@@ -1,5 +1,5 @@
 /**
- * AuxContainerPdf - PDF export container component.
+ * SherpaContainerPdf - PDF export container component.
  * 
  * Renders container data in a print-optimized layout:
  * - Title and description
@@ -11,9 +11,9 @@
  *   pdfContainer.setData(sourceContainer);
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxContainerPdf extends AuxElement {
+export class SherpaContainerPdf extends SherpaElement {
   static cssUrl = new URL('./sherpa-container-pdf.css', import.meta.url).href;
   static htmlUrl = new URL('./sherpa-container-pdf.html', import.meta.url).href;
 
@@ -111,4 +111,4 @@ export class AuxContainerPdf extends AuxElement {
   }
 }
 
-customElements.define('sherpa-container-pdf', AuxContainerPdf);
+customElements.define('sherpa-container-pdf', SherpaContainerPdf);

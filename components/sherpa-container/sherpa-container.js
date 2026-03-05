@@ -1,5 +1,5 @@
 /**
- * AuxContainer — Dashboard card with header, metrics, and data sections.
+ * SherpaContainer — Dashboard card with header, metrics, and data sections.
  *
  * Content is defined by a content template (data-content attribute) or by
  * inline child elements (fallback). Content templates live in
@@ -66,7 +66,7 @@ async function loadMenuTemplate() {
     const html = await res.text();
     menuTemplateMap = parseTemplates(html);
   } catch (e) {
-    console.warn("[AuxContainer] Failed to load menu template", e);
+    console.warn("[SherpaContainer] Failed to load menu template", e);
     menuTemplateMap = new Map();
   }
   return menuTemplateMap;
@@ -79,9 +79,9 @@ async function loadMenuTemplate() {
  */
 async function loadContentTemplate(contentId) {
   if (contentTemplateCache.has(contentId)) return contentTemplateCache.get(contentId);
-  const url = `${AuxContainer.contentBasePath}${contentId}.html`;
+  const url = `${SherpaContainer.contentBasePath}${contentId}.html`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`[AuxContainer] Content template "${contentId}" not found (${res.status})`);
+  if (!res.ok) throw new Error(`[SherpaContainer] Content template "${contentId}" not found (${res.status})`);
   const html = await res.text();
   contentTemplateCache.set(contentId, html);
   return html;
@@ -105,7 +105,7 @@ function materializeContent(html) {
     const type = slot.dataset.presentationType;
     const spec = PRESENTATION_MAP[type];
     if (!spec) {
-      console.warn(`[AuxContainer] Unknown presentation-type "${type}"`);
+      console.warn(`[SherpaContainer] Unknown presentation-type "${type}"`);
       continue;
     }
     const el = document.createElement(spec.tag);
@@ -157,7 +157,7 @@ function getSharedObserver() {
   return sharedObserver;
 }
 
-export class AuxContainer extends HTMLElement {
+export class SherpaContainer extends HTMLElement {
   #initialized = false;
   #sectionConfigs = new Map();
   #metricConfigs = new Map();
@@ -182,7 +182,7 @@ export class AuxContainer extends HTMLElement {
    * Signature: () => { filters: Array, timerange: Object|null }
    * @param {Function} fn
    */
-  static setGlobalFilterProvider(fn) { AuxContainer.#globalFilterProvider = fn; }
+  static setGlobalFilterProvider(fn) { SherpaContainer.#globalFilterProvider = fn; }
 
   /** Reset the eager counter (call before injecting a new view). */
   static resetEagerCount() {
@@ -345,7 +345,7 @@ export class AuxContainer extends HTMLElement {
       const dx = e.clientX - startX;
       const newWidth = startWidth + dx;
       const spannedCols = Math.round(newWidth / gridColWidth);
-      const stops = AuxContainer.COL_STOPS;
+      const stops = SherpaContainer.COL_STOPS;
       let bestCol = stops[0];
       for (const s of stops) {
         if (Math.abs(s - spannedCols) < Math.abs(bestCol - spannedCols)) bestCol = s;
@@ -357,7 +357,7 @@ export class AuxContainer extends HTMLElement {
       // Row axis
       const dy = e.clientY - startY;
       const deltaRows = Math.round(dy / rowHeight);
-      const newSpan = Math.min(AuxContainer.MAX_ROW_SPAN, Math.max(AuxContainer.MIN_ROW_SPAN, startRowSpan + deltaRows));
+      const newSpan = Math.min(SherpaContainer.MAX_ROW_SPAN, Math.max(SherpaContainer.MIN_ROW_SPAN, startRowSpan + deltaRows));
       if (newSpan !== this.getRowSpan()) {
         this.setAttribute("data-row-span", String(newSpan));
       }
@@ -472,8 +472,8 @@ export class AuxContainer extends HTMLElement {
     this.#initialized = true;
 
     // ── Global filter awareness (read BEFORE initial load) ─────
-    const globalState = AuxContainer.#globalFilterProvider
-      ? AuxContainer.#globalFilterProvider()
+    const globalState = SherpaContainer.#globalFilterProvider
+      ? SherpaContainer.#globalFilterProvider()
       : { filters: [], timerange: null };
     this.#globalFilters = globalState.filters;
     this.#globalTimerange = globalState.timerange;
@@ -961,7 +961,7 @@ export class AuxContainer extends HTMLElement {
 
       // Resize actions (edit mode)
       if (action === "increase-cols" || action === "decrease-cols") {
-        const stops = AuxContainer.COL_STOPS;
+        const stops = SherpaContainer.COL_STOPS;
         const cur = this.getColSpan();
         const idx = stops.indexOf(cur);
         const next = action === "increase-cols"
@@ -974,8 +974,8 @@ export class AuxContainer extends HTMLElement {
       if (action === "increase-rows" || action === "decrease-rows") {
         const cur = this.getRowSpan();
         const next = action === "increase-rows"
-          ? Math.min(AuxContainer.MAX_ROW_SPAN, cur + 1)
-          : Math.max(AuxContainer.MIN_ROW_SPAN, cur - 1);
+          ? Math.min(SherpaContainer.MAX_ROW_SPAN, cur + 1)
+          : Math.max(SherpaContainer.MIN_ROW_SPAN, cur - 1);
         if (next !== cur) this.setAttribute("data-row-span", String(next));
         return;
       }
@@ -994,4 +994,4 @@ export class AuxContainer extends HTMLElement {
   }
 }
 
-customElements.define("sherpa-container", AuxContainer);
+customElements.define("sherpa-container", SherpaContainer);

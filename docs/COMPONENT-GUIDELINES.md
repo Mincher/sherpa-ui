@@ -103,7 +103,7 @@ Every HTML file must be wrapped in a `<template id="default">` tag, even if it c
 Components whose DOM is populated from data (e.g., stepper steps, list items) use `<template>` elements **without `id`** as cloning shapes. These are distinct from multi-template `<template id="...">` blocks:
 
 ```html
-<!-- Rendered wrapper (stamped by AuxElement bootstrap) -->
+<!-- Rendered wrapper (stamped by SherpaElement bootstrap) -->
 <div class="stepper-container" role="navigation" aria-label="Progress stepper">
   <div class="stepper-header" role="tablist"></div>
 </div>
@@ -119,7 +119,7 @@ Components whose DOM is populated from data (e.g., stepper steps, list items) us
 </template>
 ```
 
-The wrapper is rendered by AuxElement's bootstrap. The `<template>` elements live in the shadow DOM as invisible containers — JS clones them per data item:
+The wrapper is rendered by SherpaElement's bootstrap. The `<template>` elements live in the shadow DOM as invisible containers — JS clones them per data item:
 
 ```js
 const itemTpl = this.$('template.step-item-tpl');
@@ -129,7 +129,7 @@ item.dataset.active = '';
 header.appendChild(frag);
 ```
 
-**Key rule:** cloning prototypes use `class` (not `id`) to avoid triggering AuxElement's multi-template parser, which looks for `template[id]`.
+**Key rule:** cloning prototypes use `class` (not `id`) to avoid triggering SherpaElement's multi-template parser, which looks for `template[id]`.
 
 ### Content Templates (application level)
 
@@ -395,12 +395,12 @@ JS is the last resort — used only for data, lifecycle and events that HTML and
 
 ### Base Class
 
-Every shadow DOM component extends `AuxElement`:
+Every shadow DOM component extends `SherpaElement`:
 
 ```js
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxTag extends AuxElement {
+export class SherpaTag extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-tag.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-tag.html', import.meta.url).href; }
 
@@ -408,7 +408,7 @@ export class AuxTag extends AuxElement {
     // Shadow DOM is populated — wire up initial state
   }
 }
-customElements.define('sherpa-tag', AuxTag);
+customElements.define('sherpa-tag', SherpaTag);
 ```
 
 ### Lifecycle Hooks
@@ -465,7 +465,7 @@ onRender() {
 
 #onHostClick(e) {
   const target = e.composedPath().find(
-    n => n instanceof HTMLElement && n.tagName === 'AUX-NAV-ITEM'
+    n => n instanceof HTMLElement && n.tagName === 'SHERPA-NAV-ITEM'
   );
   if (!target) return;
   // Handle based on target's data attributes
@@ -548,20 +548,20 @@ await myButton.rendered;
 
 ## Light DOM Exceptions
 
-Most components extend `AuxElement` and use shadow DOM. One component remains light DOM:
+Most components extend `SherpaElement` and use shadow DOM. One component remains light DOM:
 
 | Component | Base Class | Reason |
 |---|---|---|
 | `sherpa-container` | `HTMLElement` | Orchestrates child components in light DOM |
 
-This component loads its CSS via `components/index.css` (light DOM import) rather than via `AuxElement.cssUrl`.
+This component loads its CSS via `components/index.css` (light DOM import) rather than via `SherpaElement.cssUrl`.
 
-### Completed: Data-Viz → AuxElement
+### Completed: Data-Viz → SherpaElement
 
 The data-viz trio (`sherpa-base-table`, `sherpa-metric`, `sherpa-barchart`) and `sherpa-view-header` and `sherpa-container-pdf` have been converted to shadow DOM:
 
-- `ContentAttributesMixin(HTMLElement)` → `ContentAttributesMixin(AuxElement)` for the data-viz trio
-- `sherpa-view-header` and `sherpa-container-pdf` now extend `AuxElement` directly
+- `ContentAttributesMixin(HTMLElement)` → `ContentAttributesMixin(SherpaElement)` for the data-viz trio
+- `sherpa-view-header` and `sherpa-container-pdf` now extend `SherpaElement` directly
 - All five use `static cssUrl` / `static htmlUrl` and shadow DOM queries (`$()` / `$$()`)
 - External cross-shadow-boundary CSS selectors were removed; PDF-specific styling now uses the `data-pdf-mode` attribute pattern (see below)
 
@@ -615,7 +615,7 @@ This maps directly to CSS `:host([data-attribute="value"])` rules. No JS needed 
 
 When creating or modifying a component:
 
-- [ ] Extend `AuxElement` — declare `static get cssUrl()` and `static get htmlUrl()`
+- [ ] Extend `SherpaElement` — declare `static get cssUrl()` and `static get htmlUrl()`
 - [ ] Use `data-*` attributes for all non-native configuration
 - [ ] CSS handles **all visual states** — variants, sizes, status, disabled, active, hover, focus
 - [ ] JS only for data fetching, lifecycle setup, attribute defaults and event dispatch

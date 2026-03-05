@@ -1,6 +1,6 @@
 /**
  * sherpa-section-header.js
- * AuxSectionHeader — Section heading with slots extending AuxElement.
+ * SherpaSectionHeader — Section heading with slots extending SherpaElement.
  *
  * Usage:
  *   <sherpa-section-header data-label="Section Title"></sherpa-section-header>
@@ -25,9 +25,9 @@
  *   - data-divider:       "true" | "false" — Shows bottom divider
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxSectionHeader extends AuxElement {
+export class SherpaSectionHeader extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -82,4 +82,4 @@ export class AuxSectionHeader extends AuxElement {
   }
 }
 
-customElements.define('sherpa-section-header', AuxSectionHeader);
+customElements.define('sherpa-section-header', SherpaSectionHeader);

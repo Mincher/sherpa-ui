@@ -1,8 +1,8 @@
 /**
  * sherpa-footer.js
- * AuxFooter — Reusable footer component with multiple template variants.
+ * SherpaFooter — Reusable footer component with multiple template variants.
  *
- * Uses AuxElement multi-template support to select the appropriate footer
+ * Uses SherpaElement multi-template support to select the appropriate footer
  * layout based on the `type` attribute.
  *
  * Usage:
@@ -32,9 +32,9 @@
  *   (default)       — Passthrough content (slot variant)
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxFooter extends AuxElement {
+export class SherpaFooter extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -134,4 +134,4 @@ export class AuxFooter extends AuxElement {
   }
 }
 
-customElements.define('sherpa-footer', AuxFooter);
+customElements.define('sherpa-footer', SherpaFooter);

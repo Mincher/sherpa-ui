@@ -1,6 +1,6 @@
 /**
  * sherpa-card.js
- * AuxCard — Web Component extending AuxElement base class.
+ * SherpaCard — Web Component extending SherpaElement base class.
  *
  * Uses an internal <sherpa-header> for the card header area, supporting
  * both attribute-based headings and slotted custom content.
@@ -32,10 +32,10 @@
  * @fires card-click — When interactive card is clicked
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-header/sherpa-header.js';
 
-export class AuxCard extends AuxElement {
+export class SherpaCard extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -131,4 +131,4 @@ export class AuxCard extends AuxElement {
   };
 }
 
-customElements.define('sherpa-card', AuxCard);
+customElements.define('sherpa-card', SherpaCard);

@@ -10,10 +10,10 @@
  * @fires search — { value } (fired on Enter or clear)
  */
 
-import { AuxInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-button/sherpa-button.js';
 
-export class AuxInputSearch extends AuxInputBase {
+export class SherpaInputSearch extends SherpaInputBase {
 
   static get cssUrl()  { return new URL('./sherpa-input-search.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-search.html', import.meta.url).href; }
@@ -89,4 +89,4 @@ export class AuxInputSearch extends AuxInputBase {
   };
 }
 
-customElements.define('sherpa-input-search', AuxInputSearch);
+customElements.define('sherpa-input-search', SherpaInputSearch);

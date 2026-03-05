@@ -25,7 +25,7 @@
  *   getTimeRange, getRangeKey, type, disabled
  */
 
-import { AuxElement, parseTemplates } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement, parseTemplates } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 const NUMERIC_TYPES = new Set([
@@ -65,7 +65,7 @@ function loadMenuTemplates() {
 
 /* ── Component ─────────────────────────────────────────────────── */
 
-export class AuxFilterChip extends AuxElement {
+export class SherpaFilterChip extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-filter-chip.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-filter-chip.html', import.meta.url).href; }
@@ -608,4 +608,4 @@ export class AuxFilterChip extends AuxElement {
   }
 }
 
-customElements.define('sherpa-filter-chip', AuxFilterChip);
+customElements.define('sherpa-filter-chip', SherpaFilterChip);

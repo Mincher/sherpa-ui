@@ -1,7 +1,7 @@
 /**
  * SherpaDataGrid — Advanced data grid with grouping, selection, sorting, and pagination.
  *
- * Extends ContentAttributesMixin(AuxElement) for shadow DOM + data pipeline.
+ * Extends ContentAttributesMixin(SherpaElement) for shadow DOM + data pipeline.
  * Uses native <table> for correct sticky headers and full-width row backgrounds.
  * Groups use JS-toggled hidden rows (no <details>/<summary>).
  *
@@ -21,7 +21,7 @@
  */
 
 import { ContentAttributesMixin, CONTENT_ATTRIBUTES } from '../utilities/content-attributes-mixin.js';
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-check/sherpa-check.js';
 import '../sherpa-tag/sherpa-tag.js';
@@ -65,7 +65,7 @@ function columnWidth(type) {
 }
 
 
-class SherpaDataGrid extends ContentAttributesMixin(AuxElement) {
+class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   static get cssUrl()  { return new URL('./sherpa-data-grid.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-data-grid.html', import.meta.url).href; }
 

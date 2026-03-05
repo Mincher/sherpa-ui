@@ -45,7 +45,7 @@ Or with an import map:
 ## Architecture
 
 - **No bundler** — native ES modules with `import.meta.url` for template/style resolution
-- **Shadow DOM** — components encapsulate styles via `AuxElement` base class
+- **Shadow DOM** — components encapsulate styles via `SherpaElement` base class
 - **CSS Cascade Layers** — `reset → tokens → utilities → components → app`
 - **Design tokens** — sourced from Figma exports, processed via `npm run tokens:process`
 
@@ -54,20 +54,20 @@ Or with an import map:
 `sherpa-base-table`, `sherpa-barchart`, `sherpa-metric`, and `sherpa-data-grid` accept data via pluggable providers:
 
 ```js
-import { AuxTable } from 'sherpa-ui/components/sherpa-base-table/sherpa-base-table.js';
+import { SherpaTable } from 'sherpa-ui/components/sherpa-base-table/sherpa-base-table.js';
 import { SherpaDataGrid } from 'sherpa-ui/components/sherpa-data-grid/sherpa-data-grid.js';
 
 // Register your data provider before components render
-AuxTable.setDataProvider(async (config) => {
+SherpaTable.setDataProvider(async (config) => {
   // Return { name, columns, rows, summary, config, metadata }
 });
 
-AuxTable.setDateFieldProvider((datasetName) => {
+SherpaTable.setDateFieldProvider((datasetName) => {
   // Return the date field name for chronological sorting, or null
 });
 
 SherpaDataGrid.setDataProvider(async (config) => {
-  // Same signature as AuxTable provider
+  // Same signature as SherpaTable provider
 });
 ```
 
@@ -76,13 +76,13 @@ SherpaDataGrid.setDataProvider(async (config) => {
 `sherpa-container` supports configurable content template paths and global filter providers:
 
 ```js
-import { AuxContainer } from 'sherpa-ui/components/sherpa-container/sherpa-container.js';
+import { SherpaContainer } from 'sherpa-ui/components/sherpa-container/sherpa-container.js';
 
 // Override the default content template base path
-AuxContainer.contentBasePath = '/my/content/templates/';
+SherpaContainer.contentBasePath = '/my/content/templates/';
 
 // Register a global filter state provider
-AuxContainer.setGlobalFilterProvider(() => ({
+SherpaContainer.setGlobalFilterProvider(() => ({
   filters: myFilterService.getFilters(),
   timerange: myFilterService.getTimerange(),
 }));

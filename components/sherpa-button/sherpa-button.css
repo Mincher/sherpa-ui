@@ -1,6 +1,6 @@
 /**
  * sherpa-button.css
- * Shadow DOM styles for the AuxButton web component.
+ * Shadow DOM styles for the SherpaButton web component.
  *
  * Architecture:
  *   :host is the visual and interactive element — all colour, layout,

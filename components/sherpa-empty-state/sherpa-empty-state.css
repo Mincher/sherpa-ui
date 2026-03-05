@@ -1,7 +1,7 @@
 
 /**
  * sherpa-empty-state.css
- * Shadow DOM styles for the AuxEmptyState web component.
+ * Shadow DOM styles for the SherpaEmptyState web component.
  *
  * Status strategy: :host([data-status="..."]) — icon-only treatment
  *   - Illustration SVG coloured via --icon-color (uses currentColor)

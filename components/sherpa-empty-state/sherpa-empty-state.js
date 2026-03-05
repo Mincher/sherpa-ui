@@ -1,6 +1,6 @@
 /**
  * sherpa-empty-state.js
- * AuxEmptyState — Empty-state placeholder extending AuxElement.
+ * SherpaEmptyState — Empty-state placeholder extending SherpaElement.
  *
  * Usage:
  *   <sherpa-empty-state heading="No data" description="Nothing to show"></sherpa-empty-state>
@@ -17,7 +17,7 @@
  *   - heading / description / illustration / small-print
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 /* ── Built-in illustration SVGs ──────────────────────────────── */
 
@@ -56,7 +56,7 @@ const ILLUSTRATIONS = {
 
 /* ── Component ─────────────────────────────────────────────────── */
 
-export class AuxEmptyState extends AuxElement {
+export class SherpaEmptyState extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-empty-state.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-empty-state.html', import.meta.url).href; }
@@ -92,7 +92,7 @@ export class AuxEmptyState extends AuxElement {
   }
 
   onConnect() {
-    // Slot listeners are auto-wired by AuxElement; override onSlotChange for visibility logic.
+    // Slot listeners are auto-wired by SherpaElement; override onSlotChange for visibility logic.
   }
 
   onAttributeChanged(name) {
@@ -106,7 +106,7 @@ export class AuxEmptyState extends AuxElement {
   }
 
   /**
-   * Override AuxElement's default slot-change handler to also
+   * Override SherpaElement's default slot-change handler to also
    * re-evaluate section visibility whenever slot content changes.
    */
   onSlotChange(slotEl) {
@@ -208,4 +208,4 @@ export class AuxEmptyState extends AuxElement {
   }
 }
 
-customElements.define('sherpa-empty-state', AuxEmptyState);
+customElements.define('sherpa-empty-state', SherpaEmptyState);

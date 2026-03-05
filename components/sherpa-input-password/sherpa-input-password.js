@@ -1,6 +1,6 @@
 /**
  * sherpa-input-password.js
- * Password input with show/hide toggle button, extending AuxInputBase.
+ * Password input with show/hide toggle button, extending SherpaInputBase.
  *
  * @example
  *   <sherpa-input-password label="Password" placeholder="Enter a password"></sherpa-input-password>
@@ -9,10 +9,10 @@
  * @fires change — { value }
  */
 
-import { AuxInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-button/sherpa-button.js';
 
-export class AuxInputPassword extends AuxInputBase {
+export class SherpaInputPassword extends SherpaInputBase {
 
   static get cssUrl()  { return new URL('./sherpa-input-password.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-password.html', import.meta.url).href; }
@@ -60,4 +60,4 @@ export class AuxInputPassword extends AuxInputBase {
   }
 }
 
-customElements.define('sherpa-input-password', AuxInputPassword);
+customElements.define('sherpa-input-password', SherpaInputPassword);

@@ -26,11 +26,11 @@
  *   filterclear  — Dispatched when the clear action is invoked.
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 import { formatFieldName } from '../utilities/format-utils.js';
 
-export class SherpaFilterBar extends AuxElement {
+export class SherpaFilterBar extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-filter-bar.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-filter-bar.html', import.meta.url).href; }
 

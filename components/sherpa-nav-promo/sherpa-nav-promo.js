@@ -1,7 +1,7 @@
 /**
- * AuxNavPromo — Promotional callout for the navigation footer.
+ * SherpaNavPromo — Promotional callout for the navigation footer.
  *
- * Shadow-DOM component (extends AuxElement).
+ * Shadow-DOM component (extends SherpaElement).
  * Self-configures from data attributes on the host:
  *   data-promo-title, data-promo-message, data-promo-link-text, data-promo-link-url
  * Also accepts config imperatively via setConfig({ title, message, link: { text, url } }).
@@ -9,10 +9,10 @@
  * Dismissed state tracked via [data-dismissed] attribute on the host.
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
-export class AuxNavPromo extends AuxElement {
+export class SherpaNavPromo extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-nav-promo.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-nav-promo.html', import.meta.url).href; }
@@ -87,4 +87,4 @@ export class AuxNavPromo extends AuxElement {
   }
 }
 
-customElements.define('sherpa-nav-promo', AuxNavPromo);
+customElements.define('sherpa-nav-promo', SherpaNavPromo);

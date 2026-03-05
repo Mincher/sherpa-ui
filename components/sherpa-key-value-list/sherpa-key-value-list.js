@@ -1,6 +1,6 @@
 /**
  * sherpa-key-value-list.js
- * AuxKeyValueList — Semantic description list built on the native <dl> element.
+ * SherpaKeyValueList — Semantic description list built on the native <dl> element.
  *
  * Content is authored directly in the HTML template as <dt>/<dd> pairs.
  * Layout, density, striping and borders are controlled entirely via
@@ -22,10 +22,10 @@
  * @attr {string}  key-width - Key column width (default: auto)
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-tag/sherpa-tag.js';
 
-export class AuxKeyValueList extends AuxElement {
+export class SherpaKeyValueList extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-key-value-list.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-key-value-list.html', import.meta.url).href; }
@@ -42,4 +42,4 @@ export class AuxKeyValueList extends AuxElement {
   }
 }
 
-customElements.define('sherpa-key-value-list', AuxKeyValueList);
+customElements.define('sherpa-key-value-list', SherpaKeyValueList);

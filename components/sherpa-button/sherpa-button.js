@@ -1,6 +1,6 @@
 /**
  * sherpa-button.js
- * AuxButton — Web Component extending AuxElement base class.
+ * SherpaButton — Web Component extending SherpaElement base class.
  *
  * The host element IS the button — no inner <button>. The host gets
  * role="button", tabindex="0", and handles click / keyboard natively.
@@ -29,10 +29,10 @@
  *   data-menu, data-menu-position
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-menu/sherpa-menu.js';
 
-export class AuxButton extends AuxElement {
+export class SherpaButton extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -223,4 +223,4 @@ export class AuxButton extends AuxElement {
   setActive(isActive) { this.active = !!isActive; }
 }
 
-customElements.define('sherpa-button', AuxButton);
+customElements.define('sherpa-button', SherpaButton);

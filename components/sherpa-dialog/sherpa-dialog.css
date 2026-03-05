@@ -1,7 +1,7 @@
 
 /**
  * sherpa-dialog.css
- * Shadow DOM styles for the AuxDialog web component.
+ * Shadow DOM styles for the SherpaDialog web component.
  *
  * Uses the native HTML <dialog> element with ::backdrop pseudo-element.
  * The sherpa-header and sherpa-footer slotted children handle their own

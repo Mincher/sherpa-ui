@@ -59,7 +59,7 @@ export const CONTENT_ATTRIBUTES = [
  * Mixin to add content attribute support to a component class
  * 
  * Usage:
- * class AuxMetric extends ContentAttributesMixin(HTMLElement) { ... }
+ * class SherpaMetric extends ContentAttributesMixin(HTMLElement) { ... }
  */
 export function ContentAttributesMixin(Base) {
   return class extends Base {

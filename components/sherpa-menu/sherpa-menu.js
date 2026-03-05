@@ -12,7 +12,7 @@
  */
 
 import '../sherpa-menu-item/sherpa-menu-item.js';
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 const supportsAnchor = CSS.supports?.('anchor-name', '--test') ?? false;
 
@@ -20,7 +20,7 @@ const supportsAnchor = CSS.supports?.('anchor-name', '--test') ?? false;
    Component
    ══════════════════════════════════════════════════════════════════ */
 
-export class AuxMenu extends AuxElement {
+export class SherpaMenu extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-menu.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-menu.html', import.meta.url).href; }
@@ -172,6 +172,6 @@ export class AuxMenu extends AuxElement {
   };
 }
 
-customElements.define('sherpa-menu', AuxMenu);
+customElements.define('sherpa-menu', SherpaMenu);
 
-export default AuxMenu;
+export default SherpaMenu;

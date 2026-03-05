@@ -1,6 +1,6 @@
 /**
  * sherpa-stepper.js
- * AuxStepper — Horizontal/vertical step progress indicator extending AuxElement.
+ * SherpaStepper — Horizontal/vertical step progress indicator extending SherpaElement.
  *
  * HTML template defines wrapper structure and cloning prototypes.
  * JS populates steps from data; CSS handles all visual states.
@@ -17,9 +17,9 @@
  * @fires step-click  — a step header was clicked
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxStepper extends AuxElement {
+export class SherpaStepper extends SherpaElement {
 
   static get cssUrl() { return new URL('./sherpa-stepper.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-stepper.html', import.meta.url).href; }
@@ -210,4 +210,4 @@ export class AuxStepper extends AuxElement {
   }
 }
 
-customElements.define('sherpa-stepper', AuxStepper);
+customElements.define('sherpa-stepper', SherpaStepper);

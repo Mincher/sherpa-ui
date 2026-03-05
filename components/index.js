@@ -6,7 +6,7 @@
  */
 
 // Base class
-export { AuxElement } from "./utilities/sherpa-element/sherpa-element.js";
+export { SherpaElement } from "./utilities/sherpa-element/sherpa-element.js";
 
 // Core layout components
 export * from "./sherpa-nav/sherpa-nav.js";

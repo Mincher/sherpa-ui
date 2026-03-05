@@ -1,6 +1,6 @@
 /**
  * sherpa-switch.js
- * AuxSwitch — Toggle switch extending AuxElement.
+ * SherpaSwitch — Toggle switch extending SherpaElement.
  *
  * @example
  *   <sherpa-switch data-state="on"></sherpa-switch>
@@ -13,9 +13,9 @@
  * @fires change — { checked, state }
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxSwitch extends AuxElement {
+export class SherpaSwitch extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -79,4 +79,4 @@ export class AuxSwitch extends AuxElement {
   }
 }
 
-customElements.define('sherpa-switch', AuxSwitch);
+customElements.define('sherpa-switch', SherpaSwitch);

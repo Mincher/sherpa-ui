@@ -1,6 +1,6 @@
 /**
  * sherpa-tag.js
- * AuxTag — Compact label component with variant and status support.
+ * SherpaTag — Compact label component with variant and status support.
  *
  * Usage:
  *   <sherpa-tag data-status="success">New</sherpa-tag>
@@ -12,9 +12,9 @@
  *   - data-collapsed: "true" renders as small circular indicator
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxTag extends AuxElement {
+export class SherpaTag extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-tag.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-tag.html', import.meta.url).href; }
@@ -23,4 +23,4 @@ export class AuxTag extends AuxElement {
   }
 }
 
-customElements.define('sherpa-tag', AuxTag);
+customElements.define('sherpa-tag', SherpaTag);

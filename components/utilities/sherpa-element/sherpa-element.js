@@ -1,5 +1,5 @@
 /**
- * AuxElement — shared base class for all Aux web components.
+ * SherpaElement — shared base class for all Sherpa web components.
  *
  * Eliminates per-component boilerplate for:
  *   • Template fetching with class-level caching
@@ -36,7 +36,7 @@
  *
  * Multi-template support:
  *   When the HTML file contains one or more `<template id="...">` blocks,
- *   AuxElement parses them into a map and clones the one whose id matches
+ *   SherpaElement parses them into a map and clones the one whose id matches
  *   the instance's `templateId` getter. The first `<template>` serves as
  *   the default when no id matches.
  *
@@ -97,7 +97,7 @@ export function parseTemplates(html) {
   return map;
 }
 
-export class AuxElement extends HTMLElement {
+export class SherpaElement extends HTMLElement {
 
   /* ── Static resource URLs (override in subclass) ──────────────── */
 
@@ -364,7 +364,7 @@ export class AuxElement extends HTMLElement {
       this.#wireSlots();
       return true;
     } catch (e) {
-      console.error(`AuxElement.renderFromUrl: failed to load ${url}`, e);
+      console.error(`SherpaElement.renderFromUrl: failed to load ${url}`, e);
       return false;
     }
   }

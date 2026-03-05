@@ -1,11 +1,11 @@
 /**
- * AuxBarChart - Adaptive bar chart with automatic orientation.
+ * SherpaBarChart - Adaptive bar chart with automatic orientation.
  * Supports stacked bars, category limiting, and responsive legend.
  * 
  * Uses DataService for standardised data preparation.
  */
 import { getTransferableConfig } from "../utilities/data-utils.js";
-import { AuxTable } from "../sherpa-base-table/sherpa-base-table.js";
+import { SherpaTable } from "../sherpa-base-table/sherpa-base-table.js";
 import "../sherpa-button/sherpa-button.js";
 import { escapeHtml, formatFieldName, formatCompact, generateUniqueId } from "../utilities/index.js";
 
@@ -14,7 +14,7 @@ const CONFIG = {
   aspectThreshold: 1.2,
 };
 
-export class AuxBarChart extends AuxTable {
+export class SherpaBarChart extends SherpaTable {
   static cssUrl = new URL('./sherpa-barchart.css', import.meta.url).href;
   static htmlUrl = new URL('./sherpa-barchart.html', import.meta.url).href;
 
@@ -178,7 +178,7 @@ export class AuxBarChart extends AuxTable {
     this.#validateFieldsAgainstColumns();
     this.#updateDisplayData();
     } catch (e) {
-      console.error("AuxBarChart data error:", e);
+      console.error("SherpaBarChart data error:", e);
       this.#contentData = null;
       this.#data = null;
     }
@@ -848,4 +848,4 @@ export class AuxBarChart extends AuxTable {
   getCategoryField() { return this.#getCategoryField(); }
 }
 
-customElements.define("sherpa-barchart", AuxBarChart);
+customElements.define("sherpa-barchart", SherpaBarChart);

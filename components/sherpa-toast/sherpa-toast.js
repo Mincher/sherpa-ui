@@ -1,6 +1,6 @@
 /**
  * sherpa-toast.js
- * AuxToast — Toast notification extending AuxElement.
+ * SherpaToast — Toast notification extending SherpaElement.
  *
  * @element sherpa-toast
  *
@@ -20,16 +20,16 @@
  * @method setAction(text, callback) — add action button
  *
  * Static methods:
- * @method AuxToast.show(options)             — create + show a toast
- * @method AuxToast.success(value, options)   — show success toast
- * @method AuxToast.critical(value, options)  — show critical toast
- * @method AuxToast.warning(value, options)   — show warning toast
- * @method AuxToast.info(value, options)      — show info toast
+ * @method SherpaToast.show(options)             — create + show a toast
+ * @method SherpaToast.success(value, options)   — show success toast
+ * @method SherpaToast.critical(value, options)  — show critical toast
+ * @method SherpaToast.warning(value, options)   — show warning toast
+ * @method SherpaToast.info(value, options)      — show info toast
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxToast extends AuxElement {
+export class SherpaToast extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -157,20 +157,20 @@ export class AuxToast extends AuxElement {
   /* ── Static factory methods ───────────────────────────────────── */
 
   static #getContainer(position) {
-    if (!AuxToast.#containers[position]) {
+    if (!SherpaToast.#containers[position]) {
       const el = document.createElement('div');
       el.className = 'sherpa-toast-container';
       el.dataset.position = position;
       document.body.appendChild(el);
-      AuxToast.#containers[position] = el;
+      SherpaToast.#containers[position] = el;
     }
-    return AuxToast.#containers[position];
+    return SherpaToast.#containers[position];
   }
 
   /**
    * Create and show a toast programmatically.
    * @param {Object} options
-   * @returns {AuxToast}
+   * @returns {SherpaToast}
    */
   static show(options = {}) {
     const {
@@ -197,16 +197,16 @@ export class AuxToast extends AuxElement {
       toast.rendered.then(() => toast.setAction(actionText, actionCallback));
     }
 
-    const container = AuxToast.#getContainer(position);
+    const container = SherpaToast.#getContainer(position);
     container.appendChild(toast);
 
     return toast;
   }
 
-  static success(value, options = {})  { return AuxToast.show({ ...options, status: 'success', value }); }
-  static critical(value, options = {}) { return AuxToast.show({ ...options, status: 'critical', value }); }
-  static warning(value, options = {})  { return AuxToast.show({ ...options, status: 'warning', value }); }
-  static info(value, options = {})     { return AuxToast.show({ ...options, status: 'info', value }); }
+  static success(value, options = {})  { return SherpaToast.show({ ...options, status: 'success', value }); }
+  static critical(value, options = {}) { return SherpaToast.show({ ...options, status: 'critical', value }); }
+  static warning(value, options = {})  { return SherpaToast.show({ ...options, status: 'warning', value }); }
+  static info(value, options = {})     { return SherpaToast.show({ ...options, status: 'info', value }); }
 }
 
-customElements.define('sherpa-toast', AuxToast);
+customElements.define('sherpa-toast', SherpaToast);

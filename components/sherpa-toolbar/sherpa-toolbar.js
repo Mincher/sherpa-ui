@@ -22,9 +22,9 @@
  *   filters   — Below the toolbar row (filter bar, chips)
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class SherpaToolbar extends AuxElement {
+export class SherpaToolbar extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-toolbar.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-toolbar.html', import.meta.url).href; }
 

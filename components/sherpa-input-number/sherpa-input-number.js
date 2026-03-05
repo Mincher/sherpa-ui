@@ -1,6 +1,6 @@
 /**
  * sherpa-input-number.js
- * Numerical input with stepper buttons, extending AuxInputBase.
+ * Numerical input with stepper buttons, extending SherpaInputBase.
  *
  * @example
  *   <sherpa-input-number label="Quantity" min="0" max="100" step="1"></sherpa-input-number>
@@ -13,10 +13,10 @@
  * @fires change — { value }
  */
 
-import { AuxInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-button/sherpa-button.js';
 
-export class AuxInputNumber extends AuxInputBase {
+export class SherpaInputNumber extends SherpaInputBase {
 
   static get cssUrl()  { return new URL('./sherpa-input-number.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-number.html', import.meta.url).href; }
@@ -111,4 +111,4 @@ export class AuxInputNumber extends AuxInputBase {
   #onStepUp = () => this.stepUp();
 }
 
-customElements.define('sherpa-input-number', AuxInputNumber);
+customElements.define('sherpa-input-number', SherpaInputNumber);

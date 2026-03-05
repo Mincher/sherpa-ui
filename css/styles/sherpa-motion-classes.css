@@ -9,7 +9,7 @@
  *   sherpa-table:        .sherpa-motion-expand-vertical (grouped rows)
  *
  * Shadow DOM note:
- *   AuxElement injects this file as a <link> into each shadow root,
+ *   SherpaElement injects this file as a <link> into each shadow root,
  *   so @keyframes defined here are available inside shadow DOM.
  */
 

@@ -1,13 +1,13 @@
 /**
- * AuxNav — Collapsible navigation sidebar with search and edit modes.
+ * SherpaNav — Collapsible navigation sidebar with search and edit modes.
  *
  * Architecture: Shadow DOM, template-driven, CSS-first.
- *   • Extends AuxElement — CSS loaded into shadow root via cssUrl
+ *   • Extends SherpaElement — CSS loaded into shadow root via cssUrl
  *   • Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html, override: data-src)
  *   • Template is wrapped in .sherpa-nav-root carrying declarative state:
  *       data-pinned, data-mode, data-editable, data-searchable
  *   • CSS reads state from .sherpa-nav-root; JS only toggles attributes + emits events
- *   • AuxNavItem is zero-JS (slot-driven) — all interaction handled here
+ *   • SherpaNavItem is zero-JS (slot-driven) — all interaction handled here
  *   • Search highlighting via CSS Highlight API (::highlight(nav-search-match))
  *
  * Modes: default | search | edit
@@ -27,14 +27,14 @@
  *   naveditconfirm, naveditcancel — edit-mode controls
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-nav-item/sherpa-nav-item.js';
 import '../sherpa-nav-promo/sherpa-nav-promo.js';
 
 import { setupDragSort } from '../utilities/drag-sort.js';
 
-export class AuxNav extends AuxElement {
+export class SherpaNav extends SherpaElement {
   static MODES = { DEFAULT: 'default', SEARCH: 'search', EDIT: 'edit' };
   static DEFAULT_HOME_HREF = '/home.html';
 
@@ -51,7 +51,7 @@ export class AuxNav extends AuxElement {
   /** @returns {HTMLElement|null} The .sherpa-nav-root wrapper inside the shadow root. */
   get #root() { return this.$('.sherpa-nav-root'); }
 
-  // ═══════════════════════ AuxElement Hooks ═══════════════════════
+  // ═══════════════════════ SherpaElement Hooks ═══════════════════════
 
   async onRender() {
     if (!this.#hostClickWired) {
@@ -80,7 +80,7 @@ export class AuxNav extends AuxElement {
 
   // ═══════════════════════════ Public API ═══════════════════════════
 
-  get homeHref() { return this.dataset.homeHref || AuxNav.DEFAULT_HOME_HREF; }
+  get homeHref() { return this.dataset.homeHref || SherpaNav.DEFAULT_HOME_HREF; }
 
   get isPinned() { return this.#root?.dataset.pinned === 'true'; }
   set isPinned(v) {
@@ -92,23 +92,23 @@ export class AuxNav extends AuxElement {
     this.#onPinnedChange(pinned);
   }
 
-  get isSearching() { return this.mode === AuxNav.MODES.SEARCH; }
-  get isEditing() { return this.mode === AuxNav.MODES.EDIT; }
+  get isSearching() { return this.mode === SherpaNav.MODES.SEARCH; }
+  get isEditing() { return this.mode === SherpaNav.MODES.EDIT; }
 
-  get mode() { return this.#root?.dataset.mode || AuxNav.MODES.DEFAULT; }
+  get mode() { return this.#root?.dataset.mode || SherpaNav.MODES.DEFAULT; }
   set mode(v) {
     const root = this.#root;
     if (!root) return;
-    const oldMode = root.dataset.mode || AuxNav.MODES.DEFAULT;
-    if (Object.values(AuxNav.MODES).includes(v)) { root.dataset.mode = v; } else { root.dataset.mode = AuxNav.MODES.DEFAULT; }
+    const oldMode = root.dataset.mode || SherpaNav.MODES.DEFAULT;
+    if (Object.values(SherpaNav.MODES).includes(v)) { root.dataset.mode = v; } else { root.dataset.mode = SherpaNav.MODES.DEFAULT; }
     this.dataset.mode = root.dataset.mode;
     this.#onModeChange(root.dataset.mode, oldMode);
   }
 
-  startSearch() { this.mode = AuxNav.MODES.SEARCH; this.#searchField?.focus(); }
+  startSearch() { this.mode = SherpaNav.MODES.SEARCH; this.#searchField?.focus(); }
 
   endSearch() {
-    this.mode = AuxNav.MODES.DEFAULT;
+    this.mode = SherpaNav.MODES.DEFAULT;
     if (this.#searchField) { this.#searchField.value = ''; this.#searchField.clear(); }
     this.#applySearchFilter('');
   }
@@ -193,7 +193,7 @@ export class AuxNav extends AuxElement {
     const root = this.#root;
     if (root) {
       this.dataset.pinned = root.dataset.pinned || 'false';
-      this.dataset.mode = root.dataset.mode || AuxNav.MODES.DEFAULT;
+      this.dataset.mode = root.dataset.mode || SherpaNav.MODES.DEFAULT;
     }
     this.$('.nav-pin-btn')?.setActive(this.isPinned);
     this.$('.nav-edit-btn')?.setActive(this.isEditing);
@@ -205,14 +205,14 @@ export class AuxNav extends AuxElement {
   #attachContentEvents() {
     this.$('.nav-pin-btn')?.addEventListener('click', () => { this.isPinned = !this.isPinned; });
     this.$('.nav-edit-btn')?.addEventListener('click', () => {
-      this.mode = this.isEditing ? AuxNav.MODES.DEFAULT : AuxNav.MODES.EDIT;
+      this.mode = this.isEditing ? SherpaNav.MODES.DEFAULT : SherpaNav.MODES.EDIT;
     });
 
     const sf = this.#searchField;
     sf?.addEventListener('input', (e) => {
       const value = e.detail?.value ?? sf.value;
       this.#applySearchFilter(value);
-      this.mode = value.trim() ? AuxNav.MODES.SEARCH : AuxNav.MODES.DEFAULT;
+      this.mode = value.trim() ? SherpaNav.MODES.SEARCH : SherpaNav.MODES.DEFAULT;
     });
     sf?.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { e.stopPropagation(); this.endSearch(); }
@@ -221,8 +221,8 @@ export class AuxNav extends AuxElement {
       if (!e.detail?.value) this.endSearch();
     });
 
-    this.$('.nav-edit-confirm')?.addEventListener('click', () => { this.#emit('naveditconfirm'); this.mode = AuxNav.MODES.DEFAULT; });
-    this.$('.nav-edit-cancel')?.addEventListener('click', () => { this.#emit('naveditcancel'); this.mode = AuxNav.MODES.DEFAULT; });
+    this.$('.nav-edit-confirm')?.addEventListener('click', () => { this.#emit('naveditconfirm'); this.mode = SherpaNav.MODES.DEFAULT; });
+    this.$('.nav-edit-cancel')?.addEventListener('click', () => { this.#emit('naveditcancel'); this.mode = SherpaNav.MODES.DEFAULT; });
   }
 
   /** Delegated host-level click handler — registered once in onRender(). */
@@ -258,7 +258,7 @@ export class AuxNav extends AuxElement {
     if (navItem.dataset.variant === 'section' || navItem.dataset.variant === 'subsection') return;
 
     // Regular child item
-    if (this.isEditing) this.mode = AuxNav.MODES.DEFAULT;
+    if (this.isEditing) this.mode = SherpaNav.MODES.DEFAULT;
     if (this.isSearching) this.endSearch();
     this.#emit('navitemclick', {
       itemId: navItem.dataset.itemId,
@@ -277,8 +277,8 @@ export class AuxNav extends AuxElement {
   }
 
   #onModeChange(newMode, oldMode) {
-    if (oldMode === AuxNav.MODES.SEARCH && newMode !== AuxNav.MODES.SEARCH) this.#applySearchFilter('');
-    this.$('.nav-edit-btn')?.setActive(newMode === AuxNav.MODES.EDIT);
+    if (oldMode === SherpaNav.MODES.SEARCH && newMode !== SherpaNav.MODES.SEARCH) this.#applySearchFilter('');
+    this.$('.nav-edit-btn')?.setActive(newMode === SherpaNav.MODES.EDIT);
     this.#emit('navmodechange', { mode: newMode, previousMode: oldMode });
   }
 
@@ -409,4 +409,4 @@ export class AuxNav extends AuxElement {
   }
 }
 
-customElements.define('sherpa-nav', AuxNav);
+customElements.define('sherpa-nav', SherpaNav);

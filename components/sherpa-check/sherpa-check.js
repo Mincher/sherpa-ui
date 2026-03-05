@@ -1,6 +1,6 @@
 /**
  * sherpa-check.js
- * Checkbox and radio button extending AuxElement.
+ * Checkbox and radio button extending SherpaElement.
  *
  * @example
  *   <sherpa-check label="Accept terms" description="Required to continue"></sherpa-check>
@@ -23,9 +23,9 @@
  * @fires change — { checked, value }
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxCheck extends AuxElement {
+export class SherpaCheck extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-check.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-check.html', import.meta.url).href; }
@@ -270,4 +270,4 @@ export class AuxCheck extends AuxElement {
   }
 }
 
-customElements.define('sherpa-check', AuxCheck);
+customElements.define('sherpa-check', SherpaCheck);

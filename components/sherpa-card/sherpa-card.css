@@ -1,6 +1,6 @@
 /**
  * sherpa-card.css
- * Shadow DOM styles for the AuxCard web component.
+ * Shadow DOM styles for the SherpaCard web component.
  *
  * Status: container style queries resolve --status into a subtle border
  * tint. Card intentionally does NOT colour text/icons — content keeps

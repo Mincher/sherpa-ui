@@ -1,6 +1,6 @@
 /**
  * sherpa-input-date.js
- * Date input using the native browser date picker, extending AuxInputBase.
+ * Date input using the native browser date picker, extending SherpaInputBase.
  *
  * @example
  *   <sherpa-input-date label="Start Date"></sherpa-input-date>
@@ -12,9 +12,9 @@
  * @fires change — { value }
  */
 
-import { AuxInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
-export class AuxInputDate extends AuxInputBase {
+export class SherpaInputDate extends SherpaInputBase {
 
   static get cssUrl()  { return new URL('./sherpa-input-date.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-date.html', import.meta.url).href; }
@@ -50,4 +50,4 @@ export class AuxInputDate extends AuxInputBase {
   }
 }
 
-customElements.define('sherpa-input-date', AuxInputDate);
+customElements.define('sherpa-input-date', SherpaInputDate);

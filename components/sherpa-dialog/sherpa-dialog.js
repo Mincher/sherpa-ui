@@ -1,8 +1,8 @@
 /**
  * sherpa-dialog.js
- * AuxDialog — Modal dialog built on the native HTML <dialog> element.
+ * SherpaDialog — Modal dialog built on the native HTML <dialog> element.
  *
- * Uses AuxElement multi-template support. The default template includes
+ * Uses SherpaElement multi-template support. The default template includes
  * an sherpa-header (type="dialog") and sherpa-footer (type="slot") internally,
  * so consumers only need to set attributes on sherpa-dialog itself.
  *
@@ -31,11 +31,11 @@
  * @fires close — Dialog closed
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-header/sherpa-header.js';
 import '../sherpa-footer/sherpa-footer.js';
 
-export class AuxDialog extends AuxElement {
+export class SherpaDialog extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -154,4 +154,4 @@ export class AuxDialog extends AuxElement {
   }
 }
 
-customElements.define('sherpa-dialog', AuxDialog);
+customElements.define('sherpa-dialog', SherpaDialog);

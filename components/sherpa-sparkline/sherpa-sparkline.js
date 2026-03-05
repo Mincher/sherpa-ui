@@ -1,6 +1,6 @@
 /**
  * sherpa-sparkline.js
- * Shadow DOM component extending AuxElement — CSS-driven rendering.
+ * Shadow DOM component extending SherpaElement — CSS-driven rendering.
  * JS sets raw data values and range info as CSS custom properties on the host;
  * CSS handles normalisation via calc() and all visual rendering
  * (clip-path polygons per segment).
@@ -16,7 +16,7 @@
  *   - data-unit: string - Unit label for tooltip display
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 const formatTooltipValue = (value, unitLabel = '') => {
   const num = Number(value);
@@ -37,7 +37,7 @@ const formatTooltipValue = (value, unitLabel = '') => {
   return unitLabel ? `${unitLabel}: ${formatted}` : formatted;
 };
 
-export class AuxSparkline extends AuxElement {
+export class SherpaSparkline extends SherpaElement {
   static get cssUrl() { return new URL('./sherpa-sparkline.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-sparkline.html', import.meta.url).href; }
 
@@ -177,4 +177,4 @@ export class AuxSparkline extends AuxElement {
   }
 }
 
-customElements.define('sherpa-sparkline', AuxSparkline);
+customElements.define('sherpa-sparkline', SherpaSparkline);

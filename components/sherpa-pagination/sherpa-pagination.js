@@ -17,9 +17,9 @@
  *   </sherpa-pagination>
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class SherpaPagination extends AuxElement {
+export class SherpaPagination extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-pagination.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-pagination.html', import.meta.url).href; }
 

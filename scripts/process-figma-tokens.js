@@ -126,12 +126,12 @@ function getPrefixForTargetSet(targetSetName) {
   const name = (targetSetName || '').toLowerCase();
   
   // Only primitives use sherpa-core prefix
-  // All other tokens (alias, theme, etc.) reference via sherpa-core or aux
+  // All other tokens (alias, theme, etc.) reference via sherpa-core or sherpa
   if (name === 'primatives' || name === 'primitives') {
     return 'sherpa-core';
   }
   // Alias tokens are referenced as sherpa- (semantic layer)
-  return 'aux';
+  return 'sherpa';
 }
 
 /**
@@ -260,7 +260,7 @@ function categorizeToken(path) {
  * @param {string} options.varPrefix - The prefix for the generated variable names
  */
 function flattenTokens(obj, prefix = '', result = {}, options = {}) {
-  const { varPrefix = 'aux' } = options;
+  const { varPrefix = 'sherpa' } = options;
   
   for (const [key, value] of Object.entries(obj)) {
     // Skip extensions and properties metadata
@@ -517,20 +517,20 @@ function main() {
   }) : {};
   
   // Alias: resolve to var() references pointing to core tokens
-  // Use 'aux' prefix so components use --sherpa-* tokens
+  // Use 'sherpa' prefix so components use --sherpa-* tokens
   const aliasTokens = alias ? flattenTokens(alias, '', {}, { 
-    varPrefix: 'aux',
+    varPrefix: 'sherpa',
     resolveAliases: true
   }) : {};
   
   // Theme tokens: resolve to var() references (can point to alias or core)
   const lightTokens = lightTheme ? flattenTokens(lightTheme, '', {}, { 
-    varPrefix: 'aux',
+    varPrefix: 'sherpa',
     resolveAliases: true
   }) : {};
   
   const darkTokens = darkTheme ? flattenTokens(darkTheme, '', {}, { 
-    varPrefix: 'aux',
+    varPrefix: 'sherpa',
     resolveAliases: true
   }) : {};
   

@@ -1,5 +1,5 @@
 /**
- * AuxTable - Data table component with sortable columns and collapsible row segments.
+ * SherpaTable - Data table component with sortable columns and collapsible row segments.
  * Serves as the default data visualization and base for other viz types (metric, chart).
  * 
  * Data flow: config → fetchContentData → render
@@ -8,7 +8,7 @@
  * Filter chips sync their state to these parent attributes automatically.
  */
 import { ContentAttributesMixin, CONTENT_ATTRIBUTES } from "../utilities/content-attributes-mixin.js";
-import { AuxElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
 import "../sherpa-header/sherpa-header.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
@@ -16,7 +16,7 @@ import { escapeHtml, formatValue, formatFieldName, generateUniqueId } from "../u
 
 const NUMERIC_TYPES = new Set(["number", "numeric", "currency", "percent", "year", "monthNumber"]);
 
-class AuxTable extends ContentAttributesMixin(AuxElement) {
+class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   static get cssUrl()  { return new URL('./sherpa-base-table.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-base-table.html', import.meta.url).href; }
 
@@ -29,14 +29,14 @@ class AuxTable extends ContentAttributesMixin(AuxElement) {
    * Signature: async (config) => { name, columns, rows, summary, config, metadata }
    * @param {Function} fn - Data provider function
    */
-  static setDataProvider(fn) { AuxTable.#dataProvider = fn; }
+  static setDataProvider(fn) { SherpaTable.#dataProvider = fn; }
 
   /**
    * Register a date-field provider that returns the date field name for a dataset.
    * Signature: (datasetName) => string | null
    * @param {Function} fn - Date field provider function
    */
-  static setDateFieldProvider(fn) { AuxTable.#dateFieldProvider = fn; }
+  static setDateFieldProvider(fn) { SherpaTable.#dateFieldProvider = fn; }
 
   static get observedAttributes() { 
     return [
@@ -72,12 +72,12 @@ class AuxTable extends ContentAttributesMixin(AuxElement) {
 
   async fetchContentData(config) {
     if (!config) return null;
-    if (!AuxTable.#dataProvider) {
-      console.warn('[AuxTable] No data provider registered. Call AuxTable.setDataProvider(fn) at app boot.');
+    if (!SherpaTable.#dataProvider) {
+      console.warn('[SherpaTable] No data provider registered. Call SherpaTable.setDataProvider(fn) at app boot.');
       return null;
     }
     this.setAttribute("data-loading", "");
-    const result = await AuxTable.#dataProvider(config);
+    const result = await SherpaTable.#dataProvider(config);
     this.removeAttribute("data-loading");
     return result;
   }
@@ -392,7 +392,7 @@ class AuxTable extends ContentAttributesMixin(AuxElement) {
       this.#validateFieldsAgainstColumns(columns);
 
     } catch (e) {
-      console.error('[AuxTable] Data error:', e);
+      console.error('[SherpaTable] Data error:', e);
       this.#data = null;
     }
     
@@ -596,8 +596,8 @@ class AuxTable extends ContentAttributesMixin(AuxElement) {
    */
   #getDefaultChronologicalSort(columns) {
     const dataset = this.#data?.metadata?.dataset;
-    const dateField = dataset && AuxTable.#dateFieldProvider
-      ? AuxTable.#dateFieldProvider(dataset)
+    const dateField = dataset && SherpaTable.#dateFieldProvider
+      ? SherpaTable.#dateFieldProvider(dataset)
       : null;
     if (!dateField) return null;
 
@@ -667,7 +667,7 @@ class AuxTable extends ContentAttributesMixin(AuxElement) {
   getContentRows() { return this.#data?.rows || []; }
 }
 
-customElements.define("sherpa-base-table", AuxTable);
+customElements.define("sherpa-base-table", SherpaTable);
 
-export { AuxTable };
-export default AuxTable;
+export { SherpaTable };
+export default SherpaTable;

@@ -1,6 +1,6 @@
 /**
  * sherpa-input-select.js
- * Dropdown select input extending AuxInputBase using native <select>.
+ * Dropdown select input extending SherpaInputBase using native <select>.
  *
  * @example
  *   <sherpa-input-select label="Country" placeholder="Select a country">
@@ -17,9 +17,9 @@
  * @fires change — { value }
  */
 
-import { AuxInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
-export class AuxInputSelect extends AuxInputBase {
+export class SherpaInputSelect extends SherpaInputBase {
 
   static get cssUrl()  { return new URL('./sherpa-input-select.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-select.html', import.meta.url).href; }
@@ -99,4 +99,4 @@ export class AuxInputSelect extends AuxInputBase {
   }
 }
 
-customElements.define('sherpa-input-select', AuxInputSelect);
+customElements.define('sherpa-input-select', SherpaInputSelect);

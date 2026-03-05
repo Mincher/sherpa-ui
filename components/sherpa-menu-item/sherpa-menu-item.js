@@ -1,5 +1,5 @@
 /**
- * sherpa-menu-item.js — Attribute-driven menu item (extends AuxElement).
+ * sherpa-menu-item.js — Attribute-driven menu item (extends SherpaElement).
  *
  * Templates (in sherpa-menu-item.html):
  *   default — icon + label + description + chevron
@@ -10,12 +10,12 @@
  *             data-description, data-group, data-keep-open, data-has-submenu
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-switch/sherpa-switch.js';
 
 const ROLES = { radio: 'menuitemradio', checkbox: 'menuitemcheckbox', toggle: 'menuitemcheckbox' };
 
-export class AuxMenuItem extends AuxElement {
+export class SherpaMenuItem extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-menu-item.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-menu-item.html', import.meta.url).href; }
@@ -92,4 +92,4 @@ export class AuxMenuItem extends AuxElement {
   }
 }
 
-customElements.define('sherpa-menu-item', AuxMenuItem);
+customElements.define('sherpa-menu-item', SherpaMenuItem);

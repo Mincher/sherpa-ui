@@ -1,7 +1,7 @@
 
 /**
  * sherpa-key-value-list.css
- * Shadow DOM styles for the AuxKeyValueList web component.
+ * Shadow DOM styles for the SherpaKeyValueList web component.
  *
  * Uses the native <dl> element with <dt>/<dd> pairs authored in the template.
  * Layout orientation is driven by CSS flex-direction via the host layout attribute.

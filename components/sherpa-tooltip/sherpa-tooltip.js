@@ -1,7 +1,7 @@
 /**
  * sherpa-tooltip.js
- * AuxTooltip — Singleton tooltip with CSS anchor positioning fallback.
- * Extends AuxElement for shadow DOM setup and template/CSS loading.
+ * SherpaTooltip — Singleton tooltip with CSS anchor positioning fallback.
+ * Extends SherpaElement for shadow DOM setup and template/CSS loading.
  *
  * Usage (static API):
  *   Tooltip.show(anchor, 'Hello')
@@ -11,14 +11,14 @@
  *   <button data-tooltip="Help text">Hover me</button>
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 const supportsAnchor = CSS.supports('position-anchor', '--test');
 
 let instance = null;
 let currentAnchor = null;
 
-class AuxTooltip extends AuxElement {
+class SherpaTooltip extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -110,7 +110,7 @@ class AuxTooltip extends AuxElement {
   }
 }
 
-customElements.define('sherpa-tooltip', AuxTooltip);
+customElements.define('sherpa-tooltip', SherpaTooltip);
 
 /* ── Singleton access ───────────────────────────────────────────── */
 

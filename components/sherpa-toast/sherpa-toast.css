@@ -1,7 +1,7 @@
 
 /**
  * sherpa-toast.css
- * Shadow DOM styles for the AuxToast web component.
+ * Shadow DOM styles for the SherpaToast web component.
  *
  * Status: container style queries resolve --status into subtle tokens
  * on .toast (tinted bg, border, icon colour).

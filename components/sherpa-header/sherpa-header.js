@@ -1,8 +1,8 @@
 /**
  * sherpa-header.js
- * AuxHeader — Reusable header component with three template variants.
+ * SherpaHeader — Reusable header component with three template variants.
  *
- * Uses AuxElement multi-template support to select the appropriate header
+ * Uses SherpaElement multi-template support to select the appropriate header
  * layout based on the `type` attribute.
  *
  * Templates:
@@ -71,7 +71,7 @@
  *   extra       — Extra content below search (menu)
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 /**
  * Maps the `type` attribute value to a template id.
@@ -87,7 +87,7 @@ const TEMPLATE_MAP = {
   'data-viz':'data-viz',
 };
 
-export class AuxHeader extends AuxElement {
+export class SherpaHeader extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -322,4 +322,4 @@ export class AuxHeader extends AuxElement {
   }
 }
 
-customElements.define('sherpa-header', AuxHeader);
+customElements.define('sherpa-header', SherpaHeader);

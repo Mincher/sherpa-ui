@@ -1,6 +1,6 @@
 /**
  * sherpa-input-time.js
- * Time input using the native browser time picker, extending AuxInputBase.
+ * Time input using the native browser time picker, extending SherpaInputBase.
  *
  * @example
  *   <sherpa-input-time label="Start Time"></sherpa-input-time>
@@ -12,9 +12,9 @@
  * @fires change — { value }
  */
 
-import { AuxInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
-export class AuxInputTime extends AuxInputBase {
+export class SherpaInputTime extends SherpaInputBase {
 
   static get cssUrl()  { return new URL('./sherpa-input-time.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-time.html', import.meta.url).href; }
@@ -45,4 +45,4 @@ export class AuxInputTime extends AuxInputBase {
   set step(v) { v != null ? this.setAttribute('step', v) : this.removeAttribute('step'); }
 }
 
-customElements.define('sherpa-input-time', AuxInputTime);
+customElements.define('sherpa-input-time', SherpaInputTime);

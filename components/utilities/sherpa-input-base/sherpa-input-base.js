@@ -1,7 +1,7 @@
 /**
- * AuxInputBase — Abstract base class for all form input components.
+ * SherpaInputBase — Abstract base class for all form input components.
  *
- * Extends AuxElement to provide shared behaviour for inputs:
+ * Extends SherpaElement to provide shared behaviour for inputs:
  *   • Label + description rendering via <dl>/<dt>/<dd> semantic pattern
  *   • Status icon display alongside description text
  *   • Horizontal / vertical layout via `layout` attribute
@@ -44,11 +44,11 @@
  *   The browser handles loading and cascade natively — no JS involvement.
  */
 
-import { AuxElement } from '../sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../sherpa-element/sherpa-element.js';
 
 /* ── Component ──────────────────────────────────────────────────── */
 
-export class AuxInputBase extends AuxElement {
+export class SherpaInputBase extends SherpaElement {
 
   /* ── Observed attributes ────────────────────────────────────── */
 

@@ -1,5 +1,5 @@
 /**
- * AuxMetric - KPI card with value, trend, and sparkline.
+ * SherpaMetric - KPI card with value, trend, and sparkline.
  * 
  * Uses DataQueryHandler's unified format - metrics are aggregated views
  * of the same data that can render as tables or charts.
@@ -27,9 +27,9 @@
  */
 import "../sherpa-sparkline/sherpa-sparkline.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
-import { AuxTable } from "../sherpa-base-table/sherpa-base-table.js";
+import { SherpaTable } from "../sherpa-base-table/sherpa-base-table.js";
 
-export class AuxMetric extends AuxTable {
+export class SherpaMetric extends SherpaTable {
   static cssUrl = new URL('./sherpa-metric.css', import.meta.url).href;
   static htmlUrl = new URL('./sherpa-metric.html', import.meta.url).href;
 
@@ -107,7 +107,7 @@ export class AuxMetric extends AuxTable {
 
   #initialize() {
     if (!this.#contentData) {
-      console.error('[AuxMetric] #initialize called but missing data');
+      console.error('[SherpaMetric] #initialize called but missing data');
       return;
     }
 
@@ -126,7 +126,7 @@ export class AuxMetric extends AuxTable {
   #populate() {
     const data = this.#contentData;
     if (!data) {
-      console.error('[AuxMetric] No content data available');
+      console.error('[SherpaMetric] No content data available');
       return;
     }
     
@@ -222,7 +222,7 @@ export class AuxMetric extends AuxTable {
   #updateSparkline({ status, unitText, values, forceHidden } = {}) {
     const container = this.$('.metric-sparkline');
     if (!container) {
-      console.warn('[AuxMetric] Sparkline container not found during update');
+      console.warn('[SherpaMetric] Sparkline container not found during update');
       return;
     }
 
@@ -293,4 +293,4 @@ export class AuxMetric extends AuxTable {
   }
 }
 
-customElements.define("sherpa-metric", AuxMetric);
+customElements.define("sherpa-metric", SherpaMetric);

@@ -1,7 +1,7 @@
 
 /**
  * sherpa-message.css
- * Shadow DOM styles for the AuxMessage web component.
+ * Shadow DOM styles for the SherpaMessage web component.
  *
  * Status: container style queries resolve --status into subtle tokens
  * on :host (tinted bg, border, icon colour). Text is NOT status-coloured

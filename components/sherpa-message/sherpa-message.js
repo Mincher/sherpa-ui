@@ -1,6 +1,6 @@
 /**
  * sherpa-message.js
- * AuxMessage — Alert / notification message extending AuxElement.
+ * SherpaMessage — Alert / notification message extending SherpaElement.
  *
  * Usage:
  *   <sherpa-message data-status="success">Your changes have been saved.</sherpa-message>
@@ -27,9 +27,9 @@
  * @fires close — When close button is clicked
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxMessage extends AuxElement {
+export class SherpaMessage extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -82,4 +82,4 @@ export class AuxMessage extends AuxElement {
   }
 }
 
-customElements.define('sherpa-message', AuxMessage);
+customElements.define('sherpa-message', SherpaMessage);

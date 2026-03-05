@@ -1,5 +1,5 @@
 /**
- * AuxNavItem — Attribute-driven navigation item (extends AuxElement, shadow DOM).
+ * SherpaNavItem — Attribute-driven navigation item (extends SherpaElement, shadow DOM).
  *
  * Architecture: Minimal JS — icon synced via data-icon attribute, rest is declarative.
  *   • Host element IS the interactive row (role + tabindex set in templates)
@@ -7,9 +7,9 @@
  *   • Label text projected via default <slot> (element's text content)
  *   • Icon set via data-icon attribute (FontAwesome class string)
  *   • Badge rendered via <sherpa-tag> in shadow DOM, driven by data-badge attribute
- *   • Slot presence auto-detected by AuxElement (data-has-label)
+ *   • Slot presence auto-detected by SherpaElement (data-has-label)
  *   • All styling via :host([data-*]) selectors in shadow-scoped CSS
- *   • Search highlight, delete handling, and selection managed by AuxNav
+ *   • Search highlight, delete handling, and selection managed by SherpaNav
  *
  * Variants (data-variant):
  *   "section"      Section accordion header (chevron shown, no delete)
@@ -25,10 +25,10 @@
  *   (absent)       Unselected (default)
  */
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-tag/sherpa-tag.js';
 
-export class AuxNavItem extends AuxElement {
+export class SherpaNavItem extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-nav-item.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-nav-item.html', import.meta.url).href; }
@@ -65,4 +65,4 @@ export class AuxNavItem extends AuxElement {
   }
 }
 
-customElements.define('sherpa-nav-item', AuxNavItem);
+customElements.define('sherpa-nav-item', SherpaNavItem);

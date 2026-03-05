@@ -1,6 +1,6 @@
 /**
  * sherpa-filter-chip.css
- * Shadow DOM styles for the AuxFilterChip web component.
+ * Shadow DOM styles for the SherpaFilterChip web component.
  *
  * Architecture:
  *   :host is pure layout (inline-flex, gap:0). The toggle div mirrors

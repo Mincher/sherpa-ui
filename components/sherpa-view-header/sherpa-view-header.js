@@ -1,13 +1,13 @@
 /**
- * AuxViewHeader - View header toolbar with toggles and settings.
+ * SherpaViewHeader - View header toolbar with toggles and settings.
  * Manages edit mode, auto-fill, theme, and density preferences.
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
 
-import { AuxElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-export class AuxViewHeader extends AuxElement {
+export class SherpaViewHeader extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-view-header.html', import.meta.url).href; }
 
@@ -203,4 +203,4 @@ export class AuxViewHeader extends AuxElement {
 
 }
 
-customElements.define('sherpa-view-header', AuxViewHeader);
+customElements.define('sherpa-view-header', SherpaViewHeader);
