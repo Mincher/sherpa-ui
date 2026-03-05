@@ -8,9 +8,9 @@
  * template matching the type attribute at render time.
  *
  * The dropdown is an sherpa-button with the menu attribute; the menu
- * content comes from per-type menu templates in
- * sherpa-filter-chip-menu.html, following the sherpa-menu styled list
- * pattern. JS populates column items into the template at open time.
+ * content comes from per-type templates in sherpa-menu.html, accessed
+ * via SherpaMenu.getMenuTemplate(id). JS populates column items into
+ * the template at open time.
  *
  * Usage:
  *   <sherpa-filter-chip type="sort">Sort</sherpa-filter-chip>
@@ -25,11 +25,9 @@
  *   getTimeRange, getRangeKey, type, disabled
  */
 
-import {
-  SherpaElement,
-  parseTemplates,
-} from "../utilities/sherpa-element/sherpa-element.js";
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
+import { SherpaMenu } from "../sherpa-menu/sherpa-menu.js";
 
 const NUMERIC_TYPES = new Set([
   "number",
@@ -60,27 +58,6 @@ function computeTimeRange(key) {
   const start = new Date(now);
   start.setDate(start.getDate() - days);
   return { start: start.toISOString(), end: now.toISOString() };
-}
-
-/* ── Menu templates (loaded once, shared across instances) ───── */
-
-const MENU_URL = new URL("./sherpa-filter-chip-menu.html", import.meta.url)
-  .href;
-let _menuTplMap = null;
-let _menuTplPromise = null;
-
-function loadMenuTemplates() {
-  if (!_menuTplPromise) {
-    _menuTplPromise = fetch(MENU_URL)
-      .then((r) => (r.ok ? r.text() : ""))
-      .then((html) => {
-        _menuTplMap = parseTemplates(html);
-      })
-      .catch(() => {
-        _menuTplMap = null;
-      });
-  }
-  return _menuTplPromise;
 }
 
 /* ── Component ─────────────────────────────────────────────────── */
@@ -347,8 +324,8 @@ export class SherpaFilterChip extends SherpaElement {
   /* ── Menu ───────────────────────────────────────────────────────────── */
 
   async #populateMenu() {
-    await loadMenuTemplates();
-    const html = _menuTplMap?.get(this.type);
+    await SherpaMenu.ready;
+    const html = SherpaMenu.getMenuTemplate(this.type);
     if (!html) return;
 
     const frag = document.createRange().createContextualFragment(html);

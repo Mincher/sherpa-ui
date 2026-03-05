@@ -10,10 +10,14 @@
  *   presentationchange — View switch request. detail: { type, data }
  *
  * Self-filtering: Inherits containerfilterchange / globalfilterchange
- * listeners from SherpaTable base class.
+ * listeners from ContentAttributesMixin.
  */
 import { getTransferableConfig } from "../utilities/data-utils.js";
-import { SherpaTable } from "../sherpa-base-table/sherpa-base-table.js";
+import {
+  ContentAttributesMixin,
+  CONTENT_ATTRIBUTES,
+} from "../utilities/content-attributes-mixin.js";
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
 import {
   escapeHtml,
@@ -28,7 +32,7 @@ const CONFIG = {
   aspectThreshold: 1.2,
 };
 
-export class SherpaBarChart extends SherpaTable {
+export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   static cssUrl = new URL("./sherpa-barchart.css", import.meta.url).href;
   static htmlUrl = new URL("./sherpa-barchart.html", import.meta.url).href;
 
@@ -248,16 +252,7 @@ export class SherpaBarChart extends SherpaTable {
     this.#render();
 
     // Dispatch vizready so filter bars can auto-populate column menus
-    this.dispatchEvent(
-      new CustomEvent("vizready", {
-        bubbles: true,
-        composed: true,
-        detail: {
-          columns: this.getContentColumns(),
-          rows: this.getContentRows(),
-        },
-      }),
-    );
+    this.dispatchVizReady();
   }
 
   #validateFieldsAgainstColumns() {

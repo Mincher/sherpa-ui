@@ -14,12 +14,51 @@
  * Each sherpa-button[menu] creates and owns its own <sherpa-menu> instance.
  * Uses popover="auto" for top-layer promotion and light-dismiss.
  * CSS anchor positioning (with JS fallback) for placement.
+ *
+ * Menu content templates:
+ *   All menu templates are centralised in sherpa-menu.html and loaded
+ *   once at module init. Components access them via the static API:
+ *     await SherpaMenu.ready;
+ *     const html = SherpaMenu.getMenuTemplate("container");
+ *
+ *   Available template ids:
+ *     container  — Container overflow menu (resize, data, export)
+ *     sort       — Sort column picker (filter chip)
+ *     filter     — Value filter picker (filter chip)
+ *     segment    — Segment column picker (filter chip)
+ *     timeframe  — Time range presets (filter chip)
  */
 
 import "../sherpa-menu-item/sherpa-menu-item.js";
-import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import {
+  SherpaElement,
+  parseTemplates,
+} from "../utilities/sherpa-element/sherpa-element.js";
 
 const supportsAnchor = CSS.supports?.("anchor-name", "--test") ?? false;
+
+/* ── Menu content templates (loaded once at module init) ───────── */
+
+const MENU_HTML_URL = new URL("./sherpa-menu.html", import.meta.url).href;
+let _menuTemplates = null; // Map<id, htmlString> — populated by _ensureTemplates()
+let _menuTemplatesPromise = null;
+
+function _ensureTemplates() {
+  if (!_menuTemplatesPromise) {
+    _menuTemplatesPromise = fetch(MENU_HTML_URL)
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((html) => {
+        _menuTemplates = parseTemplates(html);
+      })
+      .catch(() => {
+        _menuTemplates = new Map();
+      });
+  }
+  return _menuTemplatesPromise;
+}
+
+// Kick off the fetch immediately when the module loads
+_ensureTemplates();
 
 /* ══════════════════════════════════════════════════════════════════
    Component
@@ -30,7 +69,27 @@ export class SherpaMenu extends SherpaElement {
     return new URL("./sherpa-menu.css", import.meta.url).href;
   }
   static get htmlUrl() {
-    return new URL("./sherpa-menu.html", import.meta.url).href;
+    return MENU_HTML_URL;
+  }
+
+  /**
+   * Get a menu content template by id.
+   * Returns the HTML string, or "" if not found.
+   * Call after awaiting SherpaMenu.ready to guarantee availability.
+   * @param {string} id — template id (e.g. "container", "sort")
+   * @returns {string}
+   */
+  static getMenuTemplate(id) {
+    return _menuTemplates?.get(id) ?? "";
+  }
+
+  /**
+   * Promise that resolves once menu templates are loaded and parsed.
+   * Consumers can `await SherpaMenu.ready` before calling getMenuTemplate().
+   * @type {Promise<void>}
+   */
+  static get ready() {
+    return _ensureTemplates();
   }
 
   source = null;

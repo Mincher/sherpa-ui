@@ -1,22 +1,56 @@
 /**
- * ContentAttributesMixin - Shared content configuration attribute handling
+ * ContentAttributesMixin — Shared content configuration + data pipeline.
  *
- * Provides standardized getters and setters for all content configuration attributes
- * across sherpa-metric, sherpa-base-table, and sherpa-barchart components.
+ * Provides:
+ *   • Standardised getters/setters for all content config attributes
+ *   • getConfig() / setConfig() for serialising/restoring state
+ *   • Query loading: data-query-src + data-query-key → load() → setData()
+ *   • Auto-load on connect when query attributes are present
+ *   • Pluggable data provider: setDataProvider(fn) at module level
+ *   • fetchContentData(config) — calls the registered provider
+ *   • Self-filtering: containerfilterchange + globalfilterchange listeners
+ *   • dispatchVizReady() — fires the vizready event for filter bars
+ *   • View-switching header/menu helpers: getViewOptions, configureHeader,
+ *     wireContentMenu — shared by all viz components that support
+ *     presentation switching (table, barchart, metric)
  *
- * Query loading:
- *   data-query-src  — URL to a JSON bundle of named queries
- *   data-query-key  — Key within the bundle to use for this component
- *   load()          — Fetches the bundle, extracts the entry, merges with
- *                     display attributes on the element, and calls setData().
- *
- * Auto-loading:
- *   Components using this mixin auto-call load() when they connect to the
- *   DOM (via onConnect) if data-query-src and data-query-key are both set.
- *   Global filters are seeded from the shared global-filters utility.
+ * Data provider registration (module-level, shared by all viz components):
+ *   import { setDataProvider, setDateFieldProvider } from './content-attributes-mixin.js';
+ *   setDataProvider(async (config) => { ... });
+ *   setDateFieldProvider((datasetName) => dateFieldName);
  */
 
 import { getInitialFilters } from "./global-filters.js";
+
+/* ── Pluggable data providers (shared across all viz components) ── */
+let _dataProvider = null;
+let _dateFieldProvider = null;
+
+/**
+ * Register the data provider function used by all viz components.
+ * Signature: async (config) => { name, columns, rows, summary, config, metadata }
+ * @param {Function} fn
+ */
+export function setDataProvider(fn) {
+  _dataProvider = fn;
+}
+
+/**
+ * Register a date-field provider that returns the date field name for a dataset.
+ * Signature: (datasetName) => string | null
+ * @param {Function} fn
+ */
+export function setDateFieldProvider(fn) {
+  _dateFieldProvider = fn;
+}
+
+/**
+ * Get the registered date-field provider (used by table for chronological sort).
+ * @returns {Function|null}
+ */
+export function getDateFieldProvider() {
+  return _dateFieldProvider;
+}
 
 /* ── Query bundle cache (shared across all instances) ───────── */
 const queryBundleCache = new Map();
@@ -364,18 +398,411 @@ export function ContentAttributesMixin(Base) {
       return this;
     }
 
-    /* ── Auto-load on connect ────────────────────────────────── */
+    /* ══════════════════════════════════════════════════════════
+       Data Pipeline — fetch + vizready
+       ══════════════════════════════════════════════════════════ */
 
     /**
-     * If query attributes are present when the element connects,
-     * automatically load data. Global filters are seeded from the
-     * shared global-filters utility.
+     * Fetch data from the registered provider.
+     * Sets data-loading while the request is in flight.
+     * @param {object} config - Query configuration object
+     * @returns {Promise<object|null>} Data result from the provider
+     */
+    async fetchContentData(config) {
+      if (!config) return null;
+      if (!_dataProvider) {
+        console.warn(
+          "[ContentAttributes] No data provider registered. " +
+            "Call setDataProvider(fn) at app boot.",
+        );
+        return null;
+      }
+      this.setAttribute("data-loading", "");
+      const result = await _dataProvider(config);
+      this.removeAttribute("data-loading");
+      return result;
+    }
+
+    /**
+     * Dispatch vizready event after data load completes.
+     * Filter bars listen for this to auto-populate column menus.
+     * Subclasses must implement getContentColumns() and getContentRows().
+     */
+    dispatchVizReady() {
+      const columns =
+        typeof this.getContentColumns === "function"
+          ? this.getContentColumns()
+          : [];
+      const rows =
+        typeof this.getContentRows === "function" ? this.getContentRows() : [];
+      this.dispatchEvent(
+        new CustomEvent("vizready", {
+          bubbles: true,
+          composed: true,
+          detail: { columns, rows },
+        }),
+      );
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       View-switching — header + menu helpers
+       ══════════════════════════════════════════════════════════ */
+
+    #pendingMenuData = null;
+    #menuHeadingTpl = null;
+    #menuItemTpl = null;
+    _menuButton = null;
+    _menuBound = false;
+    _menuCurrentType = "";
+
+    /**
+     * Build the list of view option descriptors for the view-switching menu.
+     * Subclasses may override to add/remove options.
+     * @param {{ activeType: string, canShowChart?: boolean }} opts
+     * @returns {Array<{ type: string, label: string, icon: string, active: boolean, disabled?: boolean, disabledTitle?: string }>}
+     */
+    getViewOptions({ activeType, canShowChart = true }) {
+      return [
+        {
+          type: "table",
+          label: "Table",
+          icon: "fa-table",
+          active: activeType === "table",
+        },
+        {
+          type: "kpi-metric",
+          label: "Metric",
+          icon: "fa-chart-bar",
+          active: activeType === "kpi-metric",
+        },
+        {
+          type: "barchart",
+          label: "Bar Chart",
+          icon: "fa-chart-simple",
+          active: activeType === "barchart",
+          disabled: !canShowChart,
+          disabledTitle: canShowChart ? "" : "No primary axis field for chart",
+        },
+      ];
+    }
+
+    /**
+     * Configure the sherpa-header child for title + view menu.
+     * Sets heading text, toggles menu button via sherpa-header's API,
+     * and stashes pending menu data for wireContentMenu().
+     * @param {{ title?: string, viewOptions?: Array }} opts
+     */
+    configureHeader({ title = "", viewOptions = [] } = {}) {
+      const headerEl = this.$("sherpa-header");
+      if (!headerEl) {
+        this.#pendingMenuData = null;
+        return;
+      }
+
+      const showHeader = this.getAttribute("data-show-header") !== "false";
+      if (!showHeader) {
+        this.setAttribute("data-show-header", "false");
+      } else {
+        this.removeAttribute("data-show-header");
+      }
+
+      const showControls =
+        this.getAttribute("data-show-header-controls") !== "false";
+      showControls
+        ? headerEl.removeAttribute("data-show-header-controls")
+        : headerEl.setAttribute("data-show-header-controls", "false");
+
+      const showViewMenu = this.getAttribute("data-show-view-menu") !== "false";
+      showViewMenu
+        ? headerEl.removeAttribute("data-show-view-menu")
+        : headerEl.setAttribute("data-show-view-menu", "false");
+
+      headerEl.heading = title || "";
+
+      const shouldShowMenu = showViewMenu;
+      headerEl.hasMenuButton = shouldShowMenu;
+
+      if (shouldShowMenu) {
+        this.#pendingMenuData = {
+          showViewMenu,
+          viewOptions,
+        };
+      } else {
+        this.#pendingMenuData = null;
+      }
+    }
+
+    /**
+     * Wire the header's menu button for view-switching.
+     * Populates the menu on open and binds presentationchange dispatch.
+     * @param {HTMLElement} root - Element containing the sherpa-header
+     * @param {string} activeType - Currently active presentation type
+     */
+    async wireContentMenu(root, activeType) {
+      if (!this.#pendingMenuData) return;
+
+      const header =
+        root.$?.("sherpa-header") || root.querySelector?.("sherpa-header");
+      if (!header?.isConnected) return;
+
+      await header.rendered;
+      const menuButton = header.menuButtonElement;
+      if (!menuButton) return;
+      await menuButton.rendered;
+
+      this._menuButton = menuButton;
+
+      if (!this._menuBound) {
+        this._menuBound = true;
+        this._menuCurrentType = activeType || "";
+
+        menuButton.addEventListener("menu-open", () => {
+          this.#populateViewMenu(this._menuCurrentType);
+        });
+
+        this.#bindContentMenu(menuButton, activeType);
+      } else {
+        this._menuCurrentType = activeType || this._menuCurrentType || "";
+      }
+    }
+
+    #bindContentMenu(menuButton, activeType) {
+      menuButton.addEventListener("menu-select", (event) => {
+        const detail = event.detail ?? {};
+        if (detail.disabled) return;
+
+        const type = detail.data?.type;
+
+        if (type && type !== (this._menuCurrentType || activeType)) {
+          this._menuCurrentType = type;
+          if (Array.isArray(this.#pendingMenuData?.viewOptions)) {
+            this.#pendingMenuData.viewOptions =
+              this.#pendingMenuData.viewOptions.map((option) => ({
+                ...option,
+                active: option.type === type,
+              }));
+          }
+
+          this.dispatchEvent(
+            new CustomEvent("presentationchange", {
+              bubbles: true,
+              detail: { type, data: this.getData?.() || null },
+            }),
+          );
+        }
+      });
+    }
+
+    /**
+     * Build DOM content for the view-switching menu.
+     * Uses cloning prototypes from the component's shadow DOM.
+     */
+    #populateViewMenu(activeType) {
+      const config = this.#pendingMenuData;
+      if (!config?.showViewMenu || !config.viewOptions?.length) return;
+
+      // Cache cloning templates on first use
+      if (!this.#menuHeadingTpl) {
+        this.#menuHeadingTpl = this.$("template.menu-heading-tpl");
+        this.#menuItemTpl = this.$("template.menu-item-tpl");
+      }
+
+      const frag = document.createDocumentFragment();
+
+      const heading = this.#menuHeadingTpl.content
+        .cloneNode(true)
+        .querySelector("sherpa-menu-item");
+      heading.textContent = "View";
+      frag.appendChild(heading);
+
+      const ul = document.createElement("ul");
+      ul.dataset.group = "view";
+
+      const normalizeIcon = (icon) => {
+        if (!icon) return null;
+        if (/fa-(solid|regular|light|thin|duotone|brands)\b/.test(icon))
+          return icon;
+        return `fa-regular ${icon}`;
+      };
+
+      for (const option of config.viewOptions) {
+        const itemFrag = this.#menuItemTpl.content.cloneNode(true);
+        const item = itemFrag.querySelector("sherpa-menu-item");
+        item.setAttribute("data-selection", "radio");
+        item.setAttribute("value", option?.type ?? "");
+        item.dataset.type = option?.type ?? "";
+        if (normalizeIcon(option?.icon))
+          item.setAttribute("data-icon", normalizeIcon(option.icon));
+        if ((option?.type ?? null) === activeType)
+          item.setAttribute("checked", "");
+        if (option?.disabled) item.setAttribute("disabled", "");
+        if (option?.disabledTitle)
+          item.setAttribute("data-description", option.disabledTitle);
+        item.textContent = option?.label || "";
+        ul.appendChild(itemFrag);
+      }
+
+      frag.appendChild(ul);
+      this._menuButton?.menuElement?.replaceChildren(frag);
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       Self-filtering — container + global filter listeners
+       ══════════════════════════════════════════════════════════ */
+
+    #containerFilterHandler = null;
+    #globalFilterHandler = null;
+    #containerEl = null;
+
+    /** Wire listeners for container-scoped and global filter events. */
+    #wireFilterListeners() {
+      this.#containerEl = this.closest("sherpa-container");
+
+      // Container-scoped filters (sort/segment/value from sibling filter bar)
+      if (this.#containerEl) {
+        this.#containerFilterHandler = (e) => this.#onContainerFilter(e);
+        this.#containerEl.addEventListener(
+          "containerfilterchange",
+          this.#containerFilterHandler,
+        );
+      }
+
+      // Global filters (timerange, global filter bar)
+      this.#globalFilterHandler = (e) => this.#onGlobalFilter(e);
+      document.addEventListener(
+        "globalfilterchange",
+        this.#globalFilterHandler,
+      );
+    }
+
+    /** Unwire filter listeners on disconnect. */
+    #unwireFilterListeners() {
+      if (this.#containerEl && this.#containerFilterHandler) {
+        this.#containerEl.removeEventListener(
+          "containerfilterchange",
+          this.#containerFilterHandler,
+        );
+      }
+      if (this.#globalFilterHandler) {
+        document.removeEventListener(
+          "globalfilterchange",
+          this.#globalFilterHandler,
+        );
+      }
+      this.#containerFilterHandler = null;
+      this.#globalFilterHandler = null;
+      this.#containerEl = null;
+    }
+
+    /**
+     * Handle container-scoped filter changes (sort, segment, value filters).
+     * Sets attributes for sort/segment; re-queries for value filters.
+     */
+    #onContainerFilter(e) {
+      const filters = e.detail?.filters || [];
+      let sortFilter = null;
+      let segmentFilter = null;
+      const valueFilters = [];
+
+      for (const f of filters) {
+        if (f.type === "sort") {
+          sortFilter = f;
+          continue;
+        }
+        if (f.type === "segment") {
+          segmentFilter = f;
+          continue;
+        }
+        if (f.type === "filter" && f.values?.length) {
+          valueFilters.push(f);
+        }
+      }
+
+      // Sort → attributes (triggers onAttributeChanged → re-render)
+      if (sortFilter) {
+        this.setAttribute("data-sort-field", sortFilter.field);
+        this.setAttribute("data-sort-direction", sortFilter.mode || "asc");
+      } else {
+        this.removeAttribute("data-sort-field");
+        this.removeAttribute("data-sort-direction");
+      }
+
+      // Segment → attributes (triggers onAttributeChanged → re-render)
+      if (segmentFilter) {
+        this.setAttribute("data-segment-field", segmentFilter.field);
+        this.setAttribute("data-segment-mode", segmentFilter.mode || "on");
+      } else {
+        this.removeAttribute("data-segment-field");
+        this.removeAttribute("data-segment-mode");
+      }
+
+      // Value filters → re-query with merged config
+      if (valueFilters.length) {
+        this.#reQueryWithFilters(valueFilters);
+      }
+    }
+
+    /**
+     * Handle global filter changes (timerange, global filter bar).
+     * Re-queries data with merged global filters.
+     */
+    #onGlobalFilter(e) {
+      const globalFilters = e.detail?.filters || [];
+      const timerange = e.detail?.timerange || null;
+      const filterEntries = [];
+
+      for (const gf of globalFilters) {
+        if (gf.values?.length) {
+          filterEntries.push({
+            field: gf.field,
+            operator: "in",
+            values: gf.values,
+          });
+        }
+      }
+      if (timerange) {
+        filterEntries.push({ type: "timerange", ...timerange });
+      }
+      if (filterEntries.length) {
+        this.#reQueryWithFilters(filterEntries);
+      }
+    }
+
+    /**
+     * Re-query this component's data with additional filter entries
+     * merged into its original config.
+     */
+    #reQueryWithFilters(additionalFilters) {
+      const config =
+        typeof this.getConfig === "function" ? this.getConfig() : null;
+      if (!config || typeof this.setData !== "function") return;
+      const mergedFilters = [...(config.filters || []), ...additionalFilters];
+      const segmentBy = this.getAttribute("data-segment-field") || undefined;
+      this.setData({ ...config, filters: mergedFilters, segmentBy });
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       Lifecycle — auto-load + filter wiring
+       ══════════════════════════════════════════════════════════ */
+
+    /**
+     * Wire filter listeners and auto-load if query attributes are set.
+     * Global filters are seeded from the shared global-filters utility.
      */
     onConnect() {
       super.onConnect?.();
+      this.#wireFilterListeners();
       if (this.querySrc && this.queryKey) {
         this.load();
       }
+    }
+
+    /**
+     * Clean up filter listeners on disconnect.
+     */
+    onDisconnect() {
+      super.onDisconnect?.();
+      this.#unwireFilterListeners();
     }
 
     /* ── Query loading ────────────────────────────────────────── */

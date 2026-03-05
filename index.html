@@ -4,14 +4,25 @@
     <title>Sherpa UI — Component Library</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <link href="css/styles/sherpa-docs.css" rel="stylesheet" />
     <style>
       body {
-        font-family: var(--sherpa-typeface-open-sans-style-name, 'Open Sans'), Arial, sans-serif;
+        font-family:
+          var(--sherpa-typeface-open-sans-style-name, "Open Sans"), Arial,
+          sans-serif;
         font-size: var(--sherpa-fonts-scale-base, 14px);
         color: var(--sherpa-text-default-body, #333);
         background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
@@ -26,7 +37,7 @@
       }
 
       .site-header h1 {
-        font-family: var(--sherpa-fonts-context-brand, 'Manrope'), sans-serif;
+        font-family: var(--sherpa-fonts-context-brand, "Manrope"), sans-serif;
         font-size: 2rem;
         font-weight: 600;
         color: var(--sherpa-text-default-heading, #222);
@@ -46,7 +57,7 @@
       }
 
       .section-title {
-        font-family: var(--sherpa-fonts-context-brand, 'Manrope'), sans-serif;
+        font-family: var(--sherpa-fonts-context-brand, "Manrope"), sans-serif;
         font-size: 1.25rem;
         font-weight: 600;
         color: var(--sherpa-text-default-heading, #222);
@@ -74,7 +85,9 @@
         text-decoration: none;
         font-size: 0.875rem;
         font-weight: 600;
-        transition: box-shadow 0.15s ease, border-color 0.15s ease;
+        transition:
+          box-shadow 0.15s ease,
+          border-color 0.15s ease;
       }
 
       .component-link:hover {
@@ -83,7 +96,9 @@
       }
 
       .component-link .tag-name {
-        font-family: var(--sherpa-typeface-source-code-pro-style-name, 'Source Code Pro'), monospace;
+        font-family:
+          var(--sherpa-typeface-source-code-pro-style-name, "Source Code Pro"),
+          monospace;
         font-size: 0.8125rem;
         font-weight: 400;
         color: var(--sherpa-text-default-secondary, #666);
@@ -111,91 +126,160 @@
     </style>
   </head>
   <body>
-
     <div class="site-header">
       <h1>Sherpa UI</h1>
       <p>Design system — Web Components, design tokens, and utility classes</p>
       <div class="quick-links">
-        <a href="docs/COMPONENT-GUIDELINES.md"><i class="fa-solid fa-book"></i> Component Guidelines</a>
-        <a href="components/COMPONENT-API.md"><i class="fa-solid fa-code"></i> Component API</a>
-        <a href="css/TOKENS-USAGE-GUIDE.md"><i class="fa-solid fa-palette"></i> Tokens Guide</a>
-        <a href="css/TEXT-STYLES.md"><i class="fa-solid fa-font"></i> Text Styles</a>
+        <a href="docs/COMPONENT-GUIDELINES.md"
+          ><i class="fa-solid fa-book"></i> Component Guidelines</a
+        >
+        <a href="components/COMPONENT-API.md"
+          ><i class="fa-solid fa-code"></i> Component API</a
+        >
+        <a href="css/TOKENS-USAGE-GUIDE.md"
+          ><i class="fa-solid fa-palette"></i> Tokens Guide</a
+        >
+        <a href="css/TEXT-STYLES.md"
+          ><i class="fa-solid fa-font"></i> Text Styles</a
+        >
       </div>
     </div>
 
     <div class="site-body">
-
       <!-- Layout & Navigation -->
       <h2 class="section-title">Layout &amp; Navigation</h2>
       <div class="component-grid">
-        <a class="component-link" href="components/sherpa-header/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-header/component-doc.html"
+        >
           Header <span class="tag-name">&lt;sherpa-header&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-footer/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-footer/component-doc.html"
+        >
           Footer <span class="tag-name">&lt;sherpa-footer&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-nav/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-nav/component-doc.html"
+        >
           Nav <span class="tag-name">&lt;sherpa-nav&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-nav-item/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-nav-item/component-doc.html"
+        >
           Nav Item <span class="tag-name">&lt;sherpa-nav-item&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-nav-promo/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-nav-promo/component-doc.html"
+        >
           Nav Promo <span class="tag-name">&lt;sherpa-nav-promo&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-view-header/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-view-header/component-doc.html"
+        >
           View Header <span class="tag-name">&lt;sherpa-view-header&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-section-header/component-doc.html">
-          Section Header <span class="tag-name">&lt;sherpa-section-header&gt;</span>
+        <a
+          class="component-link"
+          href="components/sherpa-section-header/component-doc.html"
+        >
+          Section Header
+          <span class="tag-name">&lt;sherpa-section-header&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-container/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-container/component-doc.html"
+        >
           Container <span class="tag-name">&lt;sherpa-container&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-container-pdf/component-doc.html">
-          Container PDF <span class="tag-name">&lt;sherpa-container-pdf&gt;</span>
+        <a
+          class="component-link"
+          href="components/sherpa-container-pdf/component-doc.html"
+        >
+          Container PDF
+          <span class="tag-name">&lt;sherpa-container-pdf&gt;</span>
         </a>
       </div>
 
       <!-- Data Visualization -->
       <h2 class="section-title">Data Visualization</h2>
       <div class="component-grid">
-        <a class="component-link" href="components/sherpa-base-table/component-doc.html">
-          Base Table <span class="tag-name">&lt;sherpa-base-table&gt;</span>
+        <a
+          class="component-link"
+          href="components/sherpa-data-grid/component-doc.html"
+        >
+          Data Grid <span class="tag-name">&lt;sherpa-data-grid&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-barchart/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-barchart/component-doc.html"
+        >
           Bar Chart <span class="tag-name">&lt;sherpa-barchart&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-metric/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-metric/component-doc.html"
+        >
           Metric <span class="tag-name">&lt;sherpa-metric&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-sparkline/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-sparkline/component-doc.html"
+        >
           Sparkline <span class="tag-name">&lt;sherpa-sparkline&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-key-value-list/component-doc.html">
-          Key-Value List <span class="tag-name">&lt;sherpa-key-value-list&gt;</span>
+        <a
+          class="component-link"
+          href="components/sherpa-key-value-list/component-doc.html"
+        >
+          Key-Value List
+          <span class="tag-name">&lt;sherpa-key-value-list&gt;</span>
         </a>
       </div>
 
       <!-- Controls -->
       <h2 class="section-title">Controls</h2>
       <div class="component-grid">
-        <a class="component-link" href="components/sherpa-button/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-button/component-doc.html"
+        >
           Button <span class="tag-name">&lt;sherpa-button&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-check/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-check/component-doc.html"
+        >
           Checkbox <span class="tag-name">&lt;sherpa-check&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-switch/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-switch/component-doc.html"
+        >
           Switch <span class="tag-name">&lt;sherpa-switch&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-filter-chip/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-filter-chip/component-doc.html"
+        >
           Filter Chip <span class="tag-name">&lt;sherpa-filter-chip&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-stepper/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-stepper/component-doc.html"
+        >
           Stepper <span class="tag-name">&lt;sherpa-stepper&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-tag/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-tag/component-doc.html"
+        >
           Tag <span class="tag-name">&lt;sherpa-tag&gt;</span>
         </a>
       </div>
@@ -203,25 +287,46 @@
       <!-- Inputs -->
       <h2 class="section-title">Inputs</h2>
       <div class="component-grid">
-        <a class="component-link" href="components/sherpa-input-text/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-input-text/component-doc.html"
+        >
           Text <span class="tag-name">&lt;sherpa-input-text&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-input-number/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-input-number/component-doc.html"
+        >
           Number <span class="tag-name">&lt;sherpa-input-number&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-input-password/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-input-password/component-doc.html"
+        >
           Password <span class="tag-name">&lt;sherpa-input-password&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-input-search/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-input-search/component-doc.html"
+        >
           Search <span class="tag-name">&lt;sherpa-input-search&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-input-select/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-input-select/component-doc.html"
+        >
           Select <span class="tag-name">&lt;sherpa-input-select&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-input-date/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-input-date/component-doc.html"
+        >
           Date <span class="tag-name">&lt;sherpa-input-date&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-input-time/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-input-time/component-doc.html"
+        >
           Time <span class="tag-name">&lt;sherpa-input-time&gt;</span>
         </a>
       </div>
@@ -229,25 +334,46 @@
       <!-- Feedback & Overlays -->
       <h2 class="section-title">Feedback &amp; Overlays</h2>
       <div class="component-grid">
-        <a class="component-link" href="components/sherpa-dialog/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-dialog/component-doc.html"
+        >
           Dialog <span class="tag-name">&lt;sherpa-dialog&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-toast/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-toast/component-doc.html"
+        >
           Toast <span class="tag-name">&lt;sherpa-toast&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-tooltip/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-tooltip/component-doc.html"
+        >
           Tooltip <span class="tag-name">&lt;sherpa-tooltip&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-message/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-message/component-doc.html"
+        >
           Message <span class="tag-name">&lt;sherpa-message&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-empty-state/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-empty-state/component-doc.html"
+        >
           Empty State <span class="tag-name">&lt;sherpa-empty-state&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-menu/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-menu/component-doc.html"
+        >
           Menu <span class="tag-name">&lt;sherpa-menu&gt;</span>
         </a>
-        <a class="component-link" href="components/sherpa-menu-item/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-menu-item/component-doc.html"
+        >
           Menu Item <span class="tag-name">&lt;sherpa-menu-item&gt;</span>
         </a>
       </div>
@@ -255,11 +381,13 @@
       <!-- Content -->
       <h2 class="section-title">Content</h2>
       <div class="component-grid">
-        <a class="component-link" href="components/sherpa-card/component-doc.html">
+        <a
+          class="component-link"
+          href="components/sherpa-card/component-doc.html"
+        >
           Card <span class="tag-name">&lt;sherpa-card&gt;</span>
         </a>
       </div>
-
     </div>
   </body>
 </html>

@@ -51,25 +51,26 @@ Or with an import map:
 
 ## Data-Viz Components
 
-`sherpa-base-table`, `sherpa-barchart`, `sherpa-metric`, and `sherpa-data-grid` accept data via pluggable providers:
+`sherpa-data-grid`, `sherpa-barchart`, and `sherpa-metric` accept data via pluggable providers registered through `ContentAttributesMixin`:
 
 ```js
-import { SherpaTable } from "sherpa-ui/components/sherpa-base-table/sherpa-base-table.js";
-import { SherpaDataGrid } from "sherpa-ui/components/sherpa-data-grid/sherpa-data-grid.js";
+import {
+  setDataProvider,
+  setDateFieldProvider,
+} from "sherpa-ui/components/utilities/content-attributes-mixin.js";
 
-// Register your data provider before components render
-SherpaTable.setDataProvider(async (config) => {
+// Register your data provider once — shared by all viz components
+setDataProvider(async (config) => {
   // Return { name, columns, rows, summary, config, metadata }
 });
 
-SherpaTable.setDateFieldProvider((datasetName) => {
+setDateFieldProvider((datasetName) => {
   // Return the date field name for chronological sorting, or null
 });
-
-SherpaDataGrid.setDataProvider(async (config) => {
-  // Same signature as SherpaTable provider
-});
 ```
+
+> **Backward compatibility:** `SherpaDataGrid.setDataProvider()` still works
+> but delegates to the centralized provider above.
 
 ## Global Filters
 

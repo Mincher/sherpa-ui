@@ -30,7 +30,6 @@ export * from "./sherpa-tooltip/sherpa-tooltip.js";
 // Data visualization components
 export * from "./sherpa-data-viz/sherpa-data-viz.js";
 export * from "./sherpa-metric/sherpa-metric.js";
-export * from "./sherpa-base-table/sherpa-base-table.js";
 export * from "./sherpa-barchart/sherpa-barchart.js";
 export * from "./sherpa-sparkline/sherpa-sparkline.js";
 export * from "./sherpa-data-grid/sherpa-data-grid.js";

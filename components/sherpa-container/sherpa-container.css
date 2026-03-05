@@ -8,8 +8,7 @@
  *   ├── sherpa-filter-bar[slot="filters"]
  *   └── .content
  *       ├── sherpa-metric (direct children)
- *       └── .sections
- *           └── .section > .section-content
+ *       └── sherpa-data-viz (display:contents wrapper → child is flex item)
  * 
  * Attributes:
  *   data-variant: Layout variant — "fit" (default, hugs content),
@@ -31,6 +30,9 @@ sherpa-container {
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-space-sm);
+
+  /* Private — inherited through shadow DOM into menu items */
+  --_editable-display: none;
 
   /* Appearance */
   background-color: var(--sherpa-surface-container-default);
@@ -178,97 +180,53 @@ sherpa-container[data-variant="resizable"][data-col-span="12"]
 }
 
 /* ==========================================================================
-   Sections
+   Viz Children (direct children of .content via sherpa-data-viz)
    ========================================================================== */
 
-.sections {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: var(--sherpa-space-default);
+/* sherpa-data-viz uses display:contents, so the actual viz element
+   (e.g. sherpa-data-grid) becomes the flex item of .content. */
+.content > sherpa-data-viz > * {
   flex: 1 1 0;
   min-height: 0;
-  overflow: hidden;
-  container-type: inline-size;
-  container-name: sections;
-
-  &:empty {
-    display: none;
-  }
-}
-
-.section {
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-
-  &[hidden] {
-    display: none !important;
-  }
-}
-
-.section-content {
-  flex: 1 1 0;
-  min-height: 0;
+  width: 100%;
   overflow: clip;
-  display: flex;
-  flex-direction: column;
   border-radius: var(--sherpa-border-rounding-base);
-
-  & > * {
-    flex: 1 1 0;
-    min-height: 0;
-    width: 100%;
-  }
 }
 
 /* ==========================================================================
-   Row Span Visibility Rules
+   Viz Visibility Rules (resizable variant)
    ========================================================================== */
 
-/* Limit to first section by default (resizable variant) */
+/* Limit to first viz child by default */
 sherpa-container[data-variant="resizable"]
   > .content
-  > .sections
-  > .section:nth-child(n + 2) {
+  > sherpa-data-viz:nth-of-type(n + 2) {
   display: none;
 }
 
-/* Show second section when first is hidden (resizable variant) */
-sherpa-container[data-variant="resizable"]:has(.section:first-child[hidden])
+/* Show second viz child when first is hidden */
+sherpa-container[data-variant="resizable"]:has(
+    > .content > sherpa-data-viz:first-of-type[hidden]
+  )
   > .content
-  > .sections
-  > .section:nth-child(2) {
-  display: flex;
+  > sherpa-data-viz:nth-of-type(2) {
+  display: contents;
 }
 
-/* 3+ column containers: show second section (resizable variant) */
+/* 3+ column containers: show second viz child */
 sherpa-container[data-variant="resizable"]:not([data-col-span="3"])
   > .content
-  > .sections
-  > .section:nth-child(2) {
-  display: flex;
+  > sherpa-data-viz:nth-of-type(2) {
+  display: contents;
 }
 
-/* 3-column containers with 3+ rows: show second section (resizable variant) */
+/* 3-column containers with 3+ rows: show second viz child */
 sherpa-container[data-variant="resizable"][data-col-span="3"]:not(
     [data-row-span="1"]
   ):not([data-row-span="2"])
   > .content
-  > .sections
-  > .section:nth-child(2) {
-  display: flex;
-}
-
-/* Narrow containers: stack sections vertically */
-@container container-content (width < 400px) {
-  .sections {
-    flex-direction: column;
-    flex-wrap: nowrap;
-  }
+  > sherpa-data-viz:nth-of-type(2) {
+  display: contents;
 }
 
 /* ==========================================================================
@@ -294,4 +252,5 @@ body[data-hide-metrics] sherpa-container .content > sherpa-metric {
 sherpa-container[data-variant="resizable"][data-editable] {
   overflow: auto;
   resize: both;
+  --_editable-display: block;
 }

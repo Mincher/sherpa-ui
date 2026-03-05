@@ -9,11 +9,23 @@
       "attributes": [
         { "name": "data-loading", "type": "boolean" },
         { "name": "data-stacked", "type": "boolean" },
-        { "name": "data-title", "type": "string", "default": "Revenue by Segment" },
-        { "name": "data-orientation", "type": "enum", "options": ["horizontal", "vertical"] },
+        {
+          "name": "data-title",
+          "type": "string",
+          "default": "Revenue by Segment"
+        },
+        {
+          "name": "data-orientation",
+          "type": "enum",
+          "options": ["horizontal", "vertical"]
+        },
         { "name": "data-label", "type": "string" },
         { "name": "data-show-header", "type": "boolean", "default": true },
-        { "name": "data-show-header-controls", "type": "boolean", "default": true },
+        {
+          "name": "data-show-header-controls",
+          "type": "boolean",
+          "default": true
+        },
         { "name": "data-show-view-menu", "type": "boolean", "default": true }
       ],
       "slots": [],
@@ -23,27 +35,6 @@
         "key": "barchart"
       }
     },
-    "sherpa-base-table": {
-      "component": "sherpa-base-table",
-      "label": "Base Table",
-      "description": "Data table with sortable columns and collapsible row segments. Default data visualization for containers.",
-      "path": "components/sherpa-base-table",
-      "nestedComponents": ["sherpa-header"],
-      "attributes": [
-        { "name": "data-loading", "type": "boolean" },
-        { "name": "data-sort-field", "type": "string" },
-        { "name": "data-sort-direction", "type": "enum", "default": "asc", "options": ["asc", "desc"] },
-        { "name": "data-segment-field", "type": "string" },
-        { "name": "data-segment-mode", "type": "enum", "options": ["on", "off"] },
-        { "name": "data-show-header", "type": "boolean", "default": true }
-      ],
-      "slots": [],
-      "controls": { "defaultSlot": false, "namedSlots": false },
-      "sampleData": {
-        "source": "/data/queries/doc-samples.json",
-        "key": "base-table"
-      }
-    },
     "sherpa-button": {
       "component": "sherpa-button",
       "label": "Button",
@@ -51,13 +42,30 @@
       "path": "components/sherpa-button",
       "attributes": [
         { "name": "data-label", "type": "string", "default": "Button" },
-        { "name": "data-variant", "type": "enum", "default": "primary", "options": ["primary", "secondary", "tertiary"] },
-        { "name": "data-size", "type": "enum", "options": ["small", "medium", "large"] },
+        {
+          "name": "data-variant",
+          "type": "enum",
+          "default": "primary",
+          "options": ["primary", "secondary", "tertiary"]
+        },
+        {
+          "name": "data-size",
+          "type": "enum",
+          "options": ["small", "medium", "large"]
+        },
         { "name": "data-icon-start", "type": "string" },
         { "name": "data-icon-end", "type": "string" },
-        { "name": "data-icon-weight", "type": "enum", "options": ["fa-solid", "fa-regular", "fa-light"] },
+        {
+          "name": "data-icon-weight",
+          "type": "enum",
+          "options": ["fa-solid", "fa-regular", "fa-light"]
+        },
         { "name": "data-active", "type": "boolean" },
-        { "name": "data-status", "type": "enum", "options": ["success", "critical", "warning", "info", "urgent"] },
+        {
+          "name": "data-status",
+          "type": "enum",
+          "options": ["success", "critical", "warning", "info", "urgent"]
+        },
         { "name": "data-menu", "type": "boolean" },
         { "name": "disabled", "type": "boolean" }
       ],
@@ -69,18 +77,33 @@
       "label": "Card",
       "description": "Card container with header, content, and footer areas. Supports selected, interactive, and elevated states.",
       "path": "components/sherpa-card",
-      "nestedComponents": ["sherpa-key-value-list", "sherpa-tag", "sherpa-button"],
+      "nestedComponents": [
+        "sherpa-key-value-list",
+        "sherpa-tag",
+        "sherpa-button"
+      ],
       "attributes": [
         { "name": "data-label", "type": "string" },
         { "name": "data-description", "type": "string" },
         { "name": "data-selected", "type": "boolean" },
         { "name": "data-interactive", "type": "boolean" },
-        { "name": "data-elevation", "type": "enum", "default": "sm", "options": ["none", "sm", "md", "lg"] },
+        {
+          "name": "data-elevation",
+          "type": "enum",
+          "default": "sm",
+          "options": ["none", "sm", "md", "lg"]
+        },
         { "name": "disabled", "type": "boolean" }
       ],
       "slots": [
-        { "name": "header", "html": "<span slot=\"header\">Custom Header</span>" },
-        { "name": "footer", "html": "<div slot=\"footer\"><sherpa-button data-variant=\"tertiary\" data-label=\"Details\"></sherpa-button></div>" }
+        {
+          "name": "header",
+          "html": "<span slot=\"header\">Custom Header</span>"
+        },
+        {
+          "name": "footer",
+          "html": "<div slot=\"footer\"><sherpa-button data-variant=\"tertiary\" data-label=\"Details\"></sherpa-button></div>"
+        }
       ],
       "defaultHtml": "<p>Monitor key performance indicators across all active regions. Use the controls below to filter by date range or category.</p>\n<sherpa-key-value-list data-layout=\"horizontal\" data-density=\"compact\">\n  <dt>Status</dt><dd><sherpa-tag data-status=\"success\">Active</sherpa-tag></dd>\n  <dt>Region</dt><dd>North America</dd>\n  <dt>Updated</dt><dd>2 hours ago</dd>\n</sherpa-key-value-list>"
     },
@@ -90,10 +113,27 @@
       "description": "Checkbox and radio button input. Uses multi-template support to render either type based on the data-type attribute.",
       "path": "components/sherpa-check",
       "attributes": [
-        { "name": "data-type", "type": "enum", "default": "checkbox", "options": ["checkbox", "radio"] },
-        { "name": "data-label", "type": "string", "default": "Enable notifications" },
-        { "name": "data-description", "type": "string", "default": "Receive alerts when activity occurs" },
-        { "name": "data-status", "type": "enum", "options": ["critical", "warning", "success", "info"] },
+        {
+          "name": "data-type",
+          "type": "enum",
+          "default": "checkbox",
+          "options": ["checkbox", "radio"]
+        },
+        {
+          "name": "data-label",
+          "type": "string",
+          "default": "Enable notifications"
+        },
+        {
+          "name": "data-description",
+          "type": "string",
+          "default": "Receive alerts when activity occurs"
+        },
+        {
+          "name": "data-status",
+          "type": "enum",
+          "options": ["critical", "warning", "success", "info"]
+        },
         { "name": "checked", "type": "boolean" },
         { "name": "indeterminate", "type": "boolean" },
         { "name": "disabled", "type": "boolean" },
@@ -109,12 +149,27 @@
       "label": "Container",
       "description": "Dashboard card with header, metrics, and data sections. Content is defined by a content template or inline child elements.",
       "path": "components/sherpa-container",
-      "nestedComponents": ["sherpa-header", "sherpa-barchart", "sherpa-base-table", "sherpa-metric"],
+      "nestedComponents": [
+        "sherpa-header",
+        "sherpa-barchart",
+        "sherpa-data-grid",
+        "sherpa-metric"
+      ],
       "attributes": [
         { "name": "data-title", "type": "string", "default": "Sales Overview" },
         { "name": "data-content", "type": "string" },
-        { "name": "data-col-span", "type": "enum", "default": "6", "options": ["3", "6", "9", "12"] },
-        { "name": "data-row-span", "type": "enum", "default": "2", "options": ["1", "2", "3", "4", "5", "6"] },
+        {
+          "name": "data-col-span",
+          "type": "enum",
+          "default": "6",
+          "options": ["3", "6", "9", "12"]
+        },
+        {
+          "name": "data-row-span",
+          "type": "enum",
+          "default": "2",
+          "options": ["1", "2", "3", "4", "5", "6"]
+        },
         { "name": "data-editable", "type": "boolean" }
       ],
       "slots": [],
@@ -126,9 +181,18 @@
       "label": "Container PDF",
       "description": "PDF export container. Renders container data in a print-optimized layout with title, metrics, and stacked chart/table sections.",
       "path": "components/sherpa-container-pdf",
-      "nestedComponents": ["sherpa-container", "sherpa-barchart", "sherpa-base-table"],
+      "nestedComponents": [
+        "sherpa-container",
+        "sherpa-barchart",
+        "sherpa-data-grid"
+      ],
       "attributes": [
-        { "name": "data-theme", "type": "enum", "default": "light", "options": ["light"] },
+        {
+          "name": "data-theme",
+          "type": "enum",
+          "default": "light",
+          "options": ["light"]
+        },
         { "name": "data-pdf-mode", "type": "boolean" }
       ],
       "slots": [],
@@ -140,17 +204,33 @@
       "label": "Dialog",
       "description": "Modal dialog built on native HTML <dialog>. Includes an internal sherpa-header and sherpa-footer.",
       "path": "components/sherpa-dialog",
-      "nestedComponents": ["sherpa-header", "sherpa-footer", "sherpa-button", "sherpa-message"],
+      "nestedComponents": [
+        "sherpa-header",
+        "sherpa-footer",
+        "sherpa-button",
+        "sherpa-message"
+      ],
       "attributes": [
         { "name": "data-label", "type": "string", "default": "Dialog Title" },
         { "name": "data-subtitle", "type": "string" },
-        { "name": "data-size", "type": "enum", "default": "medium", "options": ["small", "medium", "large", "full"] },
+        {
+          "name": "data-size",
+          "type": "enum",
+          "default": "medium",
+          "options": ["small", "medium", "large", "full"]
+        },
         { "name": "data-open", "type": "boolean" },
         { "name": "data-dismissible", "type": "boolean", "default": true }
       ],
       "slots": [
-        { "name": "heading", "html": "<span slot=\"heading\">Custom Heading</span>" },
-        { "name": "footer", "html": "<div slot=\"footer\"><sherpa-button data-variant=\"secondary\" data-label=\"Cancel\"></sherpa-button>\n<sherpa-button data-variant=\"primary\" data-label=\"Confirm\"></sherpa-button></div>" }
+        {
+          "name": "heading",
+          "html": "<span slot=\"heading\">Custom Heading</span>"
+        },
+        {
+          "name": "footer",
+          "html": "<div slot=\"footer\"><sherpa-button data-variant=\"secondary\" data-label=\"Cancel\"></sherpa-button>\n<sherpa-button data-variant=\"primary\" data-label=\"Confirm\"></sherpa-button></div>"
+        }
       ],
       "defaultHtml": "<p>Are you sure you want to proceed? This action will update the following items:</p>\n<sherpa-message data-status=\"warning\"><strong slot=\"heading\">Warning</strong>This cannot be undone.</sherpa-message>",
       "demoActions": [
@@ -165,13 +245,29 @@
       "path": "components/sherpa-empty-state",
       "nestedComponents": ["sherpa-button"],
       "attributes": [
-        { "name": "data-label", "type": "string", "default": "No results found" },
-        { "name": "data-description", "type": "string", "default": "Try adjusting your search or filters to find what you're looking for." },
-        { "name": "data-illustration", "type": "enum", "default": "search", "options": ["empty", "search", "folder", "data", "error", "success"] },
+        {
+          "name": "data-label",
+          "type": "string",
+          "default": "No results found"
+        },
+        {
+          "name": "data-description",
+          "type": "string",
+          "default": "Try adjusting your search or filters to find what you're looking for."
+        },
+        {
+          "name": "data-illustration",
+          "type": "enum",
+          "default": "search",
+          "options": ["empty", "search", "folder", "data", "error", "success"]
+        },
         { "name": "data-small-print", "type": "string" }
       ],
       "slots": [
-        { "name": "actions", "html": "<sherpa-button slot=\"actions\" data-variant=\"primary\" data-label=\"Clear filters\"></sherpa-button>" }
+        {
+          "name": "actions",
+          "html": "<sherpa-button slot=\"actions\" data-variant=\"primary\" data-label=\"Clear filters\"></sherpa-button>"
+        }
       ],
       "defaultContent": ""
     },
@@ -182,8 +278,18 @@
       "path": "components/sherpa-filter-chip",
       "nestedComponents": ["sherpa-menu", "sherpa-menu-item"],
       "attributes": [
-        { "name": "data-type", "type": "enum", "default": "sort", "options": ["sort", "filter", "segment"] },
-        { "name": "data-mode", "type": "enum", "default": "asc", "options": ["asc", "desc", "on", "off"] },
+        {
+          "name": "data-type",
+          "type": "enum",
+          "default": "sort",
+          "options": ["sort", "filter", "segment"]
+        },
+        {
+          "name": "data-mode",
+          "type": "enum",
+          "default": "asc",
+          "options": ["asc", "desc", "on", "off"]
+        },
         { "name": "data-field", "type": "string", "default": "revenue" },
         { "name": "data-active", "type": "boolean" },
         { "name": "disabled", "type": "boolean" }
@@ -198,14 +304,22 @@
       "path": "components/sherpa-footer",
       "nestedComponents": ["sherpa-button"],
       "attributes": [
-        { "name": "data-type", "type": "enum", "default": "action-bar", "options": ["action-bar", "slot"] },
+        {
+          "name": "data-type",
+          "type": "enum",
+          "default": "action-bar",
+          "options": ["action-bar", "slot"]
+        },
         { "name": "data-cancel-label", "type": "string", "default": "Cancel" },
         { "name": "data-apply-label", "type": "string", "default": "Apply" },
         { "name": "data-show-cancel", "type": "boolean", "default": true },
         { "name": "data-show-apply", "type": "boolean", "default": true }
       ],
       "slots": [
-        { "name": "start", "html": "<span slot=\"start\">Left-aligned content</span>" }
+        {
+          "name": "start",
+          "html": "<span slot=\"start\">Left-aligned content</span>"
+        }
       ],
       "defaultContent": "Passthrough content"
     },
@@ -216,21 +330,53 @@
       "path": "components/sherpa-header",
       "nestedComponents": ["sherpa-tag", "sherpa-button"],
       "attributes": [
-        { "name": "data-type", "type": "enum", "default": "default", "options": ["container", "dialog", "section", "card", "menu", "data-viz"] },
+        {
+          "name": "data-type",
+          "type": "enum",
+          "default": "default",
+          "options": [
+            "container",
+            "dialog",
+            "section",
+            "card",
+            "menu",
+            "data-viz"
+          ]
+        },
         { "name": "data-label", "type": "string", "default": "Header" },
         { "name": "data-description", "type": "string" },
-        { "name": "data-heading-level", "type": "enum", "options": ["primary", "secondary", "tertiary"] },
+        {
+          "name": "data-heading-level",
+          "type": "enum",
+          "options": ["primary", "secondary", "tertiary"]
+        },
         { "name": "data-divider", "type": "boolean" },
         { "name": "data-drag-handle", "type": "boolean" },
         { "name": "data-close-button", "type": "boolean" },
         { "name": "data-search", "type": "boolean" },
-        { "name": "data-density", "type": "enum", "options": ["compact", "comfortable"] }
+        {
+          "name": "data-density",
+          "type": "enum",
+          "options": ["compact", "comfortable"]
+        }
       ],
       "slots": [
-        { "name": "heading", "html": "<span slot=\"heading\">Custom heading</span>" },
-        { "name": "description", "html": "<span slot=\"description\">Custom description</span>" },
-        { "name": "actions", "html": "<sherpa-button slot=\"actions\" data-variant=\"tertiary\" data-size=\"small\" data-label=\"Action\"></sherpa-button>" },
-        { "name": "badge", "html": "<sherpa-tag slot=\"badge\" data-status=\"info\">New</sherpa-tag>" }
+        {
+          "name": "heading",
+          "html": "<span slot=\"heading\">Custom heading</span>"
+        },
+        {
+          "name": "description",
+          "html": "<span slot=\"description\">Custom description</span>"
+        },
+        {
+          "name": "actions",
+          "html": "<sherpa-button slot=\"actions\" data-variant=\"tertiary\" data-size=\"small\" data-label=\"Action\"></sherpa-button>"
+        },
+        {
+          "name": "badge",
+          "html": "<sherpa-tag slot=\"badge\" data-status=\"info\">New</sherpa-tag>"
+        }
       ]
     },
     "sherpa-input-text": {
@@ -240,9 +386,21 @@
       "path": "components/sherpa-input-text",
       "attributes": [
         { "name": "data-label", "type": "string", "default": "Full Name" },
-        { "name": "data-description", "type": "string", "default": "As it appears on your ID" },
-        { "name": "data-helper", "type": "string", "default": "First and last name required" },
-        { "name": "data-layout", "type": "enum", "options": ["horizontal", "vertical"] },
+        {
+          "name": "data-description",
+          "type": "string",
+          "default": "As it appears on your ID"
+        },
+        {
+          "name": "data-helper",
+          "type": "string",
+          "default": "First and last name required"
+        },
+        {
+          "name": "data-layout",
+          "type": "enum",
+          "options": ["horizontal", "vertical"]
+        },
         { "name": "placeholder", "type": "string" },
         { "name": "disabled", "type": "boolean" },
         { "name": "readonly", "type": "boolean" },
@@ -259,8 +417,16 @@
       "attributes": [
         { "name": "data-label", "type": "string", "default": "Quantity" },
         { "name": "data-description", "type": "string" },
-        { "name": "data-helper", "type": "string", "default": "Enter a value between 1 and 100" },
-        { "name": "data-layout", "type": "enum", "options": ["horizontal", "vertical"] },
+        {
+          "name": "data-helper",
+          "type": "string",
+          "default": "Enter a value between 1 and 100"
+        },
+        {
+          "name": "data-layout",
+          "type": "enum",
+          "options": ["horizontal", "vertical"]
+        },
         { "name": "placeholder", "type": "string", "default": "0" },
         { "name": "min", "type": "number" },
         { "name": "max", "type": "number" },
@@ -281,7 +447,11 @@
         { "name": "data-label", "type": "string", "default": "Password" },
         { "name": "data-description", "type": "string" },
         { "name": "data-helper", "type": "string" },
-        { "name": "data-layout", "type": "enum", "options": ["horizontal", "vertical"] },
+        {
+          "name": "data-layout",
+          "type": "enum",
+          "options": ["horizontal", "vertical"]
+        },
         { "name": "placeholder", "type": "string" },
         { "name": "disabled", "type": "boolean" },
         { "name": "readonly", "type": "boolean" },
@@ -299,7 +469,11 @@
         { "name": "data-label", "type": "string" },
         { "name": "data-description", "type": "string" },
         { "name": "data-helper", "type": "string" },
-        { "name": "data-layout", "type": "enum", "options": ["horizontal", "vertical"] },
+        {
+          "name": "data-layout",
+          "type": "enum",
+          "options": ["horizontal", "vertical"]
+        },
         { "name": "placeholder", "type": "string", "default": "Search..." },
         { "name": "disabled", "type": "boolean" },
         { "name": "readonly", "type": "boolean" }
@@ -316,7 +490,11 @@
         { "name": "data-label", "type": "string", "default": "Country" },
         { "name": "data-description", "type": "string" },
         { "name": "data-helper", "type": "string" },
-        { "name": "data-layout", "type": "enum", "options": ["horizontal", "vertical"] },
+        {
+          "name": "data-layout",
+          "type": "enum",
+          "options": ["horizontal", "vertical"]
+        },
         { "name": "disabled", "type": "boolean" },
         { "name": "readonly", "type": "boolean" },
         { "name": "required", "type": "boolean" }
@@ -334,7 +512,11 @@
         { "name": "data-label", "type": "string", "default": "Date" },
         { "name": "data-description", "type": "string" },
         { "name": "data-helper", "type": "string" },
-        { "name": "data-layout", "type": "enum", "options": ["horizontal", "vertical"] },
+        {
+          "name": "data-layout",
+          "type": "enum",
+          "options": ["horizontal", "vertical"]
+        },
         { "name": "min", "type": "string" },
         { "name": "max", "type": "string" },
         { "name": "disabled", "type": "boolean" },
@@ -353,7 +535,11 @@
         { "name": "data-label", "type": "string", "default": "Time" },
         { "name": "data-description", "type": "string" },
         { "name": "data-helper", "type": "string" },
-        { "name": "data-layout", "type": "enum", "options": ["horizontal", "vertical"] },
+        {
+          "name": "data-layout",
+          "type": "enum",
+          "options": ["horizontal", "vertical"]
+        },
         { "name": "min", "type": "string" },
         { "name": "max", "type": "string" },
         { "name": "step", "type": "number" },
@@ -370,8 +556,18 @@
       "description": "Semantic description list on native <dl>. Content authored as <dt>/<dd> pairs; layout and density controlled via attributes.",
       "path": "components/sherpa-key-value-list",
       "attributes": [
-        { "name": "data-layout", "type": "enum", "default": "horizontal", "options": ["horizontal", "vertical"] },
-        { "name": "data-density", "type": "enum", "default": "base", "options": ["compact", "base", "comfortable"] },
+        {
+          "name": "data-layout",
+          "type": "enum",
+          "default": "horizontal",
+          "options": ["horizontal", "vertical"]
+        },
+        {
+          "name": "data-density",
+          "type": "enum",
+          "default": "base",
+          "options": ["compact", "base", "comfortable"]
+        },
         { "name": "data-striped", "type": "boolean" },
         { "name": "data-bordered", "type": "boolean", "default": true },
         { "name": "data-truncate", "type": "boolean" },
@@ -387,9 +583,7 @@
       "description": "Menu component (per-instance, no singleton). Uses popover=\"auto\" for top-layer promotion and light-dismiss.",
       "path": "components/sherpa-menu",
       "nestedComponents": ["sherpa-menu-item"],
-      "attributes": [
-        { "name": "open", "type": "boolean", "default": true }
-      ],
+      "attributes": [{ "name": "open", "type": "boolean", "default": true }],
       "slots": [],
       "defaultHtml": "<sherpa-menu-item data-type=\"heading\">Actions</sherpa-menu-item>\n<ul data-group=\"actions\">\n  <li><sherpa-menu-item data-icon=\"\uf067\" data-action=\"add\">Add item</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-icon=\"\uf044\" data-action=\"edit\">Edit</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-icon=\"\uf1f8\" data-action=\"delete\" data-status=\"critical\">Delete</sherpa-menu-item></li>\n</ul>\n<hr>\n<sherpa-menu-item data-type=\"heading\">Options</sherpa-menu-item>\n<ul data-group=\"options\">\n  <li><sherpa-menu-item data-selection=\"checkbox\" checked data-keep-open>Show labels</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-selection=\"checkbox\" data-keep-open>Compact view</sherpa-menu-item></li>\n</ul>",
       "controls": { "namedSlots": false }
@@ -403,7 +597,11 @@
         { "name": "data-type", "type": "enum", "options": ["heading"] },
         { "name": "data-icon", "type": "string" },
         { "name": "data-action", "type": "string" },
-        { "name": "data-selection", "type": "enum", "options": ["radio", "checkbox", "toggle"] },
+        {
+          "name": "data-selection",
+          "type": "enum",
+          "options": ["radio", "checkbox", "toggle"]
+        },
         { "name": "checked", "type": "boolean" },
         { "name": "disabled", "type": "boolean" },
         { "name": "data-description", "type": "string" },
@@ -422,11 +620,19 @@
       "description": "Inline alert/notification message with icon, heading, body, action, and optional close button.",
       "path": "components/sherpa-message",
       "attributes": [
-        { "name": "data-status", "type": "enum", "default": "info", "options": ["success", "critical", "warning", "info", "urgent"] },
+        {
+          "name": "data-status",
+          "type": "enum",
+          "default": "info",
+          "options": ["success", "critical", "warning", "info", "urgent"]
+        },
         { "name": "data-dismissible", "type": "boolean" }
       ],
       "slots": [
-        { "name": "heading", "html": "<strong slot=\"heading\">Did you know?</strong>" },
+        {
+          "name": "heading",
+          "html": "<strong slot=\"heading\">Did you know?</strong>"
+        },
         { "name": "action", "html": "<a slot=\"action\" href=\"#\">Retry</a>" }
       ],
       "defaultContent": "Message body text"
@@ -439,12 +645,24 @@
       "nestedComponents": ["sherpa-sparkline"],
       "attributes": [
         { "name": "data-label", "type": "string", "default": "Revenue" },
-        { "name": "data-status", "type": "enum", "options": ["success", "warning", "critical", "info", "urgent"] },
-        { "name": "data-trend", "type": "enum", "options": ["up", "down", "flat"] },
+        {
+          "name": "data-status",
+          "type": "enum",
+          "options": ["success", "warning", "critical", "info", "urgent"]
+        },
+        {
+          "name": "data-trend",
+          "type": "enum",
+          "options": ["up", "down", "flat"]
+        },
         { "name": "data-delta", "type": "string" },
         { "name": "data-visible", "type": "boolean", "default": true },
         { "name": "data-show-header", "type": "boolean", "default": true },
-        { "name": "data-show-header-controls", "type": "boolean", "default": false }
+        {
+          "name": "data-show-header-controls",
+          "type": "boolean",
+          "default": false
+        }
       ],
       "slots": [],
       "controls": { "defaultSlot": false, "namedSlots": false },
@@ -463,13 +681,21 @@
         { "name": "data-src", "type": "string" },
         { "name": "data-home-href", "type": "string", "default": "/home.html" },
         { "name": "data-pinned", "type": "boolean", "default": false },
-        { "name": "data-mode", "type": "enum", "default": "default", "options": ["default", "search", "edit"] }
+        {
+          "name": "data-mode",
+          "type": "enum",
+          "default": "default",
+          "options": ["default", "search", "edit"]
+        }
       ],
       "slots": [],
       "controls": { "defaultSlot": false, "namedSlots": false },
       "navDemo": {
         "configs": [
-          { "label": "Dashboard Nav", "src": "/html/templates/dashboard-project-nav-template.html" }
+          {
+            "label": "Dashboard Nav",
+            "src": "/html/templates/dashboard-project-nav-template.html"
+          }
         ]
       }
     },
@@ -479,7 +705,11 @@
       "description": "Attribute-driven navigation item row with indicator, drag handle, icon, label, badge, chevron, and delete button.",
       "path": "components/sherpa-nav-item",
       "attributes": [
-        { "name": "data-variant", "type": "enum", "options": ["section", "subsection", "child"] },
+        {
+          "name": "data-variant",
+          "type": "enum",
+          "options": ["section", "subsection", "child"]
+        },
         { "name": "data-state", "type": "enum", "options": ["selected"] },
         { "name": "data-icon", "type": "string" },
         { "name": "data-item-id", "type": "string" },
@@ -487,7 +717,10 @@
         { "name": "data-editable", "type": "boolean" }
       ],
       "slots": [
-        { "name": "badge", "html": "<sherpa-tag slot=\"badge\" data-status=\"info\">3</sherpa-tag>" }
+        {
+          "name": "badge",
+          "html": "<sherpa-tag slot=\"badge\" data-status=\"info\">3</sherpa-tag>"
+        }
       ],
       "defaultContent": "Nav item label",
       "wrapperHtml": "<div style=\"width:260px; background:var(--sherpa-surface-container-default); border-radius:var(--sherpa-border-rounding-base); padding:var(--sherpa-space-xs) 0;\"><sherpa-nav-item data-variant=\"section\" data-icon=\"\uf015\">Dashboard</sherpa-nav-item><sherpa-nav-item data-variant=\"subsection\" data-state=\"selected\">Overview</sherpa-nav-item><sherpa-nav-item data-variant=\"subsection\">Analytics</sherpa-nav-item><sherpa-nav-item data-variant=\"section\" data-icon=\"\uf013\">Settings</sherpa-nav-item></div>",
@@ -499,9 +732,21 @@
       "description": "Promotional callout inside navigation footer. Self-configures from data attributes.",
       "path": "components/sherpa-nav-promo",
       "attributes": [
-        { "name": "data-promo-title", "type": "string", "default": "What's New" },
-        { "name": "data-promo-message", "type": "string", "default": "Check out the latest features" },
-        { "name": "data-promo-link-text", "type": "string", "default": "Learn more" },
+        {
+          "name": "data-promo-title",
+          "type": "string",
+          "default": "What's New"
+        },
+        {
+          "name": "data-promo-message",
+          "type": "string",
+          "default": "Check out the latest features"
+        },
+        {
+          "name": "data-promo-link-text",
+          "type": "string",
+          "default": "Learn more"
+        },
         { "name": "data-promo-link-url", "type": "string", "default": "#" },
         { "name": "data-dismissed", "type": "boolean" }
       ],
@@ -515,15 +760,36 @@
       "path": "components/sherpa-section-header",
       "nestedComponents": ["sherpa-tag", "sherpa-button"],
       "attributes": [
-        { "name": "data-label", "type": "string", "default": "Section Heading" },
-        { "name": "data-heading-level", "type": "enum", "default": "primary", "options": ["primary", "secondary", "tertiary"] },
+        {
+          "name": "data-label",
+          "type": "string",
+          "default": "Section Heading"
+        },
+        {
+          "name": "data-heading-level",
+          "type": "enum",
+          "default": "primary",
+          "options": ["primary", "secondary", "tertiary"]
+        },
         { "name": "data-divider", "type": "boolean" }
       ],
       "slots": [
-        { "name": "heading", "html": "<span slot=\"heading\">Custom Heading</span>" },
-        { "name": "badge", "html": "<sherpa-tag slot=\"badge\" data-status=\"info\">New</sherpa-tag>" },
-        { "name": "description", "html": "<span slot=\"description\">Overview of your metrics</span>" },
-        { "name": "actions", "html": "<sherpa-button slot=\"actions\" data-variant=\"tertiary\" data-label=\"View all\"></sherpa-button>" }
+        {
+          "name": "heading",
+          "html": "<span slot=\"heading\">Custom Heading</span>"
+        },
+        {
+          "name": "badge",
+          "html": "<sherpa-tag slot=\"badge\" data-status=\"info\">New</sherpa-tag>"
+        },
+        {
+          "name": "description",
+          "html": "<span slot=\"description\">Overview of your metrics</span>"
+        },
+        {
+          "name": "actions",
+          "html": "<sherpa-button slot=\"actions\" data-variant=\"tertiary\" data-label=\"View all\"></sherpa-button>"
+        }
       ]
     },
     "sherpa-sparkline": {
@@ -532,7 +798,11 @@
       "description": "Inline sparkline chart with CSS-driven rendering. JS sets data values as CSS custom properties.",
       "path": "components/sherpa-sparkline",
       "attributes": [
-        { "name": "data-values", "type": "string", "default": "24,31,18,42,35,28,50,38,45,33,52,46,58" },
+        {
+          "name": "data-values",
+          "type": "string",
+          "default": "24,31,18,42,35,28,50,38,45,33,52,46,58"
+        },
         { "name": "data-variant", "type": "enum", "options": ["bar"] },
         { "name": "data-unit", "type": "string", "default": "USD" }
       ],
@@ -547,16 +817,28 @@
       "attributes": [
         { "name": "data-current-step", "type": "number", "default": 2 },
         { "name": "data-linear", "type": "boolean" },
-        { "name": "data-show-step-numbers", "type": "boolean", "default": true },
+        {
+          "name": "data-show-step-numbers",
+          "type": "boolean",
+          "default": true
+        },
         { "name": "data-src", "type": "string" }
       ],
       "slots": [],
       "controls": { "defaultSlot": false, "namedSlots": false },
       "sampleSteps": [
-        { "label": "Account Setup", "sublabel": "Create credentials", "completed": true },
+        {
+          "label": "Account Setup",
+          "sublabel": "Create credentials",
+          "completed": true
+        },
         { "label": "Verification", "sublabel": "Confirm identity" },
         { "label": "Configuration", "sublabel": "Set preferences" },
-        { "label": "Review & Launch", "sublabel": "Final check", "disabled": true }
+        {
+          "label": "Review & Launch",
+          "sublabel": "Final check",
+          "disabled": true
+        }
       ]
     },
     "sherpa-switch": {
@@ -565,8 +847,18 @@
       "description": "Toggle switch with default (rectangular with ON/OFF labels) and simple (pill-shaped) modes.",
       "path": "components/sherpa-switch",
       "attributes": [
-        { "name": "data-state", "type": "enum", "default": "off", "options": ["on", "off"] },
-        { "name": "data-mode", "type": "enum", "default": "default", "options": ["default", "simple"] },
+        {
+          "name": "data-state",
+          "type": "enum",
+          "default": "off",
+          "options": ["on", "off"]
+        },
+        {
+          "name": "data-mode",
+          "type": "enum",
+          "default": "default",
+          "options": ["default", "simple"]
+        },
         { "name": "disabled", "type": "boolean" }
       ],
       "slots": [],
@@ -578,8 +870,17 @@
       "description": "Compact inline label/badge with variant and status support.",
       "path": "components/sherpa-tag",
       "attributes": [
-        { "name": "data-variant", "type": "enum", "default": "primary", "options": ["primary", "secondary"] },
-        { "name": "data-status", "type": "enum", "options": ["critical", "info", "success", "warning", "urgent"] },
+        {
+          "name": "data-variant",
+          "type": "enum",
+          "default": "primary",
+          "options": ["primary", "secondary"]
+        },
+        {
+          "name": "data-status",
+          "type": "enum",
+          "options": ["critical", "info", "success", "warning", "urgent"]
+        },
         { "name": "data-collapsed", "type": "boolean" }
       ],
       "slots": [],
@@ -591,13 +892,33 @@
       "description": "Toast notification with icon, heading, message, action button, and auto-dismiss timer.",
       "path": "components/sherpa-toast",
       "attributes": [
-        { "name": "data-status", "type": "enum", "default": "info", "options": ["info", "success", "warning", "critical", "urgent"] },
+        {
+          "name": "data-status",
+          "type": "enum",
+          "default": "info",
+          "options": ["info", "success", "warning", "critical", "urgent"]
+        },
         { "name": "data-label", "type": "string", "default": "Notification" },
-        { "name": "data-value", "type": "string", "default": "This is a toast message." },
+        {
+          "name": "data-value",
+          "type": "string",
+          "default": "This is a toast message."
+        },
         { "name": "data-duration", "type": "number", "default": 5000 },
         { "name": "data-timer-dismiss", "type": "boolean" },
         { "name": "data-show-close", "type": "boolean", "default": true },
-        { "name": "data-position", "type": "enum", "options": ["top-right", "top-left", "bottom-right", "bottom-left", "top-center", "bottom-center"] }
+        {
+          "name": "data-position",
+          "type": "enum",
+          "options": [
+            "top-right",
+            "top-left",
+            "bottom-right",
+            "bottom-left",
+            "top-center",
+            "bottom-center"
+          ]
+        }
       ],
       "slots": [],
       "controls": { "defaultSlot": false, "namedSlots": false },
@@ -613,7 +934,12 @@
       "path": "components/sherpa-tooltip",
       "attributes": [
         { "name": "data-visible", "type": "boolean" },
-        { "name": "data-position", "type": "enum", "default": "top", "options": ["top", "bottom"] }
+        {
+          "name": "data-position",
+          "type": "enum",
+          "default": "top",
+          "options": ["top", "bottom"]
+        }
       ],
       "slots": [],
       "controls": { "defaultSlot": false, "namedSlots": false }

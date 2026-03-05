@@ -656,7 +656,7 @@ This component loads its CSS via `components/index.css` (light DOM import) rathe
 
 ### Completed: Data-Viz → SherpaElement
 
-The data-viz trio (`sherpa-base-table`, `sherpa-metric`, `sherpa-barchart`) and `sherpa-view-header` and `sherpa-container-pdf` have been converted to shadow DOM:
+The data-viz trio (`sherpa-data-grid`, `sherpa-metric`, `sherpa-barchart`) and `sherpa-view-header` and `sherpa-container-pdf` have been converted to shadow DOM:
 
 - `ContentAttributesMixin(HTMLElement)` → `ContentAttributesMixin(SherpaElement)` for the data-viz trio
 - `sherpa-view-header` and `sherpa-container-pdf` now extend `SherpaElement` directly

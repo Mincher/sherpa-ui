@@ -52,6 +52,6 @@
     "--containerColSpan": "Integer column span (@property registered)",
     "--containerRowSpan": "Integer row span (@property registered)"
   },
-  "example": "<sherpa-container data-title=\"Revenue\" data-col-span=\"6\" data-row-span=\"2\"><sherpa-base-table></sherpa-base-table></sherpa-container>",
+  "example": "<sherpa-container data-title=\"Revenue\" data-col-span=\"6\" data-row-span=\"2\"><sherpa-data-grid></sherpa-data-grid></sherpa-container>",
   "containerDemo": { "source": "/data/queries/sales-demo.json" }
 }

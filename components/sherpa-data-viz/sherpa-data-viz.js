@@ -14,8 +14,8 @@
  * works for any supported presentation type.
  *
  * Architecture:
- *   • Container places `<sherpa-data-viz>` inside `.section-content`.
- *   • The consumer puts a viz child (e.g. `<sherpa-base-table>`) inside
+ *   • Consumer places `<sherpa-data-viz>` inside a container's `.content`.
+ *   • The consumer puts a viz child (e.g. `<sherpa-data-grid>`) inside
  *     `<sherpa-data-viz>` in the HTML.
  *   • The viz child auto-loads its data via ContentAttributesMixin.
  *   • On `presentationchange`, this wrapper removes the old child,
@@ -23,17 +23,20 @@
  *     transferable config from the outgoing child.
  *
  * Supported presentation types:
- *   table      → sherpa-base-table
+ *   table      → sherpa-data-grid
  *   barchart   → sherpa-barchart
  *   kpi-metric → sherpa-metric
- *   data-grid  → sherpa-data-grid
+ *
+ * Events dispatched:
+ *   menu-contribute — bubbles to ancestor container on connect.
+ *     detail: { group: "data", type: "toggle", label, target }
+ *     Allows the container menu to show a toggle item for this viz child.
  *
  * Events consumed (stopped at this boundary):
  *   presentationchange — from child viz. detail: { type, data }
  */
 
 import "../sherpa-metric/sherpa-metric.js";
-import "../sherpa-base-table/sherpa-base-table.js";
 import "../sherpa-barchart/sherpa-barchart.js";
 import "../sherpa-data-grid/sherpa-data-grid.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
@@ -41,10 +44,9 @@ import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 /* ── Tag lookup ────────────────────────────────────────────────── */
 
 const TAG_MAP = {
-  table: "sherpa-base-table",
+  table: "sherpa-data-grid",
   barchart: "sherpa-barchart",
   "kpi-metric": "sherpa-metric",
-  "data-grid": "sherpa-data-grid",
 };
 
 /** Selector matching any supported viz child. */
@@ -68,6 +70,11 @@ export class SherpaDataViz extends SherpaElement {
       const { type, data } = e.detail ?? {};
       if (type) this.#switchPresentation(type, data);
     });
+
+    // Contribute a toggle menu item to the nearest container menu.
+    // The event bubbles so any ancestor (e.g. sherpa-container) can
+    // collect it and stamp the item into the overflow menu.
+    this.#dispatchMenuContribute();
   }
 
   /* ── Public API ────────────────────────────────────────────── */
@@ -78,6 +85,27 @@ export class SherpaDataViz extends SherpaElement {
   }
 
   /* ── Presentation switching ────────────────────────────────── */
+
+  /**
+   * Dispatch a menu-contribute event so the ancestor container can add
+   * a toggle item for this viz wrapper in its overflow menu.
+   */
+  #dispatchMenuContribute() {
+    const child = this.activeChild;
+    if (!child) return;
+    this.dispatchEvent(
+      new CustomEvent("menu-contribute", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          group: "data",
+          type: "toggle",
+          label: child.getAttribute("data-label") || this.id,
+          target: this.id,
+        },
+      }),
+    );
+  }
 
   /**
    * Swap the current viz child for a different presentation type.

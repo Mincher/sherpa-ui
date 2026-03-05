@@ -27,9 +27,13 @@
  */
 import "../sherpa-sparkline/sherpa-sparkline.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
-import { SherpaTable } from "../sherpa-base-table/sherpa-base-table.js";
+import {
+  ContentAttributesMixin,
+  CONTENT_ATTRIBUTES,
+} from "../utilities/content-attributes-mixin.js";
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
-export class SherpaMetric extends SherpaTable {
+export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   static cssUrl = new URL("./sherpa-metric.css", import.meta.url).href;
   static htmlUrl = new URL("./sherpa-metric.html", import.meta.url).href;
 
@@ -111,22 +115,7 @@ export class SherpaMetric extends SherpaTable {
 
     // Dispatch vizready so filter bars can detect this child.
     // Metrics typically return empty columns/rows — that's expected.
-    this.dispatchEvent(
-      new CustomEvent("vizready", {
-        bubbles: true,
-        composed: true,
-        detail: {
-          columns:
-            typeof this.getContentColumns === "function"
-              ? this.getContentColumns()
-              : [],
-          rows:
-            typeof this.getContentRows === "function"
-              ? this.getContentRows()
-              : [],
-        },
-      }),
-    );
+    this.dispatchVizReady();
   }
 
   // ============ Private Methods ============

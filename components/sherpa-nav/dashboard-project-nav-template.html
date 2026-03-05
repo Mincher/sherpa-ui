@@ -1,172 +1,648 @@
 <!-- Dashboard Project Navigation Template -->
-<div class="sherpa-nav-root" data-pinned="false" data-mode="default" data-editable data-searchable>
+<div
+  class="sherpa-nav-root"
+  data-pinned="false"
+  data-mode="default"
+  data-editable
+  data-searchable
+>
+  <!-- Header -->
+  <header class="nav-header">
+    <!-- Toolbar: Logo, Product Name, Actions -->
+    <div class="nav-toolbar">
+      <svg
+        class="nav-logo"
+        viewBox="0 0 18 14"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M0 0H3.80301L12.9974 9.83439V13.9026H9.19381L4.59663 8.98333V13.9002H0V0ZM8.39098 4.91692H12.9876V0H8.39098V4.91692Z"
+          fill="currentColor"
+        />
+        <path
+          fill-rule="evenodd"
+          clip-rule="evenodd"
+          d="M12.9974 9.83439H17.594V4.91689H8.40023L12.9974 9.83439Z"
+          fill="#C046FF"
+        />
+      </svg>
+      <span class="nav-product-name text-heading-lg">Apex Prototypes</span>
+      <div class="nav-toolbar-actions">
+        <sherpa-button
+          class="nav-edit-btn"
+          data-variant="tertiary"
+          data-size="small"
+          data-icon-start="&#xf1de;"
+          title="Edit navigation"
+          aria-label="Edit navigation"
+        ></sherpa-button>
+        <sherpa-button
+          class="nav-pin-btn"
+          data-variant="tertiary"
+          data-size="small"
+          data-icon-start="&#xf08d;"
+          title="Pin navigation"
+          aria-label="Pin navigation"
+        ></sherpa-button>
+      </div>
+    </div>
 
-<!-- Header -->
-<header class="nav-header">
-  <!-- Toolbar: Logo, Product Name, Actions -->
-  <div class="nav-toolbar">
-    <svg class="nav-logo" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 0H3.80301L12.9974 9.83439V13.9026H9.19381L4.59663 8.98333V13.9002H0V0ZM8.39098 4.91692H12.9876V0H8.39098V4.91692Z" fill="currentColor"/>
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M12.9974 9.83439H17.594V4.91689H8.40023L12.9974 9.83439Z" fill="#C046FF"/>
-    </svg>
-    <span class="nav-product-name text-heading-lg">Apex Prototypes</span>
-    <div class="nav-toolbar-actions">
-      <sherpa-button class="nav-edit-btn" data-variant="tertiary" data-size="small" data-icon-start="&#xf1de;" title="Edit navigation" aria-label="Edit navigation"></sherpa-button>
-      <sherpa-button class="nav-pin-btn" data-variant="tertiary" data-size="small" data-icon-start="&#xf08d;" title="Pin navigation" aria-label="Pin navigation"></sherpa-button>
+    <!-- Search -->
+    <div class="nav-search" role="search">
+      <sherpa-nav-item
+        class="nav-search-icon"
+        data-nav-target="search"
+        data-icon="fa-solid fa-magnifying-glass"
+        tabindex="0"
+        role="button"
+        aria-label="Search"
+        >Search</sherpa-nav-item
+      >
+      <sherpa-input-search
+        class="nav-search-input"
+        placeholder="Type here to filter..."
+        aria-label="Filter navigation"
+      ></sherpa-input-search>
+    </div>
+
+    <!-- Home -->
+    <sherpa-nav-item
+      data-nav-target="home"
+      data-route="/home.html"
+      data-icon="fa-solid fa-house"
+      tabindex="0"
+      role="button"
+      aria-label="Home"
+      >Home</sherpa-nav-item
+    >
+
+    <!-- Divider -->
+    <div class="nav-divider">
+      <div class="nav-divider-line"></div>
+    </div>
+  </header>
+
+  <!-- Sections -->
+  <div class="nav-sections" role="tree">
+    <!-- Quick Access Group -->
+    <div class="nav-group" data-group-index="0">
+      <details
+        class="nav-section"
+        data-section-id="recent"
+        data-quick-access="true"
+        data-editable="true"
+        data-max-items="5"
+      >
+        <summary>
+          <sherpa-nav-item
+            data-variant="section"
+            data-icon="fa-solid fa-clock-rotate-left"
+            >Recent</sherpa-nav-item
+          >
+        </summary>
+      </details>
+
+      <details
+        class="nav-section"
+        data-section-id="favorites"
+        data-quick-access="true"
+        data-editable="true"
+        data-max-items="10"
+      >
+        <summary>
+          <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-star"
+            >Favorites</sherpa-nav-item
+          >
+        </summary>
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-default-view"
+          data-route="?view=default-view"
+          tabindex="0"
+          role="button"
+          >Default View</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-sales-overview"
+          data-route="?view=sales-overview"
+          tabindex="0"
+          role="button"
+          >Sales Overview</sherpa-nav-item
+        >
+      </details>
+
+      <details
+        class="nav-section"
+        data-section-id="mylinks"
+        data-quick-access="true"
+        data-editable="true"
+        data-max-items="10"
+      >
+        <summary>
+          <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-link"
+            >My links</sherpa-nav-item
+          >
+        </summary>
+      </details>
+    </div>
+
+    <!-- Group Divider -->
+    <div class="nav-divider" role="separator">
+      <span class="nav-divider-label">PROTOTYPES</span>
+      <div class="nav-divider-line"></div>
+    </div>
+
+    <!-- Prototypes Group -->
+    <div class="nav-group" data-group-index="1" data-draggable="true">
+      <details class="nav-section" data-section-id="dashboard-prototypes">
+        <summary>
+          <sherpa-nav-item
+            data-variant="section"
+            data-icon="fa-solid fa-table-cells-large"
+            data-badge="New"
+            >Dashboard Prototypes</sherpa-nav-item
+          >
+        </summary>
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-compact-overview"
+          data-route="?view=compact-overview"
+          tabindex="0"
+          role="button"
+          >Compact Overview</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-customer-focus"
+          data-route="?view=customer-focus"
+          tabindex="0"
+          role="button"
+          >Customer Focus</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-default-view"
+          data-route="?view=default-view"
+          tabindex="0"
+          role="button"
+          >Default View</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-sales-overview"
+          data-route="?view=sales-overview"
+          tabindex="0"
+          role="button"
+          >Sales Overview</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-support-dashboard"
+          data-route="?view=support-dashboard"
+          tabindex="0"
+          role="button"
+          >Support Dashboard</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-team-performance"
+          data-route="?view=team-performance"
+          tabindex="0"
+          role="button"
+          >Team Performance</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="view-vulnerability-dashboard"
+          data-route="?view=vulnerability-dashboard"
+          data-badge="New"
+          tabindex="0"
+          role="button"
+          >Vulnerability Dashboard</sherpa-nav-item
+        >
+      </details>
+
+      <details class="nav-section" data-section-id="component-docs">
+        <summary>
+          <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-book"
+            >Component Docs</sherpa-nav-item
+          >
+        </summary>
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-barchart"
+          data-route="?doc=sherpa-barchart"
+          tabindex="0"
+          role="button"
+          >Bar Chart</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-data-grid"
+          data-route="?doc=sherpa-data-grid"
+          tabindex="0"
+          role="button"
+          >Data Grid</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-button"
+          data-route="?doc=sherpa-button"
+          tabindex="0"
+          role="button"
+          >Button</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-card"
+          data-route="?doc=sherpa-card"
+          tabindex="0"
+          role="button"
+          >Card</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-check"
+          data-route="?doc=sherpa-check"
+          tabindex="0"
+          role="button"
+          >Check</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-container"
+          data-route="?doc=sherpa-container"
+          tabindex="0"
+          role="button"
+          >Container</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-container-pdf"
+          data-route="?doc=sherpa-container-pdf"
+          tabindex="0"
+          role="button"
+          >Container PDF</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-dialog"
+          data-route="?doc=sherpa-dialog"
+          tabindex="0"
+          role="button"
+          >Dialog</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-empty-state"
+          data-route="?doc=sherpa-empty-state"
+          tabindex="0"
+          role="button"
+          >Empty State</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-filter-chip"
+          data-route="?doc=sherpa-filter-chip"
+          tabindex="0"
+          role="button"
+          >Filter Chip</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-footer"
+          data-route="?doc=sherpa-footer"
+          tabindex="0"
+          role="button"
+          >Footer</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-header"
+          data-route="?doc=sherpa-header"
+          tabindex="0"
+          role="button"
+          >Header</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-input-date"
+          data-route="?doc=sherpa-input-date"
+          tabindex="0"
+          role="button"
+          >Input Date</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-input-number"
+          data-route="?doc=sherpa-input-number"
+          tabindex="0"
+          role="button"
+          >Input Number</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-input-password"
+          data-route="?doc=sherpa-input-password"
+          tabindex="0"
+          role="button"
+          >Input Password</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-input-search"
+          data-route="?doc=sherpa-input-search"
+          tabindex="0"
+          role="button"
+          >Input Search</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-input-select"
+          data-route="?doc=sherpa-input-select"
+          tabindex="0"
+          role="button"
+          >Input Select</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-input-text"
+          data-route="?doc=sherpa-input-text"
+          tabindex="0"
+          role="button"
+          >Input Text</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-input-time"
+          data-route="?doc=sherpa-input-time"
+          tabindex="0"
+          role="button"
+          >Input Time</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-key-value-list"
+          data-route="?doc=sherpa-key-value-list"
+          tabindex="0"
+          role="button"
+          >Key Value List</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-menu"
+          data-route="?doc=sherpa-menu"
+          tabindex="0"
+          role="button"
+          >Menu</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-menu-item"
+          data-route="?doc=sherpa-menu-item"
+          tabindex="0"
+          role="button"
+          >Menu Item</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-message"
+          data-route="?doc=sherpa-message"
+          tabindex="0"
+          role="button"
+          >Message</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-metric"
+          data-route="?doc=sherpa-metric"
+          tabindex="0"
+          role="button"
+          >Metric</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-nav"
+          data-route="?doc=sherpa-nav"
+          tabindex="0"
+          role="button"
+          >Navigation</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-nav-item"
+          data-route="?doc=sherpa-nav-item"
+          tabindex="0"
+          role="button"
+          >Nav Item</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-nav-promo"
+          data-route="?doc=sherpa-nav-promo"
+          tabindex="0"
+          role="button"
+          >Nav Promo</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-section-header"
+          data-route="?doc=sherpa-section-header"
+          tabindex="0"
+          role="button"
+          >Section Header</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-sparkline"
+          data-route="?doc=sherpa-sparkline"
+          tabindex="0"
+          role="button"
+          >Sparkline</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-stepper"
+          data-route="?doc=sherpa-stepper"
+          tabindex="0"
+          role="button"
+          >Stepper</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-switch"
+          data-route="?doc=sherpa-switch"
+          tabindex="0"
+          role="button"
+          >Switch</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-tag"
+          data-route="?doc=sherpa-tag"
+          tabindex="0"
+          role="button"
+          >Tag</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-toast"
+          data-route="?doc=sherpa-toast"
+          tabindex="0"
+          role="button"
+          >Toast</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-tooltip"
+          data-route="?doc=sherpa-tooltip"
+          tabindex="0"
+          role="button"
+          >Tooltip</sherpa-nav-item
+        >
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="doc-view-header"
+          data-route="?doc=sherpa-view-header"
+          tabindex="0"
+          role="button"
+          >View Header</sherpa-nav-item
+        >
+      </details>
+
+      <details class="nav-section" data-section-id="nested-example" open>
+        <summary>
+          <sherpa-nav-item
+            data-variant="section"
+            data-icon="fa-solid fa-sitemap"
+            data-badge="Test"
+            >Nested Example</sherpa-nav-item
+          >
+        </summary>
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="ne-plain-item-1"
+          data-route="#/example/plain-1"
+          data-icon="fa-file"
+          tabindex="0"
+          role="button"
+          >Plain Item</sherpa-nav-item
+        >
+        <details
+          class="nav-subsection"
+          data-subsection-id="ne-subsection-a"
+          open
+        >
+          <summary>
+            <sherpa-nav-item
+              data-variant="subsection"
+              data-icon="fa-solid fa-folder"
+              >Subsection A</sherpa-nav-item
+            >
+          </summary>
+          <sherpa-nav-item
+            data-variant="child"
+            data-item-id="ne-child-a1"
+            data-route="#/example/a1"
+            tabindex="0"
+            role="button"
+            >Child A-1</sherpa-nav-item
+          >
+          <sherpa-nav-item
+            data-variant="child"
+            data-item-id="ne-child-a2"
+            data-route="#/example/a2"
+            tabindex="0"
+            role="button"
+            >Child A-2</sherpa-nav-item
+          >
+          <sherpa-nav-item
+            data-variant="child"
+            data-item-id="ne-child-a3"
+            data-route="#/example/a3"
+            data-icon="fa-star"
+            tabindex="0"
+            role="button"
+            >Child A-3</sherpa-nav-item
+          >
+        </details>
+        <details class="nav-subsection" data-subsection-id="ne-subsection-b">
+          <summary>
+            <sherpa-nav-item
+              data-variant="subsection"
+              data-icon="fa-solid fa-folder-open"
+              >Subsection B</sherpa-nav-item
+            >
+          </summary>
+          <sherpa-nav-item
+            data-variant="child"
+            data-item-id="ne-child-b1"
+            data-route="#/example/b1"
+            tabindex="0"
+            role="button"
+            >Child B-1</sherpa-nav-item
+          >
+          <sherpa-nav-item
+            data-variant="child"
+            data-item-id="ne-child-b2"
+            data-route="#/example/b2"
+            tabindex="0"
+            role="button"
+            >Child B-2</sherpa-nav-item
+          >
+        </details>
+        <sherpa-nav-item
+          data-variant="child"
+          data-item-id="ne-plain-item-2"
+          data-route="#/example/plain-2"
+          data-icon="fa-circle-info"
+          tabindex="0"
+          role="button"
+          >Plain Item 2</sherpa-nav-item
+        >
+      </details>
     </div>
   </div>
 
-  <!-- Search -->
-  <div class="nav-search" role="search">
-    <sherpa-nav-item class="nav-search-icon" data-nav-target="search" data-icon="fa-solid fa-magnifying-glass" tabindex="0" role="button" aria-label="Search">Search</sherpa-nav-item>
-    <sherpa-input-search class="nav-search-input" placeholder="Type here to filter..." aria-label="Filter navigation"></sherpa-input-search>
-  </div>
+  <!-- Footer -->
+  <footer class="nav-footer">
+    <!-- Promo -->
+    <sherpa-nav-promo
+      data-promo-title="We've added Example new section!"
+      data-promo-message="Find out what's new in"
+      data-promo-link-text="the release notes"
+      data-promo-link-url="/release-notes"
+    >
+    </sherpa-nav-promo>
 
-  <!-- Home -->
-  <sherpa-nav-item data-nav-target="home" data-route="/home.html" data-icon="fa-solid fa-house" tabindex="0" role="button" aria-label="Home">Home</sherpa-nav-item>
+    <!-- Settings -->
+    <sherpa-nav-item
+      data-nav-target="settings"
+      data-route="#/settings"
+      data-icon="fa-solid fa-gear"
+      tabindex="0"
+      role="button"
+      aria-label="Settings"
+      >Settings</sherpa-nav-item
+    >
 
-  <!-- Divider -->
-  <div class="nav-divider">
-    <div class="nav-divider-line"></div>
-  </div>
-</header>
-
-<!-- Sections -->
-<div class="nav-sections" role="tree">
-
-  <!-- Quick Access Group -->
-  <div class="nav-group" data-group-index="0">
-
-    <details class="nav-section" data-section-id="recent" data-quick-access="true" data-editable="true" data-max-items="5">
-      <summary>
-        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-clock-rotate-left">Recent</sherpa-nav-item>
-      </summary>
-    </details>
-
-    <details class="nav-section" data-section-id="favorites" data-quick-access="true" data-editable="true" data-max-items="10">
-      <summary>
-        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-star">Favorites</sherpa-nav-item>
-      </summary>
-      <sherpa-nav-item data-variant="child" data-item-id="view-default-view" data-route="?view=default-view" tabindex="0" role="button">Default View</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="view-sales-overview" data-route="?view=sales-overview" tabindex="0" role="button">Sales Overview</sherpa-nav-item>
-    </details>
-
-    <details class="nav-section" data-section-id="mylinks" data-quick-access="true" data-editable="true" data-max-items="10">
-      <summary>
-        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-link">My links</sherpa-nav-item>
-      </summary>
-    </details>
-
-  </div>
-
-  <!-- Group Divider -->
-  <div class="nav-divider" role="separator">
-    <span class="nav-divider-label">PROTOTYPES</span>
-    <div class="nav-divider-line"></div>
-  </div>
-
-  <!-- Prototypes Group -->
-  <div class="nav-group" data-group-index="1" data-draggable="true">
-
-    <details class="nav-section" data-section-id="dashboard-prototypes">
-      <summary>
-        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-table-cells-large" data-badge="New">Dashboard Prototypes</sherpa-nav-item>
-      </summary>
-      <sherpa-nav-item data-variant="child" data-item-id="view-compact-overview" data-route="?view=compact-overview" tabindex="0" role="button">Compact Overview</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="view-customer-focus" data-route="?view=customer-focus" tabindex="0" role="button">Customer Focus</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="view-default-view" data-route="?view=default-view" tabindex="0" role="button">Default View</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="view-sales-overview" data-route="?view=sales-overview" tabindex="0" role="button">Sales Overview</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="view-support-dashboard" data-route="?view=support-dashboard" tabindex="0" role="button">Support Dashboard</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="view-team-performance" data-route="?view=team-performance" tabindex="0" role="button">Team Performance</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="view-vulnerability-dashboard" data-route="?view=vulnerability-dashboard" data-badge="New" tabindex="0" role="button">Vulnerability Dashboard</sherpa-nav-item>
-    </details>
-
-    <details class="nav-section" data-section-id="component-docs">
-      <summary>
-        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-book">Component Docs</sherpa-nav-item>
-      </summary>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-barchart" data-route="?doc=sherpa-barchart" tabindex="0" role="button">Bar Chart</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-base-table" data-route="?doc=sherpa-base-table" tabindex="0" role="button">Base Table</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-button" data-route="?doc=sherpa-button" tabindex="0" role="button">Button</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-card" data-route="?doc=sherpa-card" tabindex="0" role="button">Card</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-check" data-route="?doc=sherpa-check" tabindex="0" role="button">Check</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-container" data-route="?doc=sherpa-container" tabindex="0" role="button">Container</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-container-pdf" data-route="?doc=sherpa-container-pdf" tabindex="0" role="button">Container PDF</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-dialog" data-route="?doc=sherpa-dialog" tabindex="0" role="button">Dialog</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-empty-state" data-route="?doc=sherpa-empty-state" tabindex="0" role="button">Empty State</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-filter-chip" data-route="?doc=sherpa-filter-chip" tabindex="0" role="button">Filter Chip</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-footer" data-route="?doc=sherpa-footer" tabindex="0" role="button">Footer</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-header" data-route="?doc=sherpa-header" tabindex="0" role="button">Header</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-input-date" data-route="?doc=sherpa-input-date" tabindex="0" role="button">Input Date</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-input-number" data-route="?doc=sherpa-input-number" tabindex="0" role="button">Input Number</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-input-password" data-route="?doc=sherpa-input-password" tabindex="0" role="button">Input Password</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-input-search" data-route="?doc=sherpa-input-search" tabindex="0" role="button">Input Search</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-input-select" data-route="?doc=sherpa-input-select" tabindex="0" role="button">Input Select</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-input-text" data-route="?doc=sherpa-input-text" tabindex="0" role="button">Input Text</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-input-time" data-route="?doc=sherpa-input-time" tabindex="0" role="button">Input Time</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-key-value-list" data-route="?doc=sherpa-key-value-list" tabindex="0" role="button">Key Value List</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-menu" data-route="?doc=sherpa-menu" tabindex="0" role="button">Menu</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-menu-item" data-route="?doc=sherpa-menu-item" tabindex="0" role="button">Menu Item</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-message" data-route="?doc=sherpa-message" tabindex="0" role="button">Message</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-metric" data-route="?doc=sherpa-metric" tabindex="0" role="button">Metric</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-nav" data-route="?doc=sherpa-nav" tabindex="0" role="button">Navigation</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-nav-item" data-route="?doc=sherpa-nav-item" tabindex="0" role="button">Nav Item</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-nav-promo" data-route="?doc=sherpa-nav-promo" tabindex="0" role="button">Nav Promo</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-section-header" data-route="?doc=sherpa-section-header" tabindex="0" role="button">Section Header</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-sparkline" data-route="?doc=sherpa-sparkline" tabindex="0" role="button">Sparkline</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-stepper" data-route="?doc=sherpa-stepper" tabindex="0" role="button">Stepper</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-switch" data-route="?doc=sherpa-switch" tabindex="0" role="button">Switch</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-tag" data-route="?doc=sherpa-tag" tabindex="0" role="button">Tag</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-toast" data-route="?doc=sherpa-toast" tabindex="0" role="button">Toast</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-tooltip" data-route="?doc=sherpa-tooltip" tabindex="0" role="button">Tooltip</sherpa-nav-item>
-      <sherpa-nav-item data-variant="child" data-item-id="doc-view-header" data-route="?doc=sherpa-view-header" tabindex="0" role="button">View Header</sherpa-nav-item>
-    </details>
-
-    <details class="nav-section" data-section-id="nested-example" open>
-      <summary>
-        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-sitemap" data-badge="Test">Nested Example</sherpa-nav-item>
-      </summary>
-      <sherpa-nav-item data-variant="child" data-item-id="ne-plain-item-1" data-route="#/example/plain-1" data-icon="fa-file" tabindex="0" role="button">Plain Item</sherpa-nav-item>
-      <details class="nav-subsection" data-subsection-id="ne-subsection-a" open>
-        <summary>
-          <sherpa-nav-item data-variant="subsection" data-icon="fa-solid fa-folder">Subsection A</sherpa-nav-item>
-        </summary>
-        <sherpa-nav-item data-variant="child" data-item-id="ne-child-a1" data-route="#/example/a1" tabindex="0" role="button">Child A-1</sherpa-nav-item>
-        <sherpa-nav-item data-variant="child" data-item-id="ne-child-a2" data-route="#/example/a2" tabindex="0" role="button">Child A-2</sherpa-nav-item>
-        <sherpa-nav-item data-variant="child" data-item-id="ne-child-a3" data-route="#/example/a3" data-icon="fa-star" tabindex="0" role="button">Child A-3</sherpa-nav-item>
-      </details>
-      <details class="nav-subsection" data-subsection-id="ne-subsection-b">
-        <summary>
-          <sherpa-nav-item data-variant="subsection" data-icon="fa-solid fa-folder-open">Subsection B</sherpa-nav-item>
-        </summary>
-        <sherpa-nav-item data-variant="child" data-item-id="ne-child-b1" data-route="#/example/b1" tabindex="0" role="button">Child B-1</sherpa-nav-item>
-        <sherpa-nav-item data-variant="child" data-item-id="ne-child-b2" data-route="#/example/b2" tabindex="0" role="button">Child B-2</sherpa-nav-item>
-      </details>
-      <sherpa-nav-item data-variant="child" data-item-id="ne-plain-item-2" data-route="#/example/plain-2" data-icon="fa-circle-info" tabindex="0" role="button">Plain Item 2</sherpa-nav-item>
-    </details>
-
-  </div>
-
+    <!-- Edit Mode Controls -->
+    <div class="nav-edit-controls">
+      <sherpa-button
+        class="nav-edit-cancel"
+        data-variant="tertiary"
+        data-size="small"
+        data-label="Cancel"
+      ></sherpa-button>
+      <sherpa-button
+        class="nav-edit-confirm"
+        data-variant="primary"
+        data-size="small"
+        data-label="Apply"
+      ></sherpa-button>
+    </div>
+  </footer>
 </div>
-
-<!-- Footer -->
-<footer class="nav-footer">
-  <!-- Promo -->
-  <sherpa-nav-promo
-    data-promo-title="We've added Example new section!"
-    data-promo-message="Find out what's new in"
-    data-promo-link-text="the release notes"
-    data-promo-link-url="/release-notes">
-  </sherpa-nav-promo>
-
-  <!-- Settings -->
-  <sherpa-nav-item data-nav-target="settings" data-route="#/settings" data-icon="fa-solid fa-gear" tabindex="0" role="button" aria-label="Settings">Settings</sherpa-nav-item>
-
-  <!-- Edit Mode Controls -->
-  <div class="nav-edit-controls">
-    <sherpa-button class="nav-edit-cancel" data-variant="tertiary" data-size="small" data-label="Cancel"></sherpa-button>
-    <sherpa-button class="nav-edit-confirm" data-variant="primary" data-size="small" data-label="Apply"></sherpa-button>
-  </div>
-</footer>
-
-</div> <!-- /.sherpa-nav-root -->
+<!-- /.sherpa-nav-root -->

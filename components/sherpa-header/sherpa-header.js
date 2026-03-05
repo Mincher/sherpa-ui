@@ -56,8 +56,8 @@
  *   data-dismissible        — "true" | "false" — close button visible (dialog type)
  *   data-open-external      — "true" | "false" — show open-external button
  *   data-menu-button        — "true" | "false" — show menu button
- *   data-menu-src           — URL for the menu template (passed through to the
- *                              internal sherpa-button[data-menu])
+ *   data-menu-template      — Menu template id (passed through to the
+ *                              internal sherpa-button[data-menu-template])
  *
  * Events:
  *   header-close  — Fired when close button is clicked
@@ -115,7 +115,7 @@ export class SherpaHeader extends SherpaElement {
       "data-dismissible",
       "data-open-external",
       "data-menu-button",
-      "data-menu-src",
+      "data-menu-template",
     ];
   }
 
@@ -134,7 +134,7 @@ export class SherpaHeader extends SherpaElement {
     this.#syncCloseButton();
     this.#syncOpenExternal();
     this.#syncMenuButton();
-    this.#syncMenuSrc();
+    this.#syncMenuTemplate();
     this.#syncSearch();
     this.#wireEvents();
   }
@@ -162,8 +162,8 @@ export class SherpaHeader extends SherpaElement {
       case "data-menu-button":
         this.#syncMenuButton();
         break;
-      case "data-menu-src":
-        this.#syncMenuSrc();
+      case "data-menu-template":
+        this.#syncMenuTemplate();
         break;
     }
   }
@@ -286,14 +286,14 @@ export class SherpaHeader extends SherpaElement {
     this.dataset.menuButton = v ? "true" : "false";
   }
 
-  get menuSrc() {
-    return this.dataset.menuSrc || "";
+  get menuTemplate() {
+    return this.dataset.menuTemplate || "";
   }
-  set menuSrc(v) {
+  set menuTemplate(v) {
     if (v) {
-      this.dataset.menuSrc = v;
+      this.dataset.menuTemplate = v;
     } else {
-      delete this.dataset.menuSrc;
+      delete this.dataset.menuTemplate;
     }
   }
 
@@ -356,14 +356,14 @@ export class SherpaHeader extends SherpaElement {
     //   :host([data-menu-button="true"]) .menu-button { display: inline-flex; }
   }
 
-  #syncMenuSrc() {
+  #syncMenuTemplate() {
     const btn = this.$(".menu-button");
     if (!btn) return;
-    const src = this.dataset.menuSrc;
-    if (src) {
-      btn.dataset.menuSrc = src;
+    const tpl = this.dataset.menuTemplate;
+    if (tpl) {
+      btn.dataset.menuTemplate = tpl;
     } else {
-      delete btn.dataset.menuSrc;
+      delete btn.dataset.menuTemplate;
     }
   }
 

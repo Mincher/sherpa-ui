@@ -21,10 +21,10 @@
  *   Add `data-menu="true"` to mark as menu trigger. On click, the button
  *   creates its own <sherpa-menu popover="auto"> instance (as a DOM sibling).
  *
- *   If `data-menu-src` is set, the button fetches and caches the HTML
- *   template from that URL, stamps the "default" template into the menu,
- *   then dispatches `menu-populate` so consumers can append dynamic items.
- *   Without `data-menu-src`, consumers populate the menu on `menu-open`.
+ *   If `data-menu-template` is set (e.g. "container"), the button stamps
+ *   the matching template from SherpaMenu.getMenuTemplate(id) into the
+ *   menu, then dispatches `menu-populate` so consumers can inject dynamic
+ *   items. Without `data-menu-template`, consumers populate on `menu-open`.
  *
  *   Re-dispatches `menu-select` and `menu-close` on the button.
  *   Named `data-event` events from sherpa-menu also bubble through.
@@ -32,17 +32,11 @@
  * Attributes:
  *   data-label, data-variant, data-size, data-active, disabled,
  *   data-status, data-icon-start, data-icon-end, data-icon-weight,
- *   data-menu, data-menu-position, data-menu-src
+ *   data-menu, data-menu-position, data-menu-template
  */
 
-import {
-  SherpaElement,
-  parseTemplates,
-} from "../utilities/sherpa-element/sherpa-element.js";
-import "../sherpa-menu/sherpa-menu.js";
-
-/* ── Menu template cache (shared across all button instances) ───── */
-const menuTemplateCache = new Map(); // url → Map<id, htmlString>
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { SherpaMenu } from "../sherpa-menu/sherpa-menu.js";
 
 export class SherpaButton extends SherpaElement {
   /* ── Config ───────────────────────────────────────────────────── */
@@ -229,19 +223,19 @@ export class SherpaButton extends SherpaElement {
 
   /**
    * Show the button's menu.
-   * If data-menu-src is set, fetches and stamps the template first,
-   * then fires `menu-populate` for dynamic content injection.
-   * Also fires `menu-open` for backward compatibility.
+   * If data-menu-template is set, stamps the matching template from
+   * SherpaMenu's template registry, then fires `menu-populate` for
+   * dynamic content injection. Also fires `menu-open`.
    */
   async #showMenu() {
     this.active = true;
     const menu = this.#ensureMenu();
 
-    // Stamp static template from data-menu-src (if set)
-    const src = this.dataset.menuSrc;
-    if (src) {
-      const tplMap = await this.#loadMenuTemplate(src);
-      const html = tplMap?.get("default");
+    // Stamp static template from the menu template registry (if set)
+    const tplId = this.dataset.menuTemplate;
+    if (tplId) {
+      await SherpaMenu.ready;
+      const html = SherpaMenu.getMenuTemplate(tplId);
       if (html) {
         const frag = document.createRange().createContextualFragment(html);
         menu.replaceChildren(frag);
@@ -262,29 +256,6 @@ export class SherpaButton extends SherpaElement {
 
     await menu.rendered;
     menu.show(this);
-  }
-
-  /**
-   * Fetch and cache an HTML menu template by URL.
-   * Shared across all button instances via the module-level cache.
-   * @param {string} url
-   * @returns {Promise<Map<string, string>>}
-   */
-  async #loadMenuTemplate(url) {
-    if (menuTemplateCache.has(url)) return menuTemplateCache.get(url);
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const html = await res.text();
-      const map = parseTemplates(html);
-      menuTemplateCache.set(url, map);
-      return map;
-    } catch (e) {
-      console.warn("[SherpaButton] Failed to load menu template", url, e);
-      const empty = new Map();
-      menuTemplateCache.set(url, empty);
-      return empty;
-    }
   }
 
   /* ── Convenience properties ───────────────────────────────────── */

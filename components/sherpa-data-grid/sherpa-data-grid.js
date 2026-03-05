@@ -24,6 +24,8 @@
 import {
   ContentAttributesMixin,
   CONTENT_ATTRIBUTES,
+  setDataProvider,
+  getDateFieldProvider,
 } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
@@ -39,6 +41,7 @@ import {
   formatValue,
   formatFieldName,
 } from "../utilities/index.js";
+import { getTransferableConfig } from "../utilities/data-utils.js";
 
 const NUMERIC_TYPES = new Set([
   "number",
@@ -106,16 +109,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     return new URL("./sherpa-data-grid.html", import.meta.url).href;
   }
 
-  // ── Pluggable data provider (injected by the host app at boot) ──
-  static #dataProvider = null;
-
-  /**
-   * Register a data provider function.
-   * Signature: async (config) => { name, columns, rows, summary, config, metadata }
-   * @param {Function} fn
-   */
+  /** @deprecated Use setDataProvider() from content-attributes-mixin.js */
   static setDataProvider(fn) {
-    SherpaDataGrid.#dataProvider = fn;
+    setDataProvider(fn);
   }
 
   static get observedAttributes() {
@@ -153,6 +149,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #searchExpandedGroups = new Set(); // Group values auto-expanded by search
   #externalFilters = []; // External filters from FilterCoordinator (layered scoping)
   #hiddenColumns = new Set(); // Column fields hidden via column-select menu
+  #originalOrderBy = null; // Original orderBy from config (for presentation switching)
+  #originalSegmentBy = null; // Original segmentBy from config (for presentation switching)
   #rowTpl = null; // Cached <template class="row-tpl">
   #menuHeadingTpl = null; // Cached <template class="menu-heading-tpl">
   #menuItemTpl = null; // Cached <template class="menu-item-tpl">
@@ -162,9 +160,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #statusCellTpl = null; // Cached <template class="status-cell-tpl">
   #metadataSpanTpl = null; // Cached <template class="metadata-span-tpl">
   #expandedGroups = new Set(); // Group values currently expanded
-  #containerFilterHandler = null; // Bound handler for containerfilterchange
-  #globalFilterHandler = null; // Bound handler for globalfilterchange
-  #containerEl = null; // Cached closest sherpa-container ancestor
 
   /* ══════════════════════════════════════════════════════════════
      Lifecycle
@@ -183,17 +178,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   }
 
   onConnect() {
-    // ── Self-filtering: listen for container and global filter events ──
-    this.#containerEl = this.closest("sherpa-container");
-    if (this.#containerEl) {
-      this.#containerFilterHandler = (e) => this.#onContainerFilter(e);
-      this.#containerEl.addEventListener(
-        "containerfilterchange",
-        this.#containerFilterHandler,
-      );
-    }
-    this.#globalFilterHandler = (e) => this.#onGlobalFilter(e);
-    document.addEventListener("globalfilterchange", this.#globalFilterHandler);
+    super.onConnect();
 
     // Pagination events — delegated to sherpa-pagination component
     this.addEventListener("click", (e) => this.#onHostClick(e));
@@ -280,24 +265,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   }
 
   onDisconnect() {
+    super.onDisconnect();
     CSS.highlights.delete("data-grid-search");
     CSS.highlights.delete("data-grid-col-search");
-
-    if (this.#containerEl && this.#containerFilterHandler) {
-      this.#containerEl.removeEventListener(
-        "containerfilterchange",
-        this.#containerFilterHandler,
-      );
-    }
-    if (this.#globalFilterHandler) {
-      document.removeEventListener(
-        "globalfilterchange",
-        this.#globalFilterHandler,
-      );
-    }
-    this.#containerFilterHandler = null;
-    this.#globalFilterHandler = null;
-    this.#containerEl = null;
   }
 
   onAttributeChanged(name, oldValue, newValue) {
@@ -329,22 +299,40 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
      Data Pipeline
      ══════════════════════════════════════════════════════════════ */
 
-  async fetchContentData(config) {
-    if (!config) return null;
-    if (!SherpaDataGrid.#dataProvider) {
-      console.warn(
-        "[SherpaDataGrid] No data provider registered. Call SherpaDataGrid.setDataProvider(fn) at app boot.",
-      );
-      return null;
-    }
-    this.setAttribute("data-loading", "");
-    const result = await SherpaDataGrid.#dataProvider(config);
-    this.removeAttribute("data-loading");
-    return result;
-  }
-
   async setData(config) {
     this.setAttribute("data-loading", "");
+
+    // Capture original config values for revert-on-off during presentation switching
+    if (config?.originalOrderBy) {
+      this.#originalOrderBy = config.originalOrderBy;
+    } else if (config?.orderBy) {
+      const order = Array.isArray(config.orderBy)
+        ? config.orderBy[0]
+        : { field: config.orderBy, direction: config.orderDirection || "asc" };
+      if (order?.field) {
+        this.#originalOrderBy = {
+          field: order.field,
+          direction: order.direction || "asc",
+        };
+      }
+    }
+    if (config?.originalSegmentBy) {
+      this.#originalSegmentBy = config.originalSegmentBy;
+    } else if (
+      config &&
+      Object.prototype.hasOwnProperty.call(config, "segmentBy") &&
+      config.segmentBy
+    ) {
+      this.#originalSegmentBy = config.segmentBy;
+    }
+
+    // Apply segmentBy from config if explicitly provided
+    if (config && Object.prototype.hasOwnProperty.call(config, "segmentBy")) {
+      if (config.segmentBy) {
+        this.setAttribute("data-segment-field", config.segmentBy);
+        this.setAttribute("data-segment-mode", "on");
+      }
+    }
 
     try {
       this.#data = await this.fetchContentData(config);
@@ -382,16 +370,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.#render();
 
     // Dispatch vizready so filter bars can auto-populate
-    this.dispatchEvent(
-      new CustomEvent("vizready", {
-        bubbles: true,
-        composed: true,
-        detail: {
-          columns: this.getContentColumns(),
-          rows: this.getContentRows(),
-        },
-      }),
-    );
+    this.dispatchVizReady();
   }
 
   /** Infer boolean column types from field names and data. */
@@ -432,11 +411,16 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // 3b. Apply external filters from FilterCoordinator (layered scoping)
     filtered = this.#applyExternalFilters(filtered);
 
-    // 4. Sort
+    // 4. Sort — use explicit sort or fall back to chronological default
     const sortField = this.getAttribute("data-sort-field");
     const sortDir = this.getAttribute("data-sort-direction") || "asc";
     if (sortField && sortDir !== "off") {
       filtered = this.#sortRows(filtered, sortField, sortDir);
+    } else {
+      const chronoSort = this.#getDefaultChronologicalSort();
+      if (chronoSort) {
+        filtered = this.#sortRows(filtered, chronoSort.field, chronoSort.dir);
+      }
     }
 
     // 5. Group or paginate
@@ -976,6 +960,22 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         return (Number(aVal) - Number(bVal)) * dir;
       return String(aVal).localeCompare(String(bVal)) * dir;
     });
+  }
+
+  /**
+   * Returns a default sort by the dataset's dateField (descending) if one
+   * exists in the rows, even when it is not a visible column.
+   */
+  #getDefaultChronologicalSort() {
+    const dataset = this.#data?.metadata?.dataset;
+    const dateFieldFn = getDateFieldProvider();
+    const dateField = dataset && dateFieldFn ? dateFieldFn(dataset) : null;
+    if (!dateField) return null;
+
+    const firstRow = this.#allRows[0];
+    if (!firstRow || !(dateField in firstRow)) return null;
+
+    return { field: dateField, dir: "desc" };
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -1562,7 +1562,56 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
      ══════════════════════════════════════════════════════════════ */
 
   getData() {
-    return this.#data;
+    if (!this.#data) return null;
+
+    const config = getTransferableConfig(this.#data, "table");
+    const meta = this.#data?.metadata || {};
+    const segmentField = this.getAttribute("data-segment-field") || null;
+    const segmentMode = this.getAttribute("data-segment-mode");
+    const effectiveSegmentField =
+      segmentMode !== "off" && segmentField ? segmentField : null;
+    const columns = Array.isArray(this.#data?.columns)
+      ? this.#data.columns
+      : [];
+
+    config.segmentField = effectiveSegmentField;
+    config.seriesField = null;
+    config.categoryField =
+      meta.primaryField || meta.categoryField || config.categoryField || null;
+    config.valueField =
+      meta.valueField || config.valueField || meta.field || null;
+    delete config.segmentBy;
+
+    if (!config.category) {
+      const primaryField = meta.primaryField || columns[0]?.field || null;
+      if (primaryField) config.category = primaryField;
+    }
+
+    if (!Array.isArray(config.measures) || config.measures.length === 0) {
+      const numericCol = columns.find((col) =>
+        NUMERIC_TYPES.has((col.type || "").toLowerCase()),
+      );
+      if (numericCol?.field)
+        config.measures = [{ field: numericCol.field, agg: "sum" }];
+    }
+
+    const sortField = this.getAttribute("data-sort-field");
+    const sortDir = this.getAttribute("data-sort-direction") || "asc";
+    const activeSort =
+      sortField && sortDir !== "off"
+        ? { field: sortField, dir: sortDir }
+        : null;
+    config.orderBy = activeSort
+      ? [{ field: activeSort.field, direction: activeSort.dir }]
+      : this.#originalOrderBy
+        ? [this.#originalOrderBy]
+        : meta.orderBy || [];
+
+    if (this.#originalOrderBy) config.originalOrderBy = this.#originalOrderBy;
+    if (this.#originalSegmentBy)
+      config.originalSegmentBy = this.#originalSegmentBy;
+
+    return config;
   }
 
   getColumns() {
@@ -1622,87 +1671,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   /** @returns {Array<Object>} raw (unfiltered) rows */
   getContentRows() {
     return this.#allRows;
-  }
-
-  /* ══════════════════════════════════════════════════════════════
-     Self-filtering event handlers
-     ══════════════════════════════════════════════════════════════ */
-
-  /**
-   * Handle container-scoped filter changes (sort, segment, value filters).
-   * Sort/segment → attributes. Value filters → re-query.
-   */
-  #onContainerFilter(e) {
-    const filters = e.detail?.filters || [];
-    let sortFilter = null;
-    let segmentFilter = null;
-    const valueFilters = [];
-
-    for (const f of filters) {
-      if (f.type === "sort") {
-        sortFilter = f;
-        continue;
-      }
-      if (f.type === "segment") {
-        segmentFilter = f;
-        continue;
-      }
-      if (f.type === "filter" && f.values?.length) {
-        valueFilters.push(f);
-      }
-    }
-
-    if (sortFilter) {
-      this.setAttribute("data-sort-field", sortFilter.field);
-      this.setAttribute("data-sort-direction", sortFilter.mode || "asc");
-    } else {
-      this.removeAttribute("data-sort-field");
-      this.removeAttribute("data-sort-direction");
-    }
-
-    if (segmentFilter) {
-      this.setAttribute("data-segment-field", segmentFilter.field);
-      this.setAttribute("data-segment-mode", segmentFilter.mode || "on");
-    } else {
-      this.removeAttribute("data-segment-field");
-      this.removeAttribute("data-segment-mode");
-    }
-
-    if (valueFilters.length) {
-      this.#reQueryWithFilters(valueFilters);
-    }
-  }
-
-  /**
-   * Handle global filter changes (timerange, global filter bar).
-   */
-  #onGlobalFilter(e) {
-    const globalFilters = e.detail?.filters || [];
-    const timerange = e.detail?.timerange || null;
-    const entries = [];
-    for (const gf of globalFilters) {
-      if (gf.values?.length) {
-        entries.push({ field: gf.field, operator: "in", values: gf.values });
-      }
-    }
-    if (timerange) {
-      entries.push({ type: "timerange", ...timerange });
-    }
-    if (entries.length) {
-      this.#reQueryWithFilters(entries);
-    }
-  }
-
-  /**
-   * Re-query with additional filters merged into original config.
-   */
-  #reQueryWithFilters(additionalFilters) {
-    const config =
-      typeof this.getConfig === "function" ? this.getConfig() : null;
-    if (!config) return;
-    const mergedFilters = [...(config.filters || []), ...additionalFilters];
-    const segmentBy = this.getAttribute("data-segment-field") || undefined;
-    this.setData({ ...config, filters: mergedFilters, segmentBy });
   }
 }
 

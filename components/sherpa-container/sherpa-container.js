@@ -20,7 +20,7 @@
  *     sortchange            — viz child → filter bar (sort chip sync)
  *     presentationchange   — viz child → sherpa-data-viz (view switch)
  *
- *   Menu template loading is handled by sherpa-button via data-menu-src.
+ *   Menu template loading is handled by sherpa-button via data-menu-template.
  *   Menu items use data-event for auto-dispatched domain events.
  *   Container listens for those events to handle resize and section toggles.
  *
@@ -41,11 +41,10 @@
  * Slots (shadow DOM):
  *   header   — sherpa-header element
  *   filters  — sherpa-filter-bar element
- *   content  — .content wrapper div (metrics + sections)
+ *   content  — .content wrapper div (metrics + viz children)
  *   extra    — Additional consumer content
  *
  * Cloning prototypes (shadow DOM):
- *   .section-tpl      — div.section > div.section-content
  *   .menu-toggle-tpl  — li > sherpa-menu-item[data-selection="toggle"]
  */
 
@@ -54,10 +53,6 @@ import "../sherpa-filter-bar/sherpa-filter-bar.js";
 import "../sherpa-filter-chip/sherpa-filter-chip.js";
 import "../sherpa-data-viz/sherpa-data-viz.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
-
-/* ── Menu template URL (resolved once at module load) ──────────── */
-
-const MENU_SRC = new URL("./sherpa-container-menu.html", import.meta.url).href;
 
 /* ── Component ─────────────────────────────────────────────────── */
 
@@ -72,6 +67,7 @@ export class SherpaContainer extends SherpaElement {
   }
 
   #initialized = false;
+  #menuContributions = [];
 
   /* ── SherpaElement lifecycle hooks ───────────────────────────── */
 
@@ -115,13 +111,13 @@ export class SherpaContainer extends SherpaElement {
 
     // Collect inline viz children before stamping the layout template
     const metrics = [...this.querySelectorAll(":scope > sherpa-metric")];
-    const sections = [
+    const vizChildren = [
       ...this.querySelectorAll(
-        ":scope > :is(sherpa-data-viz, sherpa-base-table, sherpa-barchart, sherpa-data-grid)",
+        ":scope > :is(sherpa-data-viz, sherpa-barchart, sherpa-data-grid)",
       ),
     ];
     metrics.forEach((m) => m.remove());
-    sections.forEach((s) => s.remove());
+    vizChildren.forEach((s) => s.remove());
     const title = this.dataset.title || "";
     const description = this.dataset.description || "";
 
@@ -132,39 +128,22 @@ export class SherpaContainer extends SherpaElement {
     temp.innerHTML = layoutHtml;
     while (temp.firstChild) this.appendChild(temp.firstChild);
 
-    // Populate .content wrapper: metrics first, then .sections div
+    // Populate .content wrapper: metrics first, then viz children
     const contentDiv = this.querySelector(".content");
 
     if (contentDiv) {
-      // Metrics go directly into .content
       metrics.forEach((m) => contentDiv.appendChild(m));
 
-      // Sections go into a .sections wrapper inside .content
-      if (sections.length) {
-        const sectionsDiv = document.createElement("div");
-        sectionsDiv.className = "sections";
-
-        const sectionTpl = this.$("template.section-tpl");
-        if (sectionTpl) {
-          sections.forEach((s, i) => {
-            const frag = sectionTpl.content.cloneNode(true);
-            const wrapper = frag.querySelector(".section");
-            wrapper.id = `section-${i}`;
-
-            // Wrap bare viz children in sherpa-data-viz for presentation switching
-            let vizWrapper = s;
-            if (s.tagName !== "SHERPA-DATA-VIZ") {
-              vizWrapper = document.createElement("sherpa-data-viz");
-              vizWrapper.appendChild(s);
-            }
-
-            frag.querySelector(".section-content").appendChild(vizWrapper);
-            sectionsDiv.appendChild(frag);
-          });
+      // Wrap bare viz children in sherpa-data-viz for presentation switching
+      vizChildren.forEach((s, i) => {
+        let vizWrapper = s;
+        if (s.tagName !== "SHERPA-DATA-VIZ") {
+          vizWrapper = document.createElement("sherpa-data-viz");
+          vizWrapper.appendChild(s);
         }
-
-        contentDiv.appendChild(sectionsDiv);
-      }
+        vizWrapper.id = vizWrapper.id || `viz-${i}`;
+        contentDiv.appendChild(vizWrapper);
+      });
     }
 
     // Setup header
@@ -184,13 +163,14 @@ export class SherpaContainer extends SherpaElement {
      ════════════════════════════════════════════════════════════════ */
 
   /**
-   * Set data-menu-src on the header so the button loads the menu template,
-   * and wire up domain event listeners + menu-populate for dynamic items.
+   * Set data-menu-template on the header so the button stamps the container
+   * menu template, and wire up domain event listeners + menu-populate for
+   * dynamic items.
    */
   #wireMenuEvents() {
     const header = this.querySelector("sherpa-header");
     if (header) {
-      header.menuSrc = MENU_SRC;
+      header.menuTemplate = "container";
     }
 
     // Menu open/close — toggle state attribute
@@ -201,7 +181,12 @@ export class SherpaContainer extends SherpaElement {
       this.dataset.menuOpen = "false";
     });
 
-    // Dynamic menu content — inject section toggles, strip resize groups
+    // Collect viz-child menu contributions (dispatched via menu-contribute)
+    this.addEventListener("menu-contribute", (e) => {
+      this.#menuContributions.push(e.detail);
+    });
+
+    // Dynamic menu content — stamp viz-child contributions
     this.addEventListener("menu-populate", (e) => {
       this.#onMenuPopulate(e.detail.menu);
     });
@@ -245,75 +230,43 @@ export class SherpaContainer extends SherpaElement {
         this.setAttribute("data-row-span", String(next));
     });
 
-    // Section toggle via menu-select (toggle items don't use data-event)
+    // Viz-child toggle via menu-select (toggle items don't use data-event)
     this.addEventListener("menu-select", (e) => {
       const detail = e.detail ?? {};
       if (detail.selection === "toggle" && detail.data?.target) {
-        const targetId = detail.data.target;
-        const isVisible = Boolean(detail.checked);
-        if (!isVisible) {
-          const visible = this.#buildSectionToggles().filter(
-            (t) => t.checked,
-          ).length;
-          if (visible <= 1) return;
-        }
-        const section = this.querySelector(`.section#${CSS.escape(targetId)}`);
-        if (section) section.toggleAttribute("hidden", !isVisible);
+        const target = this.querySelector(`#${CSS.escape(detail.data.target)}`);
+        if (target) target.toggleAttribute("hidden", !detail.checked);
       }
     });
   }
 
-  /** Modify the menu content before it’s shown (called via menu-populate). */
+  /**
+   * Stamp viz-child menu contributions into the data group.
+   * Contributions are collected from `menu-contribute` events dispatched
+   * by sherpa-data-viz children on connect.
+   */
   #onMenuPopulate(menu) {
-    if (!menu) return;
-
-    // Strip resize groups when not in edit mode
-    if (!this.hasAttribute("data-editable")) {
-      menu
-        .querySelectorAll('[data-group="width"], [data-group="height"]')
-        .forEach((el) => el.remove());
-      menu
-        .querySelectorAll('sherpa-menu-item[data-type="heading"]')
-        .forEach((el) => {
-          const text = el.textContent.trim();
-          if (text === "Width" || text === "Height") el.remove();
-        });
-    }
-
-    // Build section toggle items for the data group
     const dataGroup = menu.querySelector('ul[data-group="data"]');
     const dataHeading = menu.querySelector('[data-group-heading="data"]');
-    const toggles = this.#buildSectionToggles();
 
-    if (dataGroup) {
-      if (toggles.length) {
-        const toggleTpl = this.$("template.menu-toggle-tpl");
-        toggles.forEach((t) => {
-          const frag = toggleTpl.content.cloneNode(true);
-          const item = frag.querySelector("sherpa-menu-item");
-          item.dataset.target = t.target;
-          if (t.checked) item.setAttribute("checked", "");
-          item.textContent = t.label;
-          dataGroup.appendChild(frag);
-        });
-      } else {
-        dataGroup.remove();
-        dataHeading?.remove();
-      }
+    if (!dataGroup) return;
+
+    if (!this.#menuContributions.length) {
+      dataGroup.remove();
+      dataHeading?.remove();
+      return;
     }
-  }
-  #buildSectionToggles() {
-    const sectionEls = this.querySelectorAll(".content > .sections > .section");
-    return Array.from(sectionEls).map((sectionEl) => {
-      const vizEl = sectionEl.querySelector(
-        ".section-content > :is(sherpa-base-table, sherpa-barchart, sherpa-metric)",
-      );
-      const label = vizEl?.getAttribute("data-label") || sectionEl.id;
-      return {
-        label,
-        target: sectionEl.id,
-        checked: !sectionEl.hasAttribute("hidden"),
-      };
+
+    const toggleTpl = this.$("template.menu-toggle-tpl");
+    this.#menuContributions.forEach((c) => {
+      const frag = toggleTpl.content.cloneNode(true);
+      const item = frag.querySelector("sherpa-menu-item");
+      item.dataset.target = c.target;
+      item.textContent = c.label;
+      // Reflect current visibility
+      const el = this.querySelector(`#${CSS.escape(c.target)}`);
+      if (el && !el.hasAttribute("hidden")) item.setAttribute("checked", "");
+      dataGroup.appendChild(frag);
     });
   }
 }

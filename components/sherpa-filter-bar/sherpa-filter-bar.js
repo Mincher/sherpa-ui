@@ -518,9 +518,7 @@ export class SherpaFilterBar extends SherpaElement {
 
     // Get all viz elements in the container
     const vizEls = [
-      ...container.querySelectorAll(
-        ":is(sherpa-base-table, sherpa-barchart, sherpa-data-grid)",
-      ),
+      ...container.querySelectorAll(":is(sherpa-barchart, sherpa-data-grid)"),
     ];
     const allCharts =
       vizEls.length > 0 &&

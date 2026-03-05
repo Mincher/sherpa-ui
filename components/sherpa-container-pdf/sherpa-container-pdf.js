@@ -81,7 +81,7 @@ export class SherpaContainerPdf extends SherpaElement {
         if (!sectionContent) continue;
 
         const barchart = sectionContent.querySelector("sherpa-barchart");
-        const table = sectionContent.querySelector("sherpa-base-table");
+        const table = sectionContent.querySelector("sherpa-data-grid");
         const sparkline = sectionContent.querySelector("sherpa-sparkline");
         const component = barchart || table || sparkline;
 
@@ -109,8 +109,12 @@ export class SherpaContainerPdf extends SherpaElement {
 
         // Create table presentation (data-driven element creation)
         const tableWrapper = frag.querySelector(".pdf-table-wrapper");
-        const tableEl = document.createElement("sherpa-base-table");
+        const tableEl = document.createElement("sherpa-data-grid");
         tableEl.setAttribute("data-pdf-mode", "");
+        tableEl.setAttribute("data-selectable", "false");
+        tableEl.setAttribute("data-show-pagination", "false");
+        tableEl.setAttribute("data-show-secondary-headers", "false");
+        tableEl.setAttribute("data-show-actions", "false");
         tableEl.setData({ ...data, presentationType: "table" });
         tableWrapper.appendChild(tableEl);
 
