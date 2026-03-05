@@ -1,0 +1,26 @@
+<!--
+  sherpa-card.html — Card container component.
+
+  Templates:
+    • default — Header + content + footer with slot projection
+
+  Host attributes:
+    data-selected    — Selected state
+    data-interactive — Enables hover/focus interactive styles
+    data-elevation   — Shadow elevation level
+    data-label       — Card heading text
+    data-description — Card description text
+    disabled         — Boolean, disabled state
+-->
+
+<template id="default">
+<sherpa-header part="header">
+  <slot name="header" slot="heading"></slot>
+</sherpa-header>
+<div class="card-content" part="content">
+  <slot></slot>
+</div>
+<div class="card-footer" part="footer">
+  <slot name="footer"></slot>
+</div>
+</template>

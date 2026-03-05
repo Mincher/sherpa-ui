@@ -1,0 +1,25 @@
+<!--
+  sherpa-toolbar.html — Generic horizontal toolbar with leading/center/trailing
+  zones and an optional filters row below.
+
+  Templates:
+    • default — Leading + center + trailing content slots with filters row
+
+  Host attributes:
+    data-density  — "compact" | "comfortable"
+
+  Slots:
+    leading   — Start zone (title, CTA buttons)
+    center    — Center zone (search, label — grows to fill)
+    trailing  — End zone (icon buttons, overflow menu)
+    filters   — Below the toolbar row (filter bar, chips)
+-->
+
+<template id="default">
+  <div class="toolbar-row" part="toolbar" role="toolbar">
+    <div class="leading"><slot name="leading"></slot></div>
+    <div class="center"><slot name="center"></slot></div>
+    <div class="trailing"><slot name="trailing"></slot></div>
+  </div>
+  <div class="filters-row" part="filters"><slot name="filters"></slot></div>
+</template>

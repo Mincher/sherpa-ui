@@ -1,0 +1,47 @@
+<!--
+  sherpa-metric.html — KPI metric card component.
+
+  Templates:
+    • default — Header + metric card with value, delta, and sparkline
+
+  Host attributes:
+    data-metric-id  — Unique identifier
+    data-status     — "success" | "warning" | "critical" | "info" | "urgent"
+    data-trend      — "up" | "down" | "flat" (controls icon + delta color)
+    data-label      — Metric heading/label
+    value           — Formatted metric value
+    data-delta      — Change amount or unit type
+    data-visible    — Metric visibility ("true"/"false")
+
+  Inherited from ContentAttributesMixin:
+    data-query-src, data-query-key, data-dataset, data-category,
+    data-series, data-value-field, data-agg, data-measures,
+    data-filters, data-order-by, data-limit, data-timerange,
+    data-show-status, data-unit, data-show-header,
+    data-show-header-controls, data-show-view-menu
+-->
+<template id="default">
+<sherpa-header data-type="data-viz"
+  data-show-header="true"
+  data-show-header-controls="false"
+  data-show-view-menu="true">
+</sherpa-header>
+
+<div class="metric-card">
+  <div class="metric-labels">
+    <p class="metric-value"></p>
+    <div class="metric-trend">
+      <i class="sherpa-icon metric-trend-icon metric-trend-up fa-solid fa-arrow-trend-up" data-size="xs"></i>
+      <i
+        class="sherpa-icon metric-trend-icon metric-trend-down fa-solid fa-arrow-trend-down"
+        data-size="xs"
+      ></i>
+      <span class="metric-trend-text text-label">
+        <span class="metric-delta text-metric-delta"></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="metric-sparkline"></div>
+</div>
+</template>

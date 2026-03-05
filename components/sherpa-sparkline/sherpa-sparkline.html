@@ -1,0 +1,65 @@
+<!--
+  sherpa-sparkline.html — Inline sparkline chart component.
+  12 shape divs with point spans for area/bar visualization.
+
+  Templates:
+    • default — 12 shape segments with start/end points + tooltip
+
+  Host attributes:
+    data-values  — Comma-separated or JSON array of numeric values
+    data-variant — "bar" for bar mode
+    data-unit    — Unit label for tooltip display
+-->
+<template id="default">
+<div class="shape" data-index="0">
+  <span class="point" data-role="start" data-index="0"></span>
+  <span class="point" data-role="end" data-index="1"></span>
+</div>
+<div class="shape" data-index="1">
+  <span class="point" data-role="start" data-index="1"></span>
+  <span class="point" data-role="end" data-index="2"></span>
+</div>
+<div class="shape" data-index="2">
+  <span class="point" data-role="start" data-index="2"></span>
+  <span class="point" data-role="end" data-index="3"></span>
+</div>
+<div class="shape" data-index="3">
+  <span class="point" data-role="start" data-index="3"></span>
+  <span class="point" data-role="end" data-index="4"></span>
+</div>
+<div class="shape" data-index="4">
+  <span class="point" data-role="start" data-index="4"></span>
+  <span class="point" data-role="end" data-index="5"></span>
+</div>
+<div class="shape" data-index="5">
+  <span class="point" data-role="start" data-index="5"></span>
+  <span class="point" data-role="end" data-index="6"></span>
+</div>
+<div class="shape" data-index="6">
+  <span class="point" data-role="start" data-index="6"></span>
+  <span class="point" data-role="end" data-index="7"></span>
+</div>
+<div class="shape" data-index="7">
+  <span class="point" data-role="start" data-index="7"></span>
+  <span class="point" data-role="end" data-index="8"></span>
+</div>
+<div class="shape" data-index="8">
+  <span class="point" data-role="start" data-index="8"></span>
+  <span class="point" data-role="end" data-index="9"></span>
+</div>
+<div class="shape" data-index="9">
+  <span class="point" data-role="start" data-index="9"></span>
+  <span class="point" data-role="end" data-index="10"></span>
+</div>
+<div class="shape" data-index="10">
+  <span class="point" data-role="start" data-index="10"></span>
+  <span class="point" data-role="end" data-index="11"></span>
+</div>
+<div class="shape" data-index="11">
+  <span class="point" data-role="start" data-index="11"></span>
+  <span class="point" data-role="end" data-index="12"></span>
+</div>
+<div class="tip" popover>
+  <span class="tip-text"></span>
+</div>
+</template>

@@ -1,0 +1,25 @@
+<!--
+  sherpa-button.html — Template with icon + label elements.
+  Icons shown/hidden via CSS attribute selectors.
+
+  Templates:
+    • default — Icon-start + label + icon-end
+
+  Host attributes:
+    data-label        — Button label text
+    data-icon-start   — FontAwesome unicode for leading icon
+    data-icon-end     — FontAwesome unicode for trailing icon
+    data-icon-weight  — Icon weight class: "fa-solid" | "fa-regular" | "fa-light"
+    data-variant      — "primary" | "secondary" | "tertiary"
+    data-size         — "small" | "medium" | "large"
+    data-active       — Active/pressed state
+    data-status       — "success" | "critical" | "warning" | "info" | "urgent"
+    data-menu         — "true" enables attached menu
+    data-menu-position — Menu placement: "bottom-start" | "bottom-end" | etc.
+    disabled          — Boolean, disabled state
+-->
+<template id="default">
+<i class="icon-start" aria-hidden="true"></i>
+<span class="label"></span>
+<i class="icon-end" aria-hidden="true"></i>
+</template>

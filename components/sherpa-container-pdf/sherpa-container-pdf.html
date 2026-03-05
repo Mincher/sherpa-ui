@@ -1,0 +1,20 @@
+<!--
+  sherpa-container-pdf.html — Simplified container layout optimized for print/PDF export.
+
+  Templates:
+    • default — PDF header + metrics + sections
+
+  Host attributes:
+    data-theme    — Set to "light" for PDF export
+    data-pdf-mode — PDF mode indicator (set on child components)
+-->
+<template id="default">
+<header class="pdf-header">
+  <h2 class="pdf-title text-heading-lg"></h2>
+  <p class="pdf-description text-body-sm"></p>
+</header>
+
+<div class="pdf-metrics"></div>
+
+<div class="pdf-sections"></div>
+</template>

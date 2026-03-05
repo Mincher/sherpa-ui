@@ -1,0 +1,446 @@
+<!-- N-central Navigation Template -->
+<div class="sherpa-nav-root" data-pinned="false" data-editable="default" data-searchable>
+
+<!-- Header -->
+<header class="nav-header">
+  <!-- Toolbar: Logo, Product Name, Actions -->
+  <div class="nav-toolbar">
+    <svg class="nav-logo" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0H3.80301L12.9974 9.83439V13.9026H9.19381L4.59663 8.98333V13.9002H0V0ZM8.39098 4.91692H12.9876V0H8.39098V4.91692Z" fill="currentColor"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M12.9974 9.83439H17.594V4.91689H8.40023L12.9974 9.83439Z" fill="#C046FF"/>
+    </svg>
+    <span class="nav-product-name text-heading-lg">N-central</span>
+    <div class="nav-toolbar-actions">
+      <sherpa-button class="nav-edit-btn" data-variant="tertiary" data-size="small" data-icon-start="&#xf1de;" title="Edit navigation" aria-label="Edit navigation"></sherpa-button>
+      <sherpa-button class="nav-pin-btn" data-variant="tertiary" data-size="small" data-icon-start="&#xf08d;" title="Pin navigation" aria-label="Pin navigation"></sherpa-button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="nav-search" role="search">
+    <sherpa-nav-item class="nav-search-icon" data-nav-target="search" data-icon="fa-solid fa-magnifying-glass" tabindex="0" role="button" aria-label="Search">Search</sherpa-nav-item>
+    <sherpa-input-search class="nav-search-input" placeholder="Type here to filter..." aria-label="Filter navigation"></sherpa-input-search>
+  </div>
+
+  <!-- Home -->
+  <sherpa-nav-item data-nav-target="home" data-icon="fa-solid fa-house" data-route="#/home" tabindex="0" role="button" aria-label="Home">Home</sherpa-nav-item>
+
+  <!-- Divider -->
+  <div class="nav-divider">
+    <div class="nav-divider-line"></div>
+  </div>
+</header>
+
+<!-- Sections -->
+<div class="nav-sections" role="tree">
+
+  <!-- ── MONITORING ──────────────────────────────────────────── -->
+  <div class="nav-divider" role="separator">
+    <span class="nav-divider-label">MONITORING</span>
+    <div class="nav-divider-line"></div>
+  </div>
+
+  <div class="nav-group" data-group-index="0" data-draggable="true">
+    <details class="nav-section" data-section-id="views" data-section-type="views">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-eye">Views</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="active-issues" data-route="#/views/active-issues" tabindex="0" role="button">Active Issues</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="all-devices" data-route="#/views/all-devices" tabindex="0" role="button">All Devices</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="vulnerability" data-route="#/views/vulnerability" tabindex="0" role="button">Vulnerability</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="job-status" data-route="#/views/job-status" tabindex="0" role="button">Job Status</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="netpath" data-route="#/views/netpath" tabindex="0" role="button">NetPath</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="topology-maps" data-route="#/views/topology-maps" tabindex="0" role="button">Topology Maps</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="navigate-system-level" data-route="#/views/navigate-system-level" tabindex="0" role="button">Navigate to System Level</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="navigate-so-level" data-route="#/views/navigate-so-level" tabindex="0" role="button">Navigate to SO Level</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="navigate-customer-level" data-route="#/views/navigate-customer-level" tabindex="0" role="button">Navigate to Customer Level</sherpa-nav-item>
+    </details>
+    <details class="nav-section" data-section-id="dashboards">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-gauge-high">Dashboards</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="agents-online" data-route="#/dashboards/agents-online" tabindex="0" role="button">Agents Online</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="application-listings" data-route="#/dashboards/application-listings" tabindex="0" role="button">Application Listings</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="device-esx-hosts" data-route="#/dashboards/device-esx-hosts" tabindex="0" role="button">Device - ESX Hosts</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="device-network-devices" data-route="#/dashboards/device-network-devices" tabindex="0" role="button">Device - Network Devices</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="device-printers" data-route="#/dashboards/device-printers" tabindex="0" role="button">Device - Printers</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="device-servers" data-route="#/dashboards/device-servers" tabindex="0" role="button">Device - Servers</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="device-workstations" data-route="#/dashboards/device-workstations" tabindex="0" role="button">Device - Workstations</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="edr-checks" data-route="#/dashboards/edr-checks" tabindex="0" role="button">EDR Checks</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="manage-antivirus" data-route="#/dashboards/manage-antivirus" tabindex="0" role="button">Manage - Antivirus</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="manage-patch-status" data-route="#/dashboards/manage-patch-status" tabindex="0" role="button">Manage - Patch Status</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="view-dns-filtering" data-route="#/dashboards/view-dns-filtering" tabindex="0" role="button">View - DNS Filtering</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="view-edri" data-route="#/dashboards/view-edri" tabindex="0" role="button">View - EDRi</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="view-intune" data-route="#/dashboards/view-intune" tabindex="0" role="button">View - Intune</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="manage-dashboards" data-icon="fa-gear" data-route="#/dashboards/manage-dashboards" tabindex="0" role="button">Manage Dashboards</sherpa-nav-item>
+    </details>
+  </div>
+
+  <!-- ── MANAGEMENT ──────────────────────────────────────────── -->
+  <div class="nav-divider" role="separator">
+    <span class="nav-divider-label">MANAGEMENT</span>
+    <div class="nav-divider-line"></div>
+  </div>
+
+  <div class="nav-group" data-group-index="1" data-draggable="true">
+    <details class="nav-section" data-section-id="actions">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-bolt">Actions</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="add-import-devices" data-route="#/actions/add-import-devices" tabindex="0" role="button">Add/Import Devices</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="add-service-organization" data-route="#/actions/add-service-organization" tabindex="0" role="button">Add Service Organization</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="add-customer" data-route="#/actions/add-customer" tabindex="0" role="button">Add Customer</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="add-site" data-route="#/actions/add-site" tabindex="0" role="button">Add Site</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="domain-user-management" data-route="#/actions/domain-user-management" tabindex="0" role="button">Domain User Management</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="download-agent-probe" data-route="#/actions/download-agent-probe" tabindex="0" role="button">Download Agent/Probe</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="export-last-recovery-point" data-route="#/actions/export-last-recovery-point" tabindex="0" role="button">Export Last Recovery Point</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="file-transfer" data-route="#/actions/file-transfer" tabindex="0" role="button">File Transfer</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="patch-approvals">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/actions/patch-approvals">Patch Approvals</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="patch-approvals-automatic" data-route="#/actions/patch-approvals/automatic" tabindex="0" role="button">Automatic Approvals</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="patch-approvals-by-device" data-route="#/actions/patch-approvals/by-device" tabindex="0" role="button">By Device</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="patch-approvals-by-patch" data-route="#/actions/patch-approvals/by-patch" tabindex="0" role="button">By Patch</sherpa-nav-item>
+      </details>
+      <sherpa-nav-item data-variant="child" data-item-id="push-third-party-software" data-route="#/actions/push-third-party-software" tabindex="0" role="button">Push Third Party Software</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="run-a-backup" data-route="#/actions/run-a-backup" tabindex="0" role="button">Run a Backup</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="run-a-discovery" data-route="#/actions/run-a-discovery" tabindex="0" role="button">Run a Discovery</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="run-a-mac-script" data-route="#/actions/run-a-mac-script" tabindex="0" role="button">Run a Mac Script</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="run-an-automation-policy" data-route="#/actions/run-an-automation-policy" tabindex="0" role="button">Run an Automation Policy</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="run-a-script" data-route="#/actions/run-a-script" tabindex="0" role="button">Run a Script</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="security-manager-scan">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/actions/security-manager-scan">Security Manager Scan</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="av-defender-custom-scan" data-route="#/actions/security-manager-scan/custom" tabindex="0" role="button">AV Defender Custom Scan</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="av-defender-full-scan" data-route="#/actions/security-manager-scan/full" tabindex="0" role="button">AV Defender Full Scan</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="av-defender-quick-scan" data-route="#/actions/security-manager-scan/quick" tabindex="0" role="button">AV Defender Quick Scan</sherpa-nav-item>
+      </details>
+    </details>
+    <details class="nav-section" data-section-id="analytics">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-chart-line">Analytics</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="analytics-dashboards" data-route="#/analytics/dashboards" tabindex="0" role="button">Dashboards</sherpa-nav-item>
+    </details>
+    <details class="nav-section" data-section-id="cove-data-protection">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-shield-halved">Cove Data Protection</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="cove-data-protection-main" data-route="#/cove/data-protection" tabindex="0" role="button">Cove Data Protection</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="n-able-backup">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/cove/n-able-backup">N-able Backup</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="n-able-backup-dashboards" data-route="#/cove/n-able-backup/dashboards" tabindex="0" role="button">Dashboards</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="n-able-backup-profiles" data-route="#/cove/n-able-backup/profiles" tabindex="0" role="button">Profiles</sherpa-nav-item>
+      </details>
+    </details>
+    <details class="nav-section" data-section-id="reports">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-file-lines">Reports</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="reports-administrative" data-route="#/reports/administrative" tabindex="0" role="button">Administrative</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="reports-asset" data-route="#/reports/asset" tabindex="0" role="button">Asset</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="reports-availability" data-route="#/reports/availability" tabindex="0" role="button">Availability</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="reports-events" data-route="#/reports/events" tabindex="0" role="button">Events</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="reports-metrics" data-route="#/reports/metrics" tabindex="0" role="button">Metrics</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="reports-status" data-route="#/reports/status" tabindex="0" role="button">Status</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="reports-scheduled" data-route="#/reports/scheduled" tabindex="0" role="button">Scheduled Reports</sherpa-nav-item>
+    </details>
+  </div>
+
+  <!-- ── USER ────────────────────────────────────────────────── -->
+  <div class="nav-divider" role="separator">
+    <span class="nav-divider-label">USER</span>
+    <div class="nav-divider-line"></div>
+  </div>
+
+  <div class="nav-group" data-group-index="2" data-draggable="true">
+    <details class="nav-section" data-section-id="my-links" data-editable="true">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-link">My Links</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="api-explorer" data-route="#/my-links/api-explorer" data-editable tabindex="0" role="button">API Explorer</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="automation-cookbook" data-route="#/my-links/automation-cookbook" data-editable tabindex="0" role="button">Automation Cookbook</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="book-time-engineer" data-route="#/my-links/book-time-engineer" data-editable tabindex="0" role="button">Book time with an Engineer for Best Practices Help</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="n-able-events" data-route="#/my-links/n-able-events" data-editable tabindex="0" role="button">N-able Events</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="n-able-learning" data-route="#/my-links/n-able-learning" data-editable tabindex="0" role="button">N-able Learning</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="n-ableme" data-route="#/my-links/n-ableme" data-editable tabindex="0" role="button">N-ableMe</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="n-able-product-stack" data-route="#/my-links/n-able-product-stack" data-editable tabindex="0" role="button">N-able Product Stack</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="n-able-status-updates" data-route="#/my-links/n-able-status-updates" data-editable tabindex="0" role="button">N-able Status Updates</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="n-ableme-forums" data-route="#/my-links/n-ableme-forums" data-editable tabindex="0" role="button">N-ableMe Forums</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="n-hanced-services" data-route="#/my-links/n-hanced-services" data-editable tabindex="0" role="button">N-hanced Services</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="need-help" data-route="#/my-links/need-help" data-editable tabindex="0" role="button">Need Help?</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="security-resources" data-route="#/my-links/security-resources" data-editable tabindex="0" role="button">Security Resources</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="manage-my-links" data-icon="fa-gear" data-route="#/my-links/manage" tabindex="0" role="button">Manage My Links</sherpa-nav-item>
+    </details>
+  </div>
+
+  <!-- ── SETTINGS ────────────────────────────────────────────── -->
+  <div class="nav-divider" role="separator">
+    <span class="nav-divider-label">SETTINGS</span>
+    <div class="nav-divider-line"></div>
+  </div>
+
+  <div class="nav-group" data-group-index="3" data-draggable="true">
+    <details class="nav-section" data-section-id="configuration">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-sliders">Configuration</sherpa-nav-item>
+      </summary>
+      <details class="nav-subsection" data-subsection-id="asset-discovery">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/configuration/asset-discovery">Asset Discovery</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="discovered-assets" data-route="#/configuration/asset-discovery/discovered-assets" tabindex="0" role="button">Discovered Assets</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="discovery-jobs" data-route="#/configuration/asset-discovery/discovery-jobs" tabindex="0" role="button">Discovery Jobs</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="topology-jobs" data-route="#/configuration/asset-discovery/topology-jobs" tabindex="0" role="button">Topology Jobs</sherpa-nav-item>
+      </details>
+      <sherpa-nav-item data-variant="child" data-item-id="device-management-apple" data-route="#/configuration/device-management-apple" tabindex="0" role="button">Device Management for Apple</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="config-domain-user-management" data-route="#/configuration/domain-user-management" tabindex="0" role="button">Domain User Management</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="filters" data-route="#/configuration/filters" tabindex="0" role="button">Filters</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="mobile-invitations" data-route="#/configuration/mobile-invitations" tabindex="0" role="button">Mobile Invitations</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="monitoring">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/configuration/monitoring">Monitoring</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="app-compliance-rules" data-route="#/configuration/monitoring/app-compliance-rules" tabindex="0" role="button">Application Compliance Rules</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="app-compliance-settings" data-route="#/configuration/monitoring/app-compliance-settings" tabindex="0" role="button">Application Compliance Settings</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="monitoring-dashboards" data-route="#/configuration/monitoring/dashboards" tabindex="0" role="button">Dashboards</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="license-compliance" data-route="#/configuration/monitoring/license-compliance" tabindex="0" role="button">License Compliance</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="monitoring-setup-wizard" data-route="#/configuration/monitoring/setup-wizard" tabindex="0" role="button">Monitoring Setup Wizard</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="monitoring-notifications" data-route="#/configuration/monitoring/notifications" tabindex="0" role="button">Notifications</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="monitoring-rules" data-route="#/configuration/monitoring/rules" tabindex="0" role="button">Rules</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="monitoring-service-templates" data-route="#/configuration/monitoring/service-templates" tabindex="0" role="button">Service Templates</sherpa-nav-item>
+      </details>
+      <sherpa-nav-item data-variant="child" data-item-id="patch-management" data-route="#/configuration/patch-management" tabindex="0" role="button">Patch Management</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="scheduled-tasks">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/configuration/scheduled-tasks">Scheduled Tasks</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="scheduled-tasks-add-device" data-route="#/configuration/scheduled-tasks/add-device" tabindex="0" role="button">Add/Device</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="scheduled-tasks-network-share" data-route="#/configuration/scheduled-tasks/network-share" tabindex="0" role="button">Network Share</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="scheduled-tasks-profiles" data-route="#/configuration/scheduled-tasks/profiles" tabindex="0" role="button">Profiles</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="scheduled-tasks-script-repo" data-route="#/configuration/scheduled-tasks/script-repo" tabindex="0" role="button">Script/Software Repository</sherpa-nav-item>
+      </details>
+      <details class="nav-subsection" data-subsection-id="security-manager">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/configuration/security-manager">Security Manager</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="security-global-exclusions" data-route="#/configuration/security-manager/global-exclusions" tabindex="0" role="button">Global Exclusions</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="security-profiles" data-route="#/configuration/security-manager/profiles" tabindex="0" role="button">Profiles</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="quarantine-management" data-route="#/configuration/security-manager/quarantine-management" tabindex="0" role="button">Quarantine Management</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="security-events" data-route="#/configuration/security-manager/security-events" tabindex="0" role="button">Security Events</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="security-update-servers" data-route="#/configuration/security-manager/update-servers" tabindex="0" role="button">Update Servers</sherpa-nav-item>
+      </details>
+    </details>
+    <details class="nav-section" data-section-id="administration">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-user-shield">Administration</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="audit-export" data-route="#/administration/audit-export" tabindex="0" role="button">Audit Export</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="branding" data-route="#/administration/branding" tabindex="0" role="button">Branding</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="customers" data-route="#/administration/customers" tabindex="0" role="button">Customers</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="certificate-management">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/administration/certificate-management">Certificate Management</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="generate-download-certificate" data-route="#/administration/certificate-management/generate-download" tabindex="0" role="button">Generate and Download Certificate</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="upload-certificate" data-route="#/administration/certificate-management/upload" tabindex="0" role="button">Upload Certificate</sherpa-nav-item>
+      </details>
+      <sherpa-nav-item data-variant="child" data-item-id="custom-properties" data-route="#/administration/custom-properties" tabindex="0" role="button">Custom Properties</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="defaults">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/administration/defaults">Defaults</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-agent-probe" data-route="#/administration/defaults/agent-probe" tabindex="0" role="button">Agent &amp; Probe Settings</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-backup-snmp" data-route="#/administration/defaults/backup-snmp" tabindex="0" role="button">Backup and SNMP Defaults</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-system-email" data-route="#/administration/defaults/system-email" tabindex="0" role="button">Customized System Email</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-data-retention" data-route="#/administration/defaults/data-retention" tabindex="0" role="button">Data Retention</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-device" data-route="#/administration/defaults/device" tabindex="0" role="button">Device Defaults</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-discovery" data-route="#/administration/defaults/discovery" tabindex="0" role="button">Discovery Defaults</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-message-templates" data-route="#/administration/defaults/message-templates" tabindex="0" role="button">Message Templates</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-notification-templates" data-route="#/administration/defaults/notification-templates" tabindex="0" role="button">Notification Templates</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-remote-control" data-route="#/administration/defaults/remote-control" tabindex="0" role="button">Remote Control Defaults</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-remote-control-log" data-route="#/administration/defaults/remote-control-log" tabindex="0" role="button">Remote Control Log Level</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-reports-control" data-route="#/administration/defaults/reports-control" tabindex="0" role="button">Reports Control</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-services-templates" data-route="#/administration/defaults/services-templates" tabindex="0" role="button">Services Templates</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-session-timeout" data-route="#/administration/defaults/session-timeout" tabindex="0" role="button">Session Timeout</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-update-repository" data-route="#/administration/defaults/update-repository" tabindex="0" role="button">Update Repository</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-user" data-route="#/administration/defaults/user" tabindex="0" role="button">User Defaults</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="defaults-warranty-monitoring" data-route="#/administration/defaults/warranty-monitoring" tabindex="0" role="button">Warranty Monitoring</sherpa-nav-item>
+      </details>
+      <sherpa-nav-item data-variant="child" data-item-id="disk-diagnosis" data-route="#/administration/disk-diagnosis" tabindex="0" role="button">Disk Diagnosis</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="mail-network-settings">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/administration/mail-network-settings">Mail and Network Settings</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="network-security" data-route="#/administration/mail-network/network-security" tabindex="0" role="button">Network Security</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="network-setup" data-route="#/administration/mail-network/network-setup" tabindex="0" role="button">Network Setup</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="outbound-communication" data-route="#/administration/mail-network/outbound-communication" tabindex="0" role="button">Outbound Communication</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="smtp-auth" data-route="#/administration/mail-network/smtp-auth" tabindex="0" role="button">SMTP Auth</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="test-email-delivery" data-route="#/administration/mail-network/test-email-delivery" tabindex="0" role="button">Test Email Delivery</sherpa-nav-item>
+      </details>
+      <sherpa-nav-item data-variant="child" data-item-id="probes" data-route="#/administration/probes" tabindex="0" role="button">Probes</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="psa-integration">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/administration/psa-integration">PSA Integration</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="configure-psa-integration" data-route="#/administration/psa-integration/configure" tabindex="0" role="button">Configure PSA Integration</sherpa-nav-item>
+      </details>
+      <details class="nav-subsection" data-subsection-id="service-management">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/administration/service-management">Service Management</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-custom-services" data-route="#/administration/service-management/custom-services" tabindex="0" role="button">Custom Services</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-default-parameters" data-route="#/administration/service-management/default-parameters" tabindex="0" role="button">Default Parameters</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-default-scan-intervals" data-route="#/administration/service-management/default-scan-intervals" tabindex="0" role="button">Default Scan Intervals</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-default-service-thresholds" data-route="#/administration/service-management/default-service-thresholds" tabindex="0" role="button">Default Service Thresholds</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-default-timeout-intervals" data-route="#/administration/service-management/default-timeout-intervals" tabindex="0" role="button">Default Timeout Intervals</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-default-validation-strings" data-route="#/administration/service-management/default-validation-strings" tabindex="0" role="button">Default Validation Strings</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-log-service-config" data-route="#/administration/service-management/log-service-config" tabindex="0" role="button">Log Service Configuration</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-service-control" data-route="#/administration/service-management/service-control" tabindex="0" role="button">Service Control</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-service-templates" data-route="#/administration/service-management/service-templates" tabindex="0" role="button">Service Templates</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="svc-state-priority" data-route="#/administration/service-management/state-priority" tabindex="0" role="button">State Priority Management</sherpa-nav-item>
+      </details>
+      <sherpa-nav-item data-variant="child" data-item-id="service-organizations" data-route="#/administration/service-organizations" tabindex="0" role="button">Service Organizations</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="sites" data-route="#/administration/sites" tabindex="0" role="button">Sites</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="sms-registration" data-route="#/administration/sms-registration" tabindex="0" role="button">SMS Registration</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="system-backup-restore">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/administration/system-backup-restore">System Backup and Restore</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="configure-backups" data-route="#/administration/system-backup-restore/configure" tabindex="0" role="button">Configure Backups</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="download-backups" data-route="#/administration/system-backup-restore/download" tabindex="0" role="button">Download Backups</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="restore-backups" data-route="#/administration/system-backup-restore/restore" tabindex="0" role="button">Restore Backups</sherpa-nav-item>
+      </details>
+      <details class="nav-subsection" data-subsection-id="user-management">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/administration/user-management">User Management</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="sso-providers" data-route="#/administration/user-management/sso-providers" tabindex="0" role="button">SSO Providers</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="two-factor-auth" data-route="#/administration/user-management/two-factor-auth" tabindex="0" role="button">Two-factor Authentication</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="users" data-route="#/administration/user-management/users" tabindex="0" role="button">Users</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="provisioned-users" data-route="#/administration/user-management/provisioned-users" tabindex="0" role="button">Provisioned Users</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="access-groups" data-route="#/administration/user-management/access-groups" tabindex="0" role="button">Access Groups</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="roles" data-route="#/administration/user-management/roles" tabindex="0" role="button">Roles</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="password-setting" data-route="#/administration/user-management/password-setting" tabindex="0" role="button">Password Setting</sherpa-nav-item>
+      </details>
+    </details>
+    <details class="nav-section" data-section-id="integrations">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-puzzle-piece">Integrations</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="integration-management" data-route="#/integrations/management" tabindex="0" role="button">Integration Management</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="ms-intune">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/integrations/ms-intune">MS Intune</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="ms-intune-setup" data-route="#/integrations/ms-intune/setup" tabindex="0" role="button">Setup</sherpa-nav-item>
+      </details>
+      <details class="nav-subsection" data-subsection-id="dns-filtering">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/integrations/dns-filtering">DNS Filtering</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-dashboards" data-route="#/integrations/dns-filtering/dashboards" tabindex="0" role="button">Dashboards</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-insights" data-route="#/integrations/dns-filtering/insights" tabindex="0" role="button">Insights</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-profiles" data-route="#/integrations/dns-filtering/profiles" tabindex="0" role="button">Profiles</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-profiles-block-pages" data-route="#/integrations/dns-filtering/profiles-block-pages" tabindex="0" role="button">Profiles - Block Pages</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-profiles-content-filters" data-route="#/integrations/dns-filtering/profiles-content-filters" tabindex="0" role="button">Profiles - Content Filters</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-reporting-total-requests" data-route="#/integrations/dns-filtering/reporting-total-requests" tabindex="0" role="button">Reporting - Total Requests</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-reporting-queries-per-second" data-route="#/integrations/dns-filtering/reporting-queries-per-second" tabindex="0" role="button">Reporting - Queries per Second</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-reporting-top-requests" data-route="#/integrations/dns-filtering/reporting-top-requests" tabindex="0" role="button">Reporting - Top Requests</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-reporting-threats" data-route="#/integrations/dns-filtering/reporting-threats" tabindex="0" role="button">Reporting - Threats</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-reporting-alerts" data-route="#/integrations/dns-filtering/reporting-alerts" tabindex="0" role="button">Reporting - Alerts</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-tools-ssl-certificate" data-route="#/integrations/dns-filtering/tools-ssl-certificate" tabindex="0" role="button">Tools - SSL Certificate</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-tools-query-log" data-route="#/integrations/dns-filtering/tools-query-log" tabindex="0" role="button">Tools - Query Log</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-tools-policy-audit-log" data-route="#/integrations/dns-filtering/tools-policy-audit-log" tabindex="0" role="button">Tools - Policy Audit Log</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="dns-tools-domain-lookup" data-route="#/integrations/dns-filtering/tools-domain-lookup" tabindex="0" role="button">Tools - Domain Lookup</sherpa-nav-item>
+      </details>
+    </details>
+    <details class="nav-section" data-section-id="system-settings">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-server">System Settings</sherpa-nav-item>
+      </summary>
+      <details class="nav-subsection" data-subsection-id="ncentral-server">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/system-settings/ncentral-server">N-central Server</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="license-key" data-route="#/system-settings/ncentral-server/license-key" tabindex="0" role="button">License Key</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="reboot-power-off" data-route="#/system-settings/ncentral-server/reboot-power-off" tabindex="0" role="button">Reboot / Power-Off</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="remote-control-connection-mgmt" data-route="#/system-settings/ncentral-server/remote-control-connection-mgmt" tabindex="0" role="button">Remote Control Connection Management</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="restart-processes" data-route="#/system-settings/ncentral-server/restart-processes" tabindex="0" role="button">Restart Processes</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="system-health-monitor" data-route="#/system-settings/ncentral-server/system-health-monitor" tabindex="0" role="button">System Health Monitor</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="version-management" data-route="#/system-settings/ncentral-server/version-management" tabindex="0" role="button">Version Management</sherpa-nav-item>
+      </details>
+      <details class="nav-subsection" data-subsection-id="product-settings">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/system-settings/product-settings">Product Settings</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="customer-program-level" data-route="#/system-settings/product-settings/customer-program-level" tabindex="0" role="button">Customer Program Level</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="default-analysis-reports" data-route="#/system-settings/product-settings/default-analysis-reports" tabindex="0" role="button">Default Analysis Reports</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="device-classes" data-route="#/system-settings/product-settings/device-classes" tabindex="0" role="button">Device Classes</sherpa-nav-item>
+      </details>
+      <details class="nav-subsection" data-subsection-id="system-tools">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-route="#/system-settings/tools">Tools</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="data-export" data-route="#/system-settings/tools/data-export" tabindex="0" role="button">Data Export</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="test-dns-availability" data-route="#/system-settings/tools/test-dns-availability" tabindex="0" role="button">Test DNS Availability</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="test-host-connectivity" data-route="#/system-settings/tools/test-host-connectivity" tabindex="0" role="button">Test Host Connectivity</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="test-tcp-port-connectivity" data-route="#/system-settings/tools/test-tcp-port-connectivity" tabindex="0" role="button">Test TCP Port Connectivity</sherpa-nav-item>
+      </details>
+    </details>
+    <details class="nav-section" data-section-id="administration-utilities">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-toolbox">Administration Utilities</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="active-sessions" data-route="#/admin-utilities/active-sessions" tabindex="0" role="button">Active Sessions</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="agent-probe-configuration" data-route="#/admin-utilities/agent-probe-configuration" tabindex="0" role="button">Agent/Probe Configuration</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="agent-logs" data-route="#/admin-utilities/agent-logs" tabindex="0" role="button">Agent Logs</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="log-levels" data-route="#/admin-utilities/log-levels" tabindex="0" role="button">Log Levels</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="server-code-drops" data-route="#/admin-utilities/server-code-drops" tabindex="0" role="button">Server Code Drops</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="util-session-timeout" data-route="#/admin-utilities/session-timeout" tabindex="0" role="button">Session Timeout</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="view-logs" data-route="#/admin-utilities/view-logs" tabindex="0" role="button">View Logs</sherpa-nav-item>
+    </details>
+  </div>
+
+  <!-- ── SUPPORT ─────────────────────────────────────────────── -->
+  <div class="nav-divider" role="separator">
+    <span class="nav-divider-label">SUPPORT</span>
+    <div class="nav-divider-line"></div>
+  </div>
+
+  <div class="nav-group" data-group-index="4" data-draggable="true">
+    <details class="nav-section" data-section-id="help">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-circle-question">Help</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="getting-started" data-route="#/help/getting-started" tabindex="0" role="button">Getting Started</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="whats-new" data-route="#/help/whats-new" tabindex="0" role="button">What's New</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="training-videos" data-route="#/help/training-videos" tabindex="0" role="button">Training Videos</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="rss-updates" data-route="#/help/rss-updates" tabindex="0" role="button">RSS Updates</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="version-information" data-route="#/help/version-information" tabindex="0" role="button">Version Information</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="help-main" data-route="#/help/help" tabindex="0" role="button">Help</sherpa-nav-item>
+    </details>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="nav-footer">
+  <!-- Promo (hidden — N-central template does not include a promo) -->
+  <sherpa-nav-promo hidden></sherpa-nav-promo>
+
+  <!-- Settings -->
+  <sherpa-nav-item data-nav-target="settings" data-icon="fa-solid fa-gear" data-route="#/settings" tabindex="0" role="button" aria-label="Settings">Settings</sherpa-nav-item>
+
+  <!-- Edit Mode Controls -->
+  <div class="nav-edit-controls">
+    <sherpa-button class="nav-edit-cancel" data-variant="tertiary" data-size="small" data-label="Cancel"></sherpa-button>
+    <sherpa-button class="nav-edit-confirm" data-variant="primary" data-size="small" data-label="Apply"></sherpa-button>
+  </div>
+</footer>
+
+</div> <!-- /.sherpa-nav-root -->

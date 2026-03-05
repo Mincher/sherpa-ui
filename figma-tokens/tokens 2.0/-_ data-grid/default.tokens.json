@@ -1,0 +1,77 @@
+{
+  "cell": {
+    "default": {
+      "$type": "number",
+      "$value": 32,
+      "$extensions": {
+        "com.figma.variableId": "VariableID:15334:66611",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:f375a1323ac53f8e2e52db531009bf0c50d39725/-1:-1",
+          "targetVariableName": "size/2xl",
+          "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    },
+    "padding": {
+      "$type": "number",
+      "$value": 12,
+      "$extensions": {
+        "com.figma.variableId": "VariableID:15567:282662",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:8c893e0ef750c2956b900125b6890a9c0c664a1c/-1:-1",
+          "targetVariableName": "size/xs",
+          "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    }
+  },
+  "header": {
+    "default": {
+      "$type": "number",
+      "$value": 40,
+      "$extensions": {
+        "com.figma.variableId": "VariableID:15334:66613",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:50bb0703e98078098a34dbd269ec944fc9235824/-1:-1",
+          "targetVariableName": "size/3xl",
+          "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    },
+    "padding": {
+      "$type": "number",
+      "$value": 12,
+      "$extensions": {
+        "com.figma.variableId": "VariableID:15567:282663",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:8c893e0ef750c2956b900125b6890a9c0c664a1c/-1:-1",
+          "targetVariableName": "size/xs",
+          "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    }
+  },
+  "$extensions": {
+    "com.figma.modeName": "default"
+  }
+}

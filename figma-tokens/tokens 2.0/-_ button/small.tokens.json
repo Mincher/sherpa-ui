@@ -1,0 +1,56 @@
+{
+  "size": {
+    "$type": "number",
+    "$value": 24,
+    "$extensions": {
+      "com.figma.variableId": "VariableID:15449:40114",
+      "com.figma.scopes": [
+        "WIDTH_HEIGHT"
+      ],
+      "com.figma.aliasData": {
+        "targetVariableId": "VariableID:d44a769505269988c7bc27e515b45e7749a185ea/-1:-1",
+        "targetVariableName": "size/lg",
+        "targetVariableSetId": "VariableCollectionId:397f64d7d70e44af3c87604ab30c75817e3dea14/-1:-1",
+        "targetVariableSetName": "Apex 2.0"
+      },
+      "com.figma.isOverride": true
+    }
+  },
+  "padding": {
+    "$type": "number",
+    "$value": 4,
+    "$extensions": {
+      "com.figma.variableId": "VariableID:16245:54574",
+      "com.figma.scopes": [
+        "GAP"
+      ],
+      "com.figma.aliasData": {
+        "targetVariableId": "VariableID:4a0f21817164769588901d57f327d3f969211025/-1:-1",
+        "targetVariableName": "space/2xs",
+        "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+        "targetVariableSetName": "Apex 2.0"
+      },
+      "com.figma.isOverride": true
+    }
+  },
+  "spacing": {
+    "$type": "number",
+    "$value": 4,
+    "$extensions": {
+      "com.figma.variableId": "VariableID:16245:54575",
+      "com.figma.scopes": [
+        "GAP"
+      ],
+      "com.figma.aliasData": {
+        "targetVariableId": "VariableID:4a0f21817164769588901d57f327d3f969211025/-1:-1",
+        "targetVariableName": "space/2xs",
+        "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+        "targetVariableSetName": "Apex 2.0"
+      },
+      "com.figma.isOverride": true
+    }
+  },
+  "$extensions": {
+    "com.figma.modeName": "small"
+  }
+}

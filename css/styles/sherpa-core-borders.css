@@ -1,0 +1,27 @@
+/**
+ * Core Border Tokens (Primitives)
+ * Extracted from core-tokens.css — dash, radius, and stroke values.
+ * Prefixed --sherpa- (was --apx-).
+ */
+
+:root {
+  --sherpa-core-border-dash-0: 0px;
+  --sherpa-core-border-dash-100: 4px;
+  --sherpa-core-border-dash-200: 8px;
+  --sherpa-core-border-radius-0: 0px;
+  --sherpa-core-border-radius-100: 2px;
+  --sherpa-core-border-radius-1000: 9999px;
+  --sherpa-core-border-radius-150: 3px;
+  --sherpa-core-border-radius-200: 4px;
+  --sherpa-core-border-radius-300: 8px;
+  --sherpa-core-border-radius-400: 16px;
+  --sherpa-core-border-stroke-0: 0px;
+  --sherpa-core-border-stroke-100: 0.25px;
+  --sherpa-core-border-stroke-200: 0.5px;
+  --sherpa-core-border-stroke-300: 1px;
+  --sherpa-core-border-stroke-400: 2px;
+  --sherpa-core-border-stroke-450: 3px;
+  --sherpa-core-border-stroke-500: 4px;
+  --sherpa-core-border-stroke-600: 8px;
+  --sherpa-core-border-stroke-700: 12px;
+}

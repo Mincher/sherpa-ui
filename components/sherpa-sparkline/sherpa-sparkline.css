@@ -1,0 +1,247 @@
+/**
+ * sherpa-sparkline.css — Shadow DOM
+ * CSS-only sparkline using segmented polygons
+ *
+ * Architecture:
+ *   1. Host receives raw data values (--_v0–--_v12) plus --_min and --_range
+ *      from JS via style.setProperty — custom properties inherit into shadow DOM
+ *   2. Each .shape maps to two adjacent raw values via [data-index], then CSS
+ *      normalises them in-place with calc():
+ *        --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100)
+ *   3. Clip-path lives on ::before (fill) and ::after (stroke) so child
+ *      .point elements aren't clipped
+ *   4. Y-positions:  calc(100% - n × progress × 1%)
+ *      → progress 0 = baseline (100%)  →  progress 1 = data position
+ *   5. Modes share the same clip-path polygon and animation:
+ *      - line (default): --_n-start ≠ --_n-end → angled top edge connecting points
+ *      - bar (data-variant="bar"): --_n-start = --_n-end → flat top edge = bar
+ *
+ * Colors derive from --_border-color inherited from the parent component's
+ * status styling (custom properties cross shadow boundaries).
+ */
+
+/* Per-point animation progress.
+   Each shape has two: --_progress-start (left) and --_progress-end (right).
+   inherits: true so ::before, ::after, and .point children see the values. */
+@property --_progress-start {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --_progress-end {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Animation
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes rise-start {
+  from { --_progress-start: 0; }
+  to   { --_progress-start: 1; }
+}
+
+@keyframes rise-end {
+  from { --_progress-end: 0; }
+  to   { --_progress-end: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Host
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  /* Raw data values set by JS — CSS normalises via calc() in .shape */
+  --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0; --_v4: 0;
+  --_v5: 0; --_v6: 0; --_v7: 0; --_v8: 0; --_v9: 0; --_v10: 0; --_v11: 0; --_v12: 0;
+  --_min: 0;
+  --_range: 1;
+
+  --_anim-duration: var(--sherpa-motion-duration-slow);
+  --_anim-easing: var(--sherpa-motion-easing-default);
+  --_ripple-delay-step: 0.03s;
+  --_point-hover-factor: 0;
+
+  --_stroke-width: 0.5px;
+  --_point-size: 8px;
+  --_point-offset: calc(var(--_point-size) / 2);
+
+  display: flex;
+  gap: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  color: var(--_border-color, var(--sherpa-icon-context-default-secondary));
+}
+
+:host([hidden]) { display: none; }
+
+/* ── Bar mode ────────────────────────────────────────────────────── */
+
+:host([data-variant="bar"]) {
+  gap: 2px;
+}
+
+/* ── Hover ────────────────────────────────────────────────────────── */
+
+:host(:hover) {
+  --_point-hover-factor: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Shapes (one per data-point pair)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.shape {
+  /* CSS normalisation — converts raw values to 0–100 range */
+  --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
+  --_n-end:   calc((var(--_v-end)   - var(--_min)) / var(--_range) * 100);
+
+  position: relative;
+  flex: 1 1 0%;
+  min-width: 0;
+
+  /* Two rise animations — one per top corner, staggered per point index.
+     Shape N's end delay = shape (N+1)'s start delay, so boundary points
+     stay in sync and the wave ripples left-to-right. */
+  animation:
+    rise-start var(--_anim-duration) var(--_anim-easing)
+              calc(var(--_ripple-delay-step) * var(--_i)) both,
+    rise-end   var(--_anim-duration) var(--_anim-easing)
+              calc(var(--_ripple-delay-step) * (var(--_i) + 1)) both;
+
+  /* Gradient fill — pseudo-element so child .point elements aren't clipped */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, color-mix(in srgb, currentColor 50%, transparent) 0%, transparent 100%);
+    clip-path: polygon(
+      0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1%),
+      100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1%),
+      100% 100%,
+      0%   100%
+    );
+  }
+
+  /* Stroke line on top edge */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    clip-path: polygon(
+      0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% - var(--_stroke-width)),
+      100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% - var(--_stroke-width)),
+      100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% + var(--_stroke-width)),
+      0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% + var(--_stroke-width))
+    );
+  }
+
+  /* Map each shape to its adjacent raw-value pair.
+     Shape N's start = --_vN, end = --_v(N+1).
+     Adjacent shapes share the boundary value (end of N = start of N+1).
+     --_i provides animation delay stagger index. */
+  &[data-index="0"]  { --_i: 0;  --_v-start: var(--_v0);  --_v-end: var(--_v1); }
+  &[data-index="1"]  { --_i: 1;  --_v-start: var(--_v1);  --_v-end: var(--_v2); }
+  &[data-index="2"]  { --_i: 2;  --_v-start: var(--_v2);  --_v-end: var(--_v3); }
+  &[data-index="3"]  { --_i: 3;  --_v-start: var(--_v3);  --_v-end: var(--_v4); }
+  &[data-index="4"]  { --_i: 4;  --_v-start: var(--_v4);  --_v-end: var(--_v5); }
+  &[data-index="5"]  { --_i: 5;  --_v-start: var(--_v5);  --_v-end: var(--_v6); }
+  &[data-index="6"]  { --_i: 6;  --_v-start: var(--_v6);  --_v-end: var(--_v7); }
+  &[data-index="7"]  { --_i: 7;  --_v-start: var(--_v7);  --_v-end: var(--_v8); }
+  &[data-index="8"]  { --_i: 8;  --_v-start: var(--_v8);  --_v-end: var(--_v9); }
+  &[data-index="9"]  { --_i: 9;  --_v-start: var(--_v9);  --_v-end: var(--_v10); }
+  &[data-index="10"] { --_i: 10; --_v-start: var(--_v10); --_v-end: var(--_v11); }
+  &[data-index="11"] { --_i: 11; --_v-start: var(--_v11); --_v-end: var(--_v12); }
+}
+
+/* Bar mode: both top corners use same value → flat-topped rectangle */
+:host([data-variant="bar"]) .shape {
+  --_v-start: var(--_v-end);
+}
+
+/* Show point interaction on hover */
+:host(:hover) .point:not([hidden]) {
+  pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Points (hover circles at each vertex)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.point {
+  --_point-scale: var(--_point-hover-factor);
+  position: absolute;
+  width: var(--_point-size);
+  height: var(--_point-size);
+  border-radius: 50%;
+  background: currentColor;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  opacity: var(--_point-scale);
+  z-index: 1;
+  translate: calc(-1 * var(--_point-offset)) calc(-1 * var(--_point-offset));
+  transform-origin: center;
+  transform: scale(var(--_point-scale));
+
+  &[data-role="start"] {
+    top: calc(100% - var(--_n-start) * var(--_progress-start) * 1%);
+    left: 0%;
+  }
+
+  &[data-role="end"] {
+    top: calc(100% - var(--_n-end) * var(--_progress-end) * 1%);
+    left: 100%;
+  }
+}
+
+.shape[hidden] {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Inline tooltip (popover + CSS anchor positioning)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tip {
+  position: fixed;
+  position-anchor: --spark-anchor;
+  inset: auto;
+  left: anchor(center);
+  bottom: calc(anchor(top) + var(--sherpa-space-2xs, 0.375rem) + var(--_point-offset, 0px));
+  translate: -50% 0;
+  position-try-fallbacks: flip-block;
+
+  margin: 0;
+  padding: var(--sherpa-space-3xs, 0.25rem) var(--sherpa-space-xs, 0.5rem);
+  border: none;
+  border-radius: var(--sherpa-border-rounding-lg, 0.5rem);
+  background: var(--sherpa-surface-container-floating-default, rgba(26, 28, 33, 0.92));
+  color: var(--sherpa-text-default-on-color-heading, #fff);
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgba(15, 23, 42, 0.25));
+
+  /* Popover UA overrides */
+  &::backdrop { display: none; }
+}
+
+/* Arrow */
+.tip::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  translate: -50% 0;
+  border: 6px solid transparent;
+  border-top-color: var(--sherpa-surface-container-floating-default, rgba(26, 28, 33, 0.92));
+}

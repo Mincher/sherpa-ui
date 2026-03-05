@@ -1,0 +1,371 @@
+
+/**
+ * sherpa-nav.css — Collapsible sidebar navigation (shadow-DOM scoped)
+ *
+ * Structure: :host → .sherpa-nav-root wrapper → header / sections / footer
+ *
+ * State model: Template-declared data attributes on .sherpa-nav-root
+ *   data-pinned="true|false"    Pinned open (JS toggles)
+ *   data-mode="default|search|edit"  Current interaction mode (JS toggles)
+ *   data-editable               Presence → edit button visible, edit mode available
+ *   data-searchable             Presence → search bar visible
+ *
+ * The host owns width + container query; the wrapper owns state + layout.
+ * CSS reads state from the wrapper. JS only toggles wrapper attributes + emits events.
+ *
+ * Selection: [data-state="selected"] on sherpa-nav-item
+ *   Ancestor headers highlighted via :has() (CSS-only, no JS ancestor-walking)
+ */
+
+/* ══════════════════════════════════════════════════════════════════════
+   HOST — outer box: width, container query, chrome
+   ══════════════════════════════════════════════════════════════════════ */
+
+:host {
+  --_w-collapsed: calc(var(--sherpa-space-default) * 3);
+  --_w-expanded: 320px;
+  --_item-h: calc(var(--sherpa-size-sm) + (var(--sherpa-space-sm) * 2));
+  --_label-weight: 500;
+  --_indent: var(--sherpa-space-default);
+
+  color-scheme: dark;
+  container: sherpa-nav / inline-size;
+  interpolate-size: allow-keywords;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  width: var(--_w-collapsed);
+  background: var(--sherpa-surface-app-product-nav-bg);
+  color: var(--sherpa-text-default-on-color-heading);
+  font: var(--sherpa-fonts-scale-sm) var(--sherpa-fonts-context-default), sans-serif;
+  transition: width var(--sherpa-motion-duration-base) var(--sherpa-motion-easing-default);
+  z-index: 200;
+  user-select: none;
+}
+
+:host([hidden]) { display: none; }
+
+/* Width states — host carries mirrored data-pinned / data-mode */
+:host(:not([data-pinned="true"]):is(:hover, :focus-within)) {
+  width: var(--_w-expanded);
+}
+
+:host(:is([data-pinned="true"], [data-mode="search"], [data-mode="edit"])) {
+  width: var(--_w-expanded);
+}
+
+:host([data-pinned="true"]) { position: relative; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ROOT WRAPPER — flex column layout
+   ══════════════════════════════════════════════════════════════════════ */
+
+.sherpa-nav-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+
+  /* Capability gating — hide controls when template doesn't declare them */
+  &:not([data-editable]) .nav-edit-btn { display: none; }
+  &:not([data-searchable]) .nav-search { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SUMMARY RESET
+   ══════════════════════════════════════════════════════════════════════ */
+
+summary {
+  list-style: none;
+  &::-webkit-details-marker { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LAYOUT CONTAINERS
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-sections {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden auto;
+  gap: var(--sherpa-space-xs);
+  scrollbar-width: thin;
+  scrollbar-color: var(--sherpa-text-default-on-color-secondary) transparent;
+  container-type: scroll-state;
+  container-name: nav-scroller;
+}
+
+:is(.nav-section, .nav-subsection, .nav-group) {
+  display: flex;
+  flex-direction: column;
+
+  &.nav-group { gap: var(--sherpa-space-xs); }
+}
+
+/* Indentation depth — inherited by sherpa-nav-item :host via --_depth */
+.nav-section { --_depth: 0; }
+.nav-section > :not(summary) { --_depth: 1; }
+.nav-subsection > :not(summary) { --_depth: 2; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ACCORDION — shared section / subsection <details> behavior
+   ══════════════════════════════════════════════════════════════════════ */
+
+:is(.nav-section, .nav-subsection) {
+  position: relative;
+
+  &::details-content {
+    overflow: hidden;
+    height: 0;
+    opacity: 0;
+    transition:
+      height var(--sherpa-motion-duration-slow) var(--sherpa-motion-easing-default),
+      opacity var(--sherpa-motion-duration-base) var(--sherpa-motion-easing-default),
+      content-visibility var(--sherpa-motion-duration-slow) allow-discrete;
+  }
+
+  &[open]::details-content {
+    height: auto;
+    opacity: 1;
+  }
+
+  &[open] > summary > sherpa-nav-item::part(chevron) {
+    transform: rotate(90deg);
+  }
+}
+
+.nav-group > [data-dragging] { opacity: 0.5; }
+
+/* Chevron — shown only when section/subsection has child content */
+@container sherpa-nav (min-width: 320px) {
+  :is(.nav-section, .nav-subsection):has(> :not(summary)) > summary > sherpa-nav-item::part(chevron) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Collapse content when nav is collapsed */
+@container sherpa-nav (max-width: 319px) {
+  :is(.nav-section, .nav-subsection)[open]::details-content {
+    height: 0 !important;
+    opacity: 0 !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   DIVIDERS
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+  padding: var(--sherpa-space-xs) var(--sherpa-space-default);
+  flex-shrink: 0;
+  height: calc(var(--sherpa-size-sm) + (var(--sherpa-space-xs) * 2));
+  box-sizing: border-box;
+}
+
+.nav-divider-label {
+  font-size: var(--sherpa-fonts-scale-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--sherpa-text-default-on-color-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--sherpa-text-default-on-color-secondary);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SEARCH HIGHLIGHT & HIDDEN
+   ══════════════════════════════════════════════════════════════════════ */
+
+::highlight(nav-search-match) {
+  background-color: var(--sherpa-surface-search-highlight);
+  color: inherit;
+}
+
+[data-search-hidden="true"] { display: none; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ANCESTOR ACTIVE STATE — CSS :has() replaces JS ancestor-walking
+   ══════════════════════════════════════════════════════════════════════ */
+
+:is(.nav-section, .nav-subsection):has(sherpa-nav-item[data-state="selected"]) > summary > sherpa-nav-item {
+  background: var(--sherpa-surface-app-product-nav-active);
+
+  &::part(indicator) {
+    background: var(--sherpa-surface-app-product-bar-brand);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   EDIT MODE — drag handles & delete buttons on items
+   ══════════════════════════════════════════════════════════════════════ */
+
+.sherpa-nav-root[data-mode="edit"] {
+  & :is(.nav-section[data-quick-access="true"], sherpa-nav-promo),
+  & .nav-header > :is(.nav-search, [data-nav-target="home"], .nav-divider),
+  & .nav-footer [data-nav-target="settings"] { display: none; }
+
+  & sherpa-nav-item[data-editable]::part(drag),
+  & sherpa-nav-item[data-editable]::part(delete) { display: inline-flex; }
+
+  & .nav-section:not([data-quick-access="true"]) > summary > sherpa-nav-item:is([data-variant="section"], [data-variant="subsection"])::part(drag) {
+    display: inline-flex;
+  }
+
+  & :is(.nav-section, .nav-subsection)[open]::details-content { height: 0 !important; opacity: 0 !important; }
+  & sherpa-nav-item:is([data-variant="section"], [data-variant="subsection"])::part(chevron) { transform: rotate(0deg); }
+
+  & .nav-edit-btn { color: var(--sherpa-surface-app-product-bar-brand); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   HEADER / TOOLBAR / SEARCH / FOOTER
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-header, .nav-footer {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+  padding: var(--sherpa-space-xs) var(--sherpa-space-default);
+  height: var(--sherpa-size-3xl);
+  flex-shrink: 0;
+}
+
+.nav-header {
+  gap: var(--sherpa-space-xs);
+  padding-block: var(--sherpa-space-xs);
+  padding-inline: 0px;
+  background: var(--sherpa-surface-app-product-nav-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
+}
+
+@container nav-scroller scroll-state(scrollable: top) {
+  .nav-header {
+    box-shadow: var(--sherpa-shadow-default-sm);
+  }
+}
+
+.nav-logo {
+  width: var(--sherpa-size-sm);
+  height: var(--sherpa-size-sm);
+  flex-shrink: 0;
+  & svg { width: 100%; height: 100%; }
+}
+
+.nav-product-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: var(--sherpa-fonts-scale-lg);
+}
+
+.nav-toolbar-actions {
+  display: flex;
+  gap: var(--sherpa-space-xs);
+  flex-shrink: 0;
+}
+
+.nav-search {
+  height: var(--_item-h);
+  min-height: var(--_item-h);
+  box-sizing: border-box;
+
+  & .nav-search-input { display: none; }
+}
+
+.nav-edit-controls {
+  display: none;
+  gap: var(--sherpa-space-xs);
+  padding: var(--sherpa-space-xs) var(--sherpa-space-default);
+  justify-content: flex-end;
+  .sherpa-nav-root[data-mode="edit"] & { display: flex; }
+}
+
+.nav-footer {
+  gap: var(--sherpa-space-xs);
+  background: var(--sherpa-surface-app-product-nav-bg);
+  position: sticky;
+  bottom: 0;
+  transition: box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
+}
+
+@container nav-scroller scroll-state(scrollable: bottom) {
+  .nav-footer {
+    box-shadow: var(--sherpa-shadow-default-sm);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   COLLAPSED / EXPANDED VISIBILITY
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-product-name,
+.nav-toolbar-actions,
+.nav-divider-label,
+sherpa-nav-promo { display: none; }
+
+@container sherpa-nav (min-width: 320px) {
+  .nav-product-name { display: block; animation: sherpa-fade-in 0.15s ease-out 0.05s both; }
+  .nav-toolbar-actions { display: flex; animation: sherpa-fade-in 0.15s ease-out 0.05s both; }
+  .nav-divider-label { display: inline; }
+  sherpa-nav-promo { display: flex; }
+
+  .nav-search {
+    & .nav-search-icon { display: none; }
+    & .nav-search-input { display: block; padding-inline: var(--sherpa-space-sm); }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   RIPPLE — staggered --_ripple-i index for nav-item cascade animation
+   Sets a CSS custom property per-item so sherpa-nav-item.css can compute
+   animation-delay: calc(var(--_ripple-i, 0) * 30ms).
+   Capped at 8 section headers, 10 section children, 6 subsection children.
+   ══════════════════════════════════════════════════════════════════════ */
+
+:is([data-nav-target="home"], [data-nav-target="settings"]) { --_ripple-i: 0; }
+
+.nav-group > .nav-section:nth-of-type(1) > summary sherpa-nav-item { --_ripple-i: 1; }
+.nav-group > .nav-section:nth-of-type(2) > summary sherpa-nav-item { --_ripple-i: 2; }
+.nav-group > .nav-section:nth-of-type(3) > summary sherpa-nav-item { --_ripple-i: 3; }
+.nav-group > .nav-section:nth-of-type(4) > summary sherpa-nav-item { --_ripple-i: 4; }
+.nav-group > .nav-section:nth-of-type(5) > summary sherpa-nav-item { --_ripple-i: 5; }
+.nav-group > .nav-section:nth-of-type(6) > summary sherpa-nav-item { --_ripple-i: 6; }
+.nav-group > .nav-section:nth-of-type(7) > summary sherpa-nav-item { --_ripple-i: 7; }
+.nav-group > .nav-section:nth-of-type(8) > summary sherpa-nav-item { --_ripple-i: 8; }
+
+.nav-section > sherpa-nav-item:nth-of-type(1)  { --_ripple-i: 1; }
+.nav-section > sherpa-nav-item:nth-of-type(2)  { --_ripple-i: 2; }
+.nav-section > sherpa-nav-item:nth-of-type(3)  { --_ripple-i: 3; }
+.nav-section > sherpa-nav-item:nth-of-type(4)  { --_ripple-i: 4; }
+.nav-section > sherpa-nav-item:nth-of-type(5)  { --_ripple-i: 5; }
+.nav-section > sherpa-nav-item:nth-of-type(6)  { --_ripple-i: 6; }
+.nav-section > sherpa-nav-item:nth-of-type(7)  { --_ripple-i: 7; }
+.nav-section > sherpa-nav-item:nth-of-type(8)  { --_ripple-i: 8; }
+.nav-section > sherpa-nav-item:nth-of-type(9)  { --_ripple-i: 9; }
+.nav-section > sherpa-nav-item:nth-of-type(10) { --_ripple-i: 10; }
+
+.nav-subsection > sherpa-nav-item:nth-of-type(1) { --_ripple-i: 1; }
+.nav-subsection > sherpa-nav-item:nth-of-type(2) { --_ripple-i: 2; }
+.nav-subsection > sherpa-nav-item:nth-of-type(3) { --_ripple-i: 3; }
+.nav-subsection > sherpa-nav-item:nth-of-type(4) { --_ripple-i: 4; }
+.nav-subsection > sherpa-nav-item:nth-of-type(5) { --_ripple-i: 5; }
+.nav-subsection > sherpa-nav-item:nth-of-type(6) { --_ripple-i: 6; }

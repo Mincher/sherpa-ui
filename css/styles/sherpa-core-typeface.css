@@ -1,0 +1,28 @@
+/**
+ * Core Typeface Tokens (Primitives)
+ * Extracted from core-tokens.css — font family and weight values.
+ * Prefixed --sherpa- (was --apx-).
+ */
+
+:root {
+  --sherpa-core-typeface-manrope-style-name: Manrope;
+  --sherpa-core-typeface-manrope-weight-100: Light;
+  --sherpa-core-typeface-manrope-weight-200: Regular;
+  --sherpa-core-typeface-manrope-weight-300: SemiBold;
+  --sherpa-core-typeface-manrope-weight-400: Bold;
+  --sherpa-core-typeface-open-sans-style-name: "Open Sans";
+  --sherpa-core-typeface-open-sans-weight-100: Light;
+  --sherpa-core-typeface-open-sans-weight-200: Regular;
+  --sherpa-core-typeface-open-sans-weight-300: SemiBold;
+  --sherpa-core-typeface-open-sans-weight-400: Bold;
+  --sherpa-core-typeface-roboto-style-name: Roboto;
+  --sherpa-core-typeface-roboto-weight-100: Light;
+  --sherpa-core-typeface-roboto-weight-200: Regular;
+  --sherpa-core-typeface-roboto-weight-300: SemiBold;
+  --sherpa-core-typeface-roboto-weight-400: Bold;
+  --sherpa-core-typeface-source-code-pro-style-name: "Source Code Pro";
+  --sherpa-core-typeface-source-code-pro-weight-100: Light;
+  --sherpa-core-typeface-source-code-pro-weight-200: Regular;
+  --sherpa-core-typeface-source-code-pro-weight-300: SemiBold;
+  --sherpa-core-typeface-source-code-pro-weight-400: Bold;
+}

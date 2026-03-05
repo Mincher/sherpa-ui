@@ -1,0 +1,99 @@
+/**
+ * motion-styles.css — Animation and transition utilities.
+ *
+ * Consumers:
+ *   sherpa-view-header:  .sherpa-motion-scroll-under
+ *   sherpa-barchart:     @keyframes sherpa-grow-*
+ *   sherpa-nav:          .sherpa-motion-expand-vertical, .sherpa-motion-expand-horizontal
+ *   sherpa-nav-item:     @keyframes sherpa-ripple-in, @keyframes sherpa-fade-in
+ *   sherpa-table:        .sherpa-motion-expand-vertical (grouped rows)
+ *
+ * Shadow DOM note:
+ *   AuxElement injects this file as a <link> into each shadow root,
+ *   so @keyframes defined here are available inside shadow DOM.
+ */
+
+
+/* ── Tokens ────────────────────────────────────────────────────────────── */
+
+:root {
+  --sherpa-motion-duration-fast: 0.15s;
+  --sherpa-motion-duration-base: 0.25s;
+  --sherpa-motion-duration-slow: 0.4s;
+  --sherpa-motion-easing-default: ease-out;
+}
+
+
+/* ── Expand (vertical) ─────────────────────────────────────────────────── */
+/*
+ * Toggle [data-open] to expand/collapse.
+ *
+ *   <div class="sherpa-motion-expand-vertical">
+ *     <div class="expand-header">...</div>
+ *     <div class="expand-content">...</div>
+ *   </div>
+ */
+
+.sherpa-motion-expand-vertical > .expand-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 0;
+  overflow: clip;
+  transition: max-height var(--sherpa-motion-duration-slow) var(--sherpa-motion-easing-default);
+}
+
+.sherpa-motion-expand-vertical[data-open] > .expand-content {
+  max-height: var(--expand-max-height, 1000px);
+}
+
+
+/* ── Expand (horizontal) ───────────────────────────────────────────────── */
+
+.sherpa-motion-expand-horizontal > .expand-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 0;
+  overflow: clip;
+  transition: max-width var(--sherpa-motion-duration-base) var(--sherpa-motion-easing-default);
+}
+
+.sherpa-motion-expand-horizontal[data-open] > .expand-content {
+  max-width: var(--expand-max-width, 1000px);
+}
+
+
+/* ── Scroll-under ──────────────────────────────────────────────────────── */
+
+.sherpa-motion-scroll-under {
+  transition:
+    background-color var(--sherpa-motion-duration-fast) ease,
+    border-color var(--sherpa-motion-duration-fast) ease,
+    box-shadow var(--sherpa-motion-duration-fast) ease;
+}
+
+
+/* ── Grow keyframes ────────────────────────────────────────────────────── */
+
+@keyframes sherpa-grow-horizontal { from { width: 0; } }
+@keyframes sherpa-grow-vertical   { from { height: 0; } }
+
+
+/* ── Ripple-in keyframe ────────────────────────────────────────────────── */
+/*
+ * Staggered opacity + slide reveal.  Used with --_ripple-i index:
+ *   animation: sherpa-ripple-in <dur> <ease> calc(var(--_ripple-i, 0) * 30ms) both;
+ */
+
+@keyframes sherpa-ripple-in {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+
+/* ── Fade-in keyframe ──────────────────────────────────────────────────── */
+
+@keyframes sherpa-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+

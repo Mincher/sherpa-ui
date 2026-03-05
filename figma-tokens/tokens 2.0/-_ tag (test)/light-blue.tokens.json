@@ -1,0 +1,141 @@
+{
+  "border": {
+    "default": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.08627451211214066,
+          0.6705882549285889,
+          0.886274516582489
+        ],
+        "alpha": 1,
+        "hex": "#16ABE2"
+      },
+      "$extensions": {
+        "com.figma.variableId": "VariableID:15890:80505",
+        "com.figma.scopes": [
+          "STROKE"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:788d510b2ef93c196b0269fe00cf7bf5d72c314f/-1:-1",
+          "targetVariableName": "[DEPRECATED] data-viz/categorical/color 4",
+          "targetVariableSetId": "VariableCollectionId:397f64d7d70e44af3c87604ab30c75817e3dea14/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    }
+  },
+  "fill": {
+    "solid": {
+      "purple": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.08627451211214066,
+            0.6705882549285889,
+            0.886274516582489
+          ],
+          "alpha": 1,
+          "hex": "#16ABE2"
+        },
+        "$extensions": {
+          "com.figma.variableId": "VariableID:15890:80466",
+          "com.figma.scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "com.figma.aliasData": {
+            "targetVariableId": "VariableID:788d510b2ef93c196b0269fe00cf7bf5d72c314f/-1:-1",
+            "targetVariableName": "[DEPRECATED] data-viz/categorical/color 4",
+            "targetVariableSetId": "VariableCollectionId:397f64d7d70e44af3c87604ab30c75817e3dea14/-1:-1",
+            "targetVariableSetName": "Apex 2.0"
+          },
+          "com.figma.isOverride": true
+        }
+      }
+    },
+    "transparent": {
+      "purple": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.08627451211214066,
+            0.6705882549285889,
+            0.886274516582489
+          ],
+          "alpha": 0.4000000059604645,
+          "hex": "#16ABE2"
+        },
+        "$extensions": {
+          "com.figma.variableId": "VariableID:15890:80515",
+          "com.figma.scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL"
+          ],
+          "com.figma.isOverride": true
+        }
+      }
+    }
+  },
+  "text": {
+    "default": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.18039216101169586,
+          0.18039216101169586,
+          0.20000000298023224
+        ],
+        "alpha": 1,
+        "hex": "#2E2E33"
+      },
+      "$extensions": {
+        "com.figma.variableId": "VariableID:15890:80511",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:3998c608be41c6e2a025315ec173a18371a5c003/-1:-1",
+          "targetVariableName": "text/default/on-color-subtle/body",
+          "targetVariableSetId": "VariableCollectionId:397f64d7d70e44af3c87604ab30c75817e3dea14/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    },
+    "on-transparent": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.18039216101169586,
+          0.18039216101169586,
+          0.20000000298023224
+        ],
+        "alpha": 1,
+        "hex": "#2E2E33"
+      },
+      "$extensions": {
+        "com.figma.variableId": "VariableID:15890:80526",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:c217ccc925d7a1bb6fc580e1cc6dfabacb1c3df5/-1:-1",
+          "targetVariableName": "text/default/body",
+          "targetVariableSetId": "VariableCollectionId:397f64d7d70e44af3c87604ab30c75817e3dea14/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    }
+  },
+  "$extensions": {
+    "com.figma.modeName": "light-blue"
+  }
+}

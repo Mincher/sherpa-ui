@@ -1,0 +1,152 @@
+{
+  "has Label": {
+    "$type": "number",
+    "$value": 0,
+    "$extensions": {
+      "com.figma.variableId": "VariableID:16245:24791",
+      "com.figma.scopes": [
+        "ALL_SCOPES"
+      ],
+      "com.figma.type": "boolean",
+      "com.figma.isOverride": true
+    }
+  },
+  "border": {
+    "outer": {
+      "$type": "number",
+      "$value": 999,
+      "$extensions": {
+        "com.figma.variableId": "VariableID:16245:24789",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:c0fcb90d1c947a3f8a2794bca3c182bf8f44edc4/-1:-1",
+          "targetVariableName": "border/rounding/full",
+          "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    },
+    "control": {
+      "$type": "number",
+      "$value": 999,
+      "$extensions": {
+        "com.figma.variableId": "VariableID:16245:24790",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:c0fcb90d1c947a3f8a2794bca3c182bf8f44edc4/-1:-1",
+          "targetVariableName": "border/rounding/full",
+          "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    }
+  },
+  "fill": {
+    "default": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.3607843220233917,
+          0.3607843220233917,
+          0.4000000059604645
+        ],
+        "alpha": 1,
+        "hex": "#5C5C66"
+      },
+      "$extensions": {
+        "com.figma.variableId": "VariableID:16245:24798",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:9327af5ab3f8268912305469654f42c13e96e3bf/-1:-1",
+          "targetVariableName": "color/neutral/700",
+          "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    },
+    "active": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.019607843831181526,
+          0.5058823823928833,
+          0.25882354378700256
+        ],
+        "alpha": 1,
+        "hex": "#058142"
+      },
+      "$extensions": {
+        "com.figma.variableId": "VariableID:16245:24800",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:e4501ab1adb208bf2a1229640082c2c368c18dd9/-1:-1",
+          "targetVariableName": "surface/context/success/strong/default",
+          "targetVariableSetId": "VariableCollectionId:397f64d7d70e44af3c87604ab30c75817e3dea14/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    },
+    "inactive": {
+      "$type": "color",
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0.8666666746139526,
+          0.8666666746139526,
+          0.9019607901573181
+        ],
+        "alpha": 1,
+        "hex": "#DDDDE6"
+      },
+      "$extensions": {
+        "com.figma.variableId": "VariableID:16245:24801",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:f514dcdb17a5bc9f16fa8174f361a4a815144891/-1:-1",
+          "targetVariableName": "surface/control/inactive",
+          "targetVariableSetId": "VariableCollectionId:397f64d7d70e44af3c87604ab30c75817e3dea14/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    }
+  },
+  "control": {
+    "size": {
+      "$type": "number",
+      "$value": 12,
+      "$extensions": {
+        "com.figma.variableId": "VariableID:16245:24805",
+        "com.figma.scopes": [
+          "ALL_SCOPES"
+        ],
+        "com.figma.aliasData": {
+          "targetVariableId": "VariableID:8c893e0ef750c2956b900125b6890a9c0c664a1c/-1:-1",
+          "targetVariableName": "size/xs",
+          "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+          "targetVariableSetName": "Apex 2.0"
+        },
+        "com.figma.isOverride": true
+      }
+    }
+  },
+  "$extensions": {
+    "com.figma.modeName": "compact"
+  }
+}

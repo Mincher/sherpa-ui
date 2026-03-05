@@ -1,0 +1,24 @@
+<!--
+  sherpa-nav-promo.html — Promotional callout inside navigation footer.
+  Dismissed state is tracked via [data-dismissed] attribute on the host.
+  Config is applied via setConfig({ title, message, link }).
+
+  Templates:
+    • default — Indicator + title/message content + dismiss button
+
+  Host attributes:
+    data-promo-title     — Promo heading text
+    data-promo-message   — Promo body text
+    data-promo-link-text — Link text
+    data-promo-link-url  — Link URL
+    data-dismissed       — Dismissed state (set by JS on close)
+-->
+
+<template id="default">
+<div class="promo-indicator"></div>
+<div class="promo-content">
+  <span class="promo-title"></span>
+  <span class="promo-message"></span>
+</div>
+<sherpa-button class="promo-close" data-variant="tertiary" data-size="small" data-icon-start="&#xf00d;" title="Dismiss" aria-label="Dismiss notification"></sherpa-button>
+</template>

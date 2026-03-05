@@ -1,0 +1,414 @@
+
+/**
+ * sherpa-barchart.css
+ * Bar chart with unified row architecture — each category row contains
+ * its label and bar segments together for guaranteed sync.
+ *
+ * Gridlines rendered via CSS gradient — no DOM elements needed.
+ * Axis values live outside the overflow region and never clip.
+ *
+ * Attributes:
+ *   data-orientation: "horizontal" | "vertical" - layout direction
+ *   data-compact: Hide legend for small containers
+ *   data-minimal: Show placeholder icon for very small containers
+ *   data-bar-count: Number of bars
+ *   data-series-count: Number of series
+ *   data-loading: Dim while loading
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Host
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xs);
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  container-type: size;
+  container-name: barchart;
+}
+
+:host([hidden]) { display: none; }
+
+:host([data-loading]) .chart-rows {
+  filter: grayscale(0.6);
+  color: var(--sherpa-text-inactive-default);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Chart area — flex container for rows, axis, and legend
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.chart-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Chart rows — wraps + clips category rows independently from axis/legend
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.chart-rows {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Category row — label + bar in a single flex item
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.chart-row {
+  display: flex;
+  flex-direction: row;
+  flex: 1 0 24px;
+  width: 100%;
+  align-items: stretch;
+  min-height: 0;
+
+  --_ripple-delay-step: 0.03s;
+}
+
+/* Category label — fixed width, right-aligned, truncates with ellipsis */
+.chart-label {
+  flex: 0 0 var(--_label-width, 80px);
+  max-width: var(--_label-width, 80px);
+  align-self: center;
+  display: block;
+  padding-right: var(--sherpa-space-xs);
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm);
+  color: var(--sherpa-text-default-heading);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bar — holds segments */
+.chart-bar {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 0;
+  padding: 2px 0;
+  border-left: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
+}
+
+/* Bar segments */
+.chart-segment {
+  border-radius: 0 var(--sherpa-border-rounding-xs, 2px) var(--sherpa-border-rounding-xs, 2px) 0;
+  height: clamp(12px, 100%, 28px);
+  width: max(2px, var(--_segment-size, 100%));
+  transition: width var(--sherpa-motion-duration-base, 0.25s) ease-out,
+              height var(--sherpa-motion-duration-base, 0.25s) ease-out,
+              filter var(--sherpa-motion-duration-fast, 0.15s) ease;
+  animation: sherpa-grow-horizontal var(--sherpa-motion-duration-base, 0.25s) ease-out both;
+  animation-delay: calc(var(--_ripple-delay-step) * var(--_i, 0));
+
+  &:hover { filter: brightness(1.15); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Value axis — outside overflow region, never clipped
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.chart-axis {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  flex-grow: 0;
+  flex-basis: auto;
+  width: 100%;
+  padding-top: var(--sherpa-space-2xs);
+  position: relative;
+  z-index: 0;
+}
+
+.chart-axis-pad {
+  flex: 0 0 var(--_label-width, 80px);
+  padding-right: var(--sherpa-space-xs);
+}
+
+.chart-axis-values {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  border-left: var(--sherpa-border-width-base, 1px) solid transparent;
+}
+
+.chart-value {
+  flex: 1 1 0;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm);
+  color: var(--sherpa-text-default-heading);
+  text-align: center;
+  position: relative;
+
+  &:first-child { text-align: left; }
+  &:last-child { text-align: right; }
+}
+
+/* Gridlines — extend upward from each axis value label */
+.chart-value::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 1px;
+  height: 9999px;
+  background: color-mix(in srgb, var(--sherpa-border-control-secondary-default) 40%, transparent);
+  pointer-events: none;
+}
+
+.chart-value:first-child::before { left: 0; }
+.chart-value:last-child::before { left: auto; right: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Legend
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.chart-legend {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+  padding: var(--sherpa-space-2xs) var(--sherpa-space-xs);
+  width: 100%;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+
+  &[data-disabled] {
+    color: var(--sherpa-text-inactive-default);
+
+    & .chart-legend-key {
+      background: var(--sherpa-surface-control-tertiary-inactive) !important;
+    }
+
+    & .chart-legend-label {
+      color: var(--sherpa-text-inactive-default);
+    }
+  }
+}
+
+.chart-legend-key {
+  width: var(--sherpa-size-sm, 16px);
+  height: var(--sherpa-size-sm, 16px);
+  border-radius: var(--sherpa-border-rounding-xs, 3px);
+  flex-shrink: 0;
+}
+
+.chart-legend-label {
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm);
+  color: var(--sherpa-text-default-secondary);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Empty state
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm);
+  color: var(--sherpa-text-default-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Vertical orientation overrides
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-orientation="vertical"]) {
+  .chart-area { flex-direction: row; }
+  .chart-rows { flex-direction: row; }
+
+  .chart-row {
+    flex-direction: column;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 40px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .chart-label {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    text-align: center;
+    padding-right: 0;
+    padding-top: var(--sherpa-space-2xs);
+    order: 1;
+  }
+
+  .chart-bar {
+    flex-direction: column-reverse;
+    align-items: center;
+    padding: 0 2px;
+    border-left: none;
+    border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
+  }
+
+  .chart-segment {
+    width: clamp(8px, 100%, 40px);
+    max-width: 40px;
+    height: max(2px, var(--_segment-size, 50%));
+    border-radius: var(--sherpa-border-rounding-xs, 2px) var(--sherpa-border-rounding-xs, 2px) 0 0;
+    animation-name: sherpa-grow-vertical;
+  }
+
+  .chart-axis {
+    flex-direction: column-reverse;
+    padding-top: 0;
+    padding-right: var(--sherpa-space-xs);
+    order: -1;
+    width: auto;
+    height: 100%;
+  }
+
+  .chart-axis-pad { display: none; }
+
+  .chart-axis-values {
+    flex-direction: column-reverse;
+    border-left: none;
+    padding-bottom: calc(var(--sherpa-fonts-scale-sm, 12px) + var(--sherpa-space-2xs, 4px));
+  }
+
+  .chart-value {
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    &:first-child,
+    &:last-child { text-align: right; }
+  }
+
+  .chart-value::before {
+    bottom: auto;
+    left: auto;
+    right: 100%;
+    top: 50%;
+    width: 9999px;
+    height: 1px;
+  }
+
+  .chart-value:first-child::before { left: auto; right: 100%; top: 50%; }
+  .chart-value:last-child::before { left: auto; right: 100%; top: 50%; }
+
+  .chart-legend {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: auto;
+    min-width: fit-content;
+    max-width: 120px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Compact / Minimal modes
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-compact]) .chart-legend { display: none; }
+
+:host([data-minimal]) {
+  min-height: 60px;
+
+  .chart-legend { display: none; }
+  .chart-axis { display: none; }
+  .chart-label { display: none; }
+  .chart-bar { border-left: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Container Query Responsive States
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Minimal: very narrow — bars only */
+@container barchart (max-width: 80px) {
+  .chart-legend,
+  .chart-axis,
+  .chart-header { display: none; }
+  .chart-label { display: none; }
+  .chart-bar { border-left: none; }
+}
+
+/* Compact: narrow — hide legend */
+@container barchart (max-width: 200px) {
+  .chart-legend { display: none; }
+}
+
+/* Short: hide legend when height-constrained */
+@container barchart (max-height: 120px) {
+  .chart-legend { display: none; }
+}
+
+/* Very short: hide axis too */
+@container barchart (max-height: 80px) {
+  .chart-axis { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Data-viz categorical colors (inlined — global classes can't cross shadow boundary)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.color-1  { background-color: var(--sherpa-data-viz-categorical-color-1); }
+.color-2  { background-color: var(--sherpa-data-viz-categorical-color-2); }
+.color-3  { background-color: var(--sherpa-data-viz-categorical-color-3); }
+.color-4  { background-color: var(--sherpa-data-viz-categorical-color-4); }
+.color-5  { background-color: var(--sherpa-data-viz-categorical-color-5); }
+.color-6  { background-color: var(--sherpa-data-viz-categorical-color-6); }
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Filter Chips
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.control-chip {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PDF Mode
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-pdf-mode]) {
+  width: 100%;
+  height: auto !important;
+  min-height: 250px;
+  flex: 0 0 auto !important;
+  overflow: visible !important;
+
+  .chart-header { display: none; }
+  .chart-area { min-height: 220px; }
+  .chart-legend { display: flex !important; }
+}
+

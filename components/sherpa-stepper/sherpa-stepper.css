@@ -1,0 +1,203 @@
+
+:host {
+  display: block;
+
+  /* Transition private vars */
+  --_duration: var(--sherpa-motion-duration-fast, 120ms);
+  --_easing: var(--sherpa-motion-easing-default, ease-in-out);
+
+  /* Density-switched private vars (defaults = standard) */
+  --_indicator-size: 32px;
+  --_indicator-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_label-font-size: var(--sherpa-fonts-scale-base, 16px);
+  --_sublabel-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 15px);
+}
+
+:host([hidden]) { display: none; }
+
+.stepper-container {
+  width: 100%;
+}
+
+.stepper-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0;
+}
+
+/* Step item */
+.step-item {
+  /* State-switched private vars (defaults) */
+  --_indicator-border-color: var(--sherpa-border-container-default, #d5d5dc);
+  --_indicator-bg: var(--sherpa-surface-container-default, #ffffff);
+  --_indicator-color: var(--sherpa-text-default-secondary, #6a6a75);
+  --_label-color: var(--sherpa-text-default-secondary, #6a6a75);
+  --_label-weight: 500;
+
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-2xs, 4px);
+  cursor: pointer;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  transition: background-color var(--_duration) var(--_easing);
+  flex-shrink: 0;
+
+  &:hover:not([disabled]) {
+    background-color: var(--sherpa-surface-container-hover, #f0f0f5);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default, #0b6dd6);
+    outline-offset: 2px;
+  }
+
+  &[disabled] {
+    cursor: not-allowed;
+    color: var(--sherpa-text-inactive-default);
+    --_indicator-border-color: var(--sherpa-border-control-inactive);
+    --_indicator-bg: var(--sherpa-surface-control-inactive);
+    --_indicator-color: var(--sherpa-text-inactive-default);
+    --_label-color: var(--sherpa-text-inactive-default);
+  }
+}
+
+/* Step indicator (circle with number or icon) */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--_indicator-size);
+  height: var(--_indicator-size);
+  border-radius: 50%;
+  border: var(--sherpa-border-width-lg, 2px) solid var(--_indicator-border-color);
+  background-color: var(--_indicator-bg);
+  font-size: var(--_indicator-font-size);
+  font-weight: 600;
+  color: var(--_indicator-color);
+  transition:
+    border-color var(--_duration) var(--_easing),
+    background-color var(--_duration) var(--_easing),
+    color var(--_duration) var(--_easing);
+  flex-shrink: 0;
+}
+
+/* Active step */
+.step-item[data-active] {
+  --_indicator-border-color: var(--sherpa-icon-context-info-default, #006db6);
+  --_indicator-bg: var(--sherpa-icon-context-info-default, #006db6);
+  --_indicator-color: var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color: var(--sherpa-text-default-body, #1b1b21);
+  --_label-weight: 600;
+}
+
+/* Completed step */
+.step-item[data-completed] {
+  --_indicator-border-color: var(--sherpa-icon-context-success-default, #0f7b6c);
+  --_indicator-bg: var(--sherpa-icon-context-success-default, #0f7b6c);
+  --_indicator-color: var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color: var(--sherpa-text-default-body, #1b1b21);
+}
+
+/* Error step */
+.step-item[data-error] {
+  --_indicator-border-color: var(--sherpa-icon-context-error-default, #d13438);
+  --_indicator-bg: var(--sherpa-icon-context-error-default, #d13438);
+  --_indicator-color: var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color: var(--sherpa-icon-context-error-default, #d13438);
+}
+
+/* Step labels */
+.step-label-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 6px);
+}
+
+.step-label {
+  font-size: var(--_label-font-size);
+  font-weight: var(--_label-weight);
+  line-height: 1.5;
+  color: var(--_label-color);
+  transition: color var(--_duration) var(--_easing);
+}
+
+.step-sublabel {
+  font-size: var(--_sublabel-font-size);
+  line-height: 1.5;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+}
+
+/* Connector line between steps */
+.step-connector {
+  --_connector-color: var(--sherpa-border-container-default, #d5d5dc);
+
+  flex: 1;
+  height: 2px;
+  min-width: 40px;
+  margin: 0 var(--sherpa-space-2xs, 4px);
+  background-color: var(--_connector-color);
+  align-self: center;
+  margin-top: var(--_connector-offset); /* Align with center of indicator */
+  transition: background-color var(--_duration) var(--_easing);
+
+  &[data-completed] {
+    --_connector-color: var(--sherpa-icon-context-success-default, #0f7b6c);
+  }
+}
+
+/* Vertical variant (optional - can be activated with attribute) */
+:host([data-orientation="vertical"]) {
+  .stepper-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .step-connector {
+    width: 2px;
+    height: 40px;
+    min-width: 2px;
+    margin: var(--sherpa-space-2xs, 4px) 0;
+    margin-left: calc(var(--sherpa-space-2xs, 4px) + 15px);
+  }
+
+  .step-item {
+    width: 100%;
+  }
+}
+
+/* Compact variant */
+:host([data-density="compact"]) {
+  --_indicator-size: 24px;
+  --_indicator-font-size: var(--sherpa-fonts-scale-xs, 11px);
+  --_label-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_sublabel-font-size: var(--sherpa-fonts-scale-xs, 11px);
+  --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 11px);
+
+  .step-indicator svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Comfortable variant */
+:host([data-density="comfortable"]) {
+  --_indicator-size: 40px;
+  --_indicator-font-size: var(--sherpa-fonts-scale-base, 16px);
+  --_label-font-size: var(--sherpa-fonts-scale-lg, 18px);
+  --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 19px);
+
+  .step-indicator svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Number-only mode (no labels) */
+:host([data-labels="none"]) {
+  .step-label-container {
+    display: none;
+  }
+}

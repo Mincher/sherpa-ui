@@ -1,0 +1,17 @@
+<!--
+  sherpa-tag.html — Inline tag / badge component.
+
+  Templates:
+    • default — Tag wrapper with slot for label content
+
+  Host attributes:
+    data-variant   — "primary" (default) | "secondary"
+    data-status    — "critical" | "info" | "success" | "warning" | "urgent"
+    data-collapsed — "true" renders as small circular indicator
+-->
+
+<template id="default">
+<span class="tag-wrapper" part="tag">
+  <slot></slot>
+</span>
+</template>

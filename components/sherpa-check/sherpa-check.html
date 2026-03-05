@@ -1,0 +1,54 @@
+<!--
+  sherpa-check.html — Checkbox and radio input component.
+
+  Templates:
+    • checkbox — Checkbox with label, description, and validation
+    • radio    — Radio button with label, description, and validation
+
+  Host attributes:
+    data-type        — "checkbox" (default) | "radio" (selects template)
+    data-label       — Visible label text
+    data-description — Help text below label
+    data-status      — "critical" | "warning" | "success" | "info"
+    checked          — Boolean, checked state
+    indeterminate    — Boolean, indeterminate state (checkbox only)
+    disabled         — Boolean, disabled state
+    required         — Boolean, required state
+    name             — Form field name
+    value            — Form field value
+-->
+
+<!-- Checkbox template -->
+<template id="checkbox">
+  <label class="check-wrapper" tabindex="0">
+    <span class="check-control">
+      <input type="checkbox" class="check-native" tabindex="-1" />
+      <span class="check-visual">
+        <i class="check-icon fa-solid fa-check" aria-hidden="true"></i>
+        <i class="check-indeterminate-icon fa-solid fa-minus" aria-hidden="true"></i>
+      </span>
+    </span>
+    <span class="check-content">
+      <span class="check-label text-body"></span>
+      <span class="check-description text-body-sm"></span>
+      <span class="check-validation text-body-sm" aria-live="polite" hidden></span>
+    </span>
+  </label>
+</template>
+
+<!-- Radio template -->
+<template id="radio">
+  <label class="check-wrapper" tabindex="0">
+    <span class="check-control">
+      <input type="radio" class="check-native" tabindex="-1" />
+      <span class="check-visual">
+        <span class="check-radio-dot"></span>
+      </span>
+    </span>
+    <span class="check-content">
+      <span class="check-label text-body"></span>
+      <span class="check-description text-body-sm"></span>
+      <span class="check-validation text-body-sm" aria-live="polite" hidden></span>
+    </span>
+  </label>
+</template>

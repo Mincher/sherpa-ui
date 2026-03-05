@@ -1,0 +1,38 @@
+<!--
+  sherpa-menu.html — Shadow shell + reference templates for the menu component.
+  Light DOM content is projected through <slot> as <ul>/<li> groups.
+  The menu surface wraps the slotted content with role="menu".
+
+  Templates:
+    • default   — Menu surface with slot projection
+    • reference — Documentation example with typical markup
+
+  Host attributes:
+    open    — Menu visibility (boolean, managed internally)
+    popover — Native popover attribute
+
+  Authoring pattern:
+    - <sherpa-menu-item data-type="heading"> for group headings
+    - <ul data-group="id"> for item groups
+    - <li> wrapping each <sherpa-menu-item>
+    - <hr> for dividers
+-->
+
+<!-- Shadow DOM shell -->
+<template id="default">
+  <div class="menu-surface text-body-sm" role="menu" part="surface">
+    <slot></slot>
+  </div>
+</template>
+
+<!-- Reference / documentation template -->
+<template id="reference">
+  <sherpa-menu-item data-type="heading">Group Heading</sherpa-menu-item>
+  <ul data-group="example">
+    <li><sherpa-menu-item data-action="primary-action">Primary Action</sherpa-menu-item></li>
+  </ul>
+  <hr>
+  <ul>
+    <li><sherpa-menu-item data-selection="checkbox" checked>Toggle Option</sherpa-menu-item></li>
+  </ul>
+</template>

@@ -1,0 +1,81 @@
+
+/**
+ * sherpa-switch.css – Toggle switch (on/off) with disabled state.
+ */
+
+:host {
+  color-scheme: light;
+  display: inline-flex;
+  cursor: pointer;
+  user-select: none;
+}
+
+:host([hidden]) { display: none; }
+
+:host([disabled]) {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+:host([disabled]) .switch-track {
+  background-color: var(--sherpa-surface-control-inactive);
+  border-color: var(--sherpa-border-control-inactive);
+}
+
+:host([disabled]) .switch-knob {
+  background-color: var(--sherpa-surface-container-inactive);
+}
+
+:host([disabled]) .switch-label {
+  color: var(--sherpa-text-inactive-default);
+}
+
+/* Track container – default is OFF */
+.switch-track {
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+  gap: var(--sherpa-space-2xs, 4px);
+  padding: var(--sherpa-space-3xs, 4px) var(--sherpa-space-2xs, 4px);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background-color: var(--sherpa-surface-context-default-strong-default, #1b1b21);
+  transition: background-color 150ms ease;
+  cursor: inherit;
+}
+
+/* Sliding knob */
+.switch-knob {
+  width: var(--sherpa-size-sm, 16px);
+  height: var(--sherpa-size-sm, 16px);
+  background-color: var(--sherpa-surface-container-default, #ffffff);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  flex-shrink: 0;
+}
+
+/* Label text – default is OFF */
+.switch-label {
+  color: var(--sherpa-text-default-heading, #1a1a1f);
+  min-width: 24px;
+  text-align: center;
+}
+
+/* ON state */
+:host([data-state="on"]) .switch-track {
+  background-color: var(--sherpa-surface-context-success-strong-default, #0f7b6c);
+  flex-direction: row;
+}
+
+:host([data-state="on"]) .switch-label {
+  color: var(--sherpa-text-default-on-color-heading, #ffffff);
+}
+
+/* OFF state (explicit) */
+:host([data-state="off"]) .switch-track {
+  background-color: var(--sherpa-surface-context-default-strong-default, #1b1b21);
+  flex-direction: row-reverse;
+}
+
+:host([data-state="off"]) .switch-label {
+  color: var(--sherpa-text-default-heading, #1a1a1f);
+}

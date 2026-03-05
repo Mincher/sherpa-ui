@@ -1,0 +1,251 @@
+/**
+ * text-styles.css — Global typography utility classes.
+ *
+ * Shared base properties (font-family, color, letter-spacing) are set once
+ * on a common selector. Each class then only declares what differs:
+ * font-size, line-height, font-weight (and overrides where needed).
+ *
+ * Categories:
+ *   Font family utilities  — .font-default, .font-brand, .font-mono
+ *   Headings & titles      — .text-h1–h5, .text-heading-*, .text-title-*
+ *   Body text              — .text-body, .text-body-sm, .text-body-xs
+ *   Labels & UI text       — .text-label, .text-label-subheader, .text-label-group
+ *   Search highlights      — .text-highlight-match
+ *   Display / metrics      — .text-display-*, .text-metric-delta
+ *   Monospace / code       — .text-mono
+ *   Weight utilities       — .font-light, .font-normal, .font-medium, .font-semibold, .font-bold
+ *   Transform utilities    — .uppercase, .lowercase, .capitalize, .normal-case
+ *   Truncation utilities   — .truncate, .text-wrap, .text-nowrap
+ *   Legacy aliases         — .content-title
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHARED BASE — set once, inherited by all text-* classes
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-h1, .text-h2, .text-h3, .text-h4, .text-h5,
+.text-heading-lg, .text-heading-md, .text-heading-sm,
+.text-body, .text-body-sm, .text-body-xs,
+.text-label, .text-label-subheader, .text-label-group,
+.text-nav-item, .text-metric-delta, .text-title-component,
+.content-title {
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+  color: var(--sherpa-text-default-body);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FONT FAMILY UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.font-default { font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif); }
+.font-brand   { font-family: var(--sherpa-fonts-context-brand, 'Manrope', sans-serif); }
+.font-mono    { font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEADINGS & TITLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-h1, .text-h2, .text-h3, .text-h4, .text-h5 {
+  font-weight: 600;
+  letter-spacing: var(--sherpa-fonts-letter-spacing-tight, -0.02px);
+}
+
+.text-h1 { font-size: var(--sherpa-fonts-scale-8xl, 42px); line-height: var(--sherpa-fonts-line-height-h1, 64px); }
+.text-h2 { font-size: var(--sherpa-fonts-scale-6xl, 36px); line-height: var(--sherpa-fonts-line-height-h2, 52px); }
+.text-h3 { font-size: var(--sherpa-fonts-scale-4xl, 30px); line-height: var(--sherpa-fonts-line-height-h3, 44px); }
+.text-h4 { font-size: var(--sherpa-fonts-scale-2xl, 24px); line-height: var(--sherpa-fonts-line-height-h4, 32px); }
+.text-h5 { font-size: var(--sherpa-fonts-scale-xl, 20px);  line-height: var(--sherpa-fonts-line-height-h5, 28px); }
+
+.text-heading-lg {
+  font-size: var(--sherpa-fonts-scale-lg, 16px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-lg, 24px);
+}
+
+.text-heading-md {
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+}
+
+.text-heading-sm {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+}
+
+.text-title-component {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  letter-spacing: var(--sherpa-fonts-letter-spacing-wider, 1px);
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BODY TEXT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-body {
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+}
+
+.text-body-sm {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+}
+
+.text-body-xs {
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-line-height-xs, 14px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LABELS & UI TEXT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-label {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+}
+
+.text-label-subheader {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  text-transform: uppercase;
+}
+
+.text-label-group {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  letter-spacing: var(--sherpa-fonts-letter-spacing-wide, 0.5px);
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SEARCH / FILTER HIGHLIGHTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-highlight-match {
+  background-color: var(--sherpa-surface-search-highlight, rgba(255, 216, 64, 0.35));
+  color: inherit;
+  font-weight: 600;
+  border-radius: var(--sherpa-border-rounding-xs, 2px);
+  padding: 0 1px;
+}
+
+.text-nav-item {
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-weight: 500;
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DISPLAY / METRICS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-display-3xl {
+  font-family: var(--sherpa-fonts-context-brand, 'Manrope', sans-serif);
+  font-size: var(--sherpa-fonts-scale-3xl, 28px);
+  font-weight: 400;
+  line-height: 1em;
+  letter-spacing: 1px;
+}
+
+.text-display-2xl {
+  font-family: var(--sherpa-fonts-context-brand, 'Manrope', sans-serif);
+  font-size: var(--sherpa-fonts-scale-2xl, 24px);
+  font-weight: 400;
+  line-height: 1em;
+  letter-spacing: 0.5px;
+}
+
+.text-metric-delta {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MONOSPACE / CODE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-mono {
+  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FONT WEIGHT UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.font-light    { font-weight: 300; }
+.font-normal   { font-weight: 400; }
+.font-medium   { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold     { font-weight: 700; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEXT TRANSFORM UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.uppercase   { text-transform: uppercase; }
+.lowercase   { text-transform: lowercase; }
+.capitalize  { text-transform: capitalize; }
+.normal-case { text-transform: none; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEXT TRUNCATION UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.text-wrap   { white-space: normal; }
+.text-nowrap { white-space: nowrap; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEGACY ALIASES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.content-title {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  letter-spacing: var(--sherpa-fonts-letter-spacing-wider, 1px);
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary);
+  margin: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

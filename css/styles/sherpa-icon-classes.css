@@ -1,0 +1,41 @@
+/**
+ * icon-styles.css — Global icon sizing.
+ *
+ * All icons are square. Size is controlled by:
+ *   1. data-size attribute  → maps to --sherpa-size-* tokens
+ *   2. --icon-size property → external override
+ *   3. Default: md (20px)
+ *
+ * Status colouring is handled per-component via :host([status="..."]) rules.
+ */
+
+.sherpa-icon {
+  --icon-size: var(--sherpa-size-md);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  flex-shrink: 0;
+  font-size: var(--icon-size);
+  line-height: 1;
+  color: inherit;
+
+  & svg { width: 1em; height: 1em; fill: currentColor; }
+
+
+  /* Data attributes that allow icons to be sized from the markup declaration and component javascript */
+  &[data-size="3xs"] { --icon-size: var(--sherpa-size-3xs); }
+  &[data-size="2xs"] { --icon-size: var(--sherpa-size-2xs); }
+  &[data-size="xs"]  { --icon-size: var(--sherpa-size-xs); } 
+  &[data-size="sm"]  { --icon-size: var(--sherpa-size-sm); }
+  &[data-size="md"]  { --icon-size: var(--sherpa-size-md); }
+  &[data-size="lg"]  { --icon-size: var(--sherpa-size-lg); }
+  &[data-size="xl"]  { --icon-size: var(--sherpa-size-xl); }
+  &[data-size="2xl"] { --icon-size: var(--sherpa-size-2xl); }
+  &[data-size="3xl"] { --icon-size: var(--sherpa-size-3xl); }
+  &[data-size="4xl"] { --icon-size: var(--sherpa-size-4xl); }
+  &[data-size="5xl"] { --icon-size: var(--sherpa-size-5xl); }
+  &[data-size="6xl"] { --icon-size: var(--sherpa-size-6xl); }
+}

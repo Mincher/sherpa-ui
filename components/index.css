@@ -1,0 +1,8 @@
+/**
+ * Component Style Index
+ * Import into style.css — light DOM component styles only.
+ * Shadow DOM components load their own CSS via AuxElement.
+ */
+
+/* Light DOM components */
+@import "./sherpa-container/sherpa-container.css";

@@ -1,0 +1,74 @@
+
+/**
+ * sherpa-tooltip.css – Shadow DOM tooltip with CSS anchor positioning
+ */
+
+:host {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
+
+  /* Anchor positioning */
+  position-anchor: --tooltip-anchor;
+  left: anchor(center);
+  translate: -50% 0;
+  position-try-fallbacks: flip-block;
+
+  /* Visual */
+  background-color: var(--sherpa-surface-container-floating-default, rgba(26, 28, 33, 0.92));
+  color: var(--sherpa-text-default-on-color-heading, #fff);
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  padding: var(--sherpa-space-3xs, 0.25rem) var(--sherpa-space-xs, 0.5rem);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgba(0,0,0,0.25));
+}
+
+/* Visible state */
+:host([data-visible="true"]) {
+  display: block;
+  opacity: 1;
+}
+
+/* Position: top (default) */
+:host,
+:host([data-position="top"]) {
+  bottom: calc(anchor(top) + var(--sherpa-space-2xs, 0.375rem));
+}
+
+/* Position: bottom */
+:host([data-position="bottom"]) {
+  top: calc(anchor(bottom) + var(--sherpa-space-2xs, 0.375rem));
+  bottom: auto;
+}
+
+/* Fallback for browsers without anchor positioning */
+@supports not (position-anchor: --tooltip-anchor) {
+  :host {
+    transform: translateX(-50%);
+  }
+
+  :host([data-position="top"]),
+  :host(:not([data-position])) {
+    transform: translateX(-50%) translateY(-100%);
+    margin-top: calc(-1 * var(--sherpa-space-2xs, 0.375rem));
+  }
+
+  :host([data-position="bottom"]) {
+    transform: translateX(-50%);
+    margin-top: var(--sherpa-space-2xs, 0.375rem);
+  }
+}
+
+.tooltip-surface {
+  display: contents;
+}
+
+.tooltip-content {
+  color: inherit;
+}

@@ -1,0 +1,31 @@
+<!--
+  sherpa-toast.html — Notification toast component.
+
+  Templates:
+    • default — Icon + heading/value + action button + close button
+
+  Host attributes:
+    data-status        — "info" | "success" | "warning" | "critical" | "urgent"
+    data-label         — Toast heading text
+    data-value         — Toast message content
+    data-duration      — Auto-dismiss duration in ms (default: 5000)
+    data-timer-dismiss — "true" | "false" — enable auto-dismiss
+    data-show-close    — "true" | "false" — show close button (default: "true")
+    data-position      — "top-right" | "top-left" | "bottom-right" | "bottom-left" | "top-center" | "bottom-center"
+-->
+
+<template id="default">
+<div class="toast" role="alert" aria-live="polite">
+  <div class="toast-icon">
+    <i class="sherpa-icon default-icon" data-size="md" aria-hidden="true"></i>
+  </div>
+  <div class="toast-content">
+    <div class="toast-heading text-heading-md"></div>
+    <div class="toast-value text-body-sm"></div>
+    <button type="button" class="toast-action text-label"></button>
+  </div>
+  <button type="button" class="toast-close" aria-label="Close notification">
+    <i class="fa-solid fa-xmark sherpa-icon" data-size="sm" aria-hidden="true"></i>
+  </button>
+</div>
+</template>

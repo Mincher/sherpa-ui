@@ -1,0 +1,14 @@
+/**
+ * Core Motion Tokens (Primitives)
+ * Extracted from core-tokens.css — duration values.
+ * Prefixed --sherpa- (was --apx-).
+ */
+
+:root {
+  --sherpa-core-motion-duration-0: 0;
+  --sherpa-core-motion-duration-100: 150;
+  --sherpa-core-motion-duration-200: 225;
+  --sherpa-core-motion-duration-300: 300;
+  --sherpa-core-motion-duration-400: 425;
+  --sherpa-core-motion-duration-500: 600;
+}

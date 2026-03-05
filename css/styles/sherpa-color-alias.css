@@ -1,0 +1,341 @@
+/**
+ * Color Tokens (Themed)
+ * Auto-generated from Figma Variables (Tokens 2.0)
+ * Do not edit manually - regenerate using: node scripts/process-figma-tokens.js
+ */
+
+/* Enable automatic light/dark switching */
+:root {
+  color-scheme: light dark;
+}
+
+/* Force light mode */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Force dark mode */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Color tokens using light-dark() for automatic theme switching */
+/* These reference alias and core tokens via var() */
+
+:root {
+  /* ── Border — Container ──────────────────────────────────────── */
+  --sherpa-border-container-active: var(--sherpa-color-brand-base);
+  --sherpa-border-container-default: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-700));
+  --sherpa-border-container-inactive: light-dark(var(--sherpa-color-neutral-400), var(--sherpa-color-neutral-800));
+
+  /* ── Border — Context (Status) ───────────────────────────────── */
+  --sherpa-border-context-default-default: var(--sherpa-color-neutral-300);
+  --sherpa-border-context-default-down: var(--sherpa-color-neutral-700);
+  --sherpa-border-context-default-hover: var(--sherpa-color-neutral-500);
+  --sherpa-border-context-error-default: light-dark(var(--sherpa-color-error-700), var(--sherpa-color-error-600));
+  --sherpa-border-context-info-default: light-dark(var(--sherpa-color-info-800), var(--sherpa-color-info-700));
+  --sherpa-border-context-success-default: var(--sherpa-color-success-700);
+  --sherpa-border-context-urgent-default: light-dark(var(--sherpa-color-urgent-800), var(--sherpa-color-urgent-700));
+  --sherpa-border-context-warning-default: light-dark(var(--sherpa-color-warning-900), var(--sherpa-color-warning-800));
+
+  /* ── Border — Control (Interactive) ──────────────────────────── */
+  --sherpa-border-control-active-default: light-dark(var(--sherpa-color-primary-new-base), var(--sherpa-color-primary-new-300));
+  --sherpa-border-control-active-down: var(--sherpa-color-primary-new-700);
+  --sherpa-border-control-active-hover: var(--sherpa-color-primary-new-500);
+  --sherpa-border-control-default: light-dark(var(--sherpa-core-color-basic-greyscale-500), var(--sherpa-core-color-basic-greyscale-800));
+  --sherpa-border-control-down: light-dark(var(--sherpa-core-color-basic-greyscale-600), var(--sherpa-core-color-basic-greyscale-1000));
+  --sherpa-border-control-hover: light-dark(var(--sherpa-core-color-basic-greyscale-400), var(--sherpa-core-color-basic-greyscale-900));
+  --sherpa-border-control-inactive: var(--sherpa-color-neutral-600);
+  --sherpa-border-control-primary-default: light-dark(var(--sherpa-color-primary-new-base), var(--sherpa-color-primary-new-300));
+  --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+  --sherpa-border-control-secondary-default: light-dark(var(--sherpa-color-neutral-500), var(--sherpa-color-tones-600));
+  --sherpa-border-control-secondary-down: light-dark(var(--sherpa-color-neutral-600), var(--sherpa-color-tones-700));
+  --sherpa-border-control-secondary-hover: light-dark(var(--sherpa-color-neutral-500), var(--sherpa-color-tones-600));
+  --sherpa-border-control-tertiary-default: var(--sherpa-core-color-basic-transparent-0);
+  --sherpa-border-control-tertiary-down: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-tones-1000));
+  --sherpa-border-control-tertiary-hover: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-tones-800));
+
+  /* ── Data Visualization — Categorical ────────────────────────── */
+  --sherpa-data-viz-categorical-color-1: light-dark(var(--sherpa-core-color-basic-purple-500), var(--sherpa-core-color-basic-purple-400));
+  --sherpa-data-viz-categorical-color-10: light-dark(var(--sherpa-core-color-basic-green-500), var(--sherpa-core-color-basic-green-400));
+  --sherpa-data-viz-categorical-color-11: light-dark(var(--sherpa-core-color-basic-greyscale-500), var(--sherpa-core-color-basic-greyscale-300));
+  --sherpa-data-viz-categorical-color-2: light-dark(var(--sherpa-core-color-extended-phlox-500), var(--sherpa-core-color-extended-phlox-400));
+  --sherpa-data-viz-categorical-color-3: light-dark(var(--sherpa-core-color-extended-turquoise-550), var(--sherpa-core-color-extended-turquoise-450));
+  --sherpa-data-viz-categorical-color-4: light-dark(var(--sherpa-core-color-basic-blue-green-500), var(--sherpa-core-color-basic-blue-green-400));
+  --sherpa-data-viz-categorical-color-5: light-dark(var(--sherpa-core-color-basic-blue-500), var(--sherpa-core-color-basic-blue-400));
+  --sherpa-data-viz-categorical-color-6: light-dark(var(--sherpa-core-color-extended-neon-blue-400), var(--sherpa-core-color-extended-neon-blue-300));
+  --sherpa-data-viz-categorical-color-7: light-dark(var(--sherpa-core-color-extended-chrome-orange-500), var(--sherpa-core-color-extended-chrome-orange-400));
+  --sherpa-data-viz-categorical-color-8: light-dark(var(--sherpa-core-color-extended-razamatazz-400), var(--sherpa-core-color-extended-razamatazz-350));
+  --sherpa-data-viz-categorical-color-9: light-dark(var(--sherpa-core-color-extended-razamatazz-550), var(--sherpa-core-color-extended-razamatazz-450));
+
+  /* ── Data Visualization — Divergent ──────────────────────────── */
+  --sherpa-data-viz-divergent-blue-green-pink-color-1: light-dark(var(--sherpa-core-color-basic-blue-green-800), var(--sherpa-core-color-basic-blue-green-650));
+  --sherpa-data-viz-divergent-blue-green-pink-color-10: light-dark(var(--sherpa-core-color-basic-pink-600), var(--sherpa-core-color-basic-pink-500));
+  --sherpa-data-viz-divergent-blue-green-pink-color-11: light-dark(var(--sherpa-core-color-basic-pink-700), var(--sherpa-core-color-basic-pink-600));
+  --sherpa-data-viz-divergent-blue-green-pink-color-2: light-dark(var(--sherpa-core-color-basic-blue-green-700), var(--sherpa-core-color-basic-blue-green-600));
+  --sherpa-data-viz-divergent-blue-green-pink-color-3: var(--sherpa-core-color-basic-blue-green-500);
+  --sherpa-data-viz-divergent-blue-green-pink-color-4: light-dark(var(--sherpa-core-color-basic-blue-green-200), var(--sherpa-core-color-basic-blue-green-400));
+  --sherpa-data-viz-divergent-blue-green-pink-color-5: light-dark(var(--sherpa-core-color-basic-blue-green-100), var(--sherpa-core-color-basic-blue-green-300));
+  --sherpa-data-viz-divergent-blue-green-pink-color-6: var(--sherpa-core-color-basic-monochrome-200);
+  --sherpa-data-viz-divergent-blue-green-pink-color-7: var(--sherpa-core-color-basic-pink-200);
+  --sherpa-data-viz-divergent-blue-green-pink-color-8: var(--sherpa-core-color-basic-pink-300);
+  --sherpa-data-viz-divergent-blue-green-pink-color-9: var(--sherpa-core-color-basic-pink-400);
+  --sherpa-data-viz-divergent-purple-yellow-color-1: light-dark(var(--sherpa-core-color-basic-purple-700), var(--sherpa-core-color-basic-purple-600));
+  --sherpa-data-viz-divergent-purple-yellow-color-10: light-dark(var(--sherpa-core-color-extended-warm-yellow-900), var(--sherpa-core-color-extended-warm-yellow-800));
+  --sherpa-data-viz-divergent-purple-yellow-color-11: light-dark(var(--sherpa-core-color-extended-warm-yellow-1000), var(--sherpa-core-color-extended-warm-yellow-900));
+  --sherpa-data-viz-divergent-purple-yellow-color-2: var(--sherpa-core-color-basic-purple-500);
+  --sherpa-data-viz-divergent-purple-yellow-color-3: var(--sherpa-core-color-basic-purple-400);
+  --sherpa-data-viz-divergent-purple-yellow-color-4: var(--sherpa-core-color-basic-purple-300);
+  --sherpa-data-viz-divergent-purple-yellow-color-5: var(--sherpa-core-color-basic-purple-200);
+  --sherpa-data-viz-divergent-purple-yellow-color-6: var(--sherpa-core-color-basic-monochrome-200);
+  --sherpa-data-viz-divergent-purple-yellow-color-7: light-dark(var(--sherpa-core-color-extended-warm-yellow-200), var(--sherpa-core-color-extended-warm-yellow-300));
+  --sherpa-data-viz-divergent-purple-yellow-color-8: light-dark(var(--sherpa-core-color-extended-warm-yellow-400), var(--sherpa-core-color-extended-warm-yellow-500));
+  --sherpa-data-viz-divergent-purple-yellow-color-9: light-dark(var(--sherpa-core-color-extended-warm-yellow-800), var(--sherpa-core-color-extended-warm-yellow-700));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-1: light-dark(var(--sherpa-core-color-extended-turquoise-700), var(--sherpa-core-color-extended-turquoise-600));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-10: light-dark(var(--sherpa-core-color-extended-razamatazz-600), var(--sherpa-core-color-extended-razamatazz-500));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-11: light-dark(var(--sherpa-core-color-extended-razamatazz-650), var(--sherpa-core-color-extended-razamatazz-600));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-2: light-dark(var(--sherpa-core-color-extended-turquoise-650), var(--sherpa-core-color-extended-turquoise-550));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-3: light-dark(var(--sherpa-core-color-extended-turquoise-600), var(--sherpa-core-color-extended-turquoise-450));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-4: light-dark(var(--sherpa-core-color-extended-turquoise-400), var(--sherpa-core-color-extended-turquoise-350));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-5: var(--sherpa-core-color-extended-turquoise-300);
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-6: var(--sherpa-core-color-basic-monochrome-200);
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-7: light-dark(var(--sherpa-core-color-extended-razamatazz-300), var(--sherpa-core-color-extended-razamatazz-250));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-8: light-dark(var(--sherpa-core-color-extended-razamatazz-400), var(--sherpa-core-color-extended-razamatazz-350));
+  --sherpa-data-viz-divergent-turquoise-razamatazz-color-9: var(--sherpa-core-color-extended-razamatazz-450);
+
+  /* ── Data Visualization — Sequential ─────────────────────────── */
+  --sherpa-data-viz-sequential-blue-color-1: light-dark(var(--sherpa-core-color-basic-blue-200), var(--sherpa-core-color-basic-blue-100));
+  --sherpa-data-viz-sequential-blue-color-2: light-dark(var(--sherpa-core-color-basic-blue-400), var(--sherpa-core-color-basic-blue-200));
+  --sherpa-data-viz-sequential-blue-color-3: light-dark(var(--sherpa-core-color-basic-blue-500), var(--sherpa-core-color-basic-blue-300));
+  --sherpa-data-viz-sequential-blue-color-4: light-dark(var(--sherpa-core-color-basic-blue-600), var(--sherpa-core-color-basic-blue-400));
+  --sherpa-data-viz-sequential-blue-color-5: light-dark(var(--sherpa-core-color-basic-blue-700), var(--sherpa-core-color-basic-blue-500));
+  --sherpa-data-viz-sequential-blue-green-color-1: light-dark(var(--sherpa-core-color-basic-blue-green-200), var(--sherpa-core-color-basic-blue-green-100));
+  --sherpa-data-viz-sequential-blue-green-color-2: light-dark(var(--sherpa-core-color-basic-blue-green-400), var(--sherpa-core-color-basic-blue-green-200));
+  --sherpa-data-viz-sequential-blue-green-color-3: light-dark(var(--sherpa-core-color-basic-blue-green-500), var(--sherpa-core-color-basic-blue-green-300));
+  --sherpa-data-viz-sequential-blue-green-color-4: light-dark(var(--sherpa-core-color-basic-blue-green-700), var(--sherpa-core-color-basic-blue-green-400));
+  --sherpa-data-viz-sequential-blue-green-color-5: light-dark(var(--sherpa-core-color-basic-blue-green-800), var(--sherpa-core-color-basic-blue-green-500));
+  --sherpa-data-viz-sequential-green-color-1: var(--sherpa-core-color-basic-green-200);
+  --sherpa-data-viz-sequential-green-color-2: var(--sherpa-core-color-basic-green-300);
+  --sherpa-data-viz-sequential-green-color-3: light-dark(var(--sherpa-core-color-basic-green-500), var(--sherpa-core-color-basic-green-400));
+  --sherpa-data-viz-sequential-green-color-4: light-dark(var(--sherpa-core-color-basic-green-600), var(--sherpa-core-color-basic-green-500));
+  --sherpa-data-viz-sequential-green-color-5: light-dark(var(--sherpa-core-color-basic-green-800), var(--sherpa-core-color-basic-green-600));
+  --sherpa-data-viz-sequential-greyscale-color-1: var(--sherpa-core-color-basic-greyscale-200);
+  --sherpa-data-viz-sequential-greyscale-color-2: var(--sherpa-core-color-basic-greyscale-300);
+  --sherpa-data-viz-sequential-greyscale-color-3: light-dark(var(--sherpa-core-color-basic-greyscale-500), var(--sherpa-core-color-basic-greyscale-400));
+  --sherpa-data-viz-sequential-greyscale-color-4: light-dark(var(--sherpa-core-color-basic-greyscale-600), var(--sherpa-core-color-basic-greyscale-500));
+  --sherpa-data-viz-sequential-greyscale-color-5: light-dark(var(--sherpa-core-color-basic-greyscale-700), var(--sherpa-core-color-basic-greyscale-600));
+  --sherpa-data-viz-sequential-neon-blue-color-1: light-dark(var(--sherpa-core-color-extended-neon-blue-300), var(--sherpa-core-color-extended-neon-blue-250));
+  --sherpa-data-viz-sequential-neon-blue-color-2: light-dark(var(--sherpa-core-color-extended-neon-blue-400), var(--sherpa-core-color-extended-neon-blue-300));
+  --sherpa-data-viz-sequential-neon-blue-color-3: light-dark(var(--sherpa-core-color-extended-neon-blue-450), var(--sherpa-core-color-extended-neon-blue-350));
+  --sherpa-data-viz-sequential-neon-blue-color-4: light-dark(var(--sherpa-core-color-extended-neon-blue-500), var(--sherpa-core-color-extended-neon-blue-400));
+  --sherpa-data-viz-sequential-neon-blue-color-5: light-dark(var(--sherpa-core-color-extended-neon-blue-550), var(--sherpa-core-color-extended-neon-blue-450));
+  --sherpa-data-viz-sequential-orange-color-1: light-dark(var(--sherpa-core-color-extended-warm-yellow-200), var(--sherpa-core-color-extended-warm-yellow-100));
+  --sherpa-data-viz-sequential-orange-color-2: light-dark(var(--sherpa-core-color-extended-warm-yellow-400), var(--sherpa-core-color-extended-warm-yellow-200));
+  --sherpa-data-viz-sequential-orange-color-3: light-dark(var(--sherpa-core-color-extended-warm-yellow-600), var(--sherpa-core-color-extended-warm-yellow-300));
+  --sherpa-data-viz-sequential-orange-color-4: light-dark(var(--sherpa-core-color-extended-warm-yellow-800), var(--sherpa-core-color-extended-warm-yellow-400));
+  --sherpa-data-viz-sequential-orange-color-5: light-dark(var(--sherpa-core-color-extended-warm-yellow-900), var(--sherpa-core-color-extended-warm-yellow-500));
+  --sherpa-data-viz-sequential-phlox-color-1: light-dark(var(--sherpa-core-color-extended-phlox-350), var(--sherpa-core-color-extended-phlox-300));
+  --sherpa-data-viz-sequential-phlox-color-2: light-dark(var(--sherpa-core-color-extended-phlox-450), var(--sherpa-core-color-extended-phlox-350));
+  --sherpa-data-viz-sequential-phlox-color-3: light-dark(var(--sherpa-core-color-extended-phlox-550), var(--sherpa-core-color-extended-phlox-400));
+  --sherpa-data-viz-sequential-phlox-color-4: light-dark(var(--sherpa-core-color-extended-phlox-600), var(--sherpa-core-color-extended-phlox-450));
+  --sherpa-data-viz-sequential-phlox-color-5: light-dark(var(--sherpa-core-color-extended-phlox-650), var(--sherpa-core-color-extended-phlox-500));
+  --sherpa-data-viz-sequential-pink-color-1: var(--sherpa-core-color-basic-pink-100);
+  --sherpa-data-viz-sequential-pink-color-2: var(--sherpa-core-color-basic-pink-200);
+  --sherpa-data-viz-sequential-pink-color-3: light-dark(var(--sherpa-core-color-basic-pink-400), var(--sherpa-core-color-basic-pink-300));
+  --sherpa-data-viz-sequential-pink-color-4: light-dark(var(--sherpa-core-color-basic-pink-700), var(--sherpa-core-color-basic-pink-400));
+  --sherpa-data-viz-sequential-pink-color-5: light-dark(var(--sherpa-core-color-basic-pink-800), var(--sherpa-core-color-basic-pink-500));
+  --sherpa-data-viz-sequential-purple-color-1: light-dark(var(--sherpa-core-color-basic-purple-200), var(--sherpa-core-color-basic-purple-100));
+  --sherpa-data-viz-sequential-purple-color-2: light-dark(var(--sherpa-core-color-basic-purple-300), var(--sherpa-core-color-basic-purple-200));
+  --sherpa-data-viz-sequential-purple-color-3: light-dark(var(--sherpa-core-color-basic-purple-500), var(--sherpa-core-color-basic-purple-300));
+  --sherpa-data-viz-sequential-purple-color-4: light-dark(var(--sherpa-core-color-basic-purple-600), var(--sherpa-core-color-basic-purple-400));
+  --sherpa-data-viz-sequential-purple-color-5: light-dark(var(--sherpa-core-color-basic-purple-800), var(--sherpa-core-color-basic-purple-500));
+  --sherpa-data-viz-sequential-razamatazz-color-1: light-dark(var(--sherpa-core-color-extended-razamatazz-300), var(--sherpa-core-color-extended-razamatazz-250));
+  --sherpa-data-viz-sequential-razamatazz-color-2: light-dark(var(--sherpa-core-color-extended-razamatazz-400), var(--sherpa-core-color-extended-razamatazz-300));
+  --sherpa-data-viz-sequential-razamatazz-color-3: light-dark(var(--sherpa-core-color-extended-razamatazz-500), var(--sherpa-core-color-extended-razamatazz-350));
+  --sherpa-data-viz-sequential-razamatazz-color-4: light-dark(var(--sherpa-core-color-extended-razamatazz-600), var(--sherpa-core-color-extended-razamatazz-400));
+  --sherpa-data-viz-sequential-razamatazz-color-5: light-dark(var(--sherpa-core-color-extended-razamatazz-650), var(--sherpa-core-color-extended-razamatazz-450));
+  --sherpa-data-viz-sequential-turquoise-color-1: var(--sherpa-core-color-extended-turquoise-300);
+  --sherpa-data-viz-sequential-turquoise-color-2: light-dark(var(--sherpa-core-color-extended-turquoise-400), var(--sherpa-core-color-extended-turquoise-350));
+  --sherpa-data-viz-sequential-turquoise-color-3: light-dark(var(--sherpa-core-color-extended-turquoise-550), var(--sherpa-core-color-extended-turquoise-400));
+  --sherpa-data-viz-sequential-turquoise-color-4: light-dark(var(--sherpa-core-color-extended-turquoise-650), var(--sherpa-core-color-extended-turquoise-450));
+  --sherpa-data-viz-sequential-turquoise-color-5: light-dark(var(--sherpa-core-color-extended-turquoise-700), var(--sherpa-core-color-extended-turquoise-500));
+
+  /* ── Icon ────────────────────────────────────────────────────── */
+  --sherpa-icon-active-default: light-dark(var(--sherpa-color-primary-new-base), var(--sherpa-color-primary-new-300));
+  --sherpa-icon-active-secondary: var(--sherpa-color-brand-500);
+  --sherpa-icon-context-default-body: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-neutral-200));
+  --sherpa-icon-context-default-heading: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
+  --sherpa-icon-context-default-label: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
+  --sherpa-icon-context-default-on-color-body: var(--sherpa-color-neutral-200);
+  --sherpa-icon-context-default-on-color-heading: var(--sherpa-color-neutral-0);
+  --sherpa-icon-context-default-on-color-label: var(--sherpa-color-neutral-200);
+  --sherpa-icon-context-default-on-color-placeholder: var(--sherpa-color-neutral-400);
+  --sherpa-icon-context-default-on-color-secondary: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-400));
+  --sherpa-icon-context-default-on-color-subtle-body: light-dark(var(--sherpa-color-neutral-800), var(--sherpa-color-neutral-900));
+  --sherpa-icon-context-default-on-color-subtle-heading: var(--sherpa-color-neutral-1000);
+  --sherpa-icon-context-default-on-color-subtle-label: light-dark(var(--sherpa-color-neutral-800), var(--sherpa-color-neutral-600));
+  --sherpa-icon-context-default-on-color-subtle-placeholder: var(--sherpa-color-neutral-600);
+  --sherpa-icon-context-default-on-color-subtle-secondary: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-800));
+  --sherpa-icon-context-default-placeholder: var(--sherpa-color-neutral-600);
+  --sherpa-icon-context-default-secondary: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-600));
+  --sherpa-icon-context-error-default: light-dark(var(--sherpa-color-error-700), var(--sherpa-color-error-600));
+  --sherpa-icon-context-error-on-color: var(--sherpa-color-error-300);
+  --sherpa-icon-context-error-on-color-subtle: light-dark(var(--sherpa-color-error-700), var(--sherpa-color-error-600));
+  --sherpa-icon-context-info-default: light-dark(var(--sherpa-color-info-700), var(--sherpa-color-info-600));
+  --sherpa-icon-context-info-on-color: var(--sherpa-color-info-300);
+  --sherpa-icon-context-info-on-color-subtle: light-dark(var(--sherpa-color-info-800), var(--sherpa-color-info-700));
+  --sherpa-icon-context-success-default: light-dark(var(--sherpa-color-success-700), var(--sherpa-color-success-600));
+  --sherpa-icon-context-success-on-color: var(--sherpa-color-success-300);
+  --sherpa-icon-context-success-on-color-subtle: light-dark(var(--sherpa-color-success-800), var(--sherpa-color-success-700));
+  --sherpa-icon-context-urgent-default: light-dark(var(--sherpa-color-urgent-800), var(--sherpa-color-urgent-700));
+  --sherpa-icon-context-urgent-on-color: var(--sherpa-color-urgent-200);
+  --sherpa-icon-context-urgent-on-color-subtle: light-dark(var(--sherpa-color-urgent-900), var(--sherpa-color-urgent-800));
+  --sherpa-icon-context-warning-default: light-dark(var(--sherpa-color-warning-800), var(--sherpa-color-warning-700));
+  --sherpa-icon-context-warning-on-color: var(--sherpa-color-neutral-900);
+  --sherpa-icon-context-warning-on-color-subtle: light-dark(var(--sherpa-color-warning-900), var(--sherpa-color-warning-800));
+  --sherpa-icon-inactive-default: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-600));
+  --sherpa-icon-inactive-on-color: var(--sherpa-color-neutral-600);
+  --sherpa-icon-inactive-on-color-subtle: light-dark(var(--sherpa-color-neutral-800), var(--sherpa-color-neutral-600));
+  --sherpa-icon-primary-default: light-dark(var(--sherpa-color-primary-new-base), var(--sherpa-color-primary-new-300));
+  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-new-700);
+
+  /* ── Surface — App Chrome ────────────────────────────────────── */
+  --sherpa-surface-app-product-bar-bg: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-bar-brand: var(--sherpa-color-brand-base);
+  --sherpa-surface-app-product-bar-rounding: var(--sherpa-border-rounding-none);
+  --sherpa-surface-app-product-bar-secondary: var(--sherpa-core-color-extended-deep-purple-600);
+  --sherpa-surface-app-product-bg-default: light-dark(var(--sherpa-core-color-basic-greyscale-0), var(--sherpa-color-neutral-900));
+  --sherpa-surface-app-product-bg-overlay: var(--sherpa-core-color-basic-transparent-1000);
+  --sherpa-surface-app-product-nav-active: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-900));
+  --sherpa-surface-app-product-nav-bg: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-tones-1000));
+  --sherpa-surface-app-product-nav-down: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-900));
+  --sherpa-surface-app-product-nav-hover: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-900));
+  --sherpa-surface-app-product-nav-secondary: light-dark(var(--sherpa-color-neutral-800), var(--sherpa-color-tones-900));
+
+  /* ── Surface — Container ─────────────────────────────────────── */
+  --sherpa-surface-container-active: light-dark(var(--sherpa-core-color-extended-phlox-250), var(--sherpa-color-tones-700));
+  --sherpa-surface-container-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-tones-900));
+  --sherpa-surface-container-down: light-dark(var(--sherpa-color-neutral-400), var(--sherpa-color-tones-900));
+  --sherpa-surface-container-floating-default: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-tones-700));
+  --sherpa-surface-container-hover: light-dark(var(--sherpa-core-color-basic-monochrome-200), var(--sherpa-color-tones-800));
+  --sherpa-surface-container-inactive: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-800));
+  --sherpa-surface-container-secondary-active: light-dark(var(--sherpa-core-color-extended-phlox-300), var(--sherpa-color-tones-700));
+  --sherpa-surface-container-secondary-default: light-dark(var(--sherpa-core-color-basic-monochrome-200), var(--sherpa-color-tones-800));
+  --sherpa-surface-container-secondary-down: light-dark(var(--sherpa-core-color-basic-monochrome-300), var(--sherpa-color-tones-1000));
+  --sherpa-surface-container-secondary-hover: light-dark(var(--sherpa-core-color-basic-monochrome-250), var(--sherpa-color-tones-900));
+  --sherpa-surface-container-selected-default: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-100));
+  --sherpa-surface-container-selected-down: var(--sherpa-color-brand-300);
+  --sherpa-surface-container-selected-hover: var(--sherpa-color-brand-200);
+  --sherpa-surface-container-tertiary-active: light-dark(var(--sherpa-core-color-extended-phlox-300), var(--sherpa-color-tones-700));
+  --sherpa-surface-container-tertiary-default: light-dark(var(--sherpa-core-color-basic-monochrome-300), var(--sherpa-color-neutral-900));
+  --sherpa-surface-container-tertiary-down: light-dark(var(--sherpa-core-color-basic-monochrome-450), var(--sherpa-color-neutral-1000));
+  --sherpa-surface-container-tertiary-hover: light-dark(var(--sherpa-core-color-basic-monochrome-400), var(--sherpa-color-tones-900));
+
+  /* ── Surface — Context (Status) ──────────────────────────────── */
+  --sherpa-surface-context-default-strong-default: var(--sherpa-color-neutral-500);
+  --sherpa-surface-context-default-strong-down: var(--sherpa-color-neutral-700);
+  --sherpa-surface-context-default-strong-hover: var(--sherpa-color-neutral-600);
+  --sherpa-surface-context-default-subtle-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-700));
+  --sherpa-surface-context-default-subtle-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-900));
+  --sherpa-surface-context-default-subtle-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-800));
+  --sherpa-surface-context-error-strong-default: var(--sherpa-color-error-600);
+  --sherpa-surface-context-error-strong-down: var(--sherpa-color-error-800);
+  --sherpa-surface-context-error-strong-hover: var(--sherpa-color-error-700);
+  --sherpa-surface-context-error-subtle-default: light-dark(var(--sherpa-color-error-100), var(--sherpa-color-error-200));
+  --sherpa-surface-context-error-subtle-down: var(--sherpa-color-error-300);
+  --sherpa-surface-context-error-subtle-hover: light-dark(var(--sherpa-color-error-200), var(--sherpa-color-error-100));
+  --sherpa-surface-context-error-subtle-transparent: light-dark(rgba(248, 196, 185, 0.80), rgba(221, 44, 1, 0.20));
+  --sherpa-surface-context-info-strong-default: var(--sherpa-color-info-700);
+  --sherpa-surface-context-info-strong-down: var(--sherpa-color-info-900);
+  --sherpa-surface-context-info-strong-hover: var(--sherpa-color-info-800);
+  --sherpa-surface-context-info-subtle-default: light-dark(var(--sherpa-color-info-100), var(--sherpa-color-info-200));
+  --sherpa-surface-context-info-subtle-down: var(--sherpa-color-info-300);
+  --sherpa-surface-context-info-subtle-hover: light-dark(var(--sherpa-color-info-200), var(--sherpa-color-info-100));
+  --sherpa-surface-context-success-strong-default: var(--sherpa-color-success-700);
+  --sherpa-surface-context-success-strong-down: var(--sherpa-color-success-900);
+  --sherpa-surface-context-success-strong-hover: var(--sherpa-color-success-800);
+  --sherpa-surface-context-success-subtle-default: light-dark(var(--sherpa-color-success-100), var(--sherpa-color-success-200));
+  --sherpa-surface-context-success-subtle-down: var(--sherpa-color-success-300);
+  --sherpa-surface-context-success-subtle-hover: light-dark(var(--sherpa-color-success-200), var(--sherpa-color-success-100));
+  --sherpa-surface-context-success-subtle-transparent: light-dark(rgba(240, 255, 248, 0.80), rgba(5, 129, 66, 0.20));
+  --sherpa-surface-context-urgent-strong-default: var(--sherpa-color-urgent-700);
+  --sherpa-surface-context-urgent-strong-down: var(--sherpa-color-urgent-900);
+  --sherpa-surface-context-urgent-strong-hover: var(--sherpa-color-urgent-800);
+  --sherpa-surface-context-urgent-subtle-default: light-dark(var(--sherpa-color-urgent-100), var(--sherpa-color-urgent-200));
+  --sherpa-surface-context-urgent-subtle-down: var(--sherpa-color-urgent-300);
+  --sherpa-surface-context-urgent-subtle-hover: light-dark(var(--sherpa-color-urgent-200), var(--sherpa-color-urgent-100));
+  --sherpa-surface-context-urgent-subtle-transparent: light-dark(rgba(253, 226, 193, 0.80), rgba(214, 99, 4, 0.20));
+  --sherpa-surface-context-warning-strong-default: var(--sherpa-color-warning-600);
+  --sherpa-surface-context-warning-strong-down: var(--sherpa-color-warning-800);
+  --sherpa-surface-context-warning-strong-hover: var(--sherpa-color-warning-700);
+  --sherpa-surface-context-warning-subtle-default: light-dark(var(--sherpa-color-warning-100), var(--sherpa-color-warning-200));
+  --sherpa-surface-context-warning-subtle-down: var(--sherpa-color-warning-300);
+  --sherpa-surface-context-warning-subtle-hover: light-dark(var(--sherpa-color-warning-200), var(--sherpa-color-warning-100));
+  --sherpa-surface-context-warning-subtle-transparent: light-dark(rgba(255, 174, 11, 0.20), rgba(252, 183, 45, 0.20));
+
+  /* ── Surface — Control (Interactive) ─────────────────────────── */
+  --sherpa-surface-control-active-default: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-primary-new-900));
+  --sherpa-surface-control-active-down: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-primary-new-base));
+  --sherpa-surface-control-active-hover: light-dark(var(--sherpa-color-brand-200), var(--sherpa-color-primary-new-500));
+  --sherpa-surface-control-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-tones-800));
+  --sherpa-surface-control-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-tones-1000));
+  --sherpa-surface-control-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-900));
+  --sherpa-surface-control-inactive: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-500));
+  --sherpa-surface-control-primary-default: light-dark(var(--sherpa-color-primary-new-base), var(--sherpa-color-primary-new-500));
+  --sherpa-surface-control-primary-down: light-dark(var(--sherpa-color-primary-new-800), var(--sherpa-color-primary-new-700));
+  --sherpa-surface-control-primary-hover: light-dark(var(--sherpa-color-primary-new-700), var(--sherpa-color-primary-new-base));
+  --sherpa-surface-control-secondary-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-tones-800));
+  --sherpa-surface-control-secondary-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-tones-1000));
+  --sherpa-surface-control-secondary-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-tones-900));
+  --sherpa-surface-control-tertiary-default: var(--sherpa-core-color-basic-transparent-0);
+  --sherpa-surface-control-tertiary-down: var(--sherpa-core-color-basic-transparent-600);
+  --sherpa-surface-control-tertiary-hover: var(--sherpa-core-color-basic-transparent-400);
+  --sherpa-surface-control-tertiary-inactive: var(--sherpa-core-color-basic-transparent-100);
+  --sherpa-surface-control-tertiary-on-color-default: var(--sherpa-core-color-basic-transparent-0);
+  --sherpa-surface-control-tertiary-on-color-down: var(--sherpa-core-color-basic-transparent-600);
+  --sherpa-surface-control-tertiary-on-color-hover: var(--sherpa-core-color-basic-transparent-400);
+  --sherpa-surface-control-tertiary-on-color-inactive: var(--sherpa-core-color-basic-transparent-600);
+
+  /* ── Surface — Search (Manual) ───────────────────────────────── */
+  --sherpa-surface-search-highlight: light-dark(var(--sherpa-color-brand-400), var(--sherpa-color-brand-600));
+
+  /* ── Text ────────────────────────────────────────────────────── */
+  --sherpa-text-context-error-default: light-dark(var(--sherpa-color-error-700), var(--sherpa-color-error-600));
+  --sherpa-text-context-error-on-color: light-dark(var(--sherpa-color-error-200), var(--sherpa-color-error-100));
+  --sherpa-text-context-error-on-color-subtle: var(--sherpa-color-error-700);
+  --sherpa-text-context-info-default: light-dark(var(--sherpa-color-info-700), var(--sherpa-color-info-600));
+  --sherpa-text-context-info-on-color: light-dark(var(--sherpa-color-info-200), var(--sherpa-color-info-100));
+  --sherpa-text-context-info-on-color-subtle: var(--sherpa-color-info-800);
+  --sherpa-text-context-success-default: light-dark(var(--sherpa-color-success-700), var(--sherpa-color-success-600));
+  --sherpa-text-context-success-on-color: light-dark(var(--sherpa-color-success-200), var(--sherpa-color-success-100));
+  --sherpa-text-context-success-on-color-subtle: var(--sherpa-color-success-900);
+  --sherpa-text-context-urgent-default: light-dark(var(--sherpa-color-urgent-800), var(--sherpa-color-urgent-700));
+  --sherpa-text-context-urgent-on-color: var(--sherpa-color-urgent-200);
+  --sherpa-text-context-urgent-on-color-subtle: var(--sherpa-color-urgent-900);
+  --sherpa-text-context-warning-default: light-dark(var(--sherpa-color-warning-800), var(--sherpa-color-warning-700));
+  --sherpa-text-context-warning-on-color: var(--sherpa-color-neutral-900);
+  --sherpa-text-context-warning-on-color-subtle: var(--sherpa-color-warning-900);
+  --sherpa-text-default-body: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-neutral-200));
+  --sherpa-text-default-heading: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-100));
+  --sherpa-text-default-label: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-100));
+  --sherpa-text-default-on-color-body: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-0));
+  --sherpa-text-default-on-color-heading: var(--sherpa-color-neutral-0);
+  --sherpa-text-default-on-color-label: var(--sherpa-color-neutral-0);
+  --sherpa-text-default-on-color-placeholder: light-dark(var(--sherpa-color-neutral-500), var(--sherpa-color-neutral-400));
+  --sherpa-text-default-on-color-secondary: var(--sherpa-color-neutral-300);
+  --sherpa-text-default-on-color-subtle-body: var(--sherpa-color-neutral-900);
+  --sherpa-text-default-on-color-subtle-heading: var(--sherpa-color-neutral-1000);
+  --sherpa-text-default-on-color-subtle-label: var(--sherpa-color-neutral-1000);
+  --sherpa-text-default-on-color-subtle-placeholder: var(--sherpa-color-neutral-600);
+  --sherpa-text-default-on-color-subtle-secondary: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-800));
+  --sherpa-text-default-placeholder: var(--sherpa-color-neutral-600);
+  --sherpa-text-default-secondary: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-500));
+  --sherpa-text-inactive-default: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-600));
+  --sherpa-text-inactive-on-color: var(--sherpa-color-neutral-600);
+  --sherpa-text-inactive-on-color-subtle: light-dark(var(--sherpa-color-neutral-800), var(--sherpa-color-neutral-600));
+  --sherpa-text-primary-default: light-dark(var(--sherpa-color-primary-new-base), var(--sherpa-color-primary-new-300));
+  --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-new-base);
+}

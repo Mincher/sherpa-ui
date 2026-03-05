@@ -1,0 +1,22 @@
+<!-- sherpa-container-menu.html — Container overflow menu template.
+     Groups: width, height, data (dynamic toggles), actions.
+     Replaces sherpa-container-menu.json. -->
+
+<template id="default">
+  <sherpa-menu-item data-type="heading">Width</sherpa-menu-item>
+  <ul data-group="width">
+    <li><sherpa-menu-item data-action="decrease-cols" data-icon="fa-solid fa-minus">Decrease</sherpa-menu-item></li>
+    <li><sherpa-menu-item data-action="increase-cols" data-icon="fa-solid fa-plus">Increase</sherpa-menu-item></li>
+  </ul>
+  <sherpa-menu-item data-type="heading">Height</sherpa-menu-item>
+  <ul data-group="height">
+    <li><sherpa-menu-item data-action="decrease-rows" data-icon="fa-solid fa-minus">Decrease</sherpa-menu-item></li>
+    <li><sherpa-menu-item data-action="increase-rows" data-icon="fa-solid fa-plus">Increase</sherpa-menu-item></li>
+  </ul>
+  <sherpa-menu-item data-type="heading" data-group-heading="data">Data</sherpa-menu-item>
+  <ul data-group="data"></ul>
+  <sherpa-menu-item data-type="heading">Actions</sherpa-menu-item>
+  <ul data-group="actions">
+    <li><sherpa-menu-item data-action="export" data-icon="fa-regular fa-file-export">Export</sherpa-menu-item></li>
+  </ul>
+</template>

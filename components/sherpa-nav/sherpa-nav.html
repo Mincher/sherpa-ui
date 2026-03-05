@@ -1,0 +1,144 @@
+<!--
+  sherpa-nav.html — Default navigation template.
+  Loaded via renderFromUrl (htmlUrl = null).
+
+  Host attributes:
+    data-src       — URL to load alternative nav template
+    data-home-href — Home link target
+    data-pinned    — Host mirror of pin state ("true"/"false")
+    data-mode      — Host mirror of mode state
+
+  Internal .sherpa-nav-root attributes (managed by JS):
+    data-pinned    — "true"/"false"
+    data-mode      — "default" | "search" | "edit"
+    data-editable  — Presence enables edit mode (shows edit button)
+    data-searchable — Presence enables search (shows search bar)
+-->
+<div class="sherpa-nav-root" data-pinned="false" data-mode="default" data-editable data-searchable>
+
+<!-- Header -->
+<header class="nav-header">
+  <!-- Toolbar: Logo, Product Name, Actions -->
+  <div class="nav-toolbar">
+    <svg class="nav-logo" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0H3.80301L12.9974 9.83439V13.9026H9.19381L4.59663 8.98333V13.9002H0V0ZM8.39098 4.91692H12.9876V0H8.39098V4.91692Z" fill="currentColor"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M12.9974 9.83439H17.594V4.91689H8.40023L12.9974 9.83439Z" fill="#C046FF"/>
+    </svg>
+    <span class="nav-product-name text-heading-lg">Product Name</span>
+    <div class="nav-toolbar-actions">
+      <sherpa-button class="nav-edit-btn" data-variant="tertiary" data-size="small" data-icon-start="&#xf1de;" title="Edit navigation" aria-label="Edit navigation"></sherpa-button>
+      <sherpa-button class="nav-pin-btn" data-variant="tertiary" data-size="small" data-icon-start="&#xf08d;" title="Pin navigation" aria-label="Pin navigation"></sherpa-button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="nav-search" role="search">
+    <sherpa-nav-item class="nav-search-icon" data-nav-target="search" data-icon="fa-solid fa-magnifying-glass" tabindex="0" role="button" aria-label="Search">Search</sherpa-nav-item>
+    <sherpa-input-search class="nav-search-input" placeholder="Type here to filter..." aria-label="Filter navigation"></sherpa-input-search>
+  </div>
+
+  <!-- Home -->
+  <sherpa-nav-item data-nav-target="home" data-icon="fa-solid fa-house" data-route="/home.html" tabindex="0" role="button" aria-label="Home">Home</sherpa-nav-item>
+
+  <!-- Divider -->
+  <div class="nav-divider">
+    <div class="nav-divider-line"></div>
+  </div>
+</header>
+
+<!-- Sections -->
+<div class="nav-sections" role="tree">
+
+  <!-- Quick Access Group -->
+  <div class="nav-group" data-group-index="0">
+
+    <details class="nav-section" data-section-id="recent" data-quick-access="true" data-editable="true" data-max-items="5">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-clock-rotate-left">Recent</sherpa-nav-item>
+      </summary>
+    </details>
+
+    <details class="nav-section" data-section-id="favorites" data-quick-access="true" data-editable="true" data-max-items="10">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-star">Favorites</sherpa-nav-item>
+      </summary>
+    </details>
+
+    <details class="nav-section" data-section-id="mylinks" data-quick-access="true" data-editable="true" data-max-items="10">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-link">My Links</sherpa-nav-item>
+      </summary>
+    </details>
+
+  </div>
+
+  <!-- Group Divider -->
+  <div class="nav-divider" role="separator">
+    <span class="nav-divider-label">EXAMPLE GROUP</span>
+    <div class="nav-divider-line"></div>
+  </div>
+
+  <!-- Example Group -->
+  <div class="nav-group" data-group-index="1" data-draggable="true">
+
+    <!-- Simple section with flat items -->
+    <details class="nav-section" data-section-id="example-section">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-table-cells-large">Example Section</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="item-1" data-route="#/example/item-1" tabindex="0" role="button">Item One</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="item-2" data-route="#/example/item-2" tabindex="0" role="button">Item Two</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="item-3" data-route="#/example/item-3" tabindex="0" role="button">Item Three</sherpa-nav-item>
+    </details>
+
+    <!-- Section with a badge -->
+    <details class="nav-section" data-section-id="another-section">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-flask" data-badge="New">Another Section</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="item-alpha" data-icon="fa-cubes" data-route="#/example/alpha" tabindex="0" role="button">Alpha</sherpa-nav-item>
+      <sherpa-nav-item data-variant="child" data-item-id="item-beta" data-icon="fa-hand-pointer" data-route="#/example/beta" tabindex="0" role="button">Beta</sherpa-nav-item>
+    </details>
+
+    <!-- Section with nested subsections -->
+    <details class="nav-section" data-section-id="nested-section" open>
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-sitemap">Nested Section</sherpa-nav-item>
+      </summary>
+      <sherpa-nav-item data-variant="child" data-item-id="ns-top-item" data-icon="fa-file" data-route="#/nested/top-item" tabindex="0" role="button">Top-Level Item</sherpa-nav-item>
+      <details class="nav-subsection" data-subsection-id="ns-folder-a" open>
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-icon="fa-solid fa-folder">Folder A</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="ns-a1" data-route="#/nested/a1" tabindex="0" role="button">Child A-1</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="ns-a2" data-route="#/nested/a2" tabindex="0" role="button">Child A-2</sherpa-nav-item>
+      </details>
+      <details class="nav-subsection" data-subsection-id="ns-folder-b">
+        <summary>
+          <sherpa-nav-item data-variant="subsection" data-icon="fa-solid fa-folder-open">Folder B</sherpa-nav-item>
+        </summary>
+        <sherpa-nav-item data-variant="child" data-item-id="ns-b1" data-route="#/nested/b1" tabindex="0" role="button">Child B-1</sherpa-nav-item>
+        <sherpa-nav-item data-variant="child" data-item-id="ns-b2" data-route="#/nested/b2" tabindex="0" role="button">Child B-2</sherpa-nav-item>
+      </details>
+    </details>
+
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="nav-footer">
+  <!-- Promo (hidden by default — shown when alternate template provides one) -->
+  <sherpa-nav-promo hidden></sherpa-nav-promo>
+
+  <!-- Settings -->
+  <sherpa-nav-item data-nav-target="settings" data-icon="fa-solid fa-gear" data-route="#/settings" tabindex="0" role="button" aria-label="Settings">Settings</sherpa-nav-item>
+
+  <!-- Edit Mode Controls -->
+  <div class="nav-edit-controls">
+    <sherpa-button class="nav-edit-cancel" data-variant="tertiary" data-size="small" data-label="Cancel"></sherpa-button>
+    <sherpa-button class="nav-edit-confirm" data-variant="primary" data-size="small" data-label="Apply"></sherpa-button>
+  </div>
+</footer>
+
+</div> <!-- /.sherpa-nav-root -->

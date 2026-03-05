@@ -1,0 +1,92 @@
+/**
+ * sherpa-status-tokens.css — Global status → token mapping.
+ *
+ * Defines private --_status-* CSS custom properties on [data-status]
+ * elements. Because custom properties inherit through shadow DOM
+ * boundaries, these values are automatically available inside every
+ * web component — no per-component status blocks needed.
+ *
+ * Components consume what they need via var() with a fallback:
+ *   background:   var(--_status-surface, var(--default-bg));
+ *   border-color: var(--_status-border, var(--default-border));
+ *   color:        var(--_status-text, var(--default-text));
+ *
+ * Variables provided per status:
+ *   --_status-surface              subtle surface (default/hover/down)
+ *   --_status-surface-hover
+ *   --_status-surface-down
+ *   --_status-surface-strong       strong surface (default/hover/down)
+ *   --_status-surface-strong-hover
+ *   --_status-surface-strong-down
+ *   --_status-border               border colour
+ *   --_status-text                 text colour
+ *   --_status-text-on-color        text on strong surface
+ *   --_status-icon                 icon colour
+ *
+ * Statuses: critical, info, success, warning, urgent
+ */
+
+[data-status="critical"] {
+  --_status-surface:              var(--sherpa-surface-context-error-subtle-default);
+  --_status-surface-hover:        var(--sherpa-surface-context-error-subtle-hover);
+  --_status-surface-down:         var(--sherpa-surface-context-error-subtle-down);
+  --_status-surface-strong:       var(--sherpa-surface-context-error-strong-default);
+  --_status-surface-strong-hover: var(--sherpa-surface-context-error-strong-hover);
+  --_status-surface-strong-down:  var(--sherpa-surface-context-error-strong-down);
+  --_status-border:               var(--sherpa-border-context-error-default);
+  --_status-text:                 var(--sherpa-text-context-error-default);
+  --_status-text-on-color:        var(--sherpa-text-context-error-on-color);
+  --_status-icon:                 var(--sherpa-icon-context-error-default);
+}
+
+[data-status="info"] {
+  --_status-surface:              var(--sherpa-surface-context-info-subtle-default);
+  --_status-surface-hover:        var(--sherpa-surface-context-info-subtle-hover);
+  --_status-surface-down:         var(--sherpa-surface-context-info-subtle-down);
+  --_status-surface-strong:       var(--sherpa-surface-context-info-strong-default);
+  --_status-surface-strong-hover: var(--sherpa-surface-context-info-strong-hover);
+  --_status-surface-strong-down:  var(--sherpa-surface-context-info-strong-down);
+  --_status-border:               var(--sherpa-border-context-info-default);
+  --_status-text:                 var(--sherpa-text-context-info-default);
+  --_status-text-on-color:        var(--sherpa-text-context-info-on-color);
+  --_status-icon:                 var(--sherpa-icon-context-info-default);
+}
+
+[data-status="success"] {
+  --_status-surface:              var(--sherpa-surface-context-success-subtle-default);
+  --_status-surface-hover:        var(--sherpa-surface-context-success-subtle-hover);
+  --_status-surface-down:         var(--sherpa-surface-context-success-subtle-down);
+  --_status-surface-strong:       var(--sherpa-surface-context-success-strong-default);
+  --_status-surface-strong-hover: var(--sherpa-surface-context-success-strong-hover);
+  --_status-surface-strong-down:  var(--sherpa-surface-context-success-strong-down);
+  --_status-border:               var(--sherpa-border-context-success-default);
+  --_status-text:                 var(--sherpa-text-context-success-default);
+  --_status-text-on-color:        var(--sherpa-text-context-success-on-color);
+  --_status-icon:                 var(--sherpa-icon-context-success-default);
+}
+
+[data-status="warning"] {
+  --_status-surface:              var(--sherpa-surface-context-warning-subtle-default);
+  --_status-surface-hover:        var(--sherpa-surface-context-warning-subtle-hover);
+  --_status-surface-down:         var(--sherpa-surface-context-warning-subtle-down);
+  --_status-surface-strong:       var(--sherpa-surface-context-warning-strong-default);
+  --_status-surface-strong-hover: var(--sherpa-surface-context-warning-strong-hover);
+  --_status-surface-strong-down:  var(--sherpa-surface-context-warning-strong-down);
+  --_status-border:               var(--sherpa-border-context-warning-default);
+  --_status-text:                 var(--sherpa-text-context-warning-default);
+  --_status-text-on-color:        var(--sherpa-text-context-warning-on-color);
+  --_status-icon:                 var(--sherpa-icon-context-warning-default);
+}
+
+[data-status="urgent"] {
+  --_status-surface:              var(--sherpa-surface-context-urgent-subtle-default);
+  --_status-surface-hover:        var(--sherpa-surface-context-urgent-subtle-hover);
+  --_status-surface-down:         var(--sherpa-surface-context-urgent-subtle-down);
+  --_status-surface-strong:       var(--sherpa-surface-context-urgent-strong-default);
+  --_status-surface-strong-hover: var(--sherpa-surface-context-urgent-strong-hover);
+  --_status-surface-strong-down:  var(--sherpa-surface-context-urgent-strong-down);
+  --_status-border:               var(--sherpa-border-context-urgent-default);
+  --_status-text:                 var(--sherpa-text-context-urgent-default);
+  --_status-text-on-color:        var(--sherpa-text-context-urgent-on-color);
+  --_status-icon:                 var(--sherpa-icon-context-urgent-default);
+}

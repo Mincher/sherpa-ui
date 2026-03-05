@@ -1,0 +1,691 @@
+/**
+ * sherpa-data-grid.css
+ * Advanced data grid with grouping, selection, sorting, and pagination.
+ *
+ * Uses native <table> for correct sticky headers, full-width row backgrounds,
+ * and proper column alignment. Groups use JS-toggled hidden rows.
+ *
+ * Token-aligned private properties (Figma → Sherpa):
+ *   --_cell-px:              Cell inline padding     (layout/space/x-small → sherpa-space-xs)
+ *   --_cell-h:               Data-cell row height    (32px)
+ *   --_cell-min-w:           Minimum data-cell width
+ *   --_header-h:             Header row height       (40px)
+ *   --_selection-col-w:      Selection column width  (48px)
+ *   --_action-col-w:         Action column width     (48px)
+ *   --_header-bg:            Header fill
+ *   --_cell-bg:              Cell fill
+ *   --_border-color:         Shared border color
+ *   --_border:               Cell bottom border
+ *   --_border-right:         Cell right border
+ *   --_group-parent-bg:      Group parent row fill
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Host
+   ═══════════════════════════════════════════════════════════════ */
+
+:host([hidden]) {
+  display: none !important;
+}
+
+:host {
+  --_cell-px: var(--sherpa-space-xs, 8px);
+  --_cell-h: 32px;
+  --_cell-min-w: 80px;
+  --_header-h: 40px;
+  --_selection-col-w: 48px;
+  --_action-col-w: 48px;
+  --_header-bg: var(--sherpa-surface-container-secondary-default, #f8f8f8);
+  --_cell-bg: var(--sherpa-surface-container-default, #fff);
+  --_border-color: var(--sherpa-border-container-default, #d5d5d5);
+  --_border: var(--sherpa-border-width-sm, 1px) solid var(--_border-color);
+  --_border-right: var(--sherpa-border-width-sm, 1px) solid var(--_border-color);
+  --_group-parent-bg: var(--sherpa-surface-container-default, #fff);
+  --_stripe-bg: var(--sherpa-surface-container-secondary-default, #f8f8f810);
+  --_pin-offset: 0px;
+
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: clip;
+  width: 100%;
+
+  /* body/md/default — 13px / 20px */
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+  color: var(--sherpa-text-default-body, #111);
+
+  container-type: inline-size;
+  container-name: data-grid;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Toolbar — trailing group
+   ═══════════════════════════════════════════════════════════════ */
+
+.toolbar-trailing {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+.global-search {
+  width: 200px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Table Container — single scroll surface
+   ═══════════════════════════════════════════════════════════════ */
+
+.table-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  container-type: scroll-state;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Column Headers (thead)
+   ═══════════════════════════════════════════════════════════════ */
+
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+thead th {
+  padding: 0 var(--_cell-px);
+  height: var(--_header-h);
+  text-align: left;
+  vertical-align: middle;
+  background-color: var(--_header-bg);
+  border-bottom: var(--_border);
+  border-right: var(--_border-right);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: var(--_cell-min-w);
+
+  /* body/md/emphasised — semibold 13px */
+  font-weight: 600;
+  font-size: 13px;
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+  color: var(--sherpa-text-default-label, #464646);
+  font-family: inherit;
+}
+
+/* Primary header cells — sortable */
+.primary-headers th.header-cell {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s;
+}
+
+.primary-headers th.header-cell:last-of-type {
+  border-right: none;
+}
+
+.primary-headers th.header-cell:hover {
+  background-color: var(--sherpa-surface-container-hover, #e8e8ed);
+}
+
+.primary-headers th.header-cell[data-sorted] {
+  color: var(--sherpa-text-primary-default);
+}
+
+/* Flexbox inside the th for label + sort icon */
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  min-width: 0;
+}
+
+.header-cell-label {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sort-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  color: var(--sherpa-icon-default-secondary);
+  transition: background-color 0.15s;
+}
+
+.header-cell:hover .sort-icon {
+  background-color: var(--sherpa-surface-container-secondary-default, #f8f8f8);
+}
+
+.header-cell[data-sorted] .sort-icon {
+  color: var(--sherpa-icon-primary-default);
+}
+
+/* Numeric columns — right-aligned */
+th.header-cell[data-numeric] .header-content {
+  justify-content: flex-end;
+  text-align: end;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Secondary Headers (column search)
+   ═══════════════════════════════════════════════════════════════ */
+
+.secondary-headers th {
+  background-color: var(--_header-bg);
+  border-bottom: var(--_border);
+  border-right: var(--_border-right);
+  height: var(--_header-h);
+  padding: 0 var(--_cell-px);
+  vertical-align: middle;
+}
+
+.secondary-headers th:last-of-type {
+  border-right: none;
+}
+
+.secondary-headers .col-search {
+  width: 100%;
+  min-width: 0;
+  /* Ghost style: no border, transparent background */
+  --sherpa-border-control-secondary-default: transparent;
+  --sherpa-border-control-active-default: transparent;
+  --sherpa-surface-control-default: transparent;
+}
+
+:host(:not([data-show-secondary-headers="true"])) .secondary-headers {
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Selection + Action Columns
+   ═══════════════════════════════════════════════════════════════ */
+
+.selection-cell,
+th.selection-col {
+  width: var(--_selection-col-w);
+  min-width: var(--_selection-col-w);
+  max-width: var(--_selection-col-w);
+  text-align: center;
+  vertical-align: middle;
+  padding: 0;
+  border-right: var(--_border-right);
+}
+
+.action-cell,
+th.action-col {
+  width: var(--_action-col-w);
+  min-width: var(--_action-col-w);
+  max-width: var(--_action-col-w);
+  text-align: center;
+  vertical-align: middle;
+  padding: 0;
+  border-right: none;
+}
+
+:host([data-selectable="true"]) {
+  --_pin-offset: var(--_selection-col-w);
+}
+
+:host(:not([data-selectable="true"])) .selection-cell,
+:host(:not([data-selectable="true"])) th.selection-col {
+  display: none;
+}
+
+:host(:not([data-show-actions="true"])) .action-cell,
+:host(:not([data-show-actions="true"])) th.action-col {
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Pinned Columns — freeze first two + last column while scrolling
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Selection column — pin left: 0 */
+th.selection-col,
+td.selection-cell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+/* First data column — pin left after selection column */
+thead th:nth-child(2),
+tr.grid-row td:nth-child(2) {
+  position: sticky;
+  left: var(--_pin-offset);
+  z-index: 1;
+}
+
+/* Action column — pin right: 0 */
+th.action-col,
+td.action-cell {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+}
+
+/* Pinned header cells sit above both the pinned body cells and
+   non-pinned header cells (thead already has z-index: 2). */
+thead th.selection-col,
+thead th:nth-child(2),
+thead th.action-col {
+  z-index: 3;
+}
+
+/* Opaque backgrounds on pinned body cells so scrolled content
+   doesn't show through.  Row-level states override via inherit. */
+tr.grid-row td.selection-cell,
+tr.grid-row td:nth-child(2),
+tr.grid-row td.action-cell {
+  background-color: inherit;
+}
+
+/* Scroll-under shadow transitions on pinned columns */
+th.selection-col,
+td.selection-cell,
+thead th:nth-child(2),
+tr.grid-row td:nth-child(2),
+.group-summary-inner,
+th.action-col,
+td.action-cell {
+  transition: box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
+}
+
+/* Left-pinned edge shadow — appears when content has been scrolled right
+   (scrollable: left = can scroll back left = user has scrolled right) */
+@container scroll-state(scrollable: left) {
+  thead th:nth-child(2),
+  tr.grid-row td:nth-child(2),
+  .group-summary-inner {
+    box-shadow: 4px 0 8px -2px rgba(0, 0, 0, 0.10);
+  }
+}
+
+/* Right-pinned edge shadow — appears when more content is to the right
+   (scrollable: right = can scroll further right) */
+@container scroll-state(scrollable: right) {
+  th.action-col,
+  td.action-cell {
+    box-shadow: -4px 0 8px -2px rgba(0, 0, 0, 0.10);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Density Variants
+   ═══════════════════════════════════════════════════════════════ */
+
+:host([data-density="compact"]) {
+  --_cell-h: 24px;
+  --_header-h: 28px;
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  line-height: var(--sherpa-fonts-line-height-sm, 16px);
+}
+
+:host([data-density="comfortable"]) {
+  --_cell-h: 40px;
+  --_header-h: 48px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Data Rows
+   ═══════════════════════════════════════════════════════════════ */
+
+tr.grid-row {
+  background: var(--_cell-bg);
+  transition: background-color 0.1s;
+}
+
+tr.grid-row:nth-child(even of tr.grid-row) {
+  background: var(--_stripe-bg);
+}
+
+tr.grid-row:hover {
+  background: var(--sherpa-surface-container-inactive, #c5c5c5);
+}
+
+tr.grid-row[data-selected] {
+  background: var(--sherpa-surface-container-down, #adadad);
+  color: var(--sherpa-text-default-body, #111);
+}
+
+tr.grid-row[data-selected]:hover {
+  background: var(--sherpa-surface-container-down, #adadad);
+  color: var(--sherpa-text-default-body, #111);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Data Cells
+   ═══════════════════════════════════════════════════════════════ */
+
+tr.grid-row td {
+  padding: 0 var(--_cell-px);
+  height: var(--_cell-h);
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-bottom: var(--_border);
+  border-right: var(--_border-right);
+  color: var(--sherpa-text-default-body, #111);
+  background-color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+tr.grid-row td:last-child {
+  border-right: none;
+}
+
+td[data-numeric] {
+  text-align: right;
+}
+
+/* Boolean cell icons */
+td .bool-icon {
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
+td .bool-true {
+  color: var(--sherpa-icon-context-success-default);
+}
+
+td .bool-false {
+  color: var(--sherpa-icon-default-secondary);
+}
+
+/* Link cells */
+td a {
+  color: var(--sherpa-text-primary-default);
+  text-decoration: none;
+}
+
+td a:hover {
+  text-decoration: underline;
+}
+
+/* Selection & action cells in data rows */
+tr.grid-row td.selection-cell,
+tr.grid-row td.action-cell {
+  border-bottom: var(--_border);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Group Parent Row
+   ═══════════════════════════════════════════════════════════════ */
+
+tr.group-parent-row {
+  background: var(--_group-parent-bg);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+tr.group-parent-row:hover {
+  background: var(--sherpa-surface-container-inactive, #c5c5c5);
+}
+
+tr.group-parent-row[data-selected] {
+  background: var(--sherpa-surface-container-down, #adadad);
+  color: var(--sherpa-text-default-body, #111);
+}
+
+tr.group-parent-row[data-selected]:hover {
+  background: var(--sherpa-surface-container-down, #adadad);
+  color: var(--sherpa-text-default-body, #111);
+}
+
+tr.group-parent-row[data-indeterminate] {
+  background: var(--sherpa-surface-container-down, #adadad);
+  color: var(--sherpa-text-default-body, #111);
+}
+
+tr.group-parent-row[data-indeterminate]:hover {
+  background: var(--sherpa-surface-container-down, #adadad);
+  color: var(--sherpa-text-default-body, #111);
+}
+
+/* The single full-colspan cell that holds the group summary */
+tr.group-parent-row td.group-summary-cell {
+  padding: 0;
+  height: var(--_header-h);
+  border-bottom: var(--_border);
+  vertical-align: middle;
+}
+
+/* Inner flex layout within the group summary cell.
+   sticky + max-content keeps the label pinned left
+   while the single-colspan td spans the full table width. */
+.group-summary-inner {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 100%;
+  position: sticky;
+  left: 0;
+  width: max-content;
+}
+
+.group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  transition: background-color 0.15s;
+}
+
+tr.group-parent-row:hover .group-toggle {
+  background-color: var(--sherpa-surface-container-secondary-default, #f8f8f8);
+}
+
+.toggle-icon {
+  font-size: 8px;
+  color: var(--sherpa-icon-default-secondary);
+  transition: transform 0.2s var(--sherpa-motion-easing-standard, ease);
+}
+
+tr.group-parent-row[data-expanded] .toggle-icon {
+  transform: rotate(90deg);
+}
+
+.group-content {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-default, 16px);
+}
+
+.group-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+
+  /* body/md/emphasised — semibold 13px */
+  font-weight: 600;
+  font-size: 13px;
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  color: var(--sherpa-text-default-label, #464646);
+  white-space: nowrap;
+}
+
+.group-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-count {
+  flex-shrink: 0;
+}
+
+.group-metadata {
+  display: none;
+  /* body/xs/default — regular 11px */
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-line-height-xs, 16px);
+  color: var(--sherpa-text-default-secondary, #464646);
+}
+
+.group-metadata:not(:empty) {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  white-space: nowrap;
+}
+
+/* Metadata dot separator */
+.group-metadata span + span::before {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 8px;
+  background: var(--sherpa-border-container-default, #d9d9d9);
+  margin-inline-end: var(--sherpa-space-xs, 8px);
+  vertical-align: middle;
+}
+
+/* Hidden group child rows (collapsed state) */
+tr.group-child[hidden] {
+  display: none;
+}
+
+/* Indent child-row selection checkboxes to denote hierarchy */
+tr.group-child td.selection-cell {
+  padding-inline-start: var(--sherpa-space-default, 16px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Search Highlights (CSS Custom Highlight API)
+   ═══════════════════════════════════════════════════════════════ */
+
+::highlight(data-grid-search) {
+  background-color: var(--sherpa-surface-search-highlight);
+  color: inherit;
+}
+
+::highlight(data-grid-col-search) {
+  background-color: var(--sherpa-surface-search-highlight);
+  color: inherit;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Empty State
+   ═══════════════════════════════════════════════════════════════ */
+
+.empty-state {
+  padding: var(--sherpa-space-2xl, 48px) var(--sherpa-space-lg, 24px);
+  text-align: center;
+}
+
+.empty-state[hidden] {
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Pagination
+   ═══════════════════════════════════════════════════════════════ */
+
+.grid-pagination {
+  flex-shrink: 0;
+}
+
+:host(:not([data-show-pagination="true"])) .grid-pagination {
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Loading state
+   ═══════════════════════════════════════════════════════════════ */
+
+:host([data-loading]) tbody {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PDF mode
+   ═══════════════════════════════════════════════════════════════ */
+
+:host([data-pdf-mode]) .grid-pagination {
+  display: none;
+}
+
+:host([data-pdf-mode]) .selection-cell,
+:host([data-pdf-mode]) th.selection-col {
+  display: none;
+}
+
+:host([data-pdf-mode]) .action-cell,
+:host([data-pdf-mode]) th.action-col {
+  display: none;
+}
+
+:host([data-pdf-mode]) .secondary-headers {
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Container queries — compact at narrow widths
+   ═══════════════════════════════════════════════════════════════ */
+
+@container data-grid (max-width: 500px) {
+  thead th,
+  tr.grid-row td {
+    --_cell-px: var(--sherpa-space-2xs, 4px);
+    --_cell-min-w: 60px;
+  }
+
+  .group-metadata {
+    display: none !important;
+  }
+}
+
+@container data-grid (max-width: 350px) {
+  thead th,
+  tr.grid-row td {
+    --_cell-px: var(--sherpa-space-2xs, 2px);
+    --_cell-min-w: 48px;
+  }
+}

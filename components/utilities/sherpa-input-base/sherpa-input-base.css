@@ -1,0 +1,329 @@
+
+/**
+ * sherpa-input-base.css — Shared styles for all form input components.
+ *
+ * Each concrete input component imports this via @import in its own
+ * CSS file. No JS involvement — purely CSS cascade.
+ *
+ * Layout uses <dl>/<dt>/<dd> semantics:
+ *   <dl class="input-wrapper">
+ *     <div class="input-header">           ← label + description
+ *       <dt class="input-label">…</dt>
+ *       <dd class="input-description">…</dd>
+ *     </div>
+ *     <div class="input-content">          ← control + helper
+ *       <div class="input-body">           ← border + overflow:hidden
+ *         <dd class="input-control">…</dd>
+ *         <dd class="input-validation-message">…</dd>
+ *       </div>
+ *       <dd class="input-helper">…</dd>
+ *     </div>
+ *   </dl>
+ *
+ * Token reference (from sherpa-color-alias.css / sherpa-theme-tokens.css):
+ *   Surface: --sherpa-surface-control-default / hover / down / inactive
+ *   Border:  --sherpa-border-control-secondary-default / active / inactive
+ *   Text:    --sherpa-text-default-body / label / placeholder / secondary
+ *   Status:  --sherpa-border-context-{error|warning|success|info}-default
+ *            --sherpa-text-context-{error|warning|success|info}-default
+ */
+
+/* ── Host ───────────────────────────────────────────────────────── */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  color: var(--sherpa-text-default-body, #333);
+}
+
+:host([hidden]) { display: none; }
+
+:host([disabled]) {
+  pointer-events: none;
+}
+
+/* ── Wrapper (<dl>) ─────────────────────────────────────────────── */
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Header (label + description) ───────────────────────────────── */
+
+.input-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+/* Collapse header when both label and description text are empty */
+.input-header:has(.input-label-text:empty):has(.input-description-text:empty) {
+  display: none;
+}
+
+/* ── Content (input-body + helper) ──────────────────────────────── */
+
+.input-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  min-width: 0;
+}
+
+/* Horizontal layout */
+:host([data-layout="horizontal"]) .input-wrapper {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--sherpa-space-sm, 12px);
+}
+
+:host([data-layout="horizontal"]) .input-header {
+  flex: 0 0 auto;
+  min-width: 120px;
+  padding-top: var(--sherpa-space-2xs, 4px);
+}
+
+:host([data-layout="horizontal"]) .input-content {
+  flex: 1;
+}
+
+/* ── Label (<dt>) ───────────────────────────────────────────────── */
+
+.input-label {
+  display: block;
+  margin: 0;
+  padding: 0;
+  color: var(--sherpa-text-default-label, #1a1a1f);
+}
+
+.input-label:has(.input-label-text:empty) { display: none; }
+
+:host([disabled]) .input-label {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+
+.input-required {
+  color: var(--sherpa-text-context-error-default, #c41337);
+  margin-inline-start: 2px;
+}
+
+/* ── Body (groups control + validation) ─────────────────────────── */
+
+.input-body {
+  display: flex;
+  flex-direction: column;
+  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  overflow: hidden;
+  transition: border-color 120ms ease;
+}
+
+.input-body:focus-within {
+  border-color: var(--sherpa-border-control-active-default, #0060df);
+}
+
+.input-body:has(.input-field:disabled) {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+  border-color: var(--sherpa-border-control-inactive, #7e7e8f);
+}
+
+.input-body:has(.input-field[readonly]) {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+}
+
+/* ── Control (<dd>) ─────────────────────────────────────────────── */
+
+.input-control {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Shared native input / select styling ───────────────────────── */
+
+.input-field {
+  flex: 1;
+  min-width: 0;
+  height: var(--sherpa-size-2xl, 32px);
+  padding-inline: var(--sherpa-space-xs, 8px);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--sherpa-text-default-body, #333);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  box-sizing: border-box;
+}
+
+.input-field::placeholder {
+  color: var(--sherpa-text-default-placeholder, #7e7e8f);
+}
+
+.input-field:focus {
+  outline: none;
+}
+
+.input-field:disabled {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+  cursor: not-allowed;
+}
+
+.input-field[readonly] {
+  color: var(--sherpa-text-default-body, #333);
+  cursor: default;
+}
+
+/* ── Native input chrome (spinner, picker) ──────────────────────── */
+
+/* Hide browser-native spinner (number, date, time) */
+.input-field::-webkit-inner-spin-button,
+.input-field::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input-field[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* Style native date/time picker indicator */
+.input-field::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: grayscale(0.4);
+  transition: filter 120ms ease;
+}
+
+.input-field::-webkit-calendar-picker-indicator:hover {
+  filter: none;
+}
+
+/* Hide the native search clear button */
+.input-field::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* ── Description (<dd>) — between label and control ─────────────── */
+
+.input-description {
+  display: block;
+  margin: 0;
+  padding: 0;
+  color: var(--sherpa-text-default-secondary, #6a6a7a);
+}
+
+.input-description:has(.input-description-text:empty) { display: none; }
+
+:host([disabled]) .input-description {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+
+/* ── Status indicator (appended to input-control) ───────────────── */
+
+.status-indicator {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--sherpa-size-2xl, 32px);
+  align-self: stretch;
+  color: var(--_status-icon);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+}
+
+:host([data-status]) .status-indicator { display: flex; }
+
+/* Also show on :user-invalid (error icon) */
+:host(:not([novalidate]):not([data-status])) .input-control:has(.input-field:user-invalid) .status-indicator {
+  display: flex;
+  color: var(--sherpa-icon-context-error-default, #c41337);
+}
+
+/* ── Status variants ────────────────────────────────────────────── */
+
+:host([data-status]) .input-body {
+  border-color: var(--_status-border);
+}
+
+/* ── Control group (input + button joined) ──────────────────────── */
+
+.control-group {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 0;
+  --_cg-border-width: 0;
+  --_cg-border-radius: 0;
+}
+
+/* ── Action buttons (inside control area) ───────────────────────── */
+
+.input-action {
+  flex-shrink: 0;
+}
+
+/* ── Native constraint validation (CSS-driven) ──────────────────── */
+
+/*
+ * :user-invalid activates after the user has interacted (blur) and the
+ * field is currently invalid.  No JavaScript is needed for the visual
+ * border treatment — CSS handles it automatically.
+ *
+ * The opt-out is the standard `novalidate` attribute on the host.
+ */
+
+:host(:not([novalidate])) .input-body:has(.input-field:user-invalid) {
+  border-color: var(--sherpa-border-context-error-default, #c41337);
+}
+
+/* ── Validation message (status-coloured bar below input) ───────── */
+
+/*
+ * Sits directly below the input control inside .input-body.
+ * overflow:hidden on .input-body clips corners automatically.
+ * The DD has no wrapper span — :empty works when there's no text.
+ */
+
+.input-validation-message {
+  display: none;
+  margin: 0;
+  padding: var(--sherpa-space-xs, 8px);
+  background: var(--_status-surface-strong, var(--sherpa-surface-context-default-strong-default, #c0c0cc));
+  color: var(--_validation-text, var(--sherpa-text-default-on-color-body, #fff));
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+}
+
+/* Show when explicit status is set AND message has text */
+:host([data-status]) .input-validation-message:not(:empty) {
+  display: block;
+}
+
+/* Show on native :user-invalid (uses error colours when no explicit status) */
+:host(:not([novalidate])) .input-body:has(.input-field:user-invalid) > .input-validation-message:not(:empty) {
+  display: block;
+  background: var(--_status-surface-strong, var(--sherpa-surface-context-error-strong-default, #c41337));
+}
+
+/* ── Helper text (below input body) ─────────────────────────────── */
+
+.input-helper {
+  display: block;
+  margin: 0;
+  padding: 0;
+  color: var(--sherpa-text-default-secondary, #6a6a7a);
+}
+
+.input-helper:has(.input-helper-text:empty) { display: none; }
+
+:host([disabled]) .input-helper {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}

@@ -1,0 +1,387 @@
+
+/**
+ * sherpa-base-table.css
+ * Data table with sticky headers, sortable columns, and collapsible row segments
+ * 
+ * Segments use native <details>/<summary> for accordion behavior with CSS animations.
+ * 
+ * Private properties:
+ *   --_cell-px, --_cell-py: Cell padding
+ *   --_cell-min-w: Minimum cell width
+ *   --_first-col-w: First column width
+ *   --_row-bg-odd, --_row-bg-even: Alternating row backgrounds
+ *   --_border: Shared border shorthand
+ *   --_header-bg: Header/footer background
+ */
+
+/* Data-viz header styles (delegated to sherpa-header type="data-viz") */
+sherpa-header[hidden] {
+  display: none;
+}
+
+sherpa-header[data-show-header-controls="false"] .control-chip {
+  display: none;
+}
+
+sherpa-header[data-show-view-menu="false"] sherpa-menu [data-menu-group="view"] {
+  display: none;
+}
+
+:host {
+  --_cell-px: var(--sherpa-space-xs, 8px);
+  --_cell-py: var(--sherpa-space-2xs, 6px);
+  --_cell-h: 32px;
+  --_header-h: 36px;
+  --_cell-min-w: 80px;
+  --_first-col-w: 20%;
+  --_row-bg-odd: var(--sherpa-surface-container-default, #ffffff);
+  --_row-bg-even: var(--sherpa-surface-container-secondary-default, #f4f4f8);
+  --_border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #d5d5dc);
+  --_header-bg: var(--sherpa-surface-container-secondary-default, #f4f4f8);
+
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  gap: var(--sherpa-space-xs, 8px);
+  overflow: clip;
+  width: 100%;
+
+  /* body/md/default — 13px / 20px (matches data-grid) */
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+  color: var(--sherpa-text-default-body, #111);
+
+  /* Container queries for responsive sizing */
+  container-type: inline-size;
+  container-name: table;
+}
+
+:host(:has([data-menu-open])) {
+  overflow: visible;
+}
+
+:host([hidden]) { display: none; }
+
+  .table-container {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+  }
+
+  /* Header - sticky top */
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    & th {
+      padding: 0 var(--_cell-px);
+      height: var(--_header-h);
+      text-align: left;
+      vertical-align: middle;
+      background-color: var(--_header-bg);
+      border-bottom: var(--_border);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: var(--_cell-min-w);
+      max-width: 200px;
+
+      /* body/md/emphasised — semibold 13px (matches data-grid) */
+      font-weight: 600;
+      font-size: 13px;
+      line-height: var(--sherpa-fonts-line-height-base, 20px);
+      letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+      color: var(--sherpa-text-default-label, #464646);
+      font-family: inherit;
+
+      &:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        min-width: var(--_first-col-w);
+      }
+
+      &.numeric {
+        text-align: right;
+        & .header-content { justify-content: flex-end; }
+      }
+    }
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: var(--_cell-py);
+    min-width: 0;
+  }
+
+  .header-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sort-indicator {
+    font-size: 10px;
+    color: var(--sherpa-icon-primary-default, #0b6dd6);
+    flex-shrink: 0;
+  }
+
+  th.sorted {
+    color: var(--sherpa-text-primary-default, #0b6dd6);
+  }
+
+  /* Body rows */
+  tbody tr:not(.segment-wrapper) {
+    --_row-bg: var(--_row-bg-odd);
+    background-color: var(--_row-bg);
+
+    &:nth-child(even of tr:not(.segment-wrapper)) {
+      --_row-bg: var(--_row-bg-even);
+    }
+
+    & th,
+    & td {
+      padding: 0 var(--_cell-px);
+      height: var(--_cell-h);
+      vertical-align: middle;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: var(--_cell-min-w);
+      border-bottom: var(--_border);
+      background-color: var(--_row-bg);
+      color: var(--sherpa-text-default-body, #111);
+      font-family: inherit;
+      font-size: inherit;
+
+      &:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        min-width: var(--_first-col-w);
+      }
+    }
+
+    & th { font-weight: normal; text-align: left; }
+    & .link { color: var(--sherpa-text-primary-default, #0b6dd6); cursor: pointer; }
+    & .numeric { text-align: right; }
+  }
+
+  /* Row segments using native details/summary */
+  tr.segment-wrapper {
+    & > td {
+      padding: 0;
+      background-color: transparent;
+    }
+  }
+
+  /* Footer - sticky bottom */
+  tfoot {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+
+    &[data-has-content="false"] { display: none; }
+
+    & th,
+    & td {
+      padding: 0 var(--_cell-px);
+      height: var(--_header-h);
+      vertical-align: middle;
+      background-color: var(--_header-bg);
+      border-top: var(--_border);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      min-width: var(--_cell-min-w);
+
+      &:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        min-width: var(--_first-col-w);
+      }
+    }
+
+    & th { text-align: left; font-weight: 600; }
+
+    & td {
+      text-align: right;
+      font-family: var(--sherpa-fonts-context-monospaced, 'Roboto Mono', monospace);
+      font-size: var(--sherpa-fonts-scale-sm, 12px);
+      line-height: var(--sherpa-fonts-line-height-sm, 14px);
+    }
+  }
+
+/* ===== Table Segments ===== */
+.table-segment {
+  &[data-open] .segment-arrow { transform: rotate(90deg); }
+}
+
+.segment-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--_cell-py) var(--_cell-px);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  font-size: var(--sherpa-fonts-scale-sm);
+  background-color: var(--sherpa-surface-container-secondary-default, #f4f4f8);
+  border-bottom: var(--_border);
+
+  &:hover { background-color: var(--sherpa-surface-container-hover, #f0f0f5); }
+}
+
+.segment-arrow {
+  font-size: 10px;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.segment-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+}
+
+.segment-count {
+  font-weight: 400;
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  color: var(--sherpa-text-default-placeholder, #a0a0a8);
+}
+
+.segment-content {
+  & > table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+  }
+
+  & tr {
+    background-color: var(--_row-bg-odd);
+    &:nth-child(even) { background-color: var(--_row-bg-even); }
+  }
+}
+
+/* ============ Container Query Responsive States ============ */
+
+/* Narrow width: < 200px - hide columns beyond first 2 */
+@container table (max-width: 200px) {
+  thead th:nth-child(n+3),
+  tbody td:nth-child(n+3),
+  tfoot td:nth-child(n+3) {
+    display: none;
+  }
+}
+
+/* Very narrow: < 150px - show only first column */
+@container table (max-width: 150px) {
+  thead th:nth-child(n+2),
+  tbody td:nth-child(n+2),
+  tfoot td:nth-child(n+2) {
+    display: none;
+  }
+}
+
+/* ============ Empty State ============ */
+
+.empty-state {
+  padding: var(--sherpa-space-default, 16px);
+  text-align: center;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
+/* ============ PDF Mode Overrides ============ */
+/* Activated via data-pdf-mode attribute set by sherpa-container-pdf */
+
+:host([data-pdf-mode]) {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  flex: none !important;
+  container-type: normal !important;
+  overflow: visible !important;
+  color: var(--_pdf-text-primary) !important;
+  --_bg-header: var(--_pdf-bg-header) !important;
+  --_bg-odd: var(--_pdf-bg-white) !important;
+  --_bg-even: var(--_pdf-bg-alt) !important;
+  --_border: var(--sherpa-border-width-xs, 1px) solid var(--_pdf-border-default) !important;
+}
+
+:host([data-pdf-mode]) sherpa-header {
+  display: none !important;
+}
+
+:host([data-pdf-mode]) .table-container {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  flex: none !important;
+  overflow: visible !important;
+}
+
+:host([data-pdf-mode]) table {
+  width: 100% !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
+}
+
+:host([data-pdf-mode]) th,
+:host([data-pdf-mode]) td {
+  color: var(--_pdf-text-primary) !important;
+  background-color: var(--_pdf-bg-white) !important;
+}
+
+:host([data-pdf-mode]) thead th {
+  background-color: var(--_pdf-bg-header) !important;
+  color: var(--_pdf-text-primary) !important;
+  border-bottom: var(--sherpa-border-width-xs, 1px) solid var(--_pdf-border-default) !important;
+}
+
+:host([data-pdf-mode]) tbody tr:nth-child(even) td,
+:host([data-pdf-mode]) tbody tr:nth-child(even) th {
+  background-color: var(--_pdf-bg-alt) !important;
+}
+
+:host([data-pdf-mode]) thead {
+  position: static !important;
+}
+
+:host([data-pdf-mode]) thead th:first-child,
+:host([data-pdf-mode]) tbody th:first-child,
+:host([data-pdf-mode]) tbody td:first-child {
+  position: static !important;
+}
+
+:host([data-pdf-mode]) tfoot {
+  position: static !important;
+}
+
+:host([data-pdf-mode]) tfoot th:first-child,
+:host([data-pdf-mode]) tfoot td:first-child {
+  position: static !important;
+}

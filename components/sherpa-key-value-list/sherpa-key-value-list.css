@@ -1,0 +1,185 @@
+
+/**
+ * sherpa-key-value-list.css
+ * Shadow DOM styles for the AuxKeyValueList web component.
+ *
+ * Uses the native <dl> element with <dt>/<dd> pairs authored in the template.
+ * Layout orientation is driven by CSS flex-direction via the host layout attribute.
+ *
+ * Host attributes:
+ *   data-layout:    horizontal (default) | vertical
+ *   data-density:   compact | base (default) | comfortable
+ *   data-striped:   boolean — alternate row backgrounds
+ *   data-bordered:  boolean (default: true) — show item separators
+ *   data-truncate:  boolean — clip long values with ellipsis
+ *   data-key-width: custom key column width
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOST
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+  --_key-width: auto;
+  --_padding-block: var(--sherpa-space-sm, 12px);
+}
+
+:host([hidden]) { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   <dl> — flex container, one dt/dd pair per row via CSS grid-like flex wrap
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+dl {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  min-height: var(--sherpa-size-4xl, 48px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   <dt> KEY
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+dt {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  margin: 0;
+  padding-block-start: var(--_padding-block);
+  font-weight: 600;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   <dd> VALUE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+dd {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  margin: 0;
+  padding-block-end: var(--_padding-block);
+  color: var(--sherpa-text-default-body, #1b1b21);
+  word-break: break-word;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HORIZONTAL LAYOUT (default) — dt and dd share a row
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host(:not([data-layout="vertical"])) dl {
+  display: grid;
+  grid-template-columns: var(--_key-width, auto) 1fr;
+  gap: 0 var(--sherpa-space-lg, 24px);
+}
+
+:host(:not([data-layout="vertical"])) dt {
+  min-width: 40px;
+  max-width: 350px;
+  padding-block-end: var(--_padding-block);
+}
+
+:host(:not([data-layout="vertical"])) dd {
+  justify-content: flex-end;
+  padding-block-start: var(--_padding-block);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VERTICAL LAYOUT — dt stacked above dd
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-layout="vertical"]) dt {
+  padding-block-end: var(--sherpa-space-2xs, 4px);
+}
+
+:host([data-layout="vertical"]) dd {
+  padding-block-start: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BORDERED
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* In horizontal grid layout, every other dt starts a new "row" pair.
+   We put the border on dt (not the first one). */
+
+:host(:not([data-bordered="false"])) dt:not(:first-of-type) {
+  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d5d5dc);
+}
+
+:host(:not([data-bordered="false"]):not([data-layout="vertical"])) dd:not(:first-of-type) {
+  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d5d5dc);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STRIPED — alternate pair backgrounds
+   Every other dt/dd pair gets a subtle fill. In the grid (horizontal) layout
+   both dt and dd of the same pair share the row. In vertical layout the dd
+   immediately following the dt must also be coloured.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-striped]) dt:nth-of-type(even),
+:host([data-striped]) dt:nth-of-type(even) + dd {
+  background-color: var(--sherpa-surface-container-secondary-default, #f4f4f8);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATUS — per-value text colour
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+dd[data-status="success"]  { color: var(--sherpa-icon-context-success-default, #0f7b6c); }
+dd[data-status="critical"] { color: var(--sherpa-icon-context-error-default, #d13438); }
+dd[data-status="warning"]  { color: var(--sherpa-icon-context-warning-default, #f78701); }
+dd[data-status="info"]     { color: var(--sherpa-icon-context-info-default, #006db6); }
+dd[data-status="urgent"]   { color: var(--sherpa-icon-context-urgent-default, #cb4b16); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VALUE TYPE VARIANTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Links ─────────────────────────────────────────────────────── */
+
+dd a {
+  color: var(--sherpa-text-primary-default, #0b6dd6);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default, #0b6dd6);
+    outline-offset: 2px;
+    border-radius: var(--sherpa-border-rounding-sm, 2px);
+  }
+}
+
+/* ── Monospace ─────────────────────────────────────────────────── */
+
+dd[data-type="monospace"] {
+  font-family: var(--sherpa-fonts-context-monospaced, 'Roboto Mono', monospace);
+}
+
+/* ── Truncation ────────────────────────────────────────────────── */
+
+:host([data-truncate]) dd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DENSITY
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-density="compact"]) {
+  --_padding-block: var(--sherpa-space-2xs, 6px);
+  font-size: var(--sherpa-fonts-scale-xs, 11px);
+}
+
+:host([data-density="comfortable"]) {
+  --_padding-block: var(--sherpa-space-lg, 24px);
+  font-size: var(--sherpa-fonts-scale-base, 16px);
+}

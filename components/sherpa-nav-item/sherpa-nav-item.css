@@ -1,0 +1,228 @@
+
+/**
+ * sherpa-nav-item.css — Shadow-DOM scoped styles.
+ *
+ * The host element IS the interactive row (no wrapper div).
+ * All row styling is self-contained in shadow CSS — no external dependencies.
+ * Attribute-driven icon via data-icon on host, badge slot detection
+ * (data-has-badge, data-has-content on wrappers).
+ *
+ * Variants: data-variant="section" | "subsection" | "child" | (none)
+ * State:    data-state="selected" | (absent)
+ *
+ * Chevron visibility + rotation managed externally by sherpa-nav.css
+ * via ::part(chevron), details[open], and :has().
+ *
+ * Named slots: badge, (default = label text)
+ * Attributes: data-icon (FontAwesome class string for icon)
+ * Parts: indicator, drag, icon, label, tag, chevron, delete
+ * Container: :host is an inline-size container (nav-item) so children
+ *            reveal themselves based on the item's own width.
+ */
+
+/* ══════════════════════════════════════════════════════════════════════
+   HOST — row container
+   ══════════════════════════════════════════════════════════════════════ */
+
+:host {
+  container: nav-item / inline-size;
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm);
+  padding-inline: calc(var(--_indent, 0px) * var(--_depth, 0)) var(--sherpa-space-sm);
+  height: var(--_item-h);
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  background: transparent;
+}
+
+:host(:hover) {
+  background: var(--sherpa-surface-app-product-nav-hover);
+}
+
+:host([hidden]),
+:host([data-search-hidden]) {
+  display: none;
+}
+
+/* ── Selected state ── */
+
+:host([data-state="selected"]) {
+  background: var(--sherpa-surface-app-product-nav-active);
+}
+
+:host([data-state="selected"]) .nav-item-indicator {
+  background: var(--sherpa-surface-app-product-bar-brand);
+}
+
+/* ── Child variant (secondary bg) ── */
+
+:host([data-variant="child"]) {
+  background: var(--sherpa-surface-app-product-nav-secondary);
+}
+
+:host([data-variant="child"]:hover) {
+  background: var(--sherpa-surface-app-product-nav-hover);
+}
+
+:host([data-variant="child"][data-state="selected"]) {
+  background: var(--sherpa-surface-app-product-nav-active);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   COLLAPSED — icon-only layout
+   Queries the parent sherpa-nav container (not nav-item) because a
+   container query cannot target the element that defines the container.
+   Indicator keeps its layout space (visibility: hidden) so the icon
+   stays in a stable position throughout the expand/collapse transition.
+   ══════════════════════════════════════════════════════════════════════ */
+
+@container sherpa-nav (max-width: 319px) {
+  .nav-item-indicator {
+    visibility: hidden;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   INDICATOR — active pip
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-item-indicator {
+  width: 4px;
+  height: var(--sherpa-size-sm);
+  align-self: center;
+  background: transparent;
+  border-radius: var(--sherpa-border-rounding-full);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ICON / DRAG / DELETE — sizing
+   ══════════════════════════════════════════════════════════════════════ */
+
+:is(.nav-item-icon, .nav-item-drag, .nav-item-delete) {
+  --icon-size: var(--sherpa-size-xs);
+  flex-shrink: 0;
+}
+
+.nav-item-icon {
+  display: none;
+  font-size: var(--icon-size);
+  color: var(--sherpa-icon-context-default-on-color-heading);
+}
+
+:host([data-icon]) .nav-item-icon {
+  display: flex;
+  align-items: center;
+}
+
+.nav-item-drag .sherpa-icon,
+.nav-item-delete .sherpa-icon {
+  --icon-size: var(--sherpa-size-xs);
+}
+
+.nav-item-chevron .sherpa-icon {
+  --icon-size: var(--sherpa-size-2xs);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LABEL — hidden when collapsed, ripple-revealed on expand
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-item-label {
+  display: none;
+  flex: 1;
+  font-weight: var(--_label-weight, 500);
+  min-width: 0;
+  font-size: var(--sherpa-fonts-scale-base);
+  line-height: 1.4;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@container nav-item (min-width: 100px) {
+  .nav-item-label {
+    display: block;
+    animation: sherpa-ripple-in var(--sherpa-motion-duration-fast) var(--sherpa-motion-easing-default) calc(var(--_ripple-i, 0) * 30ms) both;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   TAG — hidden by default, shown when badge slot has content
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-item-tag {
+  display: none;
+}
+
+@container nav-item (min-width: 100px) {
+  :host(:is([data-variant="child"], [data-variant="section"], [data-variant="subsection"])[data-has-badge]) .nav-item-tag {
+    display: inline-flex;
+    align-items: center;
+    animation: sherpa-ripple-in var(--sherpa-motion-duration-fast) var(--sherpa-motion-easing-default) calc((var(--_ripple-i, 0) * 30ms) + 30ms) both;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CHEVRON
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-item-chevron {
+  display: none;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+/* Chevron visibility + rotation managed by sherpa-nav.css via ::part(chevron)
+   using details[open] and :has() — no JS data-mode sync needed. */
+
+/* ══════════════════════════════════════════════════════════════════════
+   DRAG HANDLE
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-item-drag {
+  color: var(--sherpa-icon-inactive-on-color);
+  display: none;
+  cursor: grab;
+}
+
+.nav-item-drag:active {
+  cursor: grabbing;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   DELETE BUTTON
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-item-delete {
+  color: var(--sherpa-icon-inactive-on-color);
+  display: none;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-item-delete:hover {
+  color: var(--sherpa-icon-context-error-default);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SECTION / SUBSECTION VARIANT — accordion headers
+   Used inside <summary> of <details> accordions.
+   No delete button, no role/tabindex.
+   ══════════════════════════════════════════════════════════════════════ */
+
+:host(:is([data-variant="section"], [data-variant="subsection"])) .nav-item-delete {
+  display: none !important;
+}
+
+/* Subsection headers get secondary background */
+:host([data-variant="subsection"]) {
+  background: var(--sherpa-surface-app-product-nav-secondary);
+}
+
+

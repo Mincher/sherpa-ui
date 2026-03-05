@@ -1,0 +1,102 @@
+/**
+ * sherpa-tag.css
+ * Shadow DOM styles for the AuxTag web component.
+ *
+ * Status tokens:
+ *   When used in light DOM, global [data-status] rules in
+ *   sherpa-status-tokens.css set --_status-* properties on the host.
+ *   When nested inside another component's shadow DOM, the :host
+ *   rules below provide the same mapping so the tag is self-contained.
+ *
+ * Attributes:
+ *   data-variant:    primary (default) | secondary
+ *   data-status:     critical | info | success | warning | urgent
+ *   data-collapsed:  "true" renders as small circular indicator
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Host
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: contents;
+  container-type: normal;
+}
+
+:host([hidden]) { display: none; }
+
+/* ── Status — self-contained token mapping ─────────────────────────────── */
+
+:host([data-status="critical"]) {
+  --_status-surface: var(--sherpa-surface-context-error-subtle-default);
+  --_status-border:  var(--sherpa-border-context-error-default);
+  --_status-text:    var(--sherpa-text-context-error-default);
+}
+
+:host([data-status="info"]) {
+  --_status-surface: var(--sherpa-surface-context-info-subtle-default);
+  --_status-border:  var(--sherpa-border-context-info-default);
+  --_status-text:    var(--sherpa-text-context-info-default);
+}
+
+:host([data-status="success"]) {
+  --_status-surface: var(--sherpa-surface-context-success-subtle-default);
+  --_status-border:  var(--sherpa-border-context-success-default);
+  --_status-text:    var(--sherpa-text-context-success-default);
+}
+
+:host([data-status="warning"]) {
+  --_status-surface: var(--sherpa-surface-context-warning-subtle-default);
+  --_status-border:  var(--sherpa-border-context-warning-default);
+  --_status-text:    var(--sherpa-text-context-warning-default);
+}
+
+:host([data-status="urgent"]) {
+  --_status-surface: var(--sherpa-surface-context-urgent-subtle-default);
+  --_status-border:  var(--sherpa-border-context-urgent-default);
+  --_status-text:    var(--sherpa-text-context-urgent-default);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tag wrapper — default (primary) variant
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tag-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sherpa-space-2xs);
+  background: var(--_status-surface, var(--sherpa-surface-context-default-subtle-default, #f5f5f5));
+  color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
+  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default, #d4d4d4));
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  font-family: inherit;
+  font-size: var(--sherpa-fonts-scale-xs, 11px);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* ── Secondary variant ──────────────────────────────────────────────────── */
+
+:host([data-variant="secondary"]) .tag-wrapper {
+  background: var(--_status-surface, var(--sherpa-surface-container-default, #e5e5e5));
+  color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
+  border-color: var(--_status-border, var(--sherpa-border-container-default, #bfbfbf));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Collapsed mode — small circular indicator
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-collapsed="true"]) .tag-wrapper {
+  width: var(--sherpa-size-3xs, 6px);
+  height: var(--sherpa-size-3xs, 6px);
+  min-width: var(--sherpa-size-3xs, 6px);
+  min-height: var(--sherpa-size-3xs, 6px);
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0;
+  overflow: hidden;
+}

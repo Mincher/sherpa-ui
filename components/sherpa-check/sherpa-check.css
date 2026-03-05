@@ -1,0 +1,231 @@
+
+/**
+ * sherpa-check.css — Checkbox and radio styles.
+ *
+ * States are driven by host attributes:
+ *   :host([checked])        — checked state
+ *   :host([indeterminate])  — partial selection (checkbox only)
+ *   :host([disabled])       — inactive state
+ *
+ * Token mapping from Figma:
+ *   control size = 16px (--sherpa-size-sm)
+ *   checkbox rounding = 4px (--sherpa-border-rounding-base)
+ *   radio rounding = 50% (circle)
+ *   checked fill = --sherpa-surface-control-primary-default
+ *   inactive fill = --sherpa-surface-control-inactive
+ */
+
+/* ── Host ───────────────────────────────────────────────────────── */
+
+:host {
+  display: inline-block;
+  color: var(--sherpa-text-default-body, #333);
+  cursor: pointer;
+  user-select: none;
+}
+
+:host([hidden]) { display: none; }
+
+:host([disabled]) {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+:host([disabled]) .check-label {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+
+:host([disabled]) .check-description {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+
+:host([disabled][checked]) .check-icon,
+:host([disabled][indeterminate]) .check-indeterminate-icon {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+
+:host([disabled][checked][data-type="radio"]) .check-radio-dot {
+  background: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+
+/* ── Wrapper (clickable label) ──────────────────────────────────── */
+
+.check-wrapper {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-xs, 8px);
+  cursor: inherit;
+  outline: none;
+}
+
+.check-wrapper:focus-visible .check-visual {
+  outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+  outline-offset: 2px;
+}
+
+/* ── Control (visual box/circle) ────────────────────────────────── */
+
+.check-control {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 2px; /* Align with first line of text */
+}
+
+/* Hidden native input — still accessible */
+.check-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  border: 0;
+}
+
+/* Visual indicator */
+.check-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sherpa-size-sm, 16px);
+  height: var(--sherpa-size-sm, 16px);
+  border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+/* Checkbox rounding */
+:host(:not([data-type="radio"])) .check-visual {
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+}
+
+/* Radio rounding */
+:host([data-type="radio"]) .check-visual {
+  border-radius: 50%;
+}
+
+/* ── Icons ──────────────────────────────────────────────────────── */
+
+.check-icon,
+.check-indeterminate-icon {
+  display: none;
+  font-size: 10px;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.check-radio-dot {
+  display: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+/* ── Checked state ──────────────────────────────────────────────── */
+
+:host([checked]) .check-visual {
+  background: var(--sherpa-surface-control-primary-default, #0060df);
+  border-color: var(--sherpa-surface-control-primary-default, #0060df);
+}
+
+:host([checked]:not([data-type="radio"])) .check-icon {
+  display: block;
+}
+
+:host([checked][data-type="radio"]) .check-radio-dot {
+  display: block;
+}
+
+/* ── Indeterminate state (checkbox only) ────────────────────────── */
+
+:host([indeterminate]:not([data-type="radio"])) .check-visual {
+  background: var(--sherpa-surface-control-primary-default, #0060df);
+  border-color: var(--sherpa-surface-control-primary-default, #0060df);
+}
+
+:host([indeterminate]:not([data-type="radio"])) .check-icon {
+  display: none;
+}
+
+:host([indeterminate]:not([data-type="radio"])) .check-indeterminate-icon {
+  display: block;
+}
+
+/* ── Hover ──────────────────────────────────────────────────────── */
+
+:host(:not([disabled]):not([checked]):not([indeterminate])) .check-wrapper:hover .check-visual {
+  border-color: var(--sherpa-border-control-hover, #6a6a7a);
+  background: var(--sherpa-surface-control-hover, #f5f5f8);
+}
+
+:host(:not([disabled])[checked]) .check-wrapper:hover .check-visual,
+:host(:not([disabled])[indeterminate]) .check-wrapper:hover .check-visual {
+  background: var(--sherpa-border-control-primary-default, #004fc4);
+  border-color: var(--sherpa-border-control-primary-default, #004fc4);
+}
+
+/* ── Active (pressed) ───────────────────────────────────────────── */
+
+:host(:not([disabled])) .check-wrapper:active .check-visual {
+  transform: scale(0.92);
+}
+
+/* ── Disabled + checked ─────────────────────────────────────────── */
+
+:host([disabled][checked]) .check-visual,
+:host([disabled][indeterminate]) .check-visual {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+  border-color: var(--sherpa-surface-control-inactive, #dddde6);
+}
+
+:host([disabled]:not([checked]):not([indeterminate])) .check-visual {
+  border-color: var(--sherpa-border-control-inactive, #7e7e8f);
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+}
+
+/* ── Content (label + description) ──────────────────────────────── */
+
+.check-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.check-label {
+  color: var(--sherpa-text-default-body, #333);
+}
+
+.check-label:empty { display: none; }
+
+.check-description {
+  color: var(--sherpa-text-default-secondary, #6a6a7a);
+}
+
+.check-description:empty,
+.check-description[hidden] { display: none; }
+
+/* ── Status variants ────────────────────────────────────────────── */
+
+:host([data-status]:not([checked]):not([indeterminate])) .check-visual {
+  border-color: var(--_status-border);
+}
+:host([data-status]) .check-description {
+  color: var(--_status-text);
+}
+
+/* ── Native validation (via data attribute set by JS after interaction) ── */
+
+:host([data-user-invalid]:not([checked]):not([indeterminate])) .check-visual {
+  border-color: var(--sherpa-border-context-error-default, #c41337);
+}
+
+.check-validation {
+  color: var(--sherpa-text-context-error-default, #c41337);
+}
+
+.check-validation[hidden] { display: none; }

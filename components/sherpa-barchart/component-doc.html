@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Component Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="/css/styles/sherpa-style.css" rel="stylesheet" />
+    <link href="/demo/component-doc/component-doc.css" rel="stylesheet" />
+  </head>
+  <body class="doc-body" data-component="sherpa-barchart">
+    <div class="doc-page">
+
+      <!-- Hero header -->
+      <header class="doc-hero">
+        <div class="doc-hero__content">
+          <span class="doc-kicker">Component</span>
+          <h1 data-doc-title></h1>
+          <p data-doc-description></p>
+          <div class="doc-nested-components" data-nested-components></div>
+          <div class="doc-meta">
+            <span class="doc-pill" data-doc-tag></span>
+            <span class="doc-pill" data-doc-path></span>
+          </div>
+        </div>
+        <div class="doc-hero__actions">
+          <label class="doc-theme">
+            <span>Theme</span>
+            <select data-theme-select>
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <main class="doc-grid">
+
+        <!-- Preview panel -->
+        <section class="doc-panel doc-panel--preview">
+          <div class="doc-panel__header">
+            <h2>Preview</h2>
+            <sherpa-button data-variant="primary" data-size="small" data-label="Reset" data-reset></sherpa-button>
+          </div>
+          <p class="doc-section-desc">Live render with current settings. Control changes update in real time.</p>
+          <div class="doc-preview">
+            <div class="doc-preview-surface">
+              <div class="doc-preview-stage" data-preview-stage></div>
+            </div>
+            <div class="doc-preview-actions" data-demo-actions></div>
+          </div>
+        </section>
+
+        <!-- Controls panel -->
+        <section class="doc-panel doc-panel--controls">
+          <div class="doc-panel__header">
+            <h2>Controls</h2>
+          </div>
+          <p class="doc-section-desc">Adjust attributes and slot content. Preview and code update automatically.</p>
+          <div class="doc-control" data-control-attrs>
+            <h3>Attributes</h3>
+            <div class="doc-control__body" data-attr-list></div>
+          </div>
+          <div class="doc-control" data-control-default-slot>
+            <div class="doc-control__header">
+              <h3>Default Slot</h3>
+              <label class="doc-toggle">
+                <input type="checkbox" data-default-html>
+                <span>HTML</span>
+              </label>
+            </div>
+            <textarea data-default-content rows="4" placeholder="Default slot content"></textarea>
+          </div>
+          <div class="doc-control" data-control-named-slots>
+            <h3>Named Slots</h3>
+            <div class="doc-control__body" data-slot-list></div>
+          </div>
+        </section>
+
+        <!-- Code panel -->
+        <section class="doc-panel doc-panel--code">
+          <div class="doc-panel__header">
+            <h2>Code</h2>
+          </div>
+          <p class="doc-section-desc">Generated markup for the current configuration. Copy into your project.</p>
+          <pre class="doc-code"><code data-code-block></code></pre>
+        </section>
+
+      </main>
+    </div>
+    <script type="module" src="/demo/component-doc/component-doc.js"></script>
+  </body>
+</html>

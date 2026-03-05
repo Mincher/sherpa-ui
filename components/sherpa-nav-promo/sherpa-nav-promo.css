@@ -1,0 +1,43 @@
+/**
+ * sherpa-nav-promo.css — Promotional callout for navigation footer.
+ * Shadow-DOM scoped. Host is flex row with indicator bar, content, close button.
+ */
+
+:host {
+  display: flex;
+  align-items: start;
+  gap: var(--sherpa-space-xs);
+  padding: var(--sherpa-space-xs) var(--sherpa-space-default);
+  margin: var(--sherpa-space-xs);
+  border-radius: var(--sherpa-border-rounding-base);
+}
+
+:host([hidden]),
+:host([data-dismissed]) {
+  display: none !important;
+}
+
+.promo-indicator {
+  width: 4px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: var(--sherpa-icon-context-success-default);
+  border-radius: var(--sherpa-border-rounding-full);
+}
+
+.promo-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--sherpa-space-xs);
+}
+
+.promo-title {
+  font-weight: 600;
+}
+
+.promo-link {
+  color: var(--sherpa-text-primary-on-color);
+  font-weight: 600;
+  cursor: pointer;
+}

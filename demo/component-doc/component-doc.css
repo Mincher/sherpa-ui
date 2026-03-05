@@ -1,0 +1,301 @@
+/* ═══════════════════════════════════════════════════════════
+ *  component-doc.css — Styles for the interactive
+ *  component documentation pages.
+ *
+ *  Loaded by the SPA template (sherpa-component-doc.html)
+ *  into .sherpa-main-content-slot. Relies on design tokens
+ *  from sherpa-style.css which is already on the page.
+ * ═══════════════════════════════════════════════════════════ */
+
+/* ── Page ────────────────────────────────────────────────── */
+
+.doc-page {
+  padding: 32px 48px 64px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Hero ────────────────────────────────────────────────── */
+
+.doc-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.doc-hero__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-kicker {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sherpa-text-context-info-default, #0066cc);
+  margin-bottom: 4px;
+}
+
+.doc-hero h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--sherpa-text-default-heading, #222);
+  margin: 0 0 8px;
+  font-family: var(--sherpa-fonts-context-brand, 'Manrope'), sans-serif;
+}
+
+.doc-hero p {
+  font-size: 1rem;
+  color: var(--sherpa-text-default-secondary, #555);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.doc-nested-components:empty { display: none; }
+
+.doc-nested-components {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.doc-inline-code {
+  font-family: var(--sherpa-typeface-source-code-pro-style-name, 'Source Code Pro'), monospace;
+  font-size: 0.8125rem;
+  background: var(--sherpa-surface-control-default, #f0f0f0);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--sherpa-text-default-body, #111);
+}
+
+.doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.doc-pill {
+  display: inline-block;
+  font-family: var(--sherpa-typeface-source-code-pro-style-name, 'Source Code Pro'), monospace;
+  font-size: 0.75rem;
+  background: var(--sherpa-surface-control-default, #f0f0f0);
+  color: var(--sherpa-text-default-secondary, #555);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.doc-pill:empty { display: none; }
+
+.doc-hero__actions {
+  flex-shrink: 0;
+}
+
+.doc-theme {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--sherpa-text-default-secondary, #555);
+}
+
+.doc-theme select {
+  font-size: 0.8125rem;
+  padding: 4px 8px;
+  border: 1px solid var(--sherpa-border-control-default, #ccc);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: var(--sherpa-surface-container-default, #fff);
+  color: var(--sherpa-text-default-body, #111);
+}
+
+/* ── Grid ────────────────────────────────────────────────── */
+
+.doc-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto auto;
+  gap: 24px;
+}
+
+.doc-panel--preview  { grid-column: 1; grid-row: 1; }
+.doc-panel--controls { grid-column: 2; grid-row: 1 / -1; }
+.doc-panel--code     { grid-column: 1; grid-row: 2; }
+
+@media (max-width: 960px) {
+  .doc-grid {
+    grid-template-columns: 1fr;
+  }
+  .doc-panel--preview,
+  .doc-panel--controls,
+  .doc-panel--code { grid-column: 1; grid-row: auto; }
+}
+
+/* ── Panels ──────────────────────────────────────────────── */
+
+.doc-panel {
+  background: var(--sherpa-surface-container-default, #fff);
+  border: 1px solid var(--sherpa-border-container-default, #e0e0e0);
+  border-radius: var(--sherpa-border-rounding-base, 8px);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.doc-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.doc-panel__header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--sherpa-text-default-heading, #222);
+  margin: 0;
+}
+
+.doc-section-desc {
+  font-size: 0.8125rem;
+  color: var(--sherpa-text-default-secondary, #555);
+  margin: -8px 0 0;
+  line-height: 1.4;
+}
+
+/* ── Preview ─────────────────────────────────────────────── */
+
+.doc-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.doc-preview-surface {
+  background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
+  border: 1px solid var(--sherpa-border-control-default, #e0e0e0);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+
+.doc-preview-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.doc-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.doc-preview-actions[hidden] { display: none; }
+
+/* ── Controls ────────────────────────────────────────────── */
+
+.doc-control {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-control[hidden] { display: none; }
+
+.doc-control h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sherpa-text-default-heading, #222);
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--sherpa-border-control-default, #e0e0e0);
+}
+
+.doc-control__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.doc-control__header h3 {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.doc-control-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.doc-attr-label,
+.doc-slot-label {
+  font-family: var(--sherpa-typeface-source-code-pro-style-name, 'Source Code Pro'), monospace;
+  font-size: 0.8125rem;
+  color: var(--sherpa-text-default-body, #111);
+  word-break: break-all;
+}
+
+.doc-attr-value,
+.doc-slot-html {
+  font-size: 0.8125rem;
+  padding: 6px 8px;
+  border: 1px solid var(--sherpa-border-control-default, #ccc);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: var(--sherpa-surface-container-default, #fff);
+  color: var(--sherpa-text-default-body, #111);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.doc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--sherpa-text-default-secondary, #555);
+  cursor: pointer;
+}
+
+textarea[data-default-content] {
+  font-family: var(--sherpa-typeface-source-code-pro-style-name, 'Source Code Pro'), monospace;
+  font-size: 0.8125rem;
+  padding: 8px;
+  border: 1px solid var(--sherpa-border-control-default, #ccc);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: var(--sherpa-surface-container-default, #fff);
+  color: var(--sherpa-text-default-body, #111);
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Code block ──────────────────────────────────────────── */
+
+.doc-code {
+  font-family: var(--sherpa-typeface-source-code-pro-style-name, 'Source Code Pro'), monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  background: var(--sherpa-surface-control-default, #f0f0f0);
+  color: var(--sherpa-text-default-body, #111);
+  padding: 16px;
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Utility: hidden helper for container-pdf demo ───────── */
+.doc-hidden { display: none !important; }

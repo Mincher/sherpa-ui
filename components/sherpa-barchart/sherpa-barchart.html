@@ -1,0 +1,39 @@
+<!--
+  sherpa-barchart.html — Bar chart data visualization component.
+
+  Templates:
+    • default — Header with filter chips + SVG chart area
+
+  Host attributes:
+    data-loading        — Loading state indicator
+    data-stacked        — Stacked bar mode
+    data-title          — Chart heading text
+    data-orientation    — "horizontal" | "vertical"
+    data-segment-field  — Field name for segment grouping
+    data-segment-mode   — Segment mode: "on" | "off"
+    data-sort-field     — Field name for sorting
+    data-sort-direction — "asc" | "desc"
+
+  Inherited from ContentAttributesMixin:
+    data-query-src, data-query-key, data-label, data-dataset,
+    data-category, data-series, data-value-field, data-agg,
+    data-measures, data-filters, data-order-by, data-limit,
+    data-timerange, data-visible, data-show-status, data-unit,
+    data-show-header, data-show-header-controls, data-show-view-menu
+-->
+<template id="default">
+<sherpa-header data-type="data-viz"
+  data-show-header="true"
+  data-show-header-controls="true"
+  data-show-view-menu="true">
+</sherpa-header>
+<div class="chart-area">
+  <div class="chart-rows"></div>
+  <div class="chart-axis">
+    <span class="chart-axis-pad"></span>
+    <div class="chart-axis-values"></div>
+  </div>
+  <div class="chart-legend"></div>
+</div>
+<sherpa-tooltip></sherpa-tooltip>
+</template>

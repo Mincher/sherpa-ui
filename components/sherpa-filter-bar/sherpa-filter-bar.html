@@ -1,0 +1,29 @@
+<!--
+  sherpa-filter-bar.html — Horizontal filter bar with zoned layout.
+
+  Slot order (left → right):
+    toggle    — Filter on/off toggle (slot="toggle")
+    group     — Group/segment chip (slot="group")
+    sort      — Sort chip (slot="sort")
+    presets   — Preset filter chips (slot="presets")
+    filters   — User-added dynamic filter chips (default slot) + Add button
+    actions   — Clear / Apply / Save actions (slot="actions")
+
+  Host attributes:
+    data-density  — "compact" | "comfortable"
+    data-active   — Present when any filter is active
+    data-embedded — No top border (for embedding inside other components)
+-->
+
+<template id="default">
+  <div class="filter-surface">
+    <slot name="toggle"></slot>
+    <slot name="group"></slot>
+    <slot name="sort"></slot>
+    <slot name="presets"></slot>
+    <slot></slot>
+    <sherpa-button class="add-filter-btn" data-variant="secondary" data-size="small"
+      data-icon-start="&#x2b;" data-menu="true">Add</sherpa-button>
+    <slot name="actions"></slot>
+  </div>
+</template>

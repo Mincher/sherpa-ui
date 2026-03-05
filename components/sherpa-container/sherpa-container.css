@@ -1,0 +1,253 @@
+/**
+ * sherpa-container.css
+ * Dashboard card container with flex column layout: header → filters → metrics → sections
+ * 
+ * Structure:
+ *   sherpa-container (flex column)
+ *   ├── header.container-header
+ *   ├── sherpa-filter-bar[slot="filters"]
+ *   ├── .metrics
+ *   └── .sections
+ * 
+ * Attributes:
+ *   data-col-span: Column span (3, 6, 9, 12)
+ *   data-row-span: Row span (1, 2, 3+)
+ *   title: Container heading text
+ *   description: Container description / subtitle
+ *   data-menu-open: State indicator
+ */
+
+/* ==========================================================================
+   Container Base
+   ========================================================================== */
+
+sherpa-container {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm);
+  
+  /* Appearance */
+  background-color: var(--sherpa-surface-container-default);
+  border: var(--sherpa-border-width-base) solid var(--sherpa-border-control-secondary-default);
+  border-radius: var(--sherpa-border-rounding-base);
+  padding: var(--sherpa-space-xs) var(--sherpa-space-sm);
+  overflow: clip;
+  position: relative;
+
+  /* Container queries */
+  container-type: inline-size;
+  container-name: sherpa-container;
+
+  /* Active states */
+  &[data-menu-open="true"] {
+    border-color: var(--sherpa-border-control-primary-default);
+    overflow: visible;
+    z-index: 10;
+  }
+}
+
+/* ==========================================================================
+   Grid positioning — attribute-driven spans
+   ========================================================================== */
+
+/* Column spans */
+.sherpa-content-area sherpa-container                          { grid-column: span 3; }
+.sherpa-content-area sherpa-container[data-col-span="6"]      { grid-column: span 6; }
+.sherpa-content-area sherpa-container[data-col-span="9"]      { grid-column: span 9; }
+.sherpa-content-area sherpa-container[data-col-span="12"]     { grid-column: span 12; }
+
+/* Row spans */
+.sherpa-content-area sherpa-container[data-row-span="2"]      { grid-row: span 2; }
+.sherpa-content-area sherpa-container[data-row-span="3"]      { grid-row: span 3; }
+.sherpa-content-area sherpa-container[data-row-span="4"]      { grid-row: span 4; }
+.sherpa-content-area sherpa-container[data-row-span="5"]      { grid-row: span 5; }
+.sherpa-content-area sherpa-container[data-row-span="6"]      { grid-row: span 6; }
+
+/* ==========================================================================
+   Filter Bar (container-level)
+   ========================================================================== */
+
+sherpa-container > sherpa-filter-bar[slot="filters"] {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Metrics
+   ========================================================================== */
+
+.metrics {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--sherpa-space-sm);
+  flex-shrink: 0;
+  container-type: inline-size;
+  container-name: metrics;
+  overflow: hidden;
+
+  &:empty,
+  &[hidden] { display: none; }
+}
+
+/* Metric count visibility by container column span
+   3 cols:  1 metric
+   6 cols:  2 metrics
+   9 cols:  3 metrics
+   12 cols: 4 metrics */
+sherpa-container[data-col-span="3"] sherpa-metric:nth-child(n+2) { display: none; }
+sherpa-container[data-col-span="6"] sherpa-metric:nth-child(n+3) { display: none; }
+sherpa-container[data-col-span="9"] sherpa-metric:nth-child(n+4) { display: none; }
+sherpa-container[data-col-span="12"] sherpa-metric:nth-child(n+5) { display: none; }
+
+/* ==========================================================================
+   Sections
+   ========================================================================== */
+
+.sections {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-default);
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: sections;
+
+  &:empty { display: none; }
+}
+
+.section {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &[hidden] { display: none !important; }
+}
+
+.section-content {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: clip;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--sherpa-border-rounding-base);
+
+  & > * {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Row Span Visibility Rules
+   ========================================================================== */
+
+/* Limit to first section by default */
+sherpa-container > .sections > .section:nth-child(n+2) {
+  display: none;
+}
+
+/* Show second section when first is hidden */
+sherpa-container:has(.section:first-child[hidden]) > .sections > .section:nth-child(2) {
+  display: flex;
+}
+
+/* 3+ column containers: show second section */
+sherpa-container:not([data-col-span="3"]) > .sections > .section:nth-child(2) {
+  display: flex;
+}
+
+/* 3-column containers with 3+ rows: show second section */
+sherpa-container[data-col-span="3"]:not([data-row-span="1"]):not([data-row-span="2"]) > .sections > .section:nth-child(2) {
+  display: flex;
+}
+
+/* Narrow containers: stack sections vertically */
+@container sherpa-container (width < 400px) {
+  .sections {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+}
+
+/* ==========================================================================
+   Global Metrics Visibility (toolbar toggle)
+   ========================================================================== */
+
+/* Hide metrics when global "Show KPI metrics" is OFF */
+body[data-hide-metrics] sherpa-container .metrics {
+  display: none;
+}
+
+/* ==========================================================================
+   Container Query Responsive States
+   ========================================================================== */
+
+/* (Header responsive rules now live in sherpa-header.css via its own container queries) */
+
+/* ==========================================================================
+   Edit Mode
+   ========================================================================== */
+
+/* Override overflow so handles are visible */
+sherpa-container[data-editable] {
+  overflow: visible;
+}
+
+/* ==========================================================================
+   Skeleton Placeholder (deferred containers)
+   ========================================================================== */
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.container-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 8px);
+  padding: var(--sherpa-space-xs, 4px) 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.container-skeleton .skel-header,
+.container-skeleton .skel-block,
+.container-skeleton .skel-body {
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: linear-gradient(
+    90deg,
+    var(--sherpa-surface-container-subtle, #f0f0f0) 25%,
+    var(--sherpa-surface-container-default, #e8e8e8) 50%,
+    var(--sherpa-surface-container-subtle, #f0f0f0) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+.container-skeleton .skel-header {
+  height: 20px;
+  width: 55%;
+}
+
+.container-skeleton .skel-metrics {
+  display: flex;
+  gap: var(--sherpa-space-xs, 4px);
+}
+
+.container-skeleton .skel-block {
+  flex: 1;
+  height: 48px;
+}
+
+.container-skeleton .skel-body {
+  flex: 1;
+  min-height: 60px;
+}

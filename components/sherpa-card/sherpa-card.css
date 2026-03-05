@@ -1,0 +1,128 @@
+/**
+ * sherpa-card.css
+ * Shadow DOM styles for the AuxCard web component.
+ *
+ * Status: container style queries resolve --status into a subtle border
+ * tint. Card intentionally does NOT colour text/icons — content keeps
+ * default colours.
+ *
+ * Host attributes:
+ *   status       — success | critical | warning | info | neutral
+ *   selected     — selected / active state
+ *   interactive  — makes card clickable
+ *   disabled     — disabled state
+ *   elevation    — none | sm (default) | md | lg
+ *
+ * Slots:
+ *   header   — card header content
+ *   (default)— main card content
+ *   footer   — card footer content
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOST
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  container-type: normal;
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default));
+  border-radius: var(--sherpa-border-rounding-lg, 8px);
+  overflow: hidden;
+  box-shadow: var(--sherpa-shadow-default-sm);
+  transition:
+    box-shadow var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease),
+    border-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease),
+    transform var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+}
+
+:host([hidden]) { display: none; }
+
+/* ── Elevations ────────────────────────────────────────────────── */
+
+:host([data-elevation="none"]) { box-shadow: none; }
+:host([data-elevation="sm"])   { box-shadow: var(--sherpa-shadow-default-sm); }
+:host([data-elevation="md"])   { box-shadow: var(--sherpa-shadow-default-md); }
+:host([data-elevation="lg"])   { box-shadow: var(--sherpa-shadow-default-lg); }
+
+/* ── Selected state ────────────────────────────────────────────── */
+
+:host([data-selected="true"]) {
+  border-color: var(--sherpa-border-control-primary-active, #0066cc);
+  background: var(--sherpa-surface-container-selected-default, #f0f7ff);
+  box-shadow:
+    0 0 0 var(--sherpa-border-width-base, 1px)
+      var(--sherpa-border-control-primary-active, #0066cc),
+    var(--sherpa-shadow-default-sm);
+}
+
+/* ── Interactive ───────────────────────────────────────────────── */
+
+:host([data-interactive="true"]) {
+  cursor: pointer;
+}
+
+:host([data-interactive="true"]:hover:not([disabled])) {
+  border-color: var(--sherpa-border-container-hover, #ccc);
+  box-shadow: var(--sherpa-shadow-default-md);
+}
+
+:host([data-interactive="true"]:active:not([disabled])) {
+  transform: scale(0.99);
+}
+
+/* ── Focus ─────────────────────────────────────────────────────── */
+
+:host(:focus-visible) {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--sherpa-border-focus, #0066cc),
+    var(--sherpa-shadow-default-sm);
+}
+
+/* ── Disabled ──────────────────────────────────────────────────── */
+
+:host([disabled]) {
+  background: var(--sherpa-surface-container-inactive);
+  border-color: var(--sherpa-border-container-inactive);
+  color: var(--sherpa-text-inactive-default);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SLOT CONTAINERS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+sherpa-header {
+  display: none;
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+}
+
+sherpa-header[data-has-content] { display: block; }
+
+.card-footer {
+  display: none;
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
+  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+}
+
+.card-content {
+  flex: 1;
+  padding: var(--sherpa-space-default, 16px);
+}
+
+.card-footer[data-has-content] {
+  display: flex;
+  gap: var(--sherpa-space-xs, 8px);
+  justify-content: flex-end;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATUS — subtle border tint (card content keeps default colours)
+   ═══════════════════════════════════════════════════════════════════════════ */
+

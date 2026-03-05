@@ -1,0 +1,24 @@
+<!--
+  sherpa-switch.html — Toggle switch component.
+
+  Templates:
+    • default — Rectangular switch with ON/OFF text labels
+    • simple  — Pill-shaped switch without labels
+
+  Host attributes:
+    data-state — "on" | "off"
+    data-mode  — "default" | "simple"
+    disabled   — Boolean
+
+  Usage:
+    <sherpa-switch data-mode="default" data-state="on"></sherpa-switch>
+    <sherpa-switch data-mode="simple" data-state="off" disabled></sherpa-switch>
+-->
+
+<!-- Default mode (rectangular with labels) -->
+<template id="default">
+<button type="button" class="switch-track" role="switch" aria-checked="false">
+  <span class="switch-label text-label">OFF</span>
+  <span class="switch-knob"></span>
+</button>
+</template>

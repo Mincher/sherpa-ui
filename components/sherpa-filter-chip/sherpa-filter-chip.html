@@ -1,0 +1,53 @@
+<!--
+  sherpa-filter-chip.html — Per-type templates for Sort / Filter / Segment chip.
+
+  Templates:
+    • sort    — Sort toggle with directional icons + dropdown
+    • filter  — Filter toggle with icon + dropdown
+    • segment — Segment toggle with icon + dropdown
+
+  Host attributes:
+    data-type        — "sort" | "filter" | "segment" | "timeframe" (selects template)
+    data-mode        — Sort: "asc" | "desc" | "off"; Segment/Filter/Timeframe: "on" | "off"
+    data-field       — Selected field name
+    data-active      — Managed internally (computed from field + mode)
+    disabled         — Boolean, disabled state
+-->
+
+<template id="sort">
+  <div class="chip-toggle" role="button" tabindex="0">
+    <i class="chip-icon icon-default fa-solid fa-sort"></i>
+    <i class="chip-icon icon-asc fa-solid fa-sort-up"></i>
+    <i class="chip-icon icon-desc fa-solid fa-sort-down"></i>
+    <span class="chip-label"></span>
+  </div>
+  <sherpa-button class="chip-dropdown" data-variant="tertiary" data-size="small" data-icon-start="&#xf078;" data-menu="true"></sherpa-button>
+</template>
+
+<template id="filter">
+  <div class="chip-toggle" role="button" tabindex="0">
+    <i class="chip-icon icon-default fa-solid fa-filter"></i>
+    <span class="chip-label"></span>
+    <span class="chip-count" hidden></span>
+  </div>
+  <sherpa-button class="chip-dropdown" data-variant="tertiary" data-size="small" data-icon-start="&#xf078;" data-menu="true"></sherpa-button>
+  <button class="chip-close" type="button" aria-label="Remove filter">
+    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+  </button>
+</template>
+
+<template id="segment">
+  <div class="chip-toggle" role="button" tabindex="0">
+    <i class="chip-icon icon-default fa-solid fa-bars"></i>
+    <span class="chip-label"></span>
+  </div>
+  <sherpa-button class="chip-dropdown" data-variant="tertiary" data-size="small" data-icon-start="&#xf078;" data-menu="true"></sherpa-button>
+</template>
+
+<template id="timeframe">
+  <div class="chip-toggle" role="button" tabindex="0">
+    <i class="chip-icon icon-default fa-regular fa-clock"></i>
+    <span class="chip-label"></span>
+  </div>
+  <sherpa-button class="chip-dropdown" data-variant="tertiary" data-size="small" data-icon-start="&#xf078;" data-menu="true"></sherpa-button>
+</template>

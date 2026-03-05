@@ -1,0 +1,191 @@
+
+/**
+ * sherpa-view-header.css
+ * View header toolbar with section name, toggles, and actions
+ *
+ * Scroll-under effect is handled by the parent .sherpa-toolbar-header
+ * wrapper (sticky positioning + background/shadow on scroll).
+ *
+ * Typography is inlined (text utility classes don't cross shadow boundaries).
+ * Buttons are <sherpa-button> and handle their own styling.
+ * Spacing/sizing use alias tokens directly — no component-level aliases.
+ */
+
+:host {
+  display: block;
+}
+
+:host([hidden]) { display: none; }
+
+.header-surface {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm);
+  padding: var(--sherpa-space-xs);
+  min-height: fit-content;
+}
+
+/* ---- toolbar layout ---- */
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--sherpa-space-sm);
+}
+
+.heading-label {
+  color: var(--sherpa-text-default-heading);
+  white-space: nowrap;
+}
+
+/* ---- favorite button ---- */
+
+#favorite-btn {
+  display: none;
+  flex-shrink: 0;
+}
+
+#favorite-btn[data-favorite="true"] {
+  --_icon-color: var(--sherpa-text-context-warning-default, #d4a017);
+}
+
+:host([data-show-debug-toggles]) #favorite-btn {
+  display: inline-flex;
+}
+
+/* ---- dividers & toggles ---- */
+
+.toolbar-divider {
+  width: 1px;
+  height: var(--sherpa-size-lg);
+  background-color: var(--sherpa-border-control-secondary-default);
+  flex-shrink: 0;
+}
+
+.toolbar-toggles {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-default);
+}
+
+.toolbar-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+}
+
+.toolbar-toggle-label,
+.toolbar-dropdown-label {
+  color: var(--sherpa-text-default-secondary);
+}
+
+/* ---- dropdowns ---- */
+
+.toolbar-dropdown {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+}
+
+.toolbar-select {
+  height: var(--sherpa-size-2xl);
+  padding: 0 var(--sherpa-space-xs);
+  font-size: var(--sherpa-fonts-scale-base);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
+  border-radius: var(--sherpa-border-rounding-base);
+  background-color: var(--sherpa-surface-container-default);
+  color: var(--sherpa-text-default-body);
+  cursor: pointer;
+
+  &:hover { border-color: var(--sherpa-border-control-active-default); }
+  &:focus {
+    outline: none;
+    border-color: var(--sherpa-border-control-active-default);
+    box-shadow: 0 0 0 2px var(--sherpa-effects-focus-ring, oklch(54.45% 0.1166 235.68 / 20%));
+  }
+}
+
+/* ---- feedback popover ---- */
+
+.feedback-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--sherpa-effects-backdrop, oklch(0% 0 0 / 30%));
+  z-index: 9999;
+  display: none;
+
+  &[data-open] { display: block; }
+}
+
+.feedback-popover {
+  position: fixed;
+  left: var(--_feedback-left, 16px);
+  top: var(--_feedback-top, 60px);
+  width: 640px;
+  height: 800px;
+  background: var(--sherpa-surface-container-default);
+  border-radius: var(--sherpa-border-rounding-lg);
+  box-shadow: var(--sherpa-shadow-default-lg);
+  z-index: 10000;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+
+  &[data-open] { display: flex; }
+}
+
+.feedback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sherpa-space-default);
+  border-bottom: var(--sherpa-border-width-base) solid var(--sherpa-border-control-secondary-default);
+}
+
+.feedback-title {
+  margin: 0;
+  font-size: var(--sherpa-fonts-scale-lg);
+  font-weight: 600;
+}
+
+.feedback-close {
+  background: none;
+  border: none;
+  padding: var(--sherpa-space-xs);
+  cursor: pointer;
+  color: var(--sherpa-icon-context-default-secondary);
+  --icon-size: var(--sherpa-size-sm);
+  line-height: 1;
+  border-radius: var(--sherpa-border-rounding-base);
+
+  &:hover { background-color: var(--sherpa-surface-container-hover); }
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default);
+    outline-offset: -2px;
+  }
+}
+
+.feedback-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  & iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+}
+
+/* ---- debug toggles visibility ---- */
+
+.debug-toggles {
+  display: none;
+}
+
+:host([data-show-debug-toggles]) .debug-toggles {
+  display: contents;
+}

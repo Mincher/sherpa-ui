@@ -1,0 +1,87 @@
+/**
+ * sherpa-toolbar.css
+ * Generic horizontal toolbar with leading/center/trailing zones
+ * and an optional filters row below.
+ *
+ * Private properties:
+ *   --_toolbar-py: Block padding
+ *   --_toolbar-px: Inline padding
+ *   --_toolbar-gap: Gap between items within zones
+ */
+
+:host([hidden]) {
+  display: none !important;
+}
+
+:host {
+  --_toolbar-py: var(--sherpa-space-xs, 8px);
+  --_toolbar-px: var(--sherpa-space-sm, 12px);
+  --_toolbar-gap: var(--sherpa-space-xs, 8px);
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+:host([data-density="compact"]) {
+  --_toolbar-py: var(--sherpa-space-2xs, 4px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Toolbar row
+   ═══════════════════════════════════════════════════════════════ */
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: var(--_toolbar-gap);
+  padding-block: var(--_toolbar-py);
+  padding-inline: 0px;
+  box-sizing: border-box;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Leading / Center / Trailing zones
+   ═══════════════════════════════════════════════════════════════ */
+
+.leading,
+.trailing {
+  display: flex;
+  align-items: center;
+  gap: var(--_toolbar-gap);
+  flex-shrink: 0;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  gap: var(--_toolbar-gap);
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Hide empty center so leading/trailing still justify properly */
+.center:not(:has(*)) {
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Filters row
+   ═══════════════════════════════════════════════════════════════ */
+
+.filters-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-xs, 4px);
+}
+
+/* Hide the filters row when empty */
+.filters-row:not(:has(*)) {
+  display: none;
+}

@@ -1,0 +1,73 @@
+/**
+ * sherpa-footer.css
+ * Shared styles for all footer template variants.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+:host([hidden]) { display: none; }
+
+.footer {
+  box-sizing: border-box;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACTION-BAR FOOTER (cancel / apply)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.action-bar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sherpa-space-xs, 4px);
+  padding: var(--sherpa-space-sm, 8px);
+  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
+}
+
+.action-bar-footer slot[name="start"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 4px);
+  flex-shrink: 0;
+}
+
+.action-buttons sherpa-button { flex-shrink: 0; }
+
+.cancel-button[hidden],
+.apply-button[hidden] { display: none; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SLOT FOOTER (passthrough)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.slot-footer {
+  display: none;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sherpa-space-xs, 4px);
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
+  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+}
+
+.slot-footer[data-has-content] {
+  display: flex;
+}
+
+::slotted(*) {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-default, 16px);
+}

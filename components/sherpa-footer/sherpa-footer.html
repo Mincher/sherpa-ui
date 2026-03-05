@@ -1,0 +1,37 @@
+<!--
+  sherpa-footer.html — Multi-template footer component.
+
+  Templates:
+    • action-bar — Cancel + Apply button bar (menu footers, confirmation prompts)
+    • slot       — Pure slot passthrough (card/dialog footers, custom content)
+
+  Host attributes:
+    data-type         — Template variant: "action-bar" | "slot"
+    data-cancel-label — Cancel button text
+    data-apply-label  — Apply button text
+    data-show-cancel  — Show cancel button ("true"/"false", default: true)
+    data-show-apply   — Show apply button ("true"/"false", default: true)
+    data-apply-closes — Whether apply auto-closes parent ("true"/"false", default: true)
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ACTION-BAR — Cancel / Apply button bar
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="action-bar">
+  <footer class="footer action-bar-footer" part="footer">
+    <slot name="start"></slot>
+    <div class="action-buttons">
+      <sherpa-button class="cancel-button" data-variant="secondary" data-size="small" data-label="Cancel"></sherpa-button>
+      <sherpa-button class="apply-button" data-variant="primary" data-size="small" data-label="Apply"></sherpa-button>
+    </div>
+  </footer>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SLOT — Pure passthrough footer
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="slot">
+  <footer class="footer slot-footer" part="footer">
+    <slot></slot>
+  </footer>
+</template>

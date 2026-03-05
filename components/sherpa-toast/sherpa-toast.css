@@ -1,0 +1,221 @@
+
+/**
+ * sherpa-toast.css
+ * Shadow DOM styles for the AuxToast web component.
+ *
+ * Status: container style queries resolve --status into subtle tokens
+ * on .toast (tinted bg, border, icon colour).
+ *
+ * Host attributes:
+ *   status       — info (default) | success | warning | critical
+ *   show-close   — "false" hides close button (default: true)
+ *   position     — affects slide direction
+ *
+ * Slots:
+ *   icon — custom status icon
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Host
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+  container-type: normal;
+
+  /* Animation private vars */
+  --_duration: var(--sherpa-motion-duration-base, 200ms);
+  --_easing: var(--sherpa-motion-easing-default, ease-in-out);
+  --_transform-x: 100%;
+  --_transform-y: -20px;
+
+  /* Status colour defaults — inherited from global [data-status] rules.
+   * Private vars map: --_status-surface → bg, --_status-border → border, --_status-icon → icon */
+}
+
+:host([hidden]) { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Toast
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.toast {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 16px);
+  min-width: 300px;
+  max-width: 520px;
+  background-color: var(--_status-surface, var(--sherpa-surface-context-info-subtle-default, #eaf4fe));
+  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-context-info-default, #66afe9));
+  border-radius: var(--sherpa-border-rounding-lg, 12px);
+  box-shadow: var(--sherpa-shadow-default-md);
+  border-left-width: 8px;
+  transform: translateX(var(--_transform-x));
+  opacity: 0;
+  transition:
+    transform var(--_duration) var(--_easing),
+    opacity var(--_duration) var(--_easing);
+  color: var(--_status-icon, var(--sherpa-icon-context-info-on-color-subtle, #0b6dd6));
+}
+
+.toast[data-state="visible"] {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast[data-state="hiding"] {
+  transform: translateX(var(--_transform-x));
+  opacity: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Icon
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--sherpa-size-default, 20px);
+  line-height: 1;
+}
+
+.toast-icon .sherpa-icon {
+  --icon-size: var(--sherpa-size-default, 20px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Content
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-heading {
+  color: var(--sherpa-text-default-on-color-subtle-body, #0f172a);
+  margin-bottom: var(--sherpa-space-3xs, 4px);
+}
+
+.toast-heading:empty { display: none; }
+
+.toast-value {
+  color: var(--sherpa-text-default-on-color-subtle-body, #0f172a);
+}
+
+.toast-value:empty { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Action button
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.toast-action {
+  display: none;
+  margin-top: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-3xs, 4px) var(--sherpa-space-xs, 8px);
+  background: transparent;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.toast-action[data-visible] {
+  display: inline-block;
+}
+
+.toast-action:hover {
+  background-color: var(--sherpa-surface-control-secondary-hover, rgba(0, 0, 0, 0.06));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Close button
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.toast-close {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: var(--sherpa-size-xl, 28px);
+  height: var(--sherpa-size-xl, 28px);
+  padding: var(--sherpa-space-3xs, 6px);
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  background: transparent;
+  color: var(--sherpa-text-default-on-color-subtle-body, #0f172a);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 150ms ease;
+}
+
+.toast-close:hover {
+  background-color: var(--sherpa-surface-control-secondary-hover, rgba(0, 0, 0, 0.06));
+}
+
+:host([data-show-close="false"]) .toast-close { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Position-based animations
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-position="top-left"]) .toast,
+:host([data-position="bottom-left"]) .toast {
+  --_transform-x: -100%;
+}
+
+:host([data-position="top-center"]) .toast,
+:host([data-position="bottom-center"]) .toast {
+  transform: translateY(var(--_transform-y));
+}
+
+:host([data-position="top-center"]) .toast[data-state="visible"],
+:host([data-position="bottom-center"]) .toast[data-state="visible"] {
+  transform: translateY(0);
+}
+
+:host([data-position="top-center"]) .toast[data-state="hiding"],
+:host([data-position="bottom-center"]) .toast[data-state="hiding"] {
+  transform: translateY(var(--_transform-y));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Progress bar for auto-dismiss
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.toast::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: var(--sherpa-border-width-lg, 3px);
+  background-color: currentColor;
+  opacity: 0.3;
+  border-radius: 0 0 0 var(--sherpa-border-rounding-lg, 12px);
+}
+
+.toast[data-state="visible"].with-progress::after {
+  animation: toast-progress linear forwards;
+}
+
+@keyframes toast-progress {
+  from { width: 100%; }
+  to   { width: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Stacked toasts
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host + :host {
+  margin-top: var(--sherpa-space-xs, 8px);
+}
+
+

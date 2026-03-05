@@ -1,0 +1,44 @@
+/**
+ * sherpa-data-viz-classes.css — Data Visualization Color Classes
+ * Shared color classes for charts, tables, and other data-viz components.
+ * Uses categorical color tokens defined in sherpa-color-alias.css.
+ */
+
+/* ── Background Colors (bar segments, legend keys) ─────────────────────── */
+.color-1  { background-color: var(--sherpa-data-viz-categorical-color-1); }
+.color-2  { background-color: var(--sherpa-data-viz-categorical-color-2); }
+.color-3  { background-color: var(--sherpa-data-viz-categorical-color-3); }
+.color-4  { background-color: var(--sherpa-data-viz-categorical-color-4); }
+.color-5  { background-color: var(--sherpa-data-viz-categorical-color-5); }
+.color-6  { background-color: var(--sherpa-data-viz-categorical-color-6); }
+.color-7  { background-color: var(--sherpa-data-viz-categorical-color-7); }
+.color-8  { background-color: var(--sherpa-data-viz-categorical-color-8); }
+.color-9  { background-color: var(--sherpa-data-viz-categorical-color-9); }
+.color-10 { background-color: var(--sherpa-data-viz-categorical-color-10); }
+.color-11 { background-color: var(--sherpa-data-viz-categorical-color-11); }
+
+/* ── Text Colors (labels on colored backgrounds) ───────────────────────── */
+.color-text-1  { color: var(--sherpa-data-viz-categorical-color-1); }
+.color-text-2  { color: var(--sherpa-data-viz-categorical-color-2); }
+.color-text-3  { color: var(--sherpa-data-viz-categorical-color-3); }
+.color-text-4  { color: var(--sherpa-data-viz-categorical-color-4); }
+.color-text-5  { color: var(--sherpa-data-viz-categorical-color-5); }
+.color-text-6  { color: var(--sherpa-data-viz-categorical-color-6); }
+.color-text-7  { color: var(--sherpa-data-viz-categorical-color-7); }
+.color-text-8  { color: var(--sherpa-data-viz-categorical-color-8); }
+.color-text-9  { color: var(--sherpa-data-viz-categorical-color-9); }
+.color-text-10 { color: var(--sherpa-data-viz-categorical-color-10); }
+.color-text-11 { color: var(--sherpa-data-viz-categorical-color-11); }
+
+/* ── Border Colors ─────────────────────────────────────────────────────── */
+.color-border-1  { border-color: var(--sherpa-data-viz-categorical-color-1); }
+.color-border-2  { border-color: var(--sherpa-data-viz-categorical-color-2); }
+.color-border-3  { border-color: var(--sherpa-data-viz-categorical-color-3); }
+.color-border-4  { border-color: var(--sherpa-data-viz-categorical-color-4); }
+.color-border-5  { border-color: var(--sherpa-data-viz-categorical-color-5); }
+.color-border-6  { border-color: var(--sherpa-data-viz-categorical-color-6); }
+.color-border-7  { border-color: var(--sherpa-data-viz-categorical-color-7); }
+.color-border-8  { border-color: var(--sherpa-data-viz-categorical-color-8); }
+.color-border-9  { border-color: var(--sherpa-data-viz-categorical-color-9); }
+.color-border-10 { border-color: var(--sherpa-data-viz-categorical-color-10); }
+.color-border-11 { border-color: var(--sherpa-data-viz-categorical-color-11); }

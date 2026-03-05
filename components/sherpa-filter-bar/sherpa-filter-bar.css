@@ -1,0 +1,110 @@
+/**
+ * sherpa-filter-bar.css
+ * Horizontal filter bar with slot-based layout.
+ *
+ * Slot order: toggle | group | ÷ | sort | ÷ | presets | ÷ | filters + add | actions
+ *
+ * Scroll-under effect is handled by the parent .sherpa-toolbar-header
+ * wrapper (sticky positioning + background/shadow on scroll).
+ *
+ * Private properties:
+ *   --_filter-bar-py: Block padding
+ *   --_filter-bar-px: Inline padding
+ *   --_filter-bar-gap: Gap between items
+ */
+
+:host([hidden]) {
+  display: none !important;
+}
+
+:host {
+  --_filter-bar-py: var(--sherpa-space-xs, 8px);
+  --_filter-bar-px: var(--sherpa-space-xs, 8px);
+  --_filter-bar-gap: var(--sherpa-space-2xs, 4px);
+
+  display: block;
+}
+
+.filter-surface {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--_filter-bar-gap);
+  width: 100%;
+  padding-block: var(--_filter-bar-py);
+  padding-inline: 0px;
+  box-sizing: border-box;
+  border-block-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e5);
+}
+
+:host([data-density="compact"]) {
+  --_filter-bar-py: var(--sherpa-space-3xs, 2px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Slots & items
+   ═══════════════════════════════════════════════════════════════ */
+
+slot[name="toggle"]{
+  margin-left: var(--sherpa-space-xs, 8px);
+}
+   
+slot[name="toggle"],
+slot[name="group"],
+slot[name="sort"],
+slot[name="presets"],
+slot[name="actions"] {
+  display: flex;
+  align-items: center;
+  gap: var(--_filter-bar-gap);
+  flex-shrink: 0;
+}
+
+/* Add filter button */
+.add-filter-btn {
+  flex-shrink: 0;
+}
+
+/* Actions slot pins to the end */
+slot[name="actions"] {
+  margin-inline-start: auto;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Zone dividers — right border only when slot has content
+   ═══════════════════════════════════════════════════════════════ */
+
+slot[name="group"]:has(::slotted(:not([hidden]))),
+slot[name="sort"]:has(::slotted(:not([hidden]))),
+slot[name="presets"]:has(::slotted(:not([hidden]))) {
+  padding-inline-end: var(--_filter-bar-gap);
+  border-inline-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e5);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Hide empty slots to prevent phantom flex gap
+   ═══════════════════════════════════════════════════════════════ */
+
+slot[name="toggle"]:not(:has(::slotted(*))),
+slot[name="group"]:not(:has(::slotted(*))),
+slot[name="sort"]:not(:has(::slotted(*))),
+slot[name="presets"]:not(:has(::slotted(*))) {
+  display: none;
+}
+
+:host(:not([data-active])) slot[name="actions"] {
+  display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Embedded variant — parent provides padding & border
+   ═══════════════════════════════════════════════════════════════ */
+
+:host([data-embedded]) .filter-surface {
+  padding: 0;
+  border: none;
+}

@@ -1,0 +1,40 @@
+/**
+ * sherpa-input-select.css — Native select with custom chevron icon.
+ * Base styles imported from sherpa-input-base.css.
+ */
+@import '../utilities/sherpa-input-base/sherpa-input-base.css';
+
+.select-wrapper {
+  position: relative;
+  display: flex;
+  flex: 1;
+}
+
+.input-field {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: calc(var(--sherpa-space-sm, 12px) + 16px + var(--sherpa-space-xs, 8px));
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Placeholder / unselected */
+.input-field:invalid,
+.input-field option[value=""][disabled] {
+  color: var(--sherpa-text-default-placeholder, #7e7e8f);
+}
+
+/* Custom chevron */
+.select-chevron {
+  position: absolute;
+  right: var(--sherpa-space-sm, 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  color: var(--sherpa-text-default-secondary, #6a6a7a);
+  pointer-events: none;
+}
+
+:host([disabled]) .select-chevron {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}

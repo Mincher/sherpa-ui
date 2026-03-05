@@ -1,0 +1,117 @@
+<!--
+  sherpa-data-grid.html — Advanced data grid with grouping, selection, and pagination.
+
+  Uses native <table> for correct sticky headers, full-width row backgrounds,
+  and proper column alignment without flex-basis syncing.
+
+  Templates:
+    • default — Toolbar + scrollable table + pagination
+
+  Host attributes:
+    data-loading                — Loading state
+    data-segment-field          — Column name to group rows by
+    data-segment-mode           — "on" | "off" | "expanded" | "collapsed"
+    data-sort-field             — Current sort column
+    data-sort-direction         — "asc" | "desc"
+    data-page                   — Current page (1-based)
+    data-page-size              — Rows per page
+    data-selectable             — "true" | "false" — show selection checkboxes
+    data-show-actions           — "true" | "false" — show action column
+    data-show-secondary-headers — "true" | "false" — show column search row
+    data-show-pagination        — "true" | "false" — show pagination bar
+
+  Inherited from ContentAttributesMixin:
+    data-query-src, data-query-key, data-label, data-dataset,
+    data-category, data-series, data-value-field, data-agg,
+    data-measures, data-filters, data-order-by, data-limit,
+    data-timerange, data-visible, data-show-status, data-unit,
+    data-show-header, data-show-header-controls, data-show-view-menu
+-->
+
+<template id="default">
+  <!-- Toolbar -->
+  <sherpa-toolbar class="grid-toolbar">
+    <!-- Leading: consumer-provided primary action via slot -->
+    <slot name="toolbar-leading" slot="leading"></slot>
+
+    <!-- Trailing: search + column-select + export + overflow -->
+    <div slot="trailing" class="toolbar-trailing">
+      <sherpa-input-search class="global-search"
+        placeholder="Search…"
+        aria-label="Search all columns">
+      </sherpa-input-search>
+      <sherpa-button class="column-select-btn"
+        data-variant="secondary"
+        data-icon-start="&#xf0db;"
+        aria-label="Select columns"
+        data-menu="true"
+        data-menu-position="bottom-end"
+        data-keep-compact>
+      </sherpa-button>
+      <sherpa-button class="export-btn"
+        data-variant="secondary"
+        data-icon-start="&#xf56d;"
+        aria-label="Export"
+        data-keep-compact>
+      </sherpa-button>
+      <sherpa-button class="overflow-menu-btn"
+        data-variant="secondary"
+        data-icon-start="&#xf142;"
+        aria-label="Grid options"
+        data-menu="true"
+        data-menu-position="bottom-end"
+        data-keep-compact>
+      </sherpa-button>
+    </div>
+  </sherpa-toolbar>
+
+  <!-- Scrollable table container -->
+  <div class="table-container">
+    <table role="grid">
+      <thead>
+        <tr class="primary-headers">
+          <!-- Populated by JS: selection th + column th's + action th -->
+        </tr>
+        <tr class="secondary-headers">
+          <!-- Populated by JS: per-column search inputs -->
+        </tr>
+      </thead>
+      <tbody class="grid-body">
+        <!-- Flat rows or grouped rows populated by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Group parent row — cloning template (class-only, bypasses AuxElement parser) -->
+  <template class="group-row-tpl">
+    <tr class="group-parent-row">
+      <td class="group-summary-cell">
+        <div class="group-summary-inner">
+          <div class="selection-cell">
+            <sherpa-check class="group-check"></sherpa-check>
+          </div>
+          <div class="group-toggle">
+            <i class="fa-solid fa-chevron-right toggle-icon" aria-hidden="true"></i>
+          </div>
+          <div class="group-content">
+            <div class="group-heading">
+              <span class="group-label"></span>
+              <span class="group-count"></span>
+            </div>
+            <div class="group-metadata"></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </template>
+
+  <!-- Empty state -->
+  <sherpa-empty-state class="empty-state" hidden></sherpa-empty-state>
+
+  <!-- Pagination -->
+  <sherpa-pagination class="grid-pagination" part="pagination"
+    data-page="1" data-page-size="25"
+    data-allowed-sizes="10,25,50,100">
+  </sherpa-pagination>
+
+</template>

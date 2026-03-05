@@ -1,0 +1,29 @@
+{
+  "name": "sherpa-ui",
+  "version": "1.0.0",
+  "description": "Sherpa UI — A standards-based Web Component library and design token system",
+  "type": "module",
+  "main": "components/index.js",
+  "exports": {
+    ".": "./components/index.js",
+    "./css": "./css/styles/index.css",
+    "./css/reset": "./css/styles/reset.css",
+    "./components/*": "./components/*",
+    "./css/*": "./css/styles/*"
+  },
+  "files": [
+    "components/",
+    "css/"
+  ],
+  "scripts": {
+    "docs": "node scripts/extract-component-api.js",
+    "tokens:process": "node scripts/process-figma-tokens.js",
+    "build": "npm run tokens:process && npm run docs"
+  },
+  "devDependencies": {
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  },
+  "keywords": ["web-components", "design-system", "ui-library", "design-tokens"],
+  "license": "MIT"
+}

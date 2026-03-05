@@ -1,0 +1,32 @@
+<!--
+  sherpa-section-header.html — Section heading with optional badge and actions.
+
+  Templates:
+    • default — Heading + badge + description + action slot + divider
+
+  Host attributes:
+    data-label         — Section title text
+    data-heading-level — "primary" | "secondary" | "tertiary"
+    data-divider       — "true" | "false" — show bottom divider
+-->
+<template id="default">
+<header class="section-header-container" part="container">
+  <div class="section-header-content" part="content">
+    <div class="section-header-left" part="left">
+      <div class="heading-row" part="heading-row">
+        <slot name="heading">
+          <span class="section-header-heading default-heading text-heading-md"></span>
+        </slot>
+        <span class="badge-slot" part="badge"><slot name="badge"></slot></span>
+      </div>
+      <div class="section-header-description text-body-sm" part="description">
+        <slot name="description"></slot>
+      </div>
+    </div>
+    <div class="section-header-actions" part="actions">
+      <slot name="actions"></slot>
+    </div>
+  </div>
+  <hr class="section-header-divider" part="divider">
+</header>
+</template>

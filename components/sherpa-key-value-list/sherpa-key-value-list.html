@@ -1,0 +1,59 @@
+<!--
+  sherpa-key-value-list.html — Semantic description list component.
+
+  Uses the native <dl> element with <dt>/<dd> pairs authored directly
+  in the template. Layout is controlled entirely via CSS flex-direction
+  on the host's layout attribute — no JS class-toggling needed.
+
+  Value presentation types are expressed via attributes on <dd>:
+    data-type="monospace"          — monospace font
+    data-status="success|…"        — status colour (tokens from status-styles.css)
+
+  Child components (sherpa-tag, links) are placed directly in <dd>.
+
+  Host attributes:
+    data-type      — Template selection (default: "default")
+    data-layout    — "horizontal" | "vertical"
+    data-density   — "compact" | "base" | "comfortable"
+    data-striped   — Alternate row backgrounds
+    data-bordered  — Show borders (default: true)
+    data-truncate  — Clip long values with ellipsis
+    data-key-width — Key column width (default: "auto")
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Description list with one example of each value type
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="default">
+  <dl part="list" class="text-body-sm">
+
+    <!-- text (default) -->
+    <dt>Name</dt>
+    <dd>John Doe</dd>
+
+    <!-- monospace -->
+    <dt>Email</dt>
+    <dd data-type="monospace">john.doe@example.com</dd>
+
+    <!-- plain text -->
+    <dt>Phone</dt>
+    <dd>+1 (555) 123-4567</dd>
+
+    <!-- plain text -->
+    <dt>Location</dt>
+    <dd>New York, NY</dd>
+
+    <!-- status (text-only) -->
+    <dt>Status</dt>
+    <dd data-status="success" data-status-apply="text">Active</dd>
+
+    <!-- link -->
+    <dt>Website</dt>
+    <dd><a href="https://example.com" target="_blank" rel="noopener noreferrer">https://example.com</a></dd>
+
+    <!-- tag -->
+    <dt>Environment</dt>
+    <dd><sherpa-tag data-variant="secondary">Production</sherpa-tag></dd>
+
+  </dl>
+</template>

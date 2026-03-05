@@ -1,0 +1,33 @@
+/**
+ * Control Group — wrapper-based pattern for composing adjacent controls
+ * (inputs, buttons, custom elements) into a seamless row.
+ *
+ * The .control-group wrapper owns border, background, border-radius and
+ * overflow:hidden.  It sets --_cg-border-width: 0 and --_cg-border-radius: 0
+ * which inherit into child shadow DOMs, making them borderless and
+ * radiusless automatically.
+ *
+ * Usage:
+ *   <div class="control-group">
+ *     <input      … />
+ *     <sherpa-button … />
+ *   </div>
+ *
+ * No position classes needed — just place elements in the wrapper.
+ */
+
+.control-group {
+  display: inline-flex;
+  gap: 0;
+  vertical-align: middle;
+  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  overflow: hidden;
+  --_cg-border-width: 0;
+  --_cg-border-radius: 0;
+}
+
+.control-group:focus-within {
+  border-color: var(--sherpa-border-control-active-default, #0060df);
+}

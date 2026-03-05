@@ -1,0 +1,48 @@
+<!--
+  sherpa-pagination.html — Pagination bar with page-size selector and page navigator.
+
+  Templates:
+    • default — Rows-per-page selector + page controls
+
+  Host attributes:
+    data-page            — Current 1-based page number (default: 1)
+    data-page-size       — Rows shown per page (default: 25)
+    data-total-rows      — Total filterable row count (drives page calculations)
+    data-allowed-sizes   — Comma-separated page-size options (default: "10,25,50,100")
+    data-density         — "compact" | "comfortable"
+    hidden               — Hides the component entirely
+
+  Events:
+    pagechange — { page, pageSize, totalPages }
+-->
+
+<template id="default">
+  <div class="pagination-results" part="results">
+    <span class="pagination-label">Rows per page</span>
+    <select class="page-size-select" aria-label="Rows per page"></select>
+  </div>
+
+  <div class="pagination-info" part="info">
+    <span class="row-range"></span>
+  </div>
+
+  <div class="pagination-pager" part="pager">
+    <button class="page-btn page-first" aria-label="First page" type="button">
+      <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
+    </button>
+    <button class="page-btn page-prev" aria-label="Previous page" type="button">
+      <i class="fa-solid fa-angle-left" aria-hidden="true"></i>
+    </button>
+    <span class="page-indicator">
+      <span class="page-current"></span>
+      <span class="page-separator">of</span>
+      <span class="page-total"></span>
+    </span>
+    <button class="page-btn page-next" aria-label="Next page" type="button">
+      <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
+    </button>
+    <button class="page-btn page-last" aria-label="Last page" type="button">
+      <i class="fa-solid fa-angles-right" aria-hidden="true"></i>
+    </button>
+  </div>
+</template>

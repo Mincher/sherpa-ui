@@ -1,0 +1,26 @@
+<!--
+  sherpa-message.html — Inline message / banner component.
+
+  Templates:
+    • default — Icon + heading/body/action content + close button
+
+  Host attributes:
+    data-status      — "success" | "critical" | "warning" | "info" | "urgent"
+    data-dismissible — "true" | "false" — shows close button
+-->
+
+<template id="default">
+<span class="message-icon" part="icon">
+  <i class="sherpa-icon default-icon" data-size="sm" aria-hidden="true"></i>
+</span>
+
+<div class="message-content" part="content">
+  <div class="message-heading" part="heading"><slot name="heading"></slot></div>
+  <div class="message-body" part="body"><slot></slot></div>
+  <div class="message-action" part="action"><slot name="action"></slot></div>
+</div>
+
+<button type="button" class="message-close" part="close" aria-label="Dismiss">
+  <i class="fa-solid fa-xmark sherpa-icon" data-size="sm" aria-hidden="true"></i>
+</button>
+</template>

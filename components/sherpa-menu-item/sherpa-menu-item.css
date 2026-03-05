@@ -1,0 +1,88 @@
+
+/* sherpa-menu-item.css — flex row: icon? label description? chevron? */
+
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+  inline-size: 100%;
+  box-sizing: border-box;
+  padding: var(--sherpa-space-2xs) var(--sherpa-space-sm);
+  border-radius: var(--sherpa-border-rounding-sm);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+:host([hidden])         { display: none; }
+:host(:hover),
+:host(:focus-visible)   { background-color: var(--sherpa-surface-control-hover); }
+:host([checked])        { background-color: var(--sherpa-surface-control-active-default); }
+:host([disabled]) {
+  color: var(--sherpa-text-inactive-default);
+  cursor: default;
+  pointer-events: none;
+}
+
+:host([data-icon]) .sherpa-icon,
+:host([data-selection="checkbox"]) .sherpa-icon,
+:host([data-selection="radio"]) .sherpa-icon { display: inline-flex; }
+
+/* ── Label ── */
+
+.label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Description ── */
+
+.description {
+  display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(var(--sherpa-fonts-scale-sm) * 0.9);
+  color: var(--sherpa-text-default-secondary);
+}
+
+:host([data-description]) .description { display: block; }
+
+/* ── Chevron (submenu indicator) ── */
+
+.chevron {
+  display: none;
+  font-size: var(--sherpa-fonts-scale-sm);
+}
+
+:host([data-has-submenu="true"]) .chevron { display: inline-flex; }
+
+/* ── Toggle ── */
+
+sherpa-switch { pointer-events: none; }
+
+/* ── Heading ── */
+
+:host([data-type="heading"]) {
+  font-size: var(--sherpa-fonts-scale-xs);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-line-height-xs, 14px);
+  letter-spacing: var(--sherpa-fonts-letter-spacing-wider, 1px);
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary);
+  padding: var(--sherpa-space-xs);
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Search highlight ── */
+
+mark.text-highlight-match {
+  background-color: var(--sherpa-surface-search-highlight);
+  border-radius: var(--sherpa-border-rounding-2xs, 2px);
+  padding: 0 2px;
+}

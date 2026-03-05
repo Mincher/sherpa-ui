@@ -1,0 +1,214 @@
+/**
+ * Alias Tokens (Semantic)
+ * Auto-generated from Figma Variables (Tokens 2.0)
+ * Do not edit manually - regenerate using: node scripts/process-figma-tokens.js
+ */
+
+/* Semantic tokens referencing core primitives */
+/* These are referenced by theme tokens via var() */
+
+:root {
+  --sherpa-border-rounding-base: var(--sherpa-core-border-radius-200);
+  --sherpa-border-rounding-full: var(--sherpa-core-border-radius-1000);
+  --sherpa-border-rounding-lg: var(--sherpa-core-border-radius-300);
+  --sherpa-border-rounding-none: var(--sherpa-core-border-radius-0);
+  --sherpa-border-rounding-sm: var(--sherpa-core-border-radius-100);
+  --sherpa-border-rounding-xl: var(--sherpa-core-border-radius-400);
+  --sherpa-border-width-2xl: var(--sherpa-core-border-stroke-600);
+  --sherpa-border-width-3xl: var(--sherpa-core-border-stroke-700);
+  --sherpa-border-width-base: var(--sherpa-core-border-stroke-300);
+  --sherpa-border-width-lg: var(--sherpa-core-border-stroke-400);
+  --sherpa-border-width-none: var(--sherpa-core-border-stroke-0);
+  --sherpa-border-width-sm: var(--sherpa-core-border-stroke-200);
+  --sherpa-border-width-xl: var(--sherpa-core-border-stroke-500);
+  --sherpa-border-width-xs: var(--sherpa-core-border-stroke-100);
+  --sherpa-color-brand-100: var(--sherpa-core-color-extended-phlox-250);
+  --sherpa-color-brand-1000: var(--sherpa-core-color-extended-deep-purple-600);
+  --sherpa-color-brand-200: var(--sherpa-core-color-extended-phlox-300);
+  --sherpa-color-brand-300: var(--sherpa-core-color-extended-phlox-350);
+  --sherpa-color-brand-400: var(--sherpa-core-color-extended-phlox-400);
+  --sherpa-color-brand-500: var(--sherpa-core-color-extended-phlox-500);
+  --sherpa-color-brand-600: var(--sherpa-core-color-extended-phlox-550);
+  --sherpa-color-brand-700: var(--sherpa-core-color-extended-phlox-600);
+  --sherpa-color-brand-800: var(--sherpa-core-color-extended-phlox-650);
+  --sherpa-color-brand-900: var(--sherpa-core-color-extended-deep-purple-550);
+  --sherpa-color-brand-base: var(--sherpa-core-color-extended-phlox-500);
+  --sherpa-color-error-100: var(--sherpa-core-color-basic-red-0);
+  --sherpa-color-error-1000: var(--sherpa-core-color-basic-red-900);
+  --sherpa-color-error-200: var(--sherpa-core-color-basic-red-100);
+  --sherpa-color-error-300: var(--sherpa-core-color-basic-red-200);
+  --sherpa-color-error-400: var(--sherpa-core-color-basic-red-300);
+  --sherpa-color-error-500: var(--sherpa-core-color-basic-red-400);
+  --sherpa-color-error-600: var(--sherpa-core-color-basic-red-500);
+  --sherpa-color-error-700: var(--sherpa-core-color-basic-red-600);
+  --sherpa-color-error-800: var(--sherpa-core-color-basic-red-700);
+  --sherpa-color-error-900: var(--sherpa-core-color-basic-red-800);
+  --sherpa-color-info-100: var(--sherpa-core-color-basic-blue-green-0);
+  --sherpa-color-info-1000: var(--sherpa-core-color-basic-blue-green-1000);
+  --sherpa-color-info-200: var(--sherpa-core-color-basic-blue-green-100);
+  --sherpa-color-info-300: var(--sherpa-core-color-basic-blue-green-200);
+  --sherpa-color-info-400: var(--sherpa-core-color-basic-blue-green-400);
+  --sherpa-color-info-500: var(--sherpa-core-color-basic-blue-green-500);
+  --sherpa-color-info-600: var(--sherpa-core-color-basic-blue-green-600);
+  --sherpa-color-info-700: var(--sherpa-core-color-basic-blue-green-700);
+  --sherpa-color-info-800: var(--sherpa-core-color-basic-blue-green-800);
+  --sherpa-color-info-900: var(--sherpa-core-color-basic-blue-green-900);
+  --sherpa-color-neutral-0: var(--sherpa-core-color-basic-monochrome-0);
+  --sherpa-color-neutral-100: var(--sherpa-core-color-basic-greyscale-100);
+  --sherpa-color-neutral-1000: var(--sherpa-core-color-basic-monochrome-950);
+  --sherpa-color-neutral-200: var(--sherpa-core-color-basic-greyscale-150);
+  --sherpa-color-neutral-300: var(--sherpa-core-color-basic-greyscale-200);
+  --sherpa-color-neutral-400: var(--sherpa-core-color-basic-greyscale-300);
+  --sherpa-color-neutral-500: var(--sherpa-core-color-basic-greyscale-400);
+  --sherpa-color-neutral-600: var(--sherpa-core-color-basic-greyscale-600);
+  --sherpa-color-neutral-700: var(--sherpa-core-color-basic-greyscale-700);
+  --sherpa-color-neutral-800: var(--sherpa-core-color-basic-greyscale-900);
+  --sherpa-color-neutral-900: var(--sherpa-core-color-basic-greyscale-1000);
+  --sherpa-color-primary-classic-100: var(--sherpa-core-color-basic-blue-green-0);
+  --sherpa-color-primary-classic-1000: var(--sherpa-core-color-basic-blue-green-1000);
+  --sherpa-color-primary-classic-200: var(--sherpa-core-color-basic-blue-green-100);
+  --sherpa-color-primary-classic-300: var(--sherpa-core-color-basic-blue-green-200);
+  --sherpa-color-primary-classic-400: var(--sherpa-core-color-basic-blue-green-300);
+  --sherpa-color-primary-classic-500: var(--sherpa-core-color-basic-blue-green-500);
+  --sherpa-color-primary-classic-600: var(--sherpa-core-color-basic-blue-green-600);
+  --sherpa-color-primary-classic-650: var(--sherpa-core-color-basic-blue-green-650);
+  --sherpa-color-primary-classic-725: var(--sherpa-core-color-basic-blue-green-725);
+  --sherpa-color-primary-classic-750: var(--sherpa-core-color-basic-blue-green-750);
+  --sherpa-color-primary-classic-800: var(--sherpa-core-color-basic-blue-green-800);
+  --sherpa-color-primary-classic-900: var(--sherpa-core-color-basic-blue-green-900);
+  --sherpa-color-primary-classic-base: var(--sherpa-core-color-basic-blue-green-700);
+  --sherpa-color-primary-new-100: var(--sherpa-core-color-basic-blue-0);
+  --sherpa-color-primary-new-1000: var(--sherpa-core-color-extended-neon-blue-650);
+  --sherpa-color-primary-new-200: var(--sherpa-core-color-basic-blue-100);
+  --sherpa-color-primary-new-300: var(--sherpa-core-color-basic-blue-200);
+  --sherpa-color-primary-new-400: var(--sherpa-core-color-basic-blue-300);
+  --sherpa-color-primary-new-500: var(--sherpa-core-color-extended-neon-blue-500);
+  --sherpa-color-primary-new-700: var(--sherpa-core-color-extended-neon-blue-600);
+  --sherpa-color-primary-new-800: var(--sherpa-core-color-extended-neon-blue-600);
+  --sherpa-color-primary-new-900: var(--sherpa-core-color-extended-neon-blue-650);
+  --sherpa-color-primary-new-base: var(--sherpa-core-color-extended-neon-blue-550);
+  --sherpa-color-success-100: var(--sherpa-core-color-basic-green-0);
+  --sherpa-color-success-1000: var(--sherpa-core-color-basic-green-1000);
+  --sherpa-color-success-200: var(--sherpa-core-color-basic-green-100);
+  --sherpa-color-success-300: var(--sherpa-core-color-basic-green-300);
+  --sherpa-color-success-400: var(--sherpa-core-color-basic-green-400);
+  --sherpa-color-success-500: var(--sherpa-core-color-basic-green-500);
+  --sherpa-color-success-600: var(--sherpa-core-color-basic-green-600);
+  --sherpa-color-success-700: var(--sherpa-core-color-basic-green-700);
+  --sherpa-color-success-800: var(--sherpa-core-color-basic-green-800);
+  --sherpa-color-success-900: var(--sherpa-core-color-basic-green-900);
+  --sherpa-color-tones-100: var(--sherpa-core-color-extended-slate-100);
+  --sherpa-color-tones-1000: var(--sherpa-core-color-basic-monochrome-950);
+  --sherpa-color-tones-200: var(--sherpa-core-color-extended-slate-200);
+  --sherpa-color-tones-300: var(--sherpa-core-color-extended-slate-300);
+  --sherpa-color-tones-400: var(--sherpa-core-color-extended-slate-500);
+  --sherpa-color-tones-500: var(--sherpa-core-color-extended-slate-550);
+  --sherpa-color-tones-600: var(--sherpa-core-color-extended-slate-600);
+  --sherpa-color-tones-700: var(--sherpa-core-color-extended-slate-750);
+  --sherpa-color-tones-800: var(--sherpa-core-color-basic-greyscale-1000);
+  --sherpa-color-tones-900: var(--sherpa-core-color-basic-monochrome-900);
+  --sherpa-color-urgent-100: var(--sherpa-core-color-basic-orange-0);
+  --sherpa-color-urgent-1000: var(--sherpa-core-color-basic-orange-1000);
+  --sherpa-color-urgent-200: var(--sherpa-core-color-basic-orange-100);
+  --sherpa-color-urgent-300: var(--sherpa-core-color-basic-orange-200);
+  --sherpa-color-urgent-400: var(--sherpa-core-color-basic-orange-400);
+  --sherpa-color-urgent-500: var(--sherpa-core-color-basic-orange-500);
+  --sherpa-color-urgent-600: var(--sherpa-core-color-basic-orange-600);
+  --sherpa-color-urgent-700: var(--sherpa-core-color-basic-orange-700);
+  --sherpa-color-urgent-800: var(--sherpa-core-color-basic-orange-800);
+  --sherpa-color-urgent-900: var(--sherpa-core-color-basic-orange-900);
+  --sherpa-color-warning-100: var(--sherpa-core-color-extended-warm-yellow-0);
+  --sherpa-color-warning-1000: var(--sherpa-core-color-extended-warm-yellow-1000);
+  --sherpa-color-warning-200: var(--sherpa-core-color-extended-warm-yellow-100);
+  --sherpa-color-warning-300: var(--sherpa-core-color-extended-warm-yellow-200);
+  --sherpa-color-warning-400: var(--sherpa-core-color-extended-warm-yellow-400);
+  --sherpa-color-warning-500: var(--sherpa-core-color-extended-warm-yellow-500);
+  --sherpa-color-warning-600: var(--sherpa-core-color-extended-warm-yellow-600);
+  --sherpa-color-warning-700: var(--sherpa-core-color-extended-warm-yellow-700);
+  --sherpa-color-warning-800: var(--sherpa-core-color-extended-warm-yellow-800);
+  --sherpa-color-warning-900: var(--sherpa-core-color-extended-warm-yellow-900);
+  --sherpa-effects-shadow-100: light-dark(var(--sherpa-core-color-extended-slate-200), rgba(0, 0, 0, 0.35));
+  --sherpa-effects-shadow-200: light-dark(rgba(55, 47, 79, 0.20), rgba(0, 0, 0, 0.50));
+  --sherpa-fonts-context-brand: var(--sherpa-core-typeface-manrope-style-name);
+  --sherpa-fonts-context-default: var(--sherpa-core-typeface-open-sans-style-name);
+  --sherpa-fonts-context-monospaced: var(--sherpa-core-typeface-source-code-pro-style-name);
+  --sherpa-fonts-scale-0: 0px;
+  --sherpa-fonts-scale-10xl: 48px;
+  --sherpa-fonts-scale-11xl: 52px;
+  --sherpa-fonts-scale-12xl: 56px;
+  --sherpa-fonts-scale-13xl: 64px;
+  --sherpa-fonts-scale-14xl: 72px;
+  --sherpa-fonts-scale-2xl: 24px;
+  --sherpa-fonts-scale-2xs: 8px;
+  --sherpa-fonts-scale-3xl: 28px;
+  --sherpa-fonts-scale-4xl: 30px;
+  --sherpa-fonts-scale-5xl: 32px;
+  --sherpa-fonts-scale-6xl: 36px;
+  --sherpa-fonts-scale-7xl: 40px;
+  --sherpa-fonts-scale-8xl: 42px;
+  --sherpa-fonts-scale-9xl: 44px;
+  --sherpa-fonts-scale-base: 14px;
+  --sherpa-fonts-scale-lg: 16px;
+  --sherpa-fonts-scale-sm: 12px;
+  --sherpa-fonts-scale-xl: 20px;
+  --sherpa-fonts-scale-xs: 10px;
+  --sherpa-size-2xl: var(--sherpa-core-scale-400);
+  --sherpa-size-2xs: var(--sherpa-core-scale-100);
+  --sherpa-size-3xl: var(--sherpa-core-scale-500);
+  --sherpa-size-3xs: var(--sherpa-core-scale-50);
+  --sherpa-size-4xl: var(--sherpa-core-scale-600);
+  --sherpa-size-5xl: var(--sherpa-core-scale-700);
+  --sherpa-size-6xl: var(--sherpa-core-scale-800);
+  --sherpa-size-lg: var(--sherpa-core-scale-300);
+  --sherpa-size-md: var(--sherpa-core-scale-250);
+  --sherpa-size-none: var(--sherpa-core-scale-0);
+  --sherpa-size-sm: var(--sherpa-core-scale-200);
+  --sherpa-size-xl: var(--sherpa-core-scale-350);
+  --sherpa-size-xs: var(--sherpa-core-scale-150);
+  --sherpa-space-2xl: var(--sherpa-core-scale-400);
+  --sherpa-space-2xs: var(--sherpa-core-scale-50);
+  --sherpa-space-3xl: var(--sherpa-core-scale-500);
+  --sherpa-space-3xs: var(--sherpa-core-scale-25);
+  --sherpa-space-4xl: var(--sherpa-core-scale-600);
+  --sherpa-space-5xl: var(--sherpa-core-scale-700);
+  --sherpa-space-6xl: var(--sherpa-core-scale-800);
+  --sherpa-space-default: var(--sherpa-core-scale-200);
+  --sherpa-space-lg: var(--sherpa-core-scale-250);
+  --sherpa-space-none: var(--sherpa-core-scale-0);
+  --sherpa-space-sm: var(--sherpa-core-scale-150);
+  --sherpa-space-xl: var(--sherpa-core-scale-300);
+  --sherpa-space-xs: var(--sherpa-core-scale-100);
+}
+
+/* Density overrides — remap space tokens per density mode */
+/* Values sourced from figma-tokens/tokens 2.0/Density (Alias)/ */
+
+:root[data-density="compact"] {
+  --sherpa-space-2xl: var(--sherpa-core-scale-350);
+  --sherpa-space-2xs: var(--sherpa-core-scale-25);
+  --sherpa-space-3xl: var(--sherpa-core-scale-450);
+  --sherpa-space-3xs: var(--sherpa-core-scale-25);
+  --sherpa-space-4xl: var(--sherpa-core-scale-500);
+  --sherpa-space-5xl: var(--sherpa-core-scale-600);
+  --sherpa-space-6xl: var(--sherpa-core-scale-700);
+  --sherpa-space-default: var(--sherpa-core-scale-150);
+  --sherpa-space-lg: var(--sherpa-core-scale-200);
+  --sherpa-space-sm: var(--sherpa-core-scale-100);
+  --sherpa-space-xl: var(--sherpa-core-scale-250);
+  --sherpa-space-xs: var(--sherpa-core-scale-50);
+}
+
+:root[data-density="comfortable"] {
+  --sherpa-space-2xl: var(--sherpa-core-scale-450);
+  --sherpa-space-2xs: var(--sherpa-core-scale-100);
+  --sherpa-space-3xl: var(--sherpa-core-scale-600);
+  --sherpa-space-3xs: var(--sherpa-core-scale-50);
+  --sherpa-space-4xl: var(--sherpa-core-scale-700);
+  --sherpa-space-5xl: var(--sherpa-core-scale-800);
+  --sherpa-space-6xl: var(--sherpa-core-scale-800);
+  --sherpa-space-default: var(--sherpa-core-scale-250);
+  --sherpa-space-lg: var(--sherpa-core-scale-300);
+  --sherpa-space-sm: var(--sherpa-core-scale-200);
+  --sherpa-space-xl: var(--sherpa-core-scale-350);
+  --sherpa-space-xs: var(--sherpa-core-scale-150);
+}

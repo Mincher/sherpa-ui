@@ -1,0 +1,84 @@
+<!--
+  sherpa-view-header.html — Top-level view toolbar.
+
+  Templates:
+    • default — Toolbar with toggles, selects, buttons, feedback popover
+
+  Host attributes:
+    data-label               — View heading text
+    data-show-metrics        — Show KPI metrics toggle ("true"/"false")
+    data-show-debug-toggles  — Show debug toggle controls
+    data-favorite            — Favorite state ("true"/"false")
+    data-edit-mode           — Edit mode state ("true"/"false")
+-->
+
+<template id="default">
+<div class="header-surface">
+<div class="toolbar-left">
+  <sherpa-button id="favorite-btn" data-variant="secondary" data-size="medium" data-icon-start="&#xf005;" aria-label="Toggle favorite"></sherpa-button>
+  <span class="heading-label text-heading-lg">Dashboard Prototypes</span>
+  <div class="debug-toggles">
+    <span class="toolbar-divider"></span>
+    <div class="toolbar-toggles">
+    <div class="toolbar-toggle" id="show-metrics-wrapper">
+      <span class="toolbar-toggle-label text-label">Show KPI metrics</span>
+      <sherpa-switch id="show-metrics-toggle" data-state="on"></sherpa-switch>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar-right">
+  <div class="toolbar-toggle" id="edit-mode-wrapper">
+    <span class="toolbar-toggle-label text-label">Edit layout</span>
+    <sherpa-switch id="edit-mode-toggle" data-state="off"></sherpa-switch>
+  </div>
+  <span class="toolbar-divider"></span>
+  <div class="toolbar-dropdown" id="density-dropdown-wrapper">
+    <label class="toolbar-dropdown-label text-label" for="density-select">Density</label>
+    <select id="density-select" class="toolbar-select">
+      <option value="base">Base</option>
+      <option value="comfortable">Comfortable</option>
+      <option value="compact">Compact</option>
+    </select>
+  </div>
+  <div class="toolbar-dropdown" id="theme-dropdown-wrapper">
+    <label class="toolbar-dropdown-label text-label" for="theme-select">Theme</label>
+    <select id="theme-select" class="toolbar-select">
+      <option value="system">System</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </div>
+  <sherpa-button
+    id="export-all-btn"
+    data-variant="secondary"
+    data-icon-start="&#xf1c1;"
+    data-label="Export"
+    data-tooltip="Export all containers to PDF"></sherpa-button>
+  <sherpa-button
+    id="feedback-btn"
+    data-variant="secondary"
+    data-icon-start="&#xf075;"
+    data-label="Share feedback"></sherpa-button>
+</div>
+</div>
+
+<!-- Feedback popover (inside component for encapsulation) -->
+<div class="feedback-backdrop" id="feedback-backdrop"></div>
+<div class="feedback-popover" id="feedback-popover">
+  <div class="feedback-header">
+    <h3 class="feedback-title">Share your feedback</h3>
+    <button class="feedback-close" id="feedback-close" type="button" aria-label="Close">
+      <i class="fa-solid fa-xmark sherpa-icon" data-size="sm" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="feedback-content">
+    <iframe 
+      id="feedback-iframe" 
+      title="Feedback Survey"
+      src="/html/templates/feedback-placeholder.html">
+    </iframe>
+  </div>
+</div>
+</template>

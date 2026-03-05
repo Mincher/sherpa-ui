@@ -1,0 +1,18 @@
+/**
+ * sherpa-input-number.css — Numerical input with stepper buttons.
+ * Base styles imported from sherpa-input-base.css.
+ */
+@import '../utilities/sherpa-input-base/sherpa-input-base.css';
+
+.input-field {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stepper buttons match input height */
+.step-down,
+.step-up {
+  height: var(--sherpa-size-2xl, 32px);
+  width: var(--sherpa-size-2xl, 32px);
+  flex-shrink: 0;
+}

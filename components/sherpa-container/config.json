@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "sherpa-container",
+  "description": "Dashboard card with header, metrics, and data sections. Content sourced from a content template (data-content) or inline child markup (fallback).",
+  "attributes": {
+    "data-content": { "type": "string", "description": "Content template id — fetches /html/templates/content/<id>.html at init" },
+    "title": { "type": "string", "description": "Container heading text (overrides content template title)" },
+    "data-description": { "type": "string", "description": "Container description (overrides content template description)" },
+    "data-template": { "type": "string", "options": ["default", "metrics-only"], "default": "default", "description": "Layout template id from sherpa-container.html" },
+    "data-col-span": { "type": "string", "options": ["3", "6", "9", "12"], "default": "3", "description": "Column span in the content grid" },
+    "data-row-span": { "type": "string", "options": ["1", "2", "3", "4", "5", "6"], "default": "1", "description": "Row span in the content grid" },
+    "data-menu-open": { "type": "boolean", "default": false, "description": "Whether the context menu is open" }
+  },
+  "slots": {
+    "metric": "Child sherpa-metric elements (auto-created from content template or authored inline)",
+    "section": "Child sherpa-base-table or sherpa-barchart elements (auto-created from content template or authored inline)"
+  },
+  "methods": {
+    "getColSpan()": "Get current column span from data-col-span attribute",
+    "getRowSpan()": "Get current row span from data-row-span attribute",
+    "applyFilterState(filterState)": "Apply filter bar state to sections and metrics"
+  },
+  "cssCustomProperties": {
+    "--containerColSpan": "Integer column span (@property registered)",
+    "--containerRowSpan": "Integer row span (@property registered)"
+  },
+  "example": "<sherpa-container data-content=\"regional-sales-overview\" data-col-span=\"6\" data-row-span=\"2\"></sherpa-container>",
+  "containerDemo": { "source": "/data/queries/sales-demo.json" }
+}

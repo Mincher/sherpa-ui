@@ -1,0 +1,240 @@
+
+/**
+ * sherpa-metric.css — KPI / metric card
+ * Shadow DOM component.
+ *
+ * Status strategy:
+ *   • .metric-card carries [data-status] for trend-derived coloring
+ *   • Attribute selectors set universal colour properties
+ *     (--_background-color, --_text-color, --_icon-color) which cascade
+ *     to children (.metric-delta, sherpa-sparkline, etc.)
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Host
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  flex: 1 1 0;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  overflow: clip;
+  container-type: inline-size;
+  container-name: metric;
+  color: inherit;
+}
+
+:host([hidden]) { display: none; }
+
+:host([data-visible="false"]) { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Card
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.metric-card {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 8px);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 56px;
+  overflow: visible;
+  background-color: var(--_background-color, var(--sherpa-surface-context-default-subtle-default, #f2f4f8));
+  color: var(--_text-color, inherit);
+  container-type: size;
+  container-name: metric-card;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Status overrides  (subtle treatment — attribute selectors on .metric-card)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.metric-card[data-status="info"] {
+  --_background-color: var(--sherpa-surface-context-info-subtle-default);
+  --_border-color: var(--sherpa-border-context-info-default);
+  --_text-color: var(--sherpa-text-context-info-default);
+  --_icon-color: var(--sherpa-icon-context-info-default);
+}
+
+.metric-card[data-status="success"] {
+  --_background-color: var(--sherpa-surface-context-success-subtle-default);
+  --_border-color: var(--sherpa-border-context-success-default);
+  --_text-color: var(--sherpa-text-context-success-default);
+  --_icon-color: var(--sherpa-icon-context-success-default);
+}
+
+.metric-card[data-status="warning"] {
+  --_background-color: var(--sherpa-surface-context-warning-subtle-default);
+  --_border-color: var(--sherpa-border-context-warning-default);
+  --_text-color: var(--sherpa-text-context-warning-default);
+  --_icon-color: var(--sherpa-icon-context-warning-default);
+}
+
+.metric-card[data-status="critical"] {
+  --_background-color: var(--sherpa-surface-context-error-subtle-default);
+  --_border-color: var(--sherpa-border-context-error-default);
+  --_text-color: var(--sherpa-text-context-error-default);
+  --_icon-color: var(--sherpa-icon-context-error-default);
+}
+
+.metric-card[data-status="urgent"] {
+  --_background-color: var(--sherpa-surface-context-urgent-subtle-default);
+  --_border-color: var(--sherpa-border-context-urgent-default);
+  --_text-color: var(--sherpa-text-context-urgent-default);
+  --_icon-color: var(--sherpa-icon-context-urgent-default);
+}
+
+/* Flat trend uses secondary text regardless of status */
+:host([data-trend="flat"]) .metric-delta {
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+}
+
+.metric-sparkline[data-visible="false"] {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Labels
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.metric-labels {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: var(--sherpa-space-2xs, 6px);
+  flex: 0 1 auto;
+  max-width: 50%;
+  order: 1;
+  align-self: flex-start;
+}
+
+.metric-value {
+  font-family: var(--sherpa-fonts-context-brand, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-2xl, 2rem);
+  font-weight: 400;
+  line-height: 1em;
+  letter-spacing: 1px;
+  color: var(--sherpa-text-default-on-color-subtle-heading, var(--sherpa-text-default-heading));
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Trend
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.metric-trend {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 6px);
+  flex: 0 0 auto;
+
+  .metric-trend-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    --icon-size: var(--sherpa-fonts-scale-sm, 0.875rem);
+    aspect-ratio: 1;
+  }
+
+  /* Hidden by default, shown via :host([data-trend]) */
+  .metric-trend-up,
+  .metric-trend-down { display: none; }
+}
+
+.metric-trend-text {
+  white-space: normal;
+}
+
+.metric-unit {
+  color: inherit;
+}
+
+.metric-delta {
+  color: var(--_text-color, var(--sherpa-text-default-on-color-subtle-body, var(--sherpa-text-default-body)));
+}
+
+/* Trend icon visibility */
+:host([data-trend="up"]) .metric-trend-up { display: inline-flex; }
+:host([data-trend="down"]) .metric-trend-down { display: inline-flex; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Sparkline
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.metric-sparkline {
+  flex: 1 1 0%;
+  min-width: 0;
+  order: 2;
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  justify-content: flex-start;
+}
+
+.metric-sparkline > sherpa-sparkline {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Container Queries
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hide sparkline when metric is too narrow */
+@container metric (max-width: 360px) {
+  .metric-sparkline { display: none; }
+}
+
+@container metric-card (min-height: 200px) {
+  .metric-card {
+    flex-wrap: wrap;
+    align-content: flex-start;
+    row-gap: var(--sherpa-space-sm, 12px);
+  }
+
+  .metric-labels {
+    flex: 1 1 100%;
+    max-width: none;
+    width: 100%;
+  }
+
+  .metric-sparkline {
+    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@container metric-card (max-aspect-ratio: 1) {
+  .metric-card {
+    flex-direction: column;
+  }
+
+  .metric-sparkline {
+    min-width: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .metric-labels {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+@container metric-card (min-aspect-ratio: 1.001) {
+  .metric-card {
+    flex-direction: row;
+  }
+}

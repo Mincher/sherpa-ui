@@ -1,0 +1,107 @@
+
+/**
+ * sherpa-menu.css
+ * Shadow DOM + light DOM menu component.
+ * Per-instance popover with CSS anchor positioning.
+ *
+ * Light DOM content projected through <slot>:
+ *   <sherpa-menu-item type="heading"> – group heading
+ *   <ul data-group="…">            – item list (contains <li><sherpa-menu-item>)
+ *   <hr>                           – explicit divider
+ */
+
+/* ── Private tokens ── */
+
+:host {
+  --_shadow: var(--sherpa-shadow-default-md);
+}
+
+/* ── Host ── */
+
+:host {
+  display: none;
+  background-color: var(--sherpa-surface-container-default);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
+  border-radius: var(--sherpa-border-rounding-base);
+  box-shadow: var(--_shadow);
+  min-width: 180px;
+  max-width: 320px;
+  box-sizing: border-box;
+  color: var(--sherpa-text-default-body);
+  outline: none;
+}
+
+:host([open]) {
+  display: block;
+}
+
+/* ── Menu surface (shadow DOM wrapper) ── */
+
+.menu-surface {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xs);
+  padding: var(--sherpa-space-sm);
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+/* ── Slotted: item lists ── */
+
+::slotted(ul) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs);
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--sherpa-space-2xs) 0;
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
+}
+
+::slotted(ul:last-child) {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ── Slotted: explicit dividers ── */
+
+::slotted(hr) {
+  height: 1px;
+  border: none;
+  background-color: var(--sherpa-border-control-secondary-default);
+  margin: var(--sherpa-space-2xs) 0;
+}
+
+/* ── Slotted: hidden items (search filtering) ── */
+
+::slotted([hidden]) {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   POPOVER MODE
+   Each sherpa-button[menu] creates its own <sherpa-menu popover="auto"> as a
+   sibling in the same shadow root. CSS anchor positioning places the menu
+   below the trigger; JS fallback uses getBoundingClientRect.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([popover]) {
+  position: fixed;
+  margin: 0;
+  inset: auto;
+  z-index: 10000;
+  overflow: visible;
+}
+
+:host([popover][open]) {
+  display: block;
+}
+
+@supports (anchor-name: --test) {
+  :host([popover][open]) {
+    position-anchor: var(--sherpa-menu-anchor);
+    top: anchor(bottom);
+    left: anchor(left);
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+}

@@ -1,0 +1,29 @@
+<!--
+  sherpa-input-number.html — Number input with step buttons.
+
+  Templates:
+    • default — Number input + step-down/step-up buttons
+
+  Host attributes:
+    min  — Minimum value
+    max  — Maximum value
+    step — Step increment
+
+  Inherited from AuxInputBase:
+    data-label, data-description, data-helper, data-layout,
+    disabled, readonly, required, name, value, placeholder,
+    pattern, minlength, maxlength, novalidate
+-->
+<template id="default">
+<div class="control-group">
+  <input type="number" class="input-field" placeholder="0" />
+  <sherpa-button class="step-down input-action"
+              data-variant="tertiary"
+              data-icon-start="&#xf068;"
+              aria-label="Decrease value"></sherpa-button>
+  <sherpa-button class="step-up input-action"
+              data-variant="tertiary"
+              data-icon-start="&#xf067;"
+              aria-label="Increase value"></sherpa-button>
+</div>
+</template>

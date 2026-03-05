@@ -1,0 +1,41 @@
+<!--
+  sherpa-empty-state.html — Empty state placeholder component.
+
+  Templates:
+    • default — Illustration + heading + description + action buttons + footer
+
+  Host attributes:
+    data-label        — Heading text
+    data-description  — Description text
+    data-illustration — Built-in illustration: "empty" | "search" | "folder" | "data" | "error" | "success"
+    data-small-print  — Footer fine print text
+-->
+<template id="default">
+<div class="sherpa-empty-state">
+  <div class="sherpa-empty-state__illustration" hidden>
+    <slot name="illustration">
+      <div class="sherpa-empty-state__illustration-default"></div>
+    </slot>
+  </div>
+
+  <div class="sherpa-empty-state__heading" hidden>
+    <slot name="heading">
+      <h2 class="sherpa-empty-state__title text-heading-lg"></h2>
+    </slot>
+    <slot name="description">
+      <p class="sherpa-empty-state__description text-body"></p>
+    </slot>
+    <slot></slot>
+  </div>
+
+  <div class="sherpa-empty-state__buttons" hidden>
+    <slot name="actions"></slot>
+  </div>
+
+  <p class="sherpa-empty-state__small-print" hidden>
+    <slot name="footer">
+      <span class="sherpa-empty-state__small-print-text text-body-xs"></span>
+    </slot>
+  </p>
+</div>
+</template>

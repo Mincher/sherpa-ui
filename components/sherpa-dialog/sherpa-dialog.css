@@ -1,0 +1,129 @@
+
+/**
+ * sherpa-dialog.css
+ * Shadow DOM styles for the AuxDialog web component.
+ *
+ * Uses the native HTML <dialog> element with ::backdrop pseudo-element.
+ * The sherpa-header and sherpa-footer slotted children handle their own
+ * rendering and events.
+ *
+ * Status strategy: :host([data-status="..."]) — border-only treatment
+ *   - .dialog is the native <dialog> visual panel (border, background, shadow)
+ *   - Status border applied to .dialog via :host attribute selectors
+ *
+ * Host attributes:
+ *   status        — success | critical | warning | info | urgent
+ *   open          — dialog visibility (reflected by native <dialog>)
+ *   size          — small | medium (default) | large | full
+ *
+ * Slots:
+ *   header    — sherpa-header (type="dialog") for title / close button
+ *   (default) — dialog body content
+ *   footer    — sherpa-footer or custom footer content
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOST
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: contents;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DIALOG (native <dialog> element)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 600px;
+  max-width: 90vw;
+  padding: 0;
+  background-color: var(--sherpa-surface-container-default);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default);
+  border-radius: var(--sherpa-border-rounding-lg, 8px);
+  box-shadow: var(--sherpa-shadow-default-lg);
+  overflow: clip;
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+
+/* ── Open animation ────────────────────────────────────────────── */
+
+.dialog[open] {
+  animation: dialog-show var(--sherpa-motion-duration-base, 200ms) var(--sherpa-motion-easing-default, ease) forwards;
+}
+
+@keyframes dialog-show {
+  from {
+    transform: scale(0.95) translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ── Backdrop ──────────────────────────────────────────────────── */
+
+.dialog::backdrop {
+  background-color: var(--sherpa-effects-backdrop, oklch(0 0 0 / 0.5));
+  animation: backdrop-show var(--sherpa-motion-duration-base, 200ms) var(--sherpa-motion-easing-default, ease) forwards;
+}
+
+@keyframes backdrop-show {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Size variants ─────────────────────────────────────────────── */
+
+:host([data-size="small"]) .dialog  { width: 400px; }
+:host([data-size="large"]) .dialog  { width: 800px; }
+:host([data-size="full"]) .dialog {
+  width: 90vw;
+  height: 90vh;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEADER / FOOTER (internal shadow DOM children)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+sherpa-header {
+  flex-shrink: 0;
+}
+
+sherpa-footer {
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTENT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialog-content {
+  flex: 1;
+  min-height: 1px;
+  padding: var(--sherpa-space-sm);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sherpa-border-container-default) transparent;
+}
+
+.dialog-content::-webkit-scrollbar { width: 8px; }
+.dialog-content::-webkit-scrollbar-track { background: transparent; }
+.dialog-content::-webkit-scrollbar-thumb {
+  background-color: var(--sherpa-border-container-default);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+}
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sherpa-border-context-default-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATUS — border-only accent
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-status]) .dialog { border-color: var(--_status-border); }

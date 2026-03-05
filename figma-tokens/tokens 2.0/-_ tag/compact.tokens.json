@@ -1,0 +1,22 @@
+{
+  "height": {
+    "$type": "number",
+    "$value": 16,
+    "$extensions": {
+      "com.figma.variableId": "VariableID:16101:35724",
+      "com.figma.scopes": [
+        "ALL_SCOPES"
+      ],
+      "com.figma.aliasData": {
+        "targetVariableId": "VariableID:c0fdfd50ea493e3fbd970656dfaccbe5a2024d96/-1:-1",
+        "targetVariableName": "size/sm",
+        "targetVariableSetId": "VariableCollectionId:87dc7ee40c2e3a72861f4807a370f430338478ad/-1:-1",
+        "targetVariableSetName": "Apex 2.0"
+      },
+      "com.figma.isOverride": true
+    }
+  },
+  "$extensions": {
+    "com.figma.modeName": "compact"
+  }
+}

@@ -1,0 +1,32 @@
+<!--
+  sherpa-dialog.html — Multi-template dialog component.
+
+  Templates:
+    • default — Standard modal dialog with sherpa-header, content area, and sherpa-footer.
+
+  Host attributes:
+    data-label       — Dialog title text
+    data-subtitle    — Dialog subtitle text
+    data-size        — "small" | "medium" | "large" | "full"
+    data-open        — Dialog visibility ("true" to show)
+    data-dismissible — Shows close button ("true"/"false", default: true)
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Header / content / footer dialog
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="default">
+  <dialog class="dialog" part="dialog">
+    <sherpa-header data-type="dialog" part="header">
+      <slot name="heading" slot="heading"></slot>
+    </sherpa-header>
+
+    <div class="dialog-content text-body" part="content">
+      <slot></slot>
+    </div>
+
+    <sherpa-footer data-type="slot" part="footer">
+      <slot name="footer"></slot>
+    </sherpa-footer>
+  </dialog>
+</template>

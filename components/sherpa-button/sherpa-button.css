@@ -1,0 +1,265 @@
+/**
+ * sherpa-button.css
+ * Shadow DOM styles for the AuxButton web component.
+ *
+ * Architecture:
+ *   :host is the visual and interactive element — all colour, layout,
+ *   border, sizing, focus, and click handling lives here. The host has
+ *   role="button" and tabindex="0" set by the JS. No inner <button>
+ *   element; shadow DOM contains only a label <span>.
+ *
+ *   Icons are <i> elements in the template (.icon-start / .icon-end),
+ *   styled with Font Awesome 6. JS mirrors data-icon-start / data-icon-end
+ *   attribute values to element textContent. CSS shows/hides them via
+ *   :host attribute selectors.
+ *
+ *   Labels come from the data-label attribute, set as textContent on
+ *   the label span by JS. Icon-only buttons hide the label via CSS.
+ *
+ * Status — global token inheritance:
+ *   Global [data-status] rules in sherpa-status-tokens.css define
+ *   --_status-* custom properties on the host element. These inherit
+ *   through the shadow DOM boundary. Each variant picks which vars
+ *   it needs via var() fallback chains:
+ *
+ *     primary:           var(--_status-surface-strong, <default>)
+ *     secondary:         var(--_status-surface, <default>)
+ *     tertiary:          var(--_status-text, <default>)
+ *
+ *   When no data-status is present the --_status-* vars are undefined,
+ *   the fallback activates, and the default variant colour is used.
+ *
+ * Host attributes:
+ *   data-label:       button label text
+ *   data-icon-start:  leading icon (FA unicode character)
+ *   data-icon-end:    trailing icon (FA unicode character)
+ *   data-icon-weight: regular | light | thin  (default: solid / 900)
+ *   data-variant:     primary | secondary | tertiary
+ *   data-size:        small | medium (default) | large
+ *   data-active:      "true" | "false"
+ *   data-status:      error | info | success | warning | urgent
+ *   disabled
+ */
+
+
+/* ==========================================================================
+   Host — Primary variant (default)
+   ========================================================================== */
+
+:host {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-space-xs, 8px);
+  height: var(--sherpa-size-2xl, 32px);
+  padding-block: var(--sherpa-space-xs, 8px);
+  padding-inline: var(--sherpa-space-sm, 12px);
+  vertical-align: middle;
+  position: relative;
+
+  background-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default));
+  color:            var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body));
+  border: var(--sherpa-border-width-xs, 1px) solid var(--_status-border, transparent);
+  border-width: var(--_cg-border-width, var(--sherpa-border-width-xs, 1px));
+  border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
+
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+  /* Icon colour — follows status text when present */
+  --_icon-color: var(--_status-text-on-color, var(--sherpa-text-default-on-color-body));
+
+  /* Icon font weight — default solid (900), overridden via data-icon-weight */
+  --_icon-weight: 900;
+
+  /* Hover / down — consumed by :hover / :active rules */
+  --_surface-hover: var(--_status-surface-strong-hover, var(--sherpa-surface-control-primary-hover));
+  --_surface-down:  var(--_status-surface-strong-down,  var(--sherpa-surface-control-primary-down));
+  --_border-hover:  var(--_status-border, transparent);
+  --_border-down:   var(--_status-border, transparent);
+}
+
+:host([hidden]) { display: none; }
+
+
+/* ==========================================================================
+   Icons — <i> elements shown/hidden via :host attribute selectors.
+   Icons inherit font-size from :host; button padding handles visual sizing.
+   ========================================================================== */
+
+.icon-start,
+.icon-end {
+  font-family: "Font Awesome 6 Free";
+  font-weight: var(--_icon-weight);
+  font-style: normal;
+  color: var(--_icon-color);
+  display: none;
+}
+
+:host([data-icon-start]) .icon-start {
+  display: inline-flex;
+}
+
+:host([data-icon-end]) .icon-end {
+  display: inline-flex;
+}
+
+/* ── Icon weight overrides ───────────────────────────────────────────── */
+
+:host([data-icon-weight="regular"]) { --_icon-weight: 400; }
+:host([data-icon-weight="light"])   { --_icon-weight: 300; }
+:host([data-icon-weight="thin"])    { --_icon-weight: 100; }
+
+
+/* ==========================================================================
+   Label
+   ========================================================================== */
+
+.label {
+  display: inline;
+}
+
+.label:empty {
+  display: none;
+}
+
+
+/* ==========================================================================
+   Icon-only mode — auto-detected when no data-label is present
+   ========================================================================== */
+
+:host(:not([data-label])) {
+  aspect-ratio: 1;
+  padding-inline: var(--sherpa-space-xs, 8px);
+
+  &.label{
+    display:none;
+  }
+}
+
+:host(:not([data-label])[data-size="small"]) {
+  padding-inline: var(--sherpa-space-2xs, 4px);
+}
+
+:host(:not([data-label])[data-size="large"]) {
+  padding-inline: var(--sherpa-space-xs, 8px);
+}
+
+
+/* ==========================================================================
+   Focus
+   ========================================================================== */
+
+:host(:focus-visible) {
+  outline: 2px solid var(--sherpa-border-control-active-default);
+  outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   Sizes
+   ========================================================================== */
+
+:host([data-size="small"]) {
+  gap: var(--sherpa-space-3xs, 2px);
+  height: var(--sherpa-size-lg, 24px);
+  padding-block: var(--sherpa-space-2xs, 4px);
+  padding-inline: var(--sherpa-space-xs, 8px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
+:host([data-size="large"]) {
+  gap: var(--sherpa-space-xs, 8px);
+  height: var(--sherpa-size-4xl, 48px);
+  padding-block: var(--sherpa-space-xs, 8px);
+  padding-inline: var(--sherpa-space-default, 16px);
+  font-size: var(--sherpa-fonts-scale-lg, 16px);
+}
+
+
+/* ==========================================================================
+   Hover / Down — unified for all variants (uses private vars)
+   ========================================================================== */
+
+:host(:not([disabled]):hover) {
+  background-color: var(--_surface-hover);
+  border-color: var(--_border-hover);
+}
+
+:host(:not([disabled]):active) {
+  background-color: var(--_surface-down);
+  border-color: var(--_border-down);
+}
+
+
+/* ==========================================================================
+   Variants
+   ========================================================================== */
+
+/* ── Secondary ───────────────────────────────────────────────────────── */
+
+:host([data-variant="secondary"]) {
+  background-color: var(--_status-surface, var(--sherpa-surface-control-secondary-default));
+  border-color:     var(--_status-border,   var(--sherpa-border-control-secondary-default));
+  color:            var(--_status-text,     var(--sherpa-text-default-label));
+  --_icon-color:    var(--_status-text,     var(--sherpa-icon-context-default-body, var(--sherpa-text-default-label)));
+  --_surface-hover: var(--_status-surface-hover, var(--sherpa-surface-control-secondary-hover));
+  --_surface-down:  var(--_status-surface-down,  var(--sherpa-surface-control-secondary-down));
+  --_border-hover:  var(--_status-border,         var(--sherpa-border-control-secondary-hover));
+  --_border-down:   var(--_status-border,         var(--sherpa-border-control-secondary-down));
+}
+
+/* Warning edge-case — default warning text lacks contrast on the subtle
+   secondary surface, so we use the same on-color text as primary. */
+:host([data-variant="secondary"][data-status="warning"]) {
+  color:         var(--_status-text-on-color);
+  --_icon-color: var(--_status-text-on-color);
+}
+
+/* ── Tertiary ────────────────────────────────────────────────────────── */
+
+:host([data-variant="tertiary"]) {
+  background-color: var(--sherpa-surface-control-tertiary-default);
+  border-color: transparent;
+  color:         var(--_status-text, var(--sherpa-text-default-label));
+  --_icon-color: var(--_status-text, var(--sherpa-text-default-label));
+  --_surface-hover: var(--sherpa-surface-control-tertiary-hover);
+  --_surface-down:  var(--sherpa-surface-control-tertiary-down);
+  --_border-hover:  transparent;
+  --_border-down:   transparent;
+}
+
+
+/* ==========================================================================
+   States
+   ========================================================================== */
+
+/* ── Active (toggle / selection) ─────────────────────────────────────── */
+
+:host([data-active="true"]) {
+  background-color: var(--sherpa-surface-control-active-default);
+  border-color: var(--sherpa-border-control-active-default);
+  color: var(--sherpa-text-primary-default);
+  --_icon-color: var(--sherpa-text-primary-default);
+  --_surface-hover: var(--sherpa-surface-control-active-hover);
+  --_surface-down:  var(--sherpa-surface-control-active-down);
+  --_border-hover:  var(--sherpa-border-control-active-hover);
+  --_border-down:   var(--sherpa-border-control-active-down);
+}
+
+/* ── Disabled ────────────────────────────────────────────────────────── */
+
+:host([disabled]) {
+  background-color: var(--sherpa-surface-control-inactive);
+  border-color: var(--_status-border, transparent);
+  color: var(--sherpa-text-inactive-default);
+  --_icon-color: var(--sherpa-text-inactive-default);
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+
+

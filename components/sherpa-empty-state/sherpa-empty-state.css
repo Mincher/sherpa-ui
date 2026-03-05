@@ -1,0 +1,124 @@
+
+/**
+ * sherpa-empty-state.css
+ * Shadow DOM styles for the AuxEmptyState web component.
+ *
+ * Status strategy: :host([data-status="..."]) — icon-only treatment
+ *   - Illustration SVG coloured via --icon-color (uses currentColor)
+ *   - Host border/fill/text NOT affected — empty state is inline content
+ *
+ * Host attributes:
+ *   status       — success | critical | warning | info | urgent
+ *   heading      — title text
+ *   description  — body text
+ */
+
+:host {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  container-type: normal;
+}
+
+:host([hidden]) { display: none; }
+
+.sherpa-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-space-lg);
+  height: 100%;
+  max-height: 100%;
+  padding: var(--sherpa-space-xl);
+  overflow: auto;
+}
+
+/* Illustration */
+.sherpa-empty-state__illustration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sherpa-icon-context-default-placeholder);
+
+  & svg {
+    width: 200px;
+    height: 200px;
+  }
+}
+
+.sherpa-empty-state__illustration-default {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Heading section */
+.sherpa-empty-state__heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--sherpa-space-sm);
+  max-width: 400px;
+  width: 100%;
+}
+
+.sherpa-empty-state__title {
+  margin: 0;
+  color: var(--sherpa-text-default-heading);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.sherpa-empty-state__description {
+  margin: 0;
+  text-align: center;
+}
+
+/* Buttons */
+.sherpa-empty-state__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sherpa-space-xs);
+}
+
+/* Small print */
+.sherpa-empty-state__small-print {
+  margin: 0;
+  color: var(--sherpa-text-default-secondary);
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 400px;
+}
+
+/* Slotted content */
+::slotted(*) {
+  text-align: center;
+  max-width: 400px;
+}
+
+::slotted([slot="illustration"]) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sherpa-empty-state__small-print-text {
+  display: inline;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATUS — icon-only colouring
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-status]) .sherpa-empty-state__illustration { color: var(--_status-icon); }
