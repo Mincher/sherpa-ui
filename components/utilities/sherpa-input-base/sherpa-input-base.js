@@ -44,22 +44,61 @@
  *   The browser handles loading and cascade natively — no JS involvement.
  */
 
-import { SherpaElement } from '../sherpa-element/sherpa-element.js';
+import { SherpaElement } from "../sherpa-element/sherpa-element.js";
+
+/* ── Wrapper template (cloned per instance, replaces createElement) ─ */
+
+const WRAPPER_TPL = document.createElement("template");
+WRAPPER_TPL.innerHTML = `
+<dl class="input-wrapper">
+  <div class="input-header">
+    <dt class="input-label text-label">
+      <span class="input-label-text"></span>
+      <span class="input-required" aria-hidden="true"> *</span>
+    </dt>
+    <dd class="input-description text-body-sm">
+      <span class="input-description-text"></span>
+    </dd>
+  </div>
+  <div class="input-content">
+    <div class="input-body">
+      <dd class="input-control">
+        <!-- Subclass control content injected here by #buildWrapper -->
+        <span class="status-indicator" aria-hidden="true">
+          <i class="status-indicator-icon"></i>
+        </span>
+      </dd>
+      <dd class="input-validation-message" aria-live="polite"></dd>
+    </div>
+    <dd class="input-helper text-body-sm">
+      <span class="input-helper-text"></span>
+    </dd>
+  </div>
+</dl>
+`;
 
 /* ── Component ──────────────────────────────────────────────────── */
 
 export class SherpaInputBase extends SherpaElement {
-
   /* ── Observed attributes ────────────────────────────────────── */
 
   static get observedAttributes() {
     return [
       ...super.observedAttributes,
-      'data-label', 'data-description', 'data-helper', 'data-layout',
-      'disabled', 'readonly', 'required',
-      'name', 'value', 'placeholder',
-      'pattern', 'minlength', 'maxlength',
-      'novalidate'
+      "data-label",
+      "data-description",
+      "data-helper",
+      "data-layout",
+      "disabled",
+      "readonly",
+      "required",
+      "name",
+      "value",
+      "placeholder",
+      "pattern",
+      "minlength",
+      "maxlength",
+      "novalidate",
     ];
   }
 
@@ -81,12 +120,12 @@ export class SherpaInputBase extends SherpaElement {
     this.#buildWrapper();
 
     // Cache refs
-    this.#labelEl = this.$('.input-label-text');
-    this.#descriptionEl = this.$('.input-description-text');
-    this.#helperEl = this.$('.input-helper-text');
-    this.#statusIndicatorEl = this.$('.status-indicator');
-    this.#statusIndicatorIconEl = this.$('.status-indicator-icon');
-    this.#validationEl = this.$('.input-validation-message');
+    this.#labelEl = this.$(".input-label-text");
+    this.#descriptionEl = this.$(".input-description-text");
+    this.#helperEl = this.$(".input-helper-text");
+    this.#statusIndicatorEl = this.$(".status-indicator");
+    this.#statusIndicatorIconEl = this.$(".status-indicator-icon");
+    this.#validationEl = this.$(".input-validation-message");
     this.#inputEl = this.getInputElement();
 
     // Apply initial attribute values
@@ -104,50 +143,50 @@ export class SherpaInputBase extends SherpaElement {
     // Wire events on the native input
     this.#inputEl = this.getInputElement();
     if (this.#inputEl) {
-      this.#inputEl.addEventListener('input', this.#onInput);
-      this.#inputEl.addEventListener('change', this.#onChange);
-      this.#inputEl.addEventListener('blur', this.#onBlur);
-      this.#inputEl.addEventListener('invalid', this.#onInvalid);
+      this.#inputEl.addEventListener("input", this.#onInput);
+      this.#inputEl.addEventListener("change", this.#onChange);
+      this.#inputEl.addEventListener("blur", this.#onBlur);
+      this.#inputEl.addEventListener("invalid", this.#onInvalid);
     }
     this.onInputConnect();
   }
 
   onDisconnect() {
     if (this.#inputEl) {
-      this.#inputEl.removeEventListener('input', this.#onInput);
-      this.#inputEl.removeEventListener('change', this.#onChange);
-      this.#inputEl.removeEventListener('blur', this.#onBlur);
-      this.#inputEl.removeEventListener('invalid', this.#onInvalid);
+      this.#inputEl.removeEventListener("input", this.#onInput);
+      this.#inputEl.removeEventListener("change", this.#onChange);
+      this.#inputEl.removeEventListener("blur", this.#onBlur);
+      this.#inputEl.removeEventListener("invalid", this.#onInvalid);
     }
     this.onInputDisconnect();
   }
 
   onAttributeChanged(name, oldValue, newValue) {
     switch (name) {
-      case 'data-label':
+      case "data-label":
         this.#syncLabel();
         break;
-      case 'data-description':
+      case "data-description":
         this.#syncDescription();
         break;
-      case 'data-helper':
+      case "data-helper":
         this.#syncHelper();
         break;
-      case 'data-status':
+      case "data-status":
         this.#syncStatusIndicator();
         break;
-      case 'disabled':
-      case 'readonly':
-      case 'required':
-      case 'name':
-      case 'placeholder':
-      case 'pattern':
-      case 'minlength':
-      case 'maxlength':
+      case "disabled":
+      case "readonly":
+      case "required":
+      case "name":
+      case "placeholder":
+      case "pattern":
+      case "minlength":
+      case "maxlength":
         this.#syncNativeAttrs();
-        if (name === 'required') this.#syncLabel();
+        if (name === "required") this.#syncLabel();
         break;
-      case 'value':
+      case "value":
         this.#syncValue();
         break;
     }
@@ -166,44 +205,88 @@ export class SherpaInputBase extends SherpaElement {
 
   /** Return the primary native <input> or <select> element. */
   getInputElement() {
-    return this.$('.input-field');
+    return this.$(".input-field");
   }
 
   /* ── Public API ─────────────────────────────────────────────── */
 
-  get label() { return this.dataset.label || ''; }
-  set label(v) { if (v) { this.dataset.label = v; } else { delete this.dataset.label; } }
+  get label() {
+    return this.dataset.label || "";
+  }
+  set label(v) {
+    if (v) {
+      this.dataset.label = v;
+    } else {
+      delete this.dataset.label;
+    }
+  }
 
-  get description() { return this.dataset.description || ''; }
-  set description(v) { if (v) { this.dataset.description = v; } else { delete this.dataset.description; } }
+  get description() {
+    return this.dataset.description || "";
+  }
+  set description(v) {
+    if (v) {
+      this.dataset.description = v;
+    } else {
+      delete this.dataset.description;
+    }
+  }
 
-  get helper() { return this.dataset.helper || ''; }
-  set helper(v) { if (v) { this.dataset.helper = v; } else { delete this.dataset.helper; } }
+  get helper() {
+    return this.dataset.helper || "";
+  }
+  set helper(v) {
+    if (v) {
+      this.dataset.helper = v;
+    } else {
+      delete this.dataset.helper;
+    }
+  }
 
-  get layout() { return this.dataset.layout || 'vertical'; }
-  set layout(v) { this.dataset.layout = v; }
+  get layout() {
+    return this.dataset.layout || "vertical";
+  }
+  set layout(v) {
+    this.dataset.layout = v;
+  }
 
   get value() {
     const el = this.getInputElement();
-    return el ? el.value : (this.getAttribute('value') || '');
+    return el ? el.value : this.getAttribute("value") || "";
   }
   set value(v) {
     const el = this.getInputElement();
-    if (el) el.value = v ?? '';
-    this.setAttribute('value', v ?? '');
+    if (el) el.value = v ?? "";
+    this.setAttribute("value", v ?? "");
   }
 
-  get name() { return this.getAttribute('name') || ''; }
-  set name(v) { this.setAttribute('name', v); }
+  get name() {
+    return this.getAttribute("name") || "";
+  }
+  set name(v) {
+    this.setAttribute("name", v);
+  }
 
-  get disabled() { return this.hasAttribute('disabled'); }
-  set disabled(v) { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
+  get disabled() {
+    return this.hasAttribute("disabled");
+  }
+  set disabled(v) {
+    v ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
+  }
 
-  get readOnly() { return this.hasAttribute('readonly'); }
-  set readOnly(v) { v ? this.setAttribute('readonly', '') : this.removeAttribute('readonly'); }
+  get readOnly() {
+    return this.hasAttribute("readonly");
+  }
+  set readOnly(v) {
+    v ? this.setAttribute("readonly", "") : this.removeAttribute("readonly");
+  }
 
-  get required() { return this.hasAttribute('required'); }
-  set required(v) { v ? this.setAttribute('required', '') : this.removeAttribute('required'); }
+  get required() {
+    return this.hasAttribute("required");
+  }
+  set required(v) {
+    v ? this.setAttribute("required", "") : this.removeAttribute("required");
+  }
 
   /** Focus the internal native control. */
   focus(opts) {
@@ -220,7 +303,7 @@ export class SherpaInputBase extends SherpaElement {
 
   /** The native validation message string. */
   get validationMessage() {
-    return this.getInputElement()?.validationMessage || '';
+    return this.getInputElement()?.validationMessage || "";
   }
 
   /** Returns true if the native control satisfies its constraints. */
@@ -253,69 +336,19 @@ export class SherpaInputBase extends SherpaElement {
   #buildWrapper() {
     // Collect existing control content from the subclass template
     // (everything that isn't <link> or <style>)
-    const fragment = document.createDocumentFragment();
+    const controlContent = document.createDocumentFragment();
     const children = [...this.shadow.childNodes].filter(
-      n => !(n instanceof HTMLLinkElement) && !(n instanceof HTMLStyleElement)
+      (n) =>
+        !(n instanceof HTMLLinkElement) && !(n instanceof HTMLStyleElement),
     );
-    for (const child of children) fragment.appendChild(child);
+    for (const child of children) controlContent.appendChild(child);
 
-    // Build the wrapper structure
-    const wrapper = document.createElement('dl');
-    wrapper.className = 'input-wrapper';
-
-    // Header (label + description)
-    const header = document.createElement('div');
-    header.className = 'input-header';
-
-    const dt = document.createElement('dt');
-    dt.className = 'input-label text-label';
-    dt.innerHTML = '<span class="input-label-text"></span>';
-    header.appendChild(dt);
-
-    const desc = document.createElement('dd');
-    desc.className = 'input-description text-body-sm';
-    desc.innerHTML = '<span class="input-description-text"></span>';
-    header.appendChild(desc);
-
-    wrapper.appendChild(header);
-
-    // Content (input-body + helper)
-    const content = document.createElement('div');
-    content.className = 'input-content';
-
-    // Body (control + validation)
-    const body = document.createElement('div');
-    body.className = 'input-body';
-
-    // Control — holds the subclass template content + status indicator at end
-    const control = document.createElement('dd');
-    control.className = 'input-control';
-    control.appendChild(fragment);
-
-    // Status indicator icon (at the end of the control area)
-    const indicator = document.createElement('span');
-    indicator.className = 'status-indicator';
-    indicator.setAttribute('aria-hidden', 'true');
-    indicator.innerHTML = '<i class="status-indicator-icon"></i>';
-    control.appendChild(indicator);
-
-    body.appendChild(control);
-
-    // Validation message — coloured status bar below the input
-    const validation = document.createElement('dd');
-    validation.className = 'input-validation-message';
-    validation.setAttribute('aria-live', 'polite');
-    body.appendChild(validation);
-
-    content.appendChild(body);
-
-    // Helper text — below the input body
-    const helper = document.createElement('dd');
-    helper.className = 'input-helper text-body-sm';
-    helper.innerHTML = '<span class="input-helper-text"></span>';
-    content.appendChild(helper);
-
-    wrapper.appendChild(content);
+    // Clone the wrapper template and inject subclass content into .input-control
+    const wrapper = WRAPPER_TPL.content.cloneNode(true);
+    const control = wrapper.querySelector(".input-control");
+    // Insert subclass controls before the status indicator (already in template)
+    const indicator = control.querySelector(".status-indicator");
+    control.insertBefore(controlContent, indicator);
 
     this.shadow.appendChild(wrapper);
   }
@@ -324,32 +357,20 @@ export class SherpaInputBase extends SherpaElement {
 
   #syncLabel() {
     if (!this.#labelEl) return;
-    const label = this.dataset.label || '';
-    const req = this.hasAttribute('required');
-    this.#labelEl.textContent = label;
-    // Add/remove required asterisk
-    let asterisk = this.#labelEl.parentElement.querySelector('.input-required');
-    if (req && label) {
-      if (!asterisk) {
-        asterisk = document.createElement('span');
-        asterisk.className = 'input-required';
-        asterisk.textContent = ' *';
-        asterisk.setAttribute('aria-hidden', 'true');
-        this.#labelEl.after(asterisk);
-      }
-    } else if (asterisk) {
-      asterisk.remove();
-    }
+    this.#labelEl.textContent = this.dataset.label || "";
+    // Required asterisk visibility is handled by CSS:
+    //   .input-required { display: none; }
+    //   :host([required]) .input-required { display: inline; }
   }
 
   #syncDescription() {
     if (!this.#descriptionEl) return;
-    this.#descriptionEl.textContent = this.dataset.description || '';
+    this.#descriptionEl.textContent = this.dataset.description || "";
   }
 
   #syncHelper() {
     if (!this.#helperEl) return;
-    this.#helperEl.textContent = this.dataset.helper || '';
+    this.#helperEl.textContent = this.dataset.helper || "";
   }
 
   /**
@@ -359,11 +380,11 @@ export class SherpaInputBase extends SherpaElement {
   #syncStatusIndicator() {
     if (!this.#statusIndicatorIconEl) return;
     const status = this.status;
-    const iconCls = status ? (this.constructor.statusIcons?.[status] || '') : '';
+    const iconCls = status ? this.constructor.statusIcons?.[status] || "" : "";
     if (iconCls) {
       this.#statusIndicatorIconEl.className = `status-indicator-icon ${iconCls}`;
     } else {
-      this.#statusIndicatorIconEl.className = 'status-indicator-icon';
+      this.#statusIndicatorIconEl.className = "status-indicator-icon";
     }
   }
 
@@ -372,11 +393,19 @@ export class SherpaInputBase extends SherpaElement {
     if (!el) return;
 
     // Boolean attributes
-    for (const attr of ['disabled', 'readonly', 'required']) {
-      this.hasAttribute(attr) ? el.setAttribute(attr, '') : el.removeAttribute(attr);
+    for (const attr of ["disabled", "readonly", "required"]) {
+      this.hasAttribute(attr)
+        ? el.setAttribute(attr, "")
+        : el.removeAttribute(attr);
     }
     // Value attributes
-    for (const attr of ['name', 'placeholder', 'pattern', 'minlength', 'maxlength']) {
+    for (const attr of [
+      "name",
+      "placeholder",
+      "pattern",
+      "minlength",
+      "maxlength",
+    ]) {
       const val = this.getAttribute(attr);
       val !== null ? el.setAttribute(attr, val) : el.removeAttribute(attr);
     }
@@ -385,26 +414,30 @@ export class SherpaInputBase extends SherpaElement {
   #syncValue() {
     const el = this.getInputElement();
     if (!el) return;
-    const v = this.getAttribute('value') ?? '';
+    const v = this.getAttribute("value") ?? "";
     if (el.value !== v) el.value = v;
   }
 
   /* ── Event forwarding ───────────────────────────────────────── */
 
   #onInput = (e) => {
-    this.dispatchEvent(new CustomEvent('input', {
-      bubbles: true,
-      composed: true,
-      detail: { value: e.target.value }
-    }));
+    this.dispatchEvent(
+      new CustomEvent("input", {
+        bubbles: true,
+        composed: true,
+        detail: { value: e.target.value },
+      }),
+    );
   };
 
   #onChange = (e) => {
-    this.dispatchEvent(new CustomEvent('change', {
-      bubbles: true,
-      composed: true,
-      detail: { value: e.target.value }
-    }));
+    this.dispatchEvent(
+      new CustomEvent("change", {
+        bubbles: true,
+        composed: true,
+        detail: { value: e.target.value },
+      }),
+    );
   };
 
   /* ── Validation ─────────────────────────────────────────────── */
@@ -416,7 +449,7 @@ export class SherpaInputBase extends SherpaElement {
    * Also updates the status indicator icon for native validation errors.
    */
   #onBlur = () => {
-    if (this.hasAttribute('novalidate')) return;
+    if (this.hasAttribute("novalidate")) return;
     const el = this.getInputElement();
     if (!el) return;
 
@@ -426,11 +459,14 @@ export class SherpaInputBase extends SherpaElement {
 
     // For native validation (no explicit status), show/hide the critical icon
     if (!this.dataset.status && this.#statusIndicatorIconEl) {
-      const errorIconCls = this.constructor.statusIcons?.critical || this.constructor.statusIcons?.error || 'fa-solid fa-circle-exclamation';
+      const errorIconCls =
+        this.constructor.statusIcons?.critical ||
+        this.constructor.statusIcons?.error ||
+        "fa-solid fa-circle-exclamation";
       if (!el.validity.valid) {
         this.#statusIndicatorIconEl.className = `status-indicator-icon ${errorIconCls}`;
       } else {
-        this.#statusIndicatorIconEl.className = 'status-indicator-icon';
+        this.#statusIndicatorIconEl.className = "status-indicator-icon";
       }
     }
   };
@@ -449,7 +485,7 @@ export class SherpaInputBase extends SherpaElement {
    */
   #updateValidationMessage(el) {
     if (this.#validationEl) {
-      this.#validationEl.textContent = el.validationMessage || '';
+      this.#validationEl.textContent = el.validationMessage || "";
     }
   }
 }

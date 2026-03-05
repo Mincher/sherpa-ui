@@ -20,7 +20,6 @@
  *   --_group-parent-bg:      Group parent row fill
  */
 
-
 /* ═══════════════════════════════════════════════════════════════
    Host
    ═══════════════════════════════════════════════════════════════ */
@@ -53,7 +52,7 @@
   width: 100%;
 
   /* body/md/default — 13px / 20px */
-  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: 13px;
   font-weight: 400;
   line-height: var(--sherpa-fonts-line-height-base, 20px);
@@ -63,7 +62,6 @@
   container-type: inline-size;
   container-name: data-grid;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Toolbar — trailing group
@@ -78,7 +76,6 @@
 .global-search {
   width: 200px;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Table Container — single scroll surface
@@ -97,7 +94,6 @@ table {
   border-spacing: 0;
   table-layout: fixed;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Column Headers (thead)
@@ -192,7 +188,6 @@ th.header-cell[data-numeric] .header-content {
   text-align: end;
 }
 
-
 /* ═══════════════════════════════════════════════════════════════
    Secondary Headers (column search)
    ═══════════════════════════════════════════════════════════════ */
@@ -222,7 +217,6 @@ th.header-cell[data-numeric] .header-content {
 :host(:not([data-show-secondary-headers="true"])) .secondary-headers {
   display: none;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Selection + Action Columns
@@ -263,7 +257,6 @@ th.action-col {
 :host(:not([data-show-actions="true"])) th.action-col {
   display: none;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Pinned Columns — freeze first two + last column while scrolling
@@ -326,7 +319,7 @@ td.action-cell {
   thead th:nth-child(2),
   tr.grid-row td:nth-child(2),
   .group-summary-inner {
-    box-shadow: 4px 0 8px -2px rgba(0, 0, 0, 0.10);
+    box-shadow: 4px 0 8px -2px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -335,10 +328,9 @@ td.action-cell {
 @container scroll-state(scrollable: right) {
   th.action-col,
   td.action-cell {
-    box-shadow: -4px 0 8px -2px rgba(0, 0, 0, 0.10);
+    box-shadow: -4px 0 8px -2px rgba(0, 0, 0, 0.1);
   }
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Density Variants
@@ -355,7 +347,6 @@ td.action-cell {
   --_cell-h: 40px;
   --_header-h: 48px;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Data Rows
@@ -383,7 +374,6 @@ tr.grid-row[data-selected]:hover {
   background: var(--sherpa-surface-container-down, #adadad);
   color: var(--sherpa-text-default-body, #111);
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Data Cells
@@ -440,7 +430,6 @@ tr.grid-row td.selection-cell,
 tr.grid-row td.action-cell {
   border-bottom: var(--_border);
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Group Parent Row
@@ -571,7 +560,7 @@ tr.group-parent-row[data-expanded] .toggle-icon {
 
 /* Metadata dot separator */
 .group-metadata span + span::before {
-  content: '';
+  content: "";
   display: inline-block;
   width: 1px;
   height: 8px;
@@ -581,15 +570,14 @@ tr.group-parent-row[data-expanded] .toggle-icon {
 }
 
 /* Hidden group child rows (collapsed state) */
-tr.group-child[hidden] {
+tr[data-group-child][hidden] {
   display: none;
 }
 
 /* Indent child-row selection checkboxes to denote hierarchy */
-tr.group-child td.selection-cell {
+tr[data-group-child] td.selection-cell {
   padding-inline-start: var(--sherpa-space-default, 16px);
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Search Highlights (CSS Custom Highlight API)
@@ -605,20 +593,26 @@ tr.group-child td.selection-cell {
   color: inherit;
 }
 
-
 /* ═══════════════════════════════════════════════════════════════
    Empty State
    ═══════════════════════════════════════════════════════════════ */
 
 .empty-state {
+  display: none;
   padding: var(--sherpa-space-2xl, 48px) var(--sherpa-space-lg, 24px);
   text-align: center;
 }
 
-.empty-state[hidden] {
+/* Empty state: show message, hide table container and pagination */
+:host([data-empty]) .empty-state {
+  display: block;
+}
+:host([data-empty]) .table-container {
   display: none;
 }
-
+:host([data-empty]) .grid-pagination {
+  display: none;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    Pagination
@@ -632,7 +626,6 @@ tr.group-child td.selection-cell {
   display: none;
 }
 
-
 /* ═══════════════════════════════════════════════════════════════
    Loading state
    ═══════════════════════════════════════════════════════════════ */
@@ -641,7 +634,6 @@ tr.group-child td.selection-cell {
   opacity: 0.5;
   pointer-events: none;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    PDF mode
@@ -664,7 +656,6 @@ tr.group-child td.selection-cell {
 :host([data-pdf-mode]) .secondary-headers {
   display: none;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    Container queries — compact at narrow widths

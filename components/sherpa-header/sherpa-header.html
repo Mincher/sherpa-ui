@@ -29,17 +29,25 @@
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <header class="header-row" part="header">
-    <div class="drag-handle" part="drag-handle" aria-label="Drag to reposition" hidden>
-      <i class="fa-solid fa-grip-vertical sherpa-icon" data-size="xs" aria-hidden="true"></i>
+    <div class="drag-handle" part="drag-handle" aria-label="Drag to reposition">
+      <i
+        class="fa-solid fa-grip-vertical sherpa-icon"
+        data-size="xs"
+        aria-hidden="true"
+      ></i>
     </div>
     <div class="header-labels">
       <div class="heading-row">
         <slot name="heading"><span class="header-title"></span></slot>
         <span class="badge-slot" part="badge"><slot name="badge"></slot></span>
       </div>
-      <slot name="description"><p class="header-description text-body-sm"></p></slot>
+      <slot name="description"
+        ><p class="header-description text-body-sm"></p
+      ></slot>
     </div>
-    <div class="header-actions" part="actions"><slot name="actions"></slot></div>
+    <div class="header-actions" part="actions">
+      <slot name="actions"></slot>
+    </div>
     <sherpa-button
       class="open-external-button"
       data-variant="tertiary"
@@ -47,9 +55,8 @@
       data-icon-start="&#xf08e;"
       aria-label="Open in view"
       data-tooltip="Open in view"
-      hidden
     ></sherpa-button>
-    <span class="action-divider" hidden></span>
+    <span class="action-divider"></span>
     <sherpa-button
       class="menu-button"
       data-variant="tertiary"
@@ -60,7 +67,6 @@
       data-menu="true"
       data-menu-position="bottom-end"
       data-keep-compact
-      hidden
     ></sherpa-button>
     <sherpa-button
       class="close-button"
@@ -68,10 +74,9 @@
       data-size="small"
       data-icon-start="&#xf00d;"
       aria-label="Close"
-      hidden
     ></sherpa-button>
   </header>
-  <hr class="header-divider" part="divider">
+  <hr class="header-divider" part="divider" />
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -89,12 +94,15 @@
       data-size="small"
       data-icon-start="&#xf00d;"
       aria-label="Close"
-      hidden
     ></sherpa-button>
   </header>
-  <div class="search-row" hidden>
+  <div class="search-row">
     <slot name="search">
-      <sherpa-input-search class="search-field" placeholder="Search" aria-label="Search"></sherpa-input-search>
+      <sherpa-input-search
+        class="search-field"
+        placeholder="Search"
+        aria-label="Search"
+      ></sherpa-input-search>
     </slot>
   </div>
   <slot name="extra"></slot>
@@ -109,7 +117,9 @@
       <p class="header-title"></p>
       <p class="header-description text-body-sm"></p>
     </div>
-    <div class="header-actions" part="actions"><slot name="actions"></slot></div>
+    <div class="header-actions" part="actions">
+      <slot name="actions"></slot>
+    </div>
     <sherpa-button
       class="menu-button"
       data-variant="tertiary"
@@ -120,7 +130,6 @@
       data-menu="true"
       data-menu-position="bottom-end"
       data-keep-compact
-      hidden
     ></sherpa-button>
   </header>
   <div class="header-filters"><slot name="filters"></slot></div>

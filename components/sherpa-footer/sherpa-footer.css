@@ -11,12 +11,13 @@
   display: block;
 }
 
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}
 
 .footer {
   box-sizing: border-box;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ACTION-BAR FOOTER (cancel / apply)
@@ -28,7 +29,8 @@
   justify-content: flex-end;
   gap: var(--sherpa-space-xs, 4px);
   padding: var(--sherpa-space-sm, 8px);
-  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
+  border-top: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-control-secondary-default);
 }
 
 .action-bar-footer slot[name="start"] {
@@ -43,11 +45,17 @@
   flex-shrink: 0;
 }
 
-.action-buttons sherpa-button { flex-shrink: 0; }
+.action-buttons sherpa-button {
+  flex-shrink: 0;
+}
 
-.cancel-button[hidden],
-.apply-button[hidden] { display: none; }
-
+/* Cancel/apply visibility — CSS-driven via host attributes */
+:host([data-show-cancel="false"]) .cancel-button {
+  display: none;
+}
+:host([data-show-apply="false"]) .apply-button {
+  display: none;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SLOT FOOTER (passthrough)
@@ -59,7 +67,8 @@
   justify-content: flex-end;
   gap: var(--sherpa-space-xs, 4px);
   padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
-  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+  border-top: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-subtle, #f0f0f5);
 }
 
 .slot-footer[data-has-content] {

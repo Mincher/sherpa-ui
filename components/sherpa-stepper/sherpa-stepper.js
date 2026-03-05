@@ -17,15 +17,23 @@
  * @fires step-click  — a step header was clicked
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 export class SherpaStepper extends SherpaElement {
-
-  static get cssUrl() { return new URL('./sherpa-stepper.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-stepper.html', import.meta.url).href; }
+  static get cssUrl() {
+    return new URL("./sherpa-stepper.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-stepper.html", import.meta.url).href;
+  }
 
   static get observedAttributes() {
-    return ['data-current-step', 'data-linear', 'data-show-step-numbers', 'data-src'];
+    return [
+      "data-current-step",
+      "data-linear",
+      "data-show-step-numbers",
+      "data-src",
+    ];
   }
 
   /* ── State ────────────────────────────────────────────────────── */
@@ -45,10 +53,13 @@ export class SherpaStepper extends SherpaElement {
 
   onAttributeChanged(name, _old, newValue) {
     if (!this.#ready) return;
-    if (name === 'data-current-step') {
+    if (name === "data-current-step") {
       const n = parseInt(newValue) || 1;
-      if (n !== this.#currentStep) { this.#currentStep = n; this.#render(); }
-    } else if (name === 'data-src') {
+      if (n !== this.#currentStep) {
+        this.#currentStep = n;
+        this.#render();
+      }
+    } else if (name === "data-src") {
       this.#loadDataFromSrc(newValue);
     } else {
       this.#render();
@@ -62,10 +73,10 @@ export class SherpaStepper extends SherpaElement {
     const src = this.dataset.src;
     if (src) {
       try {
-        const data = await fetch(src).then(r => r.json());
+        const data = await fetch(src).then((r) => r.json());
         this.#steps = data.steps || [];
       } catch (e) {
-        console.warn('sherpa-stepper: failed to load data-src:', e);
+        console.warn("sherpa-stepper: failed to load data-src:", e);
       }
     }
   }
@@ -73,67 +84,62 @@ export class SherpaStepper extends SherpaElement {
   async #loadDataFromSrc(src) {
     if (!src) return;
     try {
-      const data = await fetch(src).then(r => r.json());
+      const data = await fetch(src).then((r) => r.json());
       this.#steps = data.steps || [];
       this.#render();
     } catch (e) {
-      console.warn('sherpa-stepper: failed to load data-src:', e);
+      console.warn("sherpa-stepper: failed to load data-src:", e);
     }
   }
 
   /* ── DOM rendering ────────────────────────────────────────────── */
 
   #render() {
-    const header = this.$('.stepper-header');
+    const header = this.$(".stepper-header");
     if (!header) return;
-    header.innerHTML = '';
+    header.replaceChildren();
 
-    const showNumbers = this.dataset.showStepNumbers !== 'false';
-    const itemTpl = this.$('template.step-item-tpl');
-    const connTpl = this.$('template.step-connector-tpl');
+    const showNumbers = this.dataset.showStepNumbers !== "false";
+    const itemTpl = this.$("template.step-item-tpl");
+    const connTpl = this.$("template.step-connector-tpl");
 
     this.#steps.forEach((step, i) => {
       const num = i + 1;
-      const isActive    = num === this.#currentStep;
+      const isActive = num === this.#currentStep;
       const isCompleted = step.completed || num < this.#currentStep;
-      const hasError    = step.error;
-      const isDisabled  = step.disabled;
+      const hasError = step.error;
+      const isDisabled = step.disabled;
 
       const frag = itemTpl.content.cloneNode(true);
-      const item = frag.querySelector('.step-item');
-      if (isActive) item.dataset.active = '';
-      if (isCompleted) item.dataset.completed = '';
-      if (hasError) item.dataset.error = '';
-      if (isDisabled) item.setAttribute('disabled', '');
-      item.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      item.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
+      const item = frag.querySelector(".step-item");
+      if (isActive) item.dataset.active = "";
+      if (isCompleted) item.dataset.completed = "";
+      if (hasError) item.dataset.error = "";
+      if (isDisabled) item.setAttribute("disabled", "");
+      item.setAttribute("aria-selected", isActive ? "true" : "false");
+      item.setAttribute("aria-disabled", isDisabled ? "true" : "false");
       item.dataset.step = num;
 
-      const indicator = frag.querySelector('.step-indicator');
-      if (hasError) indicator.innerHTML = '<i class="fa-solid fa-circle-xmark sherpa-icon" aria-hidden="true"></i>';
-      else if (isCompleted) indicator.innerHTML = '<i class="fa-solid fa-check sherpa-icon" aria-hidden="true"></i>';
-      else if (showNumbers) indicator.textContent = num;
+      // Step number — visible when neither completed nor error (CSS handles hiding)
+      const numberEl = frag.querySelector(".step-number");
+      if (showNumbers) numberEl.textContent = num;
 
-      const label = frag.querySelector('.step-label');
+      const label = frag.querySelector(".step-label");
       label.textContent = step.label || `Step ${num}`;
 
-      if (step.sublabel) {
-        const sub = document.createElement('span');
-        sub.className = 'step-sublabel text-body-xs';
-        sub.textContent = step.sublabel;
-        frag.querySelector('.step-label-container').appendChild(sub);
-      }
+      // Sublabel — CSS hides via :empty when blank
+      frag.querySelector(".step-sublabel").textContent = step.sublabel || "";
 
       if (!isDisabled) {
-        item.addEventListener('click', () => this.#onStepClick(num));
+        item.addEventListener("click", () => this.#onStepClick(num));
       }
 
       header.appendChild(frag);
 
       if (i < this.#steps.length - 1) {
         const connFrag = connTpl.content.cloneNode(true);
-        const conn = connFrag.querySelector('.step-connector');
-        if (num < this.#currentStep) conn.dataset.completed = '';
+        const conn = connFrag.querySelector(".step-connector");
+        if (num < this.#currentStep) conn.dataset.completed = "";
         header.appendChild(connFrag);
       }
     });
@@ -141,14 +147,19 @@ export class SherpaStepper extends SherpaElement {
 
   #onStepClick(num) {
     const step = this.#steps[num - 1];
-    this.dispatchEvent(new CustomEvent('step-click', {
-      bubbles: true, composed: true,
-      detail: { step: num, label: step?.label }
-    }));
+    this.dispatchEvent(
+      new CustomEvent("step-click", {
+        bubbles: true,
+        composed: true,
+        detail: { step: num, label: step?.label },
+      }),
+    );
 
-    if (this.dataset.linear === 'true') {
-      const canNav = num <= this.#currentStep ||
-        (num === this.#currentStep + 1 && this.#steps[this.#currentStep - 1]?.completed);
+    if (this.dataset.linear === "true") {
+      const canNav =
+        num <= this.#currentStep ||
+        (num === this.#currentStep + 1 &&
+          this.#steps[this.#currentStep - 1]?.completed);
       if (!canNav) return;
     }
     this.goToStep(num);
@@ -156,32 +167,58 @@ export class SherpaStepper extends SherpaElement {
 
   /* ── Public properties ────────────────────────────────────────── */
 
-  get currentStep()      { return this.#currentStep; }
-  set currentStep(v)     { this.dataset.currentStep = v; }
+  get currentStep() {
+    return this.#currentStep;
+  }
+  set currentStep(v) {
+    this.dataset.currentStep = v;
+  }
 
-  get linear()           { return this.dataset.linear === 'true'; }
-  set linear(v)          { this.dataset.linear = v ? 'true' : 'false'; }
+  get linear() {
+    return this.dataset.linear === "true";
+  }
+  set linear(v) {
+    this.dataset.linear = v ? "true" : "false";
+  }
 
-  get showStepNumbers()  { return this.dataset.showStepNumbers !== 'false'; }
-  set showStepNumbers(v) { this.dataset.showStepNumbers = v ? 'true' : 'false'; }
+  get showStepNumbers() {
+    return this.dataset.showStepNumbers !== "false";
+  }
+  set showStepNumbers(v) {
+    this.dataset.showStepNumbers = v ? "true" : "false";
+  }
 
-  get dataSrc()          { return this.dataset.src || ''; }
-  set dataSrc(v)         { this.dataset.src = v; }
+  get dataSrc() {
+    return this.dataset.src || "";
+  }
+  set dataSrc(v) {
+    this.dataset.src = v;
+  }
 
-  get steps()            { return [...this.#steps]; }
+  get steps() {
+    return [...this.#steps];
+  }
 
   /* ── Public methods ───────────────────────────────────────────── */
 
   setSteps(steps) {
-    this.#steps = steps.map(s => ({
-      label: s.label, sublabel: s.sublabel || '',
-      completed: s.completed || false, error: s.error || false, disabled: s.disabled || false
+    this.#steps = steps.map((s) => ({
+      label: s.label,
+      sublabel: s.sublabel || "",
+      completed: s.completed || false,
+      error: s.error || false,
+      disabled: s.disabled || false,
     }));
     if (this.#ready) this.#render();
   }
 
-  nextStep()     { if (this.#currentStep < this.#steps.length) this.goToStep(this.#currentStep + 1); }
-  previousStep() { if (this.#currentStep > 1) this.goToStep(this.#currentStep - 1); }
+  nextStep() {
+    if (this.#currentStep < this.#steps.length)
+      this.goToStep(this.#currentStep + 1);
+  }
+  previousStep() {
+    if (this.#currentStep > 1) this.goToStep(this.#currentStep - 1);
+  }
 
   goToStep(num) {
     if (num < 1 || num > this.#steps.length) return;
@@ -189,10 +226,17 @@ export class SherpaStepper extends SherpaElement {
     this.#currentStep = num;
     this.dataset.currentStep = num;
     this.#render();
-    this.dispatchEvent(new CustomEvent('step-change', {
-      bubbles: true, composed: true,
-      detail: { currentStep: num, previousStep: prev, label: this.#steps[num - 1]?.label }
-    }));
+    this.dispatchEvent(
+      new CustomEvent("step-change", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          currentStep: num,
+          previousStep: prev,
+          label: this.#steps[num - 1]?.label,
+        },
+      }),
+    );
   }
 
   completeStep(num) {
@@ -210,4 +254,4 @@ export class SherpaStepper extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-stepper', SherpaStepper);
+customElements.define("sherpa-stepper", SherpaStepper);

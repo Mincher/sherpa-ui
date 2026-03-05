@@ -1,4 +1,3 @@
-
 /**
  * sherpa-input-base.css — Shared styles for all form input components.
  *
@@ -32,12 +31,14 @@
 
 :host {
   display: block;
-  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
   color: var(--sherpa-text-default-body, #333);
 }
 
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}
 
 :host([disabled]) {
   pointer-events: none;
@@ -101,15 +102,27 @@
   color: var(--sherpa-text-default-label, #1a1a1f);
 }
 
-.input-label:has(.input-label-text:empty) { display: none; }
+.input-label:has(.input-label-text:empty) {
+  display: none;
+}
 
 :host([disabled]) .input-label {
   color: var(--sherpa-text-inactive-default, #7e7e8f);
 }
 
 .input-required {
+  display: none;
   color: var(--sherpa-text-context-error-default, #c41337);
   margin-inline-start: 2px;
+}
+
+:host([required]) .input-required {
+  display: inline;
+}
+
+/* Hide required indicator when label is empty */
+:host([required]) .input-label:has(.input-label-text:empty) .input-required {
+  display: none;
 }
 
 /* ── Body (groups control + validation) ─────────────────────────── */
@@ -117,7 +130,8 @@
 .input-body {
   display: flex;
   flex-direction: column;
-  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default, #9a9aad);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-control-default, #ffffff);
   overflow: hidden;
@@ -220,7 +234,9 @@
   color: var(--sherpa-text-default-secondary, #6a6a7a);
 }
 
-.input-description:has(.input-description-text:empty) { display: none; }
+.input-description:has(.input-description-text:empty) {
+  display: none;
+}
 
 :host([disabled]) .input-description {
   color: var(--sherpa-text-inactive-default, #7e7e8f);
@@ -239,10 +255,14 @@
   font-size: var(--sherpa-fonts-scale-base, 14px);
 }
 
-:host([data-status]) .status-indicator { display: flex; }
+:host([data-status]) .status-indicator {
+  display: flex;
+}
 
 /* Also show on :user-invalid (error icon) */
-:host(:not([novalidate]):not([data-status])) .input-control:has(.input-field:user-invalid) .status-indicator {
+:host(:not([novalidate]):not([data-status]))
+  .input-control:has(.input-field:user-invalid)
+  .status-indicator {
   display: flex;
   color: var(--sherpa-icon-context-error-default, #c41337);
 }
@@ -296,8 +316,14 @@
   display: none;
   margin: 0;
   padding: var(--sherpa-space-xs, 8px);
-  background: var(--_status-surface-strong, var(--sherpa-surface-context-default-strong-default, #c0c0cc));
-  color: var(--_validation-text, var(--sherpa-text-default-on-color-body, #fff));
+  background: var(
+    --_status-surface-strong,
+    var(--sherpa-surface-context-default-strong-default, #c0c0cc)
+  );
+  color: var(
+    --_validation-text,
+    var(--sherpa-text-default-on-color-body, #fff)
+  );
   font-size: var(--sherpa-fonts-scale-base, 14px);
   line-height: var(--sherpa-fonts-line-height-base, 20px);
 }
@@ -308,9 +334,14 @@
 }
 
 /* Show on native :user-invalid (uses error colours when no explicit status) */
-:host(:not([novalidate])) .input-body:has(.input-field:user-invalid) > .input-validation-message:not(:empty) {
+:host(:not([novalidate]))
+  .input-body:has(.input-field:user-invalid)
+  > .input-validation-message:not(:empty) {
   display: block;
-  background: var(--_status-surface-strong, var(--sherpa-surface-context-error-strong-default, #c41337));
+  background: var(
+    --_status-surface-strong,
+    var(--sherpa-surface-context-error-strong-default, #c41337)
+  );
 }
 
 /* ── Helper text (below input body) ─────────────────────────────── */
@@ -322,7 +353,9 @@
   color: var(--sherpa-text-default-secondary, #6a6a7a);
 }
 
-.input-helper:has(.input-helper-text:empty) { display: none; }
+.input-helper:has(.input-helper-text:empty) {
+  display: none;
+}
 
 :host([disabled]) .input-helper {
   color: var(--sherpa-text-inactive-default, #7e7e8f);

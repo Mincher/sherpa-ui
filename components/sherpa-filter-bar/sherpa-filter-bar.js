@@ -26,24 +26,35 @@
  *   filterclear  — Dispatched when the clear action is invoked.
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import '../sherpa-button/sherpa-button.js';
-import { formatFieldName } from '../utilities/format-utils.js';
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import "../sherpa-button/sherpa-button.js";
+import { formatFieldName } from "../utilities/format-utils.js";
 
 export class SherpaFilterBar extends SherpaElement {
-  static get cssUrl()  { return new URL('./sherpa-filter-bar.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-filter-bar.html', import.meta.url).href; }
+  static get cssUrl() {
+    return new URL("./sherpa-filter-bar.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-filter-bar.html", import.meta.url).href;
+  }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-density', 'data-active', 'data-preset-filters'];
+    return [
+      ...super.observedAttributes,
+      "data-density",
+      "data-active",
+      "data-preset-filters",
+    ];
   }
 
   #observer = null;
   #columns = [];
   #rows = [];
   #addBtn = null;
-  #applied = true;  // Toggle state — when false, getFilters() returns []
-  #pendingEmit = false;  // Microtask debounce for observer-driven filterchange
+  #applied = true; // Toggle state — when false, getFilters() returns []
+  #pendingEmit = false; // Microtask debounce for observer-driven filterchange
+  #menuHeadingTpl = null; // Cached <template class="menu-heading-tpl">
+  #menuItemTpl = null; // Cached <template class="menu-item-tpl">
 
   onConnect() {
     // Watch for attribute changes on slotted filter chips
@@ -63,33 +74,39 @@ export class SherpaFilterBar extends SherpaElement {
     this.#observer.observe(this, {
       subtree: true,
       attributes: true,
-      attributeFilter: ['data-active', 'data-field', 'data-mode'],
+      attributeFilter: ["data-active", "data-field", "data-mode"],
     });
 
     // Listen for slotchange on all zone slots to track chip additions/removals
-    for (const slot of this.$$('slot')) {
-      slot.addEventListener('slotchange', () => this.#syncActiveState());
+    for (const slot of this.$$("slot")) {
+      slot.addEventListener("slotchange", () => this.#syncActiveState());
     }
 
     // Clear button delegation — look for click on actions-slotted button
-    this.addEventListener('click', (e) => {
+    this.addEventListener("click", (e) => {
       const path = e.composedPath();
-      const clearBtn = path.find(n =>
-        n instanceof HTMLElement && n.slot === 'actions' && n.tagName === 'SHERPA-BUTTON' &&
-        (n.dataset.action === 'clear' || n.textContent.trim().toLowerCase().includes('clear'))
+      const clearBtn = path.find(
+        (n) =>
+          n instanceof HTMLElement &&
+          n.slot === "actions" &&
+          n.tagName === "SHERPA-BUTTON" &&
+          (n.dataset.action === "clear" ||
+            n.textContent.trim().toLowerCase().includes("clear")),
       );
       if (clearBtn) this.#clearAll();
     });
 
     // Add button — opens column menu
-    this.#addBtn = this.$('sherpa-button.add-filter-btn');
-    this.#addBtn?.addEventListener('menu-open', () => this.#populateAddMenu());
-    this.#addBtn?.addEventListener('menu-select', (e) => this.#onAddMenuSelect(e));
+    this.#addBtn = this.$("sherpa-button.add-filter-btn");
+    this.#addBtn?.addEventListener("menu-open", () => this.#populateAddMenu());
+    this.#addBtn?.addEventListener("menu-select", (e) =>
+      this.#onAddMenuSelect(e),
+    );
 
     // Listen for chip removal events (from filter chips' × button)
-    this.addEventListener('chipremove', (e) => {
+    this.addEventListener("chipremove", (e) => {
       const chip = e.target;
-      if (chip.tagName === 'SHERPA-FILTER-CHIP') {
+      if (chip.tagName === "SHERPA-FILTER-CHIP") {
         chip.remove();
         this.#syncActiveState();
         this.#emitFilterChange();
@@ -97,16 +114,16 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     // Listen for value changes from filter chips
-    this.addEventListener('filtervaluechange', () => {
+    this.addEventListener("filtervaluechange", () => {
       this.#syncActiveState();
       this.#emitFilterChange();
     });
 
     // Toggle switch — applies / unapplies all filters
-    this.addEventListener('change', (e) => {
+    this.addEventListener("change", (e) => {
       const sw = e.target;
-      if (sw?.tagName === 'SHERPA-SWITCH' && sw.slot === 'toggle') {
-        this.#applied = sw.dataset.state === 'on';
+      if (sw?.tagName === "SHERPA-SWITCH" && sw.slot === "toggle") {
+        this.#applied = sw.dataset.state === "on";
         this.#emitFilterChange();
       }
     });
@@ -120,7 +137,7 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   onAttributeChanged(name, _old, newValue) {
-    if (name === 'data-preset-filters' && newValue) {
+    if (name === "data-preset-filters" && newValue) {
       this.#initPresetChips(newValue);
     }
   }
@@ -128,16 +145,16 @@ export class SherpaFilterBar extends SherpaElement {
   /** Check if any slotted filter chip has an active filter and update host attribute. */
   #syncActiveState() {
     const chips = this.#getFilterChips();
-    const anyActive = chips.some(chip => chip.hasAttribute('data-active'));
-    this.toggleAttribute('data-active', anyActive);
+    const anyActive = chips.some((chip) => chip.hasAttribute("data-active"));
+    this.toggleAttribute("data-active", anyActive);
   }
 
   /** Clear all slotted filter chips and remove dynamic ones. */
   #clearAll() {
     for (const chip of this.#getFilterChips()) {
-      if (chip.getAttribute('data-type') === 'filter') {
+      if (chip.getAttribute("data-type") === "filter") {
         // Preset chips (slotted as presets) — just clear values
-        if (chip.slot === 'presets') {
+        if (chip.slot === "presets") {
           chip.clearValues?.();
         } else {
           // User-added dynamic filter chips — remove from DOM
@@ -145,29 +162,30 @@ export class SherpaFilterBar extends SherpaElement {
         }
       } else {
         // Static chips (sort, segment) — reset attributes
-        chip.removeAttribute('data-field');
-        chip.removeAttribute('data-mode');
+        chip.removeAttribute("data-field");
+        chip.removeAttribute("data-mode");
       }
     }
-    this.removeAttribute('data-active');
-    this.dispatchEvent(new CustomEvent('filterclear', { bubbles: true, composed: true }));
+    this.removeAttribute("data-active");
+    this.dispatchEvent(
+      new CustomEvent("filterclear", { bubbles: true, composed: true }),
+    );
   }
 
   /** Get all slotted sherpa-filter-chip elements across all slots. */
   #getFilterChips() {
-    return Array.from(this.querySelectorAll('sherpa-filter-chip'));
+    return Array.from(this.querySelectorAll("sherpa-filter-chip"));
   }
 
   /** Get fields already used by active filter chips (presets + user-added). */
   #getUsedFilterFields() {
     return new Set(
       this.#getFilterChips()
-        .filter(c => c.getAttribute('data-type') === 'filter')
-        .map(c => c.getAttribute('data-field'))
-        .filter(Boolean)
+        .filter((c) => c.getAttribute("data-type") === "filter")
+        .map((c) => c.getAttribute("data-field"))
+        .filter(Boolean),
     );
   }
-
 
   /* ══════════════════════════════════════════════════════════════
      Preset Chips
@@ -180,17 +198,22 @@ export class SherpaFilterBar extends SherpaElement {
    */
   #initPresetChips(fields) {
     // Remove existing preset filter chips (preserve timeframe / other types)
-    for (const chip of this.querySelectorAll('sherpa-filter-chip[slot="presets"][data-type="filter"]')) {
+    for (const chip of this.querySelectorAll(
+      'sherpa-filter-chip[slot="presets"][data-type="filter"]',
+    )) {
       chip.remove();
     }
 
-    const fieldList = fields.split(',').map(f => f.trim()).filter(Boolean);
+    const fieldList = fields
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean);
     for (const field of fieldList) {
-      const col = this.#columns.find(c => c.field === field);
-      const chip = document.createElement('sherpa-filter-chip');
-      chip.setAttribute('data-type', 'filter');
-      chip.setAttribute('data-field', field);
-      chip.setAttribute('slot', 'presets');
+      const col = this.#columns.find((c) => c.field === field);
+      const chip = document.createElement("sherpa-filter-chip");
+      chip.setAttribute("data-type", "filter");
+      chip.setAttribute("data-field", field);
+      chip.setAttribute("slot", "presets");
       chip.textContent = col?.name || formatFieldName(field);
       this.appendChild(chip);
 
@@ -201,7 +224,6 @@ export class SherpaFilterBar extends SherpaElement {
     }
   }
 
-
   /* ══════════════════════════════════════════════════════════════
      Add Filter Menu
      ══════════════════════════════════════════════════════════════ */
@@ -210,32 +232,39 @@ export class SherpaFilterBar extends SherpaElement {
   #populateAddMenu() {
     if (!this.#addBtn?.menuElement) return;
 
+    // Lazy-cache cloning templates
+    if (!this.#menuHeadingTpl) {
+      this.#menuHeadingTpl = this.$("template.menu-heading-tpl");
+      this.#menuItemTpl = this.$("template.menu-item-tpl");
+    }
+
     const usedFields = this.#getUsedFilterFields();
-    const available = this.#columns.filter(c => !usedFields.has(c.field));
+    const available = this.#columns.filter((c) => !usedFields.has(c.field));
 
     const frag = document.createDocumentFragment();
 
     // Heading
-    const heading = document.createElement('sherpa-menu-item');
-    heading.setAttribute('data-type', 'heading');
-    heading.textContent = 'Add filter';
+    const heading = this.#menuHeadingTpl.content
+      .cloneNode(true)
+      .querySelector("sherpa-menu-item");
+    heading.textContent = "Add filter";
     frag.appendChild(heading);
 
     if (!available.length) {
-      const empty = document.createElement('sherpa-menu-item');
-      empty.setAttribute('disabled', '');
-      empty.textContent = 'No columns available';
-      frag.appendChild(empty);
+      const emptyFrag = this.#menuItemTpl.content.cloneNode(true);
+      const empty = emptyFrag.querySelector("sherpa-menu-item");
+      empty.setAttribute("disabled", "");
+      empty.textContent = "No columns available";
+      frag.appendChild(emptyFrag);
     } else {
-      const ul = document.createElement('ul');
+      const ul = document.createElement("ul");
       for (const col of available) {
-        const li = document.createElement('li');
-        const item = document.createElement('sherpa-menu-item');
-        item.setAttribute('value', col.field);
+        const itemFrag = this.#menuItemTpl.content.cloneNode(true);
+        const item = itemFrag.querySelector("sherpa-menu-item");
+        item.setAttribute("value", col.field);
         item.dataset.addField = col.field;
         item.textContent = col.name || col.field;
-        li.appendChild(item);
-        ul.appendChild(li);
+        ul.appendChild(itemFrag);
       }
       frag.appendChild(ul);
     }
@@ -249,13 +278,13 @@ export class SherpaFilterBar extends SherpaElement {
     const field = data.addField;
     if (!field) return;
 
-    const col = this.#columns.find(c => c.field === field);
+    const col = this.#columns.find((c) => c.field === field);
     if (!col) return;
 
     // Create a new filter chip (in default slot — user filters zone)
-    const chip = document.createElement('sherpa-filter-chip');
-    chip.setAttribute('data-type', 'filter');
-    chip.setAttribute('data-field', field);
+    const chip = document.createElement("sherpa-filter-chip");
+    chip.setAttribute("data-type", "filter");
+    chip.setAttribute("data-field", field);
     chip.textContent = col.name || col.field;
 
     // Insert in light DOM default slot
@@ -267,13 +296,14 @@ export class SherpaFilterBar extends SherpaElement {
 
   /** Dispatch filterchange event. */
   #emitFilterChange() {
-    this.dispatchEvent(new CustomEvent('filterchange', {
-      bubbles: true,
-      composed: true,
-      detail: { filters: this.getFilters() },
-    }));
+    this.dispatchEvent(
+      new CustomEvent("filterchange", {
+        bubbles: true,
+        composed: true,
+        detail: { filters: this.getFilters() },
+      }),
+    );
   }
-
 
   /* ══════════════════════════════════════════════════════════════
      Public API
@@ -284,22 +314,22 @@ export class SherpaFilterBar extends SherpaElement {
     if (!this.#applied) return [];
 
     return this.#getFilterChips()
-      .filter(chip => chip.hasAttribute('data-active'))
-      .map(chip => {
-        const type = chip.getAttribute('data-type');
+      .filter((chip) => chip.hasAttribute("data-active"))
+      .map((chip) => {
+        const type = chip.getAttribute("data-type");
         const entry = {
-          field: chip.getAttribute('data-field'),
-          mode: chip.getAttribute('data-mode'),
+          field: chip.getAttribute("data-field"),
+          mode: chip.getAttribute("data-mode"),
           type,
         };
-        if (type === 'filter') {
+        if (type === "filter") {
           entry.values = chip.getSelectedValues?.() || [];
         }
-        if (type === 'timeframe') {
-          entry.rangeKey = chip.getRangeKey?.() || '';
+        if (type === "timeframe") {
+          entry.rangeKey = chip.getRangeKey?.() || "";
           entry.range = chip.getTimeRange?.() || null;
           // Use auto-detected timestamp field if chip has no explicit field
-          if (!entry.field && typeof chip.getField === 'function') {
+          if (!entry.field && typeof chip.getField === "function") {
             entry.field = chip.getField();
           }
         }
@@ -317,12 +347,14 @@ export class SherpaFilterBar extends SherpaElement {
     this.#rows = Array.isArray(rows) ? rows : [];
 
     for (const chip of this.#getFilterChips()) {
-      const type = chip.getAttribute('data-type');
-      if (type === 'filter') {
-        const col = this.#columns.find(c => c.field === chip.getAttribute('data-field'));
+      const type = chip.getAttribute("data-type");
+      if (type === "filter") {
+        const col = this.#columns.find(
+          (c) => c.field === chip.getAttribute("data-field"),
+        );
         chip.setValueData(this.#rows, col);
         // Update label when column metadata becomes available
-        if (col && chip.slot === 'presets') {
+        if (col && chip.slot === "presets") {
           chip.textContent = col.name || formatFieldName(col.field);
         }
       } else {
@@ -331,8 +363,11 @@ export class SherpaFilterBar extends SherpaElement {
     }
 
     // If preset filters attribute is set but chips haven't been created yet, create them now
-    const presetFields = this.getAttribute('data-preset-filters');
-    if (presetFields && !this.querySelector('sherpa-filter-chip[slot="presets"]')) {
+    const presetFields = this.getAttribute("data-preset-filters");
+    if (
+      presetFields &&
+      !this.querySelector('sherpa-filter-chip[slot="presets"]')
+    ) {
       this.#initPresetChips(presetFields);
     }
   }
@@ -340,7 +375,10 @@ export class SherpaFilterBar extends SherpaElement {
   /** Remove filter chip for a specific field. */
   removeFilterChip(field) {
     for (const chip of this.#getFilterChips()) {
-      if (chip.getAttribute('data-type') === 'filter' && chip.getAttribute('data-field') === field) {
+      if (
+        chip.getAttribute("data-type") === "filter" &&
+        chip.getAttribute("data-field") === field
+      ) {
         chip.remove();
         this.#syncActiveState();
         this.#emitFilterChange();
@@ -351,4 +389,4 @@ export class SherpaFilterBar extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-filter-bar', SherpaFilterBar);
+customElements.define("sherpa-filter-bar", SherpaFilterBar);

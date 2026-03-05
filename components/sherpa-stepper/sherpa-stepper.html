@@ -16,23 +16,37 @@
 -->
 
 <template id="default">
-<div class="stepper-container" role="navigation" aria-label="Progress stepper">
-  <div class="stepper-header" role="tablist"></div>
-</div>
-
-<!-- Cloning prototype: step item -->
-<template class="step-item-tpl">
-  <div class="step-item" role="tab">
-    <div class="step-indicator"></div>
-    <div class="step-label-container">
-      <span class="step-label text-label"></span>
-    </div>
+  <div
+    class="stepper-container"
+    role="navigation"
+    aria-label="Progress stepper"
+  >
+    <div class="stepper-header" role="tablist"></div>
   </div>
-</template>
 
-<!-- Cloning prototype: connector between steps -->
-<template class="step-connector-tpl">
-  <div class="step-connector"></div>
-</template>
+  <!-- Cloning prototype: step item -->
+  <template class="step-item-tpl">
+    <div class="step-item" role="tab">
+      <div class="step-indicator">
+        <span class="step-number"></span>
+        <i
+          class="fa-solid fa-check sherpa-icon indicator-completed"
+          aria-hidden="true"
+        ></i>
+        <i
+          class="fa-solid fa-circle-xmark sherpa-icon indicator-error"
+          aria-hidden="true"
+        ></i>
+      </div>
+      <div class="step-label-container">
+        <span class="step-label text-label"></span>
+        <span class="step-sublabel text-body-xs"></span>
+      </div>
+    </div>
+  </template>
 
+  <!-- Cloning prototype: connector between steps -->
+  <template class="step-connector-tpl">
+    <div class="step-connector"></div>
+  </template>
 </template>

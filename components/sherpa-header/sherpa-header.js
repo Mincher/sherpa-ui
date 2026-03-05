@@ -71,7 +71,7 @@
  *   extra       — Extra content below search (menu)
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 /**
  * Maps the `type` attribute value to a template id.
@@ -79,28 +79,40 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
  * with type-specific CSS overrides applied via :host([type="…"]).
  */
 const TEMPLATE_MAP = {
-  container: 'default',
-  dialog:    'default',
-  section:   'default',
-  card:      'default',
-  menu:      'menu',
-  'data-viz':'data-viz',
+  container: "default",
+  dialog: "default",
+  section: "default",
+  card: "default",
+  menu: "menu",
+  "data-viz": "data-viz",
 };
 
 export class SherpaHeader extends SherpaElement {
-
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-header.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-header.html', import.meta.url).href; }
+  static get cssUrl() {
+    return new URL("./sherpa-header.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-header.html", import.meta.url).href;
+  }
 
   static get observedAttributes() {
     return [
-      'data-type', 'data-label', 'data-description',
-      'data-heading-level', 'data-divider', 'data-density',
-      'data-drag-handle', 'data-close-button', 'data-close-label',
-      'data-search', 'data-search-placeholder', 'data-dismissible',
-      'data-open-external', 'data-menu-button'
+      "data-type",
+      "data-label",
+      "data-description",
+      "data-heading-level",
+      "data-divider",
+      "data-density",
+      "data-drag-handle",
+      "data-close-button",
+      "data-close-label",
+      "data-search",
+      "data-search-placeholder",
+      "data-dismissible",
+      "data-open-external",
+      "data-menu-button",
     ];
   }
 
@@ -108,7 +120,7 @@ export class SherpaHeader extends SherpaElement {
 
   get templateId() {
     const type = this.dataset.type;
-    return TEMPLATE_MAP[type] || 'default';
+    return TEMPLATE_MAP[type] || "default";
   }
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
@@ -125,201 +137,254 @@ export class SherpaHeader extends SherpaElement {
 
   onAttributeChanged(name) {
     switch (name) {
-      case 'data-label':
+      case "data-label":
         this.#syncHeading();
         break;
-      case 'data-description':
+      case "data-description":
         this.#syncDescription();
         break;
-      case 'data-close-button':
-      case 'data-close-label':
-      case 'data-dismissible':
+      case "data-close-button":
+      case "data-close-label":
+      case "data-dismissible":
         this.#syncCloseButton();
         break;
-      case 'data-search':
-      case 'data-search-placeholder':
+      case "data-search":
+      case "data-search-placeholder":
         this.#syncSearch();
         break;
-      case 'data-open-external':
+      case "data-open-external":
         this.#syncOpenExternal();
         break;
-      case 'data-menu-button':
+      case "data-menu-button":
         this.#syncMenuButton();
         break;
     }
   }
 
   /**
-   * When a custom heading is slotted, hide the default heading text.
+   * Slot change handler — delegates to SherpaElement for data-has-* toggling.
+   * CSS rule :host([data-has-heading]) .header-title { display: none } handles
+   * hiding the default title when custom heading content is slotted.
    */
   onSlotChange(slotEl) {
     super.onSlotChange(slotEl);
-
-    if (slotEl.name === 'heading') {
-      const hasCustom = slotEl.assignedNodes().length > 0;
-      const titleEl = this.$('.header-title');
-      if (titleEl) titleEl.hidden = hasCustom;
-    }
   }
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get type()        { return this.dataset.type || 'default'; }
-  set type(v)       { this.dataset.type = v; }
+  get type() {
+    return this.dataset.type || "default";
+  }
+  set type(v) {
+    this.dataset.type = v;
+  }
 
-  get heading()     { return this.dataset.label || ''; }
-  set heading(v)    { if (v) { this.dataset.label = v; } else { delete this.dataset.label; } }
+  get heading() {
+    return this.dataset.label || "";
+  }
+  set heading(v) {
+    if (v) {
+      this.dataset.label = v;
+    } else {
+      delete this.dataset.label;
+    }
+  }
 
-  get description() { return this.dataset.description || ''; }
-  set description(v){ if (v) { this.dataset.description = v; } else { delete this.dataset.description; } }
+  get description() {
+    return this.dataset.description || "";
+  }
+  set description(v) {
+    if (v) {
+      this.dataset.description = v;
+    } else {
+      delete this.dataset.description;
+    }
+  }
 
-  get headingType() { return this.dataset.headingLevel || 'primary'; }
-  set headingType(v){ this.dataset.headingLevel = v; }
+  get headingType() {
+    return this.dataset.headingLevel || "primary";
+  }
+  set headingType(v) {
+    this.dataset.headingLevel = v;
+  }
 
-  get hasDivider()  { return this.dataset.divider === 'true'; }
-  set hasDivider(v) { this.dataset.divider = v ? 'true' : 'false'; }
+  get hasDivider() {
+    return this.dataset.divider === "true";
+  }
+  set hasDivider(v) {
+    this.dataset.divider = v ? "true" : "false";
+  }
 
-  get hasDragHandle()  { return this.dataset.dragHandle === 'true'; }
-  set hasDragHandle(v) { this.dataset.dragHandle = v ? 'true' : 'false'; }
+  get hasDragHandle() {
+    return this.dataset.dragHandle === "true";
+  }
+  set hasDragHandle(v) {
+    this.dataset.dragHandle = v ? "true" : "false";
+  }
 
-  get hasCloseButton()  { return this.dataset.closeButton === 'true'; }
-  set hasCloseButton(v) { this.dataset.closeButton = v ? 'true' : 'false'; }
+  get hasCloseButton() {
+    return this.dataset.closeButton === "true";
+  }
+  set hasCloseButton(v) {
+    this.dataset.closeButton = v ? "true" : "false";
+  }
 
-  get closeLabel()  { return this.dataset.closeLabel || 'Close'; }
-  set closeLabel(v) { if (v) { this.dataset.closeLabel = v; } else { delete this.dataset.closeLabel; } }
+  get closeLabel() {
+    return this.dataset.closeLabel || "Close";
+  }
+  set closeLabel(v) {
+    if (v) {
+      this.dataset.closeLabel = v;
+    } else {
+      delete this.dataset.closeLabel;
+    }
+  }
 
-  get hasSearch()    { return this.dataset.search === 'true'; }
-  set hasSearch(v)   { this.dataset.search = v ? 'true' : 'false'; }
+  get hasSearch() {
+    return this.dataset.search === "true";
+  }
+  set hasSearch(v) {
+    this.dataset.search = v ? "true" : "false";
+  }
 
-  get searchPlaceholder() { return this.dataset.searchPlaceholder || 'Search'; }
-  set searchPlaceholder(v){ if (v) { this.dataset.searchPlaceholder = v; } else { delete this.dataset.searchPlaceholder; } }
+  get searchPlaceholder() {
+    return this.dataset.searchPlaceholder || "Search";
+  }
+  set searchPlaceholder(v) {
+    if (v) {
+      this.dataset.searchPlaceholder = v;
+    } else {
+      delete this.dataset.searchPlaceholder;
+    }
+  }
 
   get dismissible() {
-    return this.dataset.dismissible !== 'false';
+    return this.dataset.dismissible !== "false";
   }
   set dismissible(v) {
-    this.dataset.dismissible = v ? 'true' : 'false';
+    this.dataset.dismissible = v ? "true" : "false";
   }
 
-  get hasOpenExternal()  { return this.dataset.openExternal === 'true'; }
-  set hasOpenExternal(v) { this.dataset.openExternal = v ? 'true' : 'false'; }
+  get hasOpenExternal() {
+    return this.dataset.openExternal === "true";
+  }
+  set hasOpenExternal(v) {
+    this.dataset.openExternal = v ? "true" : "false";
+  }
 
-  get hasMenuButton()  { return this.dataset.menuButton === 'true'; }
-  set hasMenuButton(v) { this.dataset.menuButton = v ? 'true' : 'false'; }
+  get hasMenuButton() {
+    return this.dataset.menuButton === "true";
+  }
+  set hasMenuButton(v) {
+    this.dataset.menuButton = v ? "true" : "false";
+  }
 
   /** Returns the drag handle element (default template only) */
   get dragHandleElement() {
-    return this.$('.drag-handle');
+    return this.$(".drag-handle");
   }
 
   /** Returns the open-external button element (default template only) */
   get openExternalElement() {
-    return this.$('.open-external-button');
+    return this.$(".open-external-button");
   }
 
   /** Returns the menu button element (default template only) */
   get menuButtonElement() {
-    return this.$('.menu-button');
+    return this.$(".menu-button");
   }
 
   /** Returns the search field element (menu template only) */
   get searchField() {
-    return this.$('.search-field') || this.$('slot[name="search"]')?.assignedElements()[0];
+    return (
+      this.$(".search-field") ||
+      this.$('slot[name="search"]')?.assignedElements()[0]
+    );
   }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
   #syncHeading() {
-    const el = this.$('.header-title');
+    const el = this.$(".header-title");
     if (el) el.textContent = this.heading;
   }
 
   #syncDescription() {
-    const el = this.$('.header-description');
+    const el = this.$(".header-description");
     if (el) el.textContent = this.description;
   }
 
   #syncCloseButton() {
-    const btn = this.$('.close-button');
+    const btn = this.$(".close-button");
     if (!btn) return;
 
-    const type = this.dataset.type;
-    if (type === 'dialog') {
-      // Dialog: close shown by default unless dismissible="false"
-      btn.hidden = !this.dismissible;
-    } else {
-      // All others: close hidden unless close-button attribute present
-      btn.hidden = !this.hasCloseButton;
-    }
+    // Visibility is handled entirely by CSS:
+    //   :host([data-close-button="true"]) .close-button { display: inline-flex; }
+    //   :host([data-type="dialog"]) .close-button { display: inline-flex; }
+    //   :host([data-type="dialog"][data-dismissible="false"]) .close-button { display: none; }
 
     const label = this.closeLabel;
-    btn.setAttribute('aria-label', label);
-    btn.setAttribute('data-tooltip', label);
+    btn.setAttribute("aria-label", label);
+    btn.setAttribute("data-tooltip", label);
   }
 
   #syncOpenExternal() {
-    const btn = this.$('.open-external-button');
-    if (!btn) return;
-    btn.hidden = !this.hasOpenExternal;
-    this.#syncActionDivider();
+    // Visibility handled by CSS:
+    //   :host([data-open-external="true"]) .open-external-button { display: inline-flex; }
   }
 
   #syncMenuButton() {
-    const btn = this.$('.menu-button');
-    if (!btn) return;
-    btn.hidden = !this.hasMenuButton;
-    this.#syncActionDivider();
-  }
-
-  /** Show divider only when both open-external and menu buttons are visible */
-  #syncActionDivider() {
-    const divider = this.$('.action-divider');
-    if (divider) divider.hidden = !(this.hasOpenExternal && this.hasMenuButton);
+    // Visibility handled by CSS:
+    //   :host([data-menu-button="true"]) .menu-button { display: inline-flex; }
   }
 
   #syncSearch() {
-    const searchRow = this.$('.search-row');
-    if (!searchRow) return;
+    // Visibility handled by CSS:
+    //   :host([data-search="true"]) .search-row { display: flex; }
 
-    searchRow.hidden = !this.hasSearch;
-
-    const field = this.$('.search-field');
+    const field = this.$(".search-field");
     if (field && this.hasSearch) {
-      field.setAttribute('placeholder', this.searchPlaceholder);
+      field.setAttribute("placeholder", this.searchPlaceholder);
     }
   }
 
   #wireEvents() {
     // Close button
-    const closeBtn = this.$('.close-button');
+    const closeBtn = this.$(".close-button");
     if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        this.dispatchEvent(new CustomEvent('header-close', { bubbles: true, composed: true }));
+      closeBtn.addEventListener("click", () => {
+        this.dispatchEvent(
+          new CustomEvent("header-close", { bubbles: true, composed: true }),
+        );
       });
     }
 
     // Search field input
-    const searchField = this.$('.search-field');
+    const searchField = this.$(".search-field");
     if (searchField) {
-      searchField.addEventListener('input', (e) => {
-        this.dispatchEvent(new CustomEvent('header-search', {
-          bubbles: true,
-          composed: true,
-          detail: { query: e.detail?.value ?? searchField.value }
-        }));
-      });
-
-      searchField.addEventListener('search', (e) => {
-        if (!e.detail?.value) {
-          this.dispatchEvent(new CustomEvent('header-search', {
+      searchField.addEventListener("input", (e) => {
+        this.dispatchEvent(
+          new CustomEvent("header-search", {
             bubbles: true,
             composed: true,
-            detail: { query: '' }
-          }));
+            detail: { query: e.detail?.value ?? searchField.value },
+          }),
+        );
+      });
+
+      searchField.addEventListener("search", (e) => {
+        if (!e.detail?.value) {
+          this.dispatchEvent(
+            new CustomEvent("header-search", {
+              bubbles: true,
+              composed: true,
+              detail: { query: "" },
+            }),
+          );
         }
       });
     }
   }
 }
 
-customElements.define('sherpa-header', SherpaHeader);
+customElements.define("sherpa-header", SherpaHeader);

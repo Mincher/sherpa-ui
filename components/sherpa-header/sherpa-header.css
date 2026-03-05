@@ -1,4 +1,3 @@
-
 /**
  * sherpa-header.css
  *
@@ -32,7 +31,9 @@
   --_heading-color: var(--sherpa-text-default-header, #1a1a1f);
 }
 
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SHARED BASE — flex row: labels → actions → close
@@ -76,8 +77,12 @@
   overflow: hidden;
 }
 
-.badge-slot             { display: none; }
-.badge-slot[data-has-content] { display: inline-flex; }
+.badge-slot {
+  display: none;
+}
+.badge-slot[data-has-content] {
+  display: inline-flex;
+}
 
 .header-description {
   margin: 0;
@@ -87,7 +92,14 @@
   text-overflow: ellipsis;
 }
 
-.header-description:empty { display: none; }
+.header-description:empty {
+  display: none;
+}
+
+/* Hide default title when custom heading content is slotted */
+:host([data-has-heading]) .header-title {
+  display: none;
+}
 
 /* ── Actions (right) ──────────────────────────────────────────────────── */
 
@@ -98,28 +110,54 @@
   gap: var(--sherpa-space-xs, 4px);
 }
 
-.header-actions:empty { display: none; }
+.header-actions:empty {
+  display: none;
+}
 
-.header-actions ::slotted(sherpa-button) { flex-shrink: 0; }
+.header-actions ::slotted(sherpa-button) {
+  flex-shrink: 0;
+}
 
 /* ── Built-in action buttons (hidden by default, shown via host attrs) ── */
 
 .open-external-button,
 .menu-button,
-.close-button         { flex-shrink: 0; }
+.close-button,
+.action-divider {
+  display: none;
+  flex-shrink: 0;
+}
 
-.open-external-button[hidden],
-.menu-button[hidden],
-.close-button[hidden] { display: none; }
+:host([data-open-external="true"]) .open-external-button {
+  display: inline-flex;
+}
+:host([data-menu-button="true"]) .menu-button {
+  display: inline-flex;
+}
+
+/* Close button: shown when data-close-button="true" */
+:host([data-close-button="true"]) .close-button {
+  display: inline-flex;
+}
+
+/* Dialog: close shown by default, hidden when dismissible="false" */
+:host([data-type="dialog"]) .close-button {
+  display: inline-flex;
+}
+:host([data-type="dialog"][data-dismissible="false"]) .close-button {
+  display: none;
+}
+
+/* Action divider: shown only when both open-external AND menu-button are visible */
+:host([data-open-external="true"][data-menu-button="true"]) .action-divider {
+  display: block;
+}
 
 .action-divider {
-  display: block;
   width: 1px;
   height: var(--sherpa-size-sm, 16px);
   background-color: var(--sherpa-border-control-secondary-default);
 }
-
-.action-divider[hidden] { display: none; }
 
 /* ── Drag handle (default template only) ──────────────────────────────── */
 
@@ -132,13 +170,23 @@
   cursor: grab;
   flex-shrink: 0;
   border-radius: var(--sherpa-border-rounding-sm, 4px);
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
 }
 
-.drag-handle:hover  { color: var(--sherpa-text-default-body); background-color: var(--sherpa-surface-container-hover); }
-.drag-handle:active { cursor: grabbing; color: var(--sherpa-border-control-primary-default); }
+.drag-handle:hover {
+  color: var(--sherpa-text-default-body);
+  background-color: var(--sherpa-surface-container-hover);
+}
+.drag-handle:active {
+  cursor: grabbing;
+  color: var(--sherpa-border-control-primary-default);
+}
 
-:host([data-drag-handle="true"]) .drag-handle { display: inline-flex; }
+:host([data-drag-handle="true"]) .drag-handle {
+  display: inline-flex;
+}
 
 /* ── Divider (default template only) ──────────────────────────────────── */
 
@@ -146,10 +194,13 @@
   display: none;
   margin: 0;
   border: none;
-  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+  border-top: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-subtle, #f0f0f5);
 }
 
-:host([data-divider="true"]) .header-divider { display: block; }
+:host([data-divider="true"]) .header-divider {
+  display: block;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TYPE OVERRIDES — token tweaks via :host([data-type="..."])
@@ -158,7 +209,10 @@
 /* Container — uppercase label */
 :host([data-type="container"]) {
   --_heading-text-transform: uppercase;
-  --_heading-color: var(--sherpa-text-default-label, var(--sherpa-text-default-header, #1a1a1f));
+  --_heading-color: var(
+    --sherpa-text-default-label,
+    var(--sherpa-text-default-header, #1a1a1f)
+  );
 }
 
 /* Dialog — larger title, background bar */
@@ -170,8 +224,10 @@
   align-items: flex-start;
   padding: var(--sherpa-space-xs, 4px) var(--sherpa-space-sm, 8px);
   background-color: var(--sherpa-surface-container-default);
-  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default);
-  border-radius: var(--sherpa-border-rounding-base, 4px) var(--sherpa-border-rounding-base, 4px) 0 0;
+  border-bottom: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default);
+  border-radius: var(--sherpa-border-rounding-base, 4px)
+    var(--sherpa-border-rounding-base, 4px) 0 0;
 }
 
 /* Data-viz — small uppercase title */
@@ -189,7 +245,9 @@
   gap: var(--sherpa-space-xs, 4px);
 }
 
-.header-filters:empty { display: none; }
+.header-filters:empty {
+  display: none;
+}
 
 /* Menu — padding, wrapping description */
 .menu-header {
@@ -201,24 +259,32 @@
   --_heading-color: var(--sherpa-text-default-heading);
 }
 
-.menu-header .header-description { white-space: normal; }
+.menu-header .header-description {
+  white-space: normal;
+}
 
 /* ── Search row (menu only, outside .header) ──────────────────────────── */
 
 .search-row {
-  display: flex;
+  display: none;
   align-items: center;
   padding: 0 var(--sherpa-space-sm, 8px);
 }
 
-.search-row[hidden] { display: none; }
-.search-field        { flex: 1; }
+:host([data-search="true"]) .search-row {
+  display: flex;
+}
+.search-field {
+  flex: 1;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    HEADING-TYPE / DENSITY OVERRIDES (section usage)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-:host([data-heading-level="secondary"]) { --_heading-font-size: var(--sherpa-fonts-scale-md, 14px); }
+:host([data-heading-level="secondary"]) {
+  --_heading-font-size: var(--sherpa-fonts-scale-md, 14px);
+}
 
 :host([data-heading-level="tertiary"]) {
   --_heading-font-size: var(--sherpa-fonts-scale-sm, 12px);
@@ -227,26 +293,46 @@
   --_heading-color: var(--sherpa-text-default-secondary, #6a6a75);
 }
 
-:host([data-density="compact"])     { --_heading-font-size: var(--sherpa-fonts-scale-md, 14px); }
-:host([data-density="comfortable"]) { --_heading-font-size: var(--sherpa-fonts-scale-xl, 22px); }
+:host([data-density="compact"]) {
+  --_heading-font-size: var(--sherpa-fonts-scale-md, 14px);
+}
+:host([data-density="comfortable"]) {
+  --_heading-font-size: var(--sherpa-fonts-scale-xl, 22px);
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @container sherpa-header (max-width: 200px) {
-  .header-row           { gap: var(--sherpa-space-2xs, 2px); }
-  .header-description   { display: none; }
-  .header-actions       { gap: var(--sherpa-space-2xs, 2px); }
-  .action-divider      { display: none; }
+  .header-row {
+    gap: var(--sherpa-space-2xs, 2px);
+  }
+  .header-description {
+    display: none;
+  }
+  .header-actions {
+    gap: var(--sherpa-space-2xs, 2px);
+  }
+  .action-divider {
+    display: none;
+  }
 }
 
 @container sherpa-header (max-width: 150px) {
-  .open-external-button { display: none !important; }
-  .action-divider       { display: none !important; }
-  .header-actions ::slotted(:not([data-keep-compact])) { display: none; }
+  .open-external-button {
+    display: none !important;
+  }
+  .action-divider {
+    display: none !important;
+  }
+  .header-actions ::slotted(:not([data-keep-compact])) {
+    display: none;
+  }
 }
 
 @container sherpa-header (max-width: 120px) {
-  .header-title { font-size: var(--sherpa-fonts-scale-sm, 12px); }
+  .header-title {
+    font-size: var(--sherpa-fonts-scale-sm, 12px);
+  }
 }

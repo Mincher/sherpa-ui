@@ -21,16 +21,28 @@
     <i class="chip-icon icon-desc fa-solid fa-sort-down"></i>
     <span class="chip-label"></span>
   </div>
-  <sherpa-button class="chip-dropdown" data-variant="tertiary" data-size="small" data-icon-start="&#xf078;" data-menu="true"></sherpa-button>
+  <sherpa-button
+    class="chip-dropdown"
+    data-variant="tertiary"
+    data-size="small"
+    data-icon-start="&#xf078;"
+    data-menu="true"
+  ></sherpa-button>
 </template>
 
 <template id="filter">
   <div class="chip-toggle" role="button" tabindex="0">
     <i class="chip-icon icon-default fa-solid fa-filter"></i>
     <span class="chip-label"></span>
-    <span class="chip-count" hidden></span>
+    <span class="chip-count"></span>
   </div>
-  <sherpa-button class="chip-dropdown" data-variant="tertiary" data-size="small" data-icon-start="&#xf078;" data-menu="true"></sherpa-button>
+  <sherpa-button
+    class="chip-dropdown"
+    data-variant="tertiary"
+    data-size="small"
+    data-icon-start="&#xf078;"
+    data-menu="true"
+  ></sherpa-button>
   <button class="chip-close" type="button" aria-label="Remove filter">
     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
   </button>
@@ -41,7 +53,13 @@
     <i class="chip-icon icon-default fa-solid fa-bars"></i>
     <span class="chip-label"></span>
   </div>
-  <sherpa-button class="chip-dropdown" data-variant="tertiary" data-size="small" data-icon-start="&#xf078;" data-menu="true"></sherpa-button>
+  <sherpa-button
+    class="chip-dropdown"
+    data-variant="tertiary"
+    data-size="small"
+    data-icon-start="&#xf078;"
+    data-menu="true"
+  ></sherpa-button>
 </template>
 
 <template id="timeframe">
@@ -49,5 +67,21 @@
     <i class="chip-icon icon-default fa-regular fa-clock"></i>
     <span class="chip-label"></span>
   </div>
-  <sherpa-button class="chip-dropdown" data-variant="tertiary" data-size="small" data-icon-start="&#xf078;" data-menu="true"></sherpa-button>
+  <sherpa-button
+    class="chip-dropdown"
+    data-variant="tertiary"
+    data-size="small"
+    data-icon-start="&#xf078;"
+    data-menu="true"
+  ></sherpa-button>
+</template>
+
+<!-- Menu heading — cloning template -->
+<template class="menu-heading-tpl">
+  <sherpa-menu-item data-type="heading"></sherpa-menu-item>
+</template>
+
+<!-- Menu item — cloning template -->
+<template class="menu-item-tpl">
+  <li><sherpa-menu-item></sherpa-menu-item></li>
 </template>

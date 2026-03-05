@@ -25,22 +25,37 @@
  *   getTimeRange, getRangeKey, type, disabled
  */
 
-import { SherpaElement, parseTemplates } from '../utilities/sherpa-element/sherpa-element.js';
-import '../sherpa-button/sherpa-button.js';
+import {
+  SherpaElement,
+  parseTemplates,
+} from "../utilities/sherpa-element/sherpa-element.js";
+import "../sherpa-button/sherpa-button.js";
 
 const NUMERIC_TYPES = new Set([
-  'number', 'int', 'integer', 'float', 'double', 'decimal', 'currency', 'percent', 'percentage'
+  "number",
+  "int",
+  "integer",
+  "float",
+  "double",
+  "decimal",
+  "currency",
+  "percent",
+  "percentage",
 ]);
 
 const TIMESTAMP_TYPES = new Set([
-  'date', 'datetime', 'timestamp', 'time', 'dateTime'
+  "date",
+  "datetime",
+  "timestamp",
+  "time",
+  "dateTime",
 ]);
 
 /** Compute { start, end } Date range for a preset key. */
 function computeTimeRange(key) {
   if (!key) return null;
   const now = new Date();
-  const days = { '1d': 1, '1w': 7, '1m': 30, '1q': 90, '1y': 365 }[key];
+  const days = { "1d": 1, "1w": 7, "1m": 30, "1q": 90, "1y": 365 }[key];
   if (!days) return null;
   const start = new Date(now);
   start.setDate(start.getDate() - days);
@@ -49,16 +64,21 @@ function computeTimeRange(key) {
 
 /* ── Menu templates (loaded once, shared across instances) ───── */
 
-const MENU_URL = new URL('./sherpa-filter-chip-menu.html', import.meta.url).href;
+const MENU_URL = new URL("./sherpa-filter-chip-menu.html", import.meta.url)
+  .href;
 let _menuTplMap = null;
 let _menuTplPromise = null;
 
 function loadMenuTemplates() {
   if (!_menuTplPromise) {
     _menuTplPromise = fetch(MENU_URL)
-      .then(r => r.ok ? r.text() : '')
-      .then(html => { _menuTplMap = parseTemplates(html); })
-      .catch(() => { _menuTplMap = null; });
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((html) => {
+        _menuTplMap = parseTemplates(html);
+      })
+      .catch(() => {
+        _menuTplMap = null;
+      });
   }
   return _menuTplPromise;
 }
@@ -66,12 +86,22 @@ function loadMenuTemplates() {
 /* ── Component ─────────────────────────────────────────────────── */
 
 export class SherpaFilterChip extends SherpaElement {
-
-  static get cssUrl()  { return new URL('./sherpa-filter-chip.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-filter-chip.html', import.meta.url).href; }
+  static get cssUrl() {
+    return new URL("./sherpa-filter-chip.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-filter-chip.html", import.meta.url).href;
+  }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-type', 'data-mode', 'data-field', 'data-range-key', 'disabled'];
+    return [
+      ...super.observedAttributes,
+      "data-type",
+      "data-mode",
+      "data-field",
+      "data-range-key",
+      "disabled",
+    ];
   }
 
   #toggleEl = null;
@@ -79,69 +109,81 @@ export class SherpaFilterChip extends SherpaElement {
   #labelEl = null;
   #closeBtn = null;
   #countEl = null;
+  #menuItemTpl = null; // Cached <template class="menu-item-tpl">
+  #menuHeadingTpl = null; // Cached <template class="menu-heading-tpl">
   #columns = [];
   #userCleared = false;
 
   /* ── Filter-type state ────────────────────────────────────────── */
-  #valueRows = [];          // Raw rows for extracting unique values
-  #uniqueValues = [];       // Sorted unique values for the field
+  #valueRows = []; // Raw rows for extracting unique values
+  #uniqueValues = []; // Sorted unique values for the field
   #selectedValues = new Set(); // Currently selected filter values
-  #isBoolean = false;       // True when field has only boolean values (no menu needed)
+  #isBoolean = false; // True when field has only boolean values (no menu needed)
 
   /* ── Timeframe-type state ─────────────────────────────────────── */
-  #rangeKey = '';            // Active range preset key ('1d','1w','1m','1q','1y','')
-  #timestampField = null;    // Auto-detected timestamp column
+  #rangeKey = ""; // Active range preset key ('1d','1w','1m','1q','1y','')
+  #timestampField = null; // Auto-detected timestamp column
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   /* ── Template selection — picks the per-type template ────────── */
 
-  get templateId() { return this.type; }
+  get templateId() {
+    return this.type;
+  }
 
   onRender() {
-    this.#toggleEl = this.$('.chip-toggle');
-    this.#dropdownBtn = this.$('.chip-dropdown');
-    this.#labelEl = this.$('.chip-label');
-    this.#closeBtn = this.$('.chip-close');
-    this.#countEl = this.$('.chip-count');
+    this.#toggleEl = this.$(".chip-toggle");
+    this.#dropdownBtn = this.$(".chip-dropdown");
+    this.#labelEl = this.$(".chip-label");
+    this.#closeBtn = this.$(".chip-close");
+    this.#countEl = this.$(".chip-count");
+    this.#menuItemTpl = this.$("template.menu-item-tpl");
+    this.#menuHeadingTpl = this.$("template.menu-heading-tpl");
   }
 
   onConnect() {
-    this.#toggleEl?.addEventListener('click', (e) => {
+    this.#toggleEl?.addEventListener("click", (e) => {
       if (this.disabled) return;
       e.stopPropagation();
       this.#cycle();
     });
 
-    this.#toggleEl?.addEventListener('keydown', (e) => {
+    this.#toggleEl?.addEventListener("keydown", (e) => {
       if (this.disabled) return;
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         this.#cycle();
       }
     });
 
-    this.#dropdownBtn?.addEventListener('menu-open', () => this.#populateMenu());
-    this.#dropdownBtn?.addEventListener('menu-select', (e) => this.#onMenuSelect(e));
+    this.#dropdownBtn?.addEventListener("menu-open", () =>
+      this.#populateMenu(),
+    );
+    this.#dropdownBtn?.addEventListener("menu-select", (e) =>
+      this.#onMenuSelect(e),
+    );
 
     // Close button (filter chips only)
-    this.#closeBtn?.addEventListener('click', (e) => {
+    this.#closeBtn?.addEventListener("click", (e) => {
       e.stopPropagation();
-      this.dispatchEvent(new CustomEvent('chipremove', {
-        bubbles: true,
-        detail: { field: this.getAttribute('data-field'), type: this.type },
-      }));
+      this.dispatchEvent(
+        new CustomEvent("chipremove", {
+          bubbles: true,
+          detail: { field: this.getAttribute("data-field"), type: this.type },
+        }),
+      );
     });
 
     this.#updateLabel();
     this.#updateActive();
 
     // Timeframe chips: initialise from data-range-key attribute
-    if (this.type === 'timeframe') {
-      const attrKey = this.getAttribute('data-range-key');
+    if (this.type === "timeframe") {
+      const attrKey = this.getAttribute("data-range-key");
       if (attrKey && !this.#rangeKey) {
         this.#rangeKey = attrKey;
-        this.setAttribute('data-mode', 'on');
+        this.setAttribute("data-mode", "on");
         this.#updateLabel();
         this.#updateActive();
         // Emit initial filtervaluechange so the bar picks up the default
@@ -152,29 +194,29 @@ export class SherpaFilterChip extends SherpaElement {
 
   onAttributeChanged(name, _old, newValue) {
     switch (name) {
-      case 'data-type':
+      case "data-type":
         this.renderTemplate(this.type);
         this.#updateLabel();
         this.#updateActive();
         break;
-      case 'data-mode':
+      case "data-mode":
         this.#updateActive();
         break;
-      case 'data-field':
+      case "data-field":
         this.#updateLabel();
         this.#updateActive();
         break;
-      case 'data-range-key': {
-        if (this.type === 'timeframe' && newValue) {
+      case "data-range-key": {
+        if (this.type === "timeframe" && newValue) {
           this.#rangeKey = newValue;
-          this.setAttribute('data-mode', 'on');
+          this.setAttribute("data-mode", "on");
           this.#updateLabel();
           this.#updateActive();
           this.#emitFilterChange();
         }
         break;
       }
-      case 'disabled': {
+      case "disabled": {
         const d = newValue !== null;
         if (this.#dropdownBtn) this.#dropdownBtn.disabled = d;
         break;
@@ -186,38 +228,47 @@ export class SherpaFilterChip extends SherpaElement {
 
   #updateLabel() {
     if (!this.#labelEl) return;
-    const field = this.getAttribute('data-field');
+    const field = this.getAttribute("data-field");
 
-    if (this.type === 'timeframe') {
-      const labels = { '1d': 'Last 24 hours', '1w': 'Last 7 days', '1m': 'Last 30 days', '1q': 'Last 90 days', '1y': 'Last 365 days' };
-      this.#labelEl.textContent = labels[this.#rangeKey] || this.textContent.trim() || 'Time frame';
+    if (this.type === "timeframe") {
+      const labels = {
+        "1d": "Last 24 hours",
+        "1w": "Last 7 days",
+        "1m": "Last 30 days",
+        "1q": "Last 90 days",
+        "1y": "Last 365 days",
+      };
+      this.#labelEl.textContent =
+        labels[this.#rangeKey] || this.textContent.trim() || "Time frame";
       return;
     }
 
     if (field) {
-      const col = this.#columns.find(c => c.field === field);
+      const col = this.#columns.find((c) => c.field === field);
       const raw = col?.name || col?.field || field;
-      this.#labelEl.textContent = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      this.#labelEl.textContent =
+        raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
     } else {
       const text = this.textContent.trim();
       const raw = text || this.type;
-      this.#labelEl.textContent = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+      this.#labelEl.textContent =
+        raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
     }
   }
 
   /* ── Active state ─────────────────────────────────────────────── */
 
   #updateActive() {
-    const mode = this.getAttribute('data-mode');
+    const mode = this.getAttribute("data-mode");
     let active;
-    if (this.type === 'filter') {
-      active = this.#selectedValues.size > 0 && mode !== 'off';
-    } else if (this.type === 'timeframe') {
-      active = !!this.#rangeKey && mode !== 'off';
+    if (this.type === "filter") {
+      active = this.#selectedValues.size > 0 && mode !== "off";
+    } else if (this.type === "timeframe") {
+      active = !!this.#rangeKey && mode !== "off";
     } else {
-      active = this.hasAttribute('data-field') && !!mode && mode !== 'off';
+      active = this.hasAttribute("data-field") && !!mode && mode !== "off";
     }
-    this.toggleAttribute('data-active', active);
+    this.toggleAttribute("data-active", active);
     this.#updateCount();
   }
 
@@ -227,70 +278,70 @@ export class SherpaFilterChip extends SherpaElement {
     const count = this.#selectedValues.size;
     if (count > 0) {
       this.#countEl.textContent = count;
-      this.#countEl.hidden = false;
+      this.dataset.count = count;
     } else {
-      this.#countEl.hidden = true;
+      delete this.dataset.count;
     }
   }
 
   /* ── Cycle ────────────────────────────────────────────────────── */
 
   #cycle() {
-    if (this.type === 'filter') {
+    if (this.type === "filter") {
       if (this.#isBoolean) {
         // Boolean toggle: switch between filtering for truthy values and no filter
-        const mode = this.getAttribute('data-mode');
-        const nowOff = !mode || mode === 'off';
+        const mode = this.getAttribute("data-mode");
+        const nowOff = !mode || mode === "off";
         if (nowOff) {
-          const truthyVals = this.#uniqueValues.filter(v =>
-            v === 'true' || v === '1' || v === 'yes'
+          const truthyVals = this.#uniqueValues.filter(
+            (v) => v === "true" || v === "1" || v === "yes",
           );
           this.#selectedValues = new Set(
-            truthyVals.length ? truthyVals : this.#uniqueValues.slice(0, 1)
+            truthyVals.length ? truthyVals : this.#uniqueValues.slice(0, 1),
           );
         } else {
           this.#selectedValues.clear();
         }
-        this.setAttribute('data-mode', nowOff ? 'on' : 'off');
+        this.setAttribute("data-mode", nowOff ? "on" : "off");
         this.#updateActive();
         this.#emitFilterChange();
         return;
       }
       // Multi-value toggle: preserve selected values
       if (this.#selectedValues.size > 0) {
-        const mode = this.getAttribute('data-mode');
-        const nowOff = !mode || mode === 'off';
-        this.setAttribute('data-mode', nowOff ? 'on' : 'off');
+        const mode = this.getAttribute("data-mode");
+        const nowOff = !mode || mode === "off";
+        this.setAttribute("data-mode", nowOff ? "on" : "off");
         this.#updateActive();
         this.#emitFilterChange();
       }
       return;
     }
 
-    if (this.type === 'timeframe') {
+    if (this.type === "timeframe") {
       // Toggle active/inactive — preserve range key
       if (this.#rangeKey) {
-        const mode = this.getAttribute('data-mode');
-        const nowOff = !mode || mode === 'off';
-        this.setAttribute('data-mode', nowOff ? 'on' : 'off');
+        const mode = this.getAttribute("data-mode");
+        const nowOff = !mode || mode === "off";
+        this.setAttribute("data-mode", nowOff ? "on" : "off");
         this.#updateActive();
         this.#emitFilterChange();
       }
       return;
     }
 
-    const field = this.getAttribute('data-field');
+    const field = this.getAttribute("data-field");
     if (!field) return;
 
-    const mode = this.getAttribute('data-mode') || '';
+    const mode = this.getAttribute("data-mode") || "";
     let next;
-    if (this.type === 'sort') {
-      next = mode === 'asc' ? 'desc' : mode === 'desc' ? 'off' : 'asc';
+    if (this.type === "sort") {
+      next = mode === "asc" ? "desc" : mode === "desc" ? "off" : "asc";
     } else {
-      next = mode === 'on' ? 'off' : 'on';
+      next = mode === "on" ? "off" : "on";
     }
 
-    this.setAttribute('data-mode', next);
+    this.setAttribute("data-mode", next);
   }
 
   /* ── Menu ───────────────────────────────────────────────────────────── */
@@ -306,9 +357,9 @@ export class SherpaFilterChip extends SherpaElement {
     const heading = frag.querySelector('sherpa-menu-item[data-type="heading"]');
     if (heading) heading.textContent = this.#labelEl?.textContent || this.type;
 
-    if (this.type === 'filter') {
+    if (this.type === "filter") {
       this.#populateFilterMenu(frag);
-    } else if (this.type === 'timeframe') {
+    } else if (this.type === "timeframe") {
       this.#populateTimeframeMenu(frag);
     } else {
       this.#populateColumnMenu(frag);
@@ -322,42 +373,49 @@ export class SherpaFilterChip extends SherpaElement {
     const group = frag.querySelector('ul[data-group="columns"]');
     if (!group) return;
 
-    const currentField = this.getAttribute('data-field') || '';
+    const currentField = this.getAttribute("data-field") || "";
 
     const none = group.querySelector('[data-role="none-option"]');
     if (none) {
-      none.setAttribute('value', '');
-      none.dataset.field = '';
-      none.toggleAttribute('checked', !currentField);
+      none.setAttribute("value", "");
+      none.dataset.field = "";
+      none.toggleAttribute("checked", !currentField);
     }
 
     const makeItem = (col) => {
-      const li = document.createElement('li');
-      const item = document.createElement('sherpa-menu-item');
-      item.setAttribute('data-selection', 'radio');
-      item.setAttribute('value', col.field ?? '');
-      item.dataset.field = col.field ?? '';
-      if ((col.field ?? '') === currentField) item.setAttribute('checked', '');
-      item.textContent = col.name || col.field || '';
-      li.appendChild(item);
-      return li;
+      const itemFrag = this.#menuItemTpl.content.cloneNode(true);
+      const item = itemFrag.querySelector("sherpa-menu-item");
+      item.setAttribute("data-selection", "radio");
+      item.setAttribute("value", col.field ?? "");
+      item.dataset.field = col.field ?? "";
+      if ((col.field ?? "") === currentField) item.setAttribute("checked", "");
+      item.textContent = col.name || col.field || "";
+      return itemFrag;
     };
 
-    if (this.type === 'sort') {
-      const alpha = [], numeric = [];
-      this.#columns.forEach(c =>
-        (NUMERIC_TYPES.has((c.type || '').toLowerCase()) ? numeric : alpha).push(c)
+    if (this.type === "sort") {
+      const alpha = [],
+        numeric = [];
+      this.#columns.forEach((c) =>
+        (NUMERIC_TYPES.has((c.type || "").toLowerCase())
+          ? numeric
+          : alpha
+        ).push(c),
       );
-      for (const [headingText, cols] of [['Alphabetical', alpha], ['Numerical', numeric]]) {
+      for (const [headingText, cols] of [
+        ["Alphabetical", alpha],
+        ["Numerical", numeric],
+      ]) {
         if (!cols.length) continue;
-        const h = document.createElement('sherpa-menu-item');
-        h.setAttribute('data-type', 'heading');
+        const h = this.#menuHeadingTpl.content
+          .cloneNode(true)
+          .querySelector("sherpa-menu-item");
         h.textContent = headingText;
         group.appendChild(h);
-        cols.forEach(c => group.appendChild(makeItem(c)));
+        cols.forEach((c) => group.appendChild(makeItem(c)));
       }
     } else {
-      this.#columns.forEach(c => group.appendChild(makeItem(c)));
+      this.#columns.forEach((c) => group.appendChild(makeItem(c)));
     }
   }
 
@@ -372,17 +430,17 @@ export class SherpaFilterChip extends SherpaElement {
     }
 
     for (const val of this.#uniqueValues) {
-      const li = document.createElement('li');
-      const item = document.createElement('sherpa-menu-item');
-      item.setAttribute('data-selection', 'checkbox');
-      item.setAttribute('value', val);
+      const itemFrag = this.#menuItemTpl.content.cloneNode(true);
+      const item = itemFrag.querySelector("sherpa-menu-item");
+      item.setAttribute("data-selection", "checkbox");
+      item.setAttribute("value", val);
       item.dataset.filterValue = val;
-      if (this.#selectedValues.has(val)) item.setAttribute('checked', '');
+      if (this.#selectedValues.has(val)) item.setAttribute("checked", "");
       // Sentence case: capitalise first character, leave rest as-is
-      const display = val === '' ? '(empty)' : val.charAt(0).toUpperCase() + val.slice(1);
+      const display =
+        val === "" ? "(empty)" : val.charAt(0).toUpperCase() + val.slice(1);
       item.textContent = display;
-      li.appendChild(item);
-      group.appendChild(li);
+      group.appendChild(itemFrag);
     }
   }
 
@@ -390,8 +448,11 @@ export class SherpaFilterChip extends SherpaElement {
   #populateTimeframeMenu(frag) {
     const items = frag.querySelectorAll('[data-role="range-option"]');
     for (const item of items) {
-      item.dataset.rangeKey = item.getAttribute('value') ?? '';
-      item.toggleAttribute('checked', item.getAttribute('value') === this.#rangeKey);
+      item.dataset.rangeKey = item.getAttribute("value") ?? "";
+      item.toggleAttribute(
+        "checked",
+        item.getAttribute("value") === this.#rangeKey,
+      );
     }
   }
 
@@ -399,15 +460,15 @@ export class SherpaFilterChip extends SherpaElement {
     const data = e?.detail?.data || {};
 
     /* Filter-type: handle value checkbox toggling and action buttons */
-    if (this.type === 'filter') {
-      if (data.action === 'select-all') {
+    if (this.type === "filter") {
+      if (data.action === "select-all") {
         this.#selectedValues = new Set(this.#uniqueValues);
-        this.setAttribute('data-mode', 'on');
+        this.setAttribute("data-mode", "on");
         this.#updateActive();
         this.#emitFilterChange();
-      } else if (data.action === 'clear-all') {
+      } else if (data.action === "clear-all") {
         this.#selectedValues.clear();
-        this.setAttribute('data-mode', 'off');
+        this.setAttribute("data-mode", "off");
         this.#updateActive();
         this.#emitFilterChange();
       } else if (data.filterValue !== undefined) {
@@ -417,7 +478,10 @@ export class SherpaFilterChip extends SherpaElement {
         } else {
           this.#selectedValues.add(val);
         }
-        this.setAttribute('data-mode', this.#selectedValues.size > 0 ? 'on' : 'off');
+        this.setAttribute(
+          "data-mode",
+          this.#selectedValues.size > 0 ? "on" : "off",
+        );
         this.#updateActive();
         this.#emitFilterChange();
       }
@@ -425,10 +489,10 @@ export class SherpaFilterChip extends SherpaElement {
     }
 
     /* Timeframe-type: handle range radio selection */
-    if (this.type === 'timeframe') {
-      const key = data.rangeKey ?? '';
+    if (this.type === "timeframe") {
+      const key = data.rangeKey ?? "";
       this.#rangeKey = key;
-      this.setAttribute('data-mode', key ? 'on' : 'off');
+      this.setAttribute("data-mode", key ? "on" : "off");
       this.#updateLabel();
       this.#updateActive();
       this.#emitFilterChange();
@@ -436,41 +500,56 @@ export class SherpaFilterChip extends SherpaElement {
     }
 
     /* Sort/Segment: handle column radio selection */
-    if (data.role === 'none-option' || data.field === '') {
+    if (data.role === "none-option" || data.field === "") {
       this.#userCleared = true;
-      this.removeAttribute('data-field');
-      this.removeAttribute('data-mode');
+      this.removeAttribute("data-field");
+      this.removeAttribute("data-mode");
     } else if (data.field !== undefined) {
       this.#userCleared = false;
-      this.setAttribute('data-field', data.field);
-      if (!this.getAttribute('data-mode')) {
-        this.setAttribute('data-mode', this.type === 'sort' ? 'asc' : 'on');
+      this.setAttribute("data-field", data.field);
+      if (!this.getAttribute("data-mode")) {
+        this.setAttribute("data-mode", this.type === "sort" ? "asc" : "on");
       }
     }
   }
 
   /* ── Public API ──────────────────────────────────────────────── */
 
-  get type() { return (this.dataset.type || 'sort').toLowerCase(); }
-  set type(v) { this.dataset.type = v; }
-
-  get disabled() { return this.hasAttribute('disabled'); }
-  set disabled(v) { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
-
-  getMode() { return this.getAttribute('data-mode') || null; }
-  setMode(mode) {
-    mode === null ? this.removeAttribute('data-mode') : this.setAttribute('data-mode', mode);
+  get type() {
+    return (this.dataset.type || "sort").toLowerCase();
+  }
+  set type(v) {
+    this.dataset.type = v;
   }
 
-  getField() { return this.getAttribute('data-field') || null; }
+  get disabled() {
+    return this.hasAttribute("disabled");
+  }
+  set disabled(v) {
+    v ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
+  }
+
+  getMode() {
+    return this.getAttribute("data-mode") || null;
+  }
+  setMode(mode) {
+    mode === null
+      ? this.removeAttribute("data-mode")
+      : this.setAttribute("data-mode", mode);
+  }
+
+  getField() {
+    return this.getAttribute("data-field") || null;
+  }
   setField(field) {
     if (field) {
       this.#userCleared = false;
-      this.setAttribute('data-field', field);
-      if (!this.getAttribute('data-mode')) this.setAttribute('data-mode', this.type === 'sort' ? 'asc' : 'on');
+      this.setAttribute("data-field", field);
+      if (!this.getAttribute("data-mode"))
+        this.setAttribute("data-mode", this.type === "sort" ? "asc" : "on");
     } else {
-      this.removeAttribute('data-field');
-      this.removeAttribute('data-mode');
+      this.removeAttribute("data-field");
+      this.removeAttribute("data-mode");
     }
   }
 
@@ -482,26 +561,29 @@ export class SherpaFilterChip extends SherpaElement {
    * @returns {number} count of available columns
    */
   setAvailableColumns(columns, rows) {
-    const isSegment = this.type === 'segment';
-    const isTimeframe = this.type === 'timeframe';
+    const isSegment = this.type === "segment";
+    const isTimeframe = this.type === "timeframe";
     const cols = Array.isArray(columns) ? columns : [];
 
     if (isTimeframe) {
       // Auto-detect first timestamp column
-      this.#timestampField = cols.find(c =>
-        TIMESTAMP_TYPES.has((c?.type || '').toLowerCase())
-      )?.field || null;
+      this.#timestampField =
+        cols.find((c) => TIMESTAMP_TYPES.has((c?.type || "").toLowerCase()))
+          ?.field || null;
       this.#columns = cols;
       this.#updateLabel();
       return cols.length;
     }
 
     this.#columns = isSegment
-      ? cols.filter(c => {
-          if (NUMERIC_TYPES.has((c?.type || '').toLowerCase())) return false;
+      ? cols.filter((c) => {
+          if (NUMERIC_TYPES.has((c?.type || "").toLowerCase())) return false;
           if (Array.isArray(rows) && rows.length) {
             const vals = new Set();
-            for (const r of rows) { vals.add(r[c.field]); if (vals.size > 1) break; }
+            for (const r of rows) {
+              vals.add(r[c.field]);
+              if (vals.size > 1) break;
+            }
             if (vals.size <= 1) return false;
           }
           return true;
@@ -509,10 +591,15 @@ export class SherpaFilterChip extends SherpaElement {
       : cols;
 
     if (isSegment) {
-      this.toggleAttribute('hidden', this.#columns.length === 0);
+      this.toggleAttribute("hidden", this.#columns.length === 0);
       if (!this.#columns.length) {
-        this.removeAttribute('data-field'); this.removeAttribute('data-mode');
-      } else if (this.#columns.length === 1 && !this.getAttribute('data-field') && !this.#userCleared) {
+        this.removeAttribute("data-field");
+        this.removeAttribute("data-mode");
+      } else if (
+        this.#columns.length === 1 &&
+        !this.getAttribute("data-field") &&
+        !this.#userCleared
+      ) {
         this.setField(this.#columns[0].field);
       }
     }
@@ -532,23 +619,24 @@ export class SherpaFilterChip extends SherpaElement {
     this.#extractUniqueValues();
 
     // Detect boolean fields: explicit column type or value-based heuristic
-    const BOOL_VALUES = new Set(['true', 'false', '0', '1', 'yes', 'no']);
-    const colType = (colMeta?.type || '').toLowerCase();
-    this.#isBoolean = colType === 'boolean'
-      || (this.#uniqueValues.length > 0
-          && this.#uniqueValues.length <= 2
-          && this.#uniqueValues.every(v => BOOL_VALUES.has(v.toLowerCase())));
+    const BOOL_VALUES = new Set(["true", "false", "0", "1", "yes", "no"]);
+    const colType = (colMeta?.type || "").toLowerCase();
+    this.#isBoolean =
+      colType === "boolean" ||
+      (this.#uniqueValues.length > 0 &&
+        this.#uniqueValues.length <= 2 &&
+        this.#uniqueValues.every((v) => BOOL_VALUES.has(v.toLowerCase())));
 
     // Boolean chips don't need a dropdown or count badge
+    // CSS handles visibility: :host([data-boolean]) .chip-dropdown, .chip-count { display: none; }
     if (this.#isBoolean) {
-      if (this.#dropdownBtn) this.#dropdownBtn.hidden = true;
-      if (this.#countEl) this.#countEl.hidden = true;
+      this.dataset.boolean = "";
     }
   }
 
   /** Extract unique values for the current field from stored rows. */
   #extractUniqueValues() {
-    const field = this.getAttribute('data-field');
+    const field = this.getAttribute("data-field");
     if (!field || !this.#valueRows.length) {
       this.#uniqueValues = [];
       return;
@@ -557,7 +645,7 @@ export class SherpaFilterChip extends SherpaElement {
     const seen = new Set();
     for (const row of this.#valueRows) {
       const val = row[field];
-      seen.add(val == null ? '' : String(val));
+      seen.add(val == null ? "" : String(val));
     }
 
     this.#uniqueValues = [...seen].sort((a, b) => a.localeCompare(b));
@@ -566,23 +654,25 @@ export class SherpaFilterChip extends SherpaElement {
   /** Dispatch filtervaluechange event with current selected values. */
   #emitFilterChange() {
     const detail = {
-      field: this.getAttribute('data-field') || this.#timestampField,
-      active: this.getAttribute('data-mode') !== 'off',
+      field: this.getAttribute("data-field") || this.#timestampField,
+      active: this.getAttribute("data-mode") !== "off",
       type: this.type,
     };
 
-    if (this.type === 'timeframe') {
+    if (this.type === "timeframe") {
       detail.rangeKey = this.#rangeKey;
       detail.range = computeTimeRange(this.#rangeKey);
     } else {
       detail.values = [...this.#selectedValues];
     }
 
-    this.dispatchEvent(new CustomEvent('filtervaluechange', {
-      bubbles: true,
-      composed: true,
-      detail,
-    }));
+    this.dispatchEvent(
+      new CustomEvent("filtervaluechange", {
+        bubbles: true,
+        composed: true,
+        detail,
+      }),
+    );
   }
 
   /** Get the currently selected filter values (filter-type only). */
@@ -603,9 +693,9 @@ export class SherpaFilterChip extends SherpaElement {
   /** Clear selected filter values (filter-type only). */
   clearValues() {
     this.#selectedValues.clear();
-    this.setAttribute('data-mode', 'off');
+    this.setAttribute("data-mode", "off");
     this.#updateActive();
   }
 }
 
-customElements.define('sherpa-filter-chip', SherpaFilterChip);
+customElements.define("sherpa-filter-chip", SherpaFilterChip);

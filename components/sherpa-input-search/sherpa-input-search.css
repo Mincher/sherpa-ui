@@ -2,7 +2,7 @@
  * sherpa-input-search.css — Search input with icon and clear button.
  * Base styles imported from sherpa-input-base.css.
  */
-@import '../utilities/sherpa-input-base/sherpa-input-base.css';
+@import "../utilities/sherpa-input-base/sherpa-input-base.css";
 
 .search-wrapper {
   display: flex;
@@ -27,15 +27,22 @@
 }
 
 .search-icon-wrapper .input-field {
-  padding-left: calc(var(--sherpa-space-xs, 8px) + 12px + var(--sherpa-space-xs, 8px));
+  padding-left: calc(
+    var(--sherpa-space-xs, 8px) + 12px + var(--sherpa-space-xs, 8px)
+  );
 }
 
 .search-clear {
+  display: none;
   height: var(--sherpa-size-2xl, 32px);
   flex-shrink: 0;
 }
 
-/* Ensure hidden button is removed from layout (overrides :host display) */
-.search-clear[hidden] {
-  display: none;
+/* Show clear button + control-group layout when input has a value */
+:host([data-has-value]) .search-clear {
+  display: inline-flex;
+}
+
+:host([data-has-value]) .search-wrapper {
+  display: flex;
 }

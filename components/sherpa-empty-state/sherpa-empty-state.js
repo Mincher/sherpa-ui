@@ -17,7 +17,7 @@
  *   - heading / description / illustration / small-print
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 /* ── Built-in illustration SVGs ──────────────────────────────── */
 
@@ -57,76 +57,93 @@ const ILLUSTRATIONS = {
 /* ── Component ─────────────────────────────────────────────────── */
 
 export class SherpaEmptyState extends SherpaElement {
-
-  static get cssUrl()  { return new URL('./sherpa-empty-state.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-empty-state.html', import.meta.url).href; }
+  static get cssUrl() {
+    return new URL("./sherpa-empty-state.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-empty-state.html", import.meta.url).href;
+  }
 
   static get observedAttributes() {
-    return ['data-label', 'data-description', 'data-illustration', 'data-small-print'];
+    return [
+      "data-label",
+      "data-description",
+      "data-illustration",
+      "data-small-print",
+    ];
   }
 
   /* ── Cached element refs ──────────────────────────────────────── */
 
   #titleEl = null;
   #descriptionEl = null;
-  #illustrationWrapper = null;
   #illustrationDefault = null;
-  #headingWrapper = null;
-  #buttonsWrapper = null;
-  #smallPrintWrapper = null;
   #smallPrintText = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
-    this.#titleEl            = this.$('.sherpa-empty-state__title');
-    this.#descriptionEl      = this.$('.sherpa-empty-state__description');
-    this.#illustrationWrapper = this.$('.sherpa-empty-state__illustration');
-    this.#illustrationDefault = this.$('.sherpa-empty-state__illustration-default');
-    this.#headingWrapper     = this.$('.sherpa-empty-state__heading');
-    this.#buttonsWrapper     = this.$('.sherpa-empty-state__buttons');
-    this.#smallPrintWrapper  = this.$('.sherpa-empty-state__small-print');
-    this.#smallPrintText     = this.$('.sherpa-empty-state__small-print-text');
+    this.#titleEl = this.$(".sherpa-empty-state__title");
+    this.#descriptionEl = this.$(".sherpa-empty-state__description");
+    this.#illustrationDefault = this.$(
+      ".sherpa-empty-state__illustration-default",
+    );
+    this.#smallPrintText = this.$(".sherpa-empty-state__small-print-text");
 
     this.#syncAll();
   }
 
   onConnect() {
-    // Slot listeners are auto-wired by SherpaElement; override onSlotChange for visibility logic.
+    // Slot listeners are auto-wired by SherpaElement.
+    // Visibility is handled entirely by CSS using data-has-* and data-* selectors.
   }
 
   onAttributeChanged(name) {
     switch (name) {
-      case 'data-label':       this.#updateHeading(); break;
-      case 'data-description': this.#updateDescription(); break;
-      case 'data-illustration': this.#updateIllustration(); break;
-      case 'data-small-print': this.#updateSmallPrint(); break;
+      case "data-label":
+        this.#updateHeading();
+        break;
+      case "data-description":
+        this.#updateDescription();
+        break;
+      case "data-illustration":
+        this.#updateIllustration();
+        break;
+      case "data-small-print":
+        this.#updateSmallPrint();
+        break;
     }
-    this.#applySlotState();
-  }
-
-  /**
-   * Override SherpaElement's default slot-change handler to also
-   * re-evaluate section visibility whenever slot content changes.
-   */
-  onSlotChange(slotEl) {
-    super.onSlotChange(slotEl);
-    this.#applySlotState();
   }
 
   /* ── Public getters / setters ─────────────────────────────────── */
 
-  get heading()      { return this.dataset.label || ''; }
-  set heading(v)     { v ? this.dataset.label = v : delete this.dataset.label; }
+  get heading() {
+    return this.dataset.label || "";
+  }
+  set heading(v) {
+    v ? (this.dataset.label = v) : delete this.dataset.label;
+  }
 
-  get description()  { return this.dataset.description || ''; }
-  set description(v) { v ? this.dataset.description = v : delete this.dataset.description; }
+  get description() {
+    return this.dataset.description || "";
+  }
+  set description(v) {
+    v ? (this.dataset.description = v) : delete this.dataset.description;
+  }
 
-  get illustration() { return this.dataset.illustration || ''; }
-  set illustration(v){ v ? this.dataset.illustration = v : delete this.dataset.illustration; }
+  get illustration() {
+    return this.dataset.illustration || "";
+  }
+  set illustration(v) {
+    v ? (this.dataset.illustration = v) : delete this.dataset.illustration;
+  }
 
-  get smallPrint()   { return this.dataset.smallPrint || ''; }
-  set smallPrint(v)  { v ? this.dataset.smallPrint = v : delete this.dataset.smallPrint; }
+  get smallPrint() {
+    return this.dataset.smallPrint || "";
+  }
+  set smallPrint(v) {
+    v ? (this.dataset.smallPrint = v) : delete this.dataset.smallPrint;
+  }
 
   /* ── Sync helpers ─────────────────────────────────────────────── */
 
@@ -135,7 +152,6 @@ export class SherpaEmptyState extends SherpaElement {
     this.#updateDescription();
     this.#updateIllustration();
     this.#updateSmallPrint();
-    this.#applySlotState();
   }
 
   #updateHeading() {
@@ -148,64 +164,15 @@ export class SherpaEmptyState extends SherpaElement {
 
   #updateIllustration() {
     if (this.#illustrationDefault) {
-      this.#illustrationDefault.innerHTML = ILLUSTRATIONS[this.illustration] || '';
+      this.#illustrationDefault.innerHTML =
+        ILLUSTRATIONS[this.illustration] || "";
     }
   }
 
   #updateSmallPrint() {
-    if (this.#smallPrintText) this.#smallPrintText.textContent = this.smallPrint;
-  }
-
-  /* ── Section visibility ───────────────────────────────────────── */
-
-  #applySlotState() {
-    if (!this.#headingWrapper) return;
-
-    const slotHas = (name) => {
-      const slot = this.shadow.querySelector(name ? `slot[name="${name}"]` : 'slot:not([name])');
-      if (!slot) return false;
-      const nodes = slot.assignedNodes({ flatten: true });
-      return nodes.some(n =>
-        n.nodeType === Node.ELEMENT_NODE ||
-        (n.nodeType === Node.TEXT_NODE && n.textContent.trim())
-      );
-    };
-
-    const hasIllustrationSlot = slotHas('illustration');
-    const hasHeadingSlot      = slotHas('heading');
-    const hasDescriptionSlot  = slotHas('description');
-    const hasDefaultSlot      = slotHas(null);
-    const hasActions          = slotHas('actions');
-    const hasFooterSlot       = slotHas('footer');
-
-    const hasHeadingAttr      = Boolean(this.heading);
-    const hasDescriptionAttr  = Boolean(this.description);
-    const hasSmallPrintAttr   = Boolean(this.smallPrint);
-    const hasIllustrationAttr = Boolean(this.illustration);
-
-    if (this.#illustrationWrapper) {
-      this.#illustrationWrapper.hidden = !(hasIllustrationSlot || hasIllustrationAttr);
-      if (this.#illustrationDefault) {
-        this.#illustrationDefault.hidden = hasIllustrationSlot || !hasIllustrationAttr;
-      }
-    }
-
-    if (this.#titleEl) this.#titleEl.hidden = hasHeadingSlot || !hasHeadingAttr;
-    if (this.#descriptionEl) this.#descriptionEl.hidden = hasDescriptionSlot || !hasDescriptionAttr;
-
-    if (this.#headingWrapper) {
-      this.#headingWrapper.hidden = !(hasHeadingSlot || hasDescriptionSlot || hasDefaultSlot || hasHeadingAttr || hasDescriptionAttr);
-    }
-
-    if (this.#buttonsWrapper) this.#buttonsWrapper.hidden = !hasActions;
-
-    if (this.#smallPrintWrapper) {
-      this.#smallPrintWrapper.hidden = !(hasFooterSlot || hasSmallPrintAttr);
-    }
-    if (this.#smallPrintText) {
-      this.#smallPrintText.hidden = hasFooterSlot || !hasSmallPrintAttr;
-    }
+    if (this.#smallPrintText)
+      this.#smallPrintText.textContent = this.smallPrint;
   }
 }
 
-customElements.define('sherpa-empty-state', SherpaEmptyState);
+customElements.define("sherpa-empty-state", SherpaEmptyState);

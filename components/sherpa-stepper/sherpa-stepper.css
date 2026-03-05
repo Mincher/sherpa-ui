@@ -1,4 +1,3 @@
-
 :host {
   display: block;
 
@@ -14,7 +13,9 @@
   --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 15px);
 }
 
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}
 
 .stepper-container {
   width: 100%;
@@ -72,7 +73,8 @@
   width: var(--_indicator-size);
   height: var(--_indicator-size);
   border-radius: 50%;
-  border: var(--sherpa-border-width-lg, 2px) solid var(--_indicator-border-color);
+  border: var(--sherpa-border-width-lg, 2px) solid
+    var(--_indicator-border-color);
   background-color: var(--_indicator-bg);
   font-size: var(--_indicator-font-size);
   font-weight: 600;
@@ -95,7 +97,10 @@
 
 /* Completed step */
 .step-item[data-completed] {
-  --_indicator-border-color: var(--sherpa-icon-context-success-default, #0f7b6c);
+  --_indicator-border-color: var(
+    --sherpa-icon-context-success-default,
+    #0f7b6c
+  );
   --_indicator-bg: var(--sherpa-icon-context-success-default, #0f7b6c);
   --_indicator-color: var(--sherpa-color-neutral-0, #ffffff);
   --_label-color: var(--sherpa-text-default-body, #1b1b21);
@@ -107,6 +112,26 @@
   --_indicator-bg: var(--sherpa-icon-context-error-default, #d13438);
   --_indicator-color: var(--sherpa-color-neutral-0, #ffffff);
   --_label-color: var(--sherpa-icon-context-error-default, #d13438);
+}
+
+/* Indicator children: only the appropriate one is shown via state attributes */
+.indicator-completed,
+.indicator-error {
+  display: none;
+}
+
+.step-item[data-completed] .indicator-completed {
+  display: inline;
+}
+
+.step-item[data-error] .indicator-error {
+  display: inline;
+}
+
+/* Hide step number when icon is shown */
+.step-item[data-completed] .step-number,
+.step-item[data-error] .step-number {
+  display: none;
 }
 
 /* Step labels */
@@ -128,6 +153,11 @@
   font-size: var(--_sublabel-font-size);
   line-height: 1.5;
   color: var(--sherpa-text-default-secondary, #6a6a75);
+}
+
+/* Hide empty sublabel */
+.step-sublabel:empty {
+  display: none;
 }
 
 /* Connector line between steps */

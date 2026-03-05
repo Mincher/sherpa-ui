@@ -1,24 +1,43 @@
 /**
  * SherpaTable - Data table component with sortable columns and collapsible row segments.
  * Serves as the default data visualization and base for other viz types (metric, chart).
- * 
+ *
  * Data flow: config → fetchContentData → render
- * 
+ *
  * Segment/Sort state is managed via attributes (data-segment-field, data-segment-mode, etc.)
  * Filter chips sync their state to these parent attributes automatically.
  */
-import { ContentAttributesMixin, CONTENT_ATTRIBUTES } from "../utilities/content-attributes-mixin.js";
+import {
+  ContentAttributesMixin,
+  CONTENT_ATTRIBUTES,
+} from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
 import "../sherpa-header/sherpa-header.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
-import { escapeHtml, formatValue, formatFieldName, generateUniqueId } from "../utilities/index.js";
+import {
+  escapeHtml,
+  formatValue,
+  formatFieldName,
+  generateUniqueId,
+} from "../utilities/index.js";
 
-const NUMERIC_TYPES = new Set(["number", "numeric", "currency", "percent", "year", "monthNumber"]);
+const NUMERIC_TYPES = new Set([
+  "number",
+  "numeric",
+  "currency",
+  "percent",
+  "year",
+  "monthNumber",
+]);
 
 class SherpaTable extends ContentAttributesMixin(SherpaElement) {
-  static get cssUrl()  { return new URL('./sherpa-base-table.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-base-table.html', import.meta.url).href; }
+  static get cssUrl() {
+    return new URL("./sherpa-base-table.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-base-table.html", import.meta.url).href;
+  }
 
   // ── Pluggable data providers (injected by the host app at boot) ──
   static #dataProvider = null;
@@ -29,16 +48,20 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
    * Signature: async (config) => { name, columns, rows, summary, config, metadata }
    * @param {Function} fn - Data provider function
    */
-  static setDataProvider(fn) { SherpaTable.#dataProvider = fn; }
+  static setDataProvider(fn) {
+    SherpaTable.#dataProvider = fn;
+  }
 
   /**
    * Register a date-field provider that returns the date field name for a dataset.
    * Signature: (datasetName) => string | null
    * @param {Function} fn - Date field provider function
    */
-  static setDateFieldProvider(fn) { SherpaTable.#dateFieldProvider = fn; }
+  static setDateFieldProvider(fn) {
+    SherpaTable.#dateFieldProvider = fn;
+  }
 
-  static get observedAttributes() { 
+  static get observedAttributes() {
     return [
       ...super.observedAttributes,
       "data-loading",
@@ -46,13 +69,20 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
       "data-segment-mode",
       "data-sort-field",
       "data-sort-direction",
-      ...CONTENT_ATTRIBUTES
-    ]; 
+      ...CONTENT_ATTRIBUTES,
+    ];
   }
 
   onAttributeChanged(name, oldValue, newValue) {
     // Re-render when segment/sort attributes change
-    if (["data-segment-field", "data-segment-mode", "data-sort-field", "data-sort-direction"].includes(name)) {
+    if (
+      [
+        "data-segment-field",
+        "data-segment-mode",
+        "data-sort-field",
+        "data-sort-direction",
+      ].includes(name)
+    ) {
       if (this.#data) {
         this.#render();
       }
@@ -64,7 +94,9 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   #pendingMenuData = null;
   #originalOrderBy = null;
   #originalSegmentBy = null;
-  #externalFilters = [];    // External filters from FilterCoordinator (layered scoping)
+  #externalFilters = []; // External filters from FilterCoordinator (layered scoping)
+  #menuHeadingTpl = null; // Cached <template class="menu-heading-tpl">
+  #menuItemTpl = null; // Cached <template class="menu-item-tpl">
 
   // ─────────────────────────────────────────────────────────────
   // Base Component Methods (Shared)
@@ -73,7 +105,9 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   async fetchContentData(config) {
     if (!config) return null;
     if (!SherpaTable.#dataProvider) {
-      console.warn('[SherpaTable] No data provider registered. Call SherpaTable.setDataProvider(fn) at app boot.');
+      console.warn(
+        "[SherpaTable] No data provider registered. Call SherpaTable.setDataProvider(fn) at app boot.",
+      );
       return null;
     }
     this.setAttribute("data-loading", "");
@@ -82,23 +116,18 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
     return result;
   }
 
-  #showEmptyState(message = 'No data available') {
-    const emptyEl = this.$('.empty-state');
+  #showEmptyState(message = "No data available") {
+    const emptyEl = this.$(".empty-state");
     if (emptyEl) {
       emptyEl.textContent = escapeHtml(message);
-      emptyEl.hidden = false;
     }
-    const tableContainer = this.$('.table-container');
-    if (tableContainer) tableContainer.hidden = true;
-    const header = this.$('sherpa-header');
-    if (header) header.hidden = true;
+    // CSS handles visibility via :host([data-empty])
+    this.dataset.empty = "";
   }
 
   #hideEmptyState() {
-    const emptyEl = this.$('.empty-state');
-    if (emptyEl) emptyEl.hidden = true;
-    const tableContainer = this.$('.table-container');
-    if (tableContainer) tableContainer.hidden = false;
+    // CSS handles visibility via :host(:not([data-empty]))
+    delete this.dataset.empty;
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -106,28 +135,28 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   // ─────────────────────────────────────────────────────────────
 
   #getSegmentField() {
-    return this.getAttribute('data-segment-field') || null;
+    return this.getAttribute("data-segment-field") || null;
   }
 
   #isSegmentEnabled() {
-    const mode = this.getAttribute('data-segment-mode');
+    const mode = this.getAttribute("data-segment-mode");
     const field = this.#getSegmentField();
-    return mode !== 'off' && !!field;
+    return mode !== "off" && !!field;
   }
 
   #getSortField() {
-    return this.getAttribute('data-sort-field') || null;
+    return this.getAttribute("data-sort-field") || null;
   }
 
   #getSortDir() {
-    return this.getAttribute('data-sort-direction') || 'asc';
+    return this.getAttribute("data-sort-direction") || "asc";
   }
 
   #getActiveSort() {
     const field = this.#getSortField();
     if (!field) return null;
     const dir = this.#getSortDir();
-    if (dir === 'off') return null;
+    if (dir === "off") return null;
     return { field, dir };
   }
 
@@ -144,19 +173,19 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
     // Clear invalid segment field — but allow it if the field exists
     // in the row data (e.g. flat tables with a limited column set).
     const segmentField = this.#getSegmentField();
-    if (segmentField && !columns.some(col => col.field === segmentField)) {
-      const fieldInRows = firstRow && (segmentField in firstRow);
+    if (segmentField && !columns.some((col) => col.field === segmentField)) {
+      const fieldInRows = firstRow && segmentField in firstRow;
       if (!fieldInRows) {
-        this.#clearAttribute('data-segment-field');
-        this.#clearAttribute('data-segment-mode');
+        this.#clearAttribute("data-segment-field");
+        this.#clearAttribute("data-segment-mode");
       }
     }
 
     // Clear invalid sort field
     const sortField = this.#getSortField();
-    if (sortField && !columns.some(col => col.field === sortField)) {
-      this.#clearAttribute('data-sort-field');
-      this.#clearAttribute('data-sort-direction');
+    if (sortField && !columns.some((col) => col.field === sortField)) {
+      this.#clearAttribute("data-sort-field");
+      this.#clearAttribute("data-sort-direction");
     }
   }
 
@@ -166,42 +195,65 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
 
   getViewOptions({ activeType, canShowChart = true }) {
     return [
-      { type: "table", label: "Table", icon: "fa-table", active: activeType === "table" },
-      { type: "kpi-metric", label: "Metric", icon: "fa-chart-bar", active: activeType === "kpi-metric" },
-      { type: "barchart", label: "Bar Chart", icon: "fa-chart-simple", active: activeType === "barchart", disabled: !canShowChart, disabledTitle: canShowChart ? "" : "No primary axis field for chart" }
+      {
+        type: "table",
+        label: "Table",
+        icon: "fa-table",
+        active: activeType === "table",
+      },
+      {
+        type: "kpi-metric",
+        label: "Metric",
+        icon: "fa-chart-bar",
+        active: activeType === "kpi-metric",
+      },
+      {
+        type: "barchart",
+        label: "Bar Chart",
+        icon: "fa-chart-simple",
+        active: activeType === "barchart",
+        disabled: !canShowChart,
+        disabledTitle: canShowChart ? "" : "No primary axis field for chart",
+      },
     ];
   }
 
   configureHeader({ title = "", viewOptions = [] } = {}) {
-    const headerEl = this.$('sherpa-header');
+    const headerEl = this.$("sherpa-header");
     if (!headerEl) {
       this.#pendingMenuData = null;
       return;
     }
 
     const showHeader = this.getAttribute("data-show-header") !== "false";
-    headerEl.hidden = !showHeader;
+    // Visibility handled by CSS: :host([data-show-header="false"]) sherpa-header { display: none; }
+    if (!showHeader) {
+      this.setAttribute("data-show-header", "false");
+    } else {
+      this.removeAttribute("data-show-header");
+    }
 
-    const showControls = this.getAttribute("data-show-header-controls") !== "false";
-    showControls ? headerEl.removeAttribute("data-show-header-controls") : headerEl.setAttribute("data-show-header-controls", "false");
+    const showControls =
+      this.getAttribute("data-show-header-controls") !== "false";
+    showControls
+      ? headerEl.removeAttribute("data-show-header-controls")
+      : headerEl.setAttribute("data-show-header-controls", "false");
 
     const showViewMenu = this.getAttribute("data-show-view-menu") !== "false";
-    showViewMenu ? headerEl.removeAttribute("data-show-view-menu") : headerEl.setAttribute("data-show-view-menu", "false");
+    showViewMenu
+      ? headerEl.removeAttribute("data-show-view-menu")
+      : headerEl.setAttribute("data-show-view-menu", "false");
 
     headerEl.heading = title || "";
 
     const shouldShowMenu = showViewMenu;
-    const menuButton = headerEl.menuButtonElement;
-    if (menuButton) {
-      menuButton.toggleAttribute('hidden', !shouldShowMenu);
-    } else if (shouldShowMenu) {
-      headerEl.hasMenuButton = true;
-    }
+    // Use sherpa-header's data-menu-button API — CSS inside sherpa-header handles visibility
+    headerEl.hasMenuButton = shouldShowMenu;
 
     if (shouldShowMenu) {
       this.#pendingMenuData = {
         showViewMenu,
-        viewOptions
+        viewOptions,
       };
     } else {
       this.#pendingMenuData = null;
@@ -215,7 +267,8 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   async wireContentMenu(root, activeType) {
     if (!this.#pendingMenuData) return;
 
-    const header = root.$?.("sherpa-header") || root.querySelector?.("sherpa-header");
+    const header =
+      root.$?.("sherpa-header") || root.querySelector?.("sherpa-header");
     if (!header?.isConnected) return;
 
     await header.rendered;
@@ -230,7 +283,7 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
       this._menuCurrentType = activeType || "";
 
       // Populate menu each time it opens
-      menuButton.addEventListener('menu-open', () => {
+      menuButton.addEventListener("menu-open", () => {
         this.#populateViewMenu(this._menuCurrentType);
       });
 
@@ -241,7 +294,7 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   }
 
   #bindContentMenu(menuButton, activeType) {
-    menuButton.addEventListener('menu-select', (event) => {
+    menuButton.addEventListener("menu-select", (event) => {
       const detail = event.detail ?? {};
       if (detail.disabled) return;
 
@@ -250,16 +303,19 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
       if (type && type !== (this._menuCurrentType || activeType)) {
         this._menuCurrentType = type;
         if (Array.isArray(this.#pendingMenuData?.viewOptions)) {
-          this.#pendingMenuData.viewOptions = this.#pendingMenuData.viewOptions.map((option) => ({
-            ...option,
-            active: option.type === type
-          }));
+          this.#pendingMenuData.viewOptions =
+            this.#pendingMenuData.viewOptions.map((option) => ({
+              ...option,
+              active: option.type === type,
+            }));
         }
 
-        this.dispatchEvent(new CustomEvent('presentationchange', {
-          bubbles: true,
-          detail: { type, data: this.getData?.() || null }
-        }));
+        this.dispatchEvent(
+          new CustomEvent("presentationchange", {
+            bubbles: true,
+            detail: { type, data: this.getData?.() || null },
+          }),
+        );
       }
     });
   }
@@ -271,35 +327,45 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
     const config = this.#pendingMenuData;
     if (!config?.showViewMenu || !config.viewOptions?.length) return;
 
+    // Cache cloning templates on first use
+    if (!this.#menuHeadingTpl) {
+      this.#menuHeadingTpl = this.$("template.menu-heading-tpl");
+      this.#menuItemTpl = this.$("template.menu-item-tpl");
+    }
+
     const frag = document.createDocumentFragment();
 
-    const heading = document.createElement('sherpa-menu-item');
-    heading.setAttribute('data-type', 'heading');
-    heading.textContent = 'View';
+    const heading = this.#menuHeadingTpl.content
+      .cloneNode(true)
+      .querySelector("sherpa-menu-item");
+    heading.textContent = "View";
     frag.appendChild(heading);
 
-    const ul = document.createElement('ul');
-    ul.dataset.group = 'view';
+    const ul = document.createElement("ul");
+    ul.dataset.group = "view";
 
     const normalizeIcon = (icon) => {
       if (!icon) return null;
-      if (/fa-(solid|regular|light|thin|duotone|brands)\b/.test(icon)) return icon;
+      if (/fa-(solid|regular|light|thin|duotone|brands)\b/.test(icon))
+        return icon;
       return `fa-regular ${icon}`;
     };
 
     for (const option of config.viewOptions) {
-      const li = document.createElement('li');
-      const item = document.createElement('sherpa-menu-item');
-      item.setAttribute('data-selection', 'radio');
-      item.setAttribute('value', option?.type ?? '');
-      item.dataset.type = option?.type ?? '';
-      if (normalizeIcon(option?.icon)) item.setAttribute('data-icon', normalizeIcon(option.icon));
-      if ((option?.type ?? null) === activeType) item.setAttribute('checked', '');
-      if (option?.disabled) item.setAttribute('disabled', '');
-      if (option?.disabledTitle) item.setAttribute('data-description', option.disabledTitle);
-      item.textContent = option?.label || '';
-      li.appendChild(item);
-      ul.appendChild(li);
+      const itemFrag = this.#menuItemTpl.content.cloneNode(true);
+      const item = itemFrag.querySelector("sherpa-menu-item");
+      item.setAttribute("data-selection", "radio");
+      item.setAttribute("value", option?.type ?? "");
+      item.dataset.type = option?.type ?? "";
+      if (normalizeIcon(option?.icon))
+        item.setAttribute("data-icon", normalizeIcon(option.icon));
+      if ((option?.type ?? null) === activeType)
+        item.setAttribute("checked", "");
+      if (option?.disabled) item.setAttribute("disabled", "");
+      if (option?.disabledTitle)
+        item.setAttribute("data-description", option.disabledTitle);
+      item.textContent = option?.label || "";
+      ul.appendChild(itemFrag);
     }
 
     frag.appendChild(ul);
@@ -312,16 +378,22 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
 
   getData() {
     if (!this.#data) return null;
-    
-    const config = getTransferableConfig(this.#data, 'table');
+
+    const config = getTransferableConfig(this.#data, "table");
     const meta = this.#data?.metadata || {};
-    const effectiveSegmentField = this.#isSegmentEnabled() ? this.#getSegmentField() : null;
-    const columns = Array.isArray(this.#data?.columns) ? this.#data.columns : [];
+    const effectiveSegmentField = this.#isSegmentEnabled()
+      ? this.#getSegmentField()
+      : null;
+    const columns = Array.isArray(this.#data?.columns)
+      ? this.#data.columns
+      : [];
 
     config.segmentField = effectiveSegmentField;
     config.seriesField = null;
-    config.categoryField = meta.primaryField || meta.categoryField || config.categoryField || null;
-    config.valueField = meta.valueField || config.valueField || meta.field || null;
+    config.categoryField =
+      meta.primaryField || meta.categoryField || config.categoryField || null;
+    config.valueField =
+      meta.valueField || config.valueField || meta.field || null;
     delete config.segmentBy;
 
     if (!config.category) {
@@ -330,27 +402,33 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
     }
 
     if (!Array.isArray(config.measures) || config.measures.length === 0) {
-      const numericCol = columns.find(col => NUMERIC_TYPES.has((col.type || '').toLowerCase()));
-      if (numericCol?.field) config.measures = [{ field: numericCol.field, agg: 'sum' }];
+      const numericCol = columns.find((col) =>
+        NUMERIC_TYPES.has((col.type || "").toLowerCase()),
+      );
+      if (numericCol?.field)
+        config.measures = [{ field: numericCol.field, agg: "sum" }];
     }
 
     const activeSort = this.#getActiveSort();
     config.orderBy = activeSort
       ? [{ field: activeSort.field, direction: activeSort.dir }]
-      : (this.#originalOrderBy ? [this.#originalOrderBy] : (meta.orderBy || []));
+      : this.#originalOrderBy
+        ? [this.#originalOrderBy]
+        : meta.orderBy || [];
 
     // Preserve original config values for revert after presentation switch
     if (this.#originalOrderBy) config.originalOrderBy = this.#originalOrderBy;
-    if (this.#originalSegmentBy) config.originalSegmentBy = this.#originalSegmentBy;
-    
+    if (this.#originalSegmentBy)
+      config.originalSegmentBy = this.#originalSegmentBy;
+
     return config;
   }
 
   async setData(config) {
     this.setAttribute("data-loading", "");
-    
+
     if (!this.#menuId) {
-      this.#menuId = generateUniqueId('table');
+      this.#menuId = generateUniqueId("table");
     }
 
     // Capture original config values for revert-on-off
@@ -358,44 +436,52 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
     if (config?.originalOrderBy) {
       this.#originalOrderBy = config.originalOrderBy;
     } else if (config?.orderBy) {
-      const order = Array.isArray(config.orderBy) ? config.orderBy[0] : { field: config.orderBy, direction: config.orderDirection || 'asc' };
+      const order = Array.isArray(config.orderBy)
+        ? config.orderBy[0]
+        : { field: config.orderBy, direction: config.orderDirection || "asc" };
       if (order?.field) {
-        this.#originalOrderBy = { field: order.field, direction: order.direction || 'asc' };
+        this.#originalOrderBy = {
+          field: order.field,
+          direction: order.direction || "asc",
+        };
       }
     }
     if (config?.originalSegmentBy) {
       this.#originalSegmentBy = config.originalSegmentBy;
-    } else if (config && Object.prototype.hasOwnProperty.call(config, 'segmentBy') && config.segmentBy) {
+    } else if (
+      config &&
+      Object.prototype.hasOwnProperty.call(config, "segmentBy") &&
+      config.segmentBy
+    ) {
       this.#originalSegmentBy = config.segmentBy;
     }
-    
+
     // Apply segmentBy from config if explicitly provided
-    if (config && Object.prototype.hasOwnProperty.call(config, 'segmentBy')) {
+    if (config && Object.prototype.hasOwnProperty.call(config, "segmentBy")) {
       if (config.segmentBy) {
-        this.setAttribute('data-segment-field', config.segmentBy);
-        this.setAttribute('data-segment-mode', 'on');
+        this.setAttribute("data-segment-field", config.segmentBy);
+        this.setAttribute("data-segment-mode", "on");
       } else {
-        this.#clearAttribute('data-segment-field');
-        this.#clearAttribute('data-segment-mode');
+        this.#clearAttribute("data-segment-field");
+        this.#clearAttribute("data-segment-mode");
       }
     }
-    
+
     // Note: config.orderBy is NOT applied as sort attributes.
     // Tables default to chronological sort (by dataset dateField) unless
     // the user explicitly clicks a column header.
-    
+
     try {
       this.#data = await this.fetchContentData(config);
       const columns = this.#data?.columns || [];
 
       // Validate and clear invalid fields
       this.#validateFieldsAgainstColumns(columns);
-
     } catch (e) {
-      console.error('[SherpaTable] Data error:', e);
+      console.error("[SherpaTable] Data error:", e);
       this.#data = null;
     }
-    
+
     this.removeAttribute("data-loading");
     if (!this.#data) {
       this.#showEmptyState();
@@ -413,9 +499,20 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   #render() {
     if (!this.#data) return;
 
-    const { name, columns, rows, segmentField: dataSegmentField, segmentedRows } = this.#data;
+    const {
+      name,
+      columns,
+      rows,
+      segmentField: dataSegmentField,
+      segmentedRows,
+    } = this.#data;
 
-    if (!Array.isArray(columns) || columns.length === 0 || !Array.isArray(rows) || rows.length === 0) {
+    if (
+      !Array.isArray(columns) ||
+      columns.length === 0 ||
+      !Array.isArray(rows) ||
+      rows.length === 0
+    ) {
       this.#showEmptyState();
       return;
     }
@@ -425,23 +522,29 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
     // Read current state from attributes
     const segmentField = this.#getSegmentField();
     const segmentEnabled = this.#isSegmentEnabled();
-    const activeSegmentField = segmentEnabled ? (segmentField || dataSegmentField) : null;
+    const activeSegmentField = segmentEnabled
+      ? segmentField || dataSegmentField
+      : null;
     const activeSort = this.#getActiveSort();
 
-    const hideColIdx = activeSegmentField ? columns.findIndex(c => c.field === activeSegmentField) : -1;
+    const hideColIdx = activeSegmentField
+      ? columns.findIndex((c) => c.field === activeSegmentField)
+      : -1;
     const hiddenCols = new Set(hideColIdx >= 0 ? [hideColIdx] : []);
 
     // Title comes from DataService — append "by X" when segmentation is active
-    const baseName = name || '';
-    const displayName = (segmentEnabled && activeSegmentField)
-      ? `${baseName} by ${formatFieldName(activeSegmentField)}`
-      : baseName;
+    const baseName = name || "";
+    const displayName =
+      segmentEnabled && activeSegmentField
+        ? `${baseName} by ${formatFieldName(activeSegmentField)}`
+        : baseName;
 
     // Apply external filters, then sort
     const filtered = this.#applyExternalFilters(rows);
 
     // Default to chronological sort when no explicit sort is active
-    const effectiveSort = activeSort || this.#getDefaultChronologicalSort(columns);
+    const effectiveSort =
+      activeSort || this.#getDefaultChronologicalSort(columns);
     const sortedRows = this.#sortRows([...filtered], columns, effectiveSort);
 
     // Build segmented rows from sorted rows so each segment is in sort order
@@ -449,24 +552,31 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
     if (segmentEnabled && activeSegmentField) {
       activeSegmentedRows = new Map();
       for (const row of sortedRows) {
-        const key = String(row[activeSegmentField] ?? '');
+        const key = String(row[activeSegmentField] ?? "");
         if (!activeSegmentedRows.has(key)) activeSegmentedRows.set(key, []);
         activeSegmentedRows.get(key).push(row);
       }
     }
 
-    const useSegmentation = segmentEnabled && activeSegmentField && activeSegmentedRows instanceof Map && activeSegmentedRows.size > 0;
+    const useSegmentation =
+      segmentEnabled &&
+      activeSegmentField &&
+      activeSegmentedRows instanceof Map &&
+      activeSegmentedRows.size > 0;
 
     // Configure header
     this.configureHeader({
       title: displayName,
-      viewOptions: this.getViewOptions({ activeType: "table", canShowChart: columns.length > 0 })
+      viewOptions: this.getViewOptions({
+        activeType: "table",
+        canShowChart: columns.length > 0,
+      }),
     });
 
     // Render table
-    const thead = this.$('.table-container thead');
-    const tbody = this.$('.table-container tbody');
-    const tfoot = this.$('.table-container tfoot');
+    const thead = this.$(".table-container thead");
+    const tbody = this.$(".table-container tbody");
+    const tfoot = this.$(".table-container tfoot");
 
     if (thead) {
       thead.innerHTML = this.#renderHeader(columns, hiddenCols, activeSort);
@@ -475,43 +585,51 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
 
     if (tbody) {
       tbody.innerHTML = useSegmentation
-        ? this.#renderSegmentedBody(columns, sortedRows, activeSegmentedRows, activeSegmentField, hiddenCols)
+        ? this.#renderSegmentedBody(
+            columns,
+            sortedRows,
+            activeSegmentedRows,
+            activeSegmentField,
+            hiddenCols,
+          )
         : this.#renderFlatBody(columns, sortedRows, hiddenCols);
     }
 
-    if (tfoot) tfoot.innerHTML = "";
+    if (tfoot) tfoot.replaceChildren();
 
-    this.setAttribute('title', displayName);
+    this.setAttribute("title", displayName);
     this.wireContentMenu(this, "table");
     this.#setupSegmentInteractions();
   }
 
   #setupSegmentInteractions() {
-    const tbody = this.$('.table-container tbody');
+    const tbody = this.$(".table-container tbody");
     if (!tbody) return;
 
-    tbody.querySelectorAll('.segment-header').forEach(header => {
-      header.addEventListener('click', () => {
-        const segment = header.closest('.table-segment');
-        if (segment) segment.toggleAttribute('data-open');
+    tbody.querySelectorAll(".segment-header").forEach((header) => {
+      header.addEventListener("click", () => {
+        const segment = header.closest(".table-segment");
+        if (segment) segment.toggleAttribute("data-open");
       });
     });
   }
 
   #renderHeader(columns, hiddenCols, activeSort) {
-    return `<tr>${columns.map((col, i) => {
-      if (hiddenCols.has(i)) return '';
-      const isNum = NUMERIC_TYPES.has(col.type);
-      const isSorted = activeSort?.field === col.field;
-      const sortIcon = isSorted ? (activeSort.dir === 'asc' ? '▲' : '▼') : '';
-      return `<th scope="col" data-field="${escapeHtml(col.field)}" class="${isNum ? 'numeric' : ''} ${isSorted ? 'sorted' : ''}" style="cursor:pointer">${escapeHtml(col.name || col.field)} ${sortIcon}</th>`;
-    }).join('')}</tr>`;
+    return `<tr>${columns
+      .map((col, i) => {
+        if (hiddenCols.has(i)) return "";
+        const isNum = NUMERIC_TYPES.has(col.type);
+        const isSorted = activeSort?.field === col.field;
+        const sortIcon = isSorted ? (activeSort.dir === "asc" ? "▲" : "▼") : "";
+        return `<th scope="col" data-field="${escapeHtml(col.field)}" class="${isNum ? "numeric" : ""} ${isSorted ? "sorted" : ""}" style="cursor:pointer">${escapeHtml(col.name || col.field)} ${sortIcon}</th>`;
+      })
+      .join("")}</tr>`;
   }
 
   /** Wire click handlers on header cells for interactive column sorting. */
   #wireHeaderSort(thead) {
-    for (const th of thead.querySelectorAll('th[data-field]')) {
-      th.addEventListener('click', () => this.#onColumnSort(th.dataset.field));
+    for (const th of thead.querySelectorAll("th[data-field]")) {
+      th.addEventListener("click", () => this.#onColumnSort(th.dataset.field));
     }
   }
 
@@ -522,33 +640,38 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
 
     let newDir;
     if (currentField === field) {
-      newDir = currentDir === 'asc' ? 'desc' : currentDir === 'desc' ? 'off' : 'asc';
+      newDir =
+        currentDir === "asc" ? "desc" : currentDir === "desc" ? "off" : "asc";
     } else {
-      newDir = 'asc';
+      newDir = "asc";
     }
 
-    if (newDir === 'off') {
-      this.removeAttribute('data-sort-field');
-      this.removeAttribute('data-sort-direction');
+    if (newDir === "off") {
+      this.removeAttribute("data-sort-field");
+      this.removeAttribute("data-sort-direction");
     } else {
-      this.setAttribute('data-sort-field', field);
-      this.setAttribute('data-sort-direction', newDir);
+      this.setAttribute("data-sort-field", field);
+      this.setAttribute("data-sort-direction", newDir);
     }
 
-    this.dispatchEvent(new CustomEvent('sortchange', {
-      bubbles: true,
-      detail: { field, direction: newDir },
-    }));
+    this.dispatchEvent(
+      new CustomEvent("sortchange", {
+        bubbles: true,
+        detail: { field, direction: newDir },
+      }),
+    );
   }
 
   #renderFlatBody(columns, rows, hiddenCols) {
-    return rows.map(row => this.#renderRow(columns, row, hiddenCols)).join('');
+    return rows
+      .map((row) => this.#renderRow(columns, row, hiddenCols))
+      .join("");
   }
 
   #renderSegmentedBody(columns, rows, segmentedRows, segmentField, hiddenCols) {
-    let html = '';
+    let html = "";
     const visibleColCount = columns.length - hiddenCols.size;
-    
+
     for (const [segmentKey, segmentRowData] of segmentedRows) {
       html += `
         <tr class="segment-wrapper">
@@ -561,7 +684,7 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
               </div>
               <div class="segment-content expand-content">
                 <table>
-                  ${segmentRowData.map(row => this.#renderRow(columns, row, hiddenCols)).join('')}
+                  ${segmentRowData.map((row) => this.#renderRow(columns, row, hiddenCols)).join("")}
                 </table>
               </div>
             </div>
@@ -569,21 +692,23 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
         </tr>
       `;
     }
-    
+
     return html;
   }
 
   #renderRow(columns, row, hiddenCols) {
     const visibleColumns = columns.filter((_, i) => !hiddenCols.has(i));
     const firstVisible = visibleColumns[0];
-    
-    return `<tr>${columns.map((col, i) => {
-      if (hiddenCols.has(i)) return '';
-      const value = row[col.field];
-      const isNum = NUMERIC_TYPES.has(col.type);
-      const tag = col === firstVisible ? 'th scope="row"' : 'td';
-      return `<${tag} class="${isNum ? 'numeric' : ''}">${formatValue(value, col.type)}</${tag.split(' ')[0]}>`;
-    }).join('')}</tr>`;
+
+    return `<tr>${columns
+      .map((col, i) => {
+        if (hiddenCols.has(i)) return "";
+        const value = row[col.field];
+        const isNum = NUMERIC_TYPES.has(col.type);
+        const tag = col === firstVisible ? 'th scope="row"' : "td";
+        return `<${tag} class="${isNum ? "numeric" : ""}">${formatValue(value, col.type)}</${tag.split(" ")[0]}>`;
+      })
+      .join("")}</tr>`;
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -596,25 +721,26 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
    */
   #getDefaultChronologicalSort(columns) {
     const dataset = this.#data?.metadata?.dataset;
-    const dateField = dataset && SherpaTable.#dateFieldProvider
-      ? SherpaTable.#dateFieldProvider(dataset)
-      : null;
+    const dateField =
+      dataset && SherpaTable.#dateFieldProvider
+        ? SherpaTable.#dateFieldProvider(dataset)
+        : null;
     if (!dateField) return null;
 
     // The field must exist in the actual row data (it may not be a visible column)
     const firstRow = this.#data?.rows?.[0];
     if (!firstRow || !(dateField in firstRow)) return null;
 
-    return { field: dateField, dir: 'desc' };
+    return { field: dateField, dir: "desc" };
   }
 
   #sortRows(rows, columns, activeSort) {
     if (!activeSort) return rows;
-    
+
     const sortField = activeSort.field;
-    const colType = columns.find(c => c.field === sortField)?.type;
-    const dir = activeSort.dir === 'desc' ? -1 : 1;
-    
+    const colType = columns.find((c) => c.field === sortField)?.type;
+    const dir = activeSort.dir === "desc" ? -1 : 1;
+
     return rows.sort((a, b) => {
       const aVal = a[sortField];
       const bVal = b[sortField];
@@ -626,7 +752,7 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
     if (a == null && b == null) return 0;
     if (a == null) return 1;
     if (b == null) return -1;
-    
+
     if (NUMERIC_TYPES.has(type)) {
       return Number(a) - Number(b);
     }
@@ -641,18 +767,20 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
    *  These are composed with the component's own segment/sort via AND.
    *  @param {Array<{field: string, values: string[]}>} externalFilters */
   setExternalFilters(externalFilters) {
-    this.#externalFilters = Array.isArray(externalFilters) ? externalFilters : [];
+    this.#externalFilters = Array.isArray(externalFilters)
+      ? externalFilters
+      : [];
     if (this.#data) this.#render();
   }
 
   #applyExternalFilters(rows) {
     if (!this.#externalFilters.length) return rows;
-    return rows.filter(row =>
+    return rows.filter((row) =>
       this.#externalFilters.every(({ field, values }) => {
         const val = row[field];
         if (val == null) return false;
         return values.includes(String(val));
-      })
+      }),
     );
   }
 
@@ -661,10 +789,14 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   // ─────────────────────────────────────────────────────────────
 
   /** @returns {Array<{field: string, label?: string, type?: string}>} */
-  getContentColumns() { return this.#data?.columns || []; }
+  getContentColumns() {
+    return this.#data?.columns || [];
+  }
 
   /** @returns {Array<Object>} raw (unfiltered) rows */
-  getContentRows() { return this.#data?.rows || []; }
+  getContentRows() {
+    return this.#data?.rows || [];
+  }
 }
 
 customElements.define("sherpa-base-table", SherpaTable);

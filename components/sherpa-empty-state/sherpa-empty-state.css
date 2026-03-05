@@ -1,4 +1,3 @@
-
 /**
  * sherpa-empty-state.css
  * Shadow DOM styles for the SherpaEmptyState web component.
@@ -21,7 +20,9 @@
   container-type: normal;
 }
 
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}
 
 .sherpa-empty-state {
   display: flex;
@@ -37,7 +38,7 @@
 
 /* Illustration */
 .sherpa-empty-state__illustration {
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   color: var(--sherpa-icon-context-default-placeholder);
@@ -48,15 +49,27 @@
   }
 }
 
-.sherpa-empty-state__illustration-default {
+/* Show illustration when slot has content or data-illustration attribute present */
+:host(:is([data-has-illustration], [data-illustration]))
+  .sherpa-empty-state__illustration {
   display: flex;
+}
+
+.sherpa-empty-state__illustration-default {
+  display: none;
   align-items: center;
   justify-content: center;
 }
 
+/* Show default illustration only when no slotted illustration AND attribute is set */
+:host([data-illustration]:not([data-has-illustration]))
+  .sherpa-empty-state__illustration-default {
+  display: flex;
+}
+
 /* Heading section */
 .sherpa-empty-state__heading {
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -66,7 +79,22 @@
   width: 100%;
 }
 
+/* Show heading section when any heading/description content exists */
+:host(
+    :is(
+      [data-has-heading],
+      [data-has-description],
+      [data-has-label],
+      [data-label],
+      [data-description]
+    )
+  )
+  .sherpa-empty-state__heading {
+  display: flex;
+}
+
 .sherpa-empty-state__title {
+  display: none;
   margin: 0;
   color: var(--sherpa-text-default-heading);
   overflow: hidden;
@@ -75,29 +103,62 @@
   max-width: 100%;
 }
 
+/* Show title when data-label is set and no custom heading is slotted */
+:host([data-label]:not([data-has-heading])) .sherpa-empty-state__title {
+  display: block;
+}
+
 .sherpa-empty-state__description {
+  display: none;
   margin: 0;
   text-align: center;
 }
 
+/* Show description when data-description is set and no custom description is slotted */
+:host([data-description]:not([data-has-description]))
+  .sherpa-empty-state__description {
+  display: block;
+}
+
 /* Buttons */
 .sherpa-empty-state__buttons {
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--sherpa-space-xs);
 }
 
+/* Show buttons when actions slot has content */
+:host([data-has-actions]) .sherpa-empty-state__buttons {
+  display: flex;
+}
+
 /* Small print */
 .sherpa-empty-state__small-print {
+  display: none;
   margin: 0;
   color: var(--sherpa-text-default-secondary);
   text-align: center;
-  display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   max-width: 400px;
+}
+
+/* Show small print when footer slot has content or data-small-print attr exists */
+:host(:is([data-has-footer], [data-small-print]))
+  .sherpa-empty-state__small-print {
+  display: -webkit-box;
+}
+
+.sherpa-empty-state__small-print-text {
+  display: none;
+}
+
+/* Show small-print text when attribute is set and no custom footer slotted */
+:host([data-small-print]:not([data-has-footer]))
+  .sherpa-empty-state__small-print-text {
+  display: inline;
 }
 
 /* Slotted content */
@@ -112,13 +173,10 @@
   justify-content: center;
 }
 
-.sherpa-empty-state__small-print-text {
-  display: inline;
-}
-
-
 /* ═══════════════════════════════════════════════════════════════════════════
    STATUS — icon-only colouring
    ═══════════════════════════════════════════════════════════════════════════ */
 
-:host([data-status]) .sherpa-empty-state__illustration { color: var(--_status-icon); }
+:host([data-status]) .sherpa-empty-state__illustration {
+  color: var(--_status-icon);
+}

@@ -20,23 +20,35 @@
 -->
 
 <template id="default">
-<sherpa-header data-type="data-viz"
-  data-show-header="false"
-  data-show-header-controls="true"
-  data-show-view-menu="true">
-</sherpa-header>
-<div class="table-container">
-  <table>
-    <thead>
-      <!-- Headers populated dynamically with th[scope="col"] -->
-    </thead>
-    <tbody>
-      <!-- Rows populated dynamically with th[scope="row"] for first column -->
-    </tbody>
-    <tfoot>
-      <!-- Footer populated dynamically with th[scope="row"] for label -->
-    </tfoot>
-  </table>
-</div>
-<p class="empty-state" hidden></p>
+  <sherpa-header
+    data-type="data-viz"
+    data-show-header="false"
+    data-show-header-controls="true"
+    data-show-view-menu="true"
+  >
+  </sherpa-header>
+  <div class="table-container">
+    <table>
+      <thead>
+        <!-- Headers populated dynamically with th[scope="col"] -->
+      </thead>
+      <tbody>
+        <!-- Rows populated dynamically with th[scope="row"] for first column -->
+      </tbody>
+      <tfoot>
+        <!-- Footer populated dynamically with th[scope="row"] for label -->
+      </tfoot>
+    </table>
+  </div>
+  <p class="empty-state"></p>
+
+  <!-- Menu heading — cloning template -->
+  <template class="menu-heading-tpl">
+    <sherpa-menu-item data-type="heading"></sherpa-menu-item>
+  </template>
+
+  <!-- Menu item — cloning template -->
+  <template class="menu-item-tpl">
+    <li><sherpa-menu-item></sherpa-menu-item></li>
+  </template>
 </template>

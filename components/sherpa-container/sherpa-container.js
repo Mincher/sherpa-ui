@@ -1,14 +1,19 @@
 /**
  * SherpaContainer — Dashboard card with header, metrics, and data sections.
  *
+ * Extends SherpaElement. Shadow DOM contains only named slots, a resize
+ * handle, and a skeleton placeholder. All visible content lives in light
+ * DOM and is projected through the slots.
+ *
  * Content is defined by a content template (data-content attribute) or by
  * inline child elements (fallback). Content templates live in
  * html/templates/content/<id>.html and use <slot presentation-type="...">
  * elements to declare which data-viz components to create.
  *
- * Templates:
- *   default       — header + metrics wrapper + sections wrapper
- *   metrics-only  — header + metrics wrapper only
+ * Templates (sherpa-container.html):
+ *   shadow        — Shadow DOM: named slots + resize handle + skeleton
+ *   default       — Light-DOM layout: header + filter bar + metrics + sections
+ *   metrics-only  — Light-DOM layout: header + metrics only
  *
  * Attributes:
  *   data-content      — Content template id (fetches /html/templates/content/<id>.html)
@@ -18,6 +23,23 @@
  *   data-col-span     — Column span (3, 6, 9, 12)
  *   data-row-span     — Row span (1–6)
  *   data-menu-open    — Menu state
+ *   data-editable     — Edit mode (shows resize handles)
+ *   data-loading      — Skeleton loading placeholder visible
+ *
+ * Slots (shadow DOM):
+ *   header   — sherpa-header element
+ *   filters  — sherpa-filter-bar element
+ *   metrics  — .metrics wrapper div
+ *   sections — .sections wrapper div
+ *   extra    — Additional consumer content
+ *
+ * Cloning prototypes (shadow DOM):
+ *   .section-tpl      — div.section > div.section-content
+ *   .menu-toggle-tpl  — li > sherpa-menu-item[data-selection="toggle"]
+ *
+ * Events (bubbles: true, composed: true):
+ *   containercolumnsready  — Columns and rows ready for global filter bar
+ *   containerexport        — Export action triggered
  */
 
 import "../sherpa-metric/sherpa-metric.js";
@@ -29,15 +51,17 @@ import "../sherpa-header/sherpa-header.js";
 import "../sherpa-menu/sherpa-menu.js";
 import "../sherpa-filter-bar/sherpa-filter-bar.js";
 import "../sherpa-filter-chip/sherpa-filter-chip.js";
-import { parseTemplates } from "../utilities/sherpa-element/sherpa-element.js";
+import {
+  SherpaElement,
+  parseTemplates,
+} from "../utilities/sherpa-element/sherpa-element.js";
 import { formatFieldName } from "../utilities/index.js";
 
-/* ── Template + menu caches (shared across instances) ──────────── */
+/* ── Menu + content caches (shared across instances) ───────────── */
 
-const TEMPLATE_URL  = new URL("./sherpa-container.html", import.meta.url).href;
-const MENU_TPL_URL  = new URL("./sherpa-container-menu.html", import.meta.url).href;
+const MENU_TPL_URL = new URL("./sherpa-container-menu.html", import.meta.url)
+  .href;
 
-let templateMap = null;
 let menuTemplateMap = null;
 
 /** Content template cache — keyed by content id, stores HTML strings. */
@@ -45,18 +69,11 @@ const contentTemplateCache = new Map();
 
 /** Maps presentation-type attribute values to element tag + slot names. */
 const PRESENTATION_MAP = {
-  metric:      { tag: "sherpa-metric",     slot: "metric" },
-  table:       { tag: "sherpa-base-table", slot: "section" },
-  barchart:    { tag: "sherpa-barchart",   slot: "section" },
-  'data-grid': { tag: "sherpa-data-grid",  slot: "section" },
+  metric: { tag: "sherpa-metric", slot: "metric" },
+  table: { tag: "sherpa-base-table", slot: "section" },
+  barchart: { tag: "sherpa-barchart", slot: "section" },
+  "data-grid": { tag: "sherpa-data-grid", slot: "section" },
 };
-
-async function loadTemplates() {
-  if (templateMap) return templateMap;
-  const html = await fetch(TEMPLATE_URL).then(r => r.text());
-  templateMap = parseTemplates(html);
-  return templateMap;
-}
 
 async function loadMenuTemplate() {
   if (menuTemplateMap) return menuTemplateMap;
@@ -78,10 +95,14 @@ async function loadMenuTemplate() {
  * @returns {Promise<string>} Raw HTML of the content template.
  */
 async function loadContentTemplate(contentId) {
-  if (contentTemplateCache.has(contentId)) return contentTemplateCache.get(contentId);
+  if (contentTemplateCache.has(contentId))
+    return contentTemplateCache.get(contentId);
   const url = `${SherpaContainer.contentBasePath}${contentId}.html`;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`[SherpaContainer] Content template "${contentId}" not found (${res.status})`);
+  if (!res.ok)
+    throw new Error(
+      `[SherpaContainer] Content template "${contentId}" not found (${res.status})`,
+    );
   const html = await res.text();
   contentTemplateCache.set(contentId, html);
   return html;
@@ -96,7 +117,9 @@ async function loadContentTemplate(contentId) {
 function materializeContent(html) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   const title = doc.querySelector("title")?.textContent?.trim() || "";
-  const description = doc.querySelector('meta[name="description"]')?.getAttribute("content") || "";
+  const description =
+    doc.querySelector('meta[name="description"]')?.getAttribute("content") ||
+    "";
 
   const metrics = [];
   const sections = [];
@@ -151,104 +174,65 @@ function getSharedObserver() {
           }
         }
       },
-      { rootMargin: '200px' }
+      { rootMargin: "200px" },
     );
   }
   return sharedObserver;
 }
 
-export class SherpaContainer extends HTMLElement {
+export class SherpaContainer extends SherpaElement {
+  static get cssUrl() {
+    return new URL("./sherpa-container-shadow.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-container.html", import.meta.url).href;
+  }
+
+  /** Use the shadow template for the shadow root (layout templates are light-DOM). */
+  get templateId() {
+    return "shadow";
+  }
+
   #initialized = false;
   #sectionConfigs = new Map();
   #metricConfigs = new Map();
-  #shadow = null;
+  #resizeHandle = null; // cached in onRender
   #menuBtn = null;
-  #filterBar = null;        // Container-level filter bar element
+  #filterBar = null; // Container-level filter bar element
   #globalFilters = [];
   #globalTimerange = null;
   #containerValueFilters = [];
-  #containerSegmentField = null;   // Track segment field for change detection
+  #containerSegmentField = null; // Track segment field for change detection
   #globalFilterHandler = null;
-  #syncingSort = false;     // Guard: suppress re-entrant filterchange during sort sync
+  #syncingSort = false; // Guard: suppress re-entrant filterchange during sort sync
 
   // ── Pluggable providers (injected by the host app at boot) ──
   static #globalFilterProvider = null;
 
   /** Base URL for content template fetches. Override in consumer apps. */
-  static contentBasePath = '/html/templates/content/';
+  static contentBasePath = "/html/templates/content/";
 
   /**
    * Register a provider that returns current global filter state.
    * Signature: () => { filters: Array, timerange: Object|null }
    * @param {Function} fn
    */
-  static setGlobalFilterProvider(fn) { SherpaContainer.#globalFilterProvider = fn; }
+  static setGlobalFilterProvider(fn) {
+    SherpaContainer.#globalFilterProvider = fn;
+  }
 
   /** Reset the eager counter (call before injecting a new view). */
   static resetEagerCount() {
     eagerUsed = 0;
   }
 
-  constructor() {
-    super();
-    this.#shadow = this.attachShadow({ mode: "open" });
-    this.#shadow.innerHTML = `
-      <style>
-        :host { position: relative; }
-        .resize-handle {
-          display: none;
-          position: absolute;
-          z-index: 20;
-          bottom: 0;
-          right: 0;
-          width: 16px;
-          height: 16px;
-          cursor: nwse-resize;
-          /* Two-line grip mark (bottom-right corner) */
-          background:
-            linear-gradient(
-              135deg,
-              transparent 40%,
-              var(--sherpa-border-control-secondary-default, #555) 40%,
-              var(--sherpa-border-control-secondary-default, #555) 45%,
-              transparent 45%,
-              transparent 60%,
-              var(--sherpa-border-control-secondary-default, #555) 60%,
-              var(--sherpa-border-control-secondary-default, #555) 65%,
-              transparent 65%
-            );
-          border-radius: 0 0 var(--sherpa-border-rounding-base, 4px) 0;
-          transition: background 0.15s ease;
-        }
-        .resize-handle:hover,
-        .resize-handle:active {
-          background:
-            linear-gradient(
-              135deg,
-              transparent 40%,
-              var(--sherpa-border-control-primary-default, #7c3aed) 40%,
-              var(--sherpa-border-control-primary-default, #7c3aed) 45%,
-              transparent 45%,
-              transparent 60%,
-              var(--sherpa-border-control-primary-default, #7c3aed) 60%,
-              var(--sherpa-border-control-primary-default, #7c3aed) 65%,
-              transparent 65%
-            );
-        }
-        :host([data-editable]) .resize-handle {
-          display: block;
-        }
-      </style>
-      <slot name="header"></slot>
-      <slot name="filters"></slot>
-      <slot name="metrics"></slot>
-      <slot name="sections"></slot>
-      <slot name="extra"></slot>
-      <div class="resize-handle"></div>
-    `;
+  /* ── SherpaElement lifecycle hooks ───────────────────────────── */
+
+  onRender() {
+    this.#resizeHandle = this.$(".resize-handle");
   }
 
-  connectedCallback() {
+  onConnect() {
     if (this.#initialized) return;
 
     if (eagerUsed < EAGER_LIMIT) {
@@ -264,14 +248,17 @@ export class SherpaContainer extends HTMLElement {
     }
   }
 
-  disconnectedCallback() {
+  onDisconnect() {
     // Stop observing if still deferred
     if (observedContainers.has(this)) {
       getSharedObserver().unobserve(this);
       observedContainers.delete(this);
     }
     if (this.#globalFilterHandler) {
-      document.removeEventListener('globalfilterchange', this.#globalFilterHandler);
+      document.removeEventListener(
+        "globalfilterchange",
+        this.#globalFilterHandler,
+      );
       this.#globalFilterHandler = null;
     }
   }
@@ -281,26 +268,14 @@ export class SherpaContainer extends HTMLElement {
     if (!this.#initialized) this.#initialize();
   }
 
-  /** Show a lightweight CSS shimmer skeleton while waiting to load. */
+  /** Show the skeleton placeholder via data-loading attribute (CSS handles visibility). */
   #showSkeleton() {
-    const skel = document.createElement('div');
-    skel.className = 'container-skeleton';
-    skel.innerHTML = `
-      <div class="skel-header"></div>
-      <div class="skel-metrics">
-        <div class="skel-block"></div>
-        <div class="skel-block"></div>
-        <div class="skel-block"></div>
-        <div class="skel-block"></div>
-      </div>
-      <div class="skel-body"></div>
-    `;
-    this.appendChild(skel);
+    this.toggleAttribute("data-loading", true);
   }
 
-  /** Remove the skeleton placeholder if present. */
+  /** Remove the skeleton placeholder. */
   #removeSkeleton() {
-    this.querySelector('.container-skeleton')?.remove();
+    this.removeAttribute("data-loading");
   }
 
   /* ════════════════════════════════════════════════════════════════
@@ -327,8 +302,7 @@ export class SherpaContainer extends HTMLElement {
   static MAX_ROW_SPAN = 6;
 
   #createResizeHandles() {
-    const handle = this.#shadow.querySelector('.resize-handle');
-    if (handle) this.#attachResize(handle);
+    if (this.#resizeHandle) this.#attachResize(this.#resizeHandle);
   }
 
   /** Single corner handle — free-form resize on both axes simultaneously. */
@@ -348,7 +322,8 @@ export class SherpaContainer extends HTMLElement {
       const stops = SherpaContainer.COL_STOPS;
       let bestCol = stops[0];
       for (const s of stops) {
-        if (Math.abs(s - spannedCols) < Math.abs(bestCol - spannedCols)) bestCol = s;
+        if (Math.abs(s - spannedCols) < Math.abs(bestCol - spannedCols))
+          bestCol = s;
       }
       if (bestCol !== this.getColSpan()) {
         this.setAttribute("data-col-span", String(bestCol));
@@ -357,7 +332,10 @@ export class SherpaContainer extends HTMLElement {
       // Row axis
       const dy = e.clientY - startY;
       const deltaRows = Math.round(dy / rowHeight);
-      const newSpan = Math.min(SherpaContainer.MAX_ROW_SPAN, Math.max(SherpaContainer.MIN_ROW_SPAN, startRowSpan + deltaRows));
+      const newSpan = Math.min(
+        SherpaContainer.MAX_ROW_SPAN,
+        Math.max(SherpaContainer.MIN_ROW_SPAN, startRowSpan + deltaRows),
+      );
       if (newSpan !== this.getRowSpan()) {
         this.setAttribute("data-row-span", String(newSpan));
       }
@@ -381,7 +359,7 @@ export class SherpaContainer extends HTMLElement {
       const grid = this.closest(".sherpa-content-area");
       if (grid) {
         const cols = getComputedStyle(grid).gridTemplateColumns.split(" ");
-        gridColWidth = parseFloat(cols[0]) || (startWidth / this.getColSpan());
+        gridColWidth = parseFloat(cols[0]) || startWidth / this.getColSpan();
       } else {
         gridColWidth = startWidth / this.getColSpan();
       }
@@ -394,6 +372,7 @@ export class SherpaContainer extends HTMLElement {
         rowHeight = 160;
       }
 
+      // Transient drag interaction — inline style acceptable per guidelines
       this.style.setProperty("user-select", "none");
       document.addEventListener("pointermove", onMove);
       document.addEventListener("pointerup", onUp);
@@ -415,46 +394,43 @@ export class SherpaContainer extends HTMLElement {
       // ── Content template path ───────────────────────────────────
       const html = await loadContentTemplate(contentId);
       const content = materializeContent(html);
-      metrics     = content.metrics;
-      sections    = content.sections;
-      title       = this.dataset.title || content.title;
+      metrics = content.metrics;
+      sections = content.sections;
+      title = this.dataset.title || content.title;
       description = this.dataset.description || content.description;
     } else {
       // ── Inline children fallback ────────────────────────────────
-      metrics  = [...this.querySelectorAll(':scope > [slot="metric"]')];
+      metrics = [...this.querySelectorAll(':scope > [slot="metric"]')];
       sections = [...this.querySelectorAll(':scope > [slot="section"]')];
-      metrics.forEach(m => m.remove());
-      sections.forEach(s => s.remove());
-      title       = this.dataset.title || "";
+      metrics.forEach((m) => m.remove());
+      sections.forEach((s) => s.remove());
+      title = this.dataset.title || "";
       description = this.dataset.description || "";
     }
 
     // Stamp the layout template (creates header + .metrics + .sections wrappers)
-    const templates = await loadTemplates();
     const id = this.dataset.template || "default";
-    const html = templates?.get(id) || templates?.values().next().value || "";
+    const layoutHtml = this.getTemplateHtml(id);
     const temp = document.createElement("div");
-    temp.innerHTML = html;
+    temp.innerHTML = layoutHtml;
     while (temp.firstChild) this.appendChild(temp.firstChild);
 
     // Reparent metric children into .metrics wrapper
     const metricsDiv = this.querySelector(".metrics");
     if (metricsDiv) {
-      metrics.forEach(m => metricsDiv.appendChild(m));
+      metrics.forEach((m) => metricsDiv.appendChild(m));
     }
 
-    // Reparent section children into .sections wrapper (each in .section > .section-content)
+    // Reparent section children into .sections wrapper (clone section-tpl prototype)
     const sectionsDiv = this.querySelector(".sections");
-    if (sectionsDiv) {
+    const sectionTpl = this.$("template.section-tpl");
+    if (sectionsDiv && sectionTpl) {
       sections.forEach((s, i) => {
-        const sectionWrapper = document.createElement("div");
-        sectionWrapper.className = "section";
-        sectionWrapper.id = `section-${i}`;
-        const content = document.createElement("div");
-        content.className = "section-content";
-        content.appendChild(s);
-        sectionWrapper.appendChild(content);
-        sectionsDiv.appendChild(sectionWrapper);
+        const frag = sectionTpl.content.cloneNode(true);
+        const wrapper = frag.querySelector(".section");
+        wrapper.id = `section-${i}`;
+        frag.querySelector(".section-content").appendChild(s);
+        sectionsDiv.appendChild(frag);
       });
     }
 
@@ -482,7 +458,7 @@ export class SherpaContainer extends HTMLElement {
     const initialFilters = this.#composeGlobalFilters();
 
     // Trigger each viz child to load its own data (with pre-seeded filters)
-    const loadPromises = [...metrics, ...sections].map(el => {
+    const loadPromises = [...metrics, ...sections].map((el) => {
       if (typeof el.load === "function") return el.load(initialFilters);
     });
     await Promise.all(loadPromises);
@@ -497,7 +473,7 @@ export class SherpaContainer extends HTMLElement {
 
     // Store metric configs for re-query on global filter changes
     this.#metricConfigs.clear();
-    metrics.forEach(m => {
+    metrics.forEach((m) => {
       if (typeof m.getConfig === "function") {
         this.#metricConfigs.set(m, m.getConfig());
       }
@@ -512,7 +488,7 @@ export class SherpaContainer extends HTMLElement {
       this.#globalTimerange = e.detail?.timerange || null;
       this.#reQueryChildren();
     };
-    document.addEventListener('globalfilterchange', this.#globalFilterHandler);
+    document.addEventListener("globalfilterchange", this.#globalFilterHandler);
   }
 
   /* ════════════════════════════════════════════════════════════════
@@ -529,8 +505,12 @@ export class SherpaContainer extends HTMLElement {
     let allRows = [];
 
     for (const el of sections) {
-      const cols = typeof el.getContentColumns === 'function' ? el.getContentColumns() : [];
-      const rows = typeof el.getContentRows === 'function' ? el.getContentRows() : [];
+      const cols =
+        typeof el.getContentColumns === "function"
+          ? el.getContentColumns()
+          : [];
+      const rows =
+        typeof el.getContentRows === "function" ? el.getContentRows() : [];
       for (const col of cols) {
         if (!columnMap.has(col.field)) columnMap.set(col.field, col);
       }
@@ -543,10 +523,13 @@ export class SherpaContainer extends HTMLElement {
     this.#filterBar.setAvailableColumns(columns, allRows);
 
     // ── Report to global filter bar via custom event ──
-    this.dispatchEvent(new CustomEvent('containercolumnsready', {
-      bubbles: true, composed: true,
-      detail: { columns, rows: allRows }
-    }));
+    this.dispatchEvent(
+      new CustomEvent("containercolumnsready", {
+        bubbles: true,
+        composed: true,
+        detail: { columns, rows: allRows },
+      }),
+    );
 
     // ── Chart group chip hiding ──
     // If all sections are barcharts, hide the group chip when the only
@@ -554,11 +537,13 @@ export class SherpaContainer extends HTMLElement {
     this.#maybeHideGroupChip(sections, columns, allRows);
 
     // ── Seed segment chip from the initial viz element state ──
-    const segmentChip = this.#filterBar.querySelector('sherpa-filter-chip[slot="group"]');
+    const segmentChip = this.#filterBar.querySelector(
+      'sherpa-filter-chip[slot="group"]',
+    );
     if (segmentChip) {
       const firstViz = sections[0];
-      const initSegField = firstViz?.getAttribute('data-segment-field');
-      const initSegMode  = firstViz?.getAttribute('data-segment-mode');
+      const initSegField = firstViz?.getAttribute("data-segment-field");
+      const initSegMode = firstViz?.getAttribute("data-segment-mode");
       if (initSegField && !segmentChip.getField()) {
         segmentChip.setField(initSegField);
         if (initSegMode) segmentChip.setMode(initSegMode);
@@ -566,24 +551,26 @@ export class SherpaContainer extends HTMLElement {
     }
 
     // ── Listen for filter changes from the bar ──
-    this.addEventListener('filterchange', (e) => {
+    this.addEventListener("filterchange", (e) => {
       // Skip re-entrant events caused by programmatic sort chip updates
       if (this.#syncingSort) return;
       const filters = e.detail?.filters || [];
       this.#applyContainerFilters(filters);
     });
 
-    this.addEventListener('filterclear', () => {
+    this.addEventListener("filterclear", () => {
       this.#applyContainerFilters([]);
     });
 
     // ── 2-way sort binding: viz child column-header sort → filter bar chip ──
-    this.addEventListener('sortchange', (e) => {
-      const sortChip = this.#filterBar?.querySelector('sherpa-filter-chip[data-type="sort"]');
+    this.addEventListener("sortchange", (e) => {
+      const sortChip = this.#filterBar?.querySelector(
+        'sherpa-filter-chip[data-type="sort"]',
+      );
       if (!sortChip) return;
       const { field, direction } = e.detail || {};
       this.#syncingSort = true;
-      if (field && direction !== 'off') {
+      if (field && direction !== "off") {
         sortChip.setField(field);
         sortChip.setMode(direction);
       } else {
@@ -595,9 +582,11 @@ export class SherpaContainer extends HTMLElement {
 
   /** Query current viz elements inside section-content wrappers. */
   #getVizElements() {
-    return [...this.querySelectorAll(
-      '.section-content > :is(sherpa-base-table, sherpa-barchart, sherpa-data-grid)'
-    )];
+    return [
+      ...this.querySelectorAll(
+        ".section-content > :is(sherpa-base-table, sherpa-barchart, sherpa-data-grid)",
+      ),
+    ];
   }
 
   /**
@@ -611,28 +600,37 @@ export class SherpaContainer extends HTMLElement {
     const valueFilters = [];
 
     for (const f of filters) {
-      if (f.type === 'sort')    { sortFilter = f; continue; }
-      if (f.type === 'segment') { segmentFilter = f; continue; }
-      if (f.type === 'filter' && f.values?.length) { valueFilters.push(f); continue; }
+      if (f.type === "sort") {
+        sortFilter = f;
+        continue;
+      }
+      if (f.type === "segment") {
+        segmentFilter = f;
+        continue;
+      }
+      if (f.type === "filter" && f.values?.length) {
+        valueFilters.push(f);
+        continue;
+      }
     }
 
     for (const el of this.#getVizElements()) {
       // ── Sort ──
       if (sortFilter) {
-        el.setAttribute('data-sort-field', sortFilter.field);
-        el.setAttribute('data-sort-direction', sortFilter.mode || 'asc');
+        el.setAttribute("data-sort-field", sortFilter.field);
+        el.setAttribute("data-sort-direction", sortFilter.mode || "asc");
       } else {
-        el.removeAttribute('data-sort-field');
-        el.removeAttribute('data-sort-direction');
+        el.removeAttribute("data-sort-field");
+        el.removeAttribute("data-sort-direction");
       }
 
       // ── Segment/group ──
       if (segmentFilter) {
-        el.setAttribute('data-segment-field', segmentFilter.field);
-        el.setAttribute('data-segment-mode', segmentFilter.mode || 'on');
+        el.setAttribute("data-segment-field", segmentFilter.field);
+        el.setAttribute("data-segment-mode", segmentFilter.mode || "on");
       } else {
-        el.removeAttribute('data-segment-field');
-        el.removeAttribute('data-segment-mode');
+        el.removeAttribute("data-segment-field");
+        el.removeAttribute("data-segment-mode");
       }
     }
 
@@ -645,7 +643,9 @@ export class SherpaContainer extends HTMLElement {
     }
 
     // ── Value filters → re-query only when value filters changed ──
-    const changed = JSON.stringify(valueFilters) !== JSON.stringify(this.#containerValueFilters);
+    const changed =
+      JSON.stringify(valueFilters) !==
+      JSON.stringify(this.#containerValueFilters);
     this.#containerValueFilters = valueFilters;
     if (changed) {
       this.#reQueryChildren();
@@ -665,10 +665,11 @@ export class SherpaContainer extends HTMLElement {
   #composeGlobalFilters() {
     const out = [];
     for (const gf of this.#globalFilters) {
-      if (gf.values?.length) out.push({ field: gf.field, operator: 'in', values: gf.values });
+      if (gf.values?.length)
+        out.push({ field: gf.field, operator: "in", values: gf.values });
     }
     if (this.#globalTimerange) {
-      out.push({ type: 'timerange', ...this.#globalTimerange });
+      out.push({ type: "timerange", ...this.#globalTimerange });
     }
     return out;
   }
@@ -678,7 +679,11 @@ export class SherpaContainer extends HTMLElement {
     const containerFilters = [];
     for (const cf of this.#containerValueFilters) {
       if (cf.values?.length) {
-        containerFilters.push({ field: cf.field, operator: 'in', values: cf.values });
+        containerFilters.push({
+          field: cf.field,
+          operator: "in",
+          values: cf.values,
+        });
       }
     }
 
@@ -686,9 +691,9 @@ export class SherpaContainer extends HTMLElement {
     this.#sectionConfigs.forEach((original, sectionId) => {
       const section = this.querySelector(`#${CSS.escape(sectionId)}`);
       const vizEl = section?.querySelector(
-        '.section-content > :is(sherpa-base-table, sherpa-barchart, sherpa-data-grid)'
+        ".section-content > :is(sherpa-base-table, sherpa-barchart, sherpa-data-grid)",
       );
-      if (!vizEl || typeof vizEl.setData !== 'function') return;
+      if (!vizEl || typeof vizEl.setData !== "function") return;
 
       const mergedFilters = [
         ...(original.filters || []),
@@ -698,13 +703,13 @@ export class SherpaContainer extends HTMLElement {
 
       // Include active segment field (tables use it for column derivation,
       // charts use it for grouping — the table handles visual grouping client-side)
-      const segmentBy = vizEl.getAttribute('data-segment-field') || undefined;
+      const segmentBy = vizEl.getAttribute("data-segment-field") || undefined;
       vizEl.setData({ ...original, filters: mergedFilters, segmentBy });
     });
 
     // ── Re-query metrics ──
     this.#metricConfigs.forEach((original, metricEl) => {
-      if (typeof metricEl.setData !== 'function') return;
+      if (typeof metricEl.setData !== "function") return;
       const mergedFilters = [
         ...(original.filters || []),
         ...globalFilters,
@@ -719,34 +724,51 @@ export class SherpaContainer extends HTMLElement {
    * only non-numeric column with >1 unique value is the category axis.
    */
   #maybeHideGroupChip(sections, columns, allRows) {
-    const groupChip = this.#filterBar?.querySelector('sherpa-filter-chip[slot="group"]');
+    const groupChip = this.#filterBar?.querySelector(
+      'sherpa-filter-chip[slot="group"]',
+    );
     if (!groupChip) return;
 
-    const allCharts = sections.length > 0 && sections.every(el => el.tagName === 'SHERPA-BARCHART');
+    const allCharts =
+      sections.length > 0 &&
+      sections.every((el) => el.tagName === "SHERPA-BARCHART");
     if (!allCharts) return;
 
     // Collect category fields from all barcharts
     const catFields = new Set();
     for (const el of sections) {
-      const cat = typeof el.getCategoryField === 'function' ? el.getCategoryField() : null;
+      const cat =
+        typeof el.getCategoryField === "function"
+          ? el.getCategoryField()
+          : null;
       if (cat) catFields.add(cat);
     }
 
     // Filter columns: remove numeric, remove single-value, remove category axis fields
-    const NUMERIC_TYPES = new Set(['number', 'numeric', 'currency', 'percent', 'year', 'monthNumber']);
-    const validSegmentCols = columns.filter(col => {
-      if (NUMERIC_TYPES.has((col.type || '').toLowerCase())) return false;
+    const NUMERIC_TYPES = new Set([
+      "number",
+      "numeric",
+      "currency",
+      "percent",
+      "year",
+      "monthNumber",
+    ]);
+    const validSegmentCols = columns.filter((col) => {
+      if (NUMERIC_TYPES.has((col.type || "").toLowerCase())) return false;
       if (catFields.has(col.field)) return false;
       // Must have >1 unique value
       const vals = new Set();
-      for (const r of allRows) { vals.add(r[col.field]); if (vals.size > 1) break; }
+      for (const r of allRows) {
+        vals.add(r[col.field]);
+        if (vals.size > 1) break;
+      }
       return vals.size > 1;
     });
 
     if (validSegmentCols.length === 0) {
-      groupChip.hidden = true;
-      groupChip.removeAttribute('data-field');
-      groupChip.removeAttribute('data-mode');
+      groupChip.toggleAttribute("disabled", true);
+      groupChip.removeAttribute("data-field");
+      groupChip.removeAttribute("data-mode");
     }
   }
 
@@ -765,14 +787,19 @@ export class SherpaContainer extends HTMLElement {
       value: category,
       agg: "count",
       filters: data.filters || [],
-      showStatus: false
+      showStatus: false,
     };
   }
 
   #titleCase(str) {
     if (!str) return "";
-    return str.replace(/([A-Z])/g, " $1").replace(/[_-]/g, " ").trim()
-      .split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    return str
+      .replace(/([A-Z])/g, " $1")
+      .replace(/[_-]/g, " ")
+      .trim()
+      .split(/\s+/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
   }
 
   /* ════════════════════════════════════════════════════════════════
@@ -792,7 +819,10 @@ export class SherpaContainer extends HTMLElement {
       const stored = this.#sectionConfigs.get(sectionId);
       if (stored) stored.presentationType = type;
 
-      this.#reloadSectionContent(content, { ...(stored || data), presentationType: type });
+      this.#reloadSectionContent(content, {
+        ...(stored || data),
+        presentationType: type,
+      });
     });
 
     this.addEventListener("datasetchange", (e) => {
@@ -819,9 +849,16 @@ export class SherpaContainer extends HTMLElement {
    */
   #reloadSectionContent(container, data) {
     // Capture chip state from outgoing component
-    const CHIP_ATTRS = ['data-segment-field', 'data-segment-mode', 'data-sort-field', 'data-sort-direction'];
+    const CHIP_ATTRS = [
+      "data-segment-field",
+      "data-segment-mode",
+      "data-sort-field",
+      "data-sort-direction",
+    ];
     const chipState = {};
-    const outgoing = container.querySelector("sherpa-base-table, sherpa-barchart, sherpa-metric:not([data-section-summary])");
+    const outgoing = container.querySelector(
+      "sherpa-base-table, sherpa-barchart, sherpa-metric:not([data-section-summary])",
+    );
     if (outgoing) {
       for (const attr of CHIP_ATTRS) {
         const val = outgoing.getAttribute(attr);
@@ -830,14 +867,22 @@ export class SherpaContainer extends HTMLElement {
     }
 
     // Clear existing viz (preserve summary metrics)
-    container.querySelectorAll("sherpa-base-table, sherpa-barchart, sherpa-metric:not([data-section-summary])").forEach(el => el.remove());
+    container
+      .querySelectorAll(
+        "sherpa-base-table, sherpa-barchart, sherpa-metric:not([data-section-summary])",
+      )
+      .forEach((el) => el.remove());
 
     // Title: auto-generate from dataset name if not already set.
     if (!data.name) {
-      data.name = formatFieldName(data.dataset || '');
+      data.name = formatFieldName(data.dataset || "");
     }
 
-    const tag = { barchart: "sherpa-barchart", table: "sherpa-base-table", "kpi-metric": "sherpa-metric" }[data.presentationType];
+    const tag = {
+      barchart: "sherpa-barchart",
+      table: "sherpa-base-table",
+      "kpi-metric": "sherpa-metric",
+    }[data.presentationType];
     if (!tag) return;
 
     const el = document.createElement(tag);
@@ -899,11 +944,15 @@ export class SherpaContainer extends HTMLElement {
 
     // Show width/height resize groups only in edit mode
     if (!this.hasAttribute("data-editable")) {
-      frag.querySelectorAll('[data-group="width"], [data-group="height"]').forEach(el => el.remove());
-      frag.querySelectorAll('sherpa-menu-item[data-type="heading"]').forEach(el => {
-        const text = el.textContent.trim();
-        if (text === "Width" || text === "Height") el.remove();
-      });
+      frag
+        .querySelectorAll('[data-group="width"], [data-group="height"]')
+        .forEach((el) => el.remove());
+      frag
+        .querySelectorAll('sherpa-menu-item[data-type="heading"]')
+        .forEach((el) => {
+          const text = el.textContent.trim();
+          if (text === "Width" || text === "Height") el.remove();
+        });
     }
 
     // Build section toggle items for the data group
@@ -913,16 +962,14 @@ export class SherpaContainer extends HTMLElement {
 
     if (dataGroup) {
       if (toggles.length) {
-        toggles.forEach(t => {
-          const li = document.createElement("li");
-          const item = document.createElement("sherpa-menu-item");
-          item.setAttribute("data-selection", "toggle");
-          item.setAttribute("data-keep-open", "");
+        const toggleTpl = this.$("template.menu-toggle-tpl");
+        toggles.forEach((t) => {
+          const frag2 = toggleTpl.content.cloneNode(true);
+          const item = frag2.querySelector("sherpa-menu-item");
           item.dataset.target = t.target;
           if (t.checked) item.setAttribute("checked", "");
           item.textContent = t.label;
-          li.appendChild(item);
-          dataGroup.appendChild(li);
+          dataGroup.appendChild(frag2);
         });
       } else {
         dataGroup.remove();
@@ -935,13 +982,15 @@ export class SherpaContainer extends HTMLElement {
 
   #buildSectionToggles() {
     const sectionEls = this.querySelectorAll(".sections > .section");
-    return Array.from(sectionEls).map(sectionEl => {
-      const vizEl = sectionEl.querySelector(".section-content > :is(sherpa-base-table, sherpa-barchart, sherpa-metric)");
+    return Array.from(sectionEls).map((sectionEl) => {
+      const vizEl = sectionEl.querySelector(
+        ".section-content > :is(sherpa-base-table, sherpa-barchart, sherpa-metric)",
+      );
       const label = vizEl?.getAttribute("data-label") || sectionEl.id;
       return {
         label,
         target: sectionEl.id,
-        checked: !sectionEl.hasAttribute("hidden")
+        checked: !sectionEl.hasAttribute("hidden"),
       };
     });
   }
@@ -952,10 +1001,13 @@ export class SherpaContainer extends HTMLElement {
       const action = detail.action;
 
       if (action === "export") {
-        this.dispatchEvent(new CustomEvent('containerexport', {
-          bubbles: true, composed: true,
-          detail: { container: this }
-        }));
+        this.dispatchEvent(
+          new CustomEvent("containerexport", {
+            bubbles: true,
+            composed: true,
+            detail: { container: this },
+          }),
+        );
         return;
       }
 
@@ -964,18 +1016,20 @@ export class SherpaContainer extends HTMLElement {
         const stops = SherpaContainer.COL_STOPS;
         const cur = this.getColSpan();
         const idx = stops.indexOf(cur);
-        const next = action === "increase-cols"
-          ? stops[Math.min(idx + 1, stops.length - 1)]
-          : stops[Math.max(idx - 1, 0)];
+        const next =
+          action === "increase-cols"
+            ? stops[Math.min(idx + 1, stops.length - 1)]
+            : stops[Math.max(idx - 1, 0)];
         if (next !== cur) this.setAttribute("data-col-span", String(next));
         return;
       }
 
       if (action === "increase-rows" || action === "decrease-rows") {
         const cur = this.getRowSpan();
-        const next = action === "increase-rows"
-          ? Math.min(SherpaContainer.MAX_ROW_SPAN, cur + 1)
-          : Math.max(SherpaContainer.MIN_ROW_SPAN, cur - 1);
+        const next =
+          action === "increase-rows"
+            ? Math.min(SherpaContainer.MAX_ROW_SPAN, cur + 1)
+            : Math.max(SherpaContainer.MIN_ROW_SPAN, cur - 1);
         if (next !== cur) this.setAttribute("data-row-span", String(next));
         return;
       }
@@ -984,7 +1038,9 @@ export class SherpaContainer extends HTMLElement {
         const targetId = detail.data.target;
         const isVisible = Boolean(detail.checked);
         if (!isVisible) {
-          const visible = this.#buildSectionToggles().filter(t => t.checked).length;
+          const visible = this.#buildSectionToggles().filter(
+            (t) => t.checked,
+          ).length;
           if (visible <= 1) return;
         }
         const section = this.querySelector(`.section#${CSS.escape(targetId)}`);

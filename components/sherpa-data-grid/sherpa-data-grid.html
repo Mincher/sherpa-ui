@@ -36,31 +36,39 @@
 
     <!-- Trailing: search + column-select + export + overflow -->
     <div slot="trailing" class="toolbar-trailing">
-      <sherpa-input-search class="global-search"
+      <sherpa-input-search
+        class="global-search"
         placeholder="Search…"
-        aria-label="Search all columns">
+        aria-label="Search all columns"
+      >
       </sherpa-input-search>
-      <sherpa-button class="column-select-btn"
+      <sherpa-button
+        class="column-select-btn"
         data-variant="secondary"
         data-icon-start="&#xf0db;"
         aria-label="Select columns"
         data-menu="true"
         data-menu-position="bottom-end"
-        data-keep-compact>
+        data-keep-compact
+      >
       </sherpa-button>
-      <sherpa-button class="export-btn"
+      <sherpa-button
+        class="export-btn"
         data-variant="secondary"
         data-icon-start="&#xf56d;"
         aria-label="Export"
-        data-keep-compact>
+        data-keep-compact
+      >
       </sherpa-button>
-      <sherpa-button class="overflow-menu-btn"
+      <sherpa-button
+        class="overflow-menu-btn"
         data-variant="secondary"
         data-icon-start="&#xf142;"
         aria-label="Grid options"
         data-menu="true"
         data-menu-position="bottom-end"
-        data-keep-compact>
+        data-keep-compact
+      >
       </sherpa-button>
     </div>
   </sherpa-toolbar>
@@ -82,6 +90,35 @@
     </table>
   </div>
 
+  <!-- Data row — cloning template -->
+  <template class="row-tpl">
+    <tr class="grid-row" role="row">
+      <td class="selection-cell">
+        <sherpa-check class="row-check" aria-label="Select row"></sherpa-check>
+      </td>
+      <!-- Data cells inserted by JS before action-cell -->
+      <td class="action-cell">
+        <sherpa-button
+          class="row-action"
+          data-variant="tertiary"
+          data-size="small"
+          data-icon-start="&#xf142;"
+          aria-label="Row actions"
+        ></sherpa-button>
+      </td>
+    </tr>
+  </template>
+
+  <!-- Menu heading — cloning template -->
+  <template class="menu-heading-tpl">
+    <sherpa-menu-item data-type="heading"></sherpa-menu-item>
+  </template>
+
+  <!-- Menu item — cloning template -->
+  <template class="menu-item-tpl">
+    <li><sherpa-menu-item></sherpa-menu-item></li>
+  </template>
+
   <!-- Group parent row — cloning template (class-only, bypasses SherpaElement parser) -->
   <template class="group-row-tpl">
     <tr class="group-parent-row">
@@ -91,7 +128,10 @@
             <sherpa-check class="group-check"></sherpa-check>
           </div>
           <div class="group-toggle">
-            <i class="fa-solid fa-chevron-right toggle-icon" aria-hidden="true"></i>
+            <i
+              class="fa-solid fa-chevron-right toggle-icon"
+              aria-hidden="true"
+            ></i>
           </div>
           <div class="group-content">
             <div class="group-heading">
@@ -105,13 +145,36 @@
     </tr>
   </template>
 
+  <!-- Cell cloning prototype: plain text cell -->
+  <template class="cell-tpl">
+    <td role="gridcell"></td>
+  </template>
+
+  <!-- Cell cloning prototype: link cell -->
+  <template class="link-cell-tpl">
+    <td role="gridcell"><a href="#"></a></td>
+  </template>
+
+  <!-- Cell cloning prototype: status cell (sherpa-tag) -->
+  <template class="status-cell-tpl">
+    <td role="gridcell"><sherpa-tag data-size="small"></sherpa-tag></td>
+  </template>
+
+  <!-- Cloning prototype: group metadata span -->
+  <template class="metadata-span-tpl">
+    <span></span>
+  </template>
+
   <!-- Empty state -->
-  <sherpa-empty-state class="empty-state" hidden></sherpa-empty-state>
+  <sherpa-empty-state class="empty-state"></sherpa-empty-state>
 
   <!-- Pagination -->
-  <sherpa-pagination class="grid-pagination" part="pagination"
-    data-page="1" data-page-size="25"
-    data-allowed-sizes="10,25,50,100">
+  <sherpa-pagination
+    class="grid-pagination"
+    part="pagination"
+    data-page="1"
+    data-page-size="25"
+    data-allowed-sizes="10,25,50,100"
+  >
   </sherpa-pagination>
-
 </template>

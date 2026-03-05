@@ -1,0 +1,138 @@
+/**
+ * sherpa-container-shadow.css
+ * Shadow-scoped styles for sherpa-container's shadow DOM content:
+ * the resize handle and the skeleton loading placeholder.
+ *
+ * Light DOM styles (layout, metrics, sections, grid positioning) remain in
+ * sherpa-container.css, loaded globally via components/index.css.
+ *
+ * Attributes:
+ *   data-editable  — Edit mode (shows resize handle)
+ *   data-loading   — Skeleton placeholder visible
+ */
+
+/* ==========================================================================
+   Host
+   ========================================================================== */
+
+:host {
+  position: relative;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ==========================================================================
+   Resize Handle (edit mode)
+   ========================================================================== */
+
+.resize-handle {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  /* Two-line grip mark (bottom-right corner) */
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    var(--sherpa-border-control-secondary-default, #555) 40%,
+    var(--sherpa-border-control-secondary-default, #555) 45%,
+    transparent 45%,
+    transparent 60%,
+    var(--sherpa-border-control-secondary-default, #555) 60%,
+    var(--sherpa-border-control-secondary-default, #555) 65%,
+    transparent 65%
+  );
+  border-radius: 0 0 var(--sherpa-border-rounding-base, 4px) 0;
+  transition: background 0.15s ease;
+}
+
+.resize-handle:hover,
+.resize-handle:active {
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    var(--sherpa-border-control-primary-default, #7c3aed) 40%,
+    var(--sherpa-border-control-primary-default, #7c3aed) 45%,
+    transparent 45%,
+    transparent 60%,
+    var(--sherpa-border-control-primary-default, #7c3aed) 60%,
+    var(--sherpa-border-control-primary-default, #7c3aed) 65%,
+    transparent 65%
+  );
+}
+
+:host([data-editable]) .resize-handle {
+  display: block;
+}
+
+/* ==========================================================================
+   Skeleton Placeholder (deferred containers)
+   ========================================================================== */
+
+/* Hidden by default; shown via data-loading on :host */
+.container-skeleton {
+  display: none;
+}
+
+:host([data-loading]) .container-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 8px);
+  padding: var(--sherpa-space-xs, 4px) 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Hide slotted content while the skeleton is visible */
+:host([data-loading]) slot {
+  display: none;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skel-header,
+.skel-block,
+.skel-body {
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: linear-gradient(
+    90deg,
+    var(--sherpa-surface-container-subtle, #f0f0f0) 25%,
+    var(--sherpa-surface-container-default, #e8e8e8) 50%,
+    var(--sherpa-surface-container-subtle, #f0f0f0) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+.skel-header {
+  height: 20px;
+  width: 55%;
+}
+
+.skel-metrics {
+  display: flex;
+  gap: var(--sherpa-space-xs, 4px);
+}
+
+.skel-block {
+  flex: 1;
+  height: 48px;
+}
+
+.skel-body {
+  flex: 1;
+  min-height: 60px;
+}

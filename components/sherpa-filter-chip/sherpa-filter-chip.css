@@ -11,7 +11,6 @@
  *   The dropdown is a real sherpa-button with the data-menu attribute.
  */
 
-
 /* ==========================================================================
    Host
    ========================================================================== */
@@ -24,7 +23,8 @@
   display: inline-flex;
   gap: 0;
   vertical-align: middle;
-  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default);
+  border: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   overflow: hidden;
   transition: border-color 0.15s;
@@ -37,7 +37,6 @@
   border-color: var(--sherpa-border-control-inactive);
   color: var(--sherpa-text-inactive-default);
 }
-
 
 /* ==========================================================================
    Toggle — mirrors sherpa-button[data-variant="secondary"][data-size="small"]
@@ -64,7 +63,9 @@
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .chip-toggle:hover {
@@ -79,7 +80,6 @@
   outline: 2px solid var(--sherpa-border-control-active-default);
   outline-offset: 2px;
 }
-
 
 /* ==========================================================================
    Active state — applied to the wrapper; children inherit
@@ -107,7 +107,6 @@
   background-color: var(--sherpa-surface-control-active-down);
 }
 
-
 /* ==========================================================================
    Icons — CSS-driven visibility via :host([data-mode])
    Each chip type's template contains only its relevant icons.
@@ -124,12 +123,17 @@
 /* Default icon: visible when no data-mode, mode is "off", or mode is "on" */
 :host(:not([data-mode])) .icon-default,
 :host([data-mode="off"]) .icon-default,
-:host([data-mode="on"])  .icon-default { display: inline-flex; }
+:host([data-mode="on"]) .icon-default {
+  display: inline-flex;
+}
 
 /* Sort mode icons (only present in the sort template) */
-:host([data-mode="asc"])  .icon-asc  { display: inline-flex; }
-:host([data-mode="desc"]) .icon-desc { display: inline-flex; }
-
+:host([data-mode="asc"]) .icon-asc {
+  display: inline-flex;
+}
+:host([data-mode="desc"]) .icon-desc {
+  display: inline-flex;
+}
 
 /* ==========================================================================
    Label
@@ -141,11 +145,9 @@
   overflow: hidden;
 }
 
-
 /* ==========================================================================
    Dropdown
    ========================================================================== */
-
 
 /* ==========================================================================
    Close button — filter chips only (removable)
@@ -159,12 +161,15 @@
   height: var(--sherpa-size-lg, 24px);
   padding: 0;
   border: none;
-  border-inline-start: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default);
+  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default);
   background: var(--sherpa-surface-control-tertiary-default);
   color: var(--sherpa-text-default-secondary);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .chip-close:hover {
@@ -195,13 +200,12 @@
   background-color: var(--sherpa-surface-control-active-down);
 }
 
-
 /* ==========================================================================
    Value count badge — filter chips
    ========================================================================== */
 
 .chip-count {
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   min-width: 16px;
@@ -215,7 +219,16 @@
   line-height: 1;
 }
 
-.chip-count[hidden] {
+/* Show count badge when host has data-count attribute (count > 0) */
+:host([data-count]) .chip-count {
+  display: inline-flex;
+}
+
+/* Boolean chips: hide dropdown and count */
+:host([data-boolean]) .chip-dropdown {
+  display: none;
+}
+:host([data-boolean]) .chip-count {
   display: none;
 }
 
@@ -223,7 +236,6 @@
   background: var(--sherpa-surface-control-active-hover);
   color: var(--sherpa-text-primary-default);
 }
-
 
 /* ==========================================================================
    Preset chips — no close button

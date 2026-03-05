@@ -11,31 +11,31 @@
     data-small-print  — Footer fine print text
 -->
 <template id="default">
-<div class="sherpa-empty-state">
-  <div class="sherpa-empty-state__illustration" hidden>
-    <slot name="illustration">
-      <div class="sherpa-empty-state__illustration-default"></div>
-    </slot>
-  </div>
+  <div class="sherpa-empty-state">
+    <div class="sherpa-empty-state__illustration">
+      <slot name="illustration">
+        <div class="sherpa-empty-state__illustration-default"></div>
+      </slot>
+    </div>
 
-  <div class="sherpa-empty-state__heading" hidden>
-    <slot name="heading">
-      <h2 class="sherpa-empty-state__title text-heading-lg"></h2>
-    </slot>
-    <slot name="description">
-      <p class="sherpa-empty-state__description text-body"></p>
-    </slot>
-    <slot></slot>
-  </div>
+    <div class="sherpa-empty-state__heading">
+      <slot name="heading">
+        <h2 class="sherpa-empty-state__title text-heading-lg"></h2>
+      </slot>
+      <slot name="description">
+        <p class="sherpa-empty-state__description text-body"></p>
+      </slot>
+      <slot></slot>
+    </div>
 
-  <div class="sherpa-empty-state__buttons" hidden>
-    <slot name="actions"></slot>
-  </div>
+    <div class="sherpa-empty-state__buttons">
+      <slot name="actions"></slot>
+    </div>
 
-  <p class="sherpa-empty-state__small-print" hidden>
-    <slot name="footer">
-      <span class="sherpa-empty-state__small-print-text text-body-xs"></span>
-    </slot>
-  </p>
-</div>
+    <p class="sherpa-empty-state__small-print">
+      <slot name="footer">
+        <span class="sherpa-empty-state__small-print-text text-body-xs"></span>
+      </slot>
+    </p>
+  </div>
 </template>

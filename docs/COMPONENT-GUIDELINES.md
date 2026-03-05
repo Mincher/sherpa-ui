@@ -15,6 +15,52 @@ This component system follows a **progressive enhancement** approach: do as much
 
 The question when building any feature should always be: _"Can this be done in HTML or CSS before I write JS?"_ If a visual state, layout change or conditional display can be achieved with an attribute selector, container query, `:has()`, `<details>`, `<dialog>`, `popover`, or any other platform feature — use that instead of JavaScript.
 
+### Responsibility Layers
+
+Every component is split across three files. Each file owns **exactly one concern**. Never move responsibility to a different layer.
+
+| Layer    | File            | Owns                                                                                                            | Examples                                                   |
+| -------- | --------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **HTML** | `sherpa-*.html` | Structure, semantics, accessibility, content projection                                                         | `<template>`, `<slot>`, `<dl>/<dt>/<dd>`, `role`, `aria-*` |
+| **CSS**  | `sherpa-*.css`  | All presentation — styling, state visuals, conditional visibility, variants, sizes, responsiveness, transitions | `:host([data-*])`, `@container`, `:has()`                  |
+| **JS**   | `sherpa-*.js`   | Data, lifecycle, events, attribute coordination                                                                 | `onRender()`, `onConnect()`, `CustomEvent`, `dataset.*`    |
+
+### Template Completeness Rule
+
+> Every element the component will ever show **must exist in the HTML template from the start**. JS must never create structural DOM with `createElement()` or `innerHTML` for elements that could live in the template.
+
+If an element is conditionally visible, it lives in the template and CSS hides/shows it via `:host([data-*])` selectors.
+
+### CSS Visibility Pattern
+
+CSS owns **all show/hide logic**. JS sets `data-*` attributes on the host; CSS selectors determine which internal elements are visible.
+
+**Pattern — hide-by-default, show-via-attribute:**
+
+```css
+/* Element hidden by default */
+.close-button {
+  display: none;
+}
+
+/* Shown when host has the attribute */
+:host([data-close-button]) .close-button {
+  display: inline-flex;
+}
+```
+
+**Anti-pattern — JS `.hidden` toggling:**
+
+```js
+/* ❌ NEVER do this on shadow DOM internals */
+this.$(".close-button").hidden = shouldShow;
+
+/* ✅ DO this instead — set the attribute, CSS handles visibility */
+this.toggleAttribute("data-close-button", shouldShow);
+```
+
+The native `hidden` attribute is acceptable **only** on the `:host` itself (`:host([hidden]) { display: none; }`), never on internal shadow DOM elements.
+
 ### Scalability through standard HTML
 
 Components load their templates via `fetch()` and inject standard HTML. There is no proprietary templating syntax, no JSX, no virtual DOM. Templates are plain `.html` files containing standard elements, `<slot>` elements and `<template>` blocks.
@@ -36,21 +82,21 @@ Because the contract is _"give the component valid HTML with the right data attr
 
 ### Naming Conventions
 
-| Attribute | Purpose | Example |
-|---|---|---|
-| `data-variant` | Visual variant of the component | `"primary"`, `"secondary"`, `"tertiary"` |
-| `data-size` | Size preset | `"small"`, `"medium"`, `"large"` |
-| `data-status` | Apply status colour scheme | `"error"`, `"warning"`, `"success"`, `"info"`, `"urgent"` |
-| `data-type` | Component sub-type | `"icon"` (icon-only button) |
-| `data-layout` | Layout mode | `"horizontal"`, `"vertical"` |
-| `data-active` | Active/pressed state | `"true"` / `"false"` |
-| `data-elevation` | Shadow level | `"none"`, `"sm"`, `"md"`, `"lg"` |
-| `data-selected` | Selection state | `"true"` / `"false"` |
-| `data-icon-start` | Leading icon class | `"fa-solid fa-plus"` |
-| `data-icon-end` | Trailing icon class | `"fa-solid fa-chevron-down"` |
-| `data-label` | Text label (form controls) | `"First name"` |
-| `data-description` | Helper description text | `"As shown on your ID"` |
-| `data-helper` | Instructional hint | `"Must be at least 8 characters"` |
+| Attribute          | Purpose                         | Example                                                   |
+| ------------------ | ------------------------------- | --------------------------------------------------------- |
+| `data-variant`     | Visual variant of the component | `"primary"`, `"secondary"`, `"tertiary"`                  |
+| `data-size`        | Size preset                     | `"small"`, `"medium"`, `"large"`                          |
+| `data-status`      | Apply status colour scheme      | `"error"`, `"warning"`, `"success"`, `"info"`, `"urgent"` |
+| `data-type`        | Component sub-type              | `"icon"` (icon-only button)                               |
+| `data-layout`      | Layout mode                     | `"horizontal"`, `"vertical"`                              |
+| `data-active`      | Active/pressed state            | `"true"` / `"false"`                                      |
+| `data-elevation`   | Shadow level                    | `"none"`, `"sm"`, `"md"`, `"lg"`                          |
+| `data-selected`    | Selection state                 | `"true"` / `"false"`                                      |
+| `data-icon-start`  | Leading icon class              | `"fa-solid fa-plus"`                                      |
+| `data-icon-end`    | Trailing icon class             | `"fa-solid fa-chevron-down"`                              |
+| `data-label`       | Text label (form controls)      | `"First name"`                                            |
+| `data-description` | Helper description text         | `"As shown on your ID"`                                   |
+| `data-helper`      | Instructional hint              | `"Must be at least 8 characters"`                         |
 
 ### When to use bare attributes
 
@@ -122,10 +168,10 @@ Components whose DOM is populated from data (e.g., stepper steps, list items) us
 The wrapper is rendered by SherpaElement's bootstrap. The `<template>` elements live in the shadow DOM as invisible containers — JS clones them per data item:
 
 ```js
-const itemTpl = this.$('template.step-item-tpl');
+const itemTpl = this.$("template.step-item-tpl");
 const frag = itemTpl.content.cloneNode(true);
-const item = frag.querySelector('.step-item');
-item.dataset.active = '';
+const item = frag.querySelector(".step-item");
+item.dataset.active = "";
 header.appendChild(frag);
 ```
 
@@ -137,22 +183,32 @@ Reusable content types live in `html/templates/content/`. Each file declares:
 
 ```html
 <title>Regional Sales Overview</title>
-<meta name="description" content="Sales performance by region.">
+<meta name="description" content="Sales performance by region." />
 
-<slot data-presentation-type="metric" data-label="Total Revenue"
-      data-query-src="/data/queries/regional-sales-overview.json"
-      data-query-key="total-revenue" data-show-status="true"></slot>
-<slot data-presentation-type="table" data-label="Sales by Territory"
-      data-query-src="/data/queries/regional-sales-overview.json"
-      data-query-key="sales-by-territory"></slot>
+<slot
+  data-presentation-type="metric"
+  data-label="Total Revenue"
+  data-query-src="/data/queries/regional-sales-overview.json"
+  data-query-key="total-revenue"
+  data-show-status="true"
+></slot>
+<slot
+  data-presentation-type="table"
+  data-label="Sales by Territory"
+  data-query-src="/data/queries/regional-sales-overview.json"
+  data-query-key="sales-by-territory"
+></slot>
 ```
 
 View templates in `html/templates/views/` are layout-only:
 
 ```html
 <div class="sherpa-content-area" data-view-id="default-view">
-  <sherpa-container data-content="regional-sales-overview"
-                 data-col-span="9" data-row-span="2"></sherpa-container>
+  <sherpa-container
+    data-content="regional-sales-overview"
+    data-col-span="9"
+    data-row-span="2"
+  ></sherpa-container>
 </div>
 ```
 
@@ -180,7 +236,9 @@ Every component starts with a `:host` rule declaring display, font, colour and b
   cursor: pointer;
 }
 
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}
 ```
 
 ### Variant, Size and State Selectors
@@ -202,9 +260,15 @@ Use `:host([data-attribute="value"])` to style variants. No classes, no JS toggl
 }
 
 /* Interactive states */
-:host(:hover) { background: var(--sherpa-surface-control-primary-hover); }
-:host(:active) { background: var(--sherpa-surface-control-primary-down); }
-:host(:focus-visible) { outline: 2px solid var(--sherpa-border-focus-default); }
+:host(:hover) {
+  background: var(--sherpa-surface-control-primary-hover);
+}
+:host(:active) {
+  background: var(--sherpa-surface-control-primary-down);
+}
+:host(:focus-visible) {
+  outline: 2px solid var(--sherpa-border-focus-default);
+}
 
 /* Active toggle */
 :host([data-active="true"]) {
@@ -219,9 +283,15 @@ Components use private `--_` prefixed variables consumed with fallbacks so that 
 ```css
 :host {
   /* Consumed with fallback — default colours apply when no status is set */
-  background-color: var(--_status-surface, var(--sherpa-surface-control-primary-default));
+  background-color: var(
+    --_status-surface,
+    var(--sherpa-surface-control-primary-default)
+  );
   color: var(--_status-text, var(--sherpa-text-default-on-color-body));
-  border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
+  border-radius: var(
+    --_cg-border-radius,
+    var(--sherpa-border-rounding-base, 4px)
+  );
 }
 ```
 
@@ -235,11 +305,15 @@ Declare `container` on the host and use `@container` queries for responsive chil
 }
 
 @container sherpa-nav (min-width: 320px) {
-  .nav-product-name { display: block; }
+  .nav-product-name {
+    display: block;
+  }
 }
 
 @container sherpa-nav (max-width: 319px) {
-  .nav-product-name { display: none; }
+  .nav-product-name {
+    display: none;
+  }
 }
 ```
 
@@ -260,7 +334,9 @@ Container queries cross shadow DOM boundaries, making them ideal for layout-driv
 }
 
 /* ❌ Wrong — opacity compounds in dark mode, makes text illegible */
-:host([disabled]) { opacity: 0.5; }
+:host([disabled]) {
+  opacity: 0.5;
+}
 ```
 
 ### Control Group Pattern
@@ -271,7 +347,10 @@ Components that can be grouped (buttons, inputs, filter chips) read two inherite
 /* Inside the component */
 :host {
   border-width: var(--_cg-border-width, var(--sherpa-border-width-xs, 1px));
-  border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
+  border-radius: var(
+    --_cg-border-radius,
+    var(--sherpa-border-rounding-base, 4px)
+  );
 }
 ```
 
@@ -283,7 +362,8 @@ The wrapper owns the visual framing:
   --_cg-border-width: 0;
   --_cg-border-radius: 0;
   display: inline-flex;
-  border: var(--sherpa-border-width-xs) solid var(--sherpa-border-container-default);
+  border: var(--sherpa-border-width-xs) solid
+    var(--sherpa-border-container-default);
   border-radius: var(--sherpa-border-rounding-base);
   overflow: hidden;
 }
@@ -297,11 +377,17 @@ Inside shadow DOM, `:host` compound selectors must use the **functional form**:
 
 ```css
 /* ✅ Correct — functional pseudo-class */
-:host(:not([data-pinned="true"])) { width: 48px; }
-:host(:is([data-pinned="true"], [data-mode="edit"])) { width: 320px; }
+:host(:not([data-pinned="true"])) {
+  width: 48px;
+}
+:host(:is([data-pinned="true"], [data-mode="edit"])) {
+  width: 320px;
+}
 
 /* ❌ Wrong — chained pseudo-class doesn't work in shadow DOM */
-:host:not([data-pinned="true"]) { width: 48px; }
+:host:not([data-pinned="true"]) {
+  width: 48px;
+}
 ```
 
 CSS nesting with `&` inside `:host {}` desugars to the chained (broken) form. Put compound host selectors as standalone rules.
@@ -322,12 +408,12 @@ boundaries, these values are automatically available inside every web component.
 
 ```css
 [data-status="critical"] {
-  --_status-surface:              var(--sherpa-surface-context-error-subtle-default);
-  --_status-surface-strong:       var(--sherpa-surface-context-error-strong-default);
-  --_status-border:               var(--sherpa-border-context-error-default);
-  --_status-text:                 var(--sherpa-text-context-error-default);
-  --_status-text-on-color:        var(--sherpa-text-context-error-on-color);
-  --_status-icon:                 var(--sherpa-icon-context-error-default);
+  --_status-surface: var(--sherpa-surface-context-error-subtle-default);
+  --_status-surface-strong: var(--sherpa-surface-context-error-strong-default);
+  --_status-border: var(--sherpa-border-context-error-default);
+  --_status-text: var(--sherpa-text-context-error-default);
+  --_status-text-on-color: var(--sherpa-text-context-error-on-color);
+  --_status-icon: var(--sherpa-icon-context-error-default);
   /* … plus -hover/-down variants for surface and surface-strong */
 }
 ```
@@ -341,27 +427,33 @@ activates. No per-component status blocks needed.
 ```css
 /* Button primary — strong surface + on-colour text */
 :host {
-  background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default));
-  color:      var(--_status-text-on-color, var(--sherpa-text-default-on-color-body));
+  background: var(
+    --_status-surface-strong,
+    var(--sherpa-surface-control-primary-default)
+  );
+  color: var(--_status-text-on-color, var(--sherpa-text-default-on-color-body));
 }
 
 /* Button secondary — subtle surface + default text */
 :host([data-variant="secondary"]) {
-  background: var(--_status-surface, var(--sherpa-surface-control-secondary-default));
-  color:      var(--_status-text, var(--sherpa-text-default-label));
+  background: var(
+    --_status-surface,
+    var(--sherpa-surface-control-secondary-default)
+  );
+  color: var(--_status-text, var(--sherpa-text-default-label));
 }
 ```
 
 ### Available Status Variables
 
-| Variable | Description |
-|---|---|
-| `--_status-surface` | Subtle surface (default/hover/down) |
+| Variable                   | Description                         |
+| -------------------------- | ----------------------------------- |
+| `--_status-surface`        | Subtle surface (default/hover/down) |
 | `--_status-surface-strong` | Strong surface (default/hover/down) |
-| `--_status-border` | Border colour |
-| `--_status-text` | Text colour |
-| `--_status-text-on-color` | Text on strong surface |
-| `--_status-icon` | Icon colour |
+| `--_status-border`         | Border colour                       |
+| `--_status-text`           | Text colour                         |
+| `--_status-text-on-color`  | Text on strong surface              |
+| `--_status-icon`           | Icon colour                         |
 
 Components only consume the subset they need — no obligation to use all variables.
 
@@ -373,11 +465,11 @@ Design tokens follow a 3-tier model. Always consume **semantic tokens** with **h
 
 ### Tiers
 
-| Tier | Prefix | Source | Example |
-|---|---|---|---|
-| Core primitives | `--sherpa-core-*` | `sherpa-core-colors.css`, `sherpa-core-scale.css`, etc. | `--sherpa-core-colors-slate-600` |
-| Semantic aliases | `--sherpa-*` | `sherpa-theme-tokens.css`, `sherpa-color-alias.css` | `--sherpa-text-default-body`, `--sherpa-space-sm` |
-| Component private | `--_*` | Component CSS | `--_status-surface`, `--_cg-border-radius` |
+| Tier              | Prefix            | Source                                                  | Example                                           |
+| ----------------- | ----------------- | ------------------------------------------------------- | ------------------------------------------------- |
+| Core primitives   | `--sherpa-core-*` | `sherpa-core-colors.css`, `sherpa-core-scale.css`, etc. | `--sherpa-core-colors-slate-600`                  |
+| Semantic aliases  | `--sherpa-*`      | `sherpa-theme-tokens.css`, `sherpa-color-alias.css`     | `--sherpa-text-default-body`, `--sherpa-space-sm` |
+| Component private | `--_*`            | Component CSS                                           | `--_status-surface`, `--_cg-border-radius`        |
 
 ### Rules
 
@@ -398,29 +490,33 @@ JS is the last resort — used only for data, lifecycle and events that HTML and
 Every shadow DOM component extends `SherpaElement`:
 
 ```js
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 export class SherpaTag extends SherpaElement {
-  static get cssUrl()  { return new URL('./sherpa-tag.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-tag.html', import.meta.url).href; }
+  static get cssUrl() {
+    return new URL("./sherpa-tag.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-tag.html", import.meta.url).href;
+  }
 
   onRender() {
     // Shadow DOM is populated — wire up initial state
   }
 }
-customElements.define('sherpa-tag', SherpaTag);
+customElements.define("sherpa-tag", SherpaTag);
 ```
 
 ### Lifecycle Hooks
 
-| Hook | When | Use for |
-|---|---|---|
-| `onRender()` | Shadow DOM populated, before slots | Register event listeners, set default attributes |
-| `onConnect()` | Once, after first render | One-time setup that needs the component in the DOM |
-| `onDisconnect()` | Element removed from DOM | Clean up timers, observers, external listeners |
-| `onAttributeChanged(name, old, new)` | Observed attribute changes | React to attribute changes (data loading, template swaps) |
-| `onStatusChanged(new, old)` | `data-status` changes | Status-specific icon or ARIA updates |
-| `onSlotChange(slotEl)` | Slotted content changes | Toggle `data-has-{name}` on host |
+| Hook                                 | When                               | Use for                                                   |
+| ------------------------------------ | ---------------------------------- | --------------------------------------------------------- |
+| `onRender()`                         | Shadow DOM populated, before slots | Register event listeners, set default attributes          |
+| `onConnect()`                        | Once, after first render           | One-time setup that needs the component in the DOM        |
+| `onDisconnect()`                     | Element removed from DOM           | Clean up timers, observers, external listeners            |
+| `onAttributeChanged(name, old, new)` | Observed attribute changes         | React to attribute changes (data loading, template swaps) |
+| `onStatusChanged(new, old)`          | `data-status` changes              | Status-specific icon or ARIA updates                      |
+| `onSlotChange(slotEl)`               | Slotted content changes            | Toggle `data-has-{name}` on host                          |
 
 ### Observed Attributes
 
@@ -437,8 +533,8 @@ static get observedAttributes() {
 Use the built-in helpers instead of `this.shadowRoot.querySelector`:
 
 ```js
-this.$('.label')        // querySelector
-this.$$('.nav-item')    // querySelectorAll
+this.$(".label"); // querySelector
+this.$$(".nav-item"); // querySelectorAll
 ```
 
 ### Event Dispatching
@@ -529,20 +625,22 @@ await myButton.rendered;
 
 ## Anti-Patterns
 
-| Don't | Do Instead |
-|---|---|
-| Use `opacity` for disabled states | Use `--sherpa-text-inactive-default` and other inactive tokens on individual properties |
-| Toggle classes in JS for visual states | Set `data-*` attributes; let CSS select on them |
-| Use `:host:not(...)` (chained) | Use `:host(:not(...))` (functional form) |
-| Use `@container style(--prop)` on self | Use `:host([attr])` attribute selectors |
-| Reference core tokens (`--sherpa-core-*`) in components | Use semantic tokens (`--sherpa-*`) with hardcoded fallbacks |
-| Use JS to show/hide elements | Use `hidden` attribute, `:host([hidden])`, or CSS selectors on data attributes |
-| Put rendering logic in templates | Keep templates static; CSS and JS bring them to life |
-| Create singleton/global state managers | Use custom events with `bubbles: true` for cross-component communication |
-| Write JS for something CSS can do | Check if `:host()`, `:has()`, `@container`, `<details>`, `popover` solve it first |
-| Use bare custom attributes (e.g. `loading`) | Prefix with `data-` (e.g. `data-loading`) — bare attrs are reserved for native HTML |
-| Build DOM entirely in JS | Create an HTML template; use cloning prototypes for data-driven repeats |
-| Style child shadow DOM internals from outside | Use `data-pdf-mode` attribute + `:host([data-pdf-mode])` rules inside the child's shadow CSS |
+| Don't                                                   | Do Instead                                                                                   |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Use `opacity` for disabled states                       | Use `--sherpa-text-inactive-default` and other inactive tokens on individual properties      |
+| Toggle classes in JS for visual states                  | Set `data-*` attributes; let CSS select on them                                              |
+| Use `.hidden` on shadow DOM internals                   | CSS `:host([data-*]) .element { display: ... }` — `hidden` only on `:host`                   |
+| Use `element.style.display = '...'`                     | CSS attribute selectors                                                                      |
+| Use `createElement()` for template-able structure       | Put the element in the HTML template                                                         |
+| Use `innerHTML` for structural DOM                      | HTML template + cloning prototypes for data-driven repeats                                   |
+| Use `:host:not(...)` (chained)                          | Use `:host(:not(...))` (functional form)                                                     |
+| Use `@container style(--prop)` on self                  | Use `:host([attr])` attribute selectors                                                      |
+| Reference core tokens (`--sherpa-core-*`) in components | Use semantic tokens (`--sherpa-*`) with hardcoded fallbacks                                  |
+| Create singleton/global state managers                  | Use custom events with `bubbles: true` for cross-component communication                     |
+| Write JS for something CSS can do                       | Check if `:host()`, `:has()`, `@container`, `<details>`, `popover` solve it first            |
+| Use bare custom attributes (e.g. `loading`)             | Prefix with `data-` (e.g. `data-loading`) — bare attrs are reserved for native HTML          |
+| Build DOM entirely in JS                                | Create an HTML template; use cloning prototypes for data-driven repeats                      |
+| Style child shadow DOM internals from outside           | Use `data-pdf-mode` attribute + `:host([data-pdf-mode])` rules inside the child's shadow CSS |
 
 ---
 
@@ -550,8 +648,8 @@ await myButton.rendered;
 
 Most components extend `SherpaElement` and use shadow DOM. One component remains light DOM:
 
-| Component | Base Class | Reason |
-|---|---|---|
+| Component          | Base Class    | Reason                                     |
+| ------------------ | ------------- | ------------------------------------------ |
 | `sherpa-container` | `HTMLElement` | Orchestrates child components in light DOM |
 
 This component loads its CSS via `components/index.css` (light DOM import) rather than via `SherpaElement.cssUrl`.
@@ -571,9 +669,15 @@ Components rendered inside `sherpa-container-pdf` for print/export receive a `da
 
 ```css
 /* Inside sherpa-barchart shadow CSS */
-:host([data-pdf-mode]) .content-header { display: none; }
-:host([data-pdf-mode]) .chart-content  { min-height: 220px; }
-:host([data-pdf-mode]) .chart-legend   { display: flex !important; }
+:host([data-pdf-mode]) .content-header {
+  display: none;
+}
+:host([data-pdf-mode]) .chart-content {
+  min-height: 220px;
+}
+:host([data-pdf-mode]) .chart-legend {
+  display: flex !important;
+}
 ```
 
 PDF colour variables (`--_pdf-bg-white`, `--_pdf-bg-header`, etc.) are defined on `sherpa-container-pdf`'s `:host` and cascade through shadow boundaries via CSS custom property inheritance — no `::part()` needed.
@@ -588,14 +692,14 @@ PDF colour variables (`--_pdf-bg-white`, `--_pdf-bg-header`, etc.) are defined o
 
 ### Mapping to Figma
 
-| Figma Concept | Code Equivalent |
-|---|---|
+| Figma Concept                                 | Code Equivalent                          |
+| --------------------------------------------- | ---------------------------------------- |
 | Component variant (e.g., Primary / Secondary) | `data-variant="primary"` / `"secondary"` |
-| Component property (e.g., Size = Small) | `data-size="small"` |
-| Boolean property (e.g., Active = true) | `data-active="true"` |
-| Status (e.g., Critical) | `data-status="critical"` |
-| Design token (e.g., `space/sm`) | `--sherpa-space-sm` in CSS |
-| Colour token (e.g., `text/default/body`) | `--sherpa-text-default-body` |
+| Component property (e.g., Size = Small)       | `data-size="small"`                      |
+| Boolean property (e.g., Active = true)        | `data-active="true"`                     |
+| Status (e.g., Critical)                       | `data-status="critical"`                 |
+| Design token (e.g., `space/sm`)               | `--sherpa-space-sm` in CSS               |
+| Colour token (e.g., `text/default/body`)      | `--sherpa-text-default-body`             |
 
 ### Specifying New States
 

@@ -9,12 +9,21 @@
     data-pdf-mode — PDF mode indicator (set on child components)
 -->
 <template id="default">
-<header class="pdf-header">
-  <h2 class="pdf-title text-heading-lg"></h2>
-  <p class="pdf-description text-body-sm"></p>
-</header>
+  <header class="pdf-header">
+    <h2 class="pdf-title text-heading-lg"></h2>
+    <p class="pdf-description text-body-sm"></p>
+  </header>
 
-<div class="pdf-metrics"></div>
+  <div class="pdf-metrics"></div>
 
-<div class="pdf-sections"></div>
+  <div class="pdf-sections"></div>
+
+  <!-- Cloning prototype: PDF section with chart + table presentations -->
+  <template class="section-tpl">
+    <div class="pdf-section">
+      <h3 class="pdf-section-title"></h3>
+      <div class="pdf-presentation pdf-chart-wrapper"></div>
+      <div class="pdf-presentation pdf-table-wrapper"></div>
+    </div>
+  </template>
 </template>
