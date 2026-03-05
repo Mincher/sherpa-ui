@@ -8,40 +8,35 @@
  *
  * Content is supplied via inline child elements. The container is
  * content-agnostic — it never imports or creates viz components directly.
+ * Viz children auto-load their own data via ContentAttributesMixin and
+ * seed global filters from the shared global-filters utility.
  *
  * Architecture — decoupled peer events:
- *   Container owns layout. Menu template loading is handled by
- *   sherpa-button via data-menu-src. Menu items use data-event for
- *   auto-dispatched domain events. Container listens for those events
- *   on itself to handle resize, export, and section toggles.
- *
- *   Data filtering, column wiring, and presentation switching are handled
- *   by viz children, sherpa-filter-bar, and sherpa-data-viz via peer events:
+ *   Container owns layout and menu wiring only. All data concerns are
+ *   handled by the content components themselves:
  *     vizready             — viz child → filter bar (columns/rows)
- *     containerfilterchange — filter bar → container → viz children
+ *     containerfilterchange — filter bar → viz children (scoped)
  *     globalfilterchange   — document → viz children (direct)
  *     sortchange            — viz child → filter bar (sort chip sync)
  *     presentationchange   — viz child → sherpa-data-viz (view switch)
+ *
+ *   Menu template loading is handled by sherpa-button via data-menu-src.
+ *   Menu items use data-event for auto-dispatched domain events.
+ *   Container listens for those events to handle resize and section toggles.
  *
  * Templates (sherpa-container.html):
  *   shadow        — Shadow DOM: named slots + cloning prototypes
  *   default       — Light-DOM layout: header + filter bar + content wrapper
  *
- * Menu (sherpa-container-menu.html):
- *   Loaded by sherpa-button via data-menu-src. Container listens for
- *   menu-populate to inject dynamic section toggles, and for named
- *   domain events (containerexport, container-increase-cols, etc.).
- *
  * Attributes:
- *   data-variant      — Layout variant: "fit" (default, hugs content),
- *                        "resizable" (grid-driven spans), "fill" (fills parent)
+ *   data-variant      — Layout variant: "fit" (default), "resizable", "fill"
  *   data-title        — Container heading text
- *   description       — Container description
- *   template          — Layout template id from sherpa-container.html
+ *   data-description  — Container description
+ *   data-template     — Layout template id from sherpa-container.html
  *   data-col-span     — Column span (3, 6, 9, 12) — resizable variant only
  *   data-row-span     — Row span (1–6) — resizable variant only
  *   data-menu-open    — Menu state
- *   data-editable     — Edit mode (enables CSS resize grip, resizable variant only)
+ *   data-editable     — Edit mode (enables CSS resize grip)
  *
  * Slots (shadow DOM):
  *   header   — sherpa-header element
@@ -52,9 +47,6 @@
  * Cloning prototypes (shadow DOM):
  *   .section-tpl      — div.section > div.section-content
  *   .menu-toggle-tpl  — li > sherpa-menu-item[data-selection="toggle"]
- *
- * Events (bubbles: true, composed: true):
- *   containerexport        — Export action triggered
  */
 
 import "../sherpa-header/sherpa-header.js";
@@ -69,33 +61,6 @@ const MENU_SRC = new URL("./sherpa-container-menu.html", import.meta.url).href;
 
 /* ── Component ─────────────────────────────────────────────────── */
 
-/** Number of containers that load eagerly per navigation. */
-const EAGER_LIMIT = 4;
-let eagerUsed = 0;
-
-/** Shared IntersectionObserver — created lazily. */
-let sharedObserver = null;
-const observedContainers = new WeakMap();
-
-function getSharedObserver() {
-  if (!sharedObserver) {
-    sharedObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const container = entry.target;
-            sharedObserver.unobserve(container);
-            observedContainers.delete(container);
-            container._triggerInitialize();
-          }
-        }
-      },
-      { rootMargin: "200px" },
-    );
-  }
-  return sharedObserver;
-}
-
 export class SherpaContainer extends SherpaElement {
   static get htmlUrl() {
     return new URL("./sherpa-container.html", import.meta.url).href;
@@ -108,23 +73,6 @@ export class SherpaContainer extends SherpaElement {
 
   #initialized = false;
 
-  // ── Pluggable providers (injected by the host app at boot) ──
-  static #globalFilterProvider = null;
-
-  /**
-   * Register a provider that returns current global filter state.
-   * Signature: () => { filters: Array, timerange: Object|null }
-   * @param {Function} fn
-   */
-  static setGlobalFilterProvider(fn) {
-    SherpaContainer.#globalFilterProvider = fn;
-  }
-
-  /** Reset the eager counter (call before injecting a new view). */
-  static resetEagerCount() {
-    eagerUsed = 0;
-  }
-
   /* ── SherpaElement lifecycle hooks ───────────────────────────── */
 
   onRender() {
@@ -132,30 +80,6 @@ export class SherpaContainer extends SherpaElement {
   }
 
   onConnect() {
-    if (this.#initialized) return;
-
-    if (eagerUsed < EAGER_LIMIT) {
-      // First N containers load immediately (above the fold)
-      eagerUsed++;
-      this.#initialize();
-    } else {
-      // Deferred containers: wait for visibility
-      const observer = getSharedObserver();
-      observer.observe(this);
-      observedContainers.set(this, true);
-    }
-  }
-
-  onDisconnect() {
-    // Stop observing if still deferred
-    if (observedContainers.has(this)) {
-      getSharedObserver().unobserve(this);
-      observedContainers.delete(this);
-    }
-  }
-
-  /** Called by the IntersectionObserver when this container scrolls into view. */
-  _triggerInitialize() {
     if (!this.#initialized) this.#initialize();
   }
 
@@ -186,7 +110,7 @@ export class SherpaContainer extends SherpaElement {
      Initialisation
      ════════════════════════════════════════════════════════════════ */
 
-  async #initialize() {
+  #initialize() {
     if (this.#initialized) return;
 
     // Collect inline viz children before stamping the layout template
@@ -253,33 +177,6 @@ export class SherpaContainer extends SherpaElement {
     this.#wireMenuEvents();
 
     this.#initialized = true;
-
-    // ── Global filter seeding (read BEFORE initial load) ─────
-    // Viz children handle ongoing globalfilterchange events themselves,
-    // but the first load must be seeded with current global state.
-    const initialFilters = [];
-    const globalState = SherpaContainer.#globalFilterProvider
-      ? SherpaContainer.#globalFilterProvider()
-      : { filters: [], timerange: null };
-    for (const gf of globalState.filters || []) {
-      if (gf.values?.length) {
-        initialFilters.push({
-          field: gf.field,
-          operator: "in",
-          values: gf.values,
-        });
-      }
-    }
-    if (globalState.timerange) {
-      initialFilters.push({ type: "timerange", ...globalState.timerange });
-    }
-
-    // Trigger each viz child to load its own data (with pre-seeded filters)
-    await Promise.all(
-      [...metrics, ...sections].map((el) => {
-        if (typeof el.load === "function") return el.load(initialFilters);
-      }),
-    );
   }
 
   /* ════════════════════════════════════════════════════════════════

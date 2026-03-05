@@ -11,7 +11,7 @@ npm install sherpa-ui
 ### JavaScript — import all components
 
 ```js
-import 'sherpa-ui';
+import "sherpa-ui";
 ```
 
 ### CSS — import design tokens + utility classes
@@ -25,22 +25,22 @@ Or with an import map:
 
 ```html
 <script type="importmap">
-{
-  "imports": {
-    "sherpa-ui": "./node_modules/sherpa-ui/components/index.js",
-    "sherpa-ui/": "./node_modules/sherpa-ui/"
+  {
+    "imports": {
+      "sherpa-ui": "./node_modules/sherpa-ui/components/index.js",
+      "sherpa-ui/": "./node_modules/sherpa-ui/"
+    }
   }
-}
 </script>
 ```
 
 ## Entry Points
 
-| Entry | Path | Purpose |
-|-------|------|---------|
-| **JS** | `components/index.js` | Barrel export — registers all custom elements |
-| **CSS** | `css/styles/index.css` | Tokens + utility classes (`@layer tokens, utilities, components`) |
-| **Reset** | `css/styles/reset.css` | Minimal CSS reset |
+| Entry     | Path                   | Purpose                                                           |
+| --------- | ---------------------- | ----------------------------------------------------------------- |
+| **JS**    | `components/index.js`  | Barrel export — registers all custom elements                     |
+| **CSS**   | `css/styles/index.css` | Tokens + utility classes (`@layer tokens, utilities, components`) |
+| **Reset** | `css/styles/reset.css` | Minimal CSS reset                                                 |
 
 ## Architecture
 
@@ -54,8 +54,8 @@ Or with an import map:
 `sherpa-base-table`, `sherpa-barchart`, `sherpa-metric`, and `sherpa-data-grid` accept data via pluggable providers:
 
 ```js
-import { SherpaTable } from 'sherpa-ui/components/sherpa-base-table/sherpa-base-table.js';
-import { SherpaDataGrid } from 'sherpa-ui/components/sherpa-data-grid/sherpa-data-grid.js';
+import { SherpaTable } from "sherpa-ui/components/sherpa-base-table/sherpa-base-table.js";
+import { SherpaDataGrid } from "sherpa-ui/components/sherpa-data-grid/sherpa-data-grid.js";
 
 // Register your data provider before components render
 SherpaTable.setDataProvider(async (config) => {
@@ -71,32 +71,33 @@ SherpaDataGrid.setDataProvider(async (config) => {
 });
 ```
 
-## Container Configuration
+## Global Filters
 
-`sherpa-container` supports configurable content template paths and global filter providers:
+Register a global filter provider so viz components seed their first data load
+with any active global filters (timerange, value filters, etc.):
 
 ```js
-import { SherpaContainer } from 'sherpa-ui/components/sherpa-container/sherpa-container.js';
+import { setGlobalFilterProvider } from "sherpa-ui/components/utilities/global-filters.js";
 
-// Override the default content template base path
-SherpaContainer.contentBasePath = '/my/content/templates/';
-
-// Register a global filter state provider
-SherpaContainer.setGlobalFilterProvider(() => ({
+setGlobalFilterProvider(() => ({
   filters: myFilterService.getFilters(),
   timerange: myFilterService.getTimerange(),
 }));
 ```
 
+Viz components using `ContentAttributesMixin` auto-load from their
+`data-query-src` / `data-query-key` attributes on connect and automatically
+include these global filters in the initial request.
+
 ## Events
 
 Components dispatch these events (bubble + composed) for app-level integration:
 
-| Event | Source | Detail |
-|-------|--------|--------|
-| `containercolumnsready` | `sherpa-container` | `{ columns, rows }` |
-| `containerexport` | `sherpa-container` | `{ container }` |
-| `viewexport` | `sherpa-view-header` | `{ title }` |
+| Event                   | Source               | Detail                          |
+| ----------------------- | -------------------- | ------------------------------- |
+| `containercolumnsready` | `sherpa-filter-bar`  | `{ columns, rows }`             |
+| `containerexport`       | `sherpa-menu-item`   | `{ value }` (bubbles from menu) |
+| `viewexport`            | `sherpa-view-header` | `{ title }`                     |
 
 ## Scripts
 

@@ -17,11 +17,10 @@
  *   • Container places `<sherpa-data-viz>` inside `.section-content`.
  *   • The consumer puts a viz child (e.g. `<sherpa-base-table>`) inside
  *     `<sherpa-data-viz>` in the HTML.
+ *   • The viz child auto-loads its data via ContentAttributesMixin.
  *   • On `presentationchange`, this wrapper removes the old child,
  *     creates the new one, and calls setConfig/setData with the
  *     transferable config from the outgoing child.
- *   • The `load()` method delegates to the active child so the
- *     container's initialisation loop works unchanged.
  *
  * Supported presentation types:
  *   table      → sherpa-base-table
@@ -76,18 +75,6 @@ export class SherpaDataViz extends SherpaElement {
   /** The currently active viz child element, or null. */
   get activeChild() {
     return this.querySelector(VIZ_SELECTOR);
-  }
-
-  /**
-   * Delegate to the active viz child's `load()` method.
-   * Called by the container's initialisation loop.
-   * @param {Array} [initialFilters] - Pre-seeded global filters.
-   */
-  async load(initialFilters = []) {
-    const child = this.activeChild;
-    if (child && typeof child.load === "function") {
-      return child.load(initialFilters);
-    }
   }
 
   /* ── Presentation switching ────────────────────────────────── */
