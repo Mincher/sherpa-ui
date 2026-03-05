@@ -3,6 +3,14 @@
  * Supports stacked bars, category limiting, and responsive legend.
  *
  * Uses DataService for standardised data preparation.
+ *
+ * Events (bubbles: true, composed: true):
+ *   vizready           — Dispatched after setData() completes. detail: { columns, rows }
+ *   sortchange         — Column header sort. detail: { field, direction }
+ *   presentationchange — View switch request. detail: { type, data }
+ *
+ * Self-filtering: Inherits containerfilterchange / globalfilterchange
+ * listeners from SherpaTable base class.
  */
 import { getTransferableConfig } from "../utilities/data-utils.js";
 import { SherpaTable } from "../sherpa-base-table/sherpa-base-table.js";
@@ -70,6 +78,8 @@ export class SherpaBarChart extends SherpaTable {
   }
 
   onConnect() {
+    super.onConnect();
+
     // Initialize unique menu ID on first connection
     if (!this.#menuId) {
       this.#menuId = generateUniqueId("barchart");
@@ -133,6 +143,7 @@ export class SherpaBarChart extends SherpaTable {
   }
 
   onDisconnect() {
+    super.onDisconnect();
     this.#resizeObserver?.disconnect();
   }
 
@@ -235,6 +246,18 @@ export class SherpaBarChart extends SherpaTable {
     }
 
     this.#render();
+
+    // Dispatch vizready so filter bars can auto-populate column menus
+    this.dispatchEvent(
+      new CustomEvent("vizready", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          columns: this.getContentColumns(),
+          rows: this.getContentRows(),
+        },
+      }),
+    );
   }
 
   #validateFieldsAgainstColumns() {

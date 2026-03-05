@@ -6,6 +6,16 @@
  *
  * Segment/Sort state is managed via attributes (data-segment-field, data-segment-mode, etc.)
  * Filter chips sync their state to these parent attributes automatically.
+ *
+ * Events (bubbles: true, composed: true):
+ *   vizready           — Dispatched after setData() completes. detail: { columns, rows }
+ *   sortchange         — Column header sort. detail: { field, direction }
+ *   presentationchange — View switch request. detail: { type, data }
+ *
+ * Self-filtering:
+ *   Listens for containerfilterchange on its closest sherpa-container ancestor
+ *   to apply sort/segment/value filters. Listens for globalfilterchange on
+ *   document to re-query with merged global + container filters.
  */
 import {
   ContentAttributesMixin,
@@ -97,6 +107,167 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
   #externalFilters = []; // External filters from FilterCoordinator (layered scoping)
   #menuHeadingTpl = null; // Cached <template class="menu-heading-tpl">
   #menuItemTpl = null; // Cached <template class="menu-item-tpl">
+  #containerFilterHandler = null; // Bound handler for containerfilterchange
+  #globalFilterHandler = null; // Bound handler for globalfilterchange
+  #containerEl = null; // Cached closest sherpa-container ancestor
+
+  // ─────────────────────────────────────────────────────────────
+  // Lifecycle — self-filtering event wiring
+  // ─────────────────────────────────────────────────────────────
+
+  onConnect() {
+    super.onConnect?.();
+    this.#wireFilterListeners();
+  }
+
+  onDisconnect() {
+    super.onDisconnect?.();
+    this.#unwireFilterListeners();
+  }
+
+  /** Wire listeners for container-scoped and global filter events. */
+  #wireFilterListeners() {
+    this.#containerEl = this.closest("sherpa-container");
+
+    // Container-scoped filters (sort/segment/value from sibling filter bar)
+    if (this.#containerEl) {
+      this.#containerFilterHandler = (e) => this.#onContainerFilter(e);
+      this.#containerEl.addEventListener(
+        "containerfilterchange",
+        this.#containerFilterHandler,
+      );
+    }
+
+    // Global filters (timerange, global filter bar)
+    this.#globalFilterHandler = (e) => this.#onGlobalFilter(e);
+    document.addEventListener("globalfilterchange", this.#globalFilterHandler);
+  }
+
+  /** Unwire filter listeners on disconnect. */
+  #unwireFilterListeners() {
+    if (this.#containerEl && this.#containerFilterHandler) {
+      this.#containerEl.removeEventListener(
+        "containerfilterchange",
+        this.#containerFilterHandler,
+      );
+    }
+    if (this.#globalFilterHandler) {
+      document.removeEventListener(
+        "globalfilterchange",
+        this.#globalFilterHandler,
+      );
+    }
+    this.#containerFilterHandler = null;
+    this.#globalFilterHandler = null;
+    this.#containerEl = null;
+  }
+
+  /**
+   * Handle container-scoped filter changes (sort, segment, value filters).
+   * Sets attributes for sort/segment; stores value filters for re-query.
+   */
+  #onContainerFilter(e) {
+    const filters = e.detail?.filters || [];
+    let sortFilter = null;
+    let segmentFilter = null;
+    const valueFilters = [];
+
+    for (const f of filters) {
+      if (f.type === "sort") {
+        sortFilter = f;
+        continue;
+      }
+      if (f.type === "segment") {
+        segmentFilter = f;
+        continue;
+      }
+      if (f.type === "filter" && f.values?.length) {
+        valueFilters.push(f);
+      }
+    }
+
+    // Sort → attributes (triggers onAttributeChanged → re-render)
+    if (sortFilter) {
+      this.setAttribute("data-sort-field", sortFilter.field);
+      this.setAttribute("data-sort-direction", sortFilter.mode || "asc");
+    } else {
+      this.removeAttribute("data-sort-field");
+      this.removeAttribute("data-sort-direction");
+    }
+
+    // Segment → attributes (triggers onAttributeChanged → re-render)
+    if (segmentFilter) {
+      this.setAttribute("data-segment-field", segmentFilter.field);
+      this.setAttribute("data-segment-mode", segmentFilter.mode || "on");
+    } else {
+      this.removeAttribute("data-segment-field");
+      this.removeAttribute("data-segment-mode");
+    }
+
+    // Value filters → re-query with merged config
+    if (valueFilters.length) {
+      this.#reQueryWithFilters(valueFilters);
+    }
+  }
+
+  /**
+   * Handle global filter changes (timerange, global filter bar).
+   * Re-queries data with merged global filters.
+   */
+  #onGlobalFilter(e) {
+    const globalFilters = e.detail?.filters || [];
+    const timerange = e.detail?.timerange || null;
+    const filterEntries = [];
+
+    for (const gf of globalFilters) {
+      if (gf.values?.length) {
+        filterEntries.push({
+          field: gf.field,
+          operator: "in",
+          values: gf.values,
+        });
+      }
+    }
+    if (timerange) {
+      filterEntries.push({ type: "timerange", ...timerange });
+    }
+    if (filterEntries.length) {
+      this.#reQueryWithFilters(filterEntries);
+    }
+  }
+
+  /**
+   * Re-query this component's data with additional filter entries
+   * merged into its original config.
+   */
+  #reQueryWithFilters(additionalFilters) {
+    const config =
+      typeof this.getConfig === "function" ? this.getConfig() : null;
+    if (!config || typeof this.setData !== "function") return;
+    const mergedFilters = [...(config.filters || []), ...additionalFilters];
+    const segmentBy = this.getAttribute("data-segment-field") || undefined;
+    this.setData({ ...config, filters: mergedFilters, segmentBy });
+  }
+
+  /**
+   * Dispatch vizready event after data load completes.
+   * Filter bars listen for this to auto-populate column menus.
+   */
+  #dispatchVizReady() {
+    const columns =
+      typeof this.getContentColumns === "function"
+        ? this.getContentColumns()
+        : [];
+    const rows =
+      typeof this.getContentRows === "function" ? this.getContentRows() : [];
+    this.dispatchEvent(
+      new CustomEvent("vizready", {
+        bubbles: true,
+        composed: true,
+        detail: { columns, rows },
+      }),
+    );
+  }
 
   // ─────────────────────────────────────────────────────────────
   // Base Component Methods (Shared)
@@ -490,6 +661,7 @@ class SherpaTable extends ContentAttributesMixin(SherpaElement) {
 
     await this.rendered;
     this.#render();
+    this.#dispatchVizReady();
   }
 
   // ─────────────────────────────────────────────────────────────

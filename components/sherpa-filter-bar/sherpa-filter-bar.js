@@ -2,6 +2,11 @@
  * sherpa-filter-bar.js
  * Horizontal filter bar with zoned layout.
  *
+ * Self-populating:
+ *   Listens for `vizready` events bubbling from sibling viz children
+ *   through the shared sherpa-container ancestor. Unions their columns
+ *   and rows to seed chip menus automatically.
+ *
  * Slot-based layout:
  *   toggle   — Filter on/off toggle
  *   group    — Segment/group chip
@@ -10,20 +15,16 @@
  *   default  — User-added dynamic filter chips + Add button
  *   actions  — Clear / Apply / Save buttons
  *
- * The "Add" button allows users to dynamically add filter-type chips.
+ * Events dispatched:
+ *   filterchange          — When any chip changes. detail: { filters }
+ *   filterclear            — When the clear action is invoked.
+ *   containerfilterchange  — Dispatched on the closest sherpa-container
+ *                           ancestor so viz children can self-filter.
+ *                           detail: { filters }
  *
- * Usage:
- *   <sherpa-filter-bar>
- *     <sherpa-filter-chip slot="group" data-type="segment">Group</sherpa-filter-chip>
- *     <sherpa-filter-chip slot="sort" data-type="sort">Sort</sherpa-filter-chip>
- *     <sherpa-filter-chip slot="presets" data-type="filter" data-field="severity">Severity</sherpa-filter-chip>
- *     <sherpa-button slot="actions" data-variant="tertiary">Clear filter</sherpa-button>
- *   </sherpa-filter-bar>
- *
- * Events:
- *   filterchange — Dispatched when any slotted filter chip changes state.
- *                  detail: { filters: Array<{ field, mode, type, values? }> }
- *   filterclear  — Dispatched when the clear action is invoked.
+ * Events consumed:
+ *   vizready   (bubbles up from viz children)  — auto-populates columns/rows
+ *   sortchange (bubbles up from viz children)  — syncs sort chip state
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
@@ -55,8 +56,25 @@ export class SherpaFilterBar extends SherpaElement {
   #pendingEmit = false; // Microtask debounce for observer-driven filterchange
   #menuHeadingTpl = null; // Cached <template class="menu-heading-tpl">
   #menuItemTpl = null; // Cached <template class="menu-item-tpl">
+  #vizReadyHandler = null; // Bound handler for vizready events
+  #sortChangeHandler = null; // Bound handler for sortchange events
+  #syncingSort = false; // Guard against re-entrant filterchange during sort sync
+  #containerEl = null; // Cached closest sherpa-container ancestor
 
   onConnect() {
+    // Cache closest container for event dispatch
+    this.#containerEl = this.closest("sherpa-container");
+
+    // ── Self-populating: listen for vizready from viz children ──
+    if (this.#containerEl) {
+      this.#vizReadyHandler = (e) => this.#onVizReady(e);
+      this.#containerEl.addEventListener("vizready", this.#vizReadyHandler);
+
+      // 2-way sort binding: viz child column-header sort → sort chip
+      this.#sortChangeHandler = (e) => this.#onSortChange(e);
+      this.#containerEl.addEventListener("sortchange", this.#sortChangeHandler);
+    }
+
     // Watch for attribute changes on slotted filter chips
     this.#observer = new MutationObserver(() => {
       this.#syncActiveState();
@@ -134,6 +152,19 @@ export class SherpaFilterBar extends SherpaElement {
   onDisconnect() {
     this.#observer?.disconnect();
     this.#observer = null;
+
+    if (this.#containerEl && this.#vizReadyHandler) {
+      this.#containerEl.removeEventListener("vizready", this.#vizReadyHandler);
+    }
+    if (this.#containerEl && this.#sortChangeHandler) {
+      this.#containerEl.removeEventListener(
+        "sortchange",
+        this.#sortChangeHandler,
+      );
+    }
+    this.#vizReadyHandler = null;
+    this.#sortChangeHandler = null;
+    this.#containerEl = null;
   }
 
   onAttributeChanged(name, _old, newValue) {
@@ -170,6 +201,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.dispatchEvent(
       new CustomEvent("filterclear", { bubbles: true, composed: true }),
     );
+    this.#dispatchContainerFilterChange([]);
   }
 
   /** Get all slotted sherpa-filter-chip elements across all slots. */
@@ -294,15 +326,20 @@ export class SherpaFilterBar extends SherpaElement {
     chip.setValueData(this.#rows, col);
   }
 
-  /** Dispatch filterchange event. */
+  /** Dispatch filterchange event + containerfilterchange on container ancestor. */
   #emitFilterChange() {
+    const filters = this.getFilters();
     this.dispatchEvent(
       new CustomEvent("filterchange", {
         bubbles: true,
         composed: true,
-        detail: { filters: this.getFilters() },
+        detail: { filters },
       }),
     );
+
+    // Dispatch containerfilterchange on closest container so viz children
+    // can self-filter without container acting as intermediary.
+    this.#dispatchContainerFilterChange(filters);
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -386,6 +423,144 @@ export class SherpaFilterBar extends SherpaElement {
       }
     }
     return false;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     Self-populating event handlers
+     ══════════════════════════════════════════════════════════════ */
+
+  /**
+   * Handle a vizready event from a viz child.
+   * Unions columns and rows from all viz children that have fired so far.
+   */
+  #onVizReady(e) {
+    const { columns = [], rows = [] } = e.detail || {};
+
+    // Merge columns by field (union — first definition wins)
+    const colMap = new Map();
+    for (const c of this.#columns) colMap.set(c.field, c);
+    for (const c of columns) {
+      if (!colMap.has(c.field)) colMap.set(c.field, c);
+    }
+    const mergedCols = [...colMap.values()];
+    const mergedRows = this.#rows.concat(rows);
+
+    this.setAvailableColumns(mergedCols, mergedRows);
+
+    // Seed segment chip from first viz element if not already set
+    const segmentChip = this.querySelector('sherpa-filter-chip[slot="group"]');
+    if (segmentChip && !segmentChip.getField?.()) {
+      const vizEl = e.target;
+      const initField = vizEl?.getAttribute("data-segment-field");
+      const initMode = vizEl?.getAttribute("data-segment-mode");
+      if (initField) {
+        segmentChip.setField(initField);
+        if (initMode) segmentChip.setMode(initMode);
+      }
+    }
+
+    // Auto-hide group chip if only barcharts with no valid segment columns
+    this.#maybeHideGroupChip();
+
+    // Dispatch containercolumnsready for any external listeners (global filter bars)
+    this.dispatchEvent(
+      new CustomEvent("containercolumnsready", {
+        bubbles: true,
+        composed: true,
+        detail: { columns: mergedCols, rows: mergedRows },
+      }),
+    );
+  }
+
+  /**
+   * Handle sortchange from a viz child — sync the sort chip to match.
+   */
+  #onSortChange(e) {
+    const sortChip = this.querySelector('sherpa-filter-chip[data-type="sort"]');
+    if (!sortChip) return;
+
+    const { field, direction } = e.detail || {};
+    this.#syncingSort = true;
+    if (field && direction !== "off") {
+      sortChip.setField(field);
+      sortChip.setMode(direction);
+    } else {
+      sortChip.setField(null);
+    }
+    this.#syncingSort = false;
+  }
+
+  /**
+   * Dispatch containerfilterchange on the closest sherpa-container ancestor.
+   * Viz children listen for this to self-filter.
+   */
+  #dispatchContainerFilterChange(filters) {
+    const container = this.#containerEl || this.closest("sherpa-container");
+    if (!container) return;
+    container.dispatchEvent(
+      new CustomEvent("containerfilterchange", {
+        bubbles: false, // scoped to container
+        detail: { filters },
+      }),
+    );
+  }
+
+  /**
+   * Hide the group (segment) chip when all viz siblings are barcharts
+   * and the only non-numeric column with >1 unique value is the category axis.
+   */
+  #maybeHideGroupChip() {
+    const groupChip = this.querySelector('sherpa-filter-chip[slot="group"]');
+    if (!groupChip) return;
+
+    const container = this.#containerEl || this.closest("sherpa-container");
+    if (!container) return;
+
+    // Get all viz elements in the container
+    const vizEls = [
+      ...container.querySelectorAll(
+        ":is(sherpa-base-table, sherpa-barchart, sherpa-data-grid)",
+      ),
+    ];
+    const allCharts =
+      vizEls.length > 0 &&
+      vizEls.every((el) => el.tagName === "SHERPA-BARCHART");
+    if (!allCharts) return;
+
+    // Collect category fields
+    const catFields = new Set();
+    for (const el of vizEls) {
+      const cat =
+        typeof el.getCategoryField === "function"
+          ? el.getCategoryField()
+          : null;
+      if (cat) catFields.add(cat);
+    }
+
+    const NUMERIC_TYPES = new Set([
+      "number",
+      "numeric",
+      "currency",
+      "percent",
+      "year",
+      "monthNumber",
+    ]);
+    const validSegmentCols = this.#columns.filter((col) => {
+      if (NUMERIC_TYPES.has((col.type || "").toLowerCase())) return false;
+      if (catFields.has(col.field)) return false;
+      const vals = new Set();
+      for (const r of this.#rows) {
+        vals.add(r[col.field]);
+        if (vals.size > 1) break;
+      }
+      return vals.size > 1;
+    });
+
+    if (validSegmentCols.length === 0) {
+      groupChip.toggleAttribute("disabled", true);
+      groupChip.removeAttribute("data-field");
+      groupChip.removeAttribute("data-mode");
+    }
   }
 }
 

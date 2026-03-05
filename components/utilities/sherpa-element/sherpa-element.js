@@ -64,16 +64,26 @@
  */
 
 // Class-level caches: each subclass stores its own fetched HTML + parsed templates.
-const _htmlCache = new Map();        // raw HTML string
+const _htmlCache = new Map(); // raw HTML string
 const _templateMapCache = new Map(); // Map<id, HTMLString> (parsed from <template> blocks)
 
 /** Font Awesome CDN — loaded once by the browser, shared across all shadow roots. */
-const FA_URL = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
+const FA_URL =
+  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";
 
 /** Shared utility stylesheets — injected as <link> into every shadow root. */
-const TEXT_URL   = new URL('../../../css/styles/sherpa-text-classes.css', import.meta.url).href;
-const ICON_URL   = new URL('../../../css/styles/sherpa-icon-classes.css', import.meta.url).href;
-const MOTION_URL = new URL('../../../css/styles/sherpa-motion-classes.css', import.meta.url).href;
+const TEXT_URL = new URL(
+  "../../../css/styles/sherpa-text-classes.css",
+  import.meta.url,
+).href;
+const ICON_URL = new URL(
+  "../../../css/styles/sherpa-icon-classes.css",
+  import.meta.url,
+).href;
+const MOTION_URL = new URL(
+  "../../../css/styles/sherpa-motion-classes.css",
+  import.meta.url,
+).href;
 
 /**
  * Parse an HTML string for `<template id="...">` blocks.
@@ -81,16 +91,16 @@ const MOTION_URL = new URL('../../../css/styles/sherpa-motion-classes.css', impo
  * the legacy flat-HTML format.
  */
 export function parseTemplates(html) {
-  if (!html || !html.includes('<template')) return null;
+  if (!html || !html.includes("<template")) return null;
 
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const templates = doc.querySelectorAll('template[id]');
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const templates = doc.querySelectorAll("template[id]");
   if (templates.length === 0) return null;
 
   const map = new Map();
   for (const t of templates) {
     // Use a temporary div to serialize the fragment's inner HTML
-    const wrapper = document.createElement('div');
+    const wrapper = document.createElement("div");
     wrapper.appendChild(t.content.cloneNode(true));
     map.set(t.id, wrapper.innerHTML);
   }
@@ -98,11 +108,14 @@ export function parseTemplates(html) {
 }
 
 export class SherpaElement extends HTMLElement {
-
   /* ── Static resource URLs (override in subclass) ──────────────── */
 
-  static get cssUrl() { return null; }
-  static get htmlUrl() { return null; }
+  static get cssUrl() {
+    return null;
+  }
+  static get htmlUrl() {
+    return null;
+  }
 
   /* ── Observed attributes ──────────────────────────────────────── */
 
@@ -111,7 +124,7 @@ export class SherpaElement extends HTMLElement {
    *   static get observedAttributes() { return [...super.observedAttributes, 'data-my-attr']; }
    */
   static get observedAttributes() {
-    return ['data-status'];
+    return ["data-status"];
   }
 
   /* ── Status icon map (override in subclass to customise) ──────── */
@@ -123,15 +136,15 @@ export class SherpaElement extends HTMLElement {
    */
   static get statusIcons() {
     return {
-      success:  'fa-solid fa-circle-check',
-      error:    'fa-solid fa-circle-exclamation',   // legacy alias → critical
-      critical: 'fa-solid fa-circle-exclamation',
-      warning:  'fa-solid fa-triangle-exclamation',
-      info:     'fa-solid fa-circle-info',
-      neutral:  'fa-regular fa-circle',
-      urgent:   'fa-solid fa-bolt',
-      default:  null,
-      none:     null,
+      success: "fa-solid fa-circle-check",
+      error: "fa-solid fa-circle-exclamation", // legacy alias → critical
+      critical: "fa-solid fa-circle-exclamation",
+      warning: "fa-solid fa-triangle-exclamation",
+      info: "fa-solid fa-circle-info",
+      neutral: "fa-regular fa-circle",
+      urgent: "fa-solid fa-bolt",
+      default: null,
+      none: null,
     };
   }
 
@@ -143,7 +156,9 @@ export class SherpaElement extends HTMLElement {
    * first template (default). Only relevant when the HTML file uses
    * multi-template format.
    */
-  get templateId() { return null; }
+  get templateId() {
+    return null;
+  }
 
   /* ── Instance ─────────────────────────────────────────────────── */
 
@@ -153,24 +168,36 @@ export class SherpaElement extends HTMLElement {
 
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: 'open' });
+    this.#shadow = this.attachShadow({ mode: "open" });
   }
 
   /* ── Status accessors ─────────────────────────────────────────── */
 
   /** Current status value, or null if unset. */
-  get status() { return this.dataset.status || null; }
-  set status(v) { v ? (this.dataset.status = v) : delete this.dataset.status; }
+  get status() {
+    return this.dataset.status || null;
+  }
+  set status(v) {
+    v ? (this.dataset.status = v) : delete this.dataset.status;
+  }
 
   /** Font Awesome class for the current status icon, or null. */
-  get statusIcon() { return this.constructor.statusIcons?.[this.status] || null; }
+  get statusIcon() {
+    return this.constructor.statusIcons?.[this.status] || null;
+  }
 
   /* ── Shadow root query helpers ────────────────────────────────── */
 
-  $(sel)  { return this.#shadow.querySelector(sel); }
-  $$(sel) { return this.#shadow.querySelectorAll(sel); }
+  $(sel) {
+    return this.#shadow.querySelector(sel);
+  }
+  $$(sel) {
+    return this.#shadow.querySelectorAll(sel);
+  }
 
-  get shadow() { return this.#shadow; }
+  get shadow() {
+    return this.#shadow;
+  }
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
@@ -187,7 +214,7 @@ export class SherpaElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
-    if (name === 'data-status') {
+    if (name === "data-status") {
       this.onStatusChanged(newValue, oldValue);
     }
     this.onAttributeChanged(name, oldValue, newValue);
@@ -219,11 +246,11 @@ export class SherpaElement extends HTMLElement {
     const hasContent = this.#slotHasContent(slotEl);
     const wrapper = slotEl.parentElement;
     if (wrapper && wrapper !== this.#shadow) {
-      wrapper.toggleAttribute('data-has-content', hasContent);
+      wrapper.toggleAttribute("data-has-content", hasContent);
     }
 
     // Set host data attribute for external styling
-    const name = slotEl.name || 'label';
+    const name = slotEl.name || "label";
     this.toggleAttribute(`data-has-${name}`, hasContent);
   }
 
@@ -236,9 +263,9 @@ export class SherpaElement extends HTMLElement {
     let rawHtml = _htmlCache.get(Ctor);
     if (rawHtml === undefined && Ctor.htmlUrl) {
       try {
-        rawHtml = await fetch(Ctor.htmlUrl).then(r => r.text());
+        rawHtml = await fetch(Ctor.htmlUrl).then((r) => r.text());
       } catch {
-        rawHtml = '';
+        rawHtml = "";
       }
       _htmlCache.set(Ctor, rawHtml);
     }
@@ -253,7 +280,11 @@ export class SherpaElement extends HTMLElement {
     // Resolve which HTML to inject
     let html;
     const id = this.templateId;
-    html = (tplMap && id && tplMap.get(id)) || (tplMap && tplMap.values().next().value) || rawHtml || '';
+    html =
+      (tplMap && id && tplMap.get(id)) ||
+      (tplMap && tplMap.values().next().value) ||
+      rawHtml ||
+      "";
 
     // Populate shadow DOM — all CSS via <link> (browser-native, cached).
     const links = [
@@ -261,8 +292,8 @@ export class SherpaElement extends HTMLElement {
       `<link rel="stylesheet" href="${TEXT_URL}">`,
       `<link rel="stylesheet" href="${ICON_URL}">`,
       `<link rel="stylesheet" href="${MOTION_URL}">`,
-      Ctor.cssUrl ? `<link rel="stylesheet" href="${Ctor.cssUrl}">` : '',
-    ].join('');
+      Ctor.cssUrl ? `<link rel="stylesheet" href="${Ctor.cssUrl}">` : "",
+    ].join("");
     this.#shadow.innerHTML = `${links}${html}`;
 
     // Let subclass do post-render work (e.g. query inner elements, create auto-icons)
@@ -295,15 +326,19 @@ export class SherpaElement extends HTMLElement {
     const Ctor = this.constructor;
     const tplMap = _templateMapCache.get(Ctor);
 
-    const html = (tplMap && id && tplMap.get(id)) || (tplMap && tplMap.values().next().value) || _htmlCache.get(Ctor) || '';
+    const html =
+      (tplMap && id && tplMap.get(id)) ||
+      (tplMap && tplMap.values().next().value) ||
+      _htmlCache.get(Ctor) ||
+      "";
 
     const links = [
       `<link rel="stylesheet" href="${FA_URL}">`,
       `<link rel="stylesheet" href="${TEXT_URL}">`,
       `<link rel="stylesheet" href="${ICON_URL}">`,
       `<link rel="stylesheet" href="${MOTION_URL}">`,
-      Ctor.cssUrl ? `<link rel="stylesheet" href="${Ctor.cssUrl}">` : '',
-    ].join('');
+      Ctor.cssUrl ? `<link rel="stylesheet" href="${Ctor.cssUrl}">` : "",
+    ].join("");
     this.#shadow.innerHTML = `${links}${html}`;
 
     await this.onRender();
@@ -321,7 +356,7 @@ export class SherpaElement extends HTMLElement {
    */
   getTemplateHtml(id) {
     const tplMap = _templateMapCache.get(this.constructor);
-    return (tplMap && id && tplMap.get(id)) || '';
+    return (tplMap && id && tplMap.get(id)) || "";
   }
 
   /* ── Dynamic content loading ──────────────────────────────────── */
@@ -334,7 +369,7 @@ export class SherpaElement extends HTMLElement {
    *
    * Designed for components that load content dynamically at runtime
    * rather than from a static class-level template — e.g. sherpa-nav
-   * (data-src) and sherpa-container (data-content).
+   * (data-src).
    *
    * Unlike `renderTemplate(id)`, this fetches from an arbitrary URL
    * and does NOT use the class-level template cache.
@@ -350,13 +385,16 @@ export class SherpaElement extends HTMLElement {
 
       // Remove previous template content (preserve <link> and <style> from bootstrap)
       for (const child of [...this.#shadow.childNodes]) {
-        if (child.nodeType === Node.ELEMENT_NODE &&
-            (child.tagName === 'LINK' || child.tagName === 'STYLE')) continue;
+        if (
+          child.nodeType === Node.ELEMENT_NODE &&
+          (child.tagName === "LINK" || child.tagName === "STYLE")
+        )
+          continue;
         child.remove();
       }
 
       // Append new template content
-      const temp = document.createElement('div');
+      const temp = document.createElement("div");
       temp.innerHTML = html;
       this.#shadow.append(...temp.childNodes);
 
@@ -372,8 +410,8 @@ export class SherpaElement extends HTMLElement {
   /* ── Slot presence detection ──────────────────────────────────── */
 
   #wireSlots() {
-    for (const slot of this.#shadow.querySelectorAll('slot')) {
-      slot.addEventListener('slotchange', () => this.onSlotChange(slot));
+    for (const slot of this.#shadow.querySelectorAll("slot")) {
+      slot.addEventListener("slotchange", () => this.onSlotChange(slot));
       // Run initial check
       this.onSlotChange(slot);
     }
@@ -389,16 +427,18 @@ export class SherpaElement extends HTMLElement {
     // First check actual assigned nodes (light DOM content)
     const assigned = slotEl.assignedNodes();
     if (assigned.length > 0) {
-      return assigned.some(n =>
-        n.nodeType === Node.ELEMENT_NODE ||
-        (n.nodeType === Node.TEXT_NODE && n.textContent.trim())
+      return assigned.some(
+        (n) =>
+          n.nodeType === Node.ELEMENT_NODE ||
+          (n.nodeType === Node.TEXT_NODE && n.textContent.trim()),
       );
     }
     // Fall back to flattened nodes (includes template fallback content)
     const flattened = slotEl.assignedNodes({ flatten: true });
-    return flattened.some(n =>
-      n.nodeType === Node.ELEMENT_NODE ||
-      (n.nodeType === Node.TEXT_NODE && n.textContent.trim())
+    return flattened.some(
+      (n) =>
+        n.nodeType === Node.ELEMENT_NODE ||
+        (n.nodeType === Node.TEXT_NODE && n.textContent.trim()),
     );
   }
 

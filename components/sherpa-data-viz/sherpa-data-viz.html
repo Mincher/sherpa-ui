@@ -1,0 +1,19 @@
+<!--
+  sherpa-data-viz.html — Presentation-switching wrapper for data viz components.
+
+  Shadow template:
+    • shadow — Default slot for the active viz child (table, barchart, metric)
+
+  The component is a transparent wrapper. Its sole purpose is to own the
+  presentationchange lifecycle so the parent container stays content-agnostic.
+
+  Host attributes:
+    (none — transparent wrapper; all data-* attributes live on the child)
+
+  Slots:
+    (default) — The active viz child element
+-->
+
+<template id="shadow">
+  <slot></slot>
+</template>

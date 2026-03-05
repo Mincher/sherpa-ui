@@ -12,6 +12,7 @@
  * column headers, scrollable body, and pagination.
  *
  * Events:
+ *   vizready        — { columns, rows } (after setData completes)
  *   selectionchange — { selected: string[], count: number }
  *   sortchange      — { field: string, direction: 'asc'|'desc' }
  *   pagechange      — { page: number, pageSize: number }
@@ -161,6 +162,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #statusCellTpl = null; // Cached <template class="status-cell-tpl">
   #metadataSpanTpl = null; // Cached <template class="metadata-span-tpl">
   #expandedGroups = new Set(); // Group values currently expanded
+  #containerFilterHandler = null; // Bound handler for containerfilterchange
+  #globalFilterHandler = null; // Bound handler for globalfilterchange
+  #containerEl = null; // Cached closest sherpa-container ancestor
 
   /* ══════════════════════════════════════════════════════════════
      Lifecycle
@@ -179,6 +183,18 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   }
 
   onConnect() {
+    // ── Self-filtering: listen for container and global filter events ──
+    this.#containerEl = this.closest("sherpa-container");
+    if (this.#containerEl) {
+      this.#containerFilterHandler = (e) => this.#onContainerFilter(e);
+      this.#containerEl.addEventListener(
+        "containerfilterchange",
+        this.#containerFilterHandler,
+      );
+    }
+    this.#globalFilterHandler = (e) => this.#onGlobalFilter(e);
+    document.addEventListener("globalfilterchange", this.#globalFilterHandler);
+
     // Pagination events — delegated to sherpa-pagination component
     this.addEventListener("click", (e) => this.#onHostClick(e));
 
@@ -266,6 +282,22 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   onDisconnect() {
     CSS.highlights.delete("data-grid-search");
     CSS.highlights.delete("data-grid-col-search");
+
+    if (this.#containerEl && this.#containerFilterHandler) {
+      this.#containerEl.removeEventListener(
+        "containerfilterchange",
+        this.#containerFilterHandler,
+      );
+    }
+    if (this.#globalFilterHandler) {
+      document.removeEventListener(
+        "globalfilterchange",
+        this.#globalFilterHandler,
+      );
+    }
+    this.#containerFilterHandler = null;
+    this.#globalFilterHandler = null;
+    this.#containerEl = null;
   }
 
   onAttributeChanged(name, oldValue, newValue) {
@@ -348,6 +380,18 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     await this.rendered;
 
     this.#render();
+
+    // Dispatch vizready so filter bars can auto-populate
+    this.dispatchEvent(
+      new CustomEvent("vizready", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          columns: this.getContentColumns(),
+          rows: this.getContentRows(),
+        },
+      }),
+    );
   }
 
   /** Infer boolean column types from field names and data. */
@@ -1578,6 +1622,87 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   /** @returns {Array<Object>} raw (unfiltered) rows */
   getContentRows() {
     return this.#allRows;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     Self-filtering event handlers
+     ══════════════════════════════════════════════════════════════ */
+
+  /**
+   * Handle container-scoped filter changes (sort, segment, value filters).
+   * Sort/segment → attributes. Value filters → re-query.
+   */
+  #onContainerFilter(e) {
+    const filters = e.detail?.filters || [];
+    let sortFilter = null;
+    let segmentFilter = null;
+    const valueFilters = [];
+
+    for (const f of filters) {
+      if (f.type === "sort") {
+        sortFilter = f;
+        continue;
+      }
+      if (f.type === "segment") {
+        segmentFilter = f;
+        continue;
+      }
+      if (f.type === "filter" && f.values?.length) {
+        valueFilters.push(f);
+      }
+    }
+
+    if (sortFilter) {
+      this.setAttribute("data-sort-field", sortFilter.field);
+      this.setAttribute("data-sort-direction", sortFilter.mode || "asc");
+    } else {
+      this.removeAttribute("data-sort-field");
+      this.removeAttribute("data-sort-direction");
+    }
+
+    if (segmentFilter) {
+      this.setAttribute("data-segment-field", segmentFilter.field);
+      this.setAttribute("data-segment-mode", segmentFilter.mode || "on");
+    } else {
+      this.removeAttribute("data-segment-field");
+      this.removeAttribute("data-segment-mode");
+    }
+
+    if (valueFilters.length) {
+      this.#reQueryWithFilters(valueFilters);
+    }
+  }
+
+  /**
+   * Handle global filter changes (timerange, global filter bar).
+   */
+  #onGlobalFilter(e) {
+    const globalFilters = e.detail?.filters || [];
+    const timerange = e.detail?.timerange || null;
+    const entries = [];
+    for (const gf of globalFilters) {
+      if (gf.values?.length) {
+        entries.push({ field: gf.field, operator: "in", values: gf.values });
+      }
+    }
+    if (timerange) {
+      entries.push({ type: "timerange", ...timerange });
+    }
+    if (entries.length) {
+      this.#reQueryWithFilters(entries);
+    }
+  }
+
+  /**
+   * Re-query with additional filters merged into original config.
+   */
+  #reQueryWithFilters(additionalFilters) {
+    const config =
+      typeof this.getConfig === "function" ? this.getConfig() : null;
+    if (!config) return;
+    const mergedFilters = [...(config.filters || []), ...additionalFilters];
+    const segmentBy = this.getAttribute("data-segment-field") || undefined;
+    this.setData({ ...config, filters: mergedFilters, segmentBy });
   }
 }
 

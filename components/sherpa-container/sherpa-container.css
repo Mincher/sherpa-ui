@@ -1,17 +1,22 @@
 /**
  * sherpa-container.css
- * Dashboard card container with flex column layout: header → filters → metrics → sections
+ * Dashboard card container with flex column layout: header → filters → content
  * 
  * Structure:
  *   sherpa-container (flex column)
  *   ├── header.container-header
  *   ├── sherpa-filter-bar[slot="filters"]
- *   ├── .metrics
- *   └── .sections
+ *   └── .content
+ *       ├── sherpa-metric (direct children)
+ *       └── .sections
+ *           └── .section > .section-content
  * 
  * Attributes:
- *   data-col-span: Column span (3, 6, 9, 12)
- *   data-row-span: Row span (1, 2, 3+)
+ *   data-variant: Layout variant — "fit" (default, hugs content),
+ *                 "resizable" (grid-driven spans), "fill" (fills parent)
+ *   data-col-span: Column span (3, 6, 9, 12) — resizable variant only
+ *   data-row-span: Row span (1, 2, 3+) — resizable variant only
+ *   data-editable: Edit mode (enables CSS resize grip, resizable variant only)
  *   title: Container heading text
  *   description: Container description / subtitle
  *   data-menu-open: State indicator
@@ -40,6 +45,10 @@ sherpa-container {
   container-type: inline-size;
   container-name: sherpa-container;
 
+  &[hidden] {
+    display: none;
+  }
+
   /* Active states */
   &[data-menu-open="true"] {
     border-color: var(--sherpa-border-control-primary-default);
@@ -49,37 +58,61 @@ sherpa-container {
 }
 
 /* ==========================================================================
-   Grid positioning — attribute-driven spans
+   Layout Variants
+   ========================================================================== */
+
+/* Fit (default) — hugs content in both axes */
+sherpa-container[data-variant="fit"] {
+  width: fit-content;
+  height: fit-content;
+}
+
+/* Fill — stretches to fill parent in both axes */
+sherpa-container[data-variant="fill"] {
+  width: 100%;
+  height: 100%;
+}
+
+/* ==========================================================================
+   Grid positioning — attribute-driven spans (resizable variant only)
    ========================================================================== */
 
 /* Column spans */
-.sherpa-content-area sherpa-container {
+.sherpa-content-area sherpa-container[data-variant="resizable"] {
   grid-column: span 3;
 }
-.sherpa-content-area sherpa-container[data-col-span="6"] {
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-col-span="6"] {
   grid-column: span 6;
 }
-.sherpa-content-area sherpa-container[data-col-span="9"] {
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-col-span="9"] {
   grid-column: span 9;
 }
-.sherpa-content-area sherpa-container[data-col-span="12"] {
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-col-span="12"] {
   grid-column: span 12;
 }
 
 /* Row spans */
-.sherpa-content-area sherpa-container[data-row-span="2"] {
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="2"] {
   grid-row: span 2;
 }
-.sherpa-content-area sherpa-container[data-row-span="3"] {
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="3"] {
   grid-row: span 3;
 }
-.sherpa-content-area sherpa-container[data-row-span="4"] {
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="4"] {
   grid-row: span 4;
 }
-.sherpa-content-area sherpa-container[data-row-span="5"] {
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="5"] {
   grid-row: span 5;
 }
-.sherpa-content-area sherpa-container[data-row-span="6"] {
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="6"] {
   grid-row: span 6;
 }
 
@@ -92,40 +125,55 @@ sherpa-container > sherpa-filter-bar[slot="filters"] {
 }
 
 /* ==========================================================================
-   Metrics
+   Content Wrapper
    ========================================================================== */
 
-.metrics {
+.content {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: var(--sherpa-space-sm);
-  flex-shrink: 0;
-  container-type: inline-size;
-  container-name: metrics;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 12px);
+  flex: 1 1 0;
+  min-height: 0;
   overflow: hidden;
+  container-type: inline-size;
+  container-name: container-content;
 
-  &:empty,
-  &[hidden] {
+  &:empty {
     display: none;
   }
 }
 
-/* Metric count visibility by container column span
+/* ==========================================================================
+   Metrics (direct children of .content)
+   ========================================================================== */
+
+.content > sherpa-metric {
+  flex-shrink: 0;
+}
+
+/* Metric count visibility by container column span (resizable variant only)
    3 cols:  1 metric
    6 cols:  2 metrics
    9 cols:  3 metrics
    12 cols: 4 metrics */
-sherpa-container[data-col-span="3"] sherpa-metric:nth-child(n + 2) {
+sherpa-container[data-variant="resizable"][data-col-span="3"]
+  .content
+  > sherpa-metric:nth-of-type(n + 2) {
   display: none;
 }
-sherpa-container[data-col-span="6"] sherpa-metric:nth-child(n + 3) {
+sherpa-container[data-variant="resizable"][data-col-span="6"]
+  .content
+  > sherpa-metric:nth-of-type(n + 3) {
   display: none;
 }
-sherpa-container[data-col-span="9"] sherpa-metric:nth-child(n + 4) {
+sherpa-container[data-variant="resizable"][data-col-span="9"]
+  .content
+  > sherpa-metric:nth-of-type(n + 4) {
   display: none;
 }
-sherpa-container[data-col-span="12"] sherpa-metric:nth-child(n + 5) {
+sherpa-container[data-variant="resizable"][data-col-span="12"]
+  .content
+  > sherpa-metric:nth-of-type(n + 5) {
   display: none;
 }
 
@@ -181,34 +229,42 @@ sherpa-container[data-col-span="12"] sherpa-metric:nth-child(n + 5) {
    Row Span Visibility Rules
    ========================================================================== */
 
-/* Limit to first section by default */
-sherpa-container > .sections > .section:nth-child(n + 2) {
+/* Limit to first section by default (resizable variant) */
+sherpa-container[data-variant="resizable"]
+  > .content
+  > .sections
+  > .section:nth-child(n + 2) {
   display: none;
 }
 
-/* Show second section when first is hidden */
-sherpa-container:has(.section:first-child[hidden])
+/* Show second section when first is hidden (resizable variant) */
+sherpa-container[data-variant="resizable"]:has(.section:first-child[hidden])
+  > .content
   > .sections
   > .section:nth-child(2) {
   display: flex;
 }
 
-/* 3+ column containers: show second section */
-sherpa-container:not([data-col-span="3"]) > .sections > .section:nth-child(2) {
+/* 3+ column containers: show second section (resizable variant) */
+sherpa-container[data-variant="resizable"]:not([data-col-span="3"])
+  > .content
+  > .sections
+  > .section:nth-child(2) {
   display: flex;
 }
 
-/* 3-column containers with 3+ rows: show second section */
-sherpa-container[data-col-span="3"]:not([data-row-span="1"]):not(
-    [data-row-span="2"]
-  )
+/* 3-column containers with 3+ rows: show second section (resizable variant) */
+sherpa-container[data-variant="resizable"][data-col-span="3"]:not(
+    [data-row-span="1"]
+  ):not([data-row-span="2"])
+  > .content
   > .sections
   > .section:nth-child(2) {
   display: flex;
 }
 
 /* Narrow containers: stack sections vertically */
-@container sherpa-container (width < 400px) {
+@container container-content (width < 400px) {
   .sections {
     flex-direction: column;
     flex-wrap: nowrap;
@@ -220,7 +276,7 @@ sherpa-container[data-col-span="3"]:not([data-row-span="1"]):not(
    ========================================================================== */
 
 /* Hide metrics when global "Show KPI metrics" is OFF */
-body[data-hide-metrics] sherpa-container .metrics {
+body[data-hide-metrics] sherpa-container .content > sherpa-metric {
   display: none;
 }
 
@@ -234,7 +290,8 @@ body[data-hide-metrics] sherpa-container .metrics {
    Edit Mode
    ========================================================================== */
 
-/* Override overflow so handles are visible */
-sherpa-container[data-editable] {
-  overflow: visible;
+/* Native CSS resize grip — replaces the former JS pointer-drag handle */
+sherpa-container[data-variant="resizable"][data-editable] {
+  overflow: auto;
+  resize: both;
 }

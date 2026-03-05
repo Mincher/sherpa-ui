@@ -1,6 +1,6 @@
 /**
  * Components Index
- * 
+ *
  * Central export point for all custom web components.
  * Import this file to register all components with the browser.
  */
@@ -28,6 +28,7 @@ export * from "./sherpa-tag/sherpa-tag.js";
 export * from "./sherpa-tooltip/sherpa-tooltip.js";
 
 // Data visualization components
+export * from "./sherpa-data-viz/sherpa-data-viz.js";
 export * from "./sherpa-metric/sherpa-metric.js";
 export * from "./sherpa-base-table/sherpa-base-table.js";
 export * from "./sherpa-barchart/sherpa-barchart.js";

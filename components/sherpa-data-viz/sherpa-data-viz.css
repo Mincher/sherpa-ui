@@ -1,0 +1,15 @@
+/**
+ * sherpa-data-viz.css — Shadow-scoped styles for the data-viz wrapper.
+ *
+ * The component is a transparent layout wrapper — it should not introduce
+ * any visual chrome of its own. `display: contents` makes the slotted
+ * child behave as though it is a direct child of the wrapper's parent.
+ */
+
+:host {
+  display: contents;
+}
+
+:host([hidden]) {
+  display: none;
+}

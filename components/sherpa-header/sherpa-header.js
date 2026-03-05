@@ -56,6 +56,8 @@
  *   data-dismissible        — "true" | "false" — close button visible (dialog type)
  *   data-open-external      — "true" | "false" — show open-external button
  *   data-menu-button        — "true" | "false" — show menu button
+ *   data-menu-src           — URL for the menu template (passed through to the
+ *                              internal sherpa-button[data-menu])
  *
  * Events:
  *   header-close  — Fired when close button is clicked
@@ -113,6 +115,7 @@ export class SherpaHeader extends SherpaElement {
       "data-dismissible",
       "data-open-external",
       "data-menu-button",
+      "data-menu-src",
     ];
   }
 
@@ -131,6 +134,7 @@ export class SherpaHeader extends SherpaElement {
     this.#syncCloseButton();
     this.#syncOpenExternal();
     this.#syncMenuButton();
+    this.#syncMenuSrc();
     this.#syncSearch();
     this.#wireEvents();
   }
@@ -157,6 +161,9 @@ export class SherpaHeader extends SherpaElement {
         break;
       case "data-menu-button":
         this.#syncMenuButton();
+        break;
+      case "data-menu-src":
+        this.#syncMenuSrc();
         break;
     }
   }
@@ -279,6 +286,17 @@ export class SherpaHeader extends SherpaElement {
     this.dataset.menuButton = v ? "true" : "false";
   }
 
+  get menuSrc() {
+    return this.dataset.menuSrc || "";
+  }
+  set menuSrc(v) {
+    if (v) {
+      this.dataset.menuSrc = v;
+    } else {
+      delete this.dataset.menuSrc;
+    }
+  }
+
   /** Returns the drag handle element (default template only) */
   get dragHandleElement() {
     return this.$(".drag-handle");
@@ -336,6 +354,17 @@ export class SherpaHeader extends SherpaElement {
   #syncMenuButton() {
     // Visibility handled by CSS:
     //   :host([data-menu-button="true"]) .menu-button { display: inline-flex; }
+  }
+
+  #syncMenuSrc() {
+    const btn = this.$(".menu-button");
+    if (!btn) return;
+    const src = this.dataset.menuSrc;
+    if (src) {
+      btn.dataset.menuSrc = src;
+    } else {
+      delete btn.dataset.menuSrc;
+    }
   }
 
   #syncSearch() {

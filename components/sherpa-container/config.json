@@ -1,29 +1,57 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "name": "sherpa-container",
-  "description": "Dashboard card with header, metrics, and data sections. Content sourced from a content template (data-content) or inline child markup (fallback).",
+  "description": "Dashboard card with header, metrics, and data sections. Content supplied via inline child elements.",
   "attributes": {
-    "data-content": { "type": "string", "description": "Content template id — fetches /html/templates/content/<id>.html at init" },
-    "title": { "type": "string", "description": "Container heading text (overrides content template title)" },
-    "data-description": { "type": "string", "description": "Container description (overrides content template description)" },
-    "data-template": { "type": "string", "options": ["default", "metrics-only"], "default": "default", "description": "Layout template id from sherpa-container.html" },
-    "data-col-span": { "type": "string", "options": ["3", "6", "9", "12"], "default": "3", "description": "Column span in the content grid" },
-    "data-row-span": { "type": "string", "options": ["1", "2", "3", "4", "5", "6"], "default": "1", "description": "Row span in the content grid" },
-    "data-menu-open": { "type": "boolean", "default": false, "description": "Whether the context menu is open" }
+    "title": {
+      "type": "string",
+      "description": "Container heading text"
+    },
+    "data-description": {
+      "type": "string",
+      "description": "Container description"
+    },
+    "data-variant": {
+      "type": "string",
+      "options": ["fit", "resizable", "fill"],
+      "default": "fit",
+      "description": "Layout variant — fit (hugs content), resizable (grid-driven spans), fill (fills parent)"
+    },
+    "data-template": {
+      "type": "string",
+      "options": ["default"],
+      "default": "default",
+      "description": "Layout template id from sherpa-container.html"
+    },
+    "data-col-span": {
+      "type": "string",
+      "options": ["3", "6", "9", "12"],
+      "default": "3",
+      "description": "Column span in the content grid (resizable variant only)"
+    },
+    "data-row-span": {
+      "type": "string",
+      "options": ["1", "2", "3", "4", "5", "6"],
+      "default": "1",
+      "description": "Row span in the content grid (resizable variant only)"
+    },
+    "data-menu-open": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the context menu is open"
+    }
   },
   "slots": {
-    "metric": "Child sherpa-metric elements (auto-created from content template or authored inline)",
-    "section": "Child sherpa-base-table or sherpa-barchart elements (auto-created from content template or authored inline)"
+    "content": "Single content wrapper for metrics, sections, and any other container content"
   },
   "methods": {
     "getColSpan()": "Get current column span from data-col-span attribute",
-    "getRowSpan()": "Get current row span from data-row-span attribute",
-    "applyFilterState(filterState)": "Apply filter bar state to sections and metrics"
+    "getRowSpan()": "Get current row span from data-row-span attribute"
   },
   "cssCustomProperties": {
     "--containerColSpan": "Integer column span (@property registered)",
     "--containerRowSpan": "Integer row span (@property registered)"
   },
-  "example": "<sherpa-container data-content=\"regional-sales-overview\" data-col-span=\"6\" data-row-span=\"2\"></sherpa-container>",
+  "example": "<sherpa-container data-title=\"Revenue\" data-col-span=\"6\" data-row-span=\"2\"><sherpa-base-table></sherpa-base-table></sherpa-container>",
   "containerDemo": { "source": "/data/queries/sales-demo.json" }
 }

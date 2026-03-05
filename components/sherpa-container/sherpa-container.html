@@ -2,42 +2,29 @@
   sherpa-container.html — Templates for sherpa-container.
 
   Shadow template:
-    • shadow       — Shadow DOM structure: slots, resize handle, skeleton
+    • shadow       — Shadow DOM structure: named slots + cloning prototypes
 
   Light-DOM layout templates (stamped into the element's light DOM):
-    • default      — Header + filter bar + metrics wrapper + sections wrapper
-    • metrics-only — Header + metrics wrapper, no sections
+    • default      — Header + filter bar + content wrapper
 
   Host attributes:
-    data-content   — Content template id
     data-title     — Container heading text
     description    — Container description
     template       — Layout template id
-    data-col-span  — Column span: 3 | 6 | 9 | 12
-    data-row-span  — Row span: 1–6
+    data-variant   — Layout variant: "fit" (default, hugs content),
+                      "resizable" (grid-driven spans), "fill" (fills parent)
+    data-col-span  — Column span: 3 | 6 | 9 | 12 (resizable variant only)
+    data-row-span  — Row span: 1–6 (resizable variant only)
     data-menu-open — Menu state
-    data-editable  — Edit mode (shows resize handles)
-    data-loading   — Skeleton placeholder visible
+    data-editable  — Edit mode (resizable variant only)
 -->
 
-<!-- Shadow DOM: named slots + resize handle + skeleton + cloning prototypes -->
+<!-- Shadow DOM: named slots + cloning prototypes -->
 <template id="shadow">
   <slot name="header"></slot>
   <slot name="filters"></slot>
-  <slot name="metrics"></slot>
-  <slot name="sections"></slot>
+  <slot name="content"></slot>
   <slot name="extra"></slot>
-  <div class="resize-handle"></div>
-  <div class="container-skeleton">
-    <div class="skel-header"></div>
-    <div class="skel-metrics">
-      <div class="skel-block"></div>
-      <div class="skel-block"></div>
-      <div class="skel-block"></div>
-      <div class="skel-block"></div>
-    </div>
-    <div class="skel-body"></div>
-  </div>
   <!-- Cloning prototype: section wrapper for dynamic content -->
   <template class="section-tpl">
     <div class="section">
@@ -55,7 +42,7 @@
   </template>
 </template>
 
-<!-- Default: header + filter bar + metrics wrapper + sections wrapper -->
+<!-- Default: header + filter bar + content wrapper -->
 <template id="default">
   <sherpa-header
     data-type="container"
@@ -78,19 +65,5 @@
     >
   </sherpa-filter-bar>
 
-  <div class="metrics" slot="metrics"></div>
-
-  <div class="sections" slot="sections"></div>
-</template>
-
-<!-- Metrics-only: header + metrics wrapper, no sections -->
-<template id="metrics-only">
-  <sherpa-header
-    data-type="container"
-    slot="header"
-    data-open-external="true"
-    data-menu-button="true"
-  ></sherpa-header>
-
-  <div class="metrics" slot="metrics"></div>
+  <div class="content" slot="content"></div>
 </template>

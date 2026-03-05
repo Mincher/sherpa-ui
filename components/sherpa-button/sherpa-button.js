@@ -18,30 +18,53 @@
  *   an explicit aria-label attribute for accessibility.
  *
  * Menu:
- *   Add `menu` attribute to mark as menu trigger. On click, fires
- *   `menu-open` (consumers populate via button.menuElement), then
- *   shows the button's own <sherpa-menu popover="auto"> instance.
+ *   Add `data-menu="true"` to mark as menu trigger. On click, the button
+ *   creates its own <sherpa-menu popover="auto"> instance (as a DOM sibling).
+ *
+ *   If `data-menu-src` is set, the button fetches and caches the HTML
+ *   template from that URL, stamps the "default" template into the menu,
+ *   then dispatches `menu-populate` so consumers can append dynamic items.
+ *   Without `data-menu-src`, consumers populate the menu on `menu-open`.
+ *
  *   Re-dispatches `menu-select` and `menu-close` on the button.
+ *   Named `data-event` events from sherpa-menu also bubble through.
  *
  * Attributes:
  *   data-label, data-variant, data-size, data-active, disabled,
  *   data-status, data-icon-start, data-icon-end, data-icon-weight,
- *   data-menu, data-menu-position
+ *   data-menu, data-menu-position, data-menu-src
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import '../sherpa-menu/sherpa-menu.js';
+import {
+  SherpaElement,
+  parseTemplates,
+} from "../utilities/sherpa-element/sherpa-element.js";
+import "../sherpa-menu/sherpa-menu.js";
+
+/* ── Menu template cache (shared across all button instances) ───── */
+const menuTemplateCache = new Map(); // url → Map<id, htmlString>
 
 export class SherpaButton extends SherpaElement {
-
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-button.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-button.html', import.meta.url).href; }
+  static get cssUrl() {
+    return new URL("./sherpa-button.css", import.meta.url).href;
+  }
+  static get htmlUrl() {
+    return new URL("./sherpa-button.html", import.meta.url).href;
+  }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-label', 'data-variant', 'data-size', 'data-active', 'disabled',
-            'data-menu', 'data-menu-position'];
+    return [
+      ...super.observedAttributes,
+      "data-label",
+      "data-variant",
+      "data-size",
+      "data-active",
+      "disabled",
+      "data-menu",
+      "data-menu-position",
+    ];
   }
 
   /* ── Private state ────────────────────────────────────────────── */
@@ -55,20 +78,20 @@ export class SherpaButton extends SherpaElement {
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
-    if (!this.hasAttribute('role'))     this.setAttribute('role', 'button');
-    if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
+    if (!this.hasAttribute("role")) this.setAttribute("role", "button");
+    if (!this.hasAttribute("tabindex")) this.setAttribute("tabindex", "0");
 
-    this.#labelEl = this.$('.label');
-    this.#iconStartEl = this.$('.icon-start');
-    this.#iconEndEl = this.$('.icon-end');
+    this.#labelEl = this.$(".label");
+    this.#iconStartEl = this.$(".icon-start");
+    this.#iconEndEl = this.$(".icon-end");
 
     if (!this.dataset.variant) {
-      this.dataset.variant = 'primary';
+      this.dataset.variant = "primary";
     }
 
-    if (this.hasAttribute('disabled')) {
-      this.setAttribute('aria-disabled', 'true');
-      this.setAttribute('tabindex', '-1');
+    if (this.hasAttribute("disabled")) {
+      this.setAttribute("aria-disabled", "true");
+      this.setAttribute("tabindex", "-1");
     }
 
     // Render label and icons from attributes
@@ -77,13 +100,13 @@ export class SherpaButton extends SherpaElement {
   }
 
   onConnect() {
-    this.addEventListener('click', this.#onClick);
-    this.addEventListener('keydown', this.#onKeyDown);
+    this.addEventListener("click", this.#onClick);
+    this.addEventListener("keydown", this.#onKeyDown);
   }
 
   onDisconnect() {
-    this.removeEventListener('click', this.#onClick);
-    this.removeEventListener('keydown', this.#onKeyDown);
+    this.removeEventListener("click", this.#onClick);
+    this.removeEventListener("keydown", this.#onKeyDown);
 
     if (this.#menuEl) {
       if (this.#menuEl.open) this.#menuEl.hide();
@@ -94,22 +117,22 @@ export class SherpaButton extends SherpaElement {
 
   onAttributeChanged(name, _oldValue, newValue) {
     switch (name) {
-      case 'disabled':
+      case "disabled":
         if (newValue !== null) {
-          this.setAttribute('aria-disabled', 'true');
-          this.setAttribute('tabindex', '-1');
+          this.setAttribute("aria-disabled", "true");
+          this.setAttribute("tabindex", "-1");
         } else {
-          this.removeAttribute('aria-disabled');
-          this.setAttribute('tabindex', '0');
+          this.removeAttribute("aria-disabled");
+          this.setAttribute("tabindex", "0");
         }
         break;
 
-      case 'data-label':
+      case "data-label":
         this.#syncLabel();
         break;
 
-      case 'data-icon-start':
-      case 'data-icon-end':
+      case "data-icon-start":
+      case "data-icon-end":
         this.#syncIcons();
         break;
     }
@@ -119,26 +142,29 @@ export class SherpaButton extends SherpaElement {
 
   #syncLabel() {
     if (!this.#labelEl) return;
-    this.#labelEl.textContent = this.dataset.label ?? '';
+    this.#labelEl.textContent = this.dataset.label ?? "";
   }
 
   /* ── Icons ─────────────────────────────────────────────────────── */
 
   #syncIcons() {
     if (this.#iconStartEl) {
-      this.#iconStartEl.textContent = this.dataset.iconStart ?? '';
+      this.#iconStartEl.textContent = this.dataset.iconStart ?? "";
     }
     if (this.#iconEndEl) {
-      this.#iconEndEl.textContent = this.dataset.iconEnd ?? '';
+      this.#iconEndEl.textContent = this.dataset.iconEnd ?? "";
     }
   }
 
   /* ── Event handlers ───────────────────────────────────────────── */
 
   #onClick = (e) => {
-    if (this.disabled) { e.preventDefault(); return; }
+    if (this.disabled) {
+      e.preventDefault();
+      return;
+    }
 
-    if (this.dataset.menu === 'true') {
+    if (this.dataset.menu === "true") {
       e.stopPropagation();
       // Light-dismiss closes the menu before this handler runs,
       // so check the timestamp to avoid immediately reopening.
@@ -152,7 +178,7 @@ export class SherpaButton extends SherpaElement {
 
   #onKeyDown = (e) => {
     if (this.disabled) return;
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       this.click();
     }
@@ -161,7 +187,9 @@ export class SherpaButton extends SherpaElement {
   /* ── Menu ─────────────────────────────────────────────────────── */
 
   /** The button's own <sherpa-menu> element (created lazily). */
-  get menuElement() { return this.#ensureMenu(); }
+  get menuElement() {
+    return this.#ensureMenu();
+  }
 
   /**
    * Lazily create and wire up the per-button menu instance.
@@ -171,22 +199,28 @@ export class SherpaButton extends SherpaElement {
   #ensureMenu() {
     if (this.#menuEl) return this.#menuEl;
 
-    const menu = document.createElement('sherpa-menu');
-    menu.setAttribute('popover', 'auto');
+    const menu = document.createElement("sherpa-menu");
+    menu.setAttribute("popover", "auto");
     this.after(menu);
 
-    menu.addEventListener('menu-select', (e) => {
+    menu.addEventListener("menu-select", (e) => {
       e.stopPropagation();
-      this.dispatchEvent(new CustomEvent('menu-select', {
-        bubbles: true, composed: true, detail: e.detail
-      }));
+      this.dispatchEvent(
+        new CustomEvent("menu-select", {
+          bubbles: true,
+          composed: true,
+          detail: e.detail,
+        }),
+      );
     });
 
-    menu.addEventListener('menu-close', (e) => {
+    menu.addEventListener("menu-close", (e) => {
       e.stopPropagation();
       this.active = false;
       this.#menuClosedAt = Date.now();
-      this.dispatchEvent(new CustomEvent('menu-close', { bubbles: true, composed: true }));
+      this.dispatchEvent(
+        new CustomEvent("menu-close", { bubbles: true, composed: true }),
+      );
     });
 
     this.#menuEl = menu;
@@ -195,32 +229,90 @@ export class SherpaButton extends SherpaElement {
 
   /**
    * Show the button's menu.
-   * Fires `menu-open` first so consumers can populate
-   * via button.menuElement.replaceChildren(content).
+   * If data-menu-src is set, fetches and stamps the template first,
+   * then fires `menu-populate` for dynamic content injection.
+   * Also fires `menu-open` for backward compatibility.
    */
   async #showMenu() {
     this.active = true;
     const menu = this.#ensureMenu();
 
-    // Let consumers populate the menu before showing
-    this.dispatchEvent(new CustomEvent('menu-open', { bubbles: true, composed: true }));
+    // Stamp static template from data-menu-src (if set)
+    const src = this.dataset.menuSrc;
+    if (src) {
+      const tplMap = await this.#loadMenuTemplate(src);
+      const html = tplMap?.get("default");
+      if (html) {
+        const frag = document.createRange().createContextualFragment(html);
+        menu.replaceChildren(frag);
+      }
+    }
+
+    // Let consumers populate / modify the menu before showing
+    this.dispatchEvent(
+      new CustomEvent("menu-populate", {
+        bubbles: true,
+        composed: true,
+        detail: { menu },
+      }),
+    );
+    this.dispatchEvent(
+      new CustomEvent("menu-open", { bubbles: true, composed: true }),
+    );
 
     await menu.rendered;
     menu.show(this);
   }
 
+  /**
+   * Fetch and cache an HTML menu template by URL.
+   * Shared across all button instances via the module-level cache.
+   * @param {string} url
+   * @returns {Promise<Map<string, string>>}
+   */
+  async #loadMenuTemplate(url) {
+    if (menuTemplateCache.has(url)) return menuTemplateCache.get(url);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const html = await res.text();
+      const map = parseTemplates(html);
+      menuTemplateCache.set(url, map);
+      return map;
+    } catch (e) {
+      console.warn("[SherpaButton] Failed to load menu template", url, e);
+      const empty = new Map();
+      menuTemplateCache.set(url, empty);
+      return empty;
+    }
+  }
+
   /* ── Convenience properties ───────────────────────────────────── */
 
-  get disabled() { return this.hasAttribute('disabled'); }
-  set disabled(val) { val ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
+  get disabled() {
+    return this.hasAttribute("disabled");
+  }
+  set disabled(val) {
+    val ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
+  }
 
-  get active() { return this.dataset.active === 'true'; }
-  set active(val) { this.dataset.active = val ? 'true' : 'false'; }
+  get active() {
+    return this.dataset.active === "true";
+  }
+  set active(val) {
+    this.dataset.active = val ? "true" : "false";
+  }
 
-  get label() { return this.dataset.label ?? ''; }
-  set label(val) { this.dataset.label = val; }
+  get label() {
+    return this.dataset.label ?? "";
+  }
+  set label(val) {
+    this.dataset.label = val;
+  }
 
-  setActive(isActive) { this.active = !!isActive; }
+  setActive(isActive) {
+    this.active = !!isActive;
+  }
 }
 
-customElements.define('sherpa-button', SherpaButton);
+customElements.define("sherpa-button", SherpaButton);

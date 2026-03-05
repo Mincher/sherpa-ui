@@ -55,7 +55,7 @@ export class SherpaContainerPdf extends SherpaElement {
     if (metricsContainer) {
       metricsContainer.replaceChildren();
       const sourceMetrics = sourceContainer.querySelectorAll(
-        ".metrics > sherpa-metric",
+        ".content > sherpa-metric",
       );
       sourceMetrics.forEach((metric) => {
         const clone = metric.cloneNode(true);
@@ -70,7 +70,9 @@ export class SherpaContainerPdf extends SherpaElement {
     if (sectionsContainer && sectionTpl) {
       sectionsContainer.replaceChildren();
 
-      const sourceSections = sourceContainer.querySelectorAll(".section");
+      const sourceSections = sourceContainer.querySelectorAll(
+        ".content > .sections > .section",
+      );
       for (const section of sourceSections) {
         // Skip hidden sections (check both property and attribute)
         if (section.hidden || section.hasAttribute("hidden")) continue;

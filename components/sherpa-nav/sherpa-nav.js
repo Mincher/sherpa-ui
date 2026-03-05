@@ -187,7 +187,8 @@ export class SherpaNav extends SherpaElement {
     this.#emit("navfavoritechange", { itemId, label, favorite: on });
   }
 
-  addToRecent(itemId, label, route) {
+  async addToRecent(itemId, label, route) {
+    await this.rendered;
     const sec = this.$('.nav-section[data-section-id="recent"]');
     if (!sec) return;
     const max = parseInt(sec.dataset.maxItems, 10) || 5;
