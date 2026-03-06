@@ -141,10 +141,10 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #applyTheme(theme) {
-    // Swap the @import URL in <style id="sherpa-theme"> to load the selected theme file
-    const themeStyle = document.getElementById('sherpa-theme');
-    if (themeStyle) {
-      themeStyle.textContent = `@import url("/css/styles/sherpa-theme-${theme}.css") layer(tokens);`;
+    // Swap <link id="sherpa-theme"> href to load the selected theme file
+    const link = document.getElementById('sherpa-theme');
+    if (link) {
+      link.href = `/css/styles/sherpa-theme-${theme}.css`;
     }
   }
 

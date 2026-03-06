@@ -53,11 +53,3 @@ sherpa-tabs[data-style="product bar"] {
   --_tabs-border-default: var(--sherpa-border-default);
 }
 
-/* ── In-theme component tokens (Apex 2.0) ───────────────────── */
-
-:root {
-  --sherpa-component-accordion-border-color: var(--sherpa-border-container-default);
-  --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-base);
-  --sherpa-component-accordion-border-width: var(--sherpa-border-width-base);
-  --sherpa-component-banner-border-rounding: var(--sherpa-border-rounding-base);
-}

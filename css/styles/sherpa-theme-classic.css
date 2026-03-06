@@ -12,24 +12,25 @@
  *   color-scheme: dark         → forced dark
  */
 
+@layer theme {
 :root {
   color-scheme: light dark;
 
   /* ── Surface — App Chrome ──────────────────────────────────── */
-  --sherpa-surface-app-background-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-core-color-basic-monochrome-950));
-  --sherpa-surface-app-product-bar-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
-  --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
-  --sherpa-surface-app-product-bar-product-text: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
-  --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-100);
-  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-700);
-  --sherpa-surface-app-product-nav-base-icon: light-dark(var(--sherpa-text-default-on-color-subtle-body), var(--sherpa-text-default-on-color-body));
-  --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-body);
-  --sherpa-surface-app-product-nav-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
-  --sherpa-surface-app-product-nav-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-1000));
-  --sherpa-surface-app-product-nav-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-1000));
-  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-color-brand-100);
-  --sherpa-surface-app-product-nav-sub-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
-  --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-700);
+  --sherpa-surface-app-background-default: light-dark(var(--sherpa-core-color-basic-monochrome-25), var(--sherpa-core-color-basic-monochrome-950));
+  --sherpa-surface-app-product-bar-bg: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-base);
+  --sherpa-surface-app-product-bar-product-text: var(--sherpa-color-neutral-200);
+  --sherpa-surface-app-product-nav-active: rgba(133, 0, 204, 0.2);
+  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-base);
+  --sherpa-surface-app-product-nav-base-icon: light-dark(var(--sherpa-icon-default-on-color-body), var(--sherpa-text-default-on-color-body));
+  --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-on-color-body);
+  --sherpa-surface-app-product-nav-bg: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-tones-900));
+  --sherpa-surface-app-product-nav-down: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-hover: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-sub-active: rgba(133, 0, 204, 0.4);
+  --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-tones-1000);
+  --sherpa-surface-app-product-nav-text: var(--sherpa-text-default-on-color-body);
 
   /* ── Surface — Container ───────────────────────────────────── */
   --sherpa-surface-container-active-default: var(--sherpa-color-brand-100);
@@ -49,19 +50,19 @@
   --sherpa-surface-container-tertiary-hover: light-dark(var(--sherpa-core-color-basic-monochrome-400), var(--sherpa-color-tones-900));
 
   /* ── Surface — Control (Interactive) ───────────────────────── */
-  --sherpa-surface-control-active-default: var(--sherpa-color-brand-100);
-  --sherpa-surface-control-active-down: var(--sherpa-color-brand-300);
-  --sherpa-surface-control-active-hover: var(--sherpa-color-brand-200);
+  --sherpa-surface-control-active-default: light-dark(var(--sherpa-color-primary-classic-100), var(--sherpa-color-primary-classic-900));
+  --sherpa-surface-control-active-down: light-dark(var(--sherpa-color-primary-classic-300), var(--sherpa-color-primary-classic-600));
+  --sherpa-surface-control-active-hover: light-dark(var(--sherpa-color-primary-classic-200), var(--sherpa-color-primary-classic-500));
   --sherpa-surface-control-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-tones-900));
   --sherpa-surface-control-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-tones-1000));
   --sherpa-surface-control-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-900));
   --sherpa-surface-control-inactive: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-900));
-  --sherpa-surface-control-primary-default: var(--sherpa-color-primary-new-base);
-  --sherpa-surface-control-primary-down: var(--sherpa-color-primary-new-800);
-  --sherpa-surface-control-primary-hover: var(--sherpa-color-primary-new-700);
-  --sherpa-surface-control-secondary-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-800));
+  --sherpa-surface-control-primary-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-surface-control-primary-down: var(--sherpa-color-primary-classic-750);
+  --sherpa-surface-control-primary-hover: var(--sherpa-color-primary-classic-base);
+  --sherpa-surface-control-secondary-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-900));
   --sherpa-surface-control-secondary-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-1000));
-  --sherpa-surface-control-secondary-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-900));
+  --sherpa-surface-control-secondary-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-1000));
   --sherpa-surface-control-tertiary-on-color-default: var(--sherpa-core-color-basic-transparent-0);
   --sherpa-surface-control-tertiary-on-color-down: var(--sherpa-core-color-basic-transparent-600);
   --sherpa-surface-control-tertiary-on-color-hover: var(--sherpa-core-color-basic-transparent-400);
@@ -115,16 +116,16 @@
   --sherpa-border-container-inactive: light-dark(var(--sherpa-color-neutral-500), var(--sherpa-color-neutral-800));
 
   /* ── Border — Control (Interactive) ────────────────────────── */
-  --sherpa-border-control-active-default: var(--sherpa-color-brand-700);
-  --sherpa-border-control-active-down: var(--sherpa-color-brand-900);
-  --sherpa-border-control-active-hover: var(--sherpa-color-brand-800);
+  --sherpa-border-control-active-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-border-control-active-down: var(--sherpa-color-primary-classic-750);
+  --sherpa-border-control-active-hover: var(--sherpa-color-primary-classic-725);
   --sherpa-border-control-default: light-dark(var(--sherpa-core-color-basic-greyscale-500), var(--sherpa-core-color-basic-greyscale-800));
   --sherpa-border-control-down: light-dark(var(--sherpa-core-color-basic-greyscale-600), var(--sherpa-core-color-basic-greyscale-1000));
   --sherpa-border-control-hover: light-dark(var(--sherpa-core-color-basic-greyscale-400), var(--sherpa-core-color-basic-greyscale-900));
   --sherpa-border-control-inactive: var(--sherpa-color-neutral-600);
-  --sherpa-border-control-primary-default: var(--sherpa-color-primary-new-base);
-  --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
-  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+  --sherpa-border-control-primary-default: var(--sherpa-color-primary-classic-600);
+  --sherpa-border-control-primary-down: var(--sherpa-color-primary-classic-base);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-classic-base);
   --sherpa-border-control-secondary-default: light-dark(var(--sherpa-color-neutral-400), var(--sherpa-color-neutral-700));
   --sherpa-border-control-secondary-down: light-dark(var(--sherpa-color-neutral-600), var(--sherpa-color-neutral-900));
   --sherpa-border-control-secondary-hover: light-dark(var(--sherpa-color-neutral-500), var(--sherpa-color-neutral-800));
@@ -271,9 +272,55 @@
   --sherpa-data-viz-divergent-turquoise-razamatazz-color-8: light-dark(var(--sherpa-core-color-extended-razamatazz-400), var(--sherpa-core-color-extended-razamatazz-350));
   --sherpa-data-viz-divergent-turquoise-razamatazz-color-9: var(--sherpa-core-color-extended-razamatazz-450);
 
+  /* ── Font ──────────────────────────────────────────────────── */
+  --sherpa-font-base-letter-spacing: 0.1;
+  --sherpa-font-base-line-height: var(--sherpa-fonts-scale-xl);
+  --sherpa-font-base-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-base-size: 13px;
+  --sherpa-font-h1-letter-spacing: -0.02;
+  --sherpa-font-h1-line-height: var(--sherpa-fonts-scale-13xl);
+  --sherpa-font-h1-paragraph-spacing: var(--sherpa-fonts-scale-lg);
+  --sherpa-font-h1-size: var(--sherpa-fonts-scale-8xl);
+  --sherpa-font-h2-letter-spacing: -0.02;
+  --sherpa-font-h2-line-height: var(--sherpa-fonts-scale-11xl);
+  --sherpa-font-h2-paragraph-spacing: var(--sherpa-fonts-scale-lg);
+  --sherpa-font-h2-size: var(--sherpa-fonts-scale-6xl);
+  --sherpa-font-h3-letter-spacing: -0.02;
+  --sherpa-font-h3-line-height: var(--sherpa-fonts-scale-9xl);
+  --sherpa-font-h3-paragraph-spacing: var(--sherpa-fonts-scale-xs);
+  --sherpa-font-h3-size: var(--sherpa-fonts-scale-4xl);
+  --sherpa-font-h4-letter-spacing: -0.02;
+  --sherpa-font-h4-line-height: var(--sherpa-fonts-scale-5xl);
+  --sherpa-font-h4-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-h4-size: var(--sherpa-fonts-scale-2xl);
+  --sherpa-font-h5-letter-spacing: -0.02;
+  --sherpa-font-h5-line-height: var(--sherpa-fonts-scale-3xl);
+  --sherpa-font-h5-paragraph-spacing: var(--sherpa-fonts-scale-0);
+  --sherpa-font-h5-size: var(--sherpa-fonts-scale-xl);
+  --sherpa-font-lg-letter-spacing: 0.1;
+  --sherpa-font-lg-line-height: var(--sherpa-fonts-scale-2xl);
+  --sherpa-font-lg-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-lg-size: var(--sherpa-fonts-scale-lg);
+  --sherpa-font-sm-letter-spacing: 0.1;
+  --sherpa-font-sm-line-height: var(--sherpa-fonts-scale-base);
+  --sherpa-font-sm-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-sm-size: var(--sherpa-fonts-scale-sm);
+  --sherpa-font-xs-letter-spacing: 0.1;
+  --sherpa-font-xs-line-height: var(--sherpa-fonts-scale-base);
+  --sherpa-font-xs-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-xs-size: 11px;
+
+  /* ── Component ─────────────────────────────────────────────── */
+  --sherpa-component-accordion-border-color: light-dark(rgba(213, 213, 213, 0), rgba(255, 255, 255, 0));
+  --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-none);
+  --sherpa-component-accordion-border-width: var(--sherpa-border-width-base);
+  --sherpa-component-banner-border-rounding: var(--sherpa-border-rounding-lg);
+  --sherpa-component-tag-border-rounding: var(--sherpa-border-rounding-full);
+  --sherpa-component-toast-border-thickness-left: var(--sherpa-border-width-base);
+
   /* ── Text ──────────────────────────────────────────────────── */
-  --sherpa-text-active-alt: var(--sherpa-text-default-body);
-  --sherpa-text-active-base: light-dark(var(--sherpa-color-brand-700), var(--sherpa-color-brand-base));
+  --sherpa-text-active-alt: var(--sherpa-color-primary-classic-base);
+  --sherpa-text-active-base: var(--sherpa-color-primary-classic-base);
   --sherpa-text-default-body: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-neutral-300));
   --sherpa-text-default-heading: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
   --sherpa-text-default-label: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
@@ -292,9 +339,9 @@
   --sherpa-text-inactive-default: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-600));
   --sherpa-text-inactive-on-color: var(--sherpa-color-neutral-600);
   --sherpa-text-inactive-on-color-subtle: light-dark(var(--sherpa-color-neutral-800), var(--sherpa-color-neutral-600));
-  --sherpa-text-primary-default: light-dark(var(--sherpa-color-primary-new-base), var(--sherpa-color-primary-new-300));
-  --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
-  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-new-base);
+  --sherpa-text-primary-default: light-dark(var(--sherpa-color-primary-classic-600), var(--sherpa-color-primary-classic-300));
+  --sherpa-text-primary-on-color: var(--sherpa-color-primary-classic-200);
+  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-classic-600);
   --sherpa-text-context-error-default: light-dark(var(--sherpa-color-critical-700), var(--sherpa-color-critical-400));
   --sherpa-text-context-error-on-color: light-dark(var(--sherpa-color-critical-200), var(--sherpa-color-critical-100));
   --sherpa-text-context-error-on-color-subtle: light-dark(var(--sherpa-color-critical-700), var(--sherpa-color-critical-400));
@@ -312,8 +359,8 @@
   --sherpa-text-context-warning-on-color-subtle: light-dark(var(--sherpa-color-warning-900), var(--sherpa-color-warning-800));
 
   /* ── Icon ──────────────────────────────────────────────────── */
-  --sherpa-icon-active-alt: var(--sherpa-icon-context-default-body);
-  --sherpa-icon-active-base: light-dark(var(--sherpa-color-brand-700), var(--sherpa-color-brand-base));
+  --sherpa-icon-active-alt: var(--sherpa-color-primary-classic-base);
+  --sherpa-icon-active-base: var(--sherpa-color-primary-classic-base);
   --sherpa-icon-context-default-body: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-neutral-300));
   --sherpa-icon-context-default-heading: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
   --sherpa-icon-context-default-label: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
@@ -332,9 +379,9 @@
   --sherpa-icon-inactive-default: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-600));
   --sherpa-icon-inactive-on-color: var(--sherpa-color-neutral-600);
   --sherpa-icon-inactive-on-color-subtle: light-dark(var(--sherpa-color-neutral-800), var(--sherpa-color-neutral-600));
-  --sherpa-icon-primary-default: light-dark(var(--sherpa-color-primary-new-base), var(--sherpa-color-primary-new-300));
-  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
-  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-new-base);
+  --sherpa-icon-primary-default: light-dark(var(--sherpa-color-primary-classic-600), var(--sherpa-color-primary-classic-300));
+  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-classic-200);
+  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-classic-600);
   --sherpa-icon-context-error-default: light-dark(var(--sherpa-color-critical-700), var(--sherpa-color-critical-400));
   --sherpa-icon-context-error-on-color: light-dark(var(--sherpa-color-critical-200), var(--sherpa-color-critical-100));
   --sherpa-icon-context-error-on-color-subtle: light-dark(var(--sherpa-color-critical-700), var(--sherpa-color-critical-400));
@@ -351,3 +398,4 @@
   --sherpa-icon-context-warning-on-color: var(--sherpa-color-neutral-900);
   --sherpa-icon-context-warning-on-color-subtle: light-dark(var(--sherpa-color-warning-900), var(--sherpa-color-warning-800));
 }
+} /* @layer theme */

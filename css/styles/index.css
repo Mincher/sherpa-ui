@@ -1,19 +1,27 @@
 /**
  * Sherpa Design System — Token Cascade
  *
- * Cascade layers:
- *   tokens     — primitives, semantic aliases, themed colors, status mapping
+ * Cascade layers (in priority order, lowest → highest):
+ *   tokens     — core primitives, semantic aliases, font composites, status mapping
+ *   theme      — themed surface/text/border/icon/elevation tokens (loaded via <link>)
  *   utilities  — global reusable classes (text, icon, motion, data-viz, layout)
  *   components — light DOM component overrides
  *
+ * Token hierarchy:
+ *   core (--sherpa-core-*) → alias (--sherpa-color-*, --sherpa-size-*, etc.)
+ *     → theme (--sherpa-surface-*, --sherpa-text-*, etc.) → modifiers (status, density)
+ *
  * Theme architecture:
- *   Theme switching: swap @import URL in <style id="sherpa-theme">
- *     Available files: sherpa-theme-apex-2-core.css, sherpa-theme-data-protection.css, sherpa-theme-classic.css
- *   Mode switching: set color-scheme on documentElement
+ *   Themes are loaded via <link id="sherpa-theme"> in the HTML <head>.
+ *   Each theme file self-declares @layer theme { ... } so it slots into the
+ *   layer ordering between tokens and utilities.
+ *   Runtime theme switching: swap the <link> element's href attribute.
+ *   Available files: sherpa-theme-apex-2-core.css, sherpa-theme-data-protection.css, sherpa-theme-classic.css
+ *   Mode switching: set color-scheme on documentElement via JS
  *     "light dark" → auto (OS preference), "light" → forced light, "dark" → forced dark
  */
 
-@layer tokens, utilities, components;
+@layer tokens, theme, utilities, components;
 
 /* ── Tokens ──────────────────────────────────────────────────────────── */
 
@@ -23,18 +31,21 @@
 /* Semantic aliases (--sherpa-*) — abstract primitives into intent */
 @import "sherpa-alias.css" layer(tokens);
 
-/*
- * Theme tokens are NOT imported here.
- * They are loaded via <style id="sherpa-theme"> in the HTML <head>.
- * This allows runtime theme switching by swapping the @import URL.
- * See: sherpa-theme-apex-2-core.css (default)
- */
+/* Font composite tokens (typography scale) — base defaults, overridable by theme */
+@import "sherpa-fonts.css" layer(tokens);
 
 /* Global status → --_status-* private property mapping (inherits into shadow DOM) */
 @import "sherpa-status.css" layer(tokens);
 
-/* Font composite tokens (typography scale) */
-@import "sherpa-fonts.css" layer(tokens);
+/*
+ * Theme CSS is loaded externally via <link id="sherpa-theme"> in the HTML.
+ * Each theme file self-declares @layer theme { :root { ... } } so it slots
+ * into the layer ordering above, between tokens and utilities.
+ *
+ * No default theme is hardcoded here — the HTML <link> element provides it.
+ * This ensures runtime theme switching (swapping the <link> href) works
+ * reliably without competing with a baked-in default.
+ */
 
 /* Component collection tokens (variant defaults) */
 @import "sherpa-components.css" layer(components);
