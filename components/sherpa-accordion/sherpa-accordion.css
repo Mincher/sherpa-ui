@@ -1,0 +1,175 @@
+/**
+ * sherpa-accordion.css
+ * Shadow DOM styles for the SherpaAccordion web component.
+ *
+ * Architecture:
+ *   - CSS owns all show/hide and state logic via :host([data-*]) selectors
+ *   - Chevron rotation handled via CSS transform
+ *   - Panel visibility via grid row animation (max-height)
+ *   - Hover state lightens trigger background
+ *
+ * Host attributes:
+ *   data-expanded  — Open state, shows panel content
+ *   data-icon      — Shows the leading icon in the trigger
+ *   disabled       — Disabled state
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOST
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  overflow: hidden;
+  transition:
+    border-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+}
+
+:host([hidden]) { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TRIGGER / HEADER ROW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.accordion-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-default, 16px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+}
+
+.accordion-trigger:hover {
+  background: var(--sherpa-surface-container-hover, #fafafa);
+}
+
+.accordion-trigger:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-focus, #0066cc);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+}
+
+/* ── Trigger layout ──────────────────────────────────────────── */
+
+.trigger-left {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex: 1;
+  min-width: 0;
+}
+
+.trigger-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  flex-shrink: 0;
+}
+
+/* ── Label ───────────────────────────────────────────────────── */
+
+.trigger-label {
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+
+:host(:not([data-label])) .trigger-label { display: none; }
+
+/* ── Leading icon ────────────────────────────────────────────── */
+
+.trigger-icon {
+  display: none;
+  color: var(--sherpa-icon-default, #2e2e33);
+  font-size: var(--sherpa-font-size-default, 14px);
+}
+
+:host([data-icon]) .trigger-icon { display: inline-flex; }
+
+/* ── Chevron ─────────────────────────────────────────────────── */
+
+.chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sherpa-space-default, 16px);
+  height: var(--sherpa-space-default, 16px);
+  font-size: var(--sherpa-font-size-sm, 12px);
+  color: var(--sherpa-icon-default, #2e2e33);
+  transition:
+    transform var(--sherpa-motion-duration-default, 0.2s) var(--sherpa-motion-easing-default, ease);
+}
+
+:host([data-expanded]) .chevron {
+  transform: rotate(-180deg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PANEL / CONTENT AREA
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition:
+    grid-template-rows var(--sherpa-motion-duration-default, 0.2s) var(--sherpa-motion-easing-default, ease);
+}
+
+:host([data-expanded]) .accordion-panel {
+  grid-template-rows: 1fr;
+}
+
+.panel-content {
+  overflow: hidden;
+}
+
+:host([data-expanded]) .panel-content {
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-default, 16px);
+}
+
+/* ── Separator between trigger and panel ─────────────────────── */
+
+:host([data-expanded]) .accordion-trigger {
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DISABLED
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([disabled]) {
+  pointer-events: none;
+}
+
+:host([disabled]) .accordion-trigger {
+  background: var(--sherpa-surface-container-inactive, #f5f5f5);
+  color: var(--sherpa-text-inactive-default, #a0a0a0);
+  cursor: not-allowed;
+}
+
+:host([disabled]) .trigger-label {
+  color: var(--sherpa-text-inactive-default, #a0a0a0);
+}
+
+:host([disabled]) .chevron,
+:host([disabled]) .trigger-icon {
+  color: var(--sherpa-icon-inactive, #a0a0a0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACTIONS SLOT — hidden when empty (auto data-has-actions via SherpaElement)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+slot[name="actions"] {
+  display: none;
+}
+
+:host([data-has-actions]) slot[name="actions"] {
+  display: contents;
+}

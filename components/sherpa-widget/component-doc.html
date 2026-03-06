@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sherpa-widget — Component Doc</title>
+  <link rel="stylesheet" href="../../css/styles/sherpa-core.css" />
+  <link rel="stylesheet" href="../../css/styles/sherpa-tokens.css" />
+  <link rel="stylesheet" href="../../components/index.css" />
+  <script type="module" src="../../components/index.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 2rem; background: #f8f8fa; }
+    section { margin-bottom: 2rem; }
+    h2 { margin: 0 0 1rem; font-size: 1.1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+    sherpa-widget { height: 200px; }
+  </style>
+</head>
+<body>
+  <h1>sherpa-widget</h1>
+
+  <!-- ── Basic ───────────────────────────────────────────── -->
+  <section>
+    <h2>Basic widget with heading</h2>
+    <div class="grid">
+      <sherpa-widget data-heading="Revenue">
+        <p style="font-size: 2rem; font-weight: 700; margin: 0;">$12,450</p>
+        <p style="color: #5c5c66; margin: 4px 0 0;">+8.2% from last month</p>
+      </sherpa-widget>
+
+      <sherpa-widget data-heading="Active Users">
+        <p style="font-size: 2rem; font-weight: 700; margin: 0;">1,284</p>
+        <p style="color: #5c5c66; margin: 4px 0 0;">online now</p>
+      </sherpa-widget>
+    </div>
+  </section>
+
+  <!-- ── Size variants ───────────────────────────────────── -->
+  <section>
+    <h2>Size variants</h2>
+    <div class="grid">
+      <sherpa-widget data-heading="Small" data-size="small" style="height: auto;">
+        Compact content
+      </sherpa-widget>
+
+      <sherpa-widget data-heading="Medium" data-size="medium" style="height: auto;">
+        Default size content
+      </sherpa-widget>
+
+      <sherpa-widget data-heading="Large" data-size="large" style="height: auto;">
+        Large content area
+      </sherpa-widget>
+    </div>
+  </section>
+
+  <!-- ── Loading state ───────────────────────────────────── -->
+  <section>
+    <h2>Loading state</h2>
+    <div class="grid">
+      <sherpa-widget data-heading="Pipeline" data-loading>
+        <p>This content is dimmed while loading.</p>
+      </sherpa-widget>
+    </div>
+  </section>
+
+  <!-- ── With footer ─────────────────────────────────────── -->
+  <section>
+    <h2>With footer slot</h2>
+    <div class="grid">
+      <sherpa-widget data-heading="Tasks">
+        <p style="margin: 0;">5 tasks remaining</p>
+        <sherpa-button slot="footer" data-label="View all" data-variant="secondary" data-size="small"></sherpa-button>
+      </sherpa-widget>
+    </div>
+  </section>
+
+  <!-- ── Custom header slot ──────────────────────────────── -->
+  <section>
+    <h2>Custom header slot</h2>
+    <div class="grid">
+      <sherpa-widget>
+        <span slot="header" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-chart-line" style="color: #0079aa;"></i>
+          <strong>Performance</strong>
+        </span>
+        <p style="margin: 0;">Custom header content using a slot.</p>
+      </sherpa-widget>
+    </div>
+  </section>
+</body>
+</html>

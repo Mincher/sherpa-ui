@@ -1,0 +1,71 @@
+/**
+ * @component sherpa-overlay
+ *
+ * Full-viewport scrim/backdrop with centred content slot.
+ * Used for modals, panels, and any content that requires focus isolation.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {flag}    [data-visible]      Shows the overlay (hidden by default)
+ * @attr {string}  [data-position]     center (default) | top | bottom — vertical
+ *                                     alignment of slotted content
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — scrim div (click target) + content wrapper with default slot.
+ * CSS  — fixed position full-viewport; fade in/out via opacity transition;
+ *        scrim colour from Figma: rgba(46 46 51 / 0.5) at 40% node opacity.
+ * JS   — dispatches overlay-dismiss on scrim click; manages body scroll lock.
+ */
+
+/* ================================================================
+   :host — base (hidden by default)
+   ================================================================ */
+:host {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--sherpa-z-overlay, 1000);
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ── Visible state ─────────────────────────────────────────── */
+:host([data-visible]) {
+  display: flex;
+  opacity: 1;
+}
+
+/* ── Vertical content positioning ──────────────────────────── */
+:host([data-position="top"]) {
+  align-items: flex-start;
+}
+
+:host([data-position="bottom"]) {
+  align-items: flex-end;
+}
+
+/* ================================================================
+   Scrim — translucent backdrop
+   ================================================================ */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--sherpa-surface-overlay, rgba(46, 46, 51, 0.5));
+  cursor: pointer;
+}
+
+/* ================================================================
+   Content — centred above scrim
+   ================================================================ */
+.content {
+  position: relative;
+  z-index: 1;
+  max-height: 100%;
+  max-width: 100%;
+  overflow: auto;
+}

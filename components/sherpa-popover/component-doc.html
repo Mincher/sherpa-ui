@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sherpa-popover — Component Doc</title>
+    <link rel="stylesheet" href="../../css/styles/sherpa-core.css" />
+    <link rel="stylesheet" href="../../css/styles/themes/apex-2-core.css" />
+    <link rel="stylesheet" href="../index.css" />
+    <script type="module" src="../index.js"></script>
+    <style>
+      .demo-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        align-items: flex-start;
+        margin-block-end: 48px;
+        padding: 40px;
+      }
+      h2 { margin-block: 24px 12px; }
+      .trigger {
+        padding: 8px 16px;
+        cursor: pointer;
+        anchor-name: --demo-trigger;
+      }
+      .trigger-2 {
+        padding: 8px 16px;
+        cursor: pointer;
+        anchor-name: --demo-trigger-2;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>sherpa-popover</h1>
+
+    <h2>With header</h2>
+    <div class="demo-group">
+      <button class="trigger" onclick="
+        const pop = document.getElementById('pop-1');
+        pop.hasAttribute('data-open') ? delete pop.dataset.open : pop.dataset.open = '';
+      ">Toggle Popover</button>
+
+      <sherpa-popover
+        id="pop-1"
+        data-heading="Popover Title"
+        data-anchor="demo-trigger"
+        data-position="bottom"
+      >
+        <p style="padding: 12px; margin: 0;">This is some popover body content with additional information or actions.</p>
+      </sherpa-popover>
+    </div>
+
+    <h2>No header (content only)</h2>
+    <div class="demo-group">
+      <button class="trigger-2" onclick="
+        const pop2 = document.getElementById('pop-2');
+        pop2.hasAttribute('data-open') ? delete pop2.dataset.open : pop2.dataset.open = '';
+      ">Toggle Popover</button>
+
+      <sherpa-popover
+        id="pop-2"
+        data-anchor="demo-trigger-2"
+        data-position="bottom"
+      >
+        <div style="padding: 12px;">
+          <p style="margin: 0 0 8px;">Content-only popover without a header.</p>
+          <sherpa-button data-label="Action" data-variant="primary" data-size="small"></sherpa-button>
+        </div>
+      </sherpa-popover>
+    </div>
+  </body>
+</html>

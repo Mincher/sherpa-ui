@@ -1,0 +1,21 @@
+<!--
+  sherpa-input-date-range.html — Date range input with start and end fields.
+
+  Templates:
+    • default — Two native date inputs with separator
+
+  Host attributes:
+    min  — Minimum date value
+    max  — Maximum date value
+
+  Inherited from SherpaInputBase:
+    data-label, data-description, data-helper, data-layout,
+    disabled, readonly, required, name
+-->
+<template id="default">
+<div class="control-group">
+  <input type="date" class="input-field input-start" aria-label="Start date" />
+  <span class="range-separator" aria-hidden="true">–</span>
+  <input type="date" class="input-field input-end" aria-label="End date" />
+</div>
+</template>

@@ -1,0 +1,156 @@
+/**
+ * @component sherpa-popover
+ *
+ * General-purpose floating content container with header and optional arrow.
+ * Uses the Popover API and CSS anchor positioning (with JS fallback).
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-heading]          Header title text
+ * @attr {flag}    [data-open]             Shows the popover
+ * @attr {string}  [data-anchor]           CSS anchor name (--anchor-name) to position against
+ * @attr {string}  [data-position=bottom]  top | bottom | left | right — preferred placement
+ *
+ * ── Slots ─────────────────────────────────────────────────────
+ * default     — Body content
+ * icon        — Leading icon in the header
+ * header-end  — Trailing content in the header (tags, badges)
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — header (icon slot + heading + header-end slot + close button) + body (slot).
+ * CSS  — fixed positioning via CSS anchor positioning with @supports fallback,
+ *        drop shadow, optional arrow via ::before.
+ * JS   — manages open state, click-outside dismiss, anchor fallback positioning.
+ */
+
+/* ================================================================
+   :host — base (hidden by default)
+   ================================================================ */
+:host {
+  display: none;
+  position: fixed;
+  margin: 0;
+  inset: auto;
+  z-index: var(--sherpa-z-popover, 10000);
+  min-width: 200px;
+  max-width: 400px;
+  background: var(--sherpa-surface-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d7d7dc);
+  border-radius: var(--sherpa-radius-sm, 4px);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.12);
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-sm, 14px);
+  color: var(--sherpa-text-default-body, #18191a);
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+:host([data-open]) {
+  display: block;
+}
+
+/* ── CSS anchor positioning ────────────────────────────────── */
+@supports (anchor-name: --test) {
+  :host([data-open]) {
+    position-anchor: var(--_popover-anchor);
+  }
+
+  /* Bottom (default) */
+  :host([data-open]),
+  :host([data-open][data-position="bottom"]) {
+    top: anchor(bottom, 0);
+    left: anchor(center);
+    translate: -50% var(--sherpa-space-xs, 8px);
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+
+  /* Top */
+  :host([data-open][data-position="top"]) {
+    bottom: anchor(top, 0);
+    left: anchor(center);
+    translate: -50% calc(var(--sherpa-space-xs, 8px) * -1);
+  }
+
+  /* Left */
+  :host([data-open][data-position="left"]) {
+    right: anchor(left, 0);
+    top: anchor(center);
+    translate: calc(var(--sherpa-space-xs, 8px) * -1) -50%;
+  }
+
+  /* Right */
+  :host([data-open][data-position="right"]) {
+    left: anchor(right, 0);
+    top: anchor(center);
+    translate: var(--sherpa-space-xs, 8px) -50%;
+  }
+}
+
+/* ================================================================
+   Popover header
+   ================================================================ */
+.popover-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-sm, 12px);
+  background: var(--sherpa-surface-default, #ffffff);
+  border-bottom: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d7d7dc);
+  border-radius: var(--sherpa-radius-sm, 4px) var(--sherpa-radius-sm, 4px) 0 0;
+}
+
+:host(:not([data-heading]):not([data-has-icon]):not([data-has-header-end]))
+  .popover-header {
+  display: none;
+}
+
+.heading {
+  flex: 1;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host(:not([data-heading])) .heading {
+  display: none;
+}
+
+/* ── Close button ──────────────────────────────────────────── */
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--sherpa-radius-sm, 4px);
+  background: transparent;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  background: var(--sherpa-surface-neutral-hover, #f0f0f5);
+  color: var(--sherpa-text-default-body, #18191a);
+}
+
+/* ================================================================
+   Body
+   ================================================================ */
+.body {
+  padding: var(--sherpa-space-2xs, 4px) 0;
+  max-height: 400px;
+  overflow: auto;
+}

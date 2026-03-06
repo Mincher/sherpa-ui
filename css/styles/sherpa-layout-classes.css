@@ -1,10 +1,13 @@
 /**
  * sherpa-layout-classes.css
- * Responsive grid layout for content containers.
+ * App shell layout, responsive content grid, and scroll-under utility.
  *
- * .sherpa-content-area is a plain layout class (not a custom element).
- * It combines the scroll container, container-query host, and CSS grid
- * into a single element.
+ * Classes provided:
+ *   .sherpa-app-layout           — Grid shell: sidebar nav + main area
+ *   .sherpa-main-content         — Main content column (flex column)
+ *   .sherpa-main-content-slot    — Scrollable viewport for main content
+ *   .sherpa-content-area         — Responsive grid for widgets / containers
+ *   .sherpa-scroll-under         — Sticky header with scroll-activated bg
  *
  * Container queries control column count at breakpoints:
  *   ≥1200px → 12 cols, 640–1199px → 6 cols, <640px → 3 cols
@@ -89,20 +92,78 @@
   }
 }
 
+/* ── App Shell Layout ────────────────────────────────────────────────── */
+/*
+ * Grid-based app shell: sidebar nav + main content area.
+ * Consumer adds .sherpa-app-layout to the wrapper element.
+ *
+ * Structure:
+ *   <div class="sherpa-app-layout">
+ *     <sherpa-nav>…</sherpa-nav>
+ *     <div class="sherpa-main-content">
+ *       <sherpa-view-header>…</sherpa-view-header>
+ *       <div class="sherpa-main-content-slot">
+ *         <div class="sherpa-content-area">…</div>
+ *       </div>
+ *     </div>
+ *   </div>
+ */
+
+.sherpa-app-layout {
+  --nav-column-width: calc(var(--sherpa-space-default) * 3);
+  display: grid;
+  grid-template-columns: var(--nav-column-width) 1fr;
+  min-height: 100vh;
+  height: 100vh;
+}
+
+.sherpa-app-layout[data-nav-pinned="true"] {
+  --nav-column-width: 320px;
+}
+
+.sherpa-main-content {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sherpa-main-content-slot {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  container-type: scroll-state;
+  container-name: main-scroller;
+}
+
+.sherpa-main-content-slot > .sherpa-content-area {
+  width: 100%;
+  min-height: 100%;
+}
+
 /* ── Scroll-under effect ────────────────────────────────────────────── */
 /*
  * Apply .sherpa-scroll-under to any sticky element that should gain
  * a background + shadow when content scrolls beneath it.
  *
  * Activation:
- *   1. JS-driven: set [data-scrolled] attribute on the element.
- *   2. CSS-native (Chrome 133+): automatic via @container scroll-state
- *      when the element sits inside a scroll-state container.
+ *   1. CSS-native (Chrome/Safari 133+, Edge 133+): automatic via
+ *      @container scroll-state() — works when the element sits inside
+ *      a scroll-state container. No JS required.
+ *   2. JS fallback (Firefox): set [data-scrolled] attribute on the
+ *      element via IntersectionObserver or scroll listener.
  *
- * Wrap the scrollable area with:
- *   container-type: scroll-state;
- *   container-name: <name>;
- * and adapt the @container rule below if using a different container name.
+ * Consumer setup:
+ *   .my-scroll-area {
+ *     overflow-y: auto;
+ *     container-type: scroll-state;
+ *   }
+ *   <div class="my-scroll-area">
+ *     <header class="sherpa-scroll-under"> … </header>
+ *     …scrollable content…
+ *   </div>
  */
 
 .sherpa-scroll-under {
@@ -114,13 +175,16 @@
     box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
 }
 
+/* JS fallback — consumer toggles [data-scrolled] on the element */
 .sherpa-scroll-under[data-scrolled] {
   background-color: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
   box-shadow: var(--sherpa-shadow-default-sm);
 }
 
-/* Progressive enhancement: CSS scroll-state queries (Chrome 133+) */
-@container main-scroller (scroll-state: scrollable) {
+/* CSS scroll-state query (Chrome/Safari/Edge 133+)
+ * scroll-state(scrolled: top) is TRUE when the scroller is at rest
+ * at the top. We want styles when it is NOT at the top → use :not(). */
+@container scroll-state(not scrolled: top) {
   .sherpa-scroll-under {
     background-color: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
     box-shadow: var(--sherpa-shadow-default-sm);

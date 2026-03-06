@@ -1,0 +1,220 @@
+/**
+ * @component sherpa-callout
+ *
+ * Inline contextual callout with status variants and collapsible body.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-status=info]  info | warning | critical | success | neutral | tip
+ * @attr {string}  [data-heading]      Heading text
+ * @attr {boolean} [data-expanded]     Expanded (body visible)
+ * @attr {boolean} [data-dismissible]  Show toggle/dismiss button
+ * @attr {string}  [data-icon]         Override status icon (FA codepoint)
+ *
+ * ── Slots ─────────────────────────────────────────────────────
+ * heading — Override heading text
+ * default — Body content
+ * action  — Optional action link/button
+ *
+ * ── Events ────────────────────────────────────────────────────
+ * callout-toggle  — { expanded: boolean }
+ * callout-dismiss — {}
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — header (toggle + icon + heading) + body (slot + action slot).
+ * CSS  — status colours via --_callout-* private vars driven by
+ *        :host([data-status="*"]) selectors. Body hidden when collapsed.
+ *        Toggle icon rotates on expand.
+ * JS   — toggles data-expanded, dispatches events, syncs heading text
+ *        and status icon.
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--sherpa-radius-md, 8px);
+  padding: var(--sherpa-space-md, 16px);
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-xs, 13px);
+  line-height: var(--sherpa-line-height-default, 1.6);
+  background: var(--_callout-bg, var(--sherpa-surface-status-info-subtle, #d9e8f2));
+  color: var(--sherpa-text-default-body, #111111);
+  box-sizing: border-box;
+
+  --_callout-bg: var(--sherpa-surface-status-info-subtle, #d9e8f2);
+  --_callout-heading: var(--sherpa-text-status-info, #0079aa);
+  --_callout-icon: var(--sherpa-text-status-info, #0079aa);
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ================================================================
+   Status variants
+   ================================================================ */
+:host([data-status="info"]) {
+  --_callout-bg: var(--sherpa-surface-status-info-subtle, #d9e8f2);
+  --_callout-heading: var(--sherpa-text-status-info, #0079aa);
+  --_callout-icon: var(--sherpa-text-status-info, #0079aa);
+}
+
+:host([data-status="warning"]) {
+  --_callout-bg: var(--sherpa-surface-status-warning-subtle, #fff6d9);
+  --_callout-heading: var(--sherpa-text-status-warning, #673106);
+  --_callout-icon: var(--sherpa-text-status-warning, #673106);
+}
+
+:host([data-status="critical"]) {
+  --_callout-bg: var(--sherpa-surface-status-danger-subtle, #fadfd9);
+  --_callout-heading: var(--sherpa-text-status-danger, #950000);
+  --_callout-icon: var(--sherpa-text-status-danger, #950000);
+}
+
+:host([data-status="success"]) {
+  --_callout-bg: var(--sherpa-surface-status-success-subtle, #d9f2e0);
+  --_callout-heading: var(--sherpa-text-status-success, #1a7a2e);
+  --_callout-icon: var(--sherpa-text-status-success, #1a7a2e);
+}
+
+:host([data-status="neutral"]) {
+  --_callout-bg: var(--sherpa-surface-neutral-subtle, #f0f0f2);
+  --_callout-heading: var(--sherpa-text-default-body, #18191a);
+  --_callout-icon: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+:host([data-status="tip"]) {
+  --_callout-bg: var(--sherpa-surface-accent-subtle, #f8ebff);
+  --_callout-heading: var(--sherpa-text-accent-default, #7b2fa0);
+  --_callout-icon: var(--sherpa-text-accent-default, #7b2fa0);
+}
+
+/* ================================================================
+   Header
+   ================================================================ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 8px);
+}
+
+/* ── Toggle button ──────────────────────────────────────────── */
+.toggle-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: var(--sherpa-radius-sm, 4px);
+  cursor: pointer;
+  color: var(--_callout-heading);
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.12s ease;
+}
+
+:host([data-dismissible]) .toggle-btn {
+  display: inline-flex;
+}
+
+.toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.toggle-icon {
+  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+:host([data-expanded]) .toggle-icon {
+  transform: rotate(180deg);
+}
+
+:host(:not([data-expanded])) .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* ── Status icon ────────────────────────────────────────────── */
+.status-icon {
+  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  font-size: 16px;
+  color: var(--_callout-icon);
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Heading ────────────────────────────────────────────────── */
+.heading-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.heading-text {
+  font-size: var(--sherpa-font-size-xs, 13px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--_callout-heading);
+  line-height: var(--sherpa-line-height-default, 1.6);
+}
+
+:host(:not([data-heading])) .heading-text {
+  display: none;
+}
+
+/* ================================================================
+   Body — hidden when collapsed
+   ================================================================ */
+.body {
+  display: none;
+  flex-direction: column;
+  gap: var(--sherpa-space-md, 16px);
+  padding-top: var(--sherpa-space-md, 16px);
+  /* Indent to align with heading (toggle btn 36 + gap 8 + icon 20 + gap 8 = 72px) */
+  padding-left: 72px;
+}
+
+:host([data-expanded]) .body {
+  display: flex;
+}
+
+/* When no toggle button, less indent (icon 20 + gap 8 = 28px) */
+:host(:not([data-dismissible])) .body {
+  padding-left: 28px;
+}
+
+/* When no toggle button and always expanded, show body */
+:host(:not([data-dismissible])) .body {
+  display: flex;
+}
+
+.body-content {
+  color: var(--sherpa-text-default-body, #111111);
+}
+
+/* ── Action area ────────────────────────────────────────────── */
+.action-area {
+  display: none;
+}
+
+:host([data-has-action]) .action-area {
+  display: block;
+}
+
+::slotted([slot="action"]) {
+  color: var(--sherpa-text-link-default, #0079aa);
+  font-size: var(--sherpa-font-size-xs, 13px);
+  text-decoration: underline;
+  cursor: pointer;
+}

@@ -1,0 +1,31 @@
+<!--
+  sherpa-donut-chart.html — Donut / pie chart rendered with CSS conic-gradient.
+
+  Templates:
+    • default — Circular div with conic-gradient slices + centre label
+
+  Host attributes:
+    data-title          — Chart title
+    data-inner-label    — Centre big text (e.g. "100")
+    data-inner-sublabel — Centre small text (e.g. "TOTAL")
+    data-loading        — Boolean, dims chart
+    data-variant        — donut (default) | pie
+
+  Methods:
+    setData([{ label, value, color? }])
+-->
+<template id="default">
+  <div class="chart-header">
+    <span class="chart-title"></span>
+  </div>
+  <div class="chart-area">
+    <div class="donut-ring" aria-hidden="true"></div>
+    <div class="donut-hole"></div>
+    <div class="centre-label">
+      <span class="centre-value"></span>
+      <span class="centre-sublabel"></span>
+    </div>
+  </div>
+  <div class="chart-legend"></div>
+  <sherpa-tooltip></sherpa-tooltip>
+</template>

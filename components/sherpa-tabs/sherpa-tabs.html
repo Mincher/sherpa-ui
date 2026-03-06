@@ -1,0 +1,29 @@
+<!--
+  sherpa-tabs.html — Tabbed content switcher.
+
+  Templates:
+    • default — Tab strip (tablist) + content area (tabpanel)
+
+  The tab strip is populated dynamically by JS using the cloning prototype
+  <template class="tab-tpl">. Each slotted child with a data-tab-label
+  attribute generates one tab button.
+
+  Host attributes:
+    data-active-tab — Zero-based index of the active tab
+
+  Slots:
+    (default) — Tab panels; each direct child should have data-tab-label="..."
+-->
+
+<template id="default">
+<div class="tab-strip" role="tablist" part="tablist">
+  <template class="tab-tpl">
+    <button class="tab" role="tab" tabindex="-1" type="button">
+      <span class="tab-label text-body-emphasised-base"></span>
+    </button>
+  </template>
+</div>
+<div class="tab-content" part="panel">
+  <slot></slot>
+</div>
+</template>

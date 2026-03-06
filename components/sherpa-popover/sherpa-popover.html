@@ -1,0 +1,13 @@
+<template id="default">
+  <header class="popover-header">
+    <slot name="icon"></slot>
+    <span class="heading"></span>
+    <slot name="header-end"></slot>
+    <button class="close-btn" type="button" aria-label="Close popover">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </header>
+  <div class="body">
+    <slot></slot>
+  </div>
+</template>

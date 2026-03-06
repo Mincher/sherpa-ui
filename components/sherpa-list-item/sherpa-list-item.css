@@ -1,0 +1,169 @@
+/**
+ * sherpa-list-item.css
+ * Shadow DOM styles for the SherpaListItem web component.
+ *
+ * Architecture:
+ *   - Horizontal flex layout: leading → content → trailing
+ *   - Leading area: optional drag handle + optional icon
+ *   - Content area: label + description + default slot
+ *   - Trailing area: slotted action buttons/badges
+ *   - States: default, hover, active, inactive/disabled
+ *
+ * Host attributes:
+ *   data-active      — Active/selected visual state
+ *   data-interactive — Enables hover/click behaviour
+ *   data-draggable   — Shows drag handle
+ *   data-icon        — Shows leading icon
+ *   disabled         — Disabled state
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOST
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+:host([hidden]) { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.list-item-container {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px) var(--sherpa-space-xs, 8px) var(--sherpa-space-xs, 8px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #b2b2bf);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  transition:
+    background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease),
+    border-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+}
+
+/* ── Interactive / Hover ─────────────────────────────────────── */
+
+:host([data-interactive]) .list-item-container {
+  cursor: pointer;
+}
+
+:host([data-interactive]) .list-item-container:hover {
+  background: var(--sherpa-surface-container-hover, #fafafa);
+}
+
+/* ── Active state ────────────────────────────────────────────── */
+
+:host([data-active]) .list-item-container {
+  background: var(--sherpa-surface-container-selected-default, #f8ebff);
+  border-color: var(--sherpa-border-control-primary-active, #3c5edd);
+}
+
+/* ── Disabled ────────────────────────────────────────────────── */
+
+:host([disabled]) .list-item-container {
+  background: var(--sherpa-surface-container-inactive, #f2f2f2);
+  border-color: var(--sherpa-border-container-inactive, #c0c0cc);
+  pointer-events: none;
+}
+
+:host([disabled]) .label,
+:host([disabled]) .description {
+  color: var(--sherpa-text-inactive-default, #a0a0a0);
+}
+
+:host([disabled]) .icon,
+:host([disabled]) .drag-handle {
+  color: var(--sherpa-icon-inactive, #a0a0a0);
+}
+
+/* ── Focus ───────────────────────────────────────────────────── */
+
+:host([data-interactive]:focus-visible) .list-item-container {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-focus, #0066cc);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEADING AREA
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.leading {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* ── Drag handle — hidden by default ─────────────────────────── */
+
+.drag-handle {
+  display: none;
+  color: var(--sherpa-icon-default-subtle, #a9a9a9);
+  cursor: grab;
+}
+
+:host([data-draggable]) .drag-handle { display: inline-flex; }
+
+/* ── Leading icon — hidden by default ────────────────────────── */
+
+.leading-icon {
+  display: none;
+  color: var(--sherpa-icon-default, #2e2e33);
+}
+
+:host([data-icon]) .leading-icon { display: inline-flex; }
+:host([data-has-leading]) .leading-icon { display: inline-flex; }
+
+/* Hide entire leading area when nothing is shown */
+:host(:not([data-icon]):not([data-draggable]):not([data-has-leading])) .leading {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTENT AREA
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xxs, 4px);
+}
+
+.content-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xxs, 4px);
+}
+
+.label {
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+
+:host(:not([data-label])) .label { display: none; }
+
+.description {
+  color: var(--sherpa-text-default-subtle, #6e6e73);
+}
+
+:host(:not([data-description])) .description { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TRAILING AREA — hidden when no slotted content
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.trailing {
+  display: none;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
+}
+
+:host([data-has-trailing]) .trailing {
+  display: flex;
+}

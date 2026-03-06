@@ -1,0 +1,112 @@
+/**
+ * @component sherpa-chart-legend
+ *
+ * Standalone chart legend component with colour keys, labels and
+ * optional values. Supports horizontal and vertical orientations.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-orientation=horizontal] horizontal | vertical
+ * @attr {boolean} [data-loading]                Dims legend
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — .legend-list wraps cloned .legend-item elements.
+ *        Each item has .legend-key (colour swatch), .legend-label,
+ *        and .legend-value.
+ * CSS  — Flex layout, orientation via :host([data-orientation]).
+ *        Inactive items get reduced opacity. Key swatch is 20×20
+ *        with small rounding matching Figma specs.
+ * JS   — setItems() clones prototype, sets colour/text/state.
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+:host([data-loading]) {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ================================================================
+   Legend list — horizontal (default) or vertical
+   ================================================================ */
+.legend-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-lg, 24px);
+  align-items: center;
+}
+
+:host([data-orientation="vertical"]) .legend-list {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* ================================================================
+   Legend item
+   ================================================================ */
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  font-size: var(--sherpa-font-size-sm, 14px);
+  color: var(--sherpa-text-default-body, #18191a);
+  cursor: default;
+  transition: opacity 0.15s ease;
+}
+
+.legend-item[data-inactive] {
+  opacity: 0.4;
+}
+
+.legend-item[data-link] {
+  cursor: pointer;
+}
+
+.legend-item[data-link]:hover .legend-label {
+  text-decoration: underline;
+}
+
+/* ── Colour key swatch ───────────────────────────────────────── */
+.legend-key {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  flex-shrink: 0;
+}
+
+/* ── Label ───────────────────────────────────────────────────── */
+.legend-label {
+  white-space: nowrap;
+  color: var(--sherpa-text-default-body, #18191a);
+}
+
+/* ── Value (optional) ────────────────────────────────────────── */
+.legend-value {
+  display: none;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-text-default-heading, #18191a);
+}
+
+.legend-item[data-has-value] .legend-value {
+  display: inline;
+}
+
+/* ================================================================
+   Data-viz categorical colour classes
+   ================================================================ */
+.color-1 { background-color: var(--sherpa-data-viz-categorical-color-1, #7b1ce6); }
+.color-2 { background-color: var(--sherpa-data-viz-categorical-color-2, #16abe2); }
+.color-3 { background-color: var(--sherpa-data-viz-categorical-color-3, #2bd1c1); }
+.color-4 { background-color: var(--sherpa-data-viz-categorical-color-4, #ffaa00); }
+.color-5 { background-color: var(--sherpa-data-viz-categorical-color-5, #f3699d); }
+.color-6 { background-color: var(--sherpa-data-viz-categorical-color-6, #c046ff); }

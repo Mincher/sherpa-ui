@@ -1,0 +1,45 @@
+<!--
+  sherpa-list-item.html — Versatile list item component.
+
+  Templates:
+    • default — Leading area + content + trailing actions
+
+  Host attributes:
+    data-label       — Primary text
+    data-description — Secondary text line
+    data-icon        — Leading icon class (FontAwesome)
+    data-active      — Active/selected visual state
+    data-interactive — Enables hover/click behaviour
+    data-draggable   — Shows drag handle
+    disabled         — Disabled state
+
+  Slots:
+    leading  — Leading content (icon / avatar override)
+    (default) — Main content area (overrides label + description)
+    trailing — Trailing actions/badges
+-->
+
+<template id="default">
+<div class="list-item-container" part="container">
+  <div class="leading" part="leading">
+    <span class="drag-handle" aria-hidden="true">
+      <i class="fa-solid fa-grip-vertical"></i>
+    </span>
+    <span class="leading-icon" aria-hidden="true">
+      <slot name="leading">
+        <i class="icon"></i>
+      </slot>
+    </span>
+  </div>
+  <div class="content" part="content">
+    <div class="content-text">
+      <span class="label text-body-emphasised-sm"></span>
+      <span class="description text-body-sm"></span>
+    </div>
+    <slot></slot>
+  </div>
+  <div class="trailing" part="trailing">
+    <slot name="trailing"></slot>
+  </div>
+</div>
+</template>

@@ -1,0 +1,392 @@
+/**
+ * @component sherpa-file-upload
+ *
+ * File upload drop zone with drag-and-drop, file list, and progress tracking.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-label]        Label text above the drop zone
+ * @attr {string}  [data-accept]       Accepted file types (e.g., ".jpg,.png,image/*")
+ * @attr {boolean} [data-multiple]     Allow multiple file selection
+ * @attr {string}  [data-max-size]     Maximum file size in bytes
+ * @attr {string}  [data-max-files]    Maximum number of files
+ * @attr {string}  [data-helper]       Constraint helper text
+ * @attr {boolean} [data-drag-over]    Set by JS during drag-over (CSS uses for highlight)
+ * @attr {boolean} [data-has-files]    Set by JS when files are present
+ * @attr {boolean} [disabled]          Disabled state
+ *
+ * ── Events ────────────────────────────────────────────────────
+ * file-add    — { files: File[] }  — fired when files are added
+ * file-remove — { file, index }    — fired when a file is removed
+ * file-clear  — {}                 — fired when all files are cleared
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — drop zone + constraints text + file list (cloning prototype) + action bar.
+ * CSS  — drag-over highlight via :host([data-drag-over]), file item states via
+ *        [data-state] on cloned items, action bar shown only when files present.
+ * JS   — drag/drop API, File input change, cloning prototype for file items,
+ *        validation (type, size, count).
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 8px);
+  width: 100%;
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ================================================================
+   Label
+   ================================================================ */
+.label {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-body, #18191a);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+}
+
+:host(:not([data-label])) .label {
+  display: none;
+}
+
+/* ================================================================
+   Drop zone
+   ================================================================ */
+.drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-space-sm, 8px);
+  min-height: 80px;
+  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-md, 16px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  border: 2px dashed var(--sherpa-border-control-default, #c6c6cc);
+  border-radius: var(--sherpa-radius-sm, 4px);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  outline: none;
+}
+
+.drop-zone:hover {
+  background: var(--sherpa-surface-neutral-hover, #f5f5f7);
+  border-color: var(--sherpa-border-control-hover, #9d9da6);
+}
+
+.drop-zone:focus-visible {
+  outline: 2px solid var(--sherpa-border-control-focus, #3c5edd);
+  outline-offset: 2px;
+}
+
+/* Drag-over highlight */
+:host([data-drag-over]) .drop-zone {
+  background: var(--sherpa-surface-accent-subtle, #f8ebff);
+  border-color: var(
+    --_status-border,
+    var(--sherpa-border-control-primary-default, #c046ff)
+  );
+  border-style: solid;
+}
+
+.drop-icon {
+  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  font-size: 20px;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  flex-shrink: 0;
+}
+
+.drop-text {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  color: var(--sherpa-text-default-body, #18191a);
+}
+
+.browse-link {
+  color: var(
+    --_status-text,
+    var(--sherpa-text-link-default, #0079aa)
+  );
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.browse-link:hover {
+  text-decoration: none;
+}
+
+/* Disabled */
+:host([disabled]) .drop-zone {
+  background: var(--sherpa-surface-control-inactive, #f0f0f2);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e5);
+  cursor: default;
+  pointer-events: none;
+}
+
+:host([disabled]) .drop-icon,
+:host([disabled]) .drop-text {
+  color: var(--sherpa-text-default-inactive, #9d9da6);
+}
+
+/* ================================================================
+   File constraints
+   ================================================================ */
+.file-constraints {
+  display: none;
+}
+
+:host([data-helper]) .file-constraints {
+  display: block;
+}
+
+.constraints-text {
+  font-size: var(--sherpa-font-size-xs, 12px);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+/* ================================================================
+   File list
+   ================================================================ */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xs, 6px);
+}
+
+:host(:not([data-has-files])) .file-list {
+  display: none;
+}
+
+/* ================================================================
+   File item (cloned from .file-item-tpl)
+   ================================================================ */
+.file-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 6px) 0;
+}
+
+.file-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--sherpa-radius-sm, 4px);
+  background: var(--sherpa-surface-neutral-subtle, #f5f5f7);
+  flex-shrink: 0;
+}
+
+.file-type-icon {
+  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  font-size: 16px;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+.file-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sherpa-space-sm, 8px);
+}
+
+.file-name {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  color: var(--sherpa-text-default-body, #18191a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-size {
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── File status row ─────────────────────────────────────────── */
+.file-status-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+.file-progress-track {
+  width: 100%;
+  height: 4px;
+  background: var(--sherpa-surface-neutral-default, #e0e0e5);
+  border-radius: var(--sherpa-radius-pill, 999px);
+  overflow: hidden;
+  display: none;
+}
+
+.file-item[data-state="uploading"] .file-progress-track {
+  display: block;
+}
+
+.file-progress-fill {
+  height: 100%;
+  width: var(--_file-progress, 0%);
+  background: var(
+    --_status-surface-strong,
+    var(--sherpa-surface-control-primary-default, #3c5edd)
+  );
+  border-radius: var(--sherpa-radius-pill, 999px);
+  transition: width 0.2s ease;
+}
+
+.file-status-text {
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+.file-item[data-state="ready"] .file-status-text {
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+.file-item[data-state="uploaded"] .file-status-text {
+  color: var(--sherpa-text-status-success, #1a7a2e);
+}
+
+.file-item[data-state="failed"] .file-status-text {
+  color: var(--sherpa-text-status-danger, #dd2c00);
+}
+
+.file-item[data-state="failed"] .file-icon {
+  background: var(--sherpa-surface-status-danger-subtle, #fef0ec);
+}
+
+/* ── File actions ────────────────────────────────────────────── */
+.file-actions {
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+  align-items: flex-start;
+}
+
+.file-remove-btn,
+.file-retry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--sherpa-surface-neutral-subtle, #fafaff);
+  border-radius: var(--sherpa-radius-sm, 4px);
+  cursor: pointer;
+  color: var(--sherpa-text-default-body, #2e2e33);
+  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  padding: 0;
+  transition: background 0.12s ease;
+}
+
+.file-remove-btn:hover,
+.file-retry-btn:hover {
+  background: var(--sherpa-surface-neutral-hover, #f0f0f2);
+}
+
+.file-retry-btn {
+  display: none;
+}
+
+.file-item[data-state="failed"] .file-retry-btn {
+  display: flex;
+}
+
+/* Hide progress in non-uploading states */
+.file-item[data-state="ready"] .file-progress-track,
+.file-item[data-state="uploaded"] .file-progress-track,
+.file-item[data-state="failed"] .file-progress-track {
+  display: none;
+}
+
+/* ================================================================
+   Action bar — shown only when files present
+   ================================================================ */
+.action-bar {
+  display: none;
+  gap: var(--sherpa-space-md, 16px);
+  padding-top: var(--sherpa-space-sm, 8px);
+}
+
+:host([data-has-files]) .action-bar {
+  display: flex;
+}
+
+.upload-btn,
+.remove-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 8px);
+  padding: var(--sherpa-space-sm, 8px);
+  border: none;
+  border-radius: var(--sherpa-radius-sm, 4px);
+  font-size: var(--sherpa-font-size-xs, 13px);
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  transition: background 0.12s ease;
+}
+
+.upload-btn {
+  background: var(--sherpa-surface-control-default, #ffffff);
+  color: var(--sherpa-text-link-default, #0079aa);
+}
+
+.upload-btn:hover {
+  background: var(--sherpa-surface-neutral-hover, #f0f0f2);
+}
+
+.upload-btn i,
+.remove-all-btn i {
+  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  font-size: 14px;
+}
+
+.remove-all-btn {
+  background: var(--sherpa-surface-status-danger-subtle, #f8c4b9);
+  color: var(--sherpa-text-status-danger, #dd2c00);
+}
+
+.remove-all-btn:hover {
+  background: var(--sherpa-surface-status-danger-muted, #f0a898);
+}
+
+/* Hidden file input */
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}

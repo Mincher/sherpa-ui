@@ -1,0 +1,42 @@
+<!--
+  sherpa-progress-tracker.html — Vertical progress timeline with milestone nodes.
+
+  Templates:
+    • default          — Header (title + percentage) + milestone list
+    • milestone-tpl    — Cloning prototype: connector + node + content
+
+  Host attributes:
+    data-heading       — Tracker heading text
+    data-percentage    — Completion percentage text (e.g. "45% Complete")
+
+  Milestone data-attributes (set by JS on each cloned item):
+    data-status — default | in-progress | success | warning | critical
+
+  Methods:
+    setMilestones([{ label, status, description, timestamp }])
+-->
+<template id="default">
+  <div class="tracker-header">
+    <span class="heading-text"></span>
+    <span class="percentage-text"></span>
+  </div>
+  <div class="milestone-list" role="list"></div>
+
+  <!-- Cloning prototype: milestone item -->
+  <template class="milestone-tpl">
+    <div class="milestone" role="listitem">
+      <div class="milestone-rail">
+        <div class="connector-in"></div>
+        <div class="milestone-node">
+          <i class="node-icon" aria-hidden="true"></i>
+        </div>
+        <div class="connector-out"></div>
+      </div>
+      <div class="milestone-content">
+        <span class="milestone-label"></span>
+        <span class="milestone-description"></span>
+      </div>
+      <span class="milestone-timestamp"></span>
+    </div>
+  </template>
+</template>

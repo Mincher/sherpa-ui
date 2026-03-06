@@ -88,7 +88,7 @@
 :host([data-active]) {
   border-color: var(--sherpa-border-control-active-default);
   background-color: var(--sherpa-surface-control-active-default);
-  color: var(--sherpa-text-primary-default);
+  color: var(--sherpa-text-active-base);
   --_cg-surface: var(--sherpa-surface-control-active-default);
   --_cg-surface-hover: var(--sherpa-surface-control-active-hover);
   --_cg-surface-down: var(--sherpa-surface-control-active-down);
@@ -234,7 +234,7 @@
 
 :host([data-active]) .chip-count {
   background: var(--sherpa-surface-control-active-hover);
-  color: var(--sherpa-text-primary-default);
+  color: var(--sherpa-text-active-base);
 }
 
 /* ==========================================================================

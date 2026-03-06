@@ -149,7 +149,9 @@ export class SherpaViewHeader extends SherpaElement {
       link.rel = 'stylesheet';
       document.head.appendChild(link);
     }
-    link.href = `/css/styles/sherpa-theme-${theme}.css`;
+    // Resolve path relative to this module so it works regardless of install location
+    const base = new URL('../../css/styles/', import.meta.url).href;
+    link.href = `${base}sherpa-theme-${theme}.css`;
   }
 
   #applyMode(mode) {

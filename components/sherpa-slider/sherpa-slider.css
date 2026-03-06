@@ -1,0 +1,307 @@
+/**
+ * @component sherpa-slider
+ *
+ * Single or dual-handle range slider with optional numeric inputs.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-label]        Label text above the slider
+ * @attr {string}  [data-type=single]  single | range
+ * @attr {string}  [data-min=0]        Minimum value
+ * @attr {string}  [data-max=100]      Maximum value
+ * @attr {string}  [data-step=1]       Step increment
+ * @attr {string}  [data-value]        Current value (single mode)
+ * @attr {string}  [data-value-low]    Low handle value (range mode)
+ * @attr {string}  [data-value-high]   High handle value (range mode)
+ * @attr {boolean} [data-show-inputs]  Show numeric input fields
+ * @attr {boolean} [data-show-labels]  Show min/max increment labels
+ * @attr {boolean} [disabled]          Disabled state
+ *
+ * ── Events ────────────────────────────────────────────────────
+ * input  — fires continuously while dragging { value } or { low, high }
+ * change — fires on pointer release          { value } or { low, high }
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — track + fill + two handles (high hidden in single mode) +
+ *        optional numeric inputs + increment labels.
+ * CSS  — fill position/width driven by --_low-pct / --_high-pct custom
+ *        properties. Handle placement via left %. Visibility via
+ *        :host([data-*]) selectors.
+ * JS   — Pointer event drag handling with capture. Keyboard arrow keys.
+ *        Dual-handle collision avoidance. Input field two-way sync.
+ *
+ * ── Slots ─────────────────────────────────────────────────────
+ * (none — fully self-contained)
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  width: 100%;
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+  --_handle-size: 24px;
+  --_track-height: 4px;
+  --_input-width: 48px;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ================================================================
+   Label
+   ================================================================ */
+.label {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-body, #18191a);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+}
+
+:host(:not([data-label])) .label {
+  display: none;
+}
+
+/* ================================================================
+   Slider row — inputs + track
+   ================================================================ */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-md, 16px);
+}
+
+/* ================================================================
+   Numeric inputs — hidden unless data-show-inputs is set
+   ================================================================ */
+.input-low-wrap,
+.input-high-wrap {
+  display: none;
+}
+
+:host([data-show-inputs]) .input-high-wrap {
+  display: flex;
+}
+
+:host([data-show-inputs][data-type="range"]) .input-low-wrap {
+  display: flex;
+}
+
+.input-low,
+.input-high {
+  width: var(--_input-width);
+  height: var(--sherpa-size-2xl, 32px);
+  border: 1px solid var(--sherpa-border-control-default, #c6c6cc);
+  border-radius: var(--sherpa-radius-sm, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  color: var(--sherpa-text-default-body, #18191a);
+  font-size: var(--sherpa-font-size-sm, 14px);
+  font-family: inherit;
+  text-align: center;
+  padding: 0 var(--sherpa-space-2xs, 4px);
+  box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.input-low::-webkit-inner-spin-button,
+.input-low::-webkit-outer-spin-button,
+.input-high::-webkit-inner-spin-button,
+.input-high::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input-low:focus,
+.input-high:focus {
+  outline: 2px solid var(--sherpa-border-control-focus, #3c5edd);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+:host([disabled]) .input-low,
+:host([disabled]) .input-high {
+  background: var(--sherpa-surface-control-inactive, #f0f0f2);
+  color: var(--sherpa-text-default-inactive, #9d9da6);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e5);
+  pointer-events: none;
+}
+
+/* ================================================================
+   Track area — relative container for track + handles
+   ================================================================ */
+.track-area {
+  position: relative;
+  flex: 1;
+  height: var(--_handle-size);
+  display: flex;
+  align-items: center;
+  touch-action: none;
+  cursor: pointer;
+}
+
+/* ================================================================
+   Track — the horizontal rail
+   ================================================================ */
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--_track-height);
+  background: var(--sherpa-surface-neutral-default, #e0e0e5);
+  border-radius: var(--sherpa-radius-pill, 999px);
+  overflow: hidden;
+}
+
+/* ================================================================
+   Fill — coloured portion between handles (or from 0 to handle)
+   ================================================================ */
+.fill {
+  position: absolute;
+  left: var(--_low-pct, 0%);
+  width: calc(var(--_high-pct, 0%) - var(--_low-pct, 0%));
+  height: 100%;
+  background: var(
+    --_status-surface-strong,
+    var(--sherpa-surface-control-primary-default, #3c5edd)
+  );
+  border-radius: var(--sherpa-radius-pill, 999px);
+  transition: left 0.05s ease, width 0.05s ease;
+}
+
+/* ================================================================
+   Handles — draggable circular controls
+   ================================================================ */
+.handle {
+  position: absolute;
+  top: 50%;
+  width: var(--_handle-size);
+  height: var(--_handle-size);
+  border-radius: 50%;
+  background: var(--sherpa-surface-control-default, #ffffff);
+  border: 2px solid var(
+    --_status-surface-strong,
+    var(--sherpa-surface-control-primary-default, #3c5edd)
+  );
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  z-index: 2;
+  outline: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.handle-low {
+  left: var(--_low-pct, 0%);
+}
+
+.handle-high {
+  left: var(--_high-pct, 100%);
+}
+
+/* Single mode: hide low handle, fill starts at 0 */
+:host(:not([data-type="range"])) .handle-low {
+  display: none;
+}
+
+:host(:not([data-type="range"])) .fill {
+  left: 0%;
+  width: var(--_high-pct, 0%);
+}
+
+/* ── Handle states ──────────────────────────────────────────── */
+.handle:hover {
+  box-shadow: 0 0 0 6px rgba(60, 94, 221, 0.12),
+              0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.handle:active,
+.handle[data-dragging] {
+  cursor: grabbing;
+  box-shadow: 0 0 0 8px rgba(60, 94, 221, 0.18),
+              0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.handle:focus-visible {
+  outline: 2px solid var(--sherpa-border-control-focus, #3c5edd);
+  outline-offset: 2px;
+}
+
+/* Active-state inner dot (matches Figma State=Active) */
+.handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(
+    --_status-surface-strong,
+    var(--sherpa-surface-control-primary-default, #3c5edd)
+  );
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.handle:active::after,
+.handle[data-dragging]::after {
+  opacity: 1;
+}
+
+/* ── Disabled state ─────────────────────────────────────────── */
+:host([disabled]) .track-area {
+  pointer-events: none;
+  cursor: default;
+}
+
+:host([disabled]) .track {
+  background: var(--sherpa-surface-control-inactive, #e8e8ed);
+}
+
+:host([disabled]) .fill {
+  background: var(--sherpa-surface-control-inactive, #c6c6cc);
+}
+
+:host([disabled]) .handle {
+  background: var(--sherpa-surface-control-inactive, #f0f0f2);
+  border-color: var(--sherpa-border-control-inactive, #c6c6cc);
+  box-shadow: none;
+  cursor: default;
+}
+
+:host([disabled]) .handle::after {
+  display: none;
+}
+
+/* ================================================================
+   Increment labels — hidden unless data-show-labels is set
+   ================================================================ */
+.increments {
+  display: none;
+  justify-content: space-between;
+  font-size: var(--sherpa-font-size-xs, 12px);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  padding: 0;
+}
+
+:host([data-show-labels]) .increments {
+  display: flex;
+}
+
+/* When inputs are shown, align increments with the track area */
+:host([data-show-inputs]) .increments {
+  padding-left: calc(var(--_input-width) + var(--sherpa-space-md, 16px));
+  padding-right: calc(var(--_input-width) + var(--sherpa-space-md, 16px));
+}
+
+:host([data-show-inputs]:not([data-type="range"])) .increments {
+  padding-left: 0;
+}

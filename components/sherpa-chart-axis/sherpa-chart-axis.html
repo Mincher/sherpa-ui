@@ -1,0 +1,19 @@
+<!--
+  sherpa-chart-axis.html — Standalone chart axis with grid lines and labels.
+
+  Templates:
+    • default — Grid background + axis labels container
+
+  Host attributes:
+    data-orientation — horizontal (default) | vertical
+    data-tick-count  — Number of grid lines / axis ticks (default "5")
+    data-loading     — Boolean, dims axis
+
+  Methods:
+    setLabels(string[])          — Set axis tick labels
+    setRange(min, max, count?)   — Numeric axis: auto-generate labels
+-->
+<template id="default">
+  <div class="axis-grid" aria-hidden="true"></div>
+  <div class="axis-labels"></div>
+</template>

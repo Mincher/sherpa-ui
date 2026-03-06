@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sherpa-loader — Component Doc</title>
+    <link rel="stylesheet" href="../../css/styles/sherpa-core.css" />
+    <link rel="stylesheet" href="../../css/styles/themes/apex-2-core.css" />
+    <link rel="stylesheet" href="../index.css" />
+    <script type="module" src="../index.js"></script>
+    <style>
+      .demo-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        align-items: center;
+        margin-block-end: 32px;
+      }
+      h2 {
+        margin-block: 24px 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>sherpa-loader</h1>
+
+    <h2>Default (horizontal)</h2>
+    <div class="demo-group">
+      <sherpa-loader data-label="Loading…"></sherpa-loader>
+    </div>
+
+    <h2>Vertical orientation</h2>
+    <div class="demo-group">
+      <sherpa-loader
+        data-label="Loading…"
+        data-orientation="vertical"
+      ></sherpa-loader>
+    </div>
+
+    <h2>With panel background</h2>
+    <div class="demo-group" style="background: #f0f0f5; padding: 24px; border-radius: 8px;">
+      <sherpa-loader data-label="Loading…" data-panel></sherpa-loader>
+      <sherpa-loader
+        data-label="Loading…"
+        data-orientation="vertical"
+        data-panel
+      ></sherpa-loader>
+    </div>
+
+    <h2>Sizes</h2>
+    <div class="demo-group">
+      <sherpa-loader data-label="Small" data-size="small"></sherpa-loader>
+      <sherpa-loader data-label="Default" data-size="default"></sherpa-loader>
+      <sherpa-loader data-label="Large" data-size="large"></sherpa-loader>
+    </div>
+
+    <h2>Spinner only (no label)</h2>
+    <div class="demo-group">
+      <sherpa-loader data-size="small"></sherpa-loader>
+      <sherpa-loader></sherpa-loader>
+      <sherpa-loader data-size="large"></sherpa-loader>
+    </div>
+  </body>
+</html>

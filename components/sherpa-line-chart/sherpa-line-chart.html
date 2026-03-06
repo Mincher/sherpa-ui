@@ -1,0 +1,46 @@
+<!--
+  sherpa-line-chart.html — Line / area chart rendered with CSS clip-path polygons.
+
+  Templates:
+    • default — Chart body with y-axis, grid, series layer, point layer, x-axis, legend
+
+  Host attributes:
+    data-title    — Chart title
+    data-loading  — Boolean, dims chart
+    data-variant  — line (default) | area
+
+  Methods:
+    setData({ labels: string[], series: [{ name, values, color? }] })
+
+  Cloning prototypes:
+    .series-tpl  — One per data series (clip-path line + optional area fill)
+    .point-tpl   — One per data point (positioned dot)
+-->
+<template id="default">
+  <div class="chart-header">
+    <span class="chart-title"></span>
+  </div>
+  <div class="chart-body">
+    <div class="y-axis">
+      <span class="y-label"></span>
+      <span class="y-label"></span>
+      <span class="y-label"></span>
+      <span class="y-label"></span>
+      <span class="y-label"></span>
+      <span class="y-label"></span>
+    </div>
+    <div class="chart-panel">
+      <div class="chart-area">
+        <div class="grid-lines" aria-hidden="true"></div>
+        <div class="series-layer"></div>
+        <div class="points-layer"></div>
+      </div>
+      <div class="x-axis"></div>
+    </div>
+  </div>
+  <div class="chart-legend"></div>
+  <sherpa-tooltip></sherpa-tooltip>
+  <!-- Cloning prototypes for data-driven repeats -->
+  <template class="series-tpl"><div class="series"></div></template>
+  <template class="point-tpl"><div class="point"></div></template>
+</template>

@@ -1,0 +1,251 @@
+/**
+ * @component sherpa-progress-tracker
+ *
+ * Vertical progress timeline with status-coloured milestone nodes.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string} [data-heading]     Tracker heading text
+ * @attr {string} [data-percentage]  Completion text, e.g. "45% Complete"
+ *
+ * ── Milestone item data attributes (set by JS) ───────────────
+ * data-status  — default | in-progress | success | warning | critical
+ *                Applied to each .milestone element.
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — Header (heading + percentage) + milestone-list container.
+ *        Cloning prototype .milestone-tpl for milestone items.
+ * CSS  — Vertical rail with connectors between nodes.
+ *        Node circles colour-coded via [data-status].
+ *        First milestone hides top connector, last hides bottom.
+ * JS   — setMilestones() clones prototype, populates labels,
+ *        sets data-status on each milestone element.
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ================================================================
+   Header
+   ================================================================ */
+.tracker-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--sherpa-space-md, 16px);
+}
+
+:host([data-heading]) .tracker-header {
+  display: flex;
+}
+
+.heading-text {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-text-default-heading, #18191a);
+}
+
+.percentage-text {
+  display: none;
+  font-size: var(--sherpa-font-size-xs, 13px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+:host([data-percentage]) .percentage-text {
+  display: inline;
+}
+
+/* ================================================================
+   Milestone list
+   ================================================================ */
+.milestone-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================================================================
+   Milestone item
+   ================================================================ */
+.milestone {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-md, 16px);
+  position: relative;
+  min-height: 56px;
+
+  --_node-bg: var(--sherpa-surface-container-default, #ffffff);
+  --_node-border: var(--sherpa-border-container-default, #d5d5dc);
+  --_node-icon: none;
+  --_node-icon-color: var(--sherpa-text-default-secondary, #6a6a75);
+  --_connector-color: var(--sherpa-border-container-default, #d5d5dc);
+}
+
+/* ── Status variants ─────────────────────────────────────────── */
+.milestone[data-status="in-progress"] {
+  --_node-bg: var(--sherpa-surface-status-info-default, #0079aa);
+  --_node-border: var(--sherpa-surface-status-info-default, #0079aa);
+  --_node-icon: inline-flex;
+  --_node-icon-color: #ffffff;
+}
+
+.milestone[data-status="success"] {
+  --_node-bg: var(--sherpa-surface-status-success-default, #1a7a2e);
+  --_node-border: var(--sherpa-surface-status-success-default, #1a7a2e);
+  --_node-icon: inline-flex;
+  --_node-icon-color: #ffffff;
+}
+
+.milestone[data-status="warning"] {
+  --_node-bg: var(--sherpa-surface-status-warning-default, #c47e00);
+  --_node-border: var(--sherpa-surface-status-warning-default, #c47e00);
+  --_node-icon: inline-flex;
+  --_node-icon-color: #ffffff;
+}
+
+.milestone[data-status="critical"] {
+  --_node-bg: var(--sherpa-surface-status-danger-default, #c53030);
+  --_node-border: var(--sherpa-surface-status-danger-default, #c53030);
+  --_node-icon: inline-flex;
+  --_node-icon-color: #ffffff;
+}
+
+.milestone[data-status="default"] {
+  --_node-bg: var(--sherpa-surface-container-default, #ffffff);
+  --_node-border: var(--sherpa-border-container-default, #d5d5dc);
+  --_node-icon: none;
+  --_node-icon-color: var(--sherpa-text-default-secondary, #6a6a75);
+}
+
+/* ================================================================
+   Rail (left column: connectors + node)
+   ================================================================ */
+.milestone-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 32px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+/* Connectors */
+.connector-in,
+.connector-out {
+  width: 2px;
+  flex: 1;
+  background: var(--_connector-color);
+}
+
+/* Hide top connector on first, bottom on last */
+.milestone:first-child .connector-in {
+  visibility: hidden;
+}
+
+.milestone:last-child .connector-out {
+  visibility: hidden;
+}
+
+/* ── Node circle ─────────────────────────────────────────────── */
+.milestone-node {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--_node-border);
+  background: var(--_node-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+.node-icon {
+  display: var(--_node-icon);
+  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  font-size: 12px;
+  color: var(--_node-icon-color);
+}
+
+/* Status-specific icons via content override */
+.milestone[data-status="in-progress"] .node-icon::before {
+  content: "\f110"; /* fa-spinner */
+}
+
+.milestone[data-status="success"] .node-icon::before {
+  content: "\f00c"; /* fa-check */
+}
+
+.milestone[data-status="warning"] .node-icon::before {
+  content: "\f071"; /* fa-triangle-exclamation */
+}
+
+.milestone[data-status="critical"] .node-icon::before {
+  content: "\f00d"; /* fa-xmark */
+}
+
+/* Default: empty circle (no icon content) */
+.milestone[data-status="default"] .node-icon::before {
+  content: "";
+}
+
+/* ================================================================
+   Content (labels)
+   ================================================================ */
+.milestone-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+  padding: var(--sherpa-space-2xs, 4px) 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.milestone-label {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-text-default-body, #18191a);
+  line-height: var(--sherpa-line-height-default, 1.4);
+}
+
+.milestone-description {
+  display: none;
+  font-size: var(--sherpa-font-size-xs, 13px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  line-height: var(--sherpa-line-height-default, 1.4);
+}
+
+.milestone[data-has-description] .milestone-description {
+  display: block;
+}
+
+/* ================================================================
+   Timestamp (right side)
+   ================================================================ */
+.milestone-timestamp {
+  display: none;
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  white-space: nowrap;
+  padding: var(--sherpa-space-2xs, 4px) 0;
+  flex-shrink: 0;
+}
+
+.milestone[data-has-timestamp] .milestone-timestamp {
+  display: block;
+}

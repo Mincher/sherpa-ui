@@ -1,0 +1,119 @@
+/**
+ * @component sherpa-progress-bar
+ *
+ * Horizontal bar showing determinate or indeterminate progress.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-label]              Task label above the bar
+ * @attr {string}  [data-value]              0–100 percentage (determinate only)
+ * @attr {string}  [data-variant=determinate] determinate | indeterminate
+ * @attr {string}  [data-status-text]        Custom status text below the bar;
+ *                                           auto-generated from value when omitted
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — label span, track div (with fill child), status span.
+ * CSS  — fill width driven by --_progress custom property; indeterminate
+ *        gradient animation via @keyframes; label/status hidden when absent.
+ * JS   — sets ARIA progressbar role + aria-value* attributes; clamps value
+ *        0–100; auto-generates status text.
+ */
+
+/* ================================================================
+   :host — base
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  width: 100%;
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ================================================================
+   Label
+   ================================================================ */
+.label {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-body, #18191a);
+}
+
+:host(:not([data-label])) .label {
+  display: none;
+}
+
+/* ================================================================
+   Track + Fill
+   ================================================================ */
+.track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: var(--sherpa-surface-neutral-default, #fafafa);
+  border-radius: var(--sherpa-radius-pill, 8px);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  width: var(--_progress, 0%);
+  background: var(
+    --_status-surface-strong,
+    var(--sherpa-surface-control-primary-default, #c046ff)
+  );
+  border-radius: var(--sherpa-radius-pill, 8px);
+  transition: width 0.3s ease;
+}
+
+/* ================================================================
+   Indeterminate — animated gradient on the track itself
+   ================================================================ */
+:host([data-variant="indeterminate"]) .fill {
+  display: none;
+}
+
+:host([data-variant="indeterminate"]) .track {
+  background: linear-gradient(
+    90deg,
+    var(--sherpa-surface-neutral-default, #fafafa) 0%,
+    var(
+      --_status-surface-strong,
+      var(--sherpa-surface-control-primary-default, #c046ff)
+    ) 50%,
+    var(--sherpa-surface-neutral-default, #fafafa) 100%
+  );
+  background-size: 200% 100%;
+  animation: sherpa-progress-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes sherpa-progress-slide {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ================================================================
+   Status text
+   ================================================================ */
+.status {
+  font-size: var(--sherpa-font-size-xs, 12px);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+/* Hide status for indeterminate and when there is no value/status-text */
+:host([data-variant="indeterminate"]) .status {
+  display: none;
+}
+
+:host(:not([data-value]):not([data-status-text])) .status {
+  display: none;
+}

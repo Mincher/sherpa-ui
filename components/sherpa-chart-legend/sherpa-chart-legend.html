@@ -1,0 +1,24 @@
+<!--
+  sherpa-chart-legend.html — Standalone chart legend.
+
+  Templates:
+    • default — Flex-wrapped legend items with colour key + label + optional value
+
+  Host attributes:
+    data-orientation — horizontal (default) | vertical
+    data-loading     — Boolean, dims legend
+
+  Methods:
+    setItems([{ label, value?, color?, active? }])
+-->
+<template id="default">
+  <div class="legend-list"></div>
+  <!-- Cloning prototype for data-driven repeats -->
+  <template class="item-tpl">
+    <div class="legend-item">
+      <span class="legend-key"></span>
+      <span class="legend-label"></span>
+      <span class="legend-value"></span>
+    </div>
+  </template>
+</template>

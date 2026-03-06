@@ -1,0 +1,51 @@
+<!--
+  sherpa-slider.html — Single or range slider with optional value inputs.
+
+  Templates:
+    • default — Label + track/handle(s) + optional numeric inputs + increment labels
+
+  Host attributes:
+    data-label        — Label text above the slider
+    data-type         — single (default) | range
+    data-min          — Minimum value (default 0)
+    data-max          — Maximum value (default 100)
+    data-step         — Step increment (default 1)
+    data-value        — Current value (single mode)
+    data-value-low    — Low handle value (range mode)
+    data-value-high   — High handle value (range mode)
+    data-show-inputs  — Show numeric input fields
+    data-show-labels  — Show min/max increment labels
+    disabled          — Disabled state
+
+  Events:
+    input  — fires while dragging { value } or { low, high }
+    change — fires on release     { value } or { low, high }
+-->
+<template id="default">
+  <span class="label"></span>
+
+  <div class="slider-row">
+    <div class="input-low-wrap">
+      <input type="number" class="input-low" aria-label="Low value" />
+    </div>
+
+    <div class="track-area">
+      <div class="track">
+        <div class="fill"></div>
+      </div>
+      <div class="handle handle-low" tabindex="0" role="slider"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+      <div class="handle handle-high" tabindex="0" role="slider"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div>
+    </div>
+
+    <div class="input-high-wrap">
+      <input type="number" class="input-high" aria-label="Value" />
+    </div>
+  </div>
+
+  <div class="increments">
+    <span class="increment-min"></span>
+    <span class="increment-max"></span>
+  </div>
+</template>

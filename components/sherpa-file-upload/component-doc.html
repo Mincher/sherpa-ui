@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>sherpa-file-upload — Component Doc</title>
+  <link rel="stylesheet" href="../../css/styles/sherpa-core.css" />
+  <link rel="stylesheet" href="../../css/styles/sherpa-theme-apex-2.css" />
+  <link rel="stylesheet" href="../index.css" />
+  <script type="module" src="../index.js"></script>
+  <style>
+    .demo-grid {
+      display: grid;
+      gap: 40px;
+      padding: 32px;
+      max-width: 520px;
+    }
+    .demo-section h3 {
+      margin: 0 0 12px;
+      font: 600 14px/1.4 system-ui, sans-serif;
+      color: #5c5c66;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-grid">
+
+    <!-- Basic drop zone -->
+    <div class="demo-section">
+      <h3>Basic File Upload</h3>
+      <sherpa-file-upload
+        data-label="Attachments"
+        data-helper="Maximum file size: 4 MB. Allowed types: .jpg, .png, .pdf"
+        data-accept=".jpg,.jpeg,.png,.pdf"
+        data-multiple
+        data-max-size="4194304"
+      ></sherpa-file-upload>
+    </div>
+
+    <!-- Single file -->
+    <div class="demo-section">
+      <h3>Single File Upload</h3>
+      <sherpa-file-upload
+        data-label="Profile Photo"
+        data-helper="Upload a single image file (max 2 MB)"
+        data-accept="image/*"
+        data-max-size="2097152"
+        data-max-files="1"
+      ></sherpa-file-upload>
+    </div>
+
+    <!-- Disabled -->
+    <div class="demo-section">
+      <h3>Disabled</h3>
+      <sherpa-file-upload
+        data-label="Documents"
+        data-helper="Upload is currently disabled"
+        disabled
+      ></sherpa-file-upload>
+    </div>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('sherpa-file-upload').forEach(el => {
+      el.addEventListener('file-add', e => {
+        console.log('file-add', e.detail.files.map(f => f.name));
+
+        // Simulate upload progress for demo
+        e.detail.files.forEach((file, i) => {
+          const fileIndex = el.files.indexOf(file);
+          let progress = 0;
+          const interval = setInterval(() => {
+            progress += Math.random() * 20;
+            if (progress >= 100) {
+              progress = 100;
+              clearInterval(interval);
+              el.setFileState(fileIndex, 'uploaded');
+            } else {
+              el.setFileProgress(fileIndex, progress);
+            }
+          }, 300);
+        });
+      });
+      el.addEventListener('file-remove', e => {
+        console.log('file-remove', e.detail.file.name);
+      });
+      el.addEventListener('file-clear', () => {
+        console.log('file-clear');
+      });
+    });
+  </script>
+</body>
+</html>

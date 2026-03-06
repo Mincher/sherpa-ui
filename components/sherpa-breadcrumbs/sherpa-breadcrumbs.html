@@ -1,0 +1,34 @@
+<!--
+  sherpa-breadcrumbs.html — Navigation breadcrumb trail.
+
+  Templates:
+    • default — Semantic <nav> with <ol> breadcrumb list
+
+  Each slotted child (typically <a> or <span>) becomes a breadcrumb item.
+  JS clones the crumb prototype for each, adding a separator chevron.
+  The last item is styled as the "current" page.
+
+  Host attributes:
+    data-max-items — Max items before collapsing middle items to "…"
+
+  Slots:
+    (default) — Breadcrumb items (<a> or <span> elements)
+-->
+
+<template id="default">
+<nav aria-label="Breadcrumb" class="breadcrumb-nav">
+  <ol class="breadcrumb-list">
+    <template class="crumb-tpl">
+      <li class="crumb">
+        <span class="crumb-text text-body-sm"></span>
+        <i class="separator fa-solid fa-chevron-right" aria-hidden="true"></i>
+      </li>
+    </template>
+    <li class="crumb crumb-ellipsis" aria-hidden="true">
+      <button class="ellipsis-btn text-body-sm" type="button" aria-label="Show all breadcrumbs">…</button>
+      <i class="separator fa-solid fa-chevron-right" aria-hidden="true"></i>
+    </li>
+  </ol>
+  <slot class="source-slot"></slot>
+</nav>
+</template>

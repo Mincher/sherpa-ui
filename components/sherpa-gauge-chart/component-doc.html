@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sherpa-gauge-chart — Component Doc</title>
+  <link href="/css/styles/sherpa-docs.css" rel="stylesheet" />
+  <link id="sherpa-theme" rel="stylesheet" href="/css/styles/sherpa-theme-apex-2-core.css" />
+  <script type="module" src="/components/index.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 2rem; background: #f8f8fa; }
+    section { margin-bottom: 2rem; }
+    h2 { margin: 0 0 1rem; font-size: 1.1rem; }
+    .grid { display: flex; gap: 2rem; flex-wrap: wrap; align-items: flex-start; }
+    .demo-box { background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+  <h1>sherpa-gauge-chart</h1>
+
+  <!-- ── Solid gauge at different values ─────────────────────── -->
+  <section>
+    <h2>Solid gauge</h2>
+    <div class="grid">
+      <div class="demo-box">
+        <sherpa-gauge-chart data-title="Low" data-value="25" data-label="Risk Level"></sherpa-gauge-chart>
+      </div>
+      <div class="demo-box">
+        <sherpa-gauge-chart data-title="Medium" data-value="50" data-label="CPU"></sherpa-gauge-chart>
+      </div>
+      <div class="demo-box">
+        <sherpa-gauge-chart data-title="High" data-value="75" data-label="Memory"></sherpa-gauge-chart>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Series gauge ────────────────────────────────────────── -->
+  <section>
+    <h2>Series gauge (multi-colour segments)</h2>
+    <div class="grid">
+      <div class="demo-box">
+        <sherpa-gauge-chart id="series1"
+          data-title="Pipeline Health"
+          data-variant="series"
+          data-label="Overall">
+        </sherpa-gauge-chart>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Loading state ───────────────────────────────────────── -->
+  <section>
+    <h2>Loading state</h2>
+    <div class="grid">
+      <div class="demo-box">
+        <sherpa-gauge-chart data-title="Loading…" data-value="0" data-loading></sherpa-gauge-chart>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    document.getElementById('series1').setSegments([
+      { value: 25, color: '#058142' },
+      { value: 20, color: '#ffaa00' },
+      { value: 15, color: '#ff6b35' },
+    ]);
+  </script>
+</body>
+</html>

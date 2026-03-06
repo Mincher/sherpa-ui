@@ -21,14 +21,14 @@
   --sherpa-surface-app-product-bar-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-bar-product-block: var(--sherpa-core-color-extended-turquoise-700);
   --sherpa-surface-app-product-bar-product-text: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
-  --sherpa-surface-app-product-nav-active: var(--sherpa-core-color-extended-turquoise-250);
+  --sherpa-surface-app-product-nav-active: light-dark(var(--sherpa-core-color-extended-turquoise-250), var(--sherpa-core-color-extended-turquoise-700));
   --sherpa-surface-app-product-nav-active-icon: var(--sherpa-core-color-extended-turquoise-700);
   --sherpa-surface-app-product-nav-base-icon: light-dark(var(--sherpa-text-default-on-color-subtle-body), var(--sherpa-text-default-on-color-body));
   --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-body);
   --sherpa-surface-app-product-nav-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-1000));
-  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-core-color-extended-turquoise-250);
+  --sherpa-surface-app-product-nav-sub-active: light-dark(var(--sherpa-core-color-extended-turquoise-250), var(--sherpa-core-color-extended-turquoise-700));
   --sherpa-surface-app-product-nav-sub-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-text: var(--sherpa-core-color-extended-turquoise-700);
 
@@ -324,11 +324,11 @@
   --sherpa-text-default-body: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-neutral-300));
   --sherpa-text-default-heading: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
   --sherpa-text-default-label: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
-  --sherpa-text-default-on-color-subtle-body: var(--sherpa-color-neutral-900);
-  --sherpa-text-default-on-color-subtle-heading: var(--sherpa-color-neutral-1000);
-  --sherpa-text-default-on-color-subtle-label: var(--sherpa-color-neutral-1000);
-  --sherpa-text-default-on-color-subtle-placeholder: var(--sherpa-color-neutral-600);
-  --sherpa-text-default-on-color-subtle-secondary: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-800));
+  --sherpa-text-default-on-color-subtle-body: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-neutral-300));
+  --sherpa-text-default-on-color-subtle-heading: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
+  --sherpa-text-default-on-color-subtle-label: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
+  --sherpa-text-default-on-color-subtle-placeholder: light-dark(var(--sherpa-color-neutral-600), var(--sherpa-color-neutral-400));
+  --sherpa-text-default-on-color-subtle-secondary: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-500));
   --sherpa-text-default-on-color-body: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-0));
   --sherpa-text-default-on-color-heading: var(--sherpa-color-neutral-0);
   --sherpa-text-default-on-color-label: var(--sherpa-color-neutral-0);
@@ -360,15 +360,15 @@
 
   /* ── Icon ──────────────────────────────────────────────────── */
   --sherpa-icon-active-alt: var(--sherpa-icon-context-default-body);
-  --sherpa-icon-active-base: var(--sherpa-core-color-extended-turquoise-700);
+  --sherpa-icon-active-base: light-dark(var(--sherpa-core-color-extended-turquoise-700), var(--sherpa-core-color-extended-turquoise-450));
   --sherpa-icon-context-default-body: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-neutral-300));
   --sherpa-icon-context-default-heading: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
   --sherpa-icon-context-default-label: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
-  --sherpa-icon-context-default-on-color-subtle-body: var(--sherpa-color-neutral-900);
-  --sherpa-icon-context-default-on-color-subtle-heading: var(--sherpa-color-neutral-1000);
-  --sherpa-icon-context-default-on-color-subtle-label: var(--sherpa-color-neutral-1000);
-  --sherpa-icon-context-default-on-color-subtle-placeholder: var(--sherpa-color-neutral-600);
-  --sherpa-icon-context-default-on-color-subtle-secondary: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-800));
+  --sherpa-icon-context-default-on-color-subtle-body: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-neutral-300));
+  --sherpa-icon-context-default-on-color-subtle-heading: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
+  --sherpa-icon-context-default-on-color-subtle-label: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
+  --sherpa-icon-context-default-on-color-subtle-placeholder: light-dark(var(--sherpa-color-neutral-600), var(--sherpa-color-neutral-400));
+  --sherpa-icon-context-default-on-color-subtle-secondary: light-dark(var(--sherpa-color-neutral-700), var(--sherpa-color-neutral-500));
   --sherpa-icon-context-default-on-color-body: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-0));
   --sherpa-icon-context-default-on-color-heading: var(--sherpa-color-neutral-0);
   --sherpa-icon-context-default-on-color-label: var(--sherpa-color-neutral-0);

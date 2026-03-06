@@ -1,0 +1,98 @@
+/**
+ * @component sherpa-chart-axis
+ *
+ * Standalone chart axis component with CSS-driven grid lines and
+ * distributed axis labels. Supports horizontal (X) and vertical (Y)
+ * orientation.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-orientation=horizontal] horizontal | vertical
+ * @attr {string}  [data-tick-count=5]           Number of grid divisions
+ * @attr {boolean} [data-loading]                Dims axis
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — .axis-grid (CSS gradient grid lines) + .axis-labels
+ *        (flex-distributed labels).
+ * CSS  — Grid lines via repeating-linear-gradient whose stop count
+ *        is driven by --_tick-count. Vertical/horizontal layouts
+ *        swap flex direction and gradient direction.
+ * JS   — setLabels() sets label text, setRange() auto-generates
+ *        nicely formatted numeric labels.
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  --_tick-count: 5;
+
+  display: flex;
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+:host([data-loading]) {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Horizontal (default): labels below, grid stacks vertically ── */
+:host(:not([data-orientation="vertical"])) {
+  flex-direction: column;
+  width: 100%;
+}
+
+:host(:not([data-orientation="vertical"])) .axis-grid {
+  width: 100%;
+  height: 1px;
+  background: var(--sherpa-border-default-subtle, #e5e5ea);
+}
+
+:host(:not([data-orientation="vertical"])) .axis-labels {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--sherpa-space-xs, 8px);
+  width: 100%;
+}
+
+/* ── Vertical: labels on left, grid stacks horizontally ─────── */
+:host([data-orientation="vertical"]) {
+  flex-direction: row;
+  height: 100%;
+}
+
+:host([data-orientation="vertical"]) .axis-grid {
+  width: 1px;
+  height: 100%;
+  background: var(--sherpa-border-default-subtle, #e5e5ea);
+  order: 2;
+}
+
+:host([data-orientation="vertical"]) .axis-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: var(--sherpa-space-xs, 8px);
+  height: 100%;
+  order: 1;
+  text-align: right;
+}
+
+/* ================================================================
+   Axis labels
+   ================================================================ */
+.axis-label {
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Centre-align horizontal labels */
+:host(:not([data-orientation="vertical"])) .axis-label {
+  text-align: center;
+}

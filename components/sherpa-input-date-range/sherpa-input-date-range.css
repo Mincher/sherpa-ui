@@ -1,0 +1,65 @@
+/**
+ * @component sherpa-input-date-range
+ *
+ * Date range picker with start and end date fields.
+ * Extends SherpaInputBase for label, description, helper, layout, validation.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-value-start]  Start date (YYYY-MM-DD)
+ * @attr {string}  [data-value-end]    End date (YYYY-MM-DD)
+ * @attr {string}  [min]               Minimum selectable date
+ * @attr {string}  [max]               Maximum selectable date
+ *
+ * ── Inherited from SherpaInputBase ────────────────────────────
+ * @attr {string}  [data-label]        Label text
+ * @attr {string}  [data-description]  Description text
+ * @attr {string}  [data-helper]       Helper text
+ * @attr {string}  [data-layout]       horizontal | vertical
+ * @attr {boolean} [disabled]          Disabled state
+ * @attr {boolean} [readonly]          Readonly state
+ * @attr {boolean} [required]          Required state
+ *
+ * ── Events ────────────────────────────────────────────────────
+ * change — { start, end } — fired when either date changes
+ * input  — { start, end } — fired during input
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — control-group with two native date inputs + separator.
+ * CSS  — imports sherpa-input-base.css; adds range-specific styles:
+ *        separator, equal-width inputs, inline layout.
+ * JS   — extends SherpaInputBase; bridges data-value-start/end attrs
+ *        to native inputs; enforces start ≤ end constraint.
+ */
+
+/* Base styles */
+@import '../utilities/sherpa-input-base/sherpa-input-base.css';
+
+/* ================================================================
+   Control group — horizontal pair of date inputs
+   ================================================================ */
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.input-start,
+.input-end {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ================================================================
+   Range separator
+   ================================================================ */
+.range-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--sherpa-space-xs, 6px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  font-size: var(--sherpa-font-size-sm, 14px);
+  flex-shrink: 0;
+  user-select: none;
+}

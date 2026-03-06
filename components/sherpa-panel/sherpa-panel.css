@@ -1,0 +1,232 @@
+/**
+ * @component sherpa-panel
+ *
+ * Slide-out or inline panel with header, optional action bar, and content slot.
+ * Supports inline (left/right, collapsible) and overlay (fixed position) modes.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-variant=inline]     inline | overlay
+ * @attr {string}  [data-position=right]     left | right — side of the screen/container
+ * @attr {flag}    [data-expanded]           Expanded state (collapsed = narrow trigger strip)
+ * @attr {string}  [data-heading]            Panel heading text
+ * @attr {string}  [data-width]             Custom panel width (CSS value, default 480 px)
+ *
+ * ── Slots ─────────────────────────────────────────────────────
+ * default   — Panel body content
+ * controls  — Header control buttons (navigation, view modes)
+ * metadata  — Metadata row beneath heading (icon + text pairs)
+ * actions   — Action bar buttons
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — collapse trigger button + panel body (header + action bar + content).
+ * CSS  — Inline variant = relative-positioned, width transitions.
+ *        Overlay variant = fixed-positioned on right/left edge with scrim.
+ *        Collapsed inline = narrow strip with expand button.
+ *        Action bar and metadata hidden when slots are empty.
+ * JS   — Toggle expand/collapse, dispatch panel events, manage overlay.
+ */
+
+/* ================================================================
+   :host — base
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  background: var(--sherpa-surface-default, #ffffff);
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+  overflow: hidden;
+  height: 100%;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ================================================================
+   Inline variant — collapsed state (narrow strip)
+   ================================================================ */
+:host(:not([data-expanded])) .panel-body {
+  display: none;
+}
+
+:host(:not([data-expanded])) {
+  width: 40px;
+  padding: var(--sherpa-space-xs, 8px) 0;
+  align-items: center;
+}
+
+/* ── Collapse trigger ──────────────────────────────────────── */
+.collapse-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--sherpa-radius-sm, 4px);
+  background: var(--sherpa-surface-neutral-default, #fafaff);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+}
+
+.collapse-trigger:hover {
+  background: var(--sherpa-surface-neutral-hover, #f0f0f5);
+}
+
+/* Hide trigger when expanded */
+:host([data-expanded]) .collapse-trigger {
+  display: none;
+}
+
+/* Hide trigger for overlay variant entirely */
+:host([data-variant="overlay"]) .collapse-trigger {
+  display: none;
+}
+
+/* ================================================================
+   Expanded state — panel body visible
+   ================================================================ */
+:host([data-expanded]) {
+  width: var(--_panel-width, 480px);
+}
+
+:host([data-expanded]) .panel-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ================================================================
+   Overlay variant
+   ================================================================ */
+:host([data-variant="overlay"]) {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: var(--sherpa-z-panel, 900);
+  box-shadow: var(--sherpa-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
+  width: var(--_panel-width, 560px);
+}
+
+:host([data-variant="overlay"]:not([data-expanded])) {
+  display: none;
+  width: 0;
+}
+
+:host([data-variant="overlay"][data-position="right"]),
+:host([data-variant="overlay"]:not([data-position])) {
+  right: 0;
+}
+
+:host([data-variant="overlay"][data-position="left"]) {
+  left: 0;
+}
+
+/* ================================================================
+   Panel header
+   ================================================================ */
+.panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  flex-shrink: 0;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 32px;
+}
+
+.heading {
+  flex: 1;
+  font-size: var(--sherpa-font-size-md, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: var(--sherpa-line-height-default, 1.5);
+  color: var(--sherpa-text-default-heading, #18191a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Overlay heading uses link/accent colour */
+:host([data-variant="overlay"]) .heading {
+  color: var(--sherpa-text-interactive-link-default, #3c5edd);
+}
+
+:host(:not([data-heading])) .heading {
+  display: none;
+}
+
+/* ── Controls ──────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
+}
+
+/* Close button */
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--sherpa-radius-sm, 4px);
+  background: var(--sherpa-surface-neutral-default, #fafaff);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+}
+
+.close-btn:hover {
+  background: var(--sherpa-surface-neutral-hover, #f0f0f5);
+}
+
+/* ── Metadata row ──────────────────────────────────────────── */
+.metadata {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  font-size: var(--sherpa-font-size-sm, 14px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  min-height: 20px;
+}
+
+:host(:not([data-has-metadata])) .metadata {
+  display: none;
+}
+
+/* ================================================================
+   Action bar
+   ================================================================ */
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  background: var(--sherpa-surface-neutral-default, #fdfdfd);
+  flex-shrink: 0;
+}
+
+:host(:not([data-has-actions])) .action-bar {
+  display: none;
+}
+
+/* ================================================================
+   Content area
+   ================================================================ */
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--sherpa-space-md, 16px);
+}

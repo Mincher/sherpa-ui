@@ -1,0 +1,126 @@
+/**
+ * @component sherpa-product-bar
+ *
+ * Top-level product branding bar with icon, product name, navigation, and actions.
+ * Dark full-width bar that sits at the top of the application shell.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-product-name]  Product display name (uppercase)
+ * @attr {string}  [data-product-icon]  Font Awesome icon class for the product icon
+ *
+ * ── Slots ─────────────────────────────────────────────────────
+ * icon     — Custom product icon content (overrides data-product-icon)
+ * default  — Navigation items (tabs, links)
+ * actions  — Right-aligned action buttons / menus
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — branding (icon + name) + divider + navigation slot + actions slot.
+ * CSS  — dark surface, 48 px tall, horizontal flex.
+ *        Uses --sherpa-surface-app-product-bar-* tokens.
+ * JS   — syncs product name text content.
+ */
+
+/* ================================================================
+   :host — base
+   ================================================================ */
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-md, 16px);
+  width: 100%;
+  height: 48px;
+  padding-inline-end: var(--sherpa-space-xs, 8px);
+  background: var(--sherpa-surface-app-product-bar-default, #18191a);
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  color: var(--sherpa-text-default-on-color-body, #fafafa);
+  box-sizing: border-box;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ================================================================
+   Branding — icon + product name
+   ================================================================ */
+.branding {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-md, 16px);
+  flex-shrink: 0;
+  height: 100%;
+}
+
+.product-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(
+    --sherpa-surface-app-product-bar-icon,
+    var(--sherpa-surface-control-primary-default, #c046ff)
+  );
+  color: var(--sherpa-text-default-on-color-body, #ffffff);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+:host(:not([data-has-icon])) .product-icon {
+  display: none;
+}
+
+.product-name {
+  font-size: var(--sherpa-font-size-lg, 20px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:host(:not([data-product-name])) .product-name {
+  display: none;
+}
+
+/* ================================================================
+   Divider
+   ================================================================ */
+.divider {
+  width: 1px;
+  height: 36px;
+  background: var(--sherpa-border-default-on-color, rgba(255, 255, 255, 0.2));
+  flex-shrink: 0;
+}
+
+/* Hide divider if there's no navigation content */
+:host(:not([data-has-default])) .divider {
+  display: none;
+}
+
+/* ================================================================
+   Navigation
+   ================================================================ */
+.navigation {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ================================================================
+   Actions — right-aligned
+   ================================================================ */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
+  margin-inline-start: auto;
+}
+
+:host(:not([data-has-actions])) .actions {
+  display: none;
+}

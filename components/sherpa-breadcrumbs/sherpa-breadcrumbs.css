@@ -1,0 +1,125 @@
+/**
+ * sherpa-breadcrumbs.css
+ * Shadow DOM styles for the SherpaBreadcrumbs web component.
+ *
+ * Architecture:
+ *   - Breadcrumb items cloned from a prototype template into an <ol>
+ *   - Last item auto-styled as "current" (no separator, bold text)
+ *   - Collapsed mode hides middle items and shows an ellipsis button
+ *   - The source <slot> is hidden — JS reads it and renders clones
+ *
+ * Host attributes:
+ *   data-max-items  — Triggers collapse when exceeded
+ *   data-collapsed  — Set by JS when items exceed max
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOST
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+:host([hidden]) { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BREADCRUMB LIST
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+/* ── Individual crumb ────────────────────────────────────────── */
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.crumb-text {
+  color: var(--sherpa-text-default-link, #3c5edd);
+  cursor: pointer;
+  text-decoration: none;
+  padding: var(--sherpa-space-xxs, 4px) 0;
+}
+
+.crumb-text:hover {
+  text-decoration: underline;
+}
+
+/* Last crumb = current page (no link styling, no separator) */
+.crumb:last-of-type .crumb-text {
+  color: var(--sherpa-text-default-body, #2e2e33);
+  cursor: default;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+.crumb:last-of-type .crumb-text:hover {
+  text-decoration: none;
+}
+
+/* ── Separator chevron ───────────────────────────────────────── */
+
+.separator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sherpa-space-default, 16px);
+  height: var(--sherpa-space-default, 16px);
+  font-size: 8px;
+  color: var(--sherpa-icon-default-subtle, #8c8c8c);
+  flex-shrink: 0;
+}
+
+/* Hide separator on the last crumb */
+.crumb:last-of-type .separator {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ELLIPSIS (collapsed mode)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.crumb-ellipsis {
+  display: none;
+}
+
+:host([data-collapsed]) .crumb-ellipsis {
+  display: inline-flex;
+}
+
+.ellipsis-btn {
+  background: none;
+  border: none;
+  color: var(--sherpa-text-default-link, #3c5edd);
+  cursor: pointer;
+  padding: var(--sherpa-space-xxs, 4px) 0;
+  font: inherit;
+  line-height: 1;
+}
+
+.ellipsis-btn:hover {
+  text-decoration: underline;
+}
+
+/* Hide middle crumbs when collapsed */
+:host([data-collapsed]) .crumb[data-collapsed-hidden] {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SOURCE SLOT — hidden, used only for reading consumer children
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.source-slot {
+  display: none !important;
+}

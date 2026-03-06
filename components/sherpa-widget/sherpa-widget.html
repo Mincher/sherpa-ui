@@ -1,0 +1,32 @@
+<!--
+  sherpa-widget.html — Card-like widget wrapper with header, content, footer.
+
+  Templates:
+    • default — header + content + footer + loading overlay
+
+  Host attributes:
+    data-heading  — Widget heading text
+    data-size     — small | medium | large
+    data-loading  — Boolean, shows loading overlay with sherpa-loader
+
+  Slots:
+    header   — Custom heading content
+    default  — Widget body content
+    footer   — Footer actions
+-->
+<template id="default">
+  <div class="widget-header">
+    <slot name="header">
+      <span class="heading-text"></span>
+    </slot>
+  </div>
+  <div class="widget-content">
+    <slot></slot>
+  </div>
+  <div class="widget-footer">
+    <slot name="footer"></slot>
+  </div>
+  <div class="loading-overlay" aria-live="polite">
+    <sherpa-loader data-size="medium"></sherpa-loader>
+  </div>
+</template>

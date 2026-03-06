@@ -1,0 +1,203 @@
+/**
+ * @component sherpa-donut-chart
+ *
+ * Donut / pie chart using CSS conic-gradient on a circular div.
+ * No SVG — the ring is a round div with conic-gradient; the donut
+ * hole is a smaller circle overlay. Pie mode removes the hole.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-title]          Chart heading text
+ * @attr {string}  [data-inner-label]    Centre big text (e.g. "100")
+ * @attr {string}  [data-inner-sublabel] Centre small text (e.g. "TOTAL")
+ * @attr {boolean} [data-loading]        Dims chart while loading
+ * @attr {string}  [data-variant=donut]  donut | pie
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — chart-area wraps .donut-ring (conic-gradient via --_conic),
+ *        .donut-hole (white centre circle), .centre-label (text overlay).
+ * CSS  — Ring is border-radius: 50% with conic-gradient. Hole is 70%
+ *        diameter white circle absolutely centred. Pie variant hides hole.
+ *        Legend items are flex-wrapped divs with colour keys.
+ * JS   — setData() computes cumulative percentages, builds the
+ *        conic-gradient stops string, sets it as --_conic on .donut-ring,
+ *        and renders legend items.
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sherpa-space-md, 16px);
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+  container: sherpa-donut-chart / inline-size;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+:host([data-loading]) .chart-area {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ================================================================
+   Chart header
+   ================================================================ */
+.chart-header {
+  display: none;
+  width: 100%;
+}
+
+:host([data-title]) .chart-header {
+  display: block;
+}
+
+.chart-title {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-text-default-heading, #18191a);
+}
+
+/* ================================================================
+   Chart area — contains ring + hole + centre label
+   ================================================================ */
+.chart-area {
+  position: relative;
+  width: 174px;
+  height: 174px;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* ── Donut ring — conic-gradient ─────────────────────────────── */
+.donut-ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--_conic, conic-gradient(#e0e0e0 0% 100%));
+  transition: background 0.3s ease;
+}
+
+/* ── Donut hole (inner white circle) ─────────────────────────── */
+.donut-hole {
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: var(--sherpa-surface-container-default, #ffffff);
+}
+
+/* Pie variant: hide the hole */
+:host([data-variant="pie"]) .donut-hole {
+  display: none;
+}
+
+/* ── Centre label (overlaid text) ────────────────────────────── */
+.centre-label {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+:host([data-inner-label]) .centre-label {
+  display: flex;
+}
+
+.centre-value {
+  font-size: 16px;
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  color: var(--sherpa-text-default-heading, #18191a);
+  line-height: 1.2;
+}
+
+.centre-sublabel {
+  display: none;
+  font-size: 11px;
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:host([data-inner-sublabel]) .centre-sublabel {
+  display: block;
+}
+
+/* ================================================================
+   Legend
+   ================================================================ */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-md, 16px);
+  justify-content: center;
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-body, #18191a);
+  cursor: default;
+}
+
+.legend-key {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--sherpa-border-rounding-xs, 2px);
+  flex-shrink: 0;
+}
+
+.legend-label {
+  white-space: nowrap;
+}
+
+.legend-value {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  margin-left: var(--sherpa-space-3xs, 2px);
+}
+
+/* ================================================================
+   Data-viz categorical colors (same tokens as barchart)
+   ================================================================ */
+.color-1 { background-color: var(--sherpa-data-viz-categorical-color-1); }
+.color-2 { background-color: var(--sherpa-data-viz-categorical-color-2); }
+.color-3 { background-color: var(--sherpa-data-viz-categorical-color-3); }
+.color-4 { background-color: var(--sherpa-data-viz-categorical-color-4); }
+.color-5 { background-color: var(--sherpa-data-viz-categorical-color-5); }
+.color-6 { background-color: var(--sherpa-data-viz-categorical-color-6); }
+
+/* ================================================================
+   Container queries — smaller layout
+   ================================================================ */
+@container sherpa-donut-chart (max-width: 200px) {
+  .chart-area {
+    width: 120px;
+    height: 120px;
+  }
+
+  .centre-value {
+    font-size: 14px;
+  }
+
+  .centre-sublabel {
+    font-size: 10px;
+  }
+}

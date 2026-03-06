@@ -1,0 +1,40 @@
+<!--
+  sherpa-gauge-chart.html — Semicircle gauge rendered with CSS conic-gradient.
+
+  Templates:
+    • default — Half-circle arc with needle pointer + labels
+
+  Host attributes:
+    data-title       — Chart title
+    data-value       — Current numeric value (0–100)
+    data-min         — Minimum label (default "0%")
+    data-max         — Maximum label (default "100%")
+    data-label       — Label shown below the gauge value
+    data-loading     — Boolean, dims chart
+    data-variant     — solid (default) | series
+
+  Methods:
+    setSegments([{ value, color }])  — series variant only
+-->
+<template id="default">
+  <div class="chart-header">
+    <span class="chart-title"></span>
+  </div>
+  <div class="gauge-wrap">
+    <div class="gauge-bg" aria-hidden="true"></div>
+    <div class="gauge-fill" aria-hidden="true"></div>
+    <div class="needle-group">
+      <div class="needle"></div>
+      <div class="needle-dot-outer"></div>
+      <div class="needle-dot-inner"></div>
+    </div>
+    <div class="gauge-value-label">
+      <span class="gauge-value"></span>
+      <span class="gauge-label"></span>
+    </div>
+  </div>
+  <div class="gauge-range">
+    <span class="range-min"></span>
+    <span class="range-max"></span>
+  </div>
+</template>

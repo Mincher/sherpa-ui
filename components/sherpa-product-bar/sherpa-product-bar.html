@@ -1,0 +1,15 @@
+<template id="default">
+  <div class="branding">
+    <div class="product-icon">
+      <slot name="icon"></slot>
+    </div>
+    <span class="product-name"></span>
+  </div>
+  <div class="divider" aria-hidden="true"></div>
+  <nav class="navigation">
+    <slot></slot>
+  </nav>
+  <div class="actions">
+    <slot name="actions"></slot>
+  </div>
+</template>

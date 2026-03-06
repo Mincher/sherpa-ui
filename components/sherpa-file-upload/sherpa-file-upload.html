@@ -1,0 +1,79 @@
+<!--
+  sherpa-file-upload.html — File upload drop zone with file list.
+
+  Templates:
+    • default — Drop zone + file constraints + file list + action buttons
+
+  Cloning prototypes:
+    • .file-item-tpl — Repeated per file (icon + name + size + status + progress + actions)
+
+  Host attributes:
+    data-label         — Label text above the drop zone
+    data-accept        — Comma-separated accepted MIME types / extensions
+    data-multiple      — Allow multiple files
+    data-max-size      — Maximum file size in bytes
+    data-max-files     — Maximum number of files
+    data-helper        — Helper text (e.g., "Maximum file size: 4 MB")
+    data-drag-over     — Set automatically when dragging over drop zone
+    disabled           — Disabled state
+
+  Events:
+    file-add      — { files: File[] }
+    file-remove   — { file, index }
+    file-clear    — all files removed
+-->
+<template id="default">
+  <span class="label"></span>
+
+  <div class="drop-zone" role="button" tabindex="0">
+    <i class="drop-icon" aria-hidden="true">&#xf093;</i>
+    <span class="drop-text">Drag and drop files here or <span class="browse-link">browse files</span></span>
+  </div>
+
+  <div class="file-constraints">
+    <span class="constraints-text"></span>
+  </div>
+
+  <div class="file-list" role="list"></div>
+
+  <template class="file-item-tpl">
+    <div class="file-item" role="listitem">
+      <div class="file-icon" aria-hidden="true">
+        <i class="file-type-icon">&#xf15b;</i>
+      </div>
+      <div class="file-info">
+        <div class="file-name-row">
+          <span class="file-name"></span>
+          <span class="file-size"></span>
+        </div>
+        <div class="file-status-row">
+          <div class="file-progress-track">
+            <div class="file-progress-fill"></div>
+          </div>
+          <span class="file-status-text"></span>
+        </div>
+      </div>
+      <div class="file-actions">
+        <button class="file-retry-btn" type="button" aria-label="Retry upload">
+          <i aria-hidden="true">&#xf2ea;</i>
+        </button>
+        <button class="file-remove-btn" type="button" aria-label="Remove file">
+          <i aria-hidden="true">&#xf00d;</i>
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <div class="action-bar">
+    <button class="upload-btn" type="button">
+      <i aria-hidden="true">&#xf093;</i>
+      <span>Upload files</span>
+    </button>
+    <button class="remove-all-btn" type="button">
+      <i aria-hidden="true">&#xf1f8;</i>
+      <span>Remove all files</span>
+    </button>
+  </div>
+
+  <input type="file" class="file-input" tabindex="-1" aria-hidden="true" />
+</template>

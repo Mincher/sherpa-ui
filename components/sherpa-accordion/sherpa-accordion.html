@@ -1,0 +1,35 @@
+<!--
+  sherpa-accordion.html — Collapsible accordion panel component.
+
+  Templates:
+    • default — Header trigger with label + icon, collapsible content slot
+
+  Host attributes:
+    data-label     — Heading text displayed in the trigger row
+    data-expanded  — Boolean, controls open/closed state
+    data-icon      — Optional leading icon class (FontAwesome)
+    disabled       — Prevents interaction
+
+  Slots:
+    (default) — Panel content revealed when expanded
+    actions   — Optional trailing action buttons in the header row
+-->
+
+<template id="default">
+<div class="accordion-trigger" part="trigger" role="button" tabindex="0" aria-expanded="false">
+  <div class="trigger-left">
+    <i class="trigger-icon" aria-hidden="true"></i>
+    <span class="trigger-label text-body-emphasised-base"></span>
+    <slot name="heading"></slot>
+  </div>
+  <div class="trigger-right">
+    <slot name="actions"></slot>
+    <i class="chevron fa-solid fa-chevron-down" aria-hidden="true"></i>
+  </div>
+</div>
+<div class="accordion-panel" part="panel" role="region">
+  <div class="panel-content">
+    <slot></slot>
+  </div>
+</div>
+</template>

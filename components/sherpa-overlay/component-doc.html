@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sherpa-overlay — Component Doc</title>
+    <link rel="stylesheet" href="../../css/styles/sherpa-core.css" />
+    <link rel="stylesheet" href="../../css/styles/themes/apex-2-core.css" />
+    <link rel="stylesheet" href="../index.css" />
+    <script type="module" src="../index.js"></script>
+    <style>
+      .demo-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-block-end: 32px;
+      }
+      button {
+        padding: 8px 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>sherpa-overlay</h1>
+
+    <h2>Default (centred content)</h2>
+    <div class="demo-group">
+      <button onclick="document.getElementById('overlay-1').dataset.visible = ''">
+        Show Overlay
+      </button>
+    </div>
+
+    <sherpa-overlay id="overlay-1">
+      <div style="background: white; padding: 32px; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.2);">
+        <h3 style="margin:0 0 16px">Overlay Content</h3>
+        <p>Click the scrim to dismiss.</p>
+        <button onclick="delete document.getElementById('overlay-1').dataset.visible">Close</button>
+      </div>
+    </sherpa-overlay>
+
+    <h2>Top-aligned</h2>
+    <div class="demo-group">
+      <button onclick="document.getElementById('overlay-2').dataset.visible = ''">
+        Show Top Overlay
+      </button>
+    </div>
+
+    <sherpa-overlay id="overlay-2" data-position="top">
+      <div style="background: white; padding: 24px; border-radius: 0 0 8px 8px; margin-top: 48px; box-shadow: 0 4px 24px rgba(0,0,0,0.2);">
+        <p style="margin:0">Top-aligned overlay content</p>
+        <button onclick="delete document.getElementById('overlay-2').dataset.visible">Close</button>
+      </div>
+    </sherpa-overlay>
+
+    <script>
+      // Dismiss overlays on scrim click
+      document.querySelectorAll('sherpa-overlay').forEach(el => {
+        el.addEventListener('overlay-dismiss', () => {
+          delete el.dataset.visible;
+        });
+      });
+    </script>
+  </body>
+</html>

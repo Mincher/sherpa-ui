@@ -1,0 +1,275 @@
+/**
+ * @component sherpa-gauge-chart
+ *
+ * Semicircle gauge chart using CSS conic-gradient on half-circle divs.
+ * No SVG — the arc is a rounded div with conic-gradient clipped to the
+ * top semicircle. The needle is a thin div rotated via CSS transform.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-title]       Chart heading text
+ * @attr {string}  [data-value]       Current value 0–100
+ * @attr {string}  [data-min]         Minimum label (default "0%")
+ * @attr {string}  [data-max]         Maximum label (default "100%")
+ * @attr {string}  [data-label]       Descriptive label below value
+ * @attr {boolean} [data-loading]     Dims chart while loading
+ * @attr {string}  [data-variant]     solid (default) | series
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — gauge-wrap contains gauge-bg (grey semicircle track),
+ *        gauge-fill (coloured arc, clipped to value angle),
+ *        needle-group (needle line + centre dots), gauge-value-label.
+ * CSS  — Semicircle via border-radius + overflow hidden on bottom half.
+ *        conic-gradient from 0.5turn fills arc clockwise. Needle is
+ *        rotated from centre-bottom pivot via --_angle custom property.
+ *        Series variant uses multi-stop conic-gradient.
+ * JS   — Computes angle from data-value, sets --_angle on needle and
+ *        --_fill-angle on gauge-fill. setSegments() for series mode.
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 8px);
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+  container: sherpa-gauge-chart / inline-size;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+:host([data-loading]) .gauge-wrap {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ================================================================
+   Chart header
+   ================================================================ */
+.chart-header {
+  display: none;
+  width: 100%;
+}
+
+:host([data-title]) .chart-header {
+  display: block;
+  text-align: center;
+}
+
+.chart-title {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-text-default-heading, #18191a);
+}
+
+/* ================================================================
+   Gauge wrapper — contains semicircle arcs + needle
+   ================================================================ */
+.gauge-wrap {
+  position: relative;
+  width: 280px;
+  height: 162px;          /* slightly more than half to leave room for needle dots */
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+/* ── Background track (grey semicircle) ──────────────────────── */
+.gauge-bg {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0.5turn,
+    var(--sherpa-surface-container-muted, #f2f2f2) 0% 50%,
+    transparent 50% 100%
+  );
+  /* Only show top half — clip bottom semicircle */
+  clip-path: inset(0 0 50% 0);
+}
+
+/* ── Value fill (coloured arc) ───────────────────────────────── */
+.gauge-fill {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: var(
+    --_fill-gradient,
+    conic-gradient(
+      from 0.5turn,
+      var(--sherpa-data-viz-categorical-color-1, #058142) 0%,
+      var(--sherpa-data-viz-categorical-color-1, #058142) var(--_fill-pct, 0%),
+      transparent var(--_fill-pct, 0%),
+      transparent 50%
+    )
+  );
+  clip-path: inset(0 0 50% 0);
+  transition: --_fill-pct 0.4s ease;
+}
+
+/* ── White border / gap between bg and fill arcs ──────────────── */
+.gauge-fill::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: var(--sherpa-surface-container-default, #ffffff);
+}
+
+.gauge-bg::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: var(--sherpa-surface-container-default, #ffffff);
+}
+
+/* ================================================================
+   Needle group
+   ================================================================ */
+.needle-group {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+}
+
+/* ── Needle line ─────────────────────────────────────────────── */
+.needle {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  height: 100px;
+  margin-left: -1px;
+  background: var(--sherpa-text-default-body, #3c3c43);
+  border-radius: 1px;
+  transform-origin: bottom center;
+  transform: rotate(var(--_angle, -90deg));
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Centre dots (outer grey + inner white) ──────────────────── */
+.needle-dot-outer {
+  position: absolute;
+  bottom: -7px;
+  left: -7px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--sherpa-surface-container-subtle, #9c9ca5);
+  z-index: 2;
+}
+
+.needle-dot-inner {
+  position: absolute;
+  bottom: -5px;
+  left: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sherpa-surface-container-default, #ffffff);
+  z-index: 3;
+}
+
+/* ================================================================
+   Value label — centred below the needle pivot
+   ================================================================ */
+.gauge-value-label {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 4;
+}
+
+:host([data-value]) .gauge-value-label {
+  display: flex;
+}
+
+.gauge-value {
+  font-size: 20px;
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  color: var(--sherpa-text-default-heading, #18191a);
+  line-height: 1.2;
+}
+
+.gauge-label {
+  display: none;
+  font-size: 11px;
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:host([data-label]) .gauge-label {
+  display: block;
+}
+
+/* ================================================================
+   Range labels (0% — 100%)
+   ================================================================ */
+.gauge-range {
+  display: flex;
+  justify-content: space-between;
+  width: 260px;
+  margin-top: -4px;
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+/* ================================================================
+   Container queries
+   ================================================================ */
+@container sherpa-gauge-chart (max-width: 300px) {
+  .gauge-wrap {
+    width: 200px;
+    height: 118px;
+  }
+  .gauge-bg,
+  .gauge-fill {
+    width: 190px;
+    height: 190px;
+  }
+  .gauge-fill::after,
+  .gauge-bg::after {
+    width: 130px;
+    height: 130px;
+  }
+  .needle {
+    height: 72px;
+  }
+  .gauge-range {
+    width: 190px;
+  }
+  .gauge-value {
+    font-size: 16px;
+  }
+}

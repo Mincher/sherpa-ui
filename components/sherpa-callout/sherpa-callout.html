@@ -1,0 +1,43 @@
+<!--
+  sherpa-callout.html — Inline contextual callout with status variants.
+
+  Templates:
+    • default — Toggle button + status icon + heading + body content + optional action
+
+  Host attributes:
+    data-status     — info | warning | critical | success | neutral | tip
+    data-heading    — Heading text
+    data-expanded   — Expanded state (boolean)
+    data-dismissible — Show dismiss / collapse toggle button
+    data-icon       — Override status icon (Font Awesome codepoint)
+
+  Slots:
+    heading — Override heading text
+    default — Body content
+    action  — Optional action link/button
+
+  Events:
+    callout-toggle  — { expanded }
+    callout-dismiss — {}
+-->
+<template id="default">
+  <div class="header">
+    <button class="toggle-btn" type="button" aria-label="Toggle callout">
+      <i class="toggle-icon" aria-hidden="true">&#xf078;</i>
+    </button>
+    <i class="status-icon" aria-hidden="true"></i>
+    <div class="heading-area">
+      <slot name="heading">
+        <span class="heading-text"></span>
+      </slot>
+    </div>
+  </div>
+  <div class="body">
+    <div class="body-content">
+      <slot></slot>
+    </div>
+    <div class="action-area">
+      <slot name="action"></slot>
+    </div>
+  </div>
+</template>

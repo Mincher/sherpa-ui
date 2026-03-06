@@ -3,29 +3,17 @@
  * sherpa-view-header.css
  * View header toolbar with section name, toggles, and actions
  *
- * Sticky + scroll-under:
- *   The :host is sticky by default. When [data-scrolled] is set (via JS
- *   IntersectionObserver or manual toggle), the host gains a background
- *   and shadow to separate it from scrolled content beneath it.
- *
  * Typography is inlined (text utility classes don't cross shadow boundaries).
  * Buttons are <sherpa-button> and handle their own styling.
  * Spacing/sizing use alias tokens directly — no component-level aliases.
+ *
+ * Scroll-under styling (sticky + background + shadow on scroll) is NOT
+ * handled here. Consumers should apply the global .sherpa-scroll-under
+ * utility class from sherpa-layout-classes.css to the host element.
  */
 
 :host {
   display: block;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  transition:
-    background-color var(--sherpa-motion-duration-fast, 150ms) ease,
-    box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
-}
-
-:host([data-scrolled]) {
-  background-color: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-  box-shadow: var(--sherpa-shadow-default-sm);
 }
 
 :host([hidden]) { display: none; }

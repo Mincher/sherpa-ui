@@ -1,0 +1,270 @@
+/**
+ * @component sherpa-line-chart
+ *
+ * Line / area chart using CSS clip-path polygons on div elements.
+ * No SVG — each data series is a div whose ::after pseudo-element has a
+ * clip-path polygon tracing the line stroke. In area mode ::before draws
+ * the filled region underneath.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-title]    Chart heading text
+ * @attr {boolean} [data-loading]  Dims chart while loading
+ * @attr {string}  [data-variant]  line (default) | area
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * HTML — chart-body wraps y-axis (6 labels) + chart-panel (chart-area
+ *        with grid-lines + series-layer + points-layer, plus x-axis).
+ *        Cloning prototypes for series divs and point dots.
+ * CSS  — Grid background via linear-gradient. Series ::after uses
+ *        clip-path polygon for stroke. ::before (area fill) hidden
+ *        by default, shown via :host([data-variant="area"]).
+ *        Point dots positioned absolutely via --_px / --_py vars.
+ * JS   — setData() computes normalised coordinates, builds polygon
+ *        strings, clones prototypes, renders axes and legend.
+ */
+
+/* ================================================================
+   :host — base layout
+   ================================================================ */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-md, 16px);
+  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  box-sizing: border-box;
+  container: sherpa-line-chart / inline-size;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+:host([data-loading]) .chart-area {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ================================================================
+   Chart header
+   ================================================================ */
+.chart-header {
+  display: none;
+}
+
+:host([data-title]) .chart-header {
+  display: block;
+}
+
+.chart-title {
+  font-size: var(--sherpa-font-size-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-text-default-heading, #18191a);
+}
+
+/* ================================================================
+   Chart body — y-axis + chart panel side-by-side
+   ================================================================ */
+.chart-body {
+  display: flex;
+  gap: var(--sherpa-space-xs, 8px);
+}
+
+/* ── Y-axis ──────────────────────────────────────────────────── */
+.y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 36px;
+  text-align: right;
+  padding-right: var(--sherpa-space-2xs, 4px);
+}
+
+.y-label {
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ── Chart panel (chart-area + x-axis stacked) ───────────────── */
+.chart-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Chart area — contains grid, series lines, point dots ────── */
+.chart-area {
+  position: relative;
+  width: 100%;
+  height: 234px;
+  transition: opacity 0.2s ease;
+}
+
+/* ── Grid lines ──────────────────────────────────────────────── */
+.grid-lines {
+  --_gc: var(--sherpa-border-default-subtle, #e5e5ea);
+
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to bottom,
+    var(--_gc) 0px, var(--_gc) 1px, transparent 1px,
+    transparent 20%,
+    var(--_gc) 20%, var(--_gc) calc(20% + 1px), transparent calc(20% + 1px),
+    transparent 40%,
+    var(--_gc) 40%, var(--_gc) calc(40% + 1px), transparent calc(40% + 1px),
+    transparent 60%,
+    var(--_gc) 60%, var(--_gc) calc(60% + 1px), transparent calc(60% + 1px),
+    transparent 80%,
+    var(--_gc) 80%, var(--_gc) calc(80% + 1px), transparent calc(80% + 1px),
+    transparent calc(100% - 1px),
+    var(--_gc) calc(100% - 1px)
+  );
+}
+
+/* ================================================================
+   Series layer
+   ================================================================ */
+.series-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* ── Individual series ───────────────────────────────────────── */
+.series {
+  position: absolute;
+  inset: 0;
+}
+
+/* Stroke line — clip-path polygon set via --_stroke-path */
+.series::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--_series-color, var(--sherpa-data-viz-categorical-color-1, #7b1ce6));
+  clip-path: var(--_stroke-path, none);
+}
+
+/* Area fill — clip-path polygon set via --_area-path */
+.series::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--_series-color, var(--sherpa-data-viz-categorical-color-1, #7b1ce6));
+  opacity: 0.15;
+  clip-path: var(--_area-path, none);
+  display: none;
+}
+
+:host([data-variant="area"]) .series::before {
+  display: block;
+}
+
+/* ================================================================
+   Points layer
+   ================================================================ */
+.points-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* ── Individual data point dot ───────────────────────────────── */
+.point {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--_point-color, var(--sherpa-data-viz-categorical-color-1, #7b1ce6));
+  border: 2px solid var(--sherpa-surface-container-default, #ffffff);
+  left: var(--_px);
+  bottom: var(--_py);
+  translate: -50% 50%;
+  z-index: 1;
+  cursor: default;
+  transition: transform 0.15s ease;
+}
+
+.point:hover {
+  transform: scale(1.5);
+}
+
+/* ================================================================
+   X-axis
+   ================================================================ */
+.x-axis {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--sherpa-space-xs, 8px);
+}
+
+.x-label {
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   Legend
+   ================================================================ */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-md, 16px);
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  font-size: var(--sherpa-font-size-xs, 12px);
+  color: var(--sherpa-text-default-body, #18191a);
+  cursor: default;
+}
+
+.legend-key {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--sherpa-border-rounding-xs, 2px);
+  flex-shrink: 0;
+}
+
+.legend-label {
+  white-space: nowrap;
+}
+
+/* ================================================================
+   Container queries
+   ================================================================ */
+@container sherpa-line-chart (max-width: 400px) {
+  .chart-area {
+    height: 160px;
+  }
+
+  .y-axis {
+    min-width: 28px;
+  }
+
+  .y-label {
+    font-size: 10px;
+  }
+}
+
+@container sherpa-line-chart (max-width: 280px) {
+  .chart-body {
+    flex-direction: column;
+  }
+
+  .y-axis {
+    flex-direction: row;
+    justify-content: space-between;
+    min-width: unset;
+    text-align: center;
+    padding-right: 0;
+    padding-bottom: var(--sherpa-space-2xs, 4px);
+  }
+}

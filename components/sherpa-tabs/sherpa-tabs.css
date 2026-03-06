@@ -1,0 +1,101 @@
+/**
+ * sherpa-tabs.css
+ * Shadow DOM styles for the SherpaTabs web component.
+ *
+ * Architecture:
+ *   - Tab strip is a horizontal row of buttons cloned from a prototype
+ *   - Active tab indicated by a primary-colour bottom border
+ *   - Panels switch visibility via ::slotted() selectors
+ *   - Hover lightens tab background
+ *
+ * Host attributes:
+ *   data-active-tab — Zero-based index of the active tab
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOST
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+:host([hidden]) { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAB STRIP
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tab-strip {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
+}
+
+.tab-strip::-webkit-scrollbar { display: none; }
+
+/* ── Individual tab button ─────────────────────────────────── */
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  font: inherit;
+  color: var(--sherpa-text-default-body, #2e2e33);
+  transition:
+    background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease),
+    border-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+}
+
+.tab:hover {
+  background: var(--sherpa-surface-container-hover, #fafafa);
+}
+
+.tab:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-focus, #0066cc);
+}
+
+/* ── Active tab ──────────────────────────────────────────────── */
+
+.tab[aria-selected="true"] {
+  border-bottom-color: var(--sherpa-border-control-primary-active, #3c5edd);
+  color: var(--sherpa-text-active-base, #3c5edd);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* ── Inactive tab ────────────────────────────────────────────── */
+
+.tab[data-inactive] {
+  background: var(--sherpa-surface-container-inactive, #f2f2f2);
+  color: var(--sherpa-text-inactive-default, #a0a0a0);
+  cursor: not-allowed;
+  pointer-events: none;
+  border-bottom-color: var(--sherpa-border-container-inactive, #c0c0cc);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAB CONTENT / PANELS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tab-content {
+  flex: 1;
+}
+
+/* Default: hide all slotted children */
+::slotted(*) {
+  display: none !important;
+}
+
+/* Show only the active panel */
+::slotted([data-tab-active]) {
+  display: block !important;
+}

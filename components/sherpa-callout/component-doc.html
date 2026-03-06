@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sherpa-callout — Component Doc</title>
+  <link rel="stylesheet" href="../../css/styles/sherpa-core.css" />
+  <link rel="stylesheet" href="../../css/styles/sherpa-tokens.css" />
+  <link rel="stylesheet" href="../../components/index.css" />
+  <script type="module" src="../../components/index.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 2rem; background: #f8f8fa; }
+    section { margin-bottom: 2rem; }
+    h2 { margin: 0 0 1rem; font-size: 1.1rem; }
+    sherpa-callout { margin-bottom: 1rem; max-width: 600px; }
+  </style>
+</head>
+<body>
+  <h1>sherpa-callout</h1>
+
+  <!-- ── Status variants ─────────────────────────────────── -->
+  <section>
+    <h2>Statuses — expanded &amp; dismissible</h2>
+
+    <sherpa-callout data-status="info" data-heading="Information" data-expanded data-dismissible>
+      This is an informational callout with helpful context for the user.
+      <a slot="action" href="#">Learn more</a>
+    </sherpa-callout>
+
+    <sherpa-callout data-status="warning" data-heading="Warning" data-expanded data-dismissible>
+      Please review this section before continuing.
+    </sherpa-callout>
+
+    <sherpa-callout data-status="critical" data-heading="Critical issue" data-expanded data-dismissible>
+      An error has been detected. Immediate action required.
+    </sherpa-callout>
+
+    <sherpa-callout data-status="success" data-heading="Success" data-expanded data-dismissible>
+      Your changes have been saved successfully.
+    </sherpa-callout>
+
+    <sherpa-callout data-status="neutral" data-heading="Note" data-expanded data-dismissible>
+      This information is provided for context only.
+    </sherpa-callout>
+
+    <sherpa-callout data-status="tip" data-heading="Tip" data-expanded data-dismissible>
+      You can use keyboard shortcuts to speed up your workflow.
+    </sherpa-callout>
+  </section>
+
+  <!-- ── Collapsed ───────────────────────────────────────── -->
+  <section>
+    <h2>Collapsed (click toggle to expand)</h2>
+
+    <sherpa-callout data-status="info" data-heading="Toggle me" data-dismissible>
+      This content is hidden until you expand the callout.
+    </sherpa-callout>
+  </section>
+
+  <!-- ── Non-dismissible (always expanded) ───────────────── -->
+  <section>
+    <h2>Non-dismissible (always visible body)</h2>
+
+    <sherpa-callout data-status="warning" data-heading="Heads up">
+      This callout has no toggle button. Its body is always visible.
+    </sherpa-callout>
+  </section>
+
+  <!-- ── Heading slot override ───────────────────────────── -->
+  <section>
+    <h2>Heading via slot</h2>
+
+    <sherpa-callout data-status="tip" data-expanded data-dismissible>
+      <strong slot="heading">Custom heading via slot</strong>
+      Body content with a custom slot heading above.
+      <a slot="action" href="#">Take action</a>
+    </sherpa-callout>
+  </section>
+</body>
+</html>

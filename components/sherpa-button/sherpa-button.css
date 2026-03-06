@@ -224,7 +224,7 @@
 /* ── Secondary ───────────────────────────────────────────────────────── */
 
 :host([data-variant="secondary"]) {
-  background-color: var(--_status-surface, var(--sherpa-surface-control-secondary-default));
+  background-color: var(--_status-surface, transparent); /* var(--sherpa-surface-control-secondary-default) */
   border-color:     var(--_status-border,   var(--sherpa-border-control-secondary-default));
   color:            var(--_status-text,     var(--sherpa-text-default-label));
   --_icon-color:    var(--_status-text,     var(--sherpa-icon-context-default-body, var(--sherpa-text-default-label)));
@@ -264,8 +264,8 @@
 :host([data-active="true"]) {
   background-color: var(--sherpa-surface-control-active-default);
   border-color: var(--sherpa-border-control-active-default);
-  color: var(--sherpa-text-primary-default);
-  --_icon-color: var(--sherpa-text-primary-default);
+  color: var(--sherpa-text-active-base);
+  --_icon-color: var(--sherpa-icon-active-base);
   --_surface-hover: var(--sherpa-surface-control-active-hover);
   --_surface-down:  var(--sherpa-surface-control-active-down);
   --_border-hover:  var(--sherpa-border-control-active-hover);

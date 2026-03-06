@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>sherpa-slider — Component Doc</title>
+  <link rel="stylesheet" href="../../css/styles/sherpa-core.css" />
+  <link rel="stylesheet" href="../../css/styles/sherpa-theme-apex-2.css" />
+  <link rel="stylesheet" href="../index.css" />
+  <script type="module" src="../index.js"></script>
+  <style>
+    .demo-grid {
+      display: grid;
+      gap: 40px;
+      padding: 32px;
+      max-width: 600px;
+    }
+    .demo-section h3 {
+      margin: 0 0 12px;
+      font: 600 14px/1.4 system-ui, sans-serif;
+      color: #5c5c66;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-grid">
+
+    <!-- Single slider — basic -->
+    <div class="demo-section">
+      <h3>Single Slider</h3>
+      <sherpa-slider
+        data-label="Volume"
+        data-min="0"
+        data-max="100"
+        data-value="40"
+        data-show-labels
+      ></sherpa-slider>
+    </div>
+
+    <!-- Single slider with input -->
+    <div class="demo-section">
+      <h3>Single Slider with Input</h3>
+      <sherpa-slider
+        data-label="Brightness"
+        data-min="0"
+        data-max="100"
+        data-step="5"
+        data-value="65"
+        data-show-inputs
+        data-show-labels
+      ></sherpa-slider>
+    </div>
+
+    <!-- Range slider -->
+    <div class="demo-section">
+      <h3>Range Slider</h3>
+      <sherpa-slider
+        data-label="Price Range"
+        data-type="range"
+        data-min="0"
+        data-max="500"
+        data-step="10"
+        data-value-low="100"
+        data-value-high="350"
+        data-show-labels
+      ></sherpa-slider>
+    </div>
+
+    <!-- Range slider with inputs -->
+    <div class="demo-section">
+      <h3>Range Slider with Inputs</h3>
+      <sherpa-slider
+        data-label="Date Range Filter"
+        data-type="range"
+        data-min="0"
+        data-max="100"
+        data-value-low="25"
+        data-value-high="75"
+        data-show-inputs
+        data-show-labels
+      ></sherpa-slider>
+    </div>
+
+    <!-- Disabled -->
+    <div class="demo-section">
+      <h3>Disabled</h3>
+      <sherpa-slider
+        data-label="Disabled Slider"
+        data-value="50"
+        data-show-inputs
+        data-show-labels
+        disabled
+      ></sherpa-slider>
+    </div>
+
+    <!-- Fine step -->
+    <div class="demo-section">
+      <h3>Fine Step (0.1)</h3>
+      <sherpa-slider
+        data-label="Opacity"
+        data-min="0"
+        data-max="1"
+        data-step="0.1"
+        data-value="0.7"
+        data-show-inputs
+      ></sherpa-slider>
+    </div>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('sherpa-slider').forEach(el => {
+      el.addEventListener('input', e => {
+        console.log('input', e.detail);
+      });
+      el.addEventListener('change', e => {
+        console.log('change', e.detail);
+      });
+    });
+  </script>
+</body>
+</html>

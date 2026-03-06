@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>sherpa-panel — Component Doc</title>
+    <link rel="stylesheet" href="../../css/styles/sherpa-core.css" />
+    <link rel="stylesheet" href="../../css/styles/themes/apex-2-core.css" />
+    <link rel="stylesheet" href="../index.css" />
+    <script type="module" src="../index.js"></script>
+    <style>
+      .demo-container {
+        display: flex;
+        border: 1px solid #ddd;
+        height: 400px;
+        margin-block-end: 32px;
+        background: #f5f5f5;
+        overflow: hidden;
+      }
+      .demo-main {
+        flex: 1;
+        padding: 24px;
+      }
+      h2 { margin-block: 24px 12px; }
+      button { padding: 8px 16px; cursor: pointer; margin-block-end: 16px; }
+    </style>
+  </head>
+  <body>
+    <h1>sherpa-panel</h1>
+
+    <h2>Inline panel — right (collapsed)</h2>
+    <div class="demo-container">
+      <div class="demo-main">
+        <p>Main content area. Click the trigger to expand the panel.</p>
+      </div>
+      <sherpa-panel
+        data-heading="Details"
+        data-position="right"
+      >
+        <span slot="metadata">
+          <i class="fa-solid fa-building"></i> Acme Corp
+        </span>
+        <p>Panel body content goes here.</p>
+      </sherpa-panel>
+    </div>
+
+    <h2>Inline panel — left (expanded)</h2>
+    <div class="demo-container">
+      <sherpa-panel
+        data-heading="Navigation"
+        data-position="left"
+        data-expanded
+        data-width="300px"
+      >
+        <p>Left-side navigation panel content.</p>
+      </sherpa-panel>
+      <div class="demo-main">
+        <p>Main content area.</p>
+      </div>
+    </div>
+
+    <h2>Inline panel with action bar</h2>
+    <div class="demo-container">
+      <div class="demo-main">
+        <p>Main content area.</p>
+      </div>
+      <sherpa-panel
+        data-heading="Edit Record"
+        data-position="right"
+        data-expanded
+      >
+        <sherpa-button slot="actions" data-label="Save" data-variant="primary" data-size="small"></sherpa-button>
+        <sherpa-button slot="actions" data-label="Cancel" data-variant="secondary" data-size="small"></sherpa-button>
+        <p>Form content would go here.</p>
+      </sherpa-panel>
+    </div>
+
+    <h2>Overlay panel</h2>
+    <button onclick="document.getElementById('overlay-panel').dataset.expanded = ''">
+      Open Overlay Panel
+    </button>
+    <sherpa-panel
+      id="overlay-panel"
+      data-variant="overlay"
+      data-heading="Overlay Details"
+      data-position="right"
+    >
+      <sherpa-button slot="actions" data-label="Apply" data-variant="primary" data-size="small"></sherpa-button>
+      <sherpa-button slot="actions" data-label="Reset" data-variant="secondary" data-size="small"></sherpa-button>
+      <p>Overlay panel content. Click the close button to dismiss.</p>
+    </sherpa-panel>
+  </body>
+</html>
