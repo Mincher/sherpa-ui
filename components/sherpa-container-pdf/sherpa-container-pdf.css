@@ -24,7 +24,8 @@
   --_pdf-text-secondary: #666;
   --_pdf-text-tertiary: #555;
 
-  /* Force light mode for PDF export via data-theme attribute (set in JS) */
+  /* Force light mode for PDF export — overrides the page-level color-scheme
+     so light-dark() always resolves to its first (light) argument. */
   color-scheme: light;
 
   display: flex;
@@ -43,7 +44,7 @@
   display: none;
 }
 
-/* Force light color-scheme on all descendants for light-dark() to resolve correctly */
+/* Force light mode — PDF export always renders light appearance */
 :host,
 :host * {
   color-scheme: light !important;

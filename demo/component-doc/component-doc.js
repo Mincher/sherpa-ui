@@ -142,15 +142,15 @@ function initAttrState(a) {
       .join(" ");
   }
 
-  // Theme
-  const themeSel = $("[data-theme-select]");
-  if (themeSel) {
-    const stored = localStorage.getItem("apx-theme") || "system";
-    themeSel.value = stored;
-    applyTheme(stored);
-    themeSel.addEventListener("change", (e) => {
-      localStorage.setItem("apx-theme", e.target.value);
-      applyTheme(e.target.value);
+  // Mode (light / dark / system)
+  const modeSel = $("[data-mode-select]");
+  if (modeSel) {
+    const stored = localStorage.getItem("apx-mode") || "system";
+    modeSel.value = stored;
+    applyMode(stored);
+    modeSel.addEventListener("change", (e) => {
+      localStorage.setItem("apx-mode", e.target.value);
+      applyMode(e.target.value);
     });
   }
 
@@ -189,11 +189,12 @@ function initAttrState(a) {
   applyState();
 })();
 
-/* ── Theme ──────────────────────────────────────────────── */
+/* ── Mode ──────────────────────────────────────────────── */
 
-function applyTheme(v) {
-  if (v === "system") document.documentElement.removeAttribute("data-theme");
-  else document.documentElement.setAttribute("data-theme", v);
+function applyMode(v) {
+  // Mode switching via color-scheme — drives CSS light-dark() resolution
+  // "system" → "light dark" (OS preference), "light" → forced light, "dark" → forced dark
+  document.documentElement.style.colorScheme = v === "system" ? "light dark" : v;
 }
 
 /* ── Reset ──────────────────────────────────────────────── */

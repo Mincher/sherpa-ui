@@ -1,0 +1,63 @@
+/**
+ * Component Collection Tokens (orphaned)
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Tokens from Figma component variable collections that do NOT yet
+ * have a corresponding web component. Once a component is created,
+ * move its tokens into the component's own CSS file as :host vars
+ * and remove it from here.
+ *
+ * Components with their own tokens (already migrated):
+ *   sherpa-button  → components/sherpa-button/sherpa-button.css
+ *   sherpa-tag     → components/sherpa-tag/sherpa-tag.css
+ *   sherpa-switch  → components/sherpa-switch/sherpa-switch.css
+ *   sherpa-toast   → components/sherpa-toast/sherpa-toast.css
+ */
+
+/* ── tabs ────────────────────────────────────────────────────── */
+
+sherpa-tabs {
+  --_tabs-height-default: var(--sherpa-size-3xl);
+  --_tabs-text-default: var(--sherpa-text-default-secondary);
+  --_tabs-text-selected: var(--sherpa-text-default-label);
+  --_tabs-text-height: var(--sherpa-font-base-size);
+  --_tabs-text-line-height: var(--sherpa-font-base-line-height);
+  --_tabs-icon-default: var(--sherpa-text-default-secondary);
+  --_tabs-icon-selected: var(--sherpa-text-default-label);
+  --_tabs-fill-default: var(--sherpa-surface-subtle-default);
+  --_tabs-border-default: var(--sherpa-border-default);
+}
+
+sherpa-tabs[data-style="secondary"] {
+  --_tabs-height-default: var(--sherpa-size-2xl);
+  --_tabs-text-default: var(--sherpa-text-default-secondary);
+  --_tabs-text-selected: var(--sherpa-text-default-label);
+  --_tabs-text-height: var(--sherpa-font-sm-size);
+  --_tabs-text-line-height: var(--sherpa-font-sm-line-height);
+  --_tabs-icon-default: var(--sherpa-text-default-secondary);
+  --_tabs-icon-selected: var(--sherpa-text-default-label);
+  --_tabs-fill-default: var(--sherpa-surface-subtle-default);
+  --_tabs-border-default: var(--sherpa-border-default);
+}
+
+sherpa-tabs[data-style="product bar"] {
+  --_tabs-height-default: var(--sherpa-size-4xl);
+  --_tabs-text-default: var(--sherpa-text-default-on-color-secondary);
+  --_tabs-text-selected: var(--sherpa-text-default-on-color-label);
+  --_tabs-text-height: var(--sherpa-font-base-size);
+  --_tabs-text-line-height: var(--sherpa-font-sm-line-height);
+  --_tabs-icon-default: var(--sherpa-text-default-on-color-secondary);
+  --_tabs-icon-selected: var(--sherpa-text-default-on-color-label);
+  --_tabs-fill-default: var(--sherpa-core-color-basic-transparent-0);
+  --_tabs-border-default: var(--sherpa-border-default);
+}
+
+/* ── In-theme component tokens (Apex 2.0) ───────────────────── */
+
+:root {
+  --sherpa-component-accordion-border-color: var(--sherpa-border-container-default);
+  --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-base);
+  --sherpa-component-accordion-border-width: var(--sherpa-border-width-base);
+  --sherpa-component-banner-border-rounding: var(--sherpa-border-rounding-base);
+}

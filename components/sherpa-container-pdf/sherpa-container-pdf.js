@@ -33,8 +33,8 @@ export class SherpaContainerPdf extends SherpaElement {
   async setData(sourceContainer) {
     await this.rendered;
 
-    // Force light theme for PDF export
-    this.setAttribute("data-theme", "light");
+    // Light mode is forced via color-scheme: light in the component CSS —
+    // no runtime attribute needed.
 
     // Extract container info
     const title =

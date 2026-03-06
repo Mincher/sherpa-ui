@@ -400,7 +400,7 @@ The status system applies contextual colour schemes (critical, warning, success,
 
 ### Architecture — Global Token Inheritance
 
-**Global definitions** (`sherpa-status-tokens.css`)
+**Global definitions** (`sherpa-status.css`)
 
 `[data-status]` attribute selectors define `--_status-*` custom properties
 on the host element. Because CSS custom properties inherit through shadow DOM
@@ -467,8 +467,8 @@ Design tokens follow a 3-tier model. Always consume **semantic tokens** with **h
 
 | Tier              | Prefix            | Source                                                  | Example                                           |
 | ----------------- | ----------------- | ------------------------------------------------------- | ------------------------------------------------- |
-| Core primitives   | `--sherpa-core-*` | `sherpa-core-colors.css`, `sherpa-core-scale.css`, etc. | `--sherpa-core-colors-slate-600`                  |
-| Semantic aliases  | `--sherpa-*`      | `sherpa-theme-tokens.css`, `sherpa-color-alias.css`     | `--sherpa-text-default-body`, `--sherpa-space-sm` |
+| Core primitives   | `--sherpa-core-*` | `sherpa-primitives.css`                       | `--sherpa-core-colors-slate-600`                  |
+| Semantic aliases  | `--sherpa-*`      | `sherpa-alias.css`, `sherpa-theme-*.css`       | `--sherpa-text-default-body`, `--sherpa-space-sm` |
 | Component private | `--_*`            | Component CSS                                           | `--_status-surface`, `--_cg-border-radius`        |
 
 ### Rules
@@ -684,7 +684,7 @@ PDF colour variables (`--_pdf-bg-white`, `--_pdf-bg-header`, etc.) are defined o
 
 ### Retired: sherpa-content-area
 
-`sherpa-content-area` was retired as a custom element. Its grid layout CSS now lives in `css/styles/sherpa-content-area-classes.css` as a utility class. All usage was already `<div class="sherpa-content-area">` — the element was never instantiated.
+`sherpa-content-area` was retired as a custom element. Its grid layout CSS now lives in `css/styles/sherpa-layout-classes.css` as a utility class. All usage was already `<div class="sherpa-content-area">` — the element was never instantiated.
 
 ---
 

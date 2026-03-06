@@ -9,6 +9,12 @@
 
 :host {
   display: block;
+
+  /* Private aliases — override on :host for theming */
+  --_gap: var(--sherpa-space-xs, 4px);
+  --_padding-sm: var(--sherpa-space-sm, 8px);
+  --_padding: var(--sherpa-space-default, 16px);
+  --_border-width: var(--sherpa-border-width-base, 1px);
 }
 
 :host([hidden]) {
@@ -27,9 +33,9 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--sherpa-space-xs, 4px);
-  padding: var(--sherpa-space-sm, 8px);
-  border-top: var(--sherpa-border-width-base, 1px) solid
+  gap: var(--_gap);
+  padding: var(--_padding-sm);
+  border-top: var(--_border-width) solid
     var(--sherpa-border-control-secondary-default);
 }
 
@@ -41,7 +47,7 @@
 .action-buttons {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 4px);
+  gap: var(--_gap);
   flex-shrink: 0;
 }
 
@@ -65,9 +71,9 @@
   display: none;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--sherpa-space-xs, 4px);
-  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
-  border-top: var(--sherpa-border-width-base, 1px) solid
+  gap: var(--_gap);
+  padding: var(--_padding-sm) var(--_padding);
+  border-top: var(--_border-width) solid
     var(--sherpa-border-container-subtle, #f0f0f5);
 }
 
@@ -78,5 +84,5 @@
 ::slotted(*) {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-default, 16px);
+  gap: var(--_padding);
 }

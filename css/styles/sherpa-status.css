@@ -1,0 +1,71 @@
+/**
+ * sherpa-status.css — Global status → token mapping.
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Defines private --_status-* CSS custom properties on [data-status]
+ * elements. Because custom properties inherit through shadow DOM
+ * boundaries, these values are automatically available inside every
+ * web component — no per-component status blocks needed.
+ *
+ * Components consume what they need via var() with a fallback:
+ *   background:   var(--_status-surface, var(--default-bg));
+ *   border-color: var(--_status-border, var(--default-border));
+ *   color:        var(--_status-text, var(--default-text));
+ */
+
+[data-status="critical"] {
+  --_status-border:                      var(--sherpa-border-context-error-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-error-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
+  --_status-icon:                        var(--sherpa-icon-context-error-on-color-subtle);
+  --_status-shadow:                      var(--sherpa-elevation-tint-error);
+}
+
+[data-status="info"] {
+  --_status-border:                      var(--sherpa-border-context-info-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-info-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
+  --_status-icon:                        var(--sherpa-icon-context-info-on-color-subtle);
+  --_status-shadow:                      var(--sherpa-elevation-tint-info);
+}
+
+[data-status="success"] {
+  --_status-border:                      var(--sherpa-border-context-success-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-success-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
+  --_status-icon:                        var(--sherpa-icon-context-success-on-color-subtle);
+  --_status-shadow:                      var(--sherpa-elevation-tint-success);
+}
+
+[data-status="warning"] {
+  --_status-border:                      var(--sherpa-border-context-warning-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-warning-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-subtle-body);
+  --_status-icon:                        var(--sherpa-icon-context-default-on-color-subtle-body);
+  --_status-shadow:                      var(--sherpa-elevation-tint-warning);
+}
+
+[data-status="urgent"] {
+  --_status-border:                      var(--sherpa-border-context-urgent-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-urgent-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
+  --_status-icon:                        var(--sherpa-icon-context-urgent-on-color-subtle);
+  --_status-shadow:                      var(--sherpa-elevation-tint-urgent);
+}
+

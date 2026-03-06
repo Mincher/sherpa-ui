@@ -29,6 +29,9 @@
   --_transform-x: 100%;
   --_transform-y: -20px;
 
+  /* Figma: in-theme component token */
+  --_toast-border-thickness-left: var(--sherpa-border-width-2xl, 6px);
+
   /* Status colour defaults — inherited from global [data-status] rules.
    * Private vars map: --_status-surface → bg, --_status-border → border, --_status-icon → icon */
 }
@@ -51,7 +54,7 @@
   border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-context-info-default, #66afe9));
   border-radius: var(--sherpa-border-rounding-lg, 12px);
   box-shadow: var(--sherpa-shadow-default-md);
-  border-left-width: 8px;
+  border-left-width: var(--_toast-border-thickness-left);
   transform: translateX(var(--_transform-x));
   opacity: 0;
   transition:

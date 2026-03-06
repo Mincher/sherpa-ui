@@ -4,10 +4,11 @@
  * 
  * Structure:
  *   sherpa-container (flex column)
- *   ├── header.container-header
+ *   ├── sherpa-header[slot="header"]
  *   ├── sherpa-filter-bar[slot="filters"]
- *   └── .content
- *       ├── sherpa-metric (direct children)
+ *   ├── .metrics-area[slot="metrics"] (data-viz template only)
+ *   │   └── sherpa-metric (flex row, hidden by container query when clipped)
+ *   └── .content[slot="content"]
  *       └── sherpa-data-viz (display:contents wrapper → child is flex item)
  * 
  * Attributes:
@@ -146,37 +147,60 @@ sherpa-container > sherpa-filter-bar[slot="filters"] {
 }
 
 /* ==========================================================================
-   Metrics (direct children of .content)
+   Metrics Area (.metrics-area — data-viz template)
+   ==========================================================================
+   Metrics are laid out in a flex row. Each sherpa-metric has min-width: 180px
+   (set by the metric component itself). Container queries on .metrics-area
+   progressively hide trailing metrics when the container is too narrow to
+   fit them without clipping.
+
+   Breakpoints (based on metric min-width 180px + gap):
+     < 376px  → 1 metric  (hide 2nd+)
+     < 564px  → 2 metrics (hide 3rd+)
+     < 752px  → 3 metrics (hide 4th+)
+     ≥ 752px  → 4 metrics
    ========================================================================== */
 
-.content > sherpa-metric {
+.metrics-area {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--sherpa-space-sm, 12px);
   flex-shrink: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: metrics-area;
+
+  &:empty,
+  &[hidden] {
+    display: none;
+  }
 }
 
-/* Metric count visibility by container column span (resizable variant only)
-   3 cols:  1 metric
-   6 cols:  2 metrics
-   9 cols:  3 metrics
-   12 cols: 4 metrics */
-sherpa-container[data-variant="resizable"][data-col-span="3"]
-  .content
-  > sherpa-metric:nth-of-type(n + 2) {
-  display: none;
+/* Progressive metric hiding based on available width.
+   Each metric needs ~180px + 12px gap. Hide from the end first. */
+@container metrics-area (max-width: 375px) {
+  sherpa-metric:nth-child(n + 2) {
+    display: none;
+  }
 }
-sherpa-container[data-variant="resizable"][data-col-span="6"]
-  .content
-  > sherpa-metric:nth-of-type(n + 3) {
-  display: none;
+
+@container metrics-area (min-width: 376px) and (max-width: 563px) {
+  sherpa-metric:nth-child(n + 3) {
+    display: none;
+  }
 }
-sherpa-container[data-variant="resizable"][data-col-span="9"]
-  .content
-  > sherpa-metric:nth-of-type(n + 4) {
-  display: none;
+
+@container metrics-area (min-width: 564px) and (max-width: 751px) {
+  sherpa-metric:nth-child(n + 4) {
+    display: none;
+  }
 }
-sherpa-container[data-variant="resizable"][data-col-span="12"]
-  .content
-  > sherpa-metric:nth-of-type(n + 5) {
-  display: none;
+
+@container metrics-area (min-width: 752px) and (max-width: 939px) {
+  sherpa-metric:nth-child(n + 5) {
+    display: none;
+  }
 }
 
 /* ==========================================================================
@@ -233,8 +257,14 @@ sherpa-container[data-variant="resizable"][data-col-span="3"]:not(
    Global Metrics Visibility (toolbar toggle)
    ========================================================================== */
 
+/* Per-container metrics visibility toggle (menu action) */
+sherpa-container[data-hide-metrics] sherpa-metric,
+sherpa-container[data-hide-metrics] .metrics-area {
+  display: none;
+}
+
 /* Hide metrics when global "Show KPI metrics" is OFF */
-body[data-hide-metrics] sherpa-container .content > sherpa-metric {
+body[data-hide-metrics] sherpa-container .metrics-area {
   display: none;
 }
 

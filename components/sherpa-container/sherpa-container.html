@@ -23,6 +23,7 @@
 <template id="shadow">
   <slot name="header"></slot>
   <slot name="filters"></slot>
+  <slot name="metrics"></slot>
   <slot name="content"></slot>
   <slot name="extra"></slot>
   <!-- Cloning prototype: menu toggle item -->
@@ -59,5 +60,32 @@
     >
   </sherpa-filter-bar>
 
+  <div class="content" slot="content"></div>
+</template>
+
+<!-- Data-viz: header + filter bar + metrics area + content wrapper -->
+<template id="data-viz">
+  <sherpa-header
+    data-type="container"
+    slot="header"
+    data-open-external="true"
+    data-menu-button="true"
+  ></sherpa-header>
+
+  <sherpa-filter-bar slot="filters" data-embedded>
+    <sherpa-filter-chip slot="group" data-type="segment"
+      >Group</sherpa-filter-chip
+    >
+    <sherpa-filter-chip slot="sort" data-type="sort">Sort</sherpa-filter-chip>
+    <sherpa-button
+      slot="actions"
+      data-variant="tertiary"
+      data-size="small"
+      data-action="clear"
+      >Clear filter</sherpa-button
+    >
+  </sherpa-filter-bar>
+
+  <div class="metrics-area" slot="metrics"></div>
   <div class="content" slot="content"></div>
 </template>

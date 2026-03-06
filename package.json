@@ -17,8 +17,9 @@
   ],
   "scripts": {
     "docs": "node scripts/extract-component-api.js",
-    "tokens:process": "node scripts/process-figma-tokens.js",
-    "build": "npm run tokens:process && npm run docs"
+    "tokens:extract": "node scripts/extract-figma-vars.js",
+    "tokens:generate": "node scripts/generate-css-tokens.js",
+    "build": "npm run tokens:generate && npm run docs"
   },
   "devDependencies": {
     "eslint": "^8.55.0",

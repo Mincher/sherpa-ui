@@ -419,12 +419,20 @@ export class SherpaElement extends HTMLElement {
 
   /**
    * Checks whether a slot has meaningful content.
-   * Uses `{ flatten: true }` so that fallback content (e.g. `<slot>Button</slot>`)
-   * is included — this is the core fix for components whose default content
-   * wasn't detected because `assignedNodes()` returns [] for fallback text.
+   *
+   * "Content" means light-DOM nodes explicitly assigned by the consumer.
+   * Fallback text (e.g. `<slot>Button</slot>`) is also counted so that
+   * wrapper elements can show/hide via `data-has-*` even when the
+   * consumer hasn't slotted anything.
+   *
+   * Structural element fallback (e.g. `<slot name="heading"><span
+   * class="header-title"></span></slot>`) is intentionally excluded —
+   * those elements are part of the component template, not consumer
+   * content, and counting them would incorrectly trigger CSS rules
+   * like `:host([data-has-heading]) .header-title { display: none }`.
    */
   #slotHasContent(slotEl) {
-    // First check actual assigned nodes (light DOM content)
+    // Check actual assigned nodes (light DOM content)
     const assigned = slotEl.assignedNodes();
     if (assigned.length > 0) {
       return assigned.some(
@@ -433,12 +441,12 @@ export class SherpaElement extends HTMLElement {
           (n.nodeType === Node.TEXT_NODE && n.textContent.trim()),
       );
     }
-    // Fall back to flattened nodes (includes template fallback content)
+    // No light DOM assigned — check for text-only fallback content.
+    // Only text nodes count; element fallback is structural template
+    // content and should not be treated as consumer-provided.
     const flattened = slotEl.assignedNodes({ flatten: true });
     return flattened.some(
-      (n) =>
-        n.nodeType === Node.ELEMENT_NODE ||
-        (n.nodeType === Node.TEXT_NODE && n.textContent.trim()),
+      (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim(),
     );
   }
 

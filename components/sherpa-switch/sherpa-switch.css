@@ -8,9 +8,28 @@
   display: inline-flex;
   cursor: pointer;
   user-select: none;
+
+  /* Figma: switch collection tokens — default style */
+  --_switch-border-outer: var(--sherpa-border-rounding-base, 4px);
+  --_switch-border-control: var(--sherpa-border-rounding-sm, 2px);
+  --_switch-fill-default: var(--sherpa-color-neutral-700);
+  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default);
+  --_switch-fill-inactive: var(--sherpa-surface-control-inactive);
+  --_switch-control-size: var(--sherpa-size-sm, 16px);
 }
 
 :host([hidden]) { display: none; }
+
+/* ── Compact style variant ─────────────────────────────────────────────── */
+
+:host([data-style="compact"]) {
+  --_switch-border-outer: var(--sherpa-border-rounding-full, 999px);
+  --_switch-border-control: var(--sherpa-border-rounding-full, 999px);
+  --_switch-fill-default: var(--sherpa-color-neutral-700);
+  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default);
+  --_switch-fill-inactive: var(--sherpa-surface-control-inactive);
+  --_switch-control-size: var(--sherpa-size-xs, 12px);
+}
 
 :host([disabled]) {
   cursor: not-allowed;
@@ -38,18 +57,18 @@
   gap: var(--sherpa-space-2xs, 4px);
   padding: var(--sherpa-space-3xs, 4px) var(--sherpa-space-2xs, 4px);
   border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
-  border-radius: var(--sherpa-border-rounding-base, 4px);
-  background-color: var(--sherpa-surface-context-default-strong-default, #1b1b21);
+  border-radius: var(--_switch-border-outer);
+  background-color: var(--_switch-fill-default, var(--sherpa-surface-context-default-strong-default, #1b1b21));
   transition: background-color 150ms ease;
   cursor: inherit;
 }
 
 /* Sliding knob */
 .switch-knob {
-  width: var(--sherpa-size-sm, 16px);
-  height: var(--sherpa-size-sm, 16px);
+  width: var(--_switch-control-size);
+  height: var(--_switch-control-size);
   background-color: var(--sherpa-surface-container-default, #ffffff);
-  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  border-radius: var(--_switch-border-control);
   flex-shrink: 0;
 }
 
@@ -62,7 +81,7 @@
 
 /* ON state */
 :host([data-state="on"]) .switch-track {
-  background-color: var(--sherpa-surface-context-success-strong-default, #0f7b6c);
+  background-color: var(--_switch-fill-active, var(--sherpa-surface-context-success-strong-default, #0f7b6c));
   flex-direction: row;
 }
 
@@ -72,7 +91,7 @@
 
 /* OFF state (explicit) */
 :host([data-state="off"]) .switch-track {
-  background-color: var(--sherpa-surface-context-default-strong-default, #1b1b21);
+  background-color: var(--_switch-fill-default, var(--sherpa-surface-context-default-strong-default, #1b1b21));
   flex-direction: row-reverse;
 }
 

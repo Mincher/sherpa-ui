@@ -14,20 +14,28 @@
 
 :host {
   --_shadow: var(--sherpa-shadow-default-md);
+  --_surface: var(--sherpa-surface-container-default);
+  --_border-color: var(--sherpa-border-control-secondary-default);
+  --_border-width: var(--sherpa-border-width-base, 1px);
+  --_rounding: var(--sherpa-border-rounding-base);
+  --_text: var(--sherpa-text-default-body);
+  --_gap: var(--sherpa-space-xs);
+  --_gap-sm: var(--sherpa-space-2xs);
+  --_padding: var(--sherpa-space-sm);
 }
 
 /* ── Host ── */
 
 :host {
   display: none;
-  background-color: var(--sherpa-surface-container-default);
-  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
-  border-radius: var(--sherpa-border-rounding-base);
+  background-color: var(--_surface);
+  border: var(--_border-width) solid var(--_border-color);
+  border-radius: var(--_rounding);
   box-shadow: var(--_shadow);
   min-width: 180px;
   max-width: 320px;
   box-sizing: border-box;
-  color: var(--sherpa-text-default-body);
+  color: var(--_text);
   outline: none;
 }
 
@@ -40,8 +48,8 @@
 .menu-surface {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-xs);
-  padding: var(--sherpa-space-sm);
+  gap: var(--_gap);
+  padding: var(--_padding);
   box-sizing: border-box;
   overflow: auto;
 }
@@ -51,11 +59,11 @@
 ::slotted(ul) {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-2xs);
+  gap: var(--_gap-sm);
   list-style: none;
   margin: 0;
-  padding: 0 0 var(--sherpa-space-2xs) 0;
-  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
+  padding: 0 0 var(--_gap-sm) 0;
+  border-bottom: var(--_border-width) solid var(--_border-color);
 }
 
 ::slotted(ul:last-child) {
@@ -68,8 +76,8 @@
 ::slotted(hr) {
   height: 1px;
   border: none;
-  background-color: var(--sherpa-border-control-secondary-default);
-  margin: var(--sherpa-space-2xs) 0;
+  background-color: var(--_border-color);
+  margin: var(--_gap-sm) 0;
 }
 
 /* ── Slotted: hidden items (search filtering) ── */

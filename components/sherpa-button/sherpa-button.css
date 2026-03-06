@@ -51,9 +51,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-space-xs, 8px);
-  height: var(--sherpa-size-2xl, 32px);
-  padding-block: var(--sherpa-space-xs, 8px);
+
+  /* Figma: button collection tokens — size / padding / spacing */
+  --_button-size: var(--sherpa-size-2xl, 32px);
+  --_button-padding: var(--sherpa-space-xs, 8px);
+  --_button-spacing: var(--sherpa-space-2xs, 4px);
+
+  gap: var(--_button-spacing);
+  height: var(--_button-size);
+  padding-block: var(--_button-padding);
   padding-inline: var(--sherpa-space-sm, 12px);
   vertical-align: middle;
   position: relative;
@@ -164,17 +170,33 @@
    ========================================================================== */
 
 :host([data-size="small"]) {
-  gap: var(--sherpa-space-3xs, 2px);
-  height: var(--sherpa-size-lg, 24px);
-  padding-block: var(--sherpa-space-2xs, 4px);
+  --_button-size: var(--sherpa-size-lg, 24px);
+  --_button-padding: var(--sherpa-space-2xs, 4px);
+  --_button-spacing: var(--sherpa-space-2xs, 4px);
   padding-inline: var(--sherpa-space-xs, 8px);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 
+:host([data-size="x-small"]) {
+  --_button-size: var(--sherpa-size-md, 20px);
+  --_button-padding: var(--sherpa-space-3xs, 2px);
+  --_button-spacing: var(--sherpa-space-3xs, 2px);
+  padding-inline: var(--sherpa-space-2xs, 4px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
+:host([data-size="2x-small"]) {
+  --_button-size: var(--sherpa-size-sm, 16px);
+  --_button-padding: var(--sherpa-space-3xs, 2px);
+  --_button-spacing: var(--sherpa-space-3xs, 2px);
+  padding-inline: var(--sherpa-space-3xs, 2px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+}
+
 :host([data-size="large"]) {
-  gap: var(--sherpa-space-xs, 8px);
-  height: var(--sherpa-size-4xl, 48px);
-  padding-block: var(--sherpa-space-xs, 8px);
+  --_button-size: var(--sherpa-size-4xl, 48px);
+  --_button-padding: var(--sherpa-space-sm, 12px);
+  --_button-spacing: var(--sherpa-space-xs, 8px);
   padding-inline: var(--sherpa-space-default, 16px);
   font-size: var(--sherpa-fonts-scale-lg, 16px);
 }

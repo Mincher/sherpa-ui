@@ -233,7 +233,9 @@ export class SherpaContainer extends SherpaElement {
     // Viz-child toggle via menu-select (toggle items don't use data-event)
     this.addEventListener("menu-select", (e) => {
       const detail = e.detail ?? {};
-      if (detail.selection === "toggle" && detail.data?.target) {
+      if (detail.action === "toggle-metrics") {
+        this.toggleAttribute("data-hide-metrics", !detail.checked);
+      } else if (detail.selection === "toggle" && detail.data?.target) {
         const target = this.querySelector(`#${CSS.escape(detail.data.target)}`);
         if (target) target.toggleAttribute("hidden", !detail.checked);
       }
@@ -251,12 +253,23 @@ export class SherpaContainer extends SherpaElement {
 
     if (!dataGroup) return;
 
-    if (!this.#menuContributions.length) {
-      dataGroup.remove();
-      dataHeading?.remove();
-      return;
+    // Sync metrics toggle: remove if no metrics, else reflect current state
+    const metricsToggle = dataGroup.querySelector(
+      '[data-action="toggle-metrics"]',
+    );
+    if (metricsToggle) {
+      const hasMetrics = !!this.querySelector("sherpa-metric");
+      if (!hasMetrics) {
+        metricsToggle.closest("li")?.remove();
+      } else {
+        metricsToggle.toggleAttribute(
+          "checked",
+          !this.hasAttribute("data-hide-metrics"),
+        );
+      }
     }
 
+    // Stamp viz-child contributions
     const toggleTpl = this.$("template.menu-toggle-tpl");
     this.#menuContributions.forEach((c) => {
       const frag = toggleTpl.content.cloneNode(true);
@@ -268,6 +281,12 @@ export class SherpaContainer extends SherpaElement {
       if (el && !el.hasAttribute("hidden")) item.setAttribute("checked", "");
       dataGroup.appendChild(frag);
     });
+
+    // Remove data group entirely if empty
+    if (!dataGroup.children.length) {
+      dataGroup.remove();
+      dataHeading?.remove();
+    }
   }
 }
 

@@ -449,8 +449,6 @@ export function ContentAttributesMixin(Base) {
        ══════════════════════════════════════════════════════════ */
 
     #pendingMenuData = null;
-    #menuHeadingTpl = null;
-    #menuItemTpl = null;
     _menuButton = null;
     _menuBound = false;
     _menuCurrentType = "";
@@ -595,23 +593,17 @@ export function ContentAttributesMixin(Base) {
 
     /**
      * Build DOM content for the view-switching menu.
-     * Uses cloning prototypes from the component's shadow DOM.
+     * Creates menu-item elements directly so the mixin works regardless
+     * of whether the host component's HTML includes cloning templates.
      */
     #populateViewMenu(activeType) {
       const config = this.#pendingMenuData;
       if (!config?.showViewMenu || !config.viewOptions?.length) return;
 
-      // Cache cloning templates on first use
-      if (!this.#menuHeadingTpl) {
-        this.#menuHeadingTpl = this.$("template.menu-heading-tpl");
-        this.#menuItemTpl = this.$("template.menu-item-tpl");
-      }
-
       const frag = document.createDocumentFragment();
 
-      const heading = this.#menuHeadingTpl.content
-        .cloneNode(true)
-        .querySelector("sherpa-menu-item");
+      const heading = document.createElement("sherpa-menu-item");
+      heading.setAttribute("data-type", "heading");
       heading.textContent = "View";
       frag.appendChild(heading);
 
@@ -626,8 +618,8 @@ export function ContentAttributesMixin(Base) {
       };
 
       for (const option of config.viewOptions) {
-        const itemFrag = this.#menuItemTpl.content.cloneNode(true);
-        const item = itemFrag.querySelector("sherpa-menu-item");
+        const li = document.createElement("li");
+        const item = document.createElement("sherpa-menu-item");
         item.setAttribute("data-selection", "radio");
         item.setAttribute("value", option?.type ?? "");
         item.dataset.type = option?.type ?? "";
@@ -639,7 +631,8 @@ export function ContentAttributesMixin(Base) {
         if (option?.disabledTitle)
           item.setAttribute("data-description", option.disabledTitle);
         item.textContent = option?.label || "";
-        ul.appendChild(itemFrag);
+        li.appendChild(item);
+        ul.appendChild(li);
       }
 
       frag.appendChild(ul);

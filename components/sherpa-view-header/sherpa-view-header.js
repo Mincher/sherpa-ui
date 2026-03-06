@@ -103,15 +103,27 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #setupSelectors() {
-    // Theme
+    // Theme (brand)
     const themeSelect = this.$('#theme-select');
     if (themeSelect) {
-      const saved = localStorage.getItem('sherpa-theme') || 'system';
+      const saved = localStorage.getItem('sherpa-theme') || 'apex-2-core';
       themeSelect.value = saved;
       this.#applyTheme(saved);
       themeSelect.addEventListener('change', e => {
         localStorage.setItem('sherpa-theme', e.target.value);
         this.#applyTheme(e.target.value);
+      });
+    }
+
+    // Mode (light / dark / auto)
+    const modeSelect = this.$('#mode-select');
+    if (modeSelect) {
+      const saved = localStorage.getItem('sherpa-mode') || 'auto';
+      modeSelect.value = saved;
+      this.#applyMode(saved);
+      modeSelect.addEventListener('change', e => {
+        localStorage.setItem('sherpa-mode', e.target.value);
+        this.#applyMode(e.target.value);
       });
     }
 
@@ -129,9 +141,17 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #applyTheme(theme) {
-    theme === 'system' 
-      ? document.documentElement.removeAttribute('data-theme')
-      : document.documentElement.setAttribute('data-theme', theme);
+    // Swap the @import URL in <style id="sherpa-theme"> to load the selected theme file
+    const themeStyle = document.getElementById('sherpa-theme');
+    if (themeStyle) {
+      themeStyle.textContent = `@import url("/css/styles/sherpa-theme-${theme}.css") layer(tokens);`;
+    }
+  }
+
+  #applyMode(mode) {
+    // Mode switching via color-scheme property — drives CSS light-dark() resolution
+    // "auto" → "light dark" (OS preference), "light" → forced light, "dark" → forced dark
+    document.documentElement.style.colorScheme = mode === 'auto' ? 'light dark' : mode;
   }
 
   #setupExport() {

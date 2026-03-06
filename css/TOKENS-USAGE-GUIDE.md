@@ -25,8 +25,14 @@ Complete guide to using and extending the Apex design token system.
 const color = getComputedStyle(document.documentElement)
   .getPropertyValue('--sherpa-color-brand-base');
 
-// Switch theme
-document.documentElement.setAttribute('data-theme', 'dark');
+// Switch mode (light / dark / auto)
+document.documentElement.style.colorScheme = 'dark';     // forced dark
+document.documentElement.style.colorScheme = 'light';    // forced light
+document.documentElement.style.colorScheme = 'light dark'; // auto (OS pref)
+
+// Switch theme (swap CSS file)
+const style = document.getElementById('sherpa-theme');
+style.textContent = '@import url("/css/styles/sherpa-theme-data-protection.css") layer(tokens);';
 ```
 
 ---
@@ -208,49 +214,86 @@ Common UI dimensions:
 
 ## Theming & Dark Mode
 
-### Automatic Theme Switching
+### How It Works
 
-Tokens use CSS `light-dark()` function for automatic theme support:
-
-```css
-/* Automatically switches based on prefers-color-scheme */
---sherpa-text-default-body: light-dark(#000000, #ffffff);
-```
-
-### Manual Theme Override
-
-Force a specific theme:
-
-```html
-<!-- Force dark theme -->
-<html data-theme="dark">
-  ...
-</html>
-```
+Theme CSS files use the CSS `light-dark()` function for every colour that
+differs between light and dark modes:
 
 ```css
-/* CSS will respect data-theme attribute */
-[data-theme="dark"] {
-  color-scheme: dark;
+/* Inside sherpa-theme-apex-2-core.css */
+:root {
+  color-scheme: light dark;
+  --sherpa-surface-app-background-default: light-dark(
+    var(--sherpa-color-neutral-0),
+    var(--sherpa-core-color-basic-monochrome-950)
+  );
 }
 ```
+
+The browser resolves `light-dark()` based on the computed `color-scheme`
+property on the element.
+
+### Mode Switching
+
+Set `color-scheme` on `<html>` via JavaScript:
+
+```javascript
+// Auto (follow OS preference)
+document.documentElement.style.colorScheme = 'light dark';
+
+// Force light
+document.documentElement.style.colorScheme = 'light';
+
+// Force dark
+document.documentElement.style.colorScheme = 'dark';
+```
+
+### Theme / Brand Switching
+
+Each theme has its own standalone CSS file. Swap the file via the
+`<style id="sherpa-theme">` element in the `<head>`:
+
+```html
+<!-- In the HTML <head> -->
+<style id="sherpa-theme">
+  @import url("/css/styles/sherpa-theme-apex-2-core.css") layer(tokens);
+</style>
+```
+
+```javascript
+// Switch to Data Protection theme
+const el = document.getElementById('sherpa-theme');
+el.textContent = '@import url("/css/styles/sherpa-theme-data-protection.css") layer(tokens);';
+```
+
+Available theme files:
+- `sherpa-theme-apex-2-core.css` — Apex 2.0 Core (default)
+- `sherpa-theme-data-protection.css` — N-able Data Protection
+- `sherpa-theme-classic.css` — Classic
 
 ---
 
 ## Extending Tokens
 
-### Process Figma Tokens
+### Extract & Generate Tokens
 
-When adding new tokens in Figma Tokens 2.0:
+When tokens change in Figma:
 
 ```bash
-node scripts/process-figma-tokens.js
+# 1. Pull latest variables from Figma (requires FIGMA_ACCESS_TOKEN)
+npm run tokens:extract
+
+# 2. Regenerate CSS from the updated JSON
+npm run tokens:generate
+
+# Or run both via build:
+npm run build
 ```
 
 This:
-1. Reads Figma token definitions from `figma-tokens/tokens 2.0/`
-2. Processes primitives, aliases, themes, density, and status
-3. Generates CSS files in `css/styles/`
+1. Fetches all variable collections from the Figma REST API
+2. Writes `figma-tokens/figma-variables.json` with resolved values
+3. Generates per-theme CSS files, alias tokens, status mappings, fonts, and component tokens
 
 ### Adding Custom Tokens
 
@@ -360,14 +403,14 @@ Reference tokens in:
 ### Token value not found
 
 1. Check `css/styles/` files for the token name
-2. If missing, add to Figma Tokens 2.0 and run `npm run tokens:process`
+2. If missing, add to Figma and run `npm run tokens:extract && npm run tokens:generate`
 
 ### Theme not switching
 
-1. Verify `data-theme` attribute is set on `<html>` element
-2. Check `prefers-color-scheme` media query support
-3. Clear browser cache (tokens may be cached)
-4. Inspect computed style to see actual value
+1. Verify `<style id="sherpa-theme">` exists in `<head>` with the correct `@import` URL
+2. Confirm `color-scheme` is set on `<html>` (`light dark` for auto, `light` or `dark` for forced)
+3. Clear browser cache (CSS files may be cached)
+4. Inspect computed style to see actual `light-dark()` resolved value
 
 ---
 

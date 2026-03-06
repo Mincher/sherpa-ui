@@ -1,0 +1,65 @@
+/**
+ * Font Composite Tokens
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Typography scale tokens from the Apex 2.0 collection.
+ * Each size defines size, line-height, paragraph-spacing, and letter-spacing.
+ */
+
+:root {
+  /* ── h1 ── */
+  --sherpa-font-h1-letter-spacing: -0.02;
+  --sherpa-font-h1-line-height: var(--sherpa-fonts-scale-13xl);
+  --sherpa-font-h1-paragraph-spacing: var(--sherpa-fonts-scale-lg);
+  --sherpa-font-h1-size: var(--sherpa-fonts-scale-8xl);
+
+  /* ── h2 ── */
+  --sherpa-font-h2-letter-spacing: -0.02;
+  --sherpa-font-h2-line-height: var(--sherpa-fonts-scale-11xl);
+  --sherpa-font-h2-paragraph-spacing: var(--sherpa-fonts-scale-lg);
+  --sherpa-font-h2-size: var(--sherpa-fonts-scale-6xl);
+
+  /* ── h3 ── */
+  --sherpa-font-h3-letter-spacing: -0.02;
+  --sherpa-font-h3-line-height: var(--sherpa-fonts-scale-9xl);
+  --sherpa-font-h3-paragraph-spacing: var(--sherpa-fonts-scale-xs);
+  --sherpa-font-h3-size: var(--sherpa-fonts-scale-4xl);
+
+  /* ── h4 ── */
+  --sherpa-font-h4-letter-spacing: -0.02;
+  --sherpa-font-h4-line-height: var(--sherpa-fonts-scale-5xl);
+  --sherpa-font-h4-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-h4-size: var(--sherpa-fonts-scale-2xl);
+
+  /* ── h5 ── */
+  --sherpa-font-h5-letter-spacing: -0.02;
+  --sherpa-font-h5-line-height: var(--sherpa-fonts-scale-3xl);
+  --sherpa-font-h5-paragraph-spacing: var(--sherpa-fonts-scale-0);
+  --sherpa-font-h5-size: var(--sherpa-fonts-scale-xl);
+
+  /* ── lg ── */
+  --sherpa-font-lg-letter-spacing: 0.1;
+  --sherpa-font-lg-line-height: var(--sherpa-fonts-scale-2xl);
+  --sherpa-font-lg-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-lg-size: var(--sherpa-fonts-scale-lg);
+
+  /* ── base ── */
+  --sherpa-font-base-letter-spacing: 0.1;
+  --sherpa-font-base-line-height: var(--sherpa-fonts-scale-xl);
+  --sherpa-font-base-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-base-size: var(--sherpa-fonts-scale-base);
+
+  /* ── sm ── */
+  --sherpa-font-sm-letter-spacing: 0.1;
+  --sherpa-font-sm-line-height: var(--sherpa-fonts-scale-base);
+  --sherpa-font-sm-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-sm-size: var(--sherpa-fonts-scale-sm);
+
+  /* ── xs ── */
+  --sherpa-font-xs-letter-spacing: 0.1;
+  --sherpa-font-xs-line-height: var(--sherpa-fonts-scale-base);
+  --sherpa-font-xs-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-xs-size: var(--sherpa-fonts-scale-xs);
+
+}

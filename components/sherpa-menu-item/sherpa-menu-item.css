@@ -4,15 +4,23 @@
 :host {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs);
+  gap: var(--_gap);
   inline-size: 100%;
   box-sizing: border-box;
-  padding: var(--sherpa-space-2xs) var(--sherpa-space-sm);
-  border-radius: var(--sherpa-border-rounding-sm);
+  padding: var(--_padding-y) var(--_padding-x);
+  border-radius: var(--_rounding);
   cursor: pointer;
   outline: none;
   user-select: none;
   transition: background-color 0.15s ease;
+
+  /* Private aliases */
+  --_gap: var(--sherpa-space-xs);
+  --_padding-y: var(--sherpa-space-2xs);
+  --_padding-x: var(--sherpa-space-sm);
+  --_rounding: var(--sherpa-border-rounding-sm);
+  --_text-secondary: var(--sherpa-text-default-secondary);
+  --_font-sm: var(--sherpa-fonts-scale-sm);
 }
 
 :host([hidden])         { display: none; }
@@ -46,8 +54,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: calc(var(--sherpa-fonts-scale-sm) * 0.9);
-  color: var(--sherpa-text-default-secondary);
+  font-size: calc(var(--_font-sm) * 0.9);
+  color: var(--_text-secondary);
 }
 
 :host([data-description]) .description { display: block; }
@@ -56,7 +64,7 @@
 
 .chevron {
   display: none;
-  font-size: var(--sherpa-fonts-scale-sm);
+  font-size: var(--_font-sm);
 }
 
 :host([data-has-submenu="true"]) .chevron { display: inline-flex; }
@@ -73,8 +81,8 @@ sherpa-switch { pointer-events: none; }
   line-height: var(--sherpa-fonts-line-height-xs, 14px);
   letter-spacing: var(--sherpa-fonts-letter-spacing-wider, 1px);
   text-transform: uppercase;
-  color: var(--sherpa-text-default-secondary);
-  padding: var(--sherpa-space-xs);
+  color: var(--_text-secondary);
+  padding: var(--_gap);
   cursor: default;
   pointer-events: none;
 }

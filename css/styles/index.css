@@ -1,34 +1,43 @@
 /**
- * Apex Design Tokens (Tokens 2.0)
- * Auto-generated index file
- * Do not edit manually - regenerate using: node scripts/process-figma-tokens.js
+ * Sherpa Design System — Token Cascade
  *
  * Cascade layers:
- *   tokens     — core primitives, semantic aliases, themed colors, status mapping
+ *   tokens     — primitives, semantic aliases, themed colors, status mapping
  *   utilities  — global reusable classes (text, icon, motion, data-viz, layout)
  *   components — light DOM component overrides
+ *
+ * Theme architecture:
+ *   Theme switching: swap @import URL in <style id="sherpa-theme">
+ *     Available files: sherpa-theme-apex-2-core.css, sherpa-theme-data-protection.css, sherpa-theme-classic.css
+ *   Mode switching: set color-scheme on documentElement
+ *     "light dark" → auto (OS preference), "light" → forced light, "dark" → forced dark
  */
 
 @layer tokens, utilities, components;
 
 /* ── Tokens ──────────────────────────────────────────────────────────── */
 
-/* Core primitives (--sherpa-core-*) */
-@import "sherpa-core-borders.css" layer(tokens);
-@import "sherpa-core-colors.css" layer(tokens);
-@import "sherpa-core-effects.css" layer(tokens);
-@import "sherpa-core-motion.css" layer(tokens);
-@import "sherpa-core-scale.css" layer(tokens);
-@import "sherpa-core-typeface.css" layer(tokens);
+/* Core primitives (--sherpa-core-*) — raw design values */
+@import "sherpa-primitives.css" layer(tokens);
 
-/* Theme tokens (semantic aliases → core primitives) */
-@import "sherpa-theme-tokens.css" layer(tokens);
+/* Semantic aliases (--sherpa-*) — abstract primitives into intent */
+@import "sherpa-alias.css" layer(tokens);
 
-/* Semantic alias tokens (themed color tokens) */
-@import "sherpa-color-alias.css" layer(tokens);
+/*
+ * Theme tokens are NOT imported here.
+ * They are loaded via <style id="sherpa-theme"> in the HTML <head>.
+ * This allows runtime theme switching by swapping the @import URL.
+ * See: sherpa-theme-apex-2-core.css (default)
+ */
 
-/* Global status → token mapping (inherits into shadow DOM) */
-@import "sherpa-status-tokens.css" layer(tokens);
+/* Global status → --_status-* private property mapping (inherits into shadow DOM) */
+@import "sherpa-status.css" layer(tokens);
+
+/* Font composite tokens (typography scale) */
+@import "sherpa-fonts.css" layer(tokens);
+
+/* Component collection tokens (variant defaults) */
+@import "sherpa-components.css" layer(components);
 
 /* ── Utilities ───────────────────────────────────────────────────────── */
 
@@ -37,7 +46,7 @@
 @import "sherpa-text-classes.css" layer(utilities);
 @import "sherpa-data-viz-classes.css" layer(utilities);
 @import "sherpa-control-group-classes.css" layer(utilities);
-@import "sherpa-content-area-classes.css" layer(utilities);
+@import "sherpa-layout-classes.css" layer(utilities);
 
 /* ── Components ──────────────────────────────────────────────────────── */
 

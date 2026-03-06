@@ -47,7 +47,7 @@ Or with an import map:
 - **No bundler** — native ES modules with `import.meta.url` for template/style resolution
 - **Shadow DOM** — components encapsulate styles via `SherpaElement` base class
 - **CSS Cascade Layers** — `reset → tokens → utilities → components → app`
-- **Design tokens** — sourced from Figma exports, processed via `npm run tokens:process`
+- **Design tokens** — sourced from Figma Variables API, processed via `npm run tokens:generate`
 
 ## Data-Viz Components
 
@@ -103,7 +103,8 @@ Components dispatch these events (bubble + composed) for app-level integration:
 ## Scripts
 
 ```bash
-npm run build            # Process tokens + generate API docs
-npm run tokens:process   # Process Figma token exports
-npm run docs             # Generate COMPONENT-API.md
+npm run build              # Generate tokens + API docs
+npm run tokens:extract     # Fetch variables from Figma REST API
+npm run tokens:generate    # Generate CSS from figma-variables.json
+npm run docs               # Generate COMPONENT-API.md
 ```

@@ -31,3 +31,29 @@
 .control-group:focus-within {
   border-color: var(--sherpa-border-control-active-default, #0060df);
 }
+
+/* ── Per-child position tokens (inherit into shadow DOM) ────────── */
+
+.control-group > * {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="start"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-none, 0);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="middle"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-none, 0);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-none, 0);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="end"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-none, 0);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-spacing-offset: -1px;
+}

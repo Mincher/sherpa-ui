@@ -28,6 +28,16 @@
 
 :host {
   display: contents;
+
+  /* Private aliases */
+  --_surface: var(--sherpa-surface-container-default);
+  --_border-color: var(--sherpa-border-container-default);
+  --_border-width: var(--sherpa-border-width-base, 1px);
+  --_rounding: var(--sherpa-border-rounding-lg, 8px);
+  --_shadow: var(--sherpa-shadow-default-lg);
+  --_text: var(--sherpa-text-default-body, #2e2e33);
+  --_duration: var(--sherpa-motion-duration-base, 200ms);
+  --_easing: var(--sherpa-motion-easing-default, ease);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -41,18 +51,18 @@
   width: 600px;
   max-width: 90vw;
   padding: 0;
-  background-color: var(--sherpa-surface-container-default);
-  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default);
-  border-radius: var(--sherpa-border-rounding-lg, 8px);
-  box-shadow: var(--sherpa-shadow-default-lg);
+  background-color: var(--_surface);
+  border: var(--_border-width) solid var(--_border-color);
+  border-radius: var(--_rounding);
+  box-shadow: var(--_shadow);
   overflow: clip;
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--_text);
 }
 
 /* ── Open animation ────────────────────────────────────────────── */
 
 .dialog[open] {
-  animation: dialog-show var(--sherpa-motion-duration-base, 200ms) var(--sherpa-motion-easing-default, ease) forwards;
+  animation: dialog-show var(--_duration) var(--_easing) forwards;
 }
 
 @keyframes dialog-show {
@@ -70,7 +80,7 @@
 
 .dialog::backdrop {
   background-color: var(--sherpa-effects-backdrop, oklch(0 0 0 / 0.5));
-  animation: backdrop-show var(--sherpa-motion-duration-base, 200ms) var(--sherpa-motion-easing-default, ease) forwards;
+  animation: backdrop-show var(--_duration) var(--_easing) forwards;
 }
 
 @keyframes backdrop-show {
@@ -109,14 +119,14 @@ sherpa-footer {
   padding: var(--sherpa-space-sm);
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--sherpa-border-container-default) transparent;
+  scrollbar-color: var(--_border-color) transparent;
 }
 
 .dialog-content::-webkit-scrollbar { width: 8px; }
 .dialog-content::-webkit-scrollbar-track { background: transparent; }
 .dialog-content::-webkit-scrollbar-thumb {
-  background-color: var(--sherpa-border-container-default);
-  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background-color: var(--_border-color);
+  border-radius: var(--_rounding);
 }
 .dialog-content::-webkit-scrollbar-thumb:hover {
   background-color: var(--sherpa-border-context-default-hover);
