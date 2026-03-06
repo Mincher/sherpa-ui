@@ -173,7 +173,7 @@
   color: var(--sherpa-text-default-body, #333);
   font-family: inherit;
   font-size: inherit;
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
   box-sizing: border-box;
 }
 
@@ -325,7 +325,7 @@
     var(--sherpa-text-default-on-color-body, #fff)
   );
   font-size: var(--sherpa-fonts-scale-base, 14px);
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
 }
 
 /* Show when explicit status is set AND message has text */

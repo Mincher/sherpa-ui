@@ -106,7 +106,7 @@
 .toolbar-select {
   height: var(--sherpa-size-2xl);
   padding: 0 var(--sherpa-space-xs);
-  font-size: var(--sherpa-fonts-scale-base);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
   border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
   border-radius: var(--sherpa-border-rounding-base);
   background-color: var(--sherpa-surface-container-default);
@@ -160,7 +160,7 @@
 
 .feedback-title {
   margin: 0;
-  font-size: var(--sherpa-fonts-scale-lg);
+  font-size: var(--sherpa-fonts-scale-lg, 16px);
   font-weight: 600;
 }
 

@@ -478,16 +478,86 @@
 }
 
 /* ── Composite Shadow Tokens ─────────────────────────────────────────
- * box-shadow shorthand composites.
+ * box-shadow shorthand composites matching Figma effect styles.
  * These combine semantic elevation tokens (from the theme CSS file)
- * with shadow colour tokens (from sherpa-alias.css).
+ * with shadow colour tokens (from sherpa-alias.css / theme tints).
+ *
+ * Figma style → CSS token mapping:
+ *   shadow/default/sm     → --sherpa-shadow-default-sm
+ *   shadow/default/md     → --sherpa-shadow-default-md  (2-layer)
+ *   shadow/default/lg     → --sherpa-shadow-default-lg
+ *   shadow/default/sunken → --sherpa-shadow-default-sunken (inset)
+ *   shadow/status/sm      → --sherpa-shadow-status-sm
+ *   shadow/status/md      → --sherpa-shadow-status-md
+ *   shadow/status/lg      → --sherpa-shadow-status-lg
+ *   shadow/status/sunken  → --sherpa-shadow-status-sunken (inset)
  * ──────────────────────────────────────────────────────────────────── */
 
 :root {
+  /* ── Default shadows ──────────────────────────────────────────── */
+
+  /* shadow/default/sm — offset 2×2, blur 8, spread -4 */
   --sherpa-shadow-default-sm:
-    0 var(--sherpa-elevation-offset-y-small) var(--sherpa-elevation-blur-small) var(--sherpa-elevation-spread-small) var(--sherpa-effects-shadow-100);
+    var(--sherpa-elevation-offset-x-small, 2px)
+    var(--sherpa-elevation-offset-y-small, 2px)
+    var(--sherpa-elevation-blur-small, 8px)
+    var(--sherpa-elevation-spread-small, -4px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2));
+
+  /* shadow/default/md — 2-layer: primary + contact shadow */
   --sherpa-shadow-default-md:
-    0 var(--sherpa-elevation-offset-y-default) var(--sherpa-elevation-blur-default) var(--sherpa-elevation-spread-default) var(--sherpa-effects-shadow-200);
+    var(--sherpa-elevation-offset-x-default, 4px)
+    var(--sherpa-elevation-offset-y-default, 4px)
+    var(--sherpa-elevation-blur-default, 12px)
+    var(--sherpa-elevation-spread-default, -2px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
+    0 4px 4px 0 rgba(0, 0, 0, 0.25);
+
+  /* shadow/default/lg — offset 8×8, blur 16, spread 2 */
   --sherpa-shadow-default-lg:
-    0 var(--sherpa-elevation-offset-y-large) var(--sherpa-elevation-blur-large) var(--sherpa-elevation-spread-large) var(--sherpa-effects-shadow-200);
+    var(--sherpa-elevation-offset-x-large, 8px)
+    var(--sherpa-elevation-offset-y-large, 8px)
+    var(--sherpa-elevation-blur-large, 16px)
+    var(--sherpa-elevation-spread-large, 2px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2));
+
+  /* shadow/default/sunken — inset shadow, offset -4×4, blur 4, spread 4 */
+  --sherpa-shadow-default-sunken:
+    inset
+    var(--sherpa-elevation-offset-x-sunken, -4px)
+    var(--sherpa-elevation-offset-y-sunken, 4px)
+    var(--sherpa-elevation-blur-sunken, 4px)
+    var(--sherpa-elevation-spread-sunken, 4px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2));
+
+  /* ── Status shadows (same geometry, status-aware colour) ──────── */
+
+  --sherpa-shadow-status-sm:
+    var(--sherpa-elevation-offset-x-small, 2px)
+    var(--sherpa-elevation-offset-y-small, 2px)
+    var(--sherpa-elevation-blur-small, 8px)
+    var(--sherpa-elevation-spread-small, -4px)
+    var(--_status-shadow, var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
+
+  --sherpa-shadow-status-md:
+    var(--sherpa-elevation-offset-x-default, 4px)
+    var(--sherpa-elevation-offset-y-default, 4px)
+    var(--sherpa-elevation-blur-default, 12px)
+    var(--sherpa-elevation-spread-default, -2px)
+    var(--_status-shadow, var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
+
+  --sherpa-shadow-status-lg:
+    var(--sherpa-elevation-offset-x-large, 8px)
+    var(--sherpa-elevation-offset-y-large, 8px)
+    var(--sherpa-elevation-blur-large, 16px)
+    var(--sherpa-elevation-spread-large, 2px)
+    var(--_status-shadow, var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
+
+  --sherpa-shadow-status-sunken:
+    inset
+    var(--sherpa-elevation-offset-x-sunken, -4px)
+    var(--sherpa-elevation-offset-y-sunken, 4px)
+    var(--sherpa-elevation-blur-sunken, 4px)
+    var(--sherpa-elevation-spread-sunken, 4px)
+    var(--_status-shadow, var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
 }

@@ -2,10 +2,11 @@
 :host {
   display: block;
 
-  --_heading-font-size: var(--sherpa-fonts-scale-lg, 18px);
+  --_heading-font-size: var(--sherpa-font-lg-size, 16px);
   --_heading-text-transform: none;
-  --_heading-letter-spacing: 0;
+  --_heading-letter-spacing: -0.02px;
   --_heading-color: var(--sherpa-text-default-header, #1a1a1f);
+  --_heading-line-height: var(--sherpa-font-lg-line-height, 24px);
   --_content-gap: var(--sherpa-space-default, 16px);
 }
 
@@ -14,16 +15,18 @@
 /* ---- heading-type variants ---- */
 
 :host([data-heading-level="secondary"]) {
-  --_heading-font-size: var(--sherpa-fonts-scale-md, 14px);
+  --_heading-font-size: var(--sherpa-font-base-size, 14px);
   --_heading-text-transform: none;
-  --_heading-letter-spacing: 0;
+  --_heading-letter-spacing: 0.1px;
+  --_heading-line-height: var(--sherpa-font-base-line-height, 20px);
   --_heading-color: var(--sherpa-text-default-header, #1a1a1f);
 }
 
 :host([data-heading-level="tertiary"]) {
-  --_heading-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_heading-font-size: var(--sherpa-font-sm-size, 12px);
   --_heading-text-transform: uppercase;
   --_heading-letter-spacing: 0.5px;
+  --_heading-line-height: var(--sherpa-fonts-scale-lg, 16px);
   --_heading-color: var(--sherpa-text-default-secondary, #6a6a75);
 }
 
@@ -74,7 +77,7 @@
   color: var(--_heading-color);
   font-size: var(--_heading-font-size);
   font-weight: 600;
-  line-height: 1.4;
+  line-height: var(--_heading-line-height);
   text-transform: var(--_heading-text-transform);
   letter-spacing: var(--_heading-letter-spacing);
 }

@@ -20,7 +20,7 @@
   --_padding-x: var(--sherpa-space-sm);
   --_rounding: var(--sherpa-border-rounding-sm);
   --_text-secondary: var(--sherpa-text-default-secondary);
-  --_font-sm: var(--sherpa-fonts-scale-sm);
+  --_font-sm: var(--sherpa-fonts-scale-sm, 12px);
 }
 
 :host([hidden])         { display: none; }
@@ -76,10 +76,10 @@ sherpa-switch { pointer-events: none; }
 /* ── Heading ── */
 
 :host([data-type="heading"]) {
-  font-size: var(--sherpa-fonts-scale-xs);
+  font-size: var(--sherpa-font-xs-size, 10px);
   font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-xs, 14px);
-  letter-spacing: var(--sherpa-fonts-letter-spacing-wider, 1px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--_text-secondary);
   padding: var(--_gap);

@@ -150,7 +150,7 @@
   border-radius: var(--sherpa-border-rounding-sm, 2px);
   background: transparent;
   color: var(--sherpa-text-default-on-color-subtle-body, #0f172a);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   cursor: pointer;
   display: inline-flex;
   align-items: center;

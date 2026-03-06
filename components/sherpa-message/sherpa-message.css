@@ -45,7 +45,7 @@
   border-radius: var(--sherpa-border-rounding-full, 999px);
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   font-size: var(--_text-font-size);
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
   transition: opacity 150ms ease;
 }
 
@@ -59,7 +59,7 @@
   --_padding-block: var(--sherpa-space-xs, 8px);
   --_padding-inline: var(--sherpa-space-sm, 12px);
   --_gap: var(--sherpa-space-xs, 8px);
-  --_text-font-size: var(--sherpa-fonts-scale-xs, 11px);
+  --_text-font-size: var(--sherpa-fonts-scale-xs, 10px);
 }
 
 :host([data-density="comfortable"]) {

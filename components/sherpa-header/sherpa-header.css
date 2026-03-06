@@ -25,9 +25,9 @@
   container-type: inline-size;
   container-name: sherpa-header;
 
-  --_heading-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_heading-font-size: var(--sherpa-font-sm-size, 12px);
   --_heading-text-transform: none;
-  --_heading-letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+  --_heading-letter-spacing: 0.1px;
   --_heading-color: var(--sherpa-text-default-header, #1a1a1f);
 }
 
@@ -61,7 +61,7 @@
   margin: 0;
   font-size: var(--_heading-font-size);
   font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: var(--_heading-letter-spacing);
   text-transform: var(--_heading-text-transform);
   color: var(--_heading-color);
@@ -232,9 +232,9 @@
 
 /* Data-viz — small uppercase title */
 :host([data-type="data-viz"]) {
-  --_heading-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_heading-font-size: var(--sherpa-font-sm-size, 12px);
   --_heading-text-transform: uppercase;
-  --_heading-letter-spacing: var(--sherpa-fonts-letter-spacing-wider, 1px);
+  --_heading-letter-spacing: 1px;
   --_heading-color: var(--sherpa-text-default-secondary);
 }
 

@@ -1,37 +1,50 @@
 /**
- * text-styles.css — Global typography utility classes.
+ * sherpa-text-classes.css — Global typography utility classes
  *
- * Shared base properties (font-family, color, letter-spacing) are set once
- * on a common selector. Each class then only declares what differs:
- * font-size, line-height, font-weight (and overrides where needed).
+ * Sourced from Figma Text Styles in Apex 2.0.
+ * Each class maps 1:1 to a named Figma text style.
  *
- * Categories:
- *   Font family utilities  — .font-default, .font-brand, .font-mono
- *   Headings & titles      — .text-h1–h5, .text-heading-*, .text-title-*
- *   Body text              — .text-body, .text-body-sm, .text-body-xs
- *   Labels & UI text       — .text-label, .text-label-subheader, .text-label-group
- *   Search highlights      — .text-highlight-match
- *   Display / metrics      — .text-display-*, .text-metric-delta
- *   Monospace / code       — .text-mono
- *   Weight utilities       — .font-light, .font-normal, .font-medium, .font-semibold, .font-bold
- *   Transform utilities    — .uppercase, .lowercase, .capitalize, .normal-case
- *   Truncation utilities   — .truncate, .text-wrap, .text-nowrap
- *   Legacy aliases         — .content-title
+ * ┌─────────────────────────┬───────────────────────────────────────────────┐
+ * │ Figma Style             │ CSS Class                                     │
+ * ├─────────────────────────┼───────────────────────────────────────────────┤
+ * │ headings/h1             │ .text-h1                                      │
+ * │ headings/h2             │ .text-h2                                      │
+ * │ headings/h3             │ .text-h3                                      │
+ * │ headings/h4             │ .text-h4                                      │
+ * │ headings/h5             │ .text-h5                                      │
+ * │ body/default/lg         │ .text-body-lg                                 │
+ * │ body/default/base       │ .text-body, .text-body-base                   │
+ * │ body/default/sm         │ .text-body-sm                                 │
+ * │ body/default/xs         │ .text-body-xs                                 │
+ * │ body/emphasised/lg      │ .text-emphasis-lg                             │
+ * │ body/emphasised/base    │ .text-emphasis, .text-emphasis-base           │
+ * │ body/emphasised/sm      │ .text-emphasis-sm                             │
+ * │ body/emphasised/xs      │ .text-emphasis-xs                             │
+ * │ body/monospaced/xl      │ .text-mono-xl                                 │
+ * │ body/monospaced/lg      │ .text-mono-lg                                 │
+ * │ body/monospaced/base    │ .text-mono, .text-mono-base                   │
+ * │ body/monospaced/sm      │ .text-mono-sm                                 │
+ * │ body/monospaced/xs      │ .text-mono-xs                                 │
+ * │ product bar/product-bar │ .text-product-bar                             │
+ * └─────────────────────────┴───────────────────────────────────────────────┘
+ *
+ * Additional utilities: font family, weight, transform, truncation, labels,
+ * display/metrics, search highlights, and legacy aliases.
  */
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SHARED BASE — set once, inherited by all text-* classes
+   SHARED BASE — common properties for default-font text classes
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .text-h1, .text-h2, .text-h3, .text-h4, .text-h5,
+.text-body-lg, .text-body, .text-body-base, .text-body-sm, .text-body-xs,
+.text-emphasis-lg, .text-emphasis, .text-emphasis-base, .text-emphasis-sm, .text-emphasis-xs,
 .text-heading-lg, .text-heading-md, .text-heading-sm,
-.text-body, .text-body-sm, .text-body-xs,
 .text-label, .text-label-subheader, .text-label-group,
 .text-nav-item, .text-metric-delta, .text-title-component,
 .content-title {
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
-  letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
   color: var(--sherpa-text-default-body);
 }
 
@@ -46,68 +59,211 @@
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   HEADINGS & TITLES
+   HEADINGS  —  Figma: headings/h1–h5
+   h1–h3 = Bold (700), h4–h5 = SemiBold (600)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.text-h1, .text-h2, .text-h3, .text-h4, .text-h5 {
-  font-weight: 600;
-  letter-spacing: var(--sherpa-fonts-letter-spacing-tight, -0.02px);
+.text-h1, .text-h2, .text-h3 {
+  font-weight: 700;
+  letter-spacing: -0.02px;
 }
 
-.text-h1 { font-size: var(--sherpa-fonts-scale-8xl, 42px); line-height: var(--sherpa-fonts-line-height-h1, 64px); }
-.text-h2 { font-size: var(--sherpa-fonts-scale-6xl, 36px); line-height: var(--sherpa-fonts-line-height-h2, 52px); }
-.text-h3 { font-size: var(--sherpa-fonts-scale-4xl, 30px); line-height: var(--sherpa-fonts-line-height-h3, 44px); }
-.text-h4 { font-size: var(--sherpa-fonts-scale-2xl, 24px); line-height: var(--sherpa-fonts-line-height-h4, 32px); }
-.text-h5 { font-size: var(--sherpa-fonts-scale-xl, 20px);  line-height: var(--sherpa-fonts-line-height-h5, 28px); }
-
-.text-heading-lg {
-  font-size: var(--sherpa-fonts-scale-lg, 16px);
+.text-h4, .text-h5 {
   font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-lg, 24px);
+  letter-spacing: -0.02px;
 }
 
-.text-heading-md {
-  font-size: var(--sherpa-fonts-scale-base, 14px);
-  font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
+.text-h1 {
+  font-size: var(--sherpa-font-h1-size, 42px);
+  line-height: var(--sherpa-font-h1-line-height, 64px);
 }
 
-.text-heading-sm {
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
-  font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+.text-h2 {
+  font-size: var(--sherpa-font-h2-size, 36px);
+  line-height: var(--sherpa-font-h2-line-height, 52px);
 }
 
-.text-title-component {
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
-  font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
-  letter-spacing: var(--sherpa-fonts-letter-spacing-wider, 1px);
-  text-transform: uppercase;
-  color: var(--sherpa-text-default-secondary);
+.text-h3 {
+  font-size: var(--sherpa-font-h3-size, 30px);
+  line-height: var(--sherpa-font-h3-line-height, 44px);
+}
+
+.text-h4 {
+  font-size: var(--sherpa-font-h4-size, 24px);
+  line-height: var(--sherpa-font-h4-line-height, 32px);
+}
+
+.text-h5 {
+  font-size: var(--sherpa-font-h5-size, 20px);
+  line-height: var(--sherpa-font-h5-line-height, 28px);
 }
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   BODY TEXT
+   BODY DEFAULT  —  Figma: body/default/lg, base, sm, xs
+   Regular (400), default font
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.text-body {
-  font-size: var(--sherpa-fonts-scale-base, 14px);
+.text-body-lg {
+  font-size: var(--sherpa-font-lg-size, 16px);
   font-weight: 400;
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  line-height: var(--sherpa-font-lg-line-height, 24px);
+  letter-spacing: 0.1px;
+}
+
+.text-body,
+.text-body-base {
+  font-size: var(--sherpa-font-base-size, 14px);
+  font-weight: 400;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
 }
 
 .text-body-sm {
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 400;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
 }
 
 .text-body-xs {
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  font-size: var(--sherpa-font-xs-size, 10px);
   font-weight: 400;
-  line-height: var(--sherpa-fonts-line-height-xs, 14px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BODY EMPHASISED  —  Figma: body/emphasised/lg, base, sm, xs
+   SemiBold (600), default font
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-emphasis-lg {
+  font-size: var(--sherpa-font-lg-size, 16px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-lg-line-height, 24px);
+  letter-spacing: 0.1px;
+}
+
+.text-emphasis,
+.text-emphasis-base {
+  font-size: var(--sherpa-font-base-size, 14px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
+}
+
+.text-emphasis-sm {
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
+}
+
+.text-emphasis-xs {
+  font-size: var(--sherpa-font-xs-size, 10px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BODY MONOSPACED  —  Figma: body/monospaced/xl, lg, base, sm, xs
+   Regular (400), monospaced font
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-mono-xl {
+  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
+  font-size: var(--sherpa-font-h5-size, 20px);
+  font-weight: 400;
+  line-height: var(--sherpa-font-h5-line-height, 28px);
+  letter-spacing: -0.02px;
+}
+
+.text-mono-lg {
+  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
+  font-size: var(--sherpa-font-lg-size, 16px);
+  font-weight: 400;
+  line-height: var(--sherpa-font-lg-line-height, 24px);
+  letter-spacing: 0.1px;
+}
+
+.text-mono,
+.text-mono-base {
+  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
+  font-size: var(--sherpa-font-base-size, 14px);
+  font-weight: 400;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
+}
+
+.text-mono-sm {
+  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
+}
+
+.text-mono-xs {
+  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
+  font-size: var(--sherpa-font-xs-size, 10px);
+  font-weight: 400;
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRODUCT BAR  —  Figma: product bar/product-bar
+   Brand font (Manrope), SemiBold (600), uppercase
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-product-bar {
+  font-family: var(--sherpa-fonts-context-brand, 'Manrope', sans-serif);
+  font-size: var(--sherpa-font-h5-size, 20px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-lg-line-height, 32px);
+  letter-spacing: 0.1px;
+  text-transform: uppercase;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEADING UTILITIES  —  aliases for emphasis at body sizes
+   (Match body/emphasised styles with legacy class names)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.text-heading-lg {
+  font-size: var(--sherpa-font-lg-size, 16px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-lg-line-height, 24px);
+  letter-spacing: 0.1px;
+}
+
+.text-heading-md {
+  font-size: var(--sherpa-font-base-size, 14px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
+}
+
+.text-heading-sm {
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
+}
+
+.text-title-component {
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary);
 }
 
 
@@ -116,23 +272,25 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .text-label {
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
 }
 
 .text-label-subheader {
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
   text-transform: uppercase;
 }
 
 .text-label-group {
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
-  letter-spacing: var(--sherpa-fonts-letter-spacing-wide, 0.5px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--sherpa-text-default-secondary);
 }
@@ -151,9 +309,10 @@
 }
 
 .text-nav-item {
-  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-base-size, 14px);
   font-weight: 500;
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
 }
 
 
@@ -178,21 +337,10 @@
 }
 
 .text-metric-delta {
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
-}
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   MONOSPACE / CODE
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.text-mono {
-  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
-  font-weight: 400;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 0.1px;
 }
 
 
@@ -236,10 +384,10 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .content-title {
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
-  letter-spacing: var(--sherpa-fonts-letter-spacing-wider, 1px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--sherpa-text-default-secondary);
   margin: 0;

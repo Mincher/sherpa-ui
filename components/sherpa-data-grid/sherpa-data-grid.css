@@ -51,12 +51,12 @@
   overflow: clip;
   width: 100%;
 
-  /* body/md/default — 13px / 20px */
+  /* body/default/base — Figma: body/default/base */
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
-  font-size: 13px;
+  font-size: var(--sherpa-font-base-size, 14px);
   font-weight: 400;
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
-  letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
   color: var(--sherpa-text-default-body, #111);
 
   container-type: inline-size;
@@ -118,11 +118,11 @@ thead th {
   text-overflow: ellipsis;
   min-width: var(--_cell-min-w);
 
-  /* body/md/emphasised — semibold 13px */
+  /* body/emphasised/base — Figma: body/emphasised/base */
   font-weight: 600;
-  font-size: 13px;
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
-  letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+  font-size: var(--sherpa-font-base-size, 14px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
   color: var(--sherpa-text-default-label, #464646);
   font-family: inherit;
 }
@@ -339,8 +339,8 @@ td.action-cell {
 :host([data-density="compact"]) {
   --_cell-h: 24px;
   --_header-h: 28px;
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
-  line-height: var(--sherpa-fonts-line-height-sm, 16px);
+  font-size: var(--sherpa-font-xs-size, 10px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
 }
 
 :host([data-density="comfortable"]) {
@@ -524,10 +524,10 @@ tr.group-parent-row[data-expanded] .toggle-icon {
   align-items: center;
   gap: var(--sherpa-space-xs, 8px);
 
-  /* body/md/emphasised — semibold 13px */
+  /* body/emphasised/base — Figma: body/emphasised/base */
   font-weight: 600;
-  font-size: 13px;
-  line-height: var(--sherpa-fonts-line-height-base, 20px);
+  font-size: var(--sherpa-font-base-size, 14px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
   color: var(--sherpa-text-default-label, #464646);
   white-space: nowrap;
 }
@@ -544,10 +544,10 @@ tr.group-parent-row[data-expanded] .toggle-icon {
 
 .group-metadata {
   display: none;
-  /* body/xs/default — regular 11px */
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  /* body/default/xs — Figma: body/default/xs */
+  font-size: var(--sherpa-font-xs-size, 10px);
   font-weight: 400;
-  line-height: var(--sherpa-fonts-line-height-xs, 16px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
   color: var(--sherpa-text-default-secondary, #464646);
 }
 

@@ -51,9 +51,9 @@
   height: var(--sherpa-size-lg, 24px);
   padding-block: var(--sherpa-space-2xs, 4px);
   padding-inline: var(--sherpa-space-xs, 8px);
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
-  letter-spacing: var(--sherpa-fonts-letter-spacing-base, 0.1px);
+  letter-spacing: 0.1px;
 
   background-color: var(--sherpa-surface-control-tertiary-default);
   border: none;

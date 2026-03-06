@@ -224,8 +224,8 @@
   background: var(--sherpa-surface-container-floating-default, rgba(26, 28, 33, 0.92));
   color: var(--sherpa-text-default-on-color-heading, #fff);
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
-  line-height: var(--sherpa-fonts-line-height-sm, 14px);
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
   white-space: nowrap;
   pointer-events: none;
   z-index: 1;

@@ -176,10 +176,10 @@ dd[data-type="monospace"] {
 
 :host([data-density="compact"]) {
   --_padding-block: var(--sherpa-space-2xs, 6px);
-  font-size: var(--sherpa-fonts-scale-xs, 11px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
 }
 
 :host([data-density="comfortable"]) {
   --_padding-block: var(--sherpa-space-lg, 24px);
-  font-size: var(--sherpa-fonts-scale-base, 16px);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
 }

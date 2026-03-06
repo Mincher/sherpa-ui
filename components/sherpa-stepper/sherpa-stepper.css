@@ -8,7 +8,7 @@
   /* Density-switched private vars (defaults = standard) */
   --_indicator-size: 32px;
   --_indicator-font-size: var(--sherpa-fonts-scale-sm, 12px);
-  --_label-font-size: var(--sherpa-fonts-scale-base, 16px);
+  --_label-font-size: var(--sherpa-fonts-scale-base, 14px);
   --_sublabel-font-size: var(--sherpa-fonts-scale-sm, 12px);
   --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 15px);
 }
@@ -144,14 +144,14 @@
 .step-label {
   font-size: var(--_label-font-size);
   font-weight: var(--_label-weight);
-  line-height: 1.5;
+  line-height: var(--sherpa-font-base-line-height, 20px);
   color: var(--_label-color);
   transition: color var(--_duration) var(--_easing);
 }
 
 .step-sublabel {
   font-size: var(--_sublabel-font-size);
-  line-height: 1.5;
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
   color: var(--sherpa-text-default-secondary, #6a6a75);
 }
 
@@ -201,9 +201,9 @@
 /* Compact variant */
 :host([data-density="compact"]) {
   --_indicator-size: 24px;
-  --_indicator-font-size: var(--sherpa-fonts-scale-xs, 11px);
+  --_indicator-font-size: var(--sherpa-fonts-scale-xs, 10px);
   --_label-font-size: var(--sherpa-fonts-scale-sm, 12px);
-  --_sublabel-font-size: var(--sherpa-fonts-scale-xs, 11px);
+  --_sublabel-font-size: var(--sherpa-fonts-scale-xs, 10px);
   --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 11px);
 
   .step-indicator svg {
@@ -215,8 +215,8 @@
 /* Comfortable variant */
 :host([data-density="comfortable"]) {
   --_indicator-size: 40px;
-  --_indicator-font-size: var(--sherpa-fonts-scale-base, 16px);
-  --_label-font-size: var(--sherpa-fonts-scale-lg, 18px);
+  --_indicator-font-size: var(--sherpa-fonts-scale-base, 14px);
+  --_label-font-size: var(--sherpa-fonts-scale-lg, 16px);
   --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 19px);
 
   .step-indicator svg {

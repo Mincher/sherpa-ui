@@ -135,8 +135,8 @@
   flex: 1;
   font-weight: var(--_label-weight, 500);
   min-width: 0;
-  font-size: var(--sherpa-fonts-scale-base);
-  line-height: 1.4;
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

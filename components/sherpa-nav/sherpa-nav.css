@@ -36,9 +36,8 @@
   width: var(--_w-collapsed);
   background: var(--sherpa-surface-app-product-nav-bg);
   color: var(--sherpa-text-default-on-color-heading);
-  font:
-    var(--sherpa-fonts-scale-sm) var(--sherpa-fonts-context-default),
-    sans-serif;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   transition: width var(--sherpa-motion-duration-base)
     var(--sherpa-motion-easing-default);
   z-index: 200;
@@ -196,7 +195,7 @@ summary {
 }
 
 .nav-divider-label {
-  font-size: var(--sherpa-fonts-scale-xs);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--sherpa-text-default-on-color-secondary);
@@ -322,7 +321,7 @@ summary {
 .nav-product-name {
   flex: 1;
   font-weight: 600;
-  font-size: var(--sherpa-fonts-scale-lg);
+  font-size: var(--sherpa-fonts-scale-lg, 16px);
 }
 
 .nav-toolbar-actions {

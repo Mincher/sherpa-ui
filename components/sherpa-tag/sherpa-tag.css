@@ -163,7 +163,7 @@
   border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default, #d4d4d4));
   border-radius: var(--_tag-border-rounding, var(--sherpa-border-rounding-full, 999px));
   font-family: inherit;
-  font-size: var(--sherpa-fonts-scale-xs, 11px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
