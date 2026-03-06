@@ -38,14 +38,15 @@
 @import "sherpa-status.css" layer(tokens);
 
 /*
- * Theme CSS is loaded externally via <link id="sherpa-theme"> in the HTML.
- * Each theme file self-declares @layer theme { :root { ... } } so it slots
- * into the layer ordering above, between tokens and utilities.
+ * Default theme — provides baseline themed tokens when no external <link>
+ * overrides it. The file self-declares @layer theme { ... } so it slots
+ * into the layer ordering between tokens and utilities.
  *
- * No default theme is hardcoded here — the HTML <link> element provides it.
- * This ensures runtime theme switching (swapping the <link> href) works
- * reliably without competing with a baked-in default.
+ * Runtime theme switching: add <link id="sherpa-theme" href="..."> in the
+ * HTML <head>. Its @layer theme rules are later in source order and win.
+ * Swap the <link> href to change themes dynamically.
  */
+@import "sherpa-theme-apex-2-core.css";
 
 /* Component collection tokens (variant defaults) */
 @import "sherpa-components.css" layer(components);

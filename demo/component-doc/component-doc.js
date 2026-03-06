@@ -142,6 +142,18 @@ function initAttrState(a) {
       .join(" ");
   }
 
+  // Theme (brand)
+  const themeSel = $("[data-theme-select]");
+  if (themeSel) {
+    const stored = localStorage.getItem("sherpa-theme") || "apex-2-core";
+    themeSel.value = stored;
+    applyTheme(stored);
+    themeSel.addEventListener("change", (e) => {
+      localStorage.setItem("sherpa-theme", e.target.value);
+      applyTheme(e.target.value);
+    });
+  }
+
   // Mode (light / dark / system)
   const modeSel = $("[data-mode-select]");
   if (modeSel) {
@@ -188,6 +200,20 @@ function initAttrState(a) {
   renderDemoActions();
   applyState();
 })();
+
+/* ── Theme ─────────────────────────────────────────────── */
+
+function applyTheme(slug) {
+  // Swap or create <link id="sherpa-theme"> to load the selected theme file
+  let link = document.getElementById("sherpa-theme");
+  if (!link) {
+    link = document.createElement("link");
+    link.id = "sherpa-theme";
+    link.rel = "stylesheet";
+    document.head.appendChild(link);
+  }
+  link.href = `/css/styles/sherpa-theme-${slug}.css`;
+}
 
 /* ── Mode ──────────────────────────────────────────────── */
 

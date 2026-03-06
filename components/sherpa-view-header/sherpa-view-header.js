@@ -141,11 +141,15 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #applyTheme(theme) {
-    // Swap <link id="sherpa-theme"> href to load the selected theme file
-    const link = document.getElementById('sherpa-theme');
-    if (link) {
-      link.href = `/css/styles/sherpa-theme-${theme}.css`;
+    // Swap or create <link id="sherpa-theme"> to load the selected theme file
+    let link = document.getElementById('sherpa-theme');
+    if (!link) {
+      link = document.createElement('link');
+      link.id = 'sherpa-theme';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
     }
+    link.href = `/css/styles/sherpa-theme-${theme}.css`;
   }
 
   #applyMode(mode) {

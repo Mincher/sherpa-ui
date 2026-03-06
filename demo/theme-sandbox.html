@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sherpa Theme Token Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="/css/styles/sherpa-docs.css" rel="stylesheet" />
+  <link id="sherpa-theme" rel="stylesheet" href="/css/styles/sherpa-theme-apex-2-core.css" />
+  <style>
+    *,*::before,*::after { box-sizing: border-box; }
+    body {
+      font-family: "Open Sans", Arial, sans-serif;
+      font-size: 13px;
+      margin: 0;
+      padding: 0;
+      background: var(--sherpa-surface-app-background-default, #f5f5f5);
+      color: var(--sherpa-text-default-body, #333);
+    }
+
+    /* ── Toolbar ──────────────────────────────────────────── */
+    .sandbox-toolbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; gap: 24px;
+      padding: 12px 24px;
+      background: var(--sherpa-surface-container-default, #fff);
+      border-bottom: 1px solid var(--sherpa-border-container-default, #ddd);
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .sandbox-toolbar h1 {
+      font-family: "Manrope", sans-serif;
+      font-size: 16px; font-weight: 600; margin: 0; white-space: nowrap;
+    }
+    .sandbox-toolbar label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .04em;
+      color: var(--sherpa-text-default-secondary, #666);
+    }
+    .sandbox-toolbar select {
+      font-size: 13px; padding: 4px 8px;
+      border: 1px solid var(--sherpa-border-control-default, #ccc);
+      border-radius: 4px;
+      background: var(--sherpa-surface-control-default, #fff);
+      color: var(--sherpa-text-default-body, #333);
+    }
+    .toolbar-spacer { flex: 1; }
+    .token-count {
+      font-size: 12px;
+      color: var(--sherpa-text-default-secondary, #888);
+    }
+
+    /* ── Layout ──────────────────────────────────────────── */
+    .sandbox-layout { display: flex; min-height: calc(100vh - 52px); }
+
+    /* ── Side Nav ────────────────────────────────────────── */
+    .sandbox-nav {
+      position: sticky; top: 52px;
+      width: 240px; min-width: 240px;
+      height: calc(100vh - 52px);
+      overflow-y: auto; padding: 16px 0;
+      background: var(--sherpa-surface-container-default, #fff);
+      border-right: 1px solid var(--sherpa-border-container-default, #ddd);
+    }
+    .sandbox-nav a {
+      display: block; padding: 6px 20px;
+      font-size: 12px;
+      color: var(--sherpa-text-default-body, #555);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+    }
+    .sandbox-nav a:hover {
+      background: var(--sherpa-surface-container-hover, #f0f0f0);
+    }
+    .sandbox-nav a.active {
+      border-left-color: var(--sherpa-border-control-primary-default, #06f);
+      color: var(--sherpa-text-active-base, #06f);
+      font-weight: 600;
+    }
+
+    /* ── Content ─────────────────────────────────────────── */
+    .sandbox-content {
+      flex: 1; padding: 24px 32px; overflow-y: auto;
+    }
+    .token-section { margin-bottom: 40px; }
+    .token-section h2 {
+      font-family: "Manrope", sans-serif;
+      font-size: 15px; font-weight: 600;
+      margin: 0 0 12px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--sherpa-border-container-default, #ddd);
+    }
+    .token-section .count {
+      font-weight: 400;
+      color: var(--sherpa-text-default-secondary, #999);
+      font-size: 12px;
+    }
+
+    /* ── Token Grid ──────────────────────────────────────── */
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 8px;
+    }
+    .token-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 10px; border-radius: 6px;
+      background: var(--sherpa-surface-container-default, #fff);
+      border: 1px solid var(--sherpa-border-container-default, #eee);
+      transition: box-shadow .15s;
+    }
+    .token-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+
+    /* ── Swatches ─────────────────────────────────────────── */
+    .swatch {
+      width: 36px; height: 36px; min-width: 36px;
+      border-radius: 6px;
+      border: 1px solid rgba(128,128,128,.2);
+    }
+    .swatch--border {
+      background: var(--sherpa-surface-container-default, #fff);
+    }
+    .swatch--text {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700;
+      background: var(--sherpa-surface-container-default, #fff);
+    }
+    .swatch--computed {
+      width: auto; min-width: 80px; height: auto;
+      padding: 6px 8px; border: none; background: none;
+    }
+    .swatch--computed code {
+      font-family: "Source Code Pro", monospace;
+      font-size: 11px;
+      color: var(--sherpa-text-default-secondary, #666);
+    }
+    .token-name {
+      font-family: "Source Code Pro", monospace;
+      font-size: 11px;
+      color: var(--sherpa-text-default-body, #444);
+      word-break: break-all; line-height: 1.3;
+    }
+
+    /* ── Search ──────────────────────────────────────────── */
+    .search-input {
+      font-size: 13px; padding: 6px 10px;
+      border: 1px solid var(--sherpa-border-control-default, #ccc);
+      border-radius: 4px;
+      background: var(--sherpa-surface-control-default, #fff);
+      color: var(--sherpa-text-default-body, #333);
+      width: 200px;
+    }
+    .token-row[hidden] { display: none; }
+    .token-section[data-empty] { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Toolbar -->
+  <div class="sandbox-toolbar">
+    <h1>Theme Token Sandbox</h1>
+    <label>
+      <span>Theme</span>
+      <select id="theme-select">
+        <option value="apex-2-core">Apex 2.0 Core</option>
+        <option value="data-protection">Data Protection</option>
+        <option value="classic">Classic</option>
+      </select>
+    </label>
+    <label>
+      <span>Mode</span>
+      <select id="mode-select">
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </label>
+    <div class="toolbar-spacer"></div>
+    <input type="search" class="search-input" id="search" placeholder="Filter tokens…" />
+    <span class="token-count" id="token-count">359 tokens</span>
+  </div>
+
+  <div class="sandbox-layout">
+    <!-- Nav -->
+    <nav class="sandbox-nav" id="nav">
+        <a href="#surface-app-chrome">Surface — App Chrome</a>
+        <a href="#surface-container">Surface — Container</a>
+        <a href="#surface-control-interactive">Surface — Control (Interactive)</a>
+        <a href="#surface-context-status">Surface — Context (Status)</a>
+        <a href="#border-container">Border — Container</a>
+        <a href="#border-control-interactive">Border — Control (Interactive)</a>
+        <a href="#border-context-status">Border — Context (Status)</a>
+        <a href="#elevation">Elevation</a>
+        <a href="#data-visualization-categorical">Data Visualization — Categorical</a>
+        <a href="#data-visualization-sequential">Data Visualization — Sequential</a>
+        <a href="#data-visualization-divergent">Data Visualization — Divergent</a>
+        <a href="#font">Font</a>
+        <a href="#component">Component</a>
+        <a href="#text">Text</a>
+        <a href="#icon">Icon</a>
+        <a href="#manual-aliases-component-expected">Manual Aliases (component-expected)</a>
+    </nav>
+
+    <!-- Token Sections -->
+    <main class="sandbox-content" id="content">
+    <section class="token-section" id="surface-app-chrome">
+      <h2>Surface — App Chrome <span class="count">(14)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-surface-app-background-default"><div class="swatch" style="background:var(--sherpa-surface-app-background-default,#f0f)"></div><code class="token-name">surface-app-background-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-bar-bg"><div class="swatch" style="background:var(--sherpa-surface-app-product-bar-bg,#f0f)"></div><code class="token-name">surface-app-product-bar-bg</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-bar-product-block"><div class="swatch" style="background:var(--sherpa-surface-app-product-bar-product-block,#f0f)"></div><code class="token-name">surface-app-product-bar-product-block</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-bar-product-text"><div class="swatch" style="background:var(--sherpa-surface-app-product-bar-product-text,#f0f)"></div><code class="token-name">surface-app-product-bar-product-text</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-active"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-active,#f0f)"></div><code class="token-name">surface-app-product-nav-active</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-active-icon"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-active-icon,#f0f)"></div><code class="token-name">surface-app-product-nav-active-icon</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-base-icon"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-base-icon,#f0f)"></div><code class="token-name">surface-app-product-nav-base-icon</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-base-text"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-base-text,#f0f)"></div><code class="token-name">surface-app-product-nav-base-text</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-bg"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-bg,#f0f)"></div><code class="token-name">surface-app-product-nav-bg</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-down"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-down,#f0f)"></div><code class="token-name">surface-app-product-nav-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-hover"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-hover,#f0f)"></div><code class="token-name">surface-app-product-nav-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-sub-active"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-sub-active,#f0f)"></div><code class="token-name">surface-app-product-nav-sub-active</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-sub-bg"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-sub-bg,#f0f)"></div><code class="token-name">surface-app-product-nav-sub-bg</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-app-product-nav-text"><div class="swatch" style="background:var(--sherpa-surface-app-product-nav-text,#f0f)"></div><code class="token-name">surface-app-product-nav-text</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="surface-container">
+      <h2>Surface — Container <span class="count">(15)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-surface-container-active-default"><div class="swatch" style="background:var(--sherpa-surface-container-active-default,#f0f)"></div><code class="token-name">surface-container-active-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-active-down"><div class="swatch" style="background:var(--sherpa-surface-container-active-down,#f0f)"></div><code class="token-name">surface-container-active-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-active-hover"><div class="swatch" style="background:var(--sherpa-surface-container-active-hover,#f0f)"></div><code class="token-name">surface-container-active-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-default"><div class="swatch" style="background:var(--sherpa-surface-container-default,#f0f)"></div><code class="token-name">surface-container-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-down"><div class="swatch" style="background:var(--sherpa-surface-container-down,#f0f)"></div><code class="token-name">surface-container-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-elevated-default"><div class="swatch" style="background:var(--sherpa-surface-container-elevated-default,#f0f)"></div><code class="token-name">surface-container-elevated-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-elevated-overlay"><div class="swatch" style="background:var(--sherpa-surface-container-elevated-overlay,#f0f)"></div><code class="token-name">surface-container-elevated-overlay</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-hover"><div class="swatch" style="background:var(--sherpa-surface-container-hover,#f0f)"></div><code class="token-name">surface-container-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-inactive"><div class="swatch" style="background:var(--sherpa-surface-container-inactive,#f0f)"></div><code class="token-name">surface-container-inactive</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-secondary-default"><div class="swatch" style="background:var(--sherpa-surface-container-secondary-default,#f0f)"></div><code class="token-name">surface-container-secondary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-secondary-down"><div class="swatch" style="background:var(--sherpa-surface-container-secondary-down,#f0f)"></div><code class="token-name">surface-container-secondary-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-secondary-hover"><div class="swatch" style="background:var(--sherpa-surface-container-secondary-hover,#f0f)"></div><code class="token-name">surface-container-secondary-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-tertiary-default"><div class="swatch" style="background:var(--sherpa-surface-container-tertiary-default,#f0f)"></div><code class="token-name">surface-container-tertiary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-tertiary-down"><div class="swatch" style="background:var(--sherpa-surface-container-tertiary-down,#f0f)"></div><code class="token-name">surface-container-tertiary-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-tertiary-hover"><div class="swatch" style="background:var(--sherpa-surface-container-tertiary-hover,#f0f)"></div><code class="token-name">surface-container-tertiary-hover</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="surface-control-interactive">
+      <h2>Surface — Control (Interactive) <span class="count">(21)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-surface-control-active-default"><div class="swatch" style="background:var(--sherpa-surface-control-active-default,#f0f)"></div><code class="token-name">surface-control-active-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-active-down"><div class="swatch" style="background:var(--sherpa-surface-control-active-down,#f0f)"></div><code class="token-name">surface-control-active-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-active-hover"><div class="swatch" style="background:var(--sherpa-surface-control-active-hover,#f0f)"></div><code class="token-name">surface-control-active-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-default"><div class="swatch" style="background:var(--sherpa-surface-control-default,#f0f)"></div><code class="token-name">surface-control-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-down"><div class="swatch" style="background:var(--sherpa-surface-control-down,#f0f)"></div><code class="token-name">surface-control-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-hover"><div class="swatch" style="background:var(--sherpa-surface-control-hover,#f0f)"></div><code class="token-name">surface-control-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-inactive"><div class="swatch" style="background:var(--sherpa-surface-control-inactive,#f0f)"></div><code class="token-name">surface-control-inactive</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-primary-default"><div class="swatch" style="background:var(--sherpa-surface-control-primary-default,#f0f)"></div><code class="token-name">surface-control-primary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-primary-down"><div class="swatch" style="background:var(--sherpa-surface-control-primary-down,#f0f)"></div><code class="token-name">surface-control-primary-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-primary-hover"><div class="swatch" style="background:var(--sherpa-surface-control-primary-hover,#f0f)"></div><code class="token-name">surface-control-primary-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-secondary-default"><div class="swatch" style="background:var(--sherpa-surface-control-secondary-default,#f0f)"></div><code class="token-name">surface-control-secondary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-secondary-down"><div class="swatch" style="background:var(--sherpa-surface-control-secondary-down,#f0f)"></div><code class="token-name">surface-control-secondary-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-secondary-hover"><div class="swatch" style="background:var(--sherpa-surface-control-secondary-hover,#f0f)"></div><code class="token-name">surface-control-secondary-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-tertiary-on-color-default"><div class="swatch" style="background:var(--sherpa-surface-control-tertiary-on-color-default,#f0f)"></div><code class="token-name">surface-control-tertiary-on-color-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-tertiary-on-color-down"><div class="swatch" style="background:var(--sherpa-surface-control-tertiary-on-color-down,#f0f)"></div><code class="token-name">surface-control-tertiary-on-color-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-tertiary-on-color-hover"><div class="swatch" style="background:var(--sherpa-surface-control-tertiary-on-color-hover,#f0f)"></div><code class="token-name">surface-control-tertiary-on-color-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-tertiary-on-color-inactive"><div class="swatch" style="background:var(--sherpa-surface-control-tertiary-on-color-inactive,#f0f)"></div><code class="token-name">surface-control-tertiary-on-color-inactive</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-tertiary-default"><div class="swatch" style="background:var(--sherpa-surface-control-tertiary-default,#f0f)"></div><code class="token-name">surface-control-tertiary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-tertiary-down"><div class="swatch" style="background:var(--sherpa-surface-control-tertiary-down,#f0f)"></div><code class="token-name">surface-control-tertiary-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-tertiary-hover"><div class="swatch" style="background:var(--sherpa-surface-control-tertiary-hover,#f0f)"></div><code class="token-name">surface-control-tertiary-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-control-tertiary-inactive"><div class="swatch" style="background:var(--sherpa-surface-control-tertiary-inactive,#f0f)"></div><code class="token-name">surface-control-tertiary-inactive</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="surface-context-status">
+      <h2>Surface — Context (Status) <span class="count">(36)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-surface-context-error-strong-default"><div class="swatch" style="background:var(--sherpa-surface-context-error-strong-default,#f0f)"></div><code class="token-name">surface-context-error-strong-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-error-strong-down"><div class="swatch" style="background:var(--sherpa-surface-context-error-strong-down,#f0f)"></div><code class="token-name">surface-context-error-strong-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-error-strong-hover"><div class="swatch" style="background:var(--sherpa-surface-context-error-strong-hover,#f0f)"></div><code class="token-name">surface-context-error-strong-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-error-subtle-default"><div class="swatch" style="background:var(--sherpa-surface-context-error-subtle-default,#f0f)"></div><code class="token-name">surface-context-error-subtle-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-error-subtle-down"><div class="swatch" style="background:var(--sherpa-surface-context-error-subtle-down,#f0f)"></div><code class="token-name">surface-context-error-subtle-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-error-subtle-hover"><div class="swatch" style="background:var(--sherpa-surface-context-error-subtle-hover,#f0f)"></div><code class="token-name">surface-context-error-subtle-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-default-strong-default"><div class="swatch" style="background:var(--sherpa-surface-context-default-strong-default,#f0f)"></div><code class="token-name">surface-context-default-strong-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-default-strong-down"><div class="swatch" style="background:var(--sherpa-surface-context-default-strong-down,#f0f)"></div><code class="token-name">surface-context-default-strong-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-default-strong-hover"><div class="swatch" style="background:var(--sherpa-surface-context-default-strong-hover,#f0f)"></div><code class="token-name">surface-context-default-strong-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-default-subtle-default"><div class="swatch" style="background:var(--sherpa-surface-context-default-subtle-default,#f0f)"></div><code class="token-name">surface-context-default-subtle-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-default-subtle-down"><div class="swatch" style="background:var(--sherpa-surface-context-default-subtle-down,#f0f)"></div><code class="token-name">surface-context-default-subtle-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-default-subtle-hover"><div class="swatch" style="background:var(--sherpa-surface-context-default-subtle-hover,#f0f)"></div><code class="token-name">surface-context-default-subtle-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-info-strong-default"><div class="swatch" style="background:var(--sherpa-surface-context-info-strong-default,#f0f)"></div><code class="token-name">surface-context-info-strong-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-info-strong-down"><div class="swatch" style="background:var(--sherpa-surface-context-info-strong-down,#f0f)"></div><code class="token-name">surface-context-info-strong-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-info-strong-hover"><div class="swatch" style="background:var(--sherpa-surface-context-info-strong-hover,#f0f)"></div><code class="token-name">surface-context-info-strong-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-info-subtle-default"><div class="swatch" style="background:var(--sherpa-surface-context-info-subtle-default,#f0f)"></div><code class="token-name">surface-context-info-subtle-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-info-subtle-down"><div class="swatch" style="background:var(--sherpa-surface-context-info-subtle-down,#f0f)"></div><code class="token-name">surface-context-info-subtle-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-info-subtle-hover"><div class="swatch" style="background:var(--sherpa-surface-context-info-subtle-hover,#f0f)"></div><code class="token-name">surface-context-info-subtle-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-success-strong-default"><div class="swatch" style="background:var(--sherpa-surface-context-success-strong-default,#f0f)"></div><code class="token-name">surface-context-success-strong-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-success-strong-down"><div class="swatch" style="background:var(--sherpa-surface-context-success-strong-down,#f0f)"></div><code class="token-name">surface-context-success-strong-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-success-strong-hover"><div class="swatch" style="background:var(--sherpa-surface-context-success-strong-hover,#f0f)"></div><code class="token-name">surface-context-success-strong-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-success-subtle-default"><div class="swatch" style="background:var(--sherpa-surface-context-success-subtle-default,#f0f)"></div><code class="token-name">surface-context-success-subtle-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-success-subtle-down"><div class="swatch" style="background:var(--sherpa-surface-context-success-subtle-down,#f0f)"></div><code class="token-name">surface-context-success-subtle-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-success-subtle-hover"><div class="swatch" style="background:var(--sherpa-surface-context-success-subtle-hover,#f0f)"></div><code class="token-name">surface-context-success-subtle-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-urgent-strong-default"><div class="swatch" style="background:var(--sherpa-surface-context-urgent-strong-default,#f0f)"></div><code class="token-name">surface-context-urgent-strong-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-urgent-strong-down"><div class="swatch" style="background:var(--sherpa-surface-context-urgent-strong-down,#f0f)"></div><code class="token-name">surface-context-urgent-strong-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-urgent-strong-hover"><div class="swatch" style="background:var(--sherpa-surface-context-urgent-strong-hover,#f0f)"></div><code class="token-name">surface-context-urgent-strong-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-urgent-subtle-default"><div class="swatch" style="background:var(--sherpa-surface-context-urgent-subtle-default,#f0f)"></div><code class="token-name">surface-context-urgent-subtle-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-urgent-subtle-down"><div class="swatch" style="background:var(--sherpa-surface-context-urgent-subtle-down,#f0f)"></div><code class="token-name">surface-context-urgent-subtle-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-urgent-subtle-hover"><div class="swatch" style="background:var(--sherpa-surface-context-urgent-subtle-hover,#f0f)"></div><code class="token-name">surface-context-urgent-subtle-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-warning-strong-default"><div class="swatch" style="background:var(--sherpa-surface-context-warning-strong-default,#f0f)"></div><code class="token-name">surface-context-warning-strong-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-warning-strong-down"><div class="swatch" style="background:var(--sherpa-surface-context-warning-strong-down,#f0f)"></div><code class="token-name">surface-context-warning-strong-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-warning-strong-hover"><div class="swatch" style="background:var(--sherpa-surface-context-warning-strong-hover,#f0f)"></div><code class="token-name">surface-context-warning-strong-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-warning-subtle-default"><div class="swatch" style="background:var(--sherpa-surface-context-warning-subtle-default,#f0f)"></div><code class="token-name">surface-context-warning-subtle-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-warning-subtle-down"><div class="swatch" style="background:var(--sherpa-surface-context-warning-subtle-down,#f0f)"></div><code class="token-name">surface-context-warning-subtle-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-context-warning-subtle-hover"><div class="swatch" style="background:var(--sherpa-surface-context-warning-subtle-hover,#f0f)"></div><code class="token-name">surface-context-warning-subtle-hover</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="border-container">
+      <h2>Border — Container <span class="count">(3)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-border-container-active"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-container-active,#f0f)"></div><code class="token-name">border-container-active</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-container-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-container-default,#f0f)"></div><code class="token-name">border-container-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-container-inactive"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-container-inactive,#f0f)"></div><code class="token-name">border-container-inactive</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="border-control-interactive">
+      <h2>Border — Control (Interactive) <span class="count">(16)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-border-control-active-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-active-default,#f0f)"></div><code class="token-name">border-control-active-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-active-down"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-active-down,#f0f)"></div><code class="token-name">border-control-active-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-active-hover"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-active-hover,#f0f)"></div><code class="token-name">border-control-active-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-default,#f0f)"></div><code class="token-name">border-control-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-down"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-down,#f0f)"></div><code class="token-name">border-control-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-hover"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-hover,#f0f)"></div><code class="token-name">border-control-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-inactive"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-inactive,#f0f)"></div><code class="token-name">border-control-inactive</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-primary-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-primary-default,#f0f)"></div><code class="token-name">border-control-primary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-primary-down"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-primary-down,#f0f)"></div><code class="token-name">border-control-primary-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-primary-hover"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-primary-hover,#f0f)"></div><code class="token-name">border-control-primary-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-secondary-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-secondary-default,#f0f)"></div><code class="token-name">border-control-secondary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-secondary-down"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-secondary-down,#f0f)"></div><code class="token-name">border-control-secondary-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-secondary-hover"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-secondary-hover,#f0f)"></div><code class="token-name">border-control-secondary-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-tertiary-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-tertiary-default,#f0f)"></div><code class="token-name">border-control-tertiary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-tertiary-down"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-tertiary-down,#f0f)"></div><code class="token-name">border-control-tertiary-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-tertiary-hover"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-tertiary-hover,#f0f)"></div><code class="token-name">border-control-tertiary-hover</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="border-context-status">
+      <h2>Border — Context (Status) <span class="count">(8)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-border-context-error-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-context-error-default,#f0f)"></div><code class="token-name">border-context-error-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-context-default-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-context-default-default,#f0f)"></div><code class="token-name">border-context-default-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-context-default-down"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-context-default-down,#f0f)"></div><code class="token-name">border-context-default-down</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-context-default-hover"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-context-default-hover,#f0f)"></div><code class="token-name">border-context-default-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-context-info-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-context-info-default,#f0f)"></div><code class="token-name">border-context-info-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-context-success-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-context-success-default,#f0f)"></div><code class="token-name">border-context-success-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-context-urgent-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-context-urgent-default,#f0f)"></div><code class="token-name">border-context-urgent-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-context-warning-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-context-warning-default,#f0f)"></div><code class="token-name">border-context-warning-default</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="elevation">
+      <h2>Elevation <span class="count">(22)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-elevation-blur-default"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-blur-default"></code></div><code class="token-name">elevation-blur-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-blur-large"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-blur-large"></code></div><code class="token-name">elevation-blur-large</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-blur-small"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-blur-small"></code></div><code class="token-name">elevation-blur-small</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-blur-sunken"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-blur-sunken"></code></div><code class="token-name">elevation-blur-sunken</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-offset-x-default"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-offset-x-default"></code></div><code class="token-name">elevation-offset-x-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-offset-x-large"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-offset-x-large"></code></div><code class="token-name">elevation-offset-x-large</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-offset-x-small"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-offset-x-small"></code></div><code class="token-name">elevation-offset-x-small</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-offset-x-sunken"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-offset-x-sunken"></code></div><code class="token-name">elevation-offset-x-sunken</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-offset-y-default"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-offset-y-default"></code></div><code class="token-name">elevation-offset-y-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-offset-y-large"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-offset-y-large"></code></div><code class="token-name">elevation-offset-y-large</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-offset-y-small"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-offset-y-small"></code></div><code class="token-name">elevation-offset-y-small</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-offset-y-sunken"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-offset-y-sunken"></code></div><code class="token-name">elevation-offset-y-sunken</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-spread-default"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-spread-default"></code></div><code class="token-name">elevation-spread-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-spread-large"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-spread-large"></code></div><code class="token-name">elevation-spread-large</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-spread-small"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-spread-small"></code></div><code class="token-name">elevation-spread-small</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-spread-sunken"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-spread-sunken"></code></div><code class="token-name">elevation-spread-sunken</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-tint-error"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-tint-error"></code></div><code class="token-name">elevation-tint-error</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-tint-default"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-tint-default"></code></div><code class="token-name">elevation-tint-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-tint-info"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-tint-info"></code></div><code class="token-name">elevation-tint-info</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-tint-success"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-tint-success"></code></div><code class="token-name">elevation-tint-success</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-tint-urgent"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-tint-urgent"></code></div><code class="token-name">elevation-tint-urgent</code></div>
+      <div class="token-row" data-token-name="--sherpa-elevation-tint-warning"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-elevation-tint-warning"></code></div><code class="token-name">elevation-tint-warning</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="data-visualization-categorical">
+      <h2>Data Visualization — Categorical <span class="count">(11)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-1,#f0f)"></div><code class="token-name">data-viz-categorical-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-10"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-10,#f0f)"></div><code class="token-name">data-viz-categorical-color-10</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-11"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-11,#f0f)"></div><code class="token-name">data-viz-categorical-color-11</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-2,#f0f)"></div><code class="token-name">data-viz-categorical-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-3,#f0f)"></div><code class="token-name">data-viz-categorical-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-4,#f0f)"></div><code class="token-name">data-viz-categorical-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-5,#f0f)"></div><code class="token-name">data-viz-categorical-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-6"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-6,#f0f)"></div><code class="token-name">data-viz-categorical-color-6</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-7"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-7,#f0f)"></div><code class="token-name">data-viz-categorical-color-7</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-8"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-8,#f0f)"></div><code class="token-name">data-viz-categorical-color-8</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-categorical-color-9"><div class="swatch" style="background:var(--sherpa-data-viz-categorical-color-9,#f0f)"></div><code class="token-name">data-viz-categorical-color-9</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="data-visualization-sequential">
+      <h2>Data Visualization — Sequential <span class="count">(55)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-green-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-green-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-blue-green-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-green-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-green-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-blue-green-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-green-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-green-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-blue-green-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-green-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-green-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-blue-green-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-green-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-green-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-blue-green-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-blue-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-blue-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-blue-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-blue-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-blue-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-blue-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-blue-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-green-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-green-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-green-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-green-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-green-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-green-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-green-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-green-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-green-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-green-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-green-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-green-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-green-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-green-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-green-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-greyscale-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-greyscale-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-greyscale-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-greyscale-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-greyscale-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-greyscale-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-greyscale-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-greyscale-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-greyscale-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-greyscale-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-greyscale-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-greyscale-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-greyscale-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-greyscale-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-greyscale-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-neon-blue-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-neon-blue-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-neon-blue-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-neon-blue-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-neon-blue-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-neon-blue-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-neon-blue-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-neon-blue-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-neon-blue-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-neon-blue-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-neon-blue-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-neon-blue-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-neon-blue-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-neon-blue-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-neon-blue-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-orange-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-orange-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-orange-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-orange-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-orange-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-orange-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-orange-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-orange-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-orange-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-orange-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-orange-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-orange-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-orange-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-orange-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-orange-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-phlox-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-phlox-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-phlox-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-phlox-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-phlox-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-phlox-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-phlox-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-phlox-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-phlox-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-phlox-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-phlox-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-phlox-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-phlox-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-phlox-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-phlox-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-pink-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-pink-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-pink-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-pink-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-pink-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-pink-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-pink-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-pink-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-pink-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-pink-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-pink-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-pink-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-pink-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-pink-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-pink-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-purple-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-purple-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-purple-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-purple-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-purple-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-purple-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-purple-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-purple-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-purple-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-purple-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-purple-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-purple-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-purple-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-purple-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-purple-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-razamatazz-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-razamatazz-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-razamatazz-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-razamatazz-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-razamatazz-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-razamatazz-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-razamatazz-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-razamatazz-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-razamatazz-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-razamatazz-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-razamatazz-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-razamatazz-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-razamatazz-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-razamatazz-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-razamatazz-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-turquoise-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-turquoise-color-1,#f0f)"></div><code class="token-name">data-viz-sequential-turquoise-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-turquoise-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-turquoise-color-2,#f0f)"></div><code class="token-name">data-viz-sequential-turquoise-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-turquoise-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-turquoise-color-3,#f0f)"></div><code class="token-name">data-viz-sequential-turquoise-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-turquoise-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-turquoise-color-4,#f0f)"></div><code class="token-name">data-viz-sequential-turquoise-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-sequential-turquoise-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-sequential-turquoise-color-5,#f0f)"></div><code class="token-name">data-viz-sequential-turquoise-color-5</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="data-visualization-divergent">
+      <h2>Data Visualization — Divergent <span class="count">(33)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-1,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-10"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-10,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-10</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-11"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-11,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-11</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-2,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-3,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-4,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-5,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-6"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-6,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-6</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-7"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-7,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-7</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-8"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-8,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-8</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-blue-green-pink-color-9"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-blue-green-pink-color-9,#f0f)"></div><code class="token-name">data-viz-divergent-blue-green-pink-color-9</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-1,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-10"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-10,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-10</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-11"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-11,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-11</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-2,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-3,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-4,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-5,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-6"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-6,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-6</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-7"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-7,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-7</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-8"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-8,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-8</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-purple-yellow-color-9"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-purple-yellow-color-9,#f0f)"></div><code class="token-name">data-viz-divergent-purple-yellow-color-9</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-1"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-1,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-1</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-10"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-10,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-10</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-11"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-11,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-11</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-2"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-2,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-2</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-3"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-3,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-3</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-4"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-4,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-4</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-5"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-5,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-5</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-6"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-6,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-6</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-7"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-7,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-7</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-8"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-8,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-8</code></div>
+      <div class="token-row" data-token-name="--sherpa-data-viz-divergent-turquoise-razamatazz-color-9"><div class="swatch" style="background:var(--sherpa-data-viz-divergent-turquoise-razamatazz-color-9,#f0f)"></div><code class="token-name">data-viz-divergent-turquoise-razamatazz-color-9</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="font">
+      <h2>Font <span class="count">(36)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-font-base-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-base-letter-spacing"></code></div><code class="token-name">font-base-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-base-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-base-line-height"></code></div><code class="token-name">font-base-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-base-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-base-paragraph-spacing"></code></div><code class="token-name">font-base-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-base-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-base-size"></code></div><code class="token-name">font-base-size</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h1-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h1-letter-spacing"></code></div><code class="token-name">font-h1-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h1-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h1-line-height"></code></div><code class="token-name">font-h1-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h1-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h1-paragraph-spacing"></code></div><code class="token-name">font-h1-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h1-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h1-size"></code></div><code class="token-name">font-h1-size</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h2-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h2-letter-spacing"></code></div><code class="token-name">font-h2-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h2-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h2-line-height"></code></div><code class="token-name">font-h2-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h2-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h2-paragraph-spacing"></code></div><code class="token-name">font-h2-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h2-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h2-size"></code></div><code class="token-name">font-h2-size</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h3-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h3-letter-spacing"></code></div><code class="token-name">font-h3-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h3-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h3-line-height"></code></div><code class="token-name">font-h3-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h3-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h3-paragraph-spacing"></code></div><code class="token-name">font-h3-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h3-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h3-size"></code></div><code class="token-name">font-h3-size</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h4-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h4-letter-spacing"></code></div><code class="token-name">font-h4-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h4-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h4-line-height"></code></div><code class="token-name">font-h4-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h4-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h4-paragraph-spacing"></code></div><code class="token-name">font-h4-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h4-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h4-size"></code></div><code class="token-name">font-h4-size</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h5-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h5-letter-spacing"></code></div><code class="token-name">font-h5-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h5-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h5-line-height"></code></div><code class="token-name">font-h5-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h5-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h5-paragraph-spacing"></code></div><code class="token-name">font-h5-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-h5-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-h5-size"></code></div><code class="token-name">font-h5-size</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-lg-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-lg-letter-spacing"></code></div><code class="token-name">font-lg-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-lg-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-lg-line-height"></code></div><code class="token-name">font-lg-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-lg-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-lg-paragraph-spacing"></code></div><code class="token-name">font-lg-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-lg-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-lg-size"></code></div><code class="token-name">font-lg-size</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-sm-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-sm-letter-spacing"></code></div><code class="token-name">font-sm-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-sm-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-sm-line-height"></code></div><code class="token-name">font-sm-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-sm-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-sm-paragraph-spacing"></code></div><code class="token-name">font-sm-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-sm-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-sm-size"></code></div><code class="token-name">font-sm-size</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-xs-letter-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-xs-letter-spacing"></code></div><code class="token-name">font-xs-letter-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-xs-line-height"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-xs-line-height"></code></div><code class="token-name">font-xs-line-height</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-xs-paragraph-spacing"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-xs-paragraph-spacing"></code></div><code class="token-name">font-xs-paragraph-spacing</code></div>
+      <div class="token-row" data-token-name="--sherpa-font-xs-size"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-font-xs-size"></code></div><code class="token-name">font-xs-size</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="component">
+      <h2>Component <span class="count">(6)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-component-accordion-border-color"><div class="swatch" style="background:var(--sherpa-component-accordion-border-color,#f0f)"></div><code class="token-name">component-accordion-border-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-component-accordion-border-rounding"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-component-accordion-border-rounding"></code></div><code class="token-name">component-accordion-border-rounding</code></div>
+      <div class="token-row" data-token-name="--sherpa-component-accordion-border-width"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-component-accordion-border-width"></code></div><code class="token-name">component-accordion-border-width</code></div>
+      <div class="token-row" data-token-name="--sherpa-component-banner-border-rounding"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-component-banner-border-rounding"></code></div><code class="token-name">component-banner-border-rounding</code></div>
+      <div class="token-row" data-token-name="--sherpa-component-tag-border-rounding"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-component-tag-border-rounding"></code></div><code class="token-name">component-tag-border-rounding</code></div>
+      <div class="token-row" data-token-name="--sherpa-component-toast-border-thickness-left"><div class="swatch swatch--computed"><code class="computed" data-token="--sherpa-component-toast-border-thickness-left"></code></div><code class="token-name">component-toast-border-thickness-left</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="text">
+      <h2>Text <span class="count">(38)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-text-active-alt"><div class="swatch swatch--text" style="color:var(--sherpa-text-active-alt,#f0f)">Aa</div><code class="token-name">text-active-alt</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-active-base"><div class="swatch swatch--text" style="color:var(--sherpa-text-active-base,#f0f)">Aa</div><code class="token-name">text-active-base</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-body"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-body,#f0f)">Aa</div><code class="token-name">text-default-body</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-heading"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-heading,#f0f)">Aa</div><code class="token-name">text-default-heading</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-label"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-label,#f0f)">Aa</div><code class="token-name">text-default-label</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-subtle-body"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-subtle-body,#f0f)">Aa</div><code class="token-name">text-default-on-color-subtle-body</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-subtle-heading"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-subtle-heading,#f0f)">Aa</div><code class="token-name">text-default-on-color-subtle-heading</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-subtle-label"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-subtle-label,#f0f)">Aa</div><code class="token-name">text-default-on-color-subtle-label</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-subtle-placeholder"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-subtle-placeholder,#f0f)">Aa</div><code class="token-name">text-default-on-color-subtle-placeholder</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-subtle-secondary"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-subtle-secondary,#f0f)">Aa</div><code class="token-name">text-default-on-color-subtle-secondary</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-body"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-body,#f0f)">Aa</div><code class="token-name">text-default-on-color-body</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-heading"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-heading,#f0f)">Aa</div><code class="token-name">text-default-on-color-heading</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-label"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-label,#f0f)">Aa</div><code class="token-name">text-default-on-color-label</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-placeholder"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-placeholder,#f0f)">Aa</div><code class="token-name">text-default-on-color-placeholder</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-on-color-secondary"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-on-color-secondary,#f0f)">Aa</div><code class="token-name">text-default-on-color-secondary</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-placeholder"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-placeholder,#f0f)">Aa</div><code class="token-name">text-default-placeholder</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-default-secondary"><div class="swatch swatch--text" style="color:var(--sherpa-text-default-secondary,#f0f)">Aa</div><code class="token-name">text-default-secondary</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-inactive-default"><div class="swatch swatch--text" style="color:var(--sherpa-text-inactive-default,#f0f)">Aa</div><code class="token-name">text-inactive-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-inactive-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-text-inactive-on-color,#f0f)">Aa</div><code class="token-name">text-inactive-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-inactive-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-text-inactive-on-color-subtle,#f0f)">Aa</div><code class="token-name">text-inactive-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-primary-default"><div class="swatch swatch--text" style="color:var(--sherpa-text-primary-default,#f0f)">Aa</div><code class="token-name">text-primary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-primary-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-text-primary-on-color,#f0f)">Aa</div><code class="token-name">text-primary-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-primary-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-text-primary-on-color-subtle,#f0f)">Aa</div><code class="token-name">text-primary-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-error-default"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-error-default,#f0f)">Aa</div><code class="token-name">text-context-error-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-error-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-error-on-color,#f0f)">Aa</div><code class="token-name">text-context-error-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-error-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-error-on-color-subtle,#f0f)">Aa</div><code class="token-name">text-context-error-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-info-default"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-info-default,#f0f)">Aa</div><code class="token-name">text-context-info-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-info-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-info-on-color,#f0f)">Aa</div><code class="token-name">text-context-info-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-info-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-info-on-color-subtle,#f0f)">Aa</div><code class="token-name">text-context-info-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-success-default"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-success-default,#f0f)">Aa</div><code class="token-name">text-context-success-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-success-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-success-on-color,#f0f)">Aa</div><code class="token-name">text-context-success-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-success-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-success-on-color-subtle,#f0f)">Aa</div><code class="token-name">text-context-success-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-urgent-default"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-urgent-default,#f0f)">Aa</div><code class="token-name">text-context-urgent-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-urgent-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-urgent-on-color,#f0f)">Aa</div><code class="token-name">text-context-urgent-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-urgent-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-urgent-on-color-subtle,#f0f)">Aa</div><code class="token-name">text-context-urgent-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-warning-default"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-warning-default,#f0f)">Aa</div><code class="token-name">text-context-warning-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-warning-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-warning-on-color,#f0f)">Aa</div><code class="token-name">text-context-warning-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-text-context-warning-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-text-context-warning-on-color-subtle,#f0f)">Aa</div><code class="token-name">text-context-warning-on-color-subtle</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="icon">
+      <h2>Icon <span class="count">(38)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-icon-active-alt"><div class="swatch swatch--text" style="color:var(--sherpa-icon-active-alt,#f0f)">Aa</div><code class="token-name">icon-active-alt</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-active-base"><div class="swatch swatch--text" style="color:var(--sherpa-icon-active-base,#f0f)">Aa</div><code class="token-name">icon-active-base</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-body"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-body,#f0f)">Aa</div><code class="token-name">icon-context-default-body</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-heading"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-heading,#f0f)">Aa</div><code class="token-name">icon-context-default-heading</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-label"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-label,#f0f)">Aa</div><code class="token-name">icon-context-default-label</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-subtle-body"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-subtle-body,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-subtle-body</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-subtle-heading"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-subtle-heading,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-subtle-heading</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-subtle-label"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-subtle-label,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-subtle-label</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-subtle-placeholder"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-subtle-placeholder,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-subtle-placeholder</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-subtle-secondary"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-subtle-secondary,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-subtle-secondary</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-body"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-body,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-body</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-heading"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-heading,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-heading</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-label"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-label,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-label</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-placeholder"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-placeholder,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-placeholder</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-on-color-secondary"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-on-color-secondary,#f0f)">Aa</div><code class="token-name">icon-context-default-on-color-secondary</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-placeholder"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-placeholder,#f0f)">Aa</div><code class="token-name">icon-context-default-placeholder</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-default-secondary"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-default-secondary,#f0f)">Aa</div><code class="token-name">icon-context-default-secondary</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-inactive-default"><div class="swatch swatch--text" style="color:var(--sherpa-icon-inactive-default,#f0f)">Aa</div><code class="token-name">icon-inactive-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-inactive-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-icon-inactive-on-color,#f0f)">Aa</div><code class="token-name">icon-inactive-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-inactive-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-icon-inactive-on-color-subtle,#f0f)">Aa</div><code class="token-name">icon-inactive-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-primary-default"><div class="swatch swatch--text" style="color:var(--sherpa-icon-primary-default,#f0f)">Aa</div><code class="token-name">icon-primary-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-primary-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-icon-primary-on-color,#f0f)">Aa</div><code class="token-name">icon-primary-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-primary-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-icon-primary-on-color-subtle,#f0f)">Aa</div><code class="token-name">icon-primary-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-error-default"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-error-default,#f0f)">Aa</div><code class="token-name">icon-context-error-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-error-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-error-on-color,#f0f)">Aa</div><code class="token-name">icon-context-error-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-error-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-error-on-color-subtle,#f0f)">Aa</div><code class="token-name">icon-context-error-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-info-default"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-info-default,#f0f)">Aa</div><code class="token-name">icon-context-info-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-info-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-info-on-color,#f0f)">Aa</div><code class="token-name">icon-context-info-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-info-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-info-on-color-subtle,#f0f)">Aa</div><code class="token-name">icon-context-info-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-success-default"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-success-default,#f0f)">Aa</div><code class="token-name">icon-context-success-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-success-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-success-on-color,#f0f)">Aa</div><code class="token-name">icon-context-success-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-success-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-success-on-color-subtle,#f0f)">Aa</div><code class="token-name">icon-context-success-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-urgent-default"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-urgent-default,#f0f)">Aa</div><code class="token-name">icon-context-urgent-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-urgent-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-urgent-on-color,#f0f)">Aa</div><code class="token-name">icon-context-urgent-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-urgent-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-urgent-on-color-subtle,#f0f)">Aa</div><code class="token-name">icon-context-urgent-on-color-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-warning-default"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-warning-default,#f0f)">Aa</div><code class="token-name">icon-context-warning-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-warning-on-color"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-warning-on-color,#f0f)">Aa</div><code class="token-name">icon-context-warning-on-color</code></div>
+      <div class="token-row" data-token-name="--sherpa-icon-context-warning-on-color-subtle"><div class="swatch swatch--text" style="color:var(--sherpa-icon-context-warning-on-color-subtle,#f0f)">Aa</div><code class="token-name">icon-context-warning-on-color-subtle</code></div>
+      </div>
+    </section>
+    <section class="token-section" id="manual-aliases-component-expected">
+      <h2>Manual Aliases (component-expected) <span class="count">(7)</span></h2>
+      <div class="token-grid">
+      <div class="token-row" data-token-name="--sherpa-border-container-hover"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-container-hover,#f0f)"></div><code class="token-name">border-container-hover</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-container-subtle"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-container-subtle,#f0f)"></div><code class="token-name">border-container-subtle</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-focus"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-focus,#f0f)"></div><code class="token-name">border-focus</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-control-primary-active"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-control-primary-active,#f0f)"></div><code class="token-name">border-control-primary-active</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-container-selected-default"><div class="swatch" style="background:var(--sherpa-surface-container-selected-default,#f0f)"></div><code class="token-name">surface-container-selected-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-surface-subtle-default"><div class="swatch" style="background:var(--sherpa-surface-subtle-default,#f0f)"></div><code class="token-name">surface-subtle-default</code></div>
+      <div class="token-row" data-token-name="--sherpa-border-default"><div class="swatch swatch--border" style="border:3px solid var(--sherpa-border-default,#f0f)"></div><code class="token-name">border-default</code></div>
+      </div>
+    </section>
+    </main>
+  </div>
+
+  <script>
+    /* ── Theme switching ──────────────────────────────────── */
+    const themeSelect = document.getElementById("theme-select");
+    const modeSelect = document.getElementById("mode-select");
+    const searchInput = document.getElementById("search");
+
+    const savedTheme = localStorage.getItem("sherpa-theme") || "apex-2-core";
+    const savedMode = localStorage.getItem("apx-mode") || "system";
+    themeSelect.value = savedTheme;
+    modeSelect.value = savedMode;
+    applyTheme(savedTheme);
+    applyMode(savedMode);
+
+    themeSelect.addEventListener("change", function(e) {
+      localStorage.setItem("sherpa-theme", e.target.value);
+      applyTheme(e.target.value);
+    });
+    modeSelect.addEventListener("change", function(e) {
+      localStorage.setItem("apx-mode", e.target.value);
+      applyMode(e.target.value);
+    });
+
+    function applyTheme(slug) {
+      var link = document.getElementById("sherpa-theme");
+      if (!link) {
+        link = document.createElement("link");
+        link.id = "sherpa-theme";
+        link.rel = "stylesheet";
+        document.head.appendChild(link);
+      }
+      link.href = "/css/styles/sherpa-theme-" + slug + ".css";
+      link.onload = updateComputed;
+    }
+
+    function applyMode(v) {
+      document.documentElement.style.colorScheme = v === "system" ? "light dark" : v;
+      requestAnimationFrame(updateComputed);
+    }
+
+    /* ── Computed value display ────────────────────────────── */
+    function updateComputed() {
+      var style = getComputedStyle(document.documentElement);
+      document.querySelectorAll("code.computed[data-token]").forEach(function(el) {
+        var raw = style.getPropertyValue(el.dataset.token).trim();
+        el.textContent = raw || "(unset)";
+      });
+    }
+    requestAnimationFrame(updateComputed);
+
+    /* ── Search / filter ──────────────────────────────────── */
+    searchInput.addEventListener("input", function() {
+      var q = searchInput.value.toLowerCase();
+      var visible = 0;
+      document.querySelectorAll(".token-row").forEach(function(row) {
+        var name = row.dataset.tokenName || "";
+        var match = !q || name.includes(q);
+        row.hidden = !match;
+        if (match) visible++;
+      });
+      document.querySelectorAll(".token-section").forEach(function(sec) {
+        var hasVisible = sec.querySelector(".token-row:not([hidden])");
+        sec.toggleAttribute("data-empty", !hasVisible);
+      });
+      document.getElementById("token-count").textContent = visible + " tokens";
+    });
+
+    /* ── Sticky nav highlight ─────────────────────────────── */
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          document.querySelectorAll(".sandbox-nav a").forEach(function(a) {
+            a.classList.remove("active");
+          });
+          var a = document.querySelector('.sandbox-nav a[href="#' + entry.target.id + '"]');
+          if (a) a.classList.add("active");
+        }
+      });
+    }, { rootMargin: "-60px 0px -80% 0px" });
+    document.querySelectorAll(".token-section").forEach(function(s) {
+      observer.observe(s);
+    });
+  </script>
+</body>
+</html>

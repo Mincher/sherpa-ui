@@ -21,21 +21,21 @@
   --sherpa-surface-app-product-bar-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
   --sherpa-surface-app-product-bar-product-text: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
-  --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-100);
+  --sherpa-surface-app-product-nav-active: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
   --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-700);
   --sherpa-surface-app-product-nav-base-icon: light-dark(var(--sherpa-text-default-on-color-subtle-body), var(--sherpa-text-default-on-color-body));
   --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-body);
   --sherpa-surface-app-product-nav-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-1000));
-  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-color-brand-100);
+  --sherpa-surface-app-product-nav-sub-active: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
   --sherpa-surface-app-product-nav-sub-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-700);
 
   /* ── Surface — Container ───────────────────────────────────── */
-  --sherpa-surface-container-active-default: var(--sherpa-color-brand-100);
-  --sherpa-surface-container-active-down: var(--sherpa-color-brand-300);
-  --sherpa-surface-container-active-hover: var(--sherpa-color-brand-200);
+  --sherpa-surface-container-active-default: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
+  --sherpa-surface-container-active-down: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-700));
+  --sherpa-surface-container-active-hover: light-dark(var(--sherpa-color-brand-200), var(--sherpa-color-brand-600));
   --sherpa-surface-container-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-core-color-basic-monochrome-925));
   --sherpa-surface-container-down: light-dark(var(--sherpa-color-neutral-400), var(--sherpa-color-neutral-1000));
   --sherpa-surface-container-elevated-default: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-tones-700));
@@ -50,9 +50,9 @@
   --sherpa-surface-container-tertiary-hover: light-dark(var(--sherpa-core-color-basic-monochrome-400), var(--sherpa-color-tones-900));
 
   /* ── Surface — Control (Interactive) ───────────────────────── */
-  --sherpa-surface-control-active-default: var(--sherpa-color-brand-100);
-  --sherpa-surface-control-active-down: var(--sherpa-color-brand-300);
-  --sherpa-surface-control-active-hover: var(--sherpa-color-brand-200);
+  --sherpa-surface-control-active-default: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
+  --sherpa-surface-control-active-down: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-700));
+  --sherpa-surface-control-active-hover: light-dark(var(--sherpa-color-brand-200), var(--sherpa-color-brand-600));
   --sherpa-surface-control-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-tones-900));
   --sherpa-surface-control-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-tones-1000));
   --sherpa-surface-control-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-900));
@@ -397,5 +397,14 @@
   --sherpa-icon-context-warning-default: light-dark(var(--sherpa-color-warning-800), var(--sherpa-color-warning-700));
   --sherpa-icon-context-warning-on-color: var(--sherpa-color-neutral-900);
   --sherpa-icon-context-warning-on-color-subtle: light-dark(var(--sherpa-color-warning-900), var(--sherpa-color-warning-800));
+
+  /* ── Manual Aliases (component-expected) ───────────────────── */
+  --sherpa-border-container-hover: var(--sherpa-border-control-hover);
+  --sherpa-border-container-subtle: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-800));
+  --sherpa-border-focus: var(--sherpa-border-control-primary-default);
+  --sherpa-border-control-primary-active: var(--sherpa-border-control-active-default);
+  --sherpa-surface-container-selected-default: var(--sherpa-surface-container-active-default);
+  --sherpa-surface-subtle-default: var(--sherpa-surface-container-secondary-default);
+  --sherpa-border-default: var(--sherpa-border-container-default);
 }
 } /* @layer theme */
