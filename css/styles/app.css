@@ -1,8 +1,10 @@
 /**
  * app.css — Application-layer styles for Sherpa UI host pages.
  *
- * Provides body defaults, app-shell layout (nav + main content grid),
- * home-page and settings-page patterns, and the scroll-under toolbar effect.
+ * Provides body defaults and app-shell layout (nav + main content grid).
+ *
+ * The scroll-under toolbar effect is handled by the reusable
+ * .sherpa-scroll-under utility class in sherpa-layout-classes.css.
  *
  * Sits in @layer app — the highest-priority layer, above tokens, theme,
  * utilities, and components — so it can confidently consume design tokens
@@ -11,13 +13,9 @@
  * Token usage:
  *   --sherpa-surface-app-product-bg-default — page background
  *   --sherpa-fonts-context-default          — body font family
- *   --sherpa-fonts-context-brand            — heading font family
  *   --sherpa-fonts-scale-base               — base font size
  *   --sherpa-text-default-*                 — text colours
- *   --sherpa-surface-container-default      — card background
- *   --sherpa-shadow-default-*               — elevation shadows
  *   --sherpa-space-default                  — spacing unit
- *   --sherpa-motion-duration-fast           — transition timing
  */
 
 @layer app {
@@ -63,156 +61,8 @@
     container-name: main-scroller;
   }
 
-  /* Toolbar header wrapper — sticky at top, owns the scroll-under effect */
-  .sherpa-toolbar-header {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    transition:
-      background-color var(--sherpa-motion-duration-fast, 150ms) ease,
-      box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
-  }
-
   .sherpa-main-content-slot > .sherpa-content-area {
     width: 100%;
     min-height: 100%;
-  }
-
-  /* ── Home Page ─────────────────────────────────────────────────── */
-
-  .sherpa-home-content {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    padding: 48px;
-    display: flex;
-    flex-direction: column;
-    gap: 48px;
-  }
-
-  .home-hero {
-    text-align: center;
-    padding: 64px 24px;
-  }
-
-  .home-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: var(--sherpa-text-default-heading, #222);
-    margin: 0 0 16px 0;
-    font-family: var(--sherpa-fonts-context-brand, "Manrope"), sans-serif;
-  }
-
-  .home-subtitle {
-    font-size: 1.125rem;
-    color: var(--sherpa-text-default-secondary, #555);
-    margin: 0;
-  }
-
-  .home-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  .home-card {
-    background: var(--sherpa-surface-container-default, #fff);
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: var(--sherpa-shadow-default-sm);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    transition:
-      box-shadow 0.2s ease,
-      transform 0.2s ease;
-  }
-
-  .home-card:hover {
-    box-shadow: var(--sherpa-shadow-default-md);
-    transform: translateY(-2px);
-  }
-
-  .home-card-icon {
-    font-size: 2rem;
-    color: var(--sherpa-icon-context-info-default, #0066cc);
-  }
-
-  .home-card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--sherpa-text-default-heading, #222);
-    margin: 0;
-    font-family: var(--sherpa-fonts-context-brand, "Manrope"), sans-serif;
-  }
-
-  .home-card-desc {
-    font-size: 0.875rem;
-    color: var(--sherpa-text-default-secondary, #555);
-    margin: 0;
-    line-height: 1.5;
-  }
-
-  .home-actions {
-    text-align: center;
-    padding: 24px;
-  }
-
-  .home-cta {
-    font-size: 1rem;
-    color: var(--sherpa-text-default-secondary, #555);
-    margin: 0;
-  }
-
-  /* ── Settings Page ─────────────────────────────────────────────── */
-
-  .sherpa-settings-content {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    padding: 48px;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-
-  .settings-header {
-    border-bottom: 1px solid var(--sherpa-border-control-default, #e0e0e0);
-    padding-bottom: 24px;
-  }
-
-  .settings-title {
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--sherpa-text-default-heading, #222);
-    margin: 0 0 8px 0;
-    font-family: var(--sherpa-fonts-context-brand, "Manrope"), sans-serif;
-  }
-
-  .settings-subtitle {
-    font-size: 1rem;
-    color: var(--sherpa-text-default-secondary, #555);
-    margin: 0;
-  }
-
-  .settings-body {
-    flex: 1;
-  }
-
-  /* ── Scroll-under effect ───────────────────────────────────────── */
-  .sherpa-toolbar-header[data-scrolled] {
-    background-color: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-    box-shadow: var(--sherpa-shadow-default-sm);
-  }
-
-  /* Progressive enhancement: CSS scroll-state queries (Chrome 133+) */
-  @container main-scroller (scroll-state: scrollable) {
-    .sherpa-toolbar-header {
-      background-color: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-      box-shadow: var(--sherpa-shadow-default-sm);
-    }
   }
 } /* end @layer app */
