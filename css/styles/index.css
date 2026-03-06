@@ -2,10 +2,12 @@
  * Sherpa Design System — Token Cascade
  *
  * Cascade layers (in priority order, lowest → highest):
+ *   reset      — box-sizing, margin, font smoothing
  *   tokens     — core primitives, semantic aliases, font composites, status mapping
  *   theme      — themed surface/text/border/icon/elevation tokens (loaded via <link>)
  *   utilities  — global reusable classes (text, icon, motion, data-viz, layout)
  *   components — light DOM component overrides
+ *   app        — application-level layout and page styles
  *
  * Token hierarchy:
  *   core (--sherpa-core-*) → alias (--sherpa-color-*, --sherpa-size-*, etc.)
@@ -21,7 +23,11 @@
  *     "light dark" → auto (OS preference), "light" → forced light, "dark" → forced dark
  */
 
-@layer tokens, theme, utilities, components;
+@layer reset, tokens, theme, utilities, components, app;
+
+/* ── Reset ────────────────────────────────────────────────────────────── */
+
+@import "reset.css" layer(reset);
 
 /* ── Tokens ──────────────────────────────────────────────────────────── */
 
@@ -63,3 +69,8 @@
 /* ── Components ──────────────────────────────────────────────────────── */
 
 @import "../../components/index.css" layer(components);
+
+/* ── App ──────────────────────────────────────────────────────────────── */
+
+/* Application-level layout and page styles (body, nav grid, home/settings pages) */
+@import "app.css" layer(app);

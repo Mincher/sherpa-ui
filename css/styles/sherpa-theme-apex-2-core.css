@@ -406,5 +406,6 @@
   --sherpa-surface-container-selected-default: var(--sherpa-surface-container-active-default);
   --sherpa-surface-subtle-default: var(--sherpa-surface-container-secondary-default);
   --sherpa-border-default: var(--sherpa-border-container-default);
+  --sherpa-surface-app-product-bg-default: light-dark(var(--sherpa-color-neutral-100), var(--sherpa-color-neutral-1000));
 }
 } /* @layer theme */
