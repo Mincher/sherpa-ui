@@ -1,10 +1,14 @@
 <!--
-  sherpa-filter-chip.html — Per-type templates for Sort / Filter / Segment chip.
+  sherpa-filter-chip.html — Templates for sherpa-filter-chip.
 
   Templates:
-    • sort    — Sort toggle with directional icons + dropdown
-    • filter  — Filter toggle with icon + dropdown
-    • segment — Segment toggle with icon + dropdown
+    • sort      — Sort toggle with directional icons + dropdown
+    • filter    — Filter toggle with icon + dropdown
+    • segment   — Segment toggle with icon + dropdown
+    • timeframe — Timeframe toggle with calendar icon + dropdown
+    • (custom)  — Consumers can add additional <template id="..."> blocks here
+                   to define alternative chip layouts. Use the component's
+                   `get templateId()` override to select a template by id.
 
   Host attributes:
     data-type        — "sort" | "filter" | "segment" | "timeframe" (selects template)
@@ -12,8 +16,16 @@
     data-field       — Selected field name
     data-active      — Managed internally (computed from field + mode)
     disabled         — Boolean, disabled state
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SORT — Sort toggle with directional icons + dropdown
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="sort">
   <div class="chip-toggle" role="button" tabindex="0">
     <i class="chip-icon icon-default fa-solid fa-sort"></i>
@@ -30,6 +42,9 @@
   ></sherpa-button>
 </template>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     FILTER — Filter toggle with icon + dropdown
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="filter">
   <div class="chip-toggle" role="button" tabindex="0">
     <i class="chip-icon icon-default fa-solid fa-filter"></i>
@@ -48,6 +63,9 @@
   </button>
 </template>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SEGMENT — Segment toggle with icon + dropdown
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="segment">
   <div class="chip-toggle" role="button" tabindex="0">
     <i class="chip-icon icon-default fa-solid fa-bars"></i>
@@ -62,6 +80,9 @@
   ></sherpa-button>
 </template>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TIMEFRAME — Timeframe toggle with calendar icon + dropdown
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="timeframe">
   <div class="chip-toggle" role="button" tabindex="0">
     <i class="chip-icon icon-default fa-regular fa-clock"></i>

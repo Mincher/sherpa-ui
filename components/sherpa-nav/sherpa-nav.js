@@ -498,6 +498,11 @@ export class SherpaNav extends SherpaElement {
     });
     groups.forEach((g) => delete g.dataset.searchHidden);
     CSS.highlights.delete("nav-search-match");
+    // TODO: migrate to this.shadowRoot.highlights?.delete() once
+    // all target browsers support shadow-scoped highlights (Chrome 130+).
+    // Currently blocked because nav-item text nodes live in nested
+    // shadow roots; the highlight registry must match the tree that
+    // owns the text. See https://crbug.com/1480854.
 
     if (!filter) {
       details.forEach((d) => {
@@ -541,6 +546,8 @@ export class SherpaNav extends SherpaElement {
 
     if (ranges.length)
       CSS.highlights.set("nav-search-match", new Highlight(...ranges));
+    // TODO: migrate to this.shadowRoot.highlights?.set() — see
+    // delete call above for rationale.
   }
 }
 

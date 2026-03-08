@@ -1,8 +1,11 @@
 <!--
-  sherpa-view-header.html — Top-level view toolbar.
+  sherpa-view-header.html — Templates for sherpa-view-header.
 
   Templates:
     • default — Toolbar with toggles, selects, buttons, feedback popover
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative view-header layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-label               — View heading text
@@ -10,8 +13,16 @@
     data-show-debug-toggles  — Show debug toggle controls
     data-favorite            — Favorite state ("true"/"false")
     data-edit-mode           — Edit mode state ("true"/"false")
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — View toolbar with toggles, selects, buttons
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <div class="header-surface">
 <div class="toolbar-left">

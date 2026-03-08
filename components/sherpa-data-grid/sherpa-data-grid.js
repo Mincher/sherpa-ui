@@ -266,8 +266,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
   onDisconnect() {
     super.onDisconnect();
-    CSS.highlights.delete("data-grid-search");
-    CSS.highlights.delete("data-grid-col-search");
+    this.shadowRoot.highlights?.delete("data-grid-search");
+    this.shadowRoot.highlights?.delete("data-grid-col-search");
   }
 
   onAttributeChanged(name, oldValue, newValue) {
@@ -1002,9 +1002,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
    */
 
   #applySearchHighlights() {
-    // Clear previous highlights
-    CSS.highlights.delete("data-grid-search");
-    CSS.highlights.delete("data-grid-col-search");
+    // Clear previous highlights (shadow-scoped, requires Chrome 130+)
+    this.shadowRoot.highlights?.delete("data-grid-search");
+    this.shadowRoot.highlights?.delete("data-grid-col-search");
 
     const body = this.$(".grid-body");
     if (!body) return;
@@ -1068,9 +1068,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
 
     if (globalRanges.length)
-      CSS.highlights.set("data-grid-search", new Highlight(...globalRanges));
+      this.shadowRoot.highlights?.set("data-grid-search", new Highlight(...globalRanges));
     if (colRanges.length)
-      CSS.highlights.set("data-grid-col-search", new Highlight(...colRanges));
+      this.shadowRoot.highlights?.set("data-grid-col-search", new Highlight(...colRanges));
   }
 
   /* ══════════════════════════════════════════════════════════════

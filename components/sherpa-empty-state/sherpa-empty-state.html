@@ -1,15 +1,27 @@
 <!--
-  sherpa-empty-state.html — Empty state placeholder component.
+  sherpa-empty-state.html — Templates for sherpa-empty-state.
 
   Templates:
     • default — Illustration + heading + description + action buttons + footer
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative empty-state layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-label        — Heading text
     data-description  — Description text
     data-illustration — Built-in illustration: "empty" | "search" | "folder" | "data" | "error" | "success"
     data-small-print  — Footer fine print text
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Illustration + heading + description + actions + footer
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="sherpa-empty-state">
     <div class="sherpa-empty-state__illustration">
@@ -39,3 +51,26 @@
     </p>
   </div>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Simple (heading + single action only)
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="simple">
+  <div class="sherpa-empty-state">
+    <div class="sherpa-empty-state__heading">
+      <slot name="heading">
+        <h2 class="sherpa-empty-state__title text-heading-lg"></h2>
+      </slot>
+    </div>
+
+    <div class="sherpa-empty-state__buttons">
+      <slot name="actions"></slot>
+    </div>
+  </div>
+</template>
+-->

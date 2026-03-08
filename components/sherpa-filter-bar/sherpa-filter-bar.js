@@ -62,8 +62,16 @@ export class SherpaFilterBar extends SherpaElement {
   #containerEl = null; // Cached closest sherpa-container ancestor
 
   onConnect() {
-    // Cache closest container for event dispatch
-    this.#containerEl = this.closest("sherpa-container");
+    // Cache closest container — supports both light DOM and shadow DOM hosts
+    this.#containerEl =
+      this.closest("sherpa-container") ||
+      (() => {
+        const root = this.getRootNode();
+        return root instanceof ShadowRoot &&
+          root.host?.tagName === "SHERPA-CONTAINER"
+          ? root.host
+          : null;
+      })();
 
     // ── Self-populating: listen for vizready from viz children ──
     if (this.#containerEl) {

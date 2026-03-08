@@ -1,14 +1,26 @@
 <!--
-  sherpa-section-header.html — Section heading with optional badge and actions.
+  sherpa-section-header.html — Templates for sherpa-section-header.
 
   Templates:
     • default — Heading + badge + description + action slot + divider
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative section-header layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-label         — Section title text
     data-heading-level — "primary" | "secondary" | "tertiary"
     data-divider       — "true" | "false" — show bottom divider
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Heading + badge + description + actions + divider
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <header class="section-header-container" part="container">
   <div class="section-header-content" part="content">
@@ -30,3 +42,25 @@
   <hr class="section-header-divider" part="divider">
 </header>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Title-only (no badge, description, or actions)
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="title-only">
+<header class="section-header-container" part="container">
+  <div class="section-header-content" part="content">
+    <div class="section-header-left" part="left">
+      <slot name="heading">
+        <span class="section-header-heading default-heading text-heading-md"></span>
+      </slot>
+    </div>
+  </div>
+  <hr class="section-header-divider" part="divider">
+</header>
+</template>
+-->

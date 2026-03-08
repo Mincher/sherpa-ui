@@ -1,8 +1,11 @@
 <!--
-  sherpa-accordion.html — Collapsible accordion panel component.
+  sherpa-accordion.html — Templates for sherpa-accordion.
 
   Templates:
-    • default — Header trigger with label + icon, collapsible content slot
+    • default  — Header trigger with label + icon, collapsible content slot
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative accordion layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-label     — Heading text displayed in the trigger row
@@ -13,8 +16,16 @@
   Slots:
     (default) — Panel content revealed when expanded
     actions   — Optional trailing action buttons in the header row
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Header trigger with label + icon, collapsible content slot
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <div class="accordion-trigger" part="trigger" role="button" tabindex="0" aria-expanded="false">
   <div class="trigger-left">

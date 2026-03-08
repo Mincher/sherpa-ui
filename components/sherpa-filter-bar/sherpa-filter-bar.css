@@ -32,9 +32,8 @@
   gap: var(--_filter-bar-gap);
   width: 100%;
   padding-block: var(--_filter-bar-py);
-  padding-inline: 0px;
+  padding-inline: var(--_filter-bar-px);
   box-sizing: border-box;
-  border-block-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e5);
 }
 
 :host([data-density="compact"]) {
@@ -46,10 +45,6 @@
    Slots & items
    ═══════════════════════════════════════════════════════════════ */
 
-slot[name="toggle"]{
-  margin-left: var(--sherpa-space-xs, 8px);
-}
-   
 slot[name="toggle"],
 slot[name="group"],
 slot[name="sort"],

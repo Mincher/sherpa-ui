@@ -1,9 +1,11 @@
 <!--
-  sherpa-toolbar.html — Generic horizontal toolbar with leading/center/trailing
-  zones and an optional filters row below.
+  sherpa-toolbar.html — Templates for sherpa-toolbar.
 
   Templates:
     • default — Leading + center + trailing content slots with filters row
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative toolbar layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-density  — "compact" | "comfortable"
@@ -13,8 +15,16 @@
     center    — Center zone (search, label — grows to fill)
     trailing  — End zone (icon buttons, overflow menu)
     filters   — Below the toolbar row (filter bar, chips)
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Leading + center + trailing + filters row
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="toolbar-row" part="toolbar" role="toolbar">
     <div class="leading"><slot name="leading"></slot></div>
@@ -23,3 +33,20 @@
   </div>
   <div class="filters-row" part="filters"><slot name="filters"></slot></div>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Compact (no filters row)
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="compact">
+  <div class="toolbar-row" part="toolbar" role="toolbar">
+    <div class="leading"><slot name="leading"></slot></div>
+    <div class="center"><slot name="center"></slot></div>
+    <div class="trailing"><slot name="trailing"></slot></div>
+  </div>
+</template>
+-->

@@ -1,8 +1,11 @@
 <!--
-  sherpa-chart-legend.html — Standalone chart legend.
+  sherpa-chart-legend.html — Templates for sherpa-chart-legend.
 
   Templates:
-    • default — Flex-wrapped legend items with colour key + label + optional value
+    • default  — Flex-wrapped legend items with colour key + label + optional value
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative legend layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-orientation — horizontal (default) | vertical
@@ -10,7 +13,16 @@
 
   Methods:
     setItems([{ label, value?, color?, active? }])
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Legend items with colour key + label + optional value
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="legend-list"></div>
   <!-- Cloning prototype for data-driven repeats -->

@@ -1,8 +1,11 @@
 <!--
-  sherpa-dialog.html — Multi-template dialog component.
+  sherpa-dialog.html — Templates for sherpa-dialog.
 
   Templates:
     • default — Standard modal dialog with sherpa-header, content area, and sherpa-footer.
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative dialog layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-label       — Dialog title text
@@ -10,6 +13,11 @@
     data-size        — "small" | "medium" | "large" | "full"
     data-open        — Dialog visibility ("true" to show)
     data-dismissible — Shows close button ("true"/"false", default: true)
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -30,3 +38,24 @@
     </sherpa-footer>
   </dialog>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Confirmation dialog (no footer)
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="confirmation">
+  <dialog class="dialog" part="dialog">
+    <sherpa-header data-type="dialog" part="header">
+      <slot name="heading" slot="heading"></slot>
+    </sherpa-header>
+
+    <div class="dialog-content text-body" part="content">
+      <slot></slot>
+    </div>
+  </dialog>
+</template>
+-->

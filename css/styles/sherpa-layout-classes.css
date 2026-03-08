@@ -34,7 +34,7 @@
   min-width: 0;
   container-type: inline-size;
   margin: 0;
-  background-color: var(--sherpa-surface-app-product-bg-default);
+  background-color: transparent;
 
   /* Grid layout */
   --maxColCount: 12;
@@ -52,6 +52,60 @@
     grid-template-columns: none;
     grid-auto-rows: auto;
   }
+}
+
+/* ==========================================================================
+   Grid positioning — sherpa-container attribute-driven spans
+   ========================================================================== */
+
+/* Column spans */
+.sherpa-content-area sherpa-container[data-variant="resizable"] {
+  grid-column: span 3;
+}
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-col-span="6"] {
+  grid-column: span 6;
+}
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-col-span="9"] {
+  grid-column: span 9;
+}
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-col-span="12"] {
+  grid-column: span 12;
+}
+
+/* Row spans */
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="2"] {
+  grid-row: span 2;
+}
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="3"] {
+  grid-row: span 3;
+}
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="4"] {
+  grid-row: span 4;
+}
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="5"] {
+  grid-row: span 5;
+}
+.sherpa-content-area
+  sherpa-container[data-variant="resizable"][data-row-span="6"] {
+  grid-row: span 6;
+}
+
+/* ==========================================================================
+   Global Metrics Visibility Toggle
+   ==========================================================================
+   Sets a custom property that inherits through shadow DOM.
+   Container CSS reads --_container-metrics-display with a flex fallback.
+   ========================================================================== */
+
+body[data-hide-metrics] {
+  --_container-metrics-display: none;
 }
 
 /* Mid breakpoint: 6 columns */

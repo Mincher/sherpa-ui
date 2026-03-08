@@ -33,6 +33,8 @@
   pointer-events: none;
 }
 
+.sherpa-icon { display: none; }
+
 :host([data-icon]) .sherpa-icon,
 :host([data-selection="checkbox"]) .sherpa-icon,
 :host([data-selection="radio"]) .sherpa-icon { display: inline-flex; }

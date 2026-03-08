@@ -1,8 +1,11 @@
 <!--
-  sherpa-data-viz.html — Presentation-switching wrapper for data viz components.
+  sherpa-data-viz.html — Templates for sherpa-data-viz.
 
-  Shadow template:
+  Templates:
     • shadow — Default slot for the active viz child (table, barchart, metric)
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative data-viz layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   The component is a transparent wrapper. Its sole purpose is to own the
   presentationchange lifecycle so the parent container stays content-agnostic.
@@ -12,8 +15,16 @@
 
   Slots:
     (default) — The active viz child element
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SHADOW — Transparent wrapper with default slot
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="shadow">
   <slot></slot>
 </template>

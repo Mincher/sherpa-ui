@@ -1,8 +1,11 @@
 <!--
-  sherpa-donut-chart.html — Donut / pie chart rendered with CSS conic-gradient.
+  sherpa-donut-chart.html — Templates for sherpa-donut-chart.
 
   Templates:
-    • default — Circular div with conic-gradient slices + centre label
+    • default  — Circular div with conic-gradient slices + centre label
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative chart layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-title          — Chart title
@@ -13,7 +16,16 @@
 
   Methods:
     setData([{ label, value, color? }])
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Circular div with conic-gradient slices + centre label
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="chart-header">
     <span class="chart-title"></span>

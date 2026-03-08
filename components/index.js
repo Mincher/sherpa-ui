@@ -38,7 +38,6 @@ export * from "./sherpa-donut-chart/sherpa-donut-chart.js";
 export * from "./sherpa-gauge-chart/sherpa-gauge-chart.js";
 export * from "./sherpa-line-chart/sherpa-line-chart.js";
 export * from "./sherpa-chart-legend/sherpa-chart-legend.js";
-export * from "./sherpa-chart-axis/sherpa-chart-axis.js";
 
 // Composition components
 export * from "./sherpa-toolbar/sherpa-toolbar.js";
@@ -70,7 +69,6 @@ export * from "./sherpa-message/sherpa-message.js";
 export * from "./sherpa-section-header/sherpa-section-header.js";
 export * from "./sherpa-stepper/sherpa-stepper.js";
 export * from "./sherpa-toast/sherpa-toast.js";
-export * from "./sherpa-widget/sherpa-widget.js";
 
 // Form input components
 export * from "./sherpa-input-text/sherpa-input-text.js";

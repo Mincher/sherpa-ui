@@ -1,9 +1,12 @@
 <!--
-  sherpa-check.html — Checkbox and radio input component.
+  sherpa-check.html — Templates for sherpa-check.
 
   Templates:
     • checkbox — Checkbox with label, description, and validation
     • radio    — Radio button with label, description, and validation
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative check layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-type        — "checkbox" (default) | "radio" (selects template)
@@ -16,9 +19,16 @@
     required         — Boolean, required state
     name             — Form field name
     value            — Form field value
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
 
-<!-- Checkbox template -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CHECKBOX — Checkbox with label, description, validation
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="checkbox">
   <label class="check-wrapper" tabindex="0">
     <span class="check-control">
@@ -36,7 +46,9 @@
   </label>
 </template>
 
-<!-- Radio template -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     RADIO — Radio button with label, description, validation
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="radio">
   <label class="check-wrapper" tabindex="0">
     <span class="check-control">

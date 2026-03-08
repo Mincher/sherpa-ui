@@ -1,9 +1,12 @@
 <!--
-  sherpa-switch.html — Toggle switch component.
+  sherpa-switch.html — Templates for sherpa-switch.
 
   Templates:
     • default — Rectangular switch with ON/OFF text labels
     • simple  — Pill-shaped switch without labels
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative switch layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-state — "on" | "off"
@@ -13,9 +16,16 @@
   Usage:
     <sherpa-switch data-mode="default" data-state="on"></sherpa-switch>
     <sherpa-switch data-mode="simple" data-state="off" disabled></sherpa-switch>
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
 
-<!-- Default mode (rectangular with labels) -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Rectangular switch with ON/OFF text labels
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <button type="button" class="switch-track" role="switch" aria-checked="false">
   <span class="switch-label text-label">OFF</span>
