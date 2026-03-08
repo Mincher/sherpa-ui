@@ -1,15 +1,19 @@
 /**
- * SherpaContainer — Dashboard card with header and content area.
+ * SherpaContainer — Dashboard card with header, metrics, and content area.
  *
- * Extends SherpaElement. Shadow DOM contains only named slots and cloning
- * prototypes. All visible content lives in light DOM and is projected
- * through the slots. Styling is entirely via the light-DOM stylesheet
- * (sherpa-container.css); no shadow CSS is used.
+ * Extends SherpaElement with full shadow DOM encapsulation. The shadow
+ * template defines all structural elements: header, filter bar, 4 fixed
+ * metrics, and a default slot for consumer viz children.
  *
- * Content is supplied via inline child elements. The container is
- * content-agnostic — it never imports or creates viz components directly.
- * Viz children auto-load their own data via ContentAttributesMixin and
- * seed global filters from the shared global-filters utility.
+ * Content is supplied via inline child elements slotted into the default
+ * slot. The container is content-agnostic — it never imports or creates
+ * viz components directly. Viz children auto-load their own data via
+ * ContentAttributesMixin and seed global filters from the shared
+ * global-filters utility.
+ *
+ * Metrics are fixed in the shadow template and self-populate via
+ * ContentAttributesMixin. The container only controls their visibility
+ * based on data-col-span (CSS-driven, no JS needed).
  *
  * Architecture — decoupled peer events:
  *   Container owns layout and menu wiring only. All data concerns are
@@ -17,32 +21,24 @@
  *     vizready             — viz child → filter bar (columns/rows)
  *     containerfilterchange — filter bar → viz children (scoped)
  *     globalfilterchange   — document → viz children (direct)
- *     sortchange            — viz child → filter bar (sort chip sync)
+ *     sortchange           — viz child → filter bar (sort chip sync)
  *     presentationchange   — viz child → sherpa-data-viz (view switch)
  *
  *   Menu template loading is handled by sherpa-button via data-menu-template.
  *   Menu items use data-event for auto-dispatched domain events.
  *   Container listens for those events to handle resize and section toggles.
  *
- * Templates (sherpa-container.html):
- *   shadow        — Shadow DOM: named slots + cloning prototypes
- *   default       — Light-DOM layout: header + filter bar + content wrapper
- *
  * Attributes:
  *   data-variant      — Layout variant: "fit" (default), "resizable", "fill"
  *   data-title        — Container heading text
  *   data-description  — Container description
- *   data-template     — Layout template id from sherpa-container.html
  *   data-col-span     — Column span (3, 6, 9, 12) — resizable variant only
  *   data-row-span     — Row span (1–6) — resizable variant only
  *   data-menu-open    — Menu state
  *   data-editable     — Edit mode (enables CSS resize grip)
  *
  * Slots (shadow DOM):
- *   header   — sherpa-header element
- *   filters  — sherpa-filter-bar element
- *   content  — .content wrapper div (metrics + viz children)
- *   extra    — Additional consumer content
+ *   (default) — Consumer viz children (sherpa-data-viz wrappers)
  *
  * Cloning prototypes (shadow DOM):
  *   .menu-toggle-tpl  — li > sherpa-menu-item[data-selection="toggle"]
@@ -61,22 +57,52 @@ export class SherpaContainer extends SherpaElement {
     return new URL("./sherpa-container.html", import.meta.url).href;
   }
 
-  /** Use the shadow template for the shadow root (layout templates are light-DOM). */
-  get templateId() {
-    return "shadow";
+  static get cssUrl() {
+    return new URL("./sherpa-container.css", import.meta.url).href;
   }
 
-  #initialized = false;
   #menuContributions = [];
+  #resizeObserver = null;
+  #resizeDebounce = null;
 
   /* ── SherpaElement lifecycle hooks ───────────────────────────── */
 
   onRender() {
     if (!this.dataset.variant) this.dataset.variant = "fit";
+
+    // Set header text from host attributes
+    const header = this.$("sherpa-header");
+    if (header) {
+      header.heading = this.dataset.title || "";
+      header.description = this.dataset.description || "";
+    }
   }
 
   onConnect() {
-    if (!this.#initialized) this.#initialize();
+    this.#wireMenuEvents();
+
+    if (this.dataset.variant === "resizable") {
+      this.#startResizeObserver();
+    }
+  }
+
+  onDisconnect() {
+    super.onDisconnect();
+    this.#stopResizeObserver();
+  }
+
+  onAttributeChanged(name, _oldValue, newValue) {
+    if (name === "data-title") {
+      const header = this.$("sherpa-header");
+      if (header) header.heading = newValue || "";
+    } else if (name === "data-description") {
+      const header = this.$("sherpa-header");
+      if (header) header.description = newValue || "";
+    }
+  }
+
+  static get observedAttributes() {
+    return [...super.observedAttributes, "data-title", "data-description"];
   }
 
   /* ════════════════════════════════════════════════════════════════
@@ -97,83 +123,62 @@ export class SherpaContainer extends SherpaElement {
      Grid span constants (used by menu-based resize actions)
      ════════════════════════════════════════════════════════════════ */
 
-  /** Valid column span stops. */
   static COL_STOPS = [3, 6, 9, 12];
   static MIN_ROW_SPAN = 1;
   static MAX_ROW_SPAN = 6;
 
   /* ════════════════════════════════════════════════════════════════
-     Initialisation
+     Resize — snap-to-grid (edit mode)
      ════════════════════════════════════════════════════════════════ */
 
-  #initialize() {
-    if (this.#initialized) return;
+  #startResizeObserver() {
+    if (this.#resizeObserver) return;
+    this.#resizeObserver = new ResizeObserver(() => {
+      if (!this.hasAttribute("data-editable")) return;
+      clearTimeout(this.#resizeDebounce);
+      this.#resizeDebounce = setTimeout(() => this.#snapToGrid(), 250);
+    });
+    this.#resizeObserver.observe(this);
+  }
 
-    // Collect inline viz children before stamping the layout template
-    const metrics = [...this.querySelectorAll(":scope > sherpa-metric")];
-    const vizChildren = [
-      ...this.querySelectorAll(
-        ":scope > :is(sherpa-data-viz, sherpa-barchart, sherpa-data-grid)",
-      ),
-    ];
-    metrics.forEach((m) => m.remove());
-    vizChildren.forEach((s) => s.remove());
-    const title = this.dataset.title || "";
-    const description = this.dataset.description || "";
+  #stopResizeObserver() {
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = null;
+    clearTimeout(this.#resizeDebounce);
+  }
 
-    // Stamp the layout template (creates header + .content wrapper)
-    const id = this.dataset.template || "default";
-    const layoutHtml = this.getTemplateHtml(id);
-    const temp = document.createElement("div");
-    temp.innerHTML = layoutHtml;
-    while (temp.firstChild) this.appendChild(temp.firstChild);
+  #snapToGrid() {
+    const parent = this.parentElement;
+    if (!parent) return;
 
-    // Populate .content wrapper: metrics first, then viz children
-    const contentDiv = this.querySelector(".content");
+    const parentWidth = parent.clientWidth;
+    if (!parentWidth) return;
 
-    if (contentDiv) {
-      metrics.forEach((m) => contentDiv.appendChild(m));
+    const colWidth = parentWidth / 12;
+    const rawCols = this.offsetWidth / colWidth;
+    const stops = SherpaContainer.COL_STOPS;
+    const bestCol = stops.reduce((prev, stop) =>
+      Math.abs(rawCols - stop) < Math.abs(rawCols - prev) ? stop : prev,
+    );
 
-      // Wrap bare viz children in sherpa-data-viz for presentation switching
-      vizChildren.forEach((s, i) => {
-        let vizWrapper = s;
-        if (s.tagName !== "SHERPA-DATA-VIZ") {
-          vizWrapper = document.createElement("sherpa-data-viz");
-          vizWrapper.appendChild(s);
-        }
-        vizWrapper.id = vizWrapper.id || `viz-${i}`;
-        contentDiv.appendChild(vizWrapper);
-      });
+    if (bestCol !== this.getColSpan()) {
+      this.setAttribute("data-col-span", String(bestCol));
     }
 
-    // Setup header
-    const header = this.querySelector("sherpa-header");
-    if (header) {
-      header.heading = title;
-      header.description = description;
-    }
-
-    this.#wireMenuEvents();
-
-    this.#initialized = true;
+    this.style.removeProperty("width");
+    this.style.removeProperty("height");
   }
 
   /* ════════════════════════════════════════════════════════════════
      Menu
      ════════════════════════════════════════════════════════════════ */
 
-  /**
-   * Set data-menu-template on the header so the button stamps the container
-   * menu template, and wire up domain event listeners + menu-populate for
-   * dynamic items.
-   */
   #wireMenuEvents() {
-    const header = this.querySelector("sherpa-header");
+    const header = this.$("sherpa-header");
     if (header) {
       header.menuTemplate = "container";
     }
 
-    // Menu open/close — toggle state attribute
     this.addEventListener("menu-open", () => {
       this.dataset.menuOpen = "true";
     });
@@ -181,20 +186,13 @@ export class SherpaContainer extends SherpaElement {
       this.dataset.menuOpen = "false";
     });
 
-    // Collect viz-child menu contributions (dispatched via menu-contribute)
     this.addEventListener("menu-contribute", (e) => {
       this.#menuContributions.push(e.detail);
     });
 
-    // Dynamic menu content — stamp viz-child contributions
     this.addEventListener("menu-populate", (e) => {
       this.#onMenuPopulate(e.detail.menu);
     });
-
-    // The containerexport event is auto-dispatched by the menu item via
-    // data-event and bubbles up through the container to the app.
-    // App code can use e.target.closest('sherpa-container') to get the
-    // container reference. No interception needed here.
 
     this.addEventListener("container-increase-cols", () => {
       const stops = SherpaContainer.COL_STOPS;
@@ -230,44 +228,20 @@ export class SherpaContainer extends SherpaElement {
         this.setAttribute("data-row-span", String(next));
     });
 
-    // Viz-child toggle via menu-select (toggle items don't use data-event)
     this.addEventListener("menu-select", (e) => {
       const detail = e.detail ?? {};
-      if (detail.action === "toggle-metrics") {
-        this.toggleAttribute("data-hide-metrics", !detail.checked);
-      } else if (detail.selection === "toggle" && detail.data?.target) {
+      if (detail.selection === "toggle" && detail.data?.target) {
         const target = this.querySelector(`#${CSS.escape(detail.data.target)}`);
         if (target) target.toggleAttribute("hidden", !detail.checked);
       }
     });
   }
 
-  /**
-   * Stamp viz-child menu contributions into the data group.
-   * Contributions are collected from `menu-contribute` events dispatched
-   * by sherpa-data-viz children on connect.
-   */
   #onMenuPopulate(menu) {
     const dataGroup = menu.querySelector('ul[data-group="data"]');
     const dataHeading = menu.querySelector('[data-group-heading="data"]');
 
     if (!dataGroup) return;
-
-    // Sync metrics toggle: remove if no metrics, else reflect current state
-    const metricsToggle = dataGroup.querySelector(
-      '[data-action="toggle-metrics"]',
-    );
-    if (metricsToggle) {
-      const hasMetrics = !!this.querySelector("sherpa-metric");
-      if (!hasMetrics) {
-        metricsToggle.closest("li")?.remove();
-      } else {
-        metricsToggle.toggleAttribute(
-          "checked",
-          !this.hasAttribute("data-hide-metrics"),
-        );
-      }
-    }
 
     // Stamp viz-child contributions
     const toggleTpl = this.$("template.menu-toggle-tpl");
@@ -276,7 +250,6 @@ export class SherpaContainer extends SherpaElement {
       const item = frag.querySelector("sherpa-menu-item");
       item.dataset.target = c.target;
       item.textContent = c.label;
-      // Reflect current visibility
       const el = this.querySelector(`#${CSS.escape(c.target)}`);
       if (el && !el.hasAttribute("hidden")) item.setAttribute("checked", "");
       dataGroup.appendChild(frag);

@@ -1,8 +1,11 @@
 <!--
-  sherpa-barchart.html — Bar chart data visualization component.
+  sherpa-barchart.html — Templates for sherpa-barchart.
 
   Templates:
-    • default — Header with filter chips + SVG chart area
+    • default  — Header with filter chips + SVG chart area
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative chart layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-loading        — Loading state indicator
@@ -20,7 +23,16 @@
     data-measures, data-filters, data-order-by, data-limit,
     data-timerange, data-visible, data-show-status, data-unit,
     data-show-header, data-show-header-controls, data-show-view-menu
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Header with filter chips + SVG chart area
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <sherpa-header
     data-type="data-viz"

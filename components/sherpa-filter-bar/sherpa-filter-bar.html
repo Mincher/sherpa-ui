@@ -1,5 +1,11 @@
 <!--
-  sherpa-filter-bar.html — Horizontal filter bar with zoned layout.
+  sherpa-filter-bar.html — Templates for sherpa-filter-bar.
+
+  Templates:
+    • default — Horizontal filter bar with zoned slot layout
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative filter-bar layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Slot order (left → right):
     toggle    — Filter on/off toggle (slot="toggle")
@@ -13,8 +19,16 @@
     data-density  — "compact" | "comfortable"
     data-active   — Present when any filter is active
     data-embedded — No top border (for embedding inside other components)
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Horizontal filter bar with zoned slot layout
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="filter-surface">
     <slot name="toggle"></slot>
@@ -43,3 +57,20 @@
     <li><sherpa-menu-item></sherpa-menu-item></li>
   </template>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Minimal (sort + filter slots only)
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="minimal">
+  <div class="filter-surface">
+    <slot name="sort"></slot>
+    <slot></slot>
+    <slot name="actions"></slot>
+  </div>
+</template>
+-->

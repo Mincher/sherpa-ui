@@ -1,11 +1,16 @@
 <!--
-  sherpa-header.html — Three template variants sharing the same
-  flex-row base: labels (left) → actions (right).
+  sherpa-header.html — Templates for sherpa-header.
+
+  Three built-in variants sharing the same flex-row base:
+  labels (left) → actions (right).
 
   Templates:
     • default  — containers, dialogs, sections
     • menu     — popover / dropdown menu header
     • data-viz — chart / table header (filters below title)
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative header layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-type              — "container" | "dialog" | "section" | "card" | "menu" | "data-viz"
@@ -22,6 +27,11 @@
     data-dismissible       — "true" | "false" — close button visible (dialog type)
     data-open-external     — "true" | "false" — show open-external button
     data-menu-button       — "true" | "false" — show menu button
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════

@@ -1,8 +1,11 @@
 <!--
-  sherpa-card.html — Card container component.
+  sherpa-card.html — Templates for sherpa-card.
 
   Templates:
     • default — Header + content + footer with slot projection
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative card layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-selected    — Selected state
@@ -11,8 +14,16 @@
     data-label       — Card heading text
     data-description — Card description text
     disabled         — Boolean, disabled state
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Header + content + footer
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <sherpa-header part="header">
   <slot name="header" slot="heading"></slot>
@@ -24,3 +35,18 @@
   <slot name="footer"></slot>
 </div>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Content-only (no header or footer)
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="content-only">
+<div class="card-content" part="content">
+  <slot></slot>
+</div>
+</template>
+-->

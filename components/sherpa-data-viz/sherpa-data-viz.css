@@ -1,15 +1,27 @@
 /**
  * sherpa-data-viz.css — Shadow-scoped styles for the data-viz wrapper.
  *
- * The component is a transparent layout wrapper — it should not introduce
- * any visual chrome of its own. `display: contents` makes the slotted
- * child behave as though it is a direct child of the wrapper's parent.
+ * The component is a transparent layout wrapper for presentation switching.
+ * Uses flex layout so the container can size it via ::slotted() and the
+ * viz child fills the wrapper naturally.
  */
 
 :host {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  overflow: clip;
 }
 
 :host([hidden]) {
   display: none;
+}
+
+/* Viz child fills the wrapper */
+::slotted(*) {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
 }

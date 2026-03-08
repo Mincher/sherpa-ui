@@ -1,11 +1,14 @@
 <!--
-  sherpa-data-grid.html — Advanced data grid with grouping, selection, and pagination.
+  sherpa-data-grid.html — Templates for sherpa-data-grid.
 
   Uses native <table> for correct sticky headers, full-width row backgrounds,
   and proper column alignment without flex-basis syncing.
 
   Templates:
     • default — Toolbar + scrollable table + pagination
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative grid layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-loading                — Loading state
@@ -26,8 +29,16 @@
     data-measures, data-filters, data-order-by, data-limit,
     data-timerange, data-visible, data-show-status, data-unit,
     data-show-header, data-show-header-controls, data-show-view-menu
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Toolbar + scrollable table + pagination
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <!-- Toolbar -->
   <sherpa-toolbar class="grid-toolbar">

@@ -1,9 +1,11 @@
 <!--
-  sherpa-button.html — Template with icon + label elements.
-  Icons shown/hidden via CSS attribute selectors.
+  sherpa-button.html — Templates for sherpa-button.
 
   Templates:
     • default — Icon-start + label + icon-end
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative button layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-label        — Button label text
@@ -17,9 +19,31 @@
     data-menu         — "true" enables attached menu
     data-menu-position — Menu placement: "bottom-start" | "bottom-end" | etc.
     disabled          — Boolean, disabled state
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Icon-start + label + icon-end
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <i class="icon-start" aria-hidden="true"></i>
 <span class="label"></span>
 <i class="icon-end" aria-hidden="true"></i>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Icon-only (no label)
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="icon-only">
+<i class="icon-start" aria-hidden="true"></i>
+</template>
+-->

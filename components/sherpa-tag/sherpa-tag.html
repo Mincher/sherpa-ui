@@ -1,17 +1,46 @@
 <!--
-  sherpa-tag.html — Inline tag / badge component.
+  sherpa-tag.html — Templates for sherpa-tag.
 
   Templates:
     • default — Tag wrapper with slot for label content
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative tag layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-variant   — "primary" (default) | "secondary"
     data-status    — "critical" | "info" | "success" | "warning" | "urgent"
     data-collapsed — "true" renders as small circular indicator
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Tag wrapper with slot
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <span class="tag-wrapper" part="tag">
   <slot></slot>
 </span>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Removable tag with close button
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="removable">
+<span class="tag-wrapper" part="tag">
+  <slot></slot>
+  <button type="button" class="tag-close" part="close" aria-label="Remove">
+    <i class="fa-solid fa-xmark sherpa-icon" data-size="xs" aria-hidden="true"></i>
+  </button>
+</span>
+</template>
+-->

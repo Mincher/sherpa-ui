@@ -1,13 +1,25 @@
 <!--
-  sherpa-container-pdf.html — Simplified container layout optimized for print/PDF export.
+  sherpa-container-pdf.html — Templates for sherpa-container-pdf.
 
   Templates:
-    • default — PDF header + metrics + sections
+    • default  — PDF header + metrics + sections
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative PDF layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-theme    — Set to "light" for PDF export
     data-pdf-mode — PDF mode indicator (set on child components)
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — PDF header + metrics + sections
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <header class="pdf-header">
     <h2 class="pdf-title text-heading-lg"></h2>

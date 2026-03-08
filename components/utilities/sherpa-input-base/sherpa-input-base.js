@@ -45,6 +45,7 @@
  */
 
 import { SherpaElement } from "../sherpa-element/sherpa-element.js";
+import { StatusMixin } from "../status-mixin.js";
 
 /* ── Wrapper template (cloned per instance, replaces createElement) ─ */
 
@@ -79,7 +80,7 @@ WRAPPER_TPL.innerHTML = `
 
 /* ── Component ──────────────────────────────────────────────────── */
 
-export class SherpaInputBase extends SherpaElement {
+export class SherpaInputBase extends StatusMixin(SherpaElement) {
   /* ── Observed attributes ────────────────────────────────────── */
 
   static get observedAttributes() {

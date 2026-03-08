@@ -31,6 +31,8 @@
   --sherpa-surface-app-product-nav-sub-active: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
   --sherpa-surface-app-product-nav-sub-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-700);
+  --sherpa-surface-app-product-bar-brand: var(--sherpa-color-brand-700);
+  --sherpa-surface-app-product-nav-secondary: var(--sherpa-surface-app-product-nav-sub-bg);
 
   /* ── Surface — Container ───────────────────────────────────── */
   --sherpa-surface-container-active-default: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
@@ -407,5 +409,6 @@
   --sherpa-surface-subtle-default: var(--sherpa-surface-container-secondary-default);
   --sherpa-border-default: var(--sherpa-border-container-default);
   --sherpa-surface-app-product-bg-default: light-dark(var(--sherpa-color-neutral-100), var(--sherpa-color-neutral-1000));
+  --sherpa-surface-search-highlight: light-dark(rgba(252, 183, 45, 0.35), rgba(252, 183, 45, 0.25));
 }
 } /* @layer theme */

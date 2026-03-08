@@ -1,14 +1,39 @@
 <!--
-  sherpa-input-text.html — Plain text input.
+  sherpa-input-text.html — Templates for sherpa-input-text.
 
   Templates:
     • default — Native text input field
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative input layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Inherited from SherpaInputBase:
     data-label, data-description, data-helper, data-layout,
     disabled, readonly, required, name, value, placeholder,
     pattern, minlength, maxlength, novalidate
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Native text input field
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <input type="text" class="input-field" />
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Textarea input
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="textarea">
+<textarea class="input-field"></textarea>
+</template>
+-->

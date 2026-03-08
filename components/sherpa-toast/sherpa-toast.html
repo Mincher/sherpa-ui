@@ -1,8 +1,11 @@
 <!--
-  sherpa-toast.html — Notification toast component.
+  sherpa-toast.html — Templates for sherpa-toast.
 
   Templates:
     • default — Icon + heading/value + action button + close button
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative toast layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-status        — "info" | "success" | "warning" | "critical" | "urgent"
@@ -12,8 +15,16 @@
     data-timer-dismiss — "true" | "false" — enable auto-dismiss
     data-show-close    — "true" | "false" — show close button (default: "true")
     data-position      — "top-right" | "top-left" | "bottom-right" | "bottom-left" | "top-center" | "bottom-center"
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
 -->
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Icon + content + close button
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <div class="toast" role="alert" aria-live="polite">
   <div class="toast-icon">
@@ -29,3 +40,27 @@
   </button>
 </div>
 </template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     EXAMPLE CUSTOM TEMPLATE — Minimal toast (no action button)
+
+     Consumers can add templates like this for alternative layouts.
+     Each template must have a unique id. The component selects a template
+     via `get templateId()`.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!--
+<template id="minimal">
+<div class="toast" role="alert" aria-live="polite">
+  <div class="toast-icon">
+    <i class="sherpa-icon default-icon" data-size="md" aria-hidden="true"></i>
+  </div>
+  <div class="toast-content">
+    <div class="toast-heading text-heading-md"></div>
+    <div class="toast-value text-body-sm"></div>
+  </div>
+  <button type="button" class="toast-close" aria-label="Close notification">
+    <i class="fa-solid fa-xmark sherpa-icon" data-size="sm" aria-hidden="true"></i>
+  </button>
+</div>
+</template>
+-->

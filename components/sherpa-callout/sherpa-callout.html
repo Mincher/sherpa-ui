@@ -1,8 +1,11 @@
 <!--
-  sherpa-callout.html — Inline contextual callout with status variants.
+  sherpa-callout.html — Templates for sherpa-callout.
 
   Templates:
-    • default — Toggle button + status icon + heading + body content + optional action
+    • default  — Toggle button + status icon + heading + body content + optional action
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative callout layouts. Use the component's
+                  `get templateId()` override to select a template by id.
 
   Host attributes:
     data-status     — info | warning | critical | success | neutral | tip
@@ -19,7 +22,16 @@
   Events:
     callout-toggle  — { expanded }
     callout-dismiss — {}
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Toggle button + status icon + heading + body + action
+     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="header">
     <button class="toggle-btn" type="button" aria-label="Toggle callout">

@@ -1,130 +1,138 @@
 /**
- * sherpa-container.css
- * Dashboard card container with flex column layout: header → filters → content
- * 
- * Structure:
- *   sherpa-container (flex column)
- *   ├── sherpa-header[slot="header"]
- *   ├── sherpa-filter-bar[slot="filters"]
- *   ├── .metrics-area[slot="metrics"] (data-viz template only)
- *   │   └── sherpa-metric (flex row, hidden by container query when clipped)
- *   └── .content[slot="content"]
- *       └── sherpa-data-viz (display:contents wrapper → child is flex item)
- * 
+ * sherpa-container.css — Shadow-scoped styles
+ * Dashboard card container with flex column layout: header → filters → metrics → content
+ *
+ * Structure (shadow DOM):
+ *   :host (flex column)
+ *   ├── sherpa-header
+ *   ├── sherpa-filter-bar
+ *   ├── .metrics-area
+ *   │   └── sherpa-metric ×4 (visibility driven by data-col-span)
+ *   └── .content
+ *       └── <slot> (consumer viz children)
+ *
+ * Metric visibility by column span (resizable variant):
+ *   3 cols (default) → metric 1 only
+ *   6 cols           → metrics 1–2
+ *   9 cols           → metrics 1–3
+ *   12 cols          → all 4 metrics
+ *
  * Attributes:
- *   data-variant: Layout variant — "fit" (default, hugs content),
- *                 "resizable" (grid-driven spans), "fill" (fills parent)
- *   data-col-span: Column span (3, 6, 9, 12) — resizable variant only
- *   data-row-span: Row span (1, 2, 3+) — resizable variant only
- *   data-editable: Edit mode (enables CSS resize grip, resizable variant only)
- *   title: Container heading text
- *   description: Container description / subtitle
- *   data-menu-open: State indicator
+ *   data-variant      — "fit" | "resizable" | "fill"
+ *   data-col-span     — "3" | "6" | "9" | "12"
+ *   data-row-span     — "1"–"6"
+ *   data-editable     — Edit mode (resizable variant only)
+ *   data-title        — Container heading text
+ *   data-description  — Subtitle
+ *   data-menu-open    — Menu state
+ *   data-hide-metrics — Hide metrics area
  */
 
 /* ==========================================================================
-   Container Base
+   Host Base
    ========================================================================== */
 
-sherpa-container {
-  /* Layout */
+:host {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-sm);
+  gap: var(--sherpa-space-sm, 12px);
 
   /* Private — inherited through shadow DOM into menu items */
   --_editable-display: none;
 
-  /* Appearance */
   background-color: var(--sherpa-surface-container-default);
-  border: var(--sherpa-border-width-base) solid
+  border: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-control-secondary-default);
-  border-radius: var(--sherpa-border-rounding-base);
-  padding: var(--sherpa-space-xs) var(--sherpa-space-sm);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
   overflow: clip;
   position: relative;
 
-  /* Container queries */
   container-type: inline-size;
   container-name: sherpa-container;
+}
 
-  &[hidden] {
-    display: none;
-  }
+:host([hidden]) {
+  display: none;
+}
 
-  /* Active states */
-  &[data-menu-open="true"] {
-    border-color: var(--sherpa-border-control-primary-default);
-    overflow: visible;
-    z-index: 10;
-  }
+:host([data-menu-open="true"]) {
+  border-color: var(--sherpa-border-control-primary-default);
+  overflow: visible;
+  z-index: 10;
 }
 
 /* ==========================================================================
    Layout Variants
    ========================================================================== */
 
-/* Fit (default) — hugs content in both axes */
-sherpa-container[data-variant="fit"] {
+:host([data-variant="fit"]) {
   width: fit-content;
   height: fit-content;
 }
 
-/* Fill — stretches to fill parent in both axes */
-sherpa-container[data-variant="fill"] {
+:host([data-variant="fill"]) {
   width: 100%;
   height: 100%;
 }
 
 /* ==========================================================================
-   Grid positioning — attribute-driven spans (resizable variant only)
+   Filter Bar
    ========================================================================== */
 
-/* Column spans */
-.sherpa-content-area sherpa-container[data-variant="resizable"] {
-  grid-column: span 3;
-}
-.sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-col-span="6"] {
-  grid-column: span 6;
-}
-.sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-col-span="9"] {
-  grid-column: span 9;
-}
-.sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-col-span="12"] {
-  grid-column: span 12;
-}
-
-/* Row spans */
-.sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="2"] {
-  grid-row: span 2;
-}
-.sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="3"] {
-  grid-row: span 3;
-}
-.sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="4"] {
-  grid-row: span 4;
-}
-.sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="5"] {
-  grid-row: span 5;
-}
-.sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="6"] {
-  grid-row: span 6;
+sherpa-filter-bar {
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
-   Filter Bar (container-level)
+   Metrics Area
+   ==========================================================================
+   4 fixed sherpa-metric components. Visibility is driven by the host's
+   data-col-span attribute for resizable containers. Non-resizable variants
+   (fit, fill) show all 4 metrics.
    ========================================================================== */
 
-sherpa-container > sherpa-filter-bar[slot="filters"] {
+.metrics-area {
+  display: var(--_container-metrics-display, flex);
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--sherpa-space-sm, 12px);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Hide the area entirely when no metric has data */
+.metrics-area:not(:has(sherpa-metric[data-label])) {
+  display: none;
+}
+
+/* Hide individual empty metrics */
+.metrics-area sherpa-metric:not([data-label]) {
+  display: none;
+}
+
+/* ── Metric visibility by column span (resizable only) ──────────
+   Default (3 cols): metric 1 only
+   6 cols:           metrics 1–2
+   9 cols:           metrics 1–3
+   12 cols:          all 4 metrics
+   ──────────────────────────────────────────────────────────────── */
+
+:host([data-variant="resizable"]) .metrics-area sherpa-metric:nth-of-type(n + 2) {
+  display: none;
+}
+
+:host([data-variant="resizable"][data-col-span="6"]) .metrics-area sherpa-metric:nth-of-type(2) {
+  display: flex;
+}
+
+:host([data-variant="resizable"][data-col-span="9"]) .metrics-area sherpa-metric:nth-of-type(2),
+:host([data-variant="resizable"][data-col-span="9"]) .metrics-area sherpa-metric:nth-of-type(3) {
+  display: flex;
+}
+
+:host([data-variant="resizable"][data-col-span="12"]) .metrics-area sherpa-metric:nth-of-type(n + 2) {
+  display: flex;
 }
 
 /* ==========================================================================
@@ -140,81 +148,22 @@ sherpa-container > sherpa-filter-bar[slot="filters"] {
   overflow: hidden;
   container-type: inline-size;
   container-name: container-content;
+}
 
-  &:empty {
-    display: none;
-  }
+:host(:not([data-has-label])) .content {
+  display: none;
 }
 
 /* ==========================================================================
-   Metrics Area (.metrics-area — data-viz template)
-   ==========================================================================
-   Metrics are laid out in a flex row. Each sherpa-metric has min-width: 180px
-   (set by the metric component itself). Container queries on .metrics-area
-   progressively hide trailing metrics when the container is too narrow to
-   fit them without clipping.
-
-   Breakpoints (based on metric min-width 180px + gap):
-     < 376px  → 1 metric  (hide 2nd+)
-     < 564px  → 2 metrics (hide 3rd+)
-     < 752px  → 3 metrics (hide 4th+)
-     ≥ 752px  → 4 metrics
+   Slotted Viz Children
    ========================================================================== */
 
-.metrics-area {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: var(--sherpa-space-sm, 12px);
-  flex-shrink: 0;
-  overflow: hidden;
-  container-type: inline-size;
-  container-name: metrics-area;
-
-  &:empty,
-  &[hidden] {
-    display: none;
-  }
-}
-
-/* Progressive metric hiding based on available width.
-   Each metric needs ~180px + 12px gap. Hide from the end first. */
-@container metrics-area (max-width: 375px) {
-  sherpa-metric:nth-child(n + 2) {
-    display: none;
-  }
-}
-
-@container metrics-area (min-width: 376px) and (max-width: 563px) {
-  sherpa-metric:nth-child(n + 3) {
-    display: none;
-  }
-}
-
-@container metrics-area (min-width: 564px) and (max-width: 751px) {
-  sherpa-metric:nth-child(n + 4) {
-    display: none;
-  }
-}
-
-@container metrics-area (min-width: 752px) and (max-width: 939px) {
-  sherpa-metric:nth-child(n + 5) {
-    display: none;
-  }
-}
-
-/* ==========================================================================
-   Viz Children (direct children of .content via sherpa-data-viz)
-   ========================================================================== */
-
-/* sherpa-data-viz uses display:contents, so the actual viz element
-   (e.g. sherpa-data-grid) becomes the flex item of .content. */
-.content > sherpa-data-viz > * {
+::slotted(sherpa-data-viz) {
   flex: 1 1 0;
   min-height: 0;
   width: 100%;
   overflow: clip;
-  border-radius: var(--sherpa-border-rounding-base);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
 }
 
 /* ==========================================================================
@@ -222,64 +171,33 @@ sherpa-container > sherpa-filter-bar[slot="filters"] {
    ========================================================================== */
 
 /* Limit to first viz child by default */
-sherpa-container[data-variant="resizable"]
-  > .content
-  > sherpa-data-viz:nth-of-type(n + 2) {
+:host([data-variant="resizable"]) ::slotted(sherpa-data-viz:nth-of-type(n + 2)) {
   display: none;
 }
 
 /* Show second viz child when first is hidden */
-sherpa-container[data-variant="resizable"]:has(
-    > .content > sherpa-data-viz:first-of-type[hidden]
-  )
-  > .content
-  > sherpa-data-viz:nth-of-type(2) {
-  display: contents;
+:host([data-variant="resizable"]:has(> sherpa-data-viz:first-of-type[hidden]))
+  ::slotted(sherpa-data-viz:nth-of-type(2)) {
+  display: flex;
 }
 
-/* 3+ column containers: show second viz child */
-sherpa-container[data-variant="resizable"]:not([data-col-span="3"])
-  > .content
-  > sherpa-data-viz:nth-of-type(2) {
-  display: contents;
+/* 6+ column containers: show second viz child */
+:host([data-variant="resizable"]:not([data-col-span="3"]))
+  ::slotted(sherpa-data-viz:nth-of-type(2)) {
+  display: flex;
 }
 
-/* 3-column containers with 3+ rows: show second viz child */
-sherpa-container[data-variant="resizable"][data-col-span="3"]:not(
-    [data-row-span="1"]
-  ):not([data-row-span="2"])
-  > .content
-  > sherpa-data-viz:nth-of-type(2) {
-  display: contents;
+/* 3-column with 3+ rows: show second viz child */
+:host([data-variant="resizable"][data-col-span="3"]:not([data-row-span="1"]):not([data-row-span="2"]))
+  ::slotted(sherpa-data-viz:nth-of-type(2)) {
+  display: flex;
 }
-
-/* ==========================================================================
-   Global Metrics Visibility (toolbar toggle)
-   ========================================================================== */
-
-/* Per-container metrics visibility toggle (menu action) */
-sherpa-container[data-hide-metrics] sherpa-metric,
-sherpa-container[data-hide-metrics] .metrics-area {
-  display: none;
-}
-
-/* Hide metrics when global "Show KPI metrics" is OFF */
-body[data-hide-metrics] sherpa-container .metrics-area {
-  display: none;
-}
-
-/* ==========================================================================
-   Container Query Responsive States
-   ========================================================================== */
-
-/* (Header responsive rules now live in sherpa-header.css via its own container queries) */
 
 /* ==========================================================================
    Edit Mode
    ========================================================================== */
 
-/* Native CSS resize grip — replaces the former JS pointer-drag handle */
-sherpa-container[data-variant="resizable"][data-editable] {
+:host([data-variant="resizable"][data-editable]) {
   overflow: auto;
   resize: both;
   --_editable-display: block;

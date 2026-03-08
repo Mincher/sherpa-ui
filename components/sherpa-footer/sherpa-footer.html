@@ -1,9 +1,12 @@
 <!--
-  sherpa-footer.html — Multi-template footer component.
+  sherpa-footer.html — Templates for sherpa-footer.
 
   Templates:
     • action-bar — Cancel + Apply button bar (menu footers, confirmation prompts)
     • slot       — Pure slot passthrough (card/dialog footers, custom content)
+    • (custom)   — Consumers can add additional <template id="..."> blocks here
+                    to define alternative footer layouts. Use the component's
+                    `get templateId()` override to select a template by id.
 
   Host attributes:
     data-type         — Template variant: "action-bar" | "slot"
@@ -12,6 +15,11 @@
     data-show-cancel  — Show cancel button ("true"/"false", default: true)
     data-show-apply   — Show apply button ("true"/"false", default: true)
     data-apply-closes — Whether apply auto-closes parent ("true"/"false", default: true)
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the existing templates. Override `get templateId()` in a subclass
+    or set it dynamically to select the template at render time.
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
