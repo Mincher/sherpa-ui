@@ -1,49 +1,54 @@
 <!--
-  sherpa-button.html — Templates for sherpa-button.
+  sherpa-button.html — Unified button / behavior-chip template.
 
-  Templates:
-    • default — Icon-start + label + icon-end
-    • (custom) — Consumers can add additional <template id="..."> blocks here
-                  to define alternative button layouts. Use the component's
-                  `get templateId()` override to select a template by id.
+  Single template containing all elements. CSS controls visibility
+  based on host attributes (data-behavior, data-closeable, etc.).
+
+  Layout modes:
+    Plain button:     [ trigger ]
+    Behavior chip:    [ trigger | select ▼ ]
+    Select only:      [ select (icon) ]
+    With close:       [ ... | close × ]
+
+  Label text comes from data-label attribute or light-DOM textContent,
+  read programmatically by JS — no <slot> projection needed.
 
   Host attributes:
     data-label        — Button label text
     data-icon-start   — FontAwesome unicode for leading icon
-    data-icon-end     — FontAwesome unicode for trailing icon
-    data-icon-weight  — Icon weight class: "fa-solid" | "fa-regular" | "fa-light"
+    data-icon-end     — FontAwesome unicode for trailing icon (plain buttons)
+    data-icon-weight  — Icon weight: "regular" | "light" | "thin" (default: solid)
     data-variant      — "primary" | "secondary" | "tertiary"
-    data-size         — "small" | "medium" | "large"
-    data-active       — Active/pressed state
+    data-size         — "2x-small" | "x-small" | "small" | medium (default) | "large"
+    data-active       — Active/pressed state (boolean)
     data-status       — "success" | "critical" | "warning" | "info" | "urgent"
-    data-menu         — "true" enables attached menu
-    data-menu-position — Menu placement: "bottom-start" | "bottom-end" | etc.
-    disabled          — Boolean, disabled state
-
-  Custom templates:
-    To define a custom layout, add a new <template id="my-layout"> block
-    below the default. Override `get templateId()` in a subclass or set it
-    dynamically to select the template at render time.
+    data-behavior     — "sort" | "filter" | "segment" | "timeframe"
+    data-mode         — Sort: "asc" | "desc" | "off"; Others: "on" | "off"
+    data-field        — Selected field name (behavior buttons)
+    data-closeable    — Shows close button (boolean)
+    data-count        — Badge count (shown when > 0)
+    data-boolean      — Boolean field — hides select (boolean)
+    data-select-only  — Icon-only select mode (boolean)
+    disabled          — Disabled state (boolean)
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Icon-start + label + icon-end
+     DEFAULT — Trigger + select + close
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
-<i class="icon-start" aria-hidden="true"></i>
-<span class="label"></span>
-<i class="icon-end" aria-hidden="true"></i>
+  <button class="trigger" type="button">
+    <i class="icon-start" aria-hidden="true"></i>
+    <span class="label"></span>
+    <span class="badge" aria-hidden="true"></span>
+    <i class="icon-end" aria-hidden="true"></i>
+  </button>
+  <select class="select">
+    <button type="button">
+      <i class="select-icon" aria-hidden="true"></i>
+      <i class="select-chevron" aria-hidden="true">&#xf078;</i>
+    </button>
+  </select>
+  <button class="close" type="button" aria-label="Close">
+    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+  </button>
 </template>
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXAMPLE CUSTOM TEMPLATE — Icon-only (no label)
-
-     Consumers can add templates like this for alternative layouts.
-     Each template must have a unique id. The component selects a template
-     via `get templateId()`.
-     ═══════════════════════════════════════════════════════════════════════ -->
-<!--
-<template id="icon-only">
-<i class="icon-start" aria-hidden="true"></i>
-</template>
--->

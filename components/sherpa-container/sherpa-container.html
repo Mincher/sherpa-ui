@@ -2,7 +2,7 @@
   sherpa-container.html — Shadow DOM templates for sherpa-container.
 
   Templates:
-    • default — Full container: header, filter bar, metrics area, content slot.
+    • default — Full container: header, filter bar, metrics slot, content slot.
     • (custom) — Consumers can add additional <template id="..."> blocks here
                   to define alternative container layouts. Use the component's
                   `get templateId()` override to select a template by id.
@@ -10,11 +10,11 @@
   Structure (default template):
     • sherpa-header         — Container heading with overflow menu
     • sherpa-filter-bar     — Embedded filter bar with group/sort/clear
-    • .metrics-area         — Up to 4 sherpa-metric components (hidden when empty)
+    • .metrics-area         — Named slot for consumer-supplied sherpa-metric children
     • .content              — Default slot for consumer viz children
 
-  Metric visibility:
-    Metrics without a data-label attribute are hidden via CSS.
+  Metric visibility (resizable variant):
+    Metrics without a data-label attribute are always hidden (CSS-driven).
     For resizable containers, the visible count scales with data-col-span:
       3 cols → 1 metric, 6 → 2, 9 → 3, 12 → all 4.
 
@@ -28,6 +28,7 @@
     data-editable    — Edit mode (resizable variant only)
 
   Slots:
+    metrics   — Up to 4 sherpa-metric children (named slot)
     (default) — Consumer viz children (sherpa-data-viz wrappers)
 
   Custom templates:
@@ -37,7 +38,7 @@
 
     Example usage:
       class MyContainer extends SherpaContainer {
-        get templateId() { return 'metrics-only'; }
+        get templateId() { return 'compact'; }
       }
 -->
 
@@ -52,10 +53,10 @@
   ></sherpa-header>
 
   <sherpa-filter-bar data-embedded>
-    <sherpa-filter-chip slot="group" data-type="segment"
-      >Group</sherpa-filter-chip
+    <sherpa-button slot="group" data-behavior="segment"
+      >Group</sherpa-button
     >
-    <sherpa-filter-chip slot="sort" data-type="sort">Sort</sherpa-filter-chip>
+    <sherpa-button slot="sort" data-behavior="sort">Sort</sherpa-button>
     <sherpa-button
       slot="actions"
       data-variant="tertiary"
@@ -66,50 +67,12 @@
   </sherpa-filter-bar>
 
   <div class="metrics-area">
-    <sherpa-metric></sherpa-metric>
-    <sherpa-metric></sherpa-metric>
-    <sherpa-metric></sherpa-metric>
-    <sherpa-metric></sherpa-metric>
+    <slot name="metrics"></slot>
   </div>
 
   <div class="content">
     <slot></slot>
   </div>
-
-  <!-- Cloning prototype: menu toggle item -->
-  <template class="menu-toggle-tpl">
-    <li>
-      <sherpa-menu-item
-        data-selection="toggle"
-        data-keep-open
-      ></sherpa-menu-item>
-    </li>
-  </template>
 </template>
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXAMPLE CUSTOM TEMPLATE — Metrics-only (no filter bar or content slot)
 
-     This is an example of a custom template. Consumers can add templates
-     like this to provide alternative container layouts. Each template must
-     have a unique id. The component selects a template via `get templateId()`.
-
-     To use: override templateId in a subclass, or set it dynamically in
-     the component's JS instance.
-     ═══════════════════════════════════════════════════════════════════════ -->
-<!--
-<template id="metrics-only">
-  <sherpa-header
-    data-type="container"
-    data-open-external="true"
-    data-menu-button="true"
-  ></sherpa-header>
-
-  <div class="metrics-area">
-    <sherpa-metric></sherpa-metric>
-    <sherpa-metric></sherpa-metric>
-    <sherpa-metric></sherpa-metric>
-    <sherpa-metric></sherpa-metric>
-  </div>
-</template>
--->

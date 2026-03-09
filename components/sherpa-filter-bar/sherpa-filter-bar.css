@@ -56,9 +56,48 @@ slot[name="actions"] {
   flex-shrink: 0;
 }
 
-/* Add filter button */
-.add-filter-btn {
+/* Add filter select */
+.add-filter-select {
+  appearance: base-select;
   flex-shrink: 0;
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e5);
+  border-radius: var(--sherpa-border-radius-full, 100px);
+  padding-inline: var(--sherpa-space-xs, 8px);
+  padding-block: var(--sherpa-space-3xs, 2px);
+  font-size: var(--sherpa-text-xs-size, 12px);
+  font-family: inherit;
+  line-height: var(--sherpa-text-xs-leading, 16px);
+  background: var(--sherpa-surface-canvas-default, #fff);
+  color: var(--sherpa-text-default-body, #2a2a30);
+  cursor: pointer;
+
+  &::picker-icon {
+    display: none;
+  }
+
+  &::picker(select) {
+    border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e5);
+    border-radius: var(--sherpa-border-radius-md, 8px);
+    padding: var(--sherpa-space-2xs, 4px);
+    box-shadow: var(--sherpa-shadow-overlay, 0 4px 12px rgba(0,0,0,.12));
+    background: var(--sherpa-surface-canvas-default, #fff);
+  }
+
+  & option {
+    padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
+    border-radius: var(--sherpa-border-radius-sm, 4px);
+    font-size: var(--sherpa-text-xs-size, 12px);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--sherpa-surface-canvas-hover, #f0f0f2);
+    }
+
+    &:checked {
+      background: var(--sherpa-surface-control-primary-default, #006be5);
+      color: var(--sherpa-text-default-on-color-body, #fff);
+    }
+  }
 }
 
 /* Actions slot pins to the end */

@@ -33,11 +33,6 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the context menu is open"
-    },
-    "data-hide-metrics": {
-      "type": "boolean",
-      "default": false,
-      "description": "Hide the metrics area (per-container toggle)"
     }
   },
   "slots": {

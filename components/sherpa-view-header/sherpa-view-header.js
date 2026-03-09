@@ -12,14 +12,13 @@ export class SherpaViewHeader extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-view-header.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-show-metrics', 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode'];
+    return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-feedback-src'];
   }
 
   #viewId = null;
 
   onAttributeChanged(name, oldValue, newValue) {
     switch (name) {
-      case 'data-show-metrics': this.#applyShowMetrics(newValue === 'true'); break;
       case 'data-label': {
         const label = this.$('.heading-label');
         if (label) label.textContent = newValue || '';
@@ -31,11 +30,10 @@ export class SherpaViewHeader extends SherpaElement {
       case 'data-edit-mode':
         this.#applyEditMode(newValue === 'true');
         break;
+      case 'data-feedback-src':
+        this.#syncFeedbackSrc(newValue);
+        break;
     }
-  }
-
-  #applyShowMetrics(show) {
-    document.body.toggleAttribute('data-hide-metrics', !show);
   }
 
   #applyEditMode(on) {
@@ -60,19 +58,11 @@ export class SherpaViewHeader extends SherpaElement {
     this.#syncFavoriteButton(on);
   }
   isFavorite() { return this.dataset.favorite === 'true'; }
-  setShowMetrics(show) {
-    this.dataset.showMetrics = show ? 'true' : 'false';
-    const toggle = this.$('#show-metrics-toggle');
-    if (toggle) toggle.state = show ? 'on' : 'off';
-  }
-  isShowMetrics() { return this.dataset.showMetrics === 'true'; }
-
   onDisconnect() {}
 
   // ============ Private Methods ============
 
   onRender() {
-    this.#setupToggles();
     this.#setupSelectors();
     this.#setupExport();
     this.#setupFeedback();
@@ -86,20 +76,6 @@ export class SherpaViewHeader extends SherpaElement {
       if (label) label.textContent = heading;
     }
     this.#syncFavoriteButton(this.dataset.favorite === 'true');
-  }
-
-  #setupToggles() {
-    // Show KPI metrics toggle (default ON)
-    const showMetricsToggle = this.$('#show-metrics-toggle');
-    if (showMetricsToggle) {
-      // Initialize from toggle state
-      const showMetrics = showMetricsToggle.dataset.state === 'on';
-      this.setShowMetrics(showMetrics);
-      this.#applyShowMetrics(showMetrics);
-      showMetricsToggle.addEventListener('change', e => {
-        this.setShowMetrics(e.detail.checked);
-      });
-    }
   }
 
   #setupSelectors() {
@@ -203,6 +179,11 @@ export class SherpaViewHeader extends SherpaElement {
         detail: { viewId: this.#viewId, favorite: next }
       }));
     });
+  }
+
+  #syncFeedbackSrc(url) {
+    const iframe = this.$('#feedback-iframe');
+    if (iframe) iframe.src = url || 'about:blank';
   }
 
   #setupFeedback() {

@@ -1,46 +1,76 @@
 /**
  * sherpa-button.js
- * SherpaButton — Web Component extending SherpaElement base class.
+ * Unified button / behavior-chip web component.
  *
- * The host element IS the button — no inner <button>. The host gets
- * role="button", tabindex="0", and handles click / keyboard natively.
+ * Layout: [ trigger ] [ select ▼ ] [ close × ]
+ *
+ * Plain buttons (no data-behavior): trigger only. Native <button>
+ * provides keyboard, focus, and accessibility semantics — no
+ * role="button", tabindex, or keydown handler needed.
+ *
+ * Behavior buttons (data-behavior="sort|filter|segment|timeframe"):
+ * trigger cycles mode on click, native <select> provides dropdown,
+ * close dispatches chipremove.
  *
  * Icons:
- *   Rendered as <i> elements in the HTML template with the .sherpa-icon
- *   utility class. JS mirrors data-icon-start / data-icon-end attribute
- *   values to the element textContent. CSS shows/hides them via :host
- *   attribute selectors. Values are FA unicode characters (e.g. &#xf067;).
+ *   <i> elements styled with Font Awesome 6. JS mirrors data-icon-start /
+ *   data-icon-end to textContent. For sort behavior, icon-start swaps
+ *   between sort / sort-up / sort-down unicode chars on mode change.
  *
- * Label:
- *   Set via data-label attribute. JS mirrors it to a <span> textContent.
- *   Buttons without data-label are auto-detected as icon-only — CSS hides
- *   the label and forces square aspect-ratio. Icon-only buttons should have
- *   an explicit aria-label attribute for accessibility.
- *
- * Menu:
- *   Add `data-menu="true"` to mark as menu trigger. On click, the button
- *   creates its own <sherpa-menu popover="auto"> instance (as a DOM sibling).
- *
- *   If `data-menu-template` is set (e.g. "container"), the button stamps
- *   the matching template from SherpaMenu.getMenuTemplate(id) into the
- *   menu, then dispatches `menu-populate` so consumers can inject dynamic
- *   items. Without `data-menu-template`, consumers populate on `menu-open`.
- *
- *   Re-dispatches `menu-select` and `menu-close` on the button.
- *   Named `data-event` events from sherpa-menu also bubble through.
+ * Select:
+ *   Native <select> with appearance: base-select. Adding `multiple`
+ *   enables multi-selection — same CSS, same JS (.selectedOptions).
+ *   Filter behavior sets multiple; sort/segment/timeframe single-select.
  *
  * Attributes:
  *   data-label, data-variant, data-size, data-active, disabled,
  *   data-status, data-icon-start, data-icon-end, data-icon-weight,
- *   data-menu, data-menu-position, data-menu-template
+ *   data-behavior, data-mode, data-field, data-range-key,
+ *   data-closeable, data-count, data-boolean
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
-import { SherpaMenu } from "../sherpa-menu/sherpa-menu.js";
+
+/* ── Constants ──────────────────────────────────────────────────── */
+
+const NUMERIC_TYPES = new Set([
+  "number", "int", "integer", "float", "double",
+  "decimal", "currency", "percent", "percentage",
+]);
+
+const TIMESTAMP_TYPES = new Set([
+  "date", "datetime", "timestamp", "time", "dateTime",
+]);
+
+/** Sort icon FA unicode chars. */
+const SORT_ICONS = { off: "\uf0dc", asc: "\uf0de", desc: "\uf0dd" };
+
+/** Behavior default icons. */
+const BEHAVIOR_ICONS = {
+  sort:      "\uf0dc",
+  filter:    "\uf0b0",
+  segment:   "\uf0c9",
+  timeframe: "\uf017",
+};
+
+/** Behavior default icon weights. */
+const BEHAVIOR_ICON_WEIGHTS = { timeframe: "regular" };
+
+/** Compute { start, end } Date range for a preset key. */
+function computeTimeRange(key) {
+  if (!key) return null;
+  const days = { "1d": 1, "1w": 7, "1m": 30, "1q": 90, "1y": 365 }[key];
+  if (!days) return null;
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(start.getDate() - days);
+  return { start: start.toISOString(), end: now.toISOString() };
+}
+
+
+/* ── Component ─────────────────────────────────────────────────── */
 
 export class SherpaButton extends SherpaElement {
-  /* ── Config ───────────────────────────────────────────────────── */
-
   static get cssUrl() {
     return new URL("./sherpa-button.css", import.meta.url).href;
   }
@@ -56,69 +86,98 @@ export class SherpaButton extends SherpaElement {
       "data-size",
       "data-active",
       "disabled",
-      "data-menu",
-      "data-menu-position",
+      "data-icon-start",
+      "data-icon-end",
+      "data-behavior",
+      "data-mode",
+      "data-field",
+      "data-range-key",
+      "data-closeable",
     ];
   }
 
   /* ── Private state ────────────────────────────────────────────── */
 
+  #triggerEl = null;
   #labelEl = null;
   #iconStartEl = null;
   #iconEndEl = null;
-  #menuClosedAt = 0;
-  #menuEl = null;
+  #badgeEl = null;
+  #selectEl = null;
+  #selectIconEl = null;
+  #closeEl = null;
+
+  /* ── Behavior state (sort / filter / segment / timeframe) ────── */
+
+  #columns = [];
+  #userCleared = false;
+  #valueRows = [];
+  #uniqueValues = [];
+  #selectedValues = new Set();
+  #isBoolean = false;
+  #rangeKey = "";
+  #timestampField = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
-    if (!this.hasAttribute("role")) this.setAttribute("role", "button");
-    if (!this.hasAttribute("tabindex")) this.setAttribute("tabindex", "0");
-
+    this.#triggerEl = this.$(".trigger");
     this.#labelEl = this.$(".label");
     this.#iconStartEl = this.$(".icon-start");
     this.#iconEndEl = this.$(".icon-end");
+    this.#badgeEl = this.$(".badge");
+    this.#selectEl = this.$(".select");
+    this.#selectIconEl = this.$(".select-icon");
+    this.#closeEl = this.$(".close");
 
-    if (!this.dataset.variant) {
+    // Default variant for plain buttons (not behavior, not select-only)
+    if (!this.dataset.behavior && !this.dataset.variant && !this.hasAttribute("data-select-only")) {
       this.dataset.variant = "primary";
     }
 
     if (this.hasAttribute("disabled")) {
       this.setAttribute("aria-disabled", "true");
-      this.setAttribute("tabindex", "-1");
     }
 
-    // Render label and icons from attributes
+    this.#initBehavior();
+    this.#initSelectOnly();
     this.#syncLabel();
     this.#syncIcons();
   }
 
   onConnect() {
-    this.addEventListener("click", this.#onClick);
-    this.addEventListener("keydown", this.#onKeyDown);
-  }
+    this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
+    this.#selectEl?.addEventListener("change", this.#onSelectChange);
+    this.#closeEl?.addEventListener("click", this.#onCloseClick);
 
-  onDisconnect() {
-    this.removeEventListener("click", this.#onClick);
-    this.removeEventListener("keydown", this.#onKeyDown);
-
-    if (this.#menuEl) {
-      if (this.#menuEl.open) this.#menuEl.hide();
-      this.#menuEl.remove();
-      this.#menuEl = null;
+    // Timeframe: initialise from data-range-key attribute
+    if (this.behavior === "timeframe") {
+      const attrKey = this.getAttribute("data-range-key");
+      if (attrKey && !this.#rangeKey) {
+        this.#rangeKey = attrKey;
+        this.setAttribute("data-mode", "on");
+        this.#updateLabel();
+        this.#updateActive();
+        queueMicrotask(() => this.#emitFilterChange());
+      }
     }
   }
 
-  onAttributeChanged(name, _oldValue, newValue) {
+  onDisconnect() {
+    this.#triggerEl?.removeEventListener("click", this.#onTriggerClick);
+    this.#selectEl?.removeEventListener("change", this.#onSelectChange);
+    this.#closeEl?.removeEventListener("click", this.#onCloseClick);
+  }
+
+  onAttributeChanged(name, _old, newValue) {
     switch (name) {
       case "disabled":
         if (newValue !== null) {
           this.setAttribute("aria-disabled", "true");
-          this.setAttribute("tabindex", "-1");
         } else {
           this.removeAttribute("aria-disabled");
-          this.setAttribute("tabindex", "0");
         }
+        if (this.#selectEl) this.#selectEl.disabled = newValue !== null;
         break;
 
       case "data-label":
@@ -129,6 +188,88 @@ export class SherpaButton extends SherpaElement {
       case "data-icon-end":
         this.#syncIcons();
         break;
+
+      case "data-mode":
+        if (this.behavior === "sort") this.#syncSortIcon();
+        this.#updateActive();
+        break;
+
+      case "data-field":
+        this.#updateLabel();
+        this.#updateActive();
+        break;
+
+      case "data-range-key":
+        if (this.behavior === "timeframe" && newValue) {
+          this.#rangeKey = newValue;
+          this.setAttribute("data-mode", "on");
+          this.#updateLabel();
+          this.#updateActive();
+          this.#emitFilterChange();
+        }
+        break;
+    }
+  }
+
+  /* ── Behavior init ────────────────────────────────────────────── */
+
+  #initBehavior() {
+    const bvr = this.behavior;
+    if (!bvr) return;
+
+    // Default icon per behavior
+    if (!this.dataset.iconStart && BEHAVIOR_ICONS[bvr]) {
+      this.dataset.iconStart = BEHAVIOR_ICONS[bvr];
+    }
+    if (BEHAVIOR_ICON_WEIGHTS[bvr] && !this.dataset.iconWeight) {
+      this.dataset.iconWeight = BEHAVIOR_ICON_WEIGHTS[bvr];
+    }
+
+    if (!this.#selectEl) return;
+
+    // Filter: multi-select
+    if (bvr === "filter") {
+      this.#selectEl.multiple = true;
+    }
+
+    // Timeframe: populate preset options
+    if (bvr === "timeframe") {
+      const opts = [
+        ["", "All time"], ["1d", "Last 24 hours"], ["1w", "Last 7 days"],
+        ["1m", "Last 30 days"], ["1q", "Last 90 days"], ["1y", "Last 365 days"],
+      ];
+      for (const [value, text] of opts) {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = text;
+        opt.selected = value === "";
+        this.#selectEl.appendChild(opt);
+      }
+    }
+
+    // Sort / segment: add "None" default option
+    if (bvr === "sort" || bvr === "segment") {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "None";
+      opt.selected = true;
+      this.#selectEl.appendChild(opt);
+    }
+  }
+
+  /* ── Select-only init ─────────────────────────────────────────── */
+
+  /**
+   * Icon-only select mode: import <option>, <optgroup>, <hr> from
+   * light DOM into the shadow <select>. Consumers declare options
+   * declaratively as children of the host element.
+   */
+  #initSelectOnly() {
+    if (!this.hasAttribute("data-select-only") || !this.#selectEl) return;
+    for (const el of this.querySelectorAll(
+      ":scope > option, :scope > optgroup, :scope > hr",
+    )) {
+      this.#selectEl.appendChild(el.cloneNode(true));
     }
   }
 
@@ -136,7 +277,40 @@ export class SherpaButton extends SherpaElement {
 
   #syncLabel() {
     if (!this.#labelEl) return;
-    this.#labelEl.textContent = this.dataset.label ?? "";
+    if (this.behavior) {
+      this.#updateLabel();
+    } else {
+      this.#labelEl.textContent = this.dataset.label ?? "";
+    }
+  }
+
+  #updateLabel() {
+    if (!this.#labelEl) return;
+
+    if (this.behavior === "timeframe") {
+      const labels = {
+        "1d": "Last 24 hours", "1w": "Last 7 days",
+        "1m": "Last 30 days", "1q": "Last 90 days",
+        "1y": "Last 365 days",
+      };
+      this.#labelEl.textContent =
+        labels[this.#rangeKey] || this.dataset.label ||
+        this.textContent.trim() || "Time frame";
+      return;
+    }
+
+    const field = this.getAttribute("data-field");
+    if (field) {
+      const col = this.#columns.find((c) => c.field === field);
+      const raw = col?.name || col?.field || field;
+      this.#labelEl.textContent =
+        raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    } else {
+      const text = this.dataset.label || this.textContent.trim();
+      const raw = text || this.behavior;
+      this.#labelEl.textContent =
+        raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    }
   }
 
   /* ── Icons ─────────────────────────────────────────────────────── */
@@ -148,130 +322,204 @@ export class SherpaButton extends SherpaElement {
     if (this.#iconEndEl) {
       this.#iconEndEl.textContent = this.dataset.iconEnd ?? "";
     }
+    if (this.#selectIconEl) {
+      this.#selectIconEl.textContent = this.dataset.iconStart ?? "";
+    }
   }
 
-  /* ── Event handlers ───────────────────────────────────────────── */
+  #syncSortIcon() {
+    const mode = this.getAttribute("data-mode") || "off";
+    this.dataset.iconStart = SORT_ICONS[mode] || SORT_ICONS.off;
+  }
 
-  #onClick = (e) => {
-    if (this.disabled) {
-      e.preventDefault();
+  /* ── Active state ─────────────────────────────────────────────── */
+
+  #updateActive() {
+    if (!this.behavior) return;
+    const mode = this.getAttribute("data-mode");
+    let active;
+    if (this.behavior === "filter") {
+      active = this.#selectedValues.size > 0 && mode !== "off";
+    } else if (this.behavior === "timeframe") {
+      active = !!this.#rangeKey && mode !== "off";
+    } else {
+      active = this.hasAttribute("data-field") && !!mode && mode !== "off";
+    }
+    this.toggleAttribute("data-active", active);
+    this.#updateCount();
+  }
+
+  #updateCount() {
+    if (!this.#badgeEl) return;
+    const count = this.#selectedValues.size;
+    if (count > 0) {
+      this.#badgeEl.textContent = count;
+      this.dataset.count = count;
+    } else {
+      this.#badgeEl.textContent = "";
+      delete this.dataset.count;
+    }
+  }
+
+  /* ── Trigger click — cycle mode ───────────────────────────────── */
+
+  #onTriggerClick = (_e) => {
+    if (this.disabled || !this.behavior) return;
+    this.#cycle();
+  };
+
+  #cycle() {
+    const bvr = this.behavior;
+
+    if (bvr === "filter") {
+      if (this.#isBoolean) {
+        const mode = this.getAttribute("data-mode");
+        const nowOff = !mode || mode === "off";
+        if (nowOff) {
+          const truthyVals = this.#uniqueValues.filter(
+            (v) => v === "true" || v === "1" || v === "yes",
+          );
+          this.#selectedValues = new Set(
+            truthyVals.length ? truthyVals : this.#uniqueValues.slice(0, 1),
+          );
+        } else {
+          this.#selectedValues.clear();
+        }
+        this.setAttribute("data-mode", nowOff ? "on" : "off");
+        this.#syncSelectToValues();
+        this.#updateActive();
+        this.#emitFilterChange();
+        return;
+      }
+      // Non-boolean filter: toggle on/off if values selected, else open picker
+      if (this.#selectedValues.size > 0) {
+        const mode = this.getAttribute("data-mode");
+        const nowOff = !mode || mode === "off";
+        this.setAttribute("data-mode", nowOff ? "on" : "off");
+        this.#updateActive();
+        this.#emitFilterChange();
+      } else {
+        this.#selectEl?.showPicker?.();
+      }
       return;
     }
 
-    if (this.dataset.menu === "true") {
-      e.stopPropagation();
-      // Light-dismiss closes the menu before this handler runs,
-      // so check the timestamp to avoid immediately reopening.
-      if (this.#menuEl?.open || Date.now() - this.#menuClosedAt < 50) {
-        this.#menuEl?.hide();
+    if (bvr === "timeframe") {
+      if (this.#rangeKey) {
+        const mode = this.getAttribute("data-mode");
+        const nowOff = !mode || mode === "off";
+        this.setAttribute("data-mode", nowOff ? "on" : "off");
+        this.#updateActive();
+        this.#emitFilterChange();
       } else {
-        this.#showMenu();
+        this.#selectEl?.showPicker?.();
       }
+      return;
     }
-  };
 
-  #onKeyDown = (e) => {
-    if (this.disabled) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      this.click();
+    // Sort / segment
+    const field = this.getAttribute("data-field");
+    if (!field) {
+      // No field selected — open picker so user can choose one
+      this.#selectEl?.showPicker?.();
+      return;
     }
-  };
-
-  /* ── Menu ─────────────────────────────────────────────────────── */
-
-  /** The button's own <sherpa-menu> element (created lazily). */
-  get menuElement() {
-    return this.#ensureMenu();
+    const mode = this.getAttribute("data-mode") || "";
+    const next =
+      bvr === "sort"
+        ? mode === "asc" ? "desc" : mode === "desc" ? "off" : "asc"
+        : mode === "on" ? "off" : "on";
+    this.setAttribute("data-mode", next);
+    this.#emitFilterChange();
   }
 
-  /**
-   * Lazily create and wire up the per-button menu instance.
-   * Inserted as a sibling so CSS anchor positioning resolves
-   * in the same tree scope.
-   */
-  #ensureMenu() {
-    if (this.#menuEl) return this.#menuEl;
+  /* ── Select change ────────────────────────────────────────────── */
 
-    const menu = document.createElement("sherpa-menu");
-    menu.setAttribute("popover", "auto");
-    this.after(menu);
+  #onSelectChange = (_e) => {
+    const bvr = this.behavior;
 
-    menu.addEventListener("menu-select", (e) => {
-      e.stopPropagation();
-      this.dispatchEvent(
-        new CustomEvent("menu-select", {
-          bubbles: true,
-          composed: true,
-          detail: e.detail,
-        }),
+    if (bvr === "filter") {
+      this.#selectedValues = new Set(
+        Array.from(this.#selectEl.selectedOptions, (o) => o.value),
       );
-    });
-
-    menu.addEventListener("menu-close", (e) => {
-      e.stopPropagation();
-      this.active = false;
-      this.#menuClosedAt = Date.now();
-      this.dispatchEvent(
-        new CustomEvent("menu-close", { bubbles: true, composed: true }),
+      this.setAttribute(
+        "data-mode",
+        this.#selectedValues.size > 0 ? "on" : "off",
       );
-    });
-
-    this.#menuEl = menu;
-    return menu;
-  }
-
-  /**
-   * Show the button's menu.
-   * If data-menu-template is set, stamps the matching template from
-   * SherpaMenu's template registry, then fires `menu-populate` for
-   * dynamic content injection. Also fires `menu-open`.
-   */
-  async #showMenu() {
-    this.active = true;
-    const menu = this.#ensureMenu();
-
-    // Stamp static template from the menu template registry (if set)
-    const tplId = this.dataset.menuTemplate;
-    if (tplId) {
-      await SherpaMenu.ready;
-      const html = SherpaMenu.getMenuTemplate(tplId);
-      if (html) {
-        const frag = document.createRange().createContextualFragment(html);
-        menu.replaceChildren(frag);
+      this.#updateActive();
+      this.#emitFilterChange();
+    } else if (bvr === "timeframe") {
+      const value = this.#selectEl?.value ?? "";
+      this.#rangeKey = value;
+      this.setAttribute("data-mode", value ? "on" : "off");
+      this.#updateLabel();
+      this.#updateActive();
+      this.#emitFilterChange();
+    } else if (bvr === "sort" || bvr === "segment") {
+      const value = this.#selectEl?.value ?? "";
+      if (!value) {
+        this.#userCleared = true;
+        this.removeAttribute("data-field");
+        this.removeAttribute("data-mode");
+      } else {
+        this.#userCleared = false;
+        this.setAttribute("data-field", value);
+        if (!this.getAttribute("data-mode")) {
+          this.setAttribute("data-mode", bvr === "sort" ? "asc" : "on");
+        }
       }
     }
 
-    // Let consumers populate / modify the menu before showing
+    // Re-dispatch change on host (native change doesn't cross shadow boundary)
+    this.dispatchEvent(new Event("change", { bubbles: true }));
+  };
+
+  /* ── Close button ─────────────────────────────────────────────── */
+
+  #onCloseClick = (e) => {
+    e.stopPropagation();
     this.dispatchEvent(
-      new CustomEvent("menu-populate", {
+      new CustomEvent("chipremove", {
         bubbles: true,
         composed: true,
-        detail: { menu },
+        detail: { field: this.getAttribute("data-field"), type: this.behavior },
       }),
     );
-    this.dispatchEvent(
-      new CustomEvent("menu-open", { bubbles: true, composed: true }),
-    );
+  };
 
-    await menu.rendered;
-    menu.show(this);
+  /* ── Select ↔ value sync ──────────────────────────────────────── */
+
+  #syncSelectToValues() {
+    if (!this.#selectEl) return;
+    for (const opt of this.#selectEl.options) {
+      opt.selected = this.#selectedValues.has(opt.value);
+    }
   }
 
-  /* ── Convenience properties ───────────────────────────────────── */
+  /* ── Public API ──────────────────────────────────────────────── */
+
+  /** The behavior type or null for plain buttons. */
+  get behavior() {
+    return this.dataset.behavior || null;
+  }
+
+  /** Alias — compatibility with filter-chip consumers. */
+  get type() {
+    return this.behavior || "button";
+  }
 
   get disabled() {
     return this.hasAttribute("disabled");
   }
-  set disabled(val) {
-    val ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
+  set disabled(v) {
+    v ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
   }
 
   get active() {
-    return this.dataset.active === "true";
+    return this.hasAttribute("data-active");
   }
   set active(val) {
-    this.dataset.active = val ? "true" : "false";
+    this.toggleAttribute("data-active", !!val);
   }
 
   get label() {
@@ -283,6 +531,281 @@ export class SherpaButton extends SherpaElement {
 
   setActive(isActive) {
     this.active = !!isActive;
+  }
+
+  /** The native <select> element in shadow DOM. */
+  get selectElement() {
+    return this.#selectEl;
+  }
+
+  /** Current select value (single-select). */
+  get value() {
+    return this.#selectEl?.value ?? "";
+  }
+  set value(v) {
+    if (this.#selectEl) this.#selectEl.value = v;
+  }
+
+  getMode() {
+    return this.getAttribute("data-mode") || null;
+  }
+  setMode(mode) {
+    mode === null
+      ? this.removeAttribute("data-mode")
+      : this.setAttribute("data-mode", mode);
+  }
+
+  getField() {
+    return this.getAttribute("data-field") || this.#timestampField || null;
+  }
+  setField(field) {
+    if (field) {
+      this.#userCleared = false;
+      this.setAttribute("data-field", field);
+      if (!this.getAttribute("data-mode")) {
+        this.setAttribute(
+          "data-mode",
+          this.behavior === "sort" ? "asc" : "on",
+        );
+      }
+      if (this.#selectEl && !this.#selectEl.multiple) {
+        this.#selectEl.value = field;
+      }
+    } else {
+      this.removeAttribute("data-field");
+      this.removeAttribute("data-mode");
+    }
+  }
+
+  /**
+   * Populate available columns for the select dropdown.
+   * Segment auto-hides when no valid columns exist.
+   * @param {Array} columns — { field, name, type }
+   * @param {Array} [rows] — optional rows (for segment single-value filtering)
+   * @returns {number} column count
+   */
+  setAvailableColumns(columns, rows) {
+    const bvr = this.behavior;
+    const cols = Array.isArray(columns) ? columns : [];
+
+    if (bvr === "timeframe") {
+      this.#timestampField =
+        cols.find((c) => TIMESTAMP_TYPES.has((c?.type || "").toLowerCase()))
+          ?.field || null;
+      this.#columns = cols;
+      this.#updateLabel();
+      return cols.length;
+    }
+
+    this.#columns =
+      bvr === "segment"
+        ? cols.filter((c) => {
+            if (NUMERIC_TYPES.has((c?.type || "").toLowerCase())) return false;
+            if (Array.isArray(rows) && rows.length) {
+              const vals = new Set();
+              for (const r of rows) {
+                vals.add(r[c.field]);
+                if (vals.size > 1) break;
+              }
+              if (vals.size <= 1) return false;
+            }
+            return true;
+          })
+        : cols;
+
+    if (bvr === "segment") {
+      this.toggleAttribute("hidden", this.#columns.length === 0);
+      if (!this.#columns.length) {
+        this.removeAttribute("data-field");
+        this.removeAttribute("data-mode");
+      } else if (
+        this.#columns.length === 1 &&
+        !this.getAttribute("data-field") &&
+        !this.#userCleared
+      ) {
+        this.setField(this.#columns[0].field);
+      }
+    }
+
+    this.#populateSelectOptions();
+    this.#updateLabel();
+    this.#updateActive();
+    return this.#columns.length;
+  }
+
+  /**
+   * Build <option> elements from #columns (sort / segment only).
+   */
+  #populateSelectOptions() {
+    if (!this.#selectEl || this.behavior === "filter") return;
+
+    const currentField = this.getAttribute("data-field") || "";
+    const noneOption = this.#selectEl.querySelector('option[value=""]');
+
+    // Remove everything after the None option
+    while (noneOption && noneOption.nextElementSibling) {
+      noneOption.nextElementSibling.remove();
+    }
+    for (const og of this.#selectEl.querySelectorAll("optgroup")) {
+      og.remove();
+    }
+    if (noneOption) noneOption.selected = !currentField;
+
+    if (this.behavior === "sort") {
+      const alpha = [];
+      const numeric = [];
+      for (const c of this.#columns) {
+        (NUMERIC_TYPES.has((c.type || "").toLowerCase()) ? numeric : alpha).push(c);
+      }
+      for (const [label, cols] of [["Alphabetical", alpha], ["Numerical", numeric]]) {
+        if (!cols.length) continue;
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = label;
+        for (const c of cols) {
+          const opt = document.createElement("option");
+          opt.value = c.field ?? "";
+          opt.textContent = c.name || c.field || "";
+          opt.selected = (c.field ?? "") === currentField;
+          optgroup.appendChild(opt);
+        }
+        this.#selectEl.appendChild(optgroup);
+      }
+    } else {
+      for (const c of this.#columns) {
+        const opt = document.createElement("option");
+        opt.value = c.field ?? "";
+        opt.textContent = c.name || c.field || "";
+        opt.selected = (c.field ?? "") === currentField;
+        this.#selectEl.appendChild(opt);
+      }
+    }
+  }
+
+  /**
+   * Set row data for filter-type buttons to extract unique values.
+   * @param {Array} rows — full dataset rows
+   * @param {Object} [colMeta] — { type, name, field }
+   */
+  setValueData(rows, colMeta) {
+    this.#valueRows = Array.isArray(rows) ? rows : [];
+    this.#extractUniqueValues();
+
+    const BOOL_VALUES = new Set(["true", "false", "0", "1", "yes", "no"]);
+    const colType = (colMeta?.type || "").toLowerCase();
+    this.#isBoolean =
+      colType === "boolean" ||
+      (this.#uniqueValues.length > 0 &&
+        this.#uniqueValues.length <= 2 &&
+        this.#uniqueValues.every((v) => BOOL_VALUES.has(v.toLowerCase())));
+
+    if (this.#isBoolean) this.dataset.boolean = "";
+
+    this.#populateFilterOptions();
+  }
+
+  #populateFilterOptions() {
+    if (!this.#selectEl || this.behavior !== "filter") return;
+    this.#selectEl.replaceChildren();
+    for (const val of this.#uniqueValues) {
+      const opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent =
+        val === "" ? "(empty)" : val.charAt(0).toUpperCase() + val.slice(1);
+      opt.selected = this.#selectedValues.has(val);
+      this.#selectEl.appendChild(opt);
+    }
+  }
+
+  #extractUniqueValues() {
+    const field = this.getAttribute("data-field");
+    if (!field || !this.#valueRows.length) {
+      this.#uniqueValues = [];
+      return;
+    }
+    const seen = new Set();
+    for (const row of this.#valueRows) {
+      const val = row[field];
+      seen.add(val == null ? "" : String(val));
+    }
+    this.#uniqueValues = [...seen].sort((a, b) => a.localeCompare(b));
+  }
+
+  #emitFilterChange() {
+    const detail = {
+      field: this.getAttribute("data-field") || this.#timestampField,
+      active: this.getAttribute("data-mode") !== "off",
+      type: this.behavior,
+    };
+    if (this.behavior === "timeframe") {
+      detail.rangeKey = this.#rangeKey;
+      detail.range = computeTimeRange(this.#rangeKey);
+    } else {
+      detail.values = [...this.#selectedValues];
+    }
+    this.dispatchEvent(
+      new CustomEvent("filtervaluechange", {
+        bubbles: true,
+        composed: true,
+        detail,
+      }),
+    );
+  }
+
+  getSelectedValues() {
+    return [...this.#selectedValues];
+  }
+
+  getTimeRange() {
+    return computeTimeRange(this.#rangeKey);
+  }
+
+  getRangeKey() {
+    return this.#rangeKey;
+  }
+
+  clearValues() {
+    this.#selectedValues.clear();
+    this.setAttribute("data-mode", "off");
+    this.#syncSelectToValues();
+    this.#updateActive();
+  }
+
+  /**
+   * Programmatically set options on the select.
+   * @param {Array<{value, text, selected?, disabled?}>} options
+   */
+  setOptions(options) {
+    if (!this.#selectEl) return;
+    this.#selectEl.replaceChildren();
+    for (const o of options) {
+      const opt = document.createElement("option");
+      opt.value = o.value ?? "";
+      opt.textContent = o.text ?? o.value ?? "";
+      if (o.selected) opt.selected = true;
+      if (o.disabled) opt.disabled = true;
+      this.#selectEl.appendChild(opt);
+    }
+  }
+
+  /**
+   * Programmatically set option groups on the select.
+   * @param {Array<{label, options: Array<{value, text}>}>} groups
+   */
+  setOptionGroups(groups) {
+    if (!this.#selectEl) return;
+    this.#selectEl.replaceChildren();
+    for (const g of groups) {
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = g.label ?? "";
+      for (const o of g.options || []) {
+        const opt = document.createElement("option");
+        opt.value = o.value ?? "";
+        opt.textContent = o.text ?? o.value ?? "";
+        if (o.selected) opt.selected = true;
+        optgroup.appendChild(opt);
+      }
+      this.#selectEl.appendChild(optgroup);
+    }
   }
 }
 

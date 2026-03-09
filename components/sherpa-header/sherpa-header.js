@@ -35,7 +35,7 @@
  *
  *   <!-- Data-viz header -->
  *   <sherpa-header type="data-viz" heading="Monthly Spend">
- *     <sherpa-filter-chip slot="filters" type="segment">Segment</sherpa-filter-chip>
+ *     <sherpa-button slot="filters" data-behavior="segment">Segment</sherpa-button>
  *     <sherpa-button slot="actions" type="icon" variant="tertiary" size="small"
  *       icon-start="fa-ellipsis-vertical"></sherpa-button>
  *   </sherpa-header>

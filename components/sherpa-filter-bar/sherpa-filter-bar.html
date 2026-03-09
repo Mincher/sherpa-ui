@@ -36,26 +36,11 @@
     <slot name="sort"></slot>
     <slot name="presets"></slot>
     <slot></slot>
-    <sherpa-button
-      class="add-filter-btn"
-      data-variant="secondary"
-      data-size="small"
-      data-icon-start="&#x2b;"
-      data-menu="true"
-      >Add</sherpa-button
-    >
+    <select class="add-filter-select" hidden>
+      <option value="" selected disabled>+ Add filter</option>
+    </select>
     <slot name="actions"></slot>
   </div>
-
-  <!-- Menu heading — cloning template -->
-  <template class="menu-heading-tpl">
-    <sherpa-menu-item data-type="heading"></sherpa-menu-item>
-  </template>
-
-  <!-- Menu item — cloning template -->
-  <template class="menu-item-tpl">
-    <li><sherpa-menu-item></sherpa-menu-item></li>
-  </template>
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════

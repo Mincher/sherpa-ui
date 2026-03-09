@@ -109,6 +109,16 @@
   }
 }
 
+/* ---- feedback button (hidden unless host has data-feedback-src) ---- */
+
+#feedback-btn {
+  display: none;
+}
+
+:host([data-feedback-src]) #feedback-btn {
+  display: inline-flex;
+}
+
 /* ---- feedback popover ---- */
 
 .feedback-backdrop {
