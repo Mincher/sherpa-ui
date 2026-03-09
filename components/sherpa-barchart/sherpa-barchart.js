@@ -84,6 +84,9 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   onConnect() {
     super.onConnect();
 
+    // Mark as viz component for container CSS targeting
+    if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+
     // Initialize unique menu ID on first connection
     if (!this.#menuId) {
       this.#menuId = generateUniqueId("barchart");

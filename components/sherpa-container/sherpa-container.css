@@ -22,7 +22,7 @@
  *
  * Slots:
  *   metrics   — Up to 4 sherpa-metric children
- *   (default) — sherpa-data-viz children
+ *   (default) — viz children (sherpa-data-grid, sherpa-barchart, sherpa-metric, etc.)
  *
  * Metric visibility by column span (resizable variant):
  *   3 cols (default) → metric 1 only
@@ -160,9 +160,10 @@ sherpa-filter-bar {
 
 /* ==========================================================================
    Slotted Viz Children
+   Viz components should set data-viz on themselves so these rules apply.
    ========================================================================== */
 
-::slotted(sherpa-data-viz) {
+::slotted([data-viz]) {
   flex: 1 1 0;
   min-height: 0;
   width: 100%;
@@ -175,25 +176,25 @@ sherpa-filter-bar {
    ========================================================================== */
 
 /* Limit to first viz child by default */
-:host([data-variant="resizable"]) ::slotted(sherpa-data-viz:nth-of-type(n + 2)) {
+:host([data-variant="resizable"]) ::slotted([data-viz]:nth-of-type(n + 2)) {
   display: none;
 }
 
 /* Show second viz child when first is hidden */
-:host([data-variant="resizable"]:has(> sherpa-data-viz:first-of-type[hidden]))
-  ::slotted(sherpa-data-viz:nth-of-type(2)) {
+:host([data-variant="resizable"]:has(> [data-viz]:first-of-type[hidden]))
+  ::slotted([data-viz]:nth-of-type(2)) {
   display: flex;
 }
 
 /* 6+ column containers: show second viz child */
 :host([data-variant="resizable"]:not([data-col-span="3"]))
-  ::slotted(sherpa-data-viz:nth-of-type(2)) {
+  ::slotted([data-viz]:nth-of-type(2)) {
   display: flex;
 }
 
 /* 3-column with 3+ rows: show second viz child */
 :host([data-variant="resizable"][data-col-span="3"]:not([data-row-span="1"]):not([data-row-span="2"]))
-  ::slotted(sherpa-data-viz:nth-of-type(2)) {
+  ::slotted([data-viz]:nth-of-type(2)) {
   display: flex;
 }
 

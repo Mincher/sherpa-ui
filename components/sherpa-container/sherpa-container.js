@@ -31,7 +31,7 @@
  *     containerfilterchange — filter bar → viz children (scoped)
  *     globalfilterchange   — document → viz children (direct)
  *     sortchange           — viz child → filter bar (sort chip sync)
- *     presentationchange   — viz child → sherpa-data-viz (view switch)
+ *     presentationchange   — viz child → consumer (view switch)
  *
  *   Menu items are assembled from light-DOM `<template data-menu>`
  *   children by sherpa-button's composed-tree walking. ResizeBehavior
@@ -49,7 +49,7 @@
  *
  * Slots:
  *   metrics   — Up to 4 sherpa-metric children
- *   (default) — Consumer viz children (sherpa-data-viz wrappers)
+ *   (default) — Consumer viz children (with data-viz attribute)
  */
 
 import "../sherpa-header/sherpa-header.js";

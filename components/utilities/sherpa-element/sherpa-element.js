@@ -273,6 +273,15 @@ export class SherpaElement extends HTMLElement {
       temp.innerHTML = html;
       this.#shadow.append(...temp.childNodes);
 
+      // Wait for any custom elements in the loaded HTML to be defined
+      // before calling onRender(), so subclass hooks can safely access
+      // custom-element APIs (properties, methods) on queried children.
+      const undef = this.#shadow.querySelectorAll(":not(:defined)");
+      if (undef.length) {
+        const tags = [...new Set([...undef].map((el) => el.localName))];
+        await Promise.all(tags.map((t) => customElements.whenDefined(t)));
+      }
+
       await this.onRender();
       this.#wireSlots();
       return true;

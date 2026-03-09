@@ -1,6 +1,16 @@
 /**
  * SherpaViewHeader - View header toolbar with toggles and settings.
- * Manages edit mode, auto-fill, theme, and density preferences.
+ *
+ * Manages heading, favorites, feedback popover, global filter bar, and
+ * export intent. Theme/mode/density preferences are delegated to ThemeManager.
+ * Edit-mode is dispatched as an event — the consumer/app coordinator
+ * handles toggling containers.
+ *
+ * Events (all bubble + composed):
+ *   editmodechange   — { editMode: boolean }
+ *   viewexport       — { title: string }
+ *   favoritetoggle   — { viewId, favorite }
+ *   globalfilterchange — (dispatched on document) { filters }
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
@@ -8,6 +18,7 @@ import '../sherpa-filter-bar/sherpa-filter-bar.js';
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { TIME_RANGE_PRESETS } from '../utilities/timeframes.js';
+import { ThemeManager } from '../utilities/theme-manager.js';
 
 export class SherpaViewHeader extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
@@ -39,14 +50,14 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #applyEditMode(on) {
-    document.body.toggleAttribute('data-edit-mode', on);
-    // Toggle editable on all containers so handles show
-    document.querySelectorAll('sherpa-container').forEach(c => {
-      c.toggleAttribute('data-editable', on);
-    });
     // Sync toggle state
     const toggle = this.$('#edit-mode-toggle');
     if (toggle) toggle.dataset.state = on ? 'on' : 'off';
+    // Dispatch so app coordinator can toggle containers, body attribute, etc.
+    this.dispatchEvent(new CustomEvent('editmodechange', {
+      bubbles: true, composed: true,
+      detail: { editMode: on },
+    }));
   }
 
   // ============ Public API ============
@@ -82,61 +93,34 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #setupSelectors() {
+    // Initialise ThemeManager with CSS base URL resolved from this module
+    ThemeManager.init({
+      cssBaseUrl: new URL('../../css/styles/', import.meta.url).href,
+    });
+
     // Theme (brand)
     const themeSelect = this.$('#theme-select');
     if (themeSelect) {
-      const saved = localStorage.getItem('sherpa-theme') || 'apex-2-core';
-      themeSelect.value = saved;
-      this.#applyTheme(saved);
-      themeSelect.addEventListener('change', e => {
-        localStorage.setItem('sherpa-theme', e.target.value);
-        this.#applyTheme(e.target.value);
-      });
+      themeSelect.value = ThemeManager.getTheme();
+      ThemeManager.setTheme(ThemeManager.getTheme());
+      themeSelect.addEventListener('change', e => ThemeManager.setTheme(e.target.value));
     }
 
     // Mode (light / dark / auto)
     const modeSelect = this.$('#mode-select');
     if (modeSelect) {
-      const saved = localStorage.getItem('sherpa-mode') || 'auto';
-      modeSelect.value = saved;
-      this.#applyMode(saved);
-      modeSelect.addEventListener('change', e => {
-        localStorage.setItem('sherpa-mode', e.target.value);
-        this.#applyMode(e.target.value);
-      });
+      modeSelect.value = ThemeManager.getMode();
+      ThemeManager.setMode(ThemeManager.getMode());
+      modeSelect.addEventListener('change', e => ThemeManager.setMode(e.target.value));
     }
 
     // Density
     const densitySelect = this.$('#density-select');
     if (densitySelect) {
-      const saved = localStorage.getItem('sherpa-density') || 'base';
-      densitySelect.value = saved;
-      document.documentElement.setAttribute('data-density', saved);
-      densitySelect.addEventListener('change', e => {
-        localStorage.setItem('sherpa-density', e.target.value);
-        document.documentElement.setAttribute('data-density', e.target.value);
-      });
+      densitySelect.value = ThemeManager.getDensity();
+      ThemeManager.setDensity(ThemeManager.getDensity());
+      densitySelect.addEventListener('change', e => ThemeManager.setDensity(e.target.value));
     }
-  }
-
-  #applyTheme(theme) {
-    // Swap or create <link id="sherpa-theme"> to load the selected theme file
-    let link = document.getElementById('sherpa-theme');
-    if (!link) {
-      link = document.createElement('link');
-      link.id = 'sherpa-theme';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-    // Resolve path relative to this module so it works regardless of install location
-    const base = new URL('../../css/styles/', import.meta.url).href;
-    link.href = `${base}sherpa-theme-${theme}.css`;
-  }
-
-  #applyMode(mode) {
-    // Mode switching via color-scheme property — drives CSS light-dark() resolution
-    // "auto" → "light dark" (OS preference), "light" → forced light, "dark" → forced dark
-    document.documentElement.style.colorScheme = mode === 'auto' ? 'light dark' : mode;
   }
 
   #setupExport() {

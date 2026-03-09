@@ -186,9 +186,11 @@ export class SherpaCheck extends SherpaElement {
     if (this.type === 'radio') {
       // Radios can only be set, not unset by clicking
       if (this.checked) return;
-      // Uncheck siblings with the same name
+      // Uncheck siblings with the same name, scoped to nearest
+      // form / fieldset / [role="radiogroup"], falling back to document.
       if (this.name) {
-        const siblings = document.querySelectorAll(`sherpa-check[data-type="radio"][name="${CSS.escape(this.name)}"]`);
+        const scope = this.closest('fieldset, form, [role="radiogroup"]') || document;
+        const siblings = scope.querySelectorAll(`sherpa-check[data-type="radio"][name="${CSS.escape(this.name)}"]`);
         siblings.forEach(s => { if (s !== this) s.removeAttribute('checked'); });
       }
       this.checked = true;

@@ -96,7 +96,8 @@
   color: var(--sherpa-text-default-secondary, #6a6a75);
 }
 
-.metric-sparkline[data-visible="false"] {
+/* Sparkline hidden by default; shown via host attribute */
+:host(:not([data-sparkline])) .metric-sparkline {
   display: none;
 }
 

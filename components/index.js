@@ -27,7 +27,7 @@ export * from "./sherpa-tag/sherpa-tag.js";
 export * from "./sherpa-tooltip/sherpa-tooltip.js";
 
 // Data visualization components
-export * from "./sherpa-data-viz/sherpa-data-viz.js";
+// export * from "./sherpa-data-viz/sherpa-data-viz.js"; // archived — consumer handles presentation switching
 export * from "./sherpa-metric/sherpa-metric.js";
 export * from "./sherpa-barchart/sherpa-barchart.js";
 export * from "./sherpa-sparkline/sherpa-sparkline.js";
@@ -42,15 +42,14 @@ export * from "./sherpa-chart-legend/sherpa-chart-legend.js";
 export * from "./sherpa-toolbar/sherpa-toolbar.js";
 export * from "./sherpa-filter-bar/sherpa-filter-bar.js";
 
-// Export components
-export * from "./sherpa-container-pdf/sherpa-container-pdf.js";
+// Export components (archived)
+// export * from "./sherpa-container-pdf/sherpa-container-pdf.js";
 
 // New components
 export * from "./sherpa-accordion/sherpa-accordion.js";
 export * from "./sherpa-breadcrumbs/sherpa-breadcrumbs.js";
 export * from "./sherpa-list-item/sherpa-list-item.js";
 export * from "./sherpa-loader/sherpa-loader.js";
-export * from "./sherpa-overlay/sherpa-overlay.js";
 export * from "./sherpa-panel/sherpa-panel.js";
 export * from "./sherpa-popover/sherpa-popover.js";
 export * from "./sherpa-product-bar/sherpa-product-bar.js";

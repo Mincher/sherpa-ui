@@ -12,7 +12,7 @@
  *
  * Modes: default | search | edit
  * States: collapsed (48px) | expanded (320px via hover/focus/mode) | pinned (inline 320px)
- * Host attributes: data-src, data-home-href
+ * Host attributes: data-src, data-active-target
  * Wrapper (.sherpa-nav-root) attributes: data-pinned, data-mode, data-editable, data-searchable
  *
  * Custom events (all bubble):
@@ -36,7 +36,6 @@ import { setupDragSort } from "../utilities/drag-sort.js";
 
 export class SherpaNav extends SherpaElement {
   static MODES = { DEFAULT: "default", SEARCH: "search", EDIT: "edit" };
-  static DEFAULT_HOME_HREF = "/home.html";
 
   static get cssUrl() {
     return new URL("./sherpa-nav.css", import.meta.url).href;
@@ -46,7 +45,7 @@ export class SherpaNav extends SherpaElement {
   }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, "data-src", "data-home-href"];
+    return [...super.observedAttributes, "data-src", "data-active-target"];
   }
 
   #searchField = null;
@@ -74,8 +73,11 @@ export class SherpaNav extends SherpaElement {
     this.#attachContentEvents();
     this.#wireToggleListeners();
     this.#setupDragDrop();
-    this.#setInitialActiveState();
     this.#syncInitialState();
+
+    // Apply data-active-target if set before render
+    const target = this.dataset.activeTarget;
+    if (target) this.setActiveLink(target);
   }
 
   async onConnect() {
@@ -88,13 +90,16 @@ export class SherpaNav extends SherpaElement {
     if (name === "data-src" && newValue && this.#ready) {
       this.renderFromUrl(newValue);
     }
+    if (name === "data-active-target" && this.#ready) {
+      if (newValue) {
+        this.setActiveLink(newValue);
+      } else {
+        this.#clearAllActiveStates();
+      }
+    }
   }
 
   // ═══════════════════════════ Public API ═══════════════════════════
-
-  get homeHref() {
-    return this.dataset.homeHref || SherpaNav.DEFAULT_HOME_HREF;
-  }
 
   get isPinned() {
     return this.#root?.dataset.pinned === "true";
@@ -235,16 +240,10 @@ export class SherpaNav extends SherpaElement {
   }
 
   #setInitialActiveState() {
-    const p = window.location.pathname;
-    const target =
-      p === this.homeHref ||
-      p.endsWith("/home.html") ||
-      p === "/" ||
-      p.endsWith("/index.html")
-        ? "home"
-        : p.endsWith("/settings.html")
-          ? "settings"
-          : null;
+    // Active state is now driven by data-active-target attribute.
+    // Consumer sets <sherpa-nav data-active-target="home"> to highlight
+    // the matching nav item. No URL routing logic in the component.
+    const target = this.dataset.activeTarget;
     if (target) this.setActiveLink(target);
   }
 
@@ -259,11 +258,6 @@ export class SherpaNav extends SherpaElement {
     if (pinBtn) pinBtn.active = this.isPinned;
     const editBtn = this.$(".nav-edit-btn");
     if (editBtn) editBtn.active = this.isEditing;
-    if (this.isPinned)
-      this.closest(".sherpa-app-layout")?.setAttribute(
-        "data-nav-pinned",
-        "true",
-      );
   }
 
   // ═══════════════════════ Private — Events ══════════════════════
@@ -375,7 +369,6 @@ export class SherpaNav extends SherpaElement {
   // ═══════════════════ Private — State Changes ══════════════════
 
   #onPinnedChange(pinned) {
-    this.closest(".sherpa-app-layout")?.setAttribute("data-nav-pinned", pinned);
     const pinBtn = this.$(".nav-pin-btn");
     if (pinBtn) pinBtn.active = pinned;
     this.#emit("navpinchange", { pinned });

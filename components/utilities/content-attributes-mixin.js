@@ -451,15 +451,17 @@ export function ContentAttributesMixin(Base) {
 
     #containerFilterHandler = null;
     #globalFilterHandler = null;
-    #containerEl = null;
+    #scopeEl = null;
 
     #wireFilterListeners() {
-      this.#containerEl = this.closest("sherpa-container");
+      // Listen on parent element for containerfilterchange (no tag-name coupling).
+      // The filter-bar dispatches with bubbles:true, so it reaches any ancestor.
+      this.#scopeEl = this.parentElement;
 
-      if (this.#containerEl) {
+      if (this.#scopeEl) {
         this.#containerFilterHandler = (e) =>
           this.#onContainerFilter(e);
-        this.#containerEl.addEventListener(
+        this.#scopeEl.addEventListener(
           "containerfilterchange",
           this.#containerFilterHandler,
         );
@@ -473,8 +475,8 @@ export function ContentAttributesMixin(Base) {
     }
 
     #unwireFilterListeners() {
-      if (this.#containerEl && this.#containerFilterHandler) {
-        this.#containerEl.removeEventListener(
+      if (this.#scopeEl && this.#containerFilterHandler) {
+        this.#scopeEl.removeEventListener(
           "containerfilterchange",
           this.#containerFilterHandler,
         );
@@ -487,7 +489,7 @@ export function ContentAttributesMixin(Base) {
       }
       this.#containerFilterHandler = null;
       this.#globalFilterHandler = null;
-      this.#containerEl = null;
+      this.#scopeEl = null;
     }
 
     #onContainerFilter(e) {
