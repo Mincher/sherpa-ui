@@ -1,99 +1,96 @@
 /**
  * sherpa-button.css
- * Shadow DOM styles for the SherpaButton web component.
+ * Multi-template button component styles.
+ *
+ * Templates (via data-type):
+ *   default       — Standard button with icon(s), label, badge
+ *   icon          — Icon-only square button
+ *   button-select — Button + native select side by side (control group)
+ *   icon-select   — Icon-only select (action picker / menu trigger)
  *
  * Architecture:
- *   :host is the visual and interactive element — all colour, layout,
- *   border, sizing, focus, and click handling lives here. The host has
- *   role="button" and tabindex="0" set by the JS. No inner <button>
- *   element; shadow DOM contains only a label <span>.
+ *   :host is a wrapper providing border, border-radius, and overflow.
+ *   .trigger <button> is the primary interactive element.
+ *   .select is a native <select> with appearance: none + SVG chevron.
+ *   .close is a remove button (button-select template only).
  *
- *   Icons are <i> elements in the template (.icon-start / .icon-end),
- *   styled with Font Awesome 6. JS mirrors data-icon-start / data-icon-end
- *   attribute values to element textContent. CSS shows/hides them via
- *   :host attribute selectors.
- *
- *   Labels come from the data-label attribute, set as textContent on
- *   the label span by JS. Icon-only buttons hide the label via CSS.
+ *   Variants (primary/secondary/tertiary) set CSS custom properties at
+ *   :host level. Child elements consume them via var().
  *
  * Status — global token inheritance:
- *   Global [data-status] rules in sherpa-status-tokens.css define
- *   --_status-* custom properties on the host element. These inherit
- *   through the shadow DOM boundary. Each variant picks which vars
- *   it needs via var() fallback chains:
- *
- *     primary:           var(--_status-surface-strong, <default>)
- *     secondary:         var(--_status-surface, <default>)
- *     tertiary:          var(--_status-text, <default>)
- *
- *   When no data-status is present the --_status-* vars are undefined,
- *   the fallback activates, and the default variant colour is used.
+ *   Fallback-chain pattern: primary uses --_status-surface-strong,
+ *   secondary uses --_status-surface, tertiary uses --_status-text.
  *
  * Host attributes:
- *   data-label:       button label text
- *   data-icon-start:  leading icon (FA unicode character)
- *   data-icon-end:    trailing icon (FA unicode character)
- *   data-icon-weight: regular | light | thin  (default: solid / 900)
- *   data-variant:     primary | secondary | tertiary
- *   data-size:        small | medium (default) | large
- *   data-active:      "true" | "false"
- *   data-status:      error | info | success | warning | urgent
- *   disabled
+ *   data-type, data-label, data-icon-start, data-icon-end, data-icon-weight,
+ *   data-variant, data-size, data-active, data-status, data-closeable,
+ *   data-count, disabled
  */
 
 
 /* ==========================================================================
-   Host — Primary variant (default)
+   Host — wrapper with border / radius
    ========================================================================== */
 
 :host {
   box-sizing: border-box;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  vertical-align: middle;
+  overflow: hidden;
 
-  /* Figma: button collection tokens — size / padding / spacing */
+  /* Sizing tokens — consumed by children */
   --_button-size: var(--sherpa-size-2xl, 32px);
   --_button-padding: var(--sherpa-space-xs, 8px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
 
-  gap: var(--_button-spacing);
-  height: var(--_button-size);
-  padding-block: var(--_button-padding);
-  padding-inline: var(--sherpa-space-sm, 12px);
-  vertical-align: middle;
-  position: relative;
-
-  background-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default));
-  color:            var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body));
-  border: var(--sherpa-border-width-xs, 1px) solid var(--_status-border, transparent);
-  border-width: var(--_cg-border-width, var(--sherpa-border-width-xs, 1px));
-  border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
-
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-
-  /* Icon colour — follows status text when present */
-  --_icon-color: var(--_status-text-on-color, var(--sherpa-text-default-on-color-body));
-
-  /* Icon font weight — default solid (900), overridden via data-icon-weight */
-  --_icon-weight: 900;
-
-  /* Hover / down — consumed by :hover / :active rules */
+  /* Surface / text / icon — set per variant, consumed by .trigger */
+  --_surface:       var(--_status-surface-strong, var(--sherpa-surface-control-primary-default));
+  --_text:          var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body));
+  --_icon-color:    var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body));
+  --_icon-weight:   900;
   --_surface-hover: var(--_status-surface-strong-hover, var(--sherpa-surface-control-primary-hover));
   --_surface-down:  var(--_status-surface-strong-down,  var(--sherpa-surface-control-primary-down));
   --_border-hover:  var(--_status-border, transparent);
-  --_border-down:   var(--_status-border, transparent);
+
+  border: var(--sherpa-border-width-xs, 1px) solid var(--_status-border, transparent);
+  border-width: var(--_cg-border-width, var(--sherpa-border-width-xs, 1px));
+  border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
+  transition: border-color 0.15s;
 }
 
 :host([hidden]) { display: none; }
 
 
 /* ==========================================================================
-   Icons — <i> elements shown/hidden via :host attribute selectors.
-   Icons inherit font-size from :host; button padding handles visual sizing.
+   Trigger — <button>, primary variant default
+   ========================================================================== */
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--_button-spacing);
+  height: var(--_button-size);
+  padding-block: var(--_button-padding);
+  padding-inline: var(--sherpa-space-sm, 12px);
+  flex: 1 1 auto;
+
+  background-color: var(--_surface);
+  color: var(--_text);
+  border: none;
+  border-radius: 0;
+
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  font: inherit;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+
+/* ==========================================================================
+   Icons — shown/hidden via :host attribute selectors
    ========================================================================== */
 
 .icon-start,
@@ -103,15 +100,12 @@
   font-style: normal;
   color: var(--_icon-color);
   display: none;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
-:host([data-icon-start]) .icon-start {
-  display: inline-flex;
-}
-
-:host([data-icon-end]) .icon-end {
-  display: inline-flex;
-}
+:host([data-icon-start]) .icon-start { display: inline-flex; }
+:host([data-icon-end]) .icon-end     { display: inline-flex; }
 
 /* ── Icon weight overrides ───────────────────────────────────────────── */
 
@@ -134,34 +128,69 @@
 
 
 /* ==========================================================================
-   Icon-only mode — auto-detected when no data-label is present
+   Badge — count pill (hidden by default)
    ========================================================================== */
 
-:host(:not([data-label])) {
-  aspect-ratio: 1;
-  padding-inline: var(--sherpa-space-xs, 8px);
-
-  &.label{
-    display:none;
-  }
+.badge {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding-inline: 4px;
+  border-radius: var(--sherpa-border-rounding-round, 999px);
+  background: var(--sherpa-surface-control-secondary-default);
+  color: var(--sherpa-text-default-body);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  font-weight: 700;
+  line-height: 1;
 }
 
-:host(:not([data-label])[data-size="small"]) {
+:host([data-count]) .badge { display: inline-flex; }
+
+:host([data-active]) .badge {
+  background: var(--sherpa-surface-control-active-hover);
+  color: var(--sherpa-text-active-base);
+}
+
+
+/* ==========================================================================
+   Icon-only mode — data-type="icon" template (square trigger)
+   Also applies to default template when no label is set.
+   ========================================================================== */
+
+:host([data-type="icon"]) .trigger,
+:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])) .trigger {
+  aspect-ratio: 1;
+  padding-inline: var(--_button-padding);
+}
+
+:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])) .label {
+  display: none;
+}
+
+:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])[data-size="small"]) .trigger {
   padding-inline: var(--sherpa-space-2xs, 4px);
 }
 
-:host(:not([data-label])[data-size="large"]) {
+:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])[data-size="large"]) .trigger {
   padding-inline: var(--sherpa-space-xs, 8px);
 }
 
 
 /* ==========================================================================
-   Focus
+   Focus — on the host via :focus-within (respects border-radius)
    ========================================================================== */
 
-:host(:focus-visible) {
+:host(:focus-within) {
   outline: 2px solid var(--sherpa-border-control-active-default);
   outline-offset: 2px;
+}
+
+.trigger:focus-visible,
+.select:focus-visible,
+.close:focus-visible {
+  outline: none;
 }
 
 
@@ -173,85 +202,98 @@
   --_button-size: var(--sherpa-size-lg, 24px);
   --_button-padding: var(--sherpa-space-2xs, 4px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
-  padding-inline: var(--sherpa-space-xs, 8px);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
+:host([data-size="small"]) .trigger {
+  padding-inline: var(--sherpa-space-xs, 8px);
 }
 
 :host([data-size="x-small"]) {
   --_button-size: var(--sherpa-size-md, 20px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
-  padding-inline: var(--sherpa-space-2xs, 4px);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
+:host([data-size="x-small"]) .trigger {
+  padding-inline: var(--sherpa-space-2xs, 4px);
 }
 
 :host([data-size="2x-small"]) {
   --_button-size: var(--sherpa-size-sm, 16px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
-  padding-inline: var(--sherpa-space-3xs, 2px);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
+}
+
+:host([data-size="2x-small"]) .trigger {
+  padding-inline: var(--sherpa-space-3xs, 2px);
 }
 
 :host([data-size="large"]) {
   --_button-size: var(--sherpa-size-4xl, 48px);
   --_button-padding: var(--sherpa-space-sm, 12px);
   --_button-spacing: var(--sherpa-space-xs, 8px);
-  padding-inline: var(--sherpa-space-default, 16px);
   font-size: var(--sherpa-fonts-scale-lg, 16px);
 }
 
+:host([data-size="large"]) .trigger {
+  padding-inline: var(--sherpa-space-default, 16px);
+}
+
 
 /* ==========================================================================
-   Hover / Down — unified for all variants (uses private vars)
+   Hover / Down — trigger
    ========================================================================== */
 
-:host(:not([disabled]):hover) {
+:host(:not([disabled])) .trigger:hover {
   background-color: var(--_surface-hover);
+}
+
+:host(:not([disabled])) .trigger:active {
+  background-color: var(--_surface-down);
+}
+
+/* Border hover — standard buttons only */
+:host(:not([disabled]):not([data-type="button-select"]):hover) {
   border-color: var(--_border-hover);
 }
 
-:host(:not([disabled]):active) {
-  background-color: var(--_surface-down);
-  border-color: var(--_border-down);
-}
-
 
 /* ==========================================================================
-   Variants
+   Variants — set private vars at :host, children consume them
    ========================================================================== */
 
 /* ── Secondary ───────────────────────────────────────────────────────── */
 
 :host([data-variant="secondary"]) {
-  background-color: var(--_status-surface, transparent); /* var(--sherpa-surface-control-secondary-default) */
-  border-color:     var(--_status-border,   var(--sherpa-border-control-secondary-default));
-  color:            var(--_status-text,     var(--sherpa-text-default-label));
+  --_surface:       var(--_status-surface, transparent);
+  --_text:          var(--_status-text,     var(--sherpa-text-default-label));
   --_icon-color:    var(--_status-text,     var(--sherpa-icon-context-default-body, var(--sherpa-text-default-label)));
   --_surface-hover: var(--_status-surface-hover, var(--sherpa-surface-control-secondary-hover));
   --_surface-down:  var(--_status-surface-down,  var(--sherpa-surface-control-secondary-down));
   --_border-hover:  var(--_status-border,         var(--sherpa-border-control-secondary-hover));
-  --_border-down:   var(--_status-border,         var(--sherpa-border-control-secondary-down));
+  border-color:     var(--_status-border,   var(--sherpa-border-control-secondary-default));
 }
 
 /* Warning edge-case — default warning text lacks contrast on the subtle
    secondary surface, so we use the same on-color text as primary. */
 :host([data-variant="secondary"][data-status="warning"]) {
-  color:         var(--_status-text-on-color);
+  --_text:       var(--_status-text-on-color);
   --_icon-color: var(--_status-text-on-color);
 }
 
 /* ── Tertiary ────────────────────────────────────────────────────────── */
 
 :host([data-variant="tertiary"]) {
-  background-color: var(--sherpa-surface-control-tertiary-default);
-  border-color: transparent;
-  color:         var(--_status-text, var(--sherpa-text-default-label));
-  --_icon-color: var(--_status-text, var(--sherpa-text-default-label));
+  --_surface:       var(--sherpa-surface-control-tertiary-default);
+  --_text:          var(--_status-text, var(--sherpa-text-default-label));
+  --_icon-color:    var(--_status-text, var(--sherpa-text-default-label));
   --_surface-hover: var(--sherpa-surface-control-tertiary-hover);
   --_surface-down:  var(--sherpa-surface-control-tertiary-down);
   --_border-hover:  transparent;
-  --_border-down:   transparent;
+  border-color:     transparent;
 }
 
 
@@ -259,29 +301,180 @@
    States
    ========================================================================== */
 
-/* ── Active (toggle / selection) ─────────────────────────────────────── */
+/* ── Active (boolean attribute — presence = active) ──────────────────── */
 
-:host([data-active="true"]) {
-  background-color: var(--sherpa-surface-control-active-default);
-  border-color: var(--sherpa-border-control-active-default);
-  color: var(--sherpa-text-active-base);
-  --_icon-color: var(--sherpa-icon-active-base);
+:host([data-active]) {
+  --_surface:       var(--sherpa-surface-control-active-default);
+  --_text:          var(--sherpa-text-active-base);
+  --_icon-color:    var(--sherpa-icon-active-base);
   --_surface-hover: var(--sherpa-surface-control-active-hover);
   --_surface-down:  var(--sherpa-surface-control-active-down);
-  --_border-hover:  var(--sherpa-border-control-active-hover);
-  --_border-down:   var(--sherpa-border-control-active-down);
+  border-color:     var(--sherpa-border-control-active-default);
 }
 
 /* ── Disabled ────────────────────────────────────────────────────────── */
 
 :host([disabled]) {
-  background-color: var(--sherpa-surface-control-inactive);
-  border-color: var(--_status-border, transparent);
-  color: var(--sherpa-text-inactive-default);
+  --_surface:    var(--sherpa-surface-control-inactive);
+  --_text:       var(--sherpa-text-inactive-default);
   --_icon-color: var(--sherpa-text-inactive-default);
+  border-color:  var(--_status-border, transparent);
   pointer-events: none;
   cursor: not-allowed;
 }
 
 
+/* ==========================================================================
+   Select — native <select>, appearance:none, SVG chevron background
+   (button-select template: side-by-side with trigger)
+   ========================================================================== */
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  height: var(--_button-size);
+  width: var(--_button-size);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default);
+  background-color: var(--sherpa-surface-control-tertiary-default);
+  color: transparent;
+  cursor: pointer;
+  font: inherit;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23666' d='M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px;
+  transition: background-color 0.15s;
+}
+
+.select:hover {
+  background-color: var(--sherpa-surface-control-secondary-hover);
+}
+
+.select:active {
+  background-color: var(--sherpa-surface-control-secondary-down);
+}
+
+/* Active state */
+:host([data-active]) .select {
+  border-inline-start-color: var(--sherpa-border-control-active-default);
+  background-color: var(--_surface);
+}
+
+:host([data-active]:not([disabled])) .select:hover {
+  background-color: var(--_surface-hover);
+}
+
+:host([data-active]:not([disabled])) .select:active {
+  background-color: var(--_surface-down);
+}
+
+/* Disabled */
+:host([disabled]) .select { pointer-events: none; }
+
+
+/* ==========================================================================
+   Close button (button-select template only, shown via data-closeable)
+   ========================================================================== */
+
+.close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--_button-size);
+  height: var(--_button-size);
+  padding: 0;
+  border: none;
+  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default);
+  background: var(--sherpa-surface-control-tertiary-default);
+  color: var(--sherpa-text-default-secondary);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+:host([data-closeable]) .close { display: inline-flex; }
+
+.close:hover {
+  background-color: var(--sherpa-surface-control-secondary-hover);
+  color: var(--sherpa-text-default-body);
+}
+
+.close:active {
+  background-color: var(--sherpa-surface-control-secondary-down);
+}
+
+/* Active state — close inherits active tokens */
+:host([data-active]) .close {
+  border-inline-start-color: var(--sherpa-border-control-active-default);
+  background-color: var(--_surface);
+  color: var(--_text);
+}
+
+:host([data-active]) .close:hover {
+  background-color: var(--_surface-hover);
+}
+
+:host([data-active]) .close:active {
+  background-color: var(--_surface-down);
+}
+
+
+/* ==========================================================================
+   button-select — Control-group chip styling
+   Small / tertiary / bordered by default. Trigger + select + close.
+   ========================================================================== */
+
+:host([data-type="button-select"]) {
+  --_button-size:    var(--sherpa-size-lg, 24px);
+  --_button-padding: var(--sherpa-space-2xs, 4px);
+  --_button-spacing: var(--sherpa-space-2xs, 4px);
+  --_surface:        var(--sherpa-surface-control-tertiary-default);
+  --_text:           var(--sherpa-text-default-label);
+  --_icon-color:     var(--sherpa-text-default-label);
+  --_surface-hover:  var(--sherpa-surface-control-secondary-hover);
+  --_surface-down:   var(--sherpa-surface-control-secondary-down);
+  border-color:      var(--sherpa-border-control-secondary-default);
+  font-size:         var(--sherpa-fonts-scale-sm, 12px);
+}
+
+:host([data-type="button-select"]) .trigger {
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+/* Active — button-select chips */
+:host([data-type="button-select"][data-active]) {
+  --_surface:       var(--sherpa-surface-control-active-default);
+  --_text:          var(--sherpa-text-active-base);
+  --_icon-color:    var(--sherpa-icon-active-base, var(--sherpa-text-active-base));
+  --_surface-hover: var(--sherpa-surface-control-active-hover);
+  --_surface-down:  var(--sherpa-surface-control-active-down);
+  border-color:     var(--sherpa-border-control-active-default);
+}
+
+/* Disabled — button-select chips */
+:host([data-type="button-select"][disabled]) {
+  border-color: var(--sherpa-border-control-inactive);
+}
+
+
+/* ==========================================================================
+   icon-select — Icon-only select (action picker / menu trigger)
+   ========================================================================== */
+
+:host([data-type="icon-select"]) .select {
+  border-inline-start: none;
+  color: var(--_icon-color);
+  font-family: "Font Awesome 6 Free";
+  font-weight: var(--_icon-weight);
+  text-align: center;
+  background-image: none;
+}
 

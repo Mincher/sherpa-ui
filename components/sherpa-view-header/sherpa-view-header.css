@@ -109,6 +109,16 @@
   }
 }
 
+/* ---- feedback button (hidden unless host has data-feedback-src) ---- */
+
+#feedback-btn {
+  display: none;
+}
+
+:host([data-feedback-src]) #feedback-btn {
+  display: inline-flex;
+}
+
 /* ---- feedback popover ---- */
 
 .feedback-backdrop {
@@ -189,4 +199,10 @@
 
 :host([data-show-debug-toggles]) .debug-toggles {
   display: contents;
+}
+
+/* ---- global filter bar ---- */
+
+.global-filter-bar {
+  padding-inline: var(--sherpa-space-xs);
 }

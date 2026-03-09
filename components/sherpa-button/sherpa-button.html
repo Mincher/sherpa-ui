@@ -1,49 +1,78 @@
 <!--
-  sherpa-button.html — Templates for sherpa-button.
+  sherpa-button.html — Multi-template button component.
 
-  Templates:
-    • default — Icon-start + label + icon-end
-    • (custom) — Consumers can add additional <template id="..."> blocks here
-                  to define alternative button layouts. Use the component's
-                  `get templateId()` override to select a template by id.
+  Four templates selected via data-type attribute:
 
-  Host attributes:
+    default       — Standard button: icon(s) + label + badge
+    icon          — Icon-only button (square aspect-ratio)
+    button-select — Button + native <select> side by side (control group)
+    icon-select   — Icon-only <select> (action picker, menu trigger)
+
+  Template selection:
+    get templateId() returns dataset.type || "default"
+    Each template contains only the elements it needs.
+
+  Host attributes (shared):
+    data-type         — "icon" | "button-select" | "icon-select" (default omitted)
     data-label        — Button label text
     data-icon-start   — FontAwesome unicode for leading icon
     data-icon-end     — FontAwesome unicode for trailing icon
-    data-icon-weight  — Icon weight class: "fa-solid" | "fa-regular" | "fa-light"
+    data-icon-weight  — Icon weight: "regular" | "light" | "thin" (default: solid)
     data-variant      — "primary" | "secondary" | "tertiary"
-    data-size         — "small" | "medium" | "large"
-    data-active       — Active/pressed state
+    data-size         — "2x-small" | "x-small" | "small" | medium (default) | "large"
+    data-active       — Active/pressed state (boolean attr)
     data-status       — "success" | "critical" | "warning" | "info" | "urgent"
-    data-menu         — "true" enables attached menu
-    data-menu-position — Menu placement: "bottom-start" | "bottom-end" | etc.
-    disabled          — Boolean, disabled state
+    data-count        — Badge count (shown when > 0)
+    data-closeable    — Shows close button (button-select only)
+    disabled          — Disabled state (boolean attr)
 
-  Custom templates:
-    To define a custom layout, add a new <template id="my-layout"> block
-    below the default. Override `get templateId()` in a subclass or set it
-    dynamically to select the template at render time.
+  Events dispatched:
+    buttonclick  — Trigger button clicked (detail: { })
+    selectchange — Select value changed (detail: { value, selectedOptions })
+    chipremove   — Close button clicked (detail: { })
+    change       — Re-dispatched native change (bubbles, does not compose)
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Icon-start + label + icon-end
+     DEFAULT — Standard button: icon(s) + label + badge
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
-<i class="icon-start" aria-hidden="true"></i>
-<span class="label"></span>
-<i class="icon-end" aria-hidden="true"></i>
+  <button class="trigger" type="button">
+    <i class="icon-start" aria-hidden="true"></i>
+    <span class="label"></span>
+    <span class="badge" aria-hidden="true"></span>
+    <i class="icon-end" aria-hidden="true"></i>
+  </button>
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXAMPLE CUSTOM TEMPLATE — Icon-only (no label)
-
-     Consumers can add templates like this for alternative layouts.
-     Each template must have a unique id. The component selects a template
-     via `get templateId()`.
+     ICON — Icon-only button (square, no label)
      ═══════════════════════════════════════════════════════════════════════ -->
-<!--
-<template id="icon-only">
-<i class="icon-start" aria-hidden="true"></i>
+<template id="icon">
+  <button class="trigger" type="button">
+    <i class="icon-start" aria-hidden="true"></i>
+  </button>
 </template>
--->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     BUTTON-SELECT — Button + native select side by side (control group)
+     Used for behavior chips: sort, filter, segment, timeframe
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="button-select">
+  <button class="trigger" type="button">
+    <i class="icon-start" aria-hidden="true"></i>
+    <span class="label"></span>
+    <span class="badge" aria-hidden="true"></span>
+  </button>
+  <select class="select"></select>
+  <button class="close" type="button" aria-label="Close">
+    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+  </button>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ICON-SELECT — Icon-only select (action picker, menu trigger)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="icon-select">
+  <select class="select"></select>
+</template>

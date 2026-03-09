@@ -57,7 +57,7 @@ slot[name="actions"] {
 }
 
 /* Add filter button */
-.add-filter-btn {
+.add-filter-button {
   flex-shrink: 0;
 }
 

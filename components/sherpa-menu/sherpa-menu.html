@@ -2,18 +2,17 @@
   sherpa-menu.html — Shadow shell + menu content templates.
 
   The "default" template is the shadow DOM shell with slot projection.
-  All other templates are menu content that components stamp into the
+  Other templates are menu content that components stamp into the
   menu's light DOM via SherpaMenu.getMenuTemplate(id).
 
   Shadow template:
     • default       — Menu surface with slot projection
 
   Menu content templates:
-    • container     — Container overflow menu (resize, data toggles, export)
-    • sort          — Sort column picker (filter chip)
     • filter        — Value filter picker (filter chip)
-    • segment       — Segment column picker (filter chip)
-    • timeframe     — Time range presets (filter chip)
+
+  Note: sort, segment, and timeframe templates were removed — those chip
+  types now use a native <select> with appearance: base-select.
 
   Host attributes:
     open    — Menu visibility (boolean, managed internally)
@@ -33,83 +32,6 @@
   </div>
 </template>
 
-<!-- Container overflow menu — resize, data toggles, export.
-     Menu items use data-event for auto-dispatched domain events. -->
-<template id="container">
-  <sherpa-menu-item
-    data-type="heading"
-    style="display: var(--_editable-display, none)"
-    >Width</sherpa-menu-item
-  >
-  <ul data-group="width" style="display: var(--_editable-display, none)">
-    <li>
-      <sherpa-menu-item
-        data-event="container-decrease-cols"
-        data-icon="fa-solid fa-minus"
-        >Decrease</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-event="container-increase-cols"
-        data-icon="fa-solid fa-plus"
-        >Increase</sherpa-menu-item
-      >
-    </li>
-  </ul>
-  <sherpa-menu-item
-    data-type="heading"
-    style="display: var(--_editable-display, none)"
-    >Height</sherpa-menu-item
-  >
-  <ul data-group="height" style="display: var(--_editable-display, none)">
-    <li>
-      <sherpa-menu-item
-        data-event="container-decrease-rows"
-        data-icon="fa-solid fa-minus"
-        >Decrease</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-event="container-increase-rows"
-        data-icon="fa-solid fa-plus"
-        >Increase</sherpa-menu-item
-      >
-    </li>
-  </ul>
-  <sherpa-menu-item data-type="heading" data-group-heading="data"
-    >Data</sherpa-menu-item
-  >
-  <ul data-group="data"></ul>
-  <sherpa-menu-item data-type="heading">Actions</sherpa-menu-item>
-  <ul data-group="actions">
-    <li>
-      <sherpa-menu-item
-        data-event="containerexport"
-        data-icon="fa-regular fa-file-export"
-        >Export</sherpa-menu-item
-      >
-    </li>
-  </ul>
-</template>
-
-<!-- Sort column picker (filter chip) -->
-<template id="sort">
-  <sherpa-menu-item data-type="heading"></sherpa-menu-item>
-  <ul data-group="columns">
-    <li>
-      <sherpa-menu-item
-        data-selection="radio"
-        checked
-        data-role="none-option"
-        value=""
-        >None</sherpa-menu-item
-      >
-    </li>
-  </ul>
-</template>
-
 <!-- Value filter picker (filter chip) -->
 <template id="filter">
   <sherpa-menu-item data-type="heading"></sherpa-menu-item>
@@ -127,77 +49,5 @@
   </ul>
   <ul data-group="values">
     <!-- Populated by JS with checkbox menu items for each unique value -->
-  </ul>
-</template>
-
-<!-- Segment column picker (filter chip) -->
-<template id="segment">
-  <sherpa-menu-item data-type="heading"></sherpa-menu-item>
-  <ul data-group="columns">
-    <li>
-      <sherpa-menu-item
-        data-selection="radio"
-        checked
-        data-role="none-option"
-        value=""
-        >None</sherpa-menu-item
-      >
-    </li>
-  </ul>
-</template>
-
-<!-- Time range presets (filter chip) -->
-<template id="timeframe">
-  <sherpa-menu-item data-type="heading">Time range</sherpa-menu-item>
-  <ul data-group="ranges">
-    <li>
-      <sherpa-menu-item
-        data-selection="radio"
-        data-role="range-option"
-        value="1d"
-        >Last 24 hours</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-selection="radio"
-        data-role="range-option"
-        value="1w"
-        >Last 7 days</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-selection="radio"
-        data-role="range-option"
-        value="1m"
-        >Last 30 days</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-selection="radio"
-        data-role="range-option"
-        value="1q"
-        >Last 90 days</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-selection="radio"
-        data-role="range-option"
-        value="1y"
-        >Last 365 days</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-selection="radio"
-        data-role="range-option"
-        value=""
-        checked
-        >All time</sherpa-menu-item
-      >
-    </li>
   </ul>
 </template>

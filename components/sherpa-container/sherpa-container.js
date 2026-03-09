@@ -1,32 +1,42 @@
 /**
  * SherpaContainer — Dashboard card with header, metrics, and content area.
  *
- * Extends SherpaElement with full shadow DOM encapsulation. The shadow
- * template defines all structural elements: header, filter bar, 4 fixed
- * metrics, and a default slot for consumer viz children.
+ * Extends SherpaElement via ResizeBehavior mixin with full shadow DOM
+ * encapsulation. The shadow template defines structural layout: header,
+ * filter bar, metrics slot, and a default slot for consumer viz children.
  *
- * Content is supplied via inline child elements slotted into the default
- * slot. The container is content-agnostic — it never imports or creates
- * viz components directly. Viz children auto-load their own data via
- * ContentAttributesMixin and seed global filters from the shared
- * global-filters utility.
+ * Content is supplied via inline child elements. Metrics use a named
+ * slot (`slot="metrics"`), viz children use the default slot. The
+ * container is content-agnostic — it never imports or creates viz
+ * components directly. All content components auto-load their own data
+ * via ContentAttributesMixin.
  *
- * Metrics are fixed in the shadow template and self-populate via
- * ContentAttributesMixin. The container only controls their visibility
- * based on data-col-span (CSS-driven, no JS needed).
+ * Metric visibility is CSS-driven via data-col-span (no JS needed).
+ * The metrics area auto-hides when no metric has a data-label attribute.
+ *
+ * Menu items:
+ *   The overflow menu is assembled from light-DOM `<template data-menu>`
+ *   children found on the host. ResizeBehavior injects Width/Height
+ *   resize items (gated by --_editable-display). Consumer view templates
+ *   add action items (e.g. Export) via their own `<template data-menu>`.
+ *
+ * Resize (via ResizeBehavior mixin):
+ *   Column stops: 3 → 6 → 9 → 12, row span: 1–6.
+ *   Resize menu items are visible only when --_editable-display is set.
  *
  * Architecture — decoupled peer events:
- *   Container owns layout and menu wiring only. All data concerns are
- *   handled by the content components themselves:
+ *   Container owns layout only. All data concerns are handled by the
+ *   content components themselves:
  *     vizready             — viz child → filter bar (columns/rows)
  *     containerfilterchange — filter bar → viz children (scoped)
  *     globalfilterchange   — document → viz children (direct)
  *     sortchange           — viz child → filter bar (sort chip sync)
  *     presentationchange   — viz child → sherpa-data-viz (view switch)
  *
- *   Menu template loading is handled by sherpa-button via data-menu-template.
- *   Menu items use data-event for auto-dispatched domain events.
- *   Container listens for those events to handle resize and section toggles.
+ *   Menu items are assembled from light-DOM `<template data-menu>`
+ *   children by sherpa-button's composed-tree walking. ResizeBehavior
+ *   injects resize items; consumers add action items in view HTML.
+ *   Menu events bubble harmlessly if no listener is present.
  *
  * Attributes:
  *   data-variant      — Layout variant: "fit" (default), "resizable", "fill"
@@ -34,25 +44,22 @@
  *   data-description  — Container description
  *   data-col-span     — Column span (3, 6, 9, 12) — resizable variant only
  *   data-row-span     — Row span (1–6) — resizable variant only
- *   data-menu-open    — Menu state
+ *   data-menu-open    — Menu state (set by menu-open/menu-close events)
  *   data-editable     — Edit mode (enables CSS resize grip)
  *
- * Slots (shadow DOM):
+ * Slots:
+ *   metrics   — Up to 4 sherpa-metric children
  *   (default) — Consumer viz children (sherpa-data-viz wrappers)
- *
- * Cloning prototypes (shadow DOM):
- *   .menu-toggle-tpl  — li > sherpa-menu-item[data-selection="toggle"]
  */
 
 import "../sherpa-header/sherpa-header.js";
 import "../sherpa-filter-bar/sherpa-filter-bar.js";
-import "../sherpa-filter-chip/sherpa-filter-chip.js";
-import "../sherpa-data-viz/sherpa-data-viz.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { ResizeBehavior } from "../utilities/resize-behavior.js";
 
 /* ── Component ─────────────────────────────────────────────────── */
 
-export class SherpaContainer extends SherpaElement {
+export class SherpaContainer extends ResizeBehavior(SherpaElement) {
   static get htmlUrl() {
     return new URL("./sherpa-container.html", import.meta.url).href;
   }
@@ -61,206 +68,51 @@ export class SherpaContainer extends SherpaElement {
     return new URL("./sherpa-container.css", import.meta.url).href;
   }
 
-  #menuContributions = [];
-  #resizeObserver = null;
-  #resizeDebounce = null;
+  static get observedAttributes() {
+    return [...super.observedAttributes, "data-title", "data-description"];
+  }
 
   /* ── SherpaElement lifecycle hooks ───────────────────────────── */
 
   onRender() {
     if (!this.dataset.variant) this.dataset.variant = "fit";
-
-    // Set header text from host attributes
-    const header = this.$("sherpa-header");
-    if (header) {
-      header.heading = this.dataset.title || "";
-      header.description = this.dataset.description || "";
-    }
+    this.#syncHeader();
   }
 
   onConnect() {
-    this.#wireMenuEvents();
-
-    if (this.dataset.variant === "resizable") {
-      this.#startResizeObserver();
-    }
+    super.onConnect();
+    this.addEventListener("menu-open", this.#onMenuOpen);
+    this.addEventListener("menu-close", this.#onMenuClose);
   }
 
   onDisconnect() {
     super.onDisconnect();
-    this.#stopResizeObserver();
+    this.removeEventListener("menu-open", this.#onMenuOpen);
+    this.removeEventListener("menu-close", this.#onMenuClose);
   }
 
   onAttributeChanged(name, _oldValue, newValue) {
-    if (name === "data-title") {
-      const header = this.$("sherpa-header");
-      if (header) header.heading = newValue || "";
-    } else if (name === "data-description") {
-      const header = this.$("sherpa-header");
-      if (header) header.description = newValue || "";
+    if (name === "data-title" || name === "data-description") {
+      this.#syncHeader();
     }
   }
 
-  static get observedAttributes() {
-    return [...super.observedAttributes, "data-title", "data-description"];
-  }
+  /* ── Private ─────────────────────────────────────────────────── */
 
-  /* ════════════════════════════════════════════════════════════════
-     Public API
-     ════════════════════════════════════════════════════════════════ */
-
-  /** Column span (3 | 6 | 9 | 12). */
-  getColSpan() {
-    return parseInt(this.getAttribute("data-col-span") || "3", 10);
-  }
-
-  /** Row span (1–6). */
-  getRowSpan() {
-    return parseInt(this.getAttribute("data-row-span") || "1", 10);
-  }
-
-  /* ════════════════════════════════════════════════════════════════
-     Grid span constants (used by menu-based resize actions)
-     ════════════════════════════════════════════════════════════════ */
-
-  static COL_STOPS = [3, 6, 9, 12];
-  static MIN_ROW_SPAN = 1;
-  static MAX_ROW_SPAN = 6;
-
-  /* ════════════════════════════════════════════════════════════════
-     Resize — snap-to-grid (edit mode)
-     ════════════════════════════════════════════════════════════════ */
-
-  #startResizeObserver() {
-    if (this.#resizeObserver) return;
-    this.#resizeObserver = new ResizeObserver(() => {
-      if (!this.hasAttribute("data-editable")) return;
-      clearTimeout(this.#resizeDebounce);
-      this.#resizeDebounce = setTimeout(() => this.#snapToGrid(), 250);
-    });
-    this.#resizeObserver.observe(this);
-  }
-
-  #stopResizeObserver() {
-    this.#resizeObserver?.disconnect();
-    this.#resizeObserver = null;
-    clearTimeout(this.#resizeDebounce);
-  }
-
-  #snapToGrid() {
-    const parent = this.parentElement;
-    if (!parent) return;
-
-    const parentWidth = parent.clientWidth;
-    if (!parentWidth) return;
-
-    const colWidth = parentWidth / 12;
-    const rawCols = this.offsetWidth / colWidth;
-    const stops = SherpaContainer.COL_STOPS;
-    const bestCol = stops.reduce((prev, stop) =>
-      Math.abs(rawCols - stop) < Math.abs(rawCols - prev) ? stop : prev,
-    );
-
-    if (bestCol !== this.getColSpan()) {
-      this.setAttribute("data-col-span", String(bestCol));
-    }
-
-    this.style.removeProperty("width");
-    this.style.removeProperty("height");
-  }
-
-  /* ════════════════════════════════════════════════════════════════
-     Menu
-     ════════════════════════════════════════════════════════════════ */
-
-  #wireMenuEvents() {
+  #syncHeader() {
     const header = this.$("sherpa-header");
-    if (header) {
-      header.menuTemplate = "container";
-    }
-
-    this.addEventListener("menu-open", () => {
-      this.dataset.menuOpen = "true";
-    });
-    this.addEventListener("menu-close", () => {
-      this.dataset.menuOpen = "false";
-    });
-
-    this.addEventListener("menu-contribute", (e) => {
-      this.#menuContributions.push(e.detail);
-    });
-
-    this.addEventListener("menu-populate", (e) => {
-      this.#onMenuPopulate(e.detail.menu);
-    });
-
-    this.addEventListener("container-increase-cols", () => {
-      const stops = SherpaContainer.COL_STOPS;
-      const idx = stops.indexOf(this.getColSpan());
-      const next = stops[Math.min(idx + 1, stops.length - 1)];
-      if (next !== this.getColSpan())
-        this.setAttribute("data-col-span", String(next));
-    });
-
-    this.addEventListener("container-decrease-cols", () => {
-      const stops = SherpaContainer.COL_STOPS;
-      const idx = stops.indexOf(this.getColSpan());
-      const next = stops[Math.max(idx - 1, 0)];
-      if (next !== this.getColSpan())
-        this.setAttribute("data-col-span", String(next));
-    });
-
-    this.addEventListener("container-increase-rows", () => {
-      const next = Math.min(
-        SherpaContainer.MAX_ROW_SPAN,
-        this.getRowSpan() + 1,
-      );
-      if (next !== this.getRowSpan())
-        this.setAttribute("data-row-span", String(next));
-    });
-
-    this.addEventListener("container-decrease-rows", () => {
-      const next = Math.max(
-        SherpaContainer.MIN_ROW_SPAN,
-        this.getRowSpan() - 1,
-      );
-      if (next !== this.getRowSpan())
-        this.setAttribute("data-row-span", String(next));
-    });
-
-    this.addEventListener("menu-select", (e) => {
-      const detail = e.detail ?? {};
-      if (detail.selection === "toggle" && detail.data?.target) {
-        const target = this.querySelector(`#${CSS.escape(detail.data.target)}`);
-        if (target) target.toggleAttribute("hidden", !detail.checked);
-      }
-    });
+    if (!header) return;
+    header.heading = this.dataset.title || "";
+    header.description = this.dataset.description || "";
   }
 
-  #onMenuPopulate(menu) {
-    const dataGroup = menu.querySelector('ul[data-group="data"]');
-    const dataHeading = menu.querySelector('[data-group-heading="data"]');
+  #onMenuOpen = () => {
+    this.dataset.menuOpen = "true";
+  };
 
-    if (!dataGroup) return;
-
-    // Stamp viz-child contributions
-    const toggleTpl = this.$("template.menu-toggle-tpl");
-    this.#menuContributions.forEach((c) => {
-      const frag = toggleTpl.content.cloneNode(true);
-      const item = frag.querySelector("sherpa-menu-item");
-      item.dataset.target = c.target;
-      item.textContent = c.label;
-      const el = this.querySelector(`#${CSS.escape(c.target)}`);
-      if (el && !el.hasAttribute("hidden")) item.setAttribute("checked", "");
-      dataGroup.appendChild(frag);
-    });
-
-    // Remove data group entirely if empty
-    if (!dataGroup.children.length) {
-      dataGroup.remove();
-      dataHeading?.remove();
-    }
-  }
+  #onMenuClose = () => {
+    delete this.dataset.menuOpen;
+  };
 }
 
 customElements.define("sherpa-container", SherpaContainer);
