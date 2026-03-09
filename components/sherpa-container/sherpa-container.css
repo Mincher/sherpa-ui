@@ -7,15 +7,9 @@
  *   ├── sherpa-header
  *   ├── sherpa-filter-bar
  *   ├── .metrics-area
- *   │   └── sherpa-metric ×4 (visibility driven by data-col-span)
+ *   │   └── <slot name="metrics"> (consumer sherpa-metric children)
  *   └── .content
  *       └── <slot> (consumer viz children)
- *
- * Metric visibility by column span (resizable variant):
- *   3 cols (default) → metric 1 only
- *   6 cols           → metrics 1–2
- *   9 cols           → metrics 1–3
- *   12 cols          → all 4 metrics
  *
  * Attributes:
  *   data-variant      — "fit" | "resizable" | "fill"
@@ -25,7 +19,16 @@
  *   data-title        — Container heading text
  *   data-description  — Subtitle
  *   data-menu-open    — Menu state
- *   data-hide-metrics — Hide metrics area
+ *
+ * Slots:
+ *   metrics   — Up to 4 sherpa-metric children
+ *   (default) — sherpa-data-viz children
+ *
+ * Metric visibility by column span (resizable variant):
+ *   3 cols (default) → metric 1 only
+ *   6 cols           → metrics 1–2
+ *   9 cols           → metrics 1–3
+ *   12 cols          → all 4 metrics
  */
 
 /* ==========================================================================
@@ -87,13 +90,14 @@ sherpa-filter-bar {
 /* ==========================================================================
    Metrics Area
    ==========================================================================
-   4 fixed sherpa-metric components. Visibility is driven by the host's
-   data-col-span attribute for resizable containers. Non-resizable variants
-   (fit, fill) show all 4 metrics.
+   Consumer-supplied sherpa-metric children slotted via slot="metrics".
+   Visibility is driven by the host's data-col-span attribute for resizable
+   containers. Non-resizable variants (fit, fill) show all metrics that
+   have data (data-label attribute).
    ========================================================================== */
 
 .metrics-area {
-  display: var(--_container-metrics-display, flex);
+  display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   gap: var(--sherpa-space-sm, 12px);
@@ -101,13 +105,13 @@ sherpa-filter-bar {
   overflow: hidden;
 }
 
-/* Hide the area entirely when no metric has data */
-.metrics-area:not(:has(sherpa-metric[data-label])) {
+/* Hide the area entirely when no slotted metric has data */
+:host(:not(:has([slot="metrics"][data-label]))) .metrics-area {
   display: none;
 }
 
 /* Hide individual empty metrics */
-.metrics-area sherpa-metric:not([data-label]) {
+::slotted(sherpa-metric:not([data-label])) {
   display: none;
 }
 
@@ -118,21 +122,21 @@ sherpa-filter-bar {
    12 cols:          all 4 metrics
    ──────────────────────────────────────────────────────────────── */
 
-:host([data-variant="resizable"]) .metrics-area sherpa-metric:nth-of-type(n + 2) {
-  display: none;
+:host([data-variant="resizable"]) ::slotted(sherpa-metric:nth-of-type(n + 2)) {
+  display: none !important;
 }
 
-:host([data-variant="resizable"][data-col-span="6"]) .metrics-area sherpa-metric:nth-of-type(2) {
-  display: flex;
+:host([data-variant="resizable"][data-col-span="6"]) ::slotted(sherpa-metric:nth-of-type(2)) {
+  display: flex !important;
 }
 
-:host([data-variant="resizable"][data-col-span="9"]) .metrics-area sherpa-metric:nth-of-type(2),
-:host([data-variant="resizable"][data-col-span="9"]) .metrics-area sherpa-metric:nth-of-type(3) {
-  display: flex;
+:host([data-variant="resizable"][data-col-span="9"]) ::slotted(sherpa-metric:nth-of-type(2)),
+:host([data-variant="resizable"][data-col-span="9"]) ::slotted(sherpa-metric:nth-of-type(3)) {
+  display: flex !important;
 }
 
-:host([data-variant="resizable"][data-col-span="12"]) .metrics-area sherpa-metric:nth-of-type(n + 2) {
-  display: flex;
+:host([data-variant="resizable"][data-col-span="12"]) ::slotted(sherpa-metric:nth-of-type(n + 2)) {
+  display: flex !important;
 }
 
 /* ==========================================================================

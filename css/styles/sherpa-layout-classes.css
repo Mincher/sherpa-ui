@@ -97,17 +97,6 @@
   grid-row: span 6;
 }
 
-/* ==========================================================================
-   Global Metrics Visibility Toggle
-   ==========================================================================
-   Sets a custom property that inherits through shadow DOM.
-   Container CSS reads --_container-metrics-display with a flex fallback.
-   ========================================================================== */
-
-body[data-hide-metrics] {
-  --_container-metrics-display: none;
-}
-
 /* Mid breakpoint: 6 columns */
 @container (max-width: 1199px) {
   .sherpa-content-area {

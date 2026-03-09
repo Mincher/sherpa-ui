@@ -4,22 +4,23 @@
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-filter-bar/sherpa-filter-bar.js';
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { TIME_RANGE_PRESETS } from '../utilities/timeframes.js';
 
 export class SherpaViewHeader extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-view-header.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-show-metrics', 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode'];
+    return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-feedback-src'];
   }
 
   #viewId = null;
 
   onAttributeChanged(name, oldValue, newValue) {
     switch (name) {
-      case 'data-show-metrics': this.#applyShowMetrics(newValue === 'true'); break;
       case 'data-label': {
         const label = this.$('.heading-label');
         if (label) label.textContent = newValue || '';
@@ -31,11 +32,10 @@ export class SherpaViewHeader extends SherpaElement {
       case 'data-edit-mode':
         this.#applyEditMode(newValue === 'true');
         break;
+      case 'data-feedback-src':
+        this.#syncFeedbackSrc(newValue);
+        break;
     }
-  }
-
-  #applyShowMetrics(show) {
-    document.body.toggleAttribute('data-hide-metrics', !show);
   }
 
   #applyEditMode(on) {
@@ -60,24 +60,17 @@ export class SherpaViewHeader extends SherpaElement {
     this.#syncFavoriteButton(on);
   }
   isFavorite() { return this.dataset.favorite === 'true'; }
-  setShowMetrics(show) {
-    this.dataset.showMetrics = show ? 'true' : 'false';
-    const toggle = this.$('#show-metrics-toggle');
-    if (toggle) toggle.state = show ? 'on' : 'off';
-  }
-  isShowMetrics() { return this.dataset.showMetrics === 'true'; }
-
   onDisconnect() {}
 
   // ============ Private Methods ============
 
   onRender() {
-    this.#setupToggles();
     this.#setupSelectors();
     this.#setupExport();
     this.#setupFeedback();
     this.#setupFavorite();
     this.#setupEditMode();
+    this.#setupGlobalFilterBar();
 
     // Apply any attributes that were set before render completed
     const heading = this.dataset.label;
@@ -86,20 +79,6 @@ export class SherpaViewHeader extends SherpaElement {
       if (label) label.textContent = heading;
     }
     this.#syncFavoriteButton(this.dataset.favorite === 'true');
-  }
-
-  #setupToggles() {
-    // Show KPI metrics toggle (default ON)
-    const showMetricsToggle = this.$('#show-metrics-toggle');
-    if (showMetricsToggle) {
-      // Initialize from toggle state
-      const showMetrics = showMetricsToggle.dataset.state === 'on';
-      this.setShowMetrics(showMetrics);
-      this.#applyShowMetrics(showMetrics);
-      showMetricsToggle.addEventListener('change', e => {
-        this.setShowMetrics(e.detail.checked);
-      });
-    }
   }
 
   #setupSelectors() {
@@ -205,6 +184,11 @@ export class SherpaViewHeader extends SherpaElement {
     });
   }
 
+  #syncFeedbackSrc(url) {
+    const iframe = this.$('#feedback-iframe');
+    if (iframe) iframe.src = url || 'about:blank';
+  }
+
   #setupFeedback() {
     const btn = this.$('#feedback-btn');
     const popover = this.$('#feedback-popover');
@@ -225,6 +209,40 @@ export class SherpaViewHeader extends SherpaElement {
     closeBtn?.addEventListener('click', close);
     backdrop?.addEventListener('click', close);
     window.addEventListener('resize', () => popover.hasAttribute('data-open') && position());
+  }
+
+  /**
+   * Set up the global filter bar.
+   * Populates datetime-range chips with TIME_RANGE_PRESETS and
+   * dispatches `globalfilterchange` on document when filters change.
+   */
+  #setupGlobalFilterBar() {
+    const filterBar = this.$('.global-filter-bar');
+    if (!filterBar) return;
+
+    // Wait a tick for the filter bar to render, then populate chips
+    requestAnimationFrame(() => {
+      const dateChips = filterBar.querySelectorAll(
+        'sherpa-button[data-filter-type="datetime-range"]',
+      );
+      for (const chip of dateChips) {
+        const options = TIME_RANGE_PRESETS.map(p => ({
+          value: p.key,
+          text: p.label,
+        }));
+        chip.setOptions?.(options);
+      }
+    });
+
+    // Listen for filterchange from the global filter bar and dispatch
+    // globalfilterchange on document so all viz children pick it up.
+    filterBar.addEventListener('filterchange', (e) => {
+      document.dispatchEvent(
+        new CustomEvent('globalfilterchange', {
+          detail: { filters: e.detail?.filters || [] },
+        }),
+      );
+    });
   }
 
 }

@@ -28,8 +28,9 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { StatusMixin } from '../utilities/status-mixin.js';
 
-export class SherpaToast extends SherpaElement {
+export class SherpaToast extends StatusMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 

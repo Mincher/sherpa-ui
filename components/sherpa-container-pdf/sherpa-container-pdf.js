@@ -36,13 +36,9 @@ export class SherpaContainerPdf extends SherpaElement {
     // Light mode is forced via color-scheme: light in the component CSS —
     // no runtime attribute needed.
 
-    // Extract container info
-    const title =
-      sourceContainer.querySelector(".container-title, #container-title")
-        ?.textContent || "";
-    const description =
-      sourceContainer.querySelector(".container-desc, #container-desc")
-        ?.textContent || "";
+    // Extract container info from host data attributes
+    const title = sourceContainer.dataset.title || "";
+    const description = sourceContainer.dataset.description || "";
 
     // Set header
     const titleEl = this.$(".pdf-title");
@@ -50,12 +46,12 @@ export class SherpaContainerPdf extends SherpaElement {
     if (titleEl) titleEl.textContent = title;
     if (descEl) descEl.textContent = description;
 
-    // Clone metrics
+    // Clone metrics from light-DOM slot="metrics" children
     const metricsContainer = this.$(".pdf-metrics");
     if (metricsContainer) {
       metricsContainer.replaceChildren();
       const sourceMetrics = sourceContainer.querySelectorAll(
-        ".content > sherpa-metric",
+        ':scope > sherpa-metric[slot="metrics"]',
       );
       sourceMetrics.forEach((metric) => {
         const clone = metric.cloneNode(true);

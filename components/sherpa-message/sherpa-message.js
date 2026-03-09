@@ -28,8 +28,9 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { StatusMixin } from '../utilities/status-mixin.js';
 
-export class SherpaMessage extends SherpaElement {
+export class SherpaMessage extends StatusMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 

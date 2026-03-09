@@ -9,10 +9,10 @@
 
   Host attributes:
     data-label               — View heading text
-    data-show-metrics        — Show KPI metrics toggle ("true"/"false")
     data-show-debug-toggles  — Show debug toggle controls
     data-favorite            — Favorite state ("true"/"false")
     data-edit-mode           — Edit mode state ("true"/"false")
+    data-feedback-src        — URL for the feedback iframe (button hidden when absent)
 
   Custom templates:
     To define a custom layout, add a new <template id="my-layout"> block
@@ -31,10 +31,6 @@
   <div class="debug-toggles">
     <span class="toolbar-divider"></span>
     <div class="toolbar-toggles">
-    <div class="toolbar-toggle" id="show-metrics-wrapper">
-      <span class="toolbar-toggle-label text-label">Show KPI metrics</span>
-      <sherpa-switch id="show-metrics-toggle" data-state="on"></sherpa-switch>
-    </div>
     </div>
   </div>
 </div>
@@ -83,6 +79,17 @@
 </div>
 </div>
 
+<!-- Global filter bar -->
+<sherpa-filter-bar class="global-filter-bar">
+  <sherpa-button
+    data-type="button-select"
+    data-filter-field="timerange"
+    data-filter-type="datetime-range"
+    data-label="Time Range"
+    data-icon-start="&#xf017;"
+  ></sherpa-button>
+</sherpa-filter-bar>
+
 <!-- Feedback popover (inside component for encapsulation) -->
 <div class="feedback-backdrop" id="feedback-backdrop"></div>
 <div class="feedback-popover" id="feedback-popover">
@@ -95,8 +102,7 @@
   <div class="feedback-content">
     <iframe 
       id="feedback-iframe" 
-      title="Feedback Survey"
-      src="/html/templates/feedback-placeholder.html">
+      title="Feedback Survey">
     </iframe>
   </div>
 </div>
