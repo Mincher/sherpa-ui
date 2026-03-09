@@ -161,8 +161,13 @@ export class SherpaFilterBar extends SherpaElement {
     // Listen for button clicks from behavior chips (mode cycling)
     this.addEventListener("buttonclick", (e) => {
       const chip = e.target;
-      // data-filter-field chips: button click is a no-op (select drives changes)
-      if (chip?.hasAttribute?.("data-filter-field")) return;
+      // data-filter-field chips: toggle active state on/off
+      if (chip?.hasAttribute?.("data-filter-field")) {
+        chip.toggleAttribute("data-active", !chip.hasAttribute("data-active"));
+        this.#syncActiveState();
+        this.#emitFilterChange();
+        return;
+      }
       if (!chip?.hasAttribute?.("data-behavior")) return;
       const behavior = chip.getAttribute("data-behavior");
       if (behavior === "sort") {
@@ -181,7 +186,14 @@ export class SherpaFilterBar extends SherpaElement {
       if (chip?.hasAttribute?.("data-filter-field")) {
         const filterType = chip.getAttribute("data-filter-type") || "text";
         const value = e.detail?.value;
-        if (filterType === "datetime-range" && value) {
+        if (!value) {
+          // "None" selected — deactivate the chip
+          chip.removeAttribute("data-active");
+          this.#syncActiveState();
+          this.#emitFilterChange();
+          return;
+        }
+        if (filterType === "datetime-range") {
           // Update label from TIME_RANGE_PRESETS if applicable
           const preset = TIME_RANGE_PRESETS.find(p => p.key === value);
           if (preset) chip.dataset.label = preset.label;
@@ -207,6 +219,13 @@ export class SherpaFilterBar extends SherpaElement {
           const col = this.#columns.find(c => c.field === field);
           if (col) chip.dataset.label = col.name || formatFieldName(field);
           chip.toggleAttribute("data-active", true);
+          this.#emitFilterChange();
+        } else {
+          // "None" selected — deactivate
+          delete chip.dataset.field;
+          delete chip.dataset.mode;
+          chip.dataset.label = behavior === "sort" ? "Sort" : "Group";
+          chip.removeAttribute("data-active");
           this.#emitFilterChange();
         }
       } else if (behavior === "timeframe") {
@@ -381,10 +400,10 @@ export class SherpaFilterBar extends SherpaElement {
 
     sel.replaceChildren();
 
-    // Placeholder
+    // Placeholder — renders as FA plus icon via icon-select CSS
     const placeholder = document.createElement("option");
     placeholder.value = "";
-    placeholder.textContent = "+ Add filter";
+    placeholder.textContent = "\uf067";
     placeholder.selected = true;
     placeholder.disabled = true;
     sel.appendChild(placeholder);
@@ -740,7 +759,10 @@ export class SherpaFilterBar extends SherpaElement {
   #populateChipSelect(chip, field) {
     if (!field) return;
     const values = this.#extractUniqueValues(field);
-    const options = values.map(v => ({ value: v, text: v }));
+    const options = [
+      { value: "", text: "None" },
+      ...values.map(v => ({ value: v, text: v })),
+    ];
     chip.setOptions?.(options);
   }
 
@@ -777,18 +799,21 @@ export class SherpaFilterBar extends SherpaElement {
 
   /** Populate a sort/segment chip's select with column choices. */
   #populateColumnsSelect(chip) {
-    const options = this.#columns.map(c => ({
-      value: c.field,
-      text: c.name || formatFieldName(c.field),
-    }));
+    const options = [
+      { value: "", text: "None" },
+      ...this.#columns.map(c => ({
+        value: c.field,
+        text: c.name || formatFieldName(c.field),
+      })),
+    ];
     chip.setOptions?.(options);
   }
 
-  /** Get selected values from a chip's internal select. */
+  /** Get selected values from a chip's internal select (excludes empty "None" values). */
   #getChipSelectedValues(chip) {
     const sel = chip.selectElement;
     if (!sel) return [];
-    return Array.from(sel.selectedOptions, o => o.value);
+    return Array.from(sel.selectedOptions, o => o.value).filter(Boolean);
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -868,14 +893,15 @@ export class SherpaFilterBar extends SherpaElement {
     const current = chip.dataset.mode;
     if (!current || current === "off") {
       chip.dataset.mode = "asc";
+      chip.dataset.iconStart = "\uf062"; // fa-arrow-up
       chip.toggleAttribute("data-active", true);
     } else if (current === "asc") {
       chip.dataset.mode = "desc";
+      chip.dataset.iconStart = "\uf063"; // fa-arrow-down
     } else {
       delete chip.dataset.mode;
+      chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
       chip.removeAttribute("data-active");
-      delete chip.dataset.field;
-      chip.dataset.label = "Sort";
     }
     this.#emitFilterChange();
   }
@@ -884,8 +910,6 @@ export class SherpaFilterBar extends SherpaElement {
   #cycleSegmentMode(chip) {
     if (chip.hasAttribute("data-active")) {
       chip.removeAttribute("data-active");
-      delete chip.dataset.field;
-      chip.dataset.label = "Group";
     } else {
       chip.toggleAttribute("data-active", true);
     }
@@ -894,13 +918,16 @@ export class SherpaFilterBar extends SherpaElement {
 
   /**
    * Populate a timeframe chip's select with TIME_RANGE_PRESETS.
-   * @param {HTMLElement} chip — sherpa-button[data-behavior="timeframe"]
+   * @param {HTMLElement} chip — sherpa-button with datetime-range type
    */
   #populateTimeframeSelect(chip) {
-    const options = TIME_RANGE_PRESETS.map(p => ({
-      value: p.key,
-      text: p.label,
-    }));
+    const options = [
+      { value: "", text: "None" },
+      ...TIME_RANGE_PRESETS.map(p => ({
+        value: p.key,
+        text: p.label,
+      })),
+    ];
     chip.setOptions?.(options);
   }
 }

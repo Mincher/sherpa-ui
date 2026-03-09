@@ -255,8 +255,10 @@ export class SherpaNav extends SherpaElement {
       this.dataset.pinned = root.dataset.pinned || "false";
       this.dataset.mode = root.dataset.mode || SherpaNav.MODES.DEFAULT;
     }
-    this.$(".nav-pin-btn")?.setActive(this.isPinned);
-    this.$(".nav-edit-btn")?.setActive(this.isEditing);
+    const pinBtn = this.$(".nav-pin-btn");
+    if (pinBtn) pinBtn.active = this.isPinned;
+    const editBtn = this.$(".nav-edit-btn");
+    if (editBtn) editBtn.active = this.isEditing;
     if (this.isPinned)
       this.closest(".sherpa-app-layout")?.setAttribute(
         "data-nav-pinned",
@@ -374,7 +376,8 @@ export class SherpaNav extends SherpaElement {
 
   #onPinnedChange(pinned) {
     this.closest(".sherpa-app-layout")?.setAttribute("data-nav-pinned", pinned);
-    this.$(".nav-pin-btn")?.setActive(pinned);
+    const pinBtn = this.$(".nav-pin-btn");
+    if (pinBtn) pinBtn.active = pinned;
     this.#emit("navpinchange", { pinned });
   }
 
@@ -384,7 +387,8 @@ export class SherpaNav extends SherpaElement {
       newMode !== SherpaNav.MODES.SEARCH
     )
       this.#applySearchFilter("");
-    this.$(".nav-edit-btn")?.setActive(newMode === SherpaNav.MODES.EDIT);
+    const editBtn = this.$(".nav-edit-btn");
+    if (editBtn) editBtn.active = newMode === SherpaNav.MODES.EDIT;
     this.#emit("navmodechange", { mode: newMode, previousMode: oldMode });
   }
 

@@ -466,27 +466,6 @@
 
 
 /* ==========================================================================
-   Sort direction indicator (button-select with data-mode)
-   Show ascending / descending arrow via ::after on the trigger.
-   ========================================================================== */
-
-:host([data-type="button-select"][data-mode]) .trigger::after {
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-size: 0.75em;
-  margin-inline-start: var(--sherpa-space-2xs, 4px);
-}
-
-:host([data-type="button-select"][data-mode="asc"]) .trigger::after {
-  content: "\f062";  /* fa-arrow-up */
-}
-
-:host([data-type="button-select"][data-mode="desc"]) .trigger::after {
-  content: "\f063";  /* fa-arrow-down */
-}
-
-
-/* ==========================================================================
    icon-select — Icon-only select (action picker / menu trigger)
    ========================================================================== */
 
