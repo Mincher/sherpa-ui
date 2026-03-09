@@ -36,9 +36,14 @@
     <slot name="sort"></slot>
     <slot name="presets"></slot>
     <slot></slot>
-    <select class="add-filter-select" hidden>
-      <option value="" selected disabled>+ Add filter</option>
-    </select>
+    <sherpa-button
+      class="add-filter-button"
+      data-type="icon-select"
+      data-variant="secondary"
+      data-icon-start="&#xf067;"
+      data-size="small"
+      hidden
+    ></sherpa-button>
     <slot name="actions"></slot>
   </div>
 </template>

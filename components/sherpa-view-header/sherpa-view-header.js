@@ -4,8 +4,10 @@
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-filter-bar/sherpa-filter-bar.js';
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { TIME_RANGE_PRESETS } from '../utilities/timeframes.js';
 
 export class SherpaViewHeader extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
@@ -68,6 +70,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#setupFeedback();
     this.#setupFavorite();
     this.#setupEditMode();
+    this.#setupGlobalFilterBar();
 
     // Apply any attributes that were set before render completed
     const heading = this.dataset.label;
@@ -206,6 +209,40 @@ export class SherpaViewHeader extends SherpaElement {
     closeBtn?.addEventListener('click', close);
     backdrop?.addEventListener('click', close);
     window.addEventListener('resize', () => popover.hasAttribute('data-open') && position());
+  }
+
+  /**
+   * Set up the global filter bar.
+   * Populates datetime-range chips with TIME_RANGE_PRESETS and
+   * dispatches `globalfilterchange` on document when filters change.
+   */
+  #setupGlobalFilterBar() {
+    const filterBar = this.$('.global-filter-bar');
+    if (!filterBar) return;
+
+    // Wait a tick for the filter bar to render, then populate chips
+    requestAnimationFrame(() => {
+      const dateChips = filterBar.querySelectorAll(
+        'sherpa-button[data-filter-type="datetime-range"]',
+      );
+      for (const chip of dateChips) {
+        const options = TIME_RANGE_PRESETS.map(p => ({
+          value: p.key,
+          text: p.label,
+        }));
+        chip.setOptions?.(options);
+      }
+    });
+
+    // Listen for filterchange from the global filter bar and dispatch
+    // globalfilterchange on document so all viz children pick it up.
+    filterBar.addEventListener('filterchange', (e) => {
+      document.dispatchEvent(
+        new CustomEvent('globalfilterchange', {
+          detail: { filters: e.detail?.filters || [] },
+        }),
+      );
+    });
   }
 
 }

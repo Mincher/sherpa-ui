@@ -1,39 +1,40 @@
 <!--
-  sherpa-button.html — Unified button / behavior-chip template.
+  sherpa-button.html — Multi-template button component.
 
-  Single template containing all elements. CSS controls visibility
-  based on host attributes (data-behavior, data-closeable, etc.).
+  Four templates selected via data-type attribute:
 
-  Layout modes:
-    Plain button:     [ trigger ]
-    Behavior chip:    [ trigger | select ▼ ]
-    Select only:      [ select (icon) ]
-    With close:       [ ... | close × ]
+    default       — Standard button: icon(s) + label + badge
+    icon          — Icon-only button (square aspect-ratio)
+    button-select — Button + native <select> side by side (control group)
+    icon-select   — Icon-only <select> (action picker, menu trigger)
 
-  Label text comes from data-label attribute or light-DOM textContent,
-  read programmatically by JS — no <slot> projection needed.
+  Template selection:
+    get templateId() returns dataset.type || "default"
+    Each template contains only the elements it needs.
 
-  Host attributes:
+  Host attributes (shared):
+    data-type         — "icon" | "button-select" | "icon-select" (default omitted)
     data-label        — Button label text
     data-icon-start   — FontAwesome unicode for leading icon
-    data-icon-end     — FontAwesome unicode for trailing icon (plain buttons)
+    data-icon-end     — FontAwesome unicode for trailing icon
     data-icon-weight  — Icon weight: "regular" | "light" | "thin" (default: solid)
     data-variant      — "primary" | "secondary" | "tertiary"
     data-size         — "2x-small" | "x-small" | "small" | medium (default) | "large"
-    data-active       — Active/pressed state (boolean)
+    data-active       — Active/pressed state (boolean attr)
     data-status       — "success" | "critical" | "warning" | "info" | "urgent"
-    data-behavior     — "sort" | "filter" | "segment" | "timeframe"
-    data-mode         — Sort: "asc" | "desc" | "off"; Others: "on" | "off"
-    data-field        — Selected field name (behavior buttons)
-    data-closeable    — Shows close button (boolean)
     data-count        — Badge count (shown when > 0)
-    data-boolean      — Boolean field — hides select (boolean)
-    data-select-only  — Icon-only select mode (boolean)
-    disabled          — Disabled state (boolean)
+    data-closeable    — Shows close button (button-select only)
+    disabled          — Disabled state (boolean attr)
+
+  Events dispatched:
+    buttonclick  — Trigger button clicked (detail: { })
+    selectchange — Select value changed (detail: { value, selectedOptions })
+    chipremove   — Close button clicked (detail: { })
+    change       — Re-dispatched native change (bubbles, does not compose)
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Trigger + select + close
+     DEFAULT — Standard button: icon(s) + label + badge
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <button class="trigger" type="button">
@@ -42,13 +43,36 @@
     <span class="badge" aria-hidden="true"></span>
     <i class="icon-end" aria-hidden="true"></i>
   </button>
-  <select class="select">
-    <button type="button">
-      <i class="select-icon" aria-hidden="true"></i>
-      <i class="select-chevron" aria-hidden="true">&#xf078;</i>
-    </button>
-  </select>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ICON — Icon-only button (square, no label)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="icon">
+  <button class="trigger" type="button">
+    <i class="icon-start" aria-hidden="true"></i>
+  </button>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     BUTTON-SELECT — Button + native select side by side (control group)
+     Used for behavior chips: sort, filter, segment, timeframe
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="button-select">
+  <button class="trigger" type="button">
+    <i class="icon-start" aria-hidden="true"></i>
+    <span class="label"></span>
+    <span class="badge" aria-hidden="true"></span>
+  </button>
+  <select class="select"></select>
   <button class="close" type="button" aria-label="Close">
     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
   </button>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ICON-SELECT — Icon-only select (action picker, menu trigger)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="icon-select">
+  <select class="select"></select>
 </template>

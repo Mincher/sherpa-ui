@@ -200,3 +200,9 @@
 :host([data-show-debug-toggles]) .debug-toggles {
   display: contents;
 }
+
+/* ---- global filter bar ---- */
+
+.global-filter-bar {
+  padding-inline: var(--sherpa-space-xs);
+}

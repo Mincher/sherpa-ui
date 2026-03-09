@@ -1,34 +1,30 @@
 /**
  * sherpa-button.css
- * Unified styles for SherpaButton — plain buttons and behavior chips.
+ * Multi-template button component styles.
+ *
+ * Templates (via data-type):
+ *   default       — Standard button with icon(s), label, badge
+ *   icon          — Icon-only square button
+ *   button-select — Button + native select side by side (control group)
+ *   icon-select   — Icon-only select (action picker / menu trigger)
  *
  * Architecture:
  *   :host is a wrapper providing border, border-radius, and overflow.
- *   .trigger <button> is the primary interactive element — background,
- *   colour, padding, and sizing. No role/tabindex JS needed; native
- *   <button> provides keyboard and accessibility semantics.
- *
- *   .select is a native <select> with appearance: base-select, shown
- *   when data-behavior is set. Its <button> child displays a chevron.
- *   Adding `multiple` to the select enables multi-selection — same CSS.
- *
- *   .close is a remove button, shown when data-closeable is set.
+ *   .trigger <button> is the primary interactive element.
+ *   .select is a native <select> with appearance: none + SVG chevron.
+ *   .close is a remove button (button-select template only).
  *
  *   Variants (primary/secondary/tertiary) set CSS custom properties at
- *   :host level. .trigger consumes them via var().
- *
- *   Behavior buttons (data-behavior) override to chip-like styling:
- *   small size, visible border, tertiary trigger background.
+ *   :host level. Child elements consume them via var().
  *
  * Status — global token inheritance:
- *   Same fallback-chain pattern: primary uses --_status-surface-strong,
+ *   Fallback-chain pattern: primary uses --_status-surface-strong,
  *   secondary uses --_status-surface, tertiary uses --_status-text.
  *
  * Host attributes:
- *   data-label, data-icon-start, data-icon-end, data-icon-weight,
- *   data-variant, data-size, data-active, data-status, data-behavior,
- *   data-mode, data-field, data-closeable, data-count, data-boolean,
- *   disabled
+ *   data-type, data-label, data-icon-start, data-icon-end, data-icon-weight,
+ *   data-variant, data-size, data-active, data-status, data-closeable,
+ *   data-count, disabled
  */
 
 
@@ -43,7 +39,7 @@
   vertical-align: middle;
   overflow: hidden;
 
-  /* Sizing tokens — consumed by .trigger and child elements */
+  /* Sizing tokens — consumed by children */
   --_button-size: var(--sherpa-size-2xl, 32px);
   --_button-padding: var(--sherpa-space-xs, 8px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
@@ -111,9 +107,6 @@
 :host([data-icon-start]) .icon-start { display: inline-flex; }
 :host([data-icon-end]) .icon-end     { display: inline-flex; }
 
-/* Icon-end hidden for behavior buttons (select / close replace it) */
-:host([data-behavior]) .icon-end { display: none; }
-
 /* ── Icon weight overrides ───────────────────────────────────────────── */
 
 :host([data-icon-weight="regular"]) { --_icon-weight: 400; }
@@ -162,23 +155,25 @@
 
 
 /* ==========================================================================
-   Icon-only mode — no data-label AND not a behavior button
+   Icon-only mode — data-type="icon" template (square trigger)
+   Also applies to default template when no label is set.
    ========================================================================== */
 
-:host(:not([data-label]):not([data-behavior])) .trigger {
+:host([data-type="icon"]) .trigger,
+:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])) .trigger {
   aspect-ratio: 1;
-  padding-inline: var(--sherpa-space-xs, 8px);
+  padding-inline: var(--_button-padding);
 }
 
-:host(:not([data-label]):not([data-behavior])) .label {
+:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])) .label {
   display: none;
 }
 
-:host(:not([data-label]):not([data-behavior])[data-size="small"]) .trigger {
+:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])[data-size="small"]) .trigger {
   padding-inline: var(--sherpa-space-2xs, 4px);
 }
 
-:host(:not([data-label]):not([data-behavior])[data-size="large"]) .trigger {
+:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])[data-size="large"]) .trigger {
   padding-inline: var(--sherpa-space-xs, 8px);
 }
 
@@ -260,14 +255,14 @@
   background-color: var(--_surface-down);
 }
 
-/* Border hover — plain buttons only (behavior buttons keep static border) */
-:host(:not([disabled]):not([data-behavior]):hover) {
+/* Border hover — standard buttons only */
+:host(:not([disabled]):not([data-type="button-select"]):hover) {
   border-color: var(--_border-hover);
 }
 
 
 /* ==========================================================================
-   Variants — set private vars at :host, .trigger consumes them
+   Variants — set private vars at :host, children consume them
    ========================================================================== */
 
 /* ── Secondary ───────────────────────────────────────────────────────── */
@@ -330,190 +325,61 @@
 
 
 /* ==========================================================================
-   Select — native <select> with customisable UI (hidden by default)
+   Select — native <select>, appearance:none, SVG chevron background
+   (button-select template: side-by-side with trigger)
    ========================================================================== */
 
-.select,
-.select::picker(select) {
-  appearance: base-select;
-}
-
 .select {
-  display: none;
+  appearance: none;
+  -webkit-appearance: none;
   box-sizing: border-box;
-  border: none;
-  background: none;
-  padding: 0;
-  margin: 0;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-
-:host([data-behavior]) .select { display: inline-flex; align-items: center; }
-
-/* Hide native picker icon — <button> child provides the chevron */
-.select::picker-icon { display: none; }
-
-/* Select trigger button — chevron only */
-.select > button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   height: var(--_button-size);
   width: var(--_button-size);
+  margin: 0;
   padding: 0;
   border: none;
-  border-radius: 0;
   border-inline-start: var(--sherpa-border-width-xs, 1px) solid
     var(--sherpa-border-control-secondary-default);
-  background: var(--sherpa-surface-control-tertiary-default);
-  color: var(--sherpa-text-default-secondary);
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  background-color: var(--sherpa-surface-control-tertiary-default);
+  color: transparent;
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
+  font: inherit;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23666' d='M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px;
+  transition: background-color 0.15s;
 }
 
-:host(:not([disabled])) .select > button:hover {
+.select:hover {
   background-color: var(--sherpa-surface-control-secondary-hover);
 }
 
-:host(:not([disabled])) .select > button:active {
+.select:active {
   background-color: var(--sherpa-surface-control-secondary-down);
 }
 
-/* Active state — select trigger inherits active tokens */
-:host([data-active]) .select > button {
+/* Active state */
+:host([data-active]) .select {
   border-inline-start-color: var(--sherpa-border-control-active-default);
   background-color: var(--_surface);
-  color: var(--_text);
 }
 
-:host([data-active]:not([disabled])) .select > button:hover {
+:host([data-active]:not([disabled])) .select:hover {
   background-color: var(--_surface-hover);
 }
 
-:host([data-active]:not([disabled])) .select > button:active {
+:host([data-active]:not([disabled])) .select:active {
   background-color: var(--_surface-down);
-}
-
-/* Select button icons */
-.select-icon,
-.select-chevron {
-  font-family: "Font Awesome 6 Free";
-  font-style: normal;
-  line-height: 1;
-}
-
-.select-chevron { font-weight: 900; }
-
-.select-icon {
-  display: none;
-  font-weight: var(--_icon-weight);
 }
 
 /* Disabled */
 :host([disabled]) .select { pointer-events: none; }
 
-/* Boolean fields — hide select */
-:host([data-boolean]) .select { display: none; }
-
 
 /* ==========================================================================
-   Picker dropdown — menu surface
-   ========================================================================== */
-
-.select::picker(select) {
-  background-color: var(--sherpa-surface-container-default);
-  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default);
-  border-radius: var(--sherpa-border-rounding-base);
-  box-shadow: var(--sherpa-shadow-default-md);
-  min-width: 180px;
-  max-width: 320px;
-  padding: var(--sherpa-space-sm, 12px);
-  box-sizing: border-box;
-}
-
-
-/* ==========================================================================
-   Options / optgroup / hr — match menu item styling
-   ========================================================================== */
-
-.select option {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px);
-  border-radius: var(--sherpa-border-rounding-sm);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.select option:hover,
-.select option:focus {
-  background-color: var(--sherpa-surface-control-hover);
-}
-
-.select option:checked {
-  background-color: var(--sherpa-surface-control-active-default);
-  font-weight: 600;
-}
-
-.select option:disabled {
-  color: var(--sherpa-text-inactive-default);
-  cursor: default;
-  pointer-events: none;
-}
-
-.select option::checkmark {
-  order: 1;
-  margin-inline-start: auto;
-}
-
-.select optgroup { padding: 0; }
-
-.select optgroup > legend,
-.select optgroup::before {
-  font-size: var(--sherpa-font-xs-size, 10px);
-  font-weight: 600;
-  line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--sherpa-text-default-secondary);
-  padding: var(--sherpa-space-xs, 8px);
-  cursor: default;
-}
-
-.select hr {
-  height: 1px;
-  border: none;
-  background-color: var(--sherpa-border-control-secondary-default);
-  margin: var(--sherpa-space-2xs, 4px) 0;
-}
-
-
-/* ==========================================================================
-   Picker animation
-   ========================================================================== */
-
-.select::picker(select) {
-  opacity: 0;
-  transition: opacity 0.15s ease, display 0.15s ease allow-discrete,
-              overlay 0.15s ease allow-discrete;
-}
-
-.select:open::picker(select) { opacity: 1; }
-
-@starting-style {
-  .select:open::picker(select) { opacity: 0; }
-}
-
-
-/* ==========================================================================
-   Close button (hidden by default)
+   Close button (button-select template only, shown via data-closeable)
    ========================================================================== */
 
 .close {
@@ -559,16 +425,13 @@
   background-color: var(--_surface-down);
 }
 
-/* Preset chips — no close button */
-:host([slot="presets"]) .close { display: none; }
-
 
 /* ==========================================================================
-   Behavior — chip mode defaults (sort / filter / segment / timeframe)
-   Overrides primary defaults to small / tertiary chip styling.
+   button-select — Control-group chip styling
+   Small / tertiary / bordered by default. Trigger + select + close.
    ========================================================================== */
 
-:host([data-behavior]) {
+:host([data-type="button-select"]) {
   --_button-size:    var(--sherpa-size-lg, 24px);
   --_button-padding: var(--sherpa-space-2xs, 4px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
@@ -581,13 +444,13 @@
   font-size:         var(--sherpa-fonts-scale-sm, 12px);
 }
 
-:host([data-behavior]) .trigger {
+:host([data-type="button-select"]) .trigger {
   font-weight: 600;
   letter-spacing: 0.1px;
 }
 
-/* Active — behavior buttons */
-:host([data-behavior][data-active]) {
+/* Active — button-select chips */
+:host([data-type="button-select"][data-active]) {
   --_surface:       var(--sherpa-surface-control-active-default);
   --_text:          var(--sherpa-text-active-base);
   --_icon-color:    var(--sherpa-icon-active-base, var(--sherpa-text-active-base));
@@ -596,23 +459,43 @@
   border-color:     var(--sherpa-border-control-active-default);
 }
 
-/* Disabled — behavior buttons */
-:host([data-behavior][disabled]) {
+/* Disabled — button-select chips */
+:host([data-type="button-select"][disabled]) {
   border-color: var(--sherpa-border-control-inactive);
 }
 
 
 /* ==========================================================================
-   Select-only mode — icon trigger opens action picker
+   Sort direction indicator (button-select with data-mode)
+   Show ascending / descending arrow via ::after on the trigger.
    ========================================================================== */
 
-:host([data-select-only]) .trigger { display: none; }
-:host([data-select-only]) .close { display: none; }
-:host([data-select-only]) .select { display: inline-flex; align-items: center; }
-:host([data-select-only]) .select-icon { display: inline-flex; }
-:host([data-select-only]) .select-chevron { display: none; }
+:host([data-type="button-select"][data-mode]) .trigger::after {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.75em;
+  margin-inline-start: var(--sherpa-space-2xs, 4px);
+}
 
-:host([data-select-only]) .select > button {
+:host([data-type="button-select"][data-mode="asc"]) .trigger::after {
+  content: "\f062";  /* fa-arrow-up */
+}
+
+:host([data-type="button-select"][data-mode="desc"]) .trigger::after {
+  content: "\f063";  /* fa-arrow-down */
+}
+
+
+/* ==========================================================================
+   icon-select — Icon-only select (action picker / menu trigger)
+   ========================================================================== */
+
+:host([data-type="icon-select"]) .select {
   border-inline-start: none;
+  color: var(--_icon-color);
+  font-family: "Font Awesome 6 Free";
+  font-weight: var(--_icon-weight);
+  text-align: center;
+  background-image: none;
 }
 

@@ -505,9 +505,9 @@ export function ContentAttributesMixin(Base) {
           segmentFilter = f;
           continue;
         }
-        if (f.type === "filter" && f.values?.length) {
-          valueFilters.push(f);
-        }
+        // New API types (text, number, number-range, datetime-range)
+        // and legacy type ("filter") — all go to valueFilters
+        valueFilters.push(f);
       }
 
       if (sortFilter) {
@@ -541,24 +541,12 @@ export function ContentAttributesMixin(Base) {
     }
 
     #onGlobalFilter(e) {
-      const globalFilters = e.detail?.filters || [];
-      const timerange = e.detail?.timerange || null;
-      const filterEntries = [];
-
-      for (const gf of globalFilters) {
-        if (gf.values?.length) {
-          filterEntries.push({
-            field: gf.field,
-            operator: "in",
-            values: gf.values,
-          });
-        }
-      }
-      if (timerange) {
-        filterEntries.push({ type: "timerange", ...timerange });
-      }
-      if (filterEntries.length) {
-        this.#reQueryWithFilters(filterEntries);
+      const filters = e.detail?.filters || [];
+      // Pass all filter entries through to the data pipeline.
+      // New API entries are self-describing: { field, type, operator, value, values, range }
+      // Legacy entries may include { type: "timeframe", rangeKey, range }
+      if (filters.length) {
+        this.#reQueryWithFilters(filters);
       }
     }
 
