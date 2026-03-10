@@ -2,10 +2,9 @@
  * sherpa-button.js
  * Multi-template button web component.
  *
- * Five templates (selected via data-type → get templateId()):
- *   default       — Standard button: icon(s) + label + badge
+ * Four templates (selected via data-type → get templateId()):
+ *   default       — Standard button: icon(s) + label + badge + optional close
  *   icon          — Icon-only square button
- *   button-select — Button + native <select> side by side (control group)
  *   button-menu   — Button + menu trigger side by side (action menu)
  *   icon-menu     — Icon-only menu trigger (overflow menus)
  *
@@ -21,10 +20,6 @@
  *     Unified (default): clicking anywhere opens the menu.
  *     Split (data-split): left = buttonclick, right chevron = menu.
  *
- *   button-select also supports these two modes:
- *     Unified (default): clicking the trigger opens the native select.
- *     Split (data-split): left = buttonclick, right = select dropdown.
- *
  *   If `data-menu-template` is set (e.g. "container"), the button stamps
  *   the matching template from SherpaMenu.getMenuTemplate(id) into the
  *   menu, then dispatches `menu-populate` so consumers can inject dynamic
@@ -35,9 +30,7 @@
  *
  * Events dispatched:
  *   buttonclick    — Trigger button clicked. detail: { }
- *   selectchange   — Select value changed.  detail: { value, values }
  *   chipremove     — Close button clicked.   detail: { }
- *   change         — Re-dispatched native change (bubbles, does not compose)
  *   menu-open      — Menu is about to show. detail: { }
  *   menu-close     — Menu was dismissed. detail: { }
  *   menu-select    — Menu item selected. detail: { item, action, ... }
@@ -46,7 +39,7 @@
  * Attributes:
  *   data-type, data-label, data-variant, data-size, data-active,
  *   data-status, data-icon-start, data-icon-end, data-icon-weight,
- *   data-closeable, data-count, data-split, disabled,
+ *   data-dismissable, data-count, data-split, disabled,
  *   data-menu, data-menu-position, data-menu-template
  */
 
@@ -73,7 +66,7 @@ export class SherpaButton extends SherpaElement {
       "disabled",
       "data-icon-start",
       "data-icon-end",
-      "data-closeable",
+      "data-dismissable",
       "data-count",
       "data-menu",
       "data-menu-position",
@@ -94,12 +87,10 @@ export class SherpaButton extends SherpaElement {
   #iconStartEl = null;
   #iconEndEl = null;
   #badgeEl = null;
-  #selectEl = null;
   #closeEl = null;
   #menuTriggerEl = null;
   #menuEl = null;
   #menuClosedAt = 0;
-  #lightDomObserver = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
@@ -109,11 +100,10 @@ export class SherpaButton extends SherpaElement {
     this.#iconStartEl = this.$(".icon-start");
     this.#iconEndEl = this.$(".icon-end");
     this.#badgeEl = this.$(".badge");
-    this.#selectEl = this.$(".select");
     this.#closeEl = this.$(".close");
     this.#menuTriggerEl = this.$(".menu-trigger");
 
-    // Default variant for standard buttons (not button-select / button-menu / icon-menu)
+    // Default variant for standard buttons (not button-menu / icon-menu)
     const type = this.dataset.type;
     if (!type && !this.dataset.variant) {
       this.dataset.variant = "primary";
@@ -126,27 +116,18 @@ export class SherpaButton extends SherpaElement {
     this.#syncLabel();
     this.#syncIcons();
     this.#syncBadge();
-    this.#initLightDomOptions();
   }
 
   onConnect() {
     this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
-    this.#selectEl?.addEventListener("change", this.#onSelectChange);
     this.#closeEl?.addEventListener("click", this.#onCloseClick);
     this.#menuTriggerEl?.addEventListener("click", this.#onMenuTriggerClick);
-    this.#observeLightDomOptions();
   }
 
   onDisconnect() {
     this.#triggerEl?.removeEventListener("click", this.#onTriggerClick);
-    this.#selectEl?.removeEventListener("change", this.#onSelectChange);
     this.#closeEl?.removeEventListener("click", this.#onCloseClick);
     this.#menuTriggerEl?.removeEventListener("click", this.#onMenuTriggerClick);
-
-    if (this.#lightDomObserver) {
-      this.#lightDomObserver.disconnect();
-      this.#lightDomObserver = null;
-    }
 
     if (this.#menuEl) {
       if (this.#menuEl.open) this.#menuEl.hide();
@@ -159,7 +140,6 @@ export class SherpaButton extends SherpaElement {
     switch (name) {
       case "disabled":
         this.setAttribute("aria-disabled", newValue !== null ? "true" : "false");
-        if (this.#selectEl) this.#selectEl.disabled = newValue !== null;
         break;
 
       case "data-label":
@@ -202,65 +182,6 @@ export class SherpaButton extends SherpaElement {
     this.#badgeEl.textContent = this.dataset.count ?? "";
   }
 
-  /* ── Light DOM options import ───────────────────────────────────
-   *
-   * For the select-bearing template (button-select),
-   * import <option>, <optgroup>, <hr> from light DOM into the
-   * shadow <select>. Consumers declare options declaratively as
-   * children of the host element:
-   *
-   *   <sherpa-button data-type="button-select" data-label="Sort">
-   *     <option value="">None</option>
-   *     <option value="name">Name</option>
-   *     <option value="date">Date</option>
-   *   </sherpa-button>
-   *
-   * A MutationObserver watches for options added after initial
-   * render so consumer code can append options at any time.
-   * ─────────────────────────────────────────────────────────────── */
-
-  #initLightDomOptions() {
-    if (!this.#selectEl) return;
-    this.#importLightDomOptions();
-  }
-
-  /** Copy light-DOM option/optgroup/hr children into the shadow select. */
-  #importLightDomOptions() {
-    if (!this.#selectEl) return;
-    const nodes = this.querySelectorAll(
-      ":scope > option, :scope > optgroup, :scope > hr",
-    );
-    if (!nodes.length) return;
-    for (const el of nodes) {
-      this.#selectEl.appendChild(el.cloneNode(true));
-    }
-  }
-
-  /**
-   * Watch for option/optgroup children added or removed after render.
-   * When mutations occur, re-sync the shadow select from light DOM.
-   */
-  #observeLightDomOptions() {
-    if (!this.#selectEl) return;
-
-    const optionTags = new Set(["OPTION", "OPTGROUP", "HR"]);
-    this.#lightDomObserver = new MutationObserver((mutations) => {
-      const relevant = mutations.some((m) =>
-        [...m.addedNodes, ...m.removedNodes].some(
-          (n) => n.nodeType === 1 && optionTags.has(n.tagName),
-        ),
-      );
-      if (!relevant) return;
-      this.#selectEl.replaceChildren();
-      this.#importLightDomOptions();
-    });
-
-    this.#lightDomObserver.observe(this, {
-      childList: true,
-      subtree: false,
-    });
-  }
-
   /* ── Event handlers ───────────────────────────────────────────── */
 
   #onTriggerClick = (e) => {
@@ -280,16 +201,6 @@ export class SherpaButton extends SherpaElement {
       if (!this.hasAttribute("data-split")) {
         e.stopPropagation();
         this.#toggleMenu();
-        return;
-      }
-      // Split mode — left side dispatches buttonclick (fall through)
-    }
-
-    // button-select: unified mode opens native select on trigger; split mode fires buttonclick
-    if (type === "button-select") {
-      if (!this.hasAttribute("data-split")) {
-        e.stopPropagation();
-        this.#selectEl?.showPicker();
         return;
       }
       // Split mode — left side dispatches buttonclick (fall through)
@@ -326,26 +237,6 @@ export class SherpaButton extends SherpaElement {
       this.#showMenu();
     }
   }
-
-  #onSelectChange = (_e) => {
-    if (this.disabled) return;
-    const values = Array.from(
-      this.#selectEl.selectedOptions,
-      (o) => o.value,
-    );
-    this.dispatchEvent(
-      new CustomEvent("selectchange", {
-        bubbles: true,
-        composed: true,
-        detail: {
-          value: this.#selectEl.value,
-          values,
-        },
-      }),
-    );
-    // Re-dispatch change on host (native change doesn't cross shadow boundary)
-    this.dispatchEvent(new Event("change", { bubbles: true }));
-  };
 
   #onCloseClick = (e) => {
     e.stopPropagation();
@@ -411,12 +302,11 @@ export class SherpaButton extends SherpaElement {
     this.active = true;
     const menu = this.#ensureMenu();
 
-    // Clear previous content to avoid duplicates on re-open
-    menu.replaceChildren();
-
-    // Stamp static template from the menu template registry (if set)
+    // Stamp static template from the menu template registry (if set).
+    // Only clear when stamping a template — setMenuItems() content persists.
     const tplId = this.dataset.menuTemplate;
     if (tplId) {
+      menu.replaceChildren();
       await SherpaMenu.ready;
       const html = SherpaMenu.getMenuTemplate(tplId);
       if (html) {
@@ -487,64 +377,59 @@ export class SherpaButton extends SherpaElement {
     this.dataset.label = val;
   }
 
-  /** The native <select> element in shadow DOM (button-select only). */
-  get selectElement() {
-    return this.#selectEl;
-  }
-
-  /** Current select value (single-select). */
-  get value() {
-    return this.#selectEl?.value ?? "";
-  }
-  set value(v) {
-    if (this.#selectEl) this.#selectEl.value = v;
-  }
-
   /**
-   * Programmatically set options on the select.
+   * Programmatically populate the button's menu with items.
+   * Creates <sherpa-menu-item> elements inside the menu.
    * If the button hasn't rendered yet, defers until render completes.
-   * @param {Array<{value, text, selected?, disabled?}>} options
+   *
+   * @param {Array<{value, text, selected?, disabled?, keepOpen?}>} items
+   * @param {{ selection?: "checkbox"|"radio"|"toggle", group?: string }} [opts]
    */
-  setOptions(options) {
-    if (!this.#selectEl) {
-      // Button hasn't rendered yet — defer until render completes
-      this.rendered.then(() => this.setOptions(options));
-      return;
-    }
-    this.#selectEl.replaceChildren();
-    for (const o of options) {
-      const opt = document.createElement("option");
-      opt.value = o.value ?? "";
-      opt.textContent = o.text ?? o.value ?? "";
-      if (o.selected) opt.selected = true;
-      if (o.disabled) opt.disabled = true;
-      this.#selectEl.appendChild(opt);
-    }
-  }
+  setMenuItems(items, opts = {}) {
+    const menu = this.#ensureMenu();
+    menu.replaceChildren();
 
-  /**
-   * Programmatically set option groups on the select.
-   * If the button hasn't rendered yet, defers until render completes.
-   * @param {Array<{label, options: Array<{value, text}>}>} groups
-   */
-  setOptionGroups(groups) {
-    if (!this.#selectEl) {
-      // Button hasn't rendered yet — defer until render completes
-      this.rendered.then(() => this.setOptionGroups(groups));
-      return;
-    }
-    this.#selectEl.replaceChildren();
-    for (const g of groups) {
-      const optgroup = document.createElement("optgroup");
-      optgroup.label = g.label ?? "";
-      for (const o of g.options || []) {
-        const opt = document.createElement("option");
-        opt.value = o.value ?? "";
-        opt.textContent = o.text ?? o.value ?? "";
-        if (o.selected) opt.selected = true;
-        optgroup.appendChild(opt);
+    const ul = document.createElement("ul");
+    if (opts.group) ul.dataset.group = opts.group;
+
+    for (const item of items) {
+      const li = document.createElement("li");
+      const menuItem = document.createElement("sherpa-menu-item");
+      menuItem.setAttribute("value", item.value ?? "");
+      menuItem.textContent = item.text ?? item.value ?? "";
+      if (opts.selection) menuItem.dataset.selection = opts.selection;
+      if (opts.selection === "radio" && opts.group) {
+        menuItem.dataset.group = opts.group;
       }
-      this.#selectEl.appendChild(optgroup);
+      if (item.selected) menuItem.setAttribute("checked", "");
+      if (item.disabled) menuItem.setAttribute("disabled", "");
+      if (item.keepOpen || opts.selection === "checkbox") {
+        menuItem.setAttribute("data-keep-open", "");
+      }
+      li.appendChild(menuItem);
+      ul.appendChild(li);
+    }
+
+    menu.appendChild(ul);
+  }
+
+  /**
+   * Get values of all checked/selected menu items.
+   * @returns {string[]}
+   */
+  getSelectedValues() {
+    if (!this.#menuEl) return [];
+    const checked = this.#menuEl.querySelectorAll("sherpa-menu-item[checked]");
+    return Array.from(checked, (item) => item.getAttribute("value") ?? "").filter(Boolean);
+  }
+
+  /**
+   * Clear all checked/selected menu items.
+   */
+  clearSelection() {
+    if (!this.#menuEl) return;
+    for (const item of this.#menuEl.querySelectorAll("sherpa-menu-item[checked]")) {
+      item.removeAttribute("checked");
     }
   }
 }

@@ -405,21 +405,12 @@ export function ContentAttributesMixin(Base) {
       const ul = document.createElement("ul");
       ul.dataset.group = "view";
 
-      const normalizeIcon = (icon) => {
-        if (!icon) return null;
-        if (/fa-(solid|regular|light|thin|duotone|brands)\b/.test(icon))
-          return icon;
-        return `fa-regular ${icon}`;
-      };
-
       for (const option of config.viewOptions) {
         const li = document.createElement("li");
         const item = document.createElement("sherpa-menu-item");
         item.setAttribute("data-selection", "radio");
         item.setAttribute("value", option?.type ?? "");
-        item.dataset.type = option?.type ?? "";
-        if (normalizeIcon(option?.icon))
-          item.setAttribute("data-icon", normalizeIcon(option.icon));
+        item.dataset.group = "view";
         if ((option?.type ?? null) === activeType)
           item.setAttribute("checked", "");
         if (option?.disabled) item.setAttribute("disabled", "");

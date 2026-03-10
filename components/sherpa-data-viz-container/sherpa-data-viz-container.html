@@ -83,10 +83,10 @@
   </header>
 
   <sherpa-filter-bar data-embedded data-type="local">
-    <sherpa-button slot="group" data-type="button-select" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;"
+    <sherpa-button slot="group" data-type="button-menu" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;"
       ></sherpa-button
     >
-    <sherpa-button slot="sort" data-type="button-select" data-split data-behavior="sort" data-label="Sort" data-icon-start="&#xf0dc;"
+    <sherpa-button slot="sort" data-type="button-menu" data-split data-behavior="sort" data-label="Sort" data-icon-start="&#xf0dc;"
       ></sherpa-button
     >
     <sherpa-button
@@ -101,17 +101,14 @@
   <div class="content">
     <slot></slot>
   </div>
-</template>
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     FILTER-MENU — Menu items for the filter toggle
-     Cloned into a light-DOM <template data-menu> on connect.
-     ═══════════════════════════════════════════════════════════════════════ -->
-<template id="filter-menu">
-  <sherpa-menu-item
-    data-selection="checkbox"
-    data-event="toggle-filters"
-  >Show / hide filters</sherpa-menu-item>
+  <!-- Filter-menu — cloned into a light-DOM <template data-menu> on connect -->
+  <template id="filter-menu">
+    <sherpa-menu-item
+      data-selection="checkbox"
+      data-event="toggle-filters"
+    >Show / hide filters</sherpa-menu-item>
+  </template>
 </template>
 
 

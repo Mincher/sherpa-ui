@@ -2,9 +2,11 @@
   sherpa-menu-item.html — Attribute-driven menu item templates.
 
   Templates:
-    • default — Standard / radio / checkbox items (icon + label + description + chevron)
-    • toggle  — Toggle items (switch + label + description)
-    • heading — Non-interactive group heading (label only)
+    • default  — Plain action item (label + description + chevron)
+    • checkbox — Native checkbox + label + description
+    • radio    — Native radio + label + description
+    • toggle   — sherpa-switch + label + description
+    • heading  — Non-interactive group heading (label only)
 
   The host element IS the interactive element (role + tabindex on :host).
   Heading items get role="presentation" and are excluded from keyboard nav.
@@ -12,7 +14,6 @@
 
   Host attributes:
     data-type        — null | "heading" (selects template + non-interactive style)
-    data-icon        — FontAwesome class string (e.g. "fa-solid fa-plus")
     data-action      — Action identifier for menu-select event
     value            — Arbitrary value
     data-selection   — null | "radio" | "checkbox" | "toggle"
@@ -25,10 +26,21 @@
 -->
 
 <template id="default">
-  <i class="sherpa-icon" part="icon" data-size="sm" aria-hidden="true"></i>
   <span class="label" part="label"><slot></slot></span>
   <span class="description" part="description"></span>
   <span class="chevron" part="chevron" aria-hidden="true">&#x203A;</span>
+</template>
+
+<template id="checkbox">
+  <input type="checkbox" class="input" part="input" tabindex="-1">
+  <span class="label" part="label"><slot></slot></span>
+  <span class="description" part="description"></span>
+</template>
+
+<template id="radio">
+  <input type="radio" class="input" part="input" tabindex="-1">
+  <span class="label" part="label"><slot></slot></span>
+  <span class="description" part="description"></span>
 </template>
 
 <template id="toggle">

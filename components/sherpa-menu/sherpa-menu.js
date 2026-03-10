@@ -123,7 +123,19 @@ export class SherpaMenu extends SherpaElement {
       item.toggleAttribute("checked");
     }
     if (selection === "radio") {
-      this.#selectRadio(item);
+      // Uncheck siblings in the same group, then check this item
+      const group = item.dataset.group;
+      const siblings = group
+        ? this.querySelectorAll(
+            `sherpa-menu-item[data-group="${CSS.escape(group)}"]`,
+          )
+        : (item
+            .closest("ul")
+            ?.querySelectorAll('sherpa-menu-item[data-selection="radio"]') ?? [
+            item,
+          ]);
+      siblings.forEach((s) => s.removeAttribute("checked"));
+      item.setAttribute("checked", "");
     }
 
     this.#dispatchSelect(item);
@@ -174,24 +186,6 @@ export class SherpaMenu extends SherpaElement {
         'sherpa-menu-item:not([disabled]):not([hidden]):not([data-type="heading"])',
       ),
     ];
-  }
-
-  /* ── Radio logic ───────────────────────────────────────────── */
-
-  #selectRadio(item) {
-    const group = item.dataset.group;
-    const siblings = group
-      ? this.querySelectorAll(
-          `sherpa-menu-item[data-group="${CSS.escape(group)}"]`,
-        )
-      : (item
-          .closest("ul")
-          ?.querySelectorAll('sherpa-menu-item[data-selection="radio"]') ?? [
-          item,
-        ]);
-
-    siblings.forEach((s) => s.removeAttribute("checked"));
-    item.setAttribute("checked", "");
   }
 
   /* ── Dispatch ──────────────────────────────────────────────── */

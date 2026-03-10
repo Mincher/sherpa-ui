@@ -1,0 +1,3 @@
+Nav:
+- Pinning doesn't offset the view content's left padding/margin, like it used to, based on the nav width when pinned.
+- 

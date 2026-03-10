@@ -38,14 +38,14 @@
     "sherpa-button": {
       "component": "sherpa-button",
       "label": "Button",
-      "description": "Web Component button where the host element IS the button. Supports icons, labels, variants, sizes, and attached menus. The button-select template accepts declarative <option> children; button-menu and icon-menu provide menu-only triggers.",
+      "description": "Web Component button where the host element IS the button. Supports icons, labels, variants, sizes, and attached menus. button-menu and icon-menu provide menu-only triggers with setMenuItems() for programmatic population.",
       "path": "components/sherpa-button",
       "attributes": [
         { "name": "data-label", "type": "string", "default": "Button" },
         {
           "name": "data-type",
           "type": "enum",
-          "options": ["", "button-select", "button-menu", "icon-menu"]
+          "options": ["", "button-menu", "icon-menu"]
         },
         {
           "name": "data-variant",
@@ -591,17 +591,16 @@
       "nestedComponents": ["sherpa-menu-item"],
       "attributes": [{ "name": "open", "type": "boolean", "default": true }],
       "slots": [],
-      "defaultHtml": "<sherpa-menu-item data-type=\"heading\">Actions</sherpa-menu-item>\n<ul data-group=\"actions\">\n  <li><sherpa-menu-item data-icon=\"\uf067\" data-action=\"add\">Add item</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-icon=\"\uf044\" data-action=\"edit\">Edit</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-icon=\"\uf1f8\" data-action=\"delete\" data-status=\"critical\">Delete</sherpa-menu-item></li>\n</ul>\n<hr>\n<sherpa-menu-item data-type=\"heading\">Options</sherpa-menu-item>\n<ul data-group=\"options\">\n  <li><sherpa-menu-item data-selection=\"checkbox\" checked data-keep-open>Show labels</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-selection=\"checkbox\" data-keep-open>Compact view</sherpa-menu-item></li>\n</ul>",
+      "defaultHtml": "<sherpa-menu-item data-type=\"heading\">Actions</sherpa-menu-item>\n<ul data-group=\"actions\">\n  <li><sherpa-menu-item data-action=\"add\">Add item</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-action=\"edit\">Edit</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-action=\"delete\" data-status=\"critical\">Delete</sherpa-menu-item></li>\n</ul>\n<hr>\n<sherpa-menu-item data-type=\"heading\">Options</sherpa-menu-item>\n<ul data-group=\"options\">\n  <li><sherpa-menu-item data-selection=\"checkbox\" checked data-keep-open>Show labels</sherpa-menu-item></li>\n  <li><sherpa-menu-item data-selection=\"checkbox\" data-keep-open>Compact view</sherpa-menu-item></li>\n</ul>",
       "controls": { "namedSlots": false }
     },
     "sherpa-menu-item": {
       "component": "sherpa-menu-item",
       "label": "Menu Item",
-      "description": "Attribute-driven menu item with templates for default, toggle, and heading variants.",
+      "description": "Attribute-driven menu item with templates for default, checkbox, radio, toggle, and heading variants.",
       "path": "components/sherpa-menu-item",
       "attributes": [
         { "name": "data-type", "type": "enum", "options": ["heading"] },
-        { "name": "data-icon", "type": "string" },
         { "name": "data-action", "type": "string" },
         {
           "name": "data-selection",
@@ -617,7 +616,7 @@
       ],
       "slots": [],
       "defaultContent": "Menu item label",
-      "wrapperHtml": "<sherpa-menu open style=\"position:relative;\"><sherpa-menu-item data-type=\"heading\">Group</sherpa-menu-item><ul><li><sherpa-menu-item data-icon=\"\uf067\" data-action=\"add\">Add item</sherpa-menu-item></li><li><sherpa-menu-item data-action=\"edit\">Edit</sherpa-menu-item></li><li><sherpa-menu-item disabled>Disabled</sherpa-menu-item></li></ul><hr><ul><li><sherpa-menu-item data-selection=\"checkbox\" checked data-keep-open>Toggle option</sherpa-menu-item></li></ul></sherpa-menu>",
+      "wrapperHtml": "<sherpa-menu open style=\"position:relative;\"><sherpa-menu-item data-type=\"heading\">Group</sherpa-menu-item><ul><li><sherpa-menu-item data-action=\"add\">Add item</sherpa-menu-item></li><li><sherpa-menu-item data-action=\"edit\">Edit</sherpa-menu-item></li><li><sherpa-menu-item disabled>Disabled</sherpa-menu-item></li></ul><hr><ul><li><sherpa-menu-item data-selection=\"checkbox\" checked data-keep-open>Toggle option</sherpa-menu-item></li></ul></sherpa-menu>",
       "componentSelector": "sherpa-menu-item[data-action=\"edit\"]"
     },
     "sherpa-message": {
