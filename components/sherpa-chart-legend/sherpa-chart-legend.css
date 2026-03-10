@@ -23,7 +23,7 @@
    ================================================================ */
 :host {
   display: block;
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
 }
 
@@ -58,7 +58,7 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-space-xs, 8px);
-  font-size: var(--sherpa-font-size-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #18191a);
   cursor: default;
   transition: opacity 0.15s ease;

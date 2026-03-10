@@ -30,7 +30,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-space-md, 16px);
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
   container: sherpa-line-chart / inline-size;
 }
@@ -56,7 +56,7 @@
 }
 
 .chart-title {
-  font-size: var(--sherpa-font-size-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-text-default-heading, #18191a);
 }
@@ -80,7 +80,7 @@
 }
 
 .y-label {
-  font-size: var(--sherpa-font-size-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 12px);
   color: var(--sherpa-text-default-secondary, #5c5c66);
   line-height: 1;
   white-space: nowrap;
@@ -104,7 +104,7 @@
 
 /* ── Grid lines ──────────────────────────────────────────────── */
 .grid-lines {
-  --_gc: var(--sherpa-border-default-subtle, #e5e5ea);
+  --_gc: var(--sherpa-border-container-subtle, #e5e5ea);
 
   position: absolute;
   inset: 0;
@@ -201,7 +201,7 @@
 }
 
 .x-label {
-  font-size: var(--sherpa-font-size-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 12px);
   color: var(--sherpa-text-default-secondary, #5c5c66);
   text-align: center;
   white-space: nowrap;
@@ -221,7 +221,7 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-space-2xs, 4px);
-  font-size: var(--sherpa-font-size-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 12px);
   color: var(--sherpa-text-default-body, #18191a);
   cursor: default;
 }

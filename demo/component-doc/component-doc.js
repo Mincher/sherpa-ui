@@ -1,4 +1,5 @@
 import "/components/index.js";
+import { setDataProvider } from "/components/utilities/content-attributes-mixin.js";
 
 /* ── Constants ──────────────────────────────────────────── */
 
@@ -279,7 +280,9 @@ function renderAttrList() {
           value: v,
           type: def.type || "string",
         });
-      scheduleApply();
+      // Attributes that select the shadow template require a full rebuild
+      const needsRebuild = def.name === "data-type";
+      scheduleApply(needsRebuild);
     });
 
     row.appendChild(ctrl);
@@ -407,6 +410,9 @@ function ensureComponent(rebuild) {
       );
     } else {
       componentEl = document.createElement(componentName);
+      // Pre-apply data-type before connecting so templateId resolves correctly
+      const typeAttr = state.attrs.find((a) => a.name === "data-type");
+      if (typeAttr?.value) componentEl.dataset.type = typeAttr.value;
       stage.appendChild(componentEl);
     }
     wrapperInit = true;
@@ -622,12 +628,38 @@ async function loadContentAreaDemo(t, viewId) {
 
 async function loadContainerDemo(t, source) {
   try {
-    // Derive content template id from the source path:
-    // "/data/queries/sales-demo.json" → "sales-demo"
-    const contentId = source.replace(/^.*\//, "").replace(/\.json$/, "");
-    t.setAttribute("data-content", contentId);
     t.setAttribute("data-col-span", "6");
     t.setAttribute("data-row-span", "2");
+
+    // Register an identity data provider so setData() works in the demo
+    // without an external backend. The provider returns the config as-is,
+    // which means callers pass { columns, rows } directly.
+    setDataProvider(async (config) => config);
+
+    // Create a data grid child so the container has visible content.
+    const grid = document.createElement("sherpa-data-grid");
+    grid.dataset.showPagination = "true";
+    t.appendChild(grid);
+
+    await grid.rendered;
+
+    // Supply inline sample data.
+    await grid.setData({
+      columns: [
+        { field: "product", name: "Product", type: "string" },
+        { field: "region", name: "Region", type: "string" },
+        { field: "revenue", name: "Revenue", type: "currency" },
+        { field: "orders", name: "Orders", type: "number" },
+        { field: "status", name: "Status", type: "string" },
+      ],
+      rows: [
+        { product: "Widget A", region: "North", revenue: 12500, orders: 42, status: "Active" },
+        { product: "Widget B", region: "South", revenue: 8300, orders: 27, status: "Active" },
+        { product: "Gadget X", region: "East", revenue: 15200, orders: 56, status: "Active" },
+        { product: "Gadget Y", region: "West", revenue: 6100, orders: 19, status: "Inactive" },
+        { product: "Gizmo Z", region: "North", revenue: 9800, orders: 33, status: "Active" },
+      ],
+    });
   } catch (e) {
     console.warn("Container demo load failed", e);
   }

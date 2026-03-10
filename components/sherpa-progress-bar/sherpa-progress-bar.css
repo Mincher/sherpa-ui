@@ -26,7 +26,7 @@
   flex-direction: column;
   gap: var(--sherpa-space-2xs, 4px);
   width: 100%;
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
 }
 
@@ -38,7 +38,7 @@
    Label
    ================================================================ */
 .label {
-  font-size: var(--sherpa-font-size-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
   line-height: var(--sherpa-line-height-default, 1.4);
   color: var(--sherpa-text-default-body, #18191a);
 }
@@ -54,8 +54,8 @@
   position: relative;
   width: 100%;
   height: 4px;
-  background: var(--sherpa-surface-neutral-default, #fafafa);
-  border-radius: var(--sherpa-radius-pill, 8px);
+  background: var(--sherpa-surface-container-default, #fafafa);
+  border-radius: var(--sherpa-border-rounding-full, 8px);
   overflow: hidden;
 }
 
@@ -66,7 +66,7 @@
     --_status-surface-strong,
     var(--sherpa-surface-control-primary-default, #c046ff)
   );
-  border-radius: var(--sherpa-radius-pill, 8px);
+  border-radius: var(--sherpa-border-rounding-full, 8px);
   transition: width 0.3s ease;
 }
 
@@ -80,12 +80,12 @@
 :host([data-variant="indeterminate"]) .track {
   background: linear-gradient(
     90deg,
-    var(--sherpa-surface-neutral-default, #fafafa) 0%,
+    var(--sherpa-surface-container-default, #fafafa) 0%,
     var(
       --_status-surface-strong,
       var(--sherpa-surface-control-primary-default, #c046ff)
     ) 50%,
-    var(--sherpa-surface-neutral-default, #fafafa) 100%
+    var(--sherpa-surface-container-default, #fafafa) 100%
   );
   background-size: 200% 100%;
   animation: sherpa-progress-slide 1.5s ease-in-out infinite;
@@ -104,7 +104,7 @@
    Status text
    ================================================================ */
 .status {
-  font-size: var(--sherpa-font-size-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 12px);
   line-height: var(--sherpa-line-height-default, 1.4);
   color: var(--sherpa-text-default-secondary, #5c5c66);
 }

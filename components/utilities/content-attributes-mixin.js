@@ -444,7 +444,7 @@ export function ContentAttributesMixin(Base) {
       }
 
       frag.appendChild(ul);
-      this._menuButton?.menuElement?.replaceChildren(frag);
+      this._menuButton?.menuElement?.prepend(frag);
     }
 
     /* ── Self-filtering ─────────────────────────────────────── */

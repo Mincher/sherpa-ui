@@ -27,7 +27,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
 }
 
@@ -50,14 +50,14 @@
 }
 
 .heading-text {
-  font-size: var(--sherpa-font-size-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-text-default-heading, #18191a);
 }
 
 .percentage-text {
   display: none;
-  font-size: var(--sherpa-font-size-xs, 13px);
+  font-size: var(--sherpa-fonts-scale-xs, 13px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   color: var(--sherpa-text-default-secondary, #5c5c66);
 }
@@ -93,29 +93,29 @@
 
 /* ── Status variants ─────────────────────────────────────────── */
 .milestone[data-status="in-progress"] {
-  --_node-bg: var(--sherpa-surface-status-info-default, #0079aa);
-  --_node-border: var(--sherpa-surface-status-info-default, #0079aa);
+  --_node-bg: var(--sherpa-surface-context-info-strong-default, #0079aa);
+  --_node-border: var(--sherpa-surface-context-info-strong-default, #0079aa);
   --_node-icon: inline-flex;
   --_node-icon-color: #ffffff;
 }
 
 .milestone[data-status="success"] {
-  --_node-bg: var(--sherpa-surface-status-success-default, #1a7a2e);
-  --_node-border: var(--sherpa-surface-status-success-default, #1a7a2e);
+  --_node-bg: var(--sherpa-surface-context-success-strong-default, #1a7a2e);
+  --_node-border: var(--sherpa-surface-context-success-strong-default, #1a7a2e);
   --_node-icon: inline-flex;
   --_node-icon-color: #ffffff;
 }
 
 .milestone[data-status="warning"] {
-  --_node-bg: var(--sherpa-surface-status-warning-default, #c47e00);
-  --_node-border: var(--sherpa-surface-status-warning-default, #c47e00);
+  --_node-bg: var(--sherpa-surface-context-warning-strong-default, #c47e00);
+  --_node-border: var(--sherpa-surface-context-warning-strong-default, #c47e00);
   --_node-icon: inline-flex;
   --_node-icon-color: #ffffff;
 }
 
 .milestone[data-status="critical"] {
-  --_node-bg: var(--sherpa-surface-status-danger-default, #c53030);
-  --_node-border: var(--sherpa-surface-status-danger-default, #c53030);
+  --_node-bg: var(--sherpa-surface-context-error-strong-default, #c53030);
+  --_node-border: var(--sherpa-surface-context-error-strong-default, #c53030);
   --_node-icon: inline-flex;
   --_node-icon-color: #ffffff;
 }
@@ -216,7 +216,7 @@
 }
 
 .milestone-label {
-  font-size: var(--sherpa-font-size-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-text-default-body, #18191a);
   line-height: var(--sherpa-line-height-default, 1.4);
@@ -224,7 +224,7 @@
 
 .milestone-description {
   display: none;
-  font-size: var(--sherpa-font-size-xs, 13px);
+  font-size: var(--sherpa-fonts-scale-xs, 13px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   color: var(--sherpa-text-default-secondary, #5c5c66);
   line-height: var(--sherpa-line-height-default, 1.4);
@@ -239,7 +239,7 @@
    ================================================================ */
 .milestone-timestamp {
   display: none;
-  font-size: var(--sherpa-font-size-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 12px);
   color: var(--sherpa-text-default-secondary, #5c5c66);
   white-space: nowrap;
   padding: var(--sherpa-space-2xs, 4px) 0;

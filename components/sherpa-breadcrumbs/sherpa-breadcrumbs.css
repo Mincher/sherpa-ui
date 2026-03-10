@@ -46,10 +46,10 @@
 }
 
 .crumb-text {
-  color: var(--sherpa-text-default-link, #3c5edd);
+  color: var(--sherpa-text-primary-default, #3c5edd);
   cursor: pointer;
   text-decoration: none;
-  padding: var(--sherpa-space-xxs, 4px) 0;
+  padding: var(--sherpa-space-2xs, 4px) 0;
 }
 
 .crumb-text:hover {
@@ -76,7 +76,7 @@
   width: var(--sherpa-space-default, 16px);
   height: var(--sherpa-space-default, 16px);
   font-size: 8px;
-  color: var(--sherpa-icon-default-subtle, #8c8c8c);
+  color: var(--sherpa-icon-context-default-placeholder, #8c8c8c);
   flex-shrink: 0;
 }
 
@@ -100,9 +100,9 @@
 .ellipsis-btn {
   background: none;
   border: none;
-  color: var(--sherpa-text-default-link, #3c5edd);
+  color: var(--sherpa-text-primary-default, #3c5edd);
   cursor: pointer;
-  padding: var(--sherpa-space-xxs, 4px) 0;
+  padding: var(--sherpa-space-2xs, 4px) 0;
   font: inherit;
   line-height: 1;
 }

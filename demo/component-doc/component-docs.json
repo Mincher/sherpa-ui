@@ -38,10 +38,15 @@
     "sherpa-button": {
       "component": "sherpa-button",
       "label": "Button",
-      "description": "Web Component button where the host element IS the button. Supports icons, labels, variants, sizes, and attached menus.",
+      "description": "Web Component button where the host element IS the button. Supports icons, labels, variants, sizes, and attached menus. Select-bearing templates (button-select, icon-select) accept declarative <option> children.",
       "path": "components/sherpa-button",
       "attributes": [
         { "name": "data-label", "type": "string", "default": "Button" },
+        {
+          "name": "data-type",
+          "type": "enum",
+          "options": ["", "button-select", "icon-select"]
+        },
         {
           "name": "data-variant",
           "type": "enum",
@@ -70,7 +75,8 @@
         { "name": "disabled", "type": "boolean" }
       ],
       "slots": [],
-      "controls": { "defaultSlot": false, "namedSlots": false }
+      "controls": { "defaultSlot": true, "namedSlots": false },
+      "defaultHtml": "<option value=\"\">None</option>\n<option value=\"name\">Name</option>\n<option value=\"date\">Date</option>\n<option value=\"status\">Status</option>"
     },
     "sherpa-card": {
       "component": "sherpa-card",

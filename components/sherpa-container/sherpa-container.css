@@ -154,7 +154,8 @@ sherpa-filter-bar {
   container-name: container-content;
 }
 
-:host(:not([data-has-label])) .content {
+/* Hide when no real content is slotted (template-only doesn't count) */
+.content:not([data-has-content]) {
   display: none;
 }
 

@@ -76,7 +76,7 @@
 
 :host([disabled]) .icon,
 :host([disabled]) .drag-handle {
-  color: var(--sherpa-icon-inactive, #a0a0a0);
+  color: var(--sherpa-icon-inactive-default, #a0a0a0);
 }
 
 /* ── Focus ───────────────────────────────────────────────────── */
@@ -102,7 +102,7 @@
 
 .drag-handle {
   display: none;
-  color: var(--sherpa-icon-default-subtle, #a9a9a9);
+  color: var(--sherpa-icon-context-default-placeholder, #a9a9a9);
   cursor: grab;
 }
 
@@ -112,7 +112,7 @@
 
 .leading-icon {
   display: none;
-  color: var(--sherpa-icon-default, #2e2e33);
+  color: var(--sherpa-icon-context-default-body, #2e2e33);
 }
 
 :host([data-icon]) .leading-icon { display: inline-flex; }
@@ -132,13 +132,13 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-xxs, 4px);
+  gap: var(--sherpa-space-2xs, 4px);
 }
 
 .content-text {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-xxs, 4px);
+  gap: var(--sherpa-space-2xs, 4px);
 }
 
 .label {
@@ -148,7 +148,7 @@
 :host(:not([data-label])) .label { display: none; }
 
 .description {
-  color: var(--sherpa-text-default-subtle, #6e6e73);
+  color: var(--sherpa-text-default-secondary, #6e6e73);
 }
 
 :host(:not([data-description])) .description { display: none; }

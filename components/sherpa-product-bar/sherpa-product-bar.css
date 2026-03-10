@@ -30,8 +30,8 @@
   width: 100%;
   height: 48px;
   padding-inline-end: var(--sherpa-space-xs, 8px);
-  background: var(--sherpa-surface-app-product-bar-default, #18191a);
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  background: var(--sherpa-surface-app-product-bar-bg, #18191a);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   color: var(--sherpa-text-default-on-color-body, #fafafa);
   box-sizing: border-box;
 }
@@ -71,7 +71,7 @@
 }
 
 .product-name {
-  font-size: var(--sherpa-font-size-lg, 20px);
+  font-size: var(--sherpa-fonts-scale-lg, 20px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1;
   letter-spacing: 0.02em;
@@ -89,7 +89,7 @@
 .divider {
   width: 1px;
   height: 36px;
-  background: var(--sherpa-border-default-on-color, rgba(255, 255, 255, 0.2));
+  background: var(--sherpa-border-default, rgba(255, 255, 255, 0.2));
   flex-shrink: 0;
 }
 

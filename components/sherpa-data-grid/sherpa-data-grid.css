@@ -182,7 +182,7 @@ thead th {
   height: 32px;
   border-radius: var(--sherpa-border-rounding-base, 4px);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-icon-default-secondary);
+  color: var(--sherpa-icon-context-default-secondary);
   transition: background-color 0.15s;
 }
 
@@ -424,7 +424,7 @@ td .bool-true {
 }
 
 td .bool-false {
-  color: var(--sherpa-icon-default-secondary);
+  color: var(--sherpa-icon-context-default-secondary);
 }
 
 /* Link cells */
@@ -515,8 +515,8 @@ tr.group-parent-row:hover .group-toggle {
 
 .toggle-icon {
   font-size: 8px;
-  color: var(--sherpa-icon-default-secondary);
-  transition: transform 0.2s var(--sherpa-motion-easing-standard, ease);
+  color: var(--sherpa-icon-context-default-secondary);
+  transition: transform 0.2s var(--sherpa-motion-easing-default, ease);
 }
 
 tr.group-parent-row[data-expanded] .toggle-icon {

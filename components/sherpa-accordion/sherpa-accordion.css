@@ -86,8 +86,8 @@
 
 .trigger-icon {
   display: none;
-  color: var(--sherpa-icon-default, #2e2e33);
-  font-size: var(--sherpa-font-size-default, 14px);
+  color: var(--sherpa-icon-context-default-body, #2e2e33);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
 }
 
 :host([data-icon]) .trigger-icon { display: inline-flex; }
@@ -100,10 +100,10 @@
   justify-content: center;
   width: var(--sherpa-space-default, 16px);
   height: var(--sherpa-space-default, 16px);
-  font-size: var(--sherpa-font-size-sm, 12px);
-  color: var(--sherpa-icon-default, #2e2e33);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  color: var(--sherpa-icon-context-default-body, #2e2e33);
   transition:
-    transform var(--sherpa-motion-duration-default, 0.2s) var(--sherpa-motion-easing-default, ease);
+    transform var(--sherpa-motion-duration-base, 0.2s) var(--sherpa-motion-easing-default, ease);
 }
 
 :host([data-expanded]) .chevron {
@@ -118,7 +118,7 @@
   display: grid;
   grid-template-rows: 0fr;
   transition:
-    grid-template-rows var(--sherpa-motion-duration-default, 0.2s) var(--sherpa-motion-easing-default, ease);
+    grid-template-rows var(--sherpa-motion-duration-base, 0.2s) var(--sherpa-motion-easing-default, ease);
 }
 
 :host([data-expanded]) .accordion-panel {
@@ -159,7 +159,7 @@
 
 :host([disabled]) .chevron,
 :host([disabled]) .trigger-icon {
-  color: var(--sherpa-icon-inactive, #a0a0a0);
+  color: var(--sherpa-icon-inactive-default, #a0a0a0);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

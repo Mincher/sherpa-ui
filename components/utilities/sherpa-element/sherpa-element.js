@@ -302,15 +302,16 @@ export class SherpaElement extends HTMLElement {
 
   /**
    * Checks whether a slot has meaningful content.
-   * Light-DOM assigned nodes count. Text-only fallback counts.
-   * Element fallback (structural) does NOT count.
+   * Light-DOM assigned nodes count (except <template> elements, which
+   * are metadata fragments such as menu templates injected by mixins).
+   * Text-only fallback counts. Element fallback (structural) does NOT count.
    */
   #slotHasContent(slotEl) {
     const assigned = slotEl.assignedNodes();
     if (assigned.length > 0) {
       return assigned.some(
         (n) =>
-          n.nodeType === Node.ELEMENT_NODE ||
+          (n.nodeType === Node.ELEMENT_NODE && n.localName !== "template") ||
           (n.nodeType === Node.TEXT_NODE && n.textContent.trim()),
       );
     }

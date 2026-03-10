@@ -28,7 +28,7 @@
   --_heading-font-size: var(--sherpa-font-sm-size, 12px);
   --_heading-text-transform: none;
   --_heading-letter-spacing: 0.1px;
-  --_heading-color: var(--sherpa-text-default-header, #1a1a1f);
+  --_heading-color: var(--sherpa-text-default-heading, #1a1a1f);
 }
 
 :host([hidden]) {
@@ -211,7 +211,7 @@
   --_heading-text-transform: uppercase;
   --_heading-color: var(
     --sherpa-text-default-label,
-    var(--sherpa-text-default-header, #1a1a1f)
+    var(--sherpa-text-default-heading, #1a1a1f)
   );
 }
 

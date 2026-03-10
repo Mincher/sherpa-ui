@@ -19,6 +19,7 @@
   /* ── Surface — App Chrome ──────────────────────────────────── */
   --sherpa-surface-app-background-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-core-color-basic-monochrome-950));
   --sherpa-surface-app-product-bar-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
+  --sherpa-surface-app-product-bar-brand: var(--sherpa-core-color-extended-turquoise-700);
   --sherpa-surface-app-product-bar-product-block: var(--sherpa-core-color-extended-turquoise-700);
   --sherpa-surface-app-product-bar-product-text: light-dark(var(--sherpa-color-neutral-1000), var(--sherpa-color-neutral-200));
   --sherpa-surface-app-product-nav-active: light-dark(var(--sherpa-core-color-extended-turquoise-250), var(--sherpa-core-color-extended-turquoise-700));
@@ -29,6 +30,7 @@
   --sherpa-surface-app-product-nav-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-sub-active: light-dark(var(--sherpa-core-color-extended-turquoise-250), var(--sherpa-core-color-extended-turquoise-700));
+  --sherpa-surface-app-product-nav-secondary: var(--sherpa-surface-app-product-nav-sub-bg);
   --sherpa-surface-app-product-nav-sub-bg: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-1000));
   --sherpa-surface-app-product-nav-text: var(--sherpa-core-color-extended-turquoise-700);
 
@@ -407,5 +409,6 @@
   --sherpa-surface-subtle-default: var(--sherpa-surface-container-secondary-default);
   --sherpa-border-default: var(--sherpa-border-container-default);
   --sherpa-surface-app-product-bg-default: light-dark(var(--sherpa-color-neutral-100), var(--sherpa-color-neutral-1000));
+  --sherpa-surface-search-highlight: light-dark(rgba(252, 183, 45, 0.35), rgba(252, 183, 45, 0.25));
 }
 } /* @layer theme */

@@ -2,6 +2,12 @@
  * sherpa-filter-bar.js
  * Horizontal filter bar with zoned layout.
  *
+ * Templates:
+ *   default (global) — Full filter bar: toggle, group, sort, presets, dynamic
+ *                       filters, add-filter button, actions. Used at page level.
+ *   local            — Minimal: group + sort + actions only. Used inside
+ *                       containers (sherpa-container). Selected via data-type="local".
+ *
  * Filter chip configuration (new API):
  *   Each filter chip is a <sherpa-button data-type="button-select"> with:
  *     data-filter-field    — Data field to filter on (e.g. "severity", "amount")
@@ -54,6 +60,12 @@ export class SherpaFilterBar extends SherpaElement {
     return new URL("./sherpa-filter-bar.html", import.meta.url).href;
   }
 
+  /* ── Template selection ───────────────────────────────────────── */
+
+  get templateId() {
+    return this.dataset.type || "default";
+  }
+
   static get observedAttributes() {
     return [
       ...super.observedAttributes,
@@ -78,7 +90,10 @@ export class SherpaFilterBar extends SherpaElement {
   onConnect() {
     // Use the parent element as event scope — no tag-name coupling.
     // vizready / sortchange events bubble up from viz siblings to this scope.
-    this.#scopeEl = this.parentElement;
+    // When embedded inside a shadow root (e.g. sherpa-container), parentElement
+    // is null because ShadowRoot is not an Element. Fall back to the shadow host
+    // so composed vizready/sortchange events from slotted children are caught.
+    this.#scopeEl = this.parentElement || this.getRootNode()?.host || null;
 
     // ── Self-populating: listen for vizready from viz children ──
     if (this.#scopeEl) {

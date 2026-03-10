@@ -1,6 +1,6 @@
 /**
  * Sherpa Primitives — Core Design Tokens
- * Raw values: colors (oklch), borders, effects, motion, scale, typeface.
+ * Raw values: colors (hex), borders, effects, motion, scale, typeface.
  * These are the lowest-level tokens — never consumed directly by components.
  * Components use semantic alias tokens (--sherpa-*), not core tokens (--sherpa-core-*).
  *
@@ -123,358 +123,362 @@
   --sherpa-core-typeface-source-code-pro-weight-400: Bold;
 
   /* ═══════════════════════════════════════════════════════════════
-     COLORS — oklch absolute values
+     COLORS — hex absolute values
      ═══════════════════════════════════════════════════════════════ */
 
   /* ── Basic Color Families ─────────────────────────────────────── */
 
   /* ── Blue ─────────────────────────────────────────────── */
   /* Base: #4141EF */
-  --sherpa-core-color-basic-blue-0: oklch(0.931 0.035 282.1);
-  --sherpa-core-color-basic-blue-100: oklch(0.894 0.0525 279.4);
-  --sherpa-core-color-basic-blue-200: oklch(0.814 0.09 277.9);
-  --sherpa-core-color-basic-blue-300: oklch(0.731 0.1376 277.9);
-  --sherpa-core-color-basic-blue-400: oklch(0.651 0.1876 276.2);
-  --sherpa-core-color-basic-blue-500: oklch(0.5045 0.2501 272.9);
-  --sherpa-core-color-basic-blue-600: oklch(0.442 0.2251 272.9);
-  --sherpa-core-color-basic-blue-700: oklch(0.367 0.2501 264.7);
-  --sherpa-core-color-basic-blue-800: oklch(0.334 0.2251 265);
-  --sherpa-core-color-basic-blue-900: oklch(0.29 0.1926 265.7);
-  --sherpa-core-color-basic-blue-1000: oklch(0.239 0.1401 268.9);
+  --sherpa-core-color-basic-blue-0: #e4e6ff;
+  --sherpa-core-color-basic-blue-100: #d4d9ff;
+  --sherpa-core-color-basic-blue-200: #b4bdfc;
+  --sherpa-core-color-basic-blue-300: #949efd;
+  --sherpa-core-color-basic-blue-400: #747fff;
+  --sherpa-core-color-basic-blue-500: #4141ef;
+  --sherpa-core-color-basic-blue-600: #3533cc;
+  --sherpa-core-color-basic-blue-700: #0504bf;
+  --sherpa-core-color-basic-blue-800: #0505a7;
+  --sherpa-core-color-basic-blue-900: #060588;
+  --sherpa-core-color-basic-blue-1000: #0a0b60;
 
   /* ── Blue Green ───────────────────────────────────────── */
   /* Base: #16ABE2 */
-  --sherpa-core-color-basic-blue-green-0: oklch(0.99 0.0068 220.1);
-  --sherpa-core-color-basic-blue-green-100: oklch(0.945 0.0287 219.1);
-  --sherpa-core-color-basic-blue-green-200: oklch(0.899 0.0629 221.9);
-  --sherpa-core-color-basic-blue-green-300: oklch(0.824 0.1135 224.5);
-  --sherpa-core-color-basic-blue-green-400: oklch(0.769 0.1326 227.2);
-  --sherpa-core-color-basic-blue-green-500: oklch(0.6959 0.1367 231.1);
-  --sherpa-core-color-basic-blue-green-600: oklch(0.632 0.1271 231.1);
-  --sherpa-core-color-basic-blue-green-650: oklch(0.603 0.108 224.7);
-  --sherpa-core-color-basic-blue-green-700: oklch(0.544 0.1162 235.7);
-  --sherpa-core-color-basic-blue-green-725: oklch(0.525 0.1012 227.8);
-  --sherpa-core-color-basic-blue-green-750: oklch(0.512 0.1107 236.1);
-  --sherpa-core-color-basic-blue-green-800: oklch(0.412 0.0807 231.1);
-  --sherpa-core-color-basic-blue-green-900: oklch(0.31 0.0656 240.2);
-  --sherpa-core-color-basic-blue-green-1000: oklch(0.291 0.0478 227.9);
+  --sherpa-core-color-basic-blue-green-0: #f7fdff;
+  --sherpa-core-color-basic-blue-green-100: #d9f2fa;
+  --sherpa-core-color-basic-blue-green-200: #b0e8fc;
+  --sherpa-core-color-basic-blue-green-300: #69d5fc;
+  --sherpa-core-color-basic-blue-green-400: #3cc4f5;
+  --sherpa-core-color-basic-blue-green-500: #16abe2;
+  --sherpa-core-color-basic-blue-green-600: #0a96c9;
+  --sherpa-core-color-basic-blue-green-650: #1a8eb1;
+  --sherpa-core-color-basic-blue-green-700: #0179aa;
+  --sherpa-core-color-basic-blue-green-725: #047598;
+  --sherpa-core-color-basic-blue-green-750: #006f9d;
+  --sherpa-core-color-basic-blue-green-800: #06526f;
+  --sherpa-core-color-basic-blue-green-900: #07344e;
+  --sherpa-core-color-basic-blue-green-1000: #0c303e;
 
   /* ── Green ────────────────────────────────────────────── */
   /* Base: #20C173 */
-  --sherpa-core-color-basic-green-0: oklch(0.987 0.0186 166.6);
-  --sherpa-core-color-basic-green-50: oklch(0.939 0.0321 163.3);
-  --sherpa-core-color-basic-green-100: oklch(0.932 0.0658 164.1);
-  --sherpa-core-color-basic-green-200: oklch(0.88 0.0928 162.9);
-  --sherpa-core-color-basic-green-300: oklch(0.821 0.1232 160.8);
-  --sherpa-core-color-basic-green-400: oklch(0.776 0.1519 158.5);
-  --sherpa-core-color-basic-green-500: oklch(0.7155 0.1688 155.2);
-  --sherpa-core-color-basic-green-600: oklch(0.638 0.1688 151.5);
-  --sherpa-core-color-basic-green-625: oklch(0.638 0.1688 151.5);
-  --sherpa-core-color-basic-green-650: oklch(0.586 0.1553 151.7);
-  --sherpa-core-color-basic-green-700: oklch(0.529 0.1367 152.4);
-  --sherpa-core-color-basic-green-800: oklch(0.475 0.1232 152.6);
-  --sherpa-core-color-basic-green-900: oklch(0.425 0.1114 151.7);
-  --sherpa-core-color-basic-green-1000: oklch(0.375 0.0979 152.6);
+  --sherpa-core-color-basic-green-0: #f0fff8;
+  --sherpa-core-color-basic-green-50: #d9f2e5;
+  --sherpa-core-color-basic-green-100: #c1f7dd;
+  --sherpa-core-color-basic-green-200: #9eebc6;
+  --sherpa-core-color-basic-green-300: #74ddaa;
+  --sherpa-core-color-basic-green-400: #4bd391;
+  --sherpa-core-color-basic-green-500: #20c173;
+  --sherpa-core-color-basic-green-600: #04a753;
+  --sherpa-core-color-basic-green-625: #01a753;
+  --sherpa-core-color-basic-green-650: #00954a;
+  --sherpa-core-color-basic-green-700: #048142;
+  --sherpa-core-color-basic-green-800: #006f38;
+  --sherpa-core-color-basic-green-900: #025f2d;
+  --sherpa-core-color-basic-green-1000: #004f26;
 
   /* ── Greyscale ────────────────────────────────────────── */
   /* Base: #B2B2BF */
-  --sherpa-core-color-basic-greyscale-0: oklch(0.987 0.0066 285.9);
-  --sherpa-core-color-basic-greyscale-100: oklch(0.994 0 263.3);
-  --sherpa-core-color-basic-greyscale-150: oklch(0.925 0 263.3);
-  --sherpa-core-color-basic-greyscale-200: oklch(0.9 0.0123 285.9);
-  --sherpa-core-color-basic-greyscale-300: oklch(0.855 0.0151 285.9);
-  --sherpa-core-color-basic-greyscale-400: oklch(0.811 0.0167 285.9);
-  --sherpa-core-color-basic-greyscale-500: oklch(0.7676 0.0184 285.9);
-  --sherpa-core-color-basic-greyscale-600: oklch(0.647 0.0177 285.9);
-  --sherpa-core-color-basic-greyscale-700: oklch(0.478 0.016 285.9);
-  --sherpa-core-color-basic-greyscale-800: oklch(0.435 0.0147 285.9);
-  --sherpa-core-color-basic-greyscale-900: oklch(0.374 0.0118 285.9);
-  --sherpa-core-color-basic-greyscale-1000: oklch(0.303 0.009 285.9);
+  --sherpa-core-color-basic-greyscale-0: #fafaff;
+  --sherpa-core-color-basic-greyscale-100: #fdfdfd;
+  --sherpa-core-color-basic-greyscale-150: #e6e6e6;
+  --sherpa-core-color-basic-greyscale-200: #dddde6;
+  --sherpa-core-color-basic-greyscale-300: #ceced9;
+  --sherpa-core-color-basic-greyscale-400: #c0c0cc;
+  --sherpa-core-color-basic-greyscale-500: #b2b2bf;
+  --sherpa-core-color-basic-greyscale-600: #8d8d99;
+  --sherpa-core-color-basic-greyscale-700: #5c5c66;
+  --sherpa-core-color-basic-greyscale-800: #505059;
+  --sherpa-core-color-basic-greyscale-900: #404047;
+  --sherpa-core-color-basic-greyscale-950: #36363c;
+  --sherpa-core-color-basic-greyscale-1000: #2e2e33;
 
   /* ── Orange ───────────────────────────────────────────── */
   /* Base: #FF7300 */
-  --sherpa-core-color-basic-orange-0: oklch(0.95 0.0486 81.5);
-  --sherpa-core-color-basic-orange-100: oklch(0.927 0.0525 72.7);
-  --sherpa-core-color-basic-orange-200: oklch(0.815 0.1128 60);
-  --sherpa-core-color-basic-orange-300: oklch(0.779 0.142 58);
-  --sherpa-core-color-basic-orange-350: oklch(0.772 0.1634 67.1);
-  --sherpa-core-color-basic-orange-400: oklch(0.748 0.1634 55.3);
-  --sherpa-core-color-basic-orange-450: oklch(0.715 0.1517 66.8);
-  --sherpa-core-color-basic-orange-500: oklch(0.7131 0.1945 47.9);
-  --sherpa-core-color-basic-orange-600: oklch(0.678 0.1809 47.9);
-  --sherpa-core-color-basic-orange-700: oklch(0.63 0.1673 49.2);
-  --sherpa-core-color-basic-orange-800: oklch(0.567 0.1478 49.7);
-  --sherpa-core-color-basic-orange-900: oklch(0.5 0.1264 50.9);
-  --sherpa-core-color-basic-orange-1000: oklch(0.379 0.0934 52.2);
+  --sherpa-core-color-basic-orange-0: #ffecca;
+  --sherpa-core-color-basic-orange-100: #fde2c1;
+  --sherpa-core-color-basic-orange-200: #f8b175;
+  --sherpa-core-color-basic-orange-300: #fa9e52;
+  --sherpa-core-color-basic-orange-350: #f99d1f;
+  --sherpa-core-color-basic-orange-400: #fa8d34;
+  --sherpa-core-color-basic-orange-450: #e18d1b;
+  --sherpa-core-color-basic-orange-500: #ff7300;
+  --sherpa-core-color-basic-orange-600: #ed6d02;
+  --sherpa-core-color-basic-orange-700: #d66304;
+  --sherpa-core-color-basic-orange-800: #b95608;
+  --sherpa-core-color-basic-orange-900: #9a4909;
+  --sherpa-core-color-basic-orange-1000: #673105;
 
   /* ── Pink ─────────────────────────────────────────────── */
   /* Base: #AB27C3 */
-  --sherpa-core-color-basic-pink-0: oklch(0.974 0.0212 323.2);
-  --sherpa-core-color-basic-pink-100: oklch(0.876 0.0685 320.7);
-  --sherpa-core-color-basic-pink-200: oklch(0.781 0.1204 320.7);
-  --sherpa-core-color-basic-pink-300: oklch(0.683 0.203 320.7);
-  --sherpa-core-color-basic-pink-400: oklch(0.645 0.2361 320.7);
-  --sherpa-core-color-basic-pink-500: oklch(0.5512 0.2361 320.7);
-  --sherpa-core-color-basic-pink-600: oklch(0.486 0.2149 320.7);
-  --sherpa-core-color-basic-pink-700: oklch(0.401 0.17 320.7);
-  --sherpa-core-color-basic-pink-800: oklch(0.338 0.1417 320.7);
-  --sherpa-core-color-basic-pink-900: oklch(0.22 0.0992 331.1);
-  --sherpa-core-color-basic-pink-1000: oklch(0.182 0.085 324.9);
+  --sherpa-core-color-basic-pink-0: #fef2ff;
+  --sherpa-core-color-basic-pink-100: #ebc8f2;
+  --sherpa-core-color-basic-pink-200: #db9ee7;
+  --sherpa-core-color-basic-pink-300: #cf66e4;
+  --sherpa-core-color-basic-pink-400: #ca4ce3;
+  --sherpa-core-color-basic-pink-500: #ab27c3;
+  --sherpa-core-color-basic-pink-600: #911aa7;
+  --sherpa-core-color-basic-pink-700: #6e177e;
+  --sherpa-core-color-basic-pink-800: #561163;
+  --sherpa-core-color-basic-pink-900: #32002f;
+  --sherpa-core-color-basic-pink-1000: #230026;
 
   /* ── Purple ───────────────────────────────────────────── */
   /* Base: #7B1CE6 */
-  --sherpa-core-color-basic-purple-0: oklch(0.952 0.0262 308.1);
-  --sherpa-core-color-basic-purple-100: oklch(0.871 0.076 306.3);
-  --sherpa-core-color-basic-purple-200: oklch(0.75 0.1547 304.5);
-  --sherpa-core-color-basic-purple-300: oklch(0.647 0.2202 302.2);
-  --sherpa-core-color-basic-purple-400: oklch(0.598 0.2543 300.1);
-  --sherpa-core-color-basic-purple-500: oklch(0.5099 0.2622 296.1);
-  --sherpa-core-color-basic-purple-600: oklch(0.442 0.2386 293.7);
-  --sherpa-core-color-basic-purple-700: oklch(0.374 0.2045 293.6);
-  --sherpa-core-color-basic-purple-800: oklch(0.319 0.1521 298);
-  --sherpa-core-color-basic-purple-900: oklch(0.232 0.0944 301.4);
-  --sherpa-core-color-basic-purple-1000: oklch(0.184 0.0708 302.3);
+  --sherpa-core-color-basic-purple-0: #f4ebfd;
+  --sherpa-core-color-basic-purple-100: #e1c8fd;
+  --sherpa-core-color-basic-purple-200: #c493fc;
+  --sherpa-core-color-basic-purple-300: #a962fb;
+  --sherpa-core-color-basic-purple-400: #9b45fc;
+  --sherpa-core-color-basic-purple-500: #7b1ce6;
+  --sherpa-core-color-basic-purple-600: #620bc6;
+  --sherpa-core-color-basic-purple-700: #4d039f;
+  --sherpa-core-color-basic-purple-800: #3f1173;
+  --sherpa-core-color-basic-purple-900: #260c41;
+  --sherpa-core-color-basic-purple-1000: #19072c;
 
   /* ── Red ──────────────────────────────────────────────── */
   /* Base: #DD2C01 */
-  --sherpa-core-color-basic-red-0: oklch(0.982 0.0086 33.9);
-  --sherpa-core-color-basic-red-50: oklch(0.982 0.0086 33.9);
-  --sherpa-core-color-basic-red-100: oklch(0.863 0.0625 32.7);
-  --sherpa-core-color-basic-red-200: oklch(0.77 0.1206 34.2);
-  --sherpa-core-color-basic-red-300: oklch(0.701 0.1659 34.7);
-  --sherpa-core-color-basic-red-400: oklch(0.636 0.2154 34);
-  --sherpa-core-color-basic-red-500: oklch(0.581 0.2154 32.7);
-  --sherpa-core-color-basic-red-550: oklch(0.526 0.1939 32.7);
-  --sherpa-core-color-basic-red-600: oklch(0.527 0.1874 32.7);
-  --sherpa-core-color-basic-red-700: oklch(0.455 0.1572 32.7);
-  --sherpa-core-color-basic-red-750: oklch(0.421 0.1723 29.2);
-  --sherpa-core-color-basic-red-800: oklch(0.386 0.1314 33.8);
-  --sherpa-core-color-basic-red-900: oklch(0.332 0.1034 34.2);
-  --sherpa-core-color-basic-red-1000: oklch(0.283 0.0754 34.3);
+  --sherpa-core-color-basic-red-0: #fff7f5;
+  --sherpa-core-color-basic-red-50: #fff7f5;
+  --sherpa-core-color-basic-red-100: #f8c4b8;
+  --sherpa-core-color-basic-red-200: #f79780;
+  --sherpa-core-color-basic-red-300: #f37253;
+  --sherpa-core-color-basic-red-400: #f1441a;
+  --sherpa-core-color-basic-red-500: #dd2c01;
+  --sherpa-core-color-basic-red-550: #c12603;
+  --sherpa-core-color-basic-red-600: #bf2c09;
+  --sherpa-core-color-basic-red-700: #9b2509;
+  --sherpa-core-color-basic-red-750: #950101;
+  --sherpa-core-color-basic-red-800: #7b1d08;
+  --sherpa-core-color-basic-red-900: #601b0b;
+  --sherpa-core-color-basic-red-1000: #48180e;
 
   /* ── Yellow ───────────────────────────────────────────── */
   /* Base: #FEC404 */
-  --sherpa-core-color-basic-yellow-0: oklch(0.988 0.0156 91.6);
-  --sherpa-core-color-basic-yellow-100: oklch(0.966 0.0537 94.5);
-  --sherpa-core-color-basic-yellow-200: oklch(0.921 0.1021 93.4);
-  --sherpa-core-color-basic-yellow-300: oklch(0.892 0.1506 92.2);
-  --sherpa-core-color-basic-yellow-400: oklch(0.87 0.1627 91.2);
-  --sherpa-core-color-basic-yellow-500: oklch(0.8488 0.1731 86.9);
-  --sherpa-core-color-basic-yellow-550: oklch(0.795 0.161 86.9);
-  --sherpa-core-color-basic-yellow-600: oklch(0.81 0.1662 86.9);
-  --sherpa-core-color-basic-yellow-700: oklch(0.766 0.1558 86.9);
-  --sherpa-core-color-basic-yellow-800: oklch(0.688 0.1402 86.9);
-  --sherpa-core-color-basic-yellow-900: oklch(0.573 0.116 86.9);
-  --sherpa-core-color-basic-yellow-1000: oklch(0.466 0.0952 88.9);
+  --sherpa-core-color-basic-yellow-0: #fffbf0;
+  --sherpa-core-color-basic-yellow-100: #fff4cc;
+  --sherpa-core-color-basic-yellow-200: #fce495;
+  --sherpa-core-color-basic-yellow-300: #ffd856;
+  --sherpa-core-color-basic-yellow-400: #fccf39;
+  --sherpa-core-color-basic-yellow-500: #fec404;
+  --sherpa-core-color-basic-yellow-550: #e8b408;
+  --sherpa-core-color-basic-yellow-600: #efb800;
+  --sherpa-core-color-basic-yellow-700: #deab06;
+  --sherpa-core-color-basic-yellow-800: #c09403;
+  --sherpa-core-color-basic-yellow-900: #967304;
+  --sherpa-core-color-basic-yellow-1000: #6f5600;
 
   /* ── Monochrome ──────────────────────────────────────────────── */
-  --sherpa-core-color-basic-monochrome-0: oklch(1 0 0);
-  --sherpa-core-color-basic-monochrome-25: oklch(0.985 0 0);
-  --sherpa-core-color-basic-monochrome-50: oklch(0.961 0 0);
-  --sherpa-core-color-basic-monochrome-75: oklch(0.955 0 0);
-  --sherpa-core-color-basic-monochrome-100: oklch(0.994 0 0);
-  --sherpa-core-color-basic-monochrome-200: oklch(0.979 0 0);
-  --sherpa-core-color-basic-monochrome-250: oklch(0.916 0 0);
-  --sherpa-core-color-basic-monochrome-300: oklch(0.9249 0 0);
-  --sherpa-core-color-basic-monochrome-400: oklch(0.873 0 0);
-  --sherpa-core-color-basic-monochrome-450: oklch(0.779 0 0);
-  --sherpa-core-color-basic-monochrome-500: oklch(0.76 0 0);
-  --sherpa-core-color-basic-monochrome-550: oklch(0.683 0 0);
-  --sherpa-core-color-basic-monochrome-600: oklch(0.653 0 0);
-  --sherpa-core-color-basic-monochrome-650: oklch(0.545 0 0);
-  --sherpa-core-color-basic-monochrome-700: oklch(0.535 0 0);
-  --sherpa-core-color-basic-monochrome-800: oklch(0.394 0 0);
-  --sherpa-core-color-basic-monochrome-850: oklch(0.337 0 0);
-  --sherpa-core-color-basic-monochrome-875: oklch(0.321 0 0);
-  --sherpa-core-color-basic-monochrome-900: oklch(0.252 0 0);
-  --sherpa-core-color-basic-monochrome-925: oklch(0.182 0 0);
-  --sherpa-core-color-basic-monochrome-950: oklch(0.178 0 0);
-  --sherpa-core-color-basic-monochrome-1000: oklch(0 0 0);
+  --sherpa-core-color-basic-monochrome-0: #ffffff;
+  --sherpa-core-color-basic-monochrome-25: #fafafa;
+  --sherpa-core-color-basic-monochrome-50: #fafafa;
+  --sherpa-core-color-basic-monochrome-75: #f8f8f8;
+  --sherpa-core-color-basic-monochrome-100: #f2f2f2;
+  --sherpa-core-color-basic-monochrome-200: #f0f0f0;
+  --sherpa-core-color-basic-monochrome-250: #e3e3e3;
+  --sherpa-core-color-basic-monochrome-300: #e6e6e6;
+  --sherpa-core-color-basic-monochrome-400: #d5d5d5;
+  --sherpa-core-color-basic-monochrome-450: #b7b7b7;
+  --sherpa-core-color-basic-monochrome-500: #b1b1b1;
+  --sherpa-core-color-basic-monochrome-550: #999999;
+  --sherpa-core-color-basic-monochrome-600: #909090;
+  --sherpa-core-color-basic-monochrome-650: #707070;
+  --sherpa-core-color-basic-monochrome-700: #6d6d6d;
+  --sherpa-core-color-basic-monochrome-800: #464646;
+  --sherpa-core-color-basic-monochrome-850: #373737;
+  --sherpa-core-color-basic-monochrome-875: #333333;
+  --sherpa-core-color-basic-monochrome-900: #292a2e;
+  --sherpa-core-color-basic-monochrome-925: #222222;
+  --sherpa-core-color-basic-monochrome-950: #18191a;
+  --sherpa-core-color-basic-monochrome-1000: #000000;
 
   /* ── Transparent ─────────────────────────────────────────────── */
-  --sherpa-core-color-basic-transparent-0: oklch(0.987 0.0184 285.9 / 0%);
-  --sherpa-core-color-basic-transparent-100: oklch(0.994 0.0184 285.9 / 5%);
-  --sherpa-core-color-basic-transparent-200: oklch(0.9 0.0184 285.9 / 10%);
-  --sherpa-core-color-basic-transparent-300: oklch(0.855 0.0184 285.9 / 15%);
-  --sherpa-core-color-basic-transparent-400: oklch(0.811 0.0184 285.9 / 20%);
-  --sherpa-core-color-basic-transparent-500: oklch(0.768 0.0184 285.9 / 25%);
-  --sherpa-core-color-basic-transparent-600: oklch(0.647 0.0184 285.9 / 30%);
-  --sherpa-core-color-basic-transparent-700: oklch(0.478 0.0184 285.9 / 35%);
-  --sherpa-core-color-basic-transparent-800: oklch(0.435 0.0184 285.9 / 40%);
-  --sherpa-core-color-basic-transparent-900: oklch(0.374 0.0184 285.9 / 45%);
-  --sherpa-core-color-basic-transparent-1000: oklch(0.303 0.0184 285.9 / 50%);
+  --sherpa-core-color-basic-transparent-0: #f9f9ff00;
+  --sherpa-core-color-basic-transparent-100: #fcfcff0d;
+  --sherpa-core-color-basic-transparent-200: #dddde61a;
+  --sherpa-core-color-basic-transparent-300: #cecedb26;
+  --sherpa-core-color-basic-transparent-400: #c0c0cd33;
+  --sherpa-core-color-basic-transparent-500: #b2b2bf40;
+  --sherpa-core-color-basic-transparent-600: #8d8d994c;
+  --sherpa-core-color-basic-transparent-700: #5c5c6759;
+  --sherpa-core-color-basic-transparent-800: #50505b66;
+  --sherpa-core-color-basic-transparent-900: #40404a73;
+  --sherpa-core-color-basic-transparent-1000: #2e2e3380;
 
   /* ── Extended Color Families ──────────────────────────────────── */
 
   /* ── Chrome Orange ────────────────────────────────────── */
   /* Base: #FFAA00 */
-  --sherpa-core-color-extended-chrome-orange-200: oklch(0.981 0.0187 83.1);
-  --sherpa-core-color-extended-chrome-orange-250: oklch(0.962 0.0392 83.9);
-  --sherpa-core-color-extended-chrome-orange-300: oklch(0.928 0.0767 84.8);
-  --sherpa-core-color-extended-chrome-orange-350: oklch(0.894 0.1091 83.5);
-  --sherpa-core-color-extended-chrome-orange-400: oklch(0.864 0.1397 82.5);
-  --sherpa-core-color-extended-chrome-orange-450: oklch(0.834 0.1585 79.5);
-  --sherpa-core-color-extended-chrome-orange-500: oklch(0.8016 0.1704 73.3);
-  --sherpa-core-color-extended-chrome-orange-550: oklch(0.777 0.1653 73.3);
-  --sherpa-core-color-extended-chrome-orange-600: oklch(0.668 0.1414 73.3);
-  --sherpa-core-color-extended-chrome-orange-650: oklch(0.628 0.1329 73.3);
+  --sherpa-core-color-extended-chrome-orange-200: #fff8eb;
+  --sherpa-core-color-extended-chrome-orange-250: #fff1d5;
+  --sherpa-core-color-extended-chrome-orange-300: #ffe4ad;
+  --sherpa-core-color-extended-chrome-orange-350: #ffd686;
+  --sherpa-core-color-extended-chrome-orange-400: #ffc95b;
+  --sherpa-core-color-extended-chrome-orange-450: #ffbb35;
+  --sherpa-core-color-extended-chrome-orange-500: #ffaa01;
+  --sherpa-core-color-extended-chrome-orange-550: #f5a300;
+  --sherpa-core-color-extended-chrome-orange-600: #c88503;
+  --sherpa-core-color-extended-chrome-orange-650: #b87a03;
 
   /* ── Cool Green ───────────────────────────────────────── */
   /* Base: #14D99B */
-  --sherpa-core-color-extended-cool-green-0: oklch(0.981 0.0265 191.1);
-  --sherpa-core-color-extended-cool-green-100: oklch(0.948 0.0745 176.3);
-  --sherpa-core-color-extended-cool-green-200: oklch(0.922 0.1176 171.2);
-  --sherpa-core-color-extended-cool-green-300: oklch(0.887 0.1656 166.4);
-  --sherpa-core-color-extended-cool-green-400: oklch(0.846 0.1805 163.6);
-  --sherpa-core-color-extended-cool-green-500: oklch(0.7846 0.1656 163.6);
-  --sherpa-core-color-extended-cool-green-600: oklch(0.727 0.154 163.6);
-  --sherpa-core-color-extended-cool-green-700: oklch(0.649 0.1358 163.6);
-  --sherpa-core-color-extended-cool-green-800: oklch(0.553 0.1076 166.3);
-  --sherpa-core-color-extended-cool-green-900: oklch(0.45 0.0845 166.8);
-  --sherpa-core-color-extended-cool-green-1000: oklch(0.334 0.0662 166.7);
+  --sherpa-core-color-extended-cool-green-0: #e6fffd;
+  --sherpa-core-color-extended-cool-green-100: #b8ffec;
+  --sherpa-core-color-extended-cool-green-200: #8cffdb;
+  --sherpa-core-color-extended-cool-green-300: #47fcc1;
+  --sherpa-core-color-extended-cool-green-400: #11f0aa;
+  --sherpa-core-color-extended-cool-green-500: #14d99b;
+  --sherpa-core-color-extended-cool-green-600: #0dc48c;
+  --sherpa-core-color-extended-cool-green-700: #12a878;
+  --sherpa-core-color-extended-cool-green-800: #198664;
+  --sherpa-core-color-extended-cool-green-900: #15644b;
+  --sherpa-core-color-extended-cool-green-1000: #04412f;
 
   /* ── Cool Red ─────────────────────────────────────────── */
   /* Base: #CB527A */
-  --sherpa-core-color-extended-cool-red-0: oklch(0.975 0.0142 -5.3);
-  --sherpa-core-color-extended-cool-red-100: oklch(0.907 0.0394 -1.8);
-  --sherpa-core-color-extended-cool-red-200: oklch(0.841 0.0679 -1.4);
-  --sherpa-core-color-extended-cool-red-300: oklch(0.775 0.0963 0.1);
-  --sherpa-core-color-extended-cool-red-400: oklch(0.713 0.1262 1.4);
-  --sherpa-core-color-extended-cool-red-500: oklch(0.6066 0.1578 2.4);
-  --sherpa-core-color-extended-cool-red-600: oklch(0.534 0.1578 2.4);
-  --sherpa-core-color-extended-cool-red-700: oklch(0.465 0.1546 2.4);
-  --sherpa-core-color-extended-cool-red-800: oklch(0.396 0.1468 2.4);
-  --sherpa-core-color-extended-cool-red-900: oklch(0.337 0.1247 2.4);
-  --sherpa-core-color-extended-cool-red-1000: oklch(0.309 0.1026 5);
+  --sherpa-core-color-extended-cool-red-0: #fff3f7;
+  --sherpa-core-color-extended-cool-red-100: #f8d6e0;
+  --sherpa-core-color-extended-cool-red-200: #f1b9ca;
+  --sherpa-core-color-extended-cool-red-300: #e99cb3;
+  --sherpa-core-color-extended-cool-red-400: #e27f9d;
+  --sherpa-core-color-extended-cool-red-500: #cb527a;
+  --sherpa-core-color-extended-cool-red-600: #b23b65;
+  --sherpa-core-color-extended-cool-red-700: #9a2652;
+  --sherpa-core-color-extended-cool-red-800: #801140;
+  --sherpa-core-color-extended-cool-red-900: #660b32;
+  --sherpa-core-color-extended-cool-red-1000: #571129;
 
   /* ── Deep Purple ──────────────────────────────────────── */
   /* Base: #3E067F */
-  --sherpa-core-color-extended-deep-purple-150: oklch(0.863 0.0806 306.2);
-  --sherpa-core-color-extended-deep-purple-200: oklch(0.773 0.1354 304.9);
-  --sherpa-core-color-extended-deep-purple-250: oklch(0.686 0.1885 303.2);
-  --sherpa-core-color-extended-deep-purple-300: oklch(0.61 0.2365 300.9);
-  --sherpa-core-color-extended-deep-purple-350: oklch(0.575 0.2554 299.2);
-  --sherpa-core-color-extended-deep-purple-400: oklch(0.436 0.2365 294.4);
-  --sherpa-core-color-extended-deep-purple-450: oklch(0.372 0.2005 294.4);
-  --sherpa-core-color-extended-deep-purple-500: oklch(0.3222 0.1714 294.4);
-  --sherpa-core-color-extended-deep-purple-550: oklch(0.27 0.1405 295.9);
-  --sherpa-core-color-extended-deep-purple-600: oklch(0.158 0.0754 300.5);
+  --sherpa-core-color-extended-deep-purple-150: #dfc5fc;
+  --sherpa-core-color-extended-deep-purple-200: #c99efa;
+  --sherpa-core-color-extended-deep-purple-250: #b377f8;
+  --sherpa-core-color-extended-deep-purple-300: #9e50f7;
+  --sherpa-core-color-extended-deep-purple-350: #933cf6;
+  --sherpa-core-color-extended-deep-purple-400: #6107c2;
+  --sherpa-core-color-extended-deep-purple-450: #4d069c;
+  --sherpa-core-color-extended-deep-purple-500: #3e067f;
+  --sherpa-core-color-extended-deep-purple-550: #300561;
+  --sherpa-core-color-extended-deep-purple-600: #130227;
 
   /* ── Electric Indigo ──────────────────────────────────── */
   /* Base: #6B0BEA */
-  --sherpa-core-color-extended-electric-indigo-200: oklch(0.954 0.0245 293.5);
-  --sherpa-core-color-extended-electric-indigo-250: oklch(0.872 0.0653 300);
-  --sherpa-core-color-extended-electric-indigo-300: oklch(0.833 0.0843 297.5);
-  --sherpa-core-color-extended-electric-indigo-350: oklch(0.708 0.1523 295.5);
-  --sherpa-core-color-extended-electric-indigo-400: oklch(0.591 0.2121 291.5);
-  --sherpa-core-color-extended-electric-indigo-450: oklch(0.519 0.2529 288.8);
-  --sherpa-core-color-extended-electric-indigo-500: oklch(0.4893 0.2719 290.2);
-  --sherpa-core-color-extended-electric-indigo-550: oklch(0.417 0.2284 290.2);
-  --sherpa-core-color-extended-electric-indigo-600: oklch(0.34 0.1849 291.6);
-  --sherpa-core-color-extended-electric-indigo-650: oklch(0.232 0.1196 286.8);
+  --sherpa-core-color-extended-electric-indigo-200: #f0edff;
+  --sherpa-core-color-extended-electric-indigo-250: #dbccfa;
+  --sherpa-core-color-extended-electric-indigo-300: #cebdf9;
+  --sherpa-core-color-extended-electric-indigo-350: #a98bf5;
+  --sherpa-core-color-extended-electric-indigo-400: #845aee;
+  --sherpa-core-color-extended-electric-indigo-450: #6e32ec;
+  --sherpa-core-color-extended-electric-indigo-500: #6b0bea;
+  --sherpa-core-color-extended-electric-indigo-550: #550cbb;
+  --sherpa-core-color-extended-electric-indigo-600: #40068d;
+  --sherpa-core-color-extended-electric-indigo-650: #1e0751;
 
   /* ── Neon Blue ────────────────────────────────────────── */
   /* Base: #4C63E5 */
-  --sherpa-core-color-extended-neon-blue-200: oklch(0.955 0.0217 268.4);
-  --sherpa-core-color-extended-neon-blue-250: oklch(0.906 0.0455 275.9);
-  --sherpa-core-color-extended-neon-blue-300: oklch(0.817 0.085 273.3);
-  --sherpa-core-color-extended-neon-blue-350: oklch(0.734 0.1226 273.2);
-  --sherpa-core-color-extended-neon-blue-400: oklch(0.698 0.1344 272.1);
-  --sherpa-core-color-extended-neon-blue-450: oklch(0.626 0.1601 268.2);
-  --sherpa-core-color-extended-neon-blue-500: oklch(0.5569 0.1977 270.9);
-  --sherpa-core-color-extended-neon-blue-550: oklch(0.533 0.1977 267.6);
-  --sherpa-core-color-extended-neon-blue-600: oklch(0.354 0.1384 265);
-  --sherpa-core-color-extended-neon-blue-650: oklch(0.236 0.1226 270.9);
+  --sherpa-core-color-extended-neon-blue-200: #eaf0ff;
+  --sherpa-core-color-extended-neon-blue-250: #d7deff;
+  --sherpa-core-color-extended-neon-blue-300: #b1c0fb;
+  --sherpa-core-color-extended-neon-blue-350: #90a3f6;
+  --sherpa-core-color-extended-neon-blue-400: #8197f1;
+  --sherpa-core-color-extended-neon-blue-450: #5f80e8;
+  --sherpa-core-color-extended-neon-blue-500: #4c63e5;
+  --sherpa-core-color-extended-neon-blue-550: #3c5edd;
+  --sherpa-core-color-extended-neon-blue-600: #163382;
+  --sherpa-core-color-extended-neon-blue-650: #0e1057;
+  --sherpa-core-color-extended-neon-blue-700: #0d0d4a;
+  --sherpa-core-color-extended-neon-blue-750: #0b0b3d;
+  --sherpa-core-color-extended-neon-blue-800: #080830;
 
   /* ── Phlox ────────────────────────────────────────────── */
   /* Base: #C046FF */
-  --sherpa-core-color-extended-phlox-250: oklch(0.956 0.029 313.9);
-  --sherpa-core-color-extended-phlox-300: oklch(0.912 0.0633 315.1);
-  --sherpa-core-color-extended-phlox-350: oklch(0.824 0.124 313.2);
-  --sherpa-core-color-extended-phlox-400: oklch(0.745 0.1847 312.5);
-  --sherpa-core-color-extended-phlox-450: oklch(0.708 0.2137 311.2);
-  --sherpa-core-color-extended-phlox-500: oklch(0.6446 0.2638 311.2);
-  --sherpa-core-color-extended-phlox-550: oklch(0.582 0.2955 306.6);
-  --sherpa-core-color-extended-phlox-600: oklch(0.488 0.2532 306.3);
-  --sherpa-core-color-extended-phlox-650: oklch(0.338 0.1741 307.6);
-  --sherpa-core-color-extended-phlox-700: oklch(0.257 0.1319 308.1);
-  --sherpa-core-color-extended-phlox-750: oklch(0.241 0.124 308.6);
+  --sherpa-core-color-extended-phlox-250: #f8ebff;
+  --sherpa-core-color-extended-phlox-300: #f2d6ff;
+  --sherpa-core-color-extended-phlox-350: #e2adff;
+  --sherpa-core-color-extended-phlox-400: #d485ff;
+  --sherpa-core-color-extended-phlox-450: #cb71ff;
+  --sherpa-core-color-extended-phlox-500: #c046ff;
+  --sherpa-core-color-extended-phlox-550: #a90cff;
+  --sherpa-core-color-extended-phlox-600: #8500cc;
+  --sherpa-core-color-extended-phlox-650: #50007a;
+  --sherpa-core-color-extended-phlox-700: #350052;
+  --sherpa-core-color-extended-phlox-750: #30004b;
 
   /* ── Razamatazz ───────────────────────────────────────── */
   /* Base: #ED186B */
-  --sherpa-core-color-extended-razamatazz-200: oklch(0.959 0.0213 -9.7);
-  --sherpa-core-color-extended-razamatazz-250: oklch(0.918 0.0426 -8.2);
-  --sherpa-core-color-extended-razamatazz-300: oklch(0.841 0.0852 -5.3);
-  --sherpa-core-color-extended-razamatazz-350: oklch(0.768 0.1326 -3.9);
-  --sherpa-core-color-extended-razamatazz-400: oklch(0.704 0.1776 -1);
-  --sherpa-core-color-extended-razamatazz-450: oklch(0.652 0.2155 2.6);
-  --sherpa-core-color-extended-razamatazz-500: oklch(0.6129 0.2368 7.1);
-  --sherpa-core-color-extended-razamatazz-550: oklch(0.555 0.2155 8.2);
-  --sherpa-core-color-extended-razamatazz-600: oklch(0.479 0.1847 7.1);
-  --sherpa-core-color-extended-razamatazz-650: oklch(0.359 0.1373 7.1);
-  --sherpa-core-color-extended-razamatazz-700: oklch(0.269 0.0995 3.4);
+  --sherpa-core-color-extended-razamatazz-200: #feecf3;
+  --sherpa-core-color-extended-razamatazz-250: #fcd9e7;
+  --sherpa-core-color-extended-razamatazz-300: #f8b4ce;
+  --sherpa-core-color-extended-razamatazz-350: #f68eb6;
+  --sherpa-core-color-extended-razamatazz-400: #f3689d;
+  --sherpa-core-color-extended-razamatazz-450: #f14284;
+  --sherpa-core-color-extended-razamatazz-500: #ed186b;
+  --sherpa-core-color-extended-razamatazz-550: #d1115a;
+  --sherpa-core-color-extended-razamatazz-600: #aa0f4b;
+  --sherpa-core-color-extended-razamatazz-650: #720830;
+  --sherpa-core-color-extended-razamatazz-700: #4a0621;
 
   /* ── Slate ────────────────────────────────────────────── */
   /* Base: #BABACE */
-  --sherpa-core-color-extended-slate-0: oklch(0.974 0.011 274.8);
-  --sherpa-core-color-extended-slate-100: oklch(0.951 0.0219 274.7);
-  --sherpa-core-color-extended-slate-200: oklch(0.929 0.0225 272);
-  --sherpa-core-color-extended-slate-300: oklch(0.905 0.0225 272);
-  --sherpa-core-color-extended-slate-400: oklch(0.874 0.0247 280.8);
-  --sherpa-core-color-extended-slate-500: oklch(0.7952 0.0281 285.7);
-  --sherpa-core-color-extended-slate-550: oklch(0.66 0.0531 285.7);
-  --sherpa-core-color-extended-slate-600: oklch(0.586 0.0534 284.6);
-  --sherpa-core-color-extended-slate-650: oklch(0.494 0.054 286.9);
-  --sherpa-core-color-extended-slate-700: oklch(0.432 0.0525 292.6);
-  --sherpa-core-color-extended-slate-750: oklch(0.329 0.0562 294.6);
-  --sherpa-core-color-extended-slate-800: oklch(0.252 0.0559 294.3);
-  --sherpa-core-color-extended-slate-900: oklch(0.196 0.0281 300.2);
-  --sherpa-core-color-extended-slate-950: oklch(0.158 0.034 299.9);
+  --sherpa-core-color-extended-slate-0: #f4f6fe;
+  --sherpa-core-color-extended-slate-100: #eaeefe;
+  --sherpa-core-color-extended-slate-200: #e2e7f7;
+  --sherpa-core-color-extended-slate-300: #dadfef;
+  --sherpa-core-color-extended-slate-400: #d2d4e6;
+  --sherpa-core-color-extended-slate-500: #babace;
+  --sherpa-core-color-extended-slate-550: #8f8eb2;
+  --sherpa-core-color-extended-slate-600: #78789b;
+  --sherpa-core-color-extended-slate-650: #5f5d7f;
+  --sherpa-core-color-extended-slate-700: #514b6b;
+  --sherpa-core-color-extended-slate-750: #372f4f;
+  --sherpa-core-color-extended-slate-800: #241c3a;
+  --sherpa-core-color-extended-slate-900: #171220;
+  --sherpa-core-color-extended-slate-950: #0f0919;
 
   /* ── Turquoise ────────────────────────────────────────── */
   /* Base: #3BDBC7 */
-  --sherpa-core-color-extended-turquoise-250: oklch(0.961 0.0302 186.5);
-  --sherpa-core-color-extended-turquoise-300: oklch(0.941 0.046 188);
-  --sherpa-core-color-extended-turquoise-350: oklch(0.904 0.0709 187.2);
-  --sherpa-core-color-extended-turquoise-400: oklch(0.887 0.0827 186.3);
-  --sherpa-core-color-extended-turquoise-450: oklch(0.855 0.105 185.6);
-  --sherpa-core-color-extended-turquoise-500: oklch(0.8065 0.1313 182.6);
-  --sherpa-core-color-extended-turquoise-550: oklch(0.777 0.1313 184.8);
-  --sherpa-core-color-extended-turquoise-600: oklch(0.716 0.1195 184.4);
-  --sherpa-core-color-extended-turquoise-650: oklch(0.615 0.105 182.6);
-  --sherpa-core-color-extended-turquoise-700: oklch(0.406 0.067 182.6);
-  --sherpa-core-color-extended-turquoise-750: oklch(0.372 0.063 182.6);
+  --sherpa-core-color-extended-turquoise-250: #ddf9f5;
+  --sherpa-core-color-extended-turquoise-300: #caf6f1;
+  --sherpa-core-color-extended-turquoise-350: #a9efe7;
+  --sherpa-core-color-extended-turquoise-400: #98ece2;
+  --sherpa-core-color-extended-turquoise-450: #76e6d9;
+  --sherpa-core-color-extended-turquoise-500: #3bdbc7;
+  --sherpa-core-color-extended-turquoise-550: #2bd1c1;
+  --sherpa-core-color-extended-turquoise-600: #26bbac;
+  --sherpa-core-color-extended-turquoise-650: #19998a;
+  --sherpa-core-color-extended-turquoise-700: #0f554c;
+  --sherpa-core-color-extended-turquoise-750: #084b43;
 
   /* ── Warm Green ───────────────────────────────────────── */
   /* Base: #B7F826 */
-  --sherpa-core-color-extended-warm-green-0: oklch(0.993 0.0179 120.9);
-  --sherpa-core-color-extended-warm-green-100: oklch(0.971 0.0806 122.2);
-  --sherpa-core-color-extended-warm-green-200: oklch(0.948 0.1254 122.9);
-  --sherpa-core-color-extended-warm-green-300: oklch(0.94 0.1791 124.3);
-  --sherpa-core-color-extended-warm-green-400: oklch(0.921 0.206 125.7);
-  --sherpa-core-color-extended-warm-green-500: oklch(0.9023 0.2239 126.9);
-  --sherpa-core-color-extended-warm-green-600: oklch(0.849 0.2172 126.9);
-  --sherpa-core-color-extended-warm-green-700: oklch(0.758 0.197 127.9);
-  --sherpa-core-color-extended-warm-green-800: oklch(0.697 0.1791 127.9);
-  --sherpa-core-color-extended-warm-green-900: oklch(0.552 0.1388 126.9);
-  --sherpa-core-color-extended-warm-green-1000: oklch(0.454 0.1052 125.7);
+  --sherpa-core-color-extended-warm-green-0: #fbfff2;
+  --sherpa-core-color-extended-warm-green-100: #ecffc2;
+  --sherpa-core-color-extended-warm-green-200: #defc9c;
+  --sherpa-core-color-extended-warm-green-300: #d2ff6d;
+  --sherpa-core-color-extended-warm-green-400: #c4fc4b;
+  --sherpa-core-color-extended-warm-green-500: #b7f827;
+  --sherpa-core-color-extended-warm-green-600: #a5e613;
+  --sherpa-core-color-extended-warm-green-700: #8cc609;
+  --sherpa-core-color-extended-warm-green-800: #7db10d;
+  --sherpa-core-color-extended-warm-green-900: #5c800a;
+  --sherpa-core-color-extended-warm-green-1000: #486012;
 
   /* ── Warm Yellow ──────────────────────────────────────── */
   /* Base: #FFC44C */
-  --sherpa-core-color-extended-warm-yellow-0: oklch(0.989 0.0119 86.9);
-  --sherpa-core-color-extended-warm-yellow-100: oklch(0.953 0.043 84.6);
-  --sherpa-core-color-extended-warm-yellow-200: oklch(0.917 0.08 84.3);
-  --sherpa-core-color-extended-warm-yellow-300: oklch(0.885 0.1141 84.1);
-  --sherpa-core-color-extended-warm-yellow-400: oklch(0.853 0.1393 81.8);
-  --sherpa-core-color-extended-warm-yellow-500: oklch(0.8529 0.1482 81.8);
-  --sherpa-core-color-extended-warm-yellow-600: oklch(0.823 0.1601 79);
-  --sherpa-core-color-extended-warm-yellow-700: oklch(0.809 0.1689 75);
-  --sherpa-core-color-extended-warm-yellow-800: oklch(0.742 0.1556 75.4);
-  --sherpa-core-color-extended-warm-yellow-900: oklch(0.592 0.123 76.1);
-  --sherpa-core-color-extended-warm-yellow-1000: oklch(0.485 0.1023 75.1);
+  --sherpa-core-color-extended-warm-yellow-0: #fffbf3;
+  --sherpa-core-color-extended-warm-yellow-100: #fdeecf;
+  --sherpa-core-color-extended-warm-yellow-200: #fde0a6;
+  --sherpa-core-color-extended-warm-yellow-300: #fdd37e;
+  --sherpa-core-color-extended-warm-yellow-400: #fcc558;
+  --sherpa-core-color-extended-warm-yellow-500: #ffc44c;
+  --sherpa-core-color-extended-warm-yellow-600: #fcb72c;
+  --sherpa-core-color-extended-warm-yellow-700: #ffae0c;
+  --sherpa-core-color-extended-warm-yellow-800: #e39b04;
+  --sherpa-core-color-extended-warm-yellow-900: #a77205;
+  --sherpa-core-color-extended-warm-yellow-1000: #805500;
 
   /* ── Raven (singleton) ───────────────────────────────────────── */
-  --sherpa-core-color-extended-raven-raven: oklch(0.1706 0.0669 298.3);
+  --sherpa-core-color-extended-raven-raven: #140628;
 }
 
 /* ── Composite Shadow Tokens ─────────────────────────────────────────
