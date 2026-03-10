@@ -139,9 +139,11 @@
 /* ── App Shell Layout ────────────────────────────────────────────────── */
 /*
  * Grid-based app shell: sidebar nav + main content area.
- * Consumer adds .sherpa-app-layout to the wrapper element.
  *
- * Structure:
+ * Canonical template: html/templates/views/app-shell.html
+ * Stamp it with:  stampViewTemplate("app-shell", document.body)
+ *
+ * Structure (for reference — prefer stamping the template):
  *   <div class="sherpa-app-layout">
  *     <sherpa-nav>…</sherpa-nav>
  *     <div class="sherpa-main-content">

@@ -8,6 +8,9 @@
 // Base class
 export { SherpaElement } from "./utilities/sherpa-element/sherpa-element.js";
 
+// View layout template helper
+export { stampViewTemplate } from "./utilities/view-templates.js";
+
 // Core layout components
 export * from "./sherpa-nav/sherpa-nav.js";
 export * from "./sherpa-nav-item/sherpa-nav-item.js";
