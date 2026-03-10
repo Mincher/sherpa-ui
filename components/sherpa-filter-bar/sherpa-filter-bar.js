@@ -6,7 +6,7 @@
  *   default (global) — Full filter bar: toggle, group, sort, presets, dynamic
  *                       filters, add-filter button, actions. Used at page level.
  *   local            — Minimal: group + sort + actions only. Used inside
- *                       containers (sherpa-container). Selected via data-type="local".
+ *                       containers (sherpa-data-viz-container). Selected via data-type="local".
  *
  * Filter chip configuration (new API):
  *   Each filter chip is a <sherpa-button data-type="button-select"> with:
@@ -23,7 +23,7 @@
  *
  * Self-populating:
  *   Listens for `vizready` events bubbling from sibling viz children
- *   through the shared sherpa-container ancestor. Unions their columns
+ *   through the shared sherpa-data-viz-container ancestor. Unions their columns
  *   and rows to seed chip menus automatically.
  *
  * Slot-based layout:
@@ -40,6 +40,10 @@
  *   containerfilterchange  — Dispatched on self with bubbles: true so it
  *                           reaches any ancestor scope. Viz children listen
  *                           on their parent for this event.
+ *                           detail: { filters }
+ *   globalfilterchange     — Dispatched on `document` when `data-global` is
+ *                           set. All viz children that wire global filter
+ *                           listeners receive this event directly.
  *                           detail: { filters }
  *
  * Events consumed:
@@ -90,7 +94,7 @@ export class SherpaFilterBar extends SherpaElement {
   onConnect() {
     // Use the parent element as event scope — no tag-name coupling.
     // vizready / sortchange events bubble up from viz siblings to this scope.
-    // When embedded inside a shadow root (e.g. sherpa-container), parentElement
+    // When embedded inside a shadow root (e.g. sherpa-data-viz-container), parentElement
     // is null because ShadowRoot is not an Element. Fall back to the shadow host
     // so composed vizready/sortchange events from slotted children are caught.
     this.#scopeEl = this.parentElement || this.getRootNode()?.host || null;
@@ -147,7 +151,7 @@ export class SherpaFilterBar extends SherpaElement {
       if (clearBtn) this.#clearAll();
     });
 
-    // Add filter button — sherpa-button[data-type="icon-select"] with <select>
+    // Add filter button — sherpa-button[data-type="button-select"] with <select>
     this.#addButton = this.$(".add-filter-button");
     // The button's shadow DOM may not have rendered yet, so we listen
     // for change on the button itself (events re-dispatch on host)
@@ -321,6 +325,7 @@ export class SherpaFilterBar extends SherpaElement {
       new CustomEvent("filterclear", { bubbles: true, composed: true }),
     );
     this.#dispatchContainerFilterChange([]);
+    this.#dispatchGlobalFilterChange([]);
   }
 
   /** Get all slotted behavior buttons and data-filter-field chips. */
@@ -374,6 +379,7 @@ export class SherpaFilterBar extends SherpaElement {
       const filterType = this.#inferFilterType(col?.type);
       const chip = document.createElement("sherpa-button");
       chip.setAttribute("data-type", "button-select");
+      chip.setAttribute("data-split", "");
       chip.setAttribute("data-filter-field", field);
       chip.setAttribute("data-filter-type", filterType);
       chip.setAttribute("slot", "presets");
@@ -409,10 +415,10 @@ export class SherpaFilterBar extends SherpaElement {
 
     sel.replaceChildren();
 
-    // Placeholder — renders as FA plus icon via icon-select CSS
+    // Placeholder option
     const placeholder = document.createElement("option");
     placeholder.value = "";
-    placeholder.textContent = "\uf067";
+    placeholder.textContent = "";
     placeholder.selected = true;
     placeholder.disabled = true;
     sel.appendChild(placeholder);
@@ -445,6 +451,7 @@ export class SherpaFilterBar extends SherpaElement {
     // Create a new filter chip (in default slot — user filters zone)
     const chip = document.createElement("sherpa-button");
     chip.setAttribute("data-type", "button-select");
+    chip.setAttribute("data-split", "");
     chip.setAttribute("data-filter-field", field);
     chip.setAttribute("data-filter-type", filterType);
     chip.setAttribute("data-closeable", "");
@@ -460,7 +467,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.#populateAddSelect();
   };
 
-  /** Dispatch filterchange event + containerfilterchange on container ancestor. */
+  /** Dispatch filterchange + containerfilterchange, and globalfilterchange when data-global. */
   #emitFilterChange() {
     const filters = this.getFilters();
     this.dispatchEvent(
@@ -474,6 +481,9 @@ export class SherpaFilterBar extends SherpaElement {
     // Dispatch containerfilterchange (bubbles to parent scope) so
     // viz children can self-filter.
     this.#dispatchContainerFilterChange(filters);
+
+    // Global scope — dispatch on document so all viz children receive it.
+    this.#dispatchGlobalFilterChange(filters);
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -682,6 +692,19 @@ export class SherpaFilterBar extends SherpaElement {
       new CustomEvent("containerfilterchange", {
         bubbles: true,
         composed: true,
+        detail: { filters },
+      }),
+    );
+  }
+
+  /**
+   * When `data-global` is set, dispatch globalfilterchange on document so
+   * all viz children that listen for global filters receive the update.
+   */
+  #dispatchGlobalFilterChange(filters) {
+    if (!this.hasAttribute("data-global")) return;
+    document.dispatchEvent(
+      new CustomEvent("globalfilterchange", {
         detail: { filters },
       }),
     );

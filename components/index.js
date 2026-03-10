@@ -13,11 +13,10 @@ export * from "./sherpa-nav/sherpa-nav.js";
 export * from "./sherpa-nav-item/sherpa-nav-item.js";
 export * from "./sherpa-nav-promo/sherpa-nav-promo.js";
 export * from "./sherpa-view-header/sherpa-view-header.js";
-export * from "./sherpa-container/sherpa-container.js";
+export * from "./sherpa-data-viz-container/sherpa-data-viz-container.js";
 
 // UI components
 export * from "./sherpa-button/sherpa-button.js";
-export * from "./sherpa-header/sherpa-header.js";
 export * from "./sherpa-footer/sherpa-footer.js";
 export * from "./sherpa-menu/sherpa-menu.js";
 export * from "./sherpa-menu-item/sherpa-menu-item.js";
@@ -77,4 +76,3 @@ export * from "./sherpa-input-date/sherpa-input-date.js";
 export * from "./sherpa-input-date-range/sherpa-input-date-range.js";
 export * from "./sherpa-input-time/sherpa-input-time.js";
 export * from "./sherpa-input-password/sherpa-input-password.js";
-export * from "./sherpa-check/sherpa-check.js";

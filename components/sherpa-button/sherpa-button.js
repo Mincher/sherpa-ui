@@ -2,18 +2,28 @@
  * sherpa-button.js
  * Multi-template button web component.
  *
- * Four templates (selected via data-type → get templateId()):
+ * Five templates (selected via data-type → get templateId()):
  *   default       — Standard button: icon(s) + label + badge
  *   icon          — Icon-only square button
  *   button-select — Button + native <select> side by side (control group)
- *   icon-select   — Icon-only <select> (action picker / menu trigger)
+ *   button-menu   — Button + menu trigger side by side (action menu)
+ *   icon-menu     — Icon-only menu trigger (overflow menus)
  *
  * The button is self-managing for its own visual state and broadcasts
  * events so parent components (filter-bar, container) can orchestrate.
  *
  * Menu:
- *   Add `data-menu="true"` to mark as menu trigger. On click, the button
- *   creates its own <sherpa-menu popover="auto"> instance (as a DOM sibling).
+ *   button-menu and icon-menu types are inherently menu triggers — no
+ *   `data-menu="true"` attribute is needed. For default/icon types, add
+ *   `data-menu="true"` to enable menu trigger behavior.
+ *
+ *   button-menu has two modes:
+ *     Unified (default): clicking anywhere opens the menu.
+ *     Split (data-split): left = buttonclick, right chevron = menu.
+ *
+ *   button-select also supports these two modes:
+ *     Unified (default): clicking the trigger opens the native select.
+ *     Split (data-split): left = buttonclick, right = select dropdown.
  *
  *   If `data-menu-template` is set (e.g. "container"), the button stamps
  *   the matching template from SherpaMenu.getMenuTemplate(id) into the
@@ -36,7 +46,7 @@
  * Attributes:
  *   data-type, data-label, data-variant, data-size, data-active,
  *   data-status, data-icon-start, data-icon-end, data-icon-weight,
- *   data-closeable, data-count, disabled,
+ *   data-closeable, data-count, data-split, disabled,
  *   data-menu, data-menu-position, data-menu-template
  */
 
@@ -86,6 +96,7 @@ export class SherpaButton extends SherpaElement {
   #badgeEl = null;
   #selectEl = null;
   #closeEl = null;
+  #menuTriggerEl = null;
   #menuEl = null;
   #menuClosedAt = 0;
   #lightDomObserver = null;
@@ -100,8 +111,9 @@ export class SherpaButton extends SherpaElement {
     this.#badgeEl = this.$(".badge");
     this.#selectEl = this.$(".select");
     this.#closeEl = this.$(".close");
+    this.#menuTriggerEl = this.$(".menu-trigger");
 
-    // Default variant for standard buttons (not button-select / icon-select)
+    // Default variant for standard buttons (not button-select / button-menu / icon-menu)
     const type = this.dataset.type;
     if (!type && !this.dataset.variant) {
       this.dataset.variant = "primary";
@@ -121,6 +133,7 @@ export class SherpaButton extends SherpaElement {
     this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
     this.#selectEl?.addEventListener("change", this.#onSelectChange);
     this.#closeEl?.addEventListener("click", this.#onCloseClick);
+    this.#menuTriggerEl?.addEventListener("click", this.#onMenuTriggerClick);
     this.#observeLightDomOptions();
   }
 
@@ -128,6 +141,7 @@ export class SherpaButton extends SherpaElement {
     this.#triggerEl?.removeEventListener("click", this.#onTriggerClick);
     this.#selectEl?.removeEventListener("change", this.#onSelectChange);
     this.#closeEl?.removeEventListener("click", this.#onCloseClick);
+    this.#menuTriggerEl?.removeEventListener("click", this.#onMenuTriggerClick);
 
     if (this.#lightDomObserver) {
       this.#lightDomObserver.disconnect();
@@ -190,7 +204,7 @@ export class SherpaButton extends SherpaElement {
 
   /* ── Light DOM options import ───────────────────────────────────
    *
-   * For any select-bearing template (button-select, icon-select),
+   * For the select-bearing template (button-select),
    * import <option>, <optgroup>, <hr> from light DOM into the
    * shadow <select>. Consumers declare options declaratively as
    * children of the host element:
@@ -252,15 +266,39 @@ export class SherpaButton extends SherpaElement {
   #onTriggerClick = (e) => {
     if (this.disabled) return;
 
+    const type = this.dataset.type;
+
+    // icon-menu is always a menu trigger
+    if (type === "icon-menu") {
+      e.stopPropagation();
+      this.#toggleMenu();
+      return;
+    }
+
+    // button-menu: unified mode opens menu on trigger; split mode fires buttonclick
+    if (type === "button-menu") {
+      if (!this.hasAttribute("data-split")) {
+        e.stopPropagation();
+        this.#toggleMenu();
+        return;
+      }
+      // Split mode — left side dispatches buttonclick (fall through)
+    }
+
+    // button-select: unified mode opens native select on trigger; split mode fires buttonclick
+    if (type === "button-select") {
+      if (!this.hasAttribute("data-split")) {
+        e.stopPropagation();
+        this.#selectEl?.showPicker();
+        return;
+      }
+      // Split mode — left side dispatches buttonclick (fall through)
+    }
+
+    // Legacy menu support for default/icon types
     if (this.dataset.menu === "true") {
       e.stopPropagation();
-      // Light-dismiss closes the menu before this handler runs,
-      // so check the timestamp to avoid immediately reopening.
-      if (this.#menuEl?.open || Date.now() - this.#menuClosedAt < 50) {
-        this.#menuEl?.hide();
-      } else {
-        this.#showMenu();
-      }
+      this.#toggleMenu();
       return;
     }
 
@@ -272,6 +310,22 @@ export class SherpaButton extends SherpaElement {
       }),
     );
   };
+
+  /** Click handler for the .menu-trigger div (button-menu template). */
+  #onMenuTriggerClick = (e) => {
+    if (this.disabled) return;
+    e.stopPropagation();
+    this.#toggleMenu();
+  };
+
+  /** Toggle the menu open/closed with debounce protection. */
+  #toggleMenu() {
+    if (this.#menuEl?.open || Date.now() - this.#menuClosedAt < 50) {
+      this.#menuEl?.hide();
+    } else {
+      this.#showMenu();
+    }
+  }
 
   #onSelectChange = (_e) => {
     if (this.disabled) return;
@@ -433,7 +487,7 @@ export class SherpaButton extends SherpaElement {
     this.dataset.label = val;
   }
 
-  /** The native <select> element in shadow DOM (button-select / icon-select). */
+  /** The native <select> element in shadow DOM (button-select only). */
   get selectElement() {
     return this.#selectEl;
   }

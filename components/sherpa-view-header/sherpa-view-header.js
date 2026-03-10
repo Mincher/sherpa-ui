@@ -1,8 +1,8 @@
 /**
  * SherpaViewHeader - View header toolbar with toggles and settings.
  *
- * Manages heading, favorites, feedback popover, global filter bar, and
- * export intent. Theme/mode/density preferences are delegated to ThemeManager.
+ * Manages heading, favorites, feedback popover, and export intent.
+ * Theme/mode/density preferences are delegated to ThemeManager.
  * Edit-mode is dispatched as an event — the consumer/app coordinator
  * handles toggling containers.
  *
@@ -10,14 +10,11 @@
  *   editmodechange   — { editMode: boolean }
  *   viewexport       — { title: string }
  *   favoritetoggle   — { viewId, favorite }
- *   globalfilterchange — (dispatched on document) { filters }
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
-import '../sherpa-filter-bar/sherpa-filter-bar.js';
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { TIME_RANGE_PRESETS } from '../utilities/timeframes.js';
 import { ThemeManager } from '../utilities/theme-manager.js';
 
 export class SherpaViewHeader extends SherpaElement {
@@ -81,7 +78,6 @@ export class SherpaViewHeader extends SherpaElement {
     this.#setupFeedback();
     this.#setupFavorite();
     this.#setupEditMode();
-    this.#setupGlobalFilterBar();
 
     // Apply any attributes that were set before render completed
     const heading = this.dataset.label;
@@ -193,40 +189,6 @@ export class SherpaViewHeader extends SherpaElement {
     closeBtn?.addEventListener('click', close);
     backdrop?.addEventListener('click', close);
     window.addEventListener('resize', () => popover.hasAttribute('data-open') && position());
-  }
-
-  /**
-   * Set up the global filter bar.
-   * Populates datetime-range chips with TIME_RANGE_PRESETS and
-   * dispatches `globalfilterchange` on document when filters change.
-   */
-  #setupGlobalFilterBar() {
-    const filterBar = this.$('.global-filter-bar');
-    if (!filterBar) return;
-
-    // Wait a tick for the filter bar to render, then populate chips
-    requestAnimationFrame(() => {
-      const dateChips = filterBar.querySelectorAll(
-        'sherpa-button[data-filter-type="datetime-range"]',
-      );
-      for (const chip of dateChips) {
-        const options = TIME_RANGE_PRESETS.map(p => ({
-          value: p.key,
-          text: p.label,
-        }));
-        chip.setOptions?.(options);
-      }
-    });
-
-    // Listen for filterchange from the global filter bar and dispatch
-    // globalfilterchange on document so all viz children pick it up.
-    filterBar.addEventListener('filterchange', (e) => {
-      document.dispatchEvent(
-        new CustomEvent('globalfilterchange', {
-          detail: { filters: e.detail?.filters || [] },
-        }),
-      );
-    });
   }
 
 }

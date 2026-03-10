@@ -5,6 +5,7 @@
  * Classes provided:
  *   .sherpa-app-layout           — Grid shell: sidebar nav + main area
  *   .sherpa-main-content         — Main content column (flex column)
+ *   .sherpa-view-header-group    — Wrapper for view-header + global filter bar
  *   .sherpa-main-content-slot    — Scrollable viewport for main content
  *   .sherpa-content-area         — Responsive grid for widgets / containers
  *   .sherpa-scroll-under         — Sticky header with scroll-activated bg
@@ -55,45 +56,45 @@
 }
 
 /* ==========================================================================
-   Grid positioning — sherpa-container attribute-driven spans
+   Grid positioning — sherpa-data-viz-container attribute-driven spans
    ========================================================================== */
 
 /* Column spans */
-.sherpa-content-area sherpa-container[data-variant="resizable"] {
+.sherpa-content-area sherpa-data-viz-container[data-variant="resizable"] {
   grid-column: span 3;
 }
 .sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-col-span="6"] {
+  sherpa-data-viz-container[data-variant="resizable"][data-col-span="6"] {
   grid-column: span 6;
 }
 .sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-col-span="9"] {
+  sherpa-data-viz-container[data-variant="resizable"][data-col-span="9"] {
   grid-column: span 9;
 }
 .sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-col-span="12"] {
+  sherpa-data-viz-container[data-variant="resizable"][data-col-span="12"] {
   grid-column: span 12;
 }
 
 /* Row spans */
 .sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="2"] {
+  sherpa-data-viz-container[data-variant="resizable"][data-row-span="2"] {
   grid-row: span 2;
 }
 .sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="3"] {
+  sherpa-data-viz-container[data-variant="resizable"][data-row-span="3"] {
   grid-row: span 3;
 }
 .sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="4"] {
+  sherpa-data-viz-container[data-variant="resizable"][data-row-span="4"] {
   grid-row: span 4;
 }
 .sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="5"] {
+  sherpa-data-viz-container[data-variant="resizable"][data-row-span="5"] {
   grid-row: span 5;
 }
 .sherpa-content-area
-  sherpa-container[data-variant="resizable"][data-row-span="6"] {
+  sherpa-data-viz-container[data-variant="resizable"][data-row-span="6"] {
   grid-row: span 6;
 }
 
@@ -103,7 +104,7 @@
     --maxColCount: 6;
     grid-template-columns: repeat(6, 1fr);
 
-    & sherpa-container {
+    & sherpa-data-viz-container {
       grid-column-end: span min(var(--containerColSpan), 6) !important;
       grid-row-end: span var(--containerRowSpan) !important;
     }
@@ -116,7 +117,7 @@
     --maxColCount: 3;
     grid-template-columns: repeat(3, 1fr);
 
-    & sherpa-container {
+    & sherpa-data-viz-container {
       grid-column-end: span 3 !important;
 
       & .sections {
@@ -144,7 +145,10 @@
  *   <div class="sherpa-app-layout">
  *     <sherpa-nav>…</sherpa-nav>
  *     <div class="sherpa-main-content">
- *       <sherpa-view-header>…</sherpa-view-header>
+ *       <header class="sherpa-view-header-group sherpa-scroll-under">
+ *         <sherpa-view-header>…</sherpa-view-header>
+ *         <sherpa-filter-bar data-global>…preset chips…</sherpa-filter-bar>
+ *       </header>
  *       <div class="sherpa-main-content-slot">
  *         <div class="sherpa-content-area">…</div>
  *       </div>
@@ -184,6 +188,23 @@
 .sherpa-main-content-slot > .sherpa-content-area {
   width: 100%;
   min-height: 100%;
+}
+
+/* ── View header group ──────────────────────────────────────────────── */
+/*
+ * Wrapper for sherpa-view-header + global sherpa-filter-bar.
+ * Sits at the top of .sherpa-main-content as a flex-shrink:0 block.
+ * Apply .sherpa-scroll-under alongside for sticky + shadow on scroll.
+ */
+
+.sherpa-view-header-group {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sherpa-view-header-group > sherpa-filter-bar {
+  padding-inline: var(--sherpa-space-xs, 8px);
 }
 
 /* ── Scroll-under effect ────────────────────────────────────────────── */

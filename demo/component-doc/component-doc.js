@@ -4,8 +4,8 @@ import { setDataProvider } from "/components/utilities/content-attributes-mixin.
 /* ── Constants ──────────────────────────────────────────── */
 
 const TEMPLATE_PATHS = {
-  container: "/components/sherpa-container/sherpa-container.html",
-  containerMenu: "/components/sherpa-container/sherpa-container-menu.html",
+  container: "/components/sherpa-data-viz-container/sherpa-data-viz-container.html",
+  containerMenu: "/components/sherpa-data-viz-container/sherpa-data-viz-container-menu.html",
   metric: "/components/sherpa-metric/sherpa-metric.html",
   table: "/components/sherpa-data-grid/sherpa-data-grid.html",
 };
@@ -667,7 +667,7 @@ async function loadContainerDemo(t, source) {
 
 async function loadContainerPdfDemo(t, source) {
   try {
-    const c = document.createElement("sherpa-container");
+    const c = document.createElement("sherpa-data-viz-container");
     c.classList.add("doc-hidden");
     $("[data-preview-stage]").appendChild(c);
     await loadContainerDemo(c, source);

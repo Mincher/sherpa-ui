@@ -25,9 +25,13 @@
      DEFAULT — Header + content + footer
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
-<sherpa-header part="header">
-  <slot name="header" slot="heading"></slot>
-</sherpa-header>
+<header class="header-row" part="header">
+  <dl class="header-labels">
+    <dt class="header-title"></dt>
+    <dd class="header-description"></dd>
+  </dl>
+  <slot name="header"></slot>
+</header>
 <div class="card-content" part="content">
   <slot></slot>
 </div>

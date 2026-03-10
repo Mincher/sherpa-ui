@@ -304,12 +304,9 @@ export function ContentAttributesMixin(Base) {
     }
 
     configureHeader({ title = "", viewOptions = [] } = {}) {
-      const headerEl = this.$("sherpa-header");
-      if (!headerEl) {
-        this.#pendingMenuData = null;
-        return;
-      }
+      const titleEl = this.$(".header-title");
 
+      // Show/hide the entire header row via host attribute (CSS handles display)
       const showHeader =
         this.getAttribute("data-show-header") !== "false";
       if (!showHeader) {
@@ -318,22 +315,15 @@ export function ContentAttributesMixin(Base) {
         this.removeAttribute("data-show-header");
       }
 
-      const showControls =
-        this.getAttribute("data-show-header-controls") !== "false";
-      showControls
-        ? headerEl.removeAttribute("data-show-header-controls")
-        : headerEl.setAttribute("data-show-header-controls", "false");
+      // Set title text directly on the native element
+      if (titleEl) titleEl.textContent = title || "";
 
+      // Show/hide menu button via host attribute (CSS handles display)
       const showViewMenu =
         this.getAttribute("data-show-view-menu") !== "false";
-      showViewMenu
-        ? headerEl.removeAttribute("data-show-view-menu")
-        : headerEl.setAttribute("data-show-view-menu", "false");
-
-      headerEl.heading = title || "";
-
       const shouldShowMenu = showViewMenu;
-      headerEl.hasMenuButton = shouldShowMenu;
+      this.toggleAttribute("data-menu-button", shouldShowMenu);
+      if (shouldShowMenu) this.dataset.menuButton = "true";
 
       if (shouldShowMenu) {
         this.#pendingMenuData = { showViewMenu, viewOptions };
@@ -345,14 +335,11 @@ export function ContentAttributesMixin(Base) {
     async wireContentMenu(root, activeType) {
       if (!this.#pendingMenuData) return;
 
-      const header =
-        root.$?.("sherpa-header") ||
-        root.querySelector?.("sherpa-header");
-      if (!header?.isConnected) return;
+      const menuButton =
+        root.$?.(".menu-button") ||
+        root.querySelector?.(".menu-button");
+      if (!menuButton?.isConnected) return;
 
-      await header.rendered;
-      const menuButton = header.menuButtonElement;
-      if (!menuButton) return;
       await menuButton.rendered;
 
       this._menuButton = menuButton;

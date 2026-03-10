@@ -29,7 +29,6 @@ import {
 } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
-import "../sherpa-check/sherpa-check.js";
 import "../sherpa-tag/sherpa-tag.js";
 import "../sherpa-input-search/sherpa-input-search.js";
 
@@ -494,7 +493,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     // Selection header
     headerHtml += `<th class="selection-col" scope="col">
-      <sherpa-check class="select-all" aria-label="Select all rows"></sherpa-check>
+      <input type="checkbox" class="sherpa-check select-all" aria-label="Select all rows" />
     </th>`;
 
     for (const col of columns) {
@@ -639,7 +638,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     check.checked = this.#selectedRows.has(rowId);
     if (this.#selectedRows.has(rowId)) tr.dataset.selected = "";
     check.addEventListener("change", (ev) => {
-      const isChecked = ev.detail?.checked ?? check.checked;
+      const isChecked = ev.target.checked;
       this.#onRowSelect(rowId, isChecked, ev);
       isChecked
         ? tr.setAttribute("data-selected", "")
@@ -904,7 +903,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     // ── Group checkbox — selects/deselects all children ─────────
     groupCheck.addEventListener("change", (e) => {
-      const isChecked = e.detail?.checked ?? e.target.checked;
+      const isChecked = e.target.checked;
       for (const row of group.rows) {
         const rowId = row._rowId;
         if (rowId != null) {

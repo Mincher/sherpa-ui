@@ -22,6 +22,7 @@
     data-density  — "compact" | "comfortable"
     data-active   — Present when any filter is active
     data-embedded — No top border (for embedding inside other components)
+    data-global   — Dispatches globalfilterchange on document (for page-level bars)
     data-type     — "local" selects the local template (default: full layout)
 
   Custom templates:
@@ -43,9 +44,10 @@
     <slot></slot>
     <sherpa-button
       class="add-filter-button"
-      data-type="icon-select"
+      data-type="button-select"
       data-variant="secondary"
       data-icon-start="&#xf067;"
+      data-label="Add"
       data-size="small"
       hidden
     ></sherpa-button>

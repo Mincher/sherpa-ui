@@ -2,7 +2,7 @@
   sherpa-dialog.html — Templates for sherpa-dialog.
 
   Templates:
-    • default — Standard modal dialog with sherpa-header, content area, and sherpa-footer.
+    • default — Standard modal dialog with native header, content area, and sherpa-footer.
     • (custom) — Consumers can add additional <template id="..."> blocks here
                   to define alternative dialog layouts. Use the component's
                   `get templateId()` override to select a template by id.
@@ -25,9 +25,20 @@
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <dialog class="dialog" part="dialog">
-    <sherpa-header data-type="dialog" part="header">
-      <slot name="heading" slot="heading"></slot>
-    </sherpa-header>
+    <header class="header-row" part="header">
+      <dl class="header-labels">
+        <dt class="header-title"></dt>
+        <dd class="header-description"></dd>
+      </dl>
+      <slot name="heading"></slot>
+      <sherpa-button
+        class="close-button"
+        data-variant="tertiary"
+        data-size="small"
+        data-icon-start="&#xf00d;"
+        aria-label="Close"
+      ></sherpa-button>
+    </header>
 
     <div class="dialog-content text-body" part="content">
       <slot></slot>
@@ -49,9 +60,20 @@
 <!--
 <template id="confirmation">
   <dialog class="dialog" part="dialog">
-    <sherpa-header data-type="dialog" part="header">
-      <slot name="heading" slot="heading"></slot>
-    </sherpa-header>
+    <header class="header-row" part="header">
+      <dl class="header-labels">
+        <dt class="header-title"></dt>
+        <dd class="header-description"></dd>
+      </dl>
+      <slot name="heading"></slot>
+      <sherpa-button
+        class="close-button"
+        data-variant="tertiary"
+        data-size="small"
+        data-icon-start="&#xf00d;"
+        aria-label="Close"
+      ></sherpa-button>
+    </header>
 
     <div class="dialog-content text-body" part="content">
       <slot></slot>

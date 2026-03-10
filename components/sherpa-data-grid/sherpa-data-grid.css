@@ -231,6 +231,107 @@ th.header-cell[data-numeric] .header-content {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   Native Checkbox — sherpa-styled via appearance:none
+   ═══════════════════════════════════════════════════════════════ */
+
+.sherpa-check {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sherpa-size-sm, 16px);
+  height: var(--sherpa-size-sm, 16px);
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.sherpa-check:hover {
+  border-color: var(--sherpa-border-control-hover, #6a6a7a);
+  background: var(--sherpa-surface-control-hover, #f5f5f8);
+}
+
+.sherpa-check:active {
+  transform: scale(0.92);
+}
+
+.sherpa-check:focus-visible {
+  outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+  outline-offset: 2px;
+}
+
+.sherpa-check:checked {
+  background: var(--sherpa-surface-control-primary-default, #0060df);
+  border-color: var(--sherpa-surface-control-primary-default, #0060df);
+}
+
+.sherpa-check:checked:hover {
+  background: var(--sherpa-border-control-primary-default, #004fc4);
+  border-color: var(--sherpa-border-control-primary-default, #004fc4);
+}
+
+/* Checkmark icon via mask-image */
+.sherpa-check:checked::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  background-color: #ffffff;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+/* Indeterminate state — dash icon */
+.sherpa-check:indeterminate {
+  background: var(--sherpa-surface-control-primary-default, #0060df);
+  border-color: var(--sherpa-surface-control-primary-default, #0060df);
+}
+
+.sherpa-check:indeterminate:hover {
+  background: var(--sherpa-border-control-primary-default, #004fc4);
+  border-color: var(--sherpa-border-control-primary-default, #004fc4);
+}
+
+.sherpa-check:indeterminate::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 2px;
+  background-color: #ffffff;
+  border-radius: 1px;
+}
+
+/* Disabled */
+.sherpa-check:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sherpa-check:disabled:checked,
+.sherpa-check:disabled:indeterminate {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+  border-color: var(--sherpa-surface-control-inactive, #dddde6);
+}
+
+.sherpa-check:disabled:not(:checked):not(:indeterminate) {
+  border-color: var(--sherpa-border-control-inactive, #7e7e8f);
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    Selection + Action Columns
    ═══════════════════════════════════════════════════════════════ */
 

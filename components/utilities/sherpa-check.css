@@ -1,0 +1,196 @@
+/**
+ * sherpa-check.css — Native checkbox & radio styling for sherpa-ui.
+ *
+ * Replaces the sherpa-check web component with pure CSS on native inputs.
+ * Apply the class "sherpa-check" to any <input type="checkbox"> or
+ * <input type="radio"> to get the sherpa visual treatment.
+ *
+ * Usage:
+ *   Checkbox:  <input type="checkbox" class="sherpa-check" />
+ *   Radio:     <input type="radio" class="sherpa-check" name="group" />
+ *
+ * With label:
+ *   <label class="sherpa-check-label">
+ *     <input type="checkbox" class="sherpa-check" />
+ *     <span class="sherpa-check-text">Accept terms</span>
+ *     <span class="sherpa-check-description">Required to continue</span>
+ *   </label>
+ *
+ * States: :checked, :indeterminate (checkbox only), :disabled, :focus-visible
+ * Validation: :user-invalid (or [data-user-invalid]) for error borders
+ *
+ * Token mapping from Figma:
+ *   control size   = 16px (--sherpa-size-sm)
+ *   checkbox round = 4px  (--sherpa-border-rounding-base)
+ *   radio round    = 50%  (circle)
+ *   checked fill   = --sherpa-surface-control-primary-default
+ *   inactive fill  = --sherpa-surface-control-inactive
+ */
+
+/* ── Base control ───────────────────────────────────────────────── */
+
+.sherpa-check {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sherpa-size-sm, 16px);
+  height: var(--sherpa-size-sm, 16px);
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+  flex-shrink: 0;
+  position: relative;
+  vertical-align: middle;
+}
+
+/* Checkbox = rounded rect, Radio = circle */
+.sherpa-check[type="checkbox"] {
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+}
+
+.sherpa-check[type="radio"] {
+  border-radius: 50%;
+}
+
+/* ── Hover ──────────────────────────────────────────────────────── */
+
+.sherpa-check:hover:not(:disabled) {
+  border-color: var(--sherpa-border-control-hover, #6a6a7a);
+  background: var(--sherpa-surface-control-hover, #f5f5f8);
+}
+
+.sherpa-check:checked:hover:not(:disabled),
+.sherpa-check:indeterminate:hover:not(:disabled) {
+  background: var(--sherpa-border-control-primary-default, #004fc4);
+  border-color: var(--sherpa-border-control-primary-default, #004fc4);
+}
+
+/* ── Active (pressed) ───────────────────────────────────────────── */
+
+.sherpa-check:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+/* ── Focus ──────────────────────────────────────────────────────── */
+
+.sherpa-check:focus-visible {
+  outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+  outline-offset: 2px;
+}
+
+/* ── Checked state ──────────────────────────────────────────────── */
+
+.sherpa-check:checked {
+  background: var(--sherpa-surface-control-primary-default, #0060df);
+  border-color: var(--sherpa-surface-control-primary-default, #0060df);
+}
+
+/* Checkbox checkmark — SVG mask */
+.sherpa-check[type="checkbox"]:checked::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  background-color: #ffffff;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+/* Radio dot */
+.sherpa-check[type="radio"]:checked::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+/* ── Indeterminate state (checkbox only) ────────────────────────── */
+
+.sherpa-check:indeterminate {
+  background: var(--sherpa-surface-control-primary-default, #0060df);
+  border-color: var(--sherpa-surface-control-primary-default, #0060df);
+}
+
+.sherpa-check:indeterminate::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 2px;
+  background-color: #ffffff;
+  border-radius: 1px;
+}
+
+/* ── Disabled ───────────────────────────────────────────────────── */
+
+.sherpa-check:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sherpa-check:disabled:checked,
+.sherpa-check:disabled:indeterminate {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+  border-color: var(--sherpa-surface-control-inactive, #dddde6);
+}
+
+.sherpa-check:disabled:not(:checked):not(:indeterminate) {
+  border-color: var(--sherpa-border-control-inactive, #7e7e8f);
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+}
+
+/* ── Validation ─────────────────────────────────────────────────── */
+
+.sherpa-check:user-invalid:not(:checked):not(:indeterminate),
+.sherpa-check[data-user-invalid]:not(:checked):not(:indeterminate) {
+  border-color: var(--sherpa-border-context-error-default, #c41337);
+}
+
+/* ── Label wrapper ──────────────────────────────────────────────── */
+
+.sherpa-check-label {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-xs, 8px);
+  cursor: pointer;
+  user-select: none;
+  color: var(--sherpa-text-default-body, #333);
+}
+
+.sherpa-check-label:has(.sherpa-check:disabled) {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sherpa-check-label:has(.sherpa-check:disabled) .sherpa-check-text,
+.sherpa-check-label:has(.sherpa-check:disabled) .sherpa-check-description {
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+
+.sherpa-check-text {
+  color: var(--sherpa-text-default-body, #333);
+  font-size: var(--sherpa-font-base-size, 14px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
+}
+
+.sherpa-check-text:empty { display: none; }
+
+.sherpa-check-description {
+  color: var(--sherpa-text-default-secondary, #6a6a7a);
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-font-sm-line-height, 16px);
+}
+
+.sherpa-check-description:empty { display: none; }

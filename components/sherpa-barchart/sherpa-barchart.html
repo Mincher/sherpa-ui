@@ -2,7 +2,7 @@
   sherpa-barchart.html — Templates for sherpa-barchart.
 
   Templates:
-    • default  — Header with filter chips + SVG chart area
+    • default  — Header with menu button + SVG chart area
     • (custom) — Consumers can add additional <template id="..."> blocks here
                   to define alternative chart layouts. Use the component's
                   `get templateId()` override to select a template by id.
@@ -16,6 +16,8 @@
     data-segment-mode   — Segment mode: "on" | "off"
     data-sort-field     — Field name for sorting
     data-sort-direction — "asc" | "desc"
+    data-show-header    — "true" | "false" — Show/hide the header row
+    data-menu-button    — "true" — Show menu button
 
   Inherited from ContentAttributesMixin:
     data-query-src, data-query-key, data-label, data-dataset,
@@ -31,16 +33,26 @@
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Header with filter chips + SVG chart area
+     DEFAULT — Header with menu button + SVG chart area
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
-  <sherpa-header
-    data-type="data-viz"
-    data-show-header="true"
-    data-show-header-controls="true"
-    data-show-view-menu="true"
-  >
-  </sherpa-header>
+  <header class="header-row">
+    <dl class="header-labels">
+      <dt class="header-title"></dt>
+      <dd class="header-description"></dd>
+    </dl>
+    <sherpa-button
+      class="menu-button"
+      data-type="icon-menu"
+      data-variant="tertiary"
+      data-size="small"
+      data-icon-start="&#xf142;"
+      aria-label="Menu"
+      data-tooltip="Menu"
+      data-menu-position="bottom-end"
+      data-keep-compact
+    ></sherpa-button>
+  </header>
   <div class="chart-area">
     <div class="chart-rows"></div>
     <div class="chart-empty">No data</div>

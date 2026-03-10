@@ -204,11 +204,11 @@ View templates in `html/templates/views/` are layout-only:
 
 ```html
 <div class="sherpa-content-area" data-view-id="default-view">
-  <sherpa-container
+  <sherpa-data-viz-container
     data-content="regional-sales-overview"
     data-col-span="9"
     data-row-span="2"
-  ></sherpa-container>
+  ></sherpa-data-viz-container>
 </div>
 ```
 
@@ -650,7 +650,7 @@ Most components extend `SherpaElement` and use shadow DOM. One component remains
 
 | Component          | Base Class    | Reason                                     |
 | ------------------ | ------------- | ------------------------------------------ |
-| `sherpa-container` | `HTMLElement` | Orchestrates child components in light DOM |
+| `sherpa-data-viz-container` | `HTMLElement` | Orchestrates child components in light DOM |
 
 This component loads its CSS via `components/index.css` (light DOM import) rather than via `SherpaElement.cssUrl`.
 

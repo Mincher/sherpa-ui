@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "name": "sherpa-container",
+  "name": "sherpa-data-viz-container",
   "description": "Dashboard card with header, 4 fixed metrics, and content slot. Shadow DOM encapsulated. Metric visibility driven by data-col-span.",
   "attributes": {
     "title": {
@@ -51,6 +51,6 @@
     "--containerColSpan": "Integer column span (@property registered)",
     "--containerRowSpan": "Integer row span (@property registered)"
   },
-  "example": "<sherpa-container data-title=\"Revenue\" data-col-span=\"6\" data-row-span=\"2\"><sherpa-data-grid></sherpa-data-grid></sherpa-container>",
+  "example": "<sherpa-data-viz-container data-title=\"Revenue\" data-col-span=\"6\" data-row-span=\"2\"><sherpa-data-grid></sherpa-data-grid></sherpa-data-viz-container>",
   "containerDemo": { "source": "/data/queries/sales-demo.json" }
 }

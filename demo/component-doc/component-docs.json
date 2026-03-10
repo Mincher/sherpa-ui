@@ -38,14 +38,14 @@
     "sherpa-button": {
       "component": "sherpa-button",
       "label": "Button",
-      "description": "Web Component button where the host element IS the button. Supports icons, labels, variants, sizes, and attached menus. Select-bearing templates (button-select, icon-select) accept declarative <option> children.",
+      "description": "Web Component button where the host element IS the button. Supports icons, labels, variants, sizes, and attached menus. The button-select template accepts declarative <option> children; button-menu and icon-menu provide menu-only triggers.",
       "path": "components/sherpa-button",
       "attributes": [
         { "name": "data-label", "type": "string", "default": "Button" },
         {
           "name": "data-type",
           "type": "enum",
-          "options": ["", "button-select", "icon-select"]
+          "options": ["", "button-select", "button-menu", "icon-menu"]
         },
         {
           "name": "data-variant",
@@ -150,11 +150,11 @@
       "slots": [],
       "controls": { "defaultSlot": false, "namedSlots": false }
     },
-    "sherpa-container": {
-      "component": "sherpa-container",
-      "label": "Container",
+    "sherpa-data-viz-container": {
+      "component": "sherpa-data-viz-container",
+      "label": "Data Viz Container",
       "description": "Dashboard card with header, metrics, and data sections. Content is defined by a content template or inline child elements.",
-      "path": "components/sherpa-container",
+      "path": "components/sherpa-data-viz-container",
       "nestedComponents": [
         "sherpa-header",
         "sherpa-barchart",
@@ -188,7 +188,7 @@
       "description": "PDF export container. Renders container data in a print-optimized layout with title, metrics, and stacked chart/table sections.",
       "path": "components/sherpa-container-pdf",
       "nestedComponents": [
-        "sherpa-container",
+        "sherpa-data-viz-container",
         "sherpa-barchart",
         "sherpa-data-grid"
       ],

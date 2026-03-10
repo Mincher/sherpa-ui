@@ -1,0 +1,117 @@
+<!--
+  sherpa-data-viz-container.html — Shadow DOM templates for sherpa-data-viz-container.
+
+  Templates:
+    • default — Full container: header, filter bar, content slot.
+    • (custom) — Consumers can add additional <template id="..."> blocks here
+                  to define alternative container layouts. Use the component's
+                  `get templateId()` override to select a template by id.
+
+  Structure (default template):
+    • header              — Native <header> with <dl> for title/description,
+                            open-external button, action divider, and
+                            icon-menu menu button
+    • sherpa-filter-bar   — Embedded filter bar with group/sort/clear
+    • .content            — Default slot for consumer content (metrics + viz children)
+
+  Metric visibility (resizable variant):
+    Metrics without a data-label attribute are always hidden (CSS-driven).
+    For resizable containers, the visible count scales with data-col-span:
+      3 cols → 1 metric, 6 → 2, 9 → 3, 12 → all 4.
+
+  Host attributes:
+    data-title          — Container heading text
+    data-description    — Container description
+    data-variant        — Layout variant: "fit" (default), "resizable", "fill"
+    data-col-span       — Column span: 3 | 6 | 9 | 12 (resizable variant only)
+    data-row-span       — Row span: 1–6 (resizable variant only)
+    data-menu-open      — Menu state
+    data-editable       — Edit mode (resizable variant only)
+    data-open-external  — "true" — show open-external button
+    data-menu-button    — "true" — show menu button
+
+  Slots:
+    (default) — Consumer content: sherpa-metric children followed by viz children
+
+  Custom templates:
+    To define a custom layout, add a new <template id="my-layout"> block
+    below the default. Override `get templateId()` in a subclass or set it
+    dynamically to select the template at render time.
+
+    Example usage:
+      class MyContainer extends SherpaDataVizContainer {
+        get templateId() { return 'compact'; }
+      }
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Full container layout
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="default">
+  <header class="header-row">
+    <div class="drag-handle" aria-label="Drag to reposition">
+      <i
+        class="fa-solid fa-grip-vertical sherpa-icon"
+        data-size="xs"
+        aria-hidden="true"
+      ></i>
+    </div>
+    <dl class="header-labels">
+      <dt class="header-title"></dt>
+      <dd class="header-description"></dd>
+    </dl>
+    <sherpa-button
+      class="open-external-button"
+      data-variant="tertiary"
+      data-size="small"
+      data-icon-start="&#xf08e;"
+      aria-label="Open in view"
+      data-tooltip="Open in view"
+    ></sherpa-button>
+    <span class="action-divider"></span>
+    <sherpa-button
+      class="menu-button"
+      data-type="icon-menu"
+      data-variant="tertiary"
+      data-size="small"
+      data-icon-start="&#xf142;"
+      aria-label="Menu"
+      data-tooltip="Menu"
+      data-menu-position="bottom-end"
+      data-keep-compact
+    ></sherpa-button>
+  </header>
+
+  <sherpa-filter-bar data-embedded data-type="local">
+    <sherpa-button slot="group" data-type="button-select" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;"
+      ></sherpa-button
+    >
+    <sherpa-button slot="sort" data-type="button-select" data-split data-behavior="sort" data-label="Sort" data-icon-start="&#xf0dc;"
+      ></sherpa-button
+    >
+    <sherpa-button
+      slot="actions"
+      data-variant="tertiary"
+      data-size="small"
+      data-action="clear"
+      >Clear filter</sherpa-button
+    >
+  </sherpa-filter-bar>
+
+  <div class="content">
+    <slot></slot>
+  </div>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     FILTER-MENU — Menu items for the filter toggle
+     Cloned into a light-DOM <template data-menu> on connect.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="filter-menu">
+  <sherpa-menu-item
+    data-selection="checkbox"
+    data-event="toggle-filters"
+  >Show / hide filters</sherpa-menu-item>
+</template>
+
+

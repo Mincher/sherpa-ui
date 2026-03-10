@@ -58,9 +58,12 @@
 }
 
 .chart-title {
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-text-default-heading, #18191a);
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary);
 }
 
 /* ================================================================

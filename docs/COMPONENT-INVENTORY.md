@@ -68,7 +68,7 @@
 
 ---
 
-### 5. sherpa-container
+### 5. sherpa-data-viz-container
 
 | | |
 |---|---|
@@ -536,7 +536,7 @@
 | 2 | sherpa-button | ✅ | ✅ | ✅ | ✅ | Complete |
 | 3 | sherpa-card | ✅ | ✅ | ✅ | ✅ | Complete |
 | 4 | sherpa-check | ✅ | ✅ | ✅ | ✅ | Complete |
-| 5 | sherpa-container | ✅ | ✅ | ✅ | ✅ | Complete |
+| 5 | sherpa-data-viz-container | ✅ | ✅ | ✅ | ✅ | Complete |
 | 6 | sherpa-container-pdf | ✅ | ✅ | ✅ | ✅ | Complete |
 | 7 | sherpa-data-grid | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
 | 8 | sherpa-data-viz | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
@@ -577,7 +577,7 @@
 ## Gaps & Notes
 
 1. **Missing `component-doc.html`** (5 components): `sherpa-data-grid`, `sherpa-data-viz`, `sherpa-filter-bar`, `sherpa-pagination`, `sherpa-toolbar`
-2. **Extra files**: `sherpa-container`, `sherpa-container-pdf`, `sherpa-empty-state`, `sherpa-key-value-list` have `config.json`. `sherpa-footer` and `sherpa-header` have `README.md`. `sherpa-nav` has extra nav template HTML files.
+2. **Extra files**: `sherpa-data-viz-container`, `sherpa-container-pdf`, `sherpa-empty-state`, `sherpa-key-value-list` have `config.json`. `sherpa-footer` and `sherpa-header` have `README.md`. `sherpa-nav` has extra nav template HTML files.
 3. **COMPONENT-API.md** is a skeleton — the Quick Index and Component Details sections are empty with TODO placeholders.
 4. **All 39 components have complete `.html` + `.css` + `.js` triads** — no stubs or partial implementations.
 5. **Inheritance hierarchy**: 7 input components extend `SherpaInputBase` (which extends `SherpaElement`). 3 data components use `ContentAttributesMixin(SherpaElement)`. All others extend `SherpaElement` directly.
@@ -589,7 +589,7 @@
 | Category | Components |
 |---|---|
 | **Data Visualization** | sherpa-barchart, sherpa-data-grid, sherpa-data-viz, sherpa-metric, sherpa-sparkline |
-| **Layout / Container** | sherpa-container, sherpa-container-pdf, sherpa-card, sherpa-toolbar |
+| **Layout / Container** | sherpa-data-viz-container, sherpa-container-pdf, sherpa-card, sherpa-toolbar |
 | **Navigation** | sherpa-nav, sherpa-nav-item, sherpa-nav-promo |
 | **Form Inputs** | sherpa-input-text, sherpa-input-number, sherpa-input-date, sherpa-input-time, sherpa-input-password, sherpa-input-search, sherpa-input-select, sherpa-check, sherpa-switch |
 | **Filtering** | sherpa-filter-bar, sherpa-filter-chip |

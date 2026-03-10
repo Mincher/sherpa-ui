@@ -126,8 +126,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     switch (name) {
       case "data-title": {
-        const header = this.$("sherpa-header");
-        if (header) header.heading = newValue || "";
+        const titleEl = this.$(".header-title");
+        if (titleEl) titleEl.textContent = newValue || "";
         break;
       }
       case "data-segment-field":

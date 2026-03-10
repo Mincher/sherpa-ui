@@ -27,8 +27,8 @@ export class SherpaContainerPdf extends SherpaElement {
   #data = null;
 
   /**
-   * Set data from a source sherpa-container element
-   * @param {HTMLElement} sourceContainer - The sherpa-container to extract data from
+   * Set data from a source sherpa-data-viz-container element
+   * @param {HTMLElement} sourceContainer - The sherpa-data-viz-container to extract data from
    */
   async setData(sourceContainer) {
     await this.rendered;

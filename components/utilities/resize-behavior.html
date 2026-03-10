@@ -1,0 +1,55 @@
+<!--
+  resize-behavior.html — Menu template for the ResizeBehavior mixin.
+
+  Contains the resize menu items injected into the host's light DOM
+  as a <template data-menu>. The button's composed-tree template
+  collection picks these up when the overflow menu opens.
+
+  All items are gated by the --_editable-display CSS custom property
+  (visible only in edit mode).
+-->
+
+<template id="resize-menu">
+  <sherpa-menu-item
+    data-type="heading"
+    style="display: var(--_editable-display, none)"
+    >Width</sherpa-menu-item
+  >
+  <ul data-group="width" style="display: var(--_editable-display, none)">
+    <li>
+      <sherpa-menu-item
+        data-event="container-decrease-cols"
+        data-icon="fa-solid fa-minus"
+        >Decrease</sherpa-menu-item
+      >
+    </li>
+    <li>
+      <sherpa-menu-item
+        data-event="container-increase-cols"
+        data-icon="fa-solid fa-plus"
+        >Increase</sherpa-menu-item
+      >
+    </li>
+  </ul>
+  <sherpa-menu-item
+    data-type="heading"
+    style="display: var(--_editable-display, none)"
+    >Height</sherpa-menu-item
+  >
+  <ul data-group="height" style="display: var(--_editable-display, none)">
+    <li>
+      <sherpa-menu-item
+        data-event="container-decrease-rows"
+        data-icon="fa-solid fa-minus"
+        >Decrease</sherpa-menu-item
+      >
+    </li>
+    <li>
+      <sherpa-menu-item
+        data-event="container-increase-rows"
+        data-icon="fa-solid fa-plus"
+        >Increase</sherpa-menu-item
+      >
+    </li>
+  </ul>
+</template>

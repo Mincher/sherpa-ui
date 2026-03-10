@@ -70,10 +70,11 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     if (oldValue === newValue) return;
 
     switch (name) {
-      case "data-label":
-        if (this.$(".metric-heading"))
-          this.$(".metric-heading").textContent = newValue || "";
+      case "data-label": {
+        const titleEl = this.$(".header-title");
+        if (titleEl) titleEl.textContent = newValue || "";
         break;
+      }
       case "value":
         if (this.$(".metric-value"))
           this.$(".metric-value").textContent = newValue || "";
