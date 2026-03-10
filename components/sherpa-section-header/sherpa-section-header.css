@@ -5,7 +5,7 @@
   --_heading-font-size: var(--sherpa-font-lg-size, 16px);
   --_heading-text-transform: none;
   --_heading-letter-spacing: -0.02px;
-  --_heading-color: var(--sherpa-text-default-header, #1a1a1f);
+  --_heading-color: var(--sherpa-text-default-heading, #1a1a1f);
   --_heading-line-height: var(--sherpa-font-lg-line-height, 24px);
   --_content-gap: var(--sherpa-space-default, 16px);
 }
@@ -19,7 +19,7 @@
   --_heading-text-transform: none;
   --_heading-letter-spacing: 0.1px;
   --_heading-line-height: var(--sherpa-font-base-line-height, 20px);
-  --_heading-color: var(--sherpa-text-default-header, #1a1a1f);
+  --_heading-color: var(--sherpa-text-default-heading, #1a1a1f);
 }
 
 :host([data-heading-level="tertiary"]) {

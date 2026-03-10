@@ -32,7 +32,7 @@
   gap: var(--_filter-bar-gap);
   width: 100%;
   padding-block: var(--_filter-bar-py);
-  padding-inline: var(--_filter-bar-px);
+  /* padding-inline: var(--_filter-bar-px); */
   box-sizing: border-box;
 }
 

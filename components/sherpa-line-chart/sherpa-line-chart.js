@@ -2,10 +2,17 @@
  * sherpa-line-chart.js
  * SherpaLineChart — Line / area chart using CSS clip-path polygons.
  *
- * Usage:
- *   <sherpa-line-chart data-title="Revenue" data-variant="area">
+ * Supports both direct data and declarative query loading via
+ * ContentAttributesMixin (data-query-src + data-query-key).
+ *
+ * Usage (declarative):
+ *   <sherpa-line-chart
+ *     data-query-src="/data/queries/overview.json"
+ *     data-query-key="detections-over-time"
+ *     data-variant="area">
  *   </sherpa-line-chart>
  *
+ * Usage (programmatic):
  *   chart.setData({
  *     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
  *     series: [
@@ -18,11 +25,19 @@
  *   data-title    — Chart heading text
  *   data-loading  — Boolean
  *   data-variant  — line | area
+ *   + all ContentAttributesMixin attributes
+ *
+ * Events (bubbles: true, composed: true):
+ *   vizready — Dispatched after setData() completes. detail: { columns, rows }
  *
  * Methods:
- *   setData({ labels: string[], series: [{ name, values, color? }] })
+ *   setData(config | { labels, series })
  */
 
+import {
+  ContentAttributesMixin,
+  CONTENT_ATTRIBUTES,
+} from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 const DEFAULT_COLORS = [
@@ -37,7 +52,7 @@ const DEFAULT_COLORS = [
 /** Stroke half-width as % of chart area height (≈ 1px at 234px). */
 const STROKE_HALF = 0.45;
 
-export class SherpaLineChart extends SherpaElement {
+export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -56,6 +71,7 @@ export class SherpaLineChart extends SherpaElement {
   /* ── State ────────────────────────────────────────────────────── */
 
   #data = null;
+  #contentData = null;
   #titleEl;
   #yLabels;
   #seriesLayer;
@@ -68,6 +84,8 @@ export class SherpaLineChart extends SherpaElement {
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
+    if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+
     this.#titleEl     = this.$('.chart-title');
     this.#yLabels     = this.$$('.y-label');
     this.#seriesLayer = this.$('.series-layer');
@@ -92,11 +110,83 @@ export class SherpaLineChart extends SherpaElement {
 
   /**
    * Set chart data and render.
-   * @param {{ labels: string[], series: Array<{name: string, values: number[], color?: string}> }} data
+   * Accepts either:
+   *   - A content config object (from ContentAttributesMixin.load())
+   *   - A direct { labels, series } object
    */
-  setData(data) {
-    this.#data = data;
+  async setData(data) {
+    await this.rendered;
+
+    // Direct { labels, series } — original programmatic API
+    if (data && (Array.isArray(data.labels) || Array.isArray(data.series))) {
+      this.#data = data;
+      this.#render();
+      return;
+    }
+
+    // Content config from ContentAttributesMixin
+    try {
+      this.#contentData = await this.fetchContentData(data);
+      this.#transformContentData();
+    } catch (e) {
+      console.error('SherpaLineChart data error:', e);
+      this.#contentData = null;
+      this.#data = null;
+    }
     this.#render();
+    this.dispatchVizReady();
+  }
+
+  getContentColumns() {
+    return this.#contentData?.columns || [];
+  }
+
+  getContentRows() {
+    return this.#contentData?.rows || [];
+  }
+
+  /* ── Private: transform ───────────────────────────────────────── */
+
+  /**
+   * Transform unified { columns, rows } into { labels, series } for line chart.
+   * Uses the category column as X-axis labels, the value column for Y values,
+   * and optionally the series column to split into multiple lines.
+   */
+  #transformContentData() {
+    if (!this.#contentData) { this.#data = null; return; }
+
+    const { columns = [], rows = [] } = this.#contentData;
+    if (!rows.length || columns.length < 2) { this.#data = null; return; }
+
+    const labelField = columns[0]?.field;
+    const valueField = columns[columns.length > 2 ? 2 : 1]?.field;
+    const seriesField = columns.length > 2 ? columns[1]?.field : null;
+
+    if (!labelField || !valueField) { this.#data = null; return; }
+
+    if (seriesField) {
+      // Multi-series: group by series field
+      const seriesNames = [...new Set(rows.map(r => String(r[seriesField] ?? '')))];
+      const labels = [...new Set(rows.map(r => String(r[labelField] ?? '')))];
+
+      const series = seriesNames.map(name => {
+        const values = labels.map(label => {
+          const row = rows.find(r =>
+            String(r[seriesField]) === name && String(r[labelField]) === label
+          );
+          return row ? Number(row[valueField]) || 0 : 0;
+        });
+        return { name, values };
+      });
+
+      this.#data = { labels, series };
+    } else {
+      // Single series
+      const labels = rows.map(r => String(r[labelField] ?? ''));
+      const values = rows.map(r => Number(r[valueField]) || 0);
+      const name = columns[1]?.name || columns[1]?.field || 'Value';
+      this.#data = { labels, series: [{ name, values }] };
+    }
   }
 
   /* ── Private: sync ────────────────────────────────────────────── */

@@ -292,7 +292,7 @@ Components that display status or track progress.
 | # | Component | Depends On | Figma Page |
 |---|---|---|---|
 | 4.1 | **sherpa-callout** | — | Callout (tbc) |
-| 4.2 | **sherpa-widget** | sherpa-header, sherpa-container | Widget |
+| 4.2 | **sherpa-widget** | sherpa-header, sherpa-data-viz-container | Widget |
 | 4.3 | **sherpa-progress-tracker** | — | Progress Tracker |
 
 **Deliverable**: 3 new informational components.
@@ -540,7 +540,7 @@ Extend the charting library to cover all Figma chart types.
 | **Host attributes** | `heading`, `data-size` (small/medium/large), `data-loading` |
 | **Slots** | `header`, default (widget content), `footer` |
 | **CSS** | Card-like styling, elevation. Loading state shows sherpa-loader internally. |
-| **vs sherpa-container** | Container is for dashboard grid layout; Widget is a consumer-facing card with built-in loading state and sizing. |
+| **vs sherpa-data-viz-container** | Container is for dashboard grid layout; Widget is a consumer-facing card with built-in loading state and sizing. |
 
 ### 5.16 sherpa-progress-tracker
 

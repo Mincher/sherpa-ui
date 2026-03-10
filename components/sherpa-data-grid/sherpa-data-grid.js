@@ -29,7 +29,6 @@ import {
 } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
-import "../sherpa-check/sherpa-check.js";
 import "../sherpa-tag/sherpa-tag.js";
 import "../sherpa-input-search/sherpa-input-search.js";
 
@@ -57,19 +56,10 @@ const NUMERIC_TYPES = new Set([
   "decimal",
 ]);
 
-const BOOLEAN_FIELDS = new Set([
-  "has_exploit",
-  "cisa_kev",
-  "has_ransomware",
-  "update_available",
-]);
+const BOOLEAN_FIELDS = new Set();
 
-const STATUS_MAP = {
-  critical: "critical",
-  high: "warning",
-  medium: "info",
-  low: "success",
-};
+/** @deprecated Consumer should provide status mapping via setColumnConfig(). */
+const STATUS_MAP = {};
 
 /** Return a reasonable default column flex-basis (px) by data type. */
 function columnWidth(type) {
@@ -160,12 +150,16 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #statusCellTpl = null; // Cached <template class="status-cell-tpl">
   #metadataSpanTpl = null; // Cached <template class="metadata-span-tpl">
   #expandedGroups = new Set(); // Group values currently expanded
+  #columnConfig = {}; // Per-field config from consumer { field: { type?, statusMap? } }
 
   /* ══════════════════════════════════════════════════════════════
      Lifecycle
      ══════════════════════════════════════════════════════════════ */
 
   onRender() {
+    // Mark as viz component for container CSS targeting
+    if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+
     // Cache cloning templates
     this.#rowTpl = this.$("template.row-tpl");
     this.#menuHeadingTpl = this.$("template.menu-heading-tpl");
@@ -296,6 +290,26 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   }
 
   /* ══════════════════════════════════════════════════════════════
+     Column Configuration (consumer-provided overrides)
+     ══════════════════════════════════════════════════════════════ */
+
+  /**
+   * Set per-column configuration overrides.
+   * The config object maps field names to column settings:
+   *   { fieldName: { type?: string, statusMap?: Record<string, string> } }
+   *
+   * - type: Override the inferred column type (e.g. "boolean", "status", "link")
+   * - statusMap: For "status" columns, maps cell values to status names
+   *              e.g. { critical: "critical", high: "warning", medium: "info", low: "success" }
+   *
+   * Call before setData() to apply overrides when columns are processed.
+   * @param {Record<string, {type?: string, statusMap?: Record<string, string>}>} config
+   */
+  setColumnConfig(config) {
+    this.#columnConfig = config && typeof config === "object" ? { ...config } : {};
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      Data Pipeline
      ══════════════════════════════════════════════════════════════ */
 
@@ -373,11 +387,19 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.dispatchVizReady();
   }
 
-  /** Infer boolean column types from field names and data. */
+  /** Infer boolean column types from column config and data. */
   #inferColumnTypes() {
     for (const col of this.#columns) {
-      if (BOOLEAN_FIELDS.has(col.field) && col.type === "string") {
+      const cfg = this.#columnConfig[col.field];
+      // Consumer-provided type override takes precedence
+      if (cfg?.type) {
+        col.type = cfg.type;
+      } else if (BOOLEAN_FIELDS.has(col.field) && col.type === "string") {
         col.type = "boolean";
+      }
+      // Merge consumer-provided statusMap into the column
+      if (cfg?.statusMap) {
+        col._statusMap = cfg.statusMap;
       }
     }
   }
@@ -471,7 +493,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     // Selection header
     headerHtml += `<th class="selection-col" scope="col">
-      <sherpa-check class="select-all" aria-label="Select all rows"></sherpa-check>
+      <input type="checkbox" class="sherpa-check select-all" aria-label="Select all rows" />
     </th>`;
 
     for (const col of columns) {
@@ -616,7 +638,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     check.checked = this.#selectedRows.has(rowId);
     if (this.#selectedRows.has(rowId)) tr.dataset.selected = "";
     check.addEventListener("change", (ev) => {
-      const isChecked = ev.detail?.checked ?? check.checked;
+      const isChecked = ev.target.checked;
       this.#onRowSelect(rowId, isChecked, ev);
       isChecked
         ? tr.setAttribute("data-selected", "")
@@ -650,7 +672,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
       case "status":
         cell = this.#statusCellTpl.content.cloneNode(true).querySelector("td");
-        this.#configureStatusCell(cell.querySelector("sherpa-tag"), value);
+        this.#configureStatusCell(cell.querySelector("sherpa-tag"), value, column);
         break;
 
       case "link": {
@@ -698,9 +720,10 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     return '<i class="fa-solid fa-xmark bool-icon bool-false" aria-label="No"></i>';
   }
 
-  #configureStatusCell(tag, value) {
+  #configureStatusCell(tag, value, column) {
     const str = String(value ?? "").toLowerCase();
-    const status = STATUS_MAP[str];
+    const map = column?._statusMap || STATUS_MAP;
+    const status = map[str];
     if (status) tag.dataset.status = status;
     tag.textContent = value != null ? String(value) : "";
   }
@@ -880,7 +903,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     // ── Group checkbox — selects/deselects all children ─────────
     groupCheck.addEventListener("change", (e) => {
-      const isChecked = e.detail?.checked ?? e.target.checked;
+      const isChecked = e.target.checked;
       for (const row of group.rows) {
         const rowId = row._rowId;
         if (rowId != null) {

@@ -3,16 +3,16 @@
  * Multi-template button component styles.
  *
  * Templates (via data-type):
- *   default       — Standard button with icon(s), label, badge
+ *   default       — Standard button with icon(s), label, badge, optional close
  *   icon          — Icon-only square button
- *   button-select — Button + native select side by side (control group)
- *   icon-select   — Icon-only select (action picker / menu trigger)
+ *   button-menu   — Button + menu trigger side by side (action menu)
+ *   icon-menu     — Icon-only menu trigger (overflow menus)
  *
  * Architecture:
  *   :host is a wrapper providing border, border-radius, and overflow.
  *   .trigger <button> is the primary interactive element.
- *   .select is a native <select> with appearance: none + SVG chevron.
- *   .close is a remove button (button-select template only).
+ *   .close is a dismiss button (default + button-menu, shown via data-dismissable).
+ *   .menu-trigger is a clickable div that opens a menu (button-menu template).
  *
  *   Variants (primary/secondary/tertiary) set CSS custom properties at
  *   :host level. Child elements consume them via var().
@@ -23,8 +23,8 @@
  *
  * Host attributes:
  *   data-type, data-label, data-icon-start, data-icon-end, data-icon-weight,
- *   data-variant, data-size, data-active, data-status, data-closeable,
- *   data-count, disabled
+ *   data-variant, data-size, data-active, data-status, data-dismissable,
+ *   data-count, data-split, disabled
  */
 
 
@@ -160,20 +160,20 @@
    ========================================================================== */
 
 :host([data-type="icon"]) .trigger,
-:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])) .trigger {
+:host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])) .trigger {
   aspect-ratio: 1;
   padding-inline: var(--_button-padding);
 }
 
-:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])) .label {
+:host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])) .label {
   display: none;
 }
 
-:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])[data-size="small"]) .trigger {
+:host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])[data-size="small"]) .trigger {
   padding-inline: var(--sherpa-space-2xs, 4px);
 }
 
-:host(:not([data-label]):not([data-type="button-select"]):not([data-type="icon-select"])[data-size="large"]) .trigger {
+:host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])[data-size="large"]) .trigger {
   padding-inline: var(--sherpa-space-xs, 8px);
 }
 
@@ -188,7 +188,6 @@
 }
 
 .trigger:focus-visible,
-.select:focus-visible,
 .close:focus-visible {
   outline: none;
 }
@@ -256,7 +255,7 @@
 }
 
 /* Border hover — standard buttons only */
-:host(:not([disabled]):not([data-type="button-select"]):hover) {
+:host(:not([disabled]):hover) {
   border-color: var(--_border-hover);
 }
 
@@ -325,61 +324,7 @@
 
 
 /* ==========================================================================
-   Select — native <select>, appearance:none, SVG chevron background
-   (button-select template: side-by-side with trigger)
-   ========================================================================== */
-
-.select {
-  appearance: none;
-  -webkit-appearance: none;
-  box-sizing: border-box;
-  height: var(--_button-size);
-  width: var(--_button-size);
-  margin: 0;
-  padding: 0;
-  border: none;
-  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
-    var(--sherpa-border-control-secondary-default);
-  background-color: var(--sherpa-surface-control-tertiary-default);
-  color: transparent;
-  cursor: pointer;
-  font: inherit;
-  flex-shrink: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23666' d='M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 10px;
-  transition: background-color 0.15s;
-}
-
-.select:hover {
-  background-color: var(--sherpa-surface-control-secondary-hover);
-}
-
-.select:active {
-  background-color: var(--sherpa-surface-control-secondary-down);
-}
-
-/* Active state */
-:host([data-active]) .select {
-  border-inline-start-color: var(--sherpa-border-control-active-default);
-  background-color: var(--_surface);
-}
-
-:host([data-active]:not([disabled])) .select:hover {
-  background-color: var(--_surface-hover);
-}
-
-:host([data-active]:not([disabled])) .select:active {
-  background-color: var(--_surface-down);
-}
-
-/* Disabled */
-:host([disabled]) .select { pointer-events: none; }
-
-
-/* ==========================================================================
-   Close button (button-select template only, shown via data-closeable)
+   Close / dismiss button (shown via data-dismissable)
    ========================================================================== */
 
 .close {
@@ -399,7 +344,7 @@
   transition: background-color 0.15s, color 0.15s;
 }
 
-:host([data-closeable]) .close { display: inline-flex; }
+:host([data-dismissable]) .close { display: inline-flex; }
 
 .close:hover {
   background-color: var(--sherpa-surface-control-secondary-hover);
@@ -427,11 +372,13 @@
 
 
 /* ==========================================================================
-   button-select — Control-group chip styling
-   Small / tertiary / bordered by default. Trigger + select + close.
+   button-menu — Button + menu trigger side by side (action menu)
+   Small / tertiary / bordered by default. Trigger + menu-trigger + close.
+   Unified (default): clicking anywhere opens the menu.
+   Split (data-split): left = buttonclick, right chevron = menu.
    ========================================================================== */
 
-:host([data-type="button-select"]) {
+:host([data-type="button-menu"]) {
   --_button-size:    var(--sherpa-size-lg, 24px);
   --_button-padding: var(--sherpa-space-2xs, 4px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
@@ -444,13 +391,17 @@
   font-size:         var(--sherpa-fonts-scale-sm, 12px);
 }
 
-:host([data-type="button-select"]) .trigger {
+:host([data-type="button-menu"]) .trigger {
   font-weight: 600;
   letter-spacing: 0.1px;
 }
 
-/* Active — button-select chips */
-:host([data-type="button-select"][data-active]) {
+:host([data-type="button-menu"]) .menu-trigger {
+  display: inline-flex;
+}
+
+/* Active — button-menu */
+:host([data-type="button-menu"][data-active]) {
   --_surface:       var(--sherpa-surface-control-active-default);
   --_text:          var(--sherpa-text-active-base);
   --_icon-color:    var(--sherpa-icon-active-base, var(--sherpa-text-active-base));
@@ -459,22 +410,70 @@
   border-color:     var(--sherpa-border-control-active-default);
 }
 
-/* Disabled — button-select chips */
-:host([data-type="button-select"][disabled]) {
+/* Split mode — visual divider between trigger and menu-trigger */
+:host([data-type="button-menu"][data-split]) .menu-trigger {
+  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default);
+}
+
+:host([data-type="button-menu"][data-active][data-split]) .menu-trigger {
+  border-inline-start-color: var(--sherpa-border-control-active-default);
+}
+
+/* Disabled — button-menu */
+:host([data-type="button-menu"][disabled]) {
   border-color: var(--sherpa-border-control-inactive);
 }
 
 
 /* ==========================================================================
-   icon-select — Icon-only select (action picker / menu trigger)
+   Menu trigger — clickable div with chevron (button-menu template)
+   Hidden by default; shown only for button-menu type.
    ========================================================================== */
 
-:host([data-type="icon-select"]) .select {
-  border-inline-start: none;
+.menu-trigger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--_button-size);
+  height: var(--_button-size);
+  padding: 0;
+  background-color: var(--sherpa-surface-control-tertiary-default);
   color: var(--_icon-color);
-  font-family: "Font Awesome 6 Free";
-  font-weight: var(--_icon-weight);
-  text-align: center;
-  background-image: none;
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.menu-trigger:hover {
+  background-color: var(--sherpa-surface-control-secondary-hover);
+}
+
+.menu-trigger:active {
+  background-color: var(--sherpa-surface-control-secondary-down);
+}
+
+:host([data-active]) .menu-trigger {
+  background-color: var(--_surface);
+}
+
+:host([data-active]:not([disabled])) .menu-trigger:hover {
+  background-color: var(--_surface-hover);
+}
+
+:host([data-active]:not([disabled])) .menu-trigger:active {
+  background-color: var(--_surface-down);
+}
+
+
+/* ==========================================================================
+   icon-menu — Icon-only menu trigger (overflow menus)
+   Always functions as a menu trigger. No native <select>.
+   ========================================================================== */
+
+:host([data-type="icon-menu"]) .trigger {
+  aspect-ratio: 1;
+  padding-inline: var(--_button-padding);
 }
 

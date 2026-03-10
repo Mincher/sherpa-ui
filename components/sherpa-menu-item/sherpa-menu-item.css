@@ -1,5 +1,5 @@
 
-/* sherpa-menu-item.css — flex row: icon? label description? chevron? */
+/* sherpa-menu-item.css — flex row: input? label description? chevron? */
 
 :host {
   display: flex;
@@ -33,11 +33,15 @@
   pointer-events: none;
 }
 
-.sherpa-icon { display: none; }
+/* ── Native checkbox / radio input ── */
 
-:host([data-icon]) .sherpa-icon,
-:host([data-selection="checkbox"]) .sherpa-icon,
-:host([data-selection="radio"]) .sherpa-icon { display: inline-flex; }
+.input {
+  flex: 0 0 auto;
+  margin: 0;
+  cursor: pointer;
+  pointer-events: none;
+  accent-color: var(--sherpa-surface-control-primary-default, currentColor);
+}
 
 /* ── Label ── */
 

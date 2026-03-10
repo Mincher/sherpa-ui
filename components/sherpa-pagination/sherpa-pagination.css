@@ -35,7 +35,7 @@
   background: var(--_pagination-bg);
   border-block-start: var(--_pagination-border);
   flex-shrink: 0;
-  font-family: var(--sherpa-fonts-family-default, system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-text-default-body, #111);
 }
@@ -60,7 +60,7 @@
   appearance: none;
   -webkit-appearance: none;
   border: var(--sherpa-border-width-sm, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
-  border-radius: var(--sherpa-border-radius-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: var(--sherpa-surface-container-default, #fff);
   color: var(--sherpa-text-default-body, #111);
   font-family: inherit;
@@ -109,7 +109,7 @@
   height: var(--_btn-size);
   padding: 0;
   border: var(--sherpa-border-width-sm, 1px) solid transparent;
-  border-radius: var(--sherpa-border-radius-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: none;
   color: var(--sherpa-text-default-body, #111);
   font-size: var(--sherpa-fonts-scale-sm, 12px);

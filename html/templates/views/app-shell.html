@@ -1,0 +1,50 @@
+<!--
+  app-shell.html — Full app shell view layout template.
+
+  Provides the complete sherpa-app-layout structure:
+    • Sidebar navigation (sherpa-nav)
+    • Main content area with view-header + global filter bar
+    • Responsive content grid for data-viz containers
+
+  Usage:
+    import { stampViewTemplate } from "sherpa-ui";
+    stampViewTemplate("app-shell", document.body);
+
+  Or manually:
+    const res  = await fetch("sherpa-ui/html/templates/views/app-shell.html");
+    const doc  = new DOMParser().parseFromString(await res.text(), "text/html");
+    const tpl  = doc.getElementById("app-shell");
+    document.body.appendChild(tpl.content.cloneNode(true));
+
+  Customisation:
+    After stamping, populate the template's placeholder elements:
+      • Add nav items to sherpa-nav (via its data-src or light-DOM children)
+      • Set data-label on sherpa-view-header for the page title
+      • Add preset filter chips as children of sherpa-filter-bar
+      • Drop sherpa-data-viz-container elements into .sherpa-content-area
+
+  Layout classes used:
+    .sherpa-app-layout        — Grid shell: sidebar nav + main area
+    .sherpa-main-content      — Flex column for the main area
+    .sherpa-view-header-group — Wrapper for view-header + global filter bar
+    .sherpa-scroll-under      — Sticky header with scroll-activated bg + shadow
+    .sherpa-main-content-slot — Scrollable viewport for the content grid
+    .sherpa-content-area      — Responsive 12-col grid (12 → 6 → 3 at breakpoints)
+-->
+
+<template id="app-shell">
+  <div class="sherpa-app-layout">
+    <sherpa-nav data-pinned="false" data-editable data-searchable></sherpa-nav>
+
+    <div class="sherpa-main-content">
+      <header class="sherpa-view-header-group sherpa-scroll-under">
+        <sherpa-view-header data-label=""></sherpa-view-header>
+        <sherpa-filter-bar data-global></sherpa-filter-bar>
+      </header>
+
+      <div class="sherpa-main-content-slot">
+        <div class="sherpa-content-area"></div>
+      </div>
+    </div>
+  </div>
+</template>

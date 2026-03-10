@@ -84,6 +84,9 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   onConnect() {
     super.onConnect();
 
+    // Mark as viz component for container CSS targeting
+    if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+
     // Initialize unique menu ID on first connection
     if (!this.#menuId) {
       this.#menuId = generateUniqueId("barchart");
@@ -123,8 +126,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     switch (name) {
       case "data-title": {
-        const header = this.$("sherpa-header");
-        if (header) header.heading = newValue || "";
+        const titleEl = this.$(".header-title");
+        if (titleEl) titleEl.textContent = newValue || "";
         break;
       }
       case "data-segment-field":

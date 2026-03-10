@@ -200,17 +200,41 @@ Reusable content types live in `html/templates/content/`. Each file declares:
 ></slot>
 ```
 
-View templates in `html/templates/views/` are layout-only:
+View templates in `html/templates/views/` are layout-only HTML files.
+Each file contains one or more `<template id="...">` blocks.
+
+The library provides a stamp helper that fetches, clones, and appends a
+template in one call:
+
+```js
+import { stampViewTemplate } from "sherpa-ui";
+await stampViewTemplate("app-shell", document.body);
+```
+
+The first template — `app-shell.html` — provides the full app shell:
 
 ```html
-<div class="sherpa-content-area" data-view-id="default-view">
-  <sherpa-container
-    data-content="regional-sales-overview"
-    data-col-span="9"
-    data-row-span="2"
-  ></sherpa-container>
-</div>
+<template id="app-shell">
+  <div class="sherpa-app-layout">
+    <sherpa-nav data-pinned="false" data-editable data-searchable></sherpa-nav>
+    <div class="sherpa-main-content">
+      <header class="sherpa-view-header-group sherpa-scroll-under">
+        <sherpa-view-header data-label=""></sherpa-view-header>
+        <sherpa-filter-bar data-global></sherpa-filter-bar>
+      </header>
+      <div class="sherpa-main-content-slot">
+        <div class="sherpa-content-area"></div>
+      </div>
+    </div>
+  </div>
+</template>
 ```
+
+After stamping, consumers populate the shell: set `data-label` on the
+view-header, add nav items, drop preset filter chips into the filter bar,
+and place `sherpa-data-viz-container` elements into `.sherpa-content-area`.
+
+New view layouts are added as additional files in `html/templates/views/`.
 
 This separation means designers can compose layouts without touching data queries, and data authors can define queries without touching layouts.
 
@@ -650,7 +674,7 @@ Most components extend `SherpaElement` and use shadow DOM. One component remains
 
 | Component          | Base Class    | Reason                                     |
 | ------------------ | ------------- | ------------------------------------------ |
-| `sherpa-container` | `HTMLElement` | Orchestrates child components in light DOM |
+| `sherpa-data-viz-container` | `HTMLElement` | Orchestrates child components in light DOM |
 
 This component loads its CSS via `components/index.css` (light DOM import) rather than via `SherpaElement.cssUrl`.
 

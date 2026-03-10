@@ -96,13 +96,62 @@
    SLOT CONTAINERS
    ═══════════════════════════════════════════════════════════════════════════ */
 
-sherpa-header {
+.header-row {
   display: none;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
   padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
   border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
 }
 
-sherpa-header[data-has-content] { display: block; }
+/* Show header when it has label content or slotted heading content */
+:host([data-label]) .header-row,
+:host([data-has-header]) .header-row {
+  display: flex;
+}
+
+.header-labels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.header-title {
+  margin: 0;
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  color: var(--sherpa-text-default-heading, #1a1a1f);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-title:empty {
+  display: none;
+}
+
+.header-description {
+  margin: 0;
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-font-sm-line-height, 16px);
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-description:empty {
+  display: none;
+}
+
+/* Hide default labels when custom heading content is slotted */
+:host([data-has-header]) .header-labels {
+  display: none;
+}
 
 .card-footer {
   display: none;

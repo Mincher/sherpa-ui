@@ -2,17 +2,19 @@
  * sherpa-donut-chart.js
  * SherpaDonutChart — Donut / pie chart using CSS conic-gradient.
  *
- * Usage:
- *   <sherpa-donut-chart data-title="Sales"
- *     data-inner-label="100" data-inner-sublabel="TOTAL">
+ * Supports both direct data and declarative query loading via
+ * ContentAttributesMixin (data-query-src + data-query-key).
+ *
+ * Usage (declarative):
+ *   <sherpa-donut-chart
+ *     data-query-src="/data/queries/overview.json"
+ *     data-query-key="detections-by-severity">
  *   </sherpa-donut-chart>
  *
- *   // Then in JS:
+ * Usage (programmatic):
  *   chart.setData([
  *     { label: 'Apples',  value: 40 },
  *     { label: 'Oranges', value: 30 },
- *     { label: 'Bananas', value: 20 },
- *     { label: 'Grapes',  value: 10 },
  *   ]);
  *
  * Attributes:
@@ -21,12 +23,21 @@
  *   data-inner-sublabel — Centre small text
  *   data-loading        — Boolean
  *   data-variant        — donut | pie
+ *   + all ContentAttributesMixin attributes
+ *
+ * Events (bubbles: true, composed: true):
+ *   vizready — Dispatched after setData() completes. detail: { columns, rows }
  *
  * Methods:
- *   setData([{ label, value, color? }])
+ *   setData(config | Array<{label, value, color?}>)
  */
 
+import {
+  ContentAttributesMixin,
+  CONTENT_ATTRIBUTES,
+} from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { formatCompact } from '../utilities/index.js';
 
 /** Default palette — falls back to CSS token values, but also needed for
  *  inline conic-gradient stops where tokens can't be used directly. */
@@ -39,7 +50,7 @@ const DEFAULT_COLORS = [
   '#c046ff', // violet
 ];
 
-export class SherpaDonutChart extends SherpaElement {
+export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -60,6 +71,7 @@ export class SherpaDonutChart extends SherpaElement {
   /* ── State ────────────────────────────────────────────────────── */
 
   #data = [];
+  #contentData = null;
   #titleEl;
   #ringEl;
   #centreValueEl;
@@ -69,6 +81,8 @@ export class SherpaDonutChart extends SherpaElement {
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
+    if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+
     this.#titleEl          = this.$('.chart-title');
     this.#ringEl           = this.$('.donut-ring');
     this.#centreValueEl    = this.$('.centre-value');
@@ -91,16 +105,88 @@ export class SherpaDonutChart extends SherpaElement {
 
   /**
    * Set chart data and render.
-   * @param {Array<{label: string, value: number, color?: string}>} data
+   * Accepts either:
+   *   - A content config object (from ContentAttributesMixin.load())
+   *   - A direct array of { label, value, color? }
    */
-  setData(data) {
-    this.#data = data || [];
+  async setData(data) {
+    await this.rendered;
+
+    // Direct array — original programmatic API
+    if (Array.isArray(data)) {
+      this.#data = data;
+      this.#render();
+      return;
+    }
+
+    // Content config from ContentAttributesMixin
+    try {
+      this.#contentData = await this.fetchContentData(data);
+      this.#transformContentData();
+    } catch (e) {
+      console.error('SherpaDonutChart data error:', e);
+      this.#contentData = null;
+      this.#data = [];
+    }
     this.#render();
+    this.dispatchVizReady();
   }
 
   /** Get current data. */
   get data() {
     return [...this.#data];
+  }
+
+  getContentColumns() {
+    return this.#contentData?.columns || [];
+  }
+
+  getContentRows() {
+    return this.#contentData?.rows || [];
+  }
+
+  /* ── Private: transform ───────────────────────────────────────── */
+
+  /**
+   * Transform unified { columns, rows } into [{ label, value }] for donut.
+   * Uses the category column as label. When a series column is present,
+   * aggregate the value column by the category to produce one slice per
+   * category value.
+   */
+  #transformContentData() {
+    if (!this.#contentData) { this.#data = []; return; }
+
+    const { columns = [], rows = [], name = '' } = this.#contentData;
+    if (!rows.length || columns.length < 2) { this.#data = []; return; }
+
+    // First column = category (label), last column = value (numeric measure)
+    const labelField = columns[0]?.field;
+    const valueField = columns[columns.length - 1]?.field;
+    if (!labelField || !valueField) { this.#data = []; return; }
+
+    // If there's a series column (3+ columns), aggregate value by category
+    if (columns.length > 2) {
+      const agg = new Map();
+      for (const row of rows) {
+        const key = String(row[labelField] ?? '');
+        agg.set(key, (agg.get(key) || 0) + (Number(row[valueField]) || 0));
+      }
+      this.#data = [...agg.entries()].map(([label, value]) => ({ label, value }));
+    } else {
+      this.#data = rows.map(row => ({
+        label: String(row[labelField] ?? ''),
+        value: Number(row[valueField]) || 0,
+      }));
+    }
+
+    // Auto-set centre label to total + sublabel to chart name
+    const total = this.#data.reduce((s, d) => s + d.value, 0);
+    if (!this.hasAttribute('data-inner-label')) {
+      this.dataset.innerLabel = formatCompact(total);
+    }
+    if (!this.hasAttribute('data-inner-sublabel') && name) {
+      this.dataset.innerSublabel = name;
+    }
   }
 
   /* ── Private: sync ────────────────────────────────────────────── */

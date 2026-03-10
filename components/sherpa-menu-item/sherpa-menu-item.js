@@ -2,12 +2,14 @@
  * sherpa-menu-item.js — Attribute-driven menu item (extends SherpaElement).
  *
  * Templates (in sherpa-menu-item.html):
- *   default — icon + label + description + chevron
- *   toggle  — switch + label + description
- *   heading — label only (non-interactive group heading)
+ *   default  — label + description + chevron (plain action item)
+ *   checkbox — native checkbox input + label + description
+ *   radio    — native radio input + label + description
+ *   toggle   — sherpa-switch + label + description
+ *   heading  — label only (non-interactive group heading)
  *
- * Attributes: data-type, data-icon, data-action, value, data-selection, checked, disabled,
- *             data-description, data-group, data-keep-open, data-has-submenu
+ * Attributes: data-type, data-action, value, data-selection, checked, disabled,
+ *             data-description, data-group, data-keep-open, data-has-submenu, name
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
@@ -21,12 +23,21 @@ export class SherpaMenuItem extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-menu-item.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-type', 'data-icon', 'data-selection', 'checked', 'disabled', 'data-description'];
+    return [...super.observedAttributes, 'data-type', 'data-selection', 'checked', 'disabled', 'data-description', 'name'];
   }
 
   get templateId() {
     if (this.dataset.type === 'heading') return 'heading';
-    return this.dataset.selection === 'toggle' ? 'toggle' : 'default';
+    const sel = this.dataset.selection;
+    if (sel === 'checkbox') return 'checkbox';
+    if (sel === 'radio') return 'radio';
+    if (sel === 'toggle') return 'toggle';
+    return 'default';
+  }
+
+  /** @returns {HTMLInputElement|null} The native checkbox or radio input, if present. */
+  get inputElement() {
+    return this.$('.input');
   }
 
   onRender() {
@@ -41,8 +52,9 @@ export class SherpaMenuItem extends SherpaElement {
       this.renderTemplate(this.templateId);
       return;
     }
-    if (name === 'data-selection' && (old === 'toggle') !== (this.templateId === 'toggle')) {
+    if (name === 'data-selection') {
       this.renderTemplate(this.templateId);
+      return;
     }
     this.#sync();
   }
@@ -54,8 +66,7 @@ export class SherpaMenuItem extends SherpaElement {
       return;
     }
 
-    const sel  = this.dataset.selection;
-    const icon = this.dataset.icon;
+    const sel = this.dataset.selection;
 
     this.setAttribute('role', ROLES[sel] || 'menuitem');
     this.setAttribute('aria-disabled', String(this.hasAttribute('disabled')));
@@ -66,21 +77,12 @@ export class SherpaMenuItem extends SherpaElement {
       this.removeAttribute('aria-checked');
     }
 
-    const iconEl = this.$('.sherpa-icon');
-    if (iconEl) {
-      if (sel === 'checkbox') {
-        // Auto-set checkbox icon based on checked state
-        const checked = this.hasAttribute('checked');
-        iconEl.className = checked
-          ? 'fa-solid fa-square-check sherpa-icon'
-          : 'fa-regular fa-square sherpa-icon';
-      } else if (sel === 'radio') {
-        const checked = this.hasAttribute('checked');
-        iconEl.className = checked
-          ? 'fa-solid fa-circle-dot sherpa-icon'
-          : 'fa-regular fa-circle sherpa-icon';
-      } else {
-        iconEl.className = icon ? `${icon} sherpa-icon` : 'sherpa-icon';
+    // Sync native checkbox/radio input
+    const input = this.$('.input');
+    if (input) {
+      input.checked = this.hasAttribute('checked');
+      if (sel === 'radio' && this.hasAttribute('name')) {
+        input.name = this.getAttribute('name');
       }
     }
 

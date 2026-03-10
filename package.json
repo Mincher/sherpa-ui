@@ -9,11 +9,13 @@
     "./css": "./css/styles/index.css",
     "./css/reset": "./css/styles/reset.css",
     "./components/*": "./components/*",
-    "./css/*": "./css/styles/*"
+    "./css/*": "./css/styles/*",
+    "./templates/*": "./html/templates/*"
   },
   "files": [
     "components/",
-    "css/"
+    "css/",
+    "html/templates/"
   ],
   "scripts": {
     "docs": "node scripts/extract-component-api.js",

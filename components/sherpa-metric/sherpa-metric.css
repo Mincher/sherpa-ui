@@ -31,6 +31,71 @@
 :host([data-visible="false"]) { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   Header row — data-viz style: uppercase label + menu button
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 4px);
+  flex-shrink: 0;
+}
+
+:host([data-show-header="false"]) .header-row {
+  display: none;
+}
+
+.header-labels {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: var(--sherpa-space-3xs, 2px);
+  overflow: hidden;
+  margin: 0;
+}
+
+.header-title {
+  margin: 0;
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-title:empty {
+  display: none;
+}
+
+.header-description {
+  margin: 0;
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-font-sm-line-height, 16px);
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-description:empty {
+  display: none;
+}
+
+.menu-button {
+  display: none;
+  flex-shrink: 0;
+}
+
+:host([data-menu-button="true"]) .menu-button {
+  display: inline-flex;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    Card
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -96,7 +161,8 @@
   color: var(--sherpa-text-default-secondary, #6a6a75);
 }
 
-.metric-sparkline[data-visible="false"] {
+/* Sparkline hidden by default; shown via host attribute */
+:host(:not([data-sparkline])) .metric-sparkline {
   display: none;
 }
 
@@ -122,7 +188,7 @@
   font-weight: 400;
   line-height: 1em;
   letter-spacing: 1px;
-  color: var(--sherpa-text-default-on-color-subtle-heading, var(--sherpa-text-default-heading));
+  color: var(--sherpa-text-default-heading);
   margin: 0;
   max-width: 100%;
   min-width: 0;

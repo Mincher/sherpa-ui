@@ -54,6 +54,11 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   #sparklineUnit = "";
   #suppressSparkline = false;
 
+  onRender() {
+    // Mark as viz component for container CSS targeting
+    if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+  }
+
   setVisible(visible) {
     this.dataset.visible = visible === false ? "false" : "true";
   }
@@ -65,10 +70,11 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     if (oldValue === newValue) return;
 
     switch (name) {
-      case "data-label":
-        if (this.$(".metric-heading"))
-          this.$(".metric-heading").textContent = newValue || "";
+      case "data-label": {
+        const titleEl = this.$(".header-title");
+        if (titleEl) titleEl.textContent = newValue || "";
         break;
+      }
       case "value":
         if (this.$(".metric-value"))
           this.$(".metric-value").textContent = newValue || "";
@@ -244,14 +250,6 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   }
 
   #updateSparkline({ status, unitText, values, forceHidden } = {}) {
-    const container = this.$(".metric-sparkline");
-    if (!container) {
-      console.warn(
-        "[SherpaMetric] Sparkline container not found during update",
-      );
-      return;
-    }
-
     if (forceHidden !== undefined) {
       this.#suppressSparkline = !!forceHidden;
     }
@@ -275,17 +273,13 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     const hideBecauseStatus = effectiveStatus === "neutral";
     const showSparkline = !(this.#suppressSparkline || hideBecauseStatus);
 
-    container.dataset.visible = showSparkline ? "true" : "false";
+    // CSS controls visibility via :host([data-sparkline]) .metric-sparkline
+    this.toggleAttribute("data-sparkline", showSparkline);
 
-    if (!showSparkline) {
-      return;
-    }
+    if (!showSparkline) return;
 
-    let sparkline = container.querySelector("sherpa-sparkline");
-    if (!sparkline) {
-      sparkline = document.createElement("sherpa-sparkline");
-      container.appendChild(sparkline);
-    }
+    const sparkline = this.$("sherpa-sparkline");
+    if (!sparkline) return;
 
     sparkline.dataset.unit = unitText || "";
     sparkline.setValues(Array.isArray(values) ? values : []);

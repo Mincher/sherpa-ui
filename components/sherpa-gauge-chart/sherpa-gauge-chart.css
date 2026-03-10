@@ -34,7 +34,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sherpa-space-sm, 8px);
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
   container: sherpa-gauge-chart / inline-size;
 }
@@ -62,9 +62,12 @@
 }
 
 .chart-title {
-  font-size: var(--sherpa-font-size-sm, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-text-default-heading, #18191a);
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary);
 }
 
 /* ================================================================
@@ -89,7 +92,7 @@
   border-radius: 50%;
   background: conic-gradient(
     from 0.5turn,
-    var(--sherpa-surface-container-muted, #f2f2f2) 0% 50%,
+    var(--sherpa-surface-container-inactive, #f2f2f2) 0% 50%,
     transparent 50% 100%
   );
   /* Only show top half — clip bottom semicircle */
@@ -179,7 +182,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--sherpa-surface-container-subtle, #9c9ca5);
+  background: var(--sherpa-surface-subtle-default, #9c9ca5);
   z-index: 2;
 }
 
@@ -241,7 +244,7 @@
   justify-content: space-between;
   width: 260px;
   margin-top: -4px;
-  font-size: var(--sherpa-font-size-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 12px);
   color: var(--sherpa-text-default-secondary, #5c5c66);
 }
 

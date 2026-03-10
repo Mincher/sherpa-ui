@@ -2,8 +2,14 @@
  * sherpa-filter-bar.js
  * Horizontal filter bar with zoned layout.
  *
+ * Templates:
+ *   default (global) — Full filter bar: toggle, group, sort, presets, dynamic
+ *                       filters, add-filter button, actions. Used at page level.
+ *   local            — Minimal: group + sort + actions only. Used inside
+ *                       containers (sherpa-data-viz-container). Selected via data-type="local".
+ *
  * Filter chip configuration (new API):
- *   Each filter chip is a <sherpa-button data-type="button-select"> with:
+ *   Each filter chip is a <sherpa-button data-type="button-menu"> with:
  *     data-filter-field    — Data field to filter on (e.g. "severity", "amount")
  *     data-filter-type     — Filter type: "text" | "number" | "number-range" | "datetime-range"
  *     data-filter-operator — Operator (optional): "in" | "equals" | "contains" | "between" | "gt" | "lt" | "gte" | "lte"
@@ -17,7 +23,7 @@
  *
  * Self-populating:
  *   Listens for `vizready` events bubbling from sibling viz children
- *   through the shared sherpa-container ancestor. Unions their columns
+ *   through the shared sherpa-data-viz-container ancestor. Unions their columns
  *   and rows to seed chip menus automatically.
  *
  * Slot-based layout:
@@ -31,8 +37,13 @@
  * Events dispatched:
  *   filterchange          — When any chip changes. detail: { filters }
  *   filterclear            — When the clear action is invoked.
- *   containerfilterchange  — Dispatched on the closest sherpa-container
- *                           ancestor so viz children can self-filter.
+ *   containerfilterchange  — Dispatched on self with bubbles: true so it
+ *                           reaches any ancestor scope. Viz children listen
+ *                           on their parent for this event.
+ *                           detail: { filters }
+ *   globalfilterchange     — Dispatched on `document` when `data-global` is
+ *                           set. All viz children that wire global filter
+ *                           listeners receive this event directly.
  *                           detail: { filters }
  *
  * Events consumed:
@@ -53,6 +64,12 @@ export class SherpaFilterBar extends SherpaElement {
     return new URL("./sherpa-filter-bar.html", import.meta.url).href;
   }
 
+  /* ── Template selection ───────────────────────────────────────── */
+
+  get templateId() {
+    return this.dataset.type || "default";
+  }
+
   static get observedAttributes() {
     return [
       ...super.observedAttributes,
@@ -66,34 +83,29 @@ export class SherpaFilterBar extends SherpaElement {
   #columns = [];
   #rows = [];
   #addButton = null;
-  #addSelect = null;
   #applied = true; // Toggle state — when false, getFilters() returns []
   #pendingEmit = false; // Microtask debounce for observer-driven filterchange
   #vizReadyHandler = null; // Bound handler for vizready events
   #sortChangeHandler = null; // Bound handler for sortchange events
   #syncingSort = false; // Guard against re-entrant filterchange during sort sync
-  #containerEl = null; // Cached closest sherpa-container ancestor
+  #scopeEl = null; // Parent element used as event scope for vizready / sortchange
 
   onConnect() {
-    // Cache closest container — supports both light DOM and shadow DOM hosts
-    this.#containerEl =
-      this.closest("sherpa-container") ||
-      (() => {
-        const root = this.getRootNode();
-        return root instanceof ShadowRoot &&
-          root.host?.tagName === "SHERPA-CONTAINER"
-          ? root.host
-          : null;
-      })();
+    // Use the parent element as event scope — no tag-name coupling.
+    // vizready / sortchange events bubble up from viz siblings to this scope.
+    // When embedded inside a shadow root (e.g. sherpa-data-viz-container), parentElement
+    // is null because ShadowRoot is not an Element. Fall back to the shadow host
+    // so composed vizready/sortchange events from slotted children are caught.
+    this.#scopeEl = this.parentElement || this.getRootNode()?.host || null;
 
     // ── Self-populating: listen for vizready from viz children ──
-    if (this.#containerEl) {
+    if (this.#scopeEl) {
       this.#vizReadyHandler = (e) => this.#onVizReady(e);
-      this.#containerEl.addEventListener("vizready", this.#vizReadyHandler);
+      this.#scopeEl.addEventListener("vizready", this.#vizReadyHandler);
 
       // 2-way sort binding: viz child column-header sort → sort chip
       this.#sortChangeHandler = (e) => this.#onSortChange(e);
-      this.#containerEl.addEventListener("sortchange", this.#sortChangeHandler);
+      this.#scopeEl.addEventListener("sortchange", this.#sortChangeHandler);
     }
 
     // Watch for attribute changes on slotted filter chips
@@ -138,11 +150,10 @@ export class SherpaFilterBar extends SherpaElement {
       if (clearBtn) this.#clearAll();
     });
 
-    // Add filter button — sherpa-button[data-type="icon-select"] with <select>
+    // Add filter button — sherpa-button[data-type="button-menu"]
     this.#addButton = this.$(".add-filter-button");
-    // The button's shadow DOM may not have rendered yet, so we listen
-    // for change on the button itself (events re-dispatch on host)
-    this.#addButton?.addEventListener("change", this.#onAddSelectChange);
+    // Listen for menu-select on the add button to create new chips
+    this.#addButton?.addEventListener("menu-select", this.#onAddMenuSelect);
 
     // Listen for chip removal events (from filter chips' × button)
     this.addEventListener("chipremove", (e) => {
@@ -154,7 +165,7 @@ export class SherpaFilterBar extends SherpaElement {
         chip.remove();
         this.#syncActiveState();
         this.#emitFilterChange();
-        this.#populateAddSelect();
+        this.#populateAddMenu();
       }
     });
 
@@ -178,27 +189,31 @@ export class SherpaFilterBar extends SherpaElement {
       // Legacy timeframe / filter buttonclick → no-op
     });
 
-    // Listen for select changes from data-filter-field chips and legacy behavior chips
-    this.addEventListener("selectchange", (e) => {
+    // Listen for menu-select from data-filter-field chips and legacy behavior chips
+    this.addEventListener("menu-select", (e) => {
       const chip = e.target;
+
+      // Skip the add-filter button's own menu-select — handled separately
+      if (chip === this.#addButton) return;
 
       // ── New API: data-filter-field chips ──
       if (chip?.hasAttribute?.("data-filter-field")) {
         const filterType = chip.getAttribute("data-filter-type") || "text";
         const value = e.detail?.value;
-        if (!value) {
-          // "None" selected — deactivate the chip
-          chip.removeAttribute("data-active");
-          this.#syncActiveState();
-          this.#emitFilterChange();
-          return;
-        }
-        if (filterType === "datetime-range") {
+        if (filterType === "datetime-range" && value) {
           // Update label from TIME_RANGE_PRESETS if applicable
           const preset = TIME_RANGE_PRESETS.find(p => p.key === value);
           if (preset) chip.dataset.label = preset.label;
         }
-        chip.toggleAttribute("data-active", true);
+        // Activate chip when any value is checked
+        const values = chip.getSelectedValues?.() ?? [];
+        chip.toggleAttribute("data-active", values.length > 0);
+        // Update badge count for multi-select
+        if (values.length > 1) {
+          chip.dataset.count = String(values.length);
+        } else {
+          delete chip.dataset.count;
+        }
         this.#syncActiveState();
         this.#emitFilterChange();
         return;
@@ -221,7 +236,7 @@ export class SherpaFilterBar extends SherpaElement {
           chip.toggleAttribute("data-active", true);
           this.#emitFilterChange();
         } else {
-          // "None" selected — deactivate
+          // Deactivate
           delete chip.dataset.field;
           delete chip.dataset.mode;
           chip.dataset.label = behavior === "sort" ? "Sort" : "Group";
@@ -256,18 +271,18 @@ export class SherpaFilterBar extends SherpaElement {
     this.#observer?.disconnect();
     this.#observer = null;
 
-    if (this.#containerEl && this.#vizReadyHandler) {
-      this.#containerEl.removeEventListener("vizready", this.#vizReadyHandler);
+    if (this.#scopeEl && this.#vizReadyHandler) {
+      this.#scopeEl.removeEventListener("vizready", this.#vizReadyHandler);
     }
-    if (this.#containerEl && this.#sortChangeHandler) {
-      this.#containerEl.removeEventListener(
+    if (this.#scopeEl && this.#sortChangeHandler) {
+      this.#scopeEl.removeEventListener(
         "sortchange",
         this.#sortChangeHandler,
       );
     }
     this.#vizReadyHandler = null;
     this.#sortChangeHandler = null;
-    this.#containerEl = null;
+    this.#scopeEl = null;
   }
 
   onAttributeChanged(name, _old, newValue) {
@@ -291,13 +306,13 @@ export class SherpaFilterBar extends SherpaElement {
       const isLegacyTimeframe = chip.getAttribute("data-behavior") === "timeframe";
 
       if (isDataFilter || isLegacyFilter || isLegacyTimeframe) {
-        if (chip.hasAttribute("data-closeable")) {
+        if (chip.hasAttribute("data-dismissable")) {
           // User-added dynamic filter chips — remove from DOM
           chip.remove();
         } else {
           // Declarative / preset chips — clear values but keep in DOM
-          const sel = chip.selectElement;
-          if (sel) { for (const opt of sel.options) opt.selected = false; }
+          chip.clearSelection?.();
+          delete chip.dataset.count;
           chip.removeAttribute("data-active");
         }
       } else {
@@ -307,11 +322,12 @@ export class SherpaFilterBar extends SherpaElement {
       }
     }
     this.removeAttribute("data-active");
-    this.#populateAddSelect();
+    this.#populateAddMenu();
     this.dispatchEvent(
       new CustomEvent("filterclear", { bubbles: true, composed: true }),
     );
     this.#dispatchContainerFilterChange([]);
+    this.#dispatchGlobalFilterChange([]);
   }
 
   /** Get all slotted behavior buttons and data-filter-field chips. */
@@ -364,14 +380,15 @@ export class SherpaFilterBar extends SherpaElement {
       const col = this.#columns.find((c) => c.field === field);
       const filterType = this.#inferFilterType(col?.type);
       const chip = document.createElement("sherpa-button");
-      chip.setAttribute("data-type", "button-select");
+      chip.setAttribute("data-type", "button-menu");
+      chip.setAttribute("data-split", "");
       chip.setAttribute("data-filter-field", field);
       chip.setAttribute("data-filter-type", filterType);
       chip.setAttribute("slot", "presets");
       chip.dataset.label = col?.name || formatFieldName(field);
       this.appendChild(chip);
 
-      // Populate select based on filter type
+      // Populate menu based on filter type
       if (this.#rows.length || filterType === "datetime-range") {
         this.#populateFilterChip(chip);
       }
@@ -379,40 +396,23 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /* ══════════════════════════════════════════════════════════════
-     Add Filter Select
+     Add Filter Menu
      ══════════════════════════════════════════════════════════════ */
 
-  /** Ensure we have a reference to the button's internal <select>. */
-  #ensureAddSelect() {
-    if (!this.#addSelect && this.#addButton) {
-      this.#addSelect = this.#addButton.selectElement ?? null;
-    }
-    return this.#addSelect;
-  }
-
-  /** Populate the "Add filter" select with available (unused) columns. */
-  #populateAddSelect() {
-    const sel = this.#ensureAddSelect();
-    if (!sel) return;
+  /** Populate the "Add filter" button menu with available (unused) columns. */
+  #populateAddMenu() {
+    if (!this.#addButton) return;
 
     const usedFields = this.#getUsedFilterFields();
     const available = this.#columns.filter((c) => !usedFields.has(c.field));
 
-    sel.replaceChildren();
-
-    // Placeholder — renders as FA plus icon via icon-select CSS
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "\uf067";
-    placeholder.selected = true;
-    placeholder.disabled = true;
-    sel.appendChild(placeholder);
-
-    for (const col of available) {
-      const opt = document.createElement("option");
-      opt.value = col.field;
-      opt.textContent = col.name || formatFieldName(col.field);
-      sel.appendChild(opt);
+    if (available.length > 0) {
+      this.#addButton.setMenuItems(
+        available.map((col) => ({
+          value: col.field,
+          text: col.name || formatFieldName(col.field),
+        })),
+      );
     }
 
     // Hide when no columns exist at all
@@ -422,10 +422,9 @@ export class SherpaFilterBar extends SherpaElement {
     );
   }
 
-  /** Handle selection from the "Add filter" select. */
-  #onAddSelectChange = (_e) => {
-    const sel = this.#ensureAddSelect();
-    const field = sel?.value;
+  /** Handle selection from the "Add filter" menu. */
+  #onAddMenuSelect = (e) => {
+    const field = e.detail?.value;
     if (!field) return;
 
     const col = this.#columns.find((c) => c.field === field);
@@ -435,23 +434,24 @@ export class SherpaFilterBar extends SherpaElement {
 
     // Create a new filter chip (in default slot — user filters zone)
     const chip = document.createElement("sherpa-button");
-    chip.setAttribute("data-type", "button-select");
+    chip.setAttribute("data-type", "button-menu");
+    chip.setAttribute("data-split", "");
     chip.setAttribute("data-filter-field", field);
     chip.setAttribute("data-filter-type", filterType);
-    chip.setAttribute("data-closeable", "");
+    chip.setAttribute("data-dismissable", "");
     chip.dataset.label = col.name || formatFieldName(field);
 
     // Insert in light DOM default slot
     this.appendChild(chip);
 
-    // Populate select based on filter type
+    // Populate menu based on filter type
     this.#populateFilterChip(chip);
 
     // Repopulate to remove the now-used field
-    this.#populateAddSelect();
+    this.#populateAddMenu();
   };
 
-  /** Dispatch filterchange event + containerfilterchange on container ancestor. */
+  /** Dispatch filterchange + containerfilterchange, and globalfilterchange when data-global. */
   #emitFilterChange() {
     const filters = this.getFilters();
     this.dispatchEvent(
@@ -462,9 +462,12 @@ export class SherpaFilterBar extends SherpaElement {
       }),
     );
 
-    // Dispatch containerfilterchange on closest container so viz children
-    // can self-filter without container acting as intermediary.
+    // Dispatch containerfilterchange (bubbles to parent scope) so
+    // viz children can self-filter.
     this.#dispatchContainerFilterChange(filters);
+
+    // Global scope — dispatch on document so all viz children receive it.
+    this.#dispatchGlobalFilterChange(filters);
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -482,7 +485,7 @@ export class SherpaFilterBar extends SherpaElement {
         if (chip.hasAttribute("data-filter-field")) {
           const filterType = chip.getAttribute("data-filter-type") || "text";
           const operator = this.#resolveOperator(chip);
-          const values = this.#getChipSelectedValues(chip);
+          const values = chip.getSelectedValues?.() ?? [];
           const entry = {
             field: chip.getAttribute("data-filter-field"),
             type: filterType,
@@ -505,11 +508,12 @@ export class SherpaFilterBar extends SherpaElement {
           type,
         };
         if (type === "filter") {
-          entry.values = this.#getChipSelectedValues(chip);
+          entry.values = chip.getSelectedValues?.() ?? [];
         }
         if (type === "timeframe") {
-          entry.rangeKey = chip.value || "";
-          entry.range = this.#computeTimeRange(chip.value);
+          const tValues = chip.getSelectedValues?.() ?? [];
+          entry.rangeKey = tValues[0] || "";
+          entry.range = this.#computeTimeRange(entry.rangeKey);
           if (!entry.field) {
             entry.field = chip.getAttribute("data-field") || "";
           }
@@ -543,7 +547,7 @@ export class SherpaFilterBar extends SherpaElement {
       // ── Legacy API: data-behavior chips ──
       const behavior = chip.getAttribute("data-behavior");
       if (behavior === "filter") {
-        this.#populateChipSelect(chip, chip.getAttribute("data-field"));
+        this.#populateChipMenu(chip, chip.getAttribute("data-field"));
         const col = this.#columns.find(
           (c) => c.field === chip.getAttribute("data-field"),
         );
@@ -551,9 +555,9 @@ export class SherpaFilterBar extends SherpaElement {
           chip.dataset.label = col.name || formatFieldName(col.field);
         }
       } else if (behavior === "timeframe") {
-        this.#populateTimeframeSelect(chip);
+        this.#populateTimeframeMenu(chip);
       } else {
-        this.#populateColumnsSelect(chip);
+        this.#populateColumnsMenu(chip);
       }
     }
 
@@ -566,7 +570,7 @@ export class SherpaFilterBar extends SherpaElement {
       this.#initPresetChips(presetFields);
     }
 
-    this.#populateAddSelect();
+    this.#populateAddMenu();
   }
 
   /** Remove filter chip for a specific field. */
@@ -629,9 +633,6 @@ export class SherpaFilterBar extends SherpaElement {
       }
     }
 
-    // Auto-hide group chip if only barcharts with no valid segment columns
-    this.#maybeHideGroupChip();
-
     // Dispatch containercolumnsready for any external listeners (global filter bars)
     this.dispatchEvent(
       new CustomEvent("containercolumnsready", {
@@ -667,74 +668,31 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /**
-   * Dispatch containerfilterchange on the closest sherpa-container ancestor.
-   * Viz children listen for this to self-filter.
+   * Dispatch containerfilterchange on this element with bubbles: true.
+   * Bubbles up through the DOM so any ancestor (e.g. a container) and
+   * its descendants that listen on that ancestor will receive it.
    */
   #dispatchContainerFilterChange(filters) {
-    const container = this.#containerEl || this.closest("sherpa-container");
-    if (!container) return;
-    container.dispatchEvent(
+    this.dispatchEvent(
       new CustomEvent("containerfilterchange", {
-        bubbles: false, // scoped to container
+        bubbles: true,
+        composed: true,
         detail: { filters },
       }),
     );
   }
 
   /**
-   * Hide the group (segment) chip when all viz siblings are barcharts
-   * and the only non-numeric column with >1 unique value is the category axis.
+   * When `data-global` is set, dispatch globalfilterchange on document so
+   * all viz children that listen for global filters receive the update.
    */
-  #maybeHideGroupChip() {
-    const groupChip = this.querySelector('sherpa-button[slot="group"]');
-    if (!groupChip) return;
-
-    const container = this.#containerEl || this.closest("sherpa-container");
-    if (!container) return;
-
-    // Get all viz elements in the container
-    const vizEls = [
-      ...container.querySelectorAll(":is(sherpa-barchart, sherpa-data-grid)"),
-    ];
-    const allCharts =
-      vizEls.length > 0 &&
-      vizEls.every((el) => el.tagName === "SHERPA-BARCHART");
-    if (!allCharts) return;
-
-    // Collect category fields
-    const catFields = new Set();
-    for (const el of vizEls) {
-      const cat =
-        typeof el.getCategoryField === "function"
-          ? el.getCategoryField()
-          : null;
-      if (cat) catFields.add(cat);
-    }
-
-    const NUMERIC_TYPES = new Set([
-      "number",
-      "numeric",
-      "currency",
-      "percent",
-      "year",
-      "monthNumber",
-    ]);
-    const validSegmentCols = this.#columns.filter((col) => {
-      if (NUMERIC_TYPES.has((col.type || "").toLowerCase())) return false;
-      if (catFields.has(col.field)) return false;
-      const vals = new Set();
-      for (const r of this.#rows) {
-        vals.add(r[col.field]);
-        if (vals.size > 1) break;
-      }
-      return vals.size > 1;
-    });
-
-    if (validSegmentCols.length === 0) {
-      groupChip.toggleAttribute("disabled", true);
-      groupChip.removeAttribute("data-field");
-      groupChip.removeAttribute("data-mode");
-    }
+  #dispatchGlobalFilterChange(filters) {
+    if (!this.hasAttribute("data-global")) return;
+    document.dispatchEvent(
+      new CustomEvent("globalfilterchange", {
+        detail: { filters },
+      }),
+    );
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -755,27 +713,20 @@ export class SherpaFilterBar extends SherpaElement {
     return values.sort();
   }
 
-  /** Populate a filter chip's select with unique values for its field. */
-  #populateChipSelect(chip, field) {
+  /** Populate a filter chip's menu with unique values for its field. */
+  #populateChipMenu(chip, field) {
     if (!field) return;
     const values = this.#extractUniqueValues(field);
-    const options = [
-      { value: "", text: "None" },
-      ...values.map(v => ({ value: v, text: v })),
-    ];
-    chip.setOptions?.(options);
+    const items = values.map(v => ({ value: v, text: v }));
+    chip.setMenuItems?.(items, { selection: "checkbox", group: "values" });
   }
 
   /**
    * Populate a data-filter-field chip based on its filter type.
-   * If the chip already has consumer-provided options, skip auto-population.
+   * If the chip already has consumer-provided menu items, skip auto-population.
    * @param {HTMLElement} chip — sherpa-button with data-filter-field
    */
   #populateFilterChip(chip) {
-    // If the consumer has already provided options via setOptions(), don't override
-    const sel = chip.selectElement;
-    if (sel && sel.options.length > 0) return;
-
     const field = chip.getAttribute("data-filter-field");
     const filterType = chip.getAttribute("data-filter-type") || "text";
 
@@ -784,12 +735,12 @@ export class SherpaFilterBar extends SherpaElement {
       case "number":
         // Auto-populate from unique field values in the data
         if (field && this.#rows.length) {
-          this.#populateChipSelect(chip, field);
+          this.#populateChipMenu(chip, field);
         }
         break;
       case "datetime-range":
         // Auto-populate from TIME_RANGE_PRESETS
-        this.#populateTimeframeSelect(chip);
+        this.#populateTimeframeMenu(chip);
         break;
       case "number-range":
         // Consumer must provide options — no auto-population
@@ -797,23 +748,13 @@ export class SherpaFilterBar extends SherpaElement {
     }
   }
 
-  /** Populate a sort/segment chip's select with column choices. */
-  #populateColumnsSelect(chip) {
-    const options = [
-      { value: "", text: "None" },
-      ...this.#columns.map(c => ({
-        value: c.field,
-        text: c.name || formatFieldName(c.field),
-      })),
-    ];
-    chip.setOptions?.(options);
-  }
-
-  /** Get selected values from a chip's internal select (excludes empty "None" values). */
-  #getChipSelectedValues(chip) {
-    const sel = chip.selectElement;
-    if (!sel) return [];
-    return Array.from(sel.selectedOptions, o => o.value).filter(Boolean);
+  /** Populate a sort/segment chip's menu with column choices. */
+  #populateColumnsMenu(chip) {
+    const items = this.#columns.map(c => ({
+      value: c.field,
+      text: c.name || formatFieldName(c.field),
+    }));
+    chip.setMenuItems?.(items, { selection: "radio", group: "columns" });
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -917,18 +858,15 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /**
-   * Populate a timeframe chip's select with TIME_RANGE_PRESETS.
+   * Populate a timeframe chip's menu with TIME_RANGE_PRESETS.
    * @param {HTMLElement} chip — sherpa-button with datetime-range type
    */
-  #populateTimeframeSelect(chip) {
-    const options = [
-      { value: "", text: "None" },
-      ...TIME_RANGE_PRESETS.map(p => ({
-        value: p.key,
-        text: p.label,
-      })),
-    ];
-    chip.setOptions?.(options);
+  #populateTimeframeMenu(chip) {
+    const items = TIME_RANGE_PRESETS.map(p => ({
+      value: p.key,
+      text: p.label,
+    }));
+    chip.setMenuItems?.(items, { selection: "radio", group: "timeframes" });
   }
 }
 

@@ -3,36 +3,35 @@
  * SherpaDialog — Modal dialog built on the native HTML <dialog> element.
  *
  * Uses SherpaElement multi-template support. The default template includes
- * an sherpa-header (type="dialog") and sherpa-footer (type="slot") internally,
- * so consumers only need to set attributes on sherpa-dialog itself.
+ * a native <header> with a <dl> for title/subtitle and a close button,
+ * plus a sherpa-footer (type="slot") for footer content.
  *
  * Usage:
- *   <sherpa-dialog heading="Confirm action" dismissible>
+ *   <sherpa-dialog data-label="Confirm action">
  *     Are you sure you want to continue?
  *     <div slot="footer">
- *       <sherpa-button variant="secondary">Cancel</sherpa-button>
- *       <sherpa-button variant="primary">Confirm</sherpa-button>
+ *       <sherpa-button data-variant="secondary">Cancel</sherpa-button>
+ *       <sherpa-button data-variant="primary">Confirm</sherpa-button>
  *     </div>
  *   </sherpa-dialog>
  *
  * Slots:
- *   - heading:  Custom heading content (replaces default title in sherpa-header)
+ *   - heading:  Custom heading content (hides default title/description)
  *   - (default): Dialog body content
  *   - footer:   Footer action content (rendered inside sherpa-footer)
  *
  * Attributes:
- *   - heading:     Dialog title text
- *   - subtitle:    Dialog subtitle text
- *   - size:        "small" | "medium" | "large" | "full"
- *   - open:        Dialog visibility
- *   - dismissible: Shows close button (default: true)
+ *   - data-label:       Dialog title text
+ *   - data-subtitle:    Dialog subtitle text
+ *   - data-size:        "small" | "medium" | "large" | "full"
+ *   - data-open:        Dialog visibility
+ *   - data-dismissible: Shows close button (default: true)
  *
  * @fires open  — Dialog opened
  * @fires close — Dialog closed
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import '../sherpa-header/sherpa-header.js';
 import '../sherpa-footer/sherpa-footer.js';
 
 export class SherpaDialog extends SherpaElement {
@@ -43,8 +42,13 @@ export class SherpaDialog extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-dialog.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return ['data-label', 'data-subtitle', 'data-size', 'data-open', 'data-dismissible'];
+    return [...super.observedAttributes, 'data-label', 'data-subtitle', 'data-size', 'data-open', 'data-dismissible'];
   }
+
+  /** @type {HTMLElement|null} */
+  #titleEl = null;
+  /** @type {HTMLElement|null} */
+  #descriptionEl = null;
 
   /* ── Template selection ───────────────────────────────────────── */
 
@@ -57,10 +61,11 @@ export class SherpaDialog extends SherpaElement {
   onRender() {
     const dialog = this.$('.dialog');
 
-    // Sync attributes to internal sherpa-header
+    this.#titleEl = this.$('.header-title');
+    this.#descriptionEl = this.$('.header-description');
+
     this.#syncHeading();
     this.#syncSubtitle();
-    this.#syncDismissible();
 
     // Native <dialog> fires "close" when closed by .close() or Escape
     dialog?.addEventListener('close', () => {
@@ -73,8 +78,8 @@ export class SherpaDialog extends SherpaElement {
       if (e.target === dialog) dialog.close();
     });
 
-    // Listen for header-close from internal sherpa-header
-    this.shadowRoot.addEventListener('header-close', () => {
+    // Close button click
+    this.$('.close-button')?.addEventListener('click', () => {
       this.$('.dialog')?.close();
     });
   }
@@ -95,9 +100,6 @@ export class SherpaDialog extends SherpaElement {
         break;
       case 'data-subtitle':
         this.#syncSubtitle();
-        break;
-      case 'data-dismissible':
-        this.#syncDismissible();
         break;
     }
   }
@@ -126,18 +128,11 @@ export class SherpaDialog extends SherpaElement {
   /* ── Private ──────────────────────────────────────────────────── */
 
   #syncHeading() {
-    const header = this.$('sherpa-header');
-    if (header) header.heading = this.heading;
+    if (this.#titleEl) this.#titleEl.textContent = this.heading;
   }
 
   #syncSubtitle() {
-    const header = this.$('sherpa-header');
-    if (header) header.description = this.subtitle;
-  }
-
-  #syncDismissible() {
-    const header = this.$('sherpa-header');
-    if (header) header.dismissible = this.dismissible;
+    if (this.#descriptionEl) this.#descriptionEl.textContent = this.subtitle;
   }
 
   #openDialog() {

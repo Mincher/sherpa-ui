@@ -221,7 +221,7 @@
   padding: var(--sherpa-space-3xs, 0.25rem) var(--sherpa-space-xs, 0.5rem);
   border: none;
   border-radius: var(--sherpa-border-rounding-lg, 0.5rem);
-  background: var(--sherpa-surface-container-floating-default, rgba(26, 28, 33, 0.92));
+  background: var(--sherpa-surface-container-elevated-default, rgba(26, 28, 33, 0.92));
   color: var(--sherpa-text-default-on-color-heading, #fff);
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   font-size: var(--sherpa-font-sm-size, 12px);
@@ -243,5 +243,5 @@
   top: 100%;
   translate: -50% 0;
   border: 6px solid transparent;
-  border-top-color: var(--sherpa-surface-container-floating-default, rgba(26, 28, 33, 0.92));
+  border-top-color: var(--sherpa-surface-container-elevated-default, rgba(26, 28, 33, 0.92));
 }

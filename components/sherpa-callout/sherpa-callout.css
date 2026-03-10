@@ -34,18 +34,18 @@
 :host {
   display: flex;
   flex-direction: column;
-  border-radius: var(--sherpa-radius-md, 8px);
+  border-radius: var(--sherpa-border-rounding-base, 8px);
   padding: var(--sherpa-space-md, 16px);
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-xs, 13px);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  font-size: var(--sherpa-fonts-scale-xs, 13px);
   line-height: var(--sherpa-line-height-default, 1.6);
-  background: var(--_callout-bg, var(--sherpa-surface-status-info-subtle, #d9e8f2));
+  background: var(--_callout-bg, var(--sherpa-surface-context-info-subtle-default, #d9e8f2));
   color: var(--sherpa-text-default-body, #111111);
   box-sizing: border-box;
 
-  --_callout-bg: var(--sherpa-surface-status-info-subtle, #d9e8f2);
-  --_callout-heading: var(--sherpa-text-status-info, #0079aa);
-  --_callout-icon: var(--sherpa-text-status-info, #0079aa);
+  --_callout-bg: var(--sherpa-surface-context-info-subtle-default, #d9e8f2);
+  --_callout-heading: var(--sherpa-text-context-info-default, #0079aa);
+  --_callout-icon: var(--sherpa-text-context-info-default, #0079aa);
 }
 
 :host([hidden]) {
@@ -56,39 +56,39 @@
    Status variants
    ================================================================ */
 :host([data-status="info"]) {
-  --_callout-bg: var(--sherpa-surface-status-info-subtle, #d9e8f2);
-  --_callout-heading: var(--sherpa-text-status-info, #0079aa);
-  --_callout-icon: var(--sherpa-text-status-info, #0079aa);
+  --_callout-bg: var(--sherpa-surface-context-info-subtle-default, #d9e8f2);
+  --_callout-heading: var(--sherpa-text-context-info-default, #0079aa);
+  --_callout-icon: var(--sherpa-text-context-info-default, #0079aa);
 }
 
 :host([data-status="warning"]) {
-  --_callout-bg: var(--sherpa-surface-status-warning-subtle, #fff6d9);
-  --_callout-heading: var(--sherpa-text-status-warning, #673106);
-  --_callout-icon: var(--sherpa-text-status-warning, #673106);
+  --_callout-bg: var(--sherpa-surface-context-warning-subtle-default, #fff6d9);
+  --_callout-heading: var(--sherpa-text-context-warning-default, #673106);
+  --_callout-icon: var(--sherpa-text-context-warning-default, #673106);
 }
 
 :host([data-status="critical"]) {
-  --_callout-bg: var(--sherpa-surface-status-danger-subtle, #fadfd9);
-  --_callout-heading: var(--sherpa-text-status-danger, #950000);
-  --_callout-icon: var(--sherpa-text-status-danger, #950000);
+  --_callout-bg: var(--sherpa-surface-context-error-subtle-default, #fadfd9);
+  --_callout-heading: var(--sherpa-text-context-error-default, #950000);
+  --_callout-icon: var(--sherpa-text-context-error-default, #950000);
 }
 
 :host([data-status="success"]) {
-  --_callout-bg: var(--sherpa-surface-status-success-subtle, #d9f2e0);
-  --_callout-heading: var(--sherpa-text-status-success, #1a7a2e);
-  --_callout-icon: var(--sherpa-text-status-success, #1a7a2e);
+  --_callout-bg: var(--sherpa-surface-context-success-subtle-default, #d9f2e0);
+  --_callout-heading: var(--sherpa-text-context-success-default, #1a7a2e);
+  --_callout-icon: var(--sherpa-text-context-success-default, #1a7a2e);
 }
 
 :host([data-status="neutral"]) {
-  --_callout-bg: var(--sherpa-surface-neutral-subtle, #f0f0f2);
+  --_callout-bg: var(--sherpa-surface-subtle-default, #f0f0f2);
   --_callout-heading: var(--sherpa-text-default-body, #18191a);
   --_callout-icon: var(--sherpa-text-default-secondary, #5c5c66);
 }
 
 :host([data-status="tip"]) {
-  --_callout-bg: var(--sherpa-surface-accent-subtle, #f8ebff);
-  --_callout-heading: var(--sherpa-text-accent-default, #7b2fa0);
-  --_callout-icon: var(--sherpa-text-accent-default, #7b2fa0);
+  --_callout-bg: var(--sherpa-surface-context-default-subtle-default, #f8ebff);
+  --_callout-heading: var(--sherpa-text-primary-default, #7b2fa0);
+  --_callout-icon: var(--sherpa-text-primary-default, #7b2fa0);
 }
 
 /* ================================================================
@@ -109,7 +109,7 @@
   height: 36px;
   border: none;
   background: transparent;
-  border-radius: var(--sherpa-radius-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
   cursor: pointer;
   color: var(--_callout-heading);
   padding: 0;
@@ -163,7 +163,7 @@
 }
 
 .heading-text {
-  font-size: var(--sherpa-font-size-xs, 13px);
+  font-size: var(--sherpa-fonts-scale-xs, 13px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--_callout-heading);
   line-height: var(--sherpa-line-height-default, 1.6);
@@ -213,8 +213,8 @@
 }
 
 ::slotted([slot="action"]) {
-  color: var(--sherpa-text-link-default, #0079aa);
-  font-size: var(--sherpa-font-size-xs, 13px);
+  color: var(--sherpa-text-primary-default, #0079aa);
+  font-size: var(--sherpa-fonts-scale-xs, 13px);
   text-decoration: underline;
   cursor: pointer;
 }

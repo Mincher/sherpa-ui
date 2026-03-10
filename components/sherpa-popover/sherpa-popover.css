@@ -33,15 +33,15 @@
   z-index: var(--sherpa-z-popover, 10000);
   min-width: 200px;
   max-width: 400px;
-  background: var(--sherpa-surface-default, #ffffff);
+  background: var(--sherpa-surface-container-default, #ffffff);
   border: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-container-default, #d7d7dc);
-  border-radius: var(--sherpa-radius-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
   box-shadow:
     0 1px 4px rgba(0, 0, 0, 0.08),
     0 4px 12px rgba(0, 0, 0, 0.12);
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-sm, 14px);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #18191a);
   box-sizing: border-box;
   overflow: visible;
@@ -100,10 +100,10 @@
   align-items: center;
   gap: var(--sherpa-space-xs, 8px);
   padding: var(--sherpa-space-sm, 12px);
-  background: var(--sherpa-surface-default, #ffffff);
+  background: var(--sherpa-surface-container-default, #ffffff);
   border-bottom: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-container-default, #d7d7dc);
-  border-radius: var(--sherpa-radius-sm, 4px) var(--sherpa-radius-sm, 4px) 0 0;
+  border-radius: var(--sherpa-border-rounding-sm, 4px) var(--sherpa-border-rounding-sm, 4px) 0 0;
 }
 
 :host(:not([data-heading]):not([data-has-icon]):not([data-has-header-end]))
@@ -132,7 +132,7 @@
   width: 24px;
   height: 24px;
   border: none;
-  border-radius: var(--sherpa-radius-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: transparent;
   color: var(--sherpa-text-default-secondary, #5c5c66);
   cursor: pointer;
@@ -142,7 +142,7 @@
 }
 
 .close-btn:hover {
-  background: var(--sherpa-surface-neutral-hover, #f0f0f5);
+  background: var(--sherpa-surface-container-hover, #f0f0f5);
   color: var(--sherpa-text-default-body, #18191a);
 }
 

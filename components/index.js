@@ -8,16 +8,18 @@
 // Base class
 export { SherpaElement } from "./utilities/sherpa-element/sherpa-element.js";
 
+// View layout template helper
+export { stampViewTemplate } from "./utilities/view-templates.js";
+
 // Core layout components
 export * from "./sherpa-nav/sherpa-nav.js";
 export * from "./sherpa-nav-item/sherpa-nav-item.js";
 export * from "./sherpa-nav-promo/sherpa-nav-promo.js";
 export * from "./sherpa-view-header/sherpa-view-header.js";
-export * from "./sherpa-container/sherpa-container.js";
+export * from "./sherpa-data-viz-container/sherpa-data-viz-container.js";
 
 // UI components
 export * from "./sherpa-button/sherpa-button.js";
-export * from "./sherpa-header/sherpa-header.js";
 export * from "./sherpa-footer/sherpa-footer.js";
 export * from "./sherpa-menu/sherpa-menu.js";
 export * from "./sherpa-menu-item/sherpa-menu-item.js";
@@ -27,7 +29,7 @@ export * from "./sherpa-tag/sherpa-tag.js";
 export * from "./sherpa-tooltip/sherpa-tooltip.js";
 
 // Data visualization components
-export * from "./sherpa-data-viz/sherpa-data-viz.js";
+// export * from "./sherpa-data-viz/sherpa-data-viz.js"; // archived — consumer handles presentation switching
 export * from "./sherpa-metric/sherpa-metric.js";
 export * from "./sherpa-barchart/sherpa-barchart.js";
 export * from "./sherpa-sparkline/sherpa-sparkline.js";
@@ -42,15 +44,14 @@ export * from "./sherpa-chart-legend/sherpa-chart-legend.js";
 export * from "./sherpa-toolbar/sherpa-toolbar.js";
 export * from "./sherpa-filter-bar/sherpa-filter-bar.js";
 
-// Export components
-export * from "./sherpa-container-pdf/sherpa-container-pdf.js";
+// Export components (archived)
+// export * from "./sherpa-container-pdf/sherpa-container-pdf.js";
 
 // New components
 export * from "./sherpa-accordion/sherpa-accordion.js";
 export * from "./sherpa-breadcrumbs/sherpa-breadcrumbs.js";
 export * from "./sherpa-list-item/sherpa-list-item.js";
 export * from "./sherpa-loader/sherpa-loader.js";
-export * from "./sherpa-overlay/sherpa-overlay.js";
 export * from "./sherpa-panel/sherpa-panel.js";
 export * from "./sherpa-popover/sherpa-popover.js";
 export * from "./sherpa-product-bar/sherpa-product-bar.js";
@@ -78,4 +79,3 @@ export * from "./sherpa-input-date/sherpa-input-date.js";
 export * from "./sherpa-input-date-range/sherpa-input-date-range.js";
 export * from "./sherpa-input-time/sherpa-input-time.js";
 export * from "./sherpa-input-password/sherpa-input-password.js";
-export * from "./sherpa-check/sherpa-check.js";

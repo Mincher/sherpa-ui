@@ -304,12 +304,9 @@ export function ContentAttributesMixin(Base) {
     }
 
     configureHeader({ title = "", viewOptions = [] } = {}) {
-      const headerEl = this.$("sherpa-header");
-      if (!headerEl) {
-        this.#pendingMenuData = null;
-        return;
-      }
+      const titleEl = this.$(".header-title");
 
+      // Show/hide the entire header row via host attribute (CSS handles display)
       const showHeader =
         this.getAttribute("data-show-header") !== "false";
       if (!showHeader) {
@@ -318,22 +315,15 @@ export function ContentAttributesMixin(Base) {
         this.removeAttribute("data-show-header");
       }
 
-      const showControls =
-        this.getAttribute("data-show-header-controls") !== "false";
-      showControls
-        ? headerEl.removeAttribute("data-show-header-controls")
-        : headerEl.setAttribute("data-show-header-controls", "false");
+      // Set title text directly on the native element
+      if (titleEl) titleEl.textContent = title || "";
 
+      // Show/hide menu button via host attribute (CSS handles display)
       const showViewMenu =
         this.getAttribute("data-show-view-menu") !== "false";
-      showViewMenu
-        ? headerEl.removeAttribute("data-show-view-menu")
-        : headerEl.setAttribute("data-show-view-menu", "false");
-
-      headerEl.heading = title || "";
-
       const shouldShowMenu = showViewMenu;
-      headerEl.hasMenuButton = shouldShowMenu;
+      this.toggleAttribute("data-menu-button", shouldShowMenu);
+      if (shouldShowMenu) this.dataset.menuButton = "true";
 
       if (shouldShowMenu) {
         this.#pendingMenuData = { showViewMenu, viewOptions };
@@ -345,14 +335,11 @@ export function ContentAttributesMixin(Base) {
     async wireContentMenu(root, activeType) {
       if (!this.#pendingMenuData) return;
 
-      const header =
-        root.$?.("sherpa-header") ||
-        root.querySelector?.("sherpa-header");
-      if (!header?.isConnected) return;
+      const menuButton =
+        root.$?.(".menu-button") ||
+        root.querySelector?.(".menu-button");
+      if (!menuButton?.isConnected) return;
 
-      await header.rendered;
-      const menuButton = header.menuButtonElement;
-      if (!menuButton) return;
       await menuButton.rendered;
 
       this._menuButton = menuButton;
@@ -418,21 +405,12 @@ export function ContentAttributesMixin(Base) {
       const ul = document.createElement("ul");
       ul.dataset.group = "view";
 
-      const normalizeIcon = (icon) => {
-        if (!icon) return null;
-        if (/fa-(solid|regular|light|thin|duotone|brands)\b/.test(icon))
-          return icon;
-        return `fa-regular ${icon}`;
-      };
-
       for (const option of config.viewOptions) {
         const li = document.createElement("li");
         const item = document.createElement("sherpa-menu-item");
         item.setAttribute("data-selection", "radio");
         item.setAttribute("value", option?.type ?? "");
-        item.dataset.type = option?.type ?? "";
-        if (normalizeIcon(option?.icon))
-          item.setAttribute("data-icon", normalizeIcon(option.icon));
+        item.dataset.group = "view";
         if ((option?.type ?? null) === activeType)
           item.setAttribute("checked", "");
         if (option?.disabled) item.setAttribute("disabled", "");
@@ -444,22 +422,24 @@ export function ContentAttributesMixin(Base) {
       }
 
       frag.appendChild(ul);
-      this._menuButton?.menuElement?.replaceChildren(frag);
+      this._menuButton?.menuElement?.prepend(frag);
     }
 
     /* ── Self-filtering ─────────────────────────────────────── */
 
     #containerFilterHandler = null;
     #globalFilterHandler = null;
-    #containerEl = null;
+    #scopeEl = null;
 
     #wireFilterListeners() {
-      this.#containerEl = this.closest("sherpa-container");
+      // Listen on parent element for containerfilterchange (no tag-name coupling).
+      // The filter-bar dispatches with bubbles:true, so it reaches any ancestor.
+      this.#scopeEl = this.parentElement;
 
-      if (this.#containerEl) {
+      if (this.#scopeEl) {
         this.#containerFilterHandler = (e) =>
           this.#onContainerFilter(e);
-        this.#containerEl.addEventListener(
+        this.#scopeEl.addEventListener(
           "containerfilterchange",
           this.#containerFilterHandler,
         );
@@ -473,8 +453,8 @@ export function ContentAttributesMixin(Base) {
     }
 
     #unwireFilterListeners() {
-      if (this.#containerEl && this.#containerFilterHandler) {
-        this.#containerEl.removeEventListener(
+      if (this.#scopeEl && this.#containerFilterHandler) {
+        this.#scopeEl.removeEventListener(
           "containerfilterchange",
           this.#containerFilterHandler,
         );
@@ -487,7 +467,7 @@ export function ContentAttributesMixin(Base) {
       }
       this.#containerFilterHandler = null;
       this.#globalFilterHandler = null;
-      this.#containerEl = null;
+      this.#scopeEl = null;
     }
 
     #onContainerFilter(e) {

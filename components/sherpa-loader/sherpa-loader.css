@@ -25,8 +25,8 @@
   align-items: center;
   gap: var(--sherpa-space-sm, 8px);
   padding: var(--sherpa-space-md, 16px);
-  font-family: var(--sherpa-font-family-default, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-sm, 14px);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #2e2e38);
   box-sizing: border-box;
 }
@@ -39,8 +39,8 @@
    Panel — surface background
    ================================================================ */
 :host([data-panel]) {
-  background: var(--sherpa-surface-default, #ffffff);
-  border-radius: var(--sherpa-radius-md, 8px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border-radius: var(--sherpa-border-rounding-base, 8px);
 }
 
 /* ================================================================

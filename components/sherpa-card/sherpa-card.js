@@ -2,38 +2,37 @@
  * sherpa-card.js
  * SherpaCard — Web Component extending SherpaElement base class.
  *
- * Uses an internal <sherpa-header> for the card header area, supporting
- * both attribute-based headings and slotted custom content.
+ * Uses a native <header> element with a <dl> for the card header area,
+ * supporting both attribute-based headings and slotted custom content.
  *
  * Usage:
  *   <sherpa-card>Simple content</sherpa-card>
- *   <sherpa-card heading="Card Title" description="Subtitle">Content</sherpa-card>
+ *   <sherpa-card data-label="Card Title" data-description="Subtitle">Content</sherpa-card>
  *   <sherpa-card>
  *     <span slot="header">Custom Header</span>
  *     Main content goes here
  *     <div slot="footer">Footer actions</div>
  *   </sherpa-card>
- *   <sherpa-card selected>Selected card</sherpa-card>
- *   <sherpa-card interactive>Clickable card</sherpa-card>
+ *   <sherpa-card data-selected="true">Selected card</sherpa-card>
+ *   <sherpa-card data-interactive="true">Clickable card</sherpa-card>
  *
  * Slots:
- *   - header: Custom heading content (forwarded to sherpa-header heading slot)
+ *   - header: Custom heading content (hides default dl labels)
  *   - (default): Main card content
  *   - footer: Card footer content
  *
  * Attributes:
- *   - heading: Card title text (forwarded to sherpa-header)
- *   - description: Card subtitle text (forwarded to sherpa-header)
- *   - selected: Selected/active state
- *   - interactive: Makes card clickable
+ *   - data-label: Card title text
+ *   - data-description: Card subtitle text
+ *   - data-selected: Selected/active state
+ *   - data-interactive: Makes card clickable
  *   - disabled: Disabled state
- *   - elevation: "none" | "sm" | "md" | "lg"
+ *   - data-elevation: "none" | "sm" | "md" | "lg"
  *
  * @fires card-click — When interactive card is clicked
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import '../sherpa-header/sherpa-header.js';
 
 export class SherpaCard extends SherpaElement {
 
@@ -43,12 +42,19 @@ export class SherpaCard extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-card.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return ['data-selected', 'data-interactive', 'disabled', 'data-elevation', 'data-label', 'data-description'];
+    return [...super.observedAttributes, 'data-selected', 'data-interactive', 'disabled', 'data-elevation', 'data-label', 'data-description'];
   }
+
+  /** @type {HTMLElement|null} */
+  #titleEl = null;
+  /** @type {HTMLElement|null} */
+  #descriptionEl = null;
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
   onRender() {
+    this.#titleEl = this.$('.header-title');
+    this.#descriptionEl = this.$('.header-description');
     this.#syncHeading();
     this.#syncDescription();
   }
@@ -107,13 +113,11 @@ export class SherpaCard extends SherpaElement {
   }
 
   #syncHeading() {
-    const header = this.$('sherpa-header');
-    if (header) header.heading = this.heading;
+    if (this.#titleEl) this.#titleEl.textContent = this.heading;
   }
 
   #syncDescription() {
-    const header = this.$('sherpa-header');
-    if (header) header.description = this.description;
+    if (this.#descriptionEl) this.#descriptionEl.textContent = this.description;
   }
 
   #handleClick = () => {

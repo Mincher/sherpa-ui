@@ -3,17 +3,17 @@
 
   Four templates selected via data-type attribute:
 
-    default       — Standard button: icon(s) + label + badge
+    default       — Standard button: icon(s) + label + badge + optional close
     icon          — Icon-only button (square aspect-ratio)
-    button-select — Button + native <select> side by side (control group)
-    icon-select   — Icon-only <select> (action picker, menu trigger)
+    button-menu   — Button + menu trigger side by side (action menu)
+    icon-menu     — Icon-only menu trigger (overflow menus)
 
   Template selection:
     get templateId() returns dataset.type || "default"
     Each template contains only the elements it needs.
 
   Host attributes (shared):
-    data-type         — "icon" | "button-select" | "icon-select" (default omitted)
+    data-type         — "icon" | "button-menu" | "icon-menu" (default omitted)
     data-label        — Button label text
     data-icon-start   — FontAwesome unicode for leading icon
     data-icon-end     — FontAwesome unicode for trailing icon
@@ -23,18 +23,21 @@
     data-active       — Active/pressed state (boolean attr)
     data-status       — "success" | "critical" | "warning" | "info" | "urgent"
     data-count        — Badge count (shown when > 0)
-    data-closeable    — Shows close button (button-select only)
+    data-dismissable  — Shows close/dismiss button (default + button-menu)
+    data-split        — Split mode (button-menu): left = buttonclick, right = menu
     disabled          — Disabled state (boolean attr)
 
   Events dispatched:
-    buttonclick  — Trigger button clicked (detail: { })
-    selectchange — Select value changed (detail: { value, selectedOptions })
-    chipremove   — Close button clicked (detail: { })
-    change       — Re-dispatched native change (bubbles, does not compose)
+    buttonclick   — Trigger button clicked (detail: { })
+    chipremove    — Close button clicked (detail: { })
+    menu-open     — Menu is about to show (detail: { })
+    menu-close    — Menu was dismissed (detail: { })
+    menu-select   — Menu item selected (detail: { item, action, value, ... })
+    menu-populate — Menu ready for dynamic items (detail: { menu })
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Standard button: icon(s) + label + badge
+     DEFAULT — Standard button: icon(s) + label + badge + optional close
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <button class="trigger" type="button">
@@ -42,6 +45,9 @@
     <span class="label"></span>
     <span class="badge" aria-hidden="true"></span>
     <i class="icon-end" aria-hidden="true"></i>
+  </button>
+  <button class="close" type="button" aria-label="Close">
+    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
   </button>
 </template>
 
@@ -55,24 +61,30 @@
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     BUTTON-SELECT — Button + native select side by side (control group)
-     Used for behavior chips: sort, filter, segment, timeframe
+     BUTTON-MENU — Button + menu trigger side by side (action menu)
+     Unified mode (default): clicking anywhere opens the menu.
+     Split mode (data-split): left = buttonclick, right chevron = menu.
      ═══════════════════════════════════════════════════════════════════════ -->
-<template id="button-select">
+<template id="button-menu">
   <button class="trigger" type="button">
     <i class="icon-start" aria-hidden="true"></i>
     <span class="label"></span>
     <span class="badge" aria-hidden="true"></span>
   </button>
-  <select class="select"></select>
+  <div class="menu-trigger" role="button" tabindex="0" aria-label="Open menu">
+    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+  </div>
   <button class="close" type="button" aria-label="Close">
     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
   </button>
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     ICON-SELECT — Icon-only select (action picker, menu trigger)
+     ICON-MENU — Icon-only menu trigger (overflow menus)
+     Always functions as a menu trigger. No native <select>.
      ═══════════════════════════════════════════════════════════════════════ -->
-<template id="icon-select">
-  <select class="select"></select>
+<template id="icon-menu">
+  <button class="trigger" type="button">
+    <i class="icon-start" aria-hidden="true"></i>
+  </button>
 </template>

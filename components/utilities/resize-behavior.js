@@ -30,52 +30,24 @@ const COL_STOPS = [3, 6, 9, 12];
 const MIN_ROW_SPAN = 1;
 const MAX_ROW_SPAN = 6;
 
-/* ── Menu template markup ──────────────────────────────────────── */
+/* ── Menu template (loaded from resize-behavior.html) ──────────── */
 
-const RESIZE_MENU_HTML = `
-  <sherpa-menu-item
-    data-type="heading"
-    style="display: var(--_editable-display, none)"
-    >Width</sherpa-menu-item
-  >
-  <ul data-group="width" style="display: var(--_editable-display, none)">
-    <li>
-      <sherpa-menu-item
-        data-event="container-decrease-cols"
-        data-icon="fa-solid fa-minus"
-        >Decrease</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-event="container-increase-cols"
-        data-icon="fa-solid fa-plus"
-        >Increase</sherpa-menu-item
-      >
-    </li>
-  </ul>
-  <sherpa-menu-item
-    data-type="heading"
-    style="display: var(--_editable-display, none)"
-    >Height</sherpa-menu-item
-  >
-  <ul data-group="height" style="display: var(--_editable-display, none)">
-    <li>
-      <sherpa-menu-item
-        data-event="container-decrease-rows"
-        data-icon="fa-solid fa-minus"
-        >Decrease</sherpa-menu-item
-      >
-    </li>
-    <li>
-      <sherpa-menu-item
-        data-event="container-increase-rows"
-        data-icon="fa-solid fa-plus"
-        >Increase</sherpa-menu-item
-      >
-    </li>
-  </ul>
-`;
+const RESIZE_HTML_URL = new URL("./resize-behavior.html", import.meta.url).href;
+
+/** @type {HTMLTemplateElement|null} Parsed resize-menu template. */
+let resizeMenuSourceTpl = null;
+
+/** Promise that resolves once the HTML template is fetched and parsed. */
+const resizeMenuReady = fetch(RESIZE_HTML_URL)
+  .then((r) => r.text())
+  .then((html) => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const tpl = doc.getElementById("resize-menu");
+    if (tpl) resizeMenuSourceTpl = tpl;
+  })
+  .catch(() => {
+    /* Silently degrade — resize menu items will simply not appear */
+  });
 
 /* ── Mixin ─────────────────────────────────────────────────────── */
 
@@ -130,14 +102,18 @@ export const ResizeBehavior = (Base) =>
      * the host's light DOM. The button's composed-tree template
      * collection picks this up when the overflow menu opens.
      */
-    #injectResizeMenu() {
+    async #injectResizeMenu() {
       // Avoid duplicates if reconnected
       if (this.querySelector(":scope > template[data-menu-resize]")) return;
+
+      // Wait for the HTML template to load
+      await resizeMenuReady;
+      if (!resizeMenuSourceTpl) return;
 
       const tpl = document.createElement("template");
       tpl.setAttribute("data-menu", "");
       tpl.setAttribute("data-menu-resize", "");
-      tpl.innerHTML = RESIZE_MENU_HTML;
+      tpl.content.appendChild(resizeMenuSourceTpl.content.cloneNode(true));
       this.prepend(tpl);
       this.#resizeMenuTpl = tpl;
     }

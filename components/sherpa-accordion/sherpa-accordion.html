@@ -1,46 +1,37 @@
 <!--
-  sherpa-accordion.html — Templates for sherpa-accordion.
+  sherpa-accordion.html — Shadow DOM template for sherpa-accordion.
 
-  Templates:
-    • default  — Header trigger with label + icon, collapsible content slot
-    • (custom) — Consumers can add additional <template id="..."> blocks here
-                  to define alternative accordion layouts. Use the component's
-                  `get templateId()` override to select a template by id.
+  Uses native <details>/<summary> for expand/collapse behavior.
+  No JS toggling needed — the browser handles open/close natively.
 
   Host attributes:
-    data-label     — Heading text displayed in the trigger row
-    data-expanded  — Boolean, controls open/closed state
-    data-icon      — Optional leading icon class (FontAwesome)
+    data-label     — Heading text displayed in the summary row
+    data-icon      — Optional leading icon (FontAwesome unicode)
+    open           — Boolean, mirrors native details[open]
     disabled       — Prevents interaction
 
   Slots:
     (default) — Panel content revealed when expanded
-    actions   — Optional trailing action buttons in the header row
-
-  Custom templates:
-    To define a custom layout, add a new <template id="my-layout"> block
-    below the existing templates. Override `get templateId()` in a subclass
-    or set it dynamically to select the template at render time.
+    actions   — Optional trailing action buttons in the summary row
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Header trigger with label + icon, collapsible content slot
+     DEFAULT — Native details/summary accordion
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
-<div class="accordion-trigger" part="trigger" role="button" tabindex="0" aria-expanded="false">
-  <div class="trigger-left">
-    <i class="trigger-icon" aria-hidden="true"></i>
-    <span class="trigger-label text-body-emphasised-base"></span>
-    <slot name="heading"></slot>
-  </div>
-  <div class="trigger-right">
-    <slot name="actions"></slot>
-    <i class="chevron fa-solid fa-chevron-down" aria-hidden="true"></i>
-  </div>
-</div>
-<div class="accordion-panel" part="panel" role="region">
-  <div class="panel-content">
+<details part="details">
+  <summary class="trigger" part="trigger">
+    <div class="trigger-left">
+      <i class="trigger-icon" aria-hidden="true"></i>
+      <span class="trigger-label text-body-emphasised-base"></span>
+    </div>
+    <div class="trigger-right">
+      <slot name="actions"></slot>
+      <i class="chevron fa-solid fa-chevron-down" aria-hidden="true"></i>
+    </div>
+  </summary>
+  <div class="panel" part="panel">
     <slot></slot>
   </div>
-</div>
+</details>
 </template>

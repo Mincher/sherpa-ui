@@ -3,13 +3,14 @@
  * Shadow DOM styles for the SherpaAccordion web component.
  *
  * Architecture:
- *   - CSS owns all show/hide and state logic via :host([data-*]) selectors
- *   - Chevron rotation handled via CSS transform
- *   - Panel visibility via grid row animation (max-height)
- *   - Hover state lightens trigger background
+ *   - Uses native <details>/<summary> for expand/collapse
+ *   - CSS owns all visual states via :host([data-*]) selectors
+ *   - Chevron rotation via CSS on details[open]
+ *   - Panel expand/collapse via CSS grid-row animation
+ *   - No JS needed for show/hide logic
  *
  * Host attributes:
- *   data-expanded  — Open state, shows panel content
+ *   open           — Mirrors native details[open] (expanded state)
  *   data-icon      — Shows the leading icon in the trigger
  *   disabled       — Disabled state
  */
@@ -25,17 +26,25 @@
   border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   overflow: hidden;
-  transition:
-    border-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
 }
 
 :host([hidden]) { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TRIGGER / HEADER ROW
+   DETAILS — remove default marker
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.accordion-trigger {
+details {
+  /* fill host */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUMMARY / TRIGGER ROW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+summary.trigger {
   display: flex;
   align-items: center;
   gap: var(--sherpa-space-default, 16px);
@@ -43,15 +52,20 @@
   background: var(--sherpa-surface-container-default, #ffffff);
   cursor: pointer;
   user-select: none;
+  list-style: none;
   transition:
     background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
 }
 
-.accordion-trigger:hover {
+/* Remove default disclosure triangle in all browsers */
+summary.trigger::-webkit-details-marker { display: none; }
+summary.trigger::marker { display: none; content: ""; }
+
+summary.trigger:hover {
   background: var(--sherpa-surface-container-hover, #fafafa);
 }
 
-.accordion-trigger:focus-visible {
+summary.trigger:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--sherpa-border-focus, #0066cc);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
@@ -86,8 +100,8 @@
 
 .trigger-icon {
   display: none;
-  color: var(--sherpa-icon-default, #2e2e33);
-  font-size: var(--sherpa-font-size-default, 14px);
+  color: var(--sherpa-icon-context-default-body, #2e2e33);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
 }
 
 :host([data-icon]) .trigger-icon { display: inline-flex; }
@@ -100,13 +114,13 @@
   justify-content: center;
   width: var(--sherpa-space-default, 16px);
   height: var(--sherpa-space-default, 16px);
-  font-size: var(--sherpa-font-size-sm, 12px);
-  color: var(--sherpa-icon-default, #2e2e33);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  color: var(--sherpa-icon-context-default-body, #2e2e33);
   transition:
-    transform var(--sherpa-motion-duration-default, 0.2s) var(--sherpa-motion-easing-default, ease);
+    transform var(--sherpa-motion-duration-base, 0.2s) var(--sherpa-motion-easing-default, ease);
 }
 
-:host([data-expanded]) .chevron {
+details[open] .chevron {
   transform: rotate(-180deg);
 }
 
@@ -114,28 +128,13 @@
    PANEL / CONTENT AREA
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.accordion-panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition:
-    grid-template-rows var(--sherpa-motion-duration-default, 0.2s) var(--sherpa-motion-easing-default, ease);
-}
-
-:host([data-expanded]) .accordion-panel {
-  grid-template-rows: 1fr;
-}
-
-.panel-content {
-  overflow: hidden;
-}
-
-:host([data-expanded]) .panel-content {
+.panel {
   padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-default, 16px);
 }
 
 /* ── Separator between trigger and panel ─────────────────────── */
 
-:host([data-expanded]) .accordion-trigger {
+details[open] summary.trigger {
   border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
 }
 
@@ -147,7 +146,7 @@
   pointer-events: none;
 }
 
-:host([disabled]) .accordion-trigger {
+:host([disabled]) summary.trigger {
   background: var(--sherpa-surface-container-inactive, #f5f5f5);
   color: var(--sherpa-text-inactive-default, #a0a0a0);
   cursor: not-allowed;
@@ -159,7 +158,7 @@
 
 :host([disabled]) .chevron,
 :host([disabled]) .trigger-icon {
-  color: var(--sherpa-icon-inactive, #a0a0a0);
+  color: var(--sherpa-icon-inactive-default, #a0a0a0);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

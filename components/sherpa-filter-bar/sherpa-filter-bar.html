@@ -2,12 +2,10 @@
   sherpa-filter-bar.html — Templates for sherpa-filter-bar.
 
   Templates:
-    • default — Horizontal filter bar with zoned slot layout
-    • (custom) — Consumers can add additional <template id="..."> blocks here
-                  to define alternative filter-bar layouts. Use the component's
-                  `get templateId()` override to select a template by id.
+    • default — Full filter bar with zoned slot layout (for global use)
+    • local   — Minimal filter bar with only group + sort (for containers)
 
-  Slot order (left → right):
+  Slot order (default template, left → right):
     toggle    — Filter on/off toggle (slot="toggle")
     group     — Group/segment chip (slot="group")
     sort      — Sort chip (slot="sort")
@@ -15,19 +13,27 @@
     filters   — User-added dynamic filter chips (default slot) + Add button
     actions   — Clear / Apply / Save actions (slot="actions")
 
+  Slot order (local template, left → right):
+    group     — Group/segment chip (slot="group")
+    sort      — Sort chip (slot="sort")
+    actions   — Clear action (slot="actions")
+
   Host attributes:
     data-density  — "compact" | "comfortable"
     data-active   — Present when any filter is active
     data-embedded — No top border (for embedding inside other components)
+    data-global   — Dispatches globalfilterchange on document (for page-level bars)
+    data-type     — "local" selects the local template (default: full layout)
 
   Custom templates:
     To define a custom layout, add a new <template id="my-layout"> block
-    below the default. Override `get templateId()` in a subclass or set it
+    below. Override `get templateId()` in a subclass or set it
     dynamically to select the template at render time.
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Horizontal filter bar with zoned slot layout
+     DEFAULT — Full filter bar with zoned slot layout (global)
+     Has toggle, all filter zones, add button, and actions.
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="filter-surface">
@@ -38,9 +44,10 @@
     <slot></slot>
     <sherpa-button
       class="add-filter-button"
-      data-type="icon-select"
+      data-type="button-menu"
       data-variant="secondary"
       data-icon-start="&#xf067;"
+      data-label="Add"
       data-size="small"
       hidden
     ></sherpa-button>
@@ -49,18 +56,13 @@
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXAMPLE CUSTOM TEMPLATE — Minimal (sort + filter slots only)
-
-     Consumers can add templates like this for alternative layouts.
-     Each template must have a unique id. The component selects a template
-     via `get templateId()`.
+     LOCAL — Minimal filter bar for containers (group + sort only)
+     No toggle, no presets, no add-filter button.
      ═══════════════════════════════════════════════════════════════════════ -->
-<!--
-<template id="minimal">
+<template id="local">
   <div class="filter-surface">
+    <slot name="group"></slot>
     <slot name="sort"></slot>
-    <slot></slot>
     <slot name="actions"></slot>
   </div>
 </template>
--->
