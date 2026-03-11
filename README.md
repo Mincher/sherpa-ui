@@ -96,7 +96,8 @@ Components dispatch these events (bubble + composed) for app-level integration:
 
 | Event                   | Source               | Detail                          |
 | ----------------------- | -------------------- | ------------------------------- |
-| `containercolumnsready` | `sherpa-filter-bar`  | `{ columns, rows }`             |
+| `containerfilterchange` | `sherpa-filter-bar`  | `{ filters }`                    |
+| `globalfilterchange`    | `sherpa-filter-bar`  | `{ filters }` (on `document`)   |
 | `containerexport`       | `sherpa-menu-item`   | `{ value }` (bubbles from menu) |
 | `viewexport`            | `sherpa-view-header` | `{ title }`                     |
 

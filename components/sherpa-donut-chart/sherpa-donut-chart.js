@@ -25,9 +25,6 @@
  *   data-variant        — donut | pie
  *   + all ContentAttributesMixin attributes
  *
- * Events (bubbles: true, composed: true):
- *   vizready — Dispatched after setData() completes. detail: { columns, rows }
- *
  * Methods:
  *   setData(config | Array<{label, value, color?}>)
  */
@@ -129,20 +126,11 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       this.#data = [];
     }
     this.#render();
-    this.dispatchVizReady();
   }
 
   /** Get current data. */
   get data() {
     return [...this.#data];
-  }
-
-  getContentColumns() {
-    return this.#contentData?.columns || [];
-  }
-
-  getContentRows() {
-    return this.#contentData?.rows || [];
   }
 
   /* ── Private: transform ───────────────────────────────────────── */

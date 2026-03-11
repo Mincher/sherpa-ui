@@ -12,7 +12,6 @@
  * column headers, scrollable body, and pagination.
  *
  * Events:
- *   vizready        — { columns, rows } (after setData completes)
  *   selectionchange — { selected: string[], count: number }
  *   sortchange      — { field: string, direction: 'asc'|'desc' }
  *   pagechange      — { page: number, pageSize: number }
@@ -142,8 +141,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #originalOrderBy = null; // Original orderBy from config (for presentation switching)
   #originalSegmentBy = null; // Original segmentBy from config (for presentation switching)
   #rowTpl = null; // Cached <template class="row-tpl">
-  #menuHeadingTpl = null; // Cached <template class="menu-heading-tpl">
-  #menuItemTpl = null; // Cached <template class="menu-item-tpl">
   #groupRowTpl = null; // Cached <template class="group-row-tpl">
   #cellTpl = null; // Cached <template class="cell-tpl">
   #linkCellTpl = null; // Cached <template class="link-cell-tpl">
@@ -162,8 +159,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     // Cache cloning templates
     this.#rowTpl = this.$("template.row-tpl");
-    this.#menuHeadingTpl = this.$("template.menu-heading-tpl");
-    this.#menuItemTpl = this.$("template.menu-item-tpl");
     this.#groupRowTpl = this.$("template.group-row-tpl");
     this.#cellTpl = this.$("template.cell-tpl");
     this.#linkCellTpl = this.$("template.link-cell-tpl");
@@ -382,9 +377,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     await this.rendered;
 
     this.#render();
-
-    // Dispatch vizready so filter bars can auto-populate
-    this.dispatchVizReady();
   }
 
   /** Infer boolean column types from column config and data. */
@@ -1369,40 +1361,10 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
      Overflow Menu
      ══════════════════════════════════════════════════════════════ */
 
-  /** Clone a menu heading from the template and set its text. */
-  #cloneHeading(text) {
-    const el = this.#menuHeadingTpl.content
-      .cloneNode(true)
-      .querySelector("sherpa-menu-item");
-    el.textContent = text;
-    return el;
-  }
-
-  /** Clone a menu item (li > sherpa-menu-item) from the template. */
-  #cloneMenuItem(text, attrs = {}) {
-    const frag = this.#menuItemTpl.content.cloneNode(true);
-    const item = frag.querySelector("sherpa-menu-item");
-    item.textContent = text;
-    for (const [k, v] of Object.entries(attrs)) {
-      if (
-        k.startsWith("data-") ||
-        k === "checked" ||
-        k === "disabled" ||
-        k === "value"
-      ) {
-        item.setAttribute(k, v);
-      } else {
-        item.dataset[k] = v;
-      }
-    }
-    return frag;
-  }
-
   #populateOverflowMenu() {
     const btn = this.$(".overflow-menu-btn");
-    if (!btn?.menuElement) return;
+    if (!btn) return;
 
-    const frag = document.createDocumentFragment();
     const isGrouped =
       !!this.getAttribute("data-segment-field") &&
       this.getAttribute("data-segment-mode") !== "off";
@@ -1410,55 +1372,54 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const showSecondary =
       this.getAttribute("data-show-secondary-headers") === "true";
 
+    const sections = [];
+
     // Group actions
     if (isGrouped) {
-      frag.appendChild(this.#cloneHeading("Groups"));
-      const ul = document.createElement("ul");
-      ul.appendChild(
-        this.#cloneMenuItem("Expand all", { action: "expand-all" }),
-      );
-      ul.appendChild(
-        this.#cloneMenuItem("Collapse all", { action: "collapse-all" }),
-      );
-      frag.appendChild(ul);
+      sections.push({
+        heading: "Groups",
+        items: [
+          { value: "expand-all", text: "Expand all", data: { action: "expand-all" } },
+          { value: "collapse-all", text: "Collapse all", data: { action: "collapse-all" } },
+        ],
+      });
     }
 
     // View actions
-    frag.appendChild(this.#cloneHeading("View"));
-    const viewUl = document.createElement("ul");
-    viewUl.appendChild(
-      this.#cloneMenuItem(
-        showSecondary ? "Hide column search" : "Show column search",
-        { action: "toggle-column-search" },
-      ),
-    );
+    const viewItems = [
+      {
+        value: "toggle-column-search",
+        text: showSecondary ? "Hide column search" : "Show column search",
+        data: { action: "toggle-column-search" },
+      },
+    ];
 
-    // Density options
     const densities = [
-      { value: null, label: "Default density" },
+      { value: "", label: "Default density" },
       { value: "compact", label: "Compact" },
       { value: "comfortable", label: "Comfortable" },
     ];
     for (const d of densities) {
-      const attrs = { action: "set-density", densityValue: d.value || "" };
-      if ((density || "") === (d.value || "")) attrs["data-selected"] = "";
-      viewUl.appendChild(this.#cloneMenuItem(d.label, attrs));
+      viewItems.push({
+        value: d.value || "default-density",
+        text: d.label,
+        selected: (density || "") === (d.value || ""),
+        data: { action: "set-density", densityValue: d.value },
+      });
     }
-    frag.appendChild(viewUl);
+    sections.push({ heading: "View", items: viewItems });
 
     // Selection actions
     if (this.#selectedRows.size > 0) {
-      frag.appendChild(
-        this.#cloneHeading(`Selection (${this.#selectedRows.size})`),
-      );
-      const selUl = document.createElement("ul");
-      selUl.appendChild(
-        this.#cloneMenuItem("Clear selection", { action: "clear-selection" }),
-      );
-      frag.appendChild(selUl);
+      sections.push({
+        heading: `Selection (${this.#selectedRows.size})`,
+        items: [
+          { value: "clear-selection", text: "Clear selection", data: { action: "clear-selection" } },
+        ],
+      });
     }
 
-    btn.menuElement.replaceChildren(frag);
+    btn.setMenuItems(sections);
   }
 
   #onOverflowMenuSelect(e) {
@@ -1508,33 +1469,31 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
   #populateColumnSelectMenu() {
     const btn = this.$(".column-select-btn");
-    if (!btn?.menuElement) return;
+    if (!btn) return;
 
-    const frag = document.createDocumentFragment();
-    frag.appendChild(this.#cloneHeading("Columns"));
-
-    const ul = document.createElement("ul");
-
-    // "Select all" toggle
-    const selectAllAttrs = {
-      "data-selection": "checkbox",
-      action: "select-all-columns",
-    };
-    if (this.#hiddenColumns.size === 0) selectAllAttrs.checked = "";
-    ul.appendChild(this.#cloneMenuItem("Select all", selectAllAttrs));
+    const items = [
+      {
+        value: "select-all-columns",
+        text: "Select all",
+        selection: "checkbox",
+        checked: this.#hiddenColumns.size === 0,
+        keepOpen: true,
+        data: { action: "select-all-columns" },
+      },
+    ];
 
     for (const col of this.#columns) {
-      const attrs = {
-        "data-selection": "checkbox",
-        action: "toggle-column",
-        field: col.field,
-      };
-      if (!this.#hiddenColumns.has(col.field)) attrs.checked = "";
-      ul.appendChild(this.#cloneMenuItem(col.name || col.field, attrs));
+      items.push({
+        value: col.field,
+        text: col.name || col.field,
+        selection: "checkbox",
+        checked: !this.#hiddenColumns.has(col.field),
+        keepOpen: true,
+        data: { action: "toggle-column", field: col.field },
+      });
     }
 
-    frag.appendChild(ul);
-    btn.menuElement.replaceChildren(frag);
+    btn.setMenuItems([{ heading: "Columns", items }]);
   }
 
   #onColumnSelectMenuSelect(e) {
@@ -1680,20 +1639,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       : [];
     this.dataset.page = "1";
     if (this.#data) this.#render();
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // Public Data Accessors (for container-level filter bars)
-  // ─────────────────────────────────────────────────────────────
-
-  /** @returns {Array<{field: string, label?: string, type?: string}>} */
-  getContentColumns() {
-    return this.#columns;
-  }
-
-  /** @returns {Array<Object>} raw (unfiltered) rows */
-  getContentRows() {
-    return this.#allRows;
   }
 }
 

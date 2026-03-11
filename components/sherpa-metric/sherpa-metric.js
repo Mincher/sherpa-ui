@@ -118,10 +118,6 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     const config = { ...data, presentationType: "kpi-metric" };
     this.#contentData = await this.fetchContentData(config);
     this.#initialize();
-
-    // Dispatch vizready so filter bars can detect this child.
-    // Metrics typically return empty columns/rows — that's expected.
-    this.dispatchVizReady();
   }
 
   // ============ Private Methods ============

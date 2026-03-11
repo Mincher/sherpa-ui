@@ -27,9 +27,6 @@
  *   data-variant  — line | area
  *   + all ContentAttributesMixin attributes
  *
- * Events (bubbles: true, composed: true):
- *   vizready — Dispatched after setData() completes. detail: { columns, rows }
- *
  * Methods:
  *   setData(config | { labels, series })
  */
@@ -134,15 +131,6 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       this.#data = null;
     }
     this.#render();
-    this.dispatchVizReady();
-  }
-
-  getContentColumns() {
-    return this.#contentData?.columns || [];
-  }
-
-  getContentRows() {
-    return this.#contentData?.rows || [];
   }
 
   /* ── Private: transform ───────────────────────────────────────── */

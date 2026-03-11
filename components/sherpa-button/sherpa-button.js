@@ -281,7 +281,7 @@ export class SherpaButton extends SherpaElement {
 
     menu.addEventListener("menu-close", (e) => {
       e.stopPropagation();
-      this.active = false;
+      this.removeAttribute("aria-expanded");
       this.#menuClosedAt = Date.now();
       this.dispatchEvent(
         new CustomEvent("menu-close", { bubbles: true, composed: true }),
@@ -299,7 +299,7 @@ export class SherpaButton extends SherpaElement {
    * dynamic content injection. Also fires `menu-open`.
    */
   async #showMenu() {
-    this.active = true;
+    this.setAttribute("aria-expanded", "true");
     const menu = this.#ensureMenu();
 
     // Stamp static template from the menu template registry (if set).
@@ -331,6 +331,14 @@ export class SherpaButton extends SherpaElement {
     );
 
     await menu.rendered;
+
+    // Ensure menu items have rendered their shadow DOMs (including
+    // checkbox/radio inputs) before showing the menu.
+    const menuItems = menu.querySelectorAll("sherpa-menu-item");
+    if (menuItems.length) {
+      await Promise.all([...menuItems].map((item) => item.rendered));
+    }
+
     menu.show(this);
   }
 
@@ -338,8 +346,17 @@ export class SherpaButton extends SherpaElement {
    * Walk the composed tree from this button upward, collecting
    * `<template data-menu>` elements and stamping their content
    * into the menu.
+   *
+   * When `data-menu-scope="shadow"` is set on the button, collection
+   * stops at the immediate shadow host — ancestor templates beyond the
+   * host component are not included. This prevents viz children from
+   * inheriting their container's menu items.
    */
   #collectAncestorMenuTemplates(menu) {
+    // Remove items stamped from a previous open to prevent accumulation
+    menu.querySelectorAll("[data-from-ancestor-tpl]").forEach((el) => el.remove());
+
+    const scopeToShadow = this.dataset.menuScope === "shadow";
     let node = this.getRootNode()?.host ?? this.parentElement;
     while (node) {
       const templates = node.querySelectorAll?.(
@@ -347,9 +364,16 @@ export class SherpaButton extends SherpaElement {
       );
       if (templates) {
         for (const tpl of templates) {
-          menu.append(tpl.content.cloneNode(true));
+          const clone = tpl.content.cloneNode(true);
+          // Mark each top-level node so it can be removed on re-open
+          for (const child of clone.children) {
+            child.setAttribute("data-from-ancestor-tpl", "");
+          }
+          menu.append(clone);
         }
       }
+      // Stop after the immediate shadow host when scoped
+      if (scopeToShadow) break;
       node = node.getRootNode?.()?.host ?? node.parentElement;
     }
   }
@@ -380,37 +404,125 @@ export class SherpaButton extends SherpaElement {
   /**
    * Programmatically populate the button's menu with items.
    * Creates <sherpa-menu-item> elements inside the menu.
-   * If the button hasn't rendered yet, defers until render completes.
    *
-   * @param {Array<{value, text, selected?, disabled?, keepOpen?}>} items
-   * @param {{ selection?: "checkbox"|"radio"|"toggle", group?: string }} [opts]
+   * Supports two formats:
+   *
+   * Flat array (simple list):
+   *   setMenuItems([{ value, text, selected?, disabled?, keepOpen? }], { selection, group })
+   *
+   * Sections array (grouped with headings):
+   *   setMenuItems([{ heading, items: [...], group?, selection? }])
+   *   Each section produces a heading + <ul> with its items.
+   *
+   * Options:
+   *   append  — if true, keep existing menu content (default: false)
+   *   marker  — tag new elements for scoped cleanup on re-call; implies append
+   *
+   * @param {Array} items — flat item array OR sections array (detected by first element having `heading`)
+   * @param {{ selection?: "checkbox"|"radio"|"toggle", group?: string, append?: boolean, marker?: string }} [opts]
    */
   setMenuItems(items, opts = {}) {
     const menu = this.#ensureMenu();
-    menu.replaceChildren();
+    const { marker } = opts;
 
+    if (marker) {
+      // Scoped replace: remove only previously-marked items, keep everything else
+      menu.querySelectorAll(`[data-menu-marker="${marker}"]`).forEach((el) => el.remove());
+    } else if (!opts.append) {
+      menu.replaceChildren();
+    }
+
+    if (!items?.length) return;
+
+    // Collect newly built elements so we can tag them with marker
+    const before = new Set(menu.children);
+
+    // Detect sections format: first element has a `heading` property
+    if (items[0]?.heading !== undefined) {
+      this.#buildSections(menu, items);
+    } else {
+      this.#buildFlatList(menu, items, opts);
+    }
+
+    // Tag newly added top-level elements with the marker for scoped cleanup
+    if (marker) {
+      for (const child of menu.children) {
+        if (!before.has(child)) child.setAttribute("data-menu-marker", marker);
+      }
+    }
+  }
+
+  /** Build a flat list of menu items inside a single <ul>. */
+  #buildFlatList(menu, items, opts = {}) {
     const ul = document.createElement("ul");
     if (opts.group) ul.dataset.group = opts.group;
 
     for (const item of items) {
-      const li = document.createElement("li");
-      const menuItem = document.createElement("sherpa-menu-item");
-      menuItem.setAttribute("value", item.value ?? "");
-      menuItem.textContent = item.text ?? item.value ?? "";
-      if (opts.selection) menuItem.dataset.selection = opts.selection;
-      if (opts.selection === "radio" && opts.group) {
-        menuItem.dataset.group = opts.group;
-      }
-      if (item.selected) menuItem.setAttribute("checked", "");
-      if (item.disabled) menuItem.setAttribute("disabled", "");
-      if (item.keepOpen || opts.selection === "checkbox") {
-        menuItem.setAttribute("data-keep-open", "");
-      }
-      li.appendChild(menuItem);
-      ul.appendChild(li);
+      ul.appendChild(this.#buildMenuItem(item, opts));
     }
 
     menu.appendChild(ul);
+  }
+
+  /** Build grouped sections, each with an optional heading and <ul>. */
+  #buildSections(menu, sections) {
+    for (const section of sections) {
+      // Heading
+      if (section.heading) {
+        const heading = document.createElement("sherpa-menu-item");
+        heading.setAttribute("data-type", "heading");
+        heading.textContent = section.heading;
+        if (section.style) heading.setAttribute("style", section.style);
+        menu.appendChild(heading);
+      }
+
+      // Items
+      if (section.items?.length) {
+        const ul = document.createElement("ul");
+        if (section.group) ul.dataset.group = section.group;
+        if (section.style) ul.setAttribute("style", section.style);
+
+        const sectionOpts = {
+          selection: section.selection,
+          group: section.group,
+        };
+
+        for (const item of section.items) {
+          ul.appendChild(this.#buildMenuItem(item, sectionOpts));
+        }
+
+        menu.appendChild(ul);
+      }
+    }
+  }
+
+  /** Create a single <li><sherpa-menu-item>…</sherpa-menu-item></li>. */
+  #buildMenuItem(item, opts = {}) {
+    const li = document.createElement("li");
+    const menuItem = document.createElement("sherpa-menu-item");
+    menuItem.setAttribute("value", item.value ?? "");
+    menuItem.textContent = item.text ?? item.value ?? "";
+
+    const selection = item.selection || opts.selection;
+    if (selection) menuItem.dataset.selection = selection;
+    if (selection === "radio" && (item.group || opts.group)) {
+      menuItem.dataset.group = item.group || opts.group;
+    }
+    if (item.selected || item.checked) menuItem.setAttribute("checked", "");
+    if (item.disabled) menuItem.setAttribute("disabled", "");
+    if (item.description) menuItem.setAttribute("data-description", item.description);
+    if (item.keepOpen || selection === "checkbox") {
+      menuItem.setAttribute("data-keep-open", "");
+    }
+    // Forward custom data-* attributes
+    if (item.data) {
+      for (const [k, v] of Object.entries(item.data)) {
+        menuItem.dataset[k] = v;
+      }
+    }
+
+    li.appendChild(menuItem);
+    return li;
   }
 
   /**

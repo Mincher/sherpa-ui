@@ -9,7 +9,6 @@
  *   • Pluggable data provider: setDataProvider(fn) at module level
  *   • fetchContentData(config) — calls the registered provider
  *   • Self-filtering: containerfilterchange + globalfilterchange listeners
- *   • dispatchVizReady() — fires the vizready event for filter bars
  *   • View-switching header/menu helpers
  *
  * Data provider registration (module-level):
@@ -19,6 +18,7 @@
  */
 
 import { getInitialFilters } from "./global-filters.js";
+import { loadQueryBundle } from "./data-store.js";
 
 /* ── Pluggable data providers ───────────────────────────────────── */
 
@@ -33,20 +33,6 @@ export function setDateFieldProvider(fn) {
 }
 export function getDateFieldProvider() {
   return _dateFieldProvider;
-}
-
-/* ── Query bundle cache ─────────────────────────────────────────── */
-
-const queryBundleCache = new Map();
-
-async function fetchQueryBundle(url) {
-  if (queryBundleCache.has(url)) return queryBundleCache.get(url);
-  const promise = fetch(url).then((r) => {
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
-  });
-  queryBundleCache.set(url, promise);
-  return promise;
 }
 
 /* ── Attribute schema ───────────────────────────────────────────── *
@@ -248,25 +234,22 @@ export function ContentAttributesMixin(Base) {
       this.setAttribute("data-loading", "");
       const result = await _dataProvider(config);
       this.removeAttribute("data-loading");
-      return result;
-    }
 
-    dispatchVizReady() {
-      const columns =
-        typeof this.getContentColumns === "function"
-          ? this.getContentColumns()
-          : [];
-      const rows =
-        typeof this.getContentRows === "function"
-          ? this.getContentRows()
-          : [];
-      this.dispatchEvent(
-        new CustomEvent("vizready", {
-          bubbles: true,
-          composed: true,
-          detail: { columns, rows },
-        }),
-      );
+      // Broadcast columns so any filter bar can self-populate menus.
+      if (result?.columns?.length) {
+        this.dispatchEvent(
+          new CustomEvent("columnsready", {
+            bubbles: true,
+            composed: true,
+            detail: {
+              columns: result.columns,
+              rows: result.rows || [],
+            },
+          }),
+        );
+      }
+
+      return result;
     }
 
     /* ── View-switching ─────────────────────────────────────── */
@@ -364,7 +347,7 @@ export function ContentAttributesMixin(Base) {
         const detail = event.detail ?? {};
         if (detail.disabled) return;
 
-        const type = detail.data?.type;
+        const type = detail.value;
         if (
           type &&
           type !== (this._menuCurrentType || activeType)
@@ -394,35 +377,21 @@ export function ContentAttributesMixin(Base) {
     #populateViewMenu(activeType) {
       const config = this.#pendingMenuData;
       if (!config?.showViewMenu || !config.viewOptions?.length) return;
+      if (!this._menuButton) return;
 
-      const frag = document.createDocumentFragment();
+      const viewItems = config.viewOptions.map((option) => ({
+        value: option?.type ?? "",
+        text: option?.label || "",
+        selection: "radio",
+        selected: (option?.type ?? null) === activeType,
+        disabled: option?.disabled,
+        description: option?.disabledTitle,
+      }));
 
-      const heading = document.createElement("sherpa-menu-item");
-      heading.setAttribute("data-type", "heading");
-      heading.textContent = "View";
-      frag.appendChild(heading);
-
-      const ul = document.createElement("ul");
-      ul.dataset.group = "view";
-
-      for (const option of config.viewOptions) {
-        const li = document.createElement("li");
-        const item = document.createElement("sherpa-menu-item");
-        item.setAttribute("data-selection", "radio");
-        item.setAttribute("value", option?.type ?? "");
-        item.dataset.group = "view";
-        if ((option?.type ?? null) === activeType)
-          item.setAttribute("checked", "");
-        if (option?.disabled) item.setAttribute("disabled", "");
-        if (option?.disabledTitle)
-          item.setAttribute("data-description", option.disabledTitle);
-        item.textContent = option?.label || "";
-        li.appendChild(item);
-        ul.appendChild(li);
-      }
-
-      frag.appendChild(ul);
-      this._menuButton?.menuElement?.prepend(frag);
+      this._menuButton.setMenuItems(
+        [{ heading: "View", items: viewItems, group: "view" }],
+        { marker: "view" },
+      );
     }
 
     /* ── Self-filtering ─────────────────────────────────────── */
@@ -515,9 +484,7 @@ export function ContentAttributesMixin(Base) {
         this.removeAttribute("data-segment-mode");
       }
 
-      if (valueFilters.length) {
-        this.#reQueryWithFilters(valueFilters);
-      }
+      this.#reQueryWithFilters(valueFilters);
     }
 
     #onGlobalFilter(e) {
@@ -525,9 +492,7 @@ export function ContentAttributesMixin(Base) {
       // Pass all filter entries through to the data pipeline.
       // New API entries are self-describing: { field, type, operator, value, values, range }
       // Legacy entries may include { type: "timeframe", rangeKey, range }
-      if (filters.length) {
-        this.#reQueryWithFilters(filters);
-      }
+      this.#reQueryWithFilters(filters);
     }
 
     #reQueryWithFilters(additionalFilters) {
@@ -571,7 +536,7 @@ export function ContentAttributesMixin(Base) {
       if (!src || !key) return;
 
       try {
-        const bundle = await fetchQueryBundle(src);
+        const bundle = await loadQueryBundle(src);
         const query = bundle[key];
         if (!query) {
           console.warn(

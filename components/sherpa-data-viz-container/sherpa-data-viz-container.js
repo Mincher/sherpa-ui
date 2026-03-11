@@ -31,11 +31,14 @@
  * Architecture — decoupled peer events:
  *   Container owns layout only. All data concerns are handled by the
  *   content components themselves:
- *     vizready             — viz child → filter bar (columns/rows)
  *     containerfilterchange — filter bar → viz children (scoped)
  *     globalfilterchange   — document → viz children (direct)
  *     sortchange           — viz child → filter bar (sort chip sync)
  *     presentationchange   — viz child → consumer (view switch)
+ *
+ *   Viz children dispatch `columnsready` (bubbles, composed) when
+ *   data loads. The filter bar self-populates by listening on
+ *   `document` — the container is not involved in column data flow.
  *
  *   Menu items are assembled from light-DOM `<template data-menu>`
  *   children by sherpa-button's composed-tree walking. ResizeBehavior
@@ -91,6 +94,7 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
     if (!this.dataset.variant) this.dataset.variant = "fit";
     if (!this.dataset.openExternal) this.dataset.openExternal = "true";
     if (!this.dataset.menuButton) this.dataset.menuButton = "true";
+    if (!this.hasAttribute("data-filters")) this.toggleAttribute("data-filters", true);
 
     this.#titleEl = this.$(".header-title");
     this.#descriptionEl = this.$(".header-description");
@@ -104,13 +108,16 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
     this.#injectFilterMenu();
     this.addEventListener("menu-open", this.#onMenuOpen);
     this.addEventListener("menu-close", this.#onMenuClose);
+    this.addEventListener("menu-populate", this.#onMenuPopulate);
     this.addEventListener("toggle-filters", this.#onToggleFilters);
+
   }
 
   onDisconnect() {
     super.onDisconnect();
     this.removeEventListener("menu-open", this.#onMenuOpen);
     this.removeEventListener("menu-close", this.#onMenuClose);
+    this.removeEventListener("menu-populate", this.#onMenuPopulate);
     this.removeEventListener("toggle-filters", this.#onToggleFilters);
     this.#filterMenuTpl?.remove();
     this.#filterMenuTpl = null;
@@ -156,6 +163,16 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
 
   #onToggleFilters = () => {
     this.toggleAttribute("data-filters");
+  };
+
+  /** Sync checkbox state for the filter-toggle menu item after templates are stamped. */
+  #onMenuPopulate = (e) => {
+    const menu = e.detail?.menu;
+    if (!menu) return;
+    const item = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
+    if (item) {
+      item.toggleAttribute("checked", this.hasAttribute("data-filters"));
+    }
   };
 }
 

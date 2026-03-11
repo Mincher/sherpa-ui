@@ -311,6 +311,12 @@
   border-color:     var(--sherpa-border-control-active-default);
 }
 
+/* ── Menu expanded — subtle pressed state on the trigger ─────────────── */
+
+:host([aria-expanded="true"]:not([disabled])) .trigger {
+  background-color: var(--_surface-hover);
+}
+
 /* ── Disabled ────────────────────────────────────────────────────────── */
 
 :host([disabled]) {
@@ -400,6 +406,11 @@
   display: inline-flex;
 }
 
+/* Boolean filter chips — no dropdown menu, acts as a simple toggle */
+:host([data-filter-type="boolean"]) .menu-trigger {
+  display: none;
+}
+
 /* Active — button-menu */
 :host([data-type="button-menu"][data-active]) {
   --_surface:       var(--sherpa-surface-control-active-default);
@@ -456,6 +467,10 @@
 
 :host([data-active]) .menu-trigger {
   background-color: var(--_surface);
+}
+
+:host([aria-expanded="true"]:not([data-active]):not([disabled])) .menu-trigger {
+  background-color: var(--_surface-hover);
 }
 
 :host([data-active]:not([disabled])) .menu-trigger:hover {

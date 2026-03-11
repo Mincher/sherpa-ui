@@ -1,3 +1,7 @@
 Nav:
+
+A lot of functionality, that I've not even asked to be altered, has stopped working because of bad rewrites:
+
+- Searching in data grid headers no longer uses CSS highlight to indicate string matches in cell content.
+- Groups with matches don't auto expand when search has matches on rows within the group.
 - Pinning doesn't offset the view content's left padding/margin, like it used to, based on the nav width when pinned.
-- 

@@ -5,7 +5,6 @@
  * Uses DataService for standardised data preparation.
  *
  * Events (bubbles: true, composed: true):
- *   vizready           — Dispatched after setData() completes. detail: { columns, rows }
  *   sortchange         — Column header sort. detail: { field, direction }
  *   presentationchange — View switch request. detail: { type, data }
  *
@@ -253,9 +252,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     }
 
     this.#render();
-
-    // Dispatch vizready so filter bars can auto-populate column menus
-    this.dispatchVizReady();
   }
 
   #validateFieldsAgainstColumns() {
@@ -979,16 +975,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   // ============ Public Data Accessors ============
-
-  /** @override @returns {Array<{field: string, label?: string, type?: string}>} */
-  getContentColumns() {
-    return this.#contentData?.columns || [];
-  }
-
-  /** @override @returns {Array<Object>} raw (unfiltered) rows */
-  getContentRows() {
-    return this.#contentData?.rows || [];
-  }
 
   /** Public accessor for resolved category field name. */
   getCategoryField() {

@@ -24,7 +24,7 @@
 | **Purpose** | Adaptive bar chart with automatic orientation, stacked bars, category limiting, and responsive legend |
 | **Base class** | `ContentAttributesMixin(SherpaElement)` |
 | **Key attributes** | `data-orientation` (horizontal\|vertical), `data-compact`, `data-minimal`, `data-bar-count`, `data-series-count`, `data-loading` |
-| **Events** | `vizready`, `sortchange`, `presentationchange` |
+| **Events** | `sortchange`, `presentationchange` |
 | **Maturity** | **Complete** |
 
 ---
@@ -76,7 +76,7 @@
 | **Purpose** | Dashboard card with header and content area; content-agnostic layout with decoupled peer events |
 | **Base class** | `SherpaElement` |
 | **Key attributes** | `data-variant` (fit\|resizable\|fill), `data-col-span` (3\|6\|9\|12), `data-row-span`, `data-editable`, `title` |
-| **Events** | Listens: `vizready`, `containerfilterchange`, `presentationchange`, `sortchange` |
+| **Events** | Listens: `containerfilterchange`, `presentationchange`, `sortchange` |
 | **Maturity** | **Complete** |
 
 ---
@@ -101,7 +101,7 @@
 | **Purpose** | Advanced data grid with grouping, selection, sorting, and pagination using native `<table>` |
 | **Base class** | `ContentAttributesMixin(SherpaElement)` |
 | **Key attributes** | Content attributes from mixin (`data-dataset`, `data-value-field`, etc.), plus grid-specific: selection, grouping, sorting, pagination state |
-| **Events** | `vizready`, `selectionchange`, `sortchange`, `pagechange`, `groupexpand`, `groupcollapse`, `rowaction` |
+| **Events** | `selectionchange`, `sortchange`, `pagechange`, `groupexpand`, `groupcollapse`, `rowaction` |
 | **Missing** | `component-doc.html` |
 | **Maturity** | **Complete** (missing doc page only) |
 
@@ -152,7 +152,7 @@
 | | |
 |---|---|
 | **Files** | `.html` `.css` `.js` |
-| **Purpose** | Horizontal filter bar with zoned slot layout; self-populates from sibling viz `vizready` events |
+| **Purpose** | Horizontal filter bar with zoned slot layout; reads column metadata from query bundle via centralised data store |
 | **Base class** | `SherpaElement` |
 | **Key attributes** | None host-level; layout via slot zones |
 | **Slots** | `toggle`, `group`, `sort`, `presets`, default (dynamic chips), `actions` |
