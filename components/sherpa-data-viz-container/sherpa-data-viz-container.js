@@ -54,6 +54,7 @@
  *   data-menu-open      — Menu state (set by menu-open/menu-close events)
  *   data-editable       — Edit mode (enables CSS resize grip)
  *   data-filters        — Present when filter bar is visible (toggled via menu)
+ *   data-available-fields — JSON array forwarded to the embedded filter bar
  *   data-open-external  — "true" — show open-external button (CSS-driven)
  *   data-menu-button    — "true" — show menu button (CSS-driven)
  *   data-drag-handle    — "true" — show drag handle (CSS-driven)
@@ -78,7 +79,12 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
   }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, "data-title", "data-description"];
+    return [
+      ...super.observedAttributes,
+      "data-title",
+      "data-description",
+      "data-available-fields",
+    ];
   }
 
   /** @type {HTMLElement|null} */
@@ -101,6 +107,7 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
 
     this.#syncTitle();
     this.#syncDescription();
+    this.#syncAvailableFields();
   }
 
   onConnect() {
@@ -123,9 +130,10 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
     this.#filterMenuTpl = null;
   }
 
-  onAttributeChanged(name, _oldValue, newValue) {
+  onAttributeChanged(name) {
     if (name === "data-title") this.#syncTitle();
     if (name === "data-description") this.#syncDescription();
+    if (name === "data-available-fields") this.#syncAvailableFields();
   }
 
   /* ── Private sync ────────────────────────────────────────────── */
@@ -137,6 +145,17 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
   #syncDescription() {
     if (this.#descriptionEl)
       this.#descriptionEl.textContent = this.dataset.description || "";
+  }
+
+  #syncAvailableFields() {
+    const bar = this.$("sherpa-filter-bar");
+    if (!bar) return;
+    const value = this.getAttribute("data-available-fields");
+    if (value != null) {
+      bar.setAttribute("data-available-fields", value);
+    } else {
+      bar.removeAttribute("data-available-fields");
+    }
   }
 
   #onMenuOpen = () => {

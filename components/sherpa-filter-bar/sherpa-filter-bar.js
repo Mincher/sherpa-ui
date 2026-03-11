@@ -17,13 +17,25 @@
  *
  *   Sort/segment chips use data-behavior="sort" | "segment".
  *
- * Self-populating:
- *   Sort / group / add-filter menus self-populate by listening on
- *   `document` for `columnsready` events dispatched by viz children.
- *   No container or parent involvement is required.
+ * Field declaration:
+ *   Sort / group / add-filter menus are populated from a declarative
+ *   `data-available-fields` JSON attribute on the filter bar element.
+ *   Format: [{"field":"name","name":"Display Name","type":"string"},...]
  *
- *   Row-dependent features (text/number value menus, boolean auto-
- *   detection) are populated from the row data carried in the event.
+ *   The consuming app sets this attribute on the filter bar (or on
+ *   the container, which forwards it). No event-based discovery is
+ *   required — all timing/race issues are eliminated.
+ *
+ *   Backwards-compatible: `setAvailableColumns(columns, rows)` still
+ *   works by writing to the `data-available-fields` attribute. When
+ *   rows are supplied, unique values are extracted per field and
+ *   used to populate chip menus.
+ *
+ *   Value menus:
+ *   Filter chips with a selected field show a menu of all unique values.
+ *   Values come from two sources (in priority order):
+ *     1. `values` array in the field definition JSON
+ *     2. Extracted from row data passed to `setAvailableColumns(cols, rows)`
  *
  * Slot-based layout:
  *   toggle   — Filter on/off toggle
@@ -74,6 +86,7 @@ export class SherpaFilterBar extends SherpaElement {
       "data-density",
       "data-active",
       "data-preset-filters",
+      "data-available-fields",
     ];
   }
 
@@ -86,7 +99,6 @@ export class SherpaFilterBar extends SherpaElement {
   #sortChangeHandler = null; // Bound handler for sortchange events
   #syncingSort = false; // Guard against re-entrant filterchange during sort sync
   #scopeEl = null; // Parent element used as event scope for sortchange
-  #columnsHandler = null; // Bound handler for document-level columnsready
 
   onConnect() {
     // Wire sortchange listener on parent scope (container or shadow host)
@@ -94,16 +106,6 @@ export class SherpaFilterBar extends SherpaElement {
     if (this.#scopeEl && !this.#sortChangeHandler) {
       this.#sortChangeHandler = (e) => this.#onSortChange(e);
       this.#scopeEl.addEventListener("sortchange", this.#sortChangeHandler);
-    }
-
-    // Listen on document for columnsready — any viz child anywhere can
-    // broadcast its column list; we self-populate sort / group / add menus.
-    if (!this.#columnsHandler) {
-      this.#columnsHandler = (e) => {
-        const { columns, rows } = e.detail || {};
-        if (columns?.length) this.setAvailableColumns(columns, rows || []);
-      };
-      document.addEventListener("columnsready", this.#columnsHandler);
     }
 
     // Watch for attribute changes on slotted filter chips
@@ -251,6 +253,9 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     this.#syncActiveState();
+
+    // Populate from declarative fields attribute (if set before connect)
+    this.#syncAvailableFields();
   }
 
   onDisconnect() {
@@ -265,17 +270,51 @@ export class SherpaFilterBar extends SherpaElement {
     }
     this.#sortChangeHandler = null;
     this.#scopeEl = null;
-
-    if (this.#columnsHandler) {
-      document.removeEventListener("columnsready", this.#columnsHandler);
-      this.#columnsHandler = null;
-    }
   }
 
   onAttributeChanged(name, _old, newValue) {
     if (name === "data-preset-filters" && newValue) {
       this.#initPresetChips(newValue);
     }
+    if (name === "data-available-fields") {
+      this.#syncAvailableFields();
+    }
+  }
+
+  /**
+   * Parse the data-available-fields JSON attribute and populate all menus.
+   * Called on connect and whenever the attribute changes.
+   */
+  #syncAvailableFields() {
+    const raw = this.getAttribute("data-available-fields");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+      this.#columns = parsed;
+    } catch {
+      return;
+    }
+
+    // Populate sort / segment chip menus
+    for (const chip of this.#getFilterChips()) {
+      if (chip.hasAttribute("data-filter-field")) {
+        const field = chip.getAttribute("data-filter-field");
+        const col = this.#columns.find((c) => c.field === field);
+        if (col) chip.dataset.label = col.name || formatFieldName(col.field);
+        this.#populateFilterChip(chip);
+        continue;
+      }
+      this.#populateColumnsMenu(chip);
+    }
+
+    // Create preset chips if declared but not yet created
+    const presetFields = this.getAttribute("data-preset-filters");
+    if (presetFields && !this.querySelector('sherpa-button[slot="presets"]')) {
+      this.#initPresetChips(presetFields);
+    }
+
+    this.#populateAddMenu();
   }
 
   /** Check if any slotted filter chip has an active filter and update host attribute. */
@@ -356,23 +395,18 @@ export class SherpaFilterBar extends SherpaElement {
     for (const field of fieldList) {
       const col = this.#columns.find((c) => c.field === field);
       const filterType = this.#inferFilterType(col?.type);
-      // Auto-detect boolean from values when column type is generic
-      const isBool = filterType === "text" && this.#rows.length && this.#isBooleanValues(field);
-      const resolvedType = isBool ? "boolean" : filterType;
 
       const chip = document.createElement("sherpa-button");
       chip.setAttribute("data-type", "button-menu");
       chip.setAttribute("data-split", "");
       chip.setAttribute("data-filter-field", field);
-      chip.setAttribute("data-filter-type", resolvedType);
+      chip.setAttribute("data-filter-type", filterType);
       chip.setAttribute("slot", "presets");
       chip.dataset.label = col?.name || formatFieldName(field);
       this.appendChild(chip);
 
       // Populate menu based on filter type
-      if (this.#rows.length || filterType === "datetime-range") {
-        this.#populateFilterChip(chip);
-      }
+      this.#populateFilterChip(chip);
     }
   }
 
@@ -412,16 +446,13 @@ export class SherpaFilterBar extends SherpaElement {
     if (!col) return;
 
     const filterType = this.#inferFilterType(col.type);
-    // Auto-detect boolean from values when column type is generic
-    const isBool = filterType === "text" && this.#isBooleanValues(field);
-    const resolvedType = isBool ? "boolean" : filterType;
 
     // Create a new filter chip (in default slot — user filters zone)
     const chip = document.createElement("sherpa-button");
     chip.setAttribute("data-type", "button-menu");
     chip.setAttribute("data-split", "");
     chip.setAttribute("data-filter-field", field);
-    chip.setAttribute("data-filter-type", resolvedType);
+    chip.setAttribute("data-filter-type", filterType);
     chip.setAttribute("data-dismissable", "");
     chip.dataset.label = col.name || formatFieldName(field);
 
@@ -508,41 +539,16 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /**
-   * Set available columns and row data for chip menu population.
+   * Set available fields and optional row data for chip menu population.
+   * Writes columns to `data-available-fields` (triggers `#syncAvailableFields()`).
+   * When rows are supplied, unique values are extracted per field for chip menus.
    * @param {Array} columns — { field, name, type }
-   * @param {Array} [rows] — full dataset rows (for segment filtering + value extraction)
+   * @param {Array} [rows] — full dataset rows for unique value extraction
    */
   setAvailableColumns(columns, rows) {
-    this.#columns = Array.isArray(columns) ? columns : [];
-    this.#rows = Array.isArray(rows) ? rows : [];
-
-    for (const chip of this.#getFilterChips()) {
-      // ── data-filter-field chips ──
-      if (chip.hasAttribute("data-filter-field")) {
-        const field = chip.getAttribute("data-filter-field");
-        const col = this.#columns.find((c) => c.field === field);
-        // Update label when column metadata becomes available
-        if (col) {
-          chip.dataset.label = col.name || formatFieldName(col.field);
-        }
-        this.#populateFilterChip(chip);
-        continue;
-      }
-
-      // ── Sort / segment chips ──
-      this.#populateColumnsMenu(chip);
-    }
-
-    // If preset filters attribute is set but chips haven't been created yet, create them now
-    const presetFields = this.getAttribute("data-preset-filters");
-    if (
-      presetFields &&
-      !this.querySelector('sherpa-button[slot="presets"]')
-    ) {
-      this.#initPresetChips(presetFields);
-    }
-
-    this.#populateAddMenu();
+    if (!Array.isArray(columns) || !columns.length) return;
+    if (Array.isArray(rows)) this.#rows = rows;
+    this.setAttribute("data-available-fields", JSON.stringify(columns));
   }
 
   /** Remove filter chip for a specific field. */
@@ -616,7 +622,11 @@ export class SherpaFilterBar extends SherpaElement {
      Chip management helpers
      ══════════════════════════════════════════════════════════════ */
 
-  /** Extract unique values from rows for a given field. */
+  /**
+   * Extract unique values from stored row data for a given field.
+   * @param {string} field — column field name
+   * @returns {string[]} sorted unique values
+   */
   #extractUniqueValues(field) {
     const seen = new Set();
     const values = [];
@@ -630,16 +640,23 @@ export class SherpaFilterBar extends SherpaElement {
     return values.sort();
   }
 
-  /** Populate a filter chip's menu with unique values for its field. */
-  #populateChipMenu(chip, field) {
-    if (!field) return;
-    const values = this.#extractUniqueValues(field);
-    const items = values.map(v => ({ value: v, text: v }));
-    chip.setMenuItems?.(items, { selection: "checkbox", group: "values" });
+  /**
+   * Get unique values for a field from the best available source:
+   *   1. Declarative `values` array in the column definition
+   *   2. Extracted from `#rows` row data
+   * @param {string} field — column field name
+   * @returns {string[]}
+   */
+  #getValuesForField(field) {
+    const col = this.#columns.find((c) => c.field === field);
+    if (col?.values?.length) return col.values.map(String);
+    if (this.#rows.length) return this.#extractUniqueValues(field);
+    return [];
   }
 
   /**
    * Populate a data-filter-field chip based on its filter type.
+   * For text/number types, populates a checkbox menu of unique values.
    * Skips re-population when the menu already contains items, preventing
    * the destructive setMenuItems → replaceChildren cycle that
    * wipes checked state.
@@ -650,33 +667,26 @@ export class SherpaFilterBar extends SherpaElement {
     if (chip.menuElement?.querySelector("sherpa-menu-item")) return;
 
     const field = chip.getAttribute("data-filter-field");
-    let filterType = chip.getAttribute("data-filter-type") || "text";
-
-    // Auto-detect boolean fields from row values when type is still generic
-    if (filterType === "text" && field && this.#rows.length) {
-      if (this.#isBooleanValues(field)) {
-        filterType = "boolean";
-        chip.setAttribute("data-filter-type", "boolean");
-      }
-    }
+    const filterType = chip.getAttribute("data-filter-type") || "text";
 
     switch (filterType) {
       case "text":
-      case "number":
-        // Auto-populate from unique field values in the data
-        if (field && this.#rows.length) {
-          this.#populateChipMenu(chip, field);
+      case "number": {
+        const values = this.#getValuesForField(field);
+        if (values.length) {
+          const items = values.map((v) => ({ value: v, text: v }));
+          chip.setMenuItems?.(items, { selection: "checkbox", group: "values" });
         }
         break;
+      }
       case "datetime-range":
         // Auto-populate from TIME_RANGE_PRESETS
         this.#populateTimeframeMenu(chip);
         break;
       case "boolean":
-        // No menu — chip acts as a simple toggle. Store the truthy value
-        // so getFilters() knows what to report when the chip is active.
-        if (field && this.#rows.length) {
-          chip.dataset.filterBooleanValue = this.#getTruthyValue(field);
+        // No menu — chip acts as a simple toggle.
+        if (!chip.dataset.filterBooleanValue) {
+          chip.dataset.filterBooleanValue = "true";
         }
         break;
       case "number-range":
@@ -724,47 +734,6 @@ export class SherpaFilterBar extends SherpaElement {
     "datetime-range": "between",
     boolean: "equals",
   };
-
-  /** Sets of value-pairs that indicate a boolean field. */
-  static #BOOLEAN_VALUE_SETS = [
-    new Set(["true", "false"]),
-    new Set(["yes", "no"]),
-    new Set(["0", "1"]),
-    new Set(["on", "off"]),
-  ];
-
-  /**
-   * Check whether a field's unique values are boolean-like (e.g. true/false, yes/no).
-   * @param {string} field — column field name
-   * @returns {boolean}
-   */
-  #isBooleanValues(field) {
-    const unique = new Set();
-    for (const row of this.#rows) {
-      const v = row[field];
-      if (v != null) unique.add(String(v).toLowerCase());
-      if (unique.size > 2) return false;
-    }
-    if (unique.size === 0) return false;
-    return SherpaFilterBar.#BOOLEAN_VALUE_SETS.some(
-      (bs) => [...unique].every((v) => bs.has(v)),
-    );
-  }
-
-  /**
-   * Return the "truthy" value for a boolean field (e.g. "true", "yes", "1", "on").
-   * Preserves original casing from the data.
-   * @param {string} field
-   * @returns {string}
-   */
-  #getTruthyValue(field) {
-    const TRUTHY = new Set(["true", "yes", "1", "on"]);
-    for (const row of this.#rows) {
-      const v = row[field];
-      if (v != null && TRUTHY.has(String(v).toLowerCase())) return String(v);
-    }
-    return "true";
-  }
 
   /**
    * Return the effective operator for a chip, falling back to the default for its type.

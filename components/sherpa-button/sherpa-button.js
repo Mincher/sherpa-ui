@@ -356,6 +356,10 @@ export class SherpaButton extends SherpaElement {
     // Remove items stamped from a previous open to prevent accumulation
     menu.querySelectorAll("[data-from-ancestor-tpl]").forEach((el) => el.remove());
 
+    // "none" — skip ancestor template collection entirely;
+    // this button-menu uses only setMenuItems() content.
+    if (this.dataset.menuScope === "none") return;
+
     const scopeToShadow = this.dataset.menuScope === "shadow";
     let node = this.getRootNode()?.host ?? this.parentElement;
     while (node) {

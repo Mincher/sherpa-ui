@@ -235,20 +235,6 @@ export function ContentAttributesMixin(Base) {
       const result = await _dataProvider(config);
       this.removeAttribute("data-loading");
 
-      // Broadcast columns so any filter bar can self-populate menus.
-      if (result?.columns?.length) {
-        this.dispatchEvent(
-          new CustomEvent("columnsready", {
-            bubbles: true,
-            composed: true,
-            detail: {
-              columns: result.columns,
-              rows: result.rows || [],
-            },
-          }),
-        );
-      }
-
       return result;
     }
 
