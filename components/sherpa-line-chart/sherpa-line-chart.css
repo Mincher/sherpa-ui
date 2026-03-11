@@ -32,6 +32,8 @@
   gap: var(--sherpa-space-md, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
   container: sherpa-line-chart / inline-size;
 }
 
@@ -70,6 +72,8 @@
 .chart-body {
   display: flex;
   gap: var(--sherpa-space-xs, 8px);
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 /* ── Y-axis ──────────────────────────────────────────────────── */
@@ -93,6 +97,7 @@
 .chart-panel {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -101,7 +106,8 @@
 .chart-area {
   position: relative;
   width: 100%;
-  height: 234px;
+  flex: 1 1 0;
+  min-height: 80px;
   transition: opacity 0.2s ease;
 }
 

@@ -36,6 +36,8 @@
   gap: var(--sherpa-space-sm, 8px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
   container: sherpa-gauge-chart / inline-size;
 }
 
@@ -75,8 +77,10 @@
    ================================================================ */
 .gauge-wrap {
   position: relative;
-  width: 280px;
-  height: 162px;          /* slightly more than half to leave room for needle dots */
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 280 / 162;
+  flex-shrink: 1;
   overflow: hidden;
   transition: opacity 0.2s ease;
 }
@@ -87,8 +91,8 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 260px;
-  height: 260px;
+  width: 92.86%;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: conic-gradient(
     from 0.5turn,
@@ -105,8 +109,8 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 260px;
-  height: 260px;
+  width: 92.86%;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: var(
     --_fill-gradient,
@@ -129,8 +133,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 180px;
-  height: 180px;
+  width: 64.29%;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: var(--sherpa-surface-container-default, #ffffff);
 }
@@ -141,8 +145,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 180px;
-  height: 180px;
+  width: 64.29%;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: var(--sherpa-surface-container-default, #ffffff);
 }
@@ -165,7 +169,7 @@
   bottom: 0;
   left: 50%;
   width: 2px;
-  height: 100px;
+  height: 62%;
   margin-left: -1px;
   background: var(--sherpa-text-default-body, #3c3c43);
   border-radius: 1px;

@@ -14,12 +14,14 @@
  *   │   └── .menu-button (sherpa-button icon-menu)
  *   ├── sherpa-filter-bar
  *   └── .content
- *       └── <slot> (consumer metrics + viz children)
+ *       ├── .metrics-area
+ *       │   └── <slot name="metrics"> (sherpa-metric children)
+ *       └── <slot> (default — viz children)
  *
  * Attributes:
  *   data-variant        — "fit" | "resizable" | "fill"
  *   data-col-span       — "3" | "6" | "9" | "12"
- *   data-row-span       — "1"–"6"
+ *   data-row-span       — "1"–"6" (progressive content disclosure)
  *   data-editable       — Edit mode (resizable variant only)
  *   data-title          — Container heading text
  *   data-description    — Subtitle
@@ -236,6 +238,11 @@ sherpa-filter-bar {
   display: flex;
 }
 
+/* Hide filter bar at row-span 1 to reclaim vertical space */
+:host([data-row-span="1"]) sherpa-filter-bar {
+  display: none;
+}
+
 /* ==========================================================================
    Metrics Area
    ==========================================================================
@@ -250,8 +257,9 @@ sherpa-filter-bar {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
+  align-items: stretch;
   gap: var(--sherpa-space-sm, 12px);
-  flex: 0 0 var(--sherpa-space-3xl, 48px);
+  flex: 0 0 auto;
   overflow: hidden;
 }
 
@@ -263,6 +271,11 @@ sherpa-filter-bar {
 /* Hide individual empty metrics */
 ::slotted(sherpa-metric:not([data-label])) {
   display: none;
+}
+
+/* Metrics should never grow — size to content within the container */
+::slotted(sherpa-metric) {
+  flex: 0 0 auto;
 }
 
 /* ── Metric visibility by column span (resizable only) ──────────
@@ -304,8 +317,8 @@ sherpa-filter-bar {
   container-name: container-content;
 }
 
-/* Hide when no real content is slotted (template-only doesn't count) */
-.content:not([data-has-content]) {
+/* Hide when no content at all (no metrics, no default-slot children) */
+:host(:not([data-has-metrics]):not([data-has-label])) .content {
   display: none;
 }
 
@@ -323,43 +336,47 @@ sherpa-filter-bar {
 }
 
 /* ==========================================================================
-   Viz Visibility Rules (resizable variant)
-   ========================================================================== */
-
-/* Limit to first viz child by default */
-:host([data-variant="resizable"]) ::slotted([data-viz]:nth-of-type(n + 2)) {
-  display: none;
-}
-
-/* Show second viz child when first is hidden */
-:host([data-variant="resizable"]:has(> [data-viz]:first-of-type[hidden]))
-  ::slotted([data-viz]:nth-of-type(2)) {
-  display: flex;
-}
-
-/* 6+ column containers: show second viz child */
-:host([data-variant="resizable"]:not([data-col-span="3"]))
-  ::slotted([data-viz]:nth-of-type(2)) {
-  display: flex;
-}
-
-/* 3-column with 3+ rows: show second viz child */
-:host([data-variant="resizable"][data-col-span="3"]:not([data-row-span="1"]):not([data-row-span="2"]))
-  ::slotted([data-viz]:nth-of-type(2)) {
-  display: flex;
-}
-
-/* ==========================================================================
-   Content Visibility by Row Span
+   Content Visibility (resizable variant)
    ==========================================================================
-   Below 4 rows: show first two content elements only.
-   4+ rows: show all three content elements.
+   Progressive disclosure of default-slot children based on row-span.
+   Requires content children to precede metrics and templates in the
+   light DOM so that :nth-child() indices align with content order.
+
+   Row-span 1:   1st child only
+   Row-span 2–3: 1st + 2nd
+   Row-span 4–5: 1st + 2nd + 3rd
+   Row-span 6:   all children
+
+   Column-span overrides can promote visibility of additional children.
    ========================================================================== */
 
-:host([data-row-span="1"]) ::slotted([data-viz]:nth-of-type(n + 3)),
-:host([data-row-span="2"]) ::slotted([data-viz]:nth-of-type(n + 3)),
-:host([data-row-span="3"]) ::slotted([data-viz]:nth-of-type(n + 3)) {
+/* Base: hide 2nd+ content children in resizable containers */
+:host([data-variant="resizable"]) ::slotted(:nth-child(n+2):not([slot]):not(template)) {
   display: none;
+}
+
+/* Row-span 2+: show 2nd child */
+:host([data-variant="resizable"]:not([data-row-span="1"]))
+  ::slotted(:nth-child(2):not([slot]):not(template)) {
+  display: flex;
+}
+
+/* 6+ cols: also show 2nd child */
+:host([data-variant="resizable"]:not([data-col-span="3"]))
+  ::slotted(:nth-child(2):not([slot]):not(template)) {
+  display: flex;
+}
+
+/* Row-span 4+: show 3rd child */
+:host([data-variant="resizable"]:not([data-row-span="1"]):not([data-row-span="2"]):not([data-row-span="3"]))
+  ::slotted(:nth-child(3):not([slot]):not(template)) {
+  display: flex;
+}
+
+/* Row-span 6+: show all remaining children */
+:host([data-variant="resizable"]:not([data-row-span="1"]):not([data-row-span="2"]):not([data-row-span="3"]):not([data-row-span="4"]):not([data-row-span="5"]))
+  ::slotted(:not([slot]):not(template)) {
+  display: flex;
 }
 
 /* ==========================================================================

@@ -116,7 +116,6 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
     this.addEventListener("menu-close", this.#onMenuClose);
     this.addEventListener("menu-populate", this.#onMenuPopulate);
     this.addEventListener("toggle-filters", this.#onToggleFilters);
-
   }
 
   onDisconnect() {
@@ -176,7 +175,7 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
     tpl.setAttribute("data-menu", "");
     tpl.content.appendChild(src.content.cloneNode(true));
     this.#filterMenuTpl = tpl;
-    this.prepend(tpl);
+    this.append(tpl);
   }
 
   #onToggleFilters = () => {

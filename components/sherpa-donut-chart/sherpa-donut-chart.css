@@ -33,6 +33,8 @@
   gap: var(--sherpa-space-md, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
   container: sherpa-donut-chart / inline-size;
 }
 
@@ -71,9 +73,10 @@
    ================================================================ */
 .chart-area {
   position: relative;
-  width: 174px;
-  height: 174px;
-  flex-shrink: 0;
+  width: 100%;
+  max-width: 174px;
+  aspect-ratio: 1;
+  flex-shrink: 1;
   transition: opacity 0.2s ease;
 }
 

@@ -292,8 +292,10 @@ export class SherpaFilterBar extends SherpaElement {
       return;
     }
 
+    const chips = this.#getFilterChips();
+
     // Populate sort / segment chip menus
-    for (const chip of this.#getFilterChips()) {
+    for (const chip of chips) {
       if (chip.hasAttribute("data-filter-field")) {
         const field = chip.getAttribute("data-filter-field");
         const col = this.#columns.find((c) => c.field === field);

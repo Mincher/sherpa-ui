@@ -149,8 +149,8 @@
 :host([data-count]) .badge { display: inline-flex; }
 
 :host([data-active]) .badge {
-  background: var(--sherpa-surface-control-active-hover);
-  color: var(--sherpa-text-active-base);
+  background: var(--sherpa-text-active-base);
+  color: var(--sherpa-surface-control-active-default);
 }
 
 

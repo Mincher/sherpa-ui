@@ -12,7 +12,9 @@
                             open-external button, action divider, and
                             icon-menu menu button
     • sherpa-filter-bar   — Embedded filter bar with group/sort/clear
-    • .content            — Default slot for consumer content (metrics + viz children)
+    • .content            — Content wrapper (metrics area + default slot)
+      • .metrics-area      — Horizontal row of sherpa-metric children
+      • <slot>             — Default slot for viz children
 
   Metric visibility (resizable variant):
     Metrics without a data-label attribute are always hidden (CSS-driven).
@@ -99,11 +101,10 @@
     >
   </sherpa-filter-bar>
 
-  <div class="metrics-area">
-    <slot name="metrics"></slot>
-  </div>
-
   <div class="content">
+    <div class="metrics-area">
+      <slot name="metrics"></slot>
+    </div>
     <slot></slot>
   </div>
 
