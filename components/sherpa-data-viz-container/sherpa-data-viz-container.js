@@ -21,12 +21,11 @@
  * Menu items:
  *   The overflow menu is assembled from light-DOM `<template data-menu>`
  *   children found on the host. ResizeBehavior injects Width/Height
- *   resize items (gated by --_editable-display). Consumer view templates
+ *   resize items. Consumer view templates
  *   add action items (e.g. Export) via their own `<template data-menu>`.
  *
  * Resize (via ResizeBehavior mixin):
  *   Column stops: 3 → 6 → 9 → 12, row span: 1–6.
- *   Resize menu items are visible only when --_editable-display is set.
  *
  * Architecture — decoupled peer events:
  *   Container owns layout only. All data concerns are handled by the

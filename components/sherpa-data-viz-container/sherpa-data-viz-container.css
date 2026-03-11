@@ -47,9 +47,6 @@
   flex-direction: column;
   gap: var(--sherpa-space-sm, 12px);
 
-  /* Private — inherited through shadow DOM into menu items */
-  --_editable-display: none;
-
   background-color: var(--sherpa-surface-container-default);
   border: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-control-secondary-default);
@@ -242,10 +239,9 @@ sherpa-filter-bar {
 /* ==========================================================================
    Metrics Area
    ==========================================================================
-   Consumer-supplied sherpa-metric children slotted via the default slot.
-   The .metrics-area class provides horizontal flex layout for metrics.
-   Consumers may wrap their sherpa-metric elements in a container with
-   this class. Visibility is driven by the host's data-col-span attribute
+   Consumer-supplied sherpa-metric children assigned to slot="metrics".
+   Displays as a horizontal non-wrapping flex row.
+   Visibility is driven by the host's data-col-span attribute
    for resizable containers. Non-resizable variants (fit, fill) show all
    metrics that have data (data-label attribute).
    ========================================================================== */
@@ -255,12 +251,12 @@ sherpa-filter-bar {
   flex-direction: row;
   flex-wrap: nowrap;
   gap: var(--sherpa-space-sm, 12px);
-  flex-shrink: 0;
+  flex: 0 0 var(--sherpa-space-3xl, 48px);
   overflow: hidden;
 }
 
-/* Hide the area entirely when no metric has data */
-:host(:not(:has(sherpa-metric[data-label]))) .metrics-area {
+/* Hide the area when no metrics are slotted */
+:host(:not([data-has-metrics])) .metrics-area {
   display: none;
 }
 
@@ -354,11 +350,23 @@ sherpa-filter-bar {
 }
 
 /* ==========================================================================
+   Content Visibility by Row Span
+   ==========================================================================
+   Below 4 rows: show first two content elements only.
+   4+ rows: show all three content elements.
+   ========================================================================== */
+
+:host([data-row-span="1"]) ::slotted([data-viz]:nth-of-type(n + 3)),
+:host([data-row-span="2"]) ::slotted([data-viz]:nth-of-type(n + 3)),
+:host([data-row-span="3"]) ::slotted([data-viz]:nth-of-type(n + 3)) {
+  display: none;
+}
+
+/* ==========================================================================
    Edit Mode
    ========================================================================== */
 
 :host([data-variant="resizable"][data-editable]) {
   overflow: auto;
   resize: both;
-  --_editable-display: block;
 }

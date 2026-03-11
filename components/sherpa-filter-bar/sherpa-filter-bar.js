@@ -210,12 +210,8 @@ export class SherpaFilterBar extends SherpaElement {
         // Activate chip when any value is checked
         const values = chip.getSelectedValues?.() ?? [];
         chip.toggleAttribute("data-active", values.length > 0);
-        // Update badge count for multi-select
-        if (values.length > 1) {
-          chip.dataset.count = String(values.length);
-        } else {
-          delete chip.dataset.count;
-        }
+        // Update label and badge count based on selection count
+        this.#syncFilterChipLabel(chip, values.length);
         this.#syncActiveState();
         this.#emitFilterChange();
         return;
@@ -301,7 +297,10 @@ export class SherpaFilterBar extends SherpaElement {
       if (chip.hasAttribute("data-filter-field")) {
         const field = chip.getAttribute("data-filter-field");
         const col = this.#columns.find((c) => c.field === field);
-        if (col) chip.dataset.label = col.name || formatFieldName(col.field);
+        if (col) {
+          chip.dataset.label = col.name || formatFieldName(col.field);
+          chip.dataset.defaultLabel = chip.dataset.label;
+        }
         this.#populateFilterChip(chip);
         continue;
       }
@@ -335,6 +334,7 @@ export class SherpaFilterBar extends SherpaElement {
           // Declarative / preset chips — clear values but keep in DOM
           chip.clearSelection?.();
           delete chip.dataset.count;
+          chip.dataset.label = chip.dataset.defaultLabel || chip.dataset.label;
           chip.removeAttribute("data-active");
         }
       } else {
@@ -403,6 +403,7 @@ export class SherpaFilterBar extends SherpaElement {
       chip.setAttribute("data-filter-type", filterType);
       chip.setAttribute("slot", "presets");
       chip.dataset.label = col?.name || formatFieldName(field);
+      chip.dataset.defaultLabel = chip.dataset.label;
       this.appendChild(chip);
 
       // Populate menu based on filter type
@@ -455,6 +456,7 @@ export class SherpaFilterBar extends SherpaElement {
     chip.setAttribute("data-filter-type", filterType);
     chip.setAttribute("data-dismissable", "");
     chip.dataset.label = col.name || formatFieldName(field);
+    chip.dataset.defaultLabel = chip.dataset.label;
 
     // Insert in light DOM default slot
     this.appendChild(chip);
@@ -692,6 +694,28 @@ export class SherpaFilterBar extends SherpaElement {
       case "number-range":
         // Consumer must provide options — no auto-population
         break;
+    }
+  }
+
+  /**
+   * Update a filter chip's label and badge based on selection count.
+   * 1 selected  → label = selected item's text, no badge.
+   * >1 selected → label = default field name, badge = count.
+   * 0 selected  → label = default field name, no badge.
+   */
+  #syncFilterChipLabel(chip, count) {
+    const defaultLabel = chip.dataset.defaultLabel || chip.dataset.label;
+    if (count === 1) {
+      const menuEl = chip.menuElement ?? chip.querySelector("sherpa-menu");
+      const checked = menuEl?.querySelector("sherpa-menu-item[checked]");
+      chip.dataset.label = checked?.textContent?.trim() || defaultLabel;
+      delete chip.dataset.count;
+    } else if (count > 1) {
+      chip.dataset.label = defaultLabel;
+      chip.dataset.count = String(count);
+    } else {
+      chip.dataset.label = defaultLabel;
+      delete chip.dataset.count;
     }
   }
 

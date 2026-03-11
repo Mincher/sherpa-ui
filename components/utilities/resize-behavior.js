@@ -5,8 +5,7 @@
  * the `data-event` mechanism on `sherpa-menu-item` elements.
  *
  * On connect, the mixin injects a `<template data-menu>` into the
- * host's light DOM containing Width and Height menu groups. These items
- * are gated by `--_editable-display` (visible only in edit mode).
+ * host's light DOM containing Width and Height menu groups.
  * The button's composed-tree template collection picks them up
  * automatically when the overflow menu opens.
  *

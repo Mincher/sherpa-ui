@@ -31,7 +31,8 @@
     data-menu-button    — "true" — show menu button
 
   Slots:
-    (default) — Consumer content: sherpa-metric children followed by viz children
+    metrics   — sherpa-metric children (horizontal row layout)
+    (default) — Viz children (vertical column layout)
 
   Custom templates:
     To define a custom layout, add a new <template id="my-layout"> block
@@ -97,6 +98,10 @@
       >Clear filter</sherpa-button
     >
   </sherpa-filter-bar>
+
+  <div class="metrics-area">
+    <slot name="metrics"></slot>
+  </div>
 
   <div class="content">
     <slot></slot>
