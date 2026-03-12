@@ -34,6 +34,7 @@ import "../sherpa-input-search/sherpa-input-search.js";
 import "../sherpa-empty-state/sherpa-empty-state.js";
 import "../sherpa-pagination/sherpa-pagination.js";
 import "../sherpa-toolbar/sherpa-toolbar.js";
+import "../sherpa-filter-bar/sherpa-filter-bar.js";
 import {
   escapeHtml,
   formatValue,
@@ -148,6 +149,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #metadataSpanTpl = null; // Cached <template class="metadata-span-tpl">
   #expandedGroups = new Set(); // Group values currently expanded
   #columnConfig = {}; // Per-field config from consumer { field: { type?, statusMap? } }
+  #filterMenuTpl = null; // Injected light-DOM <template data-menu> for filter toggle
 
   /* ══════════════════════════════════════════════════════════════
      Lifecycle
@@ -156,6 +158,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   onRender() {
     // Mark as viz component for container CSS targeting
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+    if (!this.hasAttribute('data-show-toolbar')) this.toggleAttribute('data-show-toolbar', true);
+    if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);
 
     // Cache cloning templates
     this.#rowTpl = this.$("template.row-tpl");
@@ -251,15 +255,25 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // Set defaults
     if (!this.dataset.page) this.dataset.page = "1";
     if (!this.dataset.pageSize) this.dataset.pageSize = "25";
+
+    // Inject filter-menu template into light DOM for the overflow menu
+    this.#injectFilterMenu();
+    this.addEventListener("toggle-filters", this.#onToggleFilters);
+    this.addEventListener("menu-populate", this.#onMenuPopulate);
   }
 
   onDisconnect() {
     super.onDisconnect();
-    this.shadowRoot.highlights?.delete("data-grid-search");
-    this.shadowRoot.highlights?.delete("data-grid-col-search");
+    CSS.highlights?.delete("data-grid-search");
+    CSS.highlights?.delete("data-grid-col-search");
+    this.removeEventListener("toggle-filters", this.#onToggleFilters);
+    this.removeEventListener("menu-populate", this.#onMenuPopulate);
+    this.#filterMenuTpl?.remove();
+    this.#filterMenuTpl = null;
   }
 
   onAttributeChanged(name, oldValue, newValue) {
+    if (oldValue === newValue) return;
     if (
       [
         "data-sort-field",
@@ -268,6 +282,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         "data-segment-mode",
       ].includes(name)
     ) {
+      // Skip heavy re-render when the mixin is batch-setting attrs
+      // (the mixin calls #aggregate() → setData() afterward).
+      if (this._suppressAttrReaction) return;
       // Reset expanded groups when grouping field changes
       if (name === "data-segment-field") {
         this.#expandedGroups.clear();
@@ -340,14 +357,22 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       if (config.segmentBy) {
         this.setAttribute("data-segment-field", config.segmentBy);
         this.setAttribute("data-segment-mode", "on");
+      } else {
+        this.removeAttribute("data-segment-field");
+        this.removeAttribute("data-segment-mode");
       }
     }
 
-    try {
-      this.#data = await this.fetchContentData(config);
-    } catch (e) {
-      console.error("[SherpaDataGrid] Data error:", e);
-      this.#data = null;
+    // Pre-aggregated data from dataset cascade — skip fetchContentData
+    if (config?._fromCascade) {
+      this.#data = config;
+    } else {
+      try {
+        this.#data = await this.fetchContentData(config);
+      } catch (e) {
+        console.error("[SherpaDataGrid] Data error:", e);
+        this.#data = null;
+      }
     }
 
     this.removeAttribute("data-loading");
@@ -506,6 +531,11 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     headerHtml += `<th class="action-col" scope="col"></th>`;
 
     primaryRow.innerHTML = headerHtml;
+
+    // Set table min-width so columns fill when few, scroll when many
+    const totalW = columns.reduce((s, c) => s + columnWidth(c.type), 0) + 48 + 48;
+    const table = primaryRow.closest("table");
+    if (table) table.style.minWidth = `${totalW}px`;
 
     // Wire header click for sorting
     for (const cell of primaryRow.querySelectorAll(".header-cell")) {
@@ -730,7 +760,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     const groups = this.#groupRows(rows, groupField);
     const groupMode = this.getAttribute("data-segment-mode") || "collapsed";
-    const hasSearchTerm = !!this.#globalSearchTerm;
+    const hasSearchTerm = !!this.#globalSearchTerm || Object.keys(this.#columnFilters).length > 0;
     const totalCols = columns.length + 2; // +selection +action
 
     // If search was cleared, remove auto-expanded groups
@@ -1017,9 +1047,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
    */
 
   #applySearchHighlights() {
-    // Clear previous highlights (shadow-scoped, requires Chrome 130+)
-    this.shadowRoot.highlights?.delete("data-grid-search");
-    this.shadowRoot.highlights?.delete("data-grid-col-search");
+    // Clear previous highlights
+    CSS.highlights?.delete("data-grid-search");
+    CSS.highlights?.delete("data-grid-col-search");
 
     const body = this.$(".grid-body");
     if (!body) return;
@@ -1083,9 +1113,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
 
     if (globalRanges.length)
-      this.shadowRoot.highlights?.set("data-grid-search", new Highlight(...globalRanges));
+      CSS.highlights?.set("data-grid-search", new Highlight(...globalRanges));
     if (colRanges.length)
-      this.shadowRoot.highlights?.set("data-grid-col-search", new Highlight(...colRanges));
+      CSS.highlights?.set("data-grid-col-search", new Highlight(...colRanges));
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -1640,6 +1670,32 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.dataset.page = "1";
     if (this.#data) this.#render();
   }
+
+  /* ── Filter menu ─────────────────────────────────────────────────────── */
+
+  #injectFilterMenu() {
+    if (this.#filterMenuTpl) return;
+    const src = this.$("#filter-menu");
+    if (!src) return;
+    const tpl = document.createElement("template");
+    tpl.setAttribute("data-menu", "");
+    tpl.content.appendChild(src.content.cloneNode(true));
+    this.#filterMenuTpl = tpl;
+    this.append(tpl);
+  }
+
+  #onToggleFilters = () => {
+    this.toggleAttribute("data-filters");
+  };
+
+  #onMenuPopulate = (e) => {
+    const menu = e.detail?.menu;
+    if (!menu) return;
+    const item = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
+    if (item) {
+      item.toggleAttribute("checked", this.hasAttribute("data-filters"));
+    }
+  };
 }
 
 customElements.define("sherpa-data-grid", SherpaDataGrid);

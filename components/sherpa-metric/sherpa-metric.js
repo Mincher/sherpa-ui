@@ -114,7 +114,14 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   async setData(data) {
     await this.rendered;
 
-    // Ensure presentationType is set so DataService.transform() computes metric summary
+    // Pre-aggregated data from dataset cascade
+    if (data?._fromCascade) {
+      this.#contentData = data;
+      this.#initialize();
+      return;
+    }
+
+    // Legacy: content config from ContentAttributesMixin
     const config = { ...data, presentationType: "kpi-metric" };
     this.#contentData = await this.fetchContentData(config);
     this.#initialize();

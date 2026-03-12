@@ -105,6 +105,19 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   Filter Bar — hidden by default, shown via data-filters host attribute
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+sherpa-filter-bar {
+  display: none;
+  flex-shrink: 0;
+}
+
+:host([data-filters]) sherpa-filter-bar {
+  display: flex;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    Chart area — flex container for rows, axis, and legend
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -266,6 +279,10 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Legend
    ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-hide-legend]) .chart-legend {
+  display: none;
+}
 
 .chart-legend {
   display: flex;

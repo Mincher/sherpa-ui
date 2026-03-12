@@ -36,6 +36,9 @@ import {
   CONTENT_ATTRIBUTES,
 } from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import '../sherpa-button/sherpa-button.js';
+import '../sherpa-filter-bar/sherpa-filter-bar.js';
+import { formatFieldName } from '../utilities/format-utils.js';
 
 const DEFAULT_COLORS = [
   '#7b1ce6', // purple
@@ -62,6 +65,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       'data-title',
       'data-loading',
       'data-variant',
+      'data-segment-field',
+      'data-segment-mode',
+      'data-sort-field',
+      'data-sort-direction',
     ];
   }
 
@@ -77,11 +84,13 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   #legendEl;
   #seriesTpl;
   #pointTpl;
+  #filterMenuTpl = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+    if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);
 
     this.#titleEl     = this.$('.chart-title');
     this.#yLabels     = this.$$('.y-label');
@@ -99,8 +108,40 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     if (this.#data) this.#render();
   }
 
-  onAttributeChanged(name) {
+  onConnect() {
+    super.onConnect();
+    this.#injectFilterMenu();
+    this.addEventListener('toggle-filters', this.#onToggleFilters);
+    this.addEventListener('toggle-legend', this.#onToggleLegend);
+    this.addEventListener('menu-populate', this.#onMenuPopulate);
+  }
+
+  onDisconnect() {
+    super.onDisconnect();
+    this.removeEventListener('toggle-filters', this.#onToggleFilters);
+    this.removeEventListener('toggle-legend', this.#onToggleLegend);
+    this.removeEventListener('menu-populate', this.#onMenuPopulate);
+    this.#filterMenuTpl?.remove();
+    this.#filterMenuTpl = null;
+  }
+
+  onAttributeChanged(name, oldValue, newValue) {
+    if (oldValue === newValue) return;
     if (name === 'data-title') this.#syncTitle();
+    if (name === 'data-segment-field' || name === 'data-segment-mode') {
+      this.#syncTitle();
+      if (this._suppressAttrReaction) return;
+      // External attribute change — full re-aggregate needed
+      if (this.#contentData) this.reAggregate();
+    }
+    if (name === 'data-sort-field' || name === 'data-sort-direction') {
+      if (this._suppressAttrReaction) return;
+      // Local re-sort of existing data
+      if (this.#contentData) {
+        this.#transformContentData();
+        this.#render();
+      }
+    }
   }
 
   /* ── Public API ───────────────────────────────────────────────── */
@@ -121,9 +162,31 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       return;
     }
 
-    // Content config from ContentAttributesMixin
+    // Pre-aggregated data from dataset cascade
+    if (data?._fromCascade) {
+      this.#contentData = data;
+      this.#transformContentData();
+      this.#render();
+      return;
+    }
+
+    // Content config from ContentAttributesMixin (legacy)
+    const explicitSegmentBy =
+      data && Object.prototype.hasOwnProperty.call(data, "segmentBy");
     try {
       this.#contentData = await this.fetchContentData(data);
+
+      // Apply segmentBy from config
+      if (explicitSegmentBy) {
+        if (data.segmentBy) {
+          this.setAttribute("data-segment-field", data.segmentBy);
+          this.setAttribute("data-segment-mode", "on");
+        } else {
+          this.removeAttribute("data-segment-field");
+          this.removeAttribute("data-segment-mode");
+        }
+      }
+
       this.#transformContentData();
     } catch (e) {
       console.error('SherpaLineChart data error:', e);
@@ -135,10 +198,61 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: transform ───────────────────────────────────────── */
 
+  /* ── Segment helpers ───────────────────────────────────────── */
+
+  #getSegmentField() {
+    return this.getAttribute('data-segment-field') || null;
+  }
+
+  #isSegmentEnabled() {
+    const mode = this.getAttribute('data-segment-mode');
+    const field = this.#getSegmentField();
+    return mode !== 'off' && !!field;
+  }
+
+  /* ── Sort helpers ──────────────────────────────────────────── */
+
+  #getActiveSort() {
+    const dir = this.getAttribute('data-sort-direction') || null;
+    if (!dir || dir === 'off') return null;
+    return { dir };
+  }
+
+  #applyLocalSort(data) {
+    const activeSort = this.#getActiveSort();
+    if (!activeSort || !data) return data;
+
+    const labels = [...data.labels];
+    const series = data.series.map(s => ({ ...s, values: [...s.values] }));
+    if (!labels.length || !series.length) return data;
+
+    const indices = labels.map((_, i) => i);
+    const dir = activeSort.dir || 'asc';
+
+    // Sort by time — parse labels as dates
+    indices.sort((a, b) => {
+      const tA = new Date(labels[a]).getTime() || 0;
+      const tB = new Date(labels[b]).getTime() || 0;
+      const diff = tA - tB;
+      return dir === 'desc' ? -diff : diff;
+    });
+
+    return {
+      labels: indices.map(i => labels[i]),
+      series: series.map(s => ({
+        ...s,
+        values: indices.map(i => s.values[i]),
+      })),
+    };
+  }
+
   /**
    * Transform unified { columns, rows } into { labels, series } for line chart.
    * Uses the category column as X-axis labels, the value column for Y values,
    * and optionally the series column to split into multiple lines.
+   *
+   * When data-segment-field is active, uses the segment field as the series
+   * field, producing one line per unique segment value.
    */
   #transformContentData() {
     if (!this.#contentData) { this.#data = null; return; }
@@ -148,21 +262,25 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
     const labelField = columns[0]?.field;
     const valueField = columns[columns.length > 2 ? 2 : 1]?.field;
-    const seriesField = columns.length > 2 ? columns[1]?.field : null;
+
+    // Segment field overrides the implicit series column when active
+    const segmentField = this.#isSegmentEnabled()
+      ? this.#getSegmentField()
+      : (columns.length > 2 ? columns[1]?.field : null);
 
     if (!labelField || !valueField) { this.#data = null; return; }
 
-    if (seriesField) {
-      // Multi-series: group by series field
-      const seriesNames = [...new Set(rows.map(r => String(r[seriesField] ?? '')))];
+    if (segmentField && segmentField !== labelField && segmentField !== valueField) {
+      // Multi-series: group by segment/series field
+      const seriesNames = [...new Set(rows.map(r => String(r[segmentField] ?? '')))].sort();
       const labels = [...new Set(rows.map(r => String(r[labelField] ?? '')))];
 
       const series = seriesNames.map(name => {
         const values = labels.map(label => {
-          const row = rows.find(r =>
-            String(r[seriesField]) === name && String(r[labelField]) === label
+          const matching = rows.filter(r =>
+            String(r[segmentField]) === name && String(r[labelField]) === label
           );
-          return row ? Number(row[valueField]) || 0 : 0;
+          return matching.reduce((sum, r) => sum + (Number(r[valueField]) || 0), 0);
         });
         return { name, values };
       });
@@ -175,13 +293,31 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       const name = columns[1]?.name || columns[1]?.field || 'Value';
       this.#data = { labels, series: [{ name, values }] };
     }
+
+    // Apply local sort
+    this.#data = this.#applyLocalSort(this.#data);
+
+    // Limit to last 12 data points (mirrors sparkline max)
+    if (this.#data && this.#data.labels.length > 12) {
+      this.#data = {
+        labels: this.#data.labels.slice(-12),
+        series: this.#data.series.map(s => ({
+          ...s,
+          values: s.values.slice(-12),
+        })),
+      };
+    }
   }
 
   /* ── Private: sync ────────────────────────────────────────────── */
 
   #syncTitle() {
     if (this.#titleEl) {
-      this.#titleEl.textContent = this.dataset.title || '';
+      const base = this.dataset.title || '';
+      const segField = this.#isSegmentEnabled() ? this.#getSegmentField() : null;
+      this.#titleEl.textContent = segField
+        ? `${base} by ${formatFieldName(segField)}`
+        : base;
     }
   }
 
@@ -303,6 +439,40 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     if (Number.isInteger(val)) return String(val);
     return val.toFixed(1);
   }
+
+  /* ── Filter menu ─────────────────────────────────────────────────────── */
+
+  #injectFilterMenu() {
+    if (this.#filterMenuTpl) return;
+    const src = this.$('#filter-menu');
+    if (!src) return;
+    const tpl = document.createElement('template');
+    tpl.setAttribute('data-menu', '');
+    tpl.content.appendChild(src.content.cloneNode(true));
+    this.#filterMenuTpl = tpl;
+    this.append(tpl);
+  }
+
+  #onToggleFilters = () => {
+    this.toggleAttribute('data-filters');
+  };
+
+  #onToggleLegend = () => {
+    this.toggleAttribute('data-hide-legend');
+  };
+
+  #onMenuPopulate = (e) => {
+    const menu = e.detail?.menu;
+    if (!menu) return;
+    const filterItem = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
+    if (filterItem) {
+      filterItem.toggleAttribute('checked', this.hasAttribute('data-filters'));
+    }
+    const legendItem = menu.querySelector('sherpa-menu-item[data-event="toggle-legend"]');
+    if (legendItem) {
+      legendItem.toggleAttribute('checked', !this.hasAttribute('data-hide-legend'));
+    }
+  };
 }
 
 customElements.define('sherpa-line-chart', SherpaLineChart);

@@ -90,6 +90,20 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   Filter Bar — hidden by default, shown via data-filters
+   ═══════════════════════════════════════════════════════════════ */
+
+sherpa-filter-bar {
+  display: none;
+  flex-shrink: 0;
+}
+
+:host([data-filters]) sherpa-filter-bar {
+  display: flex;
+  padding-bottom: var(--sherpa-space-xs, 8px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    Table Container — single scroll surface
    ═══════════════════════════════════════════════════════════════ */
 

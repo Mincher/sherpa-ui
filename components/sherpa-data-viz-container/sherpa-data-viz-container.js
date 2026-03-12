@@ -52,8 +52,6 @@
  *   data-row-span       — Row span (1–6) — resizable variant only
  *   data-menu-open      — Menu state (set by menu-open/menu-close events)
  *   data-editable       — Edit mode (enables CSS resize grip)
- *   data-filters        — Present when filter bar is visible (toggled via menu)
- *   data-available-fields — JSON array forwarded to the embedded filter bar
  *   data-open-external  — "true" — show open-external button (CSS-driven)
  *   data-menu-button    — "true" — show menu button (CSS-driven)
  *   data-drag-handle    — "true" — show drag handle (CSS-driven)
@@ -62,7 +60,6 @@
  *   (default) — Consumer content: sherpa-metric children + viz children
  */
 
-import "../sherpa-filter-bar/sherpa-filter-bar.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { ResizeBehavior } from "../utilities/resize-behavior.js";
 
@@ -82,7 +79,6 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
       ...super.observedAttributes,
       "data-title",
       "data-description",
-      "data-available-fields",
     ];
   }
 
@@ -90,8 +86,6 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
   #titleEl = null;
   /** @type {HTMLElement|null} */
   #descriptionEl = null;
-  /** @type {HTMLTemplateElement|null} */
-  #filterMenuTpl = null;
 
   /* ── SherpaElement lifecycle hooks ───────────────────────────── */
 
@@ -99,39 +93,29 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
     if (!this.dataset.variant) this.dataset.variant = "fit";
     if (!this.dataset.openExternal) this.dataset.openExternal = "true";
     if (!this.dataset.menuButton) this.dataset.menuButton = "true";
-    if (!this.hasAttribute("data-filters")) this.toggleAttribute("data-filters", true);
 
     this.#titleEl = this.$(".header-title");
     this.#descriptionEl = this.$(".header-description");
 
     this.#syncTitle();
     this.#syncDescription();
-    this.#syncAvailableFields();
   }
 
   onConnect() {
     super.onConnect();
-    this.#injectFilterMenu();
     this.addEventListener("menu-open", this.#onMenuOpen);
     this.addEventListener("menu-close", this.#onMenuClose);
-    this.addEventListener("menu-populate", this.#onMenuPopulate);
-    this.addEventListener("toggle-filters", this.#onToggleFilters);
   }
 
   onDisconnect() {
     super.onDisconnect();
     this.removeEventListener("menu-open", this.#onMenuOpen);
     this.removeEventListener("menu-close", this.#onMenuClose);
-    this.removeEventListener("menu-populate", this.#onMenuPopulate);
-    this.removeEventListener("toggle-filters", this.#onToggleFilters);
-    this.#filterMenuTpl?.remove();
-    this.#filterMenuTpl = null;
   }
 
   onAttributeChanged(name) {
     if (name === "data-title") this.#syncTitle();
     if (name === "data-description") this.#syncDescription();
-    if (name === "data-available-fields") this.#syncAvailableFields();
   }
 
   /* ── Private sync ────────────────────────────────────────────── */
@@ -145,51 +129,12 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
       this.#descriptionEl.textContent = this.dataset.description || "";
   }
 
-  #syncAvailableFields() {
-    const bar = this.$("sherpa-filter-bar");
-    if (!bar) return;
-    const value = this.getAttribute("data-available-fields");
-    if (value != null) {
-      bar.setAttribute("data-available-fields", value);
-    } else {
-      bar.removeAttribute("data-available-fields");
-    }
-  }
-
   #onMenuOpen = () => {
     this.dataset.menuOpen = "true";
   };
 
   #onMenuClose = () => {
     delete this.dataset.menuOpen;
-  };
-
-  /* ── Filter menu ───────────────────────────────────────────── */
-
-  /** Prepend a <template data-menu> for the filter toggle into light DOM. */
-  #injectFilterMenu() {
-    if (this.#filterMenuTpl) return;
-    const src = this.$("#filter-menu");
-    if (!src) return;
-    const tpl = document.createElement("template");
-    tpl.setAttribute("data-menu", "");
-    tpl.content.appendChild(src.content.cloneNode(true));
-    this.#filterMenuTpl = tpl;
-    this.append(tpl);
-  }
-
-  #onToggleFilters = () => {
-    this.toggleAttribute("data-filters");
-  };
-
-  /** Sync checkbox state for the filter-toggle menu item after templates are stamped. */
-  #onMenuPopulate = (e) => {
-    const menu = e.detail?.menu;
-    if (!menu) return;
-    const item = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
-    if (item) {
-      item.toggleAttribute("checked", this.hasAttribute("data-filters"));
-    }
   };
 }
 

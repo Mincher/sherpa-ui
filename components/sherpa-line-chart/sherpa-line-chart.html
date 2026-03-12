@@ -19,7 +19,36 @@
 <template id="default">
   <div class="chart-header">
     <span class="chart-title"></span>
+    <sherpa-button
+      class="menu-button"
+      data-type="icon-menu"
+      data-variant="tertiary"
+      data-size="small"
+      data-icon-start="&#xf142;"
+      aria-label="Menu"
+      data-tooltip="Menu"
+      data-menu-position="bottom-end"
+      data-menu-scope="shadow"
+      data-keep-compact
+    ></sherpa-button>
   </div>
+
+  <sherpa-filter-bar data-embedded data-type="local">
+    <sherpa-button slot="group" data-type="button-menu" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none"
+      ></sherpa-button
+    >
+    <sherpa-button slot="sort" data-type="button-menu" data-split data-behavior="sort" data-sort-type="time" data-label="Sort" data-icon-start="&#xf0dc;" data-no-dropdown data-menu-scope="none"
+      ></sherpa-button
+    >
+    <sherpa-button
+      slot="actions"
+      data-variant="tertiary"
+      data-size="small"
+      data-action="clear"
+      >Clear filter</sherpa-button
+    >
+  </sherpa-filter-bar>
+
   <div class="chart-body">
     <div class="y-axis">
       <span class="y-label"></span>
@@ -43,4 +72,17 @@
   <!-- Cloning prototypes for data-driven repeats -->
   <template class="series-tpl"><div class="series"></div></template>
   <template class="point-tpl"><div class="point"></div></template>
+
+  <!-- Filter-menu — cloned into a light-DOM <template data-menu> on connect -->
+  <template id="filter-menu">
+    <sherpa-menu-item
+      data-selection="checkbox"
+      data-event="toggle-filters"
+    >Show / hide filters</sherpa-menu-item>
+    <sherpa-menu-item
+      data-selection="checkbox"
+      data-event="toggle-legend"
+      checked
+    >Show / hide legend</sherpa-menu-item>
+  </template>
 </template>

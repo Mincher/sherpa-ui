@@ -18,6 +18,7 @@ import {
 } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
+import "../sherpa-filter-bar/sherpa-filter-bar.js";
 import {
   escapeHtml,
   formatFieldName,
@@ -56,6 +57,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   #originalOrderBy = null;
   #originalSegmentBy = null;
   #tipEl = null;
+  #filterMenuTpl = null;
 
   // Attribute helpers for reading segment/sort state
   #getSegmentField() {
@@ -66,18 +68,13 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const field = this.#getSegmentField();
     return mode !== "off" && !!field;
   }
-  #getSortField() {
-    return this.getAttribute("data-sort-field") || null;
-  }
   #getSortDir() {
-    return this.getAttribute("data-sort-direction") || "asc";
+    return this.getAttribute("data-sort-direction") || null;
   }
   #getActiveSort() {
-    const field = this.#getSortField();
-    if (!field) return null;
     const dir = this.#getSortDir();
-    if (dir === "off") return null;
-    return { field, dir };
+    if (!dir || dir === "off") return null;
+    return { dir };
   }
 
   onConnect() {
@@ -85,6 +82,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     // Mark as viz component for container CSS targeting
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+    if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);
 
     // Initialize unique menu ID on first connection
     if (!this.#menuId) {
@@ -94,6 +92,12 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       this.#onResize(entries[0]),
     );
     this.#resizeObserver.observe(this);
+
+    // Inject filter-menu template into light DOM for the header menu
+    this.#injectFilterMenu();
+    this.addEventListener("toggle-filters", this.#onToggleFilters);
+    this.addEventListener("toggle-legend", this.#onToggleLegend);
+    this.addEventListener("menu-populate", this.#onMenuPopulate);
 
     // Tooltip element (nested sherpa-tooltip component)
     this.#tipEl = this.$("sherpa-tooltip");
@@ -131,17 +135,25 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       }
       case "data-segment-field":
       case "data-segment-mode":
+        if (this._suppressAttrReaction) break;
+        // External attribute change — full re-aggregate needed
+        if (this.#contentData) this.reAggregate();
+        break;
       case "data-sort-field":
       case "data-sort-direction":
+        if (this._suppressAttrReaction) break;
+        // Local re-sort of existing data
         this.#updateDisplayData();
         this.#updateChart();
         break;
-      case "data-loading":
       case "data-stacked":
       case "data-orientation":
         if (this.#data) {
           this.#render();
         }
+        break;
+      case "data-loading":
+        // CSS handles visual loading state — no re-render needed
         break;
       default:
         break;
@@ -151,6 +163,11 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   onDisconnect() {
     super.onDisconnect();
     this.#resizeObserver?.disconnect();
+    this.removeEventListener("toggle-filters", this.#onToggleFilters);
+    this.removeEventListener("toggle-legend", this.#onToggleLegend);
+    this.removeEventListener("menu-populate", this.#onMenuPopulate);
+    this.#filterMenuTpl?.remove();
+    this.#filterMenuTpl = null;
   }
 
   #contentData = null; // Standardised data from DataQueryHandler
@@ -213,6 +230,29 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       this.#originalSegmentBy = data.segmentBy;
     }
 
+    // Pre-aggregated data from dataset cascade
+    if (data?._fromCascade) {
+      this.#contentData = data;
+      this.#validateFieldsAgainstColumns();
+      this.#updateDisplayData();
+
+      this.removeAttribute("data-loading");
+      await this.rendered;
+
+      if (!this.dataset.orientation) {
+        const { width, height } = this.getBoundingClientRect();
+        if (width && height) {
+          this.dataset.orientation =
+            width / height > CONFIG.aspectThreshold ? "horizontal" : "vertical";
+        } else {
+          this.dataset.orientation = "horizontal";
+        }
+      }
+
+      this.#render();
+      return;
+    }
+
     try {
       // Use DataQueryHandler for standardised data preparation
       this.#contentData = await this.fetchContentData(data);
@@ -257,15 +297,10 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   #validateFieldsAgainstColumns() {
     const columns = this.#contentData?.columns || [];
     const segmentField = this.#getSegmentField();
-    const sortField = this.#getSortField();
 
     if (segmentField && !columns.some((col) => col.field === segmentField)) {
       this.removeAttribute("data-segment-field");
       this.removeAttribute("data-segment-mode");
-    }
-    if (sortField && !columns.some((col) => col.field === sortField)) {
-      this.removeAttribute("data-sort-field");
-      this.removeAttribute("data-sort-direction");
     }
   }
 
@@ -684,65 +719,15 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     if (!categories.length || !series.length) return data;
 
     const indices = categories.map((_, index) => index);
-    const field = activeSort.field;
     const dir = activeSort.dir || "asc";
 
-    const columns = this.#contentData?.columns || [];
-    const segmentField = this.#getSegmentField();
-    const categoryField = this.#resolveCategoryField(columns, segmentField);
-
-    // Check if sorting by a series (measure) field — use aggregated values directly
-    const matchedSeries = series.find((s) => s.field === field);
-
-    if (matchedSeries) {
-      // Sort by the aggregated series values (bar totals)
-      indices.sort((a, b) => {
-        const valA = Number(matchedSeries.values[a]) || 0;
-        const valB = Number(matchedSeries.values[b]) || 0;
-        const diff = valA - valB;
-        return dir === "desc" ? -diff : diff;
-      });
-    } else if (field === categoryField) {
-      // Sort alphabetically by category label
-      indices.sort((a, b) => {
-        const diff = String(categories[a]).localeCompare(String(categories[b]));
-        return dir === "desc" ? -diff : diff;
-      });
-    } else if (data.stacked && series.length > 1) {
-      // For stacked charts, sort by the total across all series
-      indices.sort((a, b) => {
-        const totalA = this.#getCategoryTotal(series, a);
-        const totalB = this.#getCategoryTotal(series, b);
-        const diff = totalA - totalB;
-        return dir === "desc" ? -diff : diff;
-      });
-    } else if (Array.isArray(this.#contentData?.rows)) {
-      // Fallback: sort by field values from source data
-      const getCategoryRow = (catLabel) => {
-        return this.#contentData.rows.find(
-          (row) => this.#formatLabel(row[categoryField]) === catLabel,
-        );
-      };
-
-      indices.sort((a, b) => {
-        const rowA = getCategoryRow(categories[a]);
-        const rowB = getCategoryRow(categories[b]);
-        const valA = rowA ? rowA[field] : null;
-        const valB = rowB ? rowB[field] : null;
-
-        const numA = Number(valA);
-        const numB = Number(valB);
-        let diff = 0;
-
-        if (!isNaN(numA) && !isNaN(numB)) {
-          diff = numA - numB;
-        } else {
-          diff = String(valA || "").localeCompare(String(valB || ""));
-        }
-
-        return dir === "desc" ? -diff : diff;
-      });
-    }
+    // Sort by total bar value across all series
+    indices.sort((a, b) => {
+      const totalA = this.#getCategoryTotal(series, a);
+      const totalB = this.#getCategoryTotal(series, b);
+      const diff = totalA - totalB;
+      return dir === "desc" ? -diff : diff;
+    });
 
     return {
       categories: indices.map((i) => categories[i]),
@@ -980,6 +965,40 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   getCategoryField() {
     return this.#getCategoryField();
   }
+
+  /* ── Filter menu ─────────────────────────────────────────────── */
+
+  #injectFilterMenu() {
+    if (this.#filterMenuTpl) return;
+    const src = this.$("#filter-menu");
+    if (!src) return;
+    const tpl = document.createElement("template");
+    tpl.setAttribute("data-menu", "");
+    tpl.content.appendChild(src.content.cloneNode(true));
+    this.#filterMenuTpl = tpl;
+    this.append(tpl);
+  }
+
+  #onToggleFilters = () => {
+    this.toggleAttribute("data-filters");
+  };
+
+  #onToggleLegend = () => {
+    this.toggleAttribute("data-hide-legend");
+  };
+
+  #onMenuPopulate = (e) => {
+    const menu = e.detail?.menu;
+    if (!menu) return;
+    const filterItem = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
+    if (filterItem) {
+      filterItem.toggleAttribute("checked", this.hasAttribute("data-filters"));
+    }
+    const legendItem = menu.querySelector('sherpa-menu-item[data-event="toggle-legend"]');
+    if (legendItem) {
+      legendItem.toggleAttribute("checked", !this.hasAttribute("data-hide-legend"));
+    }
+  };
 }
 
 customElements.define("sherpa-barchart", SherpaBarChart);

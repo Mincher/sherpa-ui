@@ -226,24 +226,6 @@
 }
 
 /* ==========================================================================
-   Filter Bar
-   ========================================================================== */
-
-sherpa-filter-bar {
-  display: none;
-  flex-shrink: 0;
-}
-
-:host([data-filters]) sherpa-filter-bar {
-  display: flex;
-}
-
-/* Hide filter bar at row-span 1 to reclaim vertical space */
-:host([data-row-span="1"]) sherpa-filter-bar {
-  display: none;
-}
-
-/* ==========================================================================
    Metrics Area
    ==========================================================================
    Consumer-supplied sherpa-metric children assigned to slot="metrics".

@@ -52,20 +52,49 @@
    ================================================================ */
 .chart-header {
   display: none;
+  align-items: center;
   width: 100%;
 }
 
 :host([data-title]) .chart-header {
-  display: block;
+  display: flex;
 }
 
 .chart-title {
+  flex: 1 1 0;
+  min-width: 0;
   font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--sherpa-text-default-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.menu-button {
+  display: none;
+  flex-shrink: 0;
+}
+
+:host([data-title]) .menu-button {
+  display: inline-flex;
+}
+
+/* ================================================================
+   Filter Bar — hidden by default, shown via data-filters
+   ================================================================ */
+
+sherpa-filter-bar {
+  display: none;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+:host([data-filters]) sherpa-filter-bar {
+  display: flex;
 }
 
 /* ================================================================
@@ -147,6 +176,11 @@
 /* ================================================================
    Legend
    ================================================================ */
+
+:host([data-hide-legend]) .chart-legend {
+  display: none;
+}
+
 .chart-legend {
   display: flex;
   flex-wrap: wrap;

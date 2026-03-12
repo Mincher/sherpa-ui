@@ -411,6 +411,11 @@
   display: none;
 }
 
+/* No-dropdown mode — hides the chevron dropdown, acts as a cycle-only button */
+:host([data-no-dropdown]) .menu-trigger {
+  display: none;
+}
+
 /* Active — button-menu */
 :host([data-type="button-menu"][data-active]) {
   --_surface:       var(--sherpa-surface-control-active-default);

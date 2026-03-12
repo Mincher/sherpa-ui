@@ -118,9 +118,9 @@ export class SherpaFilterBar extends SherpaElement {
         this.#pendingEmit = true;
         queueMicrotask(() => {
           this.#pendingEmit = false;
-          // Skip re-entrant filterchange when we are syncing sort chip
-          // state from a viz child's sortchange event.
-          if (this.#syncingSort) return;
+          // Skip re-entrant filterchange when we are syncing chip
+          // state from a viz child's sortchange event or mixin sync.
+          if (this.#syncingSort || this.hasAttribute("data-syncing")) return;
           this.#emitFilterChange();
         });
       }
@@ -179,7 +179,7 @@ export class SherpaFilterBar extends SherpaElement {
       if (chip?.hasAttribute?.("data-filter-field")) {
         chip.toggleAttribute("data-active", !chip.hasAttribute("data-active"));
         this.#syncActiveState();
-        this.#emitFilterChange();
+        // Observer picks up the data-active mutation and dispatches.
         return;
       }
       if (!chip?.hasAttribute?.("data-behavior")) return;
@@ -213,7 +213,7 @@ export class SherpaFilterBar extends SherpaElement {
         // Update label and badge count based on selection count
         this.#syncFilterChipLabel(chip, values.length);
         this.#syncActiveState();
-        this.#emitFilterChange();
+        // Observer picks up the data-active mutation and dispatches.
         return;
       }
 
@@ -227,14 +227,14 @@ export class SherpaFilterBar extends SherpaElement {
           const col = this.#columns.find(c => c.field === field);
           if (col) chip.dataset.label = col.name || formatFieldName(field);
           chip.toggleAttribute("data-active", true);
-          this.#emitFilterChange();
+          // Observer picks up the data-field/data-active mutations and dispatches.
         } else {
           // Deactivate
           delete chip.dataset.field;
           delete chip.dataset.mode;
           chip.dataset.label = behavior === "sort" ? "Sort" : "Group";
           chip.removeAttribute("data-active");
-          this.#emitFilterChange();
+          // Observer picks up the data-field/data-mode/data-active mutations and dispatches.
         }
       }
     });
@@ -723,7 +723,12 @@ export class SherpaFilterBar extends SherpaElement {
 
   /** Populate a sort/segment chip's menu with column choices. */
   #populateColumnsMenu(chip) {
-    const items = this.#columns.map(c => ({
+    // Segment (group) chips only show string-type columns
+    const isSegment = chip.getAttribute("data-behavior") === "segment";
+    const cols = isSegment
+      ? this.#columns.filter(c => this.#inferFilterType(c.type) === "text")
+      : this.#columns;
+    const items = cols.map(c => ({
       value: c.field,
       text: c.name || formatFieldName(c.field),
     }));
@@ -804,22 +809,61 @@ export class SherpaFilterBar extends SherpaElement {
     return { start, end: now };
   }
 
-  /** Cycle sort mode: off → asc → desc → off. */
+  /** Cycle sort mode: off → asc → desc → off (field), off → desc → asc → off (value/time). */
   #cycleSortMode(chip) {
     const current = chip.dataset.mode;
-    if (!current || current === "off") {
-      chip.dataset.mode = "asc";
-      chip.dataset.iconStart = "\uf062"; // fa-arrow-up
-      chip.toggleAttribute("data-active", true);
-    } else if (current === "asc") {
-      chip.dataset.mode = "desc";
-      chip.dataset.iconStart = "\uf063"; // fa-arrow-down
+    const sortType = chip.dataset.sortType;
+
+    if (sortType === "time") {
+      // Time sort: off → desc (Newest first) → asc (Oldest first) → off
+      if (!current || current === "off") {
+        chip.dataset.mode = "desc";
+        chip.dataset.iconStart = "\uf063"; // fa-arrow-down
+        chip.dataset.label = "Newest first";
+        chip.toggleAttribute("data-active", true);
+      } else if (current === "desc") {
+        chip.dataset.mode = "asc";
+        chip.dataset.iconStart = "\uf062"; // fa-arrow-up
+        chip.dataset.label = "Oldest first";
+      } else {
+        delete chip.dataset.mode;
+        chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
+        chip.dataset.label = "Sort";
+        chip.removeAttribute("data-active");
+      }
+    } else if (sortType === "value") {
+      // Value sort: off → desc (Largest first) → asc (Smallest first) → off
+      if (!current || current === "off") {
+        chip.dataset.mode = "desc";
+        chip.dataset.iconStart = "\uf063"; // fa-arrow-down
+        chip.dataset.label = "Largest first";
+        chip.toggleAttribute("data-active", true);
+      } else if (current === "desc") {
+        chip.dataset.mode = "asc";
+        chip.dataset.iconStart = "\uf062"; // fa-arrow-up
+        chip.dataset.label = "Smallest first";
+      } else {
+        delete chip.dataset.mode;
+        chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
+        chip.dataset.label = "Sort";
+        chip.removeAttribute("data-active");
+      }
     } else {
-      delete chip.dataset.mode;
-      chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
-      chip.removeAttribute("data-active");
+      // Field sort: off → asc → desc → off
+      if (!current || current === "off") {
+        chip.dataset.mode = "asc";
+        chip.dataset.iconStart = "\uf062"; // fa-arrow-up
+        chip.toggleAttribute("data-active", true);
+      } else if (current === "asc") {
+        chip.dataset.mode = "desc";
+        chip.dataset.iconStart = "\uf063"; // fa-arrow-down
+      } else {
+        delete chip.dataset.mode;
+        chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
+        chip.removeAttribute("data-active");
+      }
     }
-    this.#emitFilterChange();
+    // Observer picks up the data-mode/data-active mutations and dispatches.
   }
 
   /** Cycle segment mode: inactive → active → inactive. */
@@ -829,7 +873,7 @@ export class SherpaFilterBar extends SherpaElement {
     } else {
       chip.toggleAttribute("data-active", true);
     }
-    this.#emitFilterChange();
+    // Observer picks up the data-active mutation and dispatches.
   }
 
   /**

@@ -1,33 +1,43 @@
 /**
- * ContentAttributesMixin — Shared content configuration + data pipeline.
+ * ContentAttributesMixin — Shared content configuration + dataset cascade.
  *
  * Provides:
  *   • Auto-generated getters/setters for all content config attributes
  *   • getConfig() / setConfig() for serialising/restoring state
- *   • Query loading: data-query-src + data-query-key → load() → setData()
- *   • Auto-load on connect when query attributes are present
- *   • Pluggable data provider: setDataProvider(fn) at module level
- *   • fetchContentData(config) — calls the registered provider
- *   • Self-filtering: containerfilterchange + globalfilterchange listeners
+ *   • Dataset cascade: listens for `datasetfiltered` on nearest ancestor
+ *     with [data-dataset], locally aggregates, and calls this.setData()
+ *   • Pluggable date-field provider for metric sparklines
+ *   • Self-filtering: containerfilterchange sets host attributes,
+ *     segment/sort changes trigger local re-aggregate
  *   • View-switching header/menu helpers
  *
- * Data provider registration (module-level):
- *   import { setDataProvider, setDateFieldProvider } from './content-attributes-mixin.js';
- *   setDataProvider(async (config) => { ... });
- *   setDateFieldProvider((datasetName) => dateFieldName);
+ * Architecture:
+ *   App shell loads dataset once → applies global filters → dispatches
+ *   `datasetfiltered` on content-area element → mixin receives records →
+ *   aggregates locally from HTML attributes → calls this.setData().
+ *
+ *   Segment changes → full re-aggregate from raw records.
+ *   Sort changes → re-sort existing aggregated data.
+ *   No network fetches from viz components.
  */
 
-import { getInitialFilters } from "./global-filters.js";
-import { loadQueryBundle } from "./data-store.js";
+import { formatFieldName } from "./format-utils.js";
+import {
+  groupAndAggregate,
+  agg,
+  applyLocalFilters,
+  applySort,
+  buildColumns,
+  computeMetricSummary,
+} from "./aggregate.js";
 
-/* ── Pluggable data providers ───────────────────────────────────── */
+/* ── Pluggable providers ────────────────────────────────────────── */
 
-let _dataProvider = null;
 let _dateFieldProvider = null;
 
-export function setDataProvider(fn) {
-  _dataProvider = fn;
-}
+/** @deprecated No-op stub — dataset cascade replaces the data provider pattern. */
+export function setDataProvider() {}
+
 export function setDateFieldProvider(fn) {
   _dateFieldProvider = fn;
 }
@@ -46,8 +56,6 @@ export function getDateFieldProvider() {
  *   'bool'    → getAttribute() !== 'false'
  */
 const ATTR_SCHEMA = {
-  querySrc:           ["data-query-src",            "string",  ""],
-  queryKey:           ["data-query-key",            "string",  ""],
   name:               ["data-label",                "string",  ""],
   datasetName:        ["data-dataset",              "string",  ""],
   category:           ["data-category",             "string?", null],
@@ -57,6 +65,7 @@ const ATTR_SCHEMA = {
   measures:           ["data-measures",             "json",    []],
   orderBy:            ["data-order-by",             "json",    []],
   segmentField:       ["data-segment-field",        "string?", null],
+  dateGroupBy:        ["data-date-group-by",        "string?", null],
   showStatus:         ["data-show-status",          "bool",    true],
   unit:               ["data-unit",                 "string?", ""],
   sortField:          ["data-sort-field",           "string?", null],
@@ -161,6 +170,14 @@ function makeSetter(attr, type) {
   }
 }
 
+/* ── Measure normalisation ──────────────────────────────────────── */
+
+function normalizeMeasures(config) {
+  if (Array.isArray(config.measures) && config.measures.length) return config.measures;
+  if (config.valueField) return [{ field: config.valueField, agg: config.agg || 'sum' }];
+  return [];
+}
+
 /**
  * Mixin factory: adds content attribute support to a component class.
  *
@@ -189,6 +206,12 @@ export function ContentAttributesMixin(Base) {
       return this;
     }
 
+    /** @deprecated Stub for legacy callers — returns config as-is. */
+    async fetchContentData(config) {
+      console.warn('[ContentAttributesMixin] fetchContentData() is deprecated. Use dataset cascade instead.');
+      return config || null;
+    }
+
     /* ── Config serialisation ───────────────────────────────── */
 
     getConfig() {
@@ -205,7 +228,6 @@ export function ContentAttributesMixin(Base) {
 
     setConfig(config) {
       for (const [prop, [attr, type]] of Object.entries(ATTR_SCHEMA)) {
-        // Check both canonical and legacy alias names
         const val =
           config[prop] ??
           (prop === "datasetName" ? config.dataset : undefined) ??
@@ -220,22 +242,321 @@ export function ContentAttributesMixin(Base) {
       return this;
     }
 
-    /* ── Data Pipeline ──────────────────────────────────────── */
+    /* ── Dataset Cascade ────────────────────────────────────── */
 
-    async fetchContentData(config) {
-      if (!config) return null;
-      if (!_dataProvider) {
-        console.warn(
-          "[ContentAttributes] No data provider registered. " +
-            "Call setDataProvider(fn) at app boot.",
-        );
-        return null;
+    #records = null;
+    #fields = [];
+    #datasetAncestor = null;
+    #datasetFilteredHandler = null;
+
+    /**
+     * Aggregate raw records using host attribute config and call setData().
+     * This is the single path from records → rendered component.
+     */
+    #aggregate() {
+      if (!this.#records || typeof this.setData !== "function") return;
+
+      const isMetric = this.presentationType === "kpi-metric" ||
+        this.tagName.toLowerCase() === "sherpa-metric";
+      const isGrid = this.presentationType === "data-grid" ||
+        this.tagName.toLowerCase() === "sherpa-data-grid" ||
+        Array.isArray(this.fields);
+
+      // Apply component-level preset filters (e.g. metrics with data-filters)
+      const presetFilters = this.filters;
+      let records = presetFilters.length
+        ? applyLocalFilters(this.#records, presetFilters)
+        : this.#records;
+
+      // ── Data Grid: pass raw records (grid does its own filter/sort/group) ──
+      if (isGrid) {
+        const fieldNames = Array.isArray(this.fields) && this.fields.length
+          ? this.fields
+          : this.#fields.map((f) => f.name);
+        const columns = buildColumns(this.#fields, fieldNames);
+
+        // Sort
+        let rows = [...records];
+        if (this.orderBy?.length) {
+          rows = applySort(rows, this.orderBy);
+        }
+        // Limit
+        if (this.limit && rows.length > this.limit) {
+          rows = rows.slice(0, this.limit);
+        }
+
+        const displayName = this.name || formatFieldName(this.datasetName || '');
+        this.setData({
+          _fromCascade: true,
+          name: displayName,
+          columns,
+          allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
+          rows,
+          summary: null,
+          config: { unit: null, showStatus: false, presentationType: this.presentationType || 'data-grid' },
+          metadata: {
+            dataset: this.datasetName,
+            category: this.category || null,
+            measures: [],
+            dimensions: [],
+            recordCount: records.length,
+            timeRange: null,
+            orderBy: this.orderBy || [],
+            limit: this.limit || null,
+            filters: presetFilters,
+            fields: Array.isArray(this.fields) ? this.fields : undefined,
+          },
+        });
+        return;
       }
-      this.setAttribute("data-loading", "");
-      const result = await _dataProvider(config);
-      this.removeAttribute("data-loading");
 
-      return result;
+      // ── Metric: count records, compute sparkline ──
+      if (isMetric) {
+        const dateField = _dateFieldProvider
+          ? _dateFieldProvider(this.datasetName)
+          : null;
+        const summary = computeMetricSummary(records, [], dateField, presetFilters);
+        const displayName = this.name || formatFieldName(this.datasetName || '');
+
+        // Resolve unit from field metadata
+        const measures = normalizeMeasures(this);
+        let unit = this.unit || null;
+        if (!unit && measures.length) {
+          const fm = this.#fields.find((f) => f.name === measures[0].field);
+          if (fm?.type === 'currency') unit = 'USD';
+          else if (fm?.type === 'percent') unit = '%';
+        }
+
+        this.setData({
+          _fromCascade: true,
+          name: displayName,
+          columns: [],
+          allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
+          rows: [],
+          summary,
+          config: { unit, showStatus: this.showStatus, presentationType: 'kpi-metric' },
+          metadata: {
+            dataset: this.datasetName,
+            measures,
+            dimensions: [],
+            recordCount: records.length,
+            timeRange: null,
+            orderBy: [],
+            limit: null,
+            filters: presetFilters,
+          },
+        });
+        return;
+      }
+
+      // ── Charts: group, aggregate, sort ──
+      const measures = normalizeMeasures(this);
+      if (!measures.length) {
+        // Default to count when no value field specified
+        measures.push({ field: '_count', agg: 'count' });
+      }
+
+      const groupByFields = [];
+      if (this.category) groupByFields.push(this.category);
+      if (this.series) groupByFields.push(this.series);
+
+      // Segment field adds a grouping dimension
+      const segmentField = this.segmentField;
+      if (segmentField && !groupByFields.includes(segmentField)) {
+        groupByFields.push(segmentField);
+      }
+
+      // Date grouping map
+      const dateGroupMap = this.dateGroupBy && this.category
+        ? { [this.category]: this.dateGroupBy }
+        : undefined;
+
+      // Group & aggregate
+      let rows;
+      if (groupByFields.length) {
+        rows = groupAndAggregate(records, groupByFields, measures, dateGroupMap);
+      } else {
+        const row = {};
+        for (const m of measures) {
+          row[m.field] = agg(records.map((r) => r[m.field]), m.agg);
+        }
+        rows = [row];
+      }
+
+      // Sort
+      if (this.orderBy?.length) {
+        rows = applySort(rows, this.orderBy);
+      }
+
+      // Limit
+      if (this.limit && rows.length > this.limit) {
+        rows = rows.slice(0, this.limit);
+      }
+
+      // Build columns
+      const visibleFields = [...groupByFields, ...measures.map((m) => m.field)];
+      const columns = buildColumns(this.#fields, visibleFields);
+
+      const displayName = this.name || formatFieldName(this.datasetName || '');
+
+      // Resolve unit
+      let unit = this.unit || null;
+      if (!unit && measures.length) {
+        const fm = this.#fields.find((f) => f.name === measures[0].field);
+        if (fm?.type === 'currency') unit = 'USD';
+        else if (fm?.type === 'percent') unit = '%';
+      }
+
+      this.setData({
+        _fromCascade: true,
+        name: displayName,
+        columns,
+        allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
+        rows,
+        summary: null,
+        config: {
+          unit,
+          showStatus: this.showStatus,
+          presentationType: this.presentationType,
+        },
+        metadata: {
+          dataset: this.datasetName,
+          category: this.category || null,
+          series: this.series || null,
+          value: measures[0]?.field || null,
+          agg: measures[0]?.agg || 'sum',
+          measures,
+          dimensions: groupByFields,
+          valueField: measures[0]?.field || null,
+          categoryField: this.category || null,
+          primaryField: this.category || null,
+          factTable: null,
+          timeRange: null,
+          orderBy: this.orderBy || [],
+          segmentBy: segmentField || null,
+          limit: this.limit || null,
+          filters: presetFilters,
+          recordCount: records.length,
+        },
+      });
+    }
+
+    /**
+     * Handle incoming datasetfiltered event from ancestor.
+     */
+    #onDatasetFiltered(e) {
+      const { records, fields } = e.detail || {};
+      if (!Array.isArray(records)) return;
+
+      this.#records = records;
+      this.#fields = Array.isArray(fields) ? fields : [];
+
+      // Push field metadata to local filter bar
+      this.#syncFilterBarFields();
+
+      // Aggregate and render
+      this.#aggregate();
+
+      // Sync filter bar chip state
+      this.#syncFilterBarState();
+    }
+
+    /**
+     * Sync the embedded filter bar's available-fields from dataset fields.
+     */
+    #syncFilterBarFields() {
+      const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
+      if (!bar || !this.#fields.length) return;
+
+      const fields = this.#fields.map((f) => ({
+        field: f.name,
+        name: f.label || formatFieldName(f.name),
+        type: f.type || "string",
+      }));
+      bar.setAttribute("data-available-fields", JSON.stringify(fields));
+    }
+
+    /**
+     * Sync the embedded filter bar's segment and sort chips to match
+     * the host's current data-segment-field / data-sort-field attributes.
+     */
+    #syncFilterBarState() {
+      const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
+      if (!bar) return;
+
+      // Build a field→displayName map from column metadata
+      const fieldNames = new Map();
+      try {
+        const raw = bar.getAttribute("data-available-fields");
+        if (raw) {
+          for (const col of JSON.parse(raw)) {
+            fieldNames.set(col.field, col.name || col.field);
+          }
+        }
+      } catch { /* ignore malformed JSON */ }
+      const displayName = (f) => fieldNames.get(f) || formatFieldName(f);
+
+      bar.dataset.syncing = "";
+
+      // ── Segment chip ──
+      const segChip = bar.querySelector(
+        'sherpa-button[data-behavior="segment"]',
+      );
+      if (segChip) {
+        const field = this.getAttribute("data-segment-field");
+        const mode = this.getAttribute("data-segment-mode");
+        if (field && mode !== "off") {
+          segChip.dataset.field = field;
+          segChip.dataset.label = displayName(field);
+          segChip.toggleAttribute("data-active", true);
+        } else {
+          delete segChip.dataset.field;
+          segChip.dataset.label = "Group";
+          segChip.removeAttribute("data-active");
+        }
+      }
+
+      // ── Sort chip ──
+      const sortChip = bar.querySelector(
+        'sherpa-button[data-behavior="sort"]',
+      );
+      if (sortChip) {
+        const sortType = sortChip.dataset.sortType;
+        const dir = this.getAttribute("data-sort-direction");
+
+        if (sortType === "time" || sortType === "value") {
+          const labels = sortType === "time"
+            ? { desc: "Newest first", asc: "Oldest first" }
+            : { desc: "Largest first", asc: "Smallest first" };
+          if (dir && dir !== "off") {
+            sortChip.dataset.mode = dir;
+            sortChip.dataset.label = labels[dir] || labels.desc;
+            sortChip.dataset.iconStart =
+              dir === "desc" ? "\uf063" : "\uf062";
+            sortChip.toggleAttribute("data-active", true);
+          } else {
+            delete sortChip.dataset.mode;
+            sortChip.dataset.label = "Sort";
+            sortChip.dataset.iconStart = "\uf0dc";
+            sortChip.removeAttribute("data-active");
+          }
+        } else {
+          const field = this.getAttribute("data-sort-field");
+          if (field) {
+            sortChip.dataset.field = field;
+            sortChip.dataset.label = displayName(field);
+            sortChip.dataset.mode = dir || "asc";
+            sortChip.toggleAttribute("data-active", true);
+          } else {
+            delete sortChip.dataset.field;
+            delete sortChip.dataset.mode;
+            sortChip.dataset.label = "Sort";
+            sortChip.removeAttribute("data-active");
+          }
+        }
+      }
+
+      setTimeout(() => { delete bar.dataset.syncing; }, 0);
     }
 
     /* ── View-switching ─────────────────────────────────────── */
@@ -275,7 +596,6 @@ export function ContentAttributesMixin(Base) {
     configureHeader({ title = "", viewOptions = [] } = {}) {
       const titleEl = this.$(".header-title");
 
-      // Show/hide the entire header row via host attribute (CSS handles display)
       const showHeader =
         this.getAttribute("data-show-header") !== "false";
       if (!showHeader) {
@@ -284,10 +604,8 @@ export function ContentAttributesMixin(Base) {
         this.removeAttribute("data-show-header");
       }
 
-      // Set title text directly on the native element
       if (titleEl) titleEl.textContent = title || "";
 
-      // Show/hide menu button via host attribute (CSS handles display)
       const showViewMenu =
         this.getAttribute("data-show-view-menu") !== "false";
       const shouldShowMenu = showViewMenu;
@@ -380,30 +698,19 @@ export function ContentAttributesMixin(Base) {
       );
     }
 
-    /* ── Self-filtering ─────────────────────────────────────── */
+    /* ── Container filter handling ───────────────────────────── */
 
     #containerFilterHandler = null;
-    #globalFilterHandler = null;
     #scopeEl = null;
 
     #wireFilterListeners() {
-      // Listen on parent element for containerfilterchange (no tag-name coupling).
-      // The filter-bar dispatches with bubbles:true, so it reaches any ancestor.
-      this.#scopeEl = this.parentElement;
+      this.#scopeEl = this;
 
-      if (this.#scopeEl) {
-        this.#containerFilterHandler = (e) =>
-          this.#onContainerFilter(e);
-        this.#scopeEl.addEventListener(
-          "containerfilterchange",
-          this.#containerFilterHandler,
-        );
-      }
-
-      this.#globalFilterHandler = (e) => this.#onGlobalFilter(e);
-      document.addEventListener(
-        "globalfilterchange",
-        this.#globalFilterHandler,
+      this.#containerFilterHandler = (e) =>
+        this.#onContainerFilter(e);
+      this.#scopeEl.addEventListener(
+        "containerfilterchange",
+        this.#containerFilterHandler,
       );
     }
 
@@ -414,39 +721,39 @@ export function ContentAttributesMixin(Base) {
           this.#containerFilterHandler,
         );
       }
-      if (this.#globalFilterHandler) {
-        document.removeEventListener(
-          "globalfilterchange",
-          this.#globalFilterHandler,
-        );
-      }
       this.#containerFilterHandler = null;
-      this.#globalFilterHandler = null;
       this.#scopeEl = null;
     }
 
+    /**
+     * Handle local filter bar changes (sort/segment only).
+     * Value filters are not used — global filter bar handles all filtering.
+     *
+     * Sets a guard flag (_suppressAttrReaction) while batch-updating
+     * host attributes so that each chart's onAttributeChanged skips
+     * redundant heavy processing.  The single #aggregate() call at the
+     * end is the authoritative render path.
+     */
     #onContainerFilter(e) {
       const filters = e.detail?.filters || [];
       let sortFilter = null;
       let segmentFilter = null;
-      const valueFilters = [];
 
       for (const f of filters) {
-        if (f.type === "sort") {
-          sortFilter = f;
-          continue;
-        }
-        if (f.type === "segment") {
-          segmentFilter = f;
-          continue;
-        }
-        // New API types (text, number, number-range, datetime-range)
-        // and legacy type ("filter") — all go to valueFilters
-        valueFilters.push(f);
+        if (f.type === "sort") { sortFilter = f; continue; }
+        if (f.type === "segment") { segmentFilter = f; continue; }
       }
 
+      // Suppress chart onAttributeChanged reactions while we batch-set
+      // multiple attributes. Charts check this flag and skip heavy
+      // work; the mixin handles the single authoritative re-aggregate.
+      this._suppressAttrReaction = true;
+
+      // Sort attrs
       if (sortFilter) {
-        this.setAttribute("data-sort-field", sortFilter.field);
+        if (sortFilter.field) {
+          this.setAttribute("data-sort-field", sortFilter.field);
+        }
         this.setAttribute(
           "data-sort-direction",
           sortFilter.mode || "asc",
@@ -456,6 +763,7 @@ export function ContentAttributesMixin(Base) {
         this.removeAttribute("data-sort-direction");
       }
 
+      // Segment attrs
       if (segmentFilter) {
         this.setAttribute(
           "data-segment-field",
@@ -470,30 +778,11 @@ export function ContentAttributesMixin(Base) {
         this.removeAttribute("data-segment-mode");
       }
 
-      this.#reQueryWithFilters(valueFilters);
-    }
+      this._suppressAttrReaction = false;
 
-    #onGlobalFilter(e) {
-      const filters = e.detail?.filters || [];
-      // Pass all filter entries through to the data pipeline.
-      // New API entries are self-describing: { field, type, operator, value, values, range }
-      // Legacy entries may include { type: "timeframe", rangeKey, range }
-      this.#reQueryWithFilters(filters);
-    }
-
-    #reQueryWithFilters(additionalFilters) {
-      const config =
-        typeof this.getConfig === "function"
-          ? this.getConfig()
-          : null;
-      if (!config || typeof this.setData !== "function") return;
-      const mergedFilters = [
-        ...(config.filters || []),
-        ...additionalFilters,
-      ];
-      const segmentBy =
-        this.getAttribute("data-segment-field") || undefined;
-      this.setData({ ...config, filters: mergedFilters, segmentBy });
+      // Single authoritative re-aggregate + render.
+      this.#aggregate();
+      this.#syncFilterBarState();
     }
 
     /* ── Lifecycle ──────────────────────────────────────────── */
@@ -501,94 +790,66 @@ export function ContentAttributesMixin(Base) {
     onConnect() {
       super.onConnect?.();
       this.#wireFilterListeners();
-      if (this.querySrc && this.queryKey) {
-        this.load();
-      }
+      this.#wireDatasetListener();
     }
 
     onDisconnect() {
       super.onDisconnect?.();
       this.#unwireFilterListeners();
+      this.#unwireDatasetListener();
     }
 
-    /* ── Query loading ──────────────────────────────────────── */
-
-    async load(initialFilters) {
-      if (initialFilters === undefined) {
-        initialFilters = getInitialFilters();
+    /**
+     * Find nearest ancestor with [data-dataset] and listen for
+     * the datasetfiltered event. If the ancestor already has data
+     * cached (._filtered), use it immediately.
+     */
+    #wireDatasetListener() {
+      // Walk up from host to find nearest [data-dataset] content area
+      let el = this.closest("[data-dataset]");
+      if (!el) {
+        // Also check outside shadow roots
+        let root = this.getRootNode();
+        while (root && root !== document) {
+          const host = root.host;
+          if (host) {
+            el = host.closest("[data-dataset]");
+            if (el) break;
+          }
+          root = host?.getRootNode();
+        }
       }
-      const src = this.querySrc;
-      const key = this.queryKey;
-      if (!src || !key) return;
+      if (!el) return;
 
-      try {
-        const bundle = await loadQueryBundle(src);
-        const query = bundle[key];
-        if (!query) {
-          console.warn(
-            `[ContentAttributes] Key "${key}" not found in ${src}`,
-          );
-          return;
-        }
+      this.#datasetAncestor = el;
+      this.#datasetFilteredHandler = (e) => this.#onDatasetFiltered(e);
+      el.addEventListener("datasetfiltered", this.#datasetFilteredHandler);
 
-        const config = { ...query };
+      // If dataset is already loaded, use cached data immediately
+      if (el._filtered) {
+        this.#onDatasetFiltered({
+          detail: { records: el._filtered, fields: el._fields || [] },
+        });
+      }
+    }
 
-        // Display attributes from the element (always override)
-        config.name = this.name || query.name || "";
-        config.queryKey = key;
-        if (this.hasAttribute("data-show-status"))
-          config.showStatus = this.showStatus;
-        if (this.hasAttribute("data-unit")) config.unit = this.unit;
-        if (this.hasAttribute("data-visible"))
-          config.visible = this.visible;
-
-        // Element-level query overrides
-        if (this.hasAttribute("data-dataset"))
-          config.dataset = this.datasetName;
-        if (this.hasAttribute("data-category"))
-          config.category = this.category;
-        if (this.hasAttribute("data-series"))
-          config.series = this.series;
-        if (this.hasAttribute("data-value-field"))
-          config.value = this.valueField;
-        if (this.hasAttribute("data-agg")) config.agg = this.agg;
-        if (this.hasAttribute("data-filters"))
-          config.filters = this.filters;
-        if (this.hasAttribute("data-order-by"))
-          config.orderBy = this.orderBy;
-        if (this.hasAttribute("data-limit"))
-          config.limit = this.limit;
-        if (this.hasAttribute("data-measures"))
-          config.measures = this.measures;
-
-        // Normalize values → measures
-        const attrConfig = { ...config };
-        if (
-          Array.isArray(config.values) &&
-          config.values.length &&
-          !config.measures?.length
-        ) {
-          attrConfig.measures = config.values;
-        }
-        // Merge pre-seeded global filters
-        if (initialFilters.length) {
-          config.filters = [
-            ...(config.filters || []),
-            ...initialFilters,
-          ];
-        }
-
-        this.setConfig(attrConfig);
-
-        if (typeof this.setData === "function") {
-          await this.setData(config);
-        }
-      } catch (e) {
-        console.error(
-          `[ContentAttributes] Failed to load ${src}#${key}:`,
-          e,
+    #unwireDatasetListener() {
+      if (this.#datasetAncestor && this.#datasetFilteredHandler) {
+        this.#datasetAncestor.removeEventListener(
+          "datasetfiltered",
+          this.#datasetFilteredHandler,
         );
       }
+      this.#datasetAncestor = null;
+      this.#datasetFilteredHandler = null;
+    }
+
+    /**
+     * Re-aggregate from raw records. Called when segment changes.
+     * Public so components can force a re-aggregate if needed.
+     */
+    reAggregate() {
+      this.#aggregate();
     }
   };
 
@@ -597,14 +858,12 @@ export function ContentAttributesMixin(Base) {
   for (const [prop, [attr, type, defaultVal]] of Object.entries(
     ATTR_SCHEMA,
   )) {
-    // Getter
     Object.defineProperty(cls.prototype, prop, {
       get: makeGetter(attr, type, defaultVal),
       enumerable: true,
       configurable: true,
     });
 
-    // Setter method: setPropertyName(value) { return this; }
     const setterName = `set${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
     cls.prototype[setterName] = makeSetter(attr, type);
   }
