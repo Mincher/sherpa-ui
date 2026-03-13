@@ -114,10 +114,19 @@ export function applyLocalFilters(records, filters) {
   if (!Array.isArray(filters) || !filters.length) return records;
   return records.filter((rec) =>
     filters.every((f) => {
+      // Skip sentinel fields that don't map to a record property
+      if (f.field === '_timerange') {
+        if (!f.range) return true;
+        // Apply range filter using the record's own date values.
+        // The consuming app should resolve _timerange to the actual
+        // date field before calling applyLocalFilters. When unresolved,
+        // pass through (no filtering).
+        return true;
+      }
       const val = rec[f.field];
       const op = f.operator || '=';
       switch (op) {
-        case '=': case 'eq':
+        case '=': case 'eq': case 'equals':
           return String(val).toLowerCase() === String(f.value).toLowerCase();
         case '!=': case 'ne':
           return String(val).toLowerCase() !== String(f.value).toLowerCase();
@@ -128,6 +137,13 @@ export function applyLocalFilters(records, filters) {
         case 'in': {
           const list = f.values || String(f.value).split(',');
           return list.map((v) => String(v).toLowerCase()).includes(String(val).toLowerCase());
+        }
+        case 'between': {
+          if (f.range?.start && f.range?.end) {
+            const d = new Date(val);
+            return d >= f.range.start && d <= f.range.end;
+          }
+          return true;
         }
         default: return true;
       }
@@ -167,18 +183,38 @@ export function applySort(rows, orderBy) {
 // ═══════════════════════════════════════════════════════════
 
 /**
- * Compute metric summary: total count, sparkline values, and delta.
+ * Compute metric summary: total, sparkline values, and delta.
+ *
+ * When `measures` contains a value-field entry (e.g. `{ field: 'amount', agg: 'sum' }`),
+ * the total and sparkline values are computed by aggregating that field per time bucket.
+ * When no value-field measure is provided, records are counted (legacy behaviour).
+ *
  * @param {Array<Object>} records
- * @param {Array}         measures  — (unused, kept for API compat)
+ * @param {Array<{field:string, agg:string}>} measures — value-field + aggregation
  * @param {string}        dateField — date column for time bucketing
  * @param {Array}         filters   — used to derive time range bounds
  * @returns {{ total, delta, deltaPercent, values, count }}
  */
 export function computeMetricSummary(records, measures, dateField, filters) {
-  const total = records.length;
-  if (!total) return { total: 0, delta: 0, deltaPercent: 0, values: [], count: 0 };
+  if (!records.length) return { total: 0, delta: 0, deltaPercent: 0, values: [], count: 0 };
 
-  const field = dateField || 'order_date';
+  // Resolve value-field measure (skip synthetic '_count' entries)
+  const measure = Array.isArray(measures)
+    ? measures.find(m => m.field && m.field !== '_count')
+    : null;
+  const aggFn   = measure?.agg || 'count';
+  const valField = measure?.field;
+
+  // Compute total: aggregate across all records
+  const total = valField
+    ? agg(records.map(r => r[valField]), aggFn)
+    : records.length;
+
+  const field = dateField;
+  if (!field) {
+    // No date field available — cannot produce time-series bucketing
+    return { total, delta: 0, deltaPercent: 0, values: [total], count: 1 };
+  }
 
   // Determine time range from filters (preferred) or data
   let rangeStart = null;
@@ -224,24 +260,41 @@ export function computeMetricSummary(records, measures, dateField, filters) {
   }
 
   const bucketWidth = rangeMs / segmentCount;
-  const counts = new Array(segmentCount).fill(0);
 
-  for (const r of records) {
-    const v = r[field];
-    if (v == null) continue;
-    const t = new Date(v).getTime();
-    let idx = Math.floor((t - startMs) / bucketWidth);
-    if (idx >= segmentCount) idx = segmentCount - 1;
-    if (idx < 0) idx = 0;
-    counts[idx]++;
+  // Collect per-bucket values (array of arrays) when using a value field,
+  // otherwise simple counts.
+  let bucketValues;
+  if (valField) {
+    bucketValues = Array.from({ length: segmentCount }, () => []);
+    for (const r of records) {
+      const v = r[field];
+      if (v == null) continue;
+      const t = new Date(v).getTime();
+      let idx = Math.floor((t - startMs) / bucketWidth);
+      if (idx >= segmentCount) idx = segmentCount - 1;
+      if (idx < 0) idx = 0;
+      bucketValues[idx].push(r[valField]);
+    }
+    bucketValues = bucketValues.map(vals => agg(vals, aggFn));
+  } else {
+    bucketValues = new Array(segmentCount).fill(0);
+    for (const r of records) {
+      const v = r[field];
+      if (v == null) continue;
+      const t = new Date(v).getTime();
+      let idx = Math.floor((t - startMs) / bucketWidth);
+      if (idx >= segmentCount) idx = segmentCount - 1;
+      if (idx < 0) idx = 0;
+      bucketValues[idx]++;
+    }
   }
 
-  const oldest = counts[0] || 0;
-  const newest = counts[counts.length - 1] || 0;
+  const oldest = bucketValues[0] || 0;
+  const newest = bucketValues[bucketValues.length - 1] || 0;
   const delta = newest - oldest;
   const deltaPercent = oldest !== 0 ? (delta / Math.abs(oldest)) * 100 : 0;
 
-  return { total, delta, deltaPercent, values: counts, count: segmentCount };
+  return { total, delta, deltaPercent, values: bucketValues, count: segmentCount };
 }
 
 // ═══════════════════════════════════════════════════════════

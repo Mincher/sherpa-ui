@@ -312,14 +312,21 @@ export function ContentAttributesMixin(Base) {
 
       // ── Metric: count records, compute sparkline ──
       if (isMetric) {
-        const dateField = _dateFieldProvider
+        let dateField = _dateFieldProvider
           ? _dateFieldProvider(this.datasetName)
           : null;
-        const summary = computeMetricSummary(records, [], dateField, presetFilters);
-        const displayName = this.name || formatFieldName(this.datasetName || '');
 
-        // Resolve unit from field metadata
+        // Auto-detect date field from metadata when no provider is registered
+        if (!dateField && this.#fields.length) {
+          const dateFm = this.#fields.find(
+            (f) => f.type === 'date' || f.type === 'datetime',
+          );
+          if (dateFm) dateField = dateFm.name;
+        }
+
         const measures = normalizeMeasures(this);
+        const summary = computeMetricSummary(records, measures, dateField, presetFilters);
+        const displayName = this.name || formatFieldName(this.datasetName || '');
         let unit = this.unit || null;
         if (!unit && measures.length) {
           const fm = this.#fields.find((f) => f.name === measures[0].field);
@@ -786,6 +793,22 @@ export function ContentAttributesMixin(Base) {
     }
 
     /* ── Lifecycle ──────────────────────────────────────────── */
+
+    onAttributeChanged(name, oldValue, newValue) {
+      super.onAttributeChanged?.(name, oldValue, newValue);
+
+      // Sync the embedded filter bar whenever segment or sort
+      // attributes change from outside the mixin's own batch flow.
+      if (
+        !this._suppressAttrReaction &&
+        (name === "data-segment-field" ||
+          name === "data-segment-mode" ||
+          name === "data-sort-field" ||
+          name === "data-sort-direction")
+      ) {
+        this.#syncFilterBarState();
+      }
+    }
 
     onConnect() {
       super.onConnect?.();

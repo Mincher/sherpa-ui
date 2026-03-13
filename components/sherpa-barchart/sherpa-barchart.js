@@ -126,6 +126,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   onAttributeChanged(name, oldValue, newValue) {
     if (oldValue === newValue) return;
+    super.onAttributeChanged(name, oldValue, newValue);
 
     switch (name) {
       case "data-title": {

@@ -250,6 +250,11 @@ export class SherpaFilterBar extends SherpaElement {
 
     this.#syncActiveState();
 
+    // Global filter bars get a built-in Time Range chip
+    if (this.hasAttribute("data-global")) {
+      this.#initDefaultTimeRangeChip();
+    }
+
     // Populate from declarative fields attribute (if set before connect)
     this.#syncAvailableFields();
   }
@@ -341,8 +346,11 @@ export class SherpaFilterBar extends SherpaElement {
         }
       } else {
         // Static chips (sort, segment) — reset attributes
+        const behavior = chip.getAttribute("data-behavior");
         chip.removeAttribute("data-field");
         chip.removeAttribute("data-mode");
+        chip.removeAttribute("data-active");
+        chip.dataset.label = behavior === "sort" ? "Sort" : "Group";
       }
     }
     this.removeAttribute("data-active");
@@ -374,6 +382,32 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /* ══════════════════════════════════════════════════════════════
+     Default Time Range Chip (global bars only)
+     ══════════════════════════════════════════════════════════════ */
+
+  /**
+   * Create a built-in "Time Range" chip for global filter bars.
+   * Uses the sentinel field `_timerange` so consuming apps can map it
+   * to each dataset's actual date field via the `range` property.
+   */
+  #initDefaultTimeRangeChip() {
+    // Don't duplicate if already present
+    if (this.querySelector('sherpa-button[data-filter-field="_timerange"]')) return;
+
+    const chip = document.createElement("sherpa-button");
+    chip.setAttribute("data-type", "button-menu");
+    chip.setAttribute("data-split", "");
+    chip.setAttribute("data-filter-field", "_timerange");
+    chip.setAttribute("data-filter-type", "datetime-range");
+    chip.setAttribute("slot", "presets");
+    chip.dataset.label = "Time Range";
+    chip.dataset.defaultLabel = "Time Range";
+    this.appendChild(chip);
+
+    this.#populateTimeframeMenu(chip);
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      Preset Chips
      ══════════════════════════════════════════════════════════════ */
 
@@ -383,10 +417,11 @@ export class SherpaFilterBar extends SherpaElement {
    * @param {string} fields — comma-separated field names (e.g. "severity,status")
    */
   #initPresetChips(fields) {
-    // Remove existing preset filter chips
+    // Remove existing preset filter chips (preserve built-in _timerange chip)
     for (const chip of this.querySelectorAll(
       'sherpa-button[slot="presets"][data-filter-field]',
     )) {
+      if (chip.getAttribute("data-filter-field") === "_timerange") continue;
       chip.remove();
     }
 
@@ -728,9 +763,11 @@ export class SherpaFilterBar extends SherpaElement {
     const cols = isSegment
       ? this.#columns.filter(c => this.#inferFilterType(c.type) === "text")
       : this.#columns;
+    const currentField = chip.getAttribute("data-field");
     const items = cols.map(c => ({
       value: c.field,
       text: c.name || formatFieldName(c.field),
+      selected: c.field === currentField,
     }));
     chip.setMenuItems?.(items, { selection: "radio", group: "columns" });
   }
