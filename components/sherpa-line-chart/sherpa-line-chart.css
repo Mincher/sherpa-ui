@@ -33,8 +33,8 @@
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
   min-height: 0;
-  overflow: hidden;
-  container: sherpa-line-chart / inline-size;
+  overflow: clip;
+  container: sherpa-line-chart / size;
 }
 
 :host([hidden]) {
@@ -92,6 +92,17 @@ sherpa-filter-bar {
 
 :host([data-filters]) sherpa-filter-bar {
   display: flex;
+}
+
+/* ================================================================
+   Chart layout — wrapper for chart-body + legend, switches direction
+   ================================================================ */
+.chart-layout {
+  display: flex;
+  flex-direction: var(--_chart-direction, column);
+  gap: var(--sherpa-space-md, 16px);
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 /* ================================================================
@@ -254,9 +265,13 @@ sherpa-filter-bar {
 
 .chart-legend {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: var(--_chart-legend-direction, row);
+  flex-wrap: var(--_chart-legend-wrap, wrap);
   gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-md, 16px);
-  justify-content: center;
+  justify-content: var(--_chart-legend-justify, center);
+  align-self: var(--_chart-legend-align, auto);
+  width: var(--_chart-legend-width, 100%);
+  margin-top: auto;
 }
 
 .legend-item {
@@ -278,6 +293,8 @@ sherpa-filter-bar {
 .legend-label {
   white-space: nowrap;
 }
+
+/* Landscape layout is driven by --_chart-direction from data-viz-container */
 
 /* ================================================================
    Container queries

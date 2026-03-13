@@ -60,6 +60,7 @@
  *   (default) — Consumer content: sherpa-metric children + viz children
  */
 
+import "../sherpa-filter-bar/sherpa-filter-bar.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { ResizeBehavior } from "../utilities/resize-behavior.js";
 
@@ -86,6 +87,8 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
   #titleEl = null;
   /** @type {HTMLElement|null} */
   #descriptionEl = null;
+  /** @type {HTMLTemplateElement|null} */
+  #filterMenuTpl = null;
 
   /* ── SherpaElement lifecycle hooks ───────────────────────────── */
 
@@ -103,14 +106,19 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
 
   onConnect() {
     super.onConnect();
+    this.#injectFilterMenu();
     this.addEventListener("menu-open", this.#onMenuOpen);
     this.addEventListener("menu-close", this.#onMenuClose);
+    this.addEventListener("toggle-filters", this.#onToggleFilters);
   }
 
   onDisconnect() {
     super.onDisconnect();
     this.removeEventListener("menu-open", this.#onMenuOpen);
     this.removeEventListener("menu-close", this.#onMenuClose);
+    this.removeEventListener("toggle-filters", this.#onToggleFilters);
+    this.#filterMenuTpl?.remove();
+    this.#filterMenuTpl = null;
   }
 
   onAttributeChanged(name) {
@@ -135,6 +143,24 @@ export class SherpaDataVizContainer extends ResizeBehavior(SherpaElement) {
 
   #onMenuClose = () => {
     delete this.dataset.menuOpen;
+  };
+
+  /* ── Filter menu ───────────────────────────────────────────── */
+
+  /** Prepend a <template data-menu> for the filter toggle into light DOM. */
+  #injectFilterMenu() {
+    if (this.#filterMenuTpl) return;
+    const src = this.$("#filter-menu");
+    if (!src) return;
+    const tpl = document.createElement("template");
+    tpl.setAttribute("data-menu", "");
+    tpl.content.appendChild(src.content.cloneNode(true));
+    this.#filterMenuTpl = tpl;
+    this.appendChild(tpl);
+  }
+
+  #onToggleFilters = () => {
+    this.toggleAttribute("data-filters");
   };
 }
 

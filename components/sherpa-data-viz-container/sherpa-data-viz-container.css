@@ -49,6 +49,9 @@
   flex-direction: column;
   gap: var(--sherpa-space-sm, 12px);
 
+  /* Private — inherited through shadow DOM into menu items */
+  --_editable-display: none;
+
   background-color: var(--sherpa-surface-container-default);
   border: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-control-secondary-default);
@@ -57,7 +60,7 @@
   overflow: clip;
   position: relative;
 
-  container-type: inline-size;
+  container-type: size;
   container-name: sherpa-data-viz-container;
 }
 
@@ -226,6 +229,19 @@
 }
 
 /* ==========================================================================
+   Filter Bar (hidden by default, toggled via menu)
+   ========================================================================== */
+
+sherpa-filter-bar {
+  display: none;
+  flex-shrink: 0;
+}
+
+:host([data-filters]) sherpa-filter-bar {
+  display: flex;
+}
+
+/* ==========================================================================
    Metrics Area
    ==========================================================================
    Consumer-supplied sherpa-metric children assigned to slot="metrics".
@@ -294,8 +310,8 @@
   gap: var(--sherpa-space-sm, 12px);
   flex: 1 1 0;
   min-height: 0;
-  overflow: hidden;
-  container-type: inline-size;
+  overflow: clip;
+  container-type: size;
   container-name: container-content;
 }
 
@@ -318,47 +334,60 @@
 }
 
 /* ==========================================================================
+   Landscape — set chart direction custom property for slotted viz children
+   ========================================================================== */
+
+@container sherpa-data-viz-container (aspect-ratio > 1) {
+  ::slotted([data-viz]) {
+    --_chart-direction: row;
+    --_chart-legend-direction: column;
+    --_chart-legend-wrap: nowrap;
+    --_chart-legend-width: auto;
+    --_chart-legend-justify: flex-start;
+    --_chart-legend-align: center;
+  }
+}
+
+/* ==========================================================================
    Content Visibility (resizable variant)
    ==========================================================================
-   Progressive disclosure of default-slot children based on row-span.
-   Requires content children to precede metrics and templates in the
-   light DOM so that :nth-child() indices align with content order.
+   Progressive disclosure of slotted viz children based on the height
+   of the .content container (container-type: size).
 
-   Row-span 1:   1st child only
-   Row-span 2–3: 1st + 2nd
-   Row-span 4–5: 1st + 2nd + 3rd
-   Row-span 6:   all children
+   Uses :nth-child(… of <selector>) to count only content children,
+   skipping <template> and [slot] elements injected by mixins.
 
-   Column-span overrides can promote visibility of additional children.
+   Height thresholds:
+     < 200px   → 1st viz child only
+     200–399px → 1st + 2nd
+     400–599px → 1st + 2nd + 3rd
+     600px+    → all children
    ========================================================================== */
 
 /* Base: hide 2nd+ content children in resizable containers */
-:host([data-variant="resizable"]) ::slotted(:nth-child(n+2):not([slot]):not(template)) {
+:host([data-variant="resizable"]) ::slotted(:nth-child(n+2 of :not([slot]):not(template))) {
   display: none;
 }
 
-/* Row-span 2+: show 2nd child */
-:host([data-variant="resizable"]:not([data-row-span="1"]))
-  ::slotted(:nth-child(2):not([slot]):not(template)) {
-  display: flex;
+/* 200px+ content height: show 2nd child */
+@container container-content (min-height: 200px) {
+  ::slotted(:nth-child(2 of :not([slot]):not(template))) {
+    display: flex;
+  }
 }
 
-/* 6+ cols: also show 2nd child */
-:host([data-variant="resizable"]:not([data-col-span="3"]))
-  ::slotted(:nth-child(2):not([slot]):not(template)) {
-  display: flex;
+/* 400px+ content height: show 3rd child */
+@container container-content (min-height: 400px) {
+  ::slotted(:nth-child(3 of :not([slot]):not(template))) {
+    display: flex;
+  }
 }
 
-/* Row-span 4+: show 3rd child */
-:host([data-variant="resizable"]:not([data-row-span="1"]):not([data-row-span="2"]):not([data-row-span="3"]))
-  ::slotted(:nth-child(3):not([slot]):not(template)) {
-  display: flex;
-}
-
-/* Row-span 6+: show all remaining children */
-:host([data-variant="resizable"]:not([data-row-span="1"]):not([data-row-span="2"]):not([data-row-span="3"]):not([data-row-span="4"]):not([data-row-span="5"]))
-  ::slotted(:not([slot]):not(template)) {
-  display: flex;
+/* 600px+ content height: show all remaining children */
+@container container-content (min-height: 600px) {
+  ::slotted(:nth-child(n+2 of :not([slot]):not(template))) {
+    display: flex;
+  }
 }
 
 /* ==========================================================================
@@ -368,4 +397,5 @@
 :host([data-variant="resizable"][data-editable]) {
   overflow: auto;
   resize: both;
+  --_editable-display: block;
 }

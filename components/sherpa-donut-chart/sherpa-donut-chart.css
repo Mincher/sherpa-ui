@@ -34,8 +34,8 @@
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
   min-height: 0;
-  overflow: hidden;
-  container: sherpa-donut-chart / inline-size;
+  overflow: clip;
+  container: sherpa-donut-chart / size;
 }
 
 :host([hidden]) {
@@ -98,14 +98,27 @@ sherpa-filter-bar {
 }
 
 /* ================================================================
+   Chart layout — wrapper for chart-area + legend, switches direction
+   ================================================================ */
+.chart-layout {
+  display: flex;
+  flex-direction: var(--_chart-direction, column);
+  align-items: center;
+  gap: var(--sherpa-space-md, 16px);
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* ================================================================
    Chart area — contains ring + hole + centre label
    ================================================================ */
 .chart-area {
   position: relative;
-  width: 100%;
-  max-width: 174px;
+  flex: 1 1 0;
+  min-height: 0;
+  max-width: 280px;
+  max-height: 280px;
   aspect-ratio: 1;
-  flex-shrink: 1;
   transition: opacity 0.2s ease;
 }
 
@@ -183,10 +196,13 @@ sherpa-filter-bar {
 
 .chart-legend {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: var(--_chart-legend-direction, row);
+  flex-wrap: var(--_chart-legend-wrap, wrap);
   gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-md, 16px);
-  justify-content: center;
-  width: 100%;
+  justify-content: var(--_chart-legend-justify, center);
+  align-self: var(--_chart-legend-align, auto);
+  width: var(--_chart-legend-width, 100%);
+  flex-shrink: 0;
 }
 
 .legend-item {

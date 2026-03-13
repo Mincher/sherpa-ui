@@ -118,7 +118,19 @@ sherpa-filter-bar {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Chart area — flex container for rows, axis, and legend
+   Chart layout — wrapper for chart-area + legend, switches direction
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.chart-layout {
+  display: flex;
+  flex-direction: var(--_chart-direction, column);
+  gap: var(--sherpa-space-xs);
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Chart area — flex container for rows and axis
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .chart-area {
@@ -286,13 +298,15 @@ sherpa-filter-bar {
 
 .chart-legend {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: var(--_chart-legend-direction, row);
+  flex-wrap: var(--_chart-legend-wrap, wrap);
+  justify-content: var(--_chart-legend-justify, center);
   align-items: center;
+  align-self: var(--_chart-legend-align, auto);
   gap: var(--sherpa-space-xs);
   padding: var(--sherpa-space-2xs) var(--sherpa-space-xs);
-  width: 100%;
+  width: var(--_chart-legend-width, 100%);
+  margin-top: auto;
 }
 
 .chart-legend-item {
@@ -462,6 +476,8 @@ sherpa-filter-bar {
     max-width: 120px;
   }
 }
+
+/* Landscape layout is driven by --_chart-direction from data-viz-container */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Compact / Minimal modes

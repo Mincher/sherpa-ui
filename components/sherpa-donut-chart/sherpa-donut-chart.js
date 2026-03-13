@@ -287,12 +287,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
     // Auto-set centre label to total + sublabel to chart name
     const total = this.#data.reduce((s, d) => s + d.value, 0);
-    if (!this.hasAttribute('data-inner-label')) {
-      this.dataset.innerLabel = formatCompact(total);
-    }
-    if (!this.hasAttribute('data-inner-sublabel') && name) {
-      this.dataset.innerSublabel = name;
-    }
+    this.dataset.innerLabel = formatCompact(total);
   }
 
   /* ── Private: sync ────────────────────────────────────────────── */

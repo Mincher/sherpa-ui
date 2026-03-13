@@ -905,6 +905,8 @@ export class SherpaFilterBar extends SherpaElement {
 
   /** Cycle segment mode: inactive → active → inactive. */
   #cycleSegmentMode(chip) {
+    // No field selected yet — user must pick from the dropdown first
+    if (!chip.hasAttribute("data-field")) return;
     if (chip.hasAttribute("data-active")) {
       chip.removeAttribute("data-active");
     } else {

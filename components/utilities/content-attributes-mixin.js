@@ -510,8 +510,16 @@ export function ContentAttributesMixin(Base) {
         'sherpa-button[data-behavior="segment"]',
       );
       if (segChip) {
-        const field = this.getAttribute("data-segment-field");
+        // Effective group field: explicit segment override → chart category fallback
+        let field = this.getAttribute("data-segment-field")
+          || this.getAttribute("data-category");
         const mode = this.getAttribute("data-segment-mode");
+
+        // Validate field exists in the dataset columns
+        if (field && fieldNames.size > 0 && !fieldNames.has(field)) {
+          field = null;
+        }
+
         if (field && mode !== "off") {
           segChip.dataset.field = field;
           segChip.dataset.label = displayName(field);
@@ -771,7 +779,7 @@ export function ContentAttributesMixin(Base) {
       }
 
       // Segment attrs
-      if (segmentFilter) {
+      if (segmentFilter && segmentFilter.field) {
         this.setAttribute(
           "data-segment-field",
           segmentFilter.field,

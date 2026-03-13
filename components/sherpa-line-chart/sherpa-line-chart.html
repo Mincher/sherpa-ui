@@ -49,25 +49,27 @@
     >
   </sherpa-filter-bar>
 
-  <div class="chart-body">
-    <div class="y-axis">
-      <span class="y-label"></span>
-      <span class="y-label"></span>
-      <span class="y-label"></span>
-      <span class="y-label"></span>
-      <span class="y-label"></span>
-      <span class="y-label"></span>
-    </div>
-    <div class="chart-panel">
-      <div class="chart-area">
-        <div class="grid-lines" aria-hidden="true"></div>
-        <div class="series-layer"></div>
-        <div class="points-layer"></div>
+  <div class="chart-layout">
+    <div class="chart-body">
+      <div class="y-axis">
+        <span class="y-label"></span>
+        <span class="y-label"></span>
+        <span class="y-label"></span>
+        <span class="y-label"></span>
+        <span class="y-label"></span>
+        <span class="y-label"></span>
       </div>
-      <div class="x-axis"></div>
+      <div class="chart-panel">
+        <div class="chart-area">
+          <div class="grid-lines" aria-hidden="true"></div>
+          <div class="series-layer"></div>
+          <div class="points-layer"></div>
+        </div>
+        <div class="x-axis"></div>
+      </div>
     </div>
+    <div class="chart-legend"></div>
   </div>
-  <div class="chart-legend"></div>
   <sherpa-tooltip></sherpa-tooltip>
   <!-- Cloning prototypes for data-driven repeats -->
   <template class="series-tpl"><div class="series"></div></template>
