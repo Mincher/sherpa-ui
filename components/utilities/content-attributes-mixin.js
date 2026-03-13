@@ -286,17 +286,20 @@ export function ContentAttributesMixin(Base) {
         }
 
         const displayName = this.name || formatFieldName(this.datasetName || '');
+        const segmentField = this.segmentField || null;
         this.setData({
           _fromCascade: true,
           name: displayName,
           columns,
           allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
           rows,
+          segmentBy: segmentField,
           summary: null,
           config: { unit: null, showStatus: false, presentationType: this.presentationType || 'data-grid' },
           metadata: {
             dataset: this.datasetName,
             category: this.category || null,
+            segmentBy: segmentField,
             measures: [],
             dimensions: [],
             recordCount: records.length,
@@ -316,16 +319,36 @@ export function ContentAttributesMixin(Base) {
           ? _dateFieldProvider(this.datasetName)
           : null;
 
-        // Auto-detect date field from metadata when no provider is registered
+        // Auto-detect date field from metadata when no provider is registered.
+        // 'created' is the canonical record timestamp for all time-based viz;
+        // other datetime fields are secondary (user filtering only).
         if (!dateField && this.#fields.length) {
-          const dateFm = this.#fields.find(
-            (f) => f.type === 'date' || f.type === 'datetime',
-          );
-          if (dateFm) dateField = dateFm.name;
+          const createdFm = this.#fields.find((f) => f.name === 'created');
+          if (createdFm) {
+            dateField = 'created';
+          } else {
+            const dateFm = this.#fields.find(
+              (f) => f.type === 'date' || f.type === 'datetime',
+            );
+            if (dateFm) dateField = dateFm.name;
+          }
         }
 
         const measures = normalizeMeasures(this);
-        const summary = computeMetricSummary(records, measures, dateField, presetFilters);
+
+        // Resolve _timerange sentinel entries to the actual date field
+        // so computeMetricSummary can derive sparkline range bounds.
+        const resolvedFilters = dateField
+          ? presetFilters.map(f => {
+              if (f.field !== '_timerange' || !f.range) return f;
+              return [
+                { field: dateField, operator: '>=', value: f.range.start instanceof Date ? f.range.start.toISOString() : String(f.range.start) },
+                { field: dateField, operator: '<=', value: f.range.end instanceof Date ? f.range.end.toISOString() : String(f.range.end) },
+              ];
+            }).flat()
+          : presetFilters;
+
+        const summary = computeMetricSummary(records, measures, dateField, resolvedFilters);
         const displayName = this.name || formatFieldName(this.datasetName || '');
         let unit = this.unit || null;
         if (!unit && measures.length) {
@@ -458,13 +481,19 @@ export function ContentAttributesMixin(Base) {
       this.#records = records;
       this.#fields = Array.isArray(fields) ? fields : [];
 
+      // Set the syncing guard BEFORE field sync so the filter bar's
+      // MutationObserver doesn't fire containerfilterchange while
+      // chips are being populated — that would strip segment attrs.
+      const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
+      if (bar) bar.dataset.syncing = "";
+
       // Push field metadata to local filter bar
       this.#syncFilterBarFields();
 
       // Aggregate and render
       this.#aggregate();
 
-      // Sync filter bar chip state
+      // Sync filter bar chip state (re-sets data-syncing, then removes via setTimeout)
       this.#syncFilterBarState();
     }
 

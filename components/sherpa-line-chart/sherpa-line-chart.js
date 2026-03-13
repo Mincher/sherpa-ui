@@ -40,6 +40,9 @@ import '../sherpa-button/sherpa-button.js';
 import '../sherpa-filter-bar/sherpa-filter-bar.js';
 import { formatFieldName } from '../utilities/format-utils.js';
 
+const MAX_SEGMENTS = 8;
+const OTHER_COLOR = '#9e9ea8';
+
 const DEFAULT_COLORS = [
   '#7b1ce6', // purple
   '#16abe2', // blue
@@ -47,6 +50,8 @@ const DEFAULT_COLORS = [
   '#ffaa00', // amber
   '#f3699d', // pink
   '#c046ff', // violet
+  '#e67c1c', // orange
+  '#e6416e', // raspberry
 ];
 
 /** Stroke half-width as % of chart area height (≈ 1px at 234px). */
@@ -261,25 +266,29 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     const { columns = [], rows = [] } = this.#contentData;
     if (!rows.length || columns.length < 2) { this.#data = null; return; }
 
-    const labelField = columns[0]?.field;
-    const valueField = columns[columns.length > 2 ? 2 : 1]?.field;
-
-    // Segment field overrides the implicit series column when active
     const segmentField = this.#isSegmentEnabled()
       ? this.#getSegmentField()
-      : (columns.length > 2 ? columns[1]?.field : null);
+      : null;
 
+    const labelField = this.#resolveLabelField(columns, segmentField);
+    const valueField = this.#resolveValueField(columns, labelField, segmentField);
     if (!labelField || !valueField) { this.#data = null; return; }
 
-    if (segmentField && segmentField !== labelField && segmentField !== valueField) {
-      // Multi-series: group by segment/series field
-      const seriesNames = [...new Set(rows.map(r => String(r[segmentField] ?? '')))].sort();
+    // Determine effective grouping field: explicit segment, or implicit series column
+    const effectiveSegmentField = segmentField
+      || (columns.length > 2
+        ? columns.find(c => c.field !== labelField && c.field !== valueField)?.field
+        : null);
+
+    if (effectiveSegmentField && effectiveSegmentField !== labelField && effectiveSegmentField !== valueField) {
+      // Multi-series: one line per unique segment/group value
+      const seriesNames = [...new Set(rows.map(r => String(r[effectiveSegmentField] ?? '')))].sort();
       const labels = [...new Set(rows.map(r => String(r[labelField] ?? '')))];
 
       const series = seriesNames.map(name => {
         const values = labels.map(label => {
           const matching = rows.filter(r =>
-            String(r[segmentField]) === name && String(r[labelField]) === label
+            String(r[effectiveSegmentField]) === name && String(r[labelField]) === label
           );
           return matching.reduce((sum, r) => sum + (Number(r[valueField]) || 0), 0);
         });
@@ -288,11 +297,19 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
       this.#data = { labels, series };
     } else {
-      // Single series
-      const labels = rows.map(r => String(r[labelField] ?? ''));
-      const values = rows.map(r => Number(r[valueField]) || 0);
-      const name = columns[1]?.name || columns[1]?.field || 'Value';
-      this.#data = { labels, series: [{ name, values }] };
+      // Single series — aggregate by label
+      const labelOrder = [];
+      const agg = new Map();
+      for (const row of rows) {
+        const l = String(row[labelField] ?? '');
+        if (!agg.has(l)) { labelOrder.push(l); agg.set(l, 0); }
+        agg.set(l, agg.get(l) + (Number(row[valueField]) || 0));
+      }
+      const valueName = columns.find(c => c.field === valueField)?.name || valueField || 'Value';
+      this.#data = {
+        labels: labelOrder,
+        series: [{ name: valueName, values: labelOrder.map(l => agg.get(l)) }],
+      };
     }
 
     // Apply local sort
@@ -310,6 +327,32 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
+  /* ── Private: field resolution ────────────────────────────────── */
+
+  #resolveLabelField(columns, segmentField) {
+    const meta = this.#contentData?.metadata || {};
+    if (meta.primaryField && columns.some(c => c.field === meta.primaryField)) {
+      return meta.primaryField;
+    }
+    // Prefer a datetime or string column that isn't the segment field
+    const fallback = columns.find(c => {
+      const type = (c.type || '').toLowerCase();
+      return (type === 'datetime' || type === 'string') && c.field !== segmentField;
+    });
+    return fallback?.field || columns[0]?.field || null;
+  }
+
+  #resolveValueField(columns, labelField, segmentField) {
+    const numericCols = columns.filter(c => {
+      const type = (c.type || '').toLowerCase();
+      return ['number', 'numeric', 'currency', 'percent'].includes(type);
+    });
+    const preferred = numericCols.find(c => c.field !== labelField && c.field !== segmentField);
+    if (preferred) return preferred.field;
+    const fallback = numericCols.find(c => c.field !== segmentField) || numericCols[0];
+    return fallback?.field || columns[columns.length - 1]?.field || null;
+  }
+
   /* ── Private: sync ────────────────────────────────────────────── */
 
   #syncTitle() {
@@ -322,12 +365,32 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
+  /* ── Private: cap series ──────────────────────────────────────── */
+
+  #capSeries(series) {
+    if (series.length <= MAX_SEGMENTS) return series;
+    const withTotals = series.map(s => ({
+      ...s,
+      _total: s.values.reduce((a, b) => a + b, 0),
+    }));
+    withTotals.sort((a, b) => b._total - a._total);
+    const kept = withTotals.slice(0, MAX_SEGMENTS - 1);
+    const rest = withTotals.slice(MAX_SEGMENTS - 1);
+    const otherValues = kept[0].values.map((_, i) =>
+      rest.reduce((s, r) => s + (r.values[i] || 0), 0)
+    );
+    kept.push({ name: 'Other', values: otherValues, color: OTHER_COLOR });
+    return kept.map(({ _total, ...s }) => s);
+  }
+
   /* ── Private: render ──────────────────────────────────────────── */
 
   #render() {
     if (!this.#seriesLayer || !this.#pointsLayer || !this.#data) return;
 
-    const { labels = [], series = [] } = this.#data;
+    const { labels = [] } = this.#data;
+    let { series = [] } = this.#data;
+    series = this.#capSeries(series);
     const pointCount = labels.length;
     if (!pointCount || !series.length) return;
 

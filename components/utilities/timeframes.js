@@ -182,7 +182,10 @@ export function computeTimeRange(records, dateField) {
  */
 function autoDetectDateField(record) {
   if (!record) return null;
-  const DATE_FIELD_NAMES = ['order_date', 'ticket_date', 'task_date', 'first_detected', 'last_updated', 'date_published', 'created_date', 'date'];
+  // 'created' is the canonical record timestamp for all time-based viz;
+  // other datetime fields are secondary (available for user filtering).
+  if ('created' in record) return 'created';
+  const DATE_FIELD_NAMES = ['created_date', 'order_date', 'ticket_date', 'task_date', 'first_detected', 'last_updated', 'date_published', 'date'];
   for (const name of DATE_FIELD_NAMES) {
     if (name in record) return name;
   }

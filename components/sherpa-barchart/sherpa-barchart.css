@@ -554,6 +554,8 @@ sherpa-filter-bar {
 .color-4  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-4);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
 .color-5  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-5);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
 .color-6  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-6);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+.color-7  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-7);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+.color-8  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-8);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
 
 /* ═════════════════════════════════════════════════════════════════════════
    Filter Chips

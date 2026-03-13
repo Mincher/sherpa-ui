@@ -40,6 +40,9 @@ import '../sherpa-filter-bar/sherpa-filter-bar.js';
 
 /** Default palette — falls back to CSS token values, but also needed for
  *  inline conic-gradient stops where tokens can't be used directly. */
+const MAX_SEGMENTS = 8;
+const OTHER_COLOR = '#9e9ea8';
+
 const DEFAULT_COLORS = [
   '#7b1ce6', // purple
   '#16abe2', // blue
@@ -47,6 +50,8 @@ const DEFAULT_COLORS = [
   '#ffaa00', // amber
   '#f3699d', // pink
   '#c046ff', // violet
+  '#e67c1c', // orange
+  '#e6416e', // raspberry
 ];
 
 export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
@@ -311,6 +316,18 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
+  /* ── Private: cap segments ─────────────────────────────────────── */
+
+  #capSegments(data) {
+    if (data.length <= MAX_SEGMENTS) return data;
+    const sorted = [...data].sort((a, b) => b.value - a.value);
+    const kept = sorted.slice(0, MAX_SEGMENTS - 1);
+    const rest = sorted.slice(MAX_SEGMENTS - 1);
+    const otherValue = rest.reduce((s, d) => s + (d.value || 0), 0);
+    kept.push({ label: 'Other', value: otherValue, color: OTHER_COLOR });
+    return kept;
+  }
+
   /* ── Private: render ──────────────────────────────────────────── */
 
   #render() {
@@ -323,11 +340,13 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       return;
     }
 
+    const displayData = this.#capSegments(this.#data);
+
     // Build conic-gradient stops
     const stops = [];
     let cumulative = 0;
 
-    this.#data.forEach((d, i) => {
+    displayData.forEach((d, i) => {
       const color = d.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
       const pct = (d.value / total) * 100;
       const start = cumulative;
@@ -343,7 +362,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     // Build legend
     this.#legendEl.replaceChildren();
 
-    this.#data.forEach((d, i) => {
+    displayData.forEach((d, i) => {
       const color = d.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
       const item = document.createElement('div');
       item.className = 'legend-item';

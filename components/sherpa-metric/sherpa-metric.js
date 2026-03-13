@@ -168,9 +168,12 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     const values = Array.isArray(summary.values) ? summary.values : [];
     const totalValue = Number.isFinite(summary.total) ? summary.total : 0;
     const unitText = config.unit || "";
+    const showStatus = config.showStatus !== false;
 
-    // Derive trend from delta sign (aligned with full-range comparison in DataService)
+    // Derive trend direction from delta (newest bucket vs oldest bucket)
     const hasTrend = values.length > 1 && summary.delta !== 0;
+    // Show sparkline whenever there is multi-bucket time data with any variance
+    const hasTimeSeries = values.length > 1 && new Set(values).size > 1;
     let trendDir = "flat";
     if (hasTrend) {
       trendDir = summary.delta > 0 ? "up" : "down";
@@ -191,11 +194,13 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
     // Derive trend-based status for the card wrapper (not the host)
     let cardStatus = explicitStatus;
-    if (!cardStatus || cardStatus === "default") {
+    if ((!cardStatus || cardStatus === "default") && showStatus) {
       if (trendDir === "up") {
         cardStatus = "success";
       } else if (trendDir === "down") {
         cardStatus = "critical";
+      } else if (hasTimeSeries) {
+        cardStatus = "neutral";
       } else {
         cardStatus = "";
       }
@@ -240,8 +245,8 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
       deltaEL.textContent = trendLabel;
     }
 
-    // Create sparkline from summary values
-    this.#suppressSparkline = !hasTrend || cardStatus === "neutral";
+    // Create sparkline from summary values — show whenever there is time-series variance
+    this.#suppressSparkline = !hasTimeSeries;
 
     const sparklineValues = values.slice();
     this.#updateSparkline({
@@ -269,12 +274,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
       values = this.#sparklineValues;
     }
 
-    const effectiveStatus =
-      status !== undefined
-        ? status
-        : this.$(".metric-card")?.dataset.status || "";
-    const hideBecauseStatus = effectiveStatus === "neutral";
-    const showSparkline = !(this.#suppressSparkline || hideBecauseStatus);
+    const showSparkline = !this.#suppressSparkline;
 
     // CSS controls visibility via :host([data-sparkline]) .metric-sparkline
     this.toggleAttribute("data-sparkline", showSparkline);

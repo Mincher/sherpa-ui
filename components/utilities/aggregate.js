@@ -114,14 +114,17 @@ export function applyLocalFilters(records, filters) {
   if (!Array.isArray(filters) || !filters.length) return records;
   return records.filter((rec) =>
     filters.every((f) => {
-      // Skip sentinel fields that don't map to a record property
+      // Resolve _timerange sentinel against the record's date field.
+      // 'created' is the canonical record timestamp; fall back to
+      // any key ending in _date/_at.
       if (f.field === '_timerange') {
         if (!f.range) return true;
-        // Apply range filter using the record's own date values.
-        // The consuming app should resolve _timerange to the actual
-        // date field before calling applyLocalFilters. When unresolved,
-        // pass through (no filtering).
-        return true;
+        const df = 'created' in rec
+          ? 'created'
+          : Object.keys(rec).find(k => k.endsWith('_date') || k.endsWith('_at'));
+        if (!df) return true;
+        const d = new Date(rec[df]);
+        return d >= f.range.start && d <= f.range.end;
       }
       const val = rec[f.field];
       const op = f.operator || '=';
@@ -205,8 +208,8 @@ export function computeMetricSummary(records, measures, dateField, filters) {
   const aggFn   = measure?.agg || 'count';
   const valField = measure?.field;
 
-  // Compute total: aggregate across all records
-  const total = valField
+  // Preliminary total (used when no date field prevents bucketing)
+  let total = valField
     ? agg(records.map(r => r[valField]), aggFn)
     : records.length;
 
@@ -293,6 +296,9 @@ export function computeMetricSummary(records, measures, dateField, filters) {
   const newest = bucketValues[bucketValues.length - 1] || 0;
   const delta = newest - oldest;
   const deltaPercent = oldest !== 0 ? (delta / Math.abs(oldest)) * 100 : 0;
+
+  // Metric value = most recent bucket (matches sparkline's last point)
+  total = newest;
 
   return { total, delta, deltaPercent, values: bucketValues, count: segmentCount };
 }

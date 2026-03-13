@@ -290,6 +290,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       if (name === "data-segment-field") {
         this.#expandedGroups.clear();
         this.#searchExpandedGroups.clear();
+        this.#columnFilters = {};
       }
       // Respond to segment-mode changes
       if (name === "data-segment-mode" && newValue === "collapsed") {
@@ -1015,8 +1016,10 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #getDefaultChronologicalSort() {
     const dataset = this.#data?.metadata?.dataset;
     const dateFieldFn = getDateFieldProvider();
-    const dateField = dataset && dateFieldFn ? dateFieldFn(dataset) : null;
-    if (!dateField) return null;
+    let dateField = dataset && dateFieldFn ? dateFieldFn(dataset) : null;
+
+    // Fallback: 'created' is the canonical record timestamp
+    if (!dateField) dateField = 'created';
 
     const firstRow = this.#allRows[0];
     if (!firstRow || !(dateField in firstRow)) return null;

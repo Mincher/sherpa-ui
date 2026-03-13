@@ -28,7 +28,8 @@ import {
 
 const CONFIG = {
   maxGridLines: 6,
-  numColors: 6,
+  numColors: 8,
+  maxSegments: 8,
   aspectThreshold: 1.2,
 };
 
@@ -597,7 +598,9 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     }
 
     delete this.dataset.empty;
-    const { categories, series } = data;
+    const { categories } = data;
+    let { series } = data;
+    series = this.#capSeries(series);
     const isStacked = this.hasAttribute("data-stacked") || data.stacked;
 
     const maxValue = this.#getMaxValue(series, isStacked);
@@ -631,7 +634,9 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     delete this.dataset.empty;
 
-    const { categories, series } = data;
+    const { categories } = data;
+    let { series } = data;
+    series = this.#capSeries(series);
     const isStacked = this.hasAttribute("data-stacked") || data.stacked;
     const maxValue = this.#getMaxValue(series, isStacked);
     const niceMax = this.#niceNumber(maxValue);
@@ -680,6 +685,22 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     this.#renderAxis(axisValues, niceMax);
     this.#renderLegend(legend, series);
+  }
+
+  #capSeries(series) {
+    if (series.length <= CONFIG.maxSegments) return series;
+    const withTotals = series.map(s => ({
+      ...s,
+      _total: s.values.reduce((a, b) => a + b, 0),
+    }));
+    withTotals.sort((a, b) => b._total - a._total);
+    const kept = withTotals.slice(0, CONFIG.maxSegments - 1);
+    const rest = withTotals.slice(CONFIG.maxSegments - 1);
+    const otherValues = kept[0].values.map((_, i) =>
+      rest.reduce((s, r) => s + (r.values[i] || 0), 0)
+    );
+    kept.push({ name: 'Other', field: '__other__', values: otherValues });
+    return kept.map(({ _total, ...s }) => s);
   }
 
   #renderControls() {
