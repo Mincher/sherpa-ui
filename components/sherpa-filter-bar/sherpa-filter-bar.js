@@ -65,6 +65,7 @@ import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
 import { formatFieldName } from "../utilities/format-utils.js";
 import { TIME_RANGE_PRESETS } from "../utilities/timeframes.js";
+import { applyLocalFilters } from "../utilities/aggregate.js";
 
 export class SherpaFilterBar extends SherpaElement {
   static get cssUrl() {
@@ -98,6 +99,7 @@ export class SherpaFilterBar extends SherpaElement {
   #pendingEmit = false; // Microtask debounce for observer-driven filterchange
   #sortChangeHandler = null; // Bound handler for sortchange events
   #syncingSort = false; // Guard against re-entrant filterchange during sort sync
+  #refreshingOptions = false; // Guard against re-entrant option refresh
   #scopeEl = null; // Parent element used as event scope for sortchange
 
   onConnect() {
@@ -120,7 +122,7 @@ export class SherpaFilterBar extends SherpaElement {
           this.#pendingEmit = false;
           // Skip re-entrant filterchange when we are syncing chip
           // state from a viz child's sortchange event or mixin sync.
-          if (this.#syncingSort || this.hasAttribute("data-syncing")) return;
+          if (this.#syncingSort || this.#refreshingOptions || this.hasAttribute("data-syncing")) return;
           this.#emitFilterChange();
         });
       }
@@ -528,6 +530,10 @@ export class SherpaFilterBar extends SherpaElement {
 
     // Global scope — dispatch on document so all viz children receive it.
     this.#dispatchGlobalFilterChange(filters);
+
+    // Cascade: narrow available options on other filter chips to values
+    // that exist in the subset produced by all other active filters.
+    this.#refreshFilterOptions();
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -668,14 +674,16 @@ export class SherpaFilterBar extends SherpaElement {
      ══════════════════════════════════════════════════════════════ */
 
   /**
-   * Extract unique values from stored row data for a given field.
+   * Extract unique values from a row set for a given field.
    * @param {string} field — column field name
+   * @param {Array<Object>} [rows] — rows to extract from (defaults to #rows)
    * @returns {string[]} sorted unique values
    */
-  #extractUniqueValues(field) {
+  #extractUniqueValues(field, rows) {
+    const source = rows || this.#rows;
     const seen = new Set();
     const values = [];
-    for (const row of this.#rows) {
+    for (const row of source) {
       const v = row[field];
       if (v != null && !seen.has(v)) {
         seen.add(v);
@@ -686,17 +694,93 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /**
-   * Get unique values for a field from the best available source:
-   *   1. Declarative `values` array in the column definition
-   *   2. Extracted from `#rows` row data
+   * Get rows filtered by all active value filters except one field.
+   * Used for cascading AND logic — each filter's options reflect
+   * only the subset produced by all other active filters.
+   * @param {string} excludeField — field to exclude from filtering
+   * @returns {Array<Object>}
+   */
+  #getFilteredRows(excludeField) {
+    if (!this.#rows.length) return this.#rows;
+    const filters = this.getFilters().filter(
+      (f) => f.field !== excludeField && f.type !== "sort" && f.type !== "segment",
+    );
+    if (!filters.length) return this.#rows;
+    return applyLocalFilters(this.#rows, filters);
+  }
+
+  /**
+   * Get unique values for a field from the best available source.
+   * When rows are available, values are extracted from the subset
+   * filtered by all other active filters (cascading AND).
+   *   1. Declarative `values` array (only when no rows exist)
+   *   2. Extracted from filtered row data
    * @param {string} field — column field name
    * @returns {string[]}
    */
   #getValuesForField(field) {
     const col = this.#columns.find((c) => c.field === field);
+    if (this.#rows.length) {
+      return this.#extractUniqueValues(field, this.#getFilteredRows(field));
+    }
     if (col?.values?.length) return col.values.map(String);
-    if (this.#rows.length) return this.#extractUniqueValues(field);
     return [];
+  }
+
+  /**
+   * Refresh all filter chip menus to reflect cascading AND logic.
+   * Each chip's available values are narrowed to only those present
+   * in rows that match all other active filters. Preserves checked
+   * state for values that still exist in the narrowed set.
+   */
+  #refreshFilterOptions() {
+    if (this.#refreshingOptions || !this.#rows.length) return;
+    this.#refreshingOptions = true;
+
+    let needsReemit = false;
+
+    for (const chip of this.#getFilterChips()) {
+      if (!chip.hasAttribute("data-filter-field")) continue;
+      const filterType = chip.getAttribute("data-filter-type") || "text";
+      if (filterType !== "text" && filterType !== "number") continue;
+
+      const field = chip.getAttribute("data-filter-field");
+      const prevSelected = chip.getSelectedValues?.() ?? [];
+      const prevSet = new Set(prevSelected.map((v) => String(v).toLowerCase()));
+
+      const availableValues = this.#getValuesForField(field);
+
+      const items = availableValues.map((v) => ({
+        value: v,
+        text: v,
+        selected: prevSet.has(String(v).toLowerCase()),
+      }));
+
+      chip.setMenuItems?.(items, { selection: "checkbox", group: "values" });
+
+      // Count how many previously selected values survived
+      const survivingCount = items.filter((i) => i.selected).length;
+
+      if (survivingCount !== prevSelected.length) {
+        this.#syncFilterChipLabel(chip, survivingCount);
+        if (survivingCount === 0 && chip.hasAttribute("data-active")) {
+          chip.removeAttribute("data-active");
+        }
+        needsReemit = true;
+      }
+    }
+
+    if (needsReemit) {
+      this.#syncActiveState();
+      // Re-dispatch with corrected filter state after lost selections
+      const filters = this.getFilters();
+      this.#dispatchContainerFilterChange(filters);
+      this.#dispatchGlobalFilterChange(filters);
+    }
+
+    queueMicrotask(() => {
+      this.#refreshingOptions = false;
+    });
   }
 
   /**
