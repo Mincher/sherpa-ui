@@ -166,7 +166,7 @@
   height: 100vh;
 }
 
-.sherpa-app-layout[data-nav-pinned="true"] {
+.sherpa-app-layout:has(sherpa-nav[data-pinned="true"]) {
   --nav-column-width: 320px;
 }
 

@@ -209,11 +209,17 @@ export class SherpaFilterBar extends SherpaElement {
         }
         // Activate chip when any value is checked
         const values = chip.getSelectedValues?.() ?? [];
+        const wasActive = chip.hasAttribute("data-active");
         chip.toggleAttribute("data-active", values.length > 0);
         // Update label and badge count based on selection count
         this.#syncFilterChipLabel(chip, values.length);
         this.#syncActiveState();
-        // Observer picks up the data-active mutation and dispatches.
+        // If data-active didn't change (e.g. switching time range presets
+        // while already active), the MutationObserver won't fire, so
+        // emit explicitly.
+        if (wasActive === chip.hasAttribute("data-active")) {
+          this.#emitFilterChange();
+        }
         return;
       }
 
