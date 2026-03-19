@@ -1,0 +1,21 @@
+feat(mcp): add template resources, pattern catalog, and view composition tools
+
+Phase 1 - Component template resources:
+- sherpa://template/{tagName} resource serves raw HTML templates (53 resources)
+- query_component now includes available template IDs in response
+- generate_component accepts optional templateId parameter with validation
+
+Phase 2 - Pattern catalog:
+- patterns/layouts/ - 5 layout patterns: app-shell, dashboard-grid, detail-view, list-view, settings-form
+- patterns/feedback/ - 3 feedback patterns: empty-state, confirmation-dialog, loading-state
+- HTML-native metadata via data-pattern-* attributes on template elements
+- scripts/extract-pattern-index.js generates patterns/index.json
+- npm run patterns script added; build script updated
+
+Phase 3 - MCP server pattern tools:
+- list_patterns - browse patterns by category
+- get_pattern - retrieve full pattern HTML
+- compose_view - combine layout pattern + component API refs
+- sherpa://pattern/{patternId} resource for pattern HTML (8 resources)
+- build_ui prompt enhanced with layoutPattern arg + pattern summary
+- README updated: 8 tools, 120 resources, new architecture diagram
