@@ -101,11 +101,41 @@ Components dispatch these events (bubble + composed) for app-level integration:
 | `containerexport`       | `sherpa-menu-item`   | `{ value }` (bubbles from menu) |
 | `viewexport`            | `sherpa-view-header` | `{ title }`                     |
 
+## MCP Server
+
+Sherpa UI ships with an [MCP](https://modelcontextprotocol.io/) server that
+exposes component APIs, design tokens, and usage validation to AI agents.
+
+```bash
+npm run mcp                # Start the MCP server (stdio transport)
+```
+
+Add to your VS Code `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "sherpa-ui": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./node_modules/sherpa-ui/mcp-server/index.js"]
+    }
+  }
+}
+```
+
+5 tools (`query_component`, `list_components`, `generate_component`,
+`browse_tokens`, `validate_usage`), 59 resources (6 guideline docs + 53
+component schemas), and a `build_ui` prompt. See
+[mcp-server/README.md](mcp-server/README.md) for full details.
+
 ## Scripts
 
 ```bash
-npm run build              # Generate tokens + API docs
+npm run build              # Generate tokens + API docs + schemas
 npm run tokens:extract     # Fetch variables from Figma REST API
 npm run tokens:generate    # Generate CSS from figma-variables.json
 npm run docs               # Generate COMPONENT-API.md
+npm run schemas            # Generate component JSON schemas
+npm run mcp                # Start the MCP server
 ```

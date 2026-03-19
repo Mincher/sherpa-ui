@@ -15,7 +15,9 @@
   "files": [
     "components/",
     "css/",
-    "html/templates/"
+    "html/templates/",
+    "schemas/",
+    "mcp-server/"
   ],
   "scripts": {
     "docs": "node scripts/extract-component-api.js",
