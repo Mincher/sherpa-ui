@@ -36,6 +36,48 @@
     ]
   },
   {
+    "id": "add",
+    "name": "Complete add-entity flow with dialog form and toast feedback",
+    "category": "flows",
+    "file": "patterns/flows/add.html",
+    "description": "Provides the full lifecycle for creating a new entity",
+    "status": "stable",
+    "components": [
+      "sherpa-button",
+      "sherpa-dialog",
+      "sherpa-input-text",
+      "sherpa-toast"
+    ]
+  },
+  {
+    "id": "delete",
+    "name": "Complete delete-entity flow with confirmation dialog and toast feedback",
+    "category": "flows",
+    "file": "patterns/flows/delete.html",
+    "description": "Provides the full lifecycle for deleting an existing entity",
+    "status": "stable",
+    "components": [
+      "sherpa-button",
+      "sherpa-dialog",
+      "sherpa-callout",
+      "sherpa-toast"
+    ]
+  },
+  {
+    "id": "edit",
+    "name": "Complete edit-entity flow with pre-populated dialog form and toast feedback",
+    "category": "flows",
+    "file": "patterns/flows/edit.html",
+    "description": "Provides the full lifecycle for editing an existing entity",
+    "status": "stable",
+    "components": [
+      "sherpa-button",
+      "sherpa-dialog",
+      "sherpa-input-text",
+      "sherpa-toast"
+    ]
+  },
+  {
     "id": "app-shell",
     "name": "Standard application shell layout",
     "category": "layouts",

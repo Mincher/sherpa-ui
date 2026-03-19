@@ -98,7 +98,7 @@ Add to `.cursor/mcp.json` in your project:
 
 | Capability     | Count | What it gives the AI                                      |
 | -------------- | ----- | --------------------------------------------------------- |
-| **Tools**      | 8     | Actions the AI can call (query, generate, validate, compose, etc.) |
+| **Tools**      | 9     | Actions the AI can call (query, generate, validate, compose, etc.) |
 | **Resources**  | 67+   | Reference docs, component schemas, templates, and patterns |
 | **Prompts**    | 1     | A guided workflow for building complete UI layouts          |
 
@@ -309,6 +309,36 @@ layout pattern, with all relevant component APIs at hand.
 
 ---
 
+### `generate_flow` — Generate a CRUD flow
+
+Generates a complete add, edit, or delete flow for a given entity. Returns
+trigger button + dialog + form fields (or confirmation callout) + toast
+feedback comments. All flow events use `bubbles: true, composed: true`.
+
+**Input:**
+```json
+{
+  "flowType": "add",
+  "entityName": "device",
+  "fields": [
+    { "name": "hostname", "label": "Hostname", "required": true },
+    { "name": "ip_address", "label": "IP Address" },
+    { "name": "location", "label": "Location", "type": "select" }
+  ]
+}
+```
+
+**Output:** Complete HTML with trigger button, dialog containing the
+specified form fields, cancel/save buttons, and toast feedback comments.
+
+For delete flows, the dialog uses a `sherpa-callout` warning instead of
+form fields. The `fields` parameter is ignored for delete.
+
+**Use when:** You want the AI to generate a standards-compliant CRUD flow
+with correct event conventions, rather than improvising the structure.
+
+---
+
 ## 4. Resources & Prompts
 
 ### Resources
@@ -476,7 +506,8 @@ sherpa-ui/
 ├── patterns/
 │   ├── index.json            ← Pattern catalog (generated)
 │   ├── layouts/              ← View layout patterns (HTML)
-│   └── feedback/             ← Feedback/state patterns (HTML)
+│   ├── feedback/             ← Feedback/state patterns (HTML)
+│   └── flows/                ← CRUD flow patterns (HTML)
 ├── components/               ← Component source (HTML templates served)
 ├── docs/                     ← Guidelines served as resources
 ├── css/styles/               ← Token CSS files scanned by browse_tokens

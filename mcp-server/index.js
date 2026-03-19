@@ -15,6 +15,7 @@
  *   list_patterns        — List view layout and UX patterns
  *   get_pattern          — Get full HTML for a pattern
  *   compose_view         — Compose a complete view from layout + components
+ *   generate_flow        — Generate a CRUD flow (add/edit/delete) for an entity
  *
  * Resources:
  *   sherpa://guidelines/*  — Component guidelines, API standard, token usage
@@ -562,6 +563,128 @@ server.registerTool(
   }
 );
 
+/* ── Flow generation ───────────────────────────────────────────── */
+
+function generateFlowHTML(flowType, entityName, fields) {
+  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const entityLabel = capitalize(entityName);
+  const indent = "    ";
+
+  if (flowType === "add" || flowType === "edit") {
+    const isEdit = flowType === "edit";
+    const dialogTitle = isEdit ? `Edit ${entityLabel}` : `Add ${entityLabel}`;
+    const triggerLabel = isEdit ? "Edit" : "Add";
+    const triggerIcon = isEdit ? "pen-to-square" : "plus";
+    const triggerVariant = isEdit ? "secondary" : "primary";
+    const successMsg = isEdit ? `${entityLabel} updated successfully` : `${entityLabel} created successfully`;
+    const errorMsg = isEdit ? `Failed to update ${entityName}` : `Failed to create ${entityName}`;
+
+    let fieldHTML = "";
+    if (fields?.length) {
+      for (const f of fields) {
+        const tag = f.type === "select" ? "sherpa-input-select" : "sherpa-input-text";
+        const req = f.required ? " required" : "";
+        fieldHTML += `${indent}<${tag} data-label="${f.label || capitalize(f.name)}" name="${f.name}"${req}></${tag}>\n`;
+      }
+    } else {
+      fieldHTML += `${indent}<sherpa-input-text data-label="Name" name="name" required></sherpa-input-text>\n`;
+    }
+
+    const prePopNote = isEdit
+      ? `\n${indent}<!-- App JS pre-populates fields from existing record after dialog opens -->`
+      : "";
+
+    return `<!-- ${capitalize(flowType)} ${entityLabel} flow -->
+<!-- Events: flowstart, flowprogress, flowcomplete, flowcancel, flowerror -->
+<!-- All events: bubbles: true, composed: true -->
+
+<!-- Trigger -->
+<sherpa-button
+  data-label="${triggerLabel}"
+  data-variant="${triggerVariant}"
+  data-icon-start="${triggerIcon}">
+</sherpa-button>
+
+<!-- Dialog -->
+<sherpa-dialog data-label="${dialogTitle}" data-size="medium" data-dismissible>
+${prePopNote}
+${fieldHTML.trimEnd()}
+
+  <sherpa-button slot="footer" data-label="Cancel" data-variant="secondary"></sherpa-button>
+  <sherpa-button slot="footer" data-label="Save" data-variant="primary"></sherpa-button>
+</sherpa-dialog>
+
+<!-- Toast feedback (programmatic):
+  SherpaToast.success("${successMsg}")
+  SherpaToast.critical("${errorMsg}")
+-->`;
+  }
+
+  if (flowType === "delete") {
+    return `<!-- Delete ${entityLabel} flow -->
+<!-- Events: flowstart, flowprogress, flowcomplete, flowcancel, flowerror -->
+<!-- All events: bubbles: true, composed: true -->
+
+<!-- Trigger -->
+<sherpa-button
+  data-label="Delete"
+  data-variant="secondary"
+  data-status="critical"
+  data-icon-start="trash-can">
+</sherpa-button>
+
+<!-- Confirmation dialog -->
+<sherpa-dialog data-label="Delete ${entityLabel}" data-size="small" data-dismissible>
+  <sherpa-callout data-status="warning" data-heading="This action cannot be undone">
+    Are you sure you want to delete this ${entityName}? This will permanently remove it and all associated data.
+  </sherpa-callout>
+
+  <sherpa-button slot="footer" data-label="Cancel" data-variant="secondary"></sherpa-button>
+  <sherpa-button slot="footer" data-label="Delete" data-variant="primary" data-status="critical"></sherpa-button>
+</sherpa-dialog>
+
+<!-- Toast feedback (programmatic):
+  SherpaToast.success("${entityLabel} deleted successfully")
+  SherpaToast.critical("Failed to delete ${entityName}")
+-->`;
+  }
+
+  return `Unknown flow type: ${flowType}. Use "add", "edit", or "delete".`;
+}
+
+server.registerTool(
+  "generate_flow",
+  {
+    title: "Generate Flow",
+    description: "Generate a complete CRUD flow (add/edit/delete) with trigger, dialog, form, and toast feedback for a given entity",
+    inputSchema: {
+      flowType: z.enum(["add", "edit", "delete"]).describe("Flow type: add, edit, or delete"),
+      entityName: z.string().describe("Entity name (e.g. 'device', 'user', 'policy')"),
+      fields: z.array(z.object({
+        name: z.string().describe("Field name (used as the name attribute)"),
+        label: z.string().optional().describe("Field label text (defaults to capitalized name)"),
+        type: z.enum(["text", "select"]).optional().describe("Input type: text (default) or select"),
+        required: z.boolean().optional().describe("Whether the field is required"),
+      })).optional().describe("Form fields for add/edit flows (ignored for delete)"),
+    },
+  },
+  async ({ flowType, entityName, fields }) => {
+    const html = generateFlowHTML(flowType, entityName, fields);
+    const validation = validateUsage(html);
+
+    let result = html;
+    if (validation.length) {
+      result += "\n\n<!-- Validation notes:\n";
+      for (const issue of validation) {
+        result += `  ${issue.severity}: ${issue.message}\n`;
+      }
+      result += "-->";
+    }
+
+    return { content: [{ type: "text", text: result }] };
+  }
+);
+
 /* ── Resources ─────────────────────────────────────────────────── */
 
 // Static guideline documents
@@ -758,6 +881,10 @@ ${patternSummary}
 4. Custom events use bubbles: true
 5. All components need explicit closing tags (no self-closing)
 6. Use slot="name" for named content projection
+7. CRUD flows use flowstart/flowprogress/flowcomplete/flowcancel/flowerror events (bubbles: true, composed: true)
+8. Flow state is tracked in app JS memory — never in DOM attributes
+9. Dialogs use native ::backdrop via showModal() — no custom shim elements
+10. Toast feedback: SherpaToast.success() on complete, SherpaToast.critical() on error
 
 Generate the HTML with inline comments explaining the component usage.`,
           },

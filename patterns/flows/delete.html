@@ -1,0 +1,63 @@
+<!--
+  delete — Complete delete-entity flow with confirmation dialog and toast feedback.
+
+  Provides the full lifecycle for deleting an existing entity:
+    • Trigger button opens a confirmation dialog with a warning callout
+    • User confirms or cancels the destructive action
+    • Delete dispatches flowcomplete + success toast
+    • Cancel dispatches flowcancel and closes the dialog
+    • Errors dispatch flowerror + critical toast
+
+  Components: sherpa-button, sherpa-dialog, sherpa-callout, sherpa-toast
+
+  Lifecycle (app JS manages state in memory, not DOM):
+    1. User clicks delete trigger on a row or toolbar
+    2. App dispatches flowstart {flow:"delete", entity:"...", data: targetRecord}
+    3. App opens confirmation dialog showing what will be deleted
+    4. User clicks Delete → app dispatches flowprogress → calls API
+    5a. Success → flowcomplete + SherpaToast.success("Entity deleted")
+    5b. Failure → flowerror + SherpaToast.critical("Failed to delete entity")
+    6. Cancel → flowcancel → dialog closes, no side effects
+
+  Events (all bubbles: true, composed: true):
+    flowstart    — {flow: "delete", entity: string, data: object}
+    flowprogress — {flow: "delete", entity: string, data: object}
+    flowcomplete — {flow: "delete", entity: string, data: object}
+    flowcancel   — {flow: "delete", entity: string}
+    flowerror    — {flow: "delete", entity: string, error: string}
+
+  Backdrop: native ::backdrop on <dialog> — no custom shim needed.
+  See also: patterns/feedback/confirmation-dialog.html (generic confirmation)
+-->
+
+<template id="delete"
+  data-pattern-category="flows"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-button, sherpa-dialog, sherpa-callout, sherpa-toast">
+
+  <!-- Trigger — typically a row action button or toolbar delete button -->
+  <sherpa-button
+    data-label="Delete"
+    data-variant="secondary"
+    data-status="critical"
+    data-icon-start="trash-can">
+  </sherpa-button>
+
+  <!-- Confirmation dialog — no form, just warning + confirm/cancel -->
+  <sherpa-dialog data-label="Delete Entity" data-size="small" data-dismissible>
+
+    <sherpa-callout data-status="warning" data-heading="This action cannot be undone">
+      Are you sure you want to delete this entity? This will permanently remove it and all associated data.
+    </sherpa-callout>
+
+    <!-- Actions — Delete triggers flowprogress → API → flowcomplete/flowerror -->
+    <sherpa-button slot="footer" data-label="Cancel" data-variant="secondary"></sherpa-button>
+    <sherpa-button slot="footer" data-label="Delete" data-variant="primary" data-status="critical"></sherpa-button>
+  </sherpa-dialog>
+
+  <!--
+    Toast feedback (programmatic — not in DOM):
+      SherpaToast.success("Entity deleted successfully")
+      SherpaToast.critical("Failed to delete entity")
+  -->
+</template>

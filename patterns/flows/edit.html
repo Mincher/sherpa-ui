@@ -1,0 +1,66 @@
+<!--
+  edit — Complete edit-entity flow with pre-populated dialog form and toast feedback.
+
+  Provides the full lifecycle for editing an existing entity:
+    • Trigger button (row action or toolbar) opens a dialog pre-filled with current values
+    • Form fields allow modifying entity data
+    • Save dispatches flowcomplete + success toast
+    • Cancel dispatches flowcancel and closes the dialog
+    • Errors dispatch flowerror + critical toast
+
+  Components: sherpa-button, sherpa-dialog, sherpa-input-text, sherpa-toast
+
+  Lifecycle (app JS manages state in memory, not DOM):
+    1. User clicks edit trigger on a row or toolbar
+    2. App dispatches flowstart {flow:"edit", entity:"...", data: existingRecord}
+    3. App opens dialog and pre-populates form fields with existingRecord values
+    4. User modifies fields
+    5. User clicks Save → app dispatches flowprogress → calls API with changes
+    6a. Success → flowcomplete + SherpaToast.success("Entity updated")
+    6b. Failure → flowerror + SherpaToast.critical("Failed to update entity")
+    7. Cancel → flowcancel → dialog closes, no side effects
+
+  Events (all bubbles: true, composed: true):
+    flowstart    — {flow: "edit", entity: string, data: object}
+    flowprogress — {flow: "edit", entity: string, data: object}
+    flowcomplete — {flow: "edit", entity: string, data: object}
+    flowcancel   — {flow: "edit", entity: string}
+    flowerror    — {flow: "edit", entity: string, error: string}
+
+  Pre-population: App JS sets each input's `value` attribute from the existing record
+  after the dialog opens. For example:
+    dialog.querySelector('[name="name"]').value = record.name;
+
+  Backdrop: native ::backdrop on <dialog> — no custom shim needed.
+-->
+
+<template id="edit"
+  data-pattern-category="flows"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-button, sherpa-dialog, sherpa-input-text, sherpa-toast">
+
+  <!-- Trigger — typically a row action button or toolbar edit button -->
+  <sherpa-button
+    data-label="Edit"
+    data-variant="secondary"
+    data-icon-start="pen-to-square">
+  </sherpa-button>
+
+  <!-- Dialog — opens on flowstart, pre-populated with existing values -->
+  <sherpa-dialog data-label="Edit Entity" data-size="medium" data-dismissible>
+
+    <!-- Form fields — pre-populated by app JS from existing record -->
+    <sherpa-input-text data-label="Name" name="name" required placeholder="Enter name"></sherpa-input-text>
+    <sherpa-input-text data-label="Description" name="description" placeholder="Enter description"></sherpa-input-text>
+
+    <!-- Actions — Save triggers flowprogress → API → flowcomplete/flowerror -->
+    <sherpa-button slot="footer" data-label="Cancel" data-variant="secondary"></sherpa-button>
+    <sherpa-button slot="footer" data-label="Save" data-variant="primary"></sherpa-button>
+  </sherpa-dialog>
+
+  <!--
+    Toast feedback (programmatic — not in DOM):
+      SherpaToast.success("Entity updated successfully")
+      SherpaToast.critical("Failed to update entity")
+  -->
+</template>

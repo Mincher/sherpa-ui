@@ -1,0 +1,62 @@
+<!--
+  add — Complete add-entity flow with dialog form and toast feedback.
+
+  Provides the full lifecycle for creating a new entity:
+    • Trigger button opens a dialog with a form
+    • Form fields collect new entity data
+    • Save dispatches flowcomplete + success toast
+    • Cancel dispatches flowcancel and closes the dialog
+    • Errors dispatch flowerror + critical toast
+
+  Components: sherpa-button, sherpa-dialog, sherpa-input-text, sherpa-toast
+
+  Lifecycle (app JS manages state in memory, not DOM):
+    1. User clicks trigger button
+    2. App dispatches flowstart {flow:"add", entity:"..."} → opens dialog
+    3. User fills form fields
+    4. User clicks Save → app dispatches flowprogress → calls API
+    5a. Success → flowcomplete + SherpaToast.success("Entity created")
+    5b. Failure → flowerror + SherpaToast.critical("Failed to create entity")
+    6. Cancel → flowcancel → dialog closes, no side effects
+
+  Events (all bubbles: true, composed: true):
+    flowstart   — {flow: "add", entity: string}
+    flowprogress — {flow: "add", entity: string, data: object}
+    flowcomplete — {flow: "add", entity: string, data: object}
+    flowcancel   — {flow: "add", entity: string}
+    flowerror    — {flow: "add", entity: string, error: string}
+
+  Backdrop: native ::backdrop on <dialog> — no custom shim needed.
+  See also: patterns/layouts/list-view.html (Add button trigger)
+-->
+
+<template id="add"
+  data-pattern-category="flows"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-button, sherpa-dialog, sherpa-input-text, sherpa-toast">
+
+  <!-- Trigger — typically placed in a toolbar or view header -->
+  <sherpa-button
+    data-label="Add"
+    data-variant="primary"
+    data-icon-start="plus">
+  </sherpa-button>
+
+  <!-- Dialog — opens on flowstart, contains form for new entity -->
+  <sherpa-dialog data-label="Add Entity" data-size="medium" data-dismissible>
+
+    <!-- Form fields — replace with actual entity fields -->
+    <sherpa-input-text data-label="Name" name="name" required placeholder="Enter name"></sherpa-input-text>
+    <sherpa-input-text data-label="Description" name="description" placeholder="Enter description"></sherpa-input-text>
+
+    <!-- Actions — Save triggers flowprogress → API → flowcomplete/flowerror -->
+    <sherpa-button slot="footer" data-label="Cancel" data-variant="secondary"></sherpa-button>
+    <sherpa-button slot="footer" data-label="Save" data-variant="primary"></sherpa-button>
+  </sherpa-dialog>
+
+  <!--
+    Toast feedback (programmatic — not in DOM):
+      SherpaToast.success("Entity created successfully")
+      SherpaToast.critical("Failed to create entity")
+  -->
+</template>

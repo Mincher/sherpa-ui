@@ -309,3 +309,82 @@ Before submitting any component change:
 - [ ] `:host(:not(...))` functional form used throughout
 - [ ] Template wrapped in `<template id="default">`
 - [ ] `observedAttributes` spreads `super.observedAttributes`
+
+---
+
+## 12 Flow Patterns
+
+CRUD flows (Add, Edit, Delete) are **composed from existing components** — no
+special flow component exists. Each flow follows a shared lifecycle model.
+
+### Lifecycle States
+
+```
+idle → started → in-progress → complete
+                             → cancelled
+                             → error
+```
+
+State is tracked in **app JS memory** — not in DOM attributes.
+
+### Flow Events
+
+Five custom events carry the flow through its lifecycle. All use
+`bubbles: true, composed: true`.
+
+| Event          | Dispatched when                          | `detail` shape                                        |
+| -------------- | ---------------------------------------- | ----------------------------------------------------- |
+| `flowstart`    | Trigger clicked, dialog about to open    | `{ flow: "add"\|"edit"\|"delete", entity: string }`   |
+| `flowprogress` | User submits (Save / Delete clicked)     | `{ flow, entity, data: object }`                      |
+| `flowcomplete` | API call succeeds                        | `{ flow, entity, data: object }`                      |
+| `flowcancel`   | User cancels (Cancel clicked or dismiss) | `{ flow, entity }`                                    |
+| `flowerror`    | API call fails                           | `{ flow, entity, error: string }`                     |
+
+### Composition
+
+Each flow composes these existing components:
+
+| Concern        | Component(s)                                   |
+| -------------- | ---------------------------------------------- |
+| Trigger        | `sherpa-button`                                |
+| Dialog         | `sherpa-dialog` (native `<dialog>`, `::backdrop`) |
+| Form fields    | `sherpa-input-text`, `sherpa-input-select`, etc. |
+| Confirmation   | `sherpa-callout` (warning variant for delete)  |
+| Feedback       | `SherpaToast.success()` / `.critical()`        |
+
+### HTML-First Rule
+
+> The trigger, dialog, form fields, and action buttons all live in the HTML
+> template. JS opens the dialog, dispatches events, and calls APIs — it never
+> creates structural DOM for flows.
+
+### Backdrop
+
+Dialogs use the **native `::backdrop`** pseudo-element (via `<dialog>.showModal()`).
+No custom overlay elements or shim divs.
+
+### Toast Feedback
+
+```js
+// On success
+SherpaToast.success("Device created successfully");
+
+// On error
+SherpaToast.critical("Failed to create device");
+```
+
+### Anti-Patterns for Flows
+
+| ❌ Never                                            | ✅ Instead                                    |
+| --------------------------------------------------- | --------------------------------------------- |
+| Store flow state in DOM attributes                  | Track state in app JS memory                  |
+| Create dialog elements dynamically                  | Place dialog in template, toggle `data-open`  |
+| Build custom backdrop overlays                      | Use native `::backdrop` via `showModal()`     |
+| Use `window.confirm()` for delete confirmation      | Use `sherpa-dialog` + `sherpa-callout`         |
+| Dispatch flow events without `composed: true`       | Always `{ bubbles: true, composed: true }`    |
+
+### Pattern Files
+
+- `patterns/flows/add.html` — trigger + form dialog + toast docs
+- `patterns/flows/edit.html` — trigger + pre-populated form dialog + toast docs
+- `patterns/flows/delete.html` — trigger + confirmation dialog + toast docs
