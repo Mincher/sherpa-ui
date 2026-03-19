@@ -1,35 +1,31 @@
 /**
- * sherpa-footer.js
- * SherpaFooter — Reusable footer component with multiple template variants.
+ * @element sherpa-footer
+ * @description Reusable footer with multiple template variants.
+ *   Template selected via data-type attribute.
  *
- * Uses SherpaElement multi-template support to select the appropriate footer
- * layout based on the `type` attribute.
+ * @attr {enum}    [data-type]          — action-bar | slot (default: slot)
+ * @attr {string}  [data-cancel-label]  — Cancel button text (action-bar)
+ * @attr {string}  [data-apply-label]   — Apply button text (action-bar)
+ * @attr {boolean} [data-show-cancel]   — Show cancel button (default: true)
+ * @attr {boolean} [data-show-apply]    — Show apply button (default: true)
+ * @attr {boolean} [data-apply-closes]  — Apply auto-closes parent (default: true)
  *
- * Usage:
- *   <!-- Action bar (menu footer with cancel/apply) -->
- *   <sherpa-footer type="action-bar" cancel-label="Reset" apply-label="Save"></sherpa-footer>
+ * @slot start     — Content aligned to the left (action-bar)
+ * @slot (default) — Passthrough content (slot variant)
  *
- *   <!-- Slot passthrough (card/dialog footer) -->
- *   <sherpa-footer type="slot">
- *     <sherpa-button variant="secondary">Cancel</sherpa-button>
- *     <sherpa-button variant="primary">Confirm</sherpa-button>
- *   </sherpa-footer>
+ * @fires footer-cancel
+ *   bubbles: true, composed: true
+ *   detail: none
+ * @fires footer-apply
+ *   bubbles: true, composed: true
+ *   detail: { closes: boolean }
  *
- * Attributes:
- *   type            — Template variant: action-bar | slot
- *   cancel-label    — Cancel button text (action-bar)
- *   apply-label     — Apply button text (action-bar)
- *   show-cancel     — Show cancel button (action-bar, true by default)
- *   show-apply      — Show apply button (action-bar, true by default)
- *   apply-closes    — Whether apply auto-closes the parent (action-bar, true by default)
- *
- * Events:
- *   footer-cancel   — Fired when cancel button is clicked
- *   footer-apply    — Fired when apply button is clicked
- *
- * Slots:
- *   start           — Content aligned to the left (action-bar)
- *   (default)       — Passthrough content (slot variant)
+ * @prop {string}  type         — Getter/setter for data-type
+ * @prop {string}  cancelLabel  — Getter/setter for data-cancel-label
+ * @prop {string}  applyLabel   — Getter/setter for data-apply-label
+ * @prop {boolean} showCancel   — Getter/setter for data-show-cancel
+ * @prop {boolean} showApply    — Getter/setter for data-show-apply
+ * @prop {boolean} applyCloses  — Getter/setter for data-apply-closes
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

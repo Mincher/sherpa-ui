@@ -5,28 +5,15 @@
  * The browser handles expand/collapse natively. JS only syncs the
  * data-label and data-icon attributes into the shadow DOM.
  *
- * Usage:
- *   <sherpa-accordion data-label="Section Title">
- *     Panel content goes here.
- *   </sherpa-accordion>
+ * @element sherpa-accordion
  *
- *   <sherpa-accordion data-label="Details" open>
- *     <p>Initially expanded content.</p>
- *   </sherpa-accordion>
+ * @attr {string}  data-label  — Heading text for the summary row
+ * @attr {string}  data-icon   — FontAwesome unicode for optional leading icon
+ * @attr {boolean} open        — Native details open/expanded state
+ * @attr {boolean} disabled    — Prevents interaction
  *
- *   <sherpa-accordion data-label="With icon" data-icon="&#xf013;">
- *     <p>Content with a leading icon.</p>
- *   </sherpa-accordion>
- *
- * Slots:
- *   - actions:  Trailing action buttons in the summary row
- *   - (default): Panel content revealed when expanded
- *
- * Attributes:
- *   - data-label: Heading text for the summary row
- *   - data-icon:  FontAwesome unicode for the optional leading icon
- *   - open:       Native details open attribute (expanded state)
- *   - disabled:   Prevents interaction (CSS pointer-events: none)
+ * @slot          — Default slot for panel content revealed when expanded
+ * @slot actions  — Trailing action buttons in the summary row
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

@@ -1,17 +1,12 @@
 /**
- * @component sherpa-progress-bar
+ * @element sherpa-progress-bar
+ * @description Horizontal progress indicator — determinate or indeterminate.
+ *   Sets role="progressbar" with appropriate ARIA values.
  *
- * Horizontal progress indicator — determinate or indeterminate.
- *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-label]              Task label above the bar
- * @attr {string}  [data-value]              0–100 percentage (determinate)
- * @attr {string}  [data-variant=determinate] determinate | indeterminate
- * @attr {string}  [data-status-text]        Override auto-generated status text
- *
- * ── Accessibility ─────────────────────────────────────────────
- * Sets role="progressbar" with aria-valuemin, aria-valuemax, and
- * aria-valuenow (determinate) or removes aria-valuenow (indeterminate).
+ * @attr {string}  [data-label]                  — Task label above the bar
+ * @attr {number}  [data-value]                  — 0–100 percentage (determinate)
+ * @attr {enum}    [data-variant=determinate]     — determinate | indeterminate
+ * @attr {string}  [data-status-text]            — Override auto-generated status text
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

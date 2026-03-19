@@ -1,13 +1,20 @@
 /**
- * sherpa-input-search.js
- * Search input with magnifying glass icon and clear button.
+ * @element sherpa-input-search
+ * @extends SherpaInputBase
+ * @description Search input with magnifying glass icon and clear button.
+ *   Inherits label, description, helper, layout, validation from SherpaInputBase.
  *
- * @example
- *   <sherpa-input-search label="Search" placeholder="Search..."></sherpa-input-search>
+ * @fires input
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
+ * @fires search
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
  *
- * @fires input — { value }
- * @fires change — { value }
- * @fires search — { value } (fired on Enter or clear)
+ * @method clear() — Clear the search field and fire search event
  */
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";

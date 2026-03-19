@@ -1,32 +1,22 @@
 /**
- * sherpa-donut-chart.js
- * SherpaDonutChart — Donut / pie chart using CSS conic-gradient.
+ * @element sherpa-donut-chart
+ * @description Donut / pie chart using CSS conic-gradient.
+ *   Supports declarative query loading via ContentAttributesMixin
+ *   or programmatic setData().
  *
- * Supports both direct data and declarative query loading via
- * ContentAttributesMixin (data-query-src + data-query-key).
+ * @attr {string}  [data-title]          — Chart heading text
+ * @attr {string}  [data-inner-label]    — Centre big text
+ * @attr {string}  [data-inner-sublabel] — Centre small text
+ * @attr {boolean} [data-loading]        — Show loading state
+ * @attr {enum}    [data-variant]         — donut | pie
+ * @attr {string}  [data-segment-field]  — Field for segment grouping
+ * @attr {enum}    [data-segment-mode]    — Segment display mode
+ * @attr {string}  [data-sort-field]     — Sort field
+ * @attr {enum}    [data-sort-direction] — asc | desc
  *
- * Usage (declarative):
- *   <sherpa-donut-chart
- *     data-query-src="/data/queries/overview.json"
- *     data-query-key="detections-by-severity">
- *   </sherpa-donut-chart>
+ * @method setData(data) — Set chart data: Array<{ label, value, color? }> or config
  *
- * Usage (programmatic):
- *   chart.setData([
- *     { label: 'Apples',  value: 40 },
- *     { label: 'Oranges', value: 30 },
- *   ]);
- *
- * Attributes:
- *   data-title          — Chart heading text
- *   data-inner-label    — Centre big text
- *   data-inner-sublabel — Centre small text
- *   data-loading        — Boolean
- *   data-variant        — donut | pie
- *   + all ContentAttributesMixin attributes
- *
- * Methods:
- *   setData(config | Array<{label, value, color?}>)
+ * @prop {Array} data — Current chart data (getter-only)
  */
 
 import {

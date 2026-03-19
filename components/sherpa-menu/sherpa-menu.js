@@ -1,32 +1,27 @@
 /**
- * sherpa-menu.js — Menu component (per-instance, no singleton).
+ * @element sherpa-menu
+ * @description Menu component (per-instance, no singleton). Light DOM
+ *   <ul>/<li>/<sherpa-menu-item> content projected through <slot>.
+ *   Uses popover="auto" for top-layer promotion and light-dismiss.
+ *   CSS anchor positioning with JS fallback.
  *
- * Light DOM <ul>/<li>/<sherpa-menu-item> content projected through <slot>.
- * Event delegation handles click + keyboard on slotted items.
- * Dispatches `menu-select` with detail:
- *   { item, action, value, label, selection, checked, group, data }
+ * @slot (default) — Menu content: <ul>/<li>/<sherpa-menu-item> elements
  *
- * If the selected item has a `data-event` attribute, an additional
- * CustomEvent with that name is dispatched (bubbles, composed) carrying
- * the same detail. This lets menu items fire semantic domain events
- * (e.g. "containerexport") without a translation layer.
+ * @fires menu-select
+ *   bubbles: true, composed: true
+ *   detail: { item: Element, action: string, value: string, label: string,
+ *             selection: string, checked: boolean, group: string, data: * }
+ * @fires menu-close
+ *   bubbles: true, composed: true
+ *   detail: none
  *
- * Each sherpa-button[menu] creates and owns its own <sherpa-menu> instance.
- * Uses popover="auto" for top-layer promotion and light-dismiss.
- * CSS anchor positioning (with JS fallback) for placement.
+ * @method show(anchor)  — Open and position the menu relative to anchor element
+ * @method hide()        — Close the menu
+ * @method getMenuTemplate(id) — (static) Return menu template HTML by id
  *
- * Menu content templates:
- *   All menu templates are centralised in sherpa-menu.html and loaded
- *   once at module init. Components access them via the static API:
- *     await SherpaMenu.ready;
- *     const html = SherpaMenu.getMenuTemplate("container");
- *
- *   Available template ids:
- *     container  — Container overflow menu (resize, data, export)
- *     sort       — Sort column picker (filter chip)
- *     filter     — Value filter picker (filter chip)
- *     segment    — Segment column picker (filter chip)
- *     timeframe  — Time range presets (filter chip)
+ * @prop {boolean}  open   — Whether the menu is currently visible
+ * @prop {Element}  source — The anchor element that opened the menu
+ * @prop {Promise}  ready  — (static) Resolves when menu templates are loaded
  */
 
 import "../sherpa-menu-item/sherpa-menu-item.js";

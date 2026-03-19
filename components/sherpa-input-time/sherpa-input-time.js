@@ -1,15 +1,23 @@
 /**
- * sherpa-input-time.js
- * Time input using the native browser time picker, extending SherpaInputBase.
+ * @element sherpa-input-time
+ * @extends SherpaInputBase
+ * @description Time input using the native browser time picker.
+ *   Inherits label, description, helper, layout, validation from SherpaInputBase.
  *
- * @example
- *   <sherpa-input-time label="Start Time"></sherpa-input-time>
- *   <sherpa-input-time label="Alarm" value="08:30"></sherpa-input-time>
+ * @attr {string}  [min]  — Minimum selectable time (HH:MM)
+ * @attr {string}  [max]  — Maximum selectable time (HH:MM)
+ * @attr {number}  [step] — Step increment in seconds
  *
- * Extra attributes: min, max, step
+ * @fires input
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
  *
- * @fires input — { value }
- * @fires change — { value }
+ * @prop {string} min  — Getter/setter for min attribute
+ * @prop {string} max  — Getter/setter for max attribute
+ * @prop {string} step — Getter/setter for step attribute
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';

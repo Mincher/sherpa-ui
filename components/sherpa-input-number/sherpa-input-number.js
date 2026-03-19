@@ -1,16 +1,27 @@
 /**
- * sherpa-input-number.js
- * Numerical input with stepper buttons, extending SherpaInputBase.
+ * @element sherpa-input-number
+ * @extends SherpaInputBase
+ * @description Numerical input with stepper buttons. Inherits label, description,
+ *   helper, layout, validation, and value management from SherpaInputBase.
  *
- * @example
- *   <sherpa-input-number label="Quantity" min="0" max="100" step="1"></sherpa-input-number>
- *   <sherpa-input-number label="Price" step="0.01" placeholder="0.00"></sherpa-input-number>
+ * @attr {number}  [min]   — Minimum allowed value
+ * @attr {number}  [max]   — Maximum allowed value
+ * @attr {number}  [step]  — Step increment (default: 1)
  *
- * Extra attributes:
- *   min, max, step
+ * @fires input
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
  *
- * @fires input — { value }
- * @fires change — { value }
+ * @method stepUp(n=1)   — Increment value by n steps
+ * @method stepDown(n=1) — Decrement value by n steps
+ *
+ * @prop {string}  min           — Getter/setter for min attribute
+ * @prop {string}  max           — Getter/setter for max attribute
+ * @prop {string}  step          — Getter/setter for step attribute
+ * @prop {number}  valueAsNumber — Current value as a number (getter-only)
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';

@@ -1,32 +1,26 @@
 /**
- * @component sherpa-slider
+ * @element sherpa-slider
+ * @description Single or dual-handle range slider with optional numeric inputs.
+ *   Pointer event drag with setPointerCapture. Keyboard arrows with step.
  *
- * Single or dual-handle range slider with optional numeric inputs.
+ * @attr {string}  [data-label]       — Label text above the slider
+ * @attr {enum}    [data-type=single] — single | range
+ * @attr {number}  [data-min=0]       — Minimum value
+ * @attr {number}  [data-max=100]     — Maximum value
+ * @attr {number}  [data-step=1]      — Step increment
+ * @attr {string}  [data-value]       — Current value (single mode)
+ * @attr {string}  [data-value-low]   — Low handle value (range mode)
+ * @attr {string}  [data-value-high]  — High handle value (range mode)
+ * @attr {boolean} [data-show-inputs] — Show numeric input fields beside track
+ * @attr {boolean} [data-show-labels] — Show min/max increment labels
+ * @attr {boolean} [disabled]         — Disabled state
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-label]        Label text above the slider
- * @attr {string}  [data-type=single]  single | range
- * @attr {string}  [data-min=0]        Minimum value
- * @attr {string}  [data-max=100]      Maximum value
- * @attr {string}  [data-step=1]       Step increment
- * @attr {string}  [data-value]        Current value (single mode)
- * @attr {string}  [data-value-low]    Low handle value (range mode)
- * @attr {string}  [data-value-high]   High handle value (range mode)
- * @attr {boolean} [data-show-inputs]  Show numeric input fields beside track
- * @attr {boolean} [data-show-labels]  Show min/max increment labels
- * @attr {boolean} [disabled]          Disabled state
- *
- * ── Events ────────────────────────────────────────────────────
- * input  — fires continuously while dragging { value } or { low, high }
- * change — fires on pointer release          { value } or { low, high }
- *
- * ── Architecture notes ────────────────────────────────────────
- * HTML — label + slider row (inputs + track area + handles) + increment labels.
- * CSS  — fill and handle positions driven by --_low-pct / --_high-pct custom
- *        properties. Visibility controlled by :host([data-*]) selectors.
- * JS   — pointer event drag with setPointerCapture. Keyboard arrows with step.
- *        Dual-handle collision avoidance: low can't exceed high and vice-versa.
- *        Input fields sync bidirectionally with handle positions.
+ * @fires input
+ *   bubbles: true, composed: true
+ *   detail: { value: number } (single) or { low: number, high: number } (range)
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { value: number } (single) or { low: number, high: number } (range)
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

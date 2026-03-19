@@ -1,16 +1,19 @@
 /**
  * sherpa-switch.js
- * SherpaSwitch — Toggle switch extending SherpaElement.
+ * SherpaSwitch — Toggle switch component.
  *
- * @example
- *   <sherpa-switch data-state="on"></sherpa-switch>
- *   <sherpa-switch data-state="off" disabled></sherpa-switch>
+ * @element sherpa-switch
  *
- * Attributes:
- *   - data-state: "on" | "off"
- *   - disabled: boolean
+ * @attr {enum}    data-state — on | off
+ * @attr {boolean} disabled   — Native disabled state
  *
- * @fires change — { checked, state }
+ * @fires change — Fired when toggle state changes
+ *   bubbles: true, composed: true
+ *   detail: { checked: boolean, state: string }
+ *
+ * @prop {string}  state    — Current state: "on" or "off" (read/write)
+ * @prop {boolean} checked  — Whether switch is on (read/write)
+ * @prop {boolean} disabled — Disabled state (read/write)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

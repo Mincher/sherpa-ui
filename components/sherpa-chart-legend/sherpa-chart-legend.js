@@ -1,24 +1,17 @@
 /**
- * sherpa-chart-legend.js
- * SherpaChartLegend — Standalone chart legend.
+ * @element sherpa-chart-legend
+ * @description Standalone chart legend with optional interactive link items.
  *
- * Usage:
- *   <sherpa-chart-legend data-orientation="vertical"></sherpa-chart-legend>
+ * @attr {enum}    [data-orientation] — horizontal | vertical (default: horizontal)
+ * @attr {boolean} [data-loading]     — Show loading state
  *
- *   legend.setItems([
- *     { label: 'Series A', value: '42%', color: '#7b1ce6' },
- *     { label: 'Series B', value: '28%', color: '#16abe2', active: false },
- *   ]);
+ * @fires legend-item-click
+ *   bubbles: true, composed: true
+ *   detail: { index: number, label: string }
  *
- * Attributes:
- *   data-orientation — horizontal (default) | vertical
- *   data-loading     — Boolean
+ * @method setItems(items) — Set legend items: [{ label, value?, color?, active?, link? }]
  *
- * Methods:
- *   setItems([{ label, value?, color?, active?, link? }])
- *
- * Events:
- *   legend-item-click — { detail: { index, label } }  (only on link items)
+ * @prop {Array} items — Current legend items (getter-only)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

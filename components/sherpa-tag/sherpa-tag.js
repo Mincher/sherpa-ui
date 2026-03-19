@@ -2,14 +2,13 @@
  * sherpa-tag.js
  * SherpaTag — Compact label component with variant and status support.
  *
- * Usage:
- *   <sherpa-tag data-status="success">New</sherpa-tag>
- *   <sherpa-tag data-variant="secondary">5</sherpa-tag>
+ * @element sherpa-tag
  *
- * Attributes:
- *   - data-variant:   primary (default), secondary
- *   - data-status:    critical, info, success, warning, urgent
- *   - data-collapsed: "true" renders as small circular indicator
+ * @attr {enum}    data-variant   — primary | secondary
+ * @attr {enum}    data-status    — critical | info | success | warning | urgent
+ * @attr {boolean} data-collapsed — Renders as small circular indicator
+ *
+ * @slot — Default slot for tag label content
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

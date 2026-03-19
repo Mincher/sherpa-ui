@@ -1,28 +1,19 @@
 /**
- * sherpa-section-header.js
- * SherpaSectionHeader — Section heading with slots extending SherpaElement.
+ * @element sherpa-section-header
+ * @description Section heading with slots for badge, description, and actions.
  *
- * Usage:
- *   <sherpa-section-header data-label="Section Title"></sherpa-section-header>
+ * @attr {string}  [data-label]         — Section title text
+ * @attr {enum}    [data-heading-level] — primary | secondary | tertiary
+ * @attr {boolean} [data-divider]       — Show bottom divider
  *
- *   <sherpa-section-header data-label="Dashboard" data-divider="true">
- *     <span slot="description">Overview of your metrics</span>
- *     <sherpa-button slot="actions" data-variant="tertiary">
- *       <i slot="icon-start" class="fa-solid fa-plus"></i>
- *       Add Widget
- *     </sherpa-button>
- *   </sherpa-section-header>
+ * @slot heading     — Custom heading element (replaces default)
+ * @slot badge       — Badge/tag next to heading
+ * @slot description — Description text below heading
+ * @slot actions     — Action buttons on the right side
  *
- * Slots:
- *   - heading: Custom heading element (replaces default heading)
- *   - badge: Badge/tag next to heading
- *   - description: Description text below heading
- *   - actions: Action buttons on the right side
- *
- * Attributes:
- *   - data-label:         Section title text
- *   - data-heading-level: "primary" | "secondary" | "tertiary"
- *   - data-divider:       "true" | "false" — Shows bottom divider
+ * @prop {string}  heading     — Getter/setter for data-label
+ * @prop {string}  headingType — Getter/setter for data-heading-level
+ * @prop {boolean} hasDivider  — Getter/setter for data-divider
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

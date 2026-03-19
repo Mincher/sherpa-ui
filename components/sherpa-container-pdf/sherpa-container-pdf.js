@@ -1,9 +1,9 @@
 /**
- * sherpa-container-pdf — ARCHIVED (no-op stub)
+ * @element sherpa-container-pdf
+ * @description ARCHIVED — No-op stub. PDF export functionality is archived
+ *   for rework. Registers the custom element so existing imports don't break.
  *
- * PDF export functionality is archived for rework.
- * This stub registers the custom element so existing imports don't break.
- * See components/archive/sherpa-container-pdf/ for the original implementation.
+ * @method setData(sourceContainer) — No-op, logs warning
  */
 
 class SherpaContainerPdf extends HTMLElement {

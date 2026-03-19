@@ -1,30 +1,31 @@
 /**
- * sherpa-toast.js
- * SherpaToast — Toast notification extending SherpaElement.
- *
  * @element sherpa-toast
+ * @description Toast notification with auto-dismiss, status variants,
+ *   and static factory methods for programmatic creation.
  *
- * @attr {string}  data-status         — info | success | warning | critical | urgent (default: info)
- * @attr {string}  data-label          — toast heading text
- * @attr {string}  data-value          — toast message content
- * @attr {number}  data-duration       — auto-dismiss duration in ms (default: 5000)
- * @attr {string}  data-timer-dismiss  — "true" | "false" — enable auto-dismiss
- * @attr {string}  data-show-close     — "true" | "false" — show close button (default: "true")
- * @attr {string}  data-position       — top-right | top-left | bottom-right | bottom-left | top-center | bottom-center
+ * @attr {enum}    [data-status=info]          — info | success | warning | critical | urgent
+ * @attr {string}  [data-label]                — Toast heading text
+ * @attr {string}  [data-value]                — Toast message content
+ * @attr {number}  [data-duration=5000]         — Auto-dismiss duration in ms
+ * @attr {boolean} [data-timer-dismiss]         — Enable auto-dismiss
+ * @attr {boolean} [data-show-close=true]       — Show close button
+ * @attr {enum}    [data-position]              — top-right | top-left | bottom-right | bottom-left | top-center | bottom-center
  *
- * @fires close  — fired when toast is closed
- * @fires action — fired when action button is clicked
+ * @fires close
+ *   bubbles: true, composed: true
+ *   detail: none
+ * @fires action
+ *   bubbles: true, composed: true
+ *   detail: none
  *
- * @method show()  — show the toast
- * @method hide()  — hide the toast
- * @method setAction(text, callback) — add action button
- *
- * Static methods:
- * @method SherpaToast.show(options)             — create + show a toast
- * @method SherpaToast.success(value, options)   — show success toast
- * @method SherpaToast.critical(value, options)  — show critical toast
- * @method SherpaToast.warning(value, options)   — show warning toast
- * @method SherpaToast.info(value, options)      — show info toast
+ * @method show()                    — Show the toast
+ * @method hide()                    — Hide with animation and remove
+ * @method setAction(text, callback) — Add action button
+ * @method SherpaToast.show(options)           — (static) Create + show toast
+ * @method SherpaToast.success(value, options) — (static) Success toast
+ * @method SherpaToast.critical(value, options)— (static) Critical toast
+ * @method SherpaToast.warning(value, options) — (static) Warning toast
+ * @method SherpaToast.info(value, options)    — (static) Info toast
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

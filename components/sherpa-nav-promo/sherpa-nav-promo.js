@@ -1,12 +1,19 @@
 /**
- * SherpaNavPromo — Promotional callout for the navigation footer.
+ * @element sherpa-nav-promo
+ * @description Promotional callout for the navigation footer.
+ *   Accepts config via data attributes or imperatively via setConfig().
  *
- * Shadow-DOM component (extends SherpaElement).
- * Self-configures from data attributes on the host:
- *   data-promo-title, data-promo-message, data-promo-link-text, data-promo-link-url
- * Also accepts config imperatively via setConfig({ title, message, link: { text, url } }).
- * Emits 'dismiss' event when the close button is clicked.
- * Dismissed state tracked via [data-dismissed] attribute on the host.
+ * @attr {string}  [data-promo-title]     — Promo heading text
+ * @attr {string}  [data-promo-message]   — Promo body message
+ * @attr {string}  [data-promo-link-text] — CTA link label
+ * @attr {string}  [data-promo-link-url]  — CTA link URL
+ * @attr {boolean} [data-dismissed]       — Whether the promo has been dismissed
+ *
+ * @fires dismiss
+ *   bubbles: true, composed: true
+ *   detail: none
+ *
+ * @method setConfig(config) — Set promo content: { title, message, link: { text, url } }
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

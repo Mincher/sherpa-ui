@@ -1,20 +1,32 @@
 /**
- * sherpa-stepper.js
- * SherpaStepper — Horizontal/vertical step progress indicator extending SherpaElement.
- *
- * HTML template defines wrapper structure and cloning prototypes.
- * JS populates steps from data; CSS handles all visual states.
- *
  * @element sherpa-stepper
+ * @description Horizontal/vertical step progress indicator.
+ *   Steps populated from data; CSS handles all visual states.
  *
- * @attr {number}  data-current-step       - Active step (1-based, default 1)
- * @attr {string}  data-linear             - "true" | "false" — steps must complete in order
- * @attr {string}  data-show-step-numbers  - "true" | "false" — show step numbers (default "true")
- * @attr {string}  data-src                - URL to load steps JSON
+ * @attr {number}  [data-current-step=1]      — Active step (1-based)
+ * @attr {enum}    [data-linear]               — true | false — steps must complete in order
+ * @attr {enum}    [data-show-step-numbers]     — true | false (default: true)
+ * @attr {string}  [data-src]                  — URL to load steps JSON
  *
- * @method setSteps(steps)  / nextStep() / previousStep() / goToStep(n) / completeStep(n) / setStepError(n, bool)
- * @fires step-change — current step changed
- * @fires step-click  — a step header was clicked
+ * @fires step-change
+ *   bubbles: true, composed: true
+ *   detail: { currentStep: number, previousStep: number, label: string }
+ * @fires step-click
+ *   bubbles: true, composed: true
+ *   detail: { step: number, label: string }
+ *
+ * @method setSteps(steps)         — Set steps array: [{ label, description? }]
+ * @method nextStep()              — Advance to next step
+ * @method previousStep()          — Go back to previous step
+ * @method goToStep(num)           — Jump to specific step number
+ * @method completeStep(num)       — Mark a step as completed
+ * @method setStepError(num, bool) — Mark/unmark a step as errored
+ *
+ * @prop {number}  currentStep     — Getter/setter for data-current-step
+ * @prop {boolean} linear          — Getter/setter for data-linear
+ * @prop {boolean} showStepNumbers — Getter/setter for data-show-step-numbers
+ * @prop {string}  dataSrc         — Getter/setter for data-src
+ * @prop {Array}   steps           — Current steps array (getter-only)
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

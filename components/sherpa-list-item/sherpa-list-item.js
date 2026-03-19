@@ -1,38 +1,27 @@
 /**
- * sherpa-list-item.js
- * SherpaListItem — Versatile list item with leading, content, and trailing areas.
+ * @element sherpa-list-item
+ * @description Versatile list item with leading, content, and trailing areas.
+ *   Supports labels, descriptions, icons, drag handles, and slotted trailing actions.
  *
- * A reusable list item supporting labels, descriptions, icons, drag handles,
- * and slotted trailing actions. Designed for use in lists, menus, settings panels,
- * and selection interfaces.
+ * @attr {string}  [data-label]       — Primary text
+ * @attr {string}  [data-description] — Secondary helper text
+ * @attr {string}  [data-icon]        — FontAwesome class for leading icon
+ * @attr {boolean} [data-active]      — Active/selected visual state
+ * @attr {boolean} [data-interactive] — Enables hover/click behaviour
+ * @attr {boolean} [data-draggable]   — Shows drag handle
+ * @attr {boolean} [disabled]         — Disabled state
  *
- * Usage:
- *   <sherpa-list-item data-label="Item Name" data-description="Supporting text">
- *   </sherpa-list-item>
+ * @slot leading  — Custom leading content (avatar, icon override)
+ * @slot (default) — Custom content below label/description
+ * @slot trailing — Trailing action buttons or badges
  *
- *   <sherpa-list-item data-label="Draggable" data-draggable data-interactive>
- *     <sherpa-button slot="trailing" data-variant="tertiary" data-size="small" data-label="Edit"></sherpa-button>
- *   </sherpa-list-item>
+ * @fires list-item-click
+ *   bubbles: true, composed: true
+ *   detail: { label: string }
  *
- *   <sherpa-list-item data-icon="fa-solid fa-file" data-label="Document.pdf"
- *                     data-description="2.4 MB" data-interactive>
- *   </sherpa-list-item>
- *
- * Slots:
- *   - leading:  Custom leading content (avatar, icon override)
- *   - (default): Custom content below label/description
- *   - trailing: Trailing action buttons or badges
- *
- * Attributes:
- *   - data-label:       Primary text
- *   - data-description: Secondary helper text
- *   - data-icon:        FontAwesome class for leading icon
- *   - data-active:      Active/selected visual state
- *   - data-interactive: Enables hover/click behaviour
- *   - data-draggable:   Shows drag handle
- *   - disabled:         Disabled state
- *
- * @fires list-item-click — { label } when interactive item is clicked
+ * @prop {string}  label       — Getter/setter for data-label
+ * @prop {string}  description — Getter/setter for data-description
+ * @prop {boolean} active      — Getter/setter for data-active
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

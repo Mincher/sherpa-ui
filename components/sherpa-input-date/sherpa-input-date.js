@@ -1,15 +1,22 @@
 /**
- * sherpa-input-date.js
- * Date input using the native browser date picker, extending SherpaInputBase.
+ * @element sherpa-input-date
+ * @extends SherpaInputBase
+ * @description Date input using the native browser date picker.
+ *   Inherits label, description, helper, layout, validation from SherpaInputBase.
  *
- * @example
- *   <sherpa-input-date label="Start Date"></sherpa-input-date>
- *   <sherpa-input-date label="Deadline" min="2024-01-01" max="2025-12-31"></sherpa-input-date>
+ * @attr {string}  [min] — Minimum selectable date (YYYY-MM-DD)
+ * @attr {string}  [max] — Maximum selectable date (YYYY-MM-DD)
  *
- * Extra attributes: min, max
+ * @fires input
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
  *
- * @fires input — { value }
- * @fires change — { value }
+ * @prop {string}  min         — Getter/setter for min attribute
+ * @prop {string}  max         — Getter/setter for max attribute
+ * @prop {Date|null} valueAsDate — Current value as Date object (getter-only)
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';

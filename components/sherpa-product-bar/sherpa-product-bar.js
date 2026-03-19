@@ -1,16 +1,13 @@
 /**
- * @component sherpa-product-bar
+ * @element sherpa-product-bar
+ * @description Top-level product branding bar with icon, name, navigation, and actions.
  *
- * Top-level product branding bar with icon, name, navigation, and actions.
+ * @attr {string}  [data-product-name]  — Product display name
+ * @attr {string}  [data-product-icon]  — Font Awesome icon class (e.g. "fa-cube")
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-product-name]   Product display name
- * @attr {string}  [data-product-icon]   Font Awesome icon class (e.g. "fa-cube")
- *
- * ── Slots ─────────────────────────────────────────────────────
- * icon     — Custom product icon content
- * default  — Navigation items
- * actions  — Right-aligned action buttons
+ * @slot icon     — Custom product icon content
+ * @slot (default) — Navigation items
+ * @slot actions  — Right-aligned action buttons
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

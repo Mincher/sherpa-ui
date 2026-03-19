@@ -1,64 +1,36 @@
 /**
- * sherpa-filter-bar.js
- * Horizontal filter bar with zoned layout.
+ * @element sherpa-filter-bar
+ * @description Horizontal filter bar with zoned layout. Supports global and
+ *   local (container-scoped) modes. Template variants: default (global) | local.
  *
- * Templates:
- *   default (global) — Full filter bar: toggle, group, sort, presets, dynamic
- *                       filters, add-filter button, actions. Used at page level.
- *   local            — Minimal: group + sort + actions only. Used inside
- *                       containers (sherpa-data-viz-container). Selected via data-type="local".
+ * @attr {enum}    [data-density]          — Display density variant
+ * @attr {boolean} [data-active]           — Whether filters are active
+ * @attr {json}    [data-preset-filters]   — Preset filter configuration JSON
+ * @attr {json}    [data-available-fields] — Field definitions: [{ field, name, type }]
  *
- * Filter chip configuration:
- *   Each filter chip is a <sherpa-button data-type="button-menu"> with:
- *     data-filter-field    — Data field to filter on (e.g. "severity", "amount")
- *     data-filter-type     — Filter type: "text" | "number" | "number-range" | "datetime-range"
- *     data-filter-operator — Operator (optional): "in" | "equals" | "contains" | "between" | "gt" | "lt" | "gte" | "lte"
- *                           Defaults: text→in, number→equals, number-range→between, datetime-range→between
+ * @slot toggle   — Filter on/off toggle
+ * @slot group    — Segment/group chip
+ * @slot sort     — Sort chip
+ * @slot presets  — Preset filter chips
+ * @slot (default) — User-added dynamic filter chips + Add button
+ * @slot actions  — Clear / Apply / Save buttons
  *
- *   Sort/segment chips use data-behavior="sort" | "segment".
+ * @fires filterchange
+ *   bubbles: true, composed: true
+ *   detail: { filters: Array }
+ * @fires filterclear
+ *   bubbles: true, composed: true
+ *   detail: none
+ * @fires containerfilterchange
+ *   bubbles: true, composed: true
+ *   detail: { filters: Array }
+ * @fires globalfilterchange
+ *   bubbles: false, composed: false
+ *   detail: { filters: Array }
  *
- * Field declaration:
- *   Sort / group / add-filter menus are populated from a declarative
- *   `data-available-fields` JSON attribute on the filter bar element.
- *   Format: [{"field":"name","name":"Display Name","type":"string"},...]
- *
- *   The consuming app sets this attribute on the filter bar (or on
- *   the container, which forwards it). No event-based discovery is
- *   required — all timing/race issues are eliminated.
- *
- *   Backwards-compatible: `setAvailableColumns(columns, rows)` still
- *   works by writing to the `data-available-fields` attribute. When
- *   rows are supplied, unique values are extracted per field and
- *   used to populate chip menus.
- *
- *   Value menus:
- *   Filter chips with a selected field show a menu of all unique values.
- *   Values come from two sources (in priority order):
- *     1. `values` array in the field definition JSON
- *     2. Extracted from row data passed to `setAvailableColumns(cols, rows)`
- *
- * Slot-based layout:
- *   toggle   — Filter on/off toggle
- *   group    — Segment/group chip
- *   sort     — Sort chip
- *   presets  — Preset filter chips (declared by content template)
- *   default  — User-added dynamic filter chips + Add button
- *   actions  — Clear / Apply / Save buttons
- *
- * Events dispatched:
- *   filterchange          — When any chip changes. detail: { filters }
- *   filterclear            — When the clear action is invoked.
- *   containerfilterchange  — Dispatched on self with bubbles: true so it
- *                           reaches any ancestor scope. Viz children listen
- *                           on their parent for this event.
- *                           detail: { filters }
- *   globalfilterchange     — Dispatched on `document` when `data-global` is
- *                           set. All viz children that wire global filter
- *                           listeners receive this event directly.
- *                           detail: { filters }
- *
- * Events consumed:
- *   sortchange (bubbles up from viz children)  — syncs sort chip state
+ * @method getFilters()                      — Returns current filter array
+ * @method setAvailableColumns(columns, rows)— Set columns and row data for menus
+ * @method removeFilterChip(field)           — Remove filter chip by field name
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

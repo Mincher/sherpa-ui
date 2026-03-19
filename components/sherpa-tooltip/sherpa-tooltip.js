@@ -1,14 +1,37 @@
 /**
  * sherpa-tooltip.js
  * SherpaTooltip — Singleton tooltip with CSS anchor positioning fallback.
- * Extends SherpaElement for shadow DOM setup and template/CSS loading.
  *
- * Usage (static API):
- *   Tooltip.show(anchor, 'Hello')
- *   Tooltip.hide()
+ * Operates as a singleton: one tooltip instance shared across the page.
+ * Use the exported Tooltip API or declarative data-tooltip attributes.
  *
- * Declarative:
- *   <button data-tooltip="Help text">Hover me</button>
+ * @element sherpa-tooltip
+ *
+ * @attr {boolean} data-visible   — Whether the tooltip is currently shown
+ * @attr {enum}    data-position  — top | bottom | left | right
+ *
+ * @method setText(text) — Set tooltip content text
+ *   @param {string} text — Text to display
+ *   @returns {void}
+ * @method getText() — Get current tooltip text
+ *   @returns {string}
+ * @method setPosition(pos) — Set preferred position
+ *   @param {string} pos — Position value
+ *   @returns {void}
+ * @method getPosition() — Get current position
+ *   @returns {string}
+ * @method setVisible(visible) — Show or hide the tooltip
+ *   @param {boolean} visible — Visibility flag
+ *   @returns {void}
+ * @method isVisible() — Check if tooltip is shown
+ *   @returns {boolean}
+ * @method showFor(anchor, text, options) — Position and show for an anchor element
+ *   @param {Element} anchor — Target element
+ *   @param {string} text — Tooltip text
+ *   @param {object} [options] — { position: string }
+ *   @returns {Promise<void>}
+ * @method hide() — Hide the tooltip
+ *   @returns {void}
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

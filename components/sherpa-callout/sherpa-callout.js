@@ -1,28 +1,29 @@
 /**
- * sherpa-callout.js
- * SherpaCallout — Inline contextual callout with status variants.
+ * @element sherpa-callout
+ * @description Inline contextual callout with status variants and
+ *   expandable/dismissible body.
  *
- * Usage:
- *   <sherpa-callout data-status="info" data-heading="Did you know?"
- *     data-expanded data-dismissible>
- *     You can customise your dashboard layout.
- *     <a slot="action" href="#">Learn more</a>
- *   </sherpa-callout>
+ * @attr {enum}    [data-status]      — info | warning | critical | success | neutral | tip
+ * @attr {string}  [data-heading]     — Heading text
+ * @attr {boolean} [data-expanded]    — Body visible
+ * @attr {boolean} [data-dismissible] — Show toggle button
+ * @attr {string}  [data-icon]        — Override status icon (FA class)
  *
- * Slots:
- *   heading — Override heading text
- *   default — Body content
- *   action  — Optional action link/button
+ * @slot heading  — Override heading text
+ * @slot (default) — Body content
+ * @slot action   — Optional action link/button
  *
- * Attributes:
- *   data-status      — info | warning | critical | success | neutral | tip
- *   data-heading     — Heading text
- *   data-expanded    — Body visible (boolean)
- *   data-dismissible — Show toggle button (boolean)
- *   data-icon        — Override status icon (FA class, e.g. "fa-solid fa-star")
+ * @fires callout-toggle
+ *   bubbles: true, composed: true
+ *   detail: { expanded: boolean }
+ * @fires callout-dismiss
+ *   bubbles: true, composed: true
+ *   detail: none
  *
- * @fires callout-toggle  — { expanded: boolean }
- * @fires callout-dismiss — {}
+ * @method toggle()  — Toggle expanded state
+ * @method dismiss() — Dispatch dismiss event and remove element
+ *
+ * @prop {boolean} expanded — Getter/setter for data-expanded
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

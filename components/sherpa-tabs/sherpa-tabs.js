@@ -2,30 +2,25 @@
  * sherpa-tabs.js
  * SherpaTabs — Tabbed content switcher with accessible keyboard navigation.
  *
- * Each direct light-DOM child with a `data-tab-label` attribute becomes a tab.
+ * Each direct light-DOM child with a data-tab-label attribute becomes a tab.
  * The component creates shadow-DOM tab buttons from a cloning prototype and
- * manages panel visibility by setting `data-tab-active` on the matching child.
+ * manages panel visibility by setting data-tab-active on the matching child.
  *
- * Usage:
- *   <sherpa-tabs data-active-tab="0">
- *     <div data-tab-label="Overview">Overview content…</div>
- *     <div data-tab-label="Details">Details content…</div>
- *     <div data-tab-label="History">History content…</div>
- *   </sherpa-tabs>
+ * @element sherpa-tabs
  *
- *   <!-- Inactive tab -->
- *   <sherpa-tabs>
- *     <div data-tab-label="Active">Content</div>
- *     <div data-tab-label="Disabled" data-tab-inactive>Disabled panel</div>
- *   </sherpa-tabs>
+ * @attr {number}  data-active-tab — Zero-based index of the selected tab
  *
- * Slots:
- *   - (default): Tab panel children. Each must have `data-tab-label`.
+ * @slot — Default slot for tab panel children (each must have data-tab-label)
  *
- * Attributes:
- *   - data-active-tab: Zero-based index of the selected tab (default: 0)
+ * @fires tab-change — Fired when the active tab changes
+ *   bubbles: true, composed: true
+ *   detail: { index: number, label: string, previousIndex: number }
  *
- * @fires tab-change — { index: number, label: string, previousIndex: number }
+ * @method selectTab(index) — Programmatically select a tab by index
+ *   @param {number} index — Zero-based tab index
+ *   @returns {void}
+ *
+ * @prop {number} activeTab — Currently selected tab index (read/write)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

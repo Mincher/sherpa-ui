@@ -4,31 +4,39 @@
  *
  * Uses SherpaElement multi-template support. The default template includes
  * a native <header> with a <dl> for title/subtitle and a close button,
- * plus a sherpa-footer (type="slot") for footer content.
+ * plus a sherpa-footer for footer content.
  *
- * Usage:
- *   <sherpa-dialog data-label="Confirm action">
- *     Are you sure you want to continue?
- *     <div slot="footer">
- *       <sherpa-button data-variant="secondary">Cancel</sherpa-button>
- *       <sherpa-button data-variant="primary">Confirm</sherpa-button>
- *     </div>
- *   </sherpa-dialog>
+ * @element sherpa-dialog
  *
- * Slots:
- *   - heading:  Custom heading content (hides default title/description)
- *   - (default): Dialog body content
- *   - footer:   Footer action content (rendered inside sherpa-footer)
+ * @attr {string}  data-label       — Dialog title text
+ * @attr {string}  data-subtitle    — Dialog subtitle text
+ * @attr {enum}    data-size        — small | medium | large | full
+ * @attr {boolean} data-open        — Dialog visibility
+ * @attr {boolean} data-dismissible — Shows close button (default: true)
  *
- * Attributes:
- *   - data-label:       Dialog title text
- *   - data-subtitle:    Dialog subtitle text
- *   - data-size:        "small" | "medium" | "large" | "full"
- *   - data-open:        Dialog visibility
- *   - data-dismissible: Shows close button (default: true)
+ * @slot          — Default slot for dialog body content
+ * @slot heading  — Custom heading content (replaces attribute-driven title)
+ * @slot footer   — Footer action content (inside sherpa-footer)
  *
- * @fires open  — Dialog opened
- * @fires close — Dialog closed
+ * @fires open — Fired when dialog is opened
+ *   bubbles: true, composed: true
+ *   detail: { }
+ * @fires close — Fired when dialog is closed
+ *   bubbles: true, composed: true
+ *   detail: { }
+ *
+ * @method show() — Programmatically open the dialog
+ *   @returns {void}
+ * @method hide() — Programmatically close the dialog
+ *   @returns {void}
+ * @method toggle() — Toggle dialog visibility
+ *   @returns {void}
+ *
+ * @prop {string}  heading     — Title text (read/write)
+ * @prop {string}  subtitle    — Subtitle text (read/write)
+ * @prop {string}  size        — Dialog size preset (read/write)
+ * @prop {boolean} open        — Open state (read/write)
+ * @prop {boolean} dismissible — Close button visibility (read/write)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

@@ -1,12 +1,17 @@
 /**
- * sherpa-input-password.js
- * Password input with show/hide toggle button, extending SherpaInputBase.
+ * @element sherpa-input-password
+ * @extends SherpaInputBase
+ * @description Password input with show/hide toggle button. Inherits label,
+ *   description, helper, layout, validation from SherpaInputBase.
  *
- * @example
- *   <sherpa-input-password label="Password" placeholder="Enter a password"></sherpa-input-password>
+ * @fires input
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
  *
- * @fires input — { value }
- * @fires change — { value }
+ * @prop {boolean} visible — Whether password text is currently shown in plain text
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';

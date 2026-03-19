@@ -1,35 +1,19 @@
 /**
- * sherpa-breadcrumbs.js
- * SherpaBreadcrumbs — Navigation breadcrumb trail with optional collapse.
+ * @element sherpa-breadcrumbs
+ * @description Navigation breadcrumb trail with optional collapse.
+ *   Reads slotted children (anchors/spans) and renders a styled list
+ *   with chevron separators. Middle items collapse behind "…" when
+ *   count exceeds data-max-items.
  *
- * Reads slotted children (anchors/spans) and renders a styled breadcrumb
- * list with chevron separators. When the number of items exceeds
- * `data-max-items`, middle items are collapsed behind an "…" button.
+ * @attr {number} [data-max-items] — Maximum visible items before collapsing (default: unlimited)
  *
- * Usage:
- *   <sherpa-breadcrumbs>
- *     <a href="/">Home</a>
- *     <a href="/products">Products</a>
- *     <a href="/products/widgets">Widgets</a>
- *     <span>Widget Details</span>
- *   </sherpa-breadcrumbs>
+ * @slot (default) — Breadcrumb items: <a href="…"> or <span>
  *
- *   <!-- Collapsed at 3 visible items -->
- *   <sherpa-breadcrumbs data-max-items="3">
- *     <a href="/">Home</a>
- *     <a href="/a">Level A</a>
- *     <a href="/a/b">Level B</a>
- *     <a href="/a/b/c">Level C</a>
- *     <span>Current</span>
- *   </sherpa-breadcrumbs>
+ * @fires breadcrumb-click
+ *   bubbles: true, composed: true
+ *   detail: { index: number, href: string, label: string }
  *
- * Slots:
- *   - (default): Breadcrumb items (<a href="…"> or <span>)
- *
- * Attributes:
- *   - data-max-items: Maximum visible items before collapsing (default: unlimited)
- *
- * @fires breadcrumb-click — { index, href, label } when a breadcrumb is clicked
+ * @prop {number} maxItems — Getter/setter for data-max-items
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

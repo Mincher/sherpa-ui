@@ -1,25 +1,14 @@
 /**
- * sherpa-toolbar.js
- * Generic horizontal toolbar with leading/center/trailing content zones
- * and an optional filters row below.
+ * @element sherpa-toolbar
+ * @description Generic horizontal toolbar with leading/center/trailing content
+ *   zones and an optional filters row. Pure layout component — no data logic.
  *
- * Pure layout component — no data logic. Consumers slot buttons,
- * search inputs, filter bars, and other controls into the zones.
+ * @attr {enum} [data-density] — Display density variant
  *
- * Usage:
- *   <sherpa-toolbar>
- *     <span slot="leading" class="text-label-sm">Data Grid</span>
- *     <sherpa-input-search slot="center"></sherpa-input-search>
- *     <sherpa-button slot="trailing" data-variant="tertiary" data-size="small"
- *       data-icon-start="&#xf019;" aria-label="Export"></sherpa-button>
- *     <sherpa-filter-bar slot="filters">…</sherpa-filter-bar>
- *   </sherpa-toolbar>
- *
- * Slots:
- *   leading   — Start zone (title, CTA buttons)
- *   center    — Center zone (search — grows to fill)
- *   trailing  — End zone (icon buttons, overflow menu)
- *   filters   — Below the toolbar row (filter bar, chips)
+ * @slot leading  — Start zone (title, CTA buttons)
+ * @slot center   — Center zone (search — grows to fill)
+ * @slot trailing — End zone (icon buttons, overflow menu)
+ * @slot filters  — Below the toolbar row (filter bar, chips)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

@@ -1,20 +1,25 @@
 /**
- * SherpaPagination — Standalone pagination bar.
+ * @element sherpa-pagination
+ * @description Standalone pagination bar with page navigation and page-size selector.
  *
- * Attributes:
- *   data-page          — Current 1-based page (default 1)
- *   data-page-size     — Rows per page (default 25)
- *   data-total-rows    — Total row count (required for page calculations)
- *   data-allowed-sizes — Comma-separated page-size options (default "10,25,50,100")
+ * @attr {number}  [data-page=1]          — Current 1-based page
+ * @attr {number}  [data-page-size=25]    — Rows per page
+ * @attr {number}  [data-total-rows]      — Total row count (required)
+ * @attr {string}  [data-allowed-sizes]   — Comma-separated page-size options (default: "10,25,50,100")
+ * @attr {enum}    [data-density]          — Display density
  *
- * Events:
- *   pagechange — Dispatched when page or page-size changes.
- *                detail: { page, pageSize, totalPages }
+ * @fires pagechange
+ *   bubbles: true
+ *   detail: { page: number, pageSize: number, totalPages: number }
  *
- * Usage:
- *   <sherpa-pagination data-page="1" data-page-size="25"
- *     data-total-rows="238" data-allowed-sizes="10,25,50,100">
- *   </sherpa-pagination>
+ * @method goToPage(n)       — Navigate to specific page (clamped)
+ * @method setTotalRows(n)   — Update total rows + clamp page
+ *
+ * @prop {number}   page         — Current page (getter/setter)
+ * @prop {number}   pageSize     — Rows per page (getter/setter)
+ * @prop {number}   totalRows    — Total row count (getter/setter)
+ * @prop {number}   totalPages   — Computed total pages (getter-only)
+ * @prop {number[]} allowedSizes — Parsed page-size options (getter-only)
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

@@ -1,35 +1,33 @@
 /**
  * sherpa-card.js
- * SherpaCard — Web Component extending SherpaElement base class.
+ * SherpaCard — Container component with header, content, and footer areas.
  *
- * Uses a native <header> element with a <dl> for the card header area,
+ * Uses a native <header> with a <dl> for the card header area,
  * supporting both attribute-based headings and slotted custom content.
  *
- * Usage:
- *   <sherpa-card>Simple content</sherpa-card>
- *   <sherpa-card data-label="Card Title" data-description="Subtitle">Content</sherpa-card>
- *   <sherpa-card>
- *     <span slot="header">Custom Header</span>
- *     Main content goes here
- *     <div slot="footer">Footer actions</div>
- *   </sherpa-card>
- *   <sherpa-card data-selected="true">Selected card</sherpa-card>
- *   <sherpa-card data-interactive="true">Clickable card</sherpa-card>
+ * @element sherpa-card
  *
- * Slots:
- *   - header: Custom heading content (hides default dl labels)
- *   - (default): Main card content
- *   - footer: Card footer content
+ * @attr {string}  data-label       — Card title text
+ * @attr {string}  data-description  — Card subtitle text
+ * @attr {boolean} data-selected     — Selected/active state
+ * @attr {boolean} data-interactive  — Makes card clickable
+ * @attr {enum}    data-elevation    — none | sm | md | lg
+ * @attr {boolean} disabled          — Native disabled state
  *
- * Attributes:
- *   - data-label: Card title text
- *   - data-description: Card subtitle text
- *   - data-selected: Selected/active state
- *   - data-interactive: Makes card clickable
- *   - disabled: Disabled state
- *   - data-elevation: "none" | "sm" | "md" | "lg"
+ * @slot         — Default slot for main card content
+ * @slot header  — Custom heading content (replaces attribute-driven title)
+ * @slot footer  — Card footer content
  *
- * @fires card-click — When interactive card is clicked
+ * @fires card-click — Fired when interactive card is clicked or activated via keyboard
+ *   bubbles: true, composed: true
+ *   detail: { }
+ *
+ * @prop {boolean} selected    — Selected state (read/write)
+ * @prop {boolean} interactive — Clickable state (read/write)
+ * @prop {boolean} disabled    — Disabled state (read/write)
+ * @prop {string}  elevation   — Shadow level (read/write)
+ * @prop {string}  heading     — Title text (read/write)
+ * @prop {string}  description — Subtitle text (read/write)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

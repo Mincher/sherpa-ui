@@ -1,30 +1,58 @@
 /**
- * SherpaNav — Collapsible navigation sidebar with search and edit modes.
+ * @element sherpa-nav
+ * @description Collapsible navigation sidebar with search and edit modes.
+ *   Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html,
+ *   override via data-src). CSS Highlight API for search (::highlight(nav-search-match)).
  *
- * Architecture: Shadow DOM, template-driven, CSS-first.
- *   • Extends SherpaElement — CSS loaded into shadow root via cssUrl
- *   • Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html, override: data-src)
- *   • Template is wrapped in .sherpa-nav-root carrying declarative state:
- *       data-pinned, data-mode, data-editable, data-searchable
- *   • CSS reads state from .sherpa-nav-root; JS only toggles attributes + emits events
- *   • SherpaNavItem is zero-JS (slot-driven) — all interaction handled here
- *   • Search highlighting via CSS Highlight API (::highlight(nav-search-match))
+ * @attr {string}  [data-src]            — URL for the nav template HTML (default: sherpa-nav.html)
+ * @attr {string}  [data-active-target]  — Selector or ID of the currently active nav item
  *
- * Modes: default | search | edit
- * States: collapsed (48px) | expanded (320px via hover/focus/mode) | pinned (inline 320px)
- * Host attributes: data-src, data-active-target
- * Wrapper (.sherpa-nav-root) attributes: data-pinned, data-mode, data-editable, data-searchable
+ * @fires navhome
+ *   bubbles: true, composed: true
+ *   detail: none
+ * @fires navsettings
+ *   bubbles: true, composed: true
+ *   detail: none
+ * @fires navitemclick
+ *   bubbles: true, composed: true
+ *   detail: { itemId: string, sectionId: string, route: string, label: string }
+ * @fires navitemdelete
+ *   bubbles: true, composed: true
+ *   detail: { itemId: string, sectionId: string }
+ * @fires navpinchange
+ *   bubbles: true, composed: true
+ *   detail: { pinned: boolean }
+ * @fires navmodechange
+ *   bubbles: true, composed: true
+ *   detail: { mode: string, previousMode: string }
+ * @fires navsectionexpand
+ *   bubbles: true, composed: true
+ *   detail: { sectionId: string }
+ * @fires navsectionreorder
+ *   bubbles: true, composed: true
+ *   detail: { groupIndex: number, sectionOrder: Array }
+ * @fires navfavoritechange
+ *   bubbles: true, composed: true
+ *   detail: { itemId: string, label: string, favorite: boolean }
+ * @fires naveditconfirm
+ *   bubbles: true, composed: true
+ *   detail: none
+ * @fires naveditcancel
+ *   bubbles: true, composed: true
+ *   detail: none
  *
- * Custom events (all bubble):
- *   navhome, navsettings         — static link clicks
- *   navitemclick                  — child item click  { itemId, sectionId, route, label }
- *   navitemdelete                 — edit-mode delete   { itemId, sectionId }
- *   navpinchange                  — pin toggled        { pinned }
- *   navmodechange                 — mode switched      { mode, previousMode }
- *   navsectionexpand              — accordion opened   { sectionId }
- *   navsectionreorder             — drag-drop reorder  { groupIndex, sectionOrder }
- *   navfavoritechange             — favorite toggled   { itemId, label, favorite }
- *   naveditconfirm, naveditcancel — edit-mode controls
+ * @method startSearch           — Enter search mode
+ * @method endSearch             — Exit search mode
+ * @method setActiveLink(href)   — Highlight the link matching href
+ * @method setActiveItem(itemId) — Highlight the item matching itemId
+ * @method isFavorite(itemId)    — Returns boolean
+ * @method setFavorite(itemId, label, favorite) — Toggle favorite state
+ * @method addToRecent(route, label, icon) — Push item to recent list
+ *
+ * @prop {boolean} isPinned   — Whether the sidebar is pinned open
+ * @prop {boolean} isSearching — Whether search mode is active
+ * @prop {boolean} isEditing  — Whether edit mode is active
+ * @prop {string}  mode       — Current mode: "default" | "search" | "edit"
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

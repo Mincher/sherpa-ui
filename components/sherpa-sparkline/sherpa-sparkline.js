@@ -1,19 +1,14 @@
 /**
- * sherpa-sparkline.js
- * Shadow DOM component extending SherpaElement — CSS-driven rendering.
- * JS sets raw data values and range info as CSS custom properties on the host;
- * CSS handles normalisation via calc() and all visual rendering
- * (clip-path polygons per segment).
+ * @element sherpa-sparkline
+ * @description CSS-driven sparkline. JS sets raw data values as CSS custom
+ *   properties; CSS handles normalisation via calc() and visual rendering
+ *   (clip-path polygons per segment).
  *
- * Status Styling:
- *   Inherits --border-color from parent component (e.g. sherpa-metric) which
- *   sets colour via status attribute selectors. CSS custom properties from
- *   the outer document inherit through the shadow boundary.
+ * @attr {string}  [data-values]  — Comma-separated or JSON array (e.g. "10,25,15,30")
+ * @attr {enum}    [data-variant] — bar (default: line)
+ * @attr {string}  [data-unit]    — Unit label for tooltip display
  *
- * Attributes:
- *   - data-values: string - Comma-separated or JSON array (e.g., "10,25,15,30")
- *   - data-variant: string - "bar" for bar mode
- *   - data-unit: string - Unit label for tooltip display
+ * @method setValues(values) — Set sparkline data points
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

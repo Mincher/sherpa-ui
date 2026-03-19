@@ -1,20 +1,15 @@
 /**
- * sherpa-input-select.js
- * Dropdown select input extending SherpaInputBase using native <select>.
+ * @element sherpa-input-select
+ * @extends SherpaInputBase
+ * @description Dropdown select input using native <select>. Options provided
+ *   via light DOM <option> elements or programmatically via setOptions().
+ *   Inherits label, description, helper, layout, validation from SherpaInputBase.
  *
- * @example
- *   <sherpa-input-select label="Country" placeholder="Select a country">
- *     <option value="us">United States</option>
- *     <option value="gb">United Kingdom</option>
- *   </sherpa-input-select>
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
  *
- * Options can be provided via:
- *   1. Light DOM <option> elements (slotted into the <select>)
- *   2. setOptions([{ value, label, disabled? }]) method
- *
- * Extra attributes: none beyond base.
- *
- * @fires change — { value }
+ * @method setOptions(options) — Set option list: Array<{ value, label, disabled? }>
  */
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";

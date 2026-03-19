@@ -1,16 +1,21 @@
 /**
- * @component sherpa-popover
+ * sherpa-popover.js
+ * SherpaPopover — General-purpose floating content container with header.
  *
- * General-purpose floating content container with header and optional arrow.
+ * @element sherpa-popover
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-heading]           Header title text
- * @attr {flag}    [data-open]              Shows the popover
- * @attr {string}  [data-anchor]            CSS anchor name to position against
- * @attr {string}  [data-position=bottom]   top | bottom | left | right
+ * @attr {string}  data-heading   — Header title text
+ * @attr {boolean} data-open      — Shows the popover
+ * @attr {string}  data-anchor    — CSS anchor name to position against
+ * @attr {enum}    data-position  — top | bottom | left | right
  *
- * ── Events ────────────────────────────────────────────────────
- * @fires popover-close  — Dispatched when close button or click-outside dismisses
+ * @slot         — Default slot for body content
+ * @slot icon    — Header icon slot
+ * @slot header-end — Header trailing content slot
+ *
+ * @fires popover-close — Fired when close button or click-outside dismisses
+ *   bubbles: true, composed: true
+ *   detail: { }
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

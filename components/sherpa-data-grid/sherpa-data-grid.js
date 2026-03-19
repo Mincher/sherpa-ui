@@ -1,23 +1,56 @@
 /**
- * SherpaDataGrid — Advanced data grid with grouping, selection, sorting, and pagination.
+ * @element sherpa-data-grid
+ * @description Advanced data grid with grouping, selection, sorting, and pagination.
+ *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
+ *   Uses native <table> for sticky headers and full-width row backgrounds.
  *
- * Extends ContentAttributesMixin(SherpaElement) for shadow DOM + data pipeline.
- * Uses native <table> for correct sticky headers and full-width row backgrounds.
- * Groups use JS-toggled hidden rows (no <details>/<summary>).
+ * @attr {boolean} [data-loading]               — Show loading state
+ * @attr {string}  [data-segment-field]          — Field used for row grouping
+ * @attr {enum}    [data-segment-mode]            — Segment display mode
+ * @attr {string}  [data-sort-field]             — Currently sorted column field
+ * @attr {enum}    [data-sort-direction]          — asc | desc
+ * @attr {number}  [data-page]                   — Current page (1-based)
+ * @attr {number}  [data-page-size]              — Rows per page
+ * @attr {boolean} [data-selectable]             — Enable row selection
+ * @attr {boolean} [data-show-actions]           — Show row action column
+ * @attr {boolean} [data-show-secondary-headers] — Show secondary column headers
+ * @attr {boolean} [data-show-pagination]        — Show pagination bar
  *
- * Data flow: config → fetchContentData → #processData → #render
+ * @slot toolbar-leading — Consumer-provided primary action for toolbar
  *
- * External components (sherpa-toolbar, sherpa-filter-bar) are slotted by
- * the content template — this component owns only the grid itself:
- * column headers, scrollable body, and pagination.
+ * @fires selectionchange
+ *   bubbles: true
+ *   detail: { selected: string[], count: number }
+ * @fires sortchange
+ *   bubbles: true
+ *   detail: { field: string, direction: "asc" | "desc" }
+ * @fires pagechange
+ *   bubbles: true
+ *   detail: { page: number, pageSize: number }
+ * @fires groupexpand
+ *   bubbles: true
+ *   detail: { groupValue: string, field: string }
+ * @fires groupcollapse
+ *   bubbles: true
+ *   detail: { groupValue: string, field: string }
+ * @fires rowaction
+ *   bubbles: true
+ *   detail: { rowId: string, rowData: object }
+ * @fires gridexport
+ *   bubbles: true, composed: true
+ *   detail: none
  *
- * Events:
- *   selectionchange — { selected: string[], count: number }
- *   sortchange      — { field: string, direction: 'asc'|'desc' }
- *   pagechange      — { page: number, pageSize: number }
- *   groupexpand     — { groupValue: string, field: string }
- *   groupcollapse   — { groupValue: string, field: string }
- *   rowaction       — { rowId: string, rowData: object }
+ * @method setColumnConfig(config) — Set column type/status map config
+ * @method setData(config)         — Main data pipeline entry
+ * @method expandAllGroups()       — Expand all group rows
+ * @method collapseAllGroups()     — Collapse all group rows
+ * @method getSelectedRows()       — Returns selected row IDs
+ * @method getSelectedRowData()    — Returns data for selected rows
+ * @method clearSelection()        — Clear all selections
+ * @method getData()               — Returns transferable config
+ * @method getColumns()            — Returns column definitions
+ * @method getCompoundQuery()      — Returns { group, sort, filters, columnFilters, globalSearch }
+ * @method setExternalFilters(f)   — Apply external filters from FilterCoordinator
  */
 
 import {

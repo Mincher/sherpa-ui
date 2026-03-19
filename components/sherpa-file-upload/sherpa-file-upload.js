@@ -1,31 +1,34 @@
 /**
- * @component sherpa-file-upload
+ * @element sherpa-file-upload
+ * @description File upload drop zone with drag-and-drop, file list,
+ *   and per-file progress/status tracking. Consumer handles actual upload;
+ *   call setFileState/setFileProgress to update UI.
  *
- * File upload drop zone with drag-and-drop support, file list,
- * and per-file progress/status tracking.
+ * @attr {string}  [data-label]     — Label text above the drop zone
+ * @attr {string}  [data-accept]    — Accepted file types (e.g. ".jpg,.png,image/*")
+ * @attr {boolean} [data-multiple]  — Allow multiple file selection
+ * @attr {string}  [data-max-size]  — Maximum file size in bytes
+ * @attr {string}  [data-max-files] — Maximum number of files
+ * @attr {string}  [data-helper]    — Constraint / helper text
+ * @attr {boolean} [disabled]       — Disabled state
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-label]        Label text above the drop zone
- * @attr {string}  [data-accept]       Accepted file types (e.g. ".jpg,.png,image/*")
- * @attr {boolean} [data-multiple]     Allow multiple file selection
- * @attr {string}  [data-max-size]     Maximum file size in bytes
- * @attr {string}  [data-max-files]    Maximum number of files
- * @attr {string}  [data-helper]       Constraint / helper text
- * @attr {boolean} [disabled]          Disabled state
+ * @fires file-add
+ *   bubbles: true, composed: true
+ *   detail: { files: File[] }
+ * @fires file-remove
+ *   bubbles: true, composed: true
+ *   detail: { file: File, index: number }
+ * @fires file-clear
+ *   bubbles: true, composed: true
+ *   detail: none
+ * @fires file-upload-start
+ *   bubbles: true, composed: true
+ *   detail: { files: File[] }
  *
- * ── Events ────────────────────────────────────────────────────
- * file-add    — { files: File[] }  — fired when files pass validation
- * file-remove — { file, index }    — fired when a single file is removed
- * file-clear  — {}                 — fired when all files are cleared
+ * @method setFileState(index, state, statusText) — Update file item state
+ * @method setFileProgress(index, percent) — Update file upload progress
  *
- * ── Architecture notes ────────────────────────────────────────
- * HTML — drop-zone (click or drag target), file constraints text, file list
- *        (cloning prototype .file-item-tpl), action bar, hidden <input type=file>.
- * CSS  — drag-over via :host([data-drag-over]), per-item state via [data-state],
- *        action bar visibility via :host([data-has-files]).
- * JS   — Drag/drop API, File input change, cloning prototype for file items,
- *        file validation (type, size, count). Consumer handles actual upload;
- *        can call setFileState/setFileProgress on the element.
+ * @prop {File[]} files — Current list of selected files (getter-only)
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

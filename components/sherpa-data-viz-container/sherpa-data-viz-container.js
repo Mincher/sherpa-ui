@@ -1,63 +1,21 @@
 /**
- * SherpaDataVizContainer — Dashboard card with header, metrics, and content area.
+ * @element sherpa-data-viz-container
+ * @description Dashboard card with header, metrics, and content area.
+ *   Content-agnostic — never imports or creates viz components directly.
+ *   Resize support via ResizeBehavior mixin.
  *
- * Extends SherpaElement via ResizeBehavior mixin with full shadow DOM
- * encapsulation. The shadow template defines structural layout: header,
- * filter bar, and a default slot for consumer content (metrics + viz children).
+ * @attr {enum}    [data-variant]         — fit | resizable | fill (default: fit)
+ * @attr {string}  [data-title]           — Container heading text
+ * @attr {string}  [data-description]     — Container description
+ * @attr {number}  [data-col-span]        — Column span: 3 | 6 | 9 | 12 (resizable)
+ * @attr {number}  [data-row-span]        — Row span: 1–6 (resizable)
+ * @attr {boolean} [data-menu-open]       — Menu state
+ * @attr {boolean} [data-editable]        — Edit mode (enables resize grip)
+ * @attr {boolean} [data-open-external]   — Show open-external button
+ * @attr {boolean} [data-menu-button]     — Show menu button
+ * @attr {boolean} [data-drag-handle]     — Show drag handle
  *
- * The header is a native <header> element with a <dl> for title and
- * description, plus sherpa-button instances for open-external and the
- * overflow menu (icon-menu type). Visibility of these buttons is
- * CSS-driven via data-open-external and data-menu-button host attributes.
- *
- * Content is supplied via inline child elements in the default slot.
- * The container is content-agnostic — it never imports or creates viz
- * components directly. All content components auto-load their own data
- * via ContentAttributesMixin.
- *
- * Metric visibility is CSS-driven via data-col-span (no JS needed).
- * The metrics area auto-hides when no metric has a data-label attribute.
- *
- * Menu items:
- *   The overflow menu is assembled from light-DOM `<template data-menu>`
- *   children found on the host. ResizeBehavior injects Width/Height
- *   resize items. Consumer view templates
- *   add action items (e.g. Export) via their own `<template data-menu>`.
- *
- * Resize (via ResizeBehavior mixin):
- *   Column stops: 3 → 6 → 9 → 12, row span: 1–6.
- *
- * Architecture — decoupled peer events:
- *   Container owns layout only. All data concerns are handled by the
- *   content components themselves:
- *     containerfilterchange — filter bar → viz children (scoped)
- *     globalfilterchange   — document → viz children (direct)
- *     sortchange           — viz child → filter bar (sort chip sync)
- *     presentationchange   — viz child → consumer (view switch)
- *
- *   Viz children dispatch `columnsready` (bubbles, composed) when
- *   data loads. The filter bar self-populates by listening on
- *   `document` — the container is not involved in column data flow.
- *
- *   Menu items are assembled from light-DOM `<template data-menu>`
- *   children by sherpa-button's composed-tree walking. ResizeBehavior
- *   injects resize items; consumers add action items in view HTML.
- *   Menu events bubble harmlessly if no listener is present.
- *
- * Attributes:
- *   data-variant        — Layout variant: "fit" (default), "resizable", "fill"
- *   data-title          — Container heading text
- *   data-description    — Container description
- *   data-col-span       — Column span (3, 6, 9, 12) — resizable variant only
- *   data-row-span       — Row span (1–6) — resizable variant only
- *   data-menu-open      — Menu state (set by menu-open/menu-close events)
- *   data-editable       — Edit mode (enables CSS resize grip)
- *   data-open-external  — "true" — show open-external button (CSS-driven)
- *   data-menu-button    — "true" — show menu button (CSS-driven)
- *   data-drag-handle    — "true" — show drag handle (CSS-driven)
- *
- * Slots:
- *   (default) — Consumer content: sherpa-metric children + viz children
+ * @slot (default) — Consumer content: sherpa-metric children + viz children
  */
 
 import "../sherpa-filter-bar/sherpa-filter-bar.js";

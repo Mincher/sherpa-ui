@@ -1,24 +1,26 @@
 /**
- * @component sherpa-input-date-range
+ * @element sherpa-input-date-range
+ * @extends SherpaInputBase
+ * @description Date range picker composing two native date inputs (start / end).
+ *   Inherits label, description, helper, layout, validation from SherpaInputBase.
+ *   Start ≤ end constraint soft-enforced via min/max on native inputs.
  *
- * Date range picker composing two native date inputs (start / end).
- * Extends SherpaInputBase for label, description, helper, validation.
+ * @attr {string}  [data-value-start] — Start date (YYYY-MM-DD)
+ * @attr {string}  [data-value-end]   — End date (YYYY-MM-DD)
+ * @attr {string}  [min]              — Minimum selectable date (YYYY-MM-DD)
+ * @attr {string}  [max]              — Maximum selectable date (YYYY-MM-DD)
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-value-start]  Start date (YYYY-MM-DD)
- * @attr {string}  [data-value-end]    End date (YYYY-MM-DD)
- * @attr {string}  [min]               Minimum selectable date
- * @attr {string}  [max]               Maximum selectable date
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { start: string|null, end: string|null }
+ * @fires input
+ *   bubbles: true, composed: true
+ *   detail: { start: string|null, end: string|null }
  *
- * ── Events ────────────────────────────────────────────────────
- * change — { start, end } — fired when either date changes
- * input  — { start, end } — fired during input
- *
- * ── Architecture notes ────────────────────────────────────────
- * The component overrides getInputElement() to return the start input
- * as the primary element (for base-class focus/validation). Both inputs
- * are synced independently with data-value-start and data-value-end.
- * Start ≤ end constraint is soft-enforced via min/max on native inputs.
+ * @prop {string}    valueStart  — Getter/setter for data-value-start
+ * @prop {string}    valueEnd    — Getter/setter for data-value-end
+ * @prop {Date|null} startAsDate — Start value as Date (getter-only)
+ * @prop {Date|null} endAsDate   — End value as Date (getter-only)
  */
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";

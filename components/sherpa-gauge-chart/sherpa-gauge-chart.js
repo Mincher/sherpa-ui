@@ -1,32 +1,16 @@
 /**
- * sherpa-gauge-chart.js
- * SherpaGaugeChart — Semicircle gauge using CSS conic-gradient.
+ * @element sherpa-gauge-chart
+ * @description Semicircle gauge using CSS conic-gradient.
  *
- * Usage:
- *   <sherpa-gauge-chart data-title="CPU"
- *     data-value="75" data-label="Utilisation">
- *   </sherpa-gauge-chart>
+ * @attr {string}  [data-title]   — Chart heading text
+ * @attr {number}  [data-value]   — Numeric value 0–100
+ * @attr {string}  [data-min]     — Min range label (default: "0%")
+ * @attr {string}  [data-max]     — Max range label (default: "100%")
+ * @attr {string}  [data-label]   — Descriptive text below value
+ * @attr {boolean} [data-loading] — Show loading state
+ * @attr {enum}    [data-variant]  — solid | series
  *
- *   // Series variant:
- *   <sherpa-gauge-chart data-variant="series">
- *   </sherpa-gauge-chart>
- *   gauge.setSegments([
- *     { value: 25, color: '#058142' },
- *     { value: 20, color: '#ffaa00' },
- *     { value: 15, color: '#e84c3d' },
- *   ]);
- *
- * Attributes:
- *   data-title    — Chart heading text
- *   data-value    — Numeric value 0–100
- *   data-min      — Min range label (default "0%")
- *   data-max      — Max range label (default "100%")
- *   data-label    — Descriptive text below value
- *   data-loading  — Boolean
- *   data-variant  — solid | series
- *
- * Methods:
- *   setSegments([{ value, color }])
+ * @method setSegments(segments) — Series variant: set arc segments [{ value, color? }]
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

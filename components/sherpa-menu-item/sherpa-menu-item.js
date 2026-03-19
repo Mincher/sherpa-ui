@@ -1,15 +1,23 @@
 /**
- * sherpa-menu-item.js — Attribute-driven menu item (extends SherpaElement).
+ * @element sherpa-menu-item
+ * @description Attribute-driven menu item with multiple template variants.
+ *   Templates: default, checkbox, radio, toggle, heading.
  *
- * Templates (in sherpa-menu-item.html):
- *   default  — label + description + chevron (plain action item)
- *   checkbox — native checkbox input + label + description
- *   radio    — native radio input + label + description
- *   toggle   — sherpa-switch + label + description
- *   heading  — label only (non-interactive group heading)
+ * @attr {enum}    [data-type]        — checkbox | radio | toggle | heading (default: action)
+ * @attr {string}  [data-action]      — Action identifier dispatched in menu-select
+ * @attr {string}  [value]            — Value associated with this item
+ * @attr {enum}    [data-selection]    — single | multiple
+ * @attr {boolean} [checked]          — Whether checkbox/radio/toggle is checked
+ * @attr {boolean} [disabled]         — Whether the item is disabled
+ * @attr {string}  [data-description] — Secondary description text
+ * @attr {string}  [data-group]       — Group identifier for radio grouping
+ * @attr {boolean} [data-keep-open]   — Keep menu open after selection
+ * @attr {boolean} [data-has-submenu] — Whether the item opens a submenu
+ * @attr {string}  [name]             — Form-compatible name for radio/checkbox
  *
- * Attributes: data-type, data-action, value, data-selection, checked, disabled,
- *             data-description, data-group, data-keep-open, data-has-submenu, name
+ * @slot (default) — Label text content
+ *
+ * @prop {Element} inputElement — Reference to internal input (checkbox/radio/switch)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

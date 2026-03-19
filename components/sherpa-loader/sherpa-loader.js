@@ -1,17 +1,16 @@
 /**
- * @component sherpa-loader
+ * sherpa-loader.js
+ * SherpaLoader — Animated loading indicator with spinner and optional label.
  *
- * Animated loading indicator with spinner and optional label.
- *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-label]                  Loading text beside the spinner
- * @attr {string}  [data-orientation=horizontal]  horizontal | vertical
- * @attr {string}  [data-size=default]            small | default | large
- * @attr {flag}    [data-panel]                   Surface background panel
- *
- * ── Accessibility ─────────────────────────────────────────────
  * Sets role="status" and aria-live="polite" on the host so assistive
  * technology announces when the loader appears or its label changes.
+ *
+ * @element sherpa-loader
+ *
+ * @attr {string}  data-label       — Loading text beside the spinner
+ * @attr {enum}    data-orientation  — horizontal | vertical
+ * @attr {enum}    data-size         — small | default | large
+ * @attr {boolean} data-panel        — Surface background panel mode
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

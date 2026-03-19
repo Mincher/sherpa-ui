@@ -1,18 +1,26 @@
 /**
- * @component sherpa-panel
+ * sherpa-panel.js
+ * SherpaPanel — Slide-out or inline panel with header and content area.
  *
- * Slide-out or inline panel with header, optional action bar, and content slot.
+ * @element sherpa-panel
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-variant=inline]     inline | overlay
- * @attr {string}  [data-position=right]     left | right
- * @attr {flag}    [data-expanded]           Expanded (visible) state
- * @attr {string}  [data-heading]            Heading text
- * @attr {string}  [data-width]             Custom width (CSS value)
+ * @attr {enum}    data-variant   — inline | overlay
+ * @attr {enum}    data-position  — left | right
+ * @attr {boolean} data-expanded  — Expanded (visible) state
+ * @attr {string}  data-heading   — Heading text
+ * @attr {string}  data-width     — Custom width (CSS value)
  *
- * ── Events ────────────────────────────────────────────────────
- * @fires panel-toggle  — { expanded: boolean }
- * @fires panel-close   — Dispatched when the close button is clicked
+ * @slot           — Default slot for panel body content
+ * @slot controls  — Header control buttons
+ * @slot metadata  — Metadata content area
+ * @slot actions   — Action bar content
+ *
+ * @fires panel-toggle — Fired when expanded state changes
+ *   bubbles: true, composed: true
+ *   detail: { expanded: boolean }
+ * @fires panel-close — Fired when the close button is clicked
+ *   bubbles: true, composed: true
+ *   detail: { }
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

@@ -1,15 +1,28 @@
 /**
- * SherpaBarChart - Adaptive bar chart with automatic orientation.
- * Supports stacked bars, category limiting, and responsive legend.
+ * @element sherpa-barchart
+ * @description Adaptive bar chart with automatic orientation.
+ *   Supports stacked bars, category limiting, and responsive legend.
+ *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
  *
- * Uses DataService for standardised data preparation.
+ * @attr {boolean} [data-loading]        — Show loading state
+ * @attr {boolean} [data-stacked]        — Stack bars by segment
+ * @attr {string}  [data-title]          — Chart heading text
+ * @attr {enum}    [data-orientation]     — horizontal | vertical (auto-selected)
+ * @attr {string}  [data-segment-field]  — Field for bar grouping
+ * @attr {enum}    [data-segment-mode]    — Segment display mode
+ * @attr {string}  [data-sort-field]     — Sort field
+ * @attr {enum}    [data-sort-direction] — asc | desc
  *
- * Events (bubbles: true, composed: true):
- *   sortchange         — Column header sort. detail: { field, direction }
- *   presentationchange — View switch request. detail: { type, data }
+ * @fires sortchange
+ *   bubbles: true, composed: true
+ *   detail: { field: string, direction: "asc" | "desc" }
+ * @fires presentationchange
+ *   bubbles: true, composed: true
+ *   detail: { type: string, data: object }
  *
- * Self-filtering: Inherits containerfilterchange / globalfilterchange
- * listeners from ContentAttributesMixin.
+ * @method getData()             — Returns transferable config
+ * @method setData(data)         — Set chart data and render
+ * @method getCategoryField()    — Resolved category field name
  */
 import { getTransferableConfig } from "../utilities/data-utils.js";
 import {

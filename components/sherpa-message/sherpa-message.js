@@ -1,30 +1,22 @@
 /**
- * sherpa-message.js
- * SherpaMessage — Alert / notification message extending SherpaElement.
+ * @element sherpa-message
+ * @description Alert / notification message with status variants.
  *
- * Usage:
- *   <sherpa-message data-status="success">Your changes have been saved.</sherpa-message>
+ * @attr {enum}    [data-status]      — success | critical | warning | info | urgent
+ * @attr {boolean} [data-dismissible] — Show close button
  *
- *   <sherpa-message data-status="critical" data-dismissible="true">
- *     Something went wrong. Please try again.
- *     <a slot="action" href="#">Retry</a>
- *   </sherpa-message>
+ * @slot heading  — Optional heading text
+ * @slot (default) — Message content
+ * @slot action   — Action link or button
  *
- *   <sherpa-message data-status="info">
- *     <strong slot="heading">Did you know?</strong>
- *     You can customise your dashboard layout.
- *   </sherpa-message>
+ * @fires close
+ *   bubbles: true, composed: true
+ *   detail: none
  *
- * Slots:
- *   - heading: Optional heading text
- *   - (default): Message content
- *   - action: Action link or button
+ * @method dismiss() — Dispatch close event and remove element
  *
- * Attributes:
- *   - data-status:      "success" | "critical" | "warning" | "info" | "urgent"
- *   - data-dismissible: "true" | "false" — Shows close button
- *
- * @fires close — When close button is clicked
+ * @prop {string}  status      — Getter/setter for data-status
+ * @prop {boolean} dismissible — Getter/setter for data-dismissible
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

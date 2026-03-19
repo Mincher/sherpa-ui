@@ -1,28 +1,14 @@
 /**
- * sherpa-progress-tracker.js
- * SherpaProgressTracker — Vertical timeline with status-coloured milestone nodes.
+ * @element sherpa-progress-tracker
+ * @description Vertical timeline with status-coloured milestone nodes.
+ *   Milestones rendered via cloning prototype from template.
  *
- * Usage:
- *   <sherpa-progress-tracker data-heading="Application Progress"
- *     data-percentage="60% Complete">
- *   </sherpa-progress-tracker>
+ * @attr {string}  [data-heading]    — Tracker heading text
+ * @attr {string}  [data-percentage] — Completion text (e.g. "60% Complete")
  *
- *   // Then in JS:
- *   tracker.setMilestones([
- *     { label: 'Application submitted', status: 'success', timestamp: '10 Jan 2025' },
- *     { label: 'Under review', status: 'in-progress', description: 'Being reviewed by team' },
- *     { label: 'Approved', status: 'default' },
- *   ]);
+ * @method setMilestones(milestones) — Set milestones: [{ label, status, description?, timestamp? }]
  *
- * Attributes:
- *   data-heading    — Tracker heading text
- *   data-percentage — Completion text, e.g. "60% Complete"
- *
- * Methods:
- *   setMilestones([{ label, status, description, timestamp }])
- *
- * Milestone statuses:
- *   default | in-progress | success | warning | critical
+ * @prop {Array} milestones — Current milestones array (getter-only)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

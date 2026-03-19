@@ -1,15 +1,30 @@
 /**
- * SherpaViewHeader - View header toolbar with toggles and settings.
+ * @element sherpa-view-header
+ * @description View header toolbar with toggles and settings.
+ *   Manages heading, favorites, feedback popover, and export intent.
  *
- * Manages heading, favorites, feedback popover, and export intent.
- * Theme/mode/density preferences are delegated to ThemeManager.
- * Edit-mode is dispatched as an event — the consumer/app coordinator
- * handles toggling containers.
+ * @attr {string}  [data-label]              — View heading text
+ * @attr {boolean} [data-show-debug-toggles] — Show debug toggle controls
+ * @attr {boolean} [data-favorite]           — Favorite state
+ * @attr {boolean} [data-edit-mode]          — Edit mode active
+ * @attr {string}  [data-export-title]       — Title for PDF export
  *
- * Events (all bubble + composed):
- *   editmodechange   — { editMode: boolean }
- *   viewexport       — { title: string }
- *   favoritetoggle   — { viewId, favorite }
+ * @fires editmodechange
+ *   bubbles: true, composed: true
+ *   detail: { editMode: boolean }
+ * @fires viewexport
+ *   bubbles: true, composed: true
+ *   detail: { title: string }
+ * @fires favoritetoggle
+ *   bubbles: true, composed: true
+ *   detail: { viewId: string, favorite: boolean }
+ *
+ * @method setHeading(name)     — Set heading text
+ * @method getHeading()         — Get heading text
+ * @method setViewId(id)        — Set view identifier
+ * @method getViewId()          — Get view identifier
+ * @method setFavorite(on)      — Set favorite state
+ * @method isFavorite()         — Returns boolean
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';

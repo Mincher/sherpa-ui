@@ -1,29 +1,21 @@
 /**
- * SherpaMetric - KPI card with value, trend, and sparkline.
+ * @element sherpa-metric
+ * @description KPI card with value, trend, and sparkline.
+ *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
+ *   Trend-derived colouring via data-status on internal .metric-card.
  *
- * Uses DataQueryHandler's unified format - metrics are aggregated views
- * of the same data that can render as tables or charts.
+ * @attr {string}  [data-metric-id] — Unique identifier for the metric
+ * @attr {enum}    [data-status]     — success | warning | critical | info | urgent
+ * @attr {enum}    [data-trend]      — up | down | flat — trend direction
+ * @attr {string}  [data-label]      — Metric heading/label
+ * @attr {string}  [value]           — Formatted metric value
+ * @attr {string}  [data-delta]      — Change amount (e.g. "+12.5%")
  *
- * Status Styling:
- *   The host carries `status` for explicit coloring; `.metric-card`
- *   carries `data-status` for trend-derived coloring.  Attribute selectors
- *   in sherpa-metric.css set universal colour properties that cascade to children.
- *
- * Trend Display:
- *   - data-trend="up" or "down": Shows trend icon and colored delta
- *   - data-trend="flat": Shows unit type in delta label with default color (no icon)
- *
- * Attributes:
- *   - visible: boolean - Controls metric visibility (hidden when absent/false)
- *   - metric-id: string - Unique identifier for the metric
- *   - status: 'success' | 'warning' | 'critical' | 'info' | 'urgent' - Status styling
- *   - data-trend: 'up' | 'down' | 'flat' - Trend direction (controls icon and delta color)
- *   - heading: string - Metric heading/label
- *   - value: string - Formatted metric value
- *   - delta: string - Change amount (e.g., "+12.5%") or unit type when flat
- *   - Content config attributes: data-label, data-dataset, data-value-field, data-agg,
- *     data-segment-field, data-show-status, data-sort-field, data-sort-direction,
- *     data-limit, data-visible, data-filters
+ * @method setVisible(visible)                  — Set data-visible to "true"/"false"
+ * @method isVisible()                          — Returns boolean
+ * @method getTransferableConfig(type)          — Config for switching presentation type
+ * @method getData()                            — Returns metric config
+ * @method setData(data)                        — Data pipeline entry
  */
 import "../sherpa-sparkline/sherpa-sparkline.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";

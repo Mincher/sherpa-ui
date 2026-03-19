@@ -1,39 +1,18 @@
 /**
- * sherpa-line-chart.js
- * SherpaLineChart — Line / area chart using CSS clip-path segments.
+ * @element sherpa-line-chart
+ * @description Line / area chart using CSS clip-path segments.
+ *   JS sets raw data as CSS custom properties; CSS normalises via calc()
+ *   and renders clip-path polygons. Zero polygon computation in JS.
  *
- * Uses the same segment approach as sherpa-sparkline: JS sets raw data
- * values as CSS custom properties on cloned series elements. CSS normalises
- * values via calc() and renders clip-path polygons for stroke and fill.
- * Zero polygon computation in JS.
+ * @attr {string}  [data-title]          — Chart heading text
+ * @attr {boolean} [data-loading]        — Show loading state
+ * @attr {enum}    [data-variant]         — line | area
+ * @attr {string}  [data-segment-field]  — Field for series grouping
+ * @attr {enum}    [data-segment-mode]    — Segment display mode
+ * @attr {string}  [data-sort-field]     — Sort field
+ * @attr {enum}    [data-sort-direction] — asc | desc
  *
- * Supports both direct data and declarative query loading via
- * ContentAttributesMixin (data-query-src + data-query-key).
- *
- * Usage (declarative):
- *   <sherpa-line-chart
- *     data-query-src="/data/queries/overview.json"
- *     data-query-key="detections-over-time"
- *     data-variant="area">
- *   </sherpa-line-chart>
- *
- * Usage (programmatic):
- *   chart.setData({
- *     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
- *     series: [
- *       { name: 'Revenue', values: [30, 50, 40, 60, 45, 70] },
- *       { name: 'Cost',    values: [20, 30, 25, 40, 35, 50] },
- *     ]
- *   });
- *
- * Attributes:
- *   data-title    — Chart heading text
- *   data-loading  — Boolean
- *   data-variant  — line | area
- *   + all ContentAttributesMixin attributes
- *
- * Methods:
- *   setData(config | { labels, series })
+ * @method setData(data) — Set chart data: { labels, series: [{ name, values }] } or config
  */
 
 import {

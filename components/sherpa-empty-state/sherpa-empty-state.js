@@ -1,20 +1,24 @@
 /**
- * sherpa-empty-state.js
- * SherpaEmptyState — Empty-state placeholder extending SherpaElement.
+ * @element sherpa-empty-state
+ * @description Empty-state placeholder with illustration, heading, description,
+ *   and action slots.
  *
- * Usage:
- *   <sherpa-empty-state heading="No data" description="Nothing to show"></sherpa-empty-state>
- *   <sherpa-empty-state illustration="search">
- *     <h2 slot="heading">No results</h2>
- *     <p slot="description">Try adjusting your search</p>
- *     <sherpa-button slot="actions" variant="primary">Clear filters</sherpa-button>
- *   </sherpa-empty-state>
+ * @attr {string}  [data-label]        — Heading text
+ * @attr {string}  [data-description]  — Description text
+ * @attr {string}  [data-illustration]  — Built-in illustration name
+ * @attr {string}  [data-small-print]   — Footer small-print text
  *
- * Slots:
- *   - illustration, heading, description, (default), actions, footer
+ * @slot illustration — Custom illustration content
+ * @slot heading      — Custom heading
+ * @slot description  — Custom description
+ * @slot (default)    — Arbitrary content between description and actions
+ * @slot actions      — CTA buttons
+ * @slot footer       — Footer content / small print
  *
- * Attributes:
- *   - heading / description / illustration / small-print
+ * @prop {string} heading      — Getter/setter for data-label
+ * @prop {string} description  — Getter/setter for data-description
+ * @prop {string} illustration — Getter/setter for data-illustration
+ * @prop {string} smallPrint   — Getter/setter for data-small-print
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

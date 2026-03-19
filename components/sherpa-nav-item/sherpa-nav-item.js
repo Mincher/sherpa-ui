@@ -1,28 +1,15 @@
 /**
- * SherpaNavItem — Attribute-driven navigation item (extends SherpaElement, shadow DOM).
+ * @element sherpa-nav-item
+ * @description Attribute-driven navigation item. Minimal JS — icon synced
+ *   via data-icon, rest is declarative. Selection and interaction managed by
+ *   parent sherpa-nav. Chevron rotation via CSS ::part(chevron).
  *
- * Architecture: Minimal JS — icon synced via data-icon attribute, rest is declarative.
- *   • Host element IS the interactive row (role + tabindex set in templates)
- *   • Template children flat in shadow root (no wrapper div)
- *   • Label text projected via default <slot> (element's text content)
- *   • Icon set via data-icon attribute (FontAwesome class string)
- *   • Badge rendered via <sherpa-tag> in shadow DOM, driven by data-badge attribute
- *   • Slot presence auto-detected by SherpaElement (data-has-label)
- *   • All styling via :host([data-*]) selectors in shadow-scoped CSS
- *   • Search highlight, delete handling, and selection managed by SherpaNav
+ * @attr {string}  [data-icon]    — FontAwesome icon class (e.g. "fa-home")
+ * @attr {string}  [data-badge]   — Badge text rendered via internal sherpa-tag
+ * @attr {enum}    [data-variant]  — section | subsection | child
+ * @attr {enum}    [data-state]    — selected
  *
- * Variants (data-variant):
- *   "section"      Section accordion header (chevron shown, no delete)
- *   "subsection"   Subsection accordion header (chevron shown, secondary bg, no delete)
- *   "child"        Leaf item inside a section (secondary background)
- *   (none)         Base item — Home, Settings links
- *
- * Chevron rotation managed by sherpa-nav.css via ::part(chevron)
- * and details[open] — no JS data-mode sync needed.
- *
- * State (data-state):
- *   "selected"     Active — shows indicator pip + active background
- *   (absent)       Unselected (default)
+ * @slot (default) — Label text content
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

@@ -1,6 +1,6 @@
 /**
  * sherpa-button.js
- * Multi-template button web component.
+ * SherpaButton — Multi-template button web component.
  *
  * Four templates (selected via data-type → get templateId()):
  *   default       — Standard button: icon(s) + label + badge + optional close
@@ -11,36 +11,65 @@
  * The button is self-managing for its own visual state and broadcasts
  * events so parent components (filter-bar, container) can orchestrate.
  *
- * Menu:
+ * Menu behaviour:
  *   button-menu and icon-menu types are inherently menu triggers — no
- *   `data-menu="true"` attribute is needed. For default/icon types, add
- *   `data-menu="true"` to enable menu trigger behavior.
+ *   data-menu attribute needed. For default/icon types, add data-menu="true".
+ *   button-menu has two modes: unified (default) or split (data-split).
+ *   If data-menu-template is set, stamps the matching template from
+ *   SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.
  *
- *   button-menu has two modes:
- *     Unified (default): clicking anywhere opens the menu.
- *     Split (data-split): left = buttonclick, right chevron = menu.
+ * @element sherpa-button
  *
- *   If `data-menu-template` is set (e.g. "container"), the button stamps
- *   the matching template from SherpaMenu.getMenuTemplate(id) into the
- *   menu, then dispatches `menu-populate` so consumers can inject dynamic
- *   items. Without `data-menu-template`, consumers populate on `menu-open`.
+ * @attr {enum}    data-type            — default | icon | button-menu | icon-menu
+ * @attr {string}  data-label           — Button text label
+ * @attr {enum}    data-variant         — primary | secondary | tertiary | ghost
+ * @attr {enum}    data-size            — small | medium | large
+ * @attr {boolean} data-active          — Active/pressed toggle state
+ * @attr {enum}    data-status          — critical | warning | success | info | urgent
+ * @attr {string}  data-icon-start      — Leading icon (Font Awesome unicode)
+ * @attr {string}  data-icon-end        — Trailing icon (Font Awesome unicode)
+ * @attr {enum}    data-icon-weight     — fa-solid | fa-regular | fa-light
+ * @attr {boolean} data-dismissable     — Shows close/remove button (chip mode)
+ * @attr {number}  data-count           — Badge count
+ * @attr {boolean} data-split           — Split button-menu into action + trigger
+ * @attr {boolean} data-menu            — Enable menu trigger on default/icon types
+ * @attr {enum}    data-menu-position   — Menu placement (top | bottom | left | right)
+ * @attr {string}  data-menu-template   — Menu template id to stamp from SherpaMenu
+ * @attr {boolean} disabled             — Native disabled state
  *
- *   Re-dispatches `menu-select` and `menu-close` on the button.
- *   Named `data-event` events from sherpa-menu also bubble through.
+ * @fires buttonclick — Main button area clicked
+ *   bubbles: true, composed: true
+ *   detail: { }
+ * @fires chipremove — Close/dismiss button clicked
+ *   bubbles: true, composed: true
+ *   detail: { }
+ * @fires menu-open — Menu is about to show
+ *   bubbles: true, composed: true
+ *   detail: { }
+ * @fires menu-close — Menu was dismissed
+ *   bubbles: true, composed: true
+ *   detail: { }
+ * @fires menu-select — Menu item selected
+ *   bubbles: true, composed: true
+ *   detail: { item: Element, action: string }
+ * @fires menu-populate — Menu stamped and ready for dynamic items
+ *   bubbles: true, composed: true
+ *   detail: { menu: SherpaMenu }
  *
- * Events dispatched:
- *   buttonclick    — Trigger button clicked. detail: { }
- *   chipremove     — Close button clicked.   detail: { }
- *   menu-open      — Menu is about to show. detail: { }
- *   menu-close     — Menu was dismissed. detail: { }
- *   menu-select    — Menu item selected. detail: { item, action, ... }
- *   menu-populate  — Menu is ready for dynamic items. detail: { menu }
+ * @method setMenuItems(items, opts) — Populate menu with items array
+ *   @param {Array} items — Flat array or sections format
+ *   @param {object} [opts] — Options
+ *   @returns {void}
+ * @method getSelectedValues() — Get checked menu item values
+ *   @returns {string[]}
+ * @method clearSelection() — Clear all checked menu items
+ *   @returns {void}
  *
- * Attributes:
- *   data-type, data-label, data-variant, data-size, data-active,
- *   data-status, data-icon-start, data-icon-end, data-icon-weight,
- *   data-dismissable, data-count, data-split, disabled,
- *   data-menu, data-menu-position, data-menu-template
+ * @prop {boolean} disabled — Disabled state (read/write)
+ * @prop {boolean} active — Active/pressed state (read/write)
+ * @prop {string} label — Button text label (read/write)
+ * @prop {string} templateId — Active template id (read-only)
+ * @prop {SherpaMenu} menuElement — The menu instance (read-only)
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

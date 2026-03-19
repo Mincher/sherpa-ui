@@ -1,16 +1,30 @@
 /**
- * sherpa-input-text.js
- * Basic text input extending SherpaInputBase.
+ * @element sherpa-input-text
+ * @extends SherpaInputBase
+ * @description Basic text input. Inherits label, description, helper, layout,
+ *   validation, and value management from SherpaInputBase.
  *
- * @example
- *   <sherpa-input-text label="Name" placeholder="Enter your name"></sherpa-input-text>
- *   <sherpa-input-text label="Email" status="error" description="Invalid email"></sherpa-input-text>
+ * @attr {string}  [data-label]       — Label text (inherited)
+ * @attr {string}  [data-description]  — Description / error text (inherited)
+ * @attr {string}  [data-helper]       — Helper text (inherited)
+ * @attr {enum}    [data-layout]       — stacked | horizontal (inherited)
+ * @attr {boolean} [disabled]          — Disabled state (inherited)
+ * @attr {boolean} [readonly]          — Read-only state (inherited)
+ * @attr {boolean} [required]          — Required constraint (inherited)
+ * @attr {string}  [name]              — Form field name (inherited)
+ * @attr {string}  [value]             — Current value (inherited)
+ * @attr {string}  [placeholder]       — Placeholder text (inherited)
+ * @attr {string}  [pattern]           — Validation regex (inherited)
+ * @attr {number}  [minlength]         — Minimum character length (inherited)
+ * @attr {number}  [maxlength]         — Maximum character length (inherited)
+ * @attr {boolean} [novalidate]        — Disable built-in validation (inherited)
  *
- * Attributes (inherited from SherpaInputBase):
- *   label, description, layout, status, disabled, readonly, required, name, value, placeholder
- *
- * @fires input — { value }
- * @fires change — { value }
+ * @fires input
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
+ * @fires change
+ *   bubbles: true, composed: true
+ *   detail: { value: string }
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
