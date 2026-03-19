@@ -1,0 +1,35 @@
+{
+  "tagName": "sherpa-progress-bar",
+  "description": "Horizontal progress indicator — determinate or indeterminate. Sets role=\"progressbar\" with appropriate ARIA values.",
+  "category": "feedback",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Task label above the bar"
+    },
+    {
+      "name": "data-value",
+      "type": "number",
+      "description": "0–100 percentage (determinate)"
+    },
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "determinate | indeterminate",
+      "default": "determinate",
+      "enumValues": [
+        "determinate",
+        "indeterminate"
+      ]
+    },
+    {
+      "name": "data-status-text",
+      "type": "string",
+      "description": "Override auto-generated status text"
+    }
+  ],
+  "slots": [],
+  "events": []
+}

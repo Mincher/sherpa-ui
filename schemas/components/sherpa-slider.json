@@ -1,0 +1,94 @@
+{
+  "tagName": "sherpa-slider",
+  "description": "Single or dual-handle range slider with optional numeric inputs. Pointer event drag with setPointerCapture. Keyboard arrows with step.",
+  "category": "form",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Label text above the slider"
+    },
+    {
+      "name": "data-type",
+      "type": "enum",
+      "description": "single | range",
+      "default": "single",
+      "enumValues": [
+        "single",
+        "range"
+      ]
+    },
+    {
+      "name": "data-min",
+      "type": "number",
+      "description": "Minimum value",
+      "default": 0
+    },
+    {
+      "name": "data-max",
+      "type": "number",
+      "description": "Maximum value",
+      "default": 100
+    },
+    {
+      "name": "data-step",
+      "type": "number",
+      "description": "Step increment",
+      "default": 1
+    },
+    {
+      "name": "data-value",
+      "type": "string",
+      "description": "Current value (single mode)"
+    },
+    {
+      "name": "data-value-low",
+      "type": "string",
+      "description": "Low handle value (range mode)"
+    },
+    {
+      "name": "data-value-high",
+      "type": "string",
+      "description": "High handle value (range mode)"
+    },
+    {
+      "name": "data-show-inputs",
+      "type": "boolean",
+      "description": "Show numeric input fields beside track"
+    },
+    {
+      "name": "data-show-labels",
+      "type": "boolean",
+      "description": "Show min/max increment labels"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "input",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "number } (single) or { low: number",
+        "high": "number } (range)"
+      }
+    },
+    {
+      "name": "change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "number } (single) or { low: number",
+        "high": "number } (range)"
+      }
+    }
+  ]
+}

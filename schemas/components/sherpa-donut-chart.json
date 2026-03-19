@@ -1,0 +1,82 @@
+{
+  "tagName": "sherpa-donut-chart",
+  "description": "Donut / pie chart using CSS conic-gradient. Supports declarative query loading via ContentAttributesMixin or programmatic setData().",
+  "category": "data-viz",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-title",
+      "type": "string",
+      "description": "Chart heading text"
+    },
+    {
+      "name": "data-inner-label",
+      "type": "string",
+      "description": "Centre big text"
+    },
+    {
+      "name": "data-inner-sublabel",
+      "type": "string",
+      "description": "Centre small text"
+    },
+    {
+      "name": "data-loading",
+      "type": "boolean",
+      "description": "Show loading state"
+    },
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "donut | pie",
+      "enumValues": [
+        "donut",
+        "pie"
+      ]
+    },
+    {
+      "name": "data-segment-field",
+      "type": "string",
+      "description": "Field for segment grouping"
+    },
+    {
+      "name": "data-segment-mode",
+      "type": "enum",
+      "description": "Segment display mode"
+    },
+    {
+      "name": "data-sort-field",
+      "type": "string",
+      "description": "Sort field"
+    },
+    {
+      "name": "data-sort-direction",
+      "type": "enum",
+      "description": "asc | desc",
+      "enumValues": [
+        "asc",
+        "desc"
+      ]
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "setData(data)",
+      "description": "Set chart data: Array<{ label, value, color? }> or config",
+      "params": [
+        {
+          "name": "data",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "data",
+      "type": "Array",
+      "description": "Current chart data (getter-only)"
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+{
+  "tagName": "sherpa-nav",
+  "description": "Collapsible navigation sidebar with search and edit modes. Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html, override via data-src). CSS Highlight API for search (::highlight(nav-search-match)).",
+  "category": "navigation",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-src",
+      "type": "string",
+      "description": "URL for the nav template HTML (default: sherpa-nav.html)"
+    },
+    {
+      "name": "data-active-target",
+      "type": "string",
+      "description": "Selector or ID of the currently active nav item"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "navhome",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "navsettings",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "navitemclick",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "itemId": "string",
+        "sectionId": "string",
+        "route": "string",
+        "label": "string"
+      }
+    },
+    {
+      "name": "navitemdelete",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "itemId": "string",
+        "sectionId": "string"
+      }
+    },
+    {
+      "name": "navpinchange",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "pinned": "boolean"
+      }
+    },
+    {
+      "name": "navmodechange",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "mode": "string",
+        "previousMode": "string"
+      }
+    },
+    {
+      "name": "navsectionexpand",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "sectionId": "string"
+      }
+    },
+    {
+      "name": "navsectionreorder",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "groupIndex": "number",
+        "sectionOrder": "Array"
+      }
+    },
+    {
+      "name": "navfavoritechange",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "itemId": "string",
+        "label": "string",
+        "favorite": "boolean"
+      }
+    },
+    {
+      "name": "naveditconfirm",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "naveditcancel",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "startSearch",
+      "description": "Enter search mode"
+    },
+    {
+      "name": "endSearch",
+      "description": "Exit search mode"
+    },
+    {
+      "name": "setActiveLink(href)",
+      "description": "Highlight the link matching href",
+      "params": [
+        {
+          "name": "href",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setActiveItem(itemId)",
+      "description": "Highlight the item matching itemId",
+      "params": [
+        {
+          "name": "itemId",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "isFavorite(itemId)",
+      "description": "Returns boolean",
+      "params": [
+        {
+          "name": "itemId",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setFavorite(itemId, label, favorite)",
+      "description": "Toggle favorite state",
+      "params": [
+        {
+          "name": "itemId",
+          "type": "any"
+        },
+        {
+          "name": "label",
+          "type": "any"
+        },
+        {
+          "name": "favorite",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "addToRecent(route, label, icon)",
+      "description": "Push item to recent list",
+      "params": [
+        {
+          "name": "route",
+          "type": "any"
+        },
+        {
+          "name": "label",
+          "type": "any"
+        },
+        {
+          "name": "icon",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "isPinned",
+      "type": "boolean",
+      "description": "Whether the sidebar is pinned open"
+    },
+    {
+      "name": "isSearching",
+      "type": "boolean",
+      "description": "Whether search mode is active"
+    },
+    {
+      "name": "isEditing",
+      "type": "boolean",
+      "description": "Whether edit mode is active"
+    },
+    {
+      "name": "mode",
+      "type": "string",
+      "description": "Current mode: \"default\" | \"search\" | \"edit\""
+    }
+  ]
+}

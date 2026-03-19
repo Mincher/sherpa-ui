@@ -1,0 +1,39 @@
+{
+  "tagName": "sherpa-loader",
+  "description": "Animated loading indicator with spinner and optional label. Sets role=\"status\" and aria-live=\"polite\" on the host so assistive technology announces when the loader appears or its label changes.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Loading text beside the spinner"
+    },
+    {
+      "name": "data-orientation",
+      "type": "enum",
+      "description": "horizontal | vertical",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ]
+    },
+    {
+      "name": "data-size",
+      "type": "enum",
+      "description": "small | default | large",
+      "enumValues": [
+        "small",
+        "default",
+        "large"
+      ]
+    },
+    {
+      "name": "data-panel",
+      "type": "boolean",
+      "description": "Surface background panel mode"
+    }
+  ],
+  "slots": [],
+  "events": []
+}

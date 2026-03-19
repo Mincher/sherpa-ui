@@ -1,0 +1,52 @@
+{
+  "tagName": "sherpa-switch",
+  "description": "Toggle switch component.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-state",
+      "type": "enum",
+      "description": "on | off",
+      "enumValues": [
+        "on",
+        "off"
+      ]
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Native disabled state"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "change",
+      "description": "Fired when toggle state changes",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "checked": "boolean",
+        "state": "string"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "state",
+      "type": "string",
+      "description": "Current state: \"on\" or \"off\" (read/write)"
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "description": "Whether switch is on (read/write)"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state (read/write)"
+    }
+  ]
+}

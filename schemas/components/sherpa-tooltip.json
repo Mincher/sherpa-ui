@@ -1,0 +1,92 @@
+{
+  "tagName": "sherpa-tooltip",
+  "description": "Singleton tooltip with CSS anchor positioning fallback. Operates as a singleton: one tooltip instance shared across the page. Use the exported Tooltip API or declarative data-tooltip attributes.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-visible",
+      "type": "boolean",
+      "description": "Whether the tooltip is currently shown"
+    },
+    {
+      "name": "data-position",
+      "type": "enum",
+      "description": "top | bottom | left | right",
+      "enumValues": [
+        "top",
+        "bottom",
+        "left",
+        "right"
+      ]
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "setText(text)",
+      "description": "Set tooltip content text",
+      "params": [
+        {
+          "name": "text",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getText()",
+      "description": "Get current tooltip text"
+    },
+    {
+      "name": "setPosition(pos)",
+      "description": "Set preferred position",
+      "params": [
+        {
+          "name": "pos",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getPosition()",
+      "description": "Get current position"
+    },
+    {
+      "name": "setVisible(visible)",
+      "description": "Show or hide the tooltip",
+      "params": [
+        {
+          "name": "visible",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "isVisible()",
+      "description": "Check if tooltip is shown"
+    },
+    {
+      "name": "showFor(anchor, text, options)",
+      "description": "Position and show for an anchor element",
+      "params": [
+        {
+          "name": "anchor",
+          "type": "any"
+        },
+        {
+          "name": "text",
+          "type": "any"
+        },
+        {
+          "name": "options",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "hide()",
+      "description": "Hide the tooltip"
+    }
+  ]
+}

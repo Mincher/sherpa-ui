@@ -1,0 +1,54 @@
+{
+  "tagName": "sherpa-chart-legend",
+  "description": "Standalone chart legend with optional interactive link items.",
+  "category": "data-viz",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-orientation",
+      "type": "enum",
+      "description": "horizontal | vertical (default: horizontal)",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ]
+    },
+    {
+      "name": "data-loading",
+      "type": "boolean",
+      "description": "Show loading state"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "legend-item-click",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "index": "number",
+        "label": "string"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "setItems(items)",
+      "description": "Set legend items: [{ label, value?, color?, active?, link? }]",
+      "params": [
+        {
+          "name": "items",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "items",
+      "type": "Array",
+      "description": "Current legend items (getter-only)"
+    }
+  ]
+}

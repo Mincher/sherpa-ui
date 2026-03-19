@@ -1,0 +1,61 @@
+{
+  "tagName": "sherpa-gauge-chart",
+  "description": "Semicircle gauge using CSS conic-gradient.",
+  "category": "data-viz",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-title",
+      "type": "string",
+      "description": "Chart heading text"
+    },
+    {
+      "name": "data-value",
+      "type": "number",
+      "description": "Numeric value 0–100"
+    },
+    {
+      "name": "data-min",
+      "type": "string",
+      "description": "Min range label (default: \"0%\")"
+    },
+    {
+      "name": "data-max",
+      "type": "string",
+      "description": "Max range label (default: \"100%\")"
+    },
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Descriptive text below value"
+    },
+    {
+      "name": "data-loading",
+      "type": "boolean",
+      "description": "Show loading state"
+    },
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "solid | series",
+      "enumValues": [
+        "solid",
+        "series"
+      ]
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "setSegments(segments)",
+      "description": "Series variant: set arc segments [{ value, color? }]",
+      "params": [
+        {
+          "name": "segments",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}

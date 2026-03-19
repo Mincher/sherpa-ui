@@ -1,0 +1,37 @@
+{
+  "tagName": "sherpa-sparkline",
+  "description": "CSS-driven sparkline. JS sets raw data values as CSS custom properties; CSS handles normalisation via calc() and visual rendering (clip-path polygons per segment).",
+  "category": "data-viz",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-values",
+      "type": "string",
+      "description": "Comma-separated or JSON array (e.g. \"10,25,15,30\")"
+    },
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "bar (default: line)"
+    },
+    {
+      "name": "data-unit",
+      "type": "string",
+      "description": "Unit label for tooltip display"
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "setValues(values)",
+      "description": "Set sparkline data points",
+      "params": [
+        {
+          "name": "values",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}

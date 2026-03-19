@@ -1,0 +1,122 @@
+{
+  "tagName": "sherpa-file-upload",
+  "description": "File upload drop zone with drag-and-drop, file list, and per-file progress/status tracking. Consumer handles actual upload; call setFileState/setFileProgress to update UI.",
+  "category": "form",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Label text above the drop zone"
+    },
+    {
+      "name": "data-accept",
+      "type": "string",
+      "description": "Accepted file types (e.g. \".jpg,.png,image/*\")"
+    },
+    {
+      "name": "data-multiple",
+      "type": "boolean",
+      "description": "Allow multiple file selection"
+    },
+    {
+      "name": "data-max-size",
+      "type": "string",
+      "description": "Maximum file size in bytes"
+    },
+    {
+      "name": "data-max-files",
+      "type": "string",
+      "description": "Maximum number of files"
+    },
+    {
+      "name": "data-helper",
+      "type": "string",
+      "description": "Constraint / helper text"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "file-add",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "files": "File[]"
+      }
+    },
+    {
+      "name": "file-remove",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "file": "File",
+        "index": "number"
+      }
+    },
+    {
+      "name": "file-clear",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "file-upload-start",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "files": "File[]"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFileState(index, state, statusText)",
+      "description": "Update file item state",
+      "params": [
+        {
+          "name": "index",
+          "type": "any"
+        },
+        {
+          "name": "state",
+          "type": "any"
+        },
+        {
+          "name": "statusText",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setFileProgress(index, percent)",
+      "description": "Update file upload progress",
+      "params": [
+        {
+          "name": "index",
+          "type": "any"
+        },
+        {
+          "name": "percent",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "files",
+      "type": "File[]",
+      "description": "Current list of selected files (getter-only)"
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "tagName": "sherpa-dialog",
+  "description": "Modal dialog built on the native HTML <dialog> element. Uses SherpaElement multi-template support. The default template includes a native <header> with a <dl> for title/subtitle and a close button, plus a sherpa-footer for footer content.",
+  "category": "layout",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Dialog title text"
+    },
+    {
+      "name": "data-subtitle",
+      "type": "string",
+      "description": "Dialog subtitle text"
+    },
+    {
+      "name": "data-size",
+      "type": "enum",
+      "description": "small | medium | large | full",
+      "enumValues": [
+        "small",
+        "medium",
+        "large",
+        "full"
+      ]
+    },
+    {
+      "name": "data-open",
+      "type": "boolean",
+      "description": "Dialog visibility"
+    },
+    {
+      "name": "data-dismissible",
+      "type": "boolean",
+      "description": "Shows close button (default: true)"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for dialog body content"
+    },
+    {
+      "name": "heading",
+      "description": "Custom heading content (replaces attribute-driven title)"
+    },
+    {
+      "name": "footer",
+      "description": "Footer action content (inside sherpa-footer)"
+    }
+  ],
+  "events": [
+    {
+      "name": "open",
+      "description": "Fired when dialog is opened",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "close",
+      "description": "Fired when dialog is closed",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "show()",
+      "description": "Programmatically open the dialog"
+    },
+    {
+      "name": "hide()",
+      "description": "Programmatically close the dialog"
+    },
+    {
+      "name": "toggle()",
+      "description": "Toggle dialog visibility"
+    }
+  ],
+  "properties": [
+    {
+      "name": "heading",
+      "type": "string",
+      "description": "Title text (read/write)"
+    },
+    {
+      "name": "subtitle",
+      "type": "string",
+      "description": "Subtitle text (read/write)"
+    },
+    {
+      "name": "size",
+      "type": "string",
+      "description": "Dialog size preset (read/write)"
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "description": "Open state (read/write)"
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean",
+      "description": "Close button visibility (read/write)"
+    }
+  ]
+}

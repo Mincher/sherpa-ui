@@ -1,0 +1,87 @@
+{
+  "tagName": "sherpa-menu-item",
+  "description": "Attribute-driven menu item with multiple template variants. Templates: default, checkbox, radio, toggle, heading.",
+  "category": "navigation",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-type",
+      "type": "enum",
+      "description": "checkbox | radio | toggle | heading (default: action)",
+      "enumValues": [
+        "checkbox",
+        "radio",
+        "toggle",
+        "heading"
+      ]
+    },
+    {
+      "name": "data-action",
+      "type": "string",
+      "description": "Action identifier dispatched in menu-select"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Value associated with this item"
+    },
+    {
+      "name": "data-selection",
+      "type": "enum",
+      "description": "single | multiple",
+      "enumValues": [
+        "single",
+        "multiple"
+      ]
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "description": "Whether checkbox/radio/toggle is checked"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Whether the item is disabled"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Secondary description text"
+    },
+    {
+      "name": "data-group",
+      "type": "string",
+      "description": "Group identifier for radio grouping"
+    },
+    {
+      "name": "data-keep-open",
+      "type": "boolean",
+      "description": "Keep menu open after selection"
+    },
+    {
+      "name": "data-has-submenu",
+      "type": "boolean",
+      "description": "Whether the item opens a submenu"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "description": "Form-compatible name for radio/checkbox"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Label text content"
+    }
+  ],
+  "events": [],
+  "properties": [
+    {
+      "name": "inputElement",
+      "type": "Element",
+      "description": "Reference to internal input (checkbox/radio/switch)"
+    }
+  ]
+}

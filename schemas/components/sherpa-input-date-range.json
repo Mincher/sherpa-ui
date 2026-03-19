@@ -1,0 +1,73 @@
+{
+  "tagName": "sherpa-input-date-range",
+  "description": "Date range picker composing two native date inputs (start / end). Inherits label, description, helper, layout, validation from SherpaInputBase. Start ≤ end constraint soft-enforced via min/max on native inputs.",
+  "category": "form",
+  "baseClass": "SherpaInputBase",
+  "attributes": [
+    {
+      "name": "data-value-start",
+      "type": "string",
+      "description": "Start date (YYYY-MM-DD)"
+    },
+    {
+      "name": "data-value-end",
+      "type": "string",
+      "description": "End date (YYYY-MM-DD)"
+    },
+    {
+      "name": "min",
+      "type": "string",
+      "description": "Minimum selectable date (YYYY-MM-DD)"
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "description": "Maximum selectable date (YYYY-MM-DD)"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "start": "string|null",
+        "end": "string|null"
+      }
+    },
+    {
+      "name": "input",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "start": "string|null",
+        "end": "string|null"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "valueStart",
+      "type": "string",
+      "description": "Getter/setter for data-value-start"
+    },
+    {
+      "name": "valueEnd",
+      "type": "string",
+      "description": "Getter/setter for data-value-end"
+    },
+    {
+      "name": "startAsDate",
+      "type": "Date|null",
+      "description": "Start value as Date (getter-only)"
+    },
+    {
+      "name": "endAsDate",
+      "type": "Date|null",
+      "description": "End value as Date (getter-only)"
+    }
+  ]
+}

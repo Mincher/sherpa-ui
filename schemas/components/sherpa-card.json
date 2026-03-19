@@ -1,0 +1,99 @@
+{
+  "tagName": "sherpa-card",
+  "description": "Container component with header, content, and footer areas. Uses a native <header> with a <dl> for the card header area, supporting both attribute-based headings and slotted custom content.",
+  "category": "layout",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Card title text"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Card subtitle text"
+    },
+    {
+      "name": "data-selected",
+      "type": "boolean",
+      "description": "Selected/active state"
+    },
+    {
+      "name": "data-interactive",
+      "type": "boolean",
+      "description": "Makes card clickable"
+    },
+    {
+      "name": "data-elevation",
+      "type": "enum",
+      "description": "none | sm | md | lg",
+      "enumValues": [
+        "none",
+        "sm",
+        "md",
+        "lg"
+      ]
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Native disabled state"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for main card content"
+    },
+    {
+      "name": "header",
+      "description": "Custom heading content (replaces attribute-driven title)"
+    },
+    {
+      "name": "footer",
+      "description": "Card footer content"
+    }
+  ],
+  "events": [
+    {
+      "name": "card-click",
+      "description": "Fired when interactive card is clicked or activated via keyboard",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "properties": [
+    {
+      "name": "selected",
+      "type": "boolean",
+      "description": "Selected state (read/write)"
+    },
+    {
+      "name": "interactive",
+      "type": "boolean",
+      "description": "Clickable state (read/write)"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state (read/write)"
+    },
+    {
+      "name": "elevation",
+      "type": "string",
+      "description": "Shadow level (read/write)"
+    },
+    {
+      "name": "heading",
+      "type": "string",
+      "description": "Title text (read/write)"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "description": "Subtitle text (read/write)"
+    }
+  ]
+}

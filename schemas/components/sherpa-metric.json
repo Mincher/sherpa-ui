@@ -1,0 +1,92 @@
+{
+  "tagName": "sherpa-metric",
+  "description": "KPI card with value, trend, and sparkline. Extends ContentAttributesMixin(SherpaElement) for data pipeline. Trend-derived colouring via data-status on internal .metric-card.",
+  "category": "data-display",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-metric-id",
+      "type": "string",
+      "description": "Unique identifier for the metric"
+    },
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "success | warning | critical | info | urgent",
+      "enumValues": [
+        "success",
+        "warning",
+        "critical",
+        "info",
+        "urgent"
+      ]
+    },
+    {
+      "name": "data-trend",
+      "type": "enum",
+      "description": "up | down | flat — trend direction",
+      "enumValues": [
+        "up",
+        "down",
+        "flat"
+      ]
+    },
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Metric heading/label"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Formatted metric value"
+    },
+    {
+      "name": "data-delta",
+      "type": "string",
+      "description": "Change amount (e.g. \"+12.5%\")"
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "setVisible(visible)",
+      "description": "Set data-visible to \"true\"/\"false\"",
+      "params": [
+        {
+          "name": "visible",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "isVisible()",
+      "description": "Returns boolean"
+    },
+    {
+      "name": "getTransferableConfig(type)",
+      "description": "Config for switching presentation type",
+      "params": [
+        {
+          "name": "type",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getData()",
+      "description": "Returns metric config"
+    },
+    {
+      "name": "setData(data)",
+      "description": "Data pipeline entry",
+      "params": [
+        {
+          "name": "data",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "tagName": "sherpa-empty-state",
+  "description": "Empty-state placeholder with illustration, heading, description, and action slots.",
+  "category": "data-display",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Heading text"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Description text"
+    },
+    {
+      "name": "data-illustration",
+      "type": "string",
+      "description": "Built-in illustration name"
+    },
+    {
+      "name": "data-small-print",
+      "type": "string",
+      "description": "Footer small-print text"
+    }
+  ],
+  "slots": [
+    {
+      "name": "illustration",
+      "description": "Custom illustration content"
+    },
+    {
+      "name": "heading",
+      "description": "Custom heading"
+    },
+    {
+      "name": "description",
+      "description": "Custom description"
+    },
+    {
+      "name": "",
+      "description": "Arbitrary content between description and actions"
+    },
+    {
+      "name": "actions",
+      "description": "CTA buttons"
+    },
+    {
+      "name": "footer",
+      "description": "Footer content / small print"
+    }
+  ],
+  "events": [],
+  "properties": [
+    {
+      "name": "heading",
+      "type": "string",
+      "description": "Getter/setter for data-label"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "description": "Getter/setter for data-description"
+    },
+    {
+      "name": "illustration",
+      "type": "string",
+      "description": "Getter/setter for data-illustration"
+    },
+    {
+      "name": "smallPrint",
+      "type": "string",
+      "description": "Getter/setter for data-small-print"
+    }
+  ]
+}

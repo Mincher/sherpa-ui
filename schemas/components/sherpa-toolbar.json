@@ -1,0 +1,32 @@
+{
+  "tagName": "sherpa-toolbar",
+  "description": "Generic horizontal toolbar with leading/center/trailing content zones and an optional filters row. Pure layout component — no data logic.",
+  "category": "page-level",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-density",
+      "type": "enum",
+      "description": "Display density variant"
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading",
+      "description": "Start zone (title, CTA buttons)"
+    },
+    {
+      "name": "center",
+      "description": "Center zone (search — grows to fill)"
+    },
+    {
+      "name": "trailing",
+      "description": "End zone (icon buttons, overflow menu)"
+    },
+    {
+      "name": "filters",
+      "description": "Below the toolbar row (filter bar, chips)"
+    }
+  ],
+  "events": []
+}

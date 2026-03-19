@@ -1,0 +1,98 @@
+{
+  "tagName": "sherpa-pagination",
+  "description": "Standalone pagination bar with page navigation and page-size selector.",
+  "category": "data-display",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-page",
+      "type": "number",
+      "description": "Current 1-based page",
+      "default": 1
+    },
+    {
+      "name": "data-page-size",
+      "type": "number",
+      "description": "Rows per page",
+      "default": 25
+    },
+    {
+      "name": "data-total-rows",
+      "type": "number",
+      "description": "Total row count (required)"
+    },
+    {
+      "name": "data-allowed-sizes",
+      "type": "string",
+      "description": "Comma-separated page-size options (default: \"10,25,50,100\")"
+    },
+    {
+      "name": "data-density",
+      "type": "enum",
+      "description": "Display density"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "pagechange",
+      "description": "",
+      "bubbles": true,
+      "composed": false,
+      "detail": {
+        "page": "number",
+        "pageSize": "number",
+        "totalPages": "number"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "goToPage(n)",
+      "description": "Navigate to specific page (clamped)",
+      "params": [
+        {
+          "name": "n",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setTotalRows(n)",
+      "description": "Update total rows + clamp page",
+      "params": [
+        {
+          "name": "n",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "page",
+      "type": "number",
+      "description": "Current page (getter/setter)"
+    },
+    {
+      "name": "pageSize",
+      "type": "number",
+      "description": "Rows per page (getter/setter)"
+    },
+    {
+      "name": "totalRows",
+      "type": "number",
+      "description": "Total row count (getter/setter)"
+    },
+    {
+      "name": "totalPages",
+      "type": "number",
+      "description": "Computed total pages (getter-only)"
+    },
+    {
+      "name": "allowedSizes",
+      "type": "number[]",
+      "description": "Parsed page-size options (getter-only)"
+    }
+  ]
+}

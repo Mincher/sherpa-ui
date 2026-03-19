@@ -1,0 +1,102 @@
+{
+  "tagName": "sherpa-footer",
+  "description": "Reusable footer with multiple template variants. Template selected via data-type attribute.",
+  "category": "page-level",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-type",
+      "type": "enum",
+      "description": "action-bar | slot (default: slot)",
+      "enumValues": [
+        "action-bar",
+        "slot"
+      ]
+    },
+    {
+      "name": "data-cancel-label",
+      "type": "string",
+      "description": "Cancel button text (action-bar)"
+    },
+    {
+      "name": "data-apply-label",
+      "type": "string",
+      "description": "Apply button text (action-bar)"
+    },
+    {
+      "name": "data-show-cancel",
+      "type": "boolean",
+      "description": "Show cancel button (default: true)"
+    },
+    {
+      "name": "data-show-apply",
+      "type": "boolean",
+      "description": "Show apply button (default: true)"
+    },
+    {
+      "name": "data-apply-closes",
+      "type": "boolean",
+      "description": "Apply auto-closes parent (default: true)"
+    }
+  ],
+  "slots": [
+    {
+      "name": "start",
+      "description": "Content aligned to the left (action-bar)"
+    },
+    {
+      "name": "",
+      "description": "Passthrough content (slot variant)"
+    }
+  ],
+  "events": [
+    {
+      "name": "footer-cancel",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "footer-apply",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "closes": "boolean"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "type",
+      "type": "string",
+      "description": "Getter/setter for data-type"
+    },
+    {
+      "name": "cancelLabel",
+      "type": "string",
+      "description": "Getter/setter for data-cancel-label"
+    },
+    {
+      "name": "applyLabel",
+      "type": "string",
+      "description": "Getter/setter for data-apply-label"
+    },
+    {
+      "name": "showCancel",
+      "type": "boolean",
+      "description": "Getter/setter for data-show-cancel"
+    },
+    {
+      "name": "showApply",
+      "type": "boolean",
+      "description": "Getter/setter for data-show-apply"
+    },
+    {
+      "name": "applyCloses",
+      "type": "boolean",
+      "description": "Getter/setter for data-apply-closes"
+    }
+  ]
+}

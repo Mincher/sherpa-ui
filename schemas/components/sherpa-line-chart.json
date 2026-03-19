@@ -1,0 +1,65 @@
+{
+  "tagName": "sherpa-line-chart",
+  "description": "Line / area chart using CSS clip-path segments. JS sets raw data as CSS custom properties; CSS normalises via calc() and renders clip-path polygons. Zero polygon computation in JS.",
+  "category": "data-viz",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-title",
+      "type": "string",
+      "description": "Chart heading text"
+    },
+    {
+      "name": "data-loading",
+      "type": "boolean",
+      "description": "Show loading state"
+    },
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "line | area",
+      "enumValues": [
+        "line",
+        "area"
+      ]
+    },
+    {
+      "name": "data-segment-field",
+      "type": "string",
+      "description": "Field for series grouping"
+    },
+    {
+      "name": "data-segment-mode",
+      "type": "enum",
+      "description": "Segment display mode"
+    },
+    {
+      "name": "data-sort-field",
+      "type": "string",
+      "description": "Sort field"
+    },
+    {
+      "name": "data-sort-direction",
+      "type": "enum",
+      "description": "asc | desc",
+      "enumValues": [
+        "asc",
+        "desc"
+      ]
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "setData(data)",
+      "description": "Set chart data: { labels, series: [{ name, values }] } or config",
+      "params": [
+        {
+          "name": "data",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}

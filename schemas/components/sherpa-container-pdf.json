@@ -1,0 +1,21 @@
+{
+  "tagName": "sherpa-container-pdf",
+  "description": "ARCHIVED — No-op stub. PDF export functionality is archived for rework. Registers the custom element so existing imports don't break.",
+  "category": "page-level",
+  "baseClass": "SherpaElement",
+  "attributes": [],
+  "slots": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "setData(sourceContainer)",
+      "description": "No-op, logs warning",
+      "params": [
+        {
+          "name": "sourceContainer",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}

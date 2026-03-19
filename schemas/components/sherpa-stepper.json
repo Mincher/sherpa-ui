@@ -1,0 +1,142 @@
+{
+  "tagName": "sherpa-stepper",
+  "description": "Horizontal/vertical step progress indicator. Steps populated from data; CSS handles all visual states.",
+  "category": "form",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-current-step",
+      "type": "number",
+      "description": "Active step (1-based)",
+      "default": 1
+    },
+    {
+      "name": "data-linear",
+      "type": "enum",
+      "description": "true | false — steps must complete in order",
+      "enumValues": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "name": "data-show-step-numbers",
+      "type": "enum",
+      "description": "true | false (default: true)",
+      "enumValues": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "name": "data-src",
+      "type": "string",
+      "description": "URL to load steps JSON"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "step-change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "currentStep": "number",
+        "previousStep": "number",
+        "label": "string"
+      }
+    },
+    {
+      "name": "step-click",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "step": "number",
+        "label": "string"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "setSteps(steps)",
+      "description": "Set steps array: [{ label, description? }]",
+      "params": [
+        {
+          "name": "steps",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "nextStep()",
+      "description": "Advance to next step"
+    },
+    {
+      "name": "previousStep()",
+      "description": "Go back to previous step"
+    },
+    {
+      "name": "goToStep(num)",
+      "description": "Jump to specific step number",
+      "params": [
+        {
+          "name": "num",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "completeStep(num)",
+      "description": "Mark a step as completed",
+      "params": [
+        {
+          "name": "num",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setStepError(num, bool)",
+      "description": "Mark/unmark a step as errored",
+      "params": [
+        {
+          "name": "num",
+          "type": "any"
+        },
+        {
+          "name": "bool",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "currentStep",
+      "type": "number",
+      "description": "Getter/setter for data-current-step"
+    },
+    {
+      "name": "linear",
+      "type": "boolean",
+      "description": "Getter/setter for data-linear"
+    },
+    {
+      "name": "showStepNumbers",
+      "type": "boolean",
+      "description": "Getter/setter for data-show-step-numbers"
+    },
+    {
+      "name": "dataSrc",
+      "type": "string",
+      "description": "Getter/setter for data-src"
+    },
+    {
+      "name": "steps",
+      "type": "Array",
+      "description": "Current steps array (getter-only)"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "tagName": "sherpa-input-number",
+  "description": "Numerical input with stepper buttons. Inherits label, description, helper, layout, validation, and value management from SherpaInputBase.",
+  "category": "form",
+  "baseClass": "SherpaInputBase",
+  "attributes": [
+    {
+      "name": "min",
+      "type": "number",
+      "description": "Minimum allowed value"
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "description": "Maximum allowed value"
+    },
+    {
+      "name": "step",
+      "type": "number",
+      "description": "Step increment (default: 1)"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "input",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    },
+    {
+      "name": "change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "stepUp(n=1)",
+      "description": "Increment value by n steps",
+      "params": [
+        {
+          "name": "n=1",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "stepDown(n=1)",
+      "description": "Decrement value by n steps",
+      "params": [
+        {
+          "name": "n=1",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "min",
+      "type": "string",
+      "description": "Getter/setter for min attribute"
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "description": "Getter/setter for max attribute"
+    },
+    {
+      "name": "step",
+      "type": "string",
+      "description": "Getter/setter for step attribute"
+    },
+    {
+      "name": "valueAsNumber",
+      "type": "number",
+      "description": "Current value as a number (getter-only)"
+    }
+  ]
+}

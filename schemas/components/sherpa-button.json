@@ -1,0 +1,226 @@
+{
+  "tagName": "sherpa-button",
+  "description": "Multi-template button web component. Four templates (selected via data-type → get templateId()): default       — Standard button: icon(s) + label + badge + optional close icon          — Icon-only square button button-menu   — Button + menu trigger side by side (action menu) icon-menu     — Icon-only menu trigger (overflow menus) The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: button-menu and icon-menu types are inherently menu triggers — no data-menu attribute needed. For default/icon types, add data-menu=\"true\". button-menu has two modes: unified (default) or split (data-split). If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-type",
+      "type": "enum",
+      "description": "default | icon | button-menu | icon-menu",
+      "enumValues": [
+        "default",
+        "icon",
+        "button-menu",
+        "icon-menu"
+      ]
+    },
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Button text label"
+    },
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "primary | secondary | tertiary | ghost",
+      "enumValues": [
+        "primary",
+        "secondary",
+        "tertiary",
+        "ghost"
+      ]
+    },
+    {
+      "name": "data-size",
+      "type": "enum",
+      "description": "small | medium | large",
+      "enumValues": [
+        "small",
+        "medium",
+        "large"
+      ]
+    },
+    {
+      "name": "data-active",
+      "type": "boolean",
+      "description": "Active/pressed toggle state"
+    },
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "critical | warning | success | info | urgent",
+      "enumValues": [
+        "critical",
+        "warning",
+        "success",
+        "info",
+        "urgent"
+      ]
+    },
+    {
+      "name": "data-icon-start",
+      "type": "string",
+      "description": "Leading icon (Font Awesome unicode)"
+    },
+    {
+      "name": "data-icon-end",
+      "type": "string",
+      "description": "Trailing icon (Font Awesome unicode)"
+    },
+    {
+      "name": "data-icon-weight",
+      "type": "enum",
+      "description": "fa-solid | fa-regular | fa-light",
+      "enumValues": [
+        "fa-solid",
+        "fa-regular",
+        "fa-light"
+      ]
+    },
+    {
+      "name": "data-dismissable",
+      "type": "boolean",
+      "description": "Shows close/remove button (chip mode)"
+    },
+    {
+      "name": "data-count",
+      "type": "number",
+      "description": "Badge count"
+    },
+    {
+      "name": "data-split",
+      "type": "boolean",
+      "description": "Split button-menu into action + trigger"
+    },
+    {
+      "name": "data-menu",
+      "type": "boolean",
+      "description": "Enable menu trigger on default/icon types"
+    },
+    {
+      "name": "data-menu-position",
+      "type": "enum",
+      "description": "Menu placement (top | bottom | left | right)",
+      "enumValues": [
+        "top",
+        "bottom",
+        "left",
+        "right"
+      ]
+    },
+    {
+      "name": "data-menu-template",
+      "type": "string",
+      "description": "Menu template id to stamp from SherpaMenu"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Native disabled state"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "buttonclick",
+      "description": "Main button area clicked",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "chipremove",
+      "description": "Close/dismiss button clicked",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "menu-open",
+      "description": "Menu is about to show",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "menu-close",
+      "description": "Menu was dismissed",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "menu-select",
+      "description": "Menu item selected",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "item": "Element",
+        "action": "string"
+      }
+    },
+    {
+      "name": "menu-populate",
+      "description": "Menu stamped and ready for dynamic items",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "menu": "SherpaMenu"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "setMenuItems(items, opts)",
+      "description": "Populate menu with items array",
+      "params": [
+        {
+          "name": "items",
+          "type": "any"
+        },
+        {
+          "name": "opts",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getSelectedValues()",
+      "description": "Get checked menu item values"
+    },
+    {
+      "name": "clearSelection()",
+      "description": "Clear all checked menu items"
+    }
+  ],
+  "properties": [
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state (read/write)"
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "description": "Active/pressed state (read/write)"
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "description": "Button text label (read/write)"
+    },
+    {
+      "name": "templateId",
+      "type": "string",
+      "description": "Active template id (read-only)",
+      "readonly": true
+    },
+    {
+      "name": "menuElement",
+      "type": "SherpaMenu",
+      "description": "The menu instance (read-only)",
+      "readonly": true
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "tagName": "sherpa-nav-promo",
+  "description": "Promotional callout for the navigation footer. Accepts config via data attributes or imperatively via setConfig().",
+  "category": "navigation",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-promo-title",
+      "type": "string",
+      "description": "Promo heading text"
+    },
+    {
+      "name": "data-promo-message",
+      "type": "string",
+      "description": "Promo body message"
+    },
+    {
+      "name": "data-promo-link-text",
+      "type": "string",
+      "description": "CTA link label"
+    },
+    {
+      "name": "data-promo-link-url",
+      "type": "string",
+      "description": "CTA link URL"
+    },
+    {
+      "name": "data-dismissed",
+      "type": "boolean",
+      "description": "Whether the promo has been dismissed"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "dismiss",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "setConfig(config)",
+      "description": "Set promo content: { title, message, link: { text, url } }",
+      "params": [
+        {
+          "name": "config",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}

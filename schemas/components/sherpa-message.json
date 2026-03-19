@@ -1,0 +1,66 @@
+{
+  "tagName": "sherpa-message",
+  "description": "Alert / notification message with status variants.",
+  "category": "feedback",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "success | critical | warning | info | urgent",
+      "enumValues": [
+        "success",
+        "critical",
+        "warning",
+        "info",
+        "urgent"
+      ]
+    },
+    {
+      "name": "data-dismissible",
+      "type": "boolean",
+      "description": "Show close button"
+    }
+  ],
+  "slots": [
+    {
+      "name": "heading",
+      "description": "Optional heading text"
+    },
+    {
+      "name": "",
+      "description": "Message content"
+    },
+    {
+      "name": "action",
+      "description": "Action link or button"
+    }
+  ],
+  "events": [
+    {
+      "name": "close",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "dismiss()",
+      "description": "Dispatch close event and remove element"
+    }
+  ],
+  "properties": [
+    {
+      "name": "status",
+      "type": "string",
+      "description": "Getter/setter for data-status"
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean",
+      "description": "Getter/setter for data-dismissible"
+    }
+  ]
+}

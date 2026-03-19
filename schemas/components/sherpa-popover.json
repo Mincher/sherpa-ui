@@ -1,0 +1,57 @@
+{
+  "tagName": "sherpa-popover",
+  "description": "General-purpose floating content container with header.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-heading",
+      "type": "string",
+      "description": "Header title text"
+    },
+    {
+      "name": "data-open",
+      "type": "boolean",
+      "description": "Shows the popover"
+    },
+    {
+      "name": "data-anchor",
+      "type": "string",
+      "description": "CSS anchor name to position against"
+    },
+    {
+      "name": "data-position",
+      "type": "enum",
+      "description": "top | bottom | left | right",
+      "enumValues": [
+        "top",
+        "bottom",
+        "left",
+        "right"
+      ]
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for body content"
+    },
+    {
+      "name": "icon",
+      "description": "Header icon slot"
+    },
+    {
+      "name": "header-end",
+      "description": "Header trailing content slot"
+    }
+  ],
+  "events": [
+    {
+      "name": "popover-close",
+      "description": "Fired when close button or click-outside dismisses",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ]
+}

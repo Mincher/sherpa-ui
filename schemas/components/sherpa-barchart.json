@@ -1,0 +1,99 @@
+{
+  "tagName": "sherpa-barchart",
+  "description": "Adaptive bar chart with automatic orientation. Supports stacked bars, category limiting, and responsive legend. Extends ContentAttributesMixin(SherpaElement) for data pipeline.",
+  "category": "data-viz",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-loading",
+      "type": "boolean",
+      "description": "Show loading state"
+    },
+    {
+      "name": "data-stacked",
+      "type": "boolean",
+      "description": "Stack bars by segment"
+    },
+    {
+      "name": "data-title",
+      "type": "string",
+      "description": "Chart heading text"
+    },
+    {
+      "name": "data-orientation",
+      "type": "enum",
+      "description": "horizontal | vertical (auto-selected)",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ]
+    },
+    {
+      "name": "data-segment-field",
+      "type": "string",
+      "description": "Field for bar grouping"
+    },
+    {
+      "name": "data-segment-mode",
+      "type": "enum",
+      "description": "Segment display mode"
+    },
+    {
+      "name": "data-sort-field",
+      "type": "string",
+      "description": "Sort field"
+    },
+    {
+      "name": "data-sort-direction",
+      "type": "enum",
+      "description": "asc | desc",
+      "enumValues": [
+        "asc",
+        "desc"
+      ]
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "sortchange",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "field": "string",
+        "direction": "\"asc\" | \"desc\""
+      }
+    },
+    {
+      "name": "presentationchange",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "type": "string",
+        "data": "object"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "getData()",
+      "description": "Returns transferable config"
+    },
+    {
+      "name": "setData(data)",
+      "description": "Set chart data and render",
+      "params": [
+        {
+          "name": "data",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getCategoryField()",
+      "description": "Resolved category field name"
+    }
+  ]
+}

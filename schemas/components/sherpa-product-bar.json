@@ -1,0 +1,33 @@
+{
+  "tagName": "sherpa-product-bar",
+  "description": "Top-level product branding bar with icon, name, navigation, and actions.",
+  "category": "navigation",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-product-name",
+      "type": "string",
+      "description": "Product display name"
+    },
+    {
+      "name": "data-product-icon",
+      "type": "string",
+      "description": "Font Awesome icon class (e.g. \"fa-cube\")"
+    }
+  ],
+  "slots": [
+    {
+      "name": "icon",
+      "description": "Custom product icon content"
+    },
+    {
+      "name": "",
+      "description": "Navigation items"
+    },
+    {
+      "name": "actions",
+      "description": "Right-aligned action buttons"
+    }
+  ],
+  "events": []
+}

@@ -1,0 +1,41 @@
+{
+  "tagName": "sherpa-tag",
+  "description": "Compact label component with variant and status support.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "primary | secondary",
+      "enumValues": [
+        "primary",
+        "secondary"
+      ]
+    },
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "critical | info | success | warning | urgent",
+      "enumValues": [
+        "critical",
+        "info",
+        "success",
+        "warning",
+        "urgent"
+      ]
+    },
+    {
+      "name": "data-collapsed",
+      "type": "boolean",
+      "description": "Renders as small circular indicator"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for tag label content"
+    }
+  ],
+  "events": []
+}

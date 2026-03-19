@@ -1,0 +1,39 @@
+{
+  "tagName": "sherpa-progress-tracker",
+  "description": "Vertical timeline with status-coloured milestone nodes. Milestones rendered via cloning prototype from template.",
+  "category": "feedback",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-heading",
+      "type": "string",
+      "description": "Tracker heading text"
+    },
+    {
+      "name": "data-percentage",
+      "type": "string",
+      "description": "Completion text (e.g. \"60% Complete\")"
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "methods": [
+    {
+      "name": "setMilestones(milestones)",
+      "description": "Set milestones: [{ label, status, description?, timestamp? }]",
+      "params": [
+        {
+          "name": "milestones",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "milestones",
+      "type": "Array",
+      "description": "Current milestones array (getter-only)"
+    }
+  ]
+}

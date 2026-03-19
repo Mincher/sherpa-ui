@@ -1,0 +1,103 @@
+{
+  "tagName": "sherpa-input-text",
+  "description": "Basic text input. Inherits label, description, helper, layout, validation, and value management from SherpaInputBase.",
+  "category": "form",
+  "baseClass": "SherpaInputBase",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Label text (inherited)"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Description / error text (inherited)"
+    },
+    {
+      "name": "data-helper",
+      "type": "string",
+      "description": "Helper text (inherited)"
+    },
+    {
+      "name": "data-layout",
+      "type": "enum",
+      "description": "stacked | horizontal (inherited)",
+      "enumValues": [
+        "stacked",
+        "horizontal"
+      ]
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state (inherited)"
+    },
+    {
+      "name": "readonly",
+      "type": "boolean",
+      "description": "Read-only state (inherited)"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "description": "Required constraint (inherited)"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "description": "Form field name (inherited)"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Current value (inherited)"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "description": "Placeholder text (inherited)"
+    },
+    {
+      "name": "pattern",
+      "type": "string",
+      "description": "Validation regex (inherited)"
+    },
+    {
+      "name": "minlength",
+      "type": "number",
+      "description": "Minimum character length (inherited)"
+    },
+    {
+      "name": "maxlength",
+      "type": "number",
+      "description": "Maximum character length (inherited)"
+    },
+    {
+      "name": "novalidate",
+      "type": "boolean",
+      "description": "Disable built-in validation (inherited)"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "input",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    },
+    {
+      "name": "change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    }
+  ]
+}

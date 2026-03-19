@@ -1,0 +1,77 @@
+{
+  "tagName": "sherpa-panel",
+  "description": "Slide-out or inline panel with header and content area.",
+  "category": "layout",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "inline | overlay",
+      "enumValues": [
+        "inline",
+        "overlay"
+      ]
+    },
+    {
+      "name": "data-position",
+      "type": "enum",
+      "description": "left | right",
+      "enumValues": [
+        "left",
+        "right"
+      ]
+    },
+    {
+      "name": "data-expanded",
+      "type": "boolean",
+      "description": "Expanded (visible) state"
+    },
+    {
+      "name": "data-heading",
+      "type": "string",
+      "description": "Heading text"
+    },
+    {
+      "name": "data-width",
+      "type": "string",
+      "description": "Custom width (CSS value)"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for panel body content"
+    },
+    {
+      "name": "controls",
+      "description": "Header control buttons"
+    },
+    {
+      "name": "metadata",
+      "description": "Metadata content area"
+    },
+    {
+      "name": "actions",
+      "description": "Action bar content"
+    }
+  ],
+  "events": [
+    {
+      "name": "panel-toggle",
+      "description": "Fired when expanded state changes",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "expanded": "boolean"
+      }
+    },
+    {
+      "name": "panel-close",
+      "description": "Fired when the close button is clicked",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ]
+}

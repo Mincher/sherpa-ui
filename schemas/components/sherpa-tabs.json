@@ -1,0 +1,51 @@
+{
+  "tagName": "sherpa-tabs",
+  "description": "Tabbed content switcher with accessible keyboard navigation. Each direct light-DOM child with a data-tab-label attribute becomes a tab. The component creates shadow-DOM tab buttons from a cloning prototype and manages panel visibility by setting data-tab-active on the matching child.",
+  "category": "layout",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-active-tab",
+      "type": "number",
+      "description": "Zero-based index of the selected tab"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for tab panel children (each must have data-tab-label)"
+    }
+  ],
+  "events": [
+    {
+      "name": "tab-change",
+      "description": "Fired when the active tab changes",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "index": "number",
+        "label": "string",
+        "previousIndex": "number"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "selectTab(index)",
+      "description": "Programmatically select a tab by index",
+      "params": [
+        {
+          "name": "index",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "activeTab",
+      "type": "number",
+      "description": "Currently selected tab index (read/write)"
+    }
+  ]
+}

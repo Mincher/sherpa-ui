@@ -1,0 +1,61 @@
+{
+  "tagName": "sherpa-input-time",
+  "description": "Time input using the native browser time picker. Inherits label, description, helper, layout, validation from SherpaInputBase.",
+  "category": "form",
+  "baseClass": "SherpaInputBase",
+  "attributes": [
+    {
+      "name": "min",
+      "type": "string",
+      "description": "Minimum selectable time (HH:MM)"
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "description": "Maximum selectable time (HH:MM)"
+    },
+    {
+      "name": "step",
+      "type": "number",
+      "description": "Step increment in seconds"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "input",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    },
+    {
+      "name": "change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "min",
+      "type": "string",
+      "description": "Getter/setter for min attribute"
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "description": "Getter/setter for max attribute"
+    },
+    {
+      "name": "step",
+      "type": "string",
+      "description": "Getter/setter for step attribute"
+    }
+  ]
+}

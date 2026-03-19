@@ -1,0 +1,90 @@
+{
+  "tagName": "sherpa-callout",
+  "description": "Inline contextual callout with status variants and expandable/dismissible body.",
+  "category": "feedback",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "info | warning | critical | success | neutral | tip",
+      "enumValues": [
+        "info",
+        "warning",
+        "critical",
+        "success",
+        "neutral",
+        "tip"
+      ]
+    },
+    {
+      "name": "data-heading",
+      "type": "string",
+      "description": "Heading text"
+    },
+    {
+      "name": "data-expanded",
+      "type": "boolean",
+      "description": "Body visible"
+    },
+    {
+      "name": "data-dismissible",
+      "type": "boolean",
+      "description": "Show toggle button"
+    },
+    {
+      "name": "data-icon",
+      "type": "string",
+      "description": "Override status icon (FA class)"
+    }
+  ],
+  "slots": [
+    {
+      "name": "heading",
+      "description": "Override heading text"
+    },
+    {
+      "name": "",
+      "description": "Body content"
+    },
+    {
+      "name": "action",
+      "description": "Optional action link/button"
+    }
+  ],
+  "events": [
+    {
+      "name": "callout-toggle",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "expanded": "boolean"
+      }
+    },
+    {
+      "name": "callout-dismiss",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "toggle()",
+      "description": "Toggle expanded state"
+    },
+    {
+      "name": "dismiss()",
+      "description": "Dispatch dismiss event and remove element"
+    }
+  ],
+  "properties": [
+    {
+      "name": "expanded",
+      "type": "boolean",
+      "description": "Getter/setter for data-expanded"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "tagName": "sherpa-nav-item",
+  "description": "Attribute-driven navigation item. Minimal JS — icon synced via data-icon, rest is declarative. Selection and interaction managed by parent sherpa-nav. Chevron rotation via CSS ::part(chevron).",
+  "category": "navigation",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-icon",
+      "type": "string",
+      "description": "FontAwesome icon class (e.g. \"fa-home\")"
+    },
+    {
+      "name": "data-badge",
+      "type": "string",
+      "description": "Badge text rendered via internal sherpa-tag"
+    },
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "section | subsection | child",
+      "enumValues": [
+        "section",
+        "subsection",
+        "child"
+      ]
+    },
+    {
+      "name": "data-state",
+      "type": "enum",
+      "description": "selected"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Label text content"
+    }
+  ],
+  "events": []
+}

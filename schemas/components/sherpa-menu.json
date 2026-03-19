@@ -1,0 +1,78 @@
+{
+  "tagName": "sherpa-menu",
+  "description": "Menu component (per-instance, no singleton). Light DOM <ul>/<li>/<sherpa-menu-item> content projected through <slot>. Uses popover=\"auto\" for top-layer promotion and light-dismiss. CSS anchor positioning with JS fallback.",
+  "category": "navigation",
+  "baseClass": "SherpaElement",
+  "attributes": [],
+  "slots": [
+    {
+      "name": "",
+      "description": "Menu content: <ul>/<li>/<sherpa-menu-item> elements"
+    }
+  ],
+  "events": [
+    {
+      "name": "menu-select",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "item": "Element",
+        "action": "string",
+        "value": "string",
+        "label": "string"
+      }
+    },
+    {
+      "name": "menu-close",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "show(anchor)",
+      "description": "Open and position the menu relative to anchor element",
+      "params": [
+        {
+          "name": "anchor",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "hide()",
+      "description": "Close the menu"
+    },
+    {
+      "name": "getMenuTemplate(id)",
+      "description": "Return menu template HTML by id",
+      "static": true,
+      "params": [
+        {
+          "name": "id",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "open",
+      "type": "boolean",
+      "description": "Whether the menu is currently visible"
+    },
+    {
+      "name": "source",
+      "type": "Element",
+      "description": "The anchor element that opened the menu"
+    },
+    {
+      "name": "ready",
+      "type": "Promise",
+      "description": "(static) Resolves when menu templates are loaded"
+    }
+  ]
+}

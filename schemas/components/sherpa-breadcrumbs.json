@@ -1,0 +1,39 @@
+{
+  "tagName": "sherpa-breadcrumbs",
+  "description": "Navigation breadcrumb trail with optional collapse. Reads slotted children (anchors/spans) and renders a styled list with chevron separators. Middle items collapse behind \"…\" when count exceeds data-max-items.",
+  "category": "navigation",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-max-items",
+      "type": "number",
+      "description": "Maximum visible items before collapsing (default: unlimited)"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Breadcrumb items: <a href=\"…\"> or <span>"
+    }
+  ],
+  "events": [
+    {
+      "name": "breadcrumb-click",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "index": "number",
+        "href": "string",
+        "label": "string"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "maxItems",
+      "type": "number",
+      "description": "Getter/setter for data-max-items"
+    }
+  ]
+}

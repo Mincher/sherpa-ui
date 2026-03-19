@@ -1,0 +1,39 @@
+{
+  "tagName": "sherpa-accordion",
+  "description": "Collapsible content panel using native <details>/<summary>. The browser handles expand/collapse natively. JS only syncs the data-label and data-icon attributes into the shadow DOM.",
+  "category": "layout",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Heading text for the summary row"
+    },
+    {
+      "name": "data-icon",
+      "type": "string",
+      "description": "FontAwesome unicode for optional leading icon"
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "description": "Native details open/expanded state"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Prevents interaction"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for panel content revealed when expanded"
+    },
+    {
+      "name": "actions",
+      "description": "Trailing action buttons in the summary row"
+    }
+  ],
+  "events": []
+}

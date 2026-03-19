@@ -1,0 +1,70 @@
+{
+  "tagName": "sherpa-data-viz-container",
+  "description": "Dashboard card with header, metrics, and content area. Content-agnostic — never imports or creates viz components directly. Resize support via ResizeBehavior mixin.",
+  "category": "data-viz",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "fit | resizable | fill (default: fit)",
+      "enumValues": [
+        "fit",
+        "resizable",
+        "fill"
+      ]
+    },
+    {
+      "name": "data-title",
+      "type": "string",
+      "description": "Container heading text"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Container description"
+    },
+    {
+      "name": "data-col-span",
+      "type": "number",
+      "description": "Column span: 3 | 6 | 9 | 12 (resizable)"
+    },
+    {
+      "name": "data-row-span",
+      "type": "number",
+      "description": "Row span: 1–6 (resizable)"
+    },
+    {
+      "name": "data-menu-open",
+      "type": "boolean",
+      "description": "Menu state"
+    },
+    {
+      "name": "data-editable",
+      "type": "boolean",
+      "description": "Edit mode (enables resize grip)"
+    },
+    {
+      "name": "data-open-external",
+      "type": "boolean",
+      "description": "Show open-external button"
+    },
+    {
+      "name": "data-menu-button",
+      "type": "boolean",
+      "description": "Show menu button"
+    },
+    {
+      "name": "data-drag-handle",
+      "type": "boolean",
+      "description": "Show drag handle"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Consumer content: sherpa-metric children + viz children"
+    }
+  ],
+  "events": []
+}

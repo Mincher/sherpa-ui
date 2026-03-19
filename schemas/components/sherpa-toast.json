@@ -1,0 +1,173 @@
+{
+  "tagName": "sherpa-toast",
+  "description": "Toast notification with auto-dismiss, status variants, and static factory methods for programmatic creation.",
+  "category": "feedback",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "info | success | warning | critical | urgent",
+      "default": "info",
+      "enumValues": [
+        "info",
+        "success",
+        "warning",
+        "critical",
+        "urgent"
+      ]
+    },
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Toast heading text"
+    },
+    {
+      "name": "data-value",
+      "type": "string",
+      "description": "Toast message content"
+    },
+    {
+      "name": "data-duration",
+      "type": "number",
+      "description": "Auto-dismiss duration in ms",
+      "default": 5000
+    },
+    {
+      "name": "data-timer-dismiss",
+      "type": "boolean",
+      "description": "Enable auto-dismiss"
+    },
+    {
+      "name": "data-show-close",
+      "type": "boolean",
+      "description": "Show close button",
+      "default": true
+    },
+    {
+      "name": "data-position",
+      "type": "enum",
+      "description": "top-right | top-left | bottom-right | bottom-left | top-center | bottom-center",
+      "enumValues": [
+        "top-right",
+        "top-left",
+        "bottom-right",
+        "bottom-left",
+        "top-center",
+        "bottom-center"
+      ]
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "close",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "action",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "show()",
+      "description": "Show the toast"
+    },
+    {
+      "name": "hide()",
+      "description": "Hide with animation and remove"
+    },
+    {
+      "name": "setAction(text, callback)",
+      "description": "Add action button",
+      "params": [
+        {
+          "name": "text",
+          "type": "any"
+        },
+        {
+          "name": "callback",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "show(options)",
+      "description": "Create + show toast",
+      "static": true,
+      "params": [
+        {
+          "name": "options",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "success(value, options)",
+      "description": "Success toast",
+      "static": true,
+      "params": [
+        {
+          "name": "value",
+          "type": "any"
+        },
+        {
+          "name": "options",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "critical(value, options)",
+      "description": "Critical toast",
+      "static": true,
+      "params": [
+        {
+          "name": "value",
+          "type": "any"
+        },
+        {
+          "name": "options",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "warning(value, options)",
+      "description": "Warning toast",
+      "static": true,
+      "params": [
+        {
+          "name": "value",
+          "type": "any"
+        },
+        {
+          "name": "options",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "info(value, options)",
+      "description": "Info toast",
+      "static": true,
+      "params": [
+        {
+          "name": "value",
+          "type": "any"
+        },
+        {
+          "name": "options",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}

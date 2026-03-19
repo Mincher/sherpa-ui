@@ -1,0 +1,120 @@
+{
+  "tagName": "sherpa-filter-bar",
+  "description": "Horizontal filter bar with zoned layout. Supports global and local (container-scoped) modes. Template variants: default (global) | local.",
+  "category": "page-level",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-density",
+      "type": "enum",
+      "description": "Display density variant"
+    },
+    {
+      "name": "data-active",
+      "type": "boolean",
+      "description": "Whether filters are active"
+    },
+    {
+      "name": "data-preset-filters",
+      "type": "json",
+      "description": "Preset filter configuration JSON"
+    },
+    {
+      "name": "data-available-fields",
+      "type": "json",
+      "description": "Field definitions: [{ field, name, type }]"
+    }
+  ],
+  "slots": [
+    {
+      "name": "toggle",
+      "description": "Filter on/off toggle"
+    },
+    {
+      "name": "group",
+      "description": "Segment/group chip"
+    },
+    {
+      "name": "sort",
+      "description": "Sort chip"
+    },
+    {
+      "name": "presets",
+      "description": "Preset filter chips"
+    },
+    {
+      "name": "",
+      "description": "User-added dynamic filter chips + Add button"
+    },
+    {
+      "name": "actions",
+      "description": "Clear / Apply / Save buttons"
+    }
+  ],
+  "events": [
+    {
+      "name": "filterchange",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "filters": "Array"
+      }
+    },
+    {
+      "name": "filterclear",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "containerfilterchange",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "filters": "Array"
+      }
+    },
+    {
+      "name": "globalfilterchange",
+      "description": "",
+      "bubbles": false,
+      "composed": false,
+      "detail": {
+        "filters": "Array"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "getFilters()",
+      "description": "Returns current filter array"
+    },
+    {
+      "name": "setAvailableColumns(columns, rows)",
+      "description": "Set columns and row data for menus",
+      "params": [
+        {
+          "name": "columns",
+          "type": "any"
+        },
+        {
+          "name": "rows",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "removeFilterChip(field)",
+      "description": "Remove filter chip by field name",
+      "params": [
+        {
+          "name": "field",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}

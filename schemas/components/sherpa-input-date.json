@@ -1,0 +1,56 @@
+{
+  "tagName": "sherpa-input-date",
+  "description": "Date input using the native browser date picker. Inherits label, description, helper, layout, validation from SherpaInputBase.",
+  "category": "form",
+  "baseClass": "SherpaInputBase",
+  "attributes": [
+    {
+      "name": "min",
+      "type": "string",
+      "description": "Minimum selectable date (YYYY-MM-DD)"
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "description": "Maximum selectable date (YYYY-MM-DD)"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "input",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    },
+    {
+      "name": "change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "min",
+      "type": "string",
+      "description": "Getter/setter for min attribute"
+    },
+    {
+      "name": "max",
+      "type": "string",
+      "description": "Getter/setter for max attribute"
+    },
+    {
+      "name": "valueAsDate",
+      "type": "Date|null",
+      "description": "Current value as Date object (getter-only)"
+    }
+  ]
+}

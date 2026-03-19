@@ -1,0 +1,64 @@
+{
+  "tagName": "sherpa-section-header",
+  "description": "Section heading with slots for badge, description, and actions.",
+  "category": "page-level",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Section title text"
+    },
+    {
+      "name": "data-heading-level",
+      "type": "enum",
+      "description": "primary | secondary | tertiary",
+      "enumValues": [
+        "primary",
+        "secondary",
+        "tertiary"
+      ]
+    },
+    {
+      "name": "data-divider",
+      "type": "boolean",
+      "description": "Show bottom divider"
+    }
+  ],
+  "slots": [
+    {
+      "name": "heading",
+      "description": "Custom heading element (replaces default)"
+    },
+    {
+      "name": "badge",
+      "description": "Badge/tag next to heading"
+    },
+    {
+      "name": "description",
+      "description": "Description text below heading"
+    },
+    {
+      "name": "actions",
+      "description": "Action buttons on the right side"
+    }
+  ],
+  "events": [],
+  "properties": [
+    {
+      "name": "heading",
+      "type": "string",
+      "description": "Getter/setter for data-label"
+    },
+    {
+      "name": "headingType",
+      "type": "string",
+      "description": "Getter/setter for data-heading-level"
+    },
+    {
+      "name": "hasDivider",
+      "type": "boolean",
+      "description": "Getter/setter for data-divider"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "tagName": "sherpa-view-header",
+  "description": "View header toolbar with toggles and settings. Manages heading, favorites, feedback popover, and export intent.",
+  "category": "page-level",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "View heading text"
+    },
+    {
+      "name": "data-show-debug-toggles",
+      "type": "boolean",
+      "description": "Show debug toggle controls"
+    },
+    {
+      "name": "data-favorite",
+      "type": "boolean",
+      "description": "Favorite state"
+    },
+    {
+      "name": "data-edit-mode",
+      "type": "boolean",
+      "description": "Edit mode active"
+    },
+    {
+      "name": "data-export-title",
+      "type": "string",
+      "description": "Title for PDF export"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "editmodechange",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "editMode": "boolean"
+      }
+    },
+    {
+      "name": "viewexport",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "title": "string"
+      }
+    },
+    {
+      "name": "favoritetoggle",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "viewId": "string",
+        "favorite": "boolean"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "setHeading(name)",
+      "description": "Set heading text",
+      "params": [
+        {
+          "name": "name",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getHeading()",
+      "description": "Get heading text"
+    },
+    {
+      "name": "setViewId(id)",
+      "description": "Set view identifier",
+      "params": [
+        {
+          "name": "id",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getViewId()",
+      "description": "Get view identifier"
+    },
+    {
+      "name": "setFavorite(on)",
+      "description": "Set favorite state",
+      "params": [
+        {
+          "name": "on",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "isFavorite()",
+      "description": "Returns boolean"
+    }
+  ]
+}

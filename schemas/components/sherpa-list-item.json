@@ -1,0 +1,85 @@
+{
+  "tagName": "sherpa-list-item",
+  "description": "Versatile list item with leading, content, and trailing areas. Supports labels, descriptions, icons, drag handles, and slotted trailing actions.",
+  "category": "data-display",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Primary text"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Secondary helper text"
+    },
+    {
+      "name": "data-icon",
+      "type": "string",
+      "description": "FontAwesome class for leading icon"
+    },
+    {
+      "name": "data-active",
+      "type": "boolean",
+      "description": "Active/selected visual state"
+    },
+    {
+      "name": "data-interactive",
+      "type": "boolean",
+      "description": "Enables hover/click behaviour"
+    },
+    {
+      "name": "data-draggable",
+      "type": "boolean",
+      "description": "Shows drag handle"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state"
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading",
+      "description": "Custom leading content (avatar, icon override)"
+    },
+    {
+      "name": "",
+      "description": "Custom content below label/description"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing action buttons or badges"
+    }
+  ],
+  "events": [
+    {
+      "name": "list-item-click",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "label": "string"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "label",
+      "type": "string",
+      "description": "Getter/setter for data-label"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "description": "Getter/setter for data-description"
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "description": "Getter/setter for data-active"
+    }
+  ]
+}

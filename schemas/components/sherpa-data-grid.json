@@ -1,0 +1,206 @@
+{
+  "tagName": "sherpa-data-grid",
+  "description": "Advanced data grid with grouping, selection, sorting, and pagination. Extends ContentAttributesMixin(SherpaElement) for data pipeline. Uses native <table> for sticky headers and full-width row backgrounds.",
+  "category": "data-display",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-loading",
+      "type": "boolean",
+      "description": "Show loading state"
+    },
+    {
+      "name": "data-segment-field",
+      "type": "string",
+      "description": "Field used for row grouping"
+    },
+    {
+      "name": "data-segment-mode",
+      "type": "enum",
+      "description": "Segment display mode"
+    },
+    {
+      "name": "data-sort-field",
+      "type": "string",
+      "description": "Currently sorted column field"
+    },
+    {
+      "name": "data-sort-direction",
+      "type": "enum",
+      "description": "asc | desc",
+      "enumValues": [
+        "asc",
+        "desc"
+      ]
+    },
+    {
+      "name": "data-page",
+      "type": "number",
+      "description": "Current page (1-based)"
+    },
+    {
+      "name": "data-page-size",
+      "type": "number",
+      "description": "Rows per page"
+    },
+    {
+      "name": "data-selectable",
+      "type": "boolean",
+      "description": "Enable row selection"
+    },
+    {
+      "name": "data-show-actions",
+      "type": "boolean",
+      "description": "Show row action column"
+    },
+    {
+      "name": "data-show-secondary-headers",
+      "type": "boolean",
+      "description": "Show secondary column headers"
+    },
+    {
+      "name": "data-show-pagination",
+      "type": "boolean",
+      "description": "Show pagination bar"
+    }
+  ],
+  "slots": [
+    {
+      "name": "toolbar-leading",
+      "description": "Consumer-provided primary action for toolbar"
+    }
+  ],
+  "events": [
+    {
+      "name": "selectionchange",
+      "description": "",
+      "bubbles": true,
+      "composed": false,
+      "detail": {
+        "selected": "string[]",
+        "count": "number"
+      }
+    },
+    {
+      "name": "sortchange",
+      "description": "",
+      "bubbles": true,
+      "composed": false,
+      "detail": {
+        "field": "string",
+        "direction": "\"asc\" | \"desc\""
+      }
+    },
+    {
+      "name": "pagechange",
+      "description": "",
+      "bubbles": true,
+      "composed": false,
+      "detail": {
+        "page": "number",
+        "pageSize": "number"
+      }
+    },
+    {
+      "name": "groupexpand",
+      "description": "",
+      "bubbles": true,
+      "composed": false,
+      "detail": {
+        "groupValue": "string",
+        "field": "string"
+      }
+    },
+    {
+      "name": "groupcollapse",
+      "description": "",
+      "bubbles": true,
+      "composed": false,
+      "detail": {
+        "groupValue": "string",
+        "field": "string"
+      }
+    },
+    {
+      "name": "rowaction",
+      "description": "",
+      "bubbles": true,
+      "composed": false,
+      "detail": {
+        "rowId": "string",
+        "rowData": "object"
+      }
+    },
+    {
+      "name": "gridexport",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "setColumnConfig(config)",
+      "description": "Set column type/status map config",
+      "params": [
+        {
+          "name": "config",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setData(config)",
+      "description": "Main data pipeline entry",
+      "params": [
+        {
+          "name": "config",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "expandAllGroups()",
+      "description": "Expand all group rows"
+    },
+    {
+      "name": "collapseAllGroups()",
+      "description": "Collapse all group rows"
+    },
+    {
+      "name": "getSelectedRows()",
+      "description": "Returns selected row IDs"
+    },
+    {
+      "name": "getSelectedRowData()",
+      "description": "Returns data for selected rows"
+    },
+    {
+      "name": "clearSelection()",
+      "description": "Clear all selections"
+    },
+    {
+      "name": "getData()",
+      "description": "Returns transferable config"
+    },
+    {
+      "name": "getColumns()",
+      "description": "Returns column definitions"
+    },
+    {
+      "name": "getCompoundQuery()",
+      "description": "Returns { group, sort, filters, columnFilters, globalSearch }"
+    },
+    {
+      "name": "setExternalFilters(f)",
+      "description": "Apply external filters from FilterCoordinator",
+      "params": [
+        {
+          "name": "f",
+          "type": "any"
+        }
+      ]
+    }
+  ]
+}
