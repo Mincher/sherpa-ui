@@ -603,9 +603,7 @@ export class SherpaFilterBar extends SherpaElement {
       sortChip.dataset.mode = direction;
       sortChip.toggleAttribute("data-active", true);
     } else {
-      delete sortChip.dataset.field;
-      delete sortChip.dataset.mode;
-      sortChip.dataset.label = "Sort";
+      sortChip.dataset.mode = "off";
       sortChip.removeAttribute("data-active");
     }
     // Clear flag after microtask so the MutationObserver callback
@@ -925,9 +923,8 @@ export class SherpaFilterBar extends SherpaElement {
         chip.dataset.iconStart = "\uf062"; // fa-arrow-up
         chip.dataset.label = "Oldest first";
       } else {
-        delete chip.dataset.mode;
+        chip.dataset.mode = "off";
         chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
-        chip.dataset.label = "Sort";
         chip.removeAttribute("data-active");
       }
     } else if (sortType === "value") {
@@ -942,9 +939,8 @@ export class SherpaFilterBar extends SherpaElement {
         chip.dataset.iconStart = "\uf062"; // fa-arrow-up
         chip.dataset.label = "Smallest first";
       } else {
-        delete chip.dataset.mode;
+        chip.dataset.mode = "off";
         chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
-        chip.dataset.label = "Sort";
         chip.removeAttribute("data-active");
       }
     } else {
@@ -957,7 +953,7 @@ export class SherpaFilterBar extends SherpaElement {
         chip.dataset.mode = "desc";
         chip.dataset.iconStart = "\uf063"; // fa-arrow-down
       } else {
-        delete chip.dataset.mode;
+        chip.dataset.mode = "off";
         chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
         chip.removeAttribute("data-active");
       }

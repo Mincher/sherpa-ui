@@ -464,13 +464,18 @@ export function ContentAttributesMixin(Base) {
       const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
       if (bar) bar.dataset.syncing = "";
 
-      // Push field metadata to local filter bar
+      // Sync chip state BEFORE populating menus so that
+      // #populateColumnsMenu sees the current data-field and
+      // marks the correct radio item as selected.
+      this.#syncFilterBarState();
+
+      // Push field metadata to local filter bar (triggers menu population)
       this.#syncFilterBarFields();
 
       // Aggregate and render
       this.#aggregate();
 
-      // Sync filter bar chip state (re-sets data-syncing, then removes via setTimeout)
+      // Re-sync after aggregate in case fields changed
       this.#syncFilterBarState();
     }
 
@@ -531,8 +536,7 @@ export function ContentAttributesMixin(Base) {
           segChip.dataset.label = displayName(field);
           segChip.toggleAttribute("data-active", true);
         } else {
-          delete segChip.dataset.field;
-          segChip.dataset.label = "Group";
+          // Retain chip field/label — just deactivate
           segChip.removeAttribute("data-active");
         }
       }
@@ -556,8 +560,8 @@ export function ContentAttributesMixin(Base) {
               dir === "desc" ? "\uf063" : "\uf062";
             sortChip.toggleAttribute("data-active", true);
           } else {
-            delete sortChip.dataset.mode;
-            sortChip.dataset.label = "Sort";
+            // Retain chip label — just deactivate
+            sortChip.dataset.mode = "off";
             sortChip.dataset.iconStart = "\uf0dc";
             sortChip.removeAttribute("data-active");
           }
@@ -569,9 +573,8 @@ export function ContentAttributesMixin(Base) {
             sortChip.dataset.mode = dir || "asc";
             sortChip.toggleAttribute("data-active", true);
           } else {
-            delete sortChip.dataset.field;
-            delete sortChip.dataset.mode;
-            sortChip.dataset.label = "Sort";
+            // Retain chip field/label — just deactivate
+            sortChip.dataset.mode = "off";
             sortChip.removeAttribute("data-active");
           }
         }
@@ -780,8 +783,8 @@ export function ContentAttributesMixin(Base) {
           sortFilter.mode || "asc",
         );
       } else {
-        this.removeAttribute("data-sort-field");
-        this.removeAttribute("data-sort-direction");
+        // Keep field so the chip retains its selection; set direction to off
+        this.setAttribute("data-sort-direction", "off");
       }
 
       // Segment attrs
@@ -795,8 +798,8 @@ export function ContentAttributesMixin(Base) {
           segmentFilter.mode || "on",
         );
       } else {
-        this.removeAttribute("data-segment-field");
-        this.removeAttribute("data-segment-mode");
+        // Keep field so the chip retains its selection; set mode to off
+        this.setAttribute("data-segment-mode", "off");
       }
 
       this._suppressAttrReaction = false;
