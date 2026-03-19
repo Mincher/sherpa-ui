@@ -37,6 +37,7 @@ import {
   formatFieldName,
   formatCompact,
   generateUniqueId,
+  cleanTitleBase,
 } from "../utilities/index.js";
 import {
   getSegmentField,
@@ -738,12 +739,12 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       canShowChart: true,
     });
 
-    // Append "by X" when segmentation is active
-    const baseName = this.#contentData?.name || "";
+    // Use raw name when no explicit segment; recompose when segment active
+    const rawName = this.#contentData?.name || "";
     const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
     const displayTitle = segField
-      ? `${baseName} by ${formatFieldName(segField)}`
-      : baseName;
+      ? `${cleanTitleBase(rawName)} by ${formatFieldName(segField)}`
+      : rawName;
 
     this.configureHeader({
       title: escapeHtml(displayTitle),

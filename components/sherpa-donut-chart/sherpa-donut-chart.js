@@ -24,7 +24,7 @@ import {
   CONTENT_ATTRIBUTES,
 } from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { formatCompact, formatFieldName } from '../utilities/index.js';
+import { formatCompact, formatFieldName, cleanTitleBase } from '../utilities/index.js';
 import { getSegmentField, isSegmentEnabled, getActiveSort } from '../utilities/chart-utils.js';
 import { injectFilterMenu, removeFilterMenu } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
@@ -275,11 +275,11 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   #syncTitle() {
     if (this.#titleEl) {
-      const base = this.dataset.title || '';
+      const raw = this.dataset.title || '';
       const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
       this.#titleEl.textContent = segField
-        ? `${base} by ${formatFieldName(segField)}`
-        : base;
+        ? `${cleanTitleBase(raw)} by ${formatFieldName(segField)}`
+        : raw;
     }
   }
 

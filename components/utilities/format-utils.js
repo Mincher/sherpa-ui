@@ -32,6 +32,19 @@ export function formatFieldName(field) {
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+/**
+ * Extract the core entity name from a title by stripping
+ * a leading "All " prefix and/or a trailing " by <Field>" suffix.
+ * @param {string} title
+ * @returns {string}
+ */
+export function cleanTitleBase(title) {
+  if (!title) return '';
+  return title
+    .replace(/^All\s+/i, '')
+    .replace(/\s+by\s+.+$/i, '');
+}
+
 // ── ID Generation ──────────────────────────────────────────────────────────────
 
 const counters = new Map();

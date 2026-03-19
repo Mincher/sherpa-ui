@@ -24,7 +24,7 @@ import { getSegmentField, isSegmentEnabled, getActiveSort } from '../utilities/c
 import { injectFilterMenu, removeFilterMenu } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-filter-bar/sherpa-filter-bar.js';
-import { formatFieldName } from '../utilities/format-utils.js';
+import { formatFieldName, cleanTitleBase } from '../utilities/format-utils.js';
 
 const MAX_SEGMENTS = 8;
 const OTHER_COLOR = '#9e9ea8';
@@ -326,11 +326,11 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   #syncTitle() {
     if (this.#titleEl) {
-      const base = this.dataset.title || '';
+      const raw = this.dataset.title || '';
       const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
       this.#titleEl.textContent = segField
-        ? `${base} by ${formatFieldName(segField)}`
-        : base;
+        ? `${cleanTitleBase(raw)} by ${formatFieldName(segField)}`
+        : raw;
     }
   }
 
