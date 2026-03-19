@@ -1,67 +1,46 @@
-# Sherpa UI MCP Server
+# Sherpa UI — MCP Server Guide
 
-An [MCP](https://modelcontextprotocol.io/) server that exposes the Sherpa UI
-component library API to AI agents. It lets agents query component schemas,
-generate valid HTML, browse design tokens, and validate usage — all over the
-standard **stdio** transport.
+The Sherpa UI MCP server gives AI coding assistants (GitHub Copilot, Claude,
+Cursor, etc.) direct access to the full component library — every attribute,
+slot, event, design token, and usage rule. Instead of the AI guessing how your
+components work, it queries the server and gets the real API.
 
-## Quick Start
+---
+
+## Table of Contents
+
+1. [Setup](#1-setup)
+2. [What the Server Provides](#2-what-the-server-provides)
+3. [Tools Reference](#3-tools-reference)
+4. [Resources & Prompts](#4-resources--prompts)
+5. [Walkthrough: Building a Dashboard](#5-walkthrough-building-a-dashboard)
+6. [Component Categories](#6-component-categories)
+7. [Keeping Schemas Up to Date](#7-keeping-schemas-up-to-date)
+8. [Architecture](#8-architecture)
+9. [Troubleshooting](#9-troubleshooting)
+
+---
+
+## 1. Setup
+
+### Prerequisites
+
+- Node.js 18+
+- The `sherpa-ui` repository (or `sherpa-ui` installed as a dependency)
+
+### Running manually
 
 ```bash
-# From the repo root
 npm run mcp
 ```
 
-Or invoke via the `bin` entry:
+You won't see any output — the server communicates over **stdio** (standard
+input/output), not HTTP. It's designed to be launched by an AI client, not
+used in a browser.
 
-```bash
-npx sherpa-mcp
-```
+### Connecting to VS Code (GitHub Copilot)
 
-## Capabilities
-
-### Tools
-
-| Tool                 | Description                                                                 |
-| -------------------- | --------------------------------------------------------------------------- |
-| `query_component`    | Returns full JSON API for a component (attributes, slots, events, methods)  |
-| `list_components`    | Lists all 53 components, with optional category filter                      |
-| `generate_component` | Generates valid HTML for a component with given attributes and slot content  |
-| `browse_tokens`      | Searches `--sherpa-*` design tokens by keyword                              |
-| `validate_usage`     | Checks HTML for common mistakes: unknown tags, missing `data-*`, self-close |
-
-### Resources (59 total)
-
-**6 Guideline documents** — served as `text/markdown`:
-
-| URI                                        | Content                   |
-| ------------------------------------------ | ------------------------- |
-| `sherpa://guidelines/component-guidelines`  | Component Guidelines      |
-| `sherpa://guidelines/api-standard`          | Component API Standard    |
-| `sherpa://guidelines/component-template`    | Component Template        |
-| `sherpa://guidelines/token-usage`           | Design Token Usage Guide  |
-| `sherpa://guidelines/text-styles`           | Text Styles Reference     |
-| `sherpa://guidelines/copilot-instructions`  | Copilot Instructions      |
-
-**53 Component schemas** — served as `application/json` via a resource template:
-
-```
-sherpa://schema/{tagName}       e.g. sherpa://schema/sherpa-button
-```
-
-### Prompts
-
-| Prompt      | Description                                                  |
-| ----------- | ------------------------------------------------------------ |
-| `build_ui`  | Guided prompt for building a UI layout with Sherpa components |
-
-Arguments: `description` (required), `components` (optional comma-separated list).
-
-## Client Configuration
-
-### VS Code (Copilot / Continue)
-
-Add to `.vscode/mcp.json` in your project:
+Create (or add to) `.vscode/mcp.json` in your project:
 
 ```json
 {
@@ -75,9 +54,15 @@ Add to `.vscode/mcp.json` in your project:
 }
 ```
 
-### Claude Desktop
+> If sherpa-ui is a local checkout rather than an npm dependency, point `args`
+> to the absolute path of `mcp-server/index.js`.
 
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+VS Code will start the server automatically when Copilot needs it.
+
+### Connecting to Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
+(macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
@@ -90,7 +75,9 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-### Cursor
+Restart Claude Desktop after saving.
+
+### Connecting to Cursor
 
 Add to `.cursor/mcp.json` in your project:
 
@@ -105,47 +92,366 @@ Add to `.cursor/mcp.json` in your project:
 }
 ```
 
-## Component Categories
+---
 
-| Category         | Count | Examples                                           |
-| ---------------- | ----- | -------------------------------------------------- |
-| `core`           | 6     | sherpa-button, sherpa-tag, sherpa-loader             |
-| `layout`         | 5     | sherpa-card, sherpa-panel, sherpa-container-pdf      |
-| `navigation`     | 7     | sherpa-nav, sherpa-tabs, sherpa-breadcrumbs          |
-| `form`           | 11    | sherpa-input-text, sherpa-input-select, sherpa-switch|
-| `data-display`   | 6     | sherpa-data-grid, sherpa-key-value-list              |
-| `data-viz`       | 7     | sherpa-barchart, sherpa-donut-chart, sherpa-metric   |
-| `feedback`       | 5     | sherpa-dialog, sherpa-toast, sherpa-callout           |
-| `page-level`     | 6     | sherpa-view-header, sherpa-footer, sherpa-toolbar     |
+## 2. What the Server Provides
 
-## Regenerating Schemas
+| Capability     | Count | What it gives the AI                                      |
+| -------------- | ----- | --------------------------------------------------------- |
+| **Tools**      | 5     | Actions the AI can call (query, generate, validate, etc.) |
+| **Resources**  | 59    | Reference docs and component schemas it can read           |
+| **Prompts**    | 1     | A guided workflow for building complete UI layouts          |
 
-If component JSDoc headers change, regenerate the JSON schemas before
-restarting the MCP server:
+The AI uses these automatically — you just ask it to build something with
+Sherpa components and it pulls in what it needs.
+
+---
+
+## 3. Tools Reference
+
+### `query_component` — Look up a component's API
+
+Returns the full schema for a single component: every attribute (with type,
+default, and allowed values), every slot, every event (with detail shape),
+methods, and CSS custom properties.
+
+**Input:**
+```json
+{ "tagName": "sherpa-button" }
+```
+
+**Use when:** You want the AI to understand exactly how a specific component
+works before writing code that uses it.
+
+---
+
+### `list_components` — Browse the library
+
+Returns a summary of all 53 components, or filters by category. Each entry
+includes the tag name, description, and counts of attributes/slots/events.
+
+**Input:**
+```json
+{ "category": "form" }
+```
+
+Categories: `core`, `layout`, `navigation`, `form`, `data-display`,
+`data-viz`, `feedback`, `page-level`. Omit `category` to list everything.
+
+**Use when:** You want to see what's available before deciding which
+components to use.
+
+---
+
+### `generate_component` — Create valid HTML
+
+Generates standards-compliant HTML for a component with the attributes and
+slot content you specify. Only includes attributes that exist in the schema.
+Boolean attributes render without values. All values are sanitized.
+
+**Input:**
+```json
+{
+  "tagName": "sherpa-button",
+  "attributes": {
+    "data-label": "Save Changes",
+    "data-variant": "primary",
+    "data-icon-start": "check"
+  }
+}
+```
+
+**Output:**
+```html
+<sherpa-button data-label="Save Changes" data-variant="primary" data-icon-start="check"></sherpa-button>
+```
+
+You can also pass slot content:
+
+```json
+{
+  "tagName": "sherpa-view-header",
+  "attributes": { "data-title": "Dashboard" },
+  "slots": {
+    "actions": "<sherpa-button data-label='Export' data-variant='secondary'></sherpa-button>"
+  }
+}
+```
+
+**Output:**
+```html
+<sherpa-view-header data-title="Dashboard">
+  <span slot="actions"><sherpa-button data-label='Export' data-variant='secondary'></sherpa-button></span>
+</sherpa-view-header>
+```
+
+**Use when:** You want guaranteed-correct component markup without the AI
+improvising attribute names.
+
+---
+
+### `browse_tokens` — Search design tokens
+
+Searches all `--sherpa-*` CSS custom properties by keyword. Returns matches
+grouped by source file.
+
+**Input:**
+```json
+{ "query": "surface" }
+```
+
+**Output:**
+```
+Found 23 tokens matching "surface":
+
+## css/styles/tokens-semantic.css
+  --sherpa-surface-default
+  --sherpa-surface-raised
+  --sherpa-surface-sunken
+  --sherpa-surface-control-primary-default
+  ...
+```
+
+Good search terms: `surface`, `text`, `space`, `border`, `radius`, `color`,
+`font`, `shadow`.
+
+**Use when:** You need the AI to use the correct design tokens in any custom
+CSS it writes, rather than hardcoding colours and spacing.
+
+---
+
+### `validate_usage` — Catch common mistakes
+
+Checks a block of HTML for issues:
+
+- **Unknown components** — tags that don't exist in the library
+- **Missing `data-*` prefix** — bare attributes like `variant="primary"`
+  instead of `data-variant="primary"`
+- **Self-closing custom elements** — `<sherpa-button/>` instead of
+  `<sherpa-button></sherpa-button>`
+- **Opacity-based disabled styling** — should use inactive tokens instead
+
+**Input:**
+```json
+{
+  "html": "<sherpa-button variant=\"primary\"/><sherpa-fake-thing>test</sherpa-fake-thing>"
+}
+```
+
+**Output:**
+```
+Found 3 issue(s):
+
+ERROR: Unknown component: <sherpa-fake-thing>
+WARNING: Attribute "variant" should use data-* prefix (e.g. data-variant)
+ERROR: <sherpa-button/> is self-closing — custom elements require explicit closing tags
+```
+
+**Use when:** You want to verify generated HTML before using it, or as a
+quality gate after the AI writes component markup.
+
+---
+
+## 4. Resources & Prompts
+
+### Resources
+
+The AI can read these reference documents directly from the server:
+
+| URI                                        | What it contains                               |
+| ------------------------------------------ | ---------------------------------------------- |
+| `sherpa://guidelines/component-guidelines`  | How to build components (HTML/CSS/JS layers)   |
+| `sherpa://guidelines/api-standard`          | JSDoc format and attribute naming conventions  |
+| `sherpa://guidelines/component-template`    | Starter template for new components            |
+| `sherpa://guidelines/token-usage`           | How to use design tokens correctly             |
+| `sherpa://guidelines/text-styles`           | Typography scale and text utility classes      |
+| `sherpa://guidelines/copilot-instructions`  | Full coding rules for this component library   |
+| `sherpa://schema/{tagName}`                 | JSON schema for any of the 53 components       |
+
+### Prompts
+
+**`build_ui`** — A guided prompt that tells the AI to build a complete UI
+layout using Sherpa components. It automatically injects component API
+context and the library's rules.
+
+| Argument      | Required | Description                                        |
+| ------------- | -------- | -------------------------------------------------- |
+| `description` | Yes      | What you want built (plain English)                |
+| `components`  | No       | Comma-separated list of components to focus on     |
+
+**Example:** "Build a settings page with a form containing text inputs for
+name and email, a password input, and save/cancel buttons."
+
+---
+
+## 5. Walkthrough: Building a Dashboard
+
+Here's what happens behind the scenes when you ask an AI assistant to
+"Build me a support ticket dashboard" with the Sherpa MCP server connected.
+
+### Step 1 — The AI discovers what's available
+
+It calls `list_components` with category `data-display` to find grid and
+metric components, then `data-viz` for charts, and `page-level` for the
+page header.
+
+### Step 2 — It looks up the APIs it needs
+
+It calls `query_component` for `sherpa-data-grid`, `sherpa-metric`,
+`sherpa-view-header`, and `sherpa-filter-bar` to learn every attribute,
+slot, and event.
+
+### Step 3 — It generates the markup
+
+Multiple `generate_component` calls produce validated HTML:
+
+```html
+<!-- Page header with an export button in the actions slot -->
+<sherpa-view-header data-title="Support Dashboard">
+  <span slot="actions">
+    <sherpa-button data-label="Export" data-variant="secondary" data-icon-start="download"></sherpa-button>
+  </span>
+</sherpa-view-header>
+
+<!-- Metric cards -->
+<sherpa-metric data-label="Open Tickets" data-value="142" data-trend="up"></sherpa-metric>
+<sherpa-metric data-label="Avg Response" data-value="4.2h" data-trend="down"></sherpa-metric>
+<sherpa-metric data-label="Resolved Today" data-value="38"></sherpa-metric>
+
+<!-- Filter bar and data grid -->
+<sherpa-filter-bar data-label="Filter tickets"></sherpa-filter-bar>
+
+<sherpa-data-grid
+  data-label="Support Tickets"
+  data-page-size="25"
+  data-sortable
+  data-filterable
+  data-export>
+</sherpa-data-grid>
+```
+
+### Step 4 — It finds the right tokens for any custom CSS
+
+It calls `browse_tokens` with queries like `surface` and `space` to write
+wrapper CSS using the real token names:
+
+```css
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--sherpa-surface-sunken, #f5f5f5);
+  padding: var(--sherpa-space-lg, 24px);
+  gap: var(--sherpa-space-md, 16px);
+}
+```
+
+### Step 5 — It validates everything
+
+A final `validate_usage` call confirms no unknown components, no bare
+attributes, no self-closing tags.
+
+### Step 6 — It writes the JavaScript
+
+Using the event information from `query_component`, it wires up data
+loading:
+
+```js
+import { setDataProvider } from "sherpa-ui/components/utilities/content-attributes-mixin.js";
+
+setDataProvider(async (config) => {
+  const res = await fetch(`/api/tickets?${new URLSearchParams(config)}`);
+  return res.json(); // { columns, rows, summary }
+});
+```
+
+**The result:** A complete, standards-compliant dashboard — no guessed
+attribute names, no wrong token values, no invalid HTML.
+
+---
+
+## 6. Component Categories
+
+| Category       | Count | Examples                                            |
+| -------------- | ----- | --------------------------------------------------- |
+| `core`         | 6     | sherpa-button, sherpa-tag, sherpa-loader              |
+| `layout`       | 5     | sherpa-card, sherpa-panel, sherpa-container-pdf       |
+| `navigation`   | 7     | sherpa-nav, sherpa-tabs, sherpa-breadcrumbs           |
+| `form`         | 11    | sherpa-input-text, sherpa-input-select, sherpa-switch |
+| `data-display` | 6     | sherpa-data-grid, sherpa-key-value-list               |
+| `data-viz`     | 7     | sherpa-barchart, sherpa-donut-chart, sherpa-metric    |
+| `feedback`     | 5     | sherpa-dialog, sherpa-toast, sherpa-callout            |
+| `page-level`   | 6     | sherpa-view-header, sherpa-footer, sherpa-toolbar      |
+
+---
+
+## 7. Keeping Schemas Up to Date
+
+The MCP server reads component schemas from `schemas/components/`. If you
+change a component's JSDoc header (attributes, events, slots, etc.),
+regenerate the schemas:
 
 ```bash
-npm run schemas
+npm run schemas          # Rebuild JSON schemas only
+npm run build            # Full build: tokens + docs + schemas
 ```
 
-Or as part of a full build:
+Then restart the MCP server (or restart your AI client) so it picks up the
+new data.
 
-```bash
-npm run build
+---
+
+## 8. Architecture
+
+```
+sherpa-ui/
+├── mcp-server/
+│   └── index.js              ← MCP server (stdio transport)
+├── schemas/
+│   ├── component-schema.json ← JSON Schema definition
+│   └── components/
+│       ├── index.json        ← List of all 53 tag names
+│       ├── sherpa-button.json
+│       ├── sherpa-card.json
+│       └── ...               ← One JSON file per component
+├── docs/                     ← Guidelines served as resources
+├── css/styles/               ← Token CSS files scanned by browse_tokens
+└── .github/
+    └── copilot-instructions.md
 ```
 
-## Architecture
+The server loads all schemas and scans all design tokens at startup. Every
+tool call reads from this in-memory data — no network requests, no external
+dependencies.
 
-```
-mcp-server/
-  index.js          ← Server entry point (stdio transport)
-schemas/
-  component-schema.json   ← JSON Schema definition
-  components/
-    index.json            ← Array of all tag names
-    sherpa-button.json    ← Per-component API schema
-    ...
-```
+---
 
-The server reads schemas and tokens at startup, then serves them through MCP
-tools, resources, and prompts. No network requests are made — everything is
-read from the local filesystem.
+## 9. Troubleshooting
+
+### "The MCP server isn't showing up in my AI client"
+
+- Make sure Node.js 18+ is installed (`node --version`)
+- Verify the path in your config file points to the correct `index.js`
+- Restart the AI client after changing the config
+- Check that `schemas/components/index.json` exists — run `npm run schemas`
+  if it doesn't
+
+### "The server starts but the AI can't find my component"
+
+- The component may not have a JSON schema yet. Run `npm run schemas` to
+  regenerate
+- Check that the component's `.js` file has a `@element` JSDoc tag — the
+  schema extractor looks for this
+
+### "Attributes I added aren't appearing"
+
+- Add `@attr {type} data-my-attr — Description` to the component's JSDoc
+- Run `npm run schemas` to regenerate
+- Restart the MCP server
+
+### "Token search returns no results"
+
+- Tokens are scanned from `css/styles/`. Make sure your token CSS files
+  are there
+- Try broader search terms: `surface`, `text`, `space`, `border`
+- Core tokens (`--sherpa-core-*`) are included in search results but
+  components should use semantic tokens (`--sherpa-*`)
