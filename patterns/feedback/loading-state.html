@@ -1,0 +1,23 @@
+<!--
+  loading-state — Skeleton loading state for content areas.
+
+  Provides loader components to show while data is being fetched.
+  Use within data-viz containers or content areas.
+
+  Components: sherpa-loader
+
+  Customisation:
+    • Set data-variant on sherpa-loader for different loading styles
+    • Place within sherpa-data-viz-container or content areas
+    • Remove loader and show content once data arrives
+-->
+
+<template id="loading-state"
+  data-pattern-category="feedback"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-loader">
+
+  <div class="sherpa-loading-state">
+    <sherpa-loader data-label="Loading..."></sherpa-loader>
+  </div>
+</template>

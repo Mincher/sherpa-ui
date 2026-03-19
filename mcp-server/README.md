@@ -98,8 +98,8 @@ Add to `.cursor/mcp.json` in your project:
 
 | Capability     | Count | What it gives the AI                                      |
 | -------------- | ----- | --------------------------------------------------------- |
-| **Tools**      | 5     | Actions the AI can call (query, generate, validate, etc.) |
-| **Resources**  | 59    | Reference docs and component schemas it can read           |
+| **Tools**      | 8     | Actions the AI can call (query, generate, validate, compose, etc.) |
+| **Resources**  | 67+   | Reference docs, component schemas, templates, and patterns |
 | **Prompts**    | 1     | A guided workflow for building complete UI layouts          |
 
 The AI uses these automatically — you just ask it to build something with
@@ -113,7 +113,7 @@ Sherpa components and it pulls in what it needs.
 
 Returns the full schema for a single component: every attribute (with type,
 default, and allowed values), every slot, every event (with detail shape),
-methods, and CSS custom properties.
+methods, CSS custom properties, and available HTML template variants.
 
 **Input:**
 ```json
@@ -149,6 +149,10 @@ Generates standards-compliant HTML for a component with the attributes and
 slot content you specify. Only includes attributes that exist in the schema.
 Boolean attributes render without values. All values are sanitized.
 
+You can optionally specify a `templateId` for components that have multiple
+HTML template variants (e.g. sherpa-button has `default`, `icon`,
+`button-menu`, `icon-menu`).
+
 **Input:**
 ```json
 {
@@ -157,7 +161,8 @@ Boolean attributes render without values. All values are sanitized.
     "data-label": "Save Changes",
     "data-variant": "primary",
     "data-icon-start": "check"
-  }
+  },
+  "templateId": "icon"
 }
 ```
 
@@ -252,6 +257,58 @@ quality gate after the AI writes component markup.
 
 ---
 
+### `list_patterns` — Browse layout and UX patterns
+
+Returns available view patterns (app shells, dashboard grids, detail views,
+etc.), optionally filtered by category.
+
+**Input:**
+```json
+{ "category": "layouts" }
+```
+
+Categories: `layouts`, `feedback`, `flows`. Omit `category` to list everything.
+
+**Use when:** You want the AI to understand what standard layouts exist before
+composing a view from scratch.
+
+---
+
+### `get_pattern` — Get a pattern's HTML
+
+Returns the full HTML source for a specific pattern, including template
+markup, comment documentation, and component composition.
+
+**Input:**
+```json
+{ "patternId": "dashboard-grid" }
+```
+
+**Use when:** You want the AI to use a proven layout pattern as a starting
+point rather than inventing structure from scratch.
+
+---
+
+### `compose_view` — Compose a complete view
+
+Combines a layout pattern with component API references into annotated HTML.
+The AI gets the layout pattern's HTML plus inline API documentation for the
+components it uses, making it easy to customise the pattern.
+
+**Input:**
+```json
+{
+  "layoutPattern": "app-shell",
+  "components": ["sherpa-nav", "sherpa-view-header", "sherpa-filter-bar"],
+  "description": "Admin dashboard with navigation and global filters"
+}
+```
+
+**Use when:** You want the AI to build a complete page view starting from a
+layout pattern, with all relevant component APIs at hand.
+
+---
+
 ## 4. Resources & Prompts
 
 ### Resources
@@ -267,6 +324,8 @@ The AI can read these reference documents directly from the server:
 | `sherpa://guidelines/text-styles`           | Typography scale and text utility classes      |
 | `sherpa://guidelines/copilot-instructions`  | Full coding rules for this component library   |
 | `sherpa://schema/{tagName}`                 | JSON schema for any of the 53 components       |
+| `sherpa://template/{tagName}`               | Raw HTML template for any component            |
+| `sherpa://pattern/{patternId}`              | View layout or UX pattern HTML                 |
 
 ### Prompts
 
@@ -274,10 +333,11 @@ The AI can read these reference documents directly from the server:
 layout using Sherpa components. It automatically injects component API
 context and the library's rules.
 
-| Argument      | Required | Description                                        |
-| ------------- | -------- | -------------------------------------------------- |
-| `description` | Yes      | What you want built (plain English)                |
-| `components`  | No       | Comma-separated list of components to focus on     |
+| Argument        | Required | Description                                        |
+| --------------- | -------- | -------------------------------------------------- |
+| `description`   | Yes      | What you want built (plain English)                |
+| `components`    | No       | Comma-separated list of components to focus on     |
+| `layoutPattern` | No       | Layout pattern ID to use as starting point         |
 
 **Example:** "Build a settings page with a form containing text inputs for
 name and email, a password input, and save/cancel buttons."
@@ -384,15 +444,16 @@ attribute names, no wrong token values, no invalid HTML.
 
 ---
 
-## 7. Keeping Schemas Up to Date
+## 7. Keeping Schemas & Patterns Up to Date
 
-The MCP server reads component schemas from `schemas/components/`. If you
-change a component's JSDoc header (attributes, events, slots, etc.),
-regenerate the schemas:
+The MCP server reads component schemas from `schemas/components/` and
+pattern indexes from `patterns/index.json`. If you change a component's
+JSDoc header or add/modify pattern HTML files, regenerate:
 
 ```bash
 npm run schemas          # Rebuild JSON schemas only
-npm run build            # Full build: tokens + docs + schemas
+npm run patterns         # Rebuild pattern index only
+npm run build            # Full build: tokens + docs + schemas + patterns
 ```
 
 Then restart the MCP server (or restart your AI client) so it picks up the
@@ -411,8 +472,12 @@ sherpa-ui/
 │   └── components/
 │       ├── index.json        ← List of all 53 tag names
 │       ├── sherpa-button.json
-│       ├── sherpa-card.json
 │       └── ...               ← One JSON file per component
+├── patterns/
+│   ├── index.json            ← Pattern catalog (generated)
+│   ├── layouts/              ← View layout patterns (HTML)
+│   └── feedback/             ← Feedback/state patterns (HTML)
+├── components/               ← Component source (HTML templates served)
 ├── docs/                     ← Guidelines served as resources
 ├── css/styles/               ← Token CSS files scanned by browse_tokens
 └── .github/

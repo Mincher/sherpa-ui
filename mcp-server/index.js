@@ -12,10 +12,15 @@
  *   generate_component   — Generate valid HTML for a component
  *   browse_tokens        — Search design tokens by name or purpose
  *   validate_usage       — Check component HTML for common mistakes
+ *   list_patterns        — List view layout and UX patterns
+ *   get_pattern          — Get full HTML for a pattern
+ *   compose_view         — Compose a complete view from layout + components
  *
  * Resources:
  *   sherpa://guidelines/*  — Component guidelines, API standard, token usage
  *   sherpa://schema/{tag}  — Raw JSON schema per component
+ *   sherpa://template/{tag} — Raw HTML template for a component
+ *   sherpa://pattern/{id}  — View layout / UX pattern HTML
  *
  * Prompts:
  *   build_ui              — Guided prompt for building a UI layout
@@ -31,6 +36,8 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const SCHEMAS_DIR = path.join(ROOT, "schemas", "components");
+const COMPONENTS_DIR = path.join(ROOT, "components");
+const PATTERNS_DIR = path.join(ROOT, "patterns");
 const DOCS_DIR = path.join(ROOT, "docs");
 const CSS_DIR = path.join(ROOT, "css");
 const COPILOT_INSTRUCTIONS = path.join(ROOT, ".github", "copilot-instructions.md");
@@ -88,8 +95,48 @@ function readDoc(filename) {
   return null;
 }
 
+/** Parse <template id="..."> blocks from a component HTML file, stripping comments. */
+function parseTemplateIds(tagName) {
+  const htmlPath = path.join(COMPONENTS_DIR, tagName, `${tagName}.html`);
+  if (!fs.existsSync(htmlPath)) return [];
+  const raw = fs.readFileSync(htmlPath, "utf8");
+  const html = raw.replace(/<!--[\s\S]*?-->/g, "");
+  const ids = [];
+  const re = /<template\s+id=["']([^"']+)["']/g;
+  let m;
+  while ((m = re.exec(html))) ids.push(m[1]);
+  return ids;
+}
+
+/** Read raw HTML file for a component. */
+function readComponentHTML(tagName) {
+  const htmlPath = path.join(COMPONENTS_DIR, tagName, `${tagName}.html`);
+  if (!fs.existsSync(htmlPath)) return null;
+  return fs.readFileSync(htmlPath, "utf8");
+}
+
+/** Load pattern index from patterns/index.json. */
+function loadPatterns() {
+  const indexPath = path.join(PATTERNS_DIR, "index.json");
+  if (!fs.existsSync(indexPath)) return new Map();
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  const patterns = new Map();
+  for (const entry of index) {
+    patterns.set(entry.id, entry);
+  }
+  return patterns;
+}
+
+/** Read a pattern HTML file by its relative path from the index. */
+function readPatternHTML(patternEntry) {
+  const filePath = path.join(ROOT, patternEntry.file);
+  if (!fs.existsSync(filePath)) return null;
+  return fs.readFileSync(filePath, "utf8");
+}
+
 const schemas = loadSchemas();
 const tokens = loadTokens();
+const patterns = loadPatterns();
 
 /* ── HTML generation ───────────────────────────────────────────── */
 
@@ -217,10 +264,18 @@ server.registerTool(
         }],
       };
     }
+
+    // Append available template IDs from the component's HTML file
+    const templateIds = parseTemplateIds(tagName);
+    const result = { ...schema };
+    if (templateIds.length > 0) {
+      result.templates = templateIds;
+    }
+
     return {
       content: [{
         type: "text",
-        text: JSON.stringify(schema, null, 2),
+        text: JSON.stringify(result, null, 2),
       }],
     };
   }
@@ -271,9 +326,11 @@ server.registerTool(
       slots: z.record(z.string())
         .optional()
         .describe('Slot content as name-value pairs. Use "" or "default" key for default slot.'),
+      templateId: z.string().optional()
+        .describe('Template variant to use (e.g. "icon", "button-menu"). Omit for default template.'),
     },
   },
-  async ({ tagName, attributes, slots }) => {
+  async ({ tagName, attributes, slots, templateId }) => {
     const schema = schemas.get(tagName);
     if (!schema) {
       return {
@@ -281,10 +338,24 @@ server.registerTool(
       };
     }
 
+    // Validate templateId if provided
+    if (templateId) {
+      const available = parseTemplateIds(tagName);
+      if (available.length && !available.includes(templateId)) {
+        return {
+          content: [{ type: "text", text: `Unknown template "${templateId}" for ${tagName}. Available: ${available.join(", ")}` }],
+        };
+      }
+    }
+
     const html = generateComponentHTML(schema, attributes || {}, slots || {});
     const validation = validateUsage(html);
 
-    let response = html;
+    let response = "";
+    if (templateId) {
+      response += `<!-- template: ${templateId} -->\n`;
+    }
+    response += html;
     if (validation.length) {
       response += "\n\n<!-- Validation notes:\n";
       for (const issue of validation) {
@@ -366,6 +437,131 @@ server.registerTool(
   }
 );
 
+server.registerTool(
+  "list_patterns",
+  {
+    title: "List Patterns",
+    description: "List available view layout and UX patterns, optionally filtered by category",
+    inputSchema: {
+      category: z.string().optional().describe('Filter by category (e.g. "layouts", "feedback", "flows")'),
+    },
+  },
+  async ({ category }) => {
+    if (!patterns.size) {
+      return { content: [{ type: "text", text: "No patterns available. Run `npm run patterns` to generate the pattern index." }] };
+    }
+
+    let entries = [...patterns.values()];
+    if (category) {
+      entries = entries.filter((e) => e.category.toLowerCase() === category.toLowerCase());
+    }
+
+    if (!entries.length) {
+      const cats = [...new Set([...patterns.values()].map((e) => e.category))];
+      return { content: [{ type: "text", text: `No patterns in category "${category}". Available categories: ${cats.join(", ")}` }] };
+    }
+
+    let result = `Found ${entries.length} pattern(s):\n\n`;
+    const grouped = {};
+    for (const e of entries) {
+      if (!grouped[e.category]) grouped[e.category] = [];
+      grouped[e.category].push(e);
+    }
+    for (const [cat, items] of Object.entries(grouped)) {
+      result += `## ${cat}\n`;
+      for (const item of items) {
+        const status = item.status ? ` [${item.status}]` : "";
+        result += `- **${item.id}**: ${item.name}${status}\n`;
+        if (item.description) result += `  ${item.description}\n`;
+        if (item.components?.length) result += `  Components: ${item.components.join(", ")}\n`;
+      }
+      result += "\n";
+    }
+
+    return { content: [{ type: "text", text: result }] };
+  }
+);
+
+server.registerTool(
+  "get_pattern",
+  {
+    title: "Get Pattern",
+    description: "Get the full HTML source for a layout or UX pattern",
+    inputSchema: {
+      patternId: z.string().describe("Pattern ID (e.g. 'app-shell', 'dashboard-grid')"),
+    },
+  },
+  async ({ patternId }) => {
+    const entry = patterns.get(patternId);
+    if (!entry) {
+      const available = [...patterns.keys()].join(", ");
+      return { content: [{ type: "text", text: `Unknown pattern "${patternId}". Available: ${available}` }] };
+    }
+
+    const html = readPatternHTML(entry);
+    if (!html) {
+      return { content: [{ type: "text", text: `Pattern file not found: ${entry.file}` }] };
+    }
+
+    return { content: [{ type: "text", text: html }] };
+  }
+);
+
+server.registerTool(
+  "compose_view",
+  {
+    title: "Compose View",
+    description: "Compose a complete view by combining a layout pattern with components. Returns annotated HTML with component schemas inlined as comments.",
+    inputSchema: {
+      layoutPattern: z.string().describe("Layout pattern ID to use as the base (e.g. 'app-shell', 'dashboard-grid')"),
+      components: z.array(z.string()).optional().describe("Component tag names to include schemas for"),
+      description: z.string().optional().describe("Description of what this view should accomplish"),
+    },
+  },
+  async ({ layoutPattern, components: componentList, description: desc }) => {
+    const entry = patterns.get(layoutPattern);
+    if (!entry) {
+      const available = [...patterns.keys()].join(", ");
+      return { content: [{ type: "text", text: `Unknown pattern "${layoutPattern}". Available: ${available}` }] };
+    }
+
+    const layoutHTML = readPatternHTML(entry);
+    if (!layoutHTML) {
+      return { content: [{ type: "text", text: `Pattern file not found: ${entry.file}` }] };
+    }
+
+    let result = "";
+    if (desc) {
+      result += `<!-- View: ${desc} -->\n\n`;
+    }
+    result += `<!-- Layout pattern: ${entry.name} (${entry.id}) -->\n`;
+    result += layoutHTML;
+
+    if (componentList?.length) {
+      result += "\n\n<!-- Component API reference:\n";
+      for (const tag of componentList) {
+        const schema = schemas.get(tag);
+        if (schema) {
+          const attrs = (schema.attributes || []).map((a) =>
+            `  ${a.name} {${a.type}}${a.default ? ` = ${a.default}` : ""}${a.description ? ` — ${a.description}` : ""}`
+          ).join("\n");
+          const slots = (schema.slots || []).map((s) =>
+            `  <slot${s.name ? ` name="${s.name}"` : ""}>: ${s.description || ""}`
+          ).join("\n");
+          result += `\n${tag}:\n`;
+          if (attrs) result += `  Attributes:\n${attrs}\n`;
+          if (slots) result += `  Slots:\n${slots}\n`;
+          const templates = parseTemplateIds(tag);
+          if (templates.length > 1) result += `  Templates: ${templates.join(", ")}\n`;
+        }
+      }
+      result += "\n-->";
+    }
+
+    return { content: [{ type: "text", text: result }] };
+  }
+);
+
 /* ── Resources ─────────────────────────────────────────────────── */
 
 // Static guideline documents
@@ -420,6 +616,64 @@ server.registerResource(
   }
 );
 
+// Component HTML templates as resources
+server.registerResource(
+  "Component Template",
+  new ResourceTemplate("sherpa://template/{tagName}", { list: async () => {
+    return { resources: [...schemas.keys()].map((tag) => ({
+      uri: `sherpa://template/${tag}`,
+      name: `${tag} template`,
+      description: `HTML template for ${tag}`,
+      mimeType: "text/html",
+    })) };
+  }}),
+  { description: "Raw HTML template for a Sherpa UI component", mimeType: "text/html" },
+  async (uri, { tagName }) => {
+    const html = readComponentHTML(tagName);
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "text/html",
+        text: html || `<!-- No template found for ${tagName} -->`,
+      }],
+    };
+  }
+);
+
+// Pattern HTML files as resources
+server.registerResource(
+  "Pattern",
+  new ResourceTemplate("sherpa://pattern/{patternId}", { list: async () => {
+    return { resources: [...patterns.entries()].map(([id, entry]) => ({
+      uri: `sherpa://pattern/${id}`,
+      name: entry.name,
+      description: `${entry.category} pattern: ${entry.description || entry.name}`,
+      mimeType: "text/html",
+    })) };
+  }}),
+  { description: "View layout or UX pattern HTML", mimeType: "text/html" },
+  async (uri, { patternId }) => {
+    const entry = patterns.get(patternId);
+    if (!entry) {
+      return {
+        contents: [{
+          uri: uri.href,
+          mimeType: "text/html",
+          text: `<!-- Unknown pattern: ${patternId} -->`,
+        }],
+      };
+    }
+    const html = readPatternHTML(entry);
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "text/html",
+        text: html || `<!-- Pattern file not found: ${entry.file} -->`,
+      }],
+    };
+  }
+);
+
 /* ── Prompts ───────────────────────────────────────────────────── */
 
 server.registerPrompt(
@@ -430,9 +684,10 @@ server.registerPrompt(
     argsSchema: {
       description: z.string().describe("Describe the UI you want to build"),
       components: z.string().optional().describe("Comma-separated component names to include"),
+      layoutPattern: z.string().optional().describe("Layout pattern ID to start from (e.g. 'app-shell', 'dashboard-grid')"),
     },
   },
-  async ({ description, components: componentsList }) => {
+  async ({ description, components: componentsList, layoutPattern }) => {
     let componentContext = "";
 
     if (componentsList) {
@@ -451,6 +706,37 @@ server.registerPrompt(
       componentContext = `\n### Available Components\n${summary}\n`;
     }
 
+    // Include layout pattern if specified
+    let layoutContext = "";
+    if (layoutPattern) {
+      const entry = patterns.get(layoutPattern);
+      if (entry) {
+        const html = readPatternHTML(entry);
+        if (html) {
+          layoutContext = `\n## Starting Layout\nUse this pattern as the base layout:\n\n\`\`\`html\n${html}\n\`\`\`\n`;
+        }
+      }
+    }
+
+    // Include available patterns summary
+    let patternSummary = "";
+    if (patterns.size) {
+      const grouped = {};
+      for (const entry of patterns.values()) {
+        if (!grouped[entry.category]) grouped[entry.category] = [];
+        grouped[entry.category].push(entry);
+      }
+      patternSummary = "\n## Available Patterns\n";
+      for (const [cat, items] of Object.entries(grouped)) {
+        patternSummary += `### ${cat}\n`;
+        for (const item of items) {
+          patternSummary += `- **${item.id}**: ${item.name}`;
+          if (item.description) patternSummary += ` — ${item.description}`;
+          patternSummary += "\n";
+        }
+      }
+    }
+
     return {
       messages: [
         {
@@ -461,10 +747,10 @@ server.registerPrompt(
 
 ## Requirements
 ${description}
-
+${layoutContext}
 ## Component Reference
 ${componentContext}
-
+${patternSummary}
 ## Rules
 1. Use data-* attributes for all custom attributes (not bare attributes)
 2. Use semantic design tokens (--sherpa-*) with hardcoded fallbacks

@@ -1,0 +1,46 @@
+<!--
+  detail-view — Master-detail layout with header, metadata, and content panels.
+
+  Provides a structured view for displaying a single item's details:
+    • View header with breadcrumbs and action toolbar
+    • Key-value metadata panel
+    • Tabbed content sections
+
+  Components: sherpa-view-header, sherpa-breadcrumbs, sherpa-toolbar,
+              sherpa-key-value-list, sherpa-tabs, sherpa-card
+
+  Customisation:
+    • Set data-label on sherpa-view-header for the item title
+    • Populate sherpa-breadcrumbs with navigation path
+    • Add action buttons to sherpa-toolbar
+    • Add key-value pairs to sherpa-key-value-list
+    • Add tab panels with sherpa-tabs for content sections
+-->
+
+<template id="detail-view"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-view-header, sherpa-breadcrumbs, sherpa-toolbar, sherpa-key-value-list, sherpa-tabs, sherpa-card">
+
+  <div class="sherpa-detail-layout">
+    <sherpa-breadcrumbs></sherpa-breadcrumbs>
+
+    <header class="sherpa-view-header-group">
+      <sherpa-view-header data-label="">
+        <sherpa-toolbar slot="actions"></sherpa-toolbar>
+      </sherpa-view-header>
+    </header>
+
+    <div class="sherpa-detail-content">
+      <aside class="sherpa-detail-sidebar">
+        <sherpa-card data-label="Properties">
+          <sherpa-key-value-list slot="content"></sherpa-key-value-list>
+        </sherpa-card>
+      </aside>
+
+      <main class="sherpa-detail-main">
+        <sherpa-tabs></sherpa-tabs>
+      </main>
+    </div>
+  </div>
+</template>

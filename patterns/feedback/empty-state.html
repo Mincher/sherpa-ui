@@ -1,0 +1,26 @@
+<!--
+  empty-state — Placeholder shown when a view has no data.
+
+  Provides a centered empty state with illustration, message, and call to action.
+
+  Components: sherpa-empty-state, sherpa-button
+
+  Customisation:
+    • Set data-label for the empty state title
+    • Set data-description for explanatory text
+    • Set data-illustration for the illustration type
+    • Add a primary action button as slot content
+-->
+
+<template id="empty-state"
+  data-pattern-category="feedback"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-empty-state, sherpa-button">
+
+  <sherpa-empty-state
+    data-label="No items found"
+    data-description="There are no items to display. Create your first item to get started."
+    data-illustration="empty">
+    <sherpa-button data-label="Create Item" data-variant="primary"></sherpa-button>
+  </sherpa-empty-state>
+</template>

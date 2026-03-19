@@ -1,0 +1,61 @@
+<!--
+  dashboard-grid — Data dashboard with metric cards and visualization panels.
+
+  Provides a 12-column responsive grid populated with data visualization
+  containers. Each container has configurable column/row span and can hold
+  charts, tables, or metrics.
+
+  Components: sherpa-data-viz-container, sherpa-metric, sherpa-barchart,
+              sherpa-donut-chart, sherpa-data-grid
+
+  Customisation:
+    • Adjust data-col-span (1–12) and data-row-span on each container
+    • Set data-label on containers for section titles
+    • Populate containers with chart/grid/metric components
+    • Use template[data-menu] inside containers for context menus
+    • Set data-category, data-series, data-agg, data-order-by for data binding
+
+  Layout classes:
+    .sherpa-content-area — 12-col auto-fill grid (responds to container width)
+-->
+
+<template id="dashboard-grid"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-data-viz-container, sherpa-metric, sherpa-barchart, sherpa-donut-chart, sherpa-data-grid">
+
+  <div class="sherpa-content-area">
+
+    <!-- Row 1: Metric cards -->
+    <sherpa-data-viz-container data-col-span="3" data-label="Total Items">
+      <sherpa-metric slot="content"></sherpa-metric>
+    </sherpa-data-viz-container>
+
+    <sherpa-data-viz-container data-col-span="3" data-label="Active">
+      <sherpa-metric slot="content"></sherpa-metric>
+    </sherpa-data-viz-container>
+
+    <sherpa-data-viz-container data-col-span="3" data-label="Pending">
+      <sherpa-metric slot="content"></sherpa-metric>
+    </sherpa-data-viz-container>
+
+    <sherpa-data-viz-container data-col-span="3" data-label="Resolved">
+      <sherpa-metric slot="content"></sherpa-metric>
+    </sherpa-data-viz-container>
+
+    <!-- Row 2: Charts -->
+    <sherpa-data-viz-container data-col-span="6" data-label="Trend">
+      <sherpa-barchart slot="content"></sherpa-barchart>
+    </sherpa-data-viz-container>
+
+    <sherpa-data-viz-container data-col-span="6" data-label="Distribution">
+      <sherpa-donut-chart slot="content"></sherpa-donut-chart>
+    </sherpa-data-viz-container>
+
+    <!-- Row 3: Detail table -->
+    <sherpa-data-viz-container data-col-span="12" data-label="Details">
+      <sherpa-data-grid slot="content"></sherpa-data-grid>
+    </sherpa-data-viz-container>
+
+  </div>
+</template>

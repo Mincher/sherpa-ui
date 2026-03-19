@@ -1,0 +1,52 @@
+<!--
+  settings-form — Settings page with grouped form sections.
+
+  Provides a structured form layout for application settings:
+    • View header with save/cancel actions
+    • Grouped form sections with section headers
+    • Form inputs with labels
+
+  Components: sherpa-view-header, sherpa-section-header, sherpa-input-text,
+              sherpa-input-select, sherpa-switch, sherpa-button
+
+  Customisation:
+    • Set data-label on sherpa-view-header for the page title
+    • Group related inputs under sherpa-section-header elements
+    • Use appropriate input components for each setting type
+    • Add save/cancel buttons in the view-header toolbar
+-->
+
+<template id="settings-form"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-view-header, sherpa-section-header, sherpa-input-text, sherpa-input-select, sherpa-switch, sherpa-button">
+
+  <div class="sherpa-settings-layout">
+    <header class="sherpa-view-header-group">
+      <sherpa-view-header data-label="Settings">
+        <sherpa-toolbar slot="actions">
+          <sherpa-button data-label="Cancel" data-variant="secondary"></sherpa-button>
+          <sherpa-button data-label="Save" data-variant="primary"></sherpa-button>
+        </sherpa-toolbar>
+      </sherpa-view-header>
+    </header>
+
+    <div class="sherpa-settings-content">
+      <section class="sherpa-settings-section">
+        <sherpa-section-header data-label="General"></sherpa-section-header>
+        <div class="sherpa-form-group">
+          <sherpa-input-text data-label="Name"></sherpa-input-text>
+          <sherpa-input-text data-label="Description"></sherpa-input-text>
+        </div>
+      </section>
+
+      <section class="sherpa-settings-section">
+        <sherpa-section-header data-label="Preferences"></sherpa-section-header>
+        <div class="sherpa-form-group">
+          <sherpa-input-select data-label="Language"></sherpa-input-select>
+          <sherpa-switch data-label="Enable notifications"></sherpa-switch>
+        </div>
+      </section>
+    </div>
+  </div>
+</template>

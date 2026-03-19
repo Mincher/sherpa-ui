@@ -1,0 +1,113 @@
+[
+  {
+    "id": "confirmation-dialog",
+    "name": "Modal dialog for confirming destructive actions",
+    "category": "feedback",
+    "file": "patterns/feedback/confirmation-dialog.html",
+    "description": "Provides a dialog with warning message, detail text, and confirm/cancel buttons",
+    "status": "stable",
+    "components": [
+      "sherpa-dialog",
+      "sherpa-button",
+      "sherpa-callout"
+    ]
+  },
+  {
+    "id": "empty-state",
+    "name": "Placeholder shown when a view has no data",
+    "category": "feedback",
+    "file": "patterns/feedback/empty-state.html",
+    "description": "Provides a centered empty state with illustration, message, and call to action",
+    "status": "stable",
+    "components": [
+      "sherpa-empty-state",
+      "sherpa-button"
+    ]
+  },
+  {
+    "id": "loading-state",
+    "name": "Skeleton loading state for content areas",
+    "category": "feedback",
+    "file": "patterns/feedback/loading-state.html",
+    "description": "Provides loader components to show while data is being fetched",
+    "status": "stable",
+    "components": [
+      "sherpa-loader"
+    ]
+  },
+  {
+    "id": "app-shell",
+    "name": "Standard application shell layout",
+    "category": "layouts",
+    "file": "patterns/layouts/app-shell.html",
+    "description": "Provides the structural frame for a full-page application",
+    "status": "stable",
+    "components": [
+      "sherpa-nav",
+      "sherpa-view-header",
+      "sherpa-filter-bar"
+    ]
+  },
+  {
+    "id": "dashboard-grid",
+    "name": "Data dashboard with metric cards and visualization panels",
+    "category": "layouts",
+    "file": "patterns/layouts/dashboard-grid.html",
+    "description": "Provides a 12-column responsive grid populated with data visualization",
+    "status": "stable",
+    "components": [
+      "sherpa-data-viz-container",
+      "sherpa-metric",
+      "sherpa-barchart",
+      "sherpa-donut-chart",
+      "sherpa-data-grid"
+    ]
+  },
+  {
+    "id": "detail-view",
+    "name": "Master-detail layout with header, metadata, and content panels",
+    "category": "layouts",
+    "file": "patterns/layouts/detail-view.html",
+    "description": "Provides a structured view for displaying a single item's details",
+    "status": "stable",
+    "components": [
+      "sherpa-view-header",
+      "sherpa-breadcrumbs",
+      "sherpa-toolbar",
+      "sherpa-key-value-list",
+      "sherpa-tabs",
+      "sherpa-card"
+    ]
+  },
+  {
+    "id": "list-view",
+    "name": "Filterable list with toolbar and pagination",
+    "category": "layouts",
+    "file": "patterns/layouts/list-view.html",
+    "description": "Provides a standard list page layout",
+    "status": "stable",
+    "components": [
+      "sherpa-view-header",
+      "sherpa-filter-bar",
+      "sherpa-data-grid",
+      "sherpa-pagination",
+      "sherpa-toolbar"
+    ]
+  },
+  {
+    "id": "settings-form",
+    "name": "Settings page with grouped form sections",
+    "category": "layouts",
+    "file": "patterns/layouts/settings-form.html",
+    "description": "Provides a structured form layout for application settings",
+    "status": "stable",
+    "components": [
+      "sherpa-view-header",
+      "sherpa-section-header",
+      "sherpa-input-text",
+      "sherpa-input-select",
+      "sherpa-switch",
+      "sherpa-button"
+    ]
+  }
+]

@@ -1,0 +1,27 @@
+<!--
+  confirmation-dialog — Modal dialog for confirming destructive actions.
+
+  Provides a dialog with warning message, detail text, and confirm/cancel buttons.
+
+  Components: sherpa-dialog, sherpa-button, sherpa-callout
+
+  Customisation:
+    • Set data-label on sherpa-dialog for the dialog title
+    • Use data-variant="danger" for destructive confirmations
+    • Add a sherpa-callout for additional context or warnings
+    • Customise button labels for the action (e.g. "Delete", "Remove")
+-->
+
+<template id="confirmation-dialog"
+  data-pattern-category="feedback"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-dialog, sherpa-button, sherpa-callout">
+
+  <sherpa-dialog data-label="Confirm Action" data-close-button>
+    <sherpa-callout data-variant="warning" data-label="This action cannot be undone" slot="content">
+      Are you sure you want to proceed? This will permanently remove the selected item.
+    </sherpa-callout>
+    <sherpa-button slot="actions" data-label="Cancel" data-variant="secondary"></sherpa-button>
+    <sherpa-button slot="actions" data-label="Delete" data-variant="danger"></sherpa-button>
+  </sherpa-dialog>
+</template>

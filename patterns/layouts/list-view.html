@@ -1,0 +1,43 @@
+<!--
+  list-view — Filterable list with toolbar and pagination.
+
+  Provides a standard list page layout:
+    • View header with title
+    • Filter bar for search and filtering
+    • Data grid or list items
+    • Pagination controls
+
+  Components: sherpa-view-header, sherpa-filter-bar, sherpa-data-grid,
+              sherpa-pagination, sherpa-toolbar
+
+  Customisation:
+    • Set data-label on sherpa-view-header for the page title
+    • Configure sherpa-filter-bar with preset filters
+    • Set column definitions on sherpa-data-grid via data-columns
+    • Add action buttons to the toolbar (add, export, etc.)
+-->
+
+<template id="list-view"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-view-header, sherpa-filter-bar, sherpa-data-grid, sherpa-pagination, sherpa-toolbar">
+
+  <div class="sherpa-list-layout">
+    <header class="sherpa-view-header-group">
+      <sherpa-view-header data-label="">
+        <sherpa-toolbar slot="actions">
+          <sherpa-button data-label="Add" data-variant="primary" data-icon-start="plus"></sherpa-button>
+        </sherpa-toolbar>
+      </sherpa-view-header>
+      <sherpa-filter-bar></sherpa-filter-bar>
+    </header>
+
+    <div class="sherpa-list-content">
+      <sherpa-data-grid></sherpa-data-grid>
+    </div>
+
+    <footer class="sherpa-list-footer">
+      <sherpa-pagination></sherpa-pagination>
+    </footer>
+  </div>
+</template>
