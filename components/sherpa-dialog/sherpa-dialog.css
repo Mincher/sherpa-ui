@@ -44,6 +44,10 @@
    DIALOG (native <dialog> element)
    ═══════════════════════════════════════════════════════════════════════════ */
 
+.dialog:not([open]) {
+  display: none;
+}
+
 .dialog {
   display: flex;
   flex-direction: column;

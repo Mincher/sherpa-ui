@@ -139,6 +139,110 @@ const schemas = loadSchemas();
 const tokens = loadTokens();
 const patterns = loadPatterns();
 
+/* ── Icon lookup ───────────────────────────────────────────────── */
+
+/**
+ * Map of common Font Awesome icon names to unicode code points.
+ * sherpa-button uses unicode characters for data-icon-start / data-icon-end.
+ * In HTML attributes use &#x<hex>; entities. In JS strings use \u<hex>.
+ */
+const FA_ICONS = {
+  // Navigation / UI
+  "arrow-up-right-from-square": "f08e",
+  "chevron-down": "f078",
+  "chevron-up": "f077",
+  "chevron-left": "f053",
+  "chevron-right": "f054",
+  "ellipsis-vertical": "f142",
+  "xmark": "f00d",
+  "times": "f00d",
+  "sliders": "f1de",
+  "thumbtack": "f08d",
+  "bars": "f0c9",
+  "angles-left": "f100",
+  "angles-right": "f101",
+  "arrow-left": "f060",
+  "arrow-right": "f061",
+  "arrow-down": "f063",
+  "arrow-up": "f062",
+  "magnifying-glass": "f002",
+  "search": "f002",
+  "gear": "f013",
+  "cog": "f013",
+  "house": "f015",
+  "home": "f015",
+  // Actions
+  "plus": "f067",
+  "minus": "f068",
+  "pen-to-square": "f044",
+  "edit": "f044",
+  "pencil": "f303",
+  "trash-can": "f2ed",
+  "trash": "f1f8",
+  "copy": "f0c5",
+  "clone": "f24d",
+  "download": "f019",
+  "upload": "f093",
+  "share": "f064",
+  "link": "f0c1",
+  "comment": "f075",
+  "star": "f005",
+  "eye": "f06e",
+  "eye-slash": "f070",
+  "filter": "f0b0",
+  "sort": "f0dc",
+  "rotate": "f2f1",
+  "refresh": "f2f1",
+  "save": "f0c7",
+  "floppy-disk": "f0c7",
+  "print": "f02f",
+  // Files / Documents
+  "file": "f15b",
+  "file-pdf": "f1c1",
+  "folder": "f07b",
+  "folder-open": "f07c",
+  // Status
+  "check": "f00c",
+  "circle-check": "f058",
+  "info": "f129",
+  "circle-info": "f05a",
+  "exclamation": "f12a",
+  "circle-exclamation": "f06a",
+  "triangle-exclamation": "f071",
+  "warning": "f071",
+  "bell": "f0f3",
+  "bolt": "f0e7",
+  // Misc
+  "calendar": "f133",
+  "clock": "f017",
+  "user": "f007",
+  "users": "f0c0",
+  "lock": "f023",
+  "unlock": "f09c",
+  "shield": "f132",
+  "server": "f233",
+  "database": "f1c0",
+  "cloud": "f0c2",
+  "chart-bar": "f080",
+  "chart-line": "f201",
+  "chart-pie": "f200",
+  "table": "f0ce",
+  "grip-vertical": "f58e",
+};
+
+/**
+ * Convert a plain icon name to an HTML entity for use in attributes.
+ * If the value is already a unicode character or entity, pass it through.
+ */
+function iconToEntity(name) {
+  if (!name) return name;
+  // Already a unicode character (set programmatically) or HTML entity
+  if (name.startsWith("&#") || name.length === 1) return name;
+  const hex = FA_ICONS[name];
+  if (hex) return `&#x${hex};`;
+  return name; // Unknown — pass through as-is
+}
+
 /* ── HTML generation ───────────────────────────────────────────── */
 
 function generateComponentHTML(schema, attrs = {}, slotContent = {}) {
@@ -153,8 +257,13 @@ function generateComponentHTML(schema, attrs = {}, slotContent = {}) {
     if (attrDef.type === "boolean") {
       if (value === true || value === "true") parts.push(` ${name}`);
     } else {
-      // Sanitize attribute values
-      const safe = String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+      // Convert icon names to unicode entities for icon attributes
+      let resolved = String(value);
+      if (name === "data-icon-start" || name === "data-icon-end" || name === "data-icon") {
+        resolved = iconToEntity(resolved);
+      }
+      // Sanitize attribute values (preserve &#x entities for icons)
+      const safe = resolved.replace(/&(?!#x[0-9a-fA-F]+;)/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
       parts.push(` ${name}="${safe}"`);
     }
   }
@@ -574,7 +683,7 @@ function generateFlowHTML(flowType, entityName, fields) {
     const isEdit = flowType === "edit";
     const dialogTitle = isEdit ? `Edit ${entityLabel}` : `Add ${entityLabel}`;
     const triggerLabel = isEdit ? "Edit" : "Add";
-    const triggerIcon = isEdit ? "pen-to-square" : "plus";
+    const triggerIcon = isEdit ? iconToEntity("pen-to-square") : iconToEntity("plus");
     const triggerVariant = isEdit ? "secondary" : "primary";
     const successMsg = isEdit ? `${entityLabel} updated successfully` : `${entityLabel} created successfully`;
     const errorMsg = isEdit ? `Failed to update ${entityName}` : `Failed to create ${entityName}`;
@@ -630,7 +739,7 @@ ${fieldHTML.trimEnd()}
   data-label="Delete"
   data-variant="secondary"
   data-status="critical"
-  data-icon-start="trash-can">
+  data-icon-start="${iconToEntity("trash-can")}">
 </sherpa-button>
 
 <!-- Confirmation dialog -->
