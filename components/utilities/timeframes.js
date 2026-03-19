@@ -174,22 +174,34 @@ export function computeTimeRange(records, dateField) {
   return { min, max, minDate, maxDate, span, granularity, label };
 }
 
+/* ── Pluggable date-field detector ───────────────────────────────── */
+
+let _dateFieldDetector = null;
+
+/**
+ * Register a custom date-field detector.
+ * The function receives a record object and should return the field name
+ * (string) to use as the date/time column, or null.
+ * @param {(record: Object) => string|null} fn
+ */
+export function setDateFieldDetector(fn) {
+  _dateFieldDetector = fn;
+}
+
 /**
  * Auto-detect the date field from a record's keys.
- * Looks for common date field names.
+ * Defers to a consumer-provided detector when registered via
+ * setDateFieldDetector(). Otherwise falls back to suffix matching.
  * @param {Object} record
  * @returns {string|null}
  */
-function autoDetectDateField(record) {
+export function autoDetectDateField(record) {
   if (!record) return null;
-  // 'created' is the canonical record timestamp for all time-based viz;
-  // other datetime fields are secondary (available for user filtering).
-  if ('created' in record) return 'created';
-  const DATE_FIELD_NAMES = ['created_date', 'order_date', 'ticket_date', 'task_date', 'first_detected', 'last_updated', 'date_published', 'date'];
-  for (const name of DATE_FIELD_NAMES) {
-    if (name in record) return name;
+  if (_dateFieldDetector) {
+    const result = _dateFieldDetector(record);
+    if (result) return result;
   }
-  // Fallback: find any key ending in _date or _at
+  // Generic fallback: find any key ending in _date or _at
   for (const key of Object.keys(record)) {
     if (key.endsWith('_date') || key.endsWith('_at')) return key;
   }

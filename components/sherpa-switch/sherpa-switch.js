@@ -66,7 +66,7 @@ export class SherpaSwitch extends SherpaElement {
     if (this.disabled) return;
     this.state = this.state === 'on' ? 'off' : 'on';
     this.dispatchEvent(new CustomEvent('change', {
-      bubbles: true,
+      bubbles: true, composed: true,
       detail: { checked: this.checked, state: this.state },
     }));
   };

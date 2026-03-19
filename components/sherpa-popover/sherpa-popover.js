@@ -43,7 +43,7 @@ class SherpaPopover extends SherpaElement {
   /* ── lifecycle ───────────────────────────────────────────── */
 
   onRender() {
-    this.#headingEl = this.$(".heading");
+    this.#headingEl = this.$(".header-title");
     this.#closeBtnEl = this.$(".close-btn");
 
     // Defaults

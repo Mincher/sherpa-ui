@@ -66,6 +66,7 @@ export class SherpaEmptyState extends SherpaElement {
 
   static get observedAttributes() {
     return [
+      ...super.observedAttributes,
       "data-label",
       "data-description",
       "data-illustration",

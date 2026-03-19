@@ -344,7 +344,8 @@ sherpa-filter-bar {
     --_chart-legend-wrap: nowrap;
     --_chart-legend-width: auto;
     --_chart-legend-justify: flex-start;
-    --_chart-legend-align: center;
+    --_chart-legend-align: flex-start;
+    --_chart-legend-margin-top: 0;
   }
 }
 

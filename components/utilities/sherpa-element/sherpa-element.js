@@ -204,7 +204,10 @@ export class SherpaElement extends HTMLElement {
     let rawHtml = _htmlCache.get(Ctor);
     if (rawHtml === undefined && Ctor.htmlUrl) {
       try {
-        rawHtml = await fetch(Ctor.htmlUrl).then((r) => r.text());
+        rawHtml = await fetch(Ctor.htmlUrl).then((r) => {
+          if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+          return r.text();
+        });
       } catch {
         rawHtml = "";
       }

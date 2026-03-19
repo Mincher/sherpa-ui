@@ -35,6 +35,8 @@ import {
 } from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { formatCompact, formatFieldName } from '../utilities/index.js';
+import { getSegmentField, isSegmentEnabled, getActiveSort } from '../utilities/chart-utils.js';
+import { injectFilterMenu, removeFilterMenu } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-filter-bar/sherpa-filter-bar.js';
 
@@ -85,6 +87,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   #centreValueEl;
   #centreSublabelEl;
   #legendEl;
+  #legendItemTpl;
   #filterMenuTpl = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
@@ -98,6 +101,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     this.#centreValueEl    = this.$('.centre-value');
     this.#centreSublabelEl = this.$('.centre-sublabel');
     this.#legendEl         = this.$('.chart-legend');
+    this.#legendItemTpl    = this.shadowRoot.querySelector('template.legend-item-tpl');
 
     this.#syncTitle();
     this.#syncCentreLabel();
@@ -105,7 +109,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   onConnect() {
     super.onConnect();
-    this.#injectFilterMenu();
+    this.#filterMenuTpl = injectFilterMenu(this);
     this.addEventListener('toggle-filters', this.#onToggleFilters);
     this.addEventListener('toggle-legend', this.#onToggleLegend);
     this.addEventListener('menu-populate', this.#onMenuPopulate);
@@ -116,7 +120,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     this.removeEventListener('toggle-filters', this.#onToggleFilters);
     this.removeEventListener('toggle-legend', this.#onToggleLegend);
     this.removeEventListener('menu-populate', this.#onMenuPopulate);
-    this.#filterMenuTpl?.remove();
+    removeFilterMenu(this.#filterMenuTpl);
     this.#filterMenuTpl = null;
   }
 
@@ -205,28 +209,10 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: transform ───────────────────────────────────────── */
 
-  /* ── Segment helpers ───────────────────────────────────────── */
-
-  #getSegmentField() {
-    return this.getAttribute('data-segment-field') || null;
-  }
-
-  #isSegmentEnabled() {
-    const mode = this.getAttribute('data-segment-mode');
-    const field = this.#getSegmentField();
-    return mode !== 'off' && !!field;
-  }
-
   /* ── Sort helpers ──────────────────────────────────────────── */
 
-  #getActiveSort() {
-    const dir = this.getAttribute('data-sort-direction') || null;
-    if (!dir || dir === 'off') return null;
-    return { dir };
-  }
-
   #applyLocalSort(data) {
-    const activeSort = this.#getActiveSort();
+    const activeSort = getActiveSort(this);
     if (!activeSort || !data.length) return data;
 
     const sorted = [...data];
@@ -262,8 +248,8 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     if (!labelField || !valueField) { this.#data = []; return; }
 
     // Segment-driven aggregation: slices = unique segment values
-    const segmentField = this.#getSegmentField();
-    if (segmentField && this.#isSegmentEnabled() && segmentField !== labelField) {
+    const segmentField = getSegmentField(this);
+    if (segmentField && isSegmentEnabled(this) && segmentField !== labelField) {
       const agg = new Map();
       for (const row of rows) {
         const key = String(row[segmentField] ?? '');
@@ -300,7 +286,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   #syncTitle() {
     if (this.#titleEl) {
       const base = this.dataset.title || '';
-      const segField = this.#isSegmentEnabled() ? this.#getSegmentField() : null;
+      const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
       this.#titleEl.textContent = segField
         ? `${base} by ${formatFieldName(segField)}`
         : base;
@@ -364,38 +350,15 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
     displayData.forEach((d, i) => {
       const color = d.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
-      const item = document.createElement('div');
-      item.className = 'legend-item';
-
-      const key = document.createElement('span');
-      key.className = 'legend-key';
-      key.style.backgroundColor = color;
-
-      const label = document.createElement('span');
-      label.className = 'legend-label';
-      label.textContent = d.label || '';
-
-      const value = document.createElement('span');
-      value.className = 'legend-value';
-      value.textContent = d.value != null ? d.value.toLocaleString() : '';
-
-      item.append(key, label, value);
+      const item = this.#legendItemTpl.content.firstElementChild.cloneNode(true);
+      item.querySelector('.legend-key').style.backgroundColor = color;
+      item.querySelector('.legend-label').textContent = d.label || '';
+      item.querySelector('.legend-value').textContent = d.value != null ? d.value.toLocaleString() : '';
       this.#legendEl.appendChild(item);
     });
   }
 
   /* ── Filter menu ─────────────────────────────────────────────────────── */
-
-  #injectFilterMenu() {
-    if (this.#filterMenuTpl) return;
-    const src = this.$('#filter-menu');
-    if (!src) return;
-    const tpl = document.createElement('template');
-    tpl.setAttribute('data-menu', '');
-    tpl.content.appendChild(src.content.cloneNode(true));
-    this.#filterMenuTpl = tpl;
-    this.append(tpl);
-  }
 
   #onToggleFilters = () => {
     this.toggleAttribute('data-filters');

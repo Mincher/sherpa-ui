@@ -111,7 +111,7 @@
   display: none;
 }
 
-.heading {
+.header-title {
   flex: 1;
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-line-height-default, 1.4);
@@ -120,7 +120,7 @@
   white-space: nowrap;
 }
 
-:host(:not([data-heading])) .heading {
+:host(:not([data-heading])) .header-title {
   display: none;
 }
 

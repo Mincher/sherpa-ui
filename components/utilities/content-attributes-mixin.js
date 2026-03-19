@@ -21,7 +21,7 @@
  *   No network fetches from viz components.
  */
 
-import { formatFieldName } from "./format-utils.js";
+import { formatFieldName, getCurrencyCode } from "./format-utils.js";
 import {
   groupAndAggregate,
   agg,
@@ -264,125 +264,115 @@ export function ContentAttributesMixin(Base) {
 
       // Apply component-level preset filters (e.g. metrics with data-filters)
       const presetFilters = this.filters;
-      let records = presetFilters.length
+      const records = presetFilters.length
         ? applyLocalFilters(this.#records, presetFilters)
         : this.#records;
 
-      // ── Data Grid: pass raw records (grid does its own filter/sort/group) ──
-      if (isGrid) {
-        const fieldNames = Array.isArray(this.fields) && this.fields.length
-          ? this.fields
-          : this.#fields.map((f) => f.name);
-        const columns = buildColumns(this.#fields, fieldNames);
+      if (isGrid) this.#aggregateGrid(records, presetFilters);
+      else if (isMetric) this.#aggregateMetric(records, presetFilters);
+      else this.#aggregateChart(records, presetFilters);
+    }
 
-        // Sort
-        let rows = [...records];
-        if (this.orderBy?.length) {
-          rows = applySort(rows, this.orderBy);
-        }
-        // Limit
-        if (this.limit && rows.length > this.limit) {
-          rows = rows.slice(0, this.limit);
-        }
+    /** Data Grid: pass raw records (grid does its own filter/sort/group) */
+    #aggregateGrid(records, presetFilters) {
+      const fieldNames = Array.isArray(this.fields) && this.fields.length
+        ? this.fields
+        : this.#fields.map((f) => f.name);
+      const columns = buildColumns(this.#fields, fieldNames);
 
-        const displayName = this.name || formatFieldName(this.datasetName || '');
-        const segmentField = this.segmentField || null;
-        this.setData({
-          _fromCascade: true,
-          name: displayName,
-          columns,
-          allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
-          rows,
+      let rows = [...records];
+      if (this.orderBy?.length) rows = applySort(rows, this.orderBy);
+      if (this.limit && rows.length > this.limit) rows = rows.slice(0, this.limit);
+
+      const displayName = this.name || formatFieldName(this.datasetName || '');
+      const segmentField = this.segmentField || null;
+      this.setData({
+        _fromCascade: true,
+        name: displayName,
+        columns,
+        allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
+        rows,
+        segmentBy: segmentField,
+        summary: null,
+        config: { unit: null, showStatus: false, presentationType: this.presentationType || 'data-grid' },
+        metadata: {
+          dataset: this.datasetName,
+          category: this.category || null,
           segmentBy: segmentField,
-          summary: null,
-          config: { unit: null, showStatus: false, presentationType: this.presentationType || 'data-grid' },
-          metadata: {
-            dataset: this.datasetName,
-            category: this.category || null,
-            segmentBy: segmentField,
-            measures: [],
-            dimensions: [],
-            recordCount: records.length,
-            timeRange: null,
-            orderBy: this.orderBy || [],
-            limit: this.limit || null,
-            filters: presetFilters,
-            fields: Array.isArray(this.fields) ? this.fields : undefined,
-          },
-        });
-        return;
+          measures: [],
+          dimensions: [],
+          recordCount: records.length,
+          timeRange: null,
+          orderBy: this.orderBy || [],
+          limit: this.limit || null,
+          filters: presetFilters,
+          fields: Array.isArray(this.fields) ? this.fields : undefined,
+        },
+      });
+    }
+
+    /** Metric: count records, compute sparkline */
+    #aggregateMetric(records, presetFilters) {
+      let dateField = _dateFieldProvider
+        ? _dateFieldProvider(this.datasetName)
+        : null;
+
+      // Auto-detect date field from metadata when no provider is registered.
+      if (!dateField && this.#fields.length) {
+        const dateFm = this.#fields.find(
+          (f) => f.type === 'date' || f.type === 'datetime',
+        );
+        if (dateFm) dateField = dateFm.name;
       }
 
-      // ── Metric: count records, compute sparkline ──
-      if (isMetric) {
-        let dateField = _dateFieldProvider
-          ? _dateFieldProvider(this.datasetName)
-          : null;
+      const measures = normalizeMeasures(this);
 
-        // Auto-detect date field from metadata when no provider is registered.
-        // 'created' is the canonical record timestamp for all time-based viz;
-        // other datetime fields are secondary (user filtering only).
-        if (!dateField && this.#fields.length) {
-          const createdFm = this.#fields.find((f) => f.name === 'created');
-          if (createdFm) {
-            dateField = 'created';
-          } else {
-            const dateFm = this.#fields.find(
-              (f) => f.type === 'date' || f.type === 'datetime',
-            );
-            if (dateFm) dateField = dateFm.name;
-          }
-        }
+      // Resolve _timerange sentinel entries to the actual date field
+      // so computeMetricSummary can derive sparkline range bounds.
+      const resolvedFilters = dateField
+        ? presetFilters.map(f => {
+            if (f.field !== '_timerange' || !f.range) return f;
+            return [
+              { field: dateField, operator: '>=', value: f.range.start instanceof Date ? f.range.start.toISOString() : String(f.range.start) },
+              { field: dateField, operator: '<=', value: f.range.end instanceof Date ? f.range.end.toISOString() : String(f.range.end) },
+            ];
+          }).flat()
+        : presetFilters;
 
-        const measures = normalizeMeasures(this);
-
-        // Resolve _timerange sentinel entries to the actual date field
-        // so computeMetricSummary can derive sparkline range bounds.
-        const resolvedFilters = dateField
-          ? presetFilters.map(f => {
-              if (f.field !== '_timerange' || !f.range) return f;
-              return [
-                { field: dateField, operator: '>=', value: f.range.start instanceof Date ? f.range.start.toISOString() : String(f.range.start) },
-                { field: dateField, operator: '<=', value: f.range.end instanceof Date ? f.range.end.toISOString() : String(f.range.end) },
-              ];
-            }).flat()
-          : presetFilters;
-
-        const summary = computeMetricSummary(records, measures, dateField, resolvedFilters);
-        const displayName = this.name || formatFieldName(this.datasetName || '');
-        let unit = this.unit || null;
-        if (!unit && measures.length) {
-          const fm = this.#fields.find((f) => f.name === measures[0].field);
-          if (fm?.type === 'currency') unit = 'USD';
-          else if (fm?.type === 'percent') unit = '%';
-        }
-
-        this.setData({
-          _fromCascade: true,
-          name: displayName,
-          columns: [],
-          allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
-          rows: [],
-          summary,
-          config: { unit, showStatus: this.showStatus, presentationType: 'kpi-metric' },
-          metadata: {
-            dataset: this.datasetName,
-            measures,
-            dimensions: [],
-            recordCount: records.length,
-            timeRange: null,
-            orderBy: [],
-            limit: null,
-            filters: presetFilters,
-          },
-        });
-        return;
+      const summary = computeMetricSummary(records, measures, dateField, resolvedFilters);
+      const displayName = this.name || formatFieldName(this.datasetName || '');
+      let unit = this.unit || null;
+      if (!unit && measures.length) {
+        const fm = this.#fields.find((f) => f.name === measures[0].field);
+        if (fm?.type === 'currency') unit = getCurrencyCode();
+        else if (fm?.type === 'percent') unit = '%';
       }
 
-      // ── Charts: group, aggregate, sort ──
+      this.setData({
+        _fromCascade: true,
+        name: displayName,
+        columns: [],
+        allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
+        rows: [],
+        summary,
+        config: { unit, showStatus: this.showStatus, presentationType: 'kpi-metric' },
+        metadata: {
+          dataset: this.datasetName,
+          measures,
+          dimensions: [],
+          recordCount: records.length,
+          timeRange: null,
+          orderBy: [],
+          limit: null,
+          filters: presetFilters,
+        },
+      });
+    }
+
+    /** Charts: group, aggregate, sort */
+    #aggregateChart(records, presetFilters) {
       const measures = normalizeMeasures(this);
       if (!measures.length) {
-        // Default to count when no value field specified
         measures.push({ field: '_count', agg: 'count' });
       }
 
@@ -390,18 +380,15 @@ export function ContentAttributesMixin(Base) {
       if (this.category) groupByFields.push(this.category);
       if (this.series) groupByFields.push(this.series);
 
-      // Segment field adds a grouping dimension
       const segmentField = this.segmentField;
       if (segmentField && !groupByFields.includes(segmentField)) {
         groupByFields.push(segmentField);
       }
 
-      // Date grouping map
       const dateGroupMap = this.dateGroupBy && this.category
         ? { [this.category]: this.dateGroupBy }
         : undefined;
 
-      // Group & aggregate
       let rows;
       if (groupByFields.length) {
         rows = groupAndAggregate(records, groupByFields, measures, dateGroupMap);
@@ -413,27 +400,17 @@ export function ContentAttributesMixin(Base) {
         rows = [row];
       }
 
-      // Sort
-      if (this.orderBy?.length) {
-        rows = applySort(rows, this.orderBy);
-      }
+      if (this.orderBy?.length) rows = applySort(rows, this.orderBy);
+      if (this.limit && rows.length > this.limit) rows = rows.slice(0, this.limit);
 
-      // Limit
-      if (this.limit && rows.length > this.limit) {
-        rows = rows.slice(0, this.limit);
-      }
-
-      // Build columns
       const visibleFields = [...groupByFields, ...measures.map((m) => m.field)];
       const columns = buildColumns(this.#fields, visibleFields);
-
       const displayName = this.name || formatFieldName(this.datasetName || '');
 
-      // Resolve unit
       let unit = this.unit || null;
       if (!unit && measures.length) {
         const fm = this.#fields.find((f) => f.name === measures[0].field);
-        if (fm?.type === 'currency') unit = 'USD';
+        if (fm?.type === 'currency') unit = getCurrencyCode();
         else if (fm?.type === 'percent') unit = '%';
       }
 

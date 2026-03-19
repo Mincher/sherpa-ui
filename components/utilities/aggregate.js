@@ -16,6 +16,7 @@
  */
 
 import { formatFieldName } from './format-utils.js';
+import { autoDetectDateField } from './timeframes.js';
 
 // ═══════════════════════════════════════════════════════════
 //  Aggregation
@@ -38,7 +39,7 @@ export function agg(values, fn) {
     case 'avg': case 'mean': return nums.reduce((a, b) => a + b, 0) / nums.length;
     case 'min':              return Math.min(...nums);
     case 'max':              return Math.max(...nums);
-    default:                 return nums.reduce((a, b) => a + b, 0);
+    default:                 throw new Error(`Unknown aggregation: ${fn}`);
   }
 }
 
@@ -52,14 +53,12 @@ export function agg(values, fn) {
  * @param {'month'|'year'|'day'} grain
  * @returns {string}
  */
+const GRAIN_LEN = { year: 4, month: 7, day: 10 };
+
 export function truncateDate(val, grain) {
   const s = String(val ?? '');
-  switch (grain) {
-    case 'year':  return s.substring(0, 4) || s;
-    case 'month': return s.substring(0, 7) || s;
-    case 'day':   return s.substring(0, 10) || s;
-    default:      return s;
-  }
+  const len = GRAIN_LEN[grain];
+  return len ? (s.substring(0, len) || s) : s;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -115,13 +114,9 @@ export function applyLocalFilters(records, filters) {
   return records.filter((rec) =>
     filters.every((f) => {
       // Resolve _timerange sentinel against the record's date field.
-      // 'created' is the canonical record timestamp; fall back to
-      // any key ending in _date/_at.
       if (f.field === '_timerange') {
         if (!f.range) return true;
-        const df = 'created' in rec
-          ? 'created'
-          : Object.keys(rec).find(k => k.endsWith('_date') || k.endsWith('_at'));
+        const df = autoDetectDateField(rec);
         if (!df) return true;
         const d = new Date(rec[df]);
         return d >= f.range.start && d <= f.range.end;
@@ -138,8 +133,9 @@ export function applyLocalFilters(records, filters) {
         case '>=': case 'gte': return String(val) >= String(f.value);
         case '<=': case 'lte': return String(val) <= String(f.value);
         case 'in': {
-          const list = f.values || String(f.value).split(',');
-          return list.map((v) => String(v).toLowerCase()).includes(String(val).toLowerCase());
+          const list = f._normalizedIn || (f.values || String(f.value).split(',')).map((v) => String(v).toLowerCase());
+          f._normalizedIn = list;
+          return list.includes(String(val).toLowerCase());
         }
         case 'between': {
           if (f.range?.start && f.range?.end) {

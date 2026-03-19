@@ -29,6 +29,7 @@ export class SherpaStepper extends SherpaElement {
 
   static get observedAttributes() {
     return [
+      ...super.observedAttributes,
       "data-current-step",
       "data-linear",
       "data-show-step-numbers",

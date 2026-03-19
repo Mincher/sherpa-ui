@@ -5,6 +5,8 @@
 
 // ── String Helpers ─────────────────────────────────────────────────────────────
 
+const _escapeDiv = document.createElement('div');
+
 /**
  * Escape HTML entities to prevent XSS
  * @param {string} str - String to escape
@@ -12,9 +14,8 @@
  */
 export function escapeHtml(str) {
   if (str == null) return '';
-  const div = document.createElement('div');
-  div.textContent = String(str);
-  return div.innerHTML;
+  _escapeDiv.textContent = String(str);
+  return _escapeDiv.innerHTML;
 }
 
 /**
@@ -45,6 +46,32 @@ export function generateUniqueId(prefix = 'id') {
   const next = current + 1;
   counters.set(prefix, next);
   return `${prefix}-${next}`;
+}
+
+// ── Currency Configuration ─────────────────────────────────────────────────────
+
+const _currencyConfig = { locale: 'en-US', currency: 'USD' };
+
+/**
+ * Override the default currency/locale used by formatValue() and chart components.
+ * @param {{ locale?: string, currency?: string }} config
+ */
+export function setCurrencyConfig(config) {
+  if (config.locale)   _currencyConfig.locale   = config.locale;
+  if (config.currency) _currencyConfig.currency = config.currency;
+}
+
+/** Return the current currency code (e.g. 'USD'). */
+export function getCurrencyCode() {
+  return _currencyConfig.currency;
+}
+
+/** Return the currency symbol for the current config (e.g. '$'). */
+export function getCurrencySymbol() {
+  return new Intl.NumberFormat(_currencyConfig.locale, {
+    style: 'currency', currency: _currencyConfig.currency,
+    maximumFractionDigits: 0,
+  }).formatToParts(0).find(p => p.type === 'currency')?.value || _currencyConfig.currency;
 }
 
 // ── Number / Value Formatting ──────────────────────────────────────────────────
@@ -85,16 +112,16 @@ export function formatValue(value, type) {
       return `${days[d.getDay()]} ${dd} ${months[d.getMonth()]} ${d.getFullYear()}, ${hh}:${mm}:${ss}`;
     }
     case 'currency':
-      return new Intl.NumberFormat('en-US', { 
+      return new Intl.NumberFormat(_currencyConfig.locale, { 
         style: 'currency', 
-        currency: 'USD', 
+        currency: _currencyConfig.currency, 
         maximumFractionDigits: 0 
       }).format(value);
     case 'percent':
       return `${value}%`;
     case 'number':
     case 'numeric':
-      return new Intl.NumberFormat('en-US').format(value);
+      return new Intl.NumberFormat(_currencyConfig.locale).format(value);
     default:
       return escapeHtml(String(value));
   }

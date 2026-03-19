@@ -22,7 +22,7 @@ export class SherpaViewHeader extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-view-header.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-feedback-src'];
+    return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-export-title'];
   }
 
   #viewId = null;
@@ -39,9 +39,6 @@ export class SherpaViewHeader extends SherpaElement {
         break;
       case 'data-edit-mode':
         this.#applyEditMode(newValue === 'true');
-        break;
-      case 'data-feedback-src':
-        this.#syncFeedbackSrc(newValue);
         break;
     }
   }
@@ -68,14 +65,16 @@ export class SherpaViewHeader extends SherpaElement {
     this.#syncFavoriteButton(on);
   }
   isFavorite() { return this.dataset.favorite === 'true'; }
-  onDisconnect() {}
+  #resizeHandler = null;
+
+  onDisconnect() {
+  }
 
   // ============ Private Methods ============
 
   onRender() {
     this.#setupSelectors();
     this.#setupExport();
-    this.#setupFeedback();
     this.#setupFavorite();
     this.#setupEditMode();
 
@@ -124,7 +123,7 @@ export class SherpaViewHeader extends SherpaElement {
     if (!btn) return;
     
     btn.addEventListener('click', () => {
-      const pageTitle = this.getHeading() || 'Dashboard Export';
+      const pageTitle = this.getHeading() || this.dataset.exportTitle || 'Export';
       this.dispatchEvent(new CustomEvent('viewexport', {
         bubbles: true, composed: true,
         detail: { title: pageTitle }
@@ -158,37 +157,10 @@ export class SherpaViewHeader extends SherpaElement {
       const next = !this.isFavorite();
       this.setFavorite(next);
       this.dispatchEvent(new CustomEvent('favoritetoggle', {
-        bubbles: true,
+        bubbles: true, composed: true,
         detail: { viewId: this.#viewId, favorite: next }
       }));
     });
-  }
-
-  #syncFeedbackSrc(url) {
-    const iframe = this.$('#feedback-iframe');
-    if (iframe) iframe.src = url || 'about:blank';
-  }
-
-  #setupFeedback() {
-    const btn = this.$('#feedback-btn');
-    const popover = this.$('#feedback-popover');
-    const backdrop = this.$('#feedback-backdrop');
-    const closeBtn = this.$('#feedback-close');
-    if (!btn || !popover) return;
-
-    const position = () => {
-      const r = btn.getBoundingClientRect();
-      popover.style.setProperty('--_feedback-left', `${Math.max(16, r.right - 640)}px`);
-      popover.style.setProperty('--_feedback-top', `${Math.min(r.bottom + 8, window.innerHeight - 816)}px`);
-    };
-
-    const open = () => { position(); popover.toggleAttribute('data-open', true); backdrop?.toggleAttribute('data-open', true); };
-    const close = () => { popover.removeAttribute('data-open'); backdrop?.removeAttribute('data-open'); };
-
-    btn.addEventListener('click', open);
-    closeBtn?.addEventListener('click', close);
-    backdrop?.addEventListener('click', close);
-    window.addEventListener('resize', () => popover.hasAttribute('data-open') && position());
   }
 
 }

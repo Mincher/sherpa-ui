@@ -18,9 +18,6 @@ export class SherpaTag extends SherpaElement {
 
   static get cssUrl()  { return new URL('./sherpa-tag.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-tag.html', import.meta.url).href; }
-
-  onRender() {
-  }
 }
 
 customElements.define('sherpa-tag', SherpaTag);

@@ -29,7 +29,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: var(--sherpa-space-md, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
@@ -107,39 +107,50 @@ sherpa-filter-bar {
   gap: var(--sherpa-space-md, 16px);
   flex: 1 1 0;
   min-height: 0;
+  min-width: 0;
 }
 
 /* ================================================================
-   Chart area — contains ring + hole + centre label
+   Chart area — size container for ring + hole + centre label
+   Stretches to fill cross-axis via align-self: stretch.
+   container-type: size lets children use cqw/cqh units to render
+   the largest circle that fits — works in both column and row modes.
    ================================================================ */
 .chart-area {
   position: relative;
   flex: 1 1 0;
+  align-self: stretch;
   min-height: 0;
-  max-width: 280px;
-  max-height: 280px;
-  aspect-ratio: 1;
+  min-width: 0;
+  container-type: size;
   transition: opacity 0.2s ease;
 }
 
 /* ── Donut ring — conic-gradient ─────────────────────────────── */
 .donut-ring {
-  width: 100%;
-  height: 100%;
+  --_donut-size: min(100cqw, 100cqh);
+  width: var(--_donut-size);
+  height: var(--_donut-size);
   border-radius: 50%;
   background: var(--_conic, conic-gradient(#e0e0e0 0% 100%));
   transition: background 0.3s ease;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* ── Donut hole (inner white circle) ─────────────────────────── */
 .donut-hole {
-  position: absolute;
-  top: 15%;
-  left: 15%;
-  width: 70%;
-  height: 70%;
+  --_donut-size: min(100cqw, 100cqh);
+  width: calc(var(--_donut-size) * 0.7);
+  height: calc(var(--_donut-size) * 0.7);
   border-radius: 50%;
   background: var(--sherpa-surface-container-default, #ffffff);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Pie variant: hide the hole */
@@ -202,6 +213,7 @@ sherpa-filter-bar {
   justify-content: var(--_chart-legend-justify, center);
   align-self: var(--_chart-legend-align, auto);
   width: var(--_chart-legend-width, 100%);
+  margin-top: var(--_chart-legend-margin-top, auto);
   flex-shrink: 0;
 }
 
@@ -244,11 +256,6 @@ sherpa-filter-bar {
    Container queries — smaller layout
    ================================================================ */
 @container sherpa-donut-chart (max-width: 200px) {
-  .chart-area {
-    width: 120px;
-    height: 120px;
-  }
-
   .centre-value {
     font-size: 14px;
   }

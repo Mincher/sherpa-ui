@@ -25,11 +25,18 @@ import {
   formatCompact,
   generateUniqueId,
 } from "../utilities/index.js";
+import {
+  getSegmentField,
+  isSegmentEnabled,
+  getActiveSort,
+} from "../utilities/chart-utils.js";
+import { injectFilterMenu, removeFilterMenu } from "../utilities/filter-menu-utils.js";
 
 const CONFIG = {
   maxGridLines: 6,
   numColors: 8,
   maxSegments: 8,
+  maxCategories: 8,
   aspectThreshold: 1.2,
 };
 
@@ -53,30 +60,13 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   #data = null;
   #resizeObserver = null;
-  #sortOptions = [];
   #menuId = null;
   #originalOrderBy = null;
   #originalSegmentBy = null;
   #tipEl = null;
   #filterMenuTpl = null;
 
-  // Attribute helpers for reading segment/sort state
-  #getSegmentField() {
-    return this.getAttribute("data-segment-field") || null;
-  }
-  #isSegmentEnabled() {
-    const mode = this.getAttribute("data-segment-mode");
-    const field = this.#getSegmentField();
-    return mode !== "off" && !!field;
-  }
-  #getSortDir() {
-    return this.getAttribute("data-sort-direction") || null;
-  }
-  #getActiveSort() {
-    const dir = this.#getSortDir();
-    if (!dir || dir === "off") return null;
-    return { dir };
-  }
+
 
   onConnect() {
     super.onConnect();
@@ -95,7 +85,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     this.#resizeObserver.observe(this);
 
     // Inject filter-menu template into light DOM for the header menu
-    this.#injectFilterMenu();
+    this.#filterMenuTpl = injectFilterMenu(this);
     this.addEventListener("toggle-filters", this.#onToggleFilters);
     this.addEventListener("toggle-legend", this.#onToggleLegend);
     this.addEventListener("menu-populate", this.#onMenuPopulate);
@@ -168,7 +158,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     this.removeEventListener("toggle-filters", this.#onToggleFilters);
     this.removeEventListener("toggle-legend", this.#onToggleLegend);
     this.removeEventListener("menu-populate", this.#onMenuPopulate);
-    this.#filterMenuTpl?.remove();
+    removeFilterMenu(this.#filterMenuTpl);
     this.#filterMenuTpl = null;
   }
 
@@ -187,7 +177,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       meta.categoryField ||
       this.#getCategoryField() ||
       null;
-    const segmentField = this.#getSegmentField();
+    const segmentField = getSegmentField(this);
     const localSeriesField = segmentField || meta.seriesField || null;
 
     config.categoryField = categoryField;
@@ -196,7 +186,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       config.valueField ||
       meta.field ||
       this.#getValueField();
-    config.segmentField = this.#isSegmentEnabled() ? localSeriesField : null;
+    config.segmentField = isSegmentEnabled(this) ? localSeriesField : null;
     config.seriesField = config.segmentField;
 
     // Preserve original config values for revert after presentation switch
@@ -298,7 +288,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   #validateFieldsAgainstColumns() {
     const columns = this.#contentData?.columns || [];
-    const segmentField = this.#getSegmentField();
+    const segmentField = getSegmentField(this);
 
     if (segmentField && !columns.some((col) => col.field === segmentField)) {
       this.removeAttribute("data-segment-field");
@@ -324,7 +314,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       return { categories: [], series: [], stacked: false };
     }
 
-    const segmentField = this.#getSegmentField();
+    const segmentField = getSegmentField(this);
     const categoryField = this.#resolveCategoryField(columns, segmentField);
     const measureField = this.#resolveMeasureField(
       columns,
@@ -339,7 +329,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     }
 
     // When segmenting is active, delegate to segment logic
-    if (effectiveSegmentField && this.#isSegmentEnabled()) {
+    if (effectiveSegmentField && isSegmentEnabled(this)) {
       const segmented = this.#buildSeriesFromSegmentField(
         effectiveSegmentField,
         categoryField,
@@ -393,7 +383,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   #applyOrderByFromConfig(data) {
     // If user has set a sort, skip config orderBy
-    const activeSort = this.#getActiveSort();
+    const activeSort = getActiveSort(this);
     if (activeSort) return data;
 
     const orderBy = this.#contentData?.metadata?.orderBy;
@@ -418,7 +408,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     if (!categories.length || !series.length) return data;
 
     const columns = this.#contentData?.columns || [];
-    const segmentField = this.#getSegmentField();
+    const segmentField = getSegmentField(this);
     const categoryField = this.#resolveCategoryField(columns, segmentField);
     const measureField = this.#resolveMeasureField(
       columns,
@@ -598,8 +588,9 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     }
 
     delete this.dataset.empty;
-    const { categories } = data;
-    let { series } = data;
+    const capped = this.#capCategories(data);
+    const { categories } = capped;
+    let { series } = capped;
     series = this.#capSeries(series);
     const isStacked = this.hasAttribute("data-stacked") || data.stacked;
 
@@ -634,8 +625,9 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     delete this.dataset.empty;
 
-    const { categories } = data;
-    let { series } = data;
+    const capped = this.#capCategories(data);
+    const { categories } = capped;
+    let { series } = capped;
     series = this.#capSeries(series);
     const isStacked = this.hasAttribute("data-stacked") || data.stacked;
     const maxValue = this.#getMaxValue(series, isStacked);
@@ -687,6 +679,30 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     this.#renderLegend(legend, series);
   }
 
+  #capCategories(data) {
+    const { categories, series } = data;
+    if (categories.length <= CONFIG.maxCategories) return data;
+
+    const totals = categories.map((_, i) =>
+      series.reduce((sum, s) => sum + (s.values[i] || 0), 0)
+    );
+    const indices = totals
+      .map((t, i) => ({ t, i }))
+      .sort((a, b) => b.t - a.t)
+      .slice(0, CONFIG.maxCategories)
+      .map((e) => e.i)
+      .sort((a, b) => a - b);
+
+    return {
+      ...data,
+      categories: indices.map((i) => categories[i]),
+      series: series.map((s) => ({
+        ...s,
+        values: indices.map((i) => s.values[i]),
+      })),
+    };
+  }
+
   #capSeries(series) {
     if (series.length <= CONFIG.maxSegments) return series;
     const withTotals = series.map(s => ({
@@ -711,7 +727,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     // Append "by X" when segmentation is active
     const baseName = this.#contentData?.name || "";
-    const segField = this.#isSegmentEnabled() ? this.#getSegmentField() : null;
+    const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
     const displayTitle = segField
       ? `${baseName} by ${formatFieldName(segField)}`
       : baseName;
@@ -725,7 +741,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #applyLocalSort(data) {
-    const activeSort = this.#getActiveSort();
+    const activeSort = getActiveSort(this);
     if (!activeSort) return data;
 
     const categories = Array.isArray(data.categories)
@@ -989,17 +1005,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   /* ── Filter menu ─────────────────────────────────────────────── */
-
-  #injectFilterMenu() {
-    if (this.#filterMenuTpl) return;
-    const src = this.$("#filter-menu");
-    if (!src) return;
-    const tpl = document.createElement("template");
-    tpl.setAttribute("data-menu", "");
-    tpl.content.appendChild(src.content.cloneNode(true));
-    this.#filterMenuTpl = tpl;
-    this.append(tpl);
-  }
 
   #onToggleFilters = () => {
     this.toggleAttribute("data-filters");

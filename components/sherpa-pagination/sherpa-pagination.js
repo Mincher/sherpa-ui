@@ -204,7 +204,7 @@ export class SherpaPagination extends SherpaElement {
     const btn = e
       .composedPath()
       .find(
-        (n) => n instanceof HTMLElement && n.classList?.contains("page-btn"),
+        (n) => n instanceof HTMLElement && n.dataset?.action,
       );
     if (!btn || btn.disabled) return;
 
@@ -212,12 +212,12 @@ export class SherpaPagination extends SherpaElement {
     const totalPages = this.totalPages;
     let newPage = page;
 
-    if (btn.classList.contains("page-first")) newPage = 1;
-    else if (btn.classList.contains("page-prev"))
-      newPage = Math.max(1, page - 1);
-    else if (btn.classList.contains("page-next"))
-      newPage = Math.min(totalPages, page + 1);
-    else if (btn.classList.contains("page-last")) newPage = totalPages;
+    switch (btn.dataset.action) {
+      case "first": newPage = 1; break;
+      case "prev":  newPage = Math.max(1, page - 1); break;
+      case "next":  newPage = Math.min(totalPages, page + 1); break;
+      case "last":  newPage = totalPages; break;
+    }
 
     if (newPage !== page) {
       this.setAttribute("data-page", String(newPage));

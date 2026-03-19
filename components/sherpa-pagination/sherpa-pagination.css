@@ -38,6 +38,7 @@
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-text-default-body, #111);
+  container: sherpa-pagination / inline-size;
 }
 
 
@@ -177,7 +178,7 @@
    Container query — hide info at narrow widths
    ═══════════════════════════════════════════════════════════════ */
 
-@container (max-width: 400px) {
+@container sherpa-pagination (max-width: 400px) {
   .pagination-info {
     display: none;
   }

@@ -41,6 +41,7 @@ import {
   formatFieldName,
 } from "../utilities/index.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
+import { injectFilterMenu, removeFilterMenu } from "../utilities/filter-menu-utils.js";
 
 const NUMERIC_TYPES = new Set([
   "number",
@@ -146,6 +147,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #cellTpl = null; // Cached <template class="cell-tpl">
   #linkCellTpl = null; // Cached <template class="link-cell-tpl">
   #statusCellTpl = null; // Cached <template class="status-cell-tpl">
+  #headerCellTpl = null; // Cached <template class="header-cell-tpl">
+  #searchCellTpl = null; // Cached <template class="search-cell-tpl">
   #metadataSpanTpl = null; // Cached <template class="metadata-span-tpl">
   #expandedGroups = new Set(); // Group values currently expanded
   #columnConfig = {}; // Per-field config from consumer { field: { type?, statusMap? } }
@@ -167,6 +170,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.#cellTpl = this.$("template.cell-tpl");
     this.#linkCellTpl = this.$("template.link-cell-tpl");
     this.#statusCellTpl = this.$("template.status-cell-tpl");
+    this.#headerCellTpl = this.$("template.header-cell-tpl");
+    this.#searchCellTpl = this.$("template.search-cell-tpl");
     this.#metadataSpanTpl = this.$("template.metadata-span-tpl");
   }
 
@@ -257,7 +262,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     if (!this.dataset.pageSize) this.dataset.pageSize = "25";
 
     // Inject filter-menu template into light DOM for the overflow menu
-    this.#injectFilterMenu();
+    this.#filterMenuTpl = injectFilterMenu(this);
     this.addEventListener("toggle-filters", this.#onToggleFilters);
     this.addEventListener("menu-populate", this.#onMenuPopulate);
   }
@@ -268,7 +273,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     CSS.highlights?.delete("data-grid-col-search");
     this.removeEventListener("toggle-filters", this.#onToggleFilters);
     this.removeEventListener("menu-populate", this.#onMenuPopulate);
-    this.#filterMenuTpl?.remove();
+    removeFilterMenu(this.#filterMenuTpl);
     this.#filterMenuTpl = null;
   }
 
@@ -507,32 +512,37 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const secondaryRow = this.$(".secondary-headers");
     if (!primaryRow) return;
 
-    // Build primary header cells as <th> elements
-    let headerHtml = "";
+    // Build primary header cells via template cloning
+    primaryRow.replaceChildren();
 
     // Selection header
-    headerHtml += `<th class="selection-col" scope="col">
-      <input type="checkbox" class="sherpa-check select-all" aria-label="Select all rows" />
-    </th>`;
+    const selTh = document.createElement("th");
+    selTh.className = "selection-col";
+    selTh.scope = "col";
+    const selCheck = document.createElement("input");
+    selCheck.type = "checkbox";
+    selCheck.className = "sherpa-check select-all";
+    selCheck.setAttribute("aria-label", "Select all rows");
+    selTh.appendChild(selCheck);
+    primaryRow.appendChild(selTh);
 
     for (const col of columns) {
       const isNum = NUMERIC_TYPES.has(col.type);
       const w = columnWidth(col.type);
-      headerHtml += `<th class="header-cell" scope="col" data-field="${escapeHtml(col.field)}"
-        ${isNum ? "data-numeric" : ""}
-        style="width:${w}px;min-width:${w}px"
-        role="columnheader" aria-sort="none">
-        <div class="header-content">
-          <span class="header-cell-label">${escapeHtml(col.name || col.field)}</span>
-          <i class="fa-solid sort-icon" aria-hidden="true">&#xf0dc;</i>
-        </div>
-      </th>`;
+      const th = this.#headerCellTpl.content.firstElementChild.cloneNode(true);
+      th.dataset.field = col.field;
+      if (isNum) th.toggleAttribute("data-numeric", true);
+      th.style.width = `${w}px`;
+      th.style.minWidth = `${w}px`;
+      th.querySelector(".header-cell-label").textContent = col.name || col.field;
+      primaryRow.appendChild(th);
     }
 
     // Action header
-    headerHtml += `<th class="action-col" scope="col"></th>`;
-
-    primaryRow.innerHTML = headerHtml;
+    const actTh = document.createElement("th");
+    actTh.className = "action-col";
+    actTh.scope = "col";
+    primaryRow.appendChild(actTh);
 
     // Set table min-width so columns fill when few, scroll when many
     const totalW = columns.reduce((s, c) => s + columnWidth(c.type), 0) + 48 + 48;
@@ -557,20 +567,27 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     // Build secondary header cells (per-column search using sherpa-input-search)
     if (secondaryRow) {
-      let secHtml = '<th class="selection-col"></th>';
+      secondaryRow.replaceChildren();
+
+      const secSelTh = document.createElement("th");
+      secSelTh.className = "selection-col";
+      secondaryRow.appendChild(secSelTh);
+
       for (const col of columns) {
         const w = columnWidth(col.type);
-        secHtml += `<th data-field="${escapeHtml(col.field)}" style="width:${w}px;min-width:${w}px">
-          <sherpa-input-search class="col-search"
-            data-size="small"
-            data-density="compact"
-            aria-label="Search ${escapeHtml(col.name || col.field)}"
-            data-field="${escapeHtml(col.field)}">
-          </sherpa-input-search>
-        </th>`;
+        const th = this.#searchCellTpl.content.firstElementChild.cloneNode(true);
+        th.dataset.field = col.field;
+        th.style.width = `${w}px`;
+        th.style.minWidth = `${w}px`;
+        const searchEl = th.querySelector(".col-search");
+        searchEl.setAttribute("aria-label", `Search ${col.name || col.field}`);
+        searchEl.dataset.field = col.field;
+        secondaryRow.appendChild(th);
       }
-      secHtml += '<th class="action-col"></th>';
-      secondaryRow.innerHTML = secHtml;
+
+      const secActTh = document.createElement("th");
+      secActTh.className = "action-col";
+      secondaryRow.appendChild(secActTh);
 
       // Wire sherpa-input-search inputs with debounce
       for (const searchEl of secondaryRow.querySelectorAll(".col-search")) {
@@ -627,9 +644,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       const icon = cell.querySelector(".sort-icon");
       if (icon) {
         if (isSorted) {
-          icon.innerHTML = sortDir === "asc" ? "&#xf0de;" : "&#xf0dd;";
+          icon.textContent = sortDir === "asc" ? "\uf0de" : "\uf0dd";
         } else {
-          icon.innerHTML = "&#xf0dc;";
+          icon.textContent = "\uf0dc";
         }
       }
     }
@@ -1017,9 +1034,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const dataset = this.#data?.metadata?.dataset;
     const dateFieldFn = getDateFieldProvider();
     let dateField = dataset && dateFieldFn ? dateFieldFn(dataset) : null;
-
-    // Fallback: 'created' is the canonical record timestamp
-    if (!dateField) dateField = 'created';
 
     const firstRow = this.#allRows[0];
     if (!firstRow || !(dateField in firstRow)) return null;
@@ -1676,17 +1690,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   }
 
   /* ── Filter menu ─────────────────────────────────────────────────────── */
-
-  #injectFilterMenu() {
-    if (this.#filterMenuTpl) return;
-    const src = this.$("#filter-menu");
-    if (!src) return;
-    const tpl = document.createElement("template");
-    tpl.setAttribute("data-menu", "");
-    tpl.content.appendChild(src.content.cloneNode(true));
-    this.#filterMenuTpl = tpl;
-    this.append(tpl);
-  }
 
   #onToggleFilters = () => {
     this.toggleAttribute("data-filters");

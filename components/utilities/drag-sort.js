@@ -18,14 +18,14 @@
  * @param {Object} options
  * @param {string} options.itemSelector - CSS selector for draggable items.
  * @param {string} options.handleSelector - CSS selector for drag handle within each item.
- * @param {string} [options.idAttribute='sectionId'] - dataset key used as the item ID.
+ * @param {string} [options.idAttribute='id'] - dataset key used as the item ID.
  * @param {() => boolean} [options.isEnabled] - Predicate; drag only starts when true.
  * @param {(orderedIds: string[]) => void} [options.onReorder] - Called after drop with new order.
  */
 export function setupDragSort(container, {
   itemSelector,
   handleSelector,
-  idAttribute = 'sectionId',
+  idAttribute = 'id',
   isEnabled = () => true,
   onReorder = () => {}
 } = {}) {

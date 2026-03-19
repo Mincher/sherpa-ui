@@ -144,7 +144,7 @@
   min-height: 32px;
 }
 
-.heading {
+.header-title {
   flex: 1;
   font-size: var(--sherpa-fonts-scale-base, 16px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -156,11 +156,11 @@
 }
 
 /* Overlay heading uses link/accent colour */
-:host([data-variant="overlay"]) .heading {
+:host([data-variant="overlay"]) .header-title {
   color: var(--sherpa-text-primary-default, #3c5edd);
 }
 
-:host(:not([data-heading])) .heading {
+:host(:not([data-heading])) .header-title {
   display: none;
 }
 

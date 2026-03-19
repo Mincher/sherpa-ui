@@ -306,7 +306,7 @@ sherpa-filter-bar {
   gap: var(--sherpa-space-xs);
   padding: var(--sherpa-space-2xs) var(--sherpa-space-xs);
   width: var(--_chart-legend-width, 100%);
-  margin-top: auto;
+  margin-top: var(--_chart-legend-margin-top, auto);
 }
 
 .chart-legend-item {

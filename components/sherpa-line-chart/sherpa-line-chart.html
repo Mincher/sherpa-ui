@@ -1,8 +1,12 @@
 <!--
-  sherpa-line-chart.html — Line / area chart rendered with CSS clip-path polygons.
+  sherpa-line-chart.html — Line / area chart rendered with CSS segments & shapes.
+
+  Uses the same segment approach as sherpa-sparkline: each series is a
+  flex row of .shape divs whose clip-path polygons are computed entirely
+  in CSS from raw data values set as custom properties by JS.
 
   Templates:
-    • default — Chart body with y-axis, grid, series layer, point layer, x-axis, legend
+    • default — Chart body with y-axis, grid, series layer, x-axis, legend
 
   Host attributes:
     data-title    — Chart title
@@ -13,8 +17,7 @@
     setData({ labels: string[], series: [{ name, values, color? }] })
 
   Cloning prototypes:
-    .series-tpl  — One per data series (clip-path line + optional area fill)
-    .point-tpl   — One per data point (positioned dot)
+    .series-tpl  — One per data series (12 shape segments with point markers)
 -->
 <template id="default">
   <div class="chart-header">
@@ -63,7 +66,6 @@
         <div class="chart-area">
           <div class="grid-lines" aria-hidden="true"></div>
           <div class="series-layer"></div>
-          <div class="points-layer"></div>
         </div>
         <div class="x-axis"></div>
       </div>
@@ -71,9 +73,66 @@
     <div class="chart-legend"></div>
   </div>
   <sherpa-tooltip></sherpa-tooltip>
-  <!-- Cloning prototypes for data-driven repeats -->
-  <template class="series-tpl"><div class="series"></div></template>
-  <template class="point-tpl"><div class="point"></div></template>
+  <!-- Cloning prototype — one per data series, 12 shape segments inside -->
+  <template class="series-tpl">
+    <div class="series">
+      <div class="shape" data-index="0">
+        <span class="point" data-role="start" data-index="0"></span>
+        <span class="point" data-role="end" data-index="1"></span>
+      </div>
+      <div class="shape" data-index="1">
+        <span class="point" data-role="start" data-index="1"></span>
+        <span class="point" data-role="end" data-index="2"></span>
+      </div>
+      <div class="shape" data-index="2">
+        <span class="point" data-role="start" data-index="2"></span>
+        <span class="point" data-role="end" data-index="3"></span>
+      </div>
+      <div class="shape" data-index="3">
+        <span class="point" data-role="start" data-index="3"></span>
+        <span class="point" data-role="end" data-index="4"></span>
+      </div>
+      <div class="shape" data-index="4">
+        <span class="point" data-role="start" data-index="4"></span>
+        <span class="point" data-role="end" data-index="5"></span>
+      </div>
+      <div class="shape" data-index="5">
+        <span class="point" data-role="start" data-index="5"></span>
+        <span class="point" data-role="end" data-index="6"></span>
+      </div>
+      <div class="shape" data-index="6">
+        <span class="point" data-role="start" data-index="6"></span>
+        <span class="point" data-role="end" data-index="7"></span>
+      </div>
+      <div class="shape" data-index="7">
+        <span class="point" data-role="start" data-index="7"></span>
+        <span class="point" data-role="end" data-index="8"></span>
+      </div>
+      <div class="shape" data-index="8">
+        <span class="point" data-role="start" data-index="8"></span>
+        <span class="point" data-role="end" data-index="9"></span>
+      </div>
+      <div class="shape" data-index="9">
+        <span class="point" data-role="start" data-index="9"></span>
+        <span class="point" data-role="end" data-index="10"></span>
+      </div>
+      <div class="shape" data-index="10">
+        <span class="point" data-role="start" data-index="10"></span>
+        <span class="point" data-role="end" data-index="11"></span>
+      </div>
+      <div class="shape" data-index="11">
+        <span class="point" data-role="start" data-index="11"></span>
+        <span class="point" data-role="end" data-index="12"></span>
+      </div>
+    </div>
+  </template>
+  <template class="legend-item-tpl">
+    <div class="legend-item">
+      <span class="legend-key"></span>
+      <span class="legend-label"></span>
+    </div>
+  </template>
+  <template class="x-label-tpl"><span class="x-label"></span></template>
 
   <!-- Filter-menu — cloned into a light-DOM <template data-menu> on connect -->
   <template id="filter-menu">

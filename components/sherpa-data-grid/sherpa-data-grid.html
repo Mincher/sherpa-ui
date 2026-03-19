@@ -169,6 +169,23 @@
     <td role="gridcell"></td>
   </template>
 
+  <!-- Header cell — cloning prototype -->
+  <template class="header-cell-tpl">
+    <th class="header-cell" scope="col" role="columnheader" aria-sort="none">
+      <div class="header-content">
+        <span class="header-cell-label"></span>
+        <i class="fa-solid sort-icon" aria-hidden="true">&#xf0dc;</i>
+      </div>
+    </th>
+  </template>
+
+  <!-- Search cell — cloning prototype -->
+  <template class="search-cell-tpl">
+    <th>
+      <sherpa-input-search class="col-search" data-size="small" data-density="compact"></sherpa-input-search>
+    </th>
+  </template>
+
   <!-- Cell cloning prototype: link cell -->
   <template class="link-cell-tpl">
     <td role="gridcell"><a href="#"></a></td>

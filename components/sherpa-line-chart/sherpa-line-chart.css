@@ -1,10 +1,10 @@
 /**
  * @component sherpa-line-chart
  *
- * Line / area chart using CSS clip-path polygons on div elements.
- * No SVG — each data series is a div whose ::after pseudo-element has a
- * clip-path polygon tracing the line stroke. In area mode ::before draws
- * the filled region underneath.
+ * Line / area chart using CSS clip-path segments (same approach as sparkline).
+ * No SVG — each data series is a flex row of .shape divs. Each shape spans
+ * one segment between two adjacent data points. CSS normalises raw values
+ * via calc() and renders clip-path polygons for stroke and fill.
  *
  * ── Data attributes ───────────────────────────────────────────
  * @attr {string}  [data-title]    Chart heading text
@@ -13,20 +13,54 @@
  *
  * ── Architecture notes ────────────────────────────────────────
  * HTML — chart-body wraps y-axis (6 labels) + chart-panel (chart-area
- *        with grid-lines + series-layer + points-layer, plus x-axis).
- *        Cloning prototypes for series divs and point dots.
- * CSS  — Grid background via linear-gradient. Series ::after uses
- *        clip-path polygon for stroke. ::before (area fill) hidden
- *        by default, shown via :host([data-variant="area"]).
- *        Point dots positioned absolutely via --_px / --_py vars.
- * JS   — setData() computes normalised coordinates, builds polygon
- *        strings, clones prototypes, renders axes and legend.
+ *        with grid-lines + series-layer, plus x-axis).
+ *        series-tpl prototype cloned per series: contains 12 shapes
+ *        with start/end point markers.
+ * CSS  — Grid background via linear-gradient. Each shape's ::after is
+ *        the stroke line, ::before is the area fill (hidden unless area
+ *        variant). Shape index selectors map --_v0..--_v12 to
+ *        --_v-start/--_v-end. CSS normalises and computes clip-path.
+ *        Rise animation via @property --_progress-start/end.
+ * JS   — setData() sets raw values as CSS custom properties on each
+ *        cloned series element. Zero polygon computation in JS.
  */
+
+/* ================================================================
+   Registered properties for rise animation
+   ================================================================ */
+@property --_progress-start {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --_progress-end {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@keyframes rise-start {
+  from { --_progress-start: 0; }
+  to   { --_progress-start: 1; }
+}
+
+@keyframes rise-end {
+  from { --_progress-end: 0; }
+  to   { --_progress-end: 1; }
+}
 
 /* ================================================================
    :host — base layout
    ================================================================ */
 :host {
+  --_min: 0;
+  --_range: 1;
+  --_anim-duration: var(--sherpa-motion-duration-slow, 0.6s);
+  --_anim-easing: var(--sherpa-motion-easing-default, ease);
+  --_ripple-delay-step: 0.03s;
+  --_stroke-width: 0.5px;
+
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-space-md, 16px);
@@ -174,65 +208,127 @@ sherpa-filter-bar {
 }
 
 /* ================================================================
-   Series layer
+   Series layer — stacks all series via absolute positioning
    ================================================================ */
 .series-layer {
   position: absolute;
   inset: 0;
 }
 
-/* ── Individual series ───────────────────────────────────────── */
+/* ── Individual series — flex row of shape segments ──────────── */
 .series {
   position: absolute;
   inset: 0;
-}
-
-/* Stroke line — clip-path polygon set via --_stroke-path */
-.series::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--_series-color, var(--sherpa-data-viz-categorical-color-1, #7b1ce6));
-  clip-path: var(--_stroke-path, none);
-}
-
-/* Area fill — clip-path polygon set via --_area-path */
-.series::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--_series-color, var(--sherpa-data-viz-categorical-color-1, #7b1ce6));
-  opacity: 0.15;
-  clip-path: var(--_area-path, none);
-  display: none;
-}
-
-:host([data-variant="area"]) .series::before {
-  display: block;
+  display: flex;
+  gap: 0;
 }
 
 /* ================================================================
-   Points layer
+   Shape — one segment between two adjacent data points
+   CSS normalises raw values and renders clip-path polygons.
+   Matches the sparkline segment architecture.
    ================================================================ */
-.points-layer {
-  position: absolute;
-  inset: 0;
+.shape {
+  --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
+  --_n-end:   calc((var(--_v-end)   - var(--_min)) / var(--_range) * 100);
+
+  /* Slope-compensated stroke offset — JS sets --_slope-factor per shape
+     based on segment geometry (hypot(dx,dy)/dx). This keeps perpendicular
+     stroke thickness constant regardless of line angle. */
+  --_offset: calc(var(--_stroke-width) * var(--_slope-factor, 1));
+
+  position: relative;
+  flex: 1 1 0%;
+  min-width: 0;
+
+  animation:
+    rise-start var(--_anim-duration) var(--_anim-easing)
+              calc(var(--_ripple-delay-step) * var(--_i)) both,
+    rise-end   var(--_anim-duration) var(--_anim-easing)
+              calc(var(--_ripple-delay-step) * (var(--_i) + 1)) both;
 }
 
-/* ── Individual data point dot ───────────────────────────────── */
+/* Stroke line — clip-path polygon from CSS-normalised values */
+.shape::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  clip-path: polygon(
+    0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% - var(--_offset)),
+    100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% - var(--_offset)),
+    100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% + var(--_offset)),
+    0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% + var(--_offset))
+  );
+}
+
+/* Area fill — hidden by default, shown via area variant */
+.shape::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0.15;
+  clip-path: polygon(
+    0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1%),
+    100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1%),
+    100% 100%,
+    0%   100%
+  );
+  display: none;
+}
+
+:host([data-variant="area"]) .shape::before {
+  display: block;
+}
+
+/* ── Shape index → value mapping (same pattern as sparkline) ── */
+.shape[data-index="0"]  { --_i: 0;  --_v-start: var(--_v0);  --_v-end: var(--_v1); }
+.shape[data-index="1"]  { --_i: 1;  --_v-start: var(--_v1);  --_v-end: var(--_v2); }
+.shape[data-index="2"]  { --_i: 2;  --_v-start: var(--_v2);  --_v-end: var(--_v3); }
+.shape[data-index="3"]  { --_i: 3;  --_v-start: var(--_v3);  --_v-end: var(--_v4); }
+.shape[data-index="4"]  { --_i: 4;  --_v-start: var(--_v4);  --_v-end: var(--_v5); }
+.shape[data-index="5"]  { --_i: 5;  --_v-start: var(--_v5);  --_v-end: var(--_v6); }
+.shape[data-index="6"]  { --_i: 6;  --_v-start: var(--_v6);  --_v-end: var(--_v7); }
+.shape[data-index="7"]  { --_i: 7;  --_v-start: var(--_v7);  --_v-end: var(--_v8); }
+.shape[data-index="8"]  { --_i: 8;  --_v-start: var(--_v8);  --_v-end: var(--_v9); }
+.shape[data-index="9"]  { --_i: 9;  --_v-start: var(--_v9);  --_v-end: var(--_v10); }
+.shape[data-index="10"] { --_i: 10; --_v-start: var(--_v10); --_v-end: var(--_v11); }
+.shape[data-index="11"] { --_i: 11; --_v-start: var(--_v11); --_v-end: var(--_v12); }
+
+.shape[hidden] {
+  display: none;
+}
+
+/* ================================================================
+   Points — data dot markers on shape edges
+   ================================================================ */
 .point {
   position: absolute;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--_point-color, var(--sherpa-data-viz-categorical-color-1, #7b1ce6));
+  background: currentColor;
   border: 2px solid var(--sherpa-surface-container-default, #ffffff);
-  left: var(--_px);
-  bottom: var(--_py);
-  translate: -50% 50%;
   z-index: 1;
   cursor: default;
+  translate: -50% -50%;
   transition: transform 0.15s ease;
+}
+
+.point[data-role="start"] {
+  top: calc(100% - var(--_n-start) * var(--_progress-start) * 1%);
+  left: 0;
+}
+
+.point[data-role="end"] {
+  top: calc(100% - var(--_n-end) * var(--_progress-end) * 1%);
+  left: 100%;
+}
+
+/* Hide start points except on first shape — avoids duplicate dots at boundaries */
+.shape:not([data-index="0"]) > .point[data-role="start"] {
+  display: none;
 }
 
 .point:hover {
@@ -271,7 +367,7 @@ sherpa-filter-bar {
   justify-content: var(--_chart-legend-justify, center);
   align-self: var(--_chart-legend-align, auto);
   width: var(--_chart-legend-width, 100%);
-  margin-top: auto;
+  margin-top: var(--_chart-legend-margin-top, auto);
 }
 
 .legend-item {

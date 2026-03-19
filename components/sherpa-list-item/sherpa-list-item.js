@@ -111,12 +111,8 @@ export class SherpaListItem extends SherpaElement {
 
   #syncIcon() {
     if (!this.#iconEl) return;
-    this.#iconEl.className = 'icon';
-    if (this.dataset.icon) {
-      this.dataset.icon.split(' ').forEach(cls => {
-        if (cls) this.#iconEl.classList.add(cls);
-      });
-    }
+    const icon = (this.dataset.icon || '').trim();
+    this.#iconEl.className = icon ? `icon ${icon}` : 'icon';
   }
 
   #updateInteractive() {

@@ -70,27 +70,15 @@ class SherpaProductBar extends SherpaElement {
   }
 
   #syncIcon() {
-    // If a Font Awesome class is specified and no slot content exists,
-    // inject an <i> element into the icon container
     if (!this.#iconEl) return;
 
     const iconClass = this.dataset.productIcon;
-    const existingIcon = this.#iconEl.querySelector(".auto-icon");
+    const iconEl = this.#iconEl.querySelector(".auto-icon");
 
-    if (iconClass) {
-      if (existingIcon) {
-        existingIcon.className = `auto-icon fa-solid ${iconClass}`;
-      } else {
-        const i = document.createElement("i");
-        i.className = `auto-icon fa-solid ${iconClass}`;
-        i.setAttribute("aria-hidden", "true");
-        this.#iconEl.appendChild(i);
-      }
-      // Ensure the icon container is visible via data-has-icon
-      if (!this.hasAttribute("data-has-icon")) {
-        this.toggleAttribute("data-has-icon", true);
-      }
+    if (iconClass && iconEl) {
+      iconEl.className = `auto-icon fa-solid ${iconClass}`;
     }
+    this.toggleAttribute("data-has-icon", !!iconClass);
   }
 }
 

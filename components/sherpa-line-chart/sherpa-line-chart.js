@@ -1,6 +1,11 @@
 /**
  * sherpa-line-chart.js
- * SherpaLineChart — Line / area chart using CSS clip-path polygons.
+ * SherpaLineChart — Line / area chart using CSS clip-path segments.
+ *
+ * Uses the same segment approach as sherpa-sparkline: JS sets raw data
+ * values as CSS custom properties on cloned series elements. CSS normalises
+ * values via calc() and renders clip-path polygons for stroke and fill.
+ * Zero polygon computation in JS.
  *
  * Supports both direct data and declarative query loading via
  * ContentAttributesMixin (data-query-src + data-query-key).
@@ -36,12 +41,16 @@ import {
   CONTENT_ATTRIBUTES,
 } from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { getSegmentField, isSegmentEnabled, getActiveSort } from '../utilities/chart-utils.js';
+import { injectFilterMenu, removeFilterMenu } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-filter-bar/sherpa-filter-bar.js';
 import { formatFieldName } from '../utilities/format-utils.js';
 
 const MAX_SEGMENTS = 8;
 const OTHER_COLOR = '#9e9ea8';
+const MAX_SHAPE_SLOTS = 12;
+const MAX_POINT_SLOTS = MAX_SHAPE_SLOTS + 1;
 
 const DEFAULT_COLORS = [
   '#7b1ce6', // purple
@@ -53,9 +62,6 @@ const DEFAULT_COLORS = [
   '#e67c1c', // orange
   '#e6416e', // raspberry
 ];
-
-/** Stroke half-width as % of chart area height (≈ 1px at 234px). */
-const STROKE_HALF = 0.45;
 
 export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
@@ -83,12 +89,13 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   #contentData = null;
   #titleEl;
   #yLabels;
+  #chartArea;
   #seriesLayer;
-  #pointsLayer;
   #xAxis;
   #legendEl;
   #seriesTpl;
-  #pointTpl;
+  #legendItemTpl;
+  #xLabelTpl;
   #filterMenuTpl = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
@@ -99,15 +106,16 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
     this.#titleEl     = this.$('.chart-title');
     this.#yLabels     = this.$$('.y-label');
+    this.#chartArea   = this.$('.chart-area');
     this.#seriesLayer = this.$('.series-layer');
-    this.#pointsLayer = this.$('.points-layer');
     this.#xAxis       = this.$('.x-axis');
     this.#legendEl    = this.$('.chart-legend');
 
     // Cloning prototypes live inside the shadow root
     const root = this.shadowRoot;
     this.#seriesTpl = root.querySelector('template.series-tpl');
-    this.#pointTpl  = root.querySelector('template.point-tpl');
+    this.#legendItemTpl = root.querySelector('template.legend-item-tpl');
+    this.#xLabelTpl = root.querySelector('template.x-label-tpl');
 
     this.#syncTitle();
     if (this.#data) this.#render();
@@ -115,7 +123,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   onConnect() {
     super.onConnect();
-    this.#injectFilterMenu();
+    this.#filterMenuTpl = injectFilterMenu(this);
     this.addEventListener('toggle-filters', this.#onToggleFilters);
     this.addEventListener('toggle-legend', this.#onToggleLegend);
     this.addEventListener('menu-populate', this.#onMenuPopulate);
@@ -126,7 +134,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.removeEventListener('toggle-filters', this.#onToggleFilters);
     this.removeEventListener('toggle-legend', this.#onToggleLegend);
     this.removeEventListener('menu-populate', this.#onMenuPopulate);
-    this.#filterMenuTpl?.remove();
+    removeFilterMenu(this.#filterMenuTpl);
     this.#filterMenuTpl = null;
   }
 
@@ -204,28 +212,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: transform ───────────────────────────────────────── */
 
-  /* ── Segment helpers ───────────────────────────────────────── */
-
-  #getSegmentField() {
-    return this.getAttribute('data-segment-field') || null;
-  }
-
-  #isSegmentEnabled() {
-    const mode = this.getAttribute('data-segment-mode');
-    const field = this.#getSegmentField();
-    return mode !== 'off' && !!field;
-  }
-
   /* ── Sort helpers ──────────────────────────────────────────── */
 
-  #getActiveSort() {
-    const dir = this.getAttribute('data-sort-direction') || null;
-    if (!dir || dir === 'off') return null;
-    return { dir };
-  }
-
   #applyLocalSort(data) {
-    const activeSort = this.#getActiveSort();
+    const activeSort = getActiveSort(this);
     if (!activeSort || !data) return data;
 
     const labels = [...data.labels];
@@ -266,8 +256,8 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     const { columns = [], rows = [] } = this.#contentData;
     if (!rows.length || columns.length < 2) { this.#data = null; return; }
 
-    const segmentField = this.#isSegmentEnabled()
-      ? this.#getSegmentField()
+    const segmentField = isSegmentEnabled(this)
+      ? getSegmentField(this)
       : null;
 
     const labelField = this.#resolveLabelField(columns, segmentField);
@@ -358,7 +348,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   #syncTitle() {
     if (this.#titleEl) {
       const base = this.dataset.title || '';
-      const segField = this.#isSegmentEnabled() ? this.#getSegmentField() : null;
+      const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
       this.#titleEl.textContent = segField
         ? `${base} by ${formatFieldName(segField)}`
         : base;
@@ -386,7 +376,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   /* ── Private: render ──────────────────────────────────────────── */
 
   #render() {
-    if (!this.#seriesLayer || !this.#pointsLayer || !this.#data) return;
+    if (!this.#seriesLayer || !this.#data) return;
 
     const { labels = [] } = this.#data;
     let { series = [] } = this.#data;
@@ -411,6 +401,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     let yMax = globalMax + range * 0.05;
     if (yMin > 0 && yMin < range * 0.3) yMin = 0;
 
+    // Set range on host — CSS normalises values from these
+    this.style.setProperty('--_min', yMin);
+    this.style.setProperty('--_range', yMax - yMin || 1);
+
     // ── Y-axis labels (top → bottom = max → min) ────────────────
     const yLabels = Array.from(this.#yLabels);
     const tickCount = yLabels.length;
@@ -422,74 +416,68 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     // ── X-axis labels ───────────────────────────────────────────
     this.#xAxis.replaceChildren();
     for (const label of labels) {
-      const span = document.createElement('span');
-      span.className = 'x-label';
+      const span = this.#xLabelTpl.content.firstElementChild.cloneNode(true);
       span.textContent = label;
       this.#xAxis.appendChild(span);
     }
 
-    // ── Series + points ─────────────────────────────────────────
+    // ── Series (segment-based, same approach as sparkline) ─────
     this.#seriesLayer.replaceChildren();
-    this.#pointsLayer.replaceChildren();
+
+    // Chart area pixel dimensions for slope compensation
+    const areaRect = this.#chartArea?.getBoundingClientRect();
+    const chartW = areaRect?.width || 1;
+    const chartH = areaRect?.height || 1;
 
     series.forEach((s, si) => {
       const color = s.color || DEFAULT_COLORS[si % DEFAULT_COLORS.length];
+      const seriesEl = this.#seriesTpl.content.firstElementChild.cloneNode(true);
+      seriesEl.style.color = color;
 
-      // Compute normalised positions
-      const coords = s.values.map((v, i) => {
-        const x = pointCount === 1 ? 50 : (i / (pointCount - 1)) * 100;
-        const y = ((v - yMin) / (yMax - yMin)) * 100;
-        return { x, y };
+      // Set raw data values as CSS custom properties —
+      // CSS normalises and computes clip-path polygons
+      for (let i = 0; i < MAX_POINT_SLOTS; i++) {
+        if (i < s.values.length) {
+          seriesEl.style.setProperty(`--_v${i}`, s.values[i]);
+        }
+      }
+
+      // Toggle shape visibility and set slope correction factors
+      const shapes = seriesEl.querySelectorAll('.shape');
+      const segmentCount = Math.max(s.values.length - 1, 0);
+      const yRange = yMax - yMin || 1;
+      shapes.forEach((shape, idx) => {
+        shape.toggleAttribute('hidden', idx >= segmentCount);
+
+        if (idx < segmentCount) {
+          // Slope factor: hypot(dx,dy)/dx keeps perpendicular width constant
+          const nStart = (s.values[idx]     - yMin) / yRange * 100;
+          const nEnd   = (s.values[idx + 1] - yMin) / yRange * 100;
+          const dx = chartW / segmentCount;
+          const dy = Math.abs(nEnd - nStart) / 100 * chartH;
+          const factor = Math.hypot(dx, dy) / dx;
+          shape.style.setProperty('--_slope-factor', factor.toFixed(3));
+
+          // Set tooltips on visible points
+          if (idx === 0) {
+            const startPt = shape.querySelector('.point[data-role="start"]');
+            if (startPt) startPt.title = `${s.name}: ${this.#formatAxisValue(s.values[0])}`;
+          }
+          const endPt = shape.querySelector('.point[data-role="end"]');
+          if (endPt) endPt.title = `${s.name}: ${this.#formatAxisValue(s.values[idx + 1])}`;
+        }
       });
 
-      // ── Build stroke polygon ──────────────────────────────────
-      // Forward pass (top edge) + reverse pass (bottom edge)
-      const fwd = coords.map(c => `${c.x}% ${100 - c.y - STROKE_HALF}%`);
-      const rev = [...coords].reverse().map(c => `${c.x}% ${100 - c.y + STROKE_HALF}%`);
-      const strokePath = `polygon(${[...fwd, ...rev].join(', ')})`;
-
-      // ── Build area polygon ────────────────────────────────────
-      const areaTop = coords.map(c => `${c.x}% ${100 - c.y}%`);
-      const areaPath = `polygon(${[...areaTop, '100% 100%', '0% 100%'].join(', ')})`;
-
-      // Clone series
-      if (this.#seriesTpl) {
-        const seriesEl = this.#seriesTpl.content.firstElementChild.cloneNode(true);
-        seriesEl.style.setProperty('--_series-color', color);
-        seriesEl.style.setProperty('--_stroke-path', strokePath);
-        seriesEl.style.setProperty('--_area-path', areaPath);
-        this.#seriesLayer.appendChild(seriesEl);
-      }
-
-      // Clone point dots
-      if (this.#pointTpl) {
-        coords.forEach((c, pi) => {
-          const dot = this.#pointTpl.content.firstElementChild.cloneNode(true);
-          dot.style.setProperty('--_px', `${c.x}%`);
-          dot.style.setProperty('--_py', `${c.y}%`);
-          dot.style.setProperty('--_point-color', color);
-          dot.title = `${s.name}: ${s.values[pi]}`;
-          this.#pointsLayer.appendChild(dot);
-        });
-      }
+      this.#seriesLayer.appendChild(seriesEl);
     });
 
     // ── Legend ───────────────────────────────────────────────────
     this.#legendEl.replaceChildren();
     series.forEach((s, si) => {
       const color = s.color || DEFAULT_COLORS[si % DEFAULT_COLORS.length];
-      const item = document.createElement('div');
-      item.className = 'legend-item';
-
-      const key = document.createElement('span');
-      key.className = 'legend-key';
-      key.style.backgroundColor = color;
-
-      const label = document.createElement('span');
-      label.className = 'legend-label';
-      label.textContent = s.name || '';
-
-      item.append(key, label);
+      const item = this.#legendItemTpl.content.firstElementChild.cloneNode(true);
+      item.querySelector('.legend-key').style.backgroundColor = color;
+      item.querySelector('.legend-label').textContent = s.name || '';
       this.#legendEl.appendChild(item);
     });
   }
@@ -505,17 +493,6 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   /* ── Filter menu ─────────────────────────────────────────────────────── */
-
-  #injectFilterMenu() {
-    if (this.#filterMenuTpl) return;
-    const src = this.$('#filter-menu');
-    if (!src) return;
-    const tpl = document.createElement('template');
-    tpl.setAttribute('data-menu', '');
-    tpl.content.appendChild(src.content.cloneNode(true));
-    this.#filterMenuTpl = tpl;
-    this.append(tpl);
-  }
 
   #onToggleFilters = () => {
     this.toggleAttribute('data-filters');

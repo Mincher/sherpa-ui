@@ -30,6 +30,10 @@ export class SherpaKeyValueList extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-key-value-list.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-key-value-list.html', import.meta.url).href; }
 
+  static get observedAttributes() {
+    return [...super.observedAttributes, "data-type", "data-key-width"];
+  }
+
   get templateId() {
     return this.dataset.type || 'default';
   }

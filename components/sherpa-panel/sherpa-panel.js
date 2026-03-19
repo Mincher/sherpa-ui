@@ -45,7 +45,7 @@ class SherpaPanel extends SherpaElement {
   /* ── lifecycle ───────────────────────────────────────────── */
 
   onRender() {
-    this.#headingEl = this.$(".heading");
+    this.#headingEl = this.$(".header-title");
     this.#closeBtnEl = this.$(".close-btn");
     this.#triggerEl = this.$(".collapse-trigger");
 

@@ -114,7 +114,7 @@
   color: var(--sherpa-text-default-heading);
 }
 
-.message-body {
+.content {
   display: block;
   color: var(--sherpa-text-default-body);
 }

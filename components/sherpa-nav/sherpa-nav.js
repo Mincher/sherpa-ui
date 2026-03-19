@@ -168,13 +168,15 @@ export class SherpaNav extends SherpaElement {
   // ═══════════════════════ Recents & Favorites ═════════════════════
 
   isFavorite(itemId) {
+    const secId = this.dataset.favoritesSection || 'favorites';
     return !!this.$(
-      `.nav-section[data-section-id="favorites"] sherpa-nav-item[data-item-id="${itemId}"]`,
+      `.nav-section[data-section-id="${secId}"] sherpa-nav-item[data-item-id="${itemId}"]`,
     );
   }
 
   setFavorite(itemId, label, route, on) {
-    const sec = this.$('.nav-section[data-section-id="favorites"]');
+    const secId = this.dataset.favoritesSection || 'favorites';
+    const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
     const existing = sec.querySelector(
       `sherpa-nav-item[data-item-id="${itemId}"]`,
@@ -194,7 +196,8 @@ export class SherpaNav extends SherpaElement {
 
   async addToRecent(itemId, label, route) {
     await this.rendered;
-    const sec = this.$('.nav-section[data-section-id="recent"]');
+    const secId = this.dataset.recentSection || 'recent';
+    const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
     const max = parseInt(sec.dataset.maxItems, 10) || 5;
     sec.querySelector(`sherpa-nav-item[data-item-id="${itemId}"]`)?.remove();
@@ -215,7 +218,7 @@ export class SherpaNav extends SherpaElement {
   }
 
   #clearAllActiveStates() {
-    this.$$('[data-state="selected"]').forEach((el) => delete el.dataset.state);
+    this.$$('[data-state="selected"]').forEach((el) => el.removeAttribute('data-state'));
   }
 
   // ════════════════════ Private — Template Loading ═════════════════
@@ -237,14 +240,6 @@ export class SherpaNav extends SherpaElement {
       },
       true,
     );
-  }
-
-  #setInitialActiveState() {
-    // Active state is now driven by data-active-target attribute.
-    // Consumer sets <sherpa-nav data-active-target="home"> to highlight
-    // the matching nav item. No URL routing logic in the component.
-    const target = this.dataset.activeTarget;
-    if (target) this.setActiveLink(target);
   }
 
   /** Sync button active states and layout from template-declared initial values. */
@@ -456,11 +451,11 @@ export class SherpaNav extends SherpaElement {
   #revealAncestors(node) {
     let el = node instanceof HTMLElement ? node : null;
     while (el) {
-      if (el.matches("sherpa-nav-item")) delete el.dataset.searchHidden;
+      if (el.matches("sherpa-nav-item")) el.removeAttribute('data-search-hidden');
       else if (el.matches(".nav-subsection, .nav-section")) {
-        delete el.dataset.searchHidden;
+        el.removeAttribute('data-search-hidden');
         el.open = true;
-      } else if (el.matches(".nav-group")) delete el.dataset.searchHidden;
+      } else if (el.matches(".nav-group")) el.removeAttribute('data-search-hidden');
       el =
         el.parentElement?.closest(
           "sherpa-nav-item, .nav-subsection, .nav-section, .nav-group",
@@ -487,13 +482,13 @@ export class SherpaNav extends SherpaElement {
     const groups = [...scope.querySelectorAll(".nav-group")];
 
     // Reset visibility + highlight
-    items.forEach((i) => delete i.dataset.searchHidden);
-    headers.forEach((h) => delete h.dataset.searchHidden);
+    items.forEach((i) => i.removeAttribute('data-search-hidden'));
+    headers.forEach((h) => h.removeAttribute('data-search-hidden'));
     details.forEach((d) => {
       d.dataset.searchWasOpen ??= d.open ? "true" : "false";
-      delete d.dataset.searchHidden;
+      d.removeAttribute('data-search-hidden');
     });
-    groups.forEach((g) => delete g.dataset.searchHidden);
+    groups.forEach((g) => g.removeAttribute('data-search-hidden'));
     CSS.highlights.delete("nav-search-match");
     // TODO: migrate to this.shadowRoot.highlights?.delete() once
     // all target browsers support shadow-scoped highlights (Chrome 130+).
@@ -504,11 +499,11 @@ export class SherpaNav extends SherpaElement {
     if (!filter) {
       details.forEach((d) => {
         d.open = d.dataset.searchWasOpen === "true";
-        delete d.dataset.searchWasOpen;
+        d.removeAttribute('data-search-was-open');
       });
       scope
         .querySelectorAll("[data-search-hidden]")
-        .forEach((el) => delete el.dataset.searchHidden);
+        .forEach((el) => el.removeAttribute('data-search-hidden'));
       return;
     }
 

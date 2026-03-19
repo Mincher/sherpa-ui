@@ -34,13 +34,28 @@
 <!-- Sections -->
 <div class="nav-sections" role="tree">
 
+  <!-- Quick Access Group -->
+  <div class="nav-group" data-group-index="0">
+    <details class="nav-section" data-section-id="recent" data-quick-access="true" data-editable="true" data-max-items="5">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-clock-rotate-left">Recent</sherpa-nav-item>
+      </summary>
+    </details>
+
+    <details class="nav-section" data-section-id="favorites" data-quick-access="true" data-editable="true" data-max-items="10">
+      <summary>
+        <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-star">Favorites</sherpa-nav-item>
+      </summary>
+    </details>
+  </div>
+
   <!-- ── MONITORING ──────────────────────────────────────────── -->
   <div class="nav-divider" role="separator">
     <span class="nav-divider-label">MONITORING</span>
     <div class="nav-divider-line"></div>
   </div>
 
-  <div class="nav-group" data-group-index="0" data-draggable="true">
+  <div class="nav-group" data-group-index="1" data-draggable="true">
     <details class="nav-section" data-section-id="views" data-section-type="views">
       <summary>
         <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-eye">Views</sherpa-nav-item>
@@ -82,7 +97,7 @@
     <div class="nav-divider-line"></div>
   </div>
 
-  <div class="nav-group" data-group-index="1" data-draggable="true">
+  <div class="nav-group" data-group-index="2" data-draggable="true">
     <details class="nav-section" data-section-id="actions">
       <summary>
         <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-bolt">Actions</sherpa-nav-item>
@@ -157,7 +172,7 @@
     <div class="nav-divider-line"></div>
   </div>
 
-  <div class="nav-group" data-group-index="2" data-draggable="true">
+  <div class="nav-group" data-group-index="3" data-draggable="true">
     <details class="nav-section" data-section-id="my-links" data-editable="true">
       <summary>
         <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-link">My Links</sherpa-nav-item>
@@ -184,7 +199,7 @@
     <div class="nav-divider-line"></div>
   </div>
 
-  <div class="nav-group" data-group-index="3" data-draggable="true">
+  <div class="nav-group" data-group-index="4" data-draggable="true">
     <details class="nav-section" data-section-id="configuration">
       <summary>
         <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-sliders">Configuration</sherpa-nav-item>
@@ -412,7 +427,7 @@
     <div class="nav-divider-line"></div>
   </div>
 
-  <div class="nav-group" data-group-index="4" data-draggable="true">
+  <div class="nav-group" data-group-index="5" data-draggable="true">
     <details class="nav-section" data-section-id="help">
       <summary>
         <sherpa-nav-item data-variant="section" data-icon="fa-solid fa-circle-question">Help</sherpa-nav-item>

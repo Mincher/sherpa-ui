@@ -32,6 +32,19 @@ import {
   CONTENT_ATTRIBUTES,
 } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { getCurrencyCode, getCurrencySymbol } from "../utilities/format-utils.js";
+
+/* ── Pluggable trend-to-status mapping ───────────────────────── */
+
+let _trendStatusMap = { up: 'success', down: 'critical', flat: 'neutral' };
+
+/**
+ * Override the default mapping from trend direction to status.
+ * @param {{ up?: string, down?: string, flat?: string }} map
+ */
+export function setTrendStatusMap(map) {
+  _trendStatusMap = { ..._trendStatusMap, ...map };
+}
 
 export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   static cssUrl = new URL("./sherpa-metric.css", import.meta.url).href;
@@ -196,11 +209,11 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     let cardStatus = explicitStatus;
     if ((!cardStatus || cardStatus === "default") && showStatus) {
       if (trendDir === "up") {
-        cardStatus = "success";
+        cardStatus = _trendStatusMap.up || "success";
       } else if (trendDir === "down") {
-        cardStatus = "critical";
+        cardStatus = _trendStatusMap.down || "critical";
       } else if (hasTimeSeries) {
-        cardStatus = "neutral";
+        cardStatus = _trendStatusMap.flat || "neutral";
       } else {
         cardStatus = "";
       }
@@ -289,26 +302,26 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   }
 
   #formatNumber(num, unit) {
-    const isUSD = unit === "USD";
+    const isCurrency = unit === getCurrencyCode();
     const isPercent = unit === "percent" || unit === "%";
     let str;
     if (num >= 1e6) str = this.#trimDecimals((num / 1e6).toFixed(2)) + "M";
     else if (num >= 1e3) str = this.#trimDecimals((num / 1e3).toFixed(2)) + "K";
     else str = this.#trimDecimals(num.toFixed(2));
-    if (isUSD) return "$" + str;
+    if (isCurrency) return getCurrencySymbol() + str;
     if (isPercent) return str + "%";
     return str;
   }
 
   #formatDelta(num, unit) {
-    const isUSD = unit === "USD";
+    const isCurrency = unit === getCurrencyCode();
     const isPercent = unit === "percent" || unit === "%";
     const abs = Math.abs(num);
     let str;
     if (abs >= 1e6) str = this.#trimDecimals((num / 1e6).toFixed(2)) + "M";
     else if (abs >= 1e3) str = this.#trimDecimals((num / 1e3).toFixed(2)) + "K";
     else str = this.#trimDecimals(num.toFixed(2));
-    if (isUSD) return "$" + str;
+    if (isCurrency) return getCurrencySymbol() + str;
     if (isPercent) return str + "%";
     return str;
   }
