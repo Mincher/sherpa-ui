@@ -19,14 +19,27 @@
   ],
   "scripts": {
     "docs": "node scripts/extract-component-api.js",
+    "schemas": "node scripts/extract-component-schemas.js",
+    "mcp": "node mcp-server/index.js",
     "tokens:extract": "node scripts/extract-figma-vars.js",
     "tokens:generate": "node scripts/generate-css-tokens.js",
-    "build": "npm run tokens:generate && npm run docs"
+    "build": "npm run tokens:generate && npm run docs && npm run schemas"
+  },
+  "bin": {
+    "sherpa-mcp": "./mcp-server/index.js"
   },
   "devDependencies": {
     "eslint": "^8.55.0",
     "prettier": "^3.1.0"
   },
-  "keywords": ["web-components", "design-system", "ui-library", "design-tokens"],
-  "license": "MIT"
+  "keywords": [
+    "web-components",
+    "design-system",
+    "ui-library",
+    "design-tokens"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1"
+  }
 }
