@@ -1,0 +1,278 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sherpa-ui.dev/schemas/component-schema.json",
+  "title": "Sherpa UI Component Schema",
+  "description": "Machine-readable schema describing a Sherpa UI web component's public API surface. Generated from JSDoc annotations in component source files.",
+  "type": "object",
+  "required": ["tagName", "description", "attributes", "slots", "events"],
+  "properties": {
+    "tagName": {
+      "type": "string",
+      "pattern": "^sherpa-[a-z][a-z0-9-]*$",
+      "description": "Custom element tag name (e.g. sherpa-button)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief one-line description of the component"
+    },
+    "extendedDescription": {
+      "type": "string",
+      "description": "Extended description with architecture notes, usage patterns, or delegation details"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "core",
+        "layout",
+        "navigation",
+        "form",
+        "data-display",
+        "data-viz",
+        "feedback",
+        "page-level"
+      ],
+      "description": "Component category for grouping and discovery"
+    },
+    "baseClass": {
+      "type": "string",
+      "description": "Base class the component extends (e.g. SherpaElement, SherpaInputBase)",
+      "default": "SherpaElement"
+    },
+    "attributes": {
+      "type": "array",
+      "description": "All observed attributes (HTML data-* attributes and native attributes)",
+      "items": { "$ref": "#/definitions/attribute" }
+    },
+    "slots": {
+      "type": "array",
+      "description": "Content projection slots defined in the HTML template",
+      "items": { "$ref": "#/definitions/slot" }
+    },
+    "events": {
+      "type": "array",
+      "description": "Custom events dispatched by the component",
+      "items": { "$ref": "#/definitions/event" }
+    },
+    "methods": {
+      "type": "array",
+      "description": "Public instance and static methods",
+      "items": { "$ref": "#/definitions/method" },
+      "default": []
+    },
+    "properties": {
+      "type": "array",
+      "description": "Public JS properties (getters/setters) not reflected as attributes",
+      "items": { "$ref": "#/definitions/property" },
+      "default": []
+    },
+    "cssParts": {
+      "type": "array",
+      "description": "Exposed CSS ::part() names for external styling",
+      "items": { "$ref": "#/definitions/cssPart" },
+      "default": []
+    },
+    "cssProperties": {
+      "type": "array",
+      "description": "Public CSS custom properties consumers can set",
+      "items": { "$ref": "#/definitions/cssProperty" },
+      "default": []
+    },
+    "templates": {
+      "type": "array",
+      "description": "Named template variants available via templateId",
+      "items": {
+        "type": "object",
+        "required": ["id", "description"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Template id attribute value"
+          },
+          "description": {
+            "type": "string",
+            "description": "When/why this template is used"
+          }
+        }
+      },
+      "default": []
+    }
+  },
+  "definitions": {
+    "attribute": {
+      "type": "object",
+      "required": ["name", "type", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Attribute name as it appears in HTML (e.g. data-label, disabled)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["string", "boolean", "enum", "number", "json"],
+          "description": "Attribute value type"
+        },
+        "description": {
+          "type": "string",
+          "description": "What the attribute controls"
+        },
+        "default": {
+          "description": "Default value (null if none)",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "null" }
+          ]
+        },
+        "enumValues": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed values when type is enum"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the attribute is required for the component to function",
+          "default": false
+        }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Slot name (empty string for default slot)"
+        },
+        "description": {
+          "type": "string",
+          "description": "What content belongs in this slot"
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "required": ["name", "description", "bubbles", "composed"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Event name (kebab-case)"
+        },
+        "description": {
+          "type": "string",
+          "description": "What triggers this event"
+        },
+        "bubbles": {
+          "type": "boolean",
+          "description": "Whether the event bubbles",
+          "default": true
+        },
+        "composed": {
+          "type": "boolean",
+          "description": "Whether the event crosses shadow DOM boundaries",
+          "default": false
+        },
+        "detail": {
+          "type": "object",
+          "description": "Shape of the event.detail payload. Keys are property names, values are type strings.",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "method": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Method name including parentheses and param names"
+        },
+        "description": {
+          "type": "string",
+          "description": "What the method does"
+        },
+        "static": {
+          "type": "boolean",
+          "description": "Whether this is a static class method",
+          "default": false
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "description": { "type": "string" },
+              "optional": { "type": "boolean", "default": false }
+            }
+          },
+          "default": []
+        },
+        "returns": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "description": { "type": "string" }
+          }
+        }
+      }
+    },
+    "property": {
+      "type": "object",
+      "required": ["name", "type", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Property name as accessed in JS"
+        },
+        "type": {
+          "type": "string",
+          "description": "JS type (string, number, boolean, object, array, etc.)"
+        },
+        "description": {
+          "type": "string",
+          "description": "What the property represents"
+        },
+        "readonly": {
+          "type": "boolean",
+          "description": "Whether the property is read-only (getter only)",
+          "default": false
+        }
+      }
+    },
+    "cssPart": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Part name for use with ::part()"
+        },
+        "description": {
+          "type": "string",
+          "description": "What element this part exposes"
+        }
+      }
+    },
+    "cssProperty": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "CSS custom property name"
+        },
+        "description": {
+          "type": "string",
+          "description": "What this property controls"
+        },
+        "default": {
+          "type": "string",
+          "description": "Default value"
+        }
+      }
+    }
+  }
+}

@@ -40,13 +40,16 @@
  * Architecture:
  *   [describe layout and how internal elements are structured]
  *
- * Host attributes:
- *   data-label       — text content
- *   data-variant     — primary | secondary | tertiary
- *   data-size        — small | medium | large
- *   data-icon-start  — leading icon (Font Awesome unicode)
- *   data-icon-end    — trailing icon
- *   disabled         — inactive state
+ * Host attributes consumed:
+ *   data-label       {string}  — text content (hides .label when absent)
+ *   data-variant     {enum}    — primary | secondary | tertiary
+ *   data-size        {enum}    — small | medium | large
+ *   data-icon-start  {string}  — leading icon (Font Awesome unicode)
+ *   data-icon-end    {string}  — trailing icon
+ *   disabled         {boolean} — inactive state
+ *
+ * Status system:
+ *   Consumes --_status-surface, --_status-text via fallback chains.
  */
 
 /* ==========================================================================
@@ -152,16 +155,22 @@
  * sherpa-example.js
  * SherpaExample — [brief description].
  *
- * Attributes:
- *   data-label       — Text label
- *   data-variant     — primary | secondary | tertiary
- *   data-icon-start  — Leading icon
+ * [Extended description if needed — architecture, multi-template logic,
+ * delegation patterns, or anything a consumer needs to know.]
  *
- * Events:
- *   example-click — Fired when the component is activated
+ * @element sherpa-example
  *
- * Slots:
- *   actions — Action buttons
+ * @attr {string}  data-label       — Text label
+ * @attr {enum}    data-variant     — primary | secondary | tertiary
+ * @attr {string}  data-icon-start  — Leading icon (Font Awesome unicode)
+ * @attr {boolean} disabled         — Native disabled state
+ *
+ * @slot           — Default slot for main content
+ * @slot actions   — Action buttons
+ *
+ * @fires example-click — Fired when the component is activated
+ *   bubbles: true, composed: true
+ *   detail: { }
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

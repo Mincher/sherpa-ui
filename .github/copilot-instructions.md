@@ -273,8 +273,17 @@ is the canonical model for all components.
 
 ## 9 File Header Convention
 
-Every `.css` and `.js` file starts with a JSDoc block describing the component,
-its data attributes, architecture notes, and slot/event surface.
+Every `.css` and `.js` file starts with a JSDoc block following the canonical
+format defined in `docs/COMPONENT-API-STANDARD.md`.
+
+**JS files** use `@element`, `@attr`, `@slot`, `@fires`, `@method`, `@prop`,
+`@csspart`, and `@cssprop` tags in that order. Every `@attr` must include a
+type (`{string}`, `{boolean}`, `{enum}`, `{number}`, `{json}`). Every `@fires`
+must document `bubbles`, `composed`, and `detail` on indented follow-up lines.
+
+**CSS files** document host attributes consumed in selectors with
+`{type}` annotations (e.g., `data-variant {enum} — primary | secondary`)
+and note which `--_status-*` variables the component consumes.
 
 ---
 
