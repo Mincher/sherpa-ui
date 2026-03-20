@@ -315,7 +315,17 @@ Before submitting any component change:
 ## 12 Flow Patterns
 
 CRUD flows (Add, Edit, Delete) are **composed from existing components** — no
-special flow component exists. Each flow follows a shared lifecycle model.
+special flow component exists. Each flow follows a shared lifecycle model,
+orchestrated by **flow utility modules** in `components/utilities/`.
+
+### Flow Utilities
+
+| Module             | Import path                                          | Purpose                                                   |
+| ------------------ | ---------------------------------------------------- | --------------------------------------------------------- |
+| `FlowManager`      | `sherpa-ui/components/utilities/flow-manager.js`     | Dialog lifecycle, flow events, toast feedback              |
+| `FormManager`      | `sherpa-ui/components/utilities/form-manager.js`     | Read/write/clear/validate named form fields                |
+| `refreshDataset`   | `sherpa-ui/components/utilities/grid-refresh.js`     | Re-dispatch `datasetfiltered` after data mutations         |
+| `initExportFlow`   | `sherpa-ui/components/utilities/export-flow.js`      | Wire view + container export dialogs                       |
 
 ### Lifecycle States
 
@@ -325,12 +335,12 @@ idle → started → in-progress → complete
                              → error
 ```
 
-State is tracked in **app JS memory** — not in DOM attributes.
+State is tracked by `FlowManager` in **JS memory** — not in DOM attributes.
 
 ### Flow Events
 
 Five custom events carry the flow through its lifecycle. All use
-`bubbles: true, composed: true`.
+`bubbles: true, composed: true`. `FlowManager` dispatches these automatically.
 
 | Event          | Dispatched when                          | `detail` shape                                        |
 | -------------- | ---------------------------------------- | ----------------------------------------------------- |
@@ -358,30 +368,80 @@ Each flow composes these existing components:
 > template. JS opens the dialog, dispatches events, and calls APIs — it never
 > creates structural DOM for flows.
 
+### Typical Setup (Add/Edit)
+
+```js
+import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
+import { FormManager } from 'sherpa-ui/components/utilities/form-manager.js';
+import { refreshDataset } from 'sherpa-ui/components/utilities/grid-refresh.js';
+
+const dialog = document.getElementById('device-dialog');
+const form = new FormManager(dialog);
+
+const flow = new FlowManager({
+  entity: 'device',
+  contentArea,
+  dialogs: { addEdit: dialog, delete: deleteDialog },
+  async onSave(editingRecord, flowType) {
+    const values = form.read();
+    const missing = form.validate();
+    if (missing.length) throw new Error('Please fill in all required fields.');
+    // Mutate dataset or call API here
+    return values;
+  },
+  async onDelete(ids) {
+    // Remove records, return count deleted
+    return ids.length;
+  },
+  onRefresh: () => refreshDataset(contentArea, loader),
+});
+
+// Add trigger
+addBtn.addEventListener('buttonclick', () => { form.clear(); flow.startAdd(); });
+
+// Edit trigger (row action)
+grid.addEventListener('rowaction', (e) => {
+  form.populate(e.detail.rowData);
+  flow.startEdit(e.detail.rowData);
+});
+
+// Delete trigger (bulk selection)
+deleteBtn.addEventListener('buttonclick', () => {
+  const selected = grid.getSelectedRows() ?? [];
+  flow.startDelete(selected, `Delete ${selected.length} device(s)?`);
+});
+```
+
+### Export Wiring
+
+```js
+import { initExportFlow } from 'sherpa-ui/components/utilities/export-flow.js';
+
+initExportFlow(contentArea, {
+  title: 'Device Management Export',
+  buildExportDialog,
+  buildExportDialogForContainer,
+  exportWithConfig,
+});
+```
+
 ### Backdrop
 
 Dialogs use the **native `::backdrop`** pseudo-element (via `<dialog>.showModal()`).
 No custom overlay elements or shim divs.
 
-### Toast Feedback
-
-```js
-// On success
-SherpaToast.success("Device created successfully");
-
-// On error
-SherpaToast.critical("Failed to create device");
-```
-
 ### Anti-Patterns for Flows
 
 | ❌ Never                                            | ✅ Instead                                    |
 | --------------------------------------------------- | --------------------------------------------- |
-| Store flow state in DOM attributes                  | Track state in app JS memory                  |
+| Store flow state in DOM attributes                  | Use `FlowManager` (tracks state in JS memory) |
 | Create dialog elements dynamically                  | Place dialog in template, toggle `data-open`  |
 | Build custom backdrop overlays                      | Use native `::backdrop` via `showModal()`     |
 | Use `window.confirm()` for delete confirmation      | Use `sherpa-dialog` + `sherpa-callout`         |
 | Dispatch flow events without `composed: true`       | Always `{ bubbles: true, composed: true }`    |
+| Manual `readForm()` / `populateForm()` per view     | Use `FormManager` — generic by `name` attr    |
+| Inline export dialog boilerplate per view           | Use `initExportFlow()` one-liner              |
+| Manual `flow()` event dispatch helper per view      | `FlowManager` dispatches automatically        |
 
 ### Pattern Files
 

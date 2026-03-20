@@ -678,6 +678,7 @@ function generateFlowHTML(flowType, entityName, fields) {
   const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const entityLabel = capitalize(entityName);
   const indent = "    ";
+  const slug = entityName.replace(/\s+/g, "-").toLowerCase();
 
   if (flowType === "add" || flowType === "edit") {
     const isEdit = flowType === "edit";
@@ -685,8 +686,7 @@ function generateFlowHTML(flowType, entityName, fields) {
     const triggerLabel = isEdit ? "Edit" : "Add";
     const triggerIcon = isEdit ? iconToEntity("pen-to-square") : iconToEntity("plus");
     const triggerVariant = isEdit ? "secondary" : "primary";
-    const successMsg = isEdit ? `${entityLabel} updated successfully` : `${entityLabel} created successfully`;
-    const errorMsg = isEdit ? `Failed to update ${entityName}` : `Failed to create ${entityName}`;
+    const triggerId = isEdit ? `edit-${slug}-btn` : `add-${slug}-btn`;
 
     let fieldHTML = "";
     if (fields?.length) {
@@ -700,22 +700,36 @@ function generateFlowHTML(flowType, entityName, fields) {
     }
 
     const prePopNote = isEdit
-      ? `\n${indent}<!-- App JS pre-populates fields from existing record after dialog opens -->`
+      ? `\n${indent}<!-- FormManager pre-populates fields from existing record -->`
+      : "";
+
+    const requiredFields = (fields || []).filter(f => f.required).map(f => `'${f.name}'`);
+    const requiredCheck = requiredFields.length
+      ? `\n    const missing = form.validate();\n    if (missing.length) throw new Error('Please fill in all required fields.');`
+      : "";
+
+    const editTriggerNote = isEdit
+      ? `\n// Wire edit trigger (typically from grid rowaction)
+// grid.addEventListener('rowaction', (e) => {
+//   const record = e.detail?.rowData;
+//   if (!record) return;
+//   form.populate(record);
+//   flow.startEdit(record);
+// });`
       : "";
 
     return `<!-- ${capitalize(flowType)} ${entityLabel} flow -->
-<!-- Events: flowstart, flowprogress, flowcomplete, flowcancel, flowerror -->
-<!-- All events: bubbles: true, composed: true -->
 
 <!-- Trigger -->
 <sherpa-button
+  id="${triggerId}"
   data-label="${triggerLabel}"
   data-variant="${triggerVariant}"
   data-icon-start="${triggerIcon}">
 </sherpa-button>
 
 <!-- Dialog -->
-<sherpa-dialog data-label="${dialogTitle}" data-size="medium" data-dismissible>
+<sherpa-dialog id="${slug}-dialog" data-label="${dialogTitle}" data-size="medium" data-dismissible>
 ${prePopNote}
 ${fieldHTML.trimEnd()}
 
@@ -723,19 +737,45 @@ ${fieldHTML.trimEnd()}
   <sherpa-button slot="footer" data-label="Save" data-variant="primary"></sherpa-button>
 </sherpa-dialog>
 
-<!-- Toast feedback (programmatic):
-  SherpaToast.success("${successMsg}")
-  SherpaToast.critical("${errorMsg}")
--->`;
+<!-- ── Setup script ─────────────────────────────────────────── -->
+<script type="module">
+import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
+import { FormManager } from 'sherpa-ui/components/utilities/form-manager.js';
+import { refreshDataset } from 'sherpa-ui/components/utilities/grid-refresh.js';
+// import { loadDataset } from '/scripts/services/DataService.js';
+
+const contentArea = document.querySelector('[data-dataset="TODO_DATASET"]');
+const dialog = document.getElementById('${slug}-dialog');
+const form = new FormManager(dialog);
+
+const flow = new FlowManager({
+  entity: '${entityName}',
+  contentArea,
+  dialogs: { addEdit: dialog },
+  async onSave(editingRecord, flowType) {
+    const values = form.read();${requiredCheck}
+    // TODO: Call your API or mutate dataset here
+    return values;
+  },
+  onRefresh: () => refreshDataset(contentArea, () => {
+    // TODO: return loadDataset('TODO_DATASET');
+  }),
+});
+
+// Wire add trigger
+document.getElementById('${triggerId}')?.addEventListener('buttonclick', () => {
+  form.clear();
+  flow.startAdd();
+});${editTriggerNote}
+</script>`;
   }
 
   if (flowType === "delete") {
     return `<!-- Delete ${entityLabel} flow -->
-<!-- Events: flowstart, flowprogress, flowcomplete, flowcancel, flowerror -->
-<!-- All events: bubbles: true, composed: true -->
 
 <!-- Trigger -->
 <sherpa-button
+  id="delete-${slug}-btn"
   data-label="Delete"
   data-variant="secondary"
   data-status="critical"
@@ -743,7 +783,7 @@ ${fieldHTML.trimEnd()}
 </sherpa-button>
 
 <!-- Confirmation dialog -->
-<sherpa-dialog data-label="Delete ${entityLabel}" data-size="small" data-dismissible>
+<sherpa-dialog id="delete-${slug}-dialog" data-label="Delete ${entityLabel}" data-size="small" data-dismissible>
   <sherpa-callout data-status="warning" data-heading="This action cannot be undone">
     Are you sure you want to delete this ${entityName}? This will permanently remove it and all associated data.
   </sherpa-callout>
@@ -752,10 +792,34 @@ ${fieldHTML.trimEnd()}
   <sherpa-button slot="footer" data-label="Delete" data-variant="primary" data-status="critical"></sherpa-button>
 </sherpa-dialog>
 
-<!-- Toast feedback (programmatic):
-  SherpaToast.success("${entityLabel} deleted successfully")
-  SherpaToast.critical("Failed to delete ${entityName}")
--->`;
+<!-- ── Setup script ─────────────────────────────────────────── -->
+<script type="module">
+import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
+import { refreshDataset } from 'sherpa-ui/components/utilities/grid-refresh.js';
+// import { loadDataset } from '/scripts/services/DataService.js';
+
+const contentArea = document.querySelector('[data-dataset="TODO_DATASET"]');
+
+const flow = new FlowManager({
+  entity: '${entityName}',
+  contentArea,
+  dialogs: { delete: document.getElementById('delete-${slug}-dialog') },
+  async onDelete(ids) {
+    // TODO: Call your API or mutate dataset here
+    return ids.length;
+  },
+  onRefresh: () => refreshDataset(contentArea, () => {
+    // TODO: return loadDataset('TODO_DATASET');
+  }),
+});
+
+// Wire delete trigger (typically from selection)
+// document.getElementById('delete-${slug}-btn')?.addEventListener('buttonclick', () => {
+//   const selected = grid.getSelectedRows?.() ?? [];
+//   if (!selected.length) return;
+//   flow.startDelete(selected);
+// });
+</script>`;
   }
 
   return `Unknown flow type: ${flowType}. Use "add", "edit", or "delete".`;

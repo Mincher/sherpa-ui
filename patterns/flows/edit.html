@@ -9,27 +9,51 @@
     • Errors dispatch flowerror + critical toast
 
   Components: sherpa-button, sherpa-dialog, sherpa-input-text, sherpa-toast
+  Utilities: FlowManager, FormManager, refreshDataset
 
-  Lifecycle (app JS manages state in memory, not DOM):
+  Lifecycle (managed by FlowManager — state in JS memory, not DOM):
     1. User clicks edit trigger on a row or toolbar
-    2. App dispatches flowstart {flow:"edit", entity:"...", data: existingRecord}
-    3. App opens dialog and pre-populates form fields with existingRecord values
+    2. App calls form.populate(record) then flow.startEdit(record)
+    3. FlowManager dispatches flowstart, opens dialog, sets labels
     4. User modifies fields
-    5. User clicks Save → app dispatches flowprogress → calls API with changes
-    6a. Success → flowcomplete + SherpaToast.success("Entity updated")
-    6b. Failure → flowerror + SherpaToast.critical("Failed to update entity")
-    7. Cancel → flowcancel → dialog closes, no side effects
+    5. User clicks Save → FlowManager calls onSave(editingRecord, 'edit')
+    6a. Success → FlowManager dispatches flowcomplete + SherpaToast.success()
+    6b. Failure → FlowManager dispatches flowerror + SherpaToast.critical()
+    7. Cancel → FlowManager dispatches flowcancel, closes dialog
 
-  Events (all bubbles: true, composed: true):
+  Events (all bubbles: true, composed: true — dispatched by FlowManager):
     flowstart    — {flow: "edit", entity: string, data: object}
-    flowprogress — {flow: "edit", entity: string, data: object}
+    flowprogress — {flow: "edit", entity: string}
     flowcomplete — {flow: "edit", entity: string, data: object}
     flowcancel   — {flow: "edit", entity: string}
     flowerror    — {flow: "edit", entity: string, error: string}
 
-  Pre-population: App JS sets each input's `value` attribute from the existing record
-  after the dialog opens. For example:
-    dialog.querySelector('[name="name"]').value = record.name;
+  Pre-population: Use FormManager.populate(record) — sets each named field's
+  value from the record object automatically.
+
+  Setup script:
+    import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
+    import { FormManager } from 'sherpa-ui/components/utilities/form-manager.js';
+
+    const dialog = document.getElementById('entity-dialog');
+    const form = new FormManager(dialog);
+    const flow = new FlowManager({
+      entity: 'entity',
+      contentArea,
+      dialogs: { addEdit: dialog },
+      async onSave(editingRecord, flowType) {
+        const values = form.read();
+        // Call API here, return updated record
+        return values;
+      },
+      onRefresh: () => refreshDataset(contentArea, loader),
+    });
+
+    grid.addEventListener('rowaction', (e) => {
+      const record = e.detail?.rowData;
+      form.populate(record);
+      flow.startEdit(record);
+    });
 
   Backdrop: native ::backdrop on <dialog> — no custom shim needed.
 -->

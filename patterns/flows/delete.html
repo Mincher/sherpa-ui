@@ -9,22 +9,42 @@
     • Errors dispatch flowerror + critical toast
 
   Components: sherpa-button, sherpa-dialog, sherpa-callout, sherpa-toast
+  Utilities: FlowManager, refreshDataset
 
-  Lifecycle (app JS manages state in memory, not DOM):
-    1. User clicks delete trigger on a row or toolbar
-    2. App dispatches flowstart {flow:"delete", entity:"...", data: targetRecord}
-    3. App opens confirmation dialog showing what will be deleted
-    4. User clicks Delete → app dispatches flowprogress → calls API
-    5a. Success → flowcomplete + SherpaToast.success("Entity deleted")
-    5b. Failure → flowerror + SherpaToast.critical("Failed to delete entity")
-    6. Cancel → flowcancel → dialog closes, no side effects
+  Lifecycle (managed by FlowManager — state in JS memory, not DOM):
+    1. User clicks delete trigger → app calls flow.startDelete(ids, message)
+    2. FlowManager dispatches flowstart, opens confirmation dialog
+    3. User clicks Delete → FlowManager calls onDelete(ids) callback
+    4a. Success → FlowManager dispatches flowcomplete + SherpaToast.success()
+    4b. Failure → FlowManager dispatches flowerror + SherpaToast.critical()
+    5. Cancel → FlowManager dispatches flowcancel, closes dialog
 
-  Events (all bubbles: true, composed: true):
-    flowstart    — {flow: "delete", entity: string, data: object}
-    flowprogress — {flow: "delete", entity: string, data: object}
+  Events (all bubbles: true, composed: true — dispatched by FlowManager):
+    flowstart    — {flow: "delete", entity: string, data: {ids: array}}
+    flowprogress — {flow: "delete", entity: string, data: {ids: array}}
     flowcomplete — {flow: "delete", entity: string, data: object}
     flowcancel   — {flow: "delete", entity: string}
     flowerror    — {flow: "delete", entity: string, error: string}
+
+  Setup script:
+    import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
+    import { refreshDataset } from 'sherpa-ui/components/utilities/grid-refresh.js';
+
+    const flow = new FlowManager({
+      entity: 'entity',
+      contentArea,
+      dialogs: { delete: document.getElementById('delete-dialog') },
+      async onDelete(ids) {
+        // Call API here, return count removed
+        return ids.length;
+      },
+      onRefresh: () => refreshDataset(contentArea, loader),
+    });
+
+    deleteBtn.addEventListener('buttonclick', () => {
+      const selected = grid.getSelectedRows?.() ?? [];
+      flow.startDelete(selected, `Delete ${selected.length} item(s)?`);
+    });
 
   Backdrop: native ::backdrop on <dialog> — no custom shim needed.
   See also: patterns/feedback/confirmation-dialog.html (generic confirmation)

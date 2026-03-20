@@ -9,22 +9,46 @@
     • Errors dispatch flowerror + critical toast
 
   Components: sherpa-button, sherpa-dialog, sherpa-input-text, sherpa-toast
+  Utilities: FlowManager, FormManager, refreshDataset
 
-  Lifecycle (app JS manages state in memory, not DOM):
-    1. User clicks trigger button
-    2. App dispatches flowstart {flow:"add", entity:"..."} → opens dialog
+  Lifecycle (managed by FlowManager — state in JS memory, not DOM):
+    1. User clicks trigger → app calls form.clear() then flow.startAdd()
+    2. FlowManager dispatches flowstart, opens dialog, sets labels
     3. User fills form fields
-    4. User clicks Save → app dispatches flowprogress → calls API
-    5a. Success → flowcomplete + SherpaToast.success("Entity created")
-    5b. Failure → flowerror + SherpaToast.critical("Failed to create entity")
-    6. Cancel → flowcancel → dialog closes, no side effects
+    4. User clicks Save → FlowManager calls onSave() callback
+    5a. Success → FlowManager dispatches flowcomplete + SherpaToast.success()
+    5b. Failure → FlowManager dispatches flowerror + SherpaToast.critical()
+    6. Cancel → FlowManager dispatches flowcancel, closes dialog
 
-  Events (all bubbles: true, composed: true):
+  Events (all bubbles: true, composed: true — dispatched by FlowManager):
     flowstart   — {flow: "add", entity: string}
-    flowprogress — {flow: "add", entity: string, data: object}
+    flowprogress — {flow: "add", entity: string}
     flowcomplete — {flow: "add", entity: string, data: object}
     flowcancel   — {flow: "add", entity: string}
     flowerror    — {flow: "add", entity: string, error: string}
+
+  Setup script:
+    import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
+    import { FormManager } from 'sherpa-ui/components/utilities/form-manager.js';
+    import { refreshDataset } from 'sherpa-ui/components/utilities/grid-refresh.js';
+
+    const dialog = document.getElementById('entity-dialog');
+    const form = new FormManager(dialog);
+    const flow = new FlowManager({
+      entity: 'entity',
+      contentArea,
+      dialogs: { addEdit: dialog },
+      async onSave(editingRecord, flowType) {
+        const values = form.read();
+        const missing = form.validate();
+        if (missing.length) throw new Error('Please fill in all required fields.');
+        // Call API here, return saved record
+        return values;
+      },
+      onRefresh: () => refreshDataset(contentArea, loader),
+    });
+
+    addBtn.addEventListener('buttonclick', () => { form.clear(); flow.startAdd(); });
 
   Backdrop: native ::backdrop on <dialog> — no custom shim needed.
   See also: patterns/layouts/list-view.html (Add button trigger)
