@@ -340,12 +340,6 @@ sherpa-filter-bar {
 @container sherpa-data-viz-container (aspect-ratio > 1) {
   ::slotted([data-viz]) {
     --_chart-direction: row;
-    --_chart-legend-direction: column;
-    --_chart-legend-wrap: nowrap;
-    --_chart-legend-width: auto;
-    --_chart-legend-justify: flex-start;
-    --_chart-legend-align: flex-start;
-    --_chart-legend-margin-top: 0;
   }
 }
 

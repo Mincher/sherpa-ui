@@ -137,6 +137,17 @@
       "bubbles": true,
       "composed": true,
       "detail": null
+    },
+    {
+      "name": "gridaction",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "action": "string",
+        "data": "object",
+        "selectedRows": "object[]"
+      }
     }
   ],
   "methods": [
@@ -198,6 +209,16 @@
       "params": [
         {
           "name": "f",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setActionMenuItems(sections)",
+      "description": "Set secondary action menu items for bulk actions",
+      "params": [
+        {
+          "name": "sections",
           "type": "any"
         }
       ]

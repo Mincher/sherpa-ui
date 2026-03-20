@@ -44,6 +44,14 @@
   <sherpa-toolbar class="grid-toolbar">
     <!-- Leading: consumer-provided primary action via slot -->
     <slot name="toolbar-leading" slot="leading"></slot>
+    <sherpa-button
+      class="actions-btn"
+      slot="leading"
+      data-type="button-menu"
+      data-variant="secondary"
+      data-label="Actions"
+      data-menu-position="bottom-start"
+    ></sherpa-button>
 
     <!-- Filters: embedded filter bar with group/sort/clear -->
     <sherpa-filter-bar data-embedded data-type="local" slot="filters">

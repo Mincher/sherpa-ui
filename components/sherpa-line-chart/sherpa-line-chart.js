@@ -326,11 +326,14 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   #syncTitle() {
     if (this.#titleEl) {
-      const raw = this.dataset.title || '';
-      const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
-      this.#titleEl.textContent = segField
-        ? `${cleanTitleBase(raw)} by ${formatFieldName(segField)}`
-        : raw;
+      const entity = cleanTitleBase(this.dataset.title || '');
+      const segMode = this.getAttribute('data-segment-mode');
+      const groupField = this.getAttribute('data-segment-field')
+        || this.getAttribute('data-category');
+      const hasActiveGroup = segMode !== 'off' && !!groupField;
+      this.#titleEl.textContent = hasActiveGroup
+        ? `${entity} by ${formatFieldName(groupField)}`
+        : `All ${entity}`;
     }
   }
 

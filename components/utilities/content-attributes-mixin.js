@@ -401,7 +401,28 @@ export function ContentAttributesMixin(Base) {
       }
 
       if (this.orderBy?.length) rows = applySort(rows, this.orderBy);
-      if (this.limit && rows.length > this.limit) rows = rows.slice(0, this.limit);
+
+      // Apply limit to unique categories, not raw cross-product rows.
+      // When a segment field expands each category into N rows (one per
+      // segment value), a flat slice would lose entire categories.
+      if (this.limit && rows.length > this.limit) {
+        const primaryField = this.category || groupByFields[0];
+        if (segmentField && primaryField && primaryField !== segmentField) {
+          const seen = new Set();
+          const kept = [];
+          for (const row of rows) {
+            const cat = row[primaryField];
+            if (!seen.has(cat)) {
+              if (seen.size >= this.limit) break;
+              seen.add(cat);
+            }
+            kept.push(row);
+          }
+          rows = kept;
+        } else {
+          rows = rows.slice(0, this.limit);
+        }
+      }
 
       const visibleFields = [...groupByFields, ...measures.map((m) => m.field)];
       const columns = buildColumns(this.#fields, visibleFields);

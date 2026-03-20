@@ -1,6 +1,6 @@
 {
   "tagName": "sherpa-container-pdf",
-  "description": "ARCHIVED — No-op stub. PDF export functionality is archived for rework. Registers the custom element so existing imports don't break.",
+  "description": "Print-optimized container renderer for PDF export via browser print.",
   "category": "page-level",
   "baseClass": "SherpaElement",
   "attributes": [],
@@ -8,14 +8,35 @@
   "events": [],
   "methods": [
     {
-      "name": "setData(sourceContainer)",
-      "description": "No-op, logs warning",
+      "name": "setData(sourceContainer, options)",
+      "description": "Renders the source container",
       "params": [
         {
           "name": "sourceContainer",
           "type": "any"
+        },
+        {
+          "name": "options",
+          "type": "any"
         }
       ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "includeChart",
+      "type": "boolean",
+      "description": "Render chart visual (clone SVG/canvas from shadow DOM)"
+    },
+    {
+      "name": "includeMetrics",
+      "type": "boolean",
+      "description": "Render metrics row"
+    },
+    {
+      "name": "includeDataGrid",
+      "type": "boolean",
+      "description": "Include tabular data representation"
     }
   ]
 }

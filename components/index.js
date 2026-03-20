@@ -44,8 +44,8 @@ export * from "./sherpa-chart-legend/sherpa-chart-legend.js";
 export * from "./sherpa-toolbar/sherpa-toolbar.js";
 export * from "./sherpa-filter-bar/sherpa-filter-bar.js";
 
-// Export components (archived)
-// export * from "./sherpa-container-pdf/sherpa-container-pdf.js";
+// Export components
+export * from "./sherpa-container-pdf/sherpa-container-pdf.js";
 
 // New components
 export * from "./sherpa-accordion/sherpa-accordion.js";

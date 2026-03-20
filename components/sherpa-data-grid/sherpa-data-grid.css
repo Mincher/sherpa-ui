@@ -76,6 +76,18 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   Toolbar — Actions button (visible only when rows are selected)
+   ═══════════════════════════════════════════════════════════════ */
+
+.actions-btn {
+  display: none;
+}
+
+:host([data-has-selection]) .actions-btn {
+  display: inline-flex;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    Toolbar — trailing group
    ═══════════════════════════════════════════════════════════════ */
 

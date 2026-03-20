@@ -237,6 +237,15 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     const valueField = columns[columns.length - 1]?.field;
     if (!labelField || !valueField) { this.#data = []; return; }
 
+    // When grouping is explicitly off, collapse to a single total segment
+    const segMode = this.getAttribute('data-segment-mode');
+    if (segMode === 'off') {
+      const total = rows.reduce((s, r) => s + (Number(r[valueField]) || 0), 0);
+      this.#data = [{ label: 'Total', value: total }];
+      this.dataset.innerLabel = formatCompact(total);
+      return;
+    }
+
     // Segment-driven aggregation: slices = unique segment values
     const segmentField = getSegmentField(this);
     if (segmentField && isSegmentEnabled(this) && segmentField !== labelField) {
@@ -275,11 +284,14 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   #syncTitle() {
     if (this.#titleEl) {
-      const raw = this.dataset.title || '';
-      const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
-      this.#titleEl.textContent = segField
-        ? `${cleanTitleBase(raw)} by ${formatFieldName(segField)}`
-        : raw;
+      const entity = cleanTitleBase(this.dataset.title || '');
+      const segMode = this.getAttribute('data-segment-mode');
+      const groupField = this.getAttribute('data-segment-field')
+        || this.getAttribute('data-category');
+      const hasActiveGroup = segMode !== 'off' && !!groupField;
+      this.#titleEl.textContent = hasActiveGroup
+        ? `${entity} by ${formatFieldName(groupField)}`
+        : `All ${entity}`;
     }
   }
 

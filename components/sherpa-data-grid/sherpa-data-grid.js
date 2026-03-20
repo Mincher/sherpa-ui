@@ -39,6 +39,9 @@
  * @fires gridexport
  *   bubbles: true, composed: true
  *   detail: none
+ * @fires gridaction
+ *   bubbles: true, composed: true
+ *   detail: { action: string, data: object, selectedRows: object[] }
  *
  * @method setColumnConfig(config) — Set column type/status map config
  * @method setData(config)         — Main data pipeline entry
@@ -51,6 +54,7 @@
  * @method getColumns()            — Returns column definitions
  * @method getCompoundQuery()      — Returns { group, sort, filters, columnFilters, globalSearch }
  * @method setExternalFilters(f)   — Apply external filters from FilterCoordinator
+ * @method setActionMenuItems(sections) — Set secondary action menu items for bulk actions
  */
 
 import {
@@ -186,6 +190,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #expandedGroups = new Set(); // Group values currently expanded
   #columnConfig = {}; // Per-field config from consumer { field: { type?, statusMap? } }
   #filterMenuTpl = null; // Injected light-DOM <template data-menu> for filter toggle
+  #actionMenuSections = []; // Consumer-defined secondary actions for the Actions menu
 
   /* ══════════════════════════════════════════════════════════════
      Lifecycle
@@ -277,6 +282,17 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       );
       colSelectBtn.addEventListener("menu-select", (e) =>
         this.#onColumnSelectMenuSelect(e),
+      );
+    }
+
+    // Actions menu button (shown when rows are selected)
+    const actionsBtn = this.$(".actions-btn");
+    if (actionsBtn) {
+      actionsBtn.addEventListener("menu-open", () =>
+        this.#populateActionMenu(),
+      );
+      actionsBtn.addEventListener("menu-select", (e) =>
+        this.#onActionMenuSelect(e),
       );
     }
 
@@ -1339,6 +1355,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   }
 
   #emitSelectionChange() {
+    const hasSelection = this.#selectedRows.size > 0;
+    this.toggleAttribute("data-has-selection", hasSelection);
     this.dispatchEvent(
       new CustomEvent("selectionchange", {
         bubbles: true,
@@ -1416,6 +1434,37 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   /* ══════════════════════════════════════════════════════════════
      Host Click Delegation
      ══════════════════════════════════════════════════════════════ */
+
+  /* ══════════════════════════════════════════════════════════════
+     Actions Menu (secondary toolbar actions)
+     ══════════════════════════════════════════════════════════════ */
+
+  /** Set the menu items shown in the Actions dropdown button.
+   *  @param {Array<{heading?: string, items: Array<{value: string, text: string, data?: object}>}>} sections */
+  setActionMenuItems(sections) {
+    this.#actionMenuSections = sections || [];
+  }
+
+  #populateActionMenu() {
+    const btn = this.$(".actions-btn");
+    if (!btn) return;
+    btn.setMenuItems(this.#actionMenuSections);
+  }
+
+  #onActionMenuSelect(e) {
+    const detail = e?.detail || {};
+    this.dispatchEvent(
+      new CustomEvent("gridaction", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          action: detail.value,
+          data: detail.data,
+          selectedRows: this.getSelectedRowData(),
+        },
+      }),
+    );
+  }
 
   #onHostClick(e) {
     const path = e.composedPath();

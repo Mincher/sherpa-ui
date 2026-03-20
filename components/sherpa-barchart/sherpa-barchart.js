@@ -739,12 +739,15 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       canShowChart: true,
     });
 
-    // Use raw name when no explicit segment; recompose when segment active
-    const rawName = this.#contentData?.name || "";
-    const segField = isSegmentEnabled(this) ? getSegmentField(this) : null;
-    const displayTitle = segField
-      ? `${cleanTitleBase(rawName)} by ${formatFieldName(segField)}`
-      : rawName;
+    // Always clean the base name; layer the active group dynamically
+    const entity = cleanTitleBase(this.#contentData?.name || "");
+    const segMode = this.getAttribute("data-segment-mode");
+    const groupField = this.getAttribute("data-segment-field")
+      || this.getAttribute("data-category");
+    const hasActiveGroup = segMode !== "off" && !!groupField;
+    const displayTitle = hasActiveGroup
+      ? `${entity} by ${formatFieldName(groupField)}`
+      : `All ${entity}`;
 
     this.configureHeader({
       title: escapeHtml(displayTitle),

@@ -1,0 +1,227 @@
+/**
+ * sherpa-container-pdf.css — Print-optimized styles for PDF export rendering
+ *
+ * These styles are applied to the light DOM of sherpa-container-pdf elements,
+ * which render containers in a print-friendly format.
+ */
+
+:host {
+  display: block;
+  margin-bottom: var(--sherpa-space-lg, 24px);
+  page-break-inside: avoid;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Container Wrapper
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.container-pdf-wrapper {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Header (Title + Description)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.container-pdf-header {
+  margin-bottom: var(--sherpa-space-md, 16px);
+  padding-bottom: var(--sherpa-space-md, 16px);
+  border-bottom: 1px solid var(--sherpa-border-control-secondary-default, #ccc);
+}
+
+.container-pdf-title {
+  margin: 0 0 var(--sherpa-space-sm, 8px) 0;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-lg, 18px);
+  font-weight: 600;
+  color: var(--sherpa-text-default-primary, #333);
+  page-break-after: avoid;
+}
+
+.container-pdf-description {
+  margin: 0;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  color: var(--sherpa-text-default-secondary, #666);
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Content Section
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.container-pdf-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-md, 16px);
+  page-break-inside: avoid;
+}
+
+/* ─ Metrics Row ─ */
+
+.container-pdf-metrics {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--sherpa-space-sm, 8px);
+  margin-bottom: var(--sherpa-space-md, 16px);
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sherpa-space-sm, 8px);
+  background-color: var(--sherpa-surface-control-secondary-default, #f5f5f5);
+  border-radius: var(--sherpa-border-rounding-xs, 3px);
+  page-break-inside: avoid;
+}
+
+.metric-label {
+  display: block;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  color: var(--sherpa-text-default-secondary, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.metric-value {
+  display: block;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-md, 16px);
+  font-weight: 600;
+  color: var(--sherpa-text-default-primary, #333);
+}
+
+/* ─ Chart Snapshot ─ */
+
+.container-pdf-chart {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin-bottom: var(--sherpa-space-md, 16px);
+}
+
+.chart-title {
+  margin: 0 0 var(--sherpa-space-sm, 8px) 0;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-md, 14px);
+  font-weight: 600;
+  color: var(--sherpa-text-default-primary, #333);
+  page-break-after: avoid;
+}
+
+.chart-render {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+}
+
+.chart-render svg,
+.chart-render img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ─ Data Grid ─ */
+
+.container-pdf-datagrid {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin-bottom: var(--sherpa-space-md, 16px);
+}
+
+.grid-title {
+  margin: 0 0 var(--sherpa-space-sm, 8px) 0;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-md, 14px);
+  font-weight: 600;
+  color: var(--sherpa-text-default-primary, #333);
+  page-break-after: avoid;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-xs, 11px);
+  page-break-inside: avoid;
+}
+
+.data-table thead {
+  background-color: var(--sherpa-surface-control-secondary-default, #f5f5f5);
+  page-break-inside: avoid;
+}
+
+.data-table th {
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 8px);
+  text-align: left;
+  font-weight: 600;
+  color: var(--sherpa-text-default-primary, #333);
+  border: 1px solid var(--sherpa-border-control-secondary-default, #ccc);
+  page-break-inside: avoid;
+}
+
+.data-table td {
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 8px);
+  color: var(--sherpa-text-default-secondary, #666);
+  border: 1px solid var(--sherpa-border-control-secondary-default, #ccc);
+  word-break: break-word;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background-color: var(--sherpa-surface-control-tertiary-default, #fafafa);
+}
+
+/* ─ Data Table (from chart data) ─ */
+
+.container-pdf-datatable {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin-top: var(--sherpa-space-md, 16px);
+}
+
+.datatable-title {
+  margin: 0 0 var(--sherpa-space-sm, 8px) 0;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  color: var(--sherpa-text-default-secondary, #666);
+  page-break-after: avoid;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Print Media
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media print {
+  :host {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .container-pdf-wrapper {
+    page-break-inside: avoid;
+  }
+
+  .container-pdf-metrics,
+  .container-pdf-chart,
+  .container-pdf-datagrid,
+  .container-pdf-datatable {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .data-table {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
