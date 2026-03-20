@@ -35,9 +35,6 @@ import {
 
 let _dateFieldProvider = null;
 
-/** @deprecated No-op stub — dataset cascade replaces the data provider pattern. */
-export function setDataProvider() {}
-
 export function setDateFieldProvider(fn) {
   _dateFieldProvider = fn;
 }
@@ -206,11 +203,6 @@ export function ContentAttributesMixin(Base) {
       return this;
     }
 
-    /** @deprecated Stub for legacy callers — returns config as-is. */
-    async fetchContentData(config) {
-      console.warn('[ContentAttributesMixin] fetchContentData() is deprecated. Use dataset cascade instead.');
-      return config || null;
-    }
 
     /* ── Config serialisation ───────────────────────────────── */
 

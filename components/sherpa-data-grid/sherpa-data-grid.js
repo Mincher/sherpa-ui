@@ -60,7 +60,6 @@
 import {
   ContentAttributesMixin,
   CONTENT_ATTRIBUTES,
-  setDataProvider,
   getDateFieldProvider,
 } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
@@ -95,9 +94,6 @@ const NUMERIC_TYPES = new Set([
 ]);
 
 const BOOLEAN_FIELDS = new Set();
-
-/** @deprecated Consumer should provide status mapping via setColumnConfig(). */
-const STATUS_MAP = {};
 
 /** Return a reasonable default column flex-basis (px) by data type. */
 function columnWidth(type) {
@@ -135,11 +131,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   }
   static get htmlUrl() {
     return new URL("./sherpa-data-grid.html", import.meta.url).href;
-  }
-
-  /** @deprecated Use setDataProvider() from content-attributes-mixin.js */
-  static setDataProvider(fn) {
-    setDataProvider(fn);
   }
 
   static get observedAttributes() {
@@ -419,17 +410,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       }
     }
 
-    // Pre-aggregated data from dataset cascade — skip fetchContentData
-    if (config?._fromCascade) {
-      this.#data = config;
-    } else {
-      try {
-        this.#data = await this.fetchContentData(config);
-      } catch (e) {
-        console.error("[SherpaDataGrid] Data error:", e);
-        this.#data = null;
-      }
-    }
+    this.#data = config;
 
     this.removeAttribute("data-loading");
 
@@ -812,7 +793,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
   #configureStatusCell(tag, value, column) {
     const str = String(value ?? "").toLowerCase();
-    const map = column?._statusMap || STATUS_MAP;
+    const map = column?._statusMap || {};
     const status = map[str];
     if (status) tag.dataset.status = status;
     tag.textContent = value != null ? String(value) : "";

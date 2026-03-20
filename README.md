@@ -51,26 +51,18 @@ Or with an import map:
 
 ## Data-Viz Components
 
-`sherpa-data-grid`, `sherpa-barchart`, and `sherpa-metric` accept data via pluggable providers registered through `ContentAttributesMixin`:
+`sherpa-data-grid`, `sherpa-barchart`, and `sherpa-metric` accept data via the **dataset cascade** pattern: the app shell loads a dataset, applies global filters, and dispatches a `datasetfiltered` event on the content area. Each viz component listens, aggregates locally, and renders.
 
 ```js
 import {
-  setDataProvider,
   setDateFieldProvider,
 } from "sherpa-ui/components/utilities/content-attributes-mixin.js";
 
-// Register your data provider once — shared by all viz components
-setDataProvider(async (config) => {
-  // Return { name, columns, rows, summary, config, metadata }
-});
-
+// Register a date field provider for metric sparklines
 setDateFieldProvider((datasetName) => {
   // Return the date field name for chronological sorting, or null
 });
 ```
-
-> **Backward compatibility:** `SherpaDataGrid.setDataProvider()` still works
-> but delegates to the centralized provider above.
 
 ## Global Filters
 

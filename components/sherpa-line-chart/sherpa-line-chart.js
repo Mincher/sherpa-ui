@@ -166,26 +166,20 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     // Content config from ContentAttributesMixin (legacy)
     const explicitSegmentBy =
       data && Object.prototype.hasOwnProperty.call(data, "segmentBy");
-    try {
-      this.#contentData = await this.fetchContentData(data);
+    this.#contentData = data;
 
-      // Apply segmentBy from config
-      if (explicitSegmentBy) {
-        if (data.segmentBy) {
-          this.setAttribute("data-segment-field", data.segmentBy);
-          this.setAttribute("data-segment-mode", "on");
-        } else {
-          this.removeAttribute("data-segment-field");
-          this.removeAttribute("data-segment-mode");
-        }
+    // Apply segmentBy from config
+    if (explicitSegmentBy) {
+      if (data.segmentBy) {
+        this.setAttribute("data-segment-field", data.segmentBy);
+        this.setAttribute("data-segment-mode", "on");
+      } else {
+        this.removeAttribute("data-segment-field");
+        this.removeAttribute("data-segment-mode");
       }
-
-      this.#transformContentData();
-    } catch (e) {
-      console.error('SherpaLineChart data error:', e);
-      this.#contentData = null;
-      this.#data = null;
     }
+
+    this.#transformContentData();
     this.#render();
   }
 

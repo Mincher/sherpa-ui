@@ -259,29 +259,22 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       return;
     }
 
-    try {
-      // Use DataQueryHandler for standardised data preparation
-      this.#contentData = await this.fetchContentData(data);
+    this.#contentData = data;
 
-      // Apply segmentBy from config
-      if (explicitSegmentBy) {
-        if (data.segmentBy) {
-          this.setAttribute("data-segment-field", data.segmentBy);
-          this.setAttribute("data-segment-mode", "on");
-        } else {
-          this.removeAttribute("data-segment-field");
-          this.removeAttribute("data-segment-mode");
-        }
+    // Apply segmentBy from config
+    if (explicitSegmentBy) {
+      if (data.segmentBy) {
+        this.setAttribute("data-segment-field", data.segmentBy);
+        this.setAttribute("data-segment-mode", "on");
+      } else {
+        this.removeAttribute("data-segment-field");
+        this.removeAttribute("data-segment-mode");
       }
-
-      // Validate fields against available columns
-      this.#validateFieldsAgainstColumns();
-      this.#updateDisplayData();
-    } catch (e) {
-      console.error("SherpaBarChart data error:", e);
-      this.#contentData = null;
-      this.#data = null;
     }
+
+    // Validate fields against available columns
+    this.#validateFieldsAgainstColumns();
+    this.#updateDisplayData();
 
     this.removeAttribute("data-loading");
     await this.rendered;

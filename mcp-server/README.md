@@ -443,16 +443,9 @@ attributes, no self-closing tags.
 ### Step 6 — It writes the JavaScript
 
 Using the event information from `query_component`, it wires up data
-loading:
-
-```js
-import { setDataProvider } from "sherpa-ui/components/utilities/content-attributes-mixin.js";
-
-setDataProvider(async (config) => {
-  const res = await fetch(`/api/tickets?${new URLSearchParams(config)}`);
-  return res.json(); // { columns, rows, summary }
-});
-```
+loading via the **dataset cascade** — the app shell dispatches
+`datasetfiltered` events and each viz component aggregates locally.
+No `setDataProvider()` registration is needed.
 
 **The result:** A complete, standards-compliant dashboard — no guessed
 attribute names, no wrong token values, no invalid HTML.

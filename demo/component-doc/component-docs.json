@@ -113,43 +113,6 @@
       ],
       "defaultHtml": "<p>Monitor key performance indicators across all active regions. Use the controls below to filter by date range or category.</p>\n<sherpa-key-value-list data-layout=\"horizontal\" data-density=\"compact\">\n  <dt>Status</dt><dd><sherpa-tag data-status=\"success\">Active</sherpa-tag></dd>\n  <dt>Region</dt><dd>North America</dd>\n  <dt>Updated</dt><dd>2 hours ago</dd>\n</sherpa-key-value-list>"
     },
-    "sherpa-check": {
-      "component": "sherpa-check",
-      "label": "Check",
-      "description": "Checkbox and radio button input. Uses multi-template support to render either type based on the data-type attribute.",
-      "path": "components/sherpa-check",
-      "attributes": [
-        {
-          "name": "data-type",
-          "type": "enum",
-          "default": "checkbox",
-          "options": ["checkbox", "radio"]
-        },
-        {
-          "name": "data-label",
-          "type": "string",
-          "default": "Enable notifications"
-        },
-        {
-          "name": "data-description",
-          "type": "string",
-          "default": "Receive alerts when activity occurs"
-        },
-        {
-          "name": "data-status",
-          "type": "enum",
-          "options": ["critical", "warning", "success", "info"]
-        },
-        { "name": "checked", "type": "boolean" },
-        { "name": "indeterminate", "type": "boolean" },
-        { "name": "disabled", "type": "boolean" },
-        { "name": "required", "type": "boolean" },
-        { "name": "name", "type": "string" },
-        { "name": "value", "type": "string" }
-      ],
-      "slots": [],
-      "controls": { "defaultSlot": false, "namedSlots": false }
-    },
     "sherpa-data-viz-container": {
       "component": "sherpa-data-viz-container",
       "label": "Data Viz Container",
@@ -277,32 +240,6 @@
       ],
       "defaultContent": ""
     },
-    "sherpa-filter-chip": {
-      "component": "sherpa-filter-chip",
-      "label": "Filter Chip",
-      "description": "Sort, filter, and segment chip with dropdown menu. Each chip type has its own template with type-specific icons.",
-      "path": "components/sherpa-filter-chip",
-      "nestedComponents": ["sherpa-menu", "sherpa-menu-item"],
-      "attributes": [
-        {
-          "name": "data-type",
-          "type": "enum",
-          "default": "sort",
-          "options": ["sort", "filter", "segment"]
-        },
-        {
-          "name": "data-mode",
-          "type": "enum",
-          "default": "asc",
-          "options": ["asc", "desc", "on", "off"]
-        },
-        { "name": "data-field", "type": "string", "default": "revenue" },
-        { "name": "data-active", "type": "boolean" },
-        { "name": "disabled", "type": "boolean" }
-      ],
-      "slots": [],
-      "defaultContent": "Revenue"
-    },
     "sherpa-footer": {
       "component": "sherpa-footer",
       "label": "Footer",
@@ -328,62 +265,6 @@
         }
       ],
       "defaultContent": "Passthrough content"
-    },
-    "sherpa-header": {
-      "component": "sherpa-header",
-      "label": "Header",
-      "description": "Reusable header with three template variants (default, menu, data-viz). Supports headings, descriptions, actions, and search.",
-      "path": "components/sherpa-header",
-      "nestedComponents": ["sherpa-tag", "sherpa-button"],
-      "attributes": [
-        {
-          "name": "data-type",
-          "type": "enum",
-          "default": "default",
-          "options": [
-            "container",
-            "dialog",
-            "section",
-            "card",
-            "menu",
-            "data-viz"
-          ]
-        },
-        { "name": "data-label", "type": "string", "default": "Header" },
-        { "name": "data-description", "type": "string" },
-        {
-          "name": "data-heading-level",
-          "type": "enum",
-          "options": ["primary", "secondary", "tertiary"]
-        },
-        { "name": "data-divider", "type": "boolean" },
-        { "name": "data-drag-handle", "type": "boolean" },
-        { "name": "data-close-button", "type": "boolean" },
-        { "name": "data-search", "type": "boolean" },
-        {
-          "name": "data-density",
-          "type": "enum",
-          "options": ["compact", "comfortable"]
-        }
-      ],
-      "slots": [
-        {
-          "name": "heading",
-          "html": "<span slot=\"heading\">Custom heading</span>"
-        },
-        {
-          "name": "description",
-          "html": "<span slot=\"description\">Custom description</span>"
-        },
-        {
-          "name": "actions",
-          "html": "<sherpa-button slot=\"actions\" data-variant=\"tertiary\" data-size=\"small\" data-label=\"Action\"></sherpa-button>"
-        },
-        {
-          "name": "badge",
-          "html": "<sherpa-tag slot=\"badge\" data-status=\"info\">New</sherpa-tag>"
-        }
-      ]
     },
     "sherpa-input-text": {
       "component": "sherpa-input-text",

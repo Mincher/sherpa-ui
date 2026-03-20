@@ -1,5 +1,4 @@
 import "/components/index.js";
-import { setDataProvider } from "/components/utilities/content-attributes-mixin.js";
 
 /* ── Constants ──────────────────────────────────────────── */
 
@@ -553,16 +552,6 @@ function buildMarkup() {
 /* ── Post-init (component-specific) ─────────────────────── */
 
 function runPostInit(t) {
-  switch (componentName) {
-    case "sherpa-filter-chip":
-      t.setAvailableColumns?.([
-        { field: "revenue", name: "Revenue", type: "currency" },
-        { field: "orders", name: "Orders", type: "number" },
-        { field: "region", name: "Region", type: "string" },
-      ]);
-      return;
-  }
-
   // Steps (stepper)
   if (config.sampleSteps?.length) {
     t.setSteps?.(config.sampleSteps);
@@ -630,11 +619,6 @@ async function loadContainerDemo(t, source) {
   try {
     t.setAttribute("data-col-span", "6");
     t.setAttribute("data-row-span", "2");
-
-    // Register an identity data provider so setData() works in the demo
-    // without an external backend. The provider returns the config as-is,
-    // which means callers pass { columns, rows } directly.
-    setDataProvider(async (config) => config);
 
     // Create a data grid child so the container has visible content.
     const grid = document.createElement("sherpa-data-grid");

@@ -128,7 +128,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
     // Legacy: content config from ContentAttributesMixin
     const config = { ...data, presentationType: "kpi-metric" };
-    this.#contentData = await this.fetchContentData(config);
+    this.#contentData = config;
     this.#initialize();
   }
 

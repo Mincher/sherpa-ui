@@ -366,7 +366,7 @@ sherpa-filter-bar {
   gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-md, 16px);
   justify-content: var(--_chart-legend-justify, center);
   align-self: var(--_chart-legend-align, auto);
-  width: var(--_chart-legend-width, 100%);
+  width: var(--_chart-legend-width, auto);
   margin-top: var(--_chart-legend-margin-top, auto);
 }
 

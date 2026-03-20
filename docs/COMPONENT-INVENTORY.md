@@ -1,6 +1,11 @@
 # Sherpa UI — Component Inventory
 
-> Generated 2026-03-06. Audit of all 39 component directories under `components/`.
+> Last updated 2026-06-18. Covers 35 of the 53 component directories under `components/`.
+> Components added since the original audit (sherpa-accordion, sherpa-breadcrumbs,
+> sherpa-callout, sherpa-chart-legend, sherpa-donut-chart, sherpa-file-upload,
+> sherpa-gauge-chart, sherpa-input-date-range, sherpa-line-chart, sherpa-list-item,
+> sherpa-loader, sherpa-panel, sherpa-popover, sherpa-product-bar, sherpa-progress-bar,
+> sherpa-progress-tracker, sherpa-slider, sherpa-tabs) are not yet documented here.
 
 ---
 
@@ -55,20 +60,7 @@
 
 ---
 
-### 4. sherpa-check
-
-| | |
-|---|---|
-| **Files** | `.html` `.css` `.js` `component-doc.html` |
-| **Purpose** | Checkbox and radio button with label and description |
-| **Base class** | `SherpaElement` |
-| **Key attributes** | `data-type` (checkbox\|radio), `checked`, `indeterminate`, `disabled`, `name`, `value`, `data-label`, `data-description`, `data-status` |
-| **Events** | `change` |
-| **Maturity** | **Complete** |
-
----
-
-### 5. sherpa-data-viz-container
+### 4. sherpa-data-viz-container
 
 | | |
 |---|---|
@@ -81,7 +73,7 @@
 
 ---
 
-### 6. sherpa-container-pdf
+### 5. sherpa-container-pdf
 
 | | |
 |---|---|
@@ -93,7 +85,7 @@
 
 ---
 
-### 7. sherpa-data-grid
+### 6. sherpa-data-grid
 
 | | |
 |---|---|
@@ -107,20 +99,7 @@
 
 ---
 
-### 8. sherpa-data-viz
-
-| | |
-|---|---|
-| **Files** | `.html` `.css` `.js` |
-| **Purpose** | Presentation-switching wrapper — swaps child viz components (table, barchart, metric) on `presentationchange` events |
-| **Base class** | `SherpaElement` |
-| **Key attributes** | None (transparent `display: contents` wrapper) |
-| **Missing** | `component-doc.html` |
-| **Maturity** | **Complete** (missing doc page only) |
-
----
-
-### 9. sherpa-dialog
+### 7. sherpa-dialog
 
 | | |
 |---|---|
@@ -134,7 +113,7 @@
 
 ---
 
-### 10. sherpa-empty-state
+### 8. sherpa-empty-state
 
 | | |
 |---|---|
@@ -147,7 +126,7 @@
 
 ---
 
-### 11. sherpa-filter-bar
+### 9. sherpa-filter-bar
 
 | | |
 |---|---|
@@ -162,19 +141,7 @@
 
 ---
 
-### 12. sherpa-filter-chip
-
-| | |
-|---|---|
-| **Files** | `.html` `.css` `.js` `component-doc.html` |
-| **Purpose** | Sort / Filter / Segment chip with dropdown menu; template-driven per type |
-| **Base class** | `SherpaElement` |
-| **Key attributes** | `type` (sort\|filter\|segment), `data-mode`, `data-field`, `disabled` |
-| **Maturity** | **Complete** |
-
----
-
-### 13. sherpa-footer
+### 10. sherpa-footer
 
 | | |
 |---|---|
@@ -187,21 +154,7 @@
 
 ---
 
-### 14. sherpa-header
-
-| | |
-|---|---|
-| **Files** | `.html` `.css` `.js` `component-doc.html` `README.md` |
-| **Purpose** | Reusable header with three template variants (default, menu, data-viz) and type-based styling |
-| **Base class** | `SherpaElement` |
-| **Key attributes** | `data-type` (container\|dialog\|section\|data-viz\|menu), `heading`, `description`, `dismissible`, `data-heading-type`, `data-divider` |
-| **Slots** | `heading`, `badge`, `actions`, `description`, default |
-| **Events** | `close` (dialog variant) |
-| **Maturity** | **Complete** |
-
----
-
-### 15. sherpa-input-date
+### 11. sherpa-input-date
 
 | | |
 |---|---|
@@ -214,7 +167,7 @@
 
 ---
 
-### 16. sherpa-input-number
+### 12. sherpa-input-number
 
 | | |
 |---|---|
@@ -227,7 +180,7 @@
 
 ---
 
-### 17. sherpa-input-password
+### 13. sherpa-input-password
 
 | | |
 |---|---|
@@ -240,7 +193,7 @@
 
 ---
 
-### 18. sherpa-input-search
+### 14. sherpa-input-search
 
 | | |
 |---|---|
@@ -253,7 +206,7 @@
 
 ---
 
-### 19. sherpa-input-select
+### 15. sherpa-input-select
 
 | | |
 |---|---|
@@ -267,7 +220,7 @@
 
 ---
 
-### 20. sherpa-input-text
+### 16. sherpa-input-text
 
 | | |
 |---|---|
@@ -280,7 +233,7 @@
 
 ---
 
-### 21. sherpa-input-time
+### 17. sherpa-input-time
 
 | | |
 |---|---|
@@ -293,7 +246,7 @@
 
 ---
 
-### 22. sherpa-key-value-list
+### 18. sherpa-key-value-list
 
 | | |
 |---|---|
@@ -305,7 +258,7 @@
 
 ---
 
-### 23. sherpa-menu
+### 19. sherpa-menu
 
 | | |
 |---|---|
@@ -319,7 +272,7 @@
 
 ---
 
-### 24. sherpa-menu-item
+### 20. sherpa-menu-item
 
 | | |
 |---|---|
@@ -331,7 +284,7 @@
 
 ---
 
-### 25. sherpa-message
+### 21. sherpa-message
 
 | | |
 |---|---|
@@ -345,7 +298,7 @@
 
 ---
 
-### 26. sherpa-metric
+### 22. sherpa-metric
 
 | | |
 |---|---|
@@ -357,7 +310,7 @@
 
 ---
 
-### 27. sherpa-nav
+### 23. sherpa-nav
 
 | | |
 |---|---|
@@ -370,7 +323,7 @@
 
 ---
 
-### 28. sherpa-nav-item
+### 24. sherpa-nav-item
 
 | | |
 |---|---|
@@ -383,7 +336,7 @@
 
 ---
 
-### 29. sherpa-nav-promo
+### 25. sherpa-nav-promo
 
 | | |
 |---|---|
@@ -396,7 +349,7 @@
 
 ---
 
-### 30. sherpa-pagination
+### 26. sherpa-pagination
 
 | | |
 |---|---|
@@ -410,7 +363,7 @@
 
 ---
 
-### 31. sherpa-section-header
+### 27. sherpa-section-header
 
 | | |
 |---|---|
@@ -423,7 +376,7 @@
 
 ---
 
-### 32. sherpa-sparkline
+### 28. sherpa-sparkline
 
 | | |
 |---|---|
@@ -435,7 +388,7 @@
 
 ---
 
-### 33. sherpa-stepper
+### 29. sherpa-stepper
 
 | | |
 |---|---|
@@ -449,7 +402,7 @@
 
 ---
 
-### 34. sherpa-switch
+### 30. sherpa-switch
 
 | | |
 |---|---|
@@ -462,7 +415,7 @@
 
 ---
 
-### 35. sherpa-tag
+### 31. sherpa-tag
 
 | | |
 |---|---|
@@ -474,7 +427,7 @@
 
 ---
 
-### 36. sherpa-toast
+### 32. sherpa-toast
 
 | | |
 |---|---|
@@ -488,7 +441,7 @@
 
 ---
 
-### 37. sherpa-toolbar
+### 33. sherpa-toolbar
 
 | | |
 |---|---|
@@ -502,7 +455,7 @@
 
 ---
 
-### 38. sherpa-tooltip
+### 34. sherpa-tooltip
 
 | | |
 |---|---|
@@ -516,7 +469,7 @@
 
 ---
 
-### 39. sherpa-view-header
+### 35. sherpa-view-header
 
 | | |
 |---|---|
@@ -535,52 +488,48 @@
 | 1 | sherpa-barchart | ✅ | ✅ | ✅ | ✅ | Complete |
 | 2 | sherpa-button | ✅ | ✅ | ✅ | ✅ | Complete |
 | 3 | sherpa-card | ✅ | ✅ | ✅ | ✅ | Complete |
-| 4 | sherpa-check | ✅ | ✅ | ✅ | ✅ | Complete |
-| 5 | sherpa-data-viz-container | ✅ | ✅ | ✅ | ✅ | Complete |
-| 6 | sherpa-container-pdf | ✅ | ✅ | ✅ | ✅ | Complete |
-| 7 | sherpa-data-grid | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
-| 8 | sherpa-data-viz | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
-| 9 | sherpa-dialog | ✅ | ✅ | ✅ | ✅ | Complete |
-| 10 | sherpa-empty-state | ✅ | ✅ | ✅ | ✅ | Complete |
-| 11 | sherpa-filter-bar | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
-| 12 | sherpa-filter-chip | ✅ | ✅ | ✅ | ✅ | Complete |
-| 13 | sherpa-footer | ✅ | ✅ | ✅ | ✅ | Complete |
-| 14 | sherpa-header | ✅ | ✅ | ✅ | ✅ | Complete |
-| 15 | sherpa-input-date | ✅ | ✅ | ✅ | ✅ | Complete |
-| 16 | sherpa-input-number | ✅ | ✅ | ✅ | ✅ | Complete |
-| 17 | sherpa-input-password | ✅ | ✅ | ✅ | ✅ | Complete |
-| 18 | sherpa-input-search | ✅ | ✅ | ✅ | ✅ | Complete |
-| 19 | sherpa-input-select | ✅ | ✅ | ✅ | ✅ | Complete |
-| 20 | sherpa-input-text | ✅ | ✅ | ✅ | ✅ | Complete |
-| 21 | sherpa-input-time | ✅ | ✅ | ✅ | ✅ | Complete |
-| 22 | sherpa-key-value-list | ✅ | ✅ | ✅ | ✅ | Complete |
-| 23 | sherpa-menu | ✅ | ✅ | ✅ | ✅ | Complete |
-| 24 | sherpa-menu-item | ✅ | ✅ | ✅ | ✅ | Complete |
-| 25 | sherpa-message | ✅ | ✅ | ✅ | ✅ | Complete |
-| 26 | sherpa-metric | ✅ | ✅ | ✅ | ✅ | Complete |
-| 27 | sherpa-nav | ✅ | ✅ | ✅ | ✅ | Complete |
-| 28 | sherpa-nav-item | ✅ | ✅ | ✅ | ✅ | Complete |
-| 29 | sherpa-nav-promo | ✅ | ✅ | ✅ | ✅ | Complete |
-| 30 | sherpa-pagination | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
-| 31 | sherpa-section-header | ✅ | ✅ | ✅ | ✅ | Complete |
-| 32 | sherpa-sparkline | ✅ | ✅ | ✅ | ✅ | Complete |
-| 33 | sherpa-stepper | ✅ | ✅ | ✅ | ✅ | Complete |
-| 34 | sherpa-switch | ✅ | ✅ | ✅ | ✅ | Complete |
-| 35 | sherpa-tag | ✅ | ✅ | ✅ | ✅ | Complete |
-| 36 | sherpa-toast | ✅ | ✅ | ✅ | ✅ | Complete |
-| 37 | sherpa-toolbar | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
-| 38 | sherpa-tooltip | ✅ | ✅ | ✅ | ✅ | Complete |
-| 39 | sherpa-view-header | ✅ | ✅ | ✅ | ✅ | Complete |
+| 4 | sherpa-data-viz-container | ✅ | ✅ | ✅ | ✅ | Complete |
+| 5 | sherpa-container-pdf | ✅ | ✅ | ✅ | ✅ | Complete |
+| 6 | sherpa-data-grid | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
+| 7 | sherpa-dialog | ✅ | ✅ | ✅ | ✅ | Complete |
+| 8 | sherpa-empty-state | ✅ | ✅ | ✅ | ✅ | Complete |
+| 9 | sherpa-filter-bar | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
+| 10 | sherpa-footer | ✅ | ✅ | ✅ | ✅ | Complete |
+| 11 | sherpa-input-date | ✅ | ✅ | ✅ | ✅ | Complete |
+| 12 | sherpa-input-number | ✅ | ✅ | ✅ | ✅ | Complete |
+| 13 | sherpa-input-password | ✅ | ✅ | ✅ | ✅ | Complete |
+| 14 | sherpa-input-search | ✅ | ✅ | ✅ | ✅ | Complete |
+| 15 | sherpa-input-select | ✅ | ✅ | ✅ | ✅ | Complete |
+| 16 | sherpa-input-text | ✅ | ✅ | ✅ | ✅ | Complete |
+| 17 | sherpa-input-time | ✅ | ✅ | ✅ | ✅ | Complete |
+| 18 | sherpa-key-value-list | ✅ | ✅ | ✅ | ✅ | Complete |
+| 19 | sherpa-menu | ✅ | ✅ | ✅ | ✅ | Complete |
+| 20 | sherpa-menu-item | ✅ | ✅ | ✅ | ✅ | Complete |
+| 21 | sherpa-message | ✅ | ✅ | ✅ | ✅ | Complete |
+| 22 | sherpa-metric | ✅ | ✅ | ✅ | ✅ | Complete |
+| 23 | sherpa-nav | ✅ | ✅ | ✅ | ✅ | Complete |
+| 24 | sherpa-nav-item | ✅ | ✅ | ✅ | ✅ | Complete |
+| 25 | sherpa-nav-promo | ✅ | ✅ | ✅ | ✅ | Complete |
+| 26 | sherpa-pagination | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
+| 27 | sherpa-section-header | ✅ | ✅ | ✅ | ✅ | Complete |
+| 28 | sherpa-sparkline | ✅ | ✅ | ✅ | ✅ | Complete |
+| 29 | sherpa-stepper | ✅ | ✅ | ✅ | ✅ | Complete |
+| 30 | sherpa-switch | ✅ | ✅ | ✅ | ✅ | Complete |
+| 31 | sherpa-tag | ✅ | ✅ | ✅ | ✅ | Complete |
+| 32 | sherpa-toast | ✅ | ✅ | ✅ | ✅ | Complete |
+| 33 | sherpa-toolbar | ✅ | ✅ | ✅ | ❌ | Complete (no doc) |
+| 34 | sherpa-tooltip | ✅ | ✅ | ✅ | ✅ | Complete |
+| 35 | sherpa-view-header | ✅ | ✅ | ✅ | ✅ | Complete |
 
 ---
 
 ## Gaps & Notes
 
-1. **Missing `component-doc.html`** (5 components): `sherpa-data-grid`, `sherpa-data-viz`, `sherpa-filter-bar`, `sherpa-pagination`, `sherpa-toolbar`
-2. **Extra files**: `sherpa-data-viz-container`, `sherpa-container-pdf`, `sherpa-empty-state`, `sherpa-key-value-list` have `config.json`. `sherpa-footer` and `sherpa-header` have `README.md`. `sherpa-nav` has extra nav template HTML files.
-3. **COMPONENT-API.md** is a skeleton — the Quick Index and Component Details sections are empty with TODO placeholders.
-4. **All 39 components have complete `.html` + `.css` + `.js` triads** — no stubs or partial implementations.
-5. **Inheritance hierarchy**: 7 input components extend `SherpaInputBase` (which extends `SherpaElement`). 3 data components use `ContentAttributesMixin(SherpaElement)`. All others extend `SherpaElement` directly.
+1. **Missing `component-doc.html`** (3 components): `sherpa-data-grid`, `sherpa-filter-bar`, `sherpa-pagination`, `sherpa-toolbar`
+2. **Extra files**: `sherpa-data-viz-container`, `sherpa-container-pdf`, `sherpa-empty-state`, `sherpa-key-value-list` have `config.json`. `sherpa-footer` has `README.md`. `sherpa-nav` has extra nav template HTML files.
+3. **All 35 documented components have complete `.html` + `.css` + `.js` triads** — no stubs or partial implementations.
+4. **18 additional components** exist in the codebase but are not yet documented in this inventory (see header note).
+5. **Inheritance hierarchy**: 7 input components extend `SherpaInputBase` (which extends `SherpaElement`). Data components use `ContentAttributesMixin(SherpaElement)`. All others extend `SherpaElement` directly.
 
 ---
 
@@ -588,12 +537,12 @@
 
 | Category | Components |
 |---|---|
-| **Data Visualization** | sherpa-barchart, sherpa-data-grid, sherpa-data-viz, sherpa-metric, sherpa-sparkline |
+| **Data Visualization** | sherpa-barchart, sherpa-data-grid, sherpa-metric, sherpa-sparkline |
 | **Layout / Container** | sherpa-data-viz-container, sherpa-container-pdf, sherpa-card, sherpa-toolbar |
 | **Navigation** | sherpa-nav, sherpa-nav-item, sherpa-nav-promo |
-| **Form Inputs** | sherpa-input-text, sherpa-input-number, sherpa-input-date, sherpa-input-time, sherpa-input-password, sherpa-input-search, sherpa-input-select, sherpa-check, sherpa-switch |
-| **Filtering** | sherpa-filter-bar, sherpa-filter-chip |
-| **Headers / Footers** | sherpa-header, sherpa-footer, sherpa-section-header, sherpa-view-header |
+| **Form Inputs** | sherpa-input-text, sherpa-input-number, sherpa-input-date, sherpa-input-time, sherpa-input-password, sherpa-input-search, sherpa-input-select, sherpa-switch |
+| **Filtering** | sherpa-filter-bar |
+| **Headers / Footers** | sherpa-footer, sherpa-section-header, sherpa-view-header |
 | **Feedback** | sherpa-message, sherpa-toast, sherpa-empty-state, sherpa-tooltip |
 | **Interactive** | sherpa-button, sherpa-menu, sherpa-menu-item, sherpa-dialog, sherpa-stepper, sherpa-pagination |
 | **Display** | sherpa-tag, sherpa-key-value-list |

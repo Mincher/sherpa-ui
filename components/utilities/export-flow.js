@@ -42,10 +42,12 @@ export function initExportFlow(contentArea, options) {
   } = options;
 
   const containerDialogs = new Map();
+  let viewDialog = null;
 
   // View-level export dialog
   if (buildExportDialog) {
     const { dialog, getConfig } = buildExportDialog(contentArea, title);
+    viewDialog = dialog;
     document.body.appendChild(dialog);
 
     dialog.querySelector('.export-cancel-btn')
@@ -57,6 +59,16 @@ export function initExportFlow(contentArea, options) {
         dialog.hide();
         await exportWithConfig(config);
       });
+
+    // Listen for viewexport from sherpa-view-header (bubbles + composed)
+    document.addEventListener('viewexport', () => {
+      viewDialog?.show();
+    });
+
+    // Listen for gridexport from sherpa-data-grid (bubbles + composed)
+    contentArea.addEventListener('gridexport', () => {
+      viewDialog?.show();
+    });
   }
 
   // Per-container export dialogs (wired via menuitemclick + data-event="containerexport")
