@@ -98,15 +98,15 @@
   grid-row: span 6;
 }
 
-/* Mid breakpoint: 6 columns */
+/* Mid breakpoint: 6 columns — cap col-spans at 6 */
 @container (max-width: 1199px) {
   .sherpa-content-area {
     --maxColCount: 6;
     grid-template-columns: repeat(6, 1fr);
 
-    & sherpa-data-viz-container {
-      grid-column-end: span min(var(--containerColSpan), 6) !important;
-      grid-row-end: span var(--containerRowSpan) !important;
+    & sherpa-data-viz-container[data-variant="resizable"][data-col-span="9"],
+    & sherpa-data-viz-container[data-variant="resizable"][data-col-span="12"] {
+      grid-column: span 6;
     }
   }
 }

@@ -106,10 +106,31 @@
 }
 
 @supports (anchor-name: --test) {
+  /* Default: bottom-start — menu drops below, left-aligned */
   :host([popover][open]) {
     position-anchor: var(--sherpa-menu-anchor);
     top: anchor(bottom);
     left: anchor(left);
     position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+
+  /* bottom-end — menu drops below, right-aligned */
+  :host([popover][open][data-position="bottom-end"]) {
+    left: auto;
+    right: anchor(right);
+  }
+
+  /* top-start — menu opens above, left-aligned */
+  :host([popover][open][data-position="top-start"]) {
+    top: auto;
+    bottom: anchor(top);
+  }
+
+  /* top-end — menu opens above, right-aligned */
+  :host([popover][open][data-position="top-end"]) {
+    top: auto;
+    bottom: anchor(top);
+    left: auto;
+    right: anchor(right);
   }
 }

@@ -225,6 +225,10 @@ export class SherpaMenu extends SherpaElement {
     if (!anchor) return;
     this.source = anchor;
 
+    // Read preferred placement from the anchor (e.g. data-menu-position)
+    const position = anchor.dataset?.menuPosition || "bottom-start";
+    this.dataset.position = position;
+
     // Position via CSS anchor or JS fallback
     if (supportsAnchor) {
       let anchorName = anchor.style.getPropertyValue("anchor-name");
@@ -232,13 +236,26 @@ export class SherpaMenu extends SherpaElement {
         anchorName = `--sherpa-anchor-${Math.random().toString(36).slice(2, 9)}`;
         anchor.style.setProperty("anchor-name", anchorName);
       }
-      this.style.setProperty("--sherpa-menu-anchor", anchorName);
+      // Set position-anchor as inline style so anchor-name and
+      // position-anchor resolve in the same tree scope — avoids
+      // cross-shadow-root lookup failures with CSS anchor positioning.
+      this.style.setProperty("position-anchor", anchorName);
       this.style.removeProperty("top");
       this.style.removeProperty("left");
+      this.style.removeProperty("right");
+      this.style.removeProperty("bottom");
     } else {
       const rect = anchor.getBoundingClientRect();
-      this.style.setProperty("top", `${rect.bottom + 4}px`);
-      this.style.setProperty("left", `${rect.left}px`);
+      const gap = 4;
+      if (position.endsWith("-end")) {
+        this.style.setProperty("top", `${rect.bottom + gap}px`);
+        this.style.setProperty("right", `${document.documentElement.clientWidth - rect.right}px`);
+        this.style.removeProperty("left");
+      } else {
+        this.style.setProperty("top", `${rect.bottom + gap}px`);
+        this.style.setProperty("left", `${rect.left}px`);
+        this.style.removeProperty("right");
+      }
     }
 
     this.setAttribute("open", "");
