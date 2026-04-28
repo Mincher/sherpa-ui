@@ -92,6 +92,11 @@ export class SherpaNav extends SherpaElement {
   // current page would visually deselect every time the definition
   // changes (the new DOM has no [data-state="selected"] markers).
   #lastSelection = null; // { kind: 'item'|'link', itemId?, sectionId?, target? }
+  // Last pinned state observed on the host. Captured before a data-src
+  // swap (and updated whenever the user toggles the pin button) so we
+  // can restore it after the new template renders — otherwise the new
+  // template's own data-pinned default would clobber the user's choice.
+  #lastPinned = null;
 
   /** @returns {HTMLElement|null} The .sherpa-nav-root wrapper inside the shadow root. */
   get #root() {
@@ -168,6 +173,7 @@ export class SherpaNav extends SherpaElement {
     const pinned = !!v;
     root.dataset.pinned = pinned ? "true" : "false";
     this.dataset.pinned = root.dataset.pinned;
+    this.#lastPinned = root.dataset.pinned;
     this.#onPinnedChange(pinned);
   }
 
@@ -479,7 +485,11 @@ export class SherpaNav extends SherpaElement {
   #syncInitialState() {
     const root = this.#root;
     if (root) {
-      this.dataset.pinned = root.dataset.pinned || "false";
+      // Restore the host's last pinned choice across template swaps; fall
+      // back to whatever the new template declared on first render.
+      const pinned = this.#lastPinned ?? root.dataset.pinned ?? "false";
+      root.dataset.pinned = pinned;
+      this.dataset.pinned = pinned;
       this.dataset.mode = root.dataset.mode || SherpaNav.MODES.DEFAULT;
     }
     const pinBtn = this.$(".nav-pin-btn");

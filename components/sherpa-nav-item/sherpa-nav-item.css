@@ -100,8 +100,13 @@
    ICON / DRAG / DELETE — sizing
    ══════════════════════════════════════════════════════════════════════ */
 
+/* Icon-glyph rows (icon, drag handle, delete) all share the same target
+   box. The icon itself uses --sherpa-size-sm (16px) so SVG glyphs land
+   visually on par with the FontAwesome icons rendered by `data-icon` —
+   matching the Apex Prototypes nav sizing baseline. Drag/delete affordances
+   stay at the smaller --sherpa-size-xs because they're secondary controls. */
 :is(.nav-item-icon, .nav-item-drag, .nav-item-delete) {
-  --icon-size: var(--sherpa-size-xs);
+  --icon-size: var(--sherpa-size-sm);
   flex-shrink: 0;
 }
 
