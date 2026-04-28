@@ -229,8 +229,17 @@ export class SherpaMenu extends SherpaElement {
     const position = anchor.dataset?.menuPosition || "bottom-start";
     this.dataset.position = position;
 
-    // Position via CSS anchor or JS fallback
-    if (supportsAnchor) {
+    // Position via CSS anchor or JS fallback.
+    //
+    // CSS anchor positioning resolves `anchor-name` only within the same
+    // tree scope as the positioned element. When the trigger lives in a
+    // host's shadow root and the menu is slotted from light DOM (e.g.
+    // sherpa-product-bar-v2's system menu), the anchor lookup fails
+    // silently and the menu lands at 0,0. Detect that case and use the
+    // getBoundingClientRect fallback even on browsers that support
+    // CSS anchor positioning.
+    const sameTreeScope = anchor.getRootNode() === this.getRootNode();
+    if (supportsAnchor && sameTreeScope) {
       let anchorName = anchor.style.getPropertyValue("anchor-name");
       if (!anchorName) {
         anchorName = `--sherpa-anchor-${Math.random().toString(36).slice(2, 9)}`;

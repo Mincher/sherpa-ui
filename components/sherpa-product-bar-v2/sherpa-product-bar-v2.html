@@ -1,0 +1,46 @@
+<!--
+  sherpa-product-bar-v2.html — Light-themed product bar (Apr 2026 redesign).
+
+  Layout (left → right):
+    • Brand stack — system-name trigger + caret, with "TIME: HH:MM" beneath
+    • Vertical divider
+    • Tabs slot (optional)
+    • Search slot (defaults to a sherpa-input-search)
+    • Actions slot (icon-only buttons + Ask N-zo button)
+
+  Host attributes:
+    data-product-name      — Product display name shown in the brand row
+    data-time              — Time string (e.g. "09:00"); falls back to "--:--"
+    data-search-placeholder — Placeholder for the default search input
+    data-show-system       — "false" hides the brand stack (default true)
+    data-show-time         — "false" hides the time line (default true)
+-->
+<template id="default">
+  <div class="brand-stack" part="brand">
+    <button class="system-trigger" type="button" aria-haspopup="menu" aria-expanded="false">
+      <span class="system-name"></span>
+      <i class="system-caret fa-solid fa-chevron-down" aria-hidden="true"></i>
+    </button>
+    <span class="system-time">
+      <span class="system-time-label">TIME:</span>
+      <span class="system-time-value">--:--</span>
+    </span>
+    <slot name="system-menu"></slot>
+  </div>
+
+  <span class="divider" aria-hidden="true"></span>
+
+  <div class="tabs" part="tabs">
+    <slot name="tabs"></slot>
+  </div>
+
+  <div class="search" part="search">
+    <slot name="search">
+      <sherpa-input-search class="default-search" data-layout="inline"></sherpa-input-search>
+    </slot>
+  </div>
+
+  <div class="actions" part="actions">
+    <slot name="actions"></slot>
+  </div>
+</template>

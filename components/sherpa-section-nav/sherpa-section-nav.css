@@ -1,0 +1,155 @@
+/**
+ * sherpa-section-nav.css — Secondary navigation panel styles.
+ *
+ * All values come from Sherpa design tokens so the panel adapts to
+ * light / dark / data-protection / classic themes automatically.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border-inline-end: 1px solid var(--sherpa-border-container-default, #d5d5d5);
+  color: var(--sherpa-text-default-body, #111111);
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-md, 16px);
+}
+
+/* Opt-in divider beneath the header. */
+:host([data-divider]) .header {
+  border-block-end: 1px solid var(--sherpa-border-container-default, #d5d5d5);
+}
+
+.back {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  cursor: pointer;
+  color: var(--sherpa-text-default-body, #111111);
+  flex: 0 0 auto;
+}
+/* `all: unset` above clobbers the UA `[hidden]` rule, so reinstate it
+   explicitly — otherwise `data-show-back` becomes a no-op and the back
+   button is always visible. */
+.back[hidden] {
+  display: none;
+}
+.back:hover {
+  background: var(--sherpa-surface-control-secondary-hover, #f5f5f5);
+}
+.back:focus-visible {
+  outline: var(--sherpa-border-width-md, 2px) solid var(--sherpa-border-focus, #4c63e5);
+  outline-offset: 2px;
+}
+
+.heading {
+  margin: 0;
+  flex: 1 1 auto;
+  color: var(--sherpa-text-default-heading, #111111);
+}
+
+.header-end {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.header-end:not([data-has-content]) {
+  display: none;
+}
+
+/* ── Sections list ──────────────────────────────────────────────── */
+.sections {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-block: var(--sherpa-space-xs, 8px);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-label {
+  margin: 0;
+  padding: var(--sherpa-space-md, 16px) var(--sherpa-space-md, 16px) var(--sherpa-space-2xs, 4px);
+  color: var(--sherpa-text-default-secondary, #464646);
+}
+
+.group-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Item — interactive button ──────────────────────────────────── */
+.item {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-xs, 8px);
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-md, 16px);
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--sherpa-text-active-base, #0079aa);
+}
+.item:hover {
+  background: var(--sherpa-surface-control-secondary-hover, #f5f5f5);
+}
+.item:focus-visible {
+  outline: var(--sherpa-border-width-md, 2px) solid var(--sherpa-border-focus, #4c63e5);
+  outline-offset: -2px;
+}
+.item[aria-current="page"],
+.item[data-active="true"] {
+  background: var(--sherpa-surface-app-product-nav-active, #f8ebff);
+  color: var(--sherpa-surface-app-product-nav-active-icon, #111111);
+}
+
+.item-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.item-icon {
+  flex: 0 0 auto;
+  color: var(--sherpa-text-default-secondary, #464646);
+}
+
+/* ── Header item — non-interactive (e.g. user name + email) ─────── */
+.header-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-md, 16px);
+  color: var(--sherpa-text-default-body, #111111);
+}
+.header-item-name {
+  color: var(--sherpa-text-default-heading, #111111);
+}
+.header-item-description {
+  color: var(--sherpa-text-default-secondary, #464646);
+}

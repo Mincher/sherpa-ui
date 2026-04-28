@@ -28,6 +28,9 @@
 <div class="toolbar-left">
   <sherpa-button id="favorite-btn" data-variant="secondary" data-size="medium" data-icon-start="&#xf005;" aria-label="Toggle favorite"></sherpa-button>
   <span class="heading-label text-heading-lg">Dashboard Prototypes</span>
+  <!-- Optional view-selection slot (e.g. an <sherpa-input-select> that
+       narrows the current view to a specific scope/server/customer). -->
+  <slot name="view-selection" class="view-selection-slot"></slot>
   <div class="debug-toggles">
     <span class="toolbar-divider"></span>
     <div class="toolbar-toggles">

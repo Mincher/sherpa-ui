@@ -55,6 +55,7 @@ export * from "./sherpa-loader/sherpa-loader.js";
 export * from "./sherpa-panel/sherpa-panel.js";
 export * from "./sherpa-popover/sherpa-popover.js";
 export * from "./sherpa-product-bar/sherpa-product-bar.js";
+export * from "./sherpa-product-bar-v2/sherpa-product-bar-v2.js";
 export * from "./sherpa-progress-bar/sherpa-progress-bar.js";
 export * from "./sherpa-progress-tracker/sherpa-progress-tracker.js";
 export * from "./sherpa-slider/sherpa-slider.js";
@@ -67,6 +68,7 @@ export * from "./sherpa-file-upload/sherpa-file-upload.js";
 export * from "./sherpa-key-value-list/sherpa-key-value-list.js";
 export * from "./sherpa-message/sherpa-message.js";
 export * from "./sherpa-section-header/sherpa-section-header.js";
+export * from "./sherpa-section-nav/sherpa-section-nav.js";
 export * from "./sherpa-stepper/sherpa-stepper.js";
 export * from "./sherpa-toast/sherpa-toast.js";
 

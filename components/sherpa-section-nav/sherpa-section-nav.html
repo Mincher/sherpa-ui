@@ -1,0 +1,28 @@
+<!--
+  sherpa-section-nav.html — Secondary navigation panel.
+
+  Single template; the list of groups and items is supplied via the
+  setSections(...) method (see sherpa-section-nav.js) or, alternatively,
+  by setting the `data-sections` attribute to a JSON string.
+-->
+<template id="default">
+  <header class="header" part="header">
+    <button
+      class="back"
+      type="button"
+      part="back"
+      aria-label="Back"
+      hidden
+    >
+      <i class="back-icon fa-regular fa-arrow-left" aria-hidden="true"></i>
+    </button>
+    <h2 class="heading text-heading-lg" part="heading"></h2>
+    <span class="header-end" part="header-end">
+      <slot name="header-end"></slot>
+    </span>
+  </header>
+
+  <nav class="sections" part="sections" aria-label="Section navigation"></nav>
+
+  <slot></slot>
+</template>

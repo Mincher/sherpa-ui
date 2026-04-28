@@ -45,6 +45,7 @@ class SherpaProductBar extends SherpaElement {
 
     this.#syncName();
     this.#syncIcon();
+    this.#syncSlotState();
   }
 
   onAttributeChanged(name) {
@@ -76,6 +77,41 @@ class SherpaProductBar extends SherpaElement {
       iconEl.className = `auto-icon fa-solid ${iconClass}`;
     }
     this.toggleAttribute("data-has-icon", !!iconClass);
+  }
+
+  /**
+   * Reflect whether the default and `actions` slots have any assigned
+   * nodes onto host attributes (`data-has-default` / `data-has-actions`),
+   * which the component CSS uses to collapse the divider/actions area.
+   */
+  #syncSlotState() {
+    const root = this.shadowRoot;
+    if (!root) return;
+
+    const update = (slotName, attr) => {
+      const slot = slotName
+        ? root.querySelector(`slot[name="${slotName}"]`)
+        : root.querySelector("slot:not([name])");
+      if (!slot) return;
+      const has = slot.assignedNodes({ flatten: true }).some((n) => {
+        if (n.nodeType === Node.ELEMENT_NODE) return true;
+        return n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0;
+      });
+      this.toggleAttribute(attr, has);
+    };
+
+    const defaultSlot = root.querySelector("slot:not([name])");
+    const actionsSlot = root.querySelector('slot[name="actions"]');
+
+    update(null, "data-has-default");
+    update("actions", "data-has-actions");
+
+    defaultSlot?.addEventListener("slotchange", () =>
+      update(null, "data-has-default"),
+    );
+    actionsSlot?.addEventListener("slotchange", () =>
+      update("actions", "data-has-actions"),
+    );
   }
 }
 

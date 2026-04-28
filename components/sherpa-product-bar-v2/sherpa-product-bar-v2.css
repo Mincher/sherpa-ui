@@ -1,0 +1,173 @@
+/**
+ * @component sherpa-product-bar-v2
+ *
+ * Light-themed product bar (Apr 2026 redesign). 48 px tall surface that sits
+ * above the view-header in the application shell. Provides:
+ *
+ *   • A "system name" trigger with caret + secondary "TIME: HH:MM" label
+ *   • An optional tabs slot for product sub-navigation
+ *   • A central search slot (defaults to <sherpa-input-search>)
+ *   • A right-aligned actions slot for icon-only buttons + the
+ *     "Ask N-zo" assistant entry point
+ *
+ * Tokens are sourced from the Sherpa design system; the bar uses
+ *   --sherpa-surface-app-product-bar-bg  (theme-aware bar surface)
+ *   --sherpa-border-container-default    (1 px bottom rule)
+ *   --sherpa-text-default-heading        (system name)
+ *   --sherpa-text-default-body           (default body text)
+ *   --sherpa-text-default-secondary      (TIME label, caret)
+ *   --sherpa-border-focus                (focus outline)
+ *
+ * All of these tokens flip with the active sherpa theme (light / dark /
+ * data-protection / classic) so no per-mode overrides are required.
+ */
+
+:host {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 48px;
+  padding-inline: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-space-md, 16px);
+
+  background: var(--sherpa-surface-app-product-bar-bg, #ffffff);
+  border-block-end: 1px solid var(--sherpa-border-container-default, #d5d5d5);
+  color: var(--sherpa-text-default-body, #111111);
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
+  box-sizing: border-box;
+}
+
+/* ================================================================
+   Brand stack — system-name trigger + time label
+   ================================================================ */
+.brand-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-inline: var(--sherpa-space-xs, 8px);
+  min-width: 120px;
+}
+
+:host([data-show-system="false"]) .brand-stack {
+  display: none;
+}
+
+/* The system-name trigger is rendered as a borderless button so it can
+   be wired to a popover/menu by the host application. Visually it is
+   plain text + a caret.  */
+.system-trigger {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sherpa-font-base-size, 14px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
+  color: var(--sherpa-text-default-heading, #111111);
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+}
+
+.system-trigger:focus-visible {
+  outline: 2px solid var(--sherpa-border-focus, #4c63e5);
+  outline-offset: 2px;
+}
+
+.system-caret {
+  font-size: 10px;
+  color: var(--sherpa-text-default-secondary, #464646);
+}
+
+.system-time {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--sherpa-font-xs-size, 11px);
+  line-height: var(--sherpa-font-xs-line-height, 16px);
+  color: var(--sherpa-text-default-secondary, #464646);
+  white-space: nowrap;
+}
+
+:host([data-show-time="false"]) .system-time {
+  display: none;
+}
+
+/* ================================================================
+   Divider — vertical hairline between brand and search/tabs
+   ================================================================ */
+.divider {
+  align-self: center;
+  width: 1px;
+  height: 36px;
+  background: var(--sherpa-border-container-default, #d5d5d5);
+  flex-shrink: 0;
+}
+
+/* ================================================================
+   Tabs — optional product sub-nav
+   ================================================================ */
+.tabs {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+:host(:not([data-has-tabs])) .tabs {
+  display: none;
+}
+
+/* ================================================================
+   Search — fills remaining space
+   ================================================================ */
+.search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: var(--sherpa-space-xs, 8px);
+}
+
+.search ::slotted(*) {
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* Style the default <sherpa-input-search> so it fills the bar nicely. */
+.default-search {
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* ================================================================
+   Actions — right-aligned icon buttons + Ask N-zo
+   ================================================================ */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex-shrink: 0;
+  padding-inline-start: var(--sherpa-space-xs, 8px);
+}
+
+:host(:not([data-has-actions])) .actions {
+  display: none;
+}
+
+/* Visually separate the Ask N-zo button from the icon cluster with a
+   tiny vertical hairline supplied via slot=actions content (consumers
+   add an element with class="actions-divider"). */
+.actions ::slotted(.actions-divider) {
+  display: inline-block;
+  width: 1px;
+  height: 24px;
+  background: var(--sherpa-border-container-default, #d5d5d5);
+  margin-inline: var(--sherpa-space-2xs, 4px);
+}

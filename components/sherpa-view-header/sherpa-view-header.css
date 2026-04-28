@@ -41,6 +41,19 @@
   white-space: nowrap;
 }
 
+/* Slot for an optional view-selection control (e.g. a scope/server
+   <sherpa-input-select>) that renders inline next to the heading. The
+   slot collapses entirely when no slotted nodes are provided so older
+   consumers see no spacing change. */
+.view-selection-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+}
+.view-selection-slot::slotted(*) {
+  margin-inline-start: var(--sherpa-space-xs);
+}
+
 /* ---- favorite button ---- */
 
 #favorite-btn {
