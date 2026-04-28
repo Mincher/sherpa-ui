@@ -24,9 +24,6 @@
    Host
    ═══════════════════════════════════════════════════════════════ */
 
-:host([hidden]) {
-  display: none !important;
-}
 
 :host {
   --_cell-px: var(--sherpa-space-xs, 8px);

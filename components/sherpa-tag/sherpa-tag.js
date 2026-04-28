@@ -5,7 +5,7 @@
  * @element sherpa-tag
  *
  * @attr {enum}    data-variant   — primary | secondary
- * @attr {enum}    data-status    — critical | info | success | warning | urgent
+ * @attr {enum}    data-status    — critical | info | success | warning | urgent | brand
  * @attr {boolean} data-collapsed — Renders as small circular indicator
  *
  * @slot — Default slot for tag label content

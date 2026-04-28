@@ -71,9 +71,6 @@
   container: sherpa-line-chart / size;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 :host([data-loading]) .chart-area {
   opacity: 0.4;

@@ -39,9 +39,6 @@
   height: 100%;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 /* ================================================================
    Inline variant — collapsed state (narrow strip)

@@ -15,9 +15,6 @@
    Host
    ═══════════════════════════════════════════════════════════════ */
 
-:host([hidden]) {
-  display: none !important;
-}
 
 :host {
   --_pagination-h: 40px;

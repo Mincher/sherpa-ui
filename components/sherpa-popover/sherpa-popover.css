@@ -47,9 +47,6 @@
   overflow: visible;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 :host([data-open]) {
   display: block;

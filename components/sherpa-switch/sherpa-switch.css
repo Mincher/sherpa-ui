@@ -18,7 +18,6 @@
   --_switch-control-size: var(--sherpa-size-sm, 16px);
 }
 
-:host([hidden]) { display: none; }
 
 /* ── Compact style variant ─────────────────────────────────────────────── */
 

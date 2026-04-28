@@ -48,9 +48,6 @@
   --_callout-icon: var(--sherpa-text-context-info-default, #0079aa);
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 /* ================================================================
    Status variants

@@ -78,7 +78,6 @@
   color: var(--_border-color, var(--sherpa-icon-context-default-secondary));
 }
 
-:host([hidden]) { display: none; }
 
 /* ── Bar mode ────────────────────────────────────────────────────── */
 

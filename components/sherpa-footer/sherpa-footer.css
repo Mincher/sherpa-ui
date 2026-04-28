@@ -17,9 +17,6 @@
   --_border-width: var(--sherpa-border-width-base, 1px);
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 .footer {
   box-sizing: border-box;

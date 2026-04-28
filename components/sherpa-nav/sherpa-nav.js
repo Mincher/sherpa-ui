@@ -102,6 +102,7 @@ export class SherpaNav extends SherpaElement {
     this.#wireToggleListeners();
     this.#setupDragDrop();
     this.#syncInitialState();
+    this.#syncSectionBadges();
 
     // Apply data-active-target if set before render
     const target = this.dataset.activeTarget;
@@ -219,6 +220,7 @@ export class SherpaNav extends SherpaElement {
     } else if (!on && existing) {
       existing.remove();
     }
+    this.#syncSectionBadges();
     this.#emit("navfavoritechange", { itemId, label, favorite: on });
   }
 
@@ -237,6 +239,50 @@ export class SherpaNav extends SherpaElement {
     summary ? summary.after(newItem) : sec.prepend(newItem);
     const items = sec.querySelectorAll(":scope > sherpa-nav-item");
     for (let i = max; i < items.length; i++) items[i].remove();
+    this.#syncSectionBadges();
+  }
+
+  /**
+   * Aggregate child badge state up to each section/subsection summary item.
+   * Sections with at least one badged descendant get `data-aggregated-badge`
+   * plus a mirrored `data-badge` / `data-badge-status` (highest-severity wins).
+   * The visible tag is hidden via sherpa-nav.css when the section is open;
+   * in collapsed nav state, sherpa-nav-item.css renders it as a status dot.
+   */
+  #syncSectionBadges() {
+    const PRIORITY = ['critical', 'urgent', 'warning', 'info', 'brand', 'success'];
+    const rank = (s) => {
+      const i = PRIORITY.indexOf(s || 'success');
+      return i === -1 ? PRIORITY.length : i;
+    };
+    const sections = this.$$('.nav-section, .nav-subsection');
+    sections.forEach((sec) => {
+      const summaryItem = sec.querySelector(':scope > summary > sherpa-nav-item');
+      if (!summaryItem) return;
+      // Skip items that already have a non-aggregated badge.
+      if (summaryItem.hasAttribute('data-badge') &&
+          summaryItem.dataset.aggregatedBadge !== 'true') return;
+      // Find badged descendants (any depth, but skip nested section summaries
+      // since those are themselves aggregating their own children).
+      const descendants = sec.querySelectorAll('sherpa-nav-item[data-badge]');
+      let best = null;
+      descendants.forEach((d) => {
+        if (d === summaryItem) return;
+        if (d.dataset.aggregatedBadge === 'true') return;
+        if (!best || rank(d.dataset.badgeStatus) < rank(best.dataset.badgeStatus)) {
+          best = d;
+        }
+      });
+      if (best) {
+        summaryItem.dataset.aggregatedBadge = 'true';
+        summaryItem.dataset.badge = best.dataset.badge || '•';
+        summaryItem.dataset.badgeStatus = best.dataset.badgeStatus || 'success';
+      } else if (summaryItem.dataset.aggregatedBadge === 'true') {
+        delete summaryItem.dataset.aggregatedBadge;
+        summaryItem.removeAttribute('data-badge');
+        summaryItem.removeAttribute('data-badge-status');
+      }
+    });
   }
 
   // ═══════════════════════ Private — Helpers ══════════════════════

@@ -36,9 +36,6 @@
   box-sizing: border-box;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 /* ================================================================
    Branding — icon + product name

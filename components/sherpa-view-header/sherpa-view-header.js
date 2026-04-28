@@ -73,7 +73,11 @@ export class SherpaViewHeader extends SherpaElement {
 
   setHeading(name) { this.dataset.label = name; }
   getHeading() { return this.dataset.label || ''; }
-  setViewId(id) { this.#viewId = id; }
+  setViewId(id) {
+    this.#viewId = id;
+    if (id) this.dataset.viewId = id;
+    else delete this.dataset.viewId;
+  }
   getViewId() { return this.#viewId; }
   setFavorite(on) {
     this.dataset.favorite = on ? 'true' : 'false';

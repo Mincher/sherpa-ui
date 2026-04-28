@@ -59,7 +59,6 @@
   transition: border-color 0.15s;
 }
 
-:host([hidden]) { display: none; }
 
 
 /* ==========================================================================
@@ -269,7 +268,7 @@
 :host([data-variant="secondary"]) {
   --_surface:       var(--_status-surface, transparent);
   --_text:          var(--_status-text,     var(--sherpa-text-default-label));
-  --_icon-color:    var(--_status-text,     var(--sherpa-icon-context-default-body, var(--sherpa-text-default-label)));
+  --_icon-color:    var(--_status-text,     var(--sherpa-icon-context-default-body, #333));
   --_surface-hover: var(--_status-surface-hover, var(--sherpa-surface-control-secondary-hover));
   --_surface-down:  var(--_status-surface-down,  var(--sherpa-surface-control-secondary-down));
   --_border-hover:  var(--_status-border,         var(--sherpa-border-control-secondary-hover));

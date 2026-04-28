@@ -30,9 +30,6 @@
   container-name: barchart;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 :host([data-loading]) .chart-rows {
   filter: grayscale(0.6);

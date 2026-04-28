@@ -20,9 +20,6 @@
   container-type: normal;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 .sherpa-empty-state {
   display: flex;

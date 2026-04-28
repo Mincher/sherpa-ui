@@ -17,6 +17,7 @@ Available templates:
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-icon` | string | FontAwesome icon class (e.g. "fa-home") | — | — |
 | `data-badge` | string | Badge text rendered via internal sherpa-tag | — | — |
+| `data-badge-status` | enum | Badge status — sets the internal sherpa-tag's `data-status` | `success` | `critical`, `info`, `success`, `warning`, `urgent`, `brand` |
 | `data-variant` | enum | section \| subsection \| child | — | `section`, `subsection`, `child` |
 | `data-state` | enum | selected | — | — |
 

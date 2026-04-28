@@ -41,9 +41,6 @@
   container: sherpa-gauge-chart / inline-size;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 :host([data-loading]) .gauge-wrap {
   opacity: 0.4;

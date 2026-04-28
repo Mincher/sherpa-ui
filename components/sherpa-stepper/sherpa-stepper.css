@@ -13,9 +13,6 @@
   --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 15px);
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 .stepper-container {
   width: 100%;

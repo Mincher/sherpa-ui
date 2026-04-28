@@ -16,7 +16,6 @@
   display: block;
 }
 
-:host([hidden]) { display: none; }
 
 .header-surface {
   display: flex;
@@ -45,16 +44,15 @@
 /* ---- favorite button ---- */
 
 #favorite-btn {
-  display: none;
   flex-shrink: 0;
+}
+
+:host(:not([data-view-id])) #favorite-btn {
+  display: none;
 }
 
 #favorite-btn[data-favorite="true"] {
   --_icon-color: var(--sherpa-text-context-warning-default, #d4a017);
-}
-
-:host([data-show-debug-toggles]) #favorite-btn {
-  display: inline-flex;
 }
 
 /* ---- dividers & toggles ---- */

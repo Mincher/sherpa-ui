@@ -19,6 +19,7 @@
     data-search-hidden — Hidden during search filtering
     data-nav-target    — Navigation target identifier
     data-badge         — Tag/badge label text
+    data-badge-status  — Badge status (critical | info | success | warning | urgent | brand). Defaults to "success".
     data-has-badge     — Auto-managed: present when data-badge is set
     data-has-label     — Auto-managed by SherpaElement slot detection
 -->
@@ -28,7 +29,10 @@
   <div class="nav-item-drag" part="drag" aria-hidden="true">
     <i class="fa-solid fa-grip-vertical sherpa-icon" data-size="xs" aria-hidden="true"></i>
   </div>
-  <div class="nav-item-icon" part="icon"><i class="sherpa-icon" data-size="xs" aria-hidden="true"></i></div>
+  <div class="nav-item-icon" part="icon">
+    <span class="nav-item-icon-inner"><i class="sherpa-icon" data-size="xs" aria-hidden="true"></i></span>
+    <span class="nav-item-dot" part="dot" aria-hidden="true"></span>
+  </div>
   <span class="nav-item-label text-nav-item" part="label"><slot></slot></span>
   <sherpa-tag class="nav-item-tag" data-status="success" part="tag"></sherpa-tag>
   <span class="nav-item-chevron" part="chevron" aria-hidden="true">

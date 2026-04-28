@@ -25,7 +25,6 @@
   --_padding-block: var(--sherpa-space-sm, 12px);
 }
 
-:host([hidden]) { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    <dl> — flex container, one dt/dd pair per row via CSS grid-like flex wrap

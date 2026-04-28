@@ -10,7 +10,6 @@
   --_content-gap: var(--sherpa-space-default, 16px);
 }
 
-:host([hidden]) { display: none; }
 
 /* ---- heading-type variants ---- */
 

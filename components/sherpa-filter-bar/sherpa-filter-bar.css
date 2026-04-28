@@ -13,10 +13,6 @@
  *   --_filter-bar-gap: Gap between items
  */
 
-:host([hidden]) {
-  display: none !important;
-}
-
 :host {
   --_filter-bar-py: var(--sherpa-space-xs, 8px);
   --_filter-bar-px: var(--sherpa-space-xs, 8px);

@@ -41,7 +41,6 @@
   background: var(--sherpa-surface-app-product-nav-hover);
 }
 
-:host([hidden]),
 :host([data-search-hidden]) {
   display: none;
 }
@@ -110,11 +109,32 @@
   display: none;
   font-size: var(--icon-size);
   color: var(--sherpa-icon-context-default-on-color-heading);
+  position: relative;
 }
 
-:host([data-icon]) .nav-item-icon {
+:host([data-icon]) .nav-item-icon,
+:host([data-icon-svg]) .nav-item-icon,
+:host([data-svg-icon]) .nav-item-icon {
   display: flex;
   align-items: center;
+  justify-content: center;
+}
+
+.nav-item-icon-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-item-icon .sherpa-nav-item-svg {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  color: inherit;
+  fill: currentColor;
+}
+
+.nav-item-icon .sherpa-nav-item-svg path {
+  fill: currentColor;
 }
 
 .nav-item-drag .sherpa-icon,
@@ -224,5 +244,36 @@
 :host([data-variant="subsection"]) {
   background: var(--sherpa-surface-app-product-nav-secondary);
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   STATUS DOT — bottom-right of icon, shown only when nav is collapsed.
+   In expanded nav, the full sherpa-tag pill is used instead.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-item-dot {
+  display: none;
+  position: absolute;
+  bottom: -2px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  background: var(--_dot-color, var(--sherpa-border-context-success-default));
+  box-shadow: 0 0 0 2px var(--sherpa-surface-app-product-nav-bg);
+  pointer-events: none;
+}
+
+@container sherpa-nav (max-width: 319px) {
+  :host([data-has-badge]) .nav-item-dot {
+    display: block;
+  }
+}
+
+:host([data-badge-status="critical"]) { --_dot-color: var(--sherpa-border-context-error-default); }
+:host([data-badge-status="info"])     { --_dot-color: var(--sherpa-border-context-info-default); }
+:host([data-badge-status="success"])  { --_dot-color: var(--sherpa-border-context-success-default); }
+:host([data-badge-status="warning"])  { --_dot-color: var(--sherpa-border-context-warning-default); }
+:host([data-badge-status="urgent"])   { --_dot-color: var(--sherpa-border-context-urgent-default); }
+:host([data-badge-status="brand"])    { --_dot-color: light-dark(var(--sherpa-color-brand-500), var(--sherpa-color-brand-400)); }
 
 

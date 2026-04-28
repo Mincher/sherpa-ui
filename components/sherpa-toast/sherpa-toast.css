@@ -36,7 +36,6 @@
    * Private vars map: --_status-surface → bg, --_status-border → border, --_status-icon → icon */
 }
 
-:host([hidden]) { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Toast

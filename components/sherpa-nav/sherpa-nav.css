@@ -44,9 +44,6 @@
   user-select: none;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 /* Width states — host carries mirrored data-pinned / data-mode */
 :host(:not([data-pinned="true"]):is(:hover, :focus-within)) {
@@ -178,6 +175,15 @@ summary {
     height: 0 !important;
     opacity: 0 !important;
   }
+}
+
+/* Aggregated child badge: hide the summary's tag pill when the section
+   is open (children render their own badges). The status dot variant
+   shown in collapsed nav is unaffected — the section's content is force-
+   collapsed in that state regardless of [open]. */
+.nav-section[open] > summary > sherpa-nav-item[data-aggregated-badge="true"]::part(tag),
+.nav-subsection[open] > summary > sherpa-nav-item[data-aggregated-badge="true"]::part(tag) {
+  display: none !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════

@@ -33,7 +33,6 @@
   --_tag-border-rounding: var(--sherpa-border-rounding-lg, 8px);
 }
 
-:host([hidden]) { display: none; }
 
 /* ── Color variants ────────────────────────────────────────────────────── */
 
@@ -147,6 +146,12 @@
   --_status-surface: var(--sherpa-surface-context-urgent-subtle-default);
   --_status-border:  var(--sherpa-border-context-urgent-default);
   --_status-text:    var(--sherpa-text-context-urgent-default);
+}
+
+:host([data-status="brand"]) {
+  --_status-surface: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
+  --_status-border:  light-dark(var(--sherpa-color-brand-400), var(--sherpa-color-brand-700));
+  --_status-text:    light-dark(var(--sherpa-color-brand-700), var(--sherpa-color-brand-200));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

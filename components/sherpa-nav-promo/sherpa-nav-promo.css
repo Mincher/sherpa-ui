@@ -12,7 +12,6 @@
   border-radius: var(--sherpa-border-rounding-base);
 }
 
-:host([hidden]),
 :host([data-dismissed]) {
   display: none !important;
 }

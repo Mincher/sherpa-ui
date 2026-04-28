@@ -9,7 +9,7 @@ Compact label component with variant and status support.
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-variant` | enum | primary \| secondary | — | `primary`, `secondary` |
-| `data-status` | enum | critical \| info \| success \| warning \| urgent | — | `critical`, `info`, `success`, `warning`, `urgent` |
+| `data-status` | enum | critical \| info \| success \| warning \| urgent \| brand | — | `critical`, `info`, `success`, `warning`, `urgent`, `brand` |
 | `data-collapsed` | boolean | Renders as small circular indicator | — | — |
 
 ## Slots

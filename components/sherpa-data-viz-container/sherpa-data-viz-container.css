@@ -64,9 +64,6 @@
   container-name: sherpa-data-viz-container;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 :host([data-menu-open="true"]) {
   border-color: var(--sherpa-border-control-primary-default);

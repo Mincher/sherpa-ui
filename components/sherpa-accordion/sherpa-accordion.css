@@ -28,7 +28,6 @@
   overflow: hidden;
 }
 
-:host([hidden]) { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    DETAILS — remove default marker

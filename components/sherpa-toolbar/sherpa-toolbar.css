@@ -9,10 +9,6 @@
  *   --_toolbar-gap: Gap between items within zones
  */
 
-:host([hidden]) {
-  display: none !important;
-}
-
 :host {
   --_toolbar-py: var(--sherpa-space-xs, 8px);
   --_toolbar-px: var(--sherpa-space-sm, 12px);

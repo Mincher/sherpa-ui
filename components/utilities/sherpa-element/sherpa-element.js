@@ -3,7 +3,8 @@
  *
  * Handles:
  *   • Template fetching with class-level caching
- *   • Shadow DOM setup (CSS via `<link>`, HTML via fetch)
+ *   • Shadow DOM setup (CSS via adoptedStyleSheets, HTML via fetch)
+ *   • @import resolution for constructable stylesheets
  *   • Multi-template support (`<template id="...">` blocks)
  *   • Slot presence detection (`data-has-*` on host)
  *   • Query helpers `$(sel)` and `$$(sel)` on the shadow root
@@ -37,11 +38,15 @@
  *   triggering CSS rules meant for consumer-provided content.
  */
 
+import { getSheet } from "../stylesheet-cache.js";
+
 // ── Class-level caches ─────────────────────────────────────────────
 const _htmlCache = new Map();
 const _templateMapCache = new Map();
+const _classSheets = new Map();
 
 // ── Shared stylesheet URLs ─────────────────────────────────────────
+const BASE_URL = new URL("./sherpa-base.css", import.meta.url).href;
 const FA_URL =
   "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";
 const TEXT_URL = new URL(
@@ -56,6 +61,8 @@ const MOTION_URL = new URL(
   "../../../css/styles/sherpa-motion-classes.css",
   import.meta.url,
 ).href;
+
+export { BASE_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL };
 
 /**
  * Parse an HTML string for `<template id="...">` blocks.
@@ -87,9 +94,9 @@ export class SherpaElement extends HTMLElement {
     return null;
   }
 
-  /** Shared stylesheets injected into every shadow root. Override to customise. */
+  /** Shared stylesheets adopted by every shadow root. Override to customise. */
   static get sharedStyles() {
-    return [FA_URL, TEXT_URL, ICON_URL, MOTION_URL];
+    return [BASE_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL];
   }
 
   /* ── Observed attributes ──────────────────────────────────────── */
@@ -175,13 +182,23 @@ export class SherpaElement extends HTMLElement {
     this.toggleAttribute(`data-has-${name}`, hasContent);
   }
 
-  /* ── Style link construction (DRY helper) ─────────────────────── */
+  /* ── Constructable stylesheet adoption ─────────────────────────── */
 
-  #buildStyleLinks() {
+  async #adoptStyles() {
     const Ctor = this.constructor;
-    const urls = [...Ctor.sharedStyles];
-    if (Ctor.cssUrl) urls.push(Ctor.cssUrl);
-    return urls.map((u) => `<link rel="stylesheet" href="${u}">`).join("");
+    if (!_classSheets.has(Ctor)) {
+      const urls = [...Ctor.sharedStyles];
+      if (Ctor.cssUrl) urls.push(Ctor.cssUrl);
+      _classSheets.set(
+        Ctor,
+        urls.length
+          ? Promise.all(urls.map((u) => getSheet(u).catch(() => null))).then(
+              (r) => r.filter(Boolean),
+            )
+          : Promise.resolve([]),
+      );
+    }
+    this.#shadow.adoptedStyleSheets = await _classSheets.get(Ctor);
   }
 
   /* ── Template resolution ──────────────────────────────────────── */
@@ -200,6 +217,9 @@ export class SherpaElement extends HTMLElement {
   async #bootstrap() {
     const Ctor = this.constructor;
 
+    // Start stylesheet adoption (parallel with HTML fetch)
+    const stylesReady = this.#adoptStyles();
+
     // Fetch HTML template (once per class)
     let rawHtml = _htmlCache.get(Ctor);
     if (rawHtml === undefined && Ctor.htmlUrl) {
@@ -214,6 +234,9 @@ export class SherpaElement extends HTMLElement {
       _htmlCache.set(Ctor, rawHtml);
     }
 
+    // Wait for stylesheets before populating DOM (prevents FOUC)
+    await stylesReady;
+
     // Parse multi-template blocks (once per class)
     let tplMap = _templateMapCache.get(Ctor);
     if (tplMap === undefined) {
@@ -222,7 +245,7 @@ export class SherpaElement extends HTMLElement {
     }
 
     const html = this.#resolveHtml(tplMap, rawHtml, this.templateId);
-    this.#shadow.innerHTML = `${this.#buildStyleLinks()}${html}`;
+    this.#shadow.innerHTML = html;
 
     await this.onRender();
     this.#wireSlots();
@@ -243,7 +266,7 @@ export class SherpaElement extends HTMLElement {
     const tplMap = _templateMapCache.get(Ctor);
     const html = this.#resolveHtml(tplMap, _htmlCache.get(Ctor), id);
 
-    this.#shadow.innerHTML = `${this.#buildStyleLinks()}${html}`;
+    this.#shadow.innerHTML = html;
 
     await this.onRender();
     this.#wireSlots();
@@ -253,7 +276,7 @@ export class SherpaElement extends HTMLElement {
 
   /**
    * Re-render shadow DOM with HTML fetched from the given URL.
-   * Preserves `<link>` and `<style>` elements from bootstrap.
+   * adoptedStyleSheets persist on the shadow root across renders.
    * @param {string} url — URL to fetch HTML from
    * @returns {Promise<boolean>} — true if successful
    */
@@ -263,18 +286,7 @@ export class SherpaElement extends HTMLElement {
       if (!resp.ok) return false;
       const html = await resp.text();
 
-      for (const child of [...this.#shadow.childNodes]) {
-        if (
-          child.nodeType === Node.ELEMENT_NODE &&
-          (child.tagName === "LINK" || child.tagName === "STYLE")
-        )
-          continue;
-        child.remove();
-      }
-
-      const temp = document.createElement("div");
-      temp.innerHTML = html;
-      this.#shadow.append(...temp.childNodes);
+      this.#shadow.innerHTML = html;
 
       // Wait for any custom elements in the loaded HTML to be defined
       // before calling onRender(), so subclass hooks can safely access

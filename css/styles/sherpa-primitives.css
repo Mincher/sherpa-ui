@@ -491,10 +491,6 @@
  *   shadow/default/md     → --sherpa-shadow-default-md  (2-layer)
  *   shadow/default/lg     → --sherpa-shadow-default-lg
  *   shadow/default/sunken → --sherpa-shadow-default-sunken (inset)
- *   shadow/status/sm      → --sherpa-shadow-status-sm
- *   shadow/status/md      → --sherpa-shadow-status-md
- *   shadow/status/lg      → --sherpa-shadow-status-lg
- *   shadow/status/sunken  → --sherpa-shadow-status-sunken (inset)
  * ──────────────────────────────────────────────────────────────────── */
 
 :root {
@@ -533,35 +529,4 @@
     var(--sherpa-elevation-blur-sunken, 4px)
     var(--sherpa-elevation-spread-sunken, 4px)
     var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2));
-
-  /* ── Status shadows (same geometry, status-aware colour) ──────── */
-
-  --sherpa-shadow-status-sm:
-    var(--sherpa-elevation-offset-x-small, 2px)
-    var(--sherpa-elevation-offset-y-small, 2px)
-    var(--sherpa-elevation-blur-small, 8px)
-    var(--sherpa-elevation-spread-small, -4px)
-    var(--_status-shadow, var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
-
-  --sherpa-shadow-status-md:
-    var(--sherpa-elevation-offset-x-default, 4px)
-    var(--sherpa-elevation-offset-y-default, 4px)
-    var(--sherpa-elevation-blur-default, 12px)
-    var(--sherpa-elevation-spread-default, -2px)
-    var(--_status-shadow, var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
-
-  --sherpa-shadow-status-lg:
-    var(--sherpa-elevation-offset-x-large, 8px)
-    var(--sherpa-elevation-offset-y-large, 8px)
-    var(--sherpa-elevation-blur-large, 16px)
-    var(--sherpa-elevation-spread-large, 2px)
-    var(--_status-shadow, var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
-
-  --sherpa-shadow-status-sunken:
-    inset
-    var(--sherpa-elevation-offset-x-sunken, -4px)
-    var(--sherpa-elevation-offset-y-sunken, 4px)
-    var(--sherpa-elevation-blur-sunken, 4px)
-    var(--sherpa-elevation-spread-sunken, 4px)
-    var(--_status-shadow, var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
 }

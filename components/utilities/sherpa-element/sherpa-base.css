@@ -1,0 +1,5 @@
+/**
+ * sherpa-base.css — Universal host rules shared by all SherpaElement components.
+ * Adopted automatically via SherpaElement.sharedStyles.
+ */
+:host([hidden]) { display: none !important; }

@@ -36,10 +36,6 @@
   color: var(--sherpa-text-default-body, #333);
 }
 
-:host([hidden]) {
-  display: none;
-}
-
 :host([disabled]) {
   pointer-events: none;
 }

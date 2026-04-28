@@ -27,9 +27,6 @@
   box-sizing: border-box;
 }
 
-:host([hidden]) {
-  display: none;
-}
 
 :host([data-loading]) {
   opacity: 0.4;

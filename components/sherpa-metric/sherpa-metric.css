@@ -26,7 +26,6 @@
   color: inherit;
 }
 
-:host([hidden]) { display: none; }
 
 :host([data-visible="false"]) { display: none; }
 
@@ -226,7 +225,7 @@
 }
 
 .metric-delta {
-  color: var(--_text-color, var(--sherpa-text-default-on-color-subtle-body, var(--sherpa-text-default-body)));
+  color: var(--_text-color, var(--sherpa-text-default-on-color-subtle-body, #333));
 }
 
 /* Trend icon visibility */
