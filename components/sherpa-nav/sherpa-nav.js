@@ -40,6 +40,9 @@
  * @fires naveditcancel
  *   bubbles: true, composed: true
  *   detail: none
+ * @fires naveditreset
+ *   bubbles: true, composed: true
+ *   detail: none
  *
  * @method startSearch           — Enter search mode
  * @method endSearch             — Exit search mode
@@ -82,6 +85,13 @@ export class SherpaNav extends SherpaElement {
   #defaultUrl = new URL("./sherpa-nav.html", import.meta.url).href;
   #navItemTpl = null; // Cached <template class="nav-item-tpl">
   #badgeTpl = null; // Cached <template class="badge-tpl">
+  #defaultOrders = null; // Map<groupIndex, sortKey[]> captured at render
+  // Last selection requested by the host. Persisted on the instance so we
+  // can re-apply the active-state styling after the nav template is
+  // swapped via data-src or otherwise re-rendered — without this the
+  // current page would visually deselect every time the definition
+  // changes (the new DOM has no [data-state="selected"] markers).
+  #lastSelection = null; // { kind: 'item'|'link', itemId?, sectionId?, target? }
 
   /** @returns {HTMLElement|null} The .sherpa-nav-root wrapper inside the shadow root. */
   get #root() {
@@ -96,17 +106,36 @@ export class SherpaNav extends SherpaElement {
       this.#hostClickWired = true;
     }
     this.#searchField = this.$(".nav-search sherpa-input-search");
-    this.#navItemTpl = this.$("template.nav-item-tpl");
-    this.#badgeTpl = this.$("template.badge-tpl");
+    this.#navItemTpl = this.$("template.nav-item-tpl") || this.#injectFallbackTemplate(
+      "nav-item-tpl",
+      '<sherpa-nav-item data-variant="child" tabindex="0" role="button"></sherpa-nav-item>',
+    );
+    this.#badgeTpl = this.$("template.badge-tpl") || this.#injectFallbackTemplate(
+      "badge-tpl",
+      '<sherpa-tag slot="badge" data-status="success"></sherpa-tag>',
+    );
     this.#attachContentEvents();
     this.#wireToggleListeners();
     this.#setupDragDrop();
     this.#syncInitialState();
+    this.#hydrateQuickAccess();
     this.#syncSectionBadges();
 
     // Apply data-active-target if set before render
     const target = this.dataset.activeTarget;
     if (target) this.setActiveLink(target);
+
+    // Re-apply the host's last requested selection after a re-render
+    // (e.g. data-src swap). data-active-target takes precedence if set,
+    // otherwise replay whichever setActive* call last fired.
+    if (!target && this.#lastSelection) {
+      const sel = this.#lastSelection;
+      if (sel.kind === "item") {
+        this.#applyActiveItem(sel.itemId, sel.sectionId);
+      } else if (sel.kind === "link") {
+        this.#applyActiveLink(sel.target);
+      }
+    }
   }
 
   async onConnect() {
@@ -180,18 +209,41 @@ export class SherpaNav extends SherpaElement {
   }
 
   setActiveLink(target) {
+    this.#lastSelection = { kind: "link", target };
+    this.#applyActiveLink(target);
+  }
+
+  #applyActiveLink(target) {
     this.#clearAllActiveStates();
     const item = this.$(`[data-nav-target="${target}"]`);
     if (item) item.dataset.state = "selected";
   }
 
   setActiveItem(itemId, sectionId = null) {
+    this.#lastSelection = { kind: "item", itemId, sectionId };
+    this.#applyActiveItem(itemId, sectionId);
+  }
+
+  #applyActiveItem(itemId, sectionId = null) {
     this.#clearAllActiveStates();
-    const sel = sectionId
-      ? `.nav-section[data-section-id="${sectionId}"] sherpa-nav-item[data-item-id="${itemId}"]`
-      : `sherpa-nav-item[data-item-id="${itemId}"]`;
-    const item = this.$(sel);
-    if (item) item.dataset.state = "selected";
+    // Always highlight every nav item that matches the itemId, so mirrors of
+    // the same target inside Favorites / Recents (or any other section) are
+    // visually selected alongside the canonical entry. The optional sectionId
+    // is still honoured to pick a primary item when callers care about it.
+    const root = this.#root;
+    if (!root) return;
+    const matches = root.querySelectorAll(
+      `sherpa-nav-item[data-item-id="${itemId}"]`,
+    );
+    matches.forEach((el) => {
+      el.dataset.state = "selected";
+    });
+    if (sectionId) {
+      const primary = root.querySelector(
+        `.nav-section[data-section-id="${sectionId}"] sherpa-nav-item[data-item-id="${itemId}"]`,
+      );
+      if (primary) primary.dataset.state = "selected";
+    }
   }
 
   // ═══════════════════════ Recents & Favorites ═════════════════════
@@ -211,15 +263,20 @@ export class SherpaNav extends SherpaElement {
       `sherpa-nav-item[data-item-id="${itemId}"]`,
     );
     if (on && !existing) {
-      sec.appendChild(
-        this.#createNavItem(
-          { id: itemId, label, route },
-          sec.dataset.editable === "true",
-        ),
+      const item = this.#createNavItem(
+        { id: itemId, label, route },
+        sec.dataset.editable === "true",
       );
+      // Mirror selection state from any other live entry with the same id
+      // so the new favorite lights up alongside the canonical nav item.
+      if (this.$(`sherpa-nav-item[data-item-id="${itemId}"][data-state="selected"]`)) {
+        item.dataset.state = 'selected';
+      }
+      sec.appendChild(item);
     } else if (!on && existing) {
       existing.remove();
     }
+    this.#persistQuickAccess('favorites');
     this.#syncSectionBadges();
     this.#emit("navfavoritechange", { itemId, label, favorite: on });
   }
@@ -230,27 +287,129 @@ export class SherpaNav extends SherpaElement {
     const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
     const max = parseInt(sec.dataset.maxItems, 10) || 5;
-    sec.querySelector(`sherpa-nav-item[data-item-id="${itemId}"]`)?.remove();
+    // If this item is already in the Recents section, leave the existing
+    // entry exactly where it is — re-clicking a recent should NOT cause
+    // the list to reorder. We still refresh its label/route in case the
+    // upstream metadata changed, and re-mirror selection styling below.
+    const existing = sec.querySelector(`:scope > sherpa-nav-item[data-item-id="${itemId}"]`);
+    if (existing) {
+      if (label) existing.setAttribute('data-label', label);
+      if (route) existing.dataset.route = route;
+      if (this.$(`sherpa-nav-item[data-item-id="${itemId}"][data-state="selected"]`)) {
+        existing.dataset.state = 'selected';
+      }
+      this.#persistQuickAccess('recent');
+      this.#syncSectionBadges();
+      return;
+    }
     const newItem = this.#createNavItem(
       { id: itemId, label, route },
       sec.dataset.editable === "true",
     );
+    // If this item is the currently active route, mirror selection so the
+    // freshly-inserted recent entry shows the active style immediately.
+    if (this.$(`sherpa-nav-item[data-item-id="${itemId}"][data-state="selected"]`)) {
+      newItem.dataset.state = 'selected';
+    }
     const summary = sec.querySelector(":scope > summary");
     summary ? summary.after(newItem) : sec.prepend(newItem);
     const items = sec.querySelectorAll(":scope > sherpa-nav-item");
     for (let i = max; i < items.length; i++) items[i].remove();
+    this.#persistQuickAccess('recent');
     this.#syncSectionBadges();
+  }
+
+  // ═══════════════════ Recents & Favorites — Persistence ═══════════
+
+  /**
+   * Storage keys are shared across nav templates by default so a user's
+   * recents and favorites survive switching between nav definitions. To
+   * scope storage per-template (e.g. when item ids collide) set
+   * `data-recent-storage-key` / `data-favorites-storage-key` on the host.
+   */
+  get #recentStorageKey() {
+    return this.dataset.recentStorageKey || 'sherpa-nav-recent';
+  }
+  get #favoritesStorageKey() {
+    return this.dataset.favoritesStorageKey || 'sherpa-nav-favorites';
+  }
+
+  #readStored(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  #writeStored(key, items) {
+    try { localStorage.setItem(key, JSON.stringify(items)); } catch {}
+  }
+
+  /** Snapshot the live items in a quick-access section to {id,label,route}. */
+  #snapshotSection(sec) {
+    if (!sec) return [];
+    const out = [];
+    sec.querySelectorAll(':scope > sherpa-nav-item').forEach((el) => {
+      const id = el.dataset.itemId;
+      if (!id) return;
+      out.push({
+        id,
+        label: (el.textContent || '').trim(),
+        route: el.dataset.route || '',
+      });
+    });
+    return out;
+  }
+
+  /** Persist current state of a quick-access section ('recent' | 'favorites'). */
+  #persistQuickAccess(which) {
+    const secId = which === 'favorites'
+      ? (this.dataset.favoritesSection || 'favorites')
+      : (this.dataset.recentSection || 'recent');
+    const key = which === 'favorites' ? this.#favoritesStorageKey : this.#recentStorageKey;
+    const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
+    if (!sec) return;
+    this.#writeStored(key, this.#snapshotSection(sec));
+  }
+
+  /**
+   * After each render of the nav template, repopulate Recent and Favorites
+   * sections from localStorage so the user's history survives template
+   * switches and full page reloads.
+   */
+  #hydrateQuickAccess() {
+    const hydrate = (secId, key, max) => {
+      const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
+      if (!sec) return;
+      const stored = this.#readStored(key);
+      // Wipe template-declared placeholders before injecting stored entries.
+      sec.querySelectorAll(':scope > sherpa-nav-item').forEach((n) => n.remove());
+      const editable = sec.dataset.editable === 'true';
+      const limit = max ?? (parseInt(sec.dataset.maxItems, 10) || stored.length);
+      stored.slice(0, limit).forEach((item) => {
+        if (!item || !item.id) return;
+        sec.appendChild(this.#createNavItem(item, editable));
+      });
+    };
+    hydrate(this.dataset.recentSection || 'recent', this.#recentStorageKey);
+    hydrate(this.dataset.favoritesSection || 'favorites', this.#favoritesStorageKey);
   }
 
   /**
    * Aggregate child badge state up to each section/subsection summary item.
    * Sections with at least one badged descendant get `data-aggregated-badge`
    * plus a mirrored `data-badge` / `data-badge-status` (highest-severity wins).
-   * The visible tag is hidden via sherpa-nav.css when the section is open;
+   * The aggregated tag remains visible whether the section is open or closed —
    * in collapsed nav state, sherpa-nav-item.css renders it as a status dot.
    */
   #syncSectionBadges() {
-    const PRIORITY = ['critical', 'urgent', 'warning', 'info', 'brand', 'success'];
+    // Severity order from highest → lowest. "success" (New) outranks
+    // "brand" (Preview) so that a section parent showing an aggregated
+    // status reflects newly-shipped work over previews.
+    const PRIORITY = ['critical', 'urgent', 'warning', 'info', 'success', 'brand'];
     const rank = (s) => {
       const i = PRIORITY.indexOf(s || 'success');
       return i === -1 ? PRIORITY.length : i;
@@ -359,6 +518,11 @@ export class SherpaNav extends SherpaElement {
       if (!e.detail?.value) this.endSearch();
     });
 
+    this.$(".nav-edit-reset")?.addEventListener("click", () => {
+      this.resetOrder();
+      this.mode = SherpaNav.MODES.DEFAULT;
+    });
+    // Legacy buttons still wire up if a consumer template hasn't migrated yet.
     this.$(".nav-edit-confirm")?.addEventListener("click", () => {
       this.#emit("naveditconfirm");
       this.mode = SherpaNav.MODES.DEFAULT;
@@ -417,22 +581,68 @@ export class SherpaNav extends SherpaElement {
       return;
     }
 
-    // Section/subsection headers — handled by <details> toggle
+    // Section/subsection headers — handled by <details> toggle ONLY when
+    // the section has children. Childless section/subsection headers behave
+    // like leaf items: they navigate, get selected styling, and don't toggle.
     if (
       navItem.dataset.variant === "section" ||
       navItem.dataset.variant === "subsection"
-    )
+    ) {
+      const details = navItem.closest("details");
+      const hasChildren = details
+        ? details.querySelector(":scope > sherpa-nav-item, :scope > :not(summary)")
+        : null;
+      if (hasChildren) return;
+      // No children — fall through to leaf-item handling below. Prevent the
+      // surrounding <details> from toggling on this click.
+      e.preventDefault();
+      this.#clearAllActiveStates();
+      navItem.dataset.state = "selected";
+      if (this.isEditing) this.mode = SherpaNav.MODES.DEFAULT;
+      if (this.isSearching) this.endSearch();
+      const childlessSectionId = details?.dataset.sectionId || null;
+      this.#emit("navitemclick", {
+        itemId: navItem.dataset.itemId,
+        sectionId: childlessSectionId,
+        route: navItem.dataset.route,
+        label: this.#getItemLabel(navItem),
+      });
+      this.#trackRecentForLeaf(navItem, childlessSectionId);
       return;
+    }
 
     // Regular child item
     if (this.isEditing) this.mode = SherpaNav.MODES.DEFAULT;
     if (this.isSearching) this.endSearch();
+    const leafSectionId = navItem.closest(".nav-section")?.dataset.sectionId || null;
     this.#emit("navitemclick", {
       itemId: navItem.dataset.itemId,
-      sectionId: navItem.closest(".nav-section")?.dataset.sectionId || null,
+      sectionId: leafSectionId,
       route: navItem.dataset.route,
       label: this.#getItemLabel(navItem),
     });
+    this.#trackRecentForLeaf(navItem, leafSectionId);
+  }
+
+  /**
+   * Push the just-clicked leaf item into the Recents section automatically.
+   * Skipped when:
+   *  - host opts out via `data-track-recents="false"`
+   *  - the item lives inside the Recents section itself (no churn)
+   *  - the item is a known utility shortcut (favorites/recent/recents)
+   *  - the item has no `data-item-id` (nothing to key on)
+   */
+  #trackRecentForLeaf(navItem, sectionId) {
+    if (this.dataset.trackRecents === "false") return;
+    const itemId = navItem.dataset.itemId;
+    if (!itemId) return;
+    const recentSectionId = this.dataset.recentSection || "recent";
+    if (sectionId && sectionId === recentSectionId) return;
+    const utilityIds = new Set(["favorites", "recent", "recents"]);
+    if (utilityIds.has(itemId.toLowerCase())) return;
+    const label = this.#getItemLabel(navItem);
+    const route = navItem.dataset.route || "";
+    this.addToRecent(itemId, label, route);
   }
 
   // ═══════════════════ Private — State Changes ══════════════════
@@ -455,6 +665,19 @@ export class SherpaNav extends SherpaElement {
   }
 
   // ═══════════════════ Private — Item Creation ══════════════════
+
+  /**
+   * Inject a fallback <template> into the shadow root when a custom
+   * data-src nav HTML omits the cloning templates that the component
+   * relies on for hydrating recents/favorites and section headers.
+   */
+  #injectFallbackTemplate(className, innerHTML) {
+    const tpl = document.createElement("template");
+    tpl.className = className;
+    tpl.innerHTML = innerHTML;
+    (this.$(".sherpa-nav-root") || this.shadowRoot).appendChild(tpl);
+    return tpl;
+  }
 
   #createNavItem(item, editable = false) {
     const el = this.#navItemTpl.content
@@ -481,14 +704,31 @@ export class SherpaNav extends SherpaElement {
   // ═════════════════════ Private — Drag & Drop ══════════════════
 
   #setupDragDrop() {
+    // Capture the template-declared order for each draggable group BEFORE
+    // we apply any persisted user reorder, so resetOrder() can restore it.
+    this.#captureDefaultOrders();
     this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
       const gi = parseInt(container.dataset.groupIndex, 10);
+      // Mirror sectionId / itemId into a single dataset.sortKey so the
+      // generic drag-sort utility reads one attribute for both kinds of
+      // draggable item (collapsible section + standalone top-level row).
+      const tagSortKeys = () => {
+        container
+          .querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')
+          .forEach((el) => {
+            el.dataset.sortKey = el.dataset.sectionId || el.dataset.itemId || '';
+          });
+      };
+      tagSortKeys();
+      new MutationObserver(tagSortKeys).observe(container, { childList: true });
+
       setupDragSort(container, {
-        itemSelector: ":scope > .nav-section",
+        itemSelector: ':scope > .nav-section, :scope > sherpa-nav-item',
         handleSelector: ".nav-item-drag",
-        idAttribute: "sectionId",
+        idAttribute: "sortKey",
         isEnabled: () => this.isEditing,
         onReorder: (order) => {
+          this.#persistGroupOrder(gi, order);
           this.#emit("navsectionreorder", {
             groupIndex: gi,
             sectionOrder: order,
@@ -496,6 +736,92 @@ export class SherpaNav extends SherpaElement {
         },
       });
     });
+    // Apply any previously-persisted user reorder.
+    this.#applyStoredOrders();
+  }
+
+  // ═══════════════════ Order persistence ═══════════════════
+
+  /** localStorage key for the user-applied group order, scoped by template src. */
+  get #orderStorageKey() {
+    const scope = this.dataset.orderStorageKey
+      || (this.dataset.src ? `sherpa-nav-order::${this.dataset.src}` : 'sherpa-nav-order');
+    return scope;
+  }
+
+  #captureDefaultOrders() {
+    if (!this.#defaultOrders) this.#defaultOrders = new Map();
+    // Always recapture on render — the template may have changed.
+    this.#defaultOrders.clear();
+    this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
+      const gi = parseInt(container.dataset.groupIndex, 10);
+      const order = [...container.querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')]
+        .map((el) => el.dataset.sectionId || el.dataset.itemId || '')
+        .filter(Boolean);
+      this.#defaultOrders.set(gi, order);
+    });
+  }
+
+  #readOrderStore() {
+    try {
+      const raw = localStorage.getItem(this.#orderStorageKey);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch { return {}; }
+  }
+
+  #writeOrderStore(store) {
+    try { localStorage.setItem(this.#orderStorageKey, JSON.stringify(store)); } catch {}
+  }
+
+  #persistGroupOrder(groupIndex, order) {
+    const store = this.#readOrderStore();
+    store[String(groupIndex)] = order;
+    this.#writeOrderStore(store);
+  }
+
+  /** Reorder children of each draggable group to match the persisted order. */
+  #applyStoredOrders() {
+    const store = this.#readOrderStore();
+    if (!store || !Object.keys(store).length) return;
+    this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
+      const gi = parseInt(container.dataset.groupIndex, 10);
+      const order = store[String(gi)];
+      if (!Array.isArray(order) || !order.length) return;
+      this.#applyOrderToContainer(container, order);
+    });
+  }
+
+  #applyOrderToContainer(container, order) {
+    const lookup = new Map();
+    container
+      .querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')
+      .forEach((el) => {
+        const key = el.dataset.sectionId || el.dataset.itemId;
+        if (key) lookup.set(key, el);
+      });
+    order.forEach((key) => {
+      const el = lookup.get(key);
+      if (el) container.appendChild(el); // append in order; unknown keys ignored
+    });
+    // Items not present in the stored order keep their template position
+    // relative to the appended block (they remain at the end of the container).
+  }
+
+  /**
+   * Public API — revert any user reordering of draggable nav groups back
+   * to the template-declared defaults, clear persisted order, and notify
+   * listeners via `naveditreset`.
+   */
+  resetOrder() {
+    if (!this.#defaultOrders) return;
+    this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
+      const gi = parseInt(container.dataset.groupIndex, 10);
+      const order = this.#defaultOrders.get(gi);
+      if (order && order.length) this.#applyOrderToContainer(container, order);
+    });
+    try { localStorage.removeItem(this.#orderStorageKey); } catch {}
+    this.#emit('naveditreset');
   }
 
   // ═══════════════════ Private — Search Filter ══════════════════
@@ -542,14 +868,20 @@ export class SherpaNav extends SherpaElement {
     if (!scope) return;
 
     const filter = (value || "").trim().toLowerCase();
-    const items = [
-      ...scope.querySelectorAll('sherpa-nav-item[data-variant="child"]'),
-    ];
-    const headers = [
-      ...scope.querySelectorAll(
-        'sherpa-nav-item:is([data-variant="section"], [data-variant="subsection"])',
+    // Headers = section/subsection summary rows (handled separately so a
+    // header match can reveal its container without highlighting children).
+    // Items = every other nav-item in the scrollable area, including
+    // standalone top-level rows that have no data-variant attribute and
+    // any non-standard variants. This guarantees every visible nav row
+    // participates in search matching.
+    const allItems = [...scope.querySelectorAll("sherpa-nav-item")];
+    const headers = allItems.filter((i) =>
+      i.matches(
+        'sherpa-nav-item[data-variant="section"], sherpa-nav-item[data-variant="subsection"]',
       ),
-    ];
+    );
+    const headerSet = new Set(headers);
+    const items = allItems.filter((i) => !headerSet.has(i));
     const details = [
       ...scope.querySelectorAll(".nav-section, .nav-subsection"),
     ];

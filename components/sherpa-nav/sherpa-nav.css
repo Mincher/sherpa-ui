@@ -158,14 +158,14 @@ summary {
   opacity: 0.5;
 }
 
-/* Chevron — shown only when section/subsection has child content */
+/* Chevron — shown only when section/subsection has child content. The
+   item itself reserves a chevron-sized slot via visibility:hidden so
+   tag right-edges remain aligned across rows with and without children. */
 @container sherpa-nav (min-width: 320px) {
   :is(.nav-section, .nav-subsection):has(> :not(summary))
     > summary
     > sherpa-nav-item::part(chevron) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    visibility: visible;
   }
 }
 
@@ -177,13 +177,21 @@ summary {
   }
 }
 
-/* Aggregated child badge: hide the summary's tag pill when the section
-   is open (children render their own badges). The status dot variant
-   shown in collapsed nav is unaffected — the section's content is force-
-   collapsed in that state regardless of [open]. */
-.nav-section[open] > summary > sherpa-nav-item[data-aggregated-badge="true"]::part(tag),
-.nav-subsection[open] > summary > sherpa-nav-item[data-aggregated-badge="true"]::part(tag) {
-  display: none !important;
+/* Hide AGGREGATED parent tags when their section is expanded. The
+   aggregated badge is a roll-up summary of descendant statuses; once
+   the section is open, each child shows its own tag inline so the
+   parent's summary becomes redundant noise. A parent's OWN (non-
+   aggregated) badge — e.g. a standalone item's [New] tag, or a section
+   item explicitly authored with data-badge — stays visible regardless,
+   because we gate the hide rule on data-aggregated-badge="true".
+   In collapsed nav (icon-only) the dot is unaffected: content is force-
+   collapsed in that state so [open] never matches in practice. */
+@container sherpa-nav (min-width: 320px) {
+  :is(.nav-section, .nav-subsection)[open]
+    > summary
+    > sherpa-nav-item[data-aggregated-badge="true"]::part(tag) {
+    display: none;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -232,7 +240,11 @@ summary {
    ANCESTOR ACTIVE STATE — CSS :has() replaces JS ancestor-walking
    ══════════════════════════════════════════════════════════════════════ */
 
-:is(.nav-section, .nav-subsection):has(sherpa-nav-item[data-state="selected"])
+/* Quick-access sections (Recents / Favorites) host mirrors of items that
+   live in the canonical nav. The canonical parent already shows the
+   ancestor-active styling, so we exempt quick-access sections here to
+   avoid two parents lighting up at once. */
+:is(.nav-section, .nav-subsection):not([data-quick-access="true"]):has(sherpa-nav-item[data-state="selected"])
   > summary
   > sherpa-nav-item {
   background: var(--sherpa-surface-app-product-nav-active);
@@ -265,6 +277,14 @@ summary {
       [data-variant="section"],
       [data-variant="subsection"]
     )::part(drag) {
+    display: inline-flex;
+  }
+
+  /* Standalone top-level <sherpa-nav-item> rows that sit directly inside a
+     draggable group (siblings of .nav-section) are treated like parent
+     sections — show their drag handle in edit mode so they can be
+     reordered alongside collapsible sections. */
+  & .nav-group[data-draggable="true"] > sherpa-nav-item::part(drag) {
     display: inline-flex;
   }
 

@@ -12,6 +12,19 @@
 /** @type {Map<string, Promise<CSSStyleSheet>>} */
 const _cache = new Map();
 
+/**
+ * Per-page-load cache-busting token. Appended as a query string to every
+ * fetched CSS URL so a hard reload always pulls the latest stylesheet from
+ * disk, defeating any aggressive HTTP caching by browsers, Vite dev servers,
+ * or CDN intermediaries. The in-memory _cache (above) is keyed by the
+ * original URL so we still dedupe parse work within a single page load.
+ */
+const _bust = `v=${Date.now()}`;
+
+function _withBust(url) {
+  return url + (url.includes("?") ? "&" : "?") + _bust;
+}
+
 const IMPORT_RE =
   /@import\s+(?:url\(\s*['"]?(.+?)['"]?\s*\)|['"](.+?)['"])\s*;/g;
 
@@ -29,7 +42,7 @@ async function resolveImports(css, base) {
     const href = m[1] || m[2];
     const url = new URL(href, base).href;
     try {
-      const resp = await fetch(url);
+      const resp = await fetch(_withBust(url));
       if (!resp.ok) throw new Error(resp.status);
       const imported = await resp.text();
       const inlined = await resolveImports(imported, url);
@@ -52,7 +65,7 @@ export function getSheet(url) {
   if (_cache.has(url)) return _cache.get(url);
 
   const promise = (async () => {
-    const resp = await fetch(url);
+    const resp = await fetch(_withBust(url));
     if (!resp.ok) throw new Error(`CSS ${resp.status} ${url}`);
     const raw = await resp.text();
     const css = await resolveImports(raw, url);

@@ -178,7 +178,11 @@
 }
 
 @container nav-item (min-width: 100px) {
-  :host(:is([data-variant="child"], [data-variant="section"], [data-variant="subsection"])[data-has-badge]) .nav-item-tag {
+  /* Any nav-item with a badge shows its tag pill. The previous variant
+     gate (child|section|subsection) excluded standalone top-level rows
+     that sit directly inside a draggable group with no data-variant set
+     — they're parent-level items in their own right and need badges. */
+  :host([data-has-badge]) .nav-item-tag {
     display: inline-flex;
     align-items: center;
     animation: sherpa-ripple-in var(--sherpa-motion-duration-fast) var(--sherpa-motion-easing-default) calc((var(--_ripple-i, 0) * 30ms) + 30ms) both;
@@ -191,8 +195,23 @@
 
 .nav-item-chevron {
   display: none;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.2s ease;
   flex-shrink: 0;
+}
+
+@container nav-item (min-width: 100px) {
+  /* In expanded nav, every item reserves a chevron-sized slot so that
+     tag pills on rows WITHOUT a chevron (e.g. childless parent items)
+     stay right-aligned with sibling rows that DO have a chevron. The
+     slot is invisible by default and revealed by sherpa-nav.css when
+     the section actually has children. */
+  .nav-item-chevron {
+    display: inline-flex;
+    visibility: hidden;
+    width: var(--sherpa-size-xs);
+  }
 }
 
 /* Chevron visibility + rotation managed by sherpa-nav.css via ::part(chevron)
@@ -274,6 +293,10 @@
 :host([data-badge-status="success"])  { --_dot-color: var(--sherpa-border-context-success-default); }
 :host([data-badge-status="warning"])  { --_dot-color: var(--sherpa-border-context-warning-default); }
 :host([data-badge-status="urgent"])   { --_dot-color: var(--sherpa-border-context-urgent-default); }
-:host([data-badge-status="brand"])    { --_dot-color: light-dark(var(--sherpa-color-brand-500), var(--sherpa-color-brand-400)); }
+/* Brand dot mirrors the sherpa-tag brand border so the collapsed-nav dot
+   matches the colour of the expanded-nav tag for that section. The previous
+   reference to --sherpa-color-brand-500 was undefined in the design tokens
+   and caused light-dark() to fall back to the success default (green). */
+:host([data-badge-status="brand"])    { --_dot-color: light-dark(var(--sherpa-color-brand-400), var(--sherpa-color-brand-700)); }
 
 
