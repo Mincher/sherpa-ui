@@ -259,7 +259,7 @@ summary {
    ══════════════════════════════════════════════════════════════════════ */
 
 .sherpa-nav-root[data-mode="edit"] {
-  & :is(.nav-section[data-quick-access="true"], sherpa-nav-promo),
+  & sherpa-nav-promo,
   & .nav-header > :is(.nav-search, [data-nav-target="home"], .nav-divider),
   & .nav-footer [data-nav-target="settings"] {
     display: none;
@@ -268,6 +268,13 @@ summary {
   & sherpa-nav-item[data-editable]::part(drag),
   & sherpa-nav-item[data-editable]::part(delete) {
     display: inline-flex;
+  }
+
+  /* Quick-access sections (Recent / Favorites / My Links) are not
+     user-orderable — only deletable. Suppress the drag handle on their
+     editable child items. */
+  & .nav-section[data-quick-access="true"] sherpa-nav-item[data-editable]::part(drag) {
+    display: none;
   }
 
   &
@@ -288,15 +295,21 @@ summary {
     display: inline-flex;
   }
 
-  & :is(.nav-section, .nav-subsection)[open]::details-content {
+  & :is(.nav-section, .nav-subsection):not([data-quick-access="true"])[open]::details-content {
     height: 0 !important;
     opacity: 0 !important;
   }
   &
-    sherpa-nav-item:is(
+    .nav-section:not([data-quick-access="true"])
+    > summary
+    > sherpa-nav-item:is(
       [data-variant="section"],
       [data-variant="subsection"]
-    )::part(chevron) {
+    )::part(chevron),
+  &
+    .nav-subsection
+    > summary
+    > sherpa-nav-item::part(chevron) {
     transform: rotate(0deg);
   }
 

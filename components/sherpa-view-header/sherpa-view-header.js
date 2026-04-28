@@ -112,11 +112,17 @@ export class SherpaViewHeader extends SherpaElement {
       cssBaseUrl: new URL('../../css/styles/', import.meta.url).href,
     });
 
+    // Apply persisted theme / mode / density on load. The visible
+    // selectors have moved to the Settings → Appearance panel; if any
+    // legacy markup is still present we keep it wired below.
+    ThemeManager.setTheme(ThemeManager.getTheme());
+    ThemeManager.setMode(ThemeManager.getMode());
+    ThemeManager.setDensity(ThemeManager.getDensity());
+
     // Theme (brand)
     const themeSelect = this.$('#theme-select');
     if (themeSelect) {
       themeSelect.value = ThemeManager.getTheme();
-      ThemeManager.setTheme(ThemeManager.getTheme());
       themeSelect.addEventListener('change', e => ThemeManager.setTheme(e.target.value));
     }
 
@@ -124,7 +130,6 @@ export class SherpaViewHeader extends SherpaElement {
     const modeSelect = this.$('#mode-select');
     if (modeSelect) {
       modeSelect.value = ThemeManager.getMode();
-      ThemeManager.setMode(ThemeManager.getMode());
       modeSelect.addEventListener('change', e => ThemeManager.setMode(e.target.value));
     }
 
@@ -132,7 +137,6 @@ export class SherpaViewHeader extends SherpaElement {
     const densitySelect = this.$('#density-select');
     if (densitySelect) {
       densitySelect.value = ThemeManager.getDensity();
-      ThemeManager.setDensity(ThemeManager.getDensity());
       densitySelect.addEventListener('change', e => ThemeManager.setDensity(e.target.value));
     }
   }
