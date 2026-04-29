@@ -157,14 +157,31 @@
 
 .nav-item-label {
   display: none;
-  flex: 1;
-  font-weight: var(--_label-weight, 500);
+  /* Sized to its text content so the hover/click hitbox doesn't extend
+     into the empty row whitespace. `margin-inline-end: auto` consumes
+     the remaining row space (in place of the previous `flex: 1`) so
+     the chevron/tag/delete affordances stay flush right. The label can
+     still shrink (and ellipsise) when the row is too narrow. */
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 100%;
+  margin-inline-end: auto;
+  font-weight: var(--_label-weight, 500);
   font-size: var(--sherpa-fonts-scale-base, 14px);
   line-height: var(--sherpa-font-base-line-height, 20px);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  text-underline-offset: 2px;
+}
+
+/* Items with a route hint at navigability via a label underline on
+   hover. Hovering anywhere else on the row (icon, chevron, padding)
+   doesn't underline — that area is reserved for expand/collapse on
+   parent items. */
+:host([data-route]) .nav-item-label:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 @container nav-item (min-width: 100px) {

@@ -591,9 +591,10 @@ export class SherpaNav extends SherpaElement {
       return;
     }
 
-    // Section/subsection headers — handled by <details> toggle ONLY when
-    // the section has children. Childless section/subsection headers behave
-    // like leaf items: they navigate, get selected styling, and don't toggle.
+    // Section/subsection headers — when the summary has its own route,
+    // clicks on the LABEL navigate; clicks anywhere else on the row
+    // (icon, chevron, padding) toggle the <details>. Childless headers
+    // always behave like leaves. Headers without a route always toggle.
     if (
       navItem.dataset.variant === "section" ||
       navItem.dataset.variant === "subsection"
@@ -602,22 +603,31 @@ export class SherpaNav extends SherpaElement {
       const hasChildren = details
         ? details.querySelector(":scope > sherpa-nav-item, :scope > :not(summary)")
         : null;
-      if (hasChildren) return;
-      // No children — fall through to leaf-item handling below. Prevent the
-      // surrounding <details> from toggling on this click.
+      const hasRoute = !!navItem.dataset.route;
+      const onLabel = e.composedPath().some(
+        (n) => n?.getAttribute && n.getAttribute("part") === "label",
+      );
+      // No route — pure toggle (default <details> behaviour).
+      if (hasChildren && !hasRoute) return;
+      // Has route + has children: only the label navigates. Anything
+      // else on the row falls through to the native <details> toggle.
+      if (hasChildren && hasRoute && !onLabel) return;
+      // Either childless, or label-click on a routed parent → navigate.
       e.preventDefault();
       this.#clearAllActiveStates();
       navItem.dataset.state = "selected";
       if (this.isEditing) this.mode = SherpaNav.MODES.DEFAULT;
       if (this.isSearching) this.endSearch();
-      const childlessSectionId = details?.dataset.sectionId || null;
+      const headerSectionId = details?.dataset.sectionId
+        || details?.closest(".nav-section")?.dataset.sectionId
+        || null;
       this.#emit("navitemclick", {
         itemId: navItem.dataset.itemId,
-        sectionId: childlessSectionId,
+        sectionId: headerSectionId,
         route: navItem.dataset.route,
         label: this.#getItemLabel(navItem),
       });
-      this.#trackRecentForLeaf(navItem, childlessSectionId);
+      this.#trackRecentForLeaf(navItem, headerSectionId);
       return;
     }
 
