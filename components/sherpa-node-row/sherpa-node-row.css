@@ -1,0 +1,91 @@
+/**
+ * sherpa-node-row.css
+ *
+ * Three-column layout: [in-gutter | body | out-gutter].
+ * Default row height 60px per Figma.
+ */
+
+:host {
+  display: block;
+  position: relative;
+  min-height: var(--sherpa-node-row-height);
+}
+
+/* ── Flex row: [in-gutter | row-body | out-gutter] ─────────────── */
+.row {
+  display: flex;
+  align-items: stretch;
+  min-height: inherit;
+}
+
+.gutter {
+  flex: 0 0 var(--sherpa-node-socket-gutter);
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+.gutter-in  { justify-content: flex-start; }
+.gutter-out { justify-content: flex-end; }
+
+/* Sockets centered on the node's outer edge via half-width translate.
+   Works for every socket shape regardless of its intrinsic width. */
+.gutter-in  ::slotted(*) { transform: translateX(-50%); }
+.gutter-out ::slotted(*) { transform: translateX( 50%); }
+
+/* ── Body ──────────────────────────────────────────────────────── */
+
+.row-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs);
+  padding: var(--sherpa-space-xs) var(--sherpa-space-sm);
+  min-width: 0;
+  justify-content: center;
+}
+
+.row-label {
+  font-size: var(--sherpa-font-sm-size);
+  font-weight: 600;
+  color: var(--sherpa-text-default-label);
+  line-height: 1.4;
+}
+.row-label:not([data-has-content]) { display: none; }
+
+.row-control {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+  min-height: var(--sherpa-size-md);
+  color: var(--sherpa-text-default-body);
+}
+/* Form controls slotted into the row body match the .subtype-select
+   in the node header so all interactive controls share one height. */
+.row-control ::slotted(input),
+.row-control ::slotted(select),
+.row-control ::slotted(textarea) {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: var(--sherpa-font-base-size, 14px);
+  line-height: 1.4;
+  height: 32px;
+  padding: 0 var(--sherpa-space-xs, 8px);
+  color: var(--sherpa-text-default-body);
+  background: var(--sherpa-surface-container-default);
+  border: 1px solid var(--sherpa-border-container-default);
+  border-radius: var(--sherpa-radius-sm, 4px);
+}
+
+.row-helper {
+  font-size: var(--sherpa-font-xs-size);
+  color: var(--sherpa-text-default-secondary);
+  line-height: 1.4;
+}
+.row-helper:not([data-has-content]) { display: none; }
+
+:host([data-multi]) {
+  min-height: calc(var(--sherpa-node-row-height) + var(--sherpa-space-base));
+}

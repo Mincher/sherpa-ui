@@ -1,0 +1,179 @@
+/**
+ * sherpa-node.css
+ *
+ * Card host. Defaults to white-with-grey-border + drop shadow,
+ * matching the standard Figma node. data-tone="tinted" applies the
+ * kind accent as a low-alpha body fill + 1px accent stroke (used by
+ * source / output kinds).
+ *
+ * data-kind="group" is a special skin: tinted info-blue surface
+ * with a strong info-blue border (matches the Group node design).
+ */
+
+:host {
+  /* Default accent — overridden per kind below. */
+  --sherpa-node-accent: var(--sherpa-node-accent-default);
+
+  position: absolute;
+  display: block;
+  width: var(--sherpa-node-w, var(--sherpa-node-width));
+  font-family: var(--sherpa-core-typeface-open-sans-style-name, "Open Sans"), system-ui, sans-serif;
+  font-size: var(--sherpa-font-base-size, 14px);
+  color: var(--sherpa-text-default-body);
+  user-select: none;
+  contain: layout style;
+  transform: translate3d(var(--sherpa-node-x, 0px), var(--sherpa-node-y, 0px), 0);
+  will-change: transform;
+}
+
+/* ── Per-kind accents (drives sockets + tinted bodies) ─────────── */
+:host([data-kind="source"])     { --sherpa-node-accent: var(--sherpa-node-accent-source); }
+:host([data-kind="group"])      { --sherpa-node-accent: var(--sherpa-node-accent-group); }
+:host([data-kind="variable"])   { --sherpa-node-accent: var(--sherpa-node-accent-variable); }
+:host([data-kind="math"])       { --sherpa-node-accent: var(--sherpa-node-accent-math); }
+:host([data-kind="logic"])      { --sherpa-node-accent: var(--sherpa-node-accent-logic); }
+:host([data-kind="time"])       { --sherpa-node-accent: var(--sherpa-node-accent-time); }
+:host([data-kind="collection"]) { --sherpa-node-accent: var(--sherpa-node-accent-collection); }
+:host([data-kind="util"])       { --sherpa-node-accent: var(--sherpa-node-accent-util); }
+:host([data-kind="output"])     { --sherpa-node-accent: var(--sherpa-node-accent-output); }
+
+/* Source + Output kinds default to the tinted body. */
+:host([data-kind="source"]),
+:host([data-kind="output"]) {
+  --sherpa-node-tone: tinted;
+}
+
+/* ── Container ────────────────────────────────────────────────── */
+.node {
+  position: relative;
+  background: var(--sherpa-surface-container-default);
+  border: 1px solid var(--sherpa-border-container-default);
+  border-radius: var(--sherpa-node-radius);
+  box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+
+/* Tinted body — used by source + output kinds and any node opting in. */
+:host([data-tone="tinted"]) .node,
+:host([data-kind="source"]) .node,
+:host([data-kind="output"]) .node {
+  background: color-mix(in srgb, var(--sherpa-node-accent) 12%, var(--sherpa-surface-container-default));
+  border-color: var(--sherpa-node-accent);
+}
+
+/* Group node — info-blue surface + border (per design). */
+:host([data-kind="group"]) .node {
+  background: var(--sherpa-node-group-bg);
+  border-color: var(--sherpa-node-group-border);
+  border-width: 1px;
+}
+
+/* Selected state — accent ring */
+:host([data-selected]) .node {
+  outline: 2px solid var(--sherpa-node-accent);
+  outline-offset: 1px;
+}
+
+/* ── Slot wrappers ─────────────────────────────────────────────── */
+.node-header { display: block; }
+
+.node-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Footer is itself a 3-column flex row [in-gutter | body | out-gutter]
+   so any sockets slotted into footer-input / footer-output sit in the
+   same gutter rail as the rest of the node — no absolute positioning. */
+.node-footer {
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+}
+.node-footer .gutter {
+  flex: 0 0 var(--sherpa-node-socket-gutter);
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+.node-footer .gutter-in  { justify-content: flex-start; }
+.node-footer .gutter-out { justify-content: flex-end; }
+.node-footer .gutter-in  ::slotted(*) { transform: translateX(-50%); }
+.node-footer .gutter-out ::slotted(*) { transform: translateX( 50%); }
+.footer-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sherpa-space-sm, 12px);
+}
+/* Hide footer entirely when no slot in this region has any content.
+   `data-has-{slot}` is auto-mirrored on the host by SherpaElement.
+   `:has()` cannot be used here because the slotted children live in
+   light DOM, not as descendants of `.node-footer` in shadow DOM. */
+:host(:not([data-has-footer]):not([data-has-footer-input]):not([data-has-footer-output])) .node-footer {
+  display: none;
+}
+:host([data-has-footer]) .node-footer,
+:host([data-has-footer-input]) .node-footer,
+:host([data-has-footer-output]) .node-footer {
+  min-height: var(--sherpa-node-row-height);
+}
+
+/* ── Sub-type dropdown ─────────────────────────────────────────── */
+.node-subtype {
+  display: none;
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px) 0;
+}
+:host([data-subtypes]) .node-subtype { display: block; }
+
+.subtype-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+.subtype-label-text {
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  color: var(--sherpa-text-default-label);
+  line-height: 1.4;
+}
+
+.subtype-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.subtype-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 32px;
+  padding: 0 28px 0 var(--sherpa-space-xs, 8px);
+  font: inherit;
+  font-size: var(--sherpa-font-base-size, 14px);
+  color: var(--sherpa-text-default-body);
+  background: var(--sherpa-surface-container-default);
+  border: 1px solid var(--sherpa-border-container-default);
+  border-radius: var(--sherpa-radius-sm, 4px);
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+.subtype-select:hover { border-color: var(--sherpa-border-container-strong-default); }
+.subtype-select:focus-visible {
+  outline: 2px solid var(--sherpa-border-context-info-default);
+  outline-offset: 1px;
+  border-color: var(--sherpa-border-context-info-default);
+}
+
+.subtype-chevron {
+  position: absolute;
+  right: var(--sherpa-space-xs, 8px);
+  font-size: 10px;
+  color: var(--sherpa-text-default-body);
+  pointer-events: none;
+}
+
+/* ── Hide the registered <template> nodes from layout. ─────────── */
+::slotted(template) { display: none !important; }

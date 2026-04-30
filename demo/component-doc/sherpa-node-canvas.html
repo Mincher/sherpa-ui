@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>sherpa-node — Component Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Manrope:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <!-- Token cascade (primitives + aliases + fonts + status). Required so
+         every --sherpa-* reference inside the theme file resolves. Without
+         this, light-dark() gets undefined args and component backgrounds /
+         borders silently fall back to transparent. -->
+    <link rel="stylesheet" href="/css/styles/index.css" />
+    <link rel="stylesheet" href="/css/styles/sherpa-theme-apex-2-core.css" />
+    <style>
+      html, body { margin: 0; height: 100%; }
+      body {
+        font-family: "Open Sans", system-ui, sans-serif;
+        background: var(--sherpa-surface-app-product-bg-default, #eef0f3);
+        color: var(--sherpa-text-default-body, #222);
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+      header {
+        padding: 16px 24px;
+        background: var(--sherpa-surface-container-default, #fff);
+        border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e0);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      header .titles { flex: 1 1 auto; min-width: 0; }
+      header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+      header p { margin: 4px 0 0; color: var(--sherpa-text-default-secondary, #666); font-size: 13px; }
+      .theme-toggle {
+        all: unset;
+        flex: 0 0 auto;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        padding: 6px 12px;
+        border-radius: 4px;
+        background: var(--sherpa-surface-container-default);
+        border: 1px solid var(--sherpa-border-container-default);
+        color: var(--sherpa-text-default-body);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .theme-toggle:hover { border-color: var(--sherpa-border-container-strong-default); }
+      main { position: relative; min-height: 0; }
+      sherpa-node-canvas { position: absolute; inset: 0; }
+      footer {
+        max-height: 160px;
+        overflow: auto;
+        padding: 12px 24px;
+        background: var(--sherpa-surface-container-default, #fff);
+        border-top: 1px solid var(--sherpa-border-container-default, #e0e0e0);
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+      }
+      footer h3 { margin: 0 0 8px; font-family: "Open Sans"; font-size: 13px; }
+      .log-line { white-space: pre; }
+      .log-line.evt { color: var(--sherpa-text-context-info-default, #2563eb); }
+      .log-line.del { color: var(--sherpa-text-context-error-default, #c2410c); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="titles">
+        <h1>sherpa-node-canvas — full sub-type catalogue</h1>
+        <p>
+          Pan: middle-mouse or space+drag · Zoom: scroll · Drag a socket to wire ·
+          Click an edge to select · Press Delete to remove · Drag an input edge
+          out to empty canvas to delete it.
+        </p>
+      </div>
+      <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Toggle colour scheme">
+        <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+        <span id="theme-toggle-label">Auto</span>
+      </button>
+    </header>
+    <main>
+      <sherpa-node-canvas id="canvas"></sherpa-node-canvas>
+    </main>
+    <footer>
+      <h3>Event log</h3>
+      <div id="log"></div>
+    </footer>
+
+    <script type="module">
+      import "../../components/index.js";
+      import {
+        configureNode,
+        getSubtypesForKind,
+      } from "../../components/sherpa-node/sherpa-node-templates.js";
+
+      const canvas = document.getElementById("canvas");
+      const log = document.getElementById("log");
+
+      // ── Theme toggle: cycle auto → light → dark ───────────────────
+      const themeToggle = document.getElementById("theme-toggle");
+      const themeLabel = document.getElementById("theme-toggle-label");
+      const THEME_KEY = "sherpa-node-demo-theme";
+      const themes = ["light dark", "light", "dark"];
+      const labels = { "light dark": "Auto", "light": "Light", "dark": "Dark" };
+      const stored = localStorage.getItem(THEME_KEY);
+      let themeIdx = Math.max(0, themes.indexOf(stored));
+      const applyTheme = () => {
+        const t = themes[themeIdx];
+        document.documentElement.style.colorScheme = t;
+        themeLabel.textContent = labels[t];
+        localStorage.setItem(THEME_KEY, t);
+      };
+      applyTheme();
+      themeToggle.addEventListener("click", () => {
+        themeIdx = (themeIdx + 1) % themes.length;
+        applyTheme();
+      });
+      const logLine = (cls, msg) => {
+        const div = document.createElement("div");
+        div.className = "log-line " + cls;
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        log.prepend(div);
+        while (log.children.length > 80) log.lastChild.remove();
+      };
+
+      // ── Catalogue layout ───────────────────────────────────────────
+      // One column per kind. Each column lists every sub-type for
+      // that kind, plus a Group node and a Source/Output bookend.
+      const kinds = [
+        "source", "variable", "math", "logic",
+        "time", "collection", "util", "group", "output",
+      ];
+
+      const COL_W = 280;
+      const ROW_H = 320;
+      let nodeIdCounter = 1;
+      const nextId = (kind) => `${kind}-${nodeIdCounter++}`;
+
+      async function build() {
+        for (let col = 0; col < kinds.length; col++) {
+          const kind = kinds[col];
+          const subtypes = await getSubtypesForKind(kind);
+          for (let row = 0; row < subtypes.length; row++) {
+            const id = nextId(kind);
+            const node = document.createElement("sherpa-node");
+            node.dataset.nodeId = id;
+            node.dataset.x = String(40 + col * COL_W);
+            node.dataset.y = String(40 + row * ROW_H);
+            canvas.appendChild(node);
+            await configureNode(node, kind, subtypes[row].value);
+          }
+        }
+
+        // A few starter edges so multi sockets demonstrate counts.
+        // (Targets the first Math/Add node with two values from
+        //  the first two Variable nodes.)
+        const variables = [...canvas.querySelectorAll('sherpa-node[data-kind="variable"]')];
+        const mathAdd = canvas.querySelector('sherpa-node[data-kind="math"][data-subtype="add"]');
+        const compareAnd = canvas.querySelector('sherpa-node[data-kind="logic"][data-subtype="and"]');
+        const mathFloor = canvas.querySelector('sherpa-node[data-kind="math"][data-subtype="floor"]');
+        const groupNode = canvas.querySelector('sherpa-node[data-kind="group"]');
+        const output = canvas.querySelector('sherpa-node[data-kind="output"]');
+        // Wait one tick so getPortPositions sees the cloned templates.
+        await new Promise(r => requestAnimationFrame(r));
+
+        const edges = [];
+        if (variables[0] && mathAdd) edges.push({
+          from: { nodeId: variables[0].dataset.nodeId, portName: "value" },
+          to:   { nodeId: mathAdd.dataset.nodeId, portName: "a" },
+        });
+        if (variables[1] && mathAdd) edges.push({
+          from: { nodeId: variables[1].dataset.nodeId, portName: "value" },
+          to:   { nodeId: mathAdd.dataset.nodeId, portName: "b" },
+        });
+        // Three connections into Compare/and (multi).
+        if (compareAnd) {
+          for (const v of variables.slice(0, 3)) {
+            edges.push({
+              from: { nodeId: v.dataset.nodeId, portName: "value" },
+              to:   { nodeId: compareAnd.dataset.nodeId, portName: "in" },
+            });
+          }
+        }
+        // Two connections into Math/floor (multi).
+        if (mathFloor) {
+          for (const v of variables.slice(0, 2)) {
+            edges.push({
+              from: { nodeId: v.dataset.nodeId, portName: "value" },
+              to:   { nodeId: mathFloor.dataset.nodeId, portName: "in" },
+            });
+          }
+        }
+        if (groupNode && output) edges.push({
+          from: { nodeId: groupNode.dataset.nodeId, portName: "out" },
+          to:   { nodeId: output.dataset.nodeId, portName: "in" },
+        });
+        canvas.setEdges(edges);
+      }
+
+      // ── Event listeners ───────────────────────────────────────────
+      canvas.addEventListener("sherpa-edge-create", (e) => {
+        canvas.addEdge(e.detail);
+        logLine("evt", `+ edge ${e.detail.from.nodeId}.${e.detail.from.portName} → ${e.detail.to.nodeId}.${e.detail.to.portName}`);
+      });
+      canvas.addEventListener("sherpa-edge-update", (e) => {
+        logLine("evt", `~ edge[${e.detail.edgeIdx}] → ${e.detail.edge.to.nodeId}.${e.detail.edge.to.portName}`);
+      });
+      canvas.addEventListener("sherpa-edge-delete", (e) => {
+        logLine("del", `- edge[${e.detail.edgeIdx}]`);
+      });
+      canvas.addEventListener("sherpa-edge-select", (e) => {
+        logLine("evt", `· select edge ${e.detail.edgeIdx ?? "(none)"}`);
+      });
+      canvas.addEventListener("sherpa-node-subtype-change", (e) => {
+        logLine("evt", `· subtype ${e.detail.nodeId} → ${e.detail.subtype}`);
+      });
+      canvas.addEventListener("sherpa-node-drilldown", (e) => {
+        logLine("evt", `↳ drill into ${e.detail.nodeId}`);
+      });
+
+      build();
+    </script>
+  </body>
+</html>

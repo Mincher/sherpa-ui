@@ -28,6 +28,8 @@
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-menu/sherpa-menu.js';
+import '../sherpa-tag/sherpa-tag.js';
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { ThemeManager } from '../utilities/theme-manager.js';
@@ -41,6 +43,10 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #viewId = null;
+  #viewPickerEls = [];
+  #pickerItems = [];
+  #pickerValue = null;
+  #optionSlotObserver = null;
 
   onAttributeChanged(name, oldValue, newValue) {
     switch (name) {
@@ -84,9 +90,41 @@ export class SherpaViewHeader extends SherpaElement {
     this.#syncFavoriteButton(on);
   }
   isFavorite() { return this.dataset.favorite === 'true'; }
+
+  /**
+   * Render an inline view-selection picker into the `view-selection`
+   * slot. Replaces any picker chrome from a previous call.
+   *
+   * @param {Array<{value:string,label:string,badge?:string,badgeStatus?:string}>} items
+   * @param {string} [currentValue]  Falsy → first item
+   * @param {object} [opts]
+   * @param {string} [opts.ariaLabel]
+   * @param {string} [opts.placeholder]  Trigger label when no current entry
+   *
+   * Fires `viewselectionchange` (bubbles, composed) with detail
+   * `{ value, item }` when the user picks an option.
+   */
+  setViewOptions(items, currentValue, opts = {}) {
+    this.#renderViewPicker(Array.isArray(items) ? items : [], currentValue, opts);
+  }
+
+  /** @returns {string|null} */
+  getSelectedViewValue() { return this.#pickerValue; }
+
+  /** Remove any picker chrome and clear stored options. */
+  clearViewOptions() {
+    this.#viewPickerEls.forEach((el) => el.remove());
+    this.#viewPickerEls = [];
+    this.#pickerItems = [];
+    this.#pickerValue = null;
+  }
   #resizeHandler = null;
 
   onDisconnect() {
+    if (this.#optionSlotObserver) {
+      this.#optionSlotObserver.disconnect();
+      this.#optionSlotObserver = null;
+    }
   }
 
   // ============ Private Methods ============
@@ -96,6 +134,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#setupExport();
     this.#setupFavorite();
     this.#setupEditMode();
+    this.#setupOptionSlotWatcher();
 
     // Apply any attributes that were set before render completed
     const heading = this.dataset.label;
@@ -184,6 +223,206 @@ export class SherpaViewHeader extends SherpaElement {
         detail: { viewId: this.#viewId, favorite: next }
       }));
     });
+  }
+
+  // ============ View-selection Picker ============
+  // Built-in picker rendered into the `view-selection` slot. Consumers
+  // can drive it either programmatically (setViewOptions) or
+  // declaratively by adding <option> children with slot="view-selection".
+
+  #setupOptionSlotWatcher() {
+    if (this.#optionSlotObserver) return;
+    const harvest = () => {
+      const opts = [...this.querySelectorAll(':scope > option[slot="view-selection"]')];
+      if (!opts.length) return;
+      const items = opts.map((o) => ({
+        value: o.value || o.getAttribute('value') || o.textContent.trim(),
+        label: o.textContent.trim(),
+        badge: o.dataset.badge || o.getAttribute('data-badge') || undefined,
+        badgeStatus: o.dataset.badgeStatus || o.getAttribute('data-badge-status') || undefined,
+      }));
+      const selected =
+        opts.find((o) => o.hasAttribute('selected'))?.value ||
+        opts.find((o) => o.hasAttribute('selected'))?.textContent.trim() ||
+        items[0]?.value;
+      const ariaLabel = this.dataset.viewSelectionLabel || 'Select view';
+      // Remove the originals so they don't leak into layout.
+      opts.forEach((o) => o.remove());
+      this.setViewOptions(items, selected, { ariaLabel });
+    };
+    harvest();
+    this.#optionSlotObserver = new MutationObserver((records) => {
+      const sawOption = records.some((r) =>
+        [...r.addedNodes].some(
+          (n) => n.nodeType === 1 && n.tagName === 'OPTION' && n.getAttribute('slot') === 'view-selection',
+        ),
+      );
+      if (sawOption) harvest();
+    });
+    this.#optionSlotObserver.observe(this, { childList: true });
+  }
+
+  #renderViewPicker(items, currentValue, { ariaLabel = 'Select view', placeholder = 'Select…' } = {}) {
+    // Strip any chrome from a previous render.
+    this.#viewPickerEls.forEach((el) => el.remove());
+    this.#viewPickerEls = [];
+    this.#pickerItems = items;
+    if (!items.length) { this.#pickerValue = null; return; }
+
+    const resolvedValue =
+      items.find((it) => it.value === currentValue)?.value || items[0].value;
+    const currentEntry = items.find((it) => it.value === resolvedValue);
+    this.#pickerValue = resolvedValue;
+
+    const trigger = document.createElement('sherpa-button');
+    trigger.dataset.viewPicker = '';
+    trigger.setAttribute('slot', 'view-selection');
+    trigger.setAttribute('data-variant', 'secondary');
+    trigger.setAttribute('data-size', 'small');
+    trigger.setAttribute('data-icon-end', '\uf078'); // fa-chevron-down
+    trigger.setAttribute('aria-haspopup', 'menu');
+    trigger.setAttribute('aria-label', ariaLabel);
+    trigger.setAttribute('data-label', currentEntry?.label || placeholder);
+    trigger.style.inlineSize = '240px';
+    trigger.style.maxInlineSize = '240px';
+
+    let triggerBadge = null;
+    if (currentEntry?.badge) {
+      triggerBadge = document.createElement('sherpa-tag');
+      triggerBadge.dataset.viewPicker = '';
+      triggerBadge.setAttribute('slot', 'view-selection');
+      triggerBadge.setAttribute('data-variant', 'secondary');
+      if (currentEntry.badgeStatus) {
+        triggerBadge.setAttribute('data-status', currentEntry.badgeStatus);
+      }
+      triggerBadge.textContent = currentEntry.badge;
+    }
+
+    const menu = document.createElement('sherpa-menu');
+    menu.dataset.viewPicker = '';
+    menu.setAttribute('slot', 'view-selection');
+    menu.setAttribute('popover', 'auto');
+    menu.style.inlineSize = '240px';
+    menu.style.minInlineSize = '240px';
+
+    const ul = document.createElement('ul');
+    for (const it of items) {
+      ul.appendChild(this.#buildPickerRow({
+        value: it.value,
+        label: it.label,
+        badge: it.badge,
+        badgeStatus: it.badgeStatus,
+        checked: it.value === resolvedValue,
+      }));
+    }
+    menu.appendChild(ul);
+
+    this.appendChild(trigger);
+    if (triggerBadge) this.appendChild(triggerBadge);
+    this.appendChild(menu);
+
+    this.#viewPickerEls = triggerBadge ? [trigger, triggerBadge, menu] : [trigger, menu];
+
+    // Wait for sherpa-button's shadow DOM, then patch its trigger
+    // layout so the label can ellipsis-truncate at a fixed width with
+    // the chevron locked to the right.
+    const applyTruncation = () => {
+      const sr = trigger.shadowRoot;
+      if (!sr || !sr.querySelector('.trigger')) return false;
+      if (sr.querySelector('style[data-view-picker-truncate]')) return true;
+      const style = document.createElement('style');
+      style.dataset.viewPickerTruncate = '';
+      style.textContent = `
+        .trigger { inline-size: 100%; display: inline-flex; align-items: center; justify-content: flex-start; gap: var(--sherpa-space-xs); }
+        .label { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: start; }
+        .icon-end { flex: 0 0 auto; margin-inline-start: auto; }
+      `;
+      sr.appendChild(style);
+      return true;
+    };
+    const waitForRender = (attempts = 30) => {
+      if (applyTruncation()) return;
+      if (attempts <= 0) return;
+      requestAnimationFrame(() => waitForRender(attempts - 1));
+    };
+    waitForRender();
+    if (trigger.rendered && typeof trigger.rendered.then === 'function') {
+      trigger.rendered.then(applyTruncation);
+    }
+
+    trigger.addEventListener('buttonclick', (e) => {
+      e.stopPropagation();
+      if (menu.hasAttribute('open')) menu.hide?.();
+      else menu.show?.(trigger);
+    });
+
+    menu.addEventListener('menu-select', (e) => {
+      const value = e.detail?.value;
+      menu.hide?.();
+      if (!value) return;
+      const picked = this.#pickerItems.find((it) => it.value === value);
+      if (!picked) return;
+      this.#pickerValue = picked.value;
+      // Update trigger label + badge in place so the picker reflects
+      // the new selection without a full re-render.
+      trigger.setAttribute('data-label', picked.label);
+      if (this.#viewPickerEls[1]?.tagName === 'SHERPA-TAG') {
+        this.#viewPickerEls[1].remove();
+        this.#viewPickerEls.splice(1, 1);
+      }
+      if (picked.badge) {
+        const tag = document.createElement('sherpa-tag');
+        tag.dataset.viewPicker = '';
+        tag.setAttribute('slot', 'view-selection');
+        tag.setAttribute('data-variant', 'secondary');
+        if (picked.badgeStatus) tag.setAttribute('data-status', picked.badgeStatus);
+        tag.textContent = picked.badge;
+        trigger.after(tag);
+        this.#viewPickerEls.splice(1, 0, tag);
+      }
+      // Update the radio-style indicators in the menu.
+      menu.querySelectorAll('sherpa-menu-item').forEach((it) => {
+        const v = it.getAttribute('value');
+        it.setAttribute('aria-checked', v === picked.value ? 'true' : 'false');
+        if (v === picked.value) it.setAttribute('data-state', 'selected');
+        else it.removeAttribute('data-state');
+      });
+      this.dispatchEvent(new CustomEvent('viewselectionchange', {
+        bubbles: true, composed: true,
+        detail: { value: picked.value, item: picked },
+      }));
+    });
+  }
+
+  #buildPickerRow({ value, label, badge, badgeStatus, checked }) {
+    const li = document.createElement('li');
+    const item = document.createElement('sherpa-menu-item');
+    item.setAttribute('role', 'menuitemradio');
+    item.setAttribute('value', value);
+    item.setAttribute('aria-checked', checked ? 'true' : 'false');
+    if (checked) item.setAttribute('data-state', 'selected');
+
+    const row = document.createElement('span');
+    row.style.cssText =
+      'display:flex;align-items:center;gap:var(--sherpa-space-sm);inline-size:100%;';
+
+    const text = document.createElement('span');
+    text.textContent = label;
+    text.style.cssText = 'flex:1 1 auto;min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    row.appendChild(text);
+
+    if (badge) {
+      const tag = document.createElement('sherpa-tag');
+      tag.setAttribute('data-variant', 'secondary');
+      if (badgeStatus) tag.setAttribute('data-status', badgeStatus);
+      tag.style.marginInlineStart = 'auto';
+      tag.textContent = badge;
+      row.appendChild(tag);
+    }
+
+    item.appendChild(row);
+    li.appendChild(item);
+    return li;
   }
 
 }

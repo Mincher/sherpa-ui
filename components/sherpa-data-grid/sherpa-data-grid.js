@@ -239,10 +239,14 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       });
     }
 
-    // Filter bar events — value filters from dynamic filter chips
+    // Filter bar events — value filters from dynamic filter chips.
+    // sherpa-filter-bar emits the chip's actual filter type ("text",
+    // "number", "number-range", "datetime-range", "boolean") in f.type;
+    // sort/segment chips emit { field, mode, type: "sort"|"segment" }
+    // with no values. Accept anything with a non-empty values array.
     this.addEventListener("filterchange", (e) => {
       this.#valueFilters = (e.detail?.filters || []).filter(
-        (f) => f.type === "filter" && f.values?.length,
+        (f) => Array.isArray(f.values) && f.values.length > 0,
       );
       this.dataset.page = "1";
       this.#render();

@@ -1,0 +1,45 @@
+<!--
+  sherpa-node-header — 48-tall header row for sherpa-node.
+
+  Slots:
+    icon          — Leading icon (optional). Auto-populated when host
+                    has data-icon="fa-..." (FontAwesome class).
+    title         — Header title text
+    actions       — Trailing icons/buttons (in addition to built-ins)
+    input-socket  — Slot in left gutter (e.g. control-flow input)
+    output-socket — Slot in right gutter (e.g. control-flow output)
+
+  Built-in actions:
+    Drill-down button — visible when host has data-drill-down.
+    Fires `sherpa-node-drilldown` (bubbles, composed). Used by Group nodes.
+
+  Sockets slotted into input-socket / output-socket are automatically
+  tagged with data-location="header" so their CSS can pick the right
+  shape (circle/capsule/square/triangle).
+-->
+<div class="header">
+  <div class="gutter gutter-in">
+    <slot name="input-socket"></slot>
+  </div>
+  <div class="header-body">
+    <span class="icon">
+      <i class="icon-built-in" aria-hidden="true"></i>
+      <slot name="icon"></slot>
+    </span>
+    <span class="title"><slot name="title"></slot></span>
+    <span class="actions">
+      <button
+        class="drill-down"
+        type="button"
+        aria-label="Open sub-graph"
+        title="Open sub-graph"
+      >
+        <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
+      </button>
+      <slot name="actions"></slot>
+    </span>
+  </div>
+  <div class="gutter gutter-out">
+    <slot name="output-socket"></slot>
+  </div>
+</div>

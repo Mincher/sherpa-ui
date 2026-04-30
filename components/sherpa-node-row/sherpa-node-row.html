@@ -1,0 +1,37 @@
+<!--
+  sherpa-node-row — Generic field row inside a sherpa-node body.
+
+  Slots:
+    label          — Field label (text or small element)
+    control        — The actual input/select/chip group
+    helper         — Optional helper text below control
+    input-socket   — Slot mounted in the LEFT gutter (centered vertically)
+    output-socket  — Slot mounted in the RIGHT gutter (centered vertically)
+
+  Slot presence is auto-mirrored as data-has-* on the host (via SherpaElement).
+
+  Variants:
+    data-multi          — Visually expand for multi-input rows
+    data-has-helper     — Auto-set when helper slot has content
+    data-has-input-socket  — Auto-set when input-socket slot has content
+    data-has-output-socket — Auto-set when output-socket slot has content
+-->
+<div class="row">
+  <div class="gutter gutter-in">
+    <slot name="input-socket"></slot>
+  </div>
+  <div class="row-body">
+    <div class="row-label">
+      <slot name="label"></slot>
+    </div>
+    <div class="row-control">
+      <slot name="control"></slot>
+    </div>
+    <div class="row-helper">
+      <slot name="helper"></slot>
+    </div>
+  </div>
+  <div class="gutter gutter-out">
+    <slot name="output-socket"></slot>
+  </div>
+</div>

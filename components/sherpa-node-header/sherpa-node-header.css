@@ -1,0 +1,107 @@
+/**
+ * sherpa-node-header.css — 48px header per Figma.
+ *
+ * Title is heavy 16px/600 in default text colour. Per-spec the only
+ * coloured chrome on the header itself is the gutter sockets; the
+ * built-in drill-down button is rendered in a neutral surface tile.
+ */
+
+:host {
+  display: block;
+  position: relative;
+  min-height: var(--sherpa-node-header-height);
+}
+
+/* ── Flex row: [in-gutter | header-body | out-gutter] ──────────── */
+.header {
+  display: flex;
+  align-items: stretch;
+  min-height: 100%;
+}
+
+.gutter {
+  flex: 0 0 var(--sherpa-node-socket-gutter);
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+.gutter-in  { justify-content: flex-start; }
+.gutter-out { justify-content: flex-end; }
+
+/* Sockets sit naturally in flex flow but get visually centered on the
+   node's outer edge via a half-width translate. Works for any socket
+   shape (circle, capsule, D, square, triangle) because translateX(50%)
+   is relative to the slotted element's own intrinsic width. */
+.gutter-in  ::slotted(*) { transform: translateX(-50%); }
+.gutter-out ::slotted(*) { transform: translateX( 50%); }
+
+.header-body {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  min-width: 0;
+}
+
+/* ── Icon slot + built-in shorthand ────────────────────────────── */
+.icon {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  color: var(--sherpa-text-default-body);
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+/* Hide whole icon container if neither a slotted icon nor a data-icon
+   shorthand were provided. Slot wrapper gets data-has-content from
+   SherpaElement; built-in <i> is hidden unless host[data-icon]. */
+:host(:not([data-icon])) .icon-built-in { display: none; }
+.icon:not([data-has-content]):not([data-has-built-in]) { display: none; }
+
+/* ── Title ─────────────────────────────────────────────────────── */
+.title {
+  flex: 1 1 auto;
+  font-size: var(--sherpa-font-base-size, 16px);
+  font-weight: 600;
+  color: var(--sherpa-text-default-heading);
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Actions: built-in drill-down + slotted ────────────────────── */
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex: 0 0 auto;
+}
+
+.drill-down {
+  all: unset;
+  display: none;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sherpa-radius-sm, 4px);
+  background: var(--sherpa-surface-container-default);
+  border: 1px solid var(--sherpa-border-container-default);
+  color: var(--sherpa-text-default-body);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+.drill-down:hover {
+  background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default));
+  border-color: var(--sherpa-border-container-strong-default);
+}
+.drill-down:active {
+  transform: scale(0.96);
+}
+
+:host([data-drill-down]) .drill-down { display: inline-flex; }

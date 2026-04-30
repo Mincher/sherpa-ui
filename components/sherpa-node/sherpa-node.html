@@ -1,0 +1,59 @@
+<!--
+  sherpa-node — Host element for a node-graph node.
+
+  Slots:
+    header  — A <sherpa-node-header>
+    rows    — Zero or more <sherpa-node-row>s (default slot). When the
+              host has data-subtype set AND a matching rows-template is
+              registered as a child <template class="rows-tpl"
+              data-kind="…" data-subtype="…">, the JS layer clones that
+              template into light DOM, replacing any existing rows.
+    footer  — Optional footer area (e.g. true/false outputs)
+
+  Built-in body chrome:
+    .subtype-row — A native <select> that appears between header and
+                   rows when host has data-subtypes (JSON array of
+                   {value,label}). Selecting fires
+                   `sherpa-node-subtype-change` (bubbles, composed) and
+                   swaps the body template.
+
+  Visual structure:
+   ┌──────────── 240px ─────────────┐
+   │ HEADER (48h)                   │
+   ├────────────────────────────────┤
+   │ Subtype select (optional)      │
+   ├────────────────────────────────┤
+   │   ROW                          │
+   │   ROW                          │
+   ├────────────────────────────────┤
+   │ FOOTER (optional)              │
+   └────────────────────────────────┘
+-->
+<div class="node">
+  <div class="node-header">
+    <slot name="header"></slot>
+  </div>
+  <div class="node-subtype">
+    <label class="subtype-label">
+      <span class="subtype-label-text">Type</span>
+      <span class="subtype-control">
+        <select class="subtype-select" aria-label="Sub-type"></select>
+        <i class="fa-solid fa-chevron-down subtype-chevron" aria-hidden="true"></i>
+      </span>
+    </label>
+  </div>
+  <div class="node-rows">
+    <slot></slot>
+  </div>
+  <div class="node-footer">
+    <div class="gutter gutter-in">
+      <slot name="footer-input"></slot>
+    </div>
+    <div class="footer-body">
+      <slot name="footer"></slot>
+    </div>
+    <div class="gutter gutter-out">
+      <slot name="footer-output"></slot>
+    </div>
+  </div>
+</div>

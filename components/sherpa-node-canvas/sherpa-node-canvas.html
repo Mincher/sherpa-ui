@@ -1,0 +1,20 @@
+<!--
+  sherpa-node-canvas — Pan/zoom container for sherpa-nodes with edge layer.
+
+  Visual layers (back to front):
+    1. <canvas class="grid">     — Crosshair grid (CSS-controllable)
+    2. <canvas class="edges">    — Bezier edges + drag-ghost
+    3. <div    class="surface">  — Transformed div containing nodes (slot)
+
+  The two canvases share the same DPR-scaled coordinate space and are
+  redrawn whenever the viewport changes or a node moves.
+
+  data-grid="crosshair" (default) | "none"
+-->
+<div class="root">
+  <canvas class="layer grid"></canvas>
+  <canvas class="layer edges"></canvas>
+  <div class="surface">
+    <slot></slot>
+  </div>
+</div>

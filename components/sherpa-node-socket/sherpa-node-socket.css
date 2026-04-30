@@ -1,0 +1,136 @@
+/**
+ * sherpa-node-socket.css
+ *
+ * Locked shape matrix:
+ *
+ *   Position           | State          | Shape           | Border
+ *   -------------------|----------------|-----------------|---------
+ *   header in single   | any            | circle          | purple
+ *   header in multi    | any            | tall capsule    | purple
+ *   row in single      | any            | D (curve out)   | blue
+ *   row in multi       | any            | taller D        | blue
+ *   output single      | disconnected   | square          | purple/green/red
+ *   output single      | connected      | triangle        | purple/green/red
+ *
+ * Shape is derived purely from attributes:
+ *   data-direction × data-location × data-multi × data-connected × data-status
+ *
+ * data-location is auto-set by the parent (sherpa-node-header → "header",
+ * sherpa-node-row → "row"). Defaults to "header" when absent.
+ *
+ * Multi-input growth: the canvas writes `data-connection-count="N"` (and
+ * matches the inline custom property `--_count`) so the socket grows
+ * vertically with the number of incoming connections.
+ */
+
+:host {
+  /* ── Locked palette (NOT driven by node accent) ─────────────── */
+  --_socket-stroke: var(--sherpa-node-socket-purple);
+  --_socket-fill:
+    color-mix(in srgb,
+      var(--_socket-stroke) 18%,
+      var(--sherpa-surface-container-default));
+
+  display: inline-block;
+  width:  var(--sherpa-node-socket-width);
+  height: var(--sherpa-node-socket-height);
+  position: relative;
+  cursor: crosshair;
+
+  --_count: 1;
+}
+
+/* Row inputs are blue. */
+:host([data-location="row"][data-direction="in"]) {
+  --_socket-stroke: var(--sherpa-node-socket-blue);
+}
+
+/* True / false outputs override stroke colour. */
+:host([data-status="true"])  { --_socket-stroke: var(--sherpa-node-accent-true); }
+:host([data-status="false"]) { --_socket-stroke: var(--sherpa-node-accent-false); }
+
+/* Connected: fill becomes solid stroke colour. */
+:host([data-connected]) { --_socket-fill: var(--_socket-stroke); }
+
+/* ── Hit area / button ─────────────────────────────────────────── */
+.socket {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: crosshair;
+}
+
+/* ── Default shape: header circle ──────────────────────────────── */
+.socket-shape {
+  width: var(--sherpa-node-socket-size);
+  height: var(--sherpa-node-socket-size);
+  background: var(--_socket-fill);
+  border: var(--sherpa-node-socket-stroke-w) solid var(--_socket-stroke);
+  box-sizing: border-box;
+  border-radius: 999px;
+  transition: background 150ms ease, transform 150ms ease, height 150ms ease;
+}
+
+/* ── Header MULTI input: tall capsule ──────────────────────────── */
+:host([data-location="header"][data-direction="in"][data-multi]) {
+  height: calc(
+    var(--sherpa-node-socket-size) +
+    var(--sherpa-node-socket-multi-step) * (var(--_count) - 1) +
+    8px
+  );
+  min-height: 24px;
+}
+:host([data-location="header"][data-direction="in"][data-multi]) .socket-shape {
+  width: var(--sherpa-node-socket-size);
+  height: 100%;
+  border-radius: 999px;
+}
+
+/* ── Row input single: D shape (curve faces outside the node) ──── */
+:host([data-location="row"][data-direction="in"]) .socket-shape {
+  width: 12px;
+  height: 18px;
+  /* Round outer (left) edge, flat against node body on the right. */
+  border-radius: 999px 0 0 999px;
+}
+
+/* ── Row input MULTI: taller D ─────────────────────────────────── */
+:host([data-location="row"][data-direction="in"][data-multi]) {
+  height: calc(
+    18px +
+    var(--sherpa-node-socket-multi-step) * (var(--_count) - 1) +
+    6px
+  );
+  min-height: 28px;
+}
+:host([data-location="row"][data-direction="in"][data-multi]) .socket-shape {
+  width: 12px;
+  height: 100%;
+  border-radius: 999px 0 0 999px;
+}
+
+/* ── Output disconnected: square (purple/green/red border) ────── */
+:host([data-direction="out"]) .socket-shape {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  clip-path: none;
+}
+
+/* ── Output connected: triangle, solid fill ────────────────────── */
+:host([data-direction="out"][data-connected]) .socket-shape {
+  width: 14px;
+  height: 14px;
+  border-radius: 0;
+  /* Solid fill (no internal border) — the triangle IS the colour. */
+  background: var(--_socket-stroke);
+  border: none;
+  clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+}
+
+/* ── Interactions ──────────────────────────────────────────────── */
+.socket:hover  .socket-shape { transform: scale(1.08); }
+.socket:active .socket-shape { transform: scale(0.95); }

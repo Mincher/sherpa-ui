@@ -681,20 +681,27 @@ export class SherpaFilterBar extends SherpaElement {
 
   /**
    * Get unique values for a field from the best available source.
-   * When rows are available, values are extracted from the subset
-   * filtered by all other active filters (cascading AND).
-   *   1. Declarative `values` array (only when no rows exist)
-   *   2. Extracted from filtered row data
+   * When a column declares an explicit `values` array, those values
+   * are always shown (preserving their order). When rows are present,
+   * any extra observed values are appended after the declared set.
+   *   1. Declared `col.values` (always shown when present)
+   *   2. Extracted from filtered row data (cascading AND)
    * @param {string} field — column field name
    * @returns {string[]}
    */
   #getValuesForField(field) {
     const col = this.#columns.find((c) => c.field === field);
+    const declared = col?.values?.length ? col.values.map(String) : [];
     if (this.#rows.length) {
-      return this.#extractUniqueValues(field, this.#getFilteredRows(field));
+      const extracted = this.#extractUniqueValues(field, this.#getFilteredRows(field));
+      if (!declared.length) return extracted;
+      // Union: declared values first (preserve their order), then any
+      // observed values not in the declared set.
+      const seen = new Set(declared.map((v) => v.toLowerCase()));
+      const extras = extracted.filter((v) => !seen.has(String(v).toLowerCase()));
+      return [...declared, ...extras];
     }
-    if (col?.values?.length) return col.values.map(String);
-    return [];
+    return declared;
   }
 
   /**

@@ -1,0 +1,23 @@
+<!--
+  sherpa-node-socket — Connection point primitive for sherpa-node.
+
+  Variants (all data-* attributes on the host):
+    data-direction        — "in" | "out"
+    data-location         — "header" | "row" (auto-set by parent slot)
+    data-multi            — boolean: input accepts multiple connections
+    data-connected        — boolean: filled with accent color
+    data-port-name        — string: port identifier
+    data-status           — "default" | "true" | "false"
+    data-connection-count — number: count of incoming edges (set by canvas)
+
+  Shape is determined entirely by CSS using these attributes — no
+  shape attribute exists.
+
+  Events:
+    sherpa-socket-pointerdown
+      bubbles: true, composed: true
+      detail: { direction, portName, status, originalEvent }
+-->
+<button class="socket" type="button" tabindex="-1" aria-label="Socket">
+  <span class="socket-shape" aria-hidden="true"></span>
+</button>

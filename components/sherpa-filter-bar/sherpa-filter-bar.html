@@ -16,6 +16,7 @@
   Slot order (local template, left → right):
     group     — Group/segment chip (slot="group")
     sort      — Sort chip (slot="sort")
+    presets   — Preset filter chips (slot="presets")
     actions   — Clear action (slot="actions")
 
   Host attributes:
@@ -56,13 +57,16 @@
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     LOCAL — Minimal filter bar for containers (group + sort only)
-     No toggle, no presets, no add-filter button.
+     LOCAL — Minimal filter bar for containers (group + sort + presets)
+     No toggle, no add-filter button. Preset chips render between sort
+     and actions so consumers can declare per-container filter chips
+     via `data-preset-filters` + `setAvailableColumns()`.
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="local">
   <div class="filter-surface">
     <slot name="group"></slot>
     <slot name="sort"></slot>
+    <slot name="presets"></slot>
     <slot name="actions"></slot>
   </div>
   <slot></slot>
