@@ -47,36 +47,42 @@
 import { SherpaElement } from "../sherpa-element/sherpa-element.js";
 import { StatusMixin } from "../status-mixin.js";
 
-/* ── Wrapper template (cloned per instance, replaces createElement) ─ */
+/* ── Wrapper template (loaded once from sherpa-input-base.html) ──── */
 
-const WRAPPER_TPL = document.createElement("template");
-WRAPPER_TPL.innerHTML = `
-<dl class="input-wrapper">
-  <div class="input-header">
-    <dt class="input-label text-label">
-      <span class="input-label-text"></span>
-      <span class="input-required" aria-hidden="true"> *</span>
-    </dt>
-    <dd class="input-description text-body-sm">
-      <span class="input-description-text"></span>
-    </dd>
-  </div>
-  <div class="input-content">
-    <div class="input-body">
-      <dd class="input-control">
-        <!-- Subclass control content injected here by #buildWrapper -->
-        <span class="status-indicator" aria-hidden="true">
-          <i class="status-indicator-icon"></i>
-        </span>
-      </dd>
-      <dd class="input-validation-message" aria-live="polite"></dd>
-    </div>
-    <dd class="input-helper text-body-sm">
-      <span class="input-helper-text"></span>
-    </dd>
-  </div>
-</dl>
-`;
+const WRAPPER_HTML_URL = new URL("./sherpa-input-base.html", import.meta.url)
+  .href;
+
+/** @type {Promise<HTMLTemplateElement> | null} */
+let wrapperTplPromise = null;
+
+/**
+ * Fetch and parse the wrapper template on first call; cache the promise
+ * so subsequent instantiations reuse the same parsed <template> node.
+ */
+function loadWrapperTemplate() {
+  if (!wrapperTplPromise) {
+    wrapperTplPromise = fetch(WRAPPER_HTML_URL)
+      .then((r) => {
+        if (!r.ok) {
+          throw new Error(
+            `[sherpa-input-base] Failed to load wrapper template: ${r.status}`,
+          );
+        }
+        return r.text();
+      })
+      .then((html) => {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const tpl = doc.querySelector('template[id="wrapper"]');
+        if (!tpl) {
+          throw new Error(
+            "[sherpa-input-base] sherpa-input-base.html missing <template id=\"wrapper\">",
+          );
+        }
+        return tpl;
+      });
+  }
+  return wrapperTplPromise;
+}
 
 /* ── Component ──────────────────────────────────────────────────── */
 
@@ -118,7 +124,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
   async onRender() {
     // The subclass template provides the raw control markup.
     // Wrap it in the standard label/description structure.
-    this.#buildWrapper();
+    await this.#buildWrapper();
 
     // Cache refs
     this.#labelEl = this.$(".input-label-text");
@@ -335,7 +341,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
 
   /* ── Wrapper construction ───────────────────────────────────── */
 
-  #buildWrapper() {
+  async #buildWrapper() {
     // Collect existing control content from the subclass template
     // (everything that isn't <link> or <style>)
     const controlContent = document.createDocumentFragment();
@@ -345,10 +351,11 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
     );
     for (const child of children) controlContent.appendChild(child);
 
-    // Clone the wrapper template and inject subclass content into .input-control
-    const wrapper = WRAPPER_TPL.content.cloneNode(true);
+    // Clone the wrapper template (loaded once, cached for all instances)
+    // and inject subclass content into .input-control before the indicator.
+    const tpl = await loadWrapperTemplate();
+    const wrapper = tpl.content.cloneNode(true);
     const control = wrapper.querySelector(".input-control");
-    // Insert subclass controls before the status indicator (already in template)
     const indicator = control.querySelector(".status-indicator");
     control.insertBefore(controlContent, indicator);
 

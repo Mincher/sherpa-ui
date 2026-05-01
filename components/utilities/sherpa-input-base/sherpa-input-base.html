@@ -1,0 +1,35 @@
+<!--
+  sherpa-input-base.html — Wrapper template shared by all SherpaInputBase
+  subclasses. Cloned once per instance by SherpaInputBase#buildWrapper().
+
+  Subclass control content (the native <input>/<select> from the
+  subclass's own <template id="default">) is inserted into .input-control
+  before the .status-indicator span.
+-->
+<template id="wrapper">
+<dl class="input-wrapper">
+  <div class="input-header">
+    <dt class="input-label text-label">
+      <span class="input-label-text"></span>
+      <span class="input-required" aria-hidden="true"> *</span>
+    </dt>
+    <dd class="input-description text-body-sm">
+      <span class="input-description-text"></span>
+    </dd>
+  </div>
+  <div class="input-content">
+    <div class="input-body">
+      <dd class="input-control">
+        <!-- Subclass control content injected here by #buildWrapper -->
+        <span class="status-indicator" aria-hidden="true">
+          <i class="status-indicator-icon"></i>
+        </span>
+      </dd>
+      <dd class="input-validation-message" aria-live="polite"></dd>
+    </div>
+    <dd class="input-helper text-body-sm">
+      <span class="input-helper-text"></span>
+    </dd>
+  </div>
+</dl>
+</template>
