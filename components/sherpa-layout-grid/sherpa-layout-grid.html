@@ -5,11 +5,23 @@
   <sherpa-container data-variant="resizable"> children take grid spans
   from their data-col-span / data-row-span attributes.
 
+  An embedded <sherpa-view-header part="header"> sits above the grid
+  surface and is shown only when `data-heading` is set on the host.
+  Consumers can slot extra controls into the `header-actions` slot
+  (forwarded to the view-header's `view-selection` slot).
+
   Host attributes:
     data-row-height — CSS length for grid-auto-rows (default: 160px)
     data-content    — "static" — opts out of grid; stacks children vertically
+    data-heading    — Title shown by the embedded view-header
+    data-export-title — Forwarded to the embedded view-header
 -->
 
 <template id="default">
-  <slot></slot>
+  <sherpa-view-header class="grid-header" part="header">
+    <slot name="header-actions" slot="view-selection"></slot>
+  </sherpa-view-header>
+  <div class="grid-surface" part="surface">
+    <slot></slot>
+  </div>
 </template>

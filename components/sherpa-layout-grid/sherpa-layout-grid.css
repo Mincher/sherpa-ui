@@ -30,13 +30,35 @@
 }
 
 :host {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   position: relative;
   flex: 1;
   width: 100%;
   min-width: 0;
   margin: 0;
   background-color: transparent;
+  box-sizing: border-box;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+.grid-header {
+  flex: 0 0 auto;
+  display: none;
+}
+
+:host([data-heading]) .grid-header {
+  display: block;
+}
+
+.grid-surface {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
   box-sizing: border-box;
 
   container-type: inline-size;
@@ -53,11 +75,7 @@
   align-content: start;
 }
 
-:host([hidden]) {
-  display: none;
-}
-
-:host([data-content="static"]) {
+:host([data-content="static"]) .grid-surface {
   display: flex;
   flex-direction: column;
   grid-template-columns: none;
@@ -102,7 +120,7 @@
    ────────────────────────────────────────────────────────────────────── */
 
 @container sherpa-layout-grid (max-width: 1199px) {
-  :host {
+  .grid-surface {
     --maxColCount: 6;
     grid-template-columns: repeat(6, 1fr);
   }
@@ -117,7 +135,7 @@
    ────────────────────────────────────────────────────────────────────── */
 
 @container sherpa-layout-grid (max-width: 639px) {
-  :host {
+  .grid-surface {
     --maxColCount: 3;
     grid-template-columns: repeat(3, 1fr);
   }

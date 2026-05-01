@@ -24,6 +24,7 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import "../sherpa-view-header/sherpa-view-header.js";
 
 export class SherpaLayoutGrid extends SherpaElement {
   static get htmlUrl() {
@@ -35,20 +36,30 @@ export class SherpaLayoutGrid extends SherpaElement {
   }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, "data-row-height", "data-editable"];
+    return [
+      ...super.observedAttributes,
+      "data-row-height",
+      "data-editable",
+      "data-heading",
+      "data-export-title",
+    ];
   }
 
   /** @type {HTMLElement|null} */
   #dragSource = null;
+  #headerEl = null;
 
   onRender() {
+    this.#headerEl = this.$("sherpa-view-header.grid-header");
     this.#syncRowHeight();
     this.#syncEditable();
+    this.#syncHeader();
   }
 
   onAttributeChanged(name) {
     if (name === "data-row-height") this.#syncRowHeight();
     if (name === "data-editable") this.#syncEditable();
+    if (name === "data-heading" || name === "data-export-title") this.#syncHeader();
   }
 
   onDisconnect() {
@@ -66,6 +77,17 @@ export class SherpaLayoutGrid extends SherpaElement {
     } else {
       this.style.removeProperty("--row-height");
     }
+  }
+
+  #syncHeader() {
+    const header = this.#headerEl;
+    if (!header) return;
+    const heading = this.getAttribute("data-heading");
+    if (heading != null) header.setAttribute("data-label", heading);
+    else header.removeAttribute("data-label");
+    const exportTitle = this.getAttribute("data-export-title");
+    if (exportTitle != null) header.setAttribute("data-export-title", exportTitle);
+    else header.removeAttribute("data-export-title");
   }
 
   #syncEditable() {

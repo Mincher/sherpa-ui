@@ -9,12 +9,27 @@
   The two canvases share the same DPR-scaled coordinate space and are
   redrawn whenever the viewport changes or a node moves.
 
-  data-grid="crosshair" (default) | "none"
+  An embedded <sherpa-view-header part="header"> sits above the canvas
+  and is auto-driven by the internal drill-down stack: the heading
+  reflects the current frame, the back button appears whenever the
+  stack is non-empty, and a breadcrumb trail of ancestor labels is
+  slotted into the header on demand.
+
+  Host attributes:
+    data-grid          — "crosshair" (default) | "none"
+    data-heading       — Title shown when at the root frame
+    data-show-header   — "false" hides the embedded view-header
 -->
 <div class="root">
-  <canvas class="layer grid"></canvas>
-  <canvas class="layer edges"></canvas>
-  <div class="surface">
-    <slot></slot>
+  <sherpa-view-header class="canvas-header" part="header"
+    exportparts="container: header-container">
+    <slot name="header-actions" slot="view-selection"></slot>
+  </sherpa-view-header>
+  <div class="canvas-body">
+    <canvas class="layer grid"></canvas>
+    <canvas class="layer edges"></canvas>
+    <div class="surface">
+      <slot></slot>
+    </div>
   </div>
 </div>

@@ -47,6 +47,8 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import "../sherpa-view-header/sherpa-view-header.js";
+import "../sherpa-breadcrumbs/sherpa-breadcrumbs.js";
 
 const HIT_R = 18;            // px (screen) — port hit radius
 const EDGE_HIT_PX = 6;       // px (screen) — perpendicular threshold for edge hover
@@ -68,7 +70,13 @@ export class SherpaNodeCanvas extends SherpaElement {
   }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, "data-grid"];
+    return [
+      ...super.observedAttributes,
+      "data-grid",
+      "data-heading",
+      "data-show-header",
+      "data-export-title",
+    ];
   }
 
   /* ── State ─────────────────────────────────────────────────────── */
@@ -87,9 +95,15 @@ export class SherpaNodeCanvas extends SherpaElement {
   #lastClientX = 0;
   #lastClientY = 0;
 
+  // Drill-down state — internal stack of {parentId, label, snapshot}
+  // frames. Each frame holds a serialised picture of the canvas at
+  // the moment we drilled into a sub-graph; popping restores it.
+  #drillStack = [];
+
   // DOM refs
   #rootEl = null;
   #surfaceEl = null;
+  #bodyEl = null;
   #gridCanvas = null;
   #edgesCanvas = null;
   #gridCtx = null;
@@ -97,18 +111,22 @@ export class SherpaNodeCanvas extends SherpaElement {
   #ro = null;
   #slotEl = null;
   #colorProbe = null;
+  #viewHeaderEl = null;
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
   onRender() {
     this.#rootEl     = this.$(".root");
+    this.#bodyEl     = this.$(".canvas-body");
     this.#surfaceEl  = this.$(".surface");
     this.#gridCanvas = this.$(".layer.grid");
     this.#edgesCanvas = this.$(".layer.edges");
-    this.#slotEl     = this.$("slot");
+    this.#slotEl     = this.$('slot:not([name])');
     this.#gridCtx    = this.#gridCanvas.getContext("2d");
     this.#edgesCtx   = this.#edgesCanvas.getContext("2d");
+    this.#viewHeaderEl = this.$("sherpa-view-header.canvas-header");
     this.#applyTransform();
+    this.#syncHeader();
   }
 
   onConnect() {
@@ -124,6 +142,8 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.addEventListener("sherpa-socket-pointerdown", this.#onSocketPointerDown);
     this.addEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
     this.addEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
+    this.addEventListener("sherpa-node-drilldown",     this.#onNodeDrillDown);
+    this.#viewHeaderEl?.addEventListener("view-header-back", this.#onViewHeaderBack);
 
     this.#slotEl?.addEventListener("slotchange", this.#onSlotChange);
     this.#listenToNodes();
@@ -143,12 +163,15 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.removeEventListener("sherpa-socket-pointerdown", this.#onSocketPointerDown);
     this.removeEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
     this.removeEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
+    this.removeEventListener("sherpa-node-drilldown",     this.#onNodeDrillDown);
+    this.#viewHeaderEl?.removeEventListener("view-header-back", this.#onViewHeaderBack);
     this.#slotEl?.removeEventListener("slotchange", this.#onSlotChange);
     this.#ro?.disconnect();
   }
 
   onAttributeChanged(name) {
     if (name === "data-grid") this.#scheduleDraw();
+    if (name === "data-heading" || name === "data-export-title") this.#syncHeader();
   }
 
   /* ── Public API ────────────────────────────────────────────────── */
@@ -1173,6 +1196,178 @@ export class SherpaNodeCanvas extends SherpaElement {
     ctx.moveTo(x0, y0);
     ctx.bezierCurveTo(x0 + dx, y0, x1 - dx, y1, x1, y1);
     ctx.stroke();
+  }
+
+  /* ── Drill-down (sub-graph navigation) ─────────────────────────── */
+
+  /**
+   * Snapshot the current frame, clear the canvas, and notify the
+   * outside world that we've entered a sub-graph for the given parent
+   * node. The header label, back-button visibility, and breadcrumb
+   * trail update automatically.
+   *
+   * Consumers should listen for `sherpa-canvas-subgraph-enter` and
+   * populate the canvas with the sub-graph contents (or a starter
+   * graph if no cached snapshot exists).
+   *
+   * @fires sherpa-canvas-subgraph-enter
+   *   bubbles: true, composed: true
+   *   detail: { parentId, label, depth, cached:boolean }
+   */
+  pushSubgraph(parentId, label) {
+    if (!parentId) return;
+    const snapshot = this.#snapshot();
+    const resolvedLabel = label ?? this.#labelForNode(parentId) ?? parentId;
+    this.#drillStack.push({ parentId, label: resolvedLabel, snapshot });
+    this.#clearFrame();
+    this.#syncHeader();
+    this.dispatchEvent(new CustomEvent("sherpa-canvas-subgraph-enter", {
+      bubbles: true, composed: true,
+      detail: { parentId, label: resolvedLabel, depth: this.#drillStack.length, cached: false },
+    }));
+  }
+
+  /**
+   * Pop the top of the drill stack and restore the previous frame.
+   * Returns the popped frame ({ parentId, label, snapshot }) or null
+   * if the stack is empty.
+   *
+   * @fires sherpa-canvas-subgraph-exit
+   *   bubbles: true, composed: true
+   *   detail: { parentId, label, depth }
+   */
+  popSubgraph() {
+    if (!this.#drillStack.length) return null;
+    const frame = this.#drillStack.pop();
+    this.#clearFrame();
+    this.#restore(frame.snapshot);
+    this.#syncHeader();
+    this.dispatchEvent(new CustomEvent("sherpa-canvas-subgraph-exit", {
+      bubbles: true, composed: true,
+      detail: { parentId: frame.parentId, label: frame.label, depth: this.#drillStack.length },
+    }));
+    return frame;
+  }
+
+  /** Current drill depth (0 = root). */
+  getDepth() { return this.#drillStack.length; }
+
+  /** Read-only copy of the drill stack: top of stack is last. */
+  getDrillStack() {
+    return this.#drillStack.map((f) => ({ parentId: f.parentId, label: f.label }));
+  }
+
+  /** Convenience: top frame, or null. */
+  getCurrentSubgraph() {
+    if (!this.#drillStack.length) return null;
+    const top = this.#drillStack[this.#drillStack.length - 1];
+    return { parentId: top.parentId, label: top.label };
+  }
+
+  #onNodeDrillDown = (e) => {
+    const nodeId = e.detail?.nodeId;
+    if (!nodeId) return;
+    const label = e.detail?.label ?? this.#labelForNode(nodeId);
+    this.pushSubgraph(nodeId, label);
+  };
+
+  #onViewHeaderBack = () => {
+    this.popSubgraph();
+  };
+
+  /**
+   * Capture the current frame so it can be restored later. Walks
+   * <input>/<select>/<textarea> and bakes their `.value` into the
+   * `value` attribute so the cloned subtree round-trips faithfully.
+   */
+  #snapshot() {
+    const liveNodes = [...this.children].filter((el) => el.tagName?.toLowerCase() === "sherpa-node");
+    const cloned = liveNodes.map((node) => {
+      const liveControls = node.querySelectorAll("input, select, textarea");
+      const clone = node.cloneNode(true);
+      const cloneControls = clone.querySelectorAll("input, select, textarea");
+      for (let i = 0; i < liveControls.length && i < cloneControls.length; i++) {
+        const src = liveControls[i];
+        const tgt = cloneControls[i];
+        if (src.type === "checkbox" || src.type === "radio") {
+          if (src.checked) tgt.setAttribute("checked", "");
+          else tgt.removeAttribute("checked");
+        } else {
+          tgt.setAttribute("value", src.value);
+          if (tgt.tagName === "TEXTAREA") tgt.textContent = src.value;
+        }
+      }
+      return clone;
+    });
+    return {
+      nodes: cloned,
+      edges: this.getEdges(),
+      viewport: this.getViewport(),
+    };
+  }
+
+  /** Remove all <sherpa-node> children + clear edges. Viewport untouched. */
+  #clearFrame() {
+    const live = [...this.children].filter((el) => el.tagName?.toLowerCase() === "sherpa-node");
+    for (const n of live) n.remove();
+    this.setEdges([]);
+    this.setSelectedNode(null);
+  }
+
+  /** Inverse of #snapshot: append cloned nodes, restore edges + viewport. */
+  #restore(snap) {
+    if (!snap) return;
+    for (const n of snap.nodes) this.appendChild(n);
+    if (snap.edges) this.setEdges(snap.edges);
+    if (snap.viewport) this.setViewport(snap.viewport);
+  }
+
+  #labelForNode(nodeId) {
+    const node = this.#nodeById?.(nodeId) ?? this.querySelector(`sherpa-node[data-node-id="${nodeId}"]`);
+    if (!node) return null;
+    // Prefer the slotted [slot="title"] text on the node header.
+    const title = node.querySelector('[slot="title"]');
+    if (title?.textContent?.trim()) return title.textContent.trim();
+    return node.dataset.label || node.dataset.nodeId || null;
+  }
+
+  /** Sync embedded view-header attrs + breadcrumb trail from drill stack. */
+  #syncHeader() {
+    const header = this.#viewHeaderEl;
+    if (!header) return;
+    const stack = this.#drillStack;
+    const rootHeading = this.getAttribute("data-heading") || "";
+    const exportTitle = this.getAttribute("data-export-title");
+    if (exportTitle != null) header.setAttribute("data-export-title", exportTitle);
+    else header.removeAttribute("data-export-title");
+    // Heading: top of stack label, falling back to data-heading at root.
+    if (stack.length) {
+      header.setAttribute("data-label", stack[stack.length - 1].label);
+      header.setAttribute("data-back-button", "true");
+    } else {
+      if (rootHeading) header.setAttribute("data-label", rootHeading);
+      else header.removeAttribute("data-label");
+      header.removeAttribute("data-back-button");
+    }
+    // Breadcrumbs: ancestor trail (root + intermediate frames). Skip
+    // when at root.
+    for (const old of header.querySelectorAll(':scope > sherpa-breadcrumbs[data-canvas-breadcrumbs]')) {
+      old.remove();
+    }
+    if (stack.length) {
+      const crumbs = document.createElement("sherpa-breadcrumbs");
+      crumbs.setAttribute("slot", "breadcrumbs");
+      crumbs.setAttribute("data-canvas-breadcrumbs", "");
+      const trail = [];
+      if (rootHeading) trail.push(rootHeading);
+      for (let i = 0; i < stack.length - 1; i++) trail.push(stack[i].label);
+      for (const text of trail) {
+        const span = document.createElement("span");
+        span.textContent = text;
+        crumbs.appendChild(span);
+      }
+      header.appendChild(crumbs);
+    }
   }
 
   /* ── Utilities ─────────────────────────────────────────────────── */
