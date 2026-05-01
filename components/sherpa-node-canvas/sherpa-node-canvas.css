@@ -59,15 +59,18 @@
   overflow: hidden;
 }
 
-/* Trailing side-panel slot. Width follows the slotted element so a
+/* Side-panel slots. Width follows the slotted element so a
    <sherpa-content-section> minimising to its strip reclaims space for
-   the canvas without any consumer-side grid math. The wrapper is
-   hidden when the slot has no content. */
+   the canvas without any consumer-side grid math. The wrappers are
+   hidden when the slot has no content (data-has-{slot} is set
+   automatically by the sherpa-element base). */
+.side-panel-start,
 .side-panel-end {
   display: flex;
   flex: 0 0 auto;
   align-self: stretch;
 }
+:host(:not([data-has-side-panel-start])) .side-panel-start { display: none; }
 :host(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
 
 .layer {

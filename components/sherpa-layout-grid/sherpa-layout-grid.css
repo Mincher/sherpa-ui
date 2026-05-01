@@ -63,14 +63,16 @@
   width: 100%;
 }
 
-/* Trailing side-panel slot. Width follows the slotted element so a
+/* Side-panel slots. Width follows the slotted element so a
    <sherpa-content-section> minimising to its strip reclaims space
    for the grid surface without any consumer-side grid math. */
+.side-panel-start,
 .side-panel-end {
   display: flex;
   flex: 0 0 auto;
   align-self: stretch;
 }
+:host(:not([data-has-side-panel-start])) .side-panel-start { display: none; }
 :host(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
 
 .grid-surface {
