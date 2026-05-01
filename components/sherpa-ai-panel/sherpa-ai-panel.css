@@ -77,12 +77,21 @@
   box-shadow: var(--sherpa-shadow-default-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
   border-left: 1px solid var(--sherpa-border-container-default, #e5e7eb);
 }
-:host(:not([data-variant="inline"]):not([data-position="left"])) { right: 0; }
+:host(:not([data-variant="inline"]):not([data-position="left"])) {
+  right: 0;
+  border-top-left-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-bottom-left-radius: var(--sherpa-border-rounding-lg, 12px);
+}
 :host(:not([data-variant="inline"])[data-position="left"]) {
   left: 0;
   border-left: 0;
   border-right: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+  border-top-right-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-bottom-right-radius: var(--sherpa-border-rounding-lg, 12px);
 }
+
+/* Clip the inner shell so children don't bleed past the rounded edge. */
+:host(:not([data-variant="inline"])) .ai-panel { border-radius: inherit; overflow: hidden; }
 
 /* ── Layout shell ─────────────────────────────────────────────── */
 .ai-panel {
