@@ -80,7 +80,7 @@
 :host(:not([data-role="user"])) .bubble {
   background: var(--sherpa-surface-container-hover, #f3f4f6);
   border: 1px solid var(--sherpa-border-container-default, #e5e7eb);
-  border-radius: 12px 12px 12px 2px;
+  border-radius: 2px 12px 12px 12px;
   padding: 10px 12px;
 }
 
