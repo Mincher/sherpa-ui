@@ -36,11 +36,8 @@
   gap: var(--sherpa-space-xs, 8px);
   padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px) var(--sherpa-space-xs, 8px) var(--sherpa-space-xs, 8px);
   background: var(--sherpa-surface-container-default, #ffffff);
-  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #b2b2bf);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
-  transition:
-    background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease),
-    border-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+  transition: background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
 }
 
 /* ── Interactive / Hover ─────────────────────────────────────── */
@@ -57,14 +54,12 @@
 
 :host([data-active]) .list-item-container {
   background: var(--sherpa-surface-container-selected-default, #f8ebff);
-  border-color: var(--sherpa-border-control-primary-active, #3c5edd);
 }
 
 /* ── Disabled ────────────────────────────────────────────────── */
 
 :host([disabled]) .list-item-container {
   background: var(--sherpa-surface-container-inactive, #f2f2f2);
-  border-color: var(--sherpa-border-container-inactive, #c0c0cc);
   pointer-events: none;
 }
 
