@@ -1,0 +1,65 @@
+/**
+ * sherpa-proposal-preview
+ *
+ * Renders an agent proposal: rationale text, a list of ops
+ * (slotted children — typically <sherpa-proposal-op>), an
+ * expandable raw payload, and a decision toolbar.
+ *
+ * Decision controls are slotted by the host (use <sherpa-button>),
+ * so the component stays renderer-agnostic.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string} [data-rationale]  Italic rationale shown above ops.
+ *
+ * ── Slots ─────────────────────────────────────────────────────
+ * ops       — One <sherpa-proposal-op> per change.
+ * raw       — Raw payload (typically a <pre>).
+ * decision  — Decision controls (typically <sherpa-button> trio).
+ *
+ * ── Parts ─────────────────────────────────────────────────────
+ * proposal, rationale, ops, raw, decision.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+
+.rationale {
+  margin: 0 0 6px;
+  font-style: italic;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+:host(:not([data-rationale])) .rationale,
+:host([data-rationale=""]) .rationale { display: none; }
+
+.ops {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--sherpa-fonts-mono, "Source Code Pro", ui-monospace, monospace);
+  font-size: 12px;
+}
+:host(:not([data-has-ops])) .ops { display: none; }
+
+.raw {
+  margin-top: 8px;
+  font-size: 11px;
+}
+.raw-summary {
+  cursor: pointer;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  user-select: none;
+}
+:host(:not([data-has-raw])) .raw { display: none; }
+
+.decision {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+}
+:host(:not([data-has-decision])) .decision { display: none; }

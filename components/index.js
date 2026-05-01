@@ -73,6 +73,8 @@ export * from "./sherpa-message/sherpa-message.js";
 export * from "./sherpa-ai-panel/sherpa-ai-panel.js";
 export * from "./sherpa-chat-message/sherpa-chat-message.js";
 export * from "./sherpa-prompt-composer/sherpa-prompt-composer.js";
+export * from "./sherpa-proposal-preview/sherpa-proposal-preview.js";
+export * from "./sherpa-proposal-op/sherpa-proposal-op.js";
 export * from "./sherpa-section-header/sherpa-section-header.js";
 export * from "./sherpa-section-nav/sherpa-section-nav.js";
 export * from "./sherpa-stepper/sherpa-stepper.js";

@@ -1,0 +1,15 @@
+<template id="default">
+  <article class="proposal" part="proposal">
+    <p class="rationale" part="rationale"></p>
+    <div class="ops" part="ops">
+      <slot name="ops"></slot>
+    </div>
+    <details class="raw" part="raw">
+      <summary class="raw-summary">Show raw proposal</summary>
+      <slot name="raw"></slot>
+    </details>
+    <footer class="decision" part="decision">
+      <slot name="decision"></slot>
+    </footer>
+  </article>
+</template>

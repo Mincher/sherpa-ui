@@ -1,0 +1,22 @@
+:host {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 6px;
+  align-items: baseline;
+  font-family: var(--sherpa-fonts-mono, "Source Code Pro", ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+
+.tag {
+  text-align: center;
+  font-weight: 700;
+}
+
+:host([data-op="add"])         .tag,
+:host([data-op="add-edge"])    .tag { color: var(--sherpa-text-context-success-default, #15803d); }
+:host([data-op="remove"])      .tag,
+:host([data-op="remove-edge"]) .tag { color: var(--sherpa-text-context-error-default,   #b91c1c); }
+:host([data-op="update"])      .tag { color: var(--sherpa-text-context-warning-default, #92400e); }
+
+.label { word-break: break-word; }
