@@ -123,6 +123,14 @@
   left: 0;
 }
 
+/* Both — overlay spans the full width, anchored top/bottom (e.g. drawer). */
+:host([data-variant="overlay"][data-position="both"]) {
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: none;
+}
+
 /* ================================================================
    Panel header
    ================================================================ */

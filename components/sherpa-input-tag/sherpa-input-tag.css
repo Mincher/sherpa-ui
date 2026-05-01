@@ -1,0 +1,94 @@
+/**
+ * sherpa-input-tag.css — Multi-tag input.
+ *
+ * Layout: chips and the typeahead input share a single flex row that
+ * wraps to multiple lines. The typeahead grows to fill remaining space.
+ */
+
+@import '../utilities/sherpa-input-base/sherpa-input-base.css';
+
+/* ── Override input-control to allow wrapping chips ─────────────── */
+
+.input-control {
+  flex-wrap: wrap;
+  align-items: stretch;
+  min-height: var(--sherpa-size-2xl, 32px);
+}
+
+.tag-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  padding: var(--sherpa-space-3xs, 2px) var(--sherpa-space-2xs, 4px);
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── Chip ───────────────────────────────────────────────────────── */
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+  padding: var(--sherpa-space-3xs, 2px) var(--sherpa-space-2xs, 4px)
+           var(--sherpa-space-3xs, 2px) var(--sherpa-space-xs, 8px);
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  background: var(--sherpa-surface-context-info-subtle, #e6f0ff);
+  color: var(--sherpa-text-context-info-default, #0060df);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  line-height: var(--sherpa-font-sm-line-height, 16px);
+  max-width: 100%;
+}
+
+.tag-chip-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sherpa-size-md, 20px);
+  height: var(--sherpa-size-md, 20px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tag-chip-remove:hover {
+  background: color-mix(in oklab, currentColor 12%, transparent);
+}
+
+.tag-chip-remove:focus-visible {
+  outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+  outline-offset: 1px;
+}
+
+/* ── Typeahead input ────────────────────────────────────────────── */
+
+.tag-typeahead {
+  flex: 1 1 100px;
+  min-width: 60px;
+  height: var(--sherpa-size-xl, 24px);
+  padding-inline: var(--sherpa-space-2xs, 4px);
+}
+
+/* ── Disabled / readonly chip styling ───────────────────────────── */
+
+:host([disabled]) .tag-chip,
+:host([readonly]) .tag-chip {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+  color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+
+:host([disabled]) .tag-chip-remove,
+:host([readonly]) .tag-chip-remove {
+  display: none;
+}

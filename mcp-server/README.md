@@ -98,8 +98,8 @@ Add to `.cursor/mcp.json` in your project:
 
 | Capability     | Count | What it gives the AI                                      |
 | -------------- | ----- | --------------------------------------------------------- |
-| **Tools**      | 9     | Actions the AI can call (query, generate, validate, compose, etc.) |
-| **Resources**  | 67+   | Reference docs, component schemas, templates, and patterns |
+| **Tools**      | 15    | Actions the AI can call (query, generate, validate, search, compose, etc.) |
+| **Resources**  | 250+  | Schemas, HTML templates, CSS, JS, READMEs, utilities, patterns, guidelines |
 | **Prompts**    | 1     | A guided workflow for building complete UI layouts          |
 
 The AI uses these automatically — you just ask it to build something with
@@ -339,6 +339,94 @@ with correct event conventions, rather than improvising the structure.
 
 ---
 
+### `get_component_source` — Read the canonical source
+
+Returns the raw HTML template, CSS, JS, or README for a component. Use this
+when the JSON schema isn't enough — for example, when you need to see the
+actual internal class names, CSS custom properties, lifecycle hooks, or how
+the component handles a specific edge case.
+
+**Input:**
+```json
+{ "tagName": "sherpa-button", "kind": "css" }
+```
+
+`kind`: `html` | `css` | `js` | `readme`
+
+**Use when:** The agent needs deep knowledge of a component's implementation,
+not just its public API.
+
+---
+
+### `search_api` — Find which component does X
+
+Search every component schema in one shot for matching attributes, events,
+slots, methods, properties, CSS parts, or CSS custom properties. Useful when
+you know *what* you need (e.g. an event called `selection-change`) but not
+*which* component emits it.
+
+**Input:**
+```json
+{ "query": "selection-change", "facet": "events" }
+```
+
+`facet`: `all` (default) | `attributes` | `events` | `slots` | `methods` | `properties` | `cssParts` | `cssProperties`
+
+**Use when:** You need to discover capabilities across the library rather
+than inspecting one component at a time.
+
+---
+
+### `list_token_groups` — Discover token namespaces
+
+Lists every `--sherpa-*` token namespace (e.g. `surface`, `text`, `space`,
+`border`) with counts. Use this for *discovery* before drilling in with
+`browse_tokens`.
+
+**Use when:** You don't yet know which token family applies to your styling
+problem.
+
+---
+
+### `list_utilities` — List utility modules
+
+Returns every utility under `components/utilities/` (FlowManager, FormManager,
+ThemeManager, formatters, mixins, base classes) with a short JSDoc summary.
+
+**Use when:** You're about to wire a flow, write a form helper, or extend a
+base class and need to know what's already available.
+
+---
+
+### `get_utility` — Read a utility's source
+
+Returns the source for a utility module by id (e.g. `flow-manager`,
+`form-manager`, `sherpa-element`). Defaults to JS; pass `kind: "css"` or
+`"html"` for utilities that have those files.
+
+**Input:**
+```json
+{ "id": "flow-manager" }
+```
+
+**Use when:** You need to understand how a utility is structured before using
+or extending it.
+
+---
+
+### `get_architecture` — Layered architecture rules
+
+Returns the canonical architecture rules for the library: layer separation
+(HTML / CSS / JS), the `SherpaElement` base class lifecycle, the `data-*`
+attribute pattern, the cloning-template pattern, anti-patterns, and CRUD
+flow composition. Combines `copilot-instructions.md` and
+`COMPONENT-GUIDELINES.md`.
+
+**Use when:** Read this *once* at the start of any non-trivial task before
+generating components, flows, or modifying existing code.
+
+---
+
 ## 4. Resources & Prompts
 
 ### Resources
@@ -353,8 +441,12 @@ The AI can read these reference documents directly from the server:
 | `sherpa://guidelines/token-usage`           | How to use design tokens correctly             |
 | `sherpa://guidelines/text-styles`           | Typography scale and text utility classes      |
 | `sherpa://guidelines/copilot-instructions`  | Full coding rules for this component library   |
-| `sherpa://schema/{tagName}`                 | JSON schema for any of the 53 components       |
+| `sherpa://schema/{tagName}`                 | JSON schema for any component                  |
 | `sherpa://template/{tagName}`               | Raw HTML template for any component            |
+| `sherpa://component/{tagName}/css`          | Raw CSS source for any component               |
+| `sherpa://component/{tagName}/js`           | Raw JS source for any component                |
+| `sherpa://component/{tagName}/readme`       | Generated README for any component             |
+| `sherpa://utility/{id}`                     | Source for a utility module (FlowManager etc.) |
 | `sherpa://pattern/{patternId}`              | View layout or UX pattern HTML                 |
 
 ### Prompts

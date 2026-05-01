@@ -1,0 +1,44 @@
+/**
+ * sherpa-transfer-list.css — Two-pane shuttle layout.
+ *
+ * Host attributes consumed:
+ *   data-search — show/hide pane search inputs
+ */
+
+:host {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--sherpa-space-md, 16px);
+  align-items: stretch;
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  min-height: 240px;
+}
+
+:host([hidden]) { display: none; }
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xs, 8px);
+  min-width: 0;
+}
+
+.pane-search {
+  display: none;
+  width: 100%;
+}
+:host([data-search]) .pane-search { display: block; }
+
+.pane-list {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.control-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sherpa-space-xs, 8px);
+}

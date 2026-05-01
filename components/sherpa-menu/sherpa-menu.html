@@ -13,8 +13,10 @@
     • (sort, segment, timeframe chips use setMenuItems() API)
 
   Host attributes:
-    open    — Menu visibility (boolean, managed internally)
-    popover — Native popover attribute
+    open         — Menu visibility (boolean, managed internally)
+    popover      — Native popover attribute
+    data-layout  — "default" (vertical, default) | "actions" (compact horizontal row)
+    data-loading — Boolean; replaces slot content with a loader spinner
 
   Authoring pattern:
     - <sherpa-menu-item data-type="heading"> for group headings
@@ -26,6 +28,10 @@
 <!-- Shadow DOM shell -->
 <template id="default">
   <div class="menu-surface text-body-sm" role="menu" part="surface">
+    <div class="menu-loader" part="loader" role="status" aria-live="polite">
+      <span class="menu-loader-spinner" aria-hidden="true"></span>
+      <span class="menu-loader-text"></span>
+    </div>
     <slot></slot>
   </div>
 </template>

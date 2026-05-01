@@ -1,0 +1,46 @@
+/**
+ * sherpa-scheduler.css — Recurrence picker layout.
+ *
+ * Host attributes consumed:
+ *   data-frequency — once | hourly | daily | weekly | monthly
+ *
+ * CSS owns all conditional row visibility based on data-frequency.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 12px);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+
+:host([hidden]) { display: none; }
+
+.row {
+  display: none;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-sm, 12px);
+  align-items: flex-end;
+}
+
+.row-frequency { display: flex; }
+
+/* Conditional rows shown per frequency */
+:host([data-frequency="once"])    .row-once,
+:host([data-frequency="hourly"])  .row-hourly,
+:host([data-frequency="daily"])   .row-time,
+:host([data-frequency="weekly"])  .row-time,
+:host([data-frequency="weekly"])  .row-weekly,
+:host([data-frequency="monthly"]) .row-time,
+:host([data-frequency="monthly"]) .row-monthly {
+  display: flex;
+}
+
+/* Default to weekly when no frequency set */
+:host(:not([data-frequency])) .row-time,
+:host(:not([data-frequency])) .row-weekly {
+  display: flex;
+}
+
+.row > * { flex: 1 1 160px; min-width: 0; }

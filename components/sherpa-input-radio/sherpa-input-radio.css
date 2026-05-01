@@ -1,0 +1,29 @@
+/**
+ * sherpa-input-radio.css — Atomic radio primitive.
+ * Visuals come from utilities/sherpa-check.css (shared with checkbox).
+ */
+
+@import '../utilities/sherpa-check.css';
+
+:host {
+  display: inline-flex;
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+}
+
+:host([hidden]) { display: none; }
+
+:host([disabled]) { pointer-events: none; }
+
+.check-label { width: 100%; }
+
+.check-text-wrapper:has(.check-text:empty):has(.check-description:empty) {
+  display: none;
+}
+
+.check-text-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+  min-width: 0;
+}

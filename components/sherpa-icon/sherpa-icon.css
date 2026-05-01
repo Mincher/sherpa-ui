@@ -1,0 +1,59 @@
+/**
+ * sherpa-icon.css — Atomic icon primitive.
+ *
+ * Wraps either a Font Awesome <i> glyph or a registered inline <svg>
+ * inside a Shadow-DOM-friendly host. Sizing is delegated to the global
+ * .sherpa-icon class (see css/styles/sherpa-icon-classes.css), so the
+ * host only needs to mirror the size token via a CSS variable.
+ *
+ * Host attributes consumed:
+ *   name        {string} — Icon name; selects glyph or registered SVG
+ *   data-weight {enum}   — solid | regular | light | thin | duotone | brands
+ *   data-size   {enum}   — 3xs | 2xs | xs | sm | md | lg | xl | 2xl | 3xl | 4xl | 5xl | 6xl
+ *   data-status {enum}   — Status colour via --_status-text-* cascade
+ *
+ * Status tokens consumed:
+ *   --_status-text-strong (foreground colour for the glyph/svg fill)
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: var(--_status-text-strong, currentColor);
+
+  /* Mirror data-size so the inner .sherpa-icon picks up the token. */
+  --icon-size: var(--sherpa-size-md);
+}
+
+/* Size mapping mirrors css/styles/sherpa-icon-classes.css */
+:host([data-size="3xs"]) { --icon-size: var(--sherpa-size-3xs); }
+:host([data-size="2xs"]) { --icon-size: var(--sherpa-size-2xs); }
+:host([data-size="xs"])  { --icon-size: var(--sherpa-size-xs); }
+:host([data-size="sm"])  { --icon-size: var(--sherpa-size-sm); }
+:host([data-size="md"])  { --icon-size: var(--sherpa-size-md); }
+:host([data-size="lg"])  { --icon-size: var(--sherpa-size-lg); }
+:host([data-size="xl"])  { --icon-size: var(--sherpa-size-xl); }
+:host([data-size="2xl"]) { --icon-size: var(--sherpa-size-2xl); }
+:host([data-size="3xl"]) { --icon-size: var(--sherpa-size-3xl); }
+:host([data-size="4xl"]) { --icon-size: var(--sherpa-size-4xl); }
+:host([data-size="5xl"]) { --icon-size: var(--sherpa-size-5xl); }
+:host([data-size="6xl"]) { --icon-size: var(--sherpa-size-6xl); }
+
+.icon-glyph,
+.icon-svg {
+  --icon-size: inherit;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  font-size: var(--icon-size);
+}
+
+.icon-svg svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  display: block;
+}
+
+:host([hidden]) { display: none; }

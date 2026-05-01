@@ -5,6 +5,11 @@
  *   Uses popover="auto" for top-layer promotion and light-dismiss.
  *   CSS anchor positioning with JS fallback.
  *
+ * @attr {enum}    [data-layout]       — "default" (vertical) | "actions" (compact horizontal row)
+ * @attr {boolean} [data-loading]      — Show a spinner instead of slot content
+ * @attr {string}  [data-loading-text] — Optional caption shown next to the spinner
+ * @attr {enum}    [data-position]     — bottom-start (default) | bottom-end | top-start | top-end
+ *
  * @slot (default) — Menu content: <ul>/<li>/<sherpa-menu-item> elements
  *
  * @fires menu-select
@@ -90,8 +95,25 @@ export class SherpaMenu extends SherpaElement {
   source = null;
   #hiding = false;
 
+  static get observedAttributes() {
+    return [...super.observedAttributes, 'data-loading-text'];
+  }
+
   get open() {
     return this.hasAttribute("open");
+  }
+
+  onRender() {
+    this.#syncLoadingText();
+  }
+
+  onAttributeChanged(name) {
+    if (name === 'data-loading-text') this.#syncLoadingText();
+  }
+
+  #syncLoadingText() {
+    const el = this.$('.menu-loader-text');
+    if (el) el.textContent = this.dataset.loadingText || '';
   }
 
   onConnect() {

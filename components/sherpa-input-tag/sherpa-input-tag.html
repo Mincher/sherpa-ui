@@ -1,0 +1,23 @@
+<!--
+  sherpa-input-tag.html — Templates for sherpa-input-tag.
+
+  Templates:
+    • default — Chips + free-text typeahead. Press Enter or comma to commit
+                a chip; press Backspace in an empty field to delete the last.
+
+  Inherited from SherpaInputBase:
+    data-label, data-description, data-helper, data-layout,
+    disabled, readonly, required, name, placeholder, novalidate
+
+  Component-specific attributes (set on host):
+    data-value          — JSON array of current tag values, e.g. ["nyc","tor"]
+    data-allow-duplicates — Boolean; if absent, duplicate values are rejected
+    data-separator      — Single character to also commit a chip (default: ",")
+    data-max-tags       — Integer; reject input above this count
+-->
+
+<template id="default">
+<div class="tag-wrapper">
+  <input type="text" class="input-field tag-typeahead" autocomplete="off" />
+</div>
+</template>

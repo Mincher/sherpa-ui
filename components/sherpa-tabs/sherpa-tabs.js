@@ -9,12 +9,19 @@
  * @element sherpa-tabs
  *
  * @attr {number}  data-active-tab — Zero-based index of the selected tab
+ * @attr {enum}    data-load-mode  — eager (default, all panels rendered) | lazy (panels populated on first activation)
  *
- * @slot — Default slot for tab panel children (each must have data-tab-label)
+ * @slot         — Default slot for tab panel children (each must have data-tab-label)
+ * @slot detail  — Trailing content shown to the right of the tab strip (badges, actions)
  *
  * @fires tab-change — Fired when the active tab changes
  *   bubbles: true, composed: true
  *   detail: { index: number, label: string, previousIndex: number }
+ *
+ * @fires tab-load — (lazy) Fired the first time a tab becomes active. Consumers
+ *   should populate the panel synchronously or asynchronously.
+ *   bubbles: true, composed: true
+ *   detail: { index: number, label: string, panel: HTMLElement }
  *
  * @method selectTab(index) — Programmatically select a tab by index
  *   @param {number} index — Zero-based tab index
@@ -33,7 +40,7 @@ export class SherpaTabs extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-tabs.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-active-tab'];
+    return [...super.observedAttributes, 'data-active-tab', 'data-load-mode'];
   }
 
   /* ── Cached refs ──────────────────────────────────────────────── */
@@ -140,6 +147,18 @@ export class SherpaTabs extends SherpaElement {
     this.#panels.forEach((panel, i) => {
       panel.toggleAttribute('data-tab-active', i === index);
     });
+
+    // Lazy load: fire tab-load the first time a panel becomes active.
+    if (this.dataset.loadMode === 'lazy') {
+      const panel = this.#panels[index];
+      if (panel && !panel.hasAttribute('data-tab-loaded')) {
+        panel.setAttribute('data-tab-loaded', '');
+        this.dispatchEvent(new CustomEvent('tab-load', {
+          bubbles: true, composed: true,
+          detail: { index, label: panel.dataset.tabLabel || '', panel },
+        }));
+      }
+    }
   }
 
   /* ── Event handlers ───────────────────────────────────────────── */

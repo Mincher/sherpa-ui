@@ -1,0 +1,54 @@
+<!--
+  sherpa-scheduler.html — Recurrence picker (frequency + time + weekdays).
+
+  Composes: sherpa-input-select, sherpa-input-time, sherpa-input-date,
+            sherpa-input-checkbox-group (weekdays template),
+            sherpa-input-number.
+
+  Templates:
+    • default — Frequency select + conditional rows shown via host attrs
+
+  Host attributes:
+    data-frequency — once | hourly | daily | weekly | monthly (default: weekly)
+    data-value     — JSON string representing the current schedule (set by JS)
+-->
+
+<template id="default">
+  <div class="row row-frequency">
+    <sherpa-input-select
+      class="freq-select"
+      data-label="Frequency"
+      data-options='[{"value":"once","label":"Once"},{"value":"hourly","label":"Hourly"},{"value":"daily","label":"Daily"},{"value":"weekly","label":"Weekly"},{"value":"monthly","label":"Monthly"}]'
+    ></sherpa-input-select>
+  </div>
+
+  <!-- Once: date + time -->
+  <div class="row row-once">
+    <sherpa-input-date class="date-once" data-label="Date"></sherpa-input-date>
+    <sherpa-input-time class="time-once" data-label="Time"></sherpa-input-time>
+  </div>
+
+  <!-- Hourly: every N hours -->
+  <div class="row row-hourly">
+    <sherpa-input-number class="hourly-interval" data-label="Every (hours)" data-min="1" data-value="1"></sherpa-input-number>
+  </div>
+
+  <!-- Daily / Weekly: time-of-day -->
+  <div class="row row-time">
+    <sherpa-input-time class="time-of-day" data-label="At"></sherpa-input-time>
+  </div>
+
+  <!-- Weekly: weekdays -->
+  <div class="row row-weekly">
+    <sherpa-input-checkbox-group
+      class="weekday-group"
+      data-template="weekdays"
+      data-label="Days of week"
+    ></sherpa-input-checkbox-group>
+  </div>
+
+  <!-- Monthly: day-of-month -->
+  <div class="row row-monthly">
+    <sherpa-input-number class="monthly-day" data-label="Day of month" data-min="1" data-max="31" data-value="1"></sherpa-input-number>
+  </div>
+</template>

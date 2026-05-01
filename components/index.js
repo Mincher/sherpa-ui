@@ -84,6 +84,19 @@ export * from "./sherpa-input-date/sherpa-input-date.js";
 export * from "./sherpa-input-date-range/sherpa-input-date-range.js";
 export * from "./sherpa-input-time/sherpa-input-time.js";
 export * from "./sherpa-input-password/sherpa-input-password.js";
+export * from "./sherpa-input-checkbox/sherpa-input-checkbox.js";
+export * from "./sherpa-input-checkbox-group/sherpa-input-checkbox-group.js";
+export * from "./sherpa-input-radio/sherpa-input-radio.js";
+export * from "./sherpa-input-radio-group/sherpa-input-radio-group.js";
+export * from "./sherpa-input-tag/sherpa-input-tag.js";
+
+// Atomic primitives
+export * from "./sherpa-icon/sherpa-icon.js";
+
+// Composite components
+export * from "./sherpa-list/sherpa-list.js";
+export * from "./sherpa-transfer-list/sherpa-transfer-list.js";
+export * from "./sherpa-scheduler/sherpa-scheduler.js";
 
 // Node-graph components (sherpa-node family)
 export * from "./sherpa-node-socket/sherpa-node-socket.js";

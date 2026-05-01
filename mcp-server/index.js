@@ -7,21 +7,31 @@
  * Model Context Protocol (MCP). Transport: stdio.
  *
  * Tools:
- *   query_component      — Look up a component's full API
- *   list_components      — List all components with optional category filter
- *   generate_component   — Generate valid HTML for a component
- *   browse_tokens        — Search design tokens by name or purpose
- *   validate_usage       — Check component HTML for common mistakes
- *   list_patterns        — List view layout and UX patterns
- *   get_pattern          — Get full HTML for a pattern
- *   compose_view         — Compose a complete view from layout + components
- *   generate_flow        — Generate a CRUD flow (add/edit/delete) for an entity
+ *   query_component       — Look up a component's full API
+ *   list_components       — List all components with optional category filter
+ *   generate_component    — Generate valid HTML for a component
+ *   get_component_source  — Read a component's html / css / js / README
+ *   search_api            — Search across all schemas (attrs, events, slots, etc.)
+ *   browse_tokens         — Search design tokens by name or purpose
+ *   list_token_groups     — List token namespaces grouped by file
+ *   list_utilities        — List utility modules under components/utilities
+ *   get_utility           — Read a utility module's source
+ *   get_architecture      — Layered architecture rules + base-class lifecycle
+ *   validate_usage        — Check component HTML for common mistakes
+ *   list_patterns         — List view layout and UX patterns
+ *   get_pattern           — Get full HTML for a pattern
+ *   compose_view          — Compose a complete view from layout + components
+ *   generate_flow         — Generate a CRUD flow (add/edit/delete) for an entity
  *
  * Resources:
- *   sherpa://guidelines/*  — Component guidelines, API standard, token usage
- *   sherpa://schema/{tag}  — Raw JSON schema per component
- *   sherpa://template/{tag} — Raw HTML template for a component
- *   sherpa://pattern/{id}  — View layout / UX pattern HTML
+ *   sherpa://guidelines/*           — Component guidelines, API standard, token usage
+ *   sherpa://schema/{tag}           — Raw JSON schema per component
+ *   sherpa://template/{tag}         — Raw HTML template for a component
+ *   sherpa://component/{tag}/css    — Component CSS source
+ *   sherpa://component/{tag}/js     — Component JS source
+ *   sherpa://component/{tag}/readme — Component README
+ *   sherpa://utility/{id}           — Utility module source
+ *   sherpa://pattern/{id}           — View layout / UX pattern HTML
  *
  * Prompts:
  *   build_ui              — Guided prompt for building a UI layout
@@ -135,9 +145,78 @@ function readPatternHTML(patternEntry) {
   return fs.readFileSync(filePath, "utf8");
 }
 
+/** Read one of the source files (css/js/html/readme) for a component. */
+function readComponentSource(tagName, kind) {
+  const dir = path.join(COMPONENTS_DIR, tagName);
+  if (!fs.existsSync(dir)) return null;
+  const map = {
+    css: `${tagName}.css`,
+    js: `${tagName}.js`,
+    html: `${tagName}.html`,
+    readme: "README.md",
+  };
+  const filename = map[kind];
+  if (!filename) return null;
+  const filePath = path.join(dir, filename);
+  if (!fs.existsSync(filePath)) return null;
+  return fs.readFileSync(filePath, "utf8");
+}
+
+/** Discover utility modules (single-file or single-folder) under components/utilities. */
+function loadUtilities() {
+  const dir = path.join(COMPONENTS_DIR, "utilities");
+  if (!fs.existsSync(dir)) return new Map();
+  const utilities = new Map();
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith(".js")) {
+      const id = entry.name.replace(/\.js$/, "");
+      utilities.set(id, {
+        id,
+        kind: "module",
+        files: { js: path.join(dir, entry.name) },
+      });
+    } else if (entry.isDirectory()) {
+      const sub = path.join(dir, entry.name);
+      const files = {};
+      for (const ext of ["js", "css", "html"]) {
+        const f = path.join(sub, `${entry.name}.${ext}`);
+        if (fs.existsSync(f)) files[ext] = f;
+      }
+      if (Object.keys(files).length) {
+        utilities.set(entry.name, { id: entry.name, kind: "folder", files });
+      }
+    }
+  }
+  return utilities;
+}
+
+/** Read a utility source file (js | css | html). */
+function readUtilitySource(id, kind = "js") {
+  const util = utilities.get(id);
+  if (!util) return null;
+  const filePath = util.files[kind];
+  if (!filePath || !fs.existsSync(filePath)) return null;
+  return fs.readFileSync(filePath, "utf8");
+}
+
+/** Extract a short JSDoc summary from the top of a JS file. */
+function extractJsdocSummary(src) {
+  if (!src) return "";
+  const m = src.match(/\/\*\*([\s\S]*?)\*\//);
+  if (!m) return "";
+  return m[1]
+    .split("\n")
+    .map((l) => l.replace(/^\s*\*\s?/, "").trim())
+    .filter((l) => l && !l.startsWith("@"))
+    .slice(0, 3)
+    .join(" ")
+    .slice(0, 240);
+}
+
 const schemas = loadSchemas();
 const tokens = loadTokens();
 const patterns = loadPatterns();
+const utilities = loadUtilities();
 
 /* ── Icon lookup ───────────────────────────────────────────────── */
 
@@ -381,6 +460,15 @@ server.registerTool(
     if (templateIds.length > 0) {
       result.templates = templateIds;
     }
+
+    // Advertise source resources so callers know where deeper context lives
+    result.sources = {
+      schema: `sherpa://schema/${tagName}`,
+      html: `sherpa://template/${tagName}`,
+      css: `sherpa://component/${tagName}/css`,
+      js: `sherpa://component/${tagName}/js`,
+      readme: `sherpa://component/${tagName}/readme`,
+    };
 
     return {
       content: [{
@@ -858,6 +946,182 @@ server.registerTool(
   }
 );
 
+/* ── Source / search / utilities / architecture tools ──────────── */
+
+server.registerTool(
+  "get_component_source",
+  {
+    title: "Get Component Source",
+    description: "Read the canonical source file (HTML template / CSS / JS / README) for a Sherpa UI component. Use this when the schema isn't enough — e.g. to inspect CSS custom properties, internal classes, or actual template structure.",
+    inputSchema: {
+      tagName: z.string().describe("Component tag name (e.g. sherpa-button)"),
+      kind: z.enum(["html", "css", "js", "readme"]).describe("Which source file to read"),
+    },
+  },
+  async ({ tagName, kind }) => {
+    if (!schemas.has(tagName) && !fs.existsSync(path.join(COMPONENTS_DIR, tagName))) {
+      return { content: [{ type: "text", text: `Unknown component: ${tagName}` }] };
+    }
+    const src = readComponentSource(tagName, kind);
+    if (src == null) {
+      return { content: [{ type: "text", text: `No ${kind} file for ${tagName}` }] };
+    }
+    return { content: [{ type: "text", text: src }] };
+  }
+);
+
+server.registerTool(
+  "search_api",
+  {
+    title: "Search Component API",
+    description: "Search across every component schema for matching attributes, events, slots, methods, properties, CSS parts, or CSS custom properties. Use this to find which component(s) emit a particular event or expose a specific attribute.",
+    inputSchema: {
+      query: z.string().describe("Substring to match (case-insensitive)"),
+      facet: z.enum([
+        "all", "attributes", "events", "slots", "methods", "properties", "cssParts", "cssProperties",
+      ]).optional().describe("Limit search to a specific facet (defaults to all)"),
+    },
+  },
+  async ({ query, facet }) => {
+    const q = query.toLowerCase();
+    const facets = facet && facet !== "all"
+      ? [facet]
+      : ["attributes", "events", "slots", "methods", "properties", "cssParts", "cssProperties"];
+    const results = [];
+    for (const schema of schemas.values()) {
+      for (const f of facets) {
+        const items = schema[f] || [];
+        for (const item of items) {
+          const haystack = `${item.name || ""} ${item.description || ""} ${(item.values || []).join(" ")}`.toLowerCase();
+          if (haystack.includes(q)) {
+            results.push({
+              tagName: schema.tagName,
+              facet: f,
+              name: item.name,
+              type: item.type,
+              description: item.description,
+            });
+          }
+        }
+      }
+    }
+    if (!results.length) {
+      return { content: [{ type: "text", text: `No API matches for "${query}".` }] };
+    }
+    // Group by tagName
+    const grouped = {};
+    for (const r of results) {
+      grouped[r.tagName] ??= [];
+      grouped[r.tagName].push(r);
+    }
+    let out = `Found ${results.length} match(es) for "${query}":\n\n`;
+    for (const [tag, items] of Object.entries(grouped)) {
+      out += `## ${tag}\n`;
+      for (const r of items) {
+        out += `  ${r.facet}: ${r.name}`;
+        if (r.type) out += ` {${r.type}}`;
+        if (r.description) out += ` — ${r.description}`;
+        out += "\n";
+      }
+      out += "\n";
+    }
+    return { content: [{ type: "text", text: out }] };
+  }
+);
+
+server.registerTool(
+  "list_token_groups",
+  {
+    title: "List Token Groups",
+    description: "List the design-token namespaces grouped by source file. Use this for discovery before drilling in with browse_tokens.",
+    inputSchema: {},
+  },
+  async () => {
+    const grouped = {};
+    for (const t of tokens) {
+      // Group by namespace prefix: --sherpa-{ns}-...
+      const m = t.name.match(/^--sherpa-([a-z0-9]+)/);
+      const ns = m ? m[1] : "other";
+      grouped[ns] ??= new Set();
+      grouped[ns].add(t.name);
+    }
+    let out = `Found ${tokens.length} tokens across ${Object.keys(grouped).length} namespace(s):\n\n`;
+    for (const ns of Object.keys(grouped).sort()) {
+      out += `- **${ns}** — ${grouped[ns].size} tokens\n`;
+    }
+    out += "\nUse `browse_tokens` with a namespace (e.g. \"surface\") to list specific tokens.";
+    return { content: [{ type: "text", text: out }] };
+  }
+);
+
+server.registerTool(
+  "list_utilities",
+  {
+    title: "List Utilities",
+    description: "List utility modules under components/utilities/ (FlowManager, FormManager, ThemeManager, formatters, mixins, base classes). Each utility supports get_utility for source access.",
+    inputSchema: {},
+  },
+  async () => {
+    if (!utilities.size) {
+      return { content: [{ type: "text", text: "No utilities found." }] };
+    }
+    const entries = [...utilities.values()].sort((a, b) => a.id.localeCompare(b.id));
+    let out = `Found ${entries.length} utility module(s):\n\n`;
+    for (const u of entries) {
+      const summary = extractJsdocSummary(u.files.js ? fs.readFileSync(u.files.js, "utf8") : "");
+      const exts = Object.keys(u.files).join(", ");
+      out += `- **${u.id}** (${exts})`;
+      if (summary) out += ` — ${summary}`;
+      out += "\n";
+    }
+    return { content: [{ type: "text", text: out }] };
+  }
+);
+
+server.registerTool(
+  "get_utility",
+  {
+    title: "Get Utility Source",
+    description: "Read the source file for a utility module by id. Returns the JS source by default; pass kind='css' or 'html' for utilities that have those files (e.g. sherpa-input-base).",
+    inputSchema: {
+      id: z.string().describe("Utility id (e.g. 'flow-manager', 'form-manager', 'sherpa-element')"),
+      kind: z.enum(["js", "css", "html"]).optional().describe("File to read (defaults to js)"),
+    },
+  },
+  async ({ id, kind }) => {
+    const src = readUtilitySource(id, kind || "js");
+    if (src == null) {
+      const available = [...utilities.keys()].join(", ");
+      return { content: [{ type: "text", text: `Unknown utility "${id}" (or no ${kind || "js"} file). Available: ${available}` }] };
+    }
+    return { content: [{ type: "text", text: src }] };
+  }
+);
+
+server.registerTool(
+  "get_architecture",
+  {
+    title: "Get Architecture Overview",
+    description: "Return the canonical architecture rules for the Sherpa UI library: layer separation (HTML / CSS / JS), the SherpaElement base class lifecycle, the data-* attribute pattern, the cloning-template pattern, and CRUD flow composition. Read this once at the start of any non-trivial task before generating components or flows.",
+    inputSchema: {},
+  },
+  async () => {
+    const parts = [];
+    const copilot = readDoc("copilot-instructions.md");
+    if (copilot) {
+      parts.push("# Sherpa UI — Copilot Instructions\n\n" + copilot);
+    }
+    const guidelines = readDoc("COMPONENT-GUIDELINES.md");
+    if (guidelines) {
+      parts.push("\n\n---\n\n# Component Guidelines\n\n" + guidelines);
+    }
+    if (!parts.length) {
+      return { content: [{ type: "text", text: "Architecture documents not found." }] };
+    }
+    return { content: [{ type: "text", text: parts.join("") }] };
+  }
+);
+
 /* ── Resources ─────────────────────────────────────────────────── */
 
 // Static guideline documents
@@ -965,6 +1229,68 @@ server.registerResource(
         uri: uri.href,
         mimeType: "text/html",
         text: html || `<!-- Pattern file not found: ${entry.file} -->`,
+      }],
+    };
+  }
+);
+
+// Component source files (CSS / JS / README) as resources
+const COMPONENT_SOURCE_KINDS = {
+  css: { mime: "text/css", label: "CSS" },
+  js: { mime: "application/javascript", label: "JS" },
+  readme: { mime: "text/markdown", label: "README" },
+};
+
+for (const [kind, info] of Object.entries(COMPONENT_SOURCE_KINDS)) {
+  server.registerResource(
+    `Component ${info.label}`,
+    new ResourceTemplate(`sherpa://component/{tagName}/${kind}`, {
+      list: async () => ({
+        resources: [...schemas.keys()]
+          .filter((tag) => readComponentSource(tag, kind) != null)
+          .map((tag) => ({
+            uri: `sherpa://component/${tag}/${kind}`,
+            name: `${tag} ${info.label}`,
+            description: `${info.label} source for ${tag}`,
+            mimeType: info.mime,
+          })),
+      }),
+    }),
+    { description: `${info.label} source for a Sherpa UI component`, mimeType: info.mime },
+    async (uri, { tagName }) => {
+      const src = readComponentSource(tagName, kind);
+      return {
+        contents: [{
+          uri: uri.href,
+          mimeType: info.mime,
+          text: src ?? `/* No ${kind} file for ${tagName} */`,
+        }],
+      };
+    }
+  );
+}
+
+// Utility module sources as resources
+server.registerResource(
+  "Utility Module",
+  new ResourceTemplate("sherpa://utility/{id}", {
+    list: async () => ({
+      resources: [...utilities.values()].map((u) => ({
+        uri: `sherpa://utility/${u.id}`,
+        name: u.id,
+        description: `Utility module: ${u.id}`,
+        mimeType: "application/javascript",
+      })),
+    }),
+  }),
+  { description: "Source for a Sherpa UI utility module", mimeType: "application/javascript" },
+  async (uri, { id }) => {
+    const src = readUtilitySource(id, "js");
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "application/javascript",
+        text: src ?? `/* Unknown utility: ${id} */`,
       }],
     };
   }

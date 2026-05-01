@@ -7,6 +7,7 @@
  * @attr {enum}    [data-linear]               — true | false — steps must complete in order
  * @attr {enum}    [data-show-step-numbers]     — true | false (default: true)
  * @attr {string}  [data-src]                  — URL to load steps JSON
+ * @attr {enum}    [data-template]             — default | timeline (vertical timeline layout)
  *
  * @fires step-change
  *   bubbles: true, composed: true
@@ -46,20 +47,28 @@ export class SherpaStepper extends SherpaElement {
       "data-linear",
       "data-show-step-numbers",
       "data-src",
+      "data-template",
     ];
   }
 
-  /* ── State ────────────────────────────────────────────────────── */
+  get templateId() {
+    return this.dataset.template === 'timeline' ? 'timeline' : 'default';
+  }
+
+  /* ── State ───────────────────────────────────────────── */
 
   #steps = [];
   #currentStep = 1;
   #ready = false;
+  /** @type {Set<number>} */
+  #visited = new Set();
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   async onRender() {
     await this.#loadInitialData();
     this.#currentStep = parseInt(this.dataset.currentStep) || 1;
+    this.#visited.add(this.#currentStep);
     this.#render();
     this.#ready = true;
   }
@@ -74,6 +83,8 @@ export class SherpaStepper extends SherpaElement {
       }
     } else if (name === "data-src") {
       this.#loadDataFromSrc(newValue);
+    } else if (name === "data-template") {
+      this.renderTemplate(this.templateId).then(() => this.#render());
     } else {
       this.#render();
     }
@@ -122,12 +133,14 @@ export class SherpaStepper extends SherpaElement {
       const isCompleted = step.completed || num < this.#currentStep;
       const hasError = step.error;
       const isDisabled = step.disabled;
+      const isVisited = this.#visited.has(num);
 
       const frag = itemTpl.content.cloneNode(true);
       const item = frag.querySelector(".step-item");
       if (isActive) item.dataset.active = "";
       if (isCompleted) item.dataset.completed = "";
       if (hasError) item.dataset.error = "";
+      if (isVisited) item.dataset.visited = "";
       if (isDisabled) item.setAttribute("disabled", "");
       item.setAttribute("aria-selected", isActive ? "true" : "false");
       item.setAttribute("aria-disabled", isDisabled ? "true" : "false");
@@ -142,6 +155,11 @@ export class SherpaStepper extends SherpaElement {
 
       // Sublabel — CSS hides via :empty when blank
       frag.querySelector(".step-sublabel").textContent = step.sublabel || "";
+
+      // Optional timestamp (timeline template). The element is present in
+      // both templates but hidden by default in the default template via CSS.
+      const tsEl = frag.querySelector(".step-timestamp");
+      if (tsEl) tsEl.textContent = step.timestamp || "";
 
       if (!isDisabled) {
         item.addEventListener("click", () => this.#onStepClick(num));
@@ -218,6 +236,7 @@ export class SherpaStepper extends SherpaElement {
     this.#steps = steps.map((s) => ({
       label: s.label,
       sublabel: s.sublabel || "",
+      timestamp: s.timestamp || "",
       completed: s.completed || false,
       error: s.error || false,
       disabled: s.disabled || false,
@@ -237,6 +256,7 @@ export class SherpaStepper extends SherpaElement {
     if (num < 1 || num > this.#steps.length) return;
     const prev = this.#currentStep;
     this.#currentStep = num;
+    this.#visited.add(num);
     this.dataset.currentStep = num;
     this.#render();
     this.dispatchEvent(

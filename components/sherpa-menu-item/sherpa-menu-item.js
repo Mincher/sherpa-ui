@@ -4,6 +4,9 @@
  *   Templates: default, checkbox, radio, toggle, heading.
  *
  * @attr {enum}    [data-type]        — checkbox | radio | toggle | heading (default: action)
+ * @attr {enum}    [data-variant]     — null | "danger" (red destructive treatment)
+ * @attr {string}  [data-icon]        — Font Awesome icon name (e.g. "trash")
+ * @attr {enum}    [data-icon-weight] — solid (default) | regular | light | thin | brands
  * @attr {string}  [data-action]      — Action identifier dispatched in menu-select
  * @attr {string}  [value]            — Value associated with this item
  * @attr {enum}    [data-selection]    — single | multiple
@@ -31,7 +34,7 @@ export class SherpaMenuItem extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-menu-item.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-type', 'data-selection', 'checked', 'disabled', 'data-description', 'name'];
+    return [...super.observedAttributes, 'data-type', 'data-selection', 'checked', 'disabled', 'data-description', 'name', 'data-icon', 'data-icon-weight'];
   }
 
   get templateId() {
@@ -99,6 +102,17 @@ export class SherpaMenuItem extends SherpaElement {
 
     const sw = this.$('sherpa-switch');
     if (sw) sw.dataset.state = this.hasAttribute('checked') ? 'on' : 'off';
+
+    const icon = this.$('.menu-item-icon');
+    if (icon) {
+      const name = this.dataset.icon;
+      if (name) {
+        const weight = this.dataset.iconWeight || 'solid';
+        icon.className = `menu-item-icon sherpa-icon fa-${weight} fa-${name}`;
+      } else {
+        icon.className = 'menu-item-icon sherpa-icon';
+      }
+    }
   }
 }
 

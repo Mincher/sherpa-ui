@@ -152,5 +152,106 @@
   overflow: auto;
 }
 
+/* ================================================================
+   Paged template — wizard-style multi-page popover
+   ================================================================ */
+
+.body-paged {
+  padding: var(--sherpa-space-sm, 12px);
+}
+
+.body-paged ::slotted(section[data-page]) {
+  display: none;
+}
+
+/* Show only the section matching the host's data-page index. */
+:host([data-page="0"]) .body-paged ::slotted(section[data-page="0"]),
+:host([data-page="1"]) .body-paged ::slotted(section[data-page="1"]),
+:host([data-page="2"]) .body-paged ::slotted(section[data-page="2"]),
+:host([data-page="3"]) .body-paged ::slotted(section[data-page="3"]),
+:host([data-page="4"]) .body-paged ::slotted(section[data-page="4"]),
+:host([data-page="5"]) .body-paged ::slotted(section[data-page="5"]) {
+  display: block;
+}
+
+.page-back {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  cursor: pointer;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+}
+
+.page-back:hover {
+  background: var(--sherpa-surface-container-hover, #f0f0f5);
+  color: var(--sherpa-text-default-body, #18191a);
+}
+
+/* Show back button when in paged template (it's only present in that template). */
+:host([data-template="paged"]) .page-back { display: inline-flex; }
+
+/* Hide back button on first page. */
+:host([data-template="paged"][data-page="0"]) .page-back,
+:host([data-template="paged"]:not([data-page])) .page-back {
+  visibility: hidden;
+}
+
+.popover-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px);
+  border-top: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d7d7dc);
+}
+
+.page-indicator {
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
+/* ================================================================
+   Slide-in animation
+   ================================================================ */
+
+@media (prefers-reduced-motion: no-preference) {
+  :host([data-animation="slide"][data-open]) {
+    animation: sherpa-popover-slide-in 180ms ease-out both;
+  }
+  :host([data-animation="slide"][data-open][data-position="top"]) {
+    animation-name: sherpa-popover-slide-in-top;
+  }
+  :host([data-animation="slide"][data-open][data-position="left"]) {
+    animation-name: sherpa-popover-slide-in-left;
+  }
+  :host([data-animation="slide"][data-open][data-position="right"]) {
+    animation-name: sherpa-popover-slide-in-right;
+  }
+}
+
+@keyframes sherpa-popover-slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sherpa-popover-slide-in-top {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sherpa-popover-slide-in-left {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes sherpa-popover-slide-in-right {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 /* Native [hidden] support */
 :host([hidden]) { display: none; }

@@ -1,0 +1,83 @@
+/**
+ * sherpa-list.css — Grouped list container.
+ *
+ * Host attributes consumed:
+ *   data-variant — default | bordered | divided
+ *   data-density — compact | default | comfortable
+ *   data-heading — Heading text (HTML rendered when set)
+ *   data-empty   — Empty-state message
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  color: var(--sherpa-text-default-body, #2e2e33);
+
+  --_list-gap: var(--sherpa-space-2xs, 4px);
+  --_list-padding: 0;
+}
+
+:host([hidden]) { display: none; }
+
+/* ── Header ───────────────────────────────────────────── */
+
+.list-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px);
+}
+
+:host([data-heading]) .list-header,
+:host([data-has-actions]) .list-header {
+  display: flex;
+}
+
+.list-heading {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-text-default-heading, #18191a);
+}
+
+/* ── Body ─────────────────────────────────────────────── */
+
+.list-body {
+  list-style: none;
+  margin: 0;
+  padding: var(--_list-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--_list-gap);
+}
+
+/* Variants */
+:host([data-variant="bordered"]) .list-body {
+  border: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  --_list-gap: 0;
+  overflow: hidden;
+}
+
+:host([data-variant="divided"]) .list-body {
+  --_list-gap: 0;
+}
+:host([data-variant="divided"]) ::slotted(sherpa-list-item:not(:last-child)) {
+  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+}
+
+/* Density */
+:host([data-density="compact"])      { --_list-gap: 0; }
+:host([data-density="comfortable"])  { --_list-gap: var(--sherpa-space-sm, 12px); }
+
+/* ── Empty state ──────────────────────────────────────── */
+
+.list-empty {
+  display: none;
+  padding: var(--sherpa-space-md, 16px);
+  text-align: center;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+}
+
+:host([data-empty-visible]) .list-empty { display: block; }
+:host([data-empty-visible]) .list-body  { display: none; }

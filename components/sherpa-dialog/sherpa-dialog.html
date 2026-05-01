@@ -57,15 +57,19 @@
      Each template must have a unique id. The component selects a template
      via `get templateId()`.
      ═══════════════════════════════════════════════════════════════════════ -->
-<!--
-<template id="confirmation">
-  <dialog class="dialog" part="dialog">
+<!-- ══════════════════════════════════════════════════════════════════════
+     WIZARD — Multi-page modal with step indicator + back/next footer.
+     Consumers project <section data-page="0|1|2">...</section> blocks. The
+     component shows the section matching the host's data-page attribute.
+     ══════════════════════════════════════════════════════════════════════ -->
+<template id="wizard">
+  <dialog class="dialog dialog-wizard" part="dialog">
     <header class="header-row" part="header">
       <dl class="header-labels">
         <dt class="header-title"></dt>
         <dd class="header-description"></dd>
       </dl>
-      <slot name="heading"></slot>
+      <span class="wizard-step-indicator" aria-live="polite"></span>
       <sherpa-button
         class="close-button"
         data-variant="tertiary"
@@ -78,6 +82,12 @@
     <div class="dialog-content text-body" part="content">
       <slot></slot>
     </div>
+
+    <sherpa-footer data-type="slot" part="footer">
+      <sherpa-button class="wizard-back" data-variant="secondary" data-label="Back"></sherpa-button>
+      <sherpa-button class="wizard-next" data-variant="primary" data-label="Next"></sherpa-button>
+      <slot name="footer"></slot>
+    </sherpa-footer>
   </dialog>
 </template>
--->
+

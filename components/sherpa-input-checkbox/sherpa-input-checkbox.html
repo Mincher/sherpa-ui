@@ -1,0 +1,27 @@
+<!--
+  sherpa-input-checkbox.html — Templates for sherpa-input-checkbox.
+
+  Templates:
+    • default — Single checkbox with label-on-the-right + optional description.
+
+  Host attributes:
+    name              — Form field name
+    value             — Submitted value when checked (default: "on")
+    checked           — Boolean checked state
+    indeterminate     — Boolean indeterminate state (mirrors via JS)
+    disabled          — Disabled state
+    required          — Required constraint
+    data-label        — Inline label text shown to the right of the box
+    data-description  — Sub-label / helper line below the label
+    data-status       — critical | warning | success | info (consumed via cascade)
+-->
+
+<template id="default">
+<label class="check-label sherpa-check-label">
+  <input type="checkbox" class="check-input sherpa-check" />
+  <span class="check-text-wrapper">
+    <span class="check-text sherpa-check-text"></span>
+    <span class="check-description sherpa-check-description"></span>
+  </span>
+</label>
+</template>

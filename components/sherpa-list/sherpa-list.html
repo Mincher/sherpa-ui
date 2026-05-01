@@ -1,0 +1,23 @@
+<!--
+  sherpa-list.html — Grouped list container for sherpa-list-item children.
+
+  Templates:
+    • default — Wrapper <ul role="list"> with default + actions/header slots
+
+  Host attributes:
+    data-variant — default | bordered | divided
+    data-density — compact | default | comfortable
+    data-heading — Optional list heading text
+    data-empty   — Empty-state message (shown when no light DOM children)
+-->
+
+<template id="default">
+  <header class="list-header">
+    <span class="list-heading"></span>
+    <slot name="actions"></slot>
+  </header>
+  <ul class="list-body" role="list">
+    <slot></slot>
+  </ul>
+  <div class="list-empty" role="status" aria-live="polite"></div>
+</template>

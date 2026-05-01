@@ -1,0 +1,32 @@
+<!--
+  sherpa-input-radio-group.html — Templates for sherpa-input-radio-group.
+
+  Templates:
+    • default — Slotted group; consumers project sherpa-input-radio children.
+
+  Host attributes:
+    name              — Form field name (cascaded to all radio children)
+    data-label        — Group legend
+    data-description  — Sub-label
+    data-helper       — Helper text below options
+    data-orientation  — vertical (default) | horizontal
+    data-options      — JSON [{value,label,description?,disabled?}]
+    data-value        — Currently selected value (single string)
+    data-status       — critical | warning | success | info | urgent
+    disabled          — Disable all radios
+    required          — Selection required
+-->
+
+<template id="default">
+<fieldset class="group-wrapper" part="wrapper">
+  <legend class="group-legend">
+    <span class="group-label text-label"></span>
+    <span class="group-required" aria-hidden="true"> *</span>
+  </legend>
+  <p class="group-description text-body-sm"></p>
+  <div class="group-options" part="options">
+    <slot></slot>
+  </div>
+  <p class="group-helper text-body-sm"></p>
+</fieldset>
+</template>

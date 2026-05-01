@@ -11,3 +11,27 @@
     <slot></slot>
   </div>
 </template>
+
+<!-- Paged template — wizard-style multi-page popover.
+     Consumers project <section data-page="0">...</section> blocks; the
+     component shows the section matching the host's data-page attribute. -->
+<template id="paged">
+  <header class="popover-header">
+    <button class="page-back" type="button" aria-label="Previous page">
+      <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <slot name="icon"></slot>
+    <span class="header-title"></span>
+    <slot name="header-end"></slot>
+    <button class="close-btn" type="button" aria-label="Close popover">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </header>
+  <div class="body body-paged">
+    <slot></slot>
+  </div>
+  <footer class="popover-footer">
+    <span class="page-indicator" aria-live="polite"></span>
+    <button class="page-next sherpa-btn" type="button">Next</button>
+  </footer>
+</template>

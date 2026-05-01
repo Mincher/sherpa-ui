@@ -125,3 +125,19 @@
     grid-column-end: span 3 !important;
   }
 }
+
+/* ==================================================================
+   Editable mode — draggable containers (reposition)
+   ================================================================== */
+
+:host([data-editable]) ::slotted(sherpa-container) {
+  cursor: grab;
+}
+:host([data-editable]) ::slotted(sherpa-container[data-dragging]) {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+:host([data-editable]) ::slotted(sherpa-container[data-drop-target]) {
+  outline: 2px dashed var(--sherpa-border-control-primary-active, #3c5edd);
+  outline-offset: -2px;
+}

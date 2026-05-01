@@ -1,0 +1,32 @@
+<!--
+  sherpa-icon.html — Templates for sherpa-icon.
+
+  Templates:
+    • default — Font Awesome glyph rendered via <i class="fa-... sherpa-icon">.
+    • svg     — Inline <svg> registered through SherpaIcon.register(name, svg).
+
+  Host attributes:
+    name        — Icon name. FA short name (e.g. "plus") OR a registered key.
+    data-weight — "solid" (default) | "regular" | "light" | "thin" | "duotone" | "brands"
+    data-size   — "3xs"..."6xl" — proxied to inner element via the .sherpa-icon class.
+    data-status — Status colour mapping (consumed via --_status-* cascade).
+
+  Template selection:
+    The host's templateId getter selects "svg" when the name has been
+    registered via SherpaIcon.register(name, svgString); otherwise it falls
+    back to the default Font Awesome template.
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Font Awesome glyph
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="default">
+<i class="sherpa-icon icon-glyph" aria-hidden="true"></i>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SVG — Inline SVG from the registry
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="svg">
+<span class="sherpa-icon icon-svg" aria-hidden="true"></span>
+</template>

@@ -1,0 +1,38 @@
+/**
+ * sherpa-input-checkbox.css — Atomic checkbox primitive.
+ *
+ * Visual styling is provided by the global .sherpa-check / .sherpa-check-label
+ * utility classes (utilities/sherpa-check.css). They are not auto-imported
+ * inside Shadow DOM, so the component re-imports the file here.
+ */
+
+@import '../utilities/sherpa-check.css';
+
+:host {
+  display: inline-flex;
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+}
+
+:host([hidden]) { display: none; }
+
+:host([disabled]) {
+  pointer-events: none;
+}
+
+.check-label {
+  width: 100%;
+}
+
+/* Hide the wrapper if no label/description text is supplied so the bare
+   checkbox can be used as a compact selector inside dense layouts. */
+.check-text-wrapper:has(.check-text:empty):has(.check-description:empty) {
+  display: none;
+}
+
+.check-text-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+  min-width: 0;
+}

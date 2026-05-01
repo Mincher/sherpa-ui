@@ -101,6 +101,38 @@
   height: 90vh;
 }
 
+/* ================================================================
+   Status — colour the header strip via inherited --_status-* tokens
+   ================================================================ */
+
+:host([data-status]) .header-row {
+  border-bottom-color: var(--_status-border-strong, var(--sherpa-border-container-default));
+}
+:host([data-status]) .dialog {
+  border-color: var(--_status-border-strong, var(--sherpa-border-container-default));
+}
+
+/* ================================================================
+   Wizard template — page sections + step indicator
+   ================================================================ */
+
+.dialog-wizard ::slotted(section[data-page]) { display: none; }
+:host([data-template="wizard"][data-page="0"]) ::slotted(section[data-page="0"]),
+:host([data-template="wizard"][data-page="1"]) ::slotted(section[data-page="1"]),
+:host([data-template="wizard"][data-page="2"]) ::slotted(section[data-page="2"]),
+:host([data-template="wizard"][data-page="3"]) ::slotted(section[data-page="3"]),
+:host([data-template="wizard"][data-page="4"]) ::slotted(section[data-page="4"]),
+:host([data-template="wizard"][data-page="5"]) ::slotted(section[data-page="5"]) {
+  display: block;
+}
+
+.wizard-step-indicator {
+  margin-inline-start: auto;
+  margin-inline-end: var(--sherpa-space-sm, 12px);
+  color: var(--sherpa-text-default-secondary, #6a6a7a);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    HEADER
    ═══════════════════════════════════════════════════════════════════════════ */

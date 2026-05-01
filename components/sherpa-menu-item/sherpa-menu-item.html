@@ -14,6 +14,9 @@
 
   Host attributes:
     data-type        — null | "heading" (selects template + non-interactive style)
+    data-variant     — null | "danger" (red destructive treatment)
+    data-icon        — Optional Font Awesome icon name (e.g. "trash")
+    data-icon-weight — solid (default) | regular | light | thin | brands
     data-action      — Action identifier for menu-select event
     value            — Arbitrary value
     data-selection   — null | "radio" | "checkbox" | "toggle"
@@ -26,6 +29,7 @@
 -->
 
 <template id="default">
+  <i class="menu-item-icon sherpa-icon" part="icon" aria-hidden="true"></i>
   <span class="label" part="label"><slot></slot></span>
   <span class="description" part="description"></span>
   <span class="chevron" part="chevron" aria-hidden="true">&#x203A;</span>
@@ -33,18 +37,21 @@
 
 <template id="checkbox">
   <input type="checkbox" class="input" part="input" tabindex="-1">
+  <i class="menu-item-icon sherpa-icon" part="icon" aria-hidden="true"></i>
   <span class="label" part="label"><slot></slot></span>
   <span class="description" part="description"></span>
 </template>
 
 <template id="radio">
   <input type="radio" class="input" part="input" tabindex="-1">
+  <i class="menu-item-icon sherpa-icon" part="icon" aria-hidden="true"></i>
   <span class="label" part="label"><slot></slot></span>
   <span class="description" part="description"></span>
 </template>
 
 <template id="toggle">
   <sherpa-switch data-mode="simple" part="toggle" tabindex="-1"></sherpa-switch>
+  <i class="menu-item-icon sherpa-icon" part="icon" aria-hidden="true"></i>
   <span class="label" part="label"><slot></slot></span>
   <span class="description" part="description"></span>
 </template>

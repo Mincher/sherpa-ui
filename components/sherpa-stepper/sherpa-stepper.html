@@ -50,3 +50,43 @@
     <div class="step-connector"></div>
   </template>
 </template>
+
+<!-- ====================================================================
+     timeline — vertical timeline layout (visited tracking + timestamps)
+     ==================================================================== -->
+<template id="timeline">
+  <div
+    class="stepper-container timeline"
+    role="navigation"
+    aria-label="Progress timeline"
+  >
+    <div class="stepper-header timeline-header" role="tablist"></div>
+  </div>
+
+  <!-- Cloning prototype: timeline step item -->
+  <template class="step-item-tpl">
+    <div class="step-item timeline-item" role="tab">
+      <div class="step-indicator">
+        <span class="step-number"></span>
+        <i
+          class="fa-solid fa-check sherpa-icon indicator-completed"
+          aria-hidden="true"
+        ></i>
+        <i
+          class="fa-solid fa-circle-xmark sherpa-icon indicator-error"
+          aria-hidden="true"
+        ></i>
+      </div>
+      <div class="step-label-container">
+        <span class="step-label text-label"></span>
+        <span class="step-sublabel text-body-xs"></span>
+        <span class="step-timestamp text-body-xs"></span>
+      </div>
+    </div>
+  </template>
+
+  <!-- Cloning prototype: vertical connector between steps -->
+  <template class="step-connector-tpl">
+    <div class="step-connector timeline-connector"></div>
+  </template>
+</template>

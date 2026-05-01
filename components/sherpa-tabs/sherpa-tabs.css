@@ -35,6 +35,16 @@
 
 .tab-strip::-webkit-scrollbar { display: none; }
 
+/* Detail slot (trailing content beside the tabs) */
+.tab-detail {
+  display: none;
+  margin-inline-start: auto;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding-inline: var(--sherpa-space-sm, 12px);
+}
+:host([data-has-detail]) .tab-detail { display: inline-flex; }
+
 /* ── Individual tab button ─────────────────────────────────── */
 
 .tab {

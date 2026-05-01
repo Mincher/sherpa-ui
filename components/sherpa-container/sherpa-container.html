@@ -10,18 +10,35 @@
   exposes a single default <slot>.
 
   Host attributes:
-    data-variant   — "fit" | "resizable" | "fill" (default: fit)
+    data-variant   — "fit" | "resizable" | "fill" | "worksheet" (default: fit)
     data-col-span  — "3" | "6" | "9" | "12" (resizable variant only)
     data-row-span  — "1"–"6" (resizable variant only)
     data-editable  — Edit mode (resizable variant only)
     data-menu-open — Set automatically while a descendant overflow menu is open
+    data-state     — ready | loading | empty | error — controls overlay
 
   Light-DOM children may include:
     <sherpa-container-header>  — Title row
     <sherpa-filter-bar>        — Optional filter controls
     Any viz component(s)       — sherpa-barchart, sherpa-data-grid, etc.
+
+  Named slots (state overlays):
+    loading  — Shown when data-state="loading" (default: spinner placeholder)
+    empty    — Shown when data-state="empty"
+    error    — Shown when data-state="error"
 -->
 
 <template id="default">
   <slot></slot>
+  <div class="state-overlay" role="status" aria-live="polite">
+    <slot name="loading" class="state-slot state-loading">
+      <span class="state-default state-default-loading" aria-label="Loading"></span>
+    </slot>
+    <slot name="empty" class="state-slot state-empty">
+      <span class="state-default state-default-empty">No data to display.</span>
+    </slot>
+    <slot name="error" class="state-slot state-error">
+      <span class="state-default state-default-error">Failed to load.</span>
+    </slot>
+  </div>
 </template>

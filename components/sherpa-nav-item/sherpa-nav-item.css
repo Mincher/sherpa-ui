@@ -323,3 +323,66 @@
 
 /* Native [hidden] support */
 :host([hidden]) { display: none; }
+
+/* ====================================================================
+   Promo template (data-type="promo") — large CTA-style nav row
+   ==================================================================== */
+
+:host([data-type="promo"]) {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-md, 16px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-context-info-subtle, #eef3ff);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid var(--sherpa-border-context-info-default, #c7d4ff);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+:host([data-type="promo"]:hover) {
+  background: var(--sherpa-surface-context-info-default, #dde6ff);
+  border-color: var(--sherpa-border-context-info-strong, #8aa4ff);
+}
+
+:host([data-type="promo"]) .nav-promo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  color: var(--sherpa-text-context-info-default, #1d4ed8);
+  flex-shrink: 0;
+}
+
+:host([data-type="promo"]) .nav-promo-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex: 1;
+  min-width: 0;
+}
+
+:host([data-type="promo"]) .nav-promo-heading {
+  color: var(--sherpa-text-default-heading, #18191a);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+:host([data-type="promo"]) .nav-promo-description {
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+:host([data-type="promo"]) .nav-promo-description:empty {
+  display: none;
+}
+
+:host([data-type="promo"]) .nav-promo-chevron {
+  display: inline-flex;
+  align-items: center;
+  color: var(--sherpa-text-context-info-default, #1d4ed8);
+  flex-shrink: 0;
+}

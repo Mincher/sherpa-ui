@@ -13,6 +13,11 @@
  * @attr {enum}    data-size        — small | medium | large | full
  * @attr {boolean} data-open        — Dialog visibility
  * @attr {boolean} data-dismissible — Shows close button (default: true)
+ * @attr {enum}    data-status      — success | critical | warning | info | urgent
+ * @attr {enum}    data-template    — default | wizard
+ * @attr {number}  data-page        — (wizard) Active 0-based page index
+ * @attr {number}  data-pages       — (wizard) Total page count override
+ * @attr {string}  data-finish-label— (wizard) Label shown on the next button at last page (default: "Finish")
  *
  * @slot          — Default slot for dialog body content
  * @slot heading  — Custom heading content (replaces attribute-driven title)
@@ -40,17 +45,18 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { StatusMixin } from '../utilities/status-mixin.js';
 import '../sherpa-footer/sherpa-footer.js';
 
-export class SherpaDialog extends SherpaElement {
+export class SherpaDialog extends StatusMixin(SherpaElement) {
 
-  /* ── Config ───────────────────────────────────────────────────── */
+  /* ── Config ─────────────────────────────────────────── */
 
   static get cssUrl()  { return new URL('./sherpa-dialog.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-dialog.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-label', 'data-subtitle', 'data-size', 'data-open', 'data-dismissible'];
+    return [...super.observedAttributes, 'data-label', 'data-subtitle', 'data-size', 'data-open', 'data-dismissible', 'data-template', 'data-page', 'data-pages'];
   }
 
   /** @type {HTMLElement|null} */
@@ -61,7 +67,7 @@ export class SherpaDialog extends SherpaElement {
   /* ── Template selection ───────────────────────────────────────── */
 
   get templateId() {
-    return this.dataset.type || 'default';
+    return this.dataset.template || this.dataset.type || 'default';
   }
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
@@ -90,6 +96,22 @@ export class SherpaDialog extends SherpaElement {
     this.$('.close-button')?.addEventListener('click', () => {
       this.$('.dialog')?.close();
     });
+
+    // Wizard navigation
+    if (this.templateId === 'wizard') {
+      this.$('.wizard-back')?.addEventListener('button-click', () => this.prevPage());
+      this.$('.wizard-next')?.addEventListener('button-click', () => {
+        if (this.page >= this.pages - 1) {
+          this.dispatchEvent(new CustomEvent('dialog-finish', {
+            bubbles: true, composed: true,
+            detail: { page: this.page, total: this.pages },
+          }));
+        } else {
+          this.nextPage();
+        }
+      });
+      this.#syncWizard();
+    }
   }
 
   onConnect() {
@@ -108,6 +130,19 @@ export class SherpaDialog extends SherpaElement {
         break;
       case 'data-subtitle':
         this.#syncSubtitle();
+        break;
+      case 'data-template':
+        this.renderTemplate(this.templateId).then(() => this.onRender());
+        break;
+      case 'data-page':
+      case 'data-pages':
+        this.#syncWizard();
+        if (name === 'data-page') {
+          this.dispatchEvent(new CustomEvent('dialog-page-change', {
+            bubbles: true, composed: true,
+            detail: { page: this.page, total: this.pages },
+          }));
+        }
         break;
     }
   }
@@ -133,6 +168,23 @@ export class SherpaDialog extends SherpaElement {
   hide()   { delete this.dataset.open; }
   toggle() { this.open ? this.hide() : this.show(); }
 
+  /* ── Wizard API ───────────────────────────────────────── */
+
+  get page()  { return parseInt(this.dataset.page  || '0', 10) || 0; }
+  get pages() {
+    const explicit = parseInt(this.dataset.pages || '', 10);
+    if (Number.isFinite(explicit) && explicit > 0) return explicit;
+    return this.querySelectorAll('section[data-page]').length || 1;
+  }
+
+  setPage(index) {
+    const total = this.pages;
+    const next = Math.max(0, Math.min(total - 1, Number(index) || 0));
+    this.dataset.page = String(next);
+  }
+  nextPage() { this.setPage(this.page + 1); }
+  prevPage() { this.setPage(this.page - 1); }
+
   /* ── Private ──────────────────────────────────────────────────── */
 
   #syncHeading() {
@@ -154,6 +206,19 @@ export class SherpaDialog extends SherpaElement {
   #closeDialog() {
     const dialog = this.$('.dialog');
     if (dialog?.open) dialog.close();
+  }
+
+  #syncWizard() {
+    if (this.templateId !== 'wizard') return;
+    const ind = this.$('.wizard-step-indicator');
+    if (ind) ind.textContent = `Step ${this.page + 1} of ${this.pages}`;
+    const back = this.$('.wizard-back');
+    const next = this.$('.wizard-next');
+    if (back) back.toggleAttribute('disabled', this.page === 0);
+    if (next) {
+      const last = this.page >= this.pages - 1;
+      next.dataset.label = last ? (this.dataset.finishLabel || 'Finish') : 'Next';
+    }
   }
 }
 

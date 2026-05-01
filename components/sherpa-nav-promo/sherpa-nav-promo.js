@@ -1,7 +1,11 @@
 /**
  * @element sherpa-nav-promo
- * @description Promotional callout for the navigation footer.
- *   Accepts config via data attributes or imperatively via setConfig().
+ * @description Promotional callout for the navigation footer. Includes a
+ *   dismiss button and a CTA link in addition to the title/message body.
+ *   For a simpler promo entry without dismiss/link chrome, use
+ *   {@link SherpaNavItem} with `data-type="promo"` directly.
+ *
+ * @see sherpa-nav-item data-type="promo"
  *
  * @attr {string}  [data-promo-title]     — Promo heading text
  * @attr {string}  [data-promo-message]   — Promo body message

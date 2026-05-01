@@ -5,7 +5,7 @@
  * @element sherpa-panel
  *
  * @attr {enum}    data-variant   — inline | overlay
- * @attr {enum}    data-position  — left | right
+ * @attr {enum}    data-position  — left | right | both
  * @attr {boolean} data-expanded  — Expanded (visible) state
  * @attr {string}  data-heading   — Heading text
  * @attr {string}  data-width     — Custom width (CSS value)

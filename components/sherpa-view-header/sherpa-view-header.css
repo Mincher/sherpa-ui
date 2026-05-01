@@ -41,6 +41,25 @@
   white-space: nowrap;
 }
 
+/* Breadcrumbs slot row — sits above the toolbar; collapses when empty. */
+.breadcrumbs-row {
+  display: none;
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
+}
+:host([data-has-breadcrumbs]) .breadcrumbs-row { display: flex; }
+
+/* Heading row groups the optional title icon with the heading label. */
+.heading-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+}
+.title-icon-slot {
+  display: none;
+  align-items: center;
+}
+:host([data-has-title-icon]) .title-icon-slot { display: inline-flex; }
+
 /* Slot for an optional view-selection control (e.g. a scope/server
    <sherpa-input-select>) that renders inline next to the heading. The
    slot collapses entirely when no slotted nodes are provided so older

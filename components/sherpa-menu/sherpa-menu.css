@@ -54,6 +54,58 @@
   overflow: auto;
 }
 
+/* ── Compact horizontal action-bar layout ──
+   Replaces the apx-action-button-list pattern: a row of menu-items rendered
+   like icon buttons. */
+
+:host([data-layout="actions"]) {
+  min-width: auto;
+}
+
+:host([data-layout="actions"]) .menu-surface {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--_gap-sm);
+  padding: var(--_gap-sm);
+}
+
+:host([data-layout="actions"]) ::slotted(ul) {
+  flex-direction: row;
+  padding: 0;
+  border-bottom: none;
+  gap: var(--_gap-sm);
+}
+
+/* ── Loader ── */
+
+.menu-loader {
+  display: none;
+  align-items: center;
+  gap: var(--_gap-sm);
+  padding: var(--_gap-sm) var(--_padding);
+  color: var(--_text);
+  min-height: var(--sherpa-size-3xl, 36px);
+}
+
+.menu-loader-spinner {
+  display: inline-block;
+  width: var(--sherpa-size-md, 16px);
+  height: var(--sherpa-size-md, 16px);
+  border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-top-color: var(--sherpa-border-control-active-default, #0060df);
+  border-radius: 50%;
+  animation: sherpa-menu-spin 700ms linear infinite;
+}
+
+.menu-loader-text:empty { display: none; }
+
+@keyframes sherpa-menu-spin {
+  to { transform: rotate(360deg); }
+}
+
+:host([data-loading]) .menu-loader { display: inline-flex; }
+:host([data-loading]) ::slotted(*)  { display: none !important; }
+
 /* ── Slotted: item lists ── */
 
 ::slotted(ul) {

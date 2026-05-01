@@ -79,3 +79,64 @@
   resize: both;
   --_editable-display: block;
 }
+
+/* ================================================================
+   Worksheet variant — document-style page surface for forms / wizards
+   ================================================================ */
+
+:host([data-variant="worksheet"]) {
+  width: 100%;
+  max-width: var(--sherpa-content-width-md, 960px);
+  margin-inline: auto;
+  padding: var(--sherpa-space-xl, 32px);
+  gap: var(--sherpa-space-lg, 24px);
+  background-color: var(--sherpa-surface-container-default, #ffffff);
+  box-shadow: var(--sherpa-shadow-default-sm, 0 1px 2px rgba(0,0,0,0.06));
+}
+
+/* ================================================================
+   data-state overlay — loading / empty / error
+   ================================================================ */
+
+.state-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sherpa-space-md, 16px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  z-index: 5;
+}
+
+.state-slot { display: none; }
+.state-default { color: var(--sherpa-text-default-secondary, #6a6a7a); }
+
+/* Loading — simple CSS spinner fallback when no slotted content */
+.state-default-loading {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--sherpa-border-control-secondary-default, #d7d7dc);
+  border-top-color: var(--sherpa-border-control-primary-default, #4a90e2);
+  animation: sherpa-container-spin 700ms linear infinite;
+}
+
+@keyframes sherpa-container-spin { to { transform: rotate(360deg); } }
+
+:host([data-state="loading"]) .state-overlay,
+:host([data-state="empty"])   .state-overlay,
+:host([data-state="error"])   .state-overlay {
+  display: flex;
+}
+
+:host([data-state="loading"]) .state-loading { display: contents; }
+:host([data-state="empty"])   .state-empty   { display: contents; }
+:host([data-state="error"])   .state-error   { display: contents; }
+
+/* While a state overlay is shown, hide the default slotted content. */
+:host([data-state="loading"]) ::slotted(:not([slot])),
+:host([data-state="empty"])   ::slotted(:not([slot])),
+:host([data-state="error"])   ::slotted(:not([slot])) {
+  visibility: hidden;
+}

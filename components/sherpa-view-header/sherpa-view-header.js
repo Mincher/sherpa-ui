@@ -10,6 +10,10 @@
  * @attr {boolean} [data-back-button]        — Show built-in back button
  * @attr {string}  [data-export-title]       — Title for PDF export
  *
+ * @slot breadcrumbs — Optional breadcrumb row above the toolbar
+ * @slot title-icon  — Optional icon shown to the left of the heading label
+ * @slot view-selection — Optional <sherpa-input-select> for scoped views
+ *
  * @fires edit-mode-change
  *   bubbles: true, composed: true
  *   detail: { editMode: boolean }

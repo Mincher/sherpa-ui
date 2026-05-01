@@ -1,0 +1,29 @@
+<!--
+  sherpa-input-radio.html — Templates for sherpa-input-radio.
+
+  Templates:
+    • default — Single radio with label-on-the-right + optional description.
+
+  Radios participate in form groups via shared `name`. For grouped radios,
+  use sherpa-input-radio-group which manages the name + value coordination.
+
+  Host attributes:
+    name              — Form field name (radios with the same name form a group)
+    value             — Submitted value when selected
+    checked           — Boolean checked state
+    disabled          — Disabled state
+    required          — Required constraint
+    data-label        — Inline label text shown to the right of the dot
+    data-description  — Helper line below the label
+    data-status       — critical | warning | success | info | urgent
+-->
+
+<template id="default">
+<label class="check-label sherpa-check-label">
+  <input type="radio" class="check-input sherpa-check" />
+  <span class="check-text-wrapper">
+    <span class="check-text sherpa-check-text"></span>
+    <span class="check-description sherpa-check-description"></span>
+  </span>
+</label>
+</template>

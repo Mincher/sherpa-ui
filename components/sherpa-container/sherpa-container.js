@@ -12,11 +12,12 @@
  *   by the ResizeBehavior mixin, which injects menu items into a light-DOM
  *   <template data-menu-resize>.
  *
- * @attr {enum}    [data-variant=fit]   — fit | resizable | fill
+ * @attr {enum}    [data-variant=fit]   — fit | resizable | fill | worksheet
  * @attr {number}  [data-col-span]      — Column span: 3 | 6 | 9 | 12 (resizable)
  * @attr {number}  [data-row-span]      — Row span: 1–6 (resizable)
  * @attr {boolean} [data-editable]      — Edit mode (enables resize grip)
  * @attr {boolean} [data-menu-open]     — Reflected while a descendant menu is open
+ * @attr {enum}    [data-state]         — ready | loading | empty | error
  *
  * @slot (default) — Consumer composition: sherpa-container-header,
  *                   sherpa-filter-bar, viz components.

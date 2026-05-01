@@ -1,0 +1,45 @@
+<!--
+  sherpa-transfer-list.html — Two-pane shuttle (available ↔ selected).
+
+  Composes: sherpa-input-search, sherpa-list, sherpa-input-checkbox,
+            sherpa-button.
+
+  Templates:
+    • default      — Two list panes + transfer control column
+    • option-tpl   — Cloning prototype: a single transferable option row
+
+  Host attributes:
+    data-source-heading  — Heading for the available pane (default "Available")
+    data-target-heading  — Heading for the selected pane (default "Selected")
+    data-search          — present → show search inputs above each pane
+
+  Methods:
+    setOptions([{ value, label, selected? }])
+    getSelectedValues()
+-->
+
+<template id="default">
+  <div class="pane source-pane">
+    <sherpa-input-search class="pane-search" data-placeholder="Search available"></sherpa-input-search>
+    <sherpa-list class="pane-list source-list" data-variant="bordered" data-empty="No items"></sherpa-list>
+  </div>
+
+  <div class="control-column" role="group" aria-label="Transfer controls">
+    <sherpa-button class="ctrl ctrl-add"        data-variant="secondary" data-size="small" data-icon-end="&#xf054;" aria-label="Add selected"></sherpa-button>
+    <sherpa-button class="ctrl ctrl-add-all"    data-variant="tertiary"  data-size="small" data-icon-end="&#xf101;" aria-label="Add all"></sherpa-button>
+    <sherpa-button class="ctrl ctrl-remove"     data-variant="secondary" data-size="small" data-icon-start="&#xf053;" aria-label="Remove selected"></sherpa-button>
+    <sherpa-button class="ctrl ctrl-remove-all" data-variant="tertiary"  data-size="small" data-icon-start="&#xf100;" aria-label="Remove all"></sherpa-button>
+  </div>
+
+  <div class="pane target-pane">
+    <sherpa-input-search class="pane-search" data-placeholder="Search selected"></sherpa-input-search>
+    <sherpa-list class="pane-list target-list" data-variant="bordered" data-empty="Nothing selected"></sherpa-list>
+  </div>
+
+  <!-- Cloning prototype: option row -->
+  <template class="option-tpl">
+    <sherpa-list-item data-interactive>
+      <sherpa-input-checkbox slot="leading" class="option-check"></sherpa-input-checkbox>
+    </sherpa-list-item>
+  </template>
+</template>

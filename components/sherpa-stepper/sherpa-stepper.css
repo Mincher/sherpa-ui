@@ -231,3 +231,47 @@
 
 /* Native [hidden] support */
 :host([hidden]) { display: none; }
+
+/* ====================================================================
+   Timeline template — vertical layout, visited tracking, timestamps
+   ==================================================================== */
+
+:host([data-template="timeline"]) .stepper-header {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+:host([data-template="timeline"]) .timeline-item {
+  align-items: flex-start;
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+}
+
+/* Vertical connector between timeline steps */
+:host([data-template="timeline"]) .timeline-connector {
+  width: 2px;
+  height: var(--sherpa-space-md, 16px);
+  margin-left: calc(var(--_indicator-size) / 2 + var(--sherpa-space-sm, 12px));
+  background: var(--sherpa-border-container-default, #d5d5dc);
+}
+
+:host([data-template="timeline"]) .timeline-connector[data-completed] {
+  background: var(--sherpa-border-control-active-default, #0b6dd6);
+}
+
+/* Timestamp shown only in timeline template (hidden by default) */
+.step-timestamp {
+  display: none;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  font-size: var(--_sublabel-font-size);
+}
+
+:host([data-template="timeline"]) .step-timestamp:not(:empty) {
+  display: block;
+  margin-top: var(--sherpa-space-2xs, 4px);
+}
+
+/* Visited (but not active) timeline steps get a subtle highlight */
+:host([data-template="timeline"]) .timeline-item[data-visited]:not([data-active]):not([data-completed]) {
+  --_label-color: var(--sherpa-text-default-body, #2e2e33);
+}

@@ -100,5 +100,33 @@ mark.text-highlight-match {
   padding: 0 2px;
 }
 
+/* ── Leading icon ── */
+
+.menu-item-icon {
+  display: none;
+  flex: 0 0 auto;
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  width: var(--sherpa-size-md, 20px);
+  text-align: center;
+}
+
+:host([data-icon]) .menu-item-icon { display: inline-flex; }
+
+/* ── Danger variant (destructive actions) ── */
+
+:host([data-variant="danger"]) {
+  color: var(--sherpa-text-context-error-default, #c41337);
+}
+
+:host([data-variant="danger"]:hover),
+:host([data-variant="danger"]:focus-visible) {
+  background-color: var(--sherpa-surface-context-error-subtle, #fbeaee);
+  color: var(--sherpa-text-context-error-default, #c41337);
+}
+
+:host([data-variant="danger"][disabled]) {
+  color: var(--sherpa-text-inactive-default);
+}
+
 /* Native [hidden] support */
 :host([hidden]) { display: none; }

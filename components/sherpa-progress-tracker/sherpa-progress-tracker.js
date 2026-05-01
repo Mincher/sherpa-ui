@@ -1,7 +1,12 @@
 /**
  * @element sherpa-progress-tracker
- * @description Vertical timeline with status-coloured milestone nodes.
- *   Milestones rendered via cloning prototype from template.
+ * @description Vertical timeline with status-coloured milestone nodes plus a
+ *   header row (title + percentage). For a simpler atomic timeline without
+ *   header chrome, use {@link SherpaStepper} with `data-template="timeline"`
+ *   directly. This component composes that primitive's visual model and adds
+ *   the tracker header.
+ *
+ * @see sherpa-stepper data-template="timeline"
  *
  * @attr {string}  [data-heading]    — Tracker heading text
  * @attr {string}  [data-percentage] — Completion text (e.g. "60% Complete")

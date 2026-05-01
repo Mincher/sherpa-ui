@@ -1,0 +1,62 @@
+<!--
+  sherpa-input-checkbox-group.html — Templates for sherpa-input-checkbox-group.
+
+  Templates:
+    • default  — Slotted group; consumers project sherpa-input-checkbox children.
+    • weekdays — Pre-stamped Su–Sa toggle buttons (replaces apx-day-picker).
+
+  Host attributes:
+    name              — Form field name (used to scope child name attrs)
+    data-label        — Group label
+    data-description  — Sub-label / description
+    data-helper       — Helper text below the controls
+    data-orientation  — "horizontal" (default for weekdays) | "vertical"
+    data-options      — JSON [{value,label,description?,disabled?}] (default template)
+    data-value        — JSON array of selected values; mirrors child checked state
+    data-status       — critical | warning | success | info | urgent
+    disabled          — Disable all children
+    required          — At least one child must be checked (validated in JS)
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Slot for arbitrary checkboxes (or stamped from data-options)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="default">
+<fieldset class="group-wrapper" part="wrapper">
+  <legend class="group-legend">
+    <span class="group-label text-label"></span>
+    <span class="group-required" aria-hidden="true"> *</span>
+  </legend>
+  <p class="group-description text-body-sm"></p>
+  <div class="group-options" part="options">
+    <slot></slot>
+  </div>
+  <p class="group-helper text-body-sm"></p>
+</fieldset>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     WEEKDAYS — Su–Sa pill row. Used by sherpa-scheduler for cron building.
+
+     Values follow the Quartz convention used by Apex's apx-day-picker:
+       Sunday="1", Monday="2", ..., Saturday="7"
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="weekdays">
+<fieldset class="group-wrapper group-weekdays" part="wrapper">
+  <legend class="group-legend">
+    <span class="group-label text-label"></span>
+    <span class="group-required" aria-hidden="true"> *</span>
+  </legend>
+  <p class="group-description text-body-sm"></p>
+  <div class="group-options group-options-weekdays" part="options" role="group">
+    <label class="weekday" data-value="1"><input type="checkbox" value="1" class="weekday-input" /><span>Su</span></label>
+    <label class="weekday" data-value="2"><input type="checkbox" value="2" class="weekday-input" /><span>Mo</span></label>
+    <label class="weekday" data-value="3"><input type="checkbox" value="3" class="weekday-input" /><span>Tu</span></label>
+    <label class="weekday" data-value="4"><input type="checkbox" value="4" class="weekday-input" /><span>We</span></label>
+    <label class="weekday" data-value="5"><input type="checkbox" value="5" class="weekday-input" /><span>Th</span></label>
+    <label class="weekday" data-value="6"><input type="checkbox" value="6" class="weekday-input" /><span>Fr</span></label>
+    <label class="weekday" data-value="7"><input type="checkbox" value="7" class="weekday-input" /><span>Sa</span></label>
+  </div>
+  <p class="group-helper text-body-sm"></p>
+</fieldset>
+</template>
