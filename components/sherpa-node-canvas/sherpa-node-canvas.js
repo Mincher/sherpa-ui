@@ -100,6 +100,11 @@ export class SherpaNodeCanvas extends SherpaElement {
   // the moment we drilled into a sub-graph; popping restores it.
   #drillStack = [];
 
+  // Cached snapshots of CHILD sub-graphs, keyed by parent node id.
+  // Captured on popSubgraph so a subsequent pushSubgraph(sameParent)
+  // restores the work the user did inside, rather than starting fresh.
+  #subgraphs = new Map();
+
   // DOM refs
   #rootEl = null;
   #surfaceEl = null;
@@ -1220,10 +1225,12 @@ export class SherpaNodeCanvas extends SherpaElement {
     const resolvedLabel = label ?? this.#labelForNode(parentId) ?? parentId;
     this.#drillStack.push({ parentId, label: resolvedLabel, snapshot });
     this.#clearFrame();
+    const cached = this.#subgraphs.get(parentId);
+    if (cached) this.#restore(cached);
     this.#syncHeader();
     this.dispatchEvent(new CustomEvent("sherpa-canvas-subgraph-enter", {
       bubbles: true, composed: true,
-      detail: { parentId, label: resolvedLabel, depth: this.#drillStack.length, cached: false },
+      detail: { parentId, label: resolvedLabel, depth: this.#drillStack.length, cached: !!cached },
     }));
   }
 
@@ -1239,6 +1246,9 @@ export class SherpaNodeCanvas extends SherpaElement {
   popSubgraph() {
     if (!this.#drillStack.length) return null;
     const frame = this.#drillStack.pop();
+    // Cache whatever the user did inside the sub-graph so the next
+    // pushSubgraph(sameParent) restores it.
+    this.#subgraphs.set(frame.parentId, this.#snapshot());
     this.#clearFrame();
     this.#restore(frame.snapshot);
     this.#syncHeader();
@@ -1247,6 +1257,20 @@ export class SherpaNodeCanvas extends SherpaElement {
       detail: { parentId: frame.parentId, label: frame.label, depth: this.#drillStack.length },
     }));
     return frame;
+  }
+
+  /** Drop any cached child snapshot for the given parent (e.g. after
+   *  the parent group node is deleted). */
+  forgetSubgraph(parentId) {
+    if (!parentId) return;
+    this.#subgraphs.delete(parentId);
+  }
+
+  /** Drop the entire drill stack + child cache and return to root. */
+  resetDrill() {
+    this.#drillStack.length = 0;
+    this.#subgraphs.clear();
+    this.#syncHeader();
   }
 
   /** Current drill depth (0 = root). */
