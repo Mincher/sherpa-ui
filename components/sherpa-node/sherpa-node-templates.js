@@ -26,7 +26,7 @@ let _docPromise = null;
  *  getSubtypesForKind(). */
 const SUBTYPE_LABELS = {
   // variable
-  number: "Number", text: "Text", property: "Property",
+  number: "Number", decimal: "Decimal", text: "Text", property: "Property",
   // math
   add: "Add", subtract: "Subtract", multiply: "Multiply", divide: "Divide",
   ratio: "Ratio", floor: "Floor", ceiling: "Ceiling", average: "Average",

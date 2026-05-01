@@ -7,6 +7,7 @@
  * @attr {boolean} [data-show-debug-toggles] — Show debug toggle controls
  * @attr {boolean} [data-favorite]           — Favorite state
  * @attr {boolean} [data-edit-mode]          — Edit mode active
+ * @attr {boolean} [data-back-button]        — Show built-in back button
  * @attr {string}  [data-export-title]       — Title for PDF export
  *
  * @fires editmodechange
@@ -18,6 +19,9 @@
  * @fires favoritetoggle
  *   bubbles: true, composed: true
  *   detail: { viewId: string, favorite: boolean }
+ * @fires viewheaderback
+ *   bubbles: true, composed: true
+ *   detail: {}
  *
  * @method setHeading(name)     — Set heading text
  * @method getHeading()         — Get heading text
@@ -39,7 +43,7 @@ export class SherpaViewHeader extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-view-header.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-export-title'];
+    return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-back-button', 'data-export-title'];
   }
 
   #viewId = null;
@@ -133,6 +137,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#setupSelectors();
     this.#setupExport();
     this.#setupFavorite();
+    this.#setupBackButton();
     this.#setupEditMode();
     this.#setupOptionSlotWatcher();
 
@@ -221,6 +226,17 @@ export class SherpaViewHeader extends SherpaElement {
       this.dispatchEvent(new CustomEvent('favoritetoggle', {
         bubbles: true, composed: true,
         detail: { viewId: this.#viewId, favorite: next }
+      }));
+    });
+  }
+
+  #setupBackButton() {
+    const btn = this.$('#back-btn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      this.dispatchEvent(new CustomEvent('viewheaderback', {
+        bubbles: true, composed: true,
+        detail: {},
       }));
     });
   }

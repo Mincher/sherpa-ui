@@ -1,8 +1,11 @@
 /**
  * sherpa-node-row.css
  *
- * Three-column layout: [in-gutter | body | out-gutter].
- * Default row height 60px per Figma.
+ * Grid layout: [in-gutter | control | out-gutter] with label and helper
+ * spanning all three columns. Sockets align to the vertical center of
+ * the control (not the row body), so labels/helpers don't push them
+ * off-axis. The control's outer edges line up with the subtype-select
+ * above (both inset 12px from the node edge).
  */
 
 :host {
@@ -11,37 +14,22 @@
   min-height: var(--sherpa-node-row-height);
 }
 
-/* ── Flex row: [in-gutter | row-body | out-gutter] ─────────────── */
 .row {
-  display: flex;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns:
+    var(--sherpa-node-socket-gutter) 1fr var(--sherpa-node-socket-gutter);
+  align-content: center;
+  row-gap: var(--sherpa-space-3xs);
   min-height: inherit;
+  padding: var(--sherpa-space-xs) 0;
 }
 
-.gutter {
-  flex: 0 0 var(--sherpa-node-socket-gutter);
-  display: flex;
-  align-items: center;
-  overflow: visible;
-}
-.gutter-in  { justify-content: flex-start; }
-.gutter-out { justify-content: flex-end; }
-
-/* Sockets centered on the node's outer edge via half-width translate.
-   Works for every socket shape regardless of its intrinsic width. */
-.gutter-in  ::slotted(*) { transform: translateX(-50%); }
-.gutter-out ::slotted(*) { transform: translateX( 50%); }
-
-/* ── Body ──────────────────────────────────────────────────────── */
-
-.row-body {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-3xs);
-  padding: var(--sherpa-space-xs) var(--sherpa-space-sm);
-  min-width: 0;
-  justify-content: center;
+/* Label + helper span the full width and re-introduce the body
+   horizontal padding so they line up with the subtype select. */
+.row-label,
+.row-helper {
+  grid-column: 1 / -1;
+  padding: 0 var(--sherpa-space-sm);
 }
 
 .row-label {
@@ -52,39 +40,54 @@
 }
 .row-label:not([data-has-content]) { display: none; }
 
-.row-control {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs);
-  min-height: var(--sherpa-size-md);
-  color: var(--sherpa-text-default-body);
-}
-/* Form controls slotted into the row body match the .subtype-select
-   in the node header so all interactive controls share one height. */
-.row-control ::slotted(input),
-.row-control ::slotted(select),
-.row-control ::slotted(textarea) {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: 100%;
-  box-sizing: border-box;
-  font: inherit;
-  font-size: var(--sherpa-font-base-size, 14px);
-  line-height: 1.4;
-  height: 32px;
-  padding: 0 var(--sherpa-space-xs, 8px);
-  color: var(--sherpa-text-default-body);
-  background: var(--sherpa-surface-container-default);
-  border: 1px solid var(--sherpa-border-container-default);
-  border-radius: var(--sherpa-radius-sm, 4px);
-}
-
 .row-helper {
   font-size: var(--sherpa-font-xs-size);
   color: var(--sherpa-text-default-secondary);
   line-height: 1.4;
 }
 .row-helper:not([data-has-content]) { display: none; }
+
+/* Socket gutters — sit at the node edge, vertically centered on the
+   control row only (label/helper are above/below in their own rows). */
+.gutter {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+.gutter-in  { justify-content: flex-start; }
+.gutter-out { justify-content: flex-end; }
+
+/* Sockets centered on the node's outer edge via half-width translate. */
+.gutter-in  ::slotted(*) { transform: translateX(-50%); }
+.gutter-out ::slotted(*) { transform: translateX( 50%); }
+
+/* Control sits between the gutters. Inner padding pulls its outer
+   edges to 12px from the node edge (8px gutter + 4px) — matching
+   `.subtype-select` inside `.node-subtype`. */
+.row-control {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs);
+  min-height: var(--sherpa-size-md);
+  padding: 0 var(--sherpa-space-2xs);
+  color: var(--sherpa-text-default-body);
+  min-width: 0;
+}
+
+/* Inputs are full sherpa-input-* components — height, border, focus,
+   and disabled visuals are owned by the input. We only need to make
+   them fill the available row width. */
+.row-control ::slotted(sherpa-input-text),
+.row-control ::slotted(sherpa-input-number),
+.row-control ::slotted(sherpa-input-select),
+.row-control ::slotted(sherpa-input-time),
+.row-control ::slotted(sherpa-input-date),
+.row-control ::slotted(sherpa-input-search),
+.row-control ::slotted(sherpa-input-password) {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
 
 :host([data-multi]) {
   min-height: calc(var(--sherpa-node-row-height) + var(--sherpa-space-base));

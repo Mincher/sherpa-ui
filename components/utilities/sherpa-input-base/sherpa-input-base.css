@@ -144,7 +144,26 @@
 }
 
 .input-body:has(.input-field[readonly]) {
-  background: var(--sherpa-surface-control-inactive, #dddde6);
+  background: light-dark(
+    var(--sherpa-surface-control-inactive, #dddde6),
+    color-mix(in oklab, var(--sherpa-text-default-body, #fff) 12%, transparent)
+  );
+  border-style: dashed;
+}
+
+/* Dim adornment icons (chevron, search glyph, etc.) in readonly state */
+.input-body:has(.input-field[readonly]) i,
+.input-body:has(.input-field[readonly]) .input-field {
+  color: light-dark(
+    var(--sherpa-text-default-body, #333),
+    color-mix(in oklab, var(--sherpa-text-default-body, #fff) 55%, transparent)
+  );
+}
+
+/* Dim native date/time picker indicator in readonly state */
+.input-body:has(.input-field[readonly]) .input-field::-webkit-calendar-picker-indicator {
+  opacity: 0.45;
+  cursor: default;
 }
 
 /* ── Control (<dd>) ─────────────────────────────────────────────── */

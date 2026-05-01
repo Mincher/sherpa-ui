@@ -52,7 +52,7 @@ const HIT_R = 18;            // px (screen) — port hit radius
 const EDGE_HIT_PX = 6;       // px (screen) — perpendicular threshold for edge hover
 const ZOOM_MIN = 0.1;
 const ZOOM_MAX = 2.5;
-const WHEEL_K = 0.001;
+const WHEEL_K = 0.0025;
 const BEZIER_SAMPLES = 32;   // polyline segments per edge for hit-test
 
 export class SherpaNodeCanvas extends SherpaElement {
@@ -83,6 +83,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #rafPending = false;
   #hoverEdgeIdx = -1;
   #selectedEdgeIdx = -1;
+  #selectedNodeId = null;
   #lastClientX = 0;
   #lastClientY = 0;
 
@@ -122,6 +123,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
     this.addEventListener("sherpa-socket-pointerdown", this.#onSocketPointerDown);
     this.addEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
+    this.addEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
 
     this.#slotEl?.addEventListener("slotchange", this.#onSlotChange);
     this.#listenToNodes();
@@ -140,6 +142,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     window.removeEventListener("keyup",   this.#onKeyUp);
     this.removeEventListener("sherpa-socket-pointerdown", this.#onSocketPointerDown);
     this.removeEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
+    this.removeEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
     this.#slotEl?.removeEventListener("slotchange", this.#onSlotChange);
     this.#ro?.disconnect();
   }
@@ -165,10 +168,12 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#edges = (edges || []).map((e) => this.#normEdge(e));
     this.#selectedEdgeIdx = -1;
     this.#hoverEdgeIdx = -1;
+    this.#schedulePropagate();
     this.#scheduleDraw();
   }
   addEdge(edge) {
     this.#edges.push(this.#normEdge(edge));
+    this.#schedulePropagate();
     this.#scheduleDraw();
   }
   removeEdge(idx) {
@@ -177,15 +182,92 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (this.#selectedEdgeIdx === idx) this.#selectedEdgeIdx = -1;
     else if (this.#selectedEdgeIdx > idx) this.#selectedEdgeIdx--;
     this.#hoverEdgeIdx = -1;
+    this.#schedulePropagate();
     this.#scheduleDraw();
   }
   getSelectedEdge() {
     return this.#selectedEdgeIdx >= 0 ? this.#selectedEdgeIdx : null;
   }
+
+  /**
+   * Convert client (screen) coordinates to world coordinates. Useful
+   * for callers that need to drop a node at a cursor position (e.g. a
+   * drag-from-palette flow): pass `event.clientX`/`event.clientY` and
+   * place the new node at the returned `{x, y}`.
+   */
+  screenToWorld(sx, sy) { return this.#screenToWorld(sx, sy); }
+
+  /* ── Node selection ───────────────────────────────────────────── */
+  getSelectedNode() { return this.#selectedNodeId; }
+  setSelectedNode(nodeId) {
+    const next = nodeId || null;
+    if (next === this.#selectedNodeId) return;
+    if (this.#selectedNodeId) {
+      this.#nodeById(this.#selectedNodeId)?.removeAttribute("data-selected");
+    }
+    this.#selectedNodeId = next;
+    if (next) {
+      // Selecting a node clears any selected edge (mutually exclusive).
+      this.setSelectedEdge(null);
+      this.#nodeById(next)?.setAttribute("data-selected", "");
+    }
+    this.dispatchEvent(new CustomEvent("sherpa-node-select", {
+      bubbles: true, composed: true,
+      detail: { nodeId: next },
+    }));
+  }
+
+  /**
+   * Remove a node and any edges that reference it. Fires
+   * `sherpa-edge-delete` for each removed edge and `sherpa-node-delete`
+   * for the node itself.
+   */
+  removeNode(nodeId) {
+    if (!nodeId) return;
+    // Locked nodes (e.g. the Trigger / Output boundary nodes inside a
+    // group sub-graph) cannot be removed — they represent the
+    // surrounding parent's input / output sockets.
+    const target = this.#nodeById(nodeId);
+    if (target?.hasAttribute("data-locked")) return;
+    // Remove edges referencing the node (iterate from the back so
+    // splice indices stay valid).
+    for (let i = this.#edges.length - 1; i >= 0; i--) {
+      const e = this.#edges[i];
+      if (e.from?.nodeId === nodeId || e.to?.nodeId === nodeId) {
+        this.dispatchEvent(new CustomEvent("sherpa-edge-delete", {
+          bubbles: true, composed: true,
+          detail: { edgeIdx: i },
+        }));
+        this.#edges.splice(i, 1);
+        if (this.#selectedEdgeIdx === i) this.#selectedEdgeIdx = -1;
+        else if (this.#selectedEdgeIdx > i) this.#selectedEdgeIdx--;
+      }
+    }
+    const node = this.#nodeById(nodeId);
+    if (node) node.remove();
+    if (this.#selectedNodeId === nodeId) this.#selectedNodeId = null;
+    this.#hoverEdgeIdx = -1;
+    this.#invalidatePortCache(nodeId);
+    this.dispatchEvent(new CustomEvent("sherpa-node-delete", {
+      bubbles: true, composed: true,
+      detail: { nodeId },
+    }));
+    this.#schedulePropagate();
+    this.#scheduleDraw();
+  }
   setSelectedEdge(idx) {
     const next = (typeof idx === "number" && idx >= 0 && idx < this.#edges.length) ? idx : -1;
     if (next === this.#selectedEdgeIdx) return;
     this.#selectedEdgeIdx = next;
+    if (next !== -1 && this.#selectedNodeId) {
+      // Edge selection clears node selection (mutually exclusive).
+      this.#nodeById(this.#selectedNodeId)?.removeAttribute("data-selected");
+      this.#selectedNodeId = null;
+      this.dispatchEvent(new CustomEvent("sherpa-node-select", {
+        bubbles: true, composed: true,
+        detail: { nodeId: null },
+      }));
+    }
     this.dispatchEvent(new CustomEvent("sherpa-edge-select", {
       bubbles: true, composed: true,
       detail: { edgeIdx: next === -1 ? null : next },
@@ -264,6 +346,64 @@ export class SherpaNodeCanvas extends SherpaElement {
     return this.querySelector(`sherpa-node[data-node-id="${CSS.escape(nodeId)}"]`);
   }
 
+  #findSocket(nodeId, portName) {
+    const node = this.#nodeById(nodeId);
+    if (!node) return null;
+    return node.querySelector(
+      `sherpa-node-socket[data-port-name="${CSS.escape(portName)}"]`,
+    );
+  }
+
+  /**
+   * Return the value type a socket emits / accepts:
+   *   "number" — numeric value
+   *   "text"   — string value
+   *   "any"    — universal (status branches, util outputs, headers
+   *              with no controllable type)
+   *
+   * Resolution order:
+   *   1. Explicit `data-value-type` on the socket wins.
+   *   2. If the socket lives in a sherpa-node-row, infer from the
+   *      sibling slot="control" element's tag name.
+   *   3. Otherwise infer from the parent node's kind/subtype:
+   *        math.*           → number
+   *        variable.number  → number
+   *        variable.text    → text
+   *        anything else    → any
+   */
+  #socketType(sock) {
+    if (!sock) return "any";
+    if (sock.dataset.valueType) return sock.dataset.valueType;
+
+    const row = sock.closest("sherpa-node-row");
+    if (row) {
+      const ctrl = row.querySelector(":scope > [slot='control']");
+      if (ctrl) {
+        const t = ctrl.localName;
+        if (t === "sherpa-input-number") return "number";
+        if (t === "sherpa-input-text"
+         || t === "sherpa-input-select"
+         || t === "sherpa-input-time"
+         || t === "sherpa-input-date") return "text";
+      }
+    }
+
+    const node    = sock.closest("sherpa-node");
+    const kind    = node?.dataset?.kind || "";
+    const subtype = node?.dataset?.subtype || "";
+    if (kind === "math") return "number";
+    if (kind === "variable") {
+      if (subtype === "number") return "number";
+      if (subtype === "text")   return "text";
+    }
+    return "any";
+  }
+
+  #typesCompatible(fromType, toType) {
+    if (fromType === "any" || toType === "any") return true;
+    return fromType === toType;
+  }
+
   #invalidatePortCache(nodeId) {
     if (nodeId) this.#portCache.delete(nodeId);
     else this.#portCache.clear();
@@ -275,6 +415,18 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   #onWheel = (e) => {
     e.preventDefault();
+    // Trackpad pinch gestures are reported as wheel events with
+    // ctrlKey=true (synthetic). Treat those — and the explicit
+    // Ctrl/Cmd-modifier — as zoom. Plain two-finger scroll pans.
+    const isZoom = e.ctrlKey || e.metaKey;
+    if (!isZoom) {
+      this.#viewport.x -= e.deltaX;
+      this.#viewport.y -= e.deltaY;
+      this.#applyTransform();
+      this.#scheduleDraw();
+      this.#emitViewport();
+      return;
+    }
     const factor = Math.exp(-e.deltaY * WHEEL_K);
     const newZoom = this.#clampZoom(this.#viewport.zoom * factor);
     if (newZoom === this.#viewport.zoom) return;
@@ -305,8 +457,25 @@ export class SherpaNodeCanvas extends SherpaElement {
 
     // Plain left-click: select edge under cursor, or clear selection.
     if (e.button === 0) {
+      // If the click originated inside a <sherpa-node>, the
+      // node-level handler (#onNodePointerDown) has already taken
+      // care of selection / drag-start. Don't run the canvas
+      // background logic — otherwise we would immediately clear the
+      // selection we just made.
+      const path = e.composedPath ? e.composedPath() : [];
+      for (const n of path) {
+        if (n === this) break;
+        if (n?.localName === "sherpa-node") return;
+      }
       const idx = this.#findEdgeAt(e.clientX, e.clientY);
-      this.setSelectedEdge(idx >= 0 ? idx : null);
+      if (idx >= 0) {
+        this.setSelectedNode(null);
+        this.setSelectedEdge(idx);
+      } else {
+        // Click on bare canvas — clear both edge and node selection.
+        this.setSelectedEdge(null);
+        this.setSelectedNode(null);
+      }
     }
   };
 
@@ -381,6 +550,13 @@ export class SherpaNodeCanvas extends SherpaElement {
           } else {
             edge.from = { nodeId: drop.nodeId, portName: drop.portName };
           }
+          // Same type-compat gate as fresh connections.
+          const fromSock = this.#findSocket(edge.from.nodeId, edge.from.portName);
+          const toSock   = this.#findSocket(edge.to.nodeId,   edge.to.portName);
+          if (!this.#typesCompatible(this.#socketType(fromSock), this.#socketType(toSock))) {
+            this.#scheduleDraw();
+            return;
+          }
           this.#edges[drag.redirectIdx] = edge;
           this.dispatchEvent(new CustomEvent("sherpa-edge-update", {
             bubbles: true, composed: true,
@@ -395,6 +571,14 @@ export class SherpaNodeCanvas extends SherpaElement {
           const b = drop;
           const out = a.side === "out" ? a : b;
           const inn = a.side === "out" ? b : a;
+          // Type-compatibility gate: a `text` output cannot feed a
+          // `number` input (and vice-versa). `any` is universal.
+          const fromSock = this.#findSocket(out.nodeId, out.portName);
+          const toSock   = this.#findSocket(inn.nodeId, inn.portName);
+          if (!this.#typesCompatible(this.#socketType(fromSock), this.#socketType(toSock))) {
+            this.#scheduleDraw();
+            return;
+          }
           const edge = {
             from: { nodeId: out.nodeId, portName: out.portName },
             to:   { nodeId: inn.nodeId, portName: inn.portName },
@@ -417,6 +601,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     }
     // Delete selected edge.
     if ((e.code === "Delete" || e.code === "Backspace") && this.#selectedEdgeIdx >= 0) {
+      if (this.#focusInsideEditableControl()) return;
       const idx = this.#selectedEdgeIdx;
       this.dispatchEvent(new CustomEvent("sherpa-edge-delete", {
         bubbles: true, composed: true,
@@ -426,6 +611,16 @@ export class SherpaNodeCanvas extends SherpaElement {
       this.#selectedEdgeIdx = -1;
       this.#hoverEdgeIdx = -1;
       this.#scheduleDraw();
+      return;
+    }
+    // Delete selected node (and any edges touching it).
+    if ((e.code === "Delete" || e.code === "Backspace") && this.#selectedNodeId) {
+      // Don't intercept the key when the user is actually editing a
+      // control inside a node (text input, textarea, contentEditable,
+      // or any sherpa-input-* host whose shadow root has focus).
+      if (this.#focusInsideEditableControl()) return;
+      e.preventDefault();
+      this.removeNode(this.#selectedNodeId);
     }
   };
   #onKeyUp = (e) => {
@@ -434,6 +629,28 @@ export class SherpaNodeCanvas extends SherpaElement {
       this.removeAttribute("data-space-down");
     }
   };
+
+  /** True when the deepest focused element is a text-editable control
+   *  (native input/textarea/contentEditable) — including ones inside
+   *  the shadow DOM of a sherpa-input-* component. Used to suppress
+   *  delete-key node/edge removal while typing. */
+  #focusInsideEditableControl() {
+    let el = document.activeElement;
+    // Walk into nested shadow roots to find the real focus target.
+    while (el?.shadowRoot && el.shadowRoot.activeElement) {
+      el = el.shadowRoot.activeElement;
+    }
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    const tag = el.tagName;
+    if (tag === "TEXTAREA") return true;
+    if (tag === "INPUT") {
+      const type = (el.type || "text").toLowerCase();
+      // Buttons / boxes don't consume the delete key for text editing.
+      return !["button", "checkbox", "radio", "submit", "reset", "image", "file"].includes(type);
+    }
+    return false;
+  }
 
   /* ── Edge drag / re-attach ─────────────────────────────────────── */
 
@@ -485,6 +702,8 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (!nodeId || this.#spaceDown) return;
     const node = this.#nodeById(nodeId);
     if (!node) return;
+    // Click on a node selects it (and clears any selected edge).
+    this.setSelectedNode(nodeId);
     this.#nodeDrag = {
       nodeId,
       x0: originalEvent.clientX,
@@ -655,6 +874,112 @@ export class SherpaNodeCanvas extends SherpaElement {
     });
   }
 
+  /* ── Value propagation ─────────────────────────────────────────── */
+
+  // Tracks every input we've driven so we can clear those that are no
+  // longer connected. Keyed by `${nodeId}|${portName}`.
+  #drivenInputs = new Set();
+  #propagatePending = false;
+
+  #onNodeValueChange = () => { this.#schedulePropagate(); };
+
+  #schedulePropagate() {
+    if (this.#propagatePending) return;
+    this.#propagatePending = true;
+    queueMicrotask(() => {
+      this.#propagatePending = false;
+      this.#propagateValues();
+    });
+  }
+
+  /**
+   * Walk the graph and copy each edge's source output value into the
+   * matching downstream input control. Iterates until values stabilise
+   * (or a hard cap is reached) so chains like `Variable → Math → Math`
+   * settle in one user action.
+   */
+  #propagateValues() {
+    // 1. Build node lookup once.
+    const nodeMap = new Map();
+    for (const n of this.querySelectorAll("sherpa-node")) {
+      const id = n.dataset.nodeId;
+      if (id) nodeMap.set(id, n);
+    }
+    // 2. Group edges by target nodeId for fast lookup of incoming values.
+    const incomingByNode = new Map();   // nodeId → Map<portName, value | value[]>
+    const targetKeys = new Set();       // "nodeId|portName" of every connected input
+    for (const e of this.#edges) {
+      if (!e?.from || !e?.to) continue;
+      targetKeys.add(`${e.to.nodeId}|${e.to.portName}`);
+    }
+
+    // 3. Iterate to a fixed point (max 8 passes — graph depth is small).
+    const MAX_PASSES = 8;
+    let prevSnapshot = "";
+    for (let pass = 0; pass < MAX_PASSES; pass++) {
+      // Reset incoming map each pass; re-resolve from current node state.
+      incomingByNode.clear();
+      for (const e of this.#edges) {
+        if (!e?.from || !e?.to) continue;
+        const src = nodeMap.get(e.from.nodeId);
+        if (!src) continue;
+        // Source's own incoming map for this pass (may be empty on
+        // pass 0 but populated on subsequent passes).
+        const srcIncoming = this.#asPlainIncoming(incomingByNode.get(e.from.nodeId));
+        const value = src.getOutputValue?.(e.from.portName, srcIncoming) ?? null;
+
+        let bucket = incomingByNode.get(e.to.nodeId);
+        if (!bucket) { bucket = new Map(); incomingByNode.set(e.to.nodeId, bucket); }
+
+        const existing = bucket.get(e.to.portName);
+        if (existing === undefined) {
+          bucket.set(e.to.portName, value);
+        } else if (Array.isArray(existing)) {
+          existing.push(value);
+        } else {
+          bucket.set(e.to.portName, [existing, value]);
+        }
+      }
+
+      // Apply incoming values to target inputs.
+      const nextDriven = new Set();
+      for (const [nodeId, bucket] of incomingByNode) {
+        const node = nodeMap.get(nodeId);
+        if (!node) continue;
+        for (const [port, value] of bucket) {
+          // Multi-input ports (data-multi sockets like math.average) don't
+          // map to a single row control — they're consumed by the node's
+          // own getOutputValue. Skip the writeback for those.
+          const v = Array.isArray(value) ? value[value.length - 1] : value;
+          node.setInputValue?.(port, v);
+          nextDriven.add(`${nodeId}|${port}`);
+        }
+      }
+
+      // Snapshot for fixed-point detection.
+      const snapshot = JSON.stringify([...incomingByNode].map(
+        ([k, m]) => [k, [...m]],
+      ));
+      if (snapshot === prevSnapshot) break;
+      prevSnapshot = snapshot;
+    }
+
+    // 4. Clear inputs we previously drove that are no longer connected.
+    for (const key of this.#drivenInputs) {
+      if (targetKeys.has(key)) continue;
+      const [nodeId, port] = key.split("|");
+      nodeMap.get(nodeId)?.clearInputValue?.(port);
+    }
+    this.#drivenInputs = targetKeys;
+  }
+
+  #asPlainIncoming(bucket) {
+    if (!bucket) return {};
+    const out = {};
+    for (const [k, v] of bucket) out[k] = v;
+    return out;
+  }
+
   #resizeCanvases() {
     const dpr = window.devicePixelRatio || 1;
     const r = this.getBoundingClientRect();
@@ -680,23 +1005,25 @@ export class SherpaNodeCanvas extends SherpaElement {
     ctx.clearRect(0, 0, r.width, r.height);
     if (this.dataset.grid === "none") return;
 
-    const { x: vx, y: vy, zoom } = this.#viewport;
+    const { x: vx, y: vy } = this.#viewport;
     const css = getComputedStyle(this);
-    const stepWorld = parseFloat(css.getPropertyValue("--sherpa-node-canvas-grid-step")) || 24;
+    // Step is in *screen* pixels — fixed visual density regardless of
+    // zoom. Pan still slides the crosshairs so the grid feels attached
+    // to the canvas, but each cell is always the same size on screen.
+    const step = parseFloat(css.getPropertyValue("--sherpa-node-canvas-grid-step")) || 72;
     const arm = parseFloat(css.getPropertyValue("--sherpa-node-canvas-grid-arm")) || 3;
-    const color = css.getPropertyValue("--sherpa-node-canvas-grid-color").trim() || "rgba(127,127,127,0.35)";
+    const color = this.#resolveColor("--sherpa-node-canvas-grid-color", "rgba(127,127,127,0.35)");
 
-    const stepScreen = stepWorld * zoom;
-    if (stepScreen < 6) return;
+    if (step < 6) return;
 
-    const startX = vx - Math.floor(vx / stepScreen) * stepScreen;
-    const startY = vy - Math.floor(vy / stepScreen) * stepScreen;
+    const startX = ((vx % step) + step) % step;
+    const startY = ((vy % step) + step) % step;
 
     ctx.strokeStyle = color;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 0.5;
     ctx.beginPath();
-    for (let sy = startY; sy < r.height; sy += stepScreen) {
-      for (let sx = startX; sx < r.width; sx += stepScreen) {
+    for (let sy = startY; sy < r.height; sy += step) {
+      for (let sx = startX; sx < r.width; sx += step) {
         ctx.moveTo(sx - arm, sy);
         ctx.lineTo(sx + arm, sy);
         ctx.moveTo(sx, sy - arm);

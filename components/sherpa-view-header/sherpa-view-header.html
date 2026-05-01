@@ -12,6 +12,7 @@
     data-show-debug-toggles  — Show debug toggle controls
     data-favorite            — Favorite state ("true"/"false")
     data-edit-mode           — Edit mode state ("true"/"false")
+    data-back-button         — Show built-in back button (e.g. for drill-down exit)
     data-feedback-src        — URL for the feedback iframe (button hidden when absent)
 
   Custom templates:
@@ -26,6 +27,7 @@
 <template id="default">
 <div class="header-surface">
 <div class="toolbar-left">
+  <sherpa-button id="back-btn" class="back-btn" data-variant="secondary" data-size="medium" data-icon-start="&#xf060;" data-label="Back" aria-label="Go back"></sherpa-button>
   <sherpa-button id="favorite-btn" data-variant="secondary" data-size="medium" data-icon-start="&#xf005;" aria-label="Toggle favorite"></sherpa-button>
   <span class="heading-label text-heading-lg">Dashboard Prototypes</span>
   <!-- Optional view-selection slot (e.g. an <sherpa-input-select> that

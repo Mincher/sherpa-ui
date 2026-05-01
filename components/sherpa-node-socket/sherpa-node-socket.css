@@ -89,12 +89,13 @@
   border-radius: 999px;
 }
 
-/* ── Row input single: D shape (curve faces outside the node) ──── */
+/* ── Row input single: D shape (flat spine on the left, curve on right) ──── */
 :host([data-location="row"][data-direction="in"]) .socket-shape {
   width: 12px;
   height: 18px;
-  /* Round outer (left) edge, flat against node body on the right. */
-  border-radius: 999px 0 0 999px;
+  /* Flat outer (left) edge — the spine of the D — and curve on
+     the right facing into the node body. */
+  border-radius: 0 999px 999px 0;
 }
 
 /* ── Row input MULTI: taller D ─────────────────────────────────── */
@@ -109,7 +110,7 @@
 :host([data-location="row"][data-direction="in"][data-multi]) .socket-shape {
   width: 12px;
   height: 100%;
-  border-radius: 999px 0 0 999px;
+  border-radius: 0 999px 999px 0;
 }
 
 /* ── Output disconnected: square (purple/green/red border) ────── */

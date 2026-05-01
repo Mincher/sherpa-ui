@@ -135,6 +135,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
     this.#syncHelper();
     this.#syncStatusIndicator();
     this.#syncNativeAttrs();
+    this.#syncValue();
 
     // Let subclass do its own post-render work
     await this.onInputRender();

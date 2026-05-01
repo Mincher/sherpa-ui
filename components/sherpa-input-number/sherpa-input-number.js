@@ -42,16 +42,30 @@ export class SherpaInputNumber extends SherpaInputBase {
   async onInputRender() {
     this.#stepDownBtn = this.$('.step-down');
     this.#stepUpBtn = this.$('.step-up');
+    // Propagate min/max/step to the native input on initial render —
+    // attributeChangedCallback fires before the input exists, so the
+    // host's declared step would otherwise never reach the control
+    // (causing e.g. step="0.1" to fall back to step=1 and rejecting
+    // decimal entries on validation).
+    const el = this.getInputElement();
+    if (el) {
+      for (const name of ['min', 'max', 'step']) {
+        const v = this.getAttribute(name);
+        if (v !== null) el.setAttribute(name, v);
+      }
+    }
   }
 
   onInputConnect() {
     this.#stepDownBtn?.addEventListener('click', this.#onStepDown);
     this.#stepUpBtn?.addEventListener('click', this.#onStepUp);
+    this.getInputElement()?.addEventListener('keydown', this.#onKeyDown);
   }
 
   onInputDisconnect() {
     this.#stepDownBtn?.removeEventListener('click', this.#onStepDown);
     this.#stepUpBtn?.removeEventListener('click', this.#onStepUp);
+    this.getInputElement()?.removeEventListener('keydown', this.#onKeyDown);
   }
 
   onAttributeChanged(name, oldValue, newValue) {
@@ -120,6 +134,21 @@ export class SherpaInputNumber extends SherpaInputBase {
 
   #onStepDown = () => this.stepDown();
   #onStepUp = () => this.stepUp();
+
+  /**
+   * When `step` is an integer (e.g. "1", "5"), block keystrokes that
+   * would let the user type a fractional or scientific value
+   * (`.`, `,`, `e`, `E`). Other keys (digits, sign, navigation,
+   * shortcuts) are passed through unchanged.
+   */
+  #onKeyDown = (e) => {
+    const step = parseFloat(this.step);
+    if (!isFinite(step) || step % 1 !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === '.' || e.key === ',' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
+  };
 }
 
 customElements.define('sherpa-input-number', SherpaInputNumber);

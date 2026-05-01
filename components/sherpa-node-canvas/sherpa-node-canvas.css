@@ -14,6 +14,13 @@
   background: var(--sherpa-surface-app-product-bg-default, #eef0f3);
   contain: strict;
   touch-action: none;
+
+  /* Crosshair grid tuning. The colour resolves through a probe
+     element so light/dark switches automatically pick up the
+     correct theme variant. Step is in *world* units. */
+  --sherpa-node-canvas-grid-step: 72px;
+  --sherpa-node-canvas-grid-arm:  3px;
+  --sherpa-node-canvas-grid-color: var(--sherpa-border-container-subtle-default, var(--sherpa-border-container-default, currentColor));
 }
 
 :host([data-grabbing])    { cursor: grabbing; }

@@ -43,6 +43,15 @@
   --sherpa-node-tone: tinted;
 }
 
+/* An Output node with no incoming connections is an error state — flip
+   its accent (which drives both the tinted body and border) to the
+   error/red strong token. As soon as any input socket reports
+   data-connected (set by sherpa-node-canvas's #multiCounts pass) the
+   node returns to its default green accent. */
+:host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) {
+  --sherpa-node-accent: var(--sherpa-node-accent-false);
+}
+
 /* ── Container ────────────────────────────────────────────────── */
 .node {
   position: relative;
@@ -121,59 +130,16 @@
 }
 
 /* ── Sub-type dropdown ─────────────────────────────────────────── */
+/* The control itself is a <sherpa-input-select> — all height,
+   border, focus ring, chevron, and label styling is provided by
+   the input component. We only own the wrapper's spacing and
+   visibility toggle. */
 .node-subtype {
   display: none;
   padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px) 0;
 }
 :host([data-subtypes]) .node-subtype { display: block; }
-
-.subtype-label {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-3xs, 2px);
-}
-.subtype-label-text {
-  font-size: var(--sherpa-font-sm-size, 12px);
-  font-weight: 600;
-  color: var(--sherpa-text-default-label);
-  line-height: 1.4;
-}
-
-.subtype-control {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.subtype-select {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 32px;
-  padding: 0 28px 0 var(--sherpa-space-xs, 8px);
-  font: inherit;
-  font-size: var(--sherpa-font-base-size, 14px);
-  color: var(--sherpa-text-default-body);
-  background: var(--sherpa-surface-container-default);
-  border: 1px solid var(--sherpa-border-container-default);
-  border-radius: var(--sherpa-radius-sm, 4px);
-  cursor: pointer;
-  transition: border-color 150ms ease;
-}
-.subtype-select:hover { border-color: var(--sherpa-border-container-strong-default); }
-.subtype-select:focus-visible {
-  outline: 2px solid var(--sherpa-border-context-info-default);
-  outline-offset: 1px;
-  border-color: var(--sherpa-border-context-info-default);
-}
-
-.subtype-chevron {
-  position: absolute;
-  right: var(--sherpa-space-xs, 8px);
-  font-size: 10px;
-  color: var(--sherpa-text-default-body);
-  pointer-events: none;
-}
+.node-subtype .subtype-select { display: block; width: 100%; }
 
 /* ── Hide the registered <template> nodes from layout. ─────────── */
 ::slotted(template) { display: none !important; }

@@ -23,6 +23,7 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   #selectEl = null;
+  #pendingOptions = null;
 
   getInputElement() {
     return this.$(".input-field");
@@ -32,6 +33,13 @@ export class SherpaInputSelect extends SherpaInputBase {
     this.#selectEl = this.getInputElement();
     // Move slotted <option> elements from light DOM to shadow <select>
     this.#adoptOptions();
+    // If setOptions() was called before the inner <select> existed,
+    // flush the queued list now.
+    if (this.#pendingOptions) {
+      const queued = this.#pendingOptions;
+      this.#pendingOptions = null;
+      this.setOptions(queued);
+    }
     // Set initial placeholder option
     this.#ensurePlaceholder();
   }
@@ -50,7 +58,12 @@ export class SherpaInputSelect extends SherpaInputBase {
    * @param {Array<{value: string, label: string, disabled?: boolean}>} options
    */
   setOptions(options) {
-    if (!this.#selectEl) return;
+    if (!this.#selectEl) {
+      // Component hasn't finished rendering yet — queue the call so
+      // onInputRender() can flush it once the inner <select> exists.
+      this.#pendingOptions = options ? [...options] : [];
+      return;
+    }
     // Keep placeholder, remove the rest
     const placeholder = this.#selectEl.querySelector('option[value=""]');
     this.#selectEl.replaceChildren();
@@ -62,6 +75,12 @@ export class SherpaInputSelect extends SherpaInputBase {
       el.textContent = opt.label || opt.value || "";
       if (opt.disabled) el.disabled = true;
       this.#selectEl.appendChild(el);
+    }
+    // Re-apply pending value from host attribute (if any) now that the
+    // matching <option> exists in the DOM.
+    const hostValue = this.getAttribute("value");
+    if (hostValue && this.#selectEl.value !== hostValue) {
+      this.#selectEl.value = hostValue;
     }
   }
 

@@ -89,6 +89,10 @@ export class SherpaNode extends SherpaElement {
     this.#subtypeSelect?.addEventListener("change", this.#onSubtypeChange);
     this.#subtypeSelect?.addEventListener("pointerdown", this.#stopPointer);
     this.#subtypeSelect?.addEventListener("click", this.#stopPointer);
+    // Light-DOM <sherpa-input-*> controls bubble `change` (composed:true)
+    // up to the host. Re-emit a node-level event so the canvas can run
+    // value propagation along edges.
+    this.addEventListener("change", this.#onControlChange);
   }
 
   onDisconnect() {
@@ -96,6 +100,7 @@ export class SherpaNode extends SherpaElement {
     this.#subtypeSelect?.removeEventListener("change", this.#onSubtypeChange);
     this.#subtypeSelect?.removeEventListener("pointerdown", this.#stopPointer);
     this.#subtypeSelect?.removeEventListener("click", this.#stopPointer);
+    this.removeEventListener("change", this.#onControlChange);
   }
 
   onAttributeChanged(name) {
@@ -103,8 +108,8 @@ export class SherpaNode extends SherpaElement {
     else if (name === "data-w") this.#syncWidth();
     else if (name === "data-subtypes") this.#syncSubtypeOptions();
     else if (name === "data-subtype") {
-      if (this.#subtypeSelect && this.#subtypeSelect.value !== this.dataset.subtype) {
-        this.#subtypeSelect.value = this.dataset.subtype || "";
+      if (this.#subtypeSelect && this.#subtypeSelect.getAttribute("value") !== this.dataset.subtype) {
+        this.#subtypeSelect.setAttribute("value", this.dataset.subtype || "");
       }
       this.#applyTemplate();
     }
@@ -150,6 +155,167 @@ export class SherpaNode extends SherpaElement {
     return map;
   }
 
+  /* ── Value passthrough API ─────────────────────────────────────── */
+
+  /**
+   * Compute the value emitted on a given output port.
+   *
+   * `incoming` is a plain object mapping inputPortName → value (string)
+   *   or value[] (for `data-multi` aggregation ports). The canvas builds
+   *   this map by resolving every edge that targets this node.
+   *
+   * Returns string|null. The canvas writes this string into any
+   *   downstream input control via setInputValue().
+   */
+  getOutputValue(portName, incoming = {}) {
+    if (!portName) return null;
+    const socket = this.querySelector(
+      `sherpa-node-socket[data-direction="out"][data-port-name="${CSS.escape(portName)}"]`,
+    );
+    if (!socket) return null;
+
+    // True/false branch outputs emit fixed branch markers per the
+    // demo spec: 1 for the "true" branch, 2 for the "false" branch.
+    const status = socket.dataset.status || "";
+    if (status === "true")  return "1";
+    if (status === "false") return "2";
+
+    const kind    = this.dataset.kind || "";
+    const subtype = this.dataset.subtype || "";
+    const ctrls   = this.#getControlValues();
+
+    // Helper: prefer an upstream-driven incoming value, otherwise the
+    // matching local control. This lets a connected input override
+    // whatever the user typed locally.
+    const inOr = (port, ctrlName, fallback = "") => {
+      if (incoming[port] !== undefined) return incoming[port];
+      if (ctrls[ctrlName] !== undefined) return ctrls[ctrlName];
+      return fallback;
+    };
+    const num = (v, def = 0) => {
+      const n = parseFloat(v);
+      return Number.isFinite(n) ? n : def;
+    };
+
+    if (kind === "source")    return "1";
+    if (kind === "variable")  {
+      if (subtype === "property") {
+        const cat = ctrls.category || "";
+        const fld = ctrls.field || "";
+        return cat && fld ? `${cat}.${fld}` : (cat || fld || null);
+      }
+      return ctrls.value ?? null;
+    }
+    if (kind === "math") {
+      const a = num(inOr("a", "a"));
+      const b = num(inOr("b", "b"));
+      const inV = incoming.in;
+      const inArr = Array.isArray(inV) ? inV.map(num) : (inV !== undefined ? [num(inV)] : []);
+      switch (subtype) {
+        case "add":       return String(a + b);
+        case "subtract":  return String(a - b);
+        case "multiply":  return String(a * b);
+        case "divide":    return b === 0 ? "" : String(a / b);
+        case "ratio":     return b === 0 ? "" : String(a / b);
+        case "floor":     return inArr.length ? String(Math.min(...inArr)) : "";
+        case "ceiling":   return inArr.length ? String(Math.max(...inArr)) : "";
+        case "average":   return inArr.length ? String(inArr.reduce((s, n) => s + n, 0) / inArr.length) : "";
+        case "round": {
+          const v = num(inArr[0]);
+          const p = num(ctrls.places);
+          const m = Math.pow(10, p);
+          return String(Math.round(v * m) / m);
+        }
+        case "increment": {
+          const v = num(inArr[0]);
+          const s = num(ctrls.step, 1);
+          return String(v + s);
+        }
+        default: return null;
+      }
+    }
+    if (kind === "collection") return subtype || null;
+    if (kind === "util") {
+      // util nodes carry their primary value in the first control.
+      const first = Object.values(ctrls).find((v) => v !== "" && v != null);
+      return first ?? subtype ?? null;
+    }
+    // logic nodes only expose status outputs (handled above).
+    return null;
+  }
+
+  /**
+   * Mirror an upstream value into the row-control matching `portName`,
+   * and lock the control so the user can't override the driven value.
+   * No-op if the node has no row-level input socket for that port.
+   */
+  setInputValue(portName, value) {
+    const ctrl = this.#getControlForInputPort(portName);
+    if (!ctrl) return;
+    const v = value == null ? "" : String(value);
+    if (ctrl.getAttribute("value") !== v) ctrl.setAttribute("value", v);
+    if (!ctrl.hasAttribute("readonly")) ctrl.setAttribute("readonly", "");
+    // <select> ignores `readonly`; mirror to `disabled` so it can't change.
+    if (ctrl.localName === "sherpa-input-select" && !ctrl.hasAttribute("disabled")) {
+      ctrl.setAttribute("disabled", "");
+    }
+    ctrl.setAttribute("data-driven", "");
+  }
+
+  /** Restore an input control to user-editable state and clear value. */
+  clearInputValue(portName) {
+    const ctrl = this.#getControlForInputPort(portName);
+    if (!ctrl) return;
+    if (ctrl.hasAttribute("data-driven")) {
+      ctrl.removeAttribute("readonly");
+      if (ctrl.localName === "sherpa-input-select") {
+        ctrl.removeAttribute("disabled");
+      }
+      ctrl.removeAttribute("data-driven");
+      ctrl.setAttribute("value", "");
+    }
+  }
+
+  /* ── Internals: value plumbing ─────────────────────────────────── */
+
+  /** Map of `name` → current value for every sherpa-input-* in this node. */
+  #getControlValues() {
+    const out = {};
+    const ctrls = this.querySelectorAll("[slot='control'][name]");
+    for (const c of ctrls) {
+      const name = c.getAttribute("name");
+      if (!name) continue;
+      // SherpaInputBase exposes value either via the `value` getter or
+      // as the host attribute. Both fall back to "".
+      const v = (c.value !== undefined ? c.value : c.getAttribute("value")) ?? "";
+      out[name] = v;
+    }
+    return out;
+  }
+
+  /** Find the `slot="control"` element inside the row whose input-socket
+      matches `portName`. */
+  #getControlForInputPort(portName) {
+    const socket = this.querySelector(
+      `sherpa-node-row > sherpa-node-socket[data-direction="in"][data-port-name="${CSS.escape(portName)}"]`,
+    );
+    const row = socket?.closest("sherpa-node-row");
+    return row?.querySelector(":scope > [slot='control']") ?? null;
+  }
+
+  #onControlChange = (e) => {
+    // Ignore our own subtype dropdown — that has its own event path.
+    if (e.composedPath().includes(this.#subtypeSelect)) return;
+    // Driven controls fire change as a side-effect of being written by
+    // the canvas; suppress those to avoid an event loop.
+    const tgt = e.composedPath().find((n) => n?.hasAttribute?.("data-driven"));
+    if (tgt) return;
+    this.dispatchEvent(new CustomEvent("sherpa-node-value-change", {
+      bubbles: true, composed: true,
+      detail: { nodeId: this.nodeId },
+    }));
+  };
+
   /* ── Internals ─────────────────────────────────────────────────── */
 
   #syncPosition() {
@@ -170,26 +336,31 @@ export class SherpaNode extends SherpaElement {
 
   #syncSubtypeOptions() {
     if (!this.#subtypeSelect) return;
-    let raw = this.dataset.subtypes;
+    const raw = this.dataset.subtypes;
     if (!raw) {
-      this.#subtypeSelect.replaceChildren();
+      if (typeof this.#subtypeSelect.setOptions === "function") {
+        this.#subtypeSelect.setOptions([]);
+      }
       return;
     }
     let opts;
     try { opts = JSON.parse(raw); }
     catch { opts = []; }
-    const frag = document.createDocumentFragment();
-    for (const o of opts) {
-      const el = document.createElement("option");
-      el.value = String(o.value ?? "");
-      el.textContent = String(o.label ?? o.value ?? "");
-      frag.appendChild(el);
-    }
-    this.#subtypeSelect.replaceChildren(frag);
-    if (this.dataset.subtype) {
-      this.#subtypeSelect.value = this.dataset.subtype;
-    } else if (opts.length) {
-      this.#subtypeSelect.value = String(opts[0].value);
+    const normalised = opts.map((o) => ({
+      value: String(o.value ?? ""),
+      label: String(o.label ?? o.value ?? ""),
+    }));
+    const apply = () => {
+      if (typeof this.#subtypeSelect.setOptions !== "function") return;
+      this.#subtypeSelect.setOptions(normalised);
+      const initial = this.dataset.subtype || (normalised[0]?.value ?? "");
+      if (initial) this.#subtypeSelect.setAttribute("value", initial);
+    };
+    // sherpa-input-select upgrades asynchronously; wait if needed.
+    if (typeof this.#subtypeSelect.setOptions === "function") {
+      apply();
+    } else if (window.customElements?.whenDefined) {
+      customElements.whenDefined("sherpa-input-select").then(apply);
     }
   }
 
@@ -219,10 +390,21 @@ export class SherpaNode extends SherpaElement {
       if (el.nodeType === 1) el.setAttribute("data-template-row", "");
     }
     this.appendChild(clone);
+    // Tell the canvas a template swap may have changed available
+    // controls / sockets; defer so the new elements have time to
+    // upgrade before the propagation pass reads their values.
+    queueMicrotask(() => {
+      this.dispatchEvent(new CustomEvent("sherpa-node-value-change", {
+        bubbles: true, composed: true,
+        detail: { nodeId: this.nodeId, reason: "template" },
+      }));
+    });
   }
 
   #onSubtypeChange = (e) => {
-    const value = e.target.value;
+    // sherpa-input-select fires a `change` CustomEvent with detail.value.
+    // Fall back to reading value off the element for safety.
+    const value = e?.detail?.value ?? this.#subtypeSelect?.getAttribute("value") ?? "";
     this.setAttribute("data-subtype", value);
     this.dispatchEvent(new CustomEvent("sherpa-node-subtype-change", {
       bubbles: true, composed: true,

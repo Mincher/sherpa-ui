@@ -17,21 +17,19 @@
     data-has-output-socket — Auto-set when output-socket slot has content
 -->
 <div class="row">
+  <div class="row-label">
+    <slot name="label"></slot>
+  </div>
   <div class="gutter gutter-in">
     <slot name="input-socket"></slot>
   </div>
-  <div class="row-body">
-    <div class="row-label">
-      <slot name="label"></slot>
-    </div>
-    <div class="row-control">
-      <slot name="control"></slot>
-    </div>
-    <div class="row-helper">
-      <slot name="helper"></slot>
-    </div>
+  <div class="row-control">
+    <slot name="control"></slot>
   </div>
   <div class="gutter gutter-out">
     <slot name="output-socket"></slot>
+  </div>
+  <div class="row-helper">
+    <slot name="helper"></slot>
   </div>
 </div>

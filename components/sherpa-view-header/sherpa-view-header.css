@@ -68,6 +68,11 @@
   --_icon-color: var(--sherpa-text-context-warning-default, #d4a017);
 }
 
+/* ---- back button (drill-down exit) ---- */
+
+#back-btn { display: none; flex-shrink: 0; }
+:host([data-back-button]) #back-btn { display: inline-flex; }
+
 /* ---- dividers & toggles ---- */
 
 .toolbar-divider {
