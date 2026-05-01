@@ -32,7 +32,15 @@
   --sherpa-node-socket-blue:   var(--sherpa-data-viz-categorical-color-5);
 
   /* ── Group node skin ──────────────────────────────────────────── */
-  --sherpa-node-group-bg:     var(--sherpa-surface-context-info-subtle-default);
+  /* Mixed against the container surface so the tint stays fully
+     opaque in both light and dark themes. The aliased
+     `info-subtle-default` slot uses an alpha tint in dark mode which
+     would let the canvas grid bleed through. */
+  --sherpa-node-group-bg: color-mix(
+    in srgb,
+    var(--sherpa-node-accent-group) 12%,
+    var(--sherpa-surface-container-default)
+  );
   --sherpa-node-group-border: var(--sherpa-border-context-info-default);
 
   /* ── Geometry (Figma: 240w, 48px header, 60px row, 4px radius) ── */
