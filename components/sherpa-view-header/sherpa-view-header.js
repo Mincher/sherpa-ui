@@ -146,6 +146,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#setupBackButton();
     this.#setupEditMode();
     this.#setupOptionSlotWatcher();
+    this.#setupBreadcrumbsSlotWatcher();
 
     // Apply any attributes that were set before render completed
     const heading = this.dataset.label;
@@ -245,6 +246,23 @@ export class SherpaViewHeader extends SherpaElement {
         detail: {},
       }));
     });
+  }
+
+  /**
+   * Reflect whether the `breadcrumbs` slot has any assigned nodes onto a
+   * host attribute (`data-has-breadcrumbs`) so the CSS can show the row.
+   */
+  #setupBreadcrumbsSlotWatcher() {
+    const slot = this.shadowRoot?.querySelector('slot[name="breadcrumbs"]');
+    if (!slot) return;
+    const sync = () => {
+      const has = slot.assignedNodes({ flatten: true }).some((n) =>
+        n.nodeType === 1 || (n.nodeType === 3 && n.textContent.trim())
+      );
+      this.toggleAttribute('data-has-breadcrumbs', has);
+    };
+    slot.addEventListener('slotchange', sync);
+    sync();
   }
 
   // ============ View-selection Picker ============
