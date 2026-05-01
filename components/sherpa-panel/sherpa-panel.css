@@ -141,36 +141,6 @@
 }
 
 /* ================================================================
-   Side variant — floating, fully-rounded card-style panel.
-   Distinct from `overlay` (which anchors to a screen edge) and from
-   `inline` (which is in-flow and collapsible). Side panels float
-   inside their layout slot with all corners rounded and a shadow.
-   ================================================================ */
-:host([data-variant="side"]) {
-  border: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-  border-radius: var(--sherpa-border-rounding-lg, 12px);
-  box-shadow: var(--sherpa-shadow-default-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
-  background: var(--sherpa-surface-container-default, #ffffff);
-  width: var(--_panel-width, 100%);
-  height: 100%;
-}
-
-/* Side variant always shows its body (no collapse strip). */
-:host([data-variant="side"]) .collapse-trigger { display: none; }
-:host([data-variant="side"]) .panel-body {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-
-/* Header gets a soft divider beneath it so the toolbar reads as a
-   distinct row (matches the side-panel design pattern). */
-:host([data-variant="side"]) .panel-header {
-  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-}
-
-/* ================================================================
    Panel header
    ================================================================ */
 .panel-header {
@@ -264,14 +234,6 @@
 
 :host(:not([data-has-actions])) .action-bar {
   display: none;
-}
-
-/* Side variant — toolbar row sits flush below the header,
-   buttons right-aligned, no background fill. */
-:host([data-variant="side"]) .action-bar {
-  background: transparent;
-  justify-content: flex-end;
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
 }
 
 /* ================================================================

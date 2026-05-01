@@ -1,0 +1,181 @@
+/**
+ * sherpa-content-section.css — In-flow side content section.
+ *
+ * Distinct from sherpa-panel:
+ *   - sherpa-panel       → fixed/overlay drawers anchored to the viewport.
+ *   - sherpa-content-section → in-flow column inside a layout, fills its
+ *     allotted height, can be minimised to a narrow strip on the side it
+ *     is anchored to.
+ *
+ * Host attributes consumed:
+ *   data-position   — left | right (which side the section anchors to;
+ *                     drives chevron direction + restore-strip placement)
+ *   data-heading    — Heading text shown in the header
+ *   data-minimised  — When present, header/toolbar/body collapse to a
+ *                     narrow restore strip on the anchored side.
+ *   data-has-actions — Auto-set by SherpaElement when [slot=actions] is filled
+ *   data-has-toolbar — Auto-set by SherpaElement when [slot=toolbar] is filled
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+
+  background: var(--sherpa-surface-container-default, #ffffff);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  border: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  border-radius: var(--sherpa-border-rounding-lg, 12px);
+  overflow: hidden;
+
+  --_section-width: 320px;
+  --_section-min-strip: 40px;
+  width: var(--_section-width);
+  flex-shrink: 0;
+}
+
+:host([hidden]) { display: none; }
+
+/* ── Header ───────────────────────────────────────────── */
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  flex-shrink: 0;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+.section-title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--sherpa-fonts-scale-base, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: var(--sherpa-line-height-default, 1.5);
+  color: var(--sherpa-text-default-heading, #18191a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host(:not([data-heading])) .section-title { display: none; }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
+}
+
+:host(:not([data-has-actions])) .header-actions { display: none; }
+
+/* ── Minimise / restore controls ──────────────────────── */
+
+.minimise-btn,
+.restore-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-text-default-body, #2e2e33);
+  cursor: pointer;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+}
+
+.minimise-btn {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.minimise-btn:hover,
+.restore-btn:hover {
+  background: var(--sherpa-surface-container-hover, #f0f0f5);
+}
+
+/* Chevron direction — points toward the anchored side. */
+:host([data-position="left"]) .minimise-icon::before  { content: "\f053"; } /* chevron-left */
+:host([data-position="right"]) .minimise-icon::before { content: "\f054"; } /* chevron-right */
+:host(:not([data-position])) .minimise-icon::before   { content: "\f053"; }
+
+/* When anchored on the right, header order is reversed so the minimise
+   chevron sits closest to the screen edge. */
+:host([data-position="right"]) .section-header {
+  flex-direction: row-reverse;
+}
+
+/* ── Toolbar ──────────────────────────────────────────── */
+
+.section-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  background: var(--sherpa-surface-container-subtle, #fafafd);
+  flex-shrink: 0;
+}
+
+:host(:not([data-has-toolbar])) .section-toolbar { display: none; }
+
+/* ── Body ─────────────────────────────────────────────── */
+
+.section-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sherpa-space-md, 16px);
+}
+
+/* ── Restore strip (default hidden) ───────────────────── */
+
+.restore-btn {
+  display: none;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  padding: var(--sherpa-space-sm, 12px) 0;
+  gap: var(--sherpa-space-xs, 8px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+.restore-label {
+  writing-mode: vertical-rl;
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+:host([data-position="right"]) .restore-label {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+}
+
+/* Restore chevron points away from the anchored side (toward content). */
+:host([data-position="left"]) .restore-icon::before  { content: "\f054"; }
+:host([data-position="right"]) .restore-icon::before { content: "\f053"; }
+:host(:not([data-position])) .restore-icon::before   { content: "\f054"; }
+
+/* ── Minimised state ──────────────────────────────────── */
+
+:host([data-minimised]) {
+  width: var(--_section-min-strip);
+}
+
+:host([data-minimised]) .section-header,
+:host([data-minimised]) .section-toolbar,
+:host([data-minimised]) .section-body {
+  display: none;
+}
+
+:host([data-minimised]) .restore-btn {
+  display: flex;
+}

@@ -4,7 +4,7 @@
  *
  * @element sherpa-panel
  *
- * @attr {enum}    data-variant   — inline | overlay | side
+ * @attr {enum}    data-variant   — inline | overlay
  * @attr {enum}    data-position  — left | right | both
  * @attr {boolean} data-expanded  — Expanded (visible) state
  * @attr {string}  data-heading   — Heading text

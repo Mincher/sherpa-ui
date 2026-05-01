@@ -1,0 +1,34 @@
+<template id="default">
+  <header class="section-header" part="header">
+    <button
+      class="minimise-btn"
+      type="button"
+      aria-label="Minimise section"
+      data-action="minimise"
+    >
+      <i class="minimise-icon fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <h2 class="section-title" part="title"></h2>
+    <div class="header-actions">
+      <slot name="actions"></slot>
+    </div>
+  </header>
+
+  <div class="section-toolbar" part="toolbar">
+    <slot name="toolbar"></slot>
+  </div>
+
+  <div class="section-body" part="body">
+    <slot></slot>
+  </div>
+
+  <button
+    class="restore-btn"
+    type="button"
+    aria-label="Expand section"
+    data-action="restore"
+  >
+    <i class="restore-icon fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="restore-label"></span>
+  </button>
+</template>
