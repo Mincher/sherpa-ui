@@ -1,0 +1,28 @@
+<!--
+  sherpa-prompt-composer.html
+
+  Templates:
+    • default — Auto-growing textarea + circular send button.
+
+  Host attributes:
+    data-placeholder — Placeholder text for the textarea.
+    data-disabled    — Boolean flag: disables the input + send button.
+    data-rows        — Initial visible rows (default 1).
+-->
+
+<template id="default">
+  <form class="composer" part="composer" autocomplete="off">
+    <textarea
+      class="composer-input"
+      part="input"
+      rows="1"
+      spellcheck="true"></textarea>
+    <button
+      type="submit"
+      class="composer-send"
+      part="send"
+      aria-label="Send">
+      <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+    </button>
+  </form>
+</template>

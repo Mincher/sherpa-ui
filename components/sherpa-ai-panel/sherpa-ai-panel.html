@@ -1,0 +1,70 @@
+<!--
+  sherpa-ai-panel.html
+
+  Templates:
+    • default — AI / chat surface chrome:
+                header (title + new-chat / archive / extra controls / close)
+                · thread region (default slot)
+                · suggestions region (slot)
+                · composer region (slot)
+                · footer disclaimer (slot)
+
+  Host attributes:
+    data-variant       — "inline" | "overlay" (default "overlay")
+    data-position      — "left" | "right"     (default "right")
+    data-expanded      — Boolean. Expanded / visible state.
+    data-heading       — Heading text. Defaults to "Ask AI".
+    data-width         — Custom width (CSS value).
+    data-can-archive   — Boolean. Enables the archive button.
+    data-busy          — Boolean. Disables new-chat / archive buttons.
+
+  Slots:
+    controls    — Extra header buttons (slotted before the close button).
+    suggestions — Suggested prompt cards (shown above composer when
+                  the thread slot is empty).
+    composer    — A <sherpa-prompt-composer> or equivalent.
+    footer      — Disclaimer / footnote content.
+    default     — Chat thread (e.g. <sherpa-chat-message> nodes).
+-->
+
+<template id="default">
+  <section class="ai-panel" part="panel">
+    <header class="ai-panel-header" part="header">
+      <span class="ai-panel-title" part="title"></span>
+      <div class="ai-panel-controls" part="controls">
+        <slot name="controls"></slot>
+        <button class="ai-icon-btn" part="new-chat-btn"
+                data-action="new-chat" type="button"
+                aria-label="New chat" title="New chat">
+          <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+        </button>
+        <button class="ai-icon-btn" part="archive-btn"
+                data-action="archive" type="button"
+                aria-label="Archive chat" title="Archive chat" disabled>
+          <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+        </button>
+        <button class="ai-icon-btn" part="close-btn"
+                data-action="close" type="button"
+                aria-label="Close" title="Close">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="ai-panel-thread" part="thread" aria-live="polite">
+      <slot></slot>
+    </div>
+
+    <div class="ai-panel-suggestions" part="suggestions">
+      <slot name="suggestions"></slot>
+    </div>
+
+    <div class="ai-panel-composer" part="composer">
+      <slot name="composer"></slot>
+    </div>
+
+    <footer class="ai-panel-footer" part="footer">
+      <slot name="footer"></slot>
+    </footer>
+  </section>
+</template>

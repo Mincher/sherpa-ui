@@ -1,0 +1,182 @@
+/**
+ * @component sherpa-ai-panel
+ *
+ * Standalone chrome for AI / chat surfaces. Provides:
+ *   • A header with title, new-chat, archive, optional extra controls, close.
+ *   • A scrollable thread region (default slot).
+ *   • Slots for suggested prompts, composer, footer disclaimer.
+ *
+ * Sibling to sherpa-panel — uses the same overlay / inline mental model
+ * but is purpose-built for chat surfaces. Application logic
+ * (LLM calls, archive persistence, message rendering) lives in the
+ * host; the component dispatches the events the host needs.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-variant=overlay]   inline | overlay
+ * @attr {string}  [data-position=right]    left | right
+ * @attr {flag}    [data-expanded]          Visible state.
+ * @attr {string}  [data-heading="Ask AI"]  Header title.
+ * @attr {string}  [data-width]             Custom width (CSS value).
+ * @attr {flag}    [data-can-archive]       Enables archive button.
+ * @attr {flag}    [data-busy]              Disables new-chat + archive.
+ *
+ * ── Parts ─────────────────────────────────────────────────────
+ * panel, header, title, controls, thread, suggestions, composer,
+ * footer, new-chat-btn, archive-btn, close-btn.
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * Overlay variant = position:fixed on left/right edge; doesn't
+ * affect host layout. Inline variant = block-level container that
+ * fills its parent.
+ *
+ * The suggestions slot auto-collapses when the thread slot has any
+ * children, so suggested prompts only show on an empty conversation.
+ */
+
+/* ── Token namespace (override on :host or :root) ───────────── */
+:host {
+  --ai-accent-gradient: var(--sherpa-ai-accent-gradient,
+    linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%));
+}
+
+/* ── Base ─────────────────────────────────────────────────────── */
+:host {
+  display: flex;
+  flex-direction: column;
+  background: var(--sherpa-surface-container-default, #fff);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  box-sizing: border-box;
+  overflow: hidden;
+  height: 100%;
+}
+
+:host([hidden]) { display: none; }
+
+/* Hide entirely when collapsed — both variants. */
+:host(:not([data-expanded])) { display: none; }
+
+/* ── Inline variant ───────────────────────────────────────────── */
+:host([data-variant="inline"]) {
+  position: relative;
+  width: var(--_panel-width, 100%);
+  border-left: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+}
+:host([data-variant="inline"][data-position="left"]) {
+  border-left: 0;
+  border-right: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+}
+
+/* ── Overlay variant (default) ────────────────────────────────── */
+:host(:not([data-variant="inline"])) {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: var(--sherpa-z-panel, 900);
+  width: var(--_panel-width, min(420px, 90vw));
+  box-shadow: var(--sherpa-shadow-default-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
+  border-left: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+}
+:host(:not([data-variant="inline"]):not([data-position="left"])) { right: 0; }
+:host(:not([data-variant="inline"])[data-position="left"]) {
+  left: 0;
+  border-left: 0;
+  border-right: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+}
+
+/* ── Layout shell ─────────────────────────────────────────────── */
+.ai-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto auto;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.ai-panel-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border-bottom: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+  flex-shrink: 0;
+}
+.ai-panel-title {
+  flex: 1;
+  font-size: var(--sherpa-fonts-scale-base, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: var(--sherpa-line-height-default, 1.5);
+  color: var(--sherpa-text-default-heading, #18191a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ai-panel-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
+}
+
+.ai-icon-btn {
+  all: unset;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  font-size: 13px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.ai-icon-btn:hover {
+  background: var(--sherpa-surface-container-hover, #f3f4f6);
+  color: var(--sherpa-text-default-heading, #18191a);
+}
+.ai-icon-btn:focus-visible {
+  outline: 2px solid var(--sherpa-border-context-info-default, #2563eb);
+  outline-offset: 1px;
+}
+.ai-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ai-icon-btn:disabled:hover {
+  background: transparent;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+/* ── Thread ───────────────────────────────────────────────────── */
+.ai-panel-thread {
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-md, 16px);
+}
+
+/* ── Suggestions (auto-hide when thread has content) ──────────── */
+.ai-panel-suggestions {
+  padding: 0 var(--sherpa-space-md, 16px) var(--sherpa-space-sm, 12px);
+}
+:host([data-has-content]) .ai-panel-suggestions { display: none; }
+
+/* ── Composer ─────────────────────────────────────────────────── */
+.ai-panel-composer {
+  padding: 0 var(--sherpa-space-md, 16px) var(--sherpa-space-sm, 12px);
+}
+:host(:not([data-has-composer])) .ai-panel-composer { display: none; }
+
+/* ── Footer ───────────────────────────────────────────────────── */
+.ai-panel-footer {
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-md, 16px);
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--sherpa-text-default-tertiary, #94a3b8);
+  line-height: 1.4;
+  border-top: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+}
+:host(:not([data-has-footer])) .ai-panel-footer { display: none; }

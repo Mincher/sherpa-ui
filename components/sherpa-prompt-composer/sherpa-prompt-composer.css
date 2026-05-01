@@ -1,0 +1,104 @@
+/**
+ * @component sherpa-prompt-composer
+ *
+ * Single-line / multi-line prompt input with an inline circular send
+ * button and an animated gradient border. Designed for AI / chat
+ * surfaces where the user authors a free-text request and submits.
+ *
+ * ── Data attributes ───────────────────────────────────────────
+ * @attr {string}  [data-placeholder]   Placeholder text.
+ * @attr {flag}    [data-disabled]      Disables input + send.
+ * @attr {number}  [data-max-height=160] Max visible textarea height (px).
+ *
+ * ── Parts ─────────────────────────────────────────────────────
+ * composer  — Outer <form> wrapper.
+ * input     — The <textarea>.
+ * send      — The submit <button>.
+ *
+ * ── Architecture notes ────────────────────────────────────────
+ * Self-contained: owns auto-grow, Enter-submits / Shift+Enter-newline,
+ * and dispatches a single `prompt-submit` event after clearing the
+ * input. Visual surface uses the standard sherpa surface tokens with
+ * an `--ai-accent` gradient ring.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+}
+
+:host([hidden]) { display: none; }
+
+/* ── Composer wrapper with gradient border ───────────────────── */
+.composer {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 10px) var(--sherpa-space-sm, 12px);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      var(--sherpa-surface-container-default, #fff),
+      var(--sherpa-surface-container-default, #fff)
+    ) padding-box,
+    var(--sherpa-ai-accent-gradient,
+      linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%)
+    ) border-box;
+  border: 1.5px solid transparent;
+  transition: box-shadow 120ms ease;
+}
+.composer:focus-within {
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+/* ── Input ───────────────────────────────────────────────────── */
+.composer-input {
+  all: unset;
+  font-family: inherit;
+  font-size: var(--sherpa-fonts-scale-sm, 13px);
+  line-height: var(--sherpa-line-height-default, 1.45);
+  min-height: 22px;
+  max-height: var(--_max-height, 160px);
+  resize: none;
+  overflow-y: auto;
+  color: var(--sherpa-text-default-body, #2e2e33);
+  width: 100%;
+  box-sizing: border-box;
+}
+.composer-input::placeholder {
+  color: var(--sherpa-text-default-tertiary, #94a3b8);
+}
+.composer-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Send button ─────────────────────────────────────────────── */
+.composer-send {
+  all: unset;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--sherpa-surface-container-hover, #e5e7eb);
+  color: var(--sherpa-text-default-secondary, #6b7280);
+  font-size: 12px;
+  transition: background-color 120ms ease, color 120ms ease;
+  flex-shrink: 0;
+}
+.composer-send:hover {
+  background: var(--sherpa-surface-context-info-default, #2563eb);
+  color: var(--sherpa-text-context-info-on-default, #fff);
+}
+.composer-send:focus-visible {
+  outline: 2px solid var(--sherpa-border-context-info-default, #2563eb);
+  outline-offset: 2px;
+}
+.composer-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--sherpa-surface-container-hover, #e5e7eb);
+  color: var(--sherpa-text-default-secondary, #6b7280);
+}

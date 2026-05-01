@@ -1,0 +1,30 @@
+<!--
+  sherpa-chat-message.html
+
+  Templates:
+    • default — Optional avatar + body bubble.
+
+  Host attributes:
+    data-role        — "user" | "ai" (default "ai"). Drives layout side
+                       and bubble colour scheme.
+    data-avatar-icon — Font Awesome class string, e.g. "fa-solid fa-wand-magic-sparkles".
+                       Only rendered for the "ai" role unless an avatar
+                       slot is provided.
+
+  Slots:
+    avatar  — Custom avatar content (overrides data-avatar-icon).
+    default — Message body content.
+-->
+
+<template id="default">
+  <div class="message" part="message">
+    <span class="avatar" part="avatar">
+      <slot name="avatar">
+        <i class="avatar-icon" aria-hidden="true"></i>
+      </slot>
+    </span>
+    <div class="bubble" part="bubble">
+      <slot></slot>
+    </div>
+  </div>
+</template>
