@@ -84,6 +84,14 @@
   color: var(--sherpa-text-default-secondary, #464646);
 }
 
+:host([data-show-system-menu="false"]) .system-caret {
+  display: none;
+}
+
+:host([data-show-system-menu="false"]) .system-trigger {
+  cursor: default;
+}
+
 .system-time {
   display: inline-flex;
   align-items: baseline;

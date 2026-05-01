@@ -7,6 +7,8 @@
  * @attr {string}  [data-time]               — Time string ("09:00")
  * @attr {string}  [data-show-system]        — "false" hides the brand stack
  * @attr {string}  [data-show-time]          — "false" hides the time line
+ * @attr {string}  [data-show-system-menu]   — "false" hides the dropdown caret
+ *                                             and disables the trigger menu
  *
  * @slot tabs    — Optional product sub-nav (sets data-has-tabs when populated)
  * @slot search  — Search control; falls back to a default sherpa-input-search
@@ -57,8 +59,13 @@ class SherpaProductBarV2 extends SherpaElement {
     this.#syncTime();
     this.#syncSlotState();
 
-    this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
-    this.addEventListener("menu-close", this.#onMenuClose);
+    if (this.dataset.showSystemMenu !== "false") {
+      this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
+      this.addEventListener("menu-close", this.#onMenuClose);
+    } else {
+      this.#triggerEl?.removeAttribute("aria-haspopup");
+      this.#triggerEl?.removeAttribute("aria-expanded");
+    }
   }
 
   onDisconnect() {
