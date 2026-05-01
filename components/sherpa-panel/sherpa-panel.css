@@ -105,6 +105,8 @@
   top: 0;
   bottom: 0;
   z-index: var(--sherpa-z-panel, 900);
+  /* Drop shadow lifts panel off the page; rounded corners are applied per
+     anchored side below so the inner edge curves while the screen-edge stays flush. */
   box-shadow: var(--sherpa-shadow-default-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
   width: var(--_panel-width, 560px);
 }
@@ -114,13 +116,19 @@
   width: 0;
 }
 
+/* Anchored right → round the left (inner) corners. */
 :host([data-variant="overlay"][data-position="right"]),
 :host([data-variant="overlay"]:not([data-position])) {
   right: 0;
+  border-top-left-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-bottom-left-radius: var(--sherpa-border-rounding-lg, 12px);
 }
 
+/* Anchored left → round the right (inner) corners. */
 :host([data-variant="overlay"][data-position="left"]) {
   left: 0;
+  border-top-right-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-bottom-right-radius: var(--sherpa-border-rounding-lg, 12px);
 }
 
 /* Both — overlay spans the full width, anchored top/bottom (e.g. drawer). */
@@ -129,6 +137,7 @@
   right: 0;
   width: auto;
   max-width: none;
+  border-radius: 0;
 }
 
 /* ================================================================
