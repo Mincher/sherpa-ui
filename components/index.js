@@ -100,6 +100,7 @@ export * from "./sherpa-icon/sherpa-icon.js";
 
 // Composite components
 export * from "./sherpa-list/sherpa-list.js";
+export * from "./sherpa-list-panel/sherpa-list-panel.js";
 export * from "./sherpa-transfer-list/sherpa-transfer-list.js";
 export * from "./sherpa-scheduler/sherpa-scheduler.js";
 

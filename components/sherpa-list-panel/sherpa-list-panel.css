@@ -1,0 +1,74 @@
+/**
+ * sherpa-list-panel.css — Searchable panel containing list content.
+ *
+ * Host attributes consumed:
+ *   data-empty            — Empty-state message text
+ *   data-empty-visible    — Set by JS when search yields no matches
+ *   data-bordered         — Adds outer border + radius
+ *
+ * CSS Highlight API:
+ *   ::highlight(list-panel-match) — applied by JS to matched text ranges.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  box-sizing: border-box;
+}
+
+:host([hidden]) { display: none; }
+
+:host([data-bordered]) {
+  border: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  border-radius: var(--sherpa-border-rounding-lg, 12px);
+  overflow: hidden;
+}
+
+/* ── Header / search ─────────────────────────────────── */
+
+.panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-sm, 12px);
+  flex-shrink: 0;
+}
+
+.panel-search {
+  width: 100%;
+}
+
+/* ── Body ────────────────────────────────────────────── */
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--sherpa-space-sm, 12px) var(--sherpa-space-sm, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 12px);
+}
+
+/* ── Empty state ─────────────────────────────────────── */
+
+.panel-empty {
+  display: none;
+  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-md, 16px);
+  text-align: center;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+}
+
+:host([data-empty-visible]) .panel-empty { display: block; }
+
+/* ── Search highlight ────────────────────────────────── */
+
+::highlight(list-panel-match) {
+  background-color: var(--sherpa-surface-warning-subtle, #fff3cd);
+  color: var(--sherpa-text-default-body, #2e2e33);
+}

@@ -1,0 +1,17 @@
+<template id="default">
+  <header class="panel-header">
+    <slot name="search">
+      <sherpa-input-search
+        class="panel-search"
+        data-name="list-panel-search"
+        data-placeholder="Type to search"
+        data-hide-label
+      ></sherpa-input-search>
+    </slot>
+  </header>
+
+  <div class="panel-body" part="body">
+    <slot></slot>
+    <div class="panel-empty" part="empty"></div>
+  </div>
+</template>
