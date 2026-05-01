@@ -135,6 +135,22 @@
   padding: var(--sherpa-space-md, 16px);
 }
 
+/* ── Sticky search slot ──────────────────────────────────
+   Sits at the top of the scrolling body. The wrapper is
+   sticky (so it stays pinned while body content scrolls
+   beneath) and is hidden when no element occupies the slot. */
+.section-search {
+  position: sticky;
+  top: calc(var(--sherpa-space-md, 16px) * -1);
+  z-index: 1;
+  margin: calc(var(--sherpa-space-md, 16px) * -1);
+  margin-bottom: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+}
+:host(:not([data-has-search])) .section-search { display: none; }
+
 /* ── Restore strip (default hidden) ───────────────────── */
 
 .restore-btn {

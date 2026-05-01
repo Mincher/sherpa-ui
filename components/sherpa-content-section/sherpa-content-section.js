@@ -17,6 +17,7 @@
  *
  * @slot (default) — Body content
  * @slot toolbar   — Toolbar row beneath the header
+ * @slot search    — Sticky search input pinned to the top of the body
  * @slot actions   — Header trailing actions (buttons / menu)
  *
  * @fires section-minimise-change
