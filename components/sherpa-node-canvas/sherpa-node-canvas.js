@@ -1397,17 +1397,47 @@ export class SherpaNodeCanvas extends SherpaElement {
       const crumbs = document.createElement("sherpa-breadcrumbs");
       crumbs.setAttribute("slot", "breadcrumbs");
       crumbs.setAttribute("data-canvas-breadcrumbs", "");
+      // Trail: [root?, ...ancestor frame labels]. The current frame
+      // (top of stack) is rendered as the view-header label, not as a
+      // crumb. Each crumb is an <a> so sherpa-breadcrumbs makes it
+      // clickable; the href is a sentinel — we handle navigation via
+      // the `breadcrumb-click` event.
       const trail = [];
-      if (rootHeading) trail.push(rootHeading);
-      for (let i = 0; i < stack.length - 1; i++) trail.push(stack[i].label);
-      for (const text of trail) {
-        const span = document.createElement("span");
-        span.textContent = text;
-        crumbs.appendChild(span);
+      if (rootHeading) trail.push({ label: rootHeading, depth: 0 });
+      for (let i = 0; i < stack.length - 1; i++) {
+        trail.push({ label: stack[i].label, depth: i + 1 });
       }
+      for (const { label, depth: targetDepth } of trail) {
+        const a = document.createElement("a");
+        a.href = "#";
+        a.textContent = label;
+        a.dataset.targetDepth = String(targetDepth);
+        crumbs.appendChild(a);
+      }
+      crumbs.addEventListener("breadcrumb-click", this.#onBreadcrumbClick);
       header.appendChild(crumbs);
     }
   }
+
+  /**
+   * Pop drill frames until reaching the depth associated with the
+   * clicked crumb. Each frame is popped via the public `popSubgraph`
+   * API so per-frame snapshots are cached the same way as a back-button
+   * click — re-entering the parent later restores the work.
+   */
+  #onBreadcrumbClick = (e) => {
+    e.preventDefault?.();
+    const trail = this.#viewHeaderEl?.querySelector(
+      ':scope > sherpa-breadcrumbs[data-canvas-breadcrumbs]'
+    );
+    if (!trail) return;
+    const idx = e.detail?.index;
+    if (typeof idx !== "number") return;
+    const link = trail.querySelectorAll("a")[idx];
+    const target = Number(link?.dataset.targetDepth);
+    if (!Number.isFinite(target)) return;
+    while (this.#drillStack.length > target) this.popSubgraph();
+  };
 
   /* ── Utilities ─────────────────────────────────────────────────── */
 
