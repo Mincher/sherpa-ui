@@ -16,7 +16,9 @@ export * from "./sherpa-nav/sherpa-nav.js";
 export * from "./sherpa-nav-item/sherpa-nav-item.js";
 export * from "./sherpa-nav-promo/sherpa-nav-promo.js";
 export * from "./sherpa-view-header/sherpa-view-header.js";
-export * from "./sherpa-data-viz-container/sherpa-data-viz-container.js";
+export * from "./sherpa-layout-grid/sherpa-layout-grid.js";
+export * from "./sherpa-container/sherpa-container.js";
+export * from "./sherpa-container-header/sherpa-container-header.js";
 
 // UI components
 export * from "./sherpa-button/sherpa-button.js";
@@ -45,7 +47,7 @@ export * from "./sherpa-toolbar/sherpa-toolbar.js";
 export * from "./sherpa-filter-bar/sherpa-filter-bar.js";
 
 // Export components
-export * from "./sherpa-container-pdf/sherpa-container-pdf.js";
+export * from "./sherpa-container-pdf-exporter/sherpa-container-pdf-exporter.js";
 
 // New components
 export * from "./sherpa-accordion/sherpa-accordion.js";

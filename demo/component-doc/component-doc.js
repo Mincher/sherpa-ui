@@ -3,8 +3,7 @@ import "/components/index.js";
 /* ── Constants ──────────────────────────────────────────── */
 
 const TEMPLATE_PATHS = {
-  container: "/components/sherpa-data-viz-container/sherpa-data-viz-container.html",
-  containerMenu: "/components/sherpa-data-viz-container/sherpa-data-viz-container-menu.html",
+  container: "/components/sherpa-container/sherpa-container.html",
   metric: "/components/sherpa-metric/sherpa-metric.html",
   table: "/components/sherpa-data-grid/sherpa-data-grid.html",
 };
@@ -601,10 +600,10 @@ async function loadContentAreaDemo(t, viewId) {
     const res = await fetch(`/html/templates/views/${viewId}.html`);
     if (!res.ok) return;
     const html = await res.text();
-    // The template wraps containers in <div class="sherpa-content-area">. Extract inner containers.
+    // The template wraps containers in <sherpa-layout-grid>. Extract inner containers.
     const tmp = document.createElement("div");
     tmp.innerHTML = html;
-    const area = tmp.querySelector(".sherpa-content-area");
+    const area = tmp.querySelector("sherpa-layout-grid");
     if (area) {
       // Move containers into the demo element
       while (area.firstElementChild) t.appendChild(area.firstElementChild);
@@ -651,7 +650,7 @@ async function loadContainerDemo(t, source) {
 
 async function loadContainerPdfDemo(t, source) {
   try {
-    const c = document.createElement("sherpa-data-viz-container");
+    const c = document.createElement("sherpa-container");
     c.classList.add("doc-hidden");
     $("[data-preview-stage]").appendChild(c);
     await loadContainerDemo(c, source);

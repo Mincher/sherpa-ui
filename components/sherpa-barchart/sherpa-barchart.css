@@ -120,10 +120,17 @@ sherpa-filter-bar {
 
 .chart-layout {
   display: flex;
-  flex-direction: var(--_chart-direction, column);
+  flex-direction: column;
   gap: var(--sherpa-space-xs);
   flex: 1 1 0;
   min-height: 0;
+}
+
+/* Landscape — flip to row when the parent sherpa-container is wider than tall. */
+@container sherpa-container (aspect-ratio > 1) {
+  .chart-layout {
+    flex-direction: row;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -473,8 +480,6 @@ sherpa-filter-bar {
     max-width: 120px;
   }
 }
-
-/* Landscape layout is driven by --_chart-direction from data-viz-container */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Compact / Minimal modes

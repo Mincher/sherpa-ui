@@ -87,7 +87,6 @@ Set chart data and render
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
-- `--_chart-direction`
 - `--_chart-legend-align`
 - `--_chart-legend-direction`
 - `--_chart-legend-justify`

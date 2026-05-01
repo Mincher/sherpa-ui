@@ -1,0 +1,166 @@
+/**
+ * sherpa-container-header.css — Shadow-scoped styles
+ * Header row for sherpa-container: drag-handle → labels → action buttons.
+ *
+ * Structure (shadow DOM):
+ *   :host (block)
+ *   └── header.header-row
+ *       ├── .drag-handle
+ *       ├── dl.header-labels
+ *       │   ├── dt.header-title
+ *       │   └── dd.header-description
+ *       ├── .open-external-button (sherpa-button)
+ *       ├── .action-divider
+ *       └── .menu-button (sherpa-button icon-menu)
+ *
+ * Host attributes consumed:
+ *   data-open-external {boolean} — show open-external button
+ *   data-menu-button   {boolean} — show overflow menu button
+ *   data-drag-handle   {boolean} — show drag handle
+ *
+ * Container query:
+ *   container-name: sherpa-container-header (inline-size)
+ */
+
+:host {
+  display: block;
+  flex-shrink: 0;
+  container-type: inline-size;
+  container-name: sherpa-container-header;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 4px);
+  box-sizing: border-box;
+}
+
+/* ── Labels (dl) ──────────────────────────────────────────────────────── */
+
+.header-labels {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: var(--sherpa-space-3xs, 2px);
+  overflow: hidden;
+  margin: 0;
+}
+
+.header-title {
+  margin: 0;
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-label, var(--sherpa-text-default-heading, #1a1a1f));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-description {
+  margin: 0;
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-font-sm-line-height, 16px);
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-description:empty {
+  display: none;
+}
+
+/* ── Built-in action buttons (hidden by default, shown via host attrs) ── */
+
+.open-external-button,
+.menu-button,
+.action-divider {
+  display: none;
+  flex-shrink: 0;
+}
+
+:host([data-open-external="true"]) .open-external-button {
+  display: inline-flex;
+}
+
+:host([data-menu-button="true"]) .menu-button {
+  display: inline-flex;
+}
+
+:host([data-open-external="true"][data-menu-button="true"]) .action-divider {
+  display: block;
+}
+
+.action-divider {
+  width: 1px;
+  height: var(--sherpa-size-sm, 16px);
+  background-color: var(--sherpa-border-control-secondary-default);
+}
+
+/* ── Drag handle ──────────────────────────────────────────────────────── */
+
+.drag-handle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  --icon-size: var(--sherpa-size-md, 20px);
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  cursor: grab;
+  flex-shrink: 0;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.drag-handle:hover {
+  color: var(--sherpa-text-default-body);
+  background-color: var(--sherpa-surface-container-hover);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+  color: var(--sherpa-border-control-primary-default);
+}
+
+:host([data-drag-handle="true"]) .drag-handle {
+  display: inline-flex;
+}
+
+/* ── Responsive (queries the header's own inline size) ─────────────── */
+
+@container sherpa-container-header (max-width: 200px) {
+  .header-row {
+    gap: var(--sherpa-space-2xs, 2px);
+  }
+  .header-description {
+    display: none;
+  }
+  .action-divider {
+    display: none;
+  }
+}
+
+@container sherpa-container-header (max-width: 150px) {
+  .open-external-button {
+    display: none !important;
+  }
+  .action-divider {
+    display: none !important;
+  }
+}
+
+@container sherpa-container-header (max-width: 120px) {
+  .header-title {
+    font-size: var(--sherpa-fonts-scale-sm, 12px);
+  }
+}

@@ -44,7 +44,6 @@ influenced by setting `data-*` attributes or status on ancestors:
 
 - `--_anim-duration`
 - `--_anim-easing`
-- `--_chart-direction`
 - `--_chart-legend-align`
 - `--_chart-legend-direction`
 - `--_chart-legend-justify`
@@ -62,7 +61,8 @@ influenced by setting `data-*` attributes or status on ancestors:
 - `--_range`
 - `--_ripple-delay-step`
 - `--_slope-factor`
-- ... and 16 more
+- `--_stroke-width`
+- ... and 15 more
 
 ## Usage
 

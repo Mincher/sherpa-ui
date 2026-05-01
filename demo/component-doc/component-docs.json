@@ -113,20 +113,24 @@
       ],
       "defaultHtml": "<p>Monitor key performance indicators across all active regions. Use the controls below to filter by date range or category.</p>\n<sherpa-key-value-list data-layout=\"horizontal\" data-density=\"compact\">\n  <dt>Status</dt><dd><sherpa-tag data-status=\"success\">Active</sherpa-tag></dd>\n  <dt>Region</dt><dd>North America</dd>\n  <dt>Updated</dt><dd>2 hours ago</dd>\n</sherpa-key-value-list>"
     },
-    "sherpa-data-viz-container": {
-      "component": "sherpa-data-viz-container",
-      "label": "Data Viz Container",
-      "description": "Dashboard card with header, metrics, and data sections. Content is defined by a content template or inline child elements.",
-      "path": "components/sherpa-data-viz-container",
+    "sherpa-container": {
+      "component": "sherpa-container",
+      "label": "Container",
+      "description": "Pure wrapper container. Composed with sherpa-container-header and viz components inside a sherpa-layout-grid.",
+      "path": "components/sherpa-container",
       "nestedComponents": [
-        "sherpa-header",
+        "sherpa-container-header",
         "sherpa-barchart",
         "sherpa-data-grid",
         "sherpa-metric"
       ],
       "attributes": [
-        { "name": "data-title", "type": "string", "default": "Sales Overview" },
-        { "name": "data-content", "type": "string" },
+        {
+          "name": "data-variant",
+          "type": "enum",
+          "default": "fit",
+          "options": ["fit", "resizable", "fill"]
+        },
         {
           "name": "data-col-span",
           "type": "enum",
@@ -145,13 +149,13 @@
       "controls": { "defaultSlot": false, "namedSlots": false },
       "containerDemo": { "source": "/data/queries/sales-demo.json" }
     },
-    "sherpa-container-pdf": {
-      "component": "sherpa-container-pdf",
-      "label": "Container PDF",
-      "description": "PDF export container. Renders container data in a print-optimized layout with title, metrics, and stacked chart/table sections.",
-      "path": "components/sherpa-container-pdf",
+    "sherpa-container-pdf-exporter": {
+      "component": "sherpa-container-pdf-exporter",
+      "label": "Container PDF Exporter",
+      "description": "PDF export adapter. Renders a sherpa-container's data in a print-optimized layout with title, metrics, and stacked chart/table sections.",
+      "path": "components/sherpa-container-pdf-exporter",
       "nestedComponents": [
-        "sherpa-data-viz-container",
+        "sherpa-container",
         "sherpa-barchart",
         "sherpa-data-grid"
       ],

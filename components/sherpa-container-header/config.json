@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "sherpa-container-header",
+  "description": "Header row for sherpa-container (or any container-style host). Renders title, description, optional drag handle, optional open-external button, and optional overflow menu button. Events from the embedded sherpa-button bubble and compose out.",
+  "attributes": {
+    "data-title": {
+      "type": "string",
+      "description": "Heading text"
+    },
+    "data-description": {
+      "type": "string",
+      "description": "Secondary description text (hidden when empty)"
+    },
+    "data-open-external": {
+      "type": "boolean",
+      "default": false,
+      "description": "Show the open-external button"
+    },
+    "data-menu-button": {
+      "type": "boolean",
+      "default": false,
+      "description": "Show the overflow menu button"
+    },
+    "data-drag-handle": {
+      "type": "boolean",
+      "default": false,
+      "description": "Show the drag handle (for editable containers)"
+    }
+  },
+  "example": "<sherpa-container-header data-title=\"Revenue\" data-description=\"Last 30 days\" data-menu-button=\"true\"></sherpa-container-header>"
+}

@@ -457,7 +457,7 @@ attribute names, no wrong token values, no invalid HTML.
 | Category       | Count | Examples                                            |
 | -------------- | ----- | --------------------------------------------------- |
 | `core`         | 6     | sherpa-button, sherpa-tag, sherpa-loader              |
-| `layout`       | 5     | sherpa-card, sherpa-panel, sherpa-container-pdf       |
+| `layout`       | 5     | sherpa-card, sherpa-panel, sherpa-container-pdf-exporter |
 | `navigation`   | 7     | sherpa-nav, sherpa-tabs, sherpa-breadcrumbs           |
 | `form`         | 11    | sherpa-input-text, sherpa-input-select, sherpa-switch |
 | `data-display` | 6     | sherpa-data-grid, sherpa-key-value-list               |

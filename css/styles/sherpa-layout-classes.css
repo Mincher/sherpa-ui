@@ -1,140 +1,17 @@
 /**
  * sherpa-layout-classes.css
- * App shell layout, responsive content grid, and scroll-under utility.
+ * App shell layout and scroll-under utility.
  *
  * Classes provided:
  *   .sherpa-app-layout           — Grid shell: sidebar nav + main area
  *   .sherpa-main-content         — Main content column (flex column)
  *   .sherpa-view-header-group    — Wrapper for view-header + global filter bar
  *   .sherpa-main-content-slot    — Scrollable viewport for main content
- *   .sherpa-content-area         — Responsive grid for widgets / containers
  *   .sherpa-scroll-under         — Sticky header with scroll-activated bg
  *
- * Container queries control column count at breakpoints:
- *   ≥1200px → 12 cols, 640–1199px → 6 cols, <640px → 3 cols
+ * The dashboard widget grid (formerly `.sherpa-content-area`) lives in the
+ * `<sherpa-layout-grid>` web component.
  */
-
-@property --maxColCount {
-  syntax: "<integer>";
-  inherits: true;
-  initial-value: 12;
-}
-
-@property --row-height {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 160px;
-}
-
-.sherpa-content-area {
-  /* Container-query host for responsive breakpoints */
-  display: grid;
-  position: relative;
-  flex: 1;
-  width: 100%;
-  min-width: 0;
-  container-type: inline-size;
-  margin: 0;
-  background-color: transparent;
-
-  /* Grid layout */
-  --maxColCount: 12;
-  --row-height: calc(var(--sherpa-space-default) * 10);
-
-  grid-template-columns: repeat(var(--maxColCount), 1fr);
-  grid-auto-rows: var(--row-height);
-  padding: var(--sherpa-space-sm);
-  gap: var(--sherpa-space-xs);
-  align-content: start;
-
-  &[data-content="static"] {
-    display: flex;
-    flex-direction: column;
-    grid-template-columns: none;
-    grid-auto-rows: auto;
-  }
-}
-
-/* ==========================================================================
-   Grid positioning — sherpa-data-viz-container attribute-driven spans
-   ========================================================================== */
-
-/* Column spans */
-.sherpa-content-area sherpa-data-viz-container[data-variant="resizable"] {
-  grid-column: span 3;
-}
-.sherpa-content-area
-  sherpa-data-viz-container[data-variant="resizable"][data-col-span="6"] {
-  grid-column: span 6;
-}
-.sherpa-content-area
-  sherpa-data-viz-container[data-variant="resizable"][data-col-span="9"] {
-  grid-column: span 9;
-}
-.sherpa-content-area
-  sherpa-data-viz-container[data-variant="resizable"][data-col-span="12"] {
-  grid-column: span 12;
-}
-
-/* Row spans */
-.sherpa-content-area
-  sherpa-data-viz-container[data-variant="resizable"][data-row-span="2"] {
-  grid-row: span 2;
-}
-.sherpa-content-area
-  sherpa-data-viz-container[data-variant="resizable"][data-row-span="3"] {
-  grid-row: span 3;
-}
-.sherpa-content-area
-  sherpa-data-viz-container[data-variant="resizable"][data-row-span="4"] {
-  grid-row: span 4;
-}
-.sherpa-content-area
-  sherpa-data-viz-container[data-variant="resizable"][data-row-span="5"] {
-  grid-row: span 5;
-}
-.sherpa-content-area
-  sherpa-data-viz-container[data-variant="resizable"][data-row-span="6"] {
-  grid-row: span 6;
-}
-
-/* Mid breakpoint: 6 columns — cap col-spans at 6 */
-@container (max-width: 1199px) {
-  .sherpa-content-area {
-    --maxColCount: 6;
-    grid-template-columns: repeat(6, 1fr);
-
-    & sherpa-data-viz-container[data-variant="resizable"][data-col-span="9"],
-    & sherpa-data-viz-container[data-variant="resizable"][data-col-span="12"] {
-      grid-column: span 6;
-    }
-  }
-}
-
-/* Small breakpoint: 3 columns, stack sections */
-@container (max-width: 639px) {
-  .sherpa-content-area {
-    --maxColCount: 3;
-    grid-template-columns: repeat(3, 1fr);
-
-    & sherpa-data-viz-container {
-      grid-column-end: span 3 !important;
-
-      & .sections {
-        flex-direction: column;
-        flex-wrap: nowrap;
-      }
-
-      & .section-content { min-height: 0; }
-
-      /* Hide extra sections for short containers */
-      &[data-row-span="1"] .section:nth-child(n + 2),
-      &[data-row-span="2"] .section:nth-child(n + 2) {
-        display: none !important;
-      }
-    }
-  }
-}
 
 /* ── App Shell Layout ────────────────────────────────────────────────── */
 /*
@@ -152,7 +29,7 @@
  *         <sherpa-filter-bar data-global>…preset chips…</sherpa-filter-bar>
  *       </header>
  *       <div class="sherpa-main-content-slot">
- *         <div class="sherpa-content-area">…</div>
+ *         <sherpa-layout-grid>…</sherpa-layout-grid>
  *       </div>
  *     </div>
  *   </div>
@@ -187,7 +64,7 @@
   container-name: main-scroller;
 }
 
-.sherpa-main-content-slot > .sherpa-content-area {
+.sherpa-main-content-slot > sherpa-layout-grid {
   width: 100%;
   min-height: 100%;
 }

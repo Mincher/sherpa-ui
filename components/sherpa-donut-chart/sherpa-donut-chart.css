@@ -99,12 +99,19 @@ sherpa-filter-bar {
    ================================================================ */
 .chart-layout {
   display: flex;
-  flex-direction: var(--_chart-direction, column);
+  flex-direction: column;
   align-items: center;
   gap: var(--sherpa-space-md, 16px);
   flex: 1 1 0;
   min-height: 0;
   min-width: 0;
+}
+
+/* Landscape — flip to row when the parent sherpa-container is wider than tall. */
+@container sherpa-container (aspect-ratio > 1) {
+  .chart-layout {
+    flex-direction: row;
+  }
 }
 
 /* ================================================================

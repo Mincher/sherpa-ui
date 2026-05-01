@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "sherpa-layout-grid",
+  "description": "Responsive 12/6/3 column dashboard grid. Slotted sherpa-container[data-variant=\"resizable\"] children take grid spans from their data-col-span / data-row-span attributes.",
+  "attributes": {
+    "data-row-height": {
+      "type": "string",
+      "description": "CSS length for grid-auto-rows (default: 160px)"
+    },
+    "data-content": {
+      "type": "string",
+      "options": ["static"],
+      "description": "Opt out of the grid — stacks children vertically"
+    }
+  },
+  "slots": {
+    "(default)": "sherpa-container children"
+  },
+  "example": "<sherpa-layout-grid>\n  <sherpa-container data-variant=\"resizable\" data-col-span=\"6\" data-row-span=\"2\">\n    <sherpa-container-header data-title=\"Revenue\"></sherpa-container-header>\n    <sherpa-barchart></sherpa-barchart>\n  </sherpa-container>\n</sherpa-layout-grid>"
+}

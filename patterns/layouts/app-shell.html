@@ -11,7 +11,7 @@
   Customisation:
     • Add nav items to sherpa-nav (via data-src or light-DOM children)
     • Set data-label on sherpa-view-header for the page title
-    • Add sherpa-data-viz-container elements into .sherpa-content-area
+    • Add sherpa-container elements into <sherpa-layout-grid>
     • Add data-global to sherpa-filter-bar for global filtering
     • Set data-preset-filters on sherpa-filter-bar for auto-created presets
 
@@ -21,7 +21,7 @@
     .sherpa-view-header-group — Wrapper for view-header + global filter bar
     .sherpa-scroll-under      — Sticky header with scroll-activated bg + shadow
     .sherpa-main-content-slot — Scrollable viewport for the content grid
-    .sherpa-content-area      — Responsive 12-col grid
+    <sherpa-layout-grid>      — Responsive 12-col grid
 -->
 
 <template id="app-shell"
@@ -39,7 +39,7 @@
       </header>
 
       <div class="sherpa-main-content-slot">
-        <div class="sherpa-content-area"></div>
+        <sherpa-layout-grid></sherpa-layout-grid>
       </div>
     </div>
   </div>

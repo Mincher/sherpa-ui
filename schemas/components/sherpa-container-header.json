@@ -1,0 +1,41 @@
+{
+  "tagName": "sherpa-container-header",
+  "description": "Header row for sherpa-container. Renders title, description, and optional action buttons (drag handle, open-external, overflow menu). Built to be slotted as a light-DOM child of sherpa-container, but works inside any host element. Events from the embedded sherpa-button (menu-open, menu-close, buttonclick) bubble and compose out of the header's shadow DOM and continue through its host into any ancestor — no re-dispatching required.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-title",
+      "type": "string",
+      "description": "Heading text"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Secondary text (hidden when empty)"
+    },
+    {
+      "name": "data-open-external",
+      "type": "boolean",
+      "description": "Show the open-external button"
+    },
+    {
+      "name": "data-menu-button",
+      "type": "boolean",
+      "description": "Show the overflow menu button"
+    },
+    {
+      "name": "data-drag-handle",
+      "type": "boolean",
+      "description": "Show the drag handle"
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "cssParts": [
+    {
+      "name": "header-row",
+      "description": "Outer header element"
+    }
+  ]
+}

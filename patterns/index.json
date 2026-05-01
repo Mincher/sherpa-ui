@@ -98,7 +98,9 @@
     "description": "Provides a 12-column responsive grid populated with data visualization",
     "status": "stable",
     "components": [
-      "sherpa-data-viz-container",
+      "sherpa-layout-grid",
+      "sherpa-container",
+      "sherpa-container-header",
       "sherpa-metric",
       "sherpa-barchart",
       "sherpa-donut-chart",

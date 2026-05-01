@@ -15,7 +15,7 @@
  * Reload a dataset and dispatch a `datasetfiltered` event on the content area
  * so all viz children (grids, charts, metrics) re-render.
  *
- * @param {HTMLElement} contentArea — The .sherpa-content-area element
+ * @param {HTMLElement} contentArea — The <sherpa-layout-grid> element
  * @param {function(): Promise<{records: Array, fields: Array}>} loader — Async function that returns { records, fields }
  */
 export async function refreshDataset(contentArea, loader) {

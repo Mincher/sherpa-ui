@@ -28,7 +28,7 @@
 
 /**
  * Wire view-level and container-level export dialogs for a content area.
- * @param {HTMLElement} contentArea — The .sherpa-content-area element
+ * @param {HTMLElement} contentArea — The <sherpa-layout-grid> element
  * @param {ExportFlowOptions} options
  */
 export function initExportFlow(contentArea, options) {
@@ -73,7 +73,7 @@ export function initExportFlow(contentArea, options) {
 
   // Per-container export dialogs (wired via menuitemclick + data-event="containerexport")
   if (buildExportDialogForContainer) {
-    for (const container of contentArea.querySelectorAll('sherpa-data-viz-container')) {
+    for (const container of contentArea.querySelectorAll('sherpa-container')) {
       if (!container.querySelector('[data-menu]')) continue;
 
       container.addEventListener('menuitemclick', (e) => {

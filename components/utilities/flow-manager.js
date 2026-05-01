@@ -27,7 +27,7 @@ import { SherpaToast } from '../sherpa-toast/sherpa-toast.js';
 /**
  * @typedef {Object} FlowManagerOptions
  * @property {string} entity — Entity name (e.g. 'device', 'detection')
- * @property {HTMLElement} contentArea — The .sherpa-content-area element for dispatching flow events
+ * @property {HTMLElement} contentArea — The <sherpa-layout-grid> element for dispatching flow events
  * @property {Object} dialogs
  * @property {HTMLElement} [dialogs.addEdit] — Add/Edit dialog element (sherpa-dialog)
  * @property {HTMLElement} [dialogs.delete] — Delete confirmation dialog element (sherpa-dialog)

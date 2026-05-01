@@ -1,8 +1,8 @@
 /**
- * sherpa-container-pdf.css — Print-optimized styles for PDF export rendering
+ * sherpa-container-pdf-exporter.css — Print-optimized styles for PDF export rendering
  *
- * These styles are applied to the light DOM of sherpa-container-pdf elements,
- * which render containers in a print-friendly format.
+ * These styles are applied to the light DOM of sherpa-container-pdf-exporter
+ * elements, which render containers in a print-friendly format.
  */
 
 :host {

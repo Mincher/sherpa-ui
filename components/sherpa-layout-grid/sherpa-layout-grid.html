@@ -1,0 +1,15 @@
+<!--
+  sherpa-layout-grid.html — Shadow DOM template for sherpa-layout-grid.
+
+  Responsive 12/6/3 column grid for dashboard composition. Slotted
+  <sherpa-container data-variant="resizable"> children take grid spans
+  from their data-col-span / data-row-span attributes.
+
+  Host attributes:
+    data-row-height — CSS length for grid-auto-rows (default: 160px)
+    data-content    — "static" — opts out of grid; stacks children vertically
+-->
+
+<template id="default">
+  <slot></slot>
+</template>

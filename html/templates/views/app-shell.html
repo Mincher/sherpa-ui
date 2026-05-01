@@ -24,7 +24,7 @@
       • Set data-preset-filters on sherpa-filter-bar for auto-created presets
         (e.g. data-preset-filters="customer,first_detected" — date fields
          auto-detect to datetime-range type with time-range presets)
-      • Drop sherpa-data-viz-container elements into .sherpa-content-area
+      • Drop sherpa-container elements into <sherpa-layout-grid>
 
   Layout classes used:
     .sherpa-app-layout        — Grid shell: sidebar nav + main area
@@ -32,7 +32,7 @@
     .sherpa-view-header-group — Wrapper for view-header + global filter bar
     .sherpa-scroll-under      — Sticky header with scroll-activated bg + shadow
     .sherpa-main-content-slot — Scrollable viewport for the content grid
-    .sherpa-content-area      — Responsive 12-col grid (12 → 6 → 3 at breakpoints)
+    <sherpa-layout-grid>      — Responsive 12-col grid (12 → 6 → 3 at breakpoints)
 -->
 
 <template id="app-shell">
@@ -46,7 +46,7 @@
       </header>
 
       <div class="sherpa-main-content-slot">
-        <div class="sherpa-content-area"></div>
+        <sherpa-layout-grid></sherpa-layout-grid>
       </div>
     </div>
   </div>

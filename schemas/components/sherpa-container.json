@@ -1,0 +1,75 @@
+{
+  "tagName": "sherpa-container",
+  "description": "Pure wrapper container for dashboard composition. Owns sizing (variant, col/row span) and exposes a named container query scope (`sherpa-container`) so descendant viz components (charts, grids) can adapt their internal layout via container queries.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "fit | resizable | fill",
+      "default": "fit",
+      "enumValues": [
+        "fit",
+        "resizable",
+        "fill"
+      ]
+    },
+    {
+      "name": "data-col-span",
+      "type": "number",
+      "description": "Column span: 3 | 6 | 9 | 12 (resizable)"
+    },
+    {
+      "name": "data-row-span",
+      "type": "number",
+      "description": "Row span: 1–6 (resizable)"
+    },
+    {
+      "name": "data-editable",
+      "type": "boolean",
+      "description": "Edit mode (enables resize grip)"
+    },
+    {
+      "name": "data-menu-open",
+      "type": "boolean",
+      "description": "Reflected while a descendant menu is open"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Consumer composition: sherpa-container-header,"
+    }
+  ],
+  "events": [
+    {
+      "name": "container-increase-cols",
+      "description": "Bubbled from injected resize menu items",
+      "bubbles": true,
+      "composed": false,
+      "detail": null
+    },
+    {
+      "name": "container-decrease-cols",
+      "description": "Bubbled from injected resize menu items",
+      "bubbles": true,
+      "composed": false,
+      "detail": null
+    },
+    {
+      "name": "container-increase-rows",
+      "description": "Bubbled from injected resize menu items",
+      "bubbles": true,
+      "composed": false,
+      "detail": null
+    },
+    {
+      "name": "container-decrease-rows",
+      "description": "Bubbled from injected resize menu items",
+      "bubbles": true,
+      "composed": false,
+      "detail": null
+    }
+  ]
+}

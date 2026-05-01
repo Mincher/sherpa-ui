@@ -223,7 +223,7 @@ The first template — `app-shell.html` — provides the full app shell:
         <sherpa-filter-bar data-global></sherpa-filter-bar>
       </header>
       <div class="sherpa-main-content-slot">
-        <div class="sherpa-content-area"></div>
+        <sherpa-layout-grid></sherpa-layout-grid>
       </div>
     </div>
   </div>
@@ -232,7 +232,8 @@ The first template — `app-shell.html` — provides the full app shell:
 
 After stamping, consumers populate the shell: set `data-label` on the
 view-header, add nav items, drop preset filter chips into the filter bar,
-and place `sherpa-data-viz-container` elements into `.sherpa-content-area`.
+and place `sherpa-container` elements (each composed with
+`sherpa-container-header` + a viz child) into `<sherpa-layout-grid>`.
 
 New view layouts are added as additional files in `html/templates/views/`.
 
@@ -670,26 +671,29 @@ await myButton.rendered;
 
 ## Light DOM Exceptions
 
-Most components extend `SherpaElement` and use shadow DOM. One component remains light DOM:
+Most components extend `SherpaElement` and use shadow DOM. All container-related
+components (`sherpa-container`, `sherpa-container-header`, `sherpa-layout-grid`)
+are shadow DOM via `SherpaElement`. The PDF export adapter
+(`sherpa-container-pdf-exporter`) is the one remaining light DOM component:
 
-| Component          | Base Class    | Reason                                     |
-| ------------------ | ------------- | ------------------------------------------ |
-| `sherpa-data-viz-container` | `HTMLElement` | Orchestrates child components in light DOM |
+| Component                       | Base Class    | Reason                                       |
+| ------------------------------- | ------------- | -------------------------------------------- |
+| `sherpa-container-pdf-exporter` | `HTMLElement` | Orchestrates print-mode child components for export |
 
 This component loads its CSS via `components/index.css` (light DOM import) rather than via `SherpaElement.cssUrl`.
 
 ### Completed: Data-Viz → SherpaElement
 
-The data-viz trio (`sherpa-data-grid`, `sherpa-metric`, `sherpa-barchart`) and `sherpa-view-header` and `sherpa-container-pdf` have been converted to shadow DOM:
+The data-viz trio (`sherpa-data-grid`, `sherpa-metric`, `sherpa-barchart`) and `sherpa-view-header` have been converted to shadow DOM:
 
 - `ContentAttributesMixin(HTMLElement)` → `ContentAttributesMixin(SherpaElement)` for the data-viz trio
-- `sherpa-view-header` and `sherpa-container-pdf` now extend `SherpaElement` directly
-- All five use `static cssUrl` / `static htmlUrl` and shadow DOM queries (`$()` / `$$()`)
+- `sherpa-view-header` extends `SherpaElement` directly
+- All four use `static cssUrl` / `static htmlUrl` and shadow DOM queries (`$()` / `$$()`)
 - External cross-shadow-boundary CSS selectors were removed; PDF-specific styling now uses the `data-pdf-mode` attribute pattern (see below)
 
 ### PDF Mode Pattern
 
-Components rendered inside `sherpa-container-pdf` for print/export receive a `data-pdf-mode` attribute on the host. Each component's shadow CSS includes `:host([data-pdf-mode])` rules that override layout, colours and typography for PDF output:
+Components rendered inside `sherpa-container-pdf-exporter` for print/export receive a `data-pdf-mode` attribute on the host. Each component's shadow CSS includes `:host([data-pdf-mode])` rules that override layout, colours and typography for PDF output:
 
 ```css
 /* Inside sherpa-barchart shadow CSS */
@@ -704,11 +708,17 @@ Components rendered inside `sherpa-container-pdf` for print/export receive a `da
 }
 ```
 
-PDF colour variables (`--_pdf-bg-white`, `--_pdf-bg-header`, etc.) are defined on `sherpa-container-pdf`'s `:host` and cascade through shadow boundaries via CSS custom property inheritance — no `::part()` needed.
+PDF colour variables (`--_pdf-bg-white`, `--_pdf-bg-header`, etc.) are defined on `sherpa-container-pdf-exporter`'s `:host` and cascade through shadow boundaries via CSS custom property inheritance — no `::part()` needed.
 
-### Retired: sherpa-content-area
+### Retired: sherpa-data-viz-container & sherpa-content-area
 
-`sherpa-content-area` was retired as a custom element. Its grid layout CSS now lives in `css/styles/sherpa-layout-classes.css` as a utility class. All usage was already `<div class="sherpa-content-area">` — the element was never instantiated.
+The monolithic `sherpa-data-viz-container` has been split into:
+
+- `sherpa-container` — pure wrapper that owns the named container scope (`container: sherpa-container / size`) and resize behaviour
+- `sherpa-container-header` — standalone title/menu/drag-handle row composed inside containers
+- `sherpa-layout-grid` — web-component replacement for the old `.sherpa-content-area` utility class
+
+The old `.sherpa-content-area` CSS class was retired with the migration to `<sherpa-layout-grid>`.
 
 ---
 

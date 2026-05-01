@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "sherpa-container",
+  "description": "Pure wrapper container. Owns sizing variants, col/row span, and exposes a named container query scope (sherpa-container) for descendant viz components. Header, filters, and metrics are composed as light-DOM children.",
+  "attributes": {
+    "data-variant": {
+      "type": "string",
+      "options": ["fit", "resizable", "fill"],
+      "default": "fit",
+      "description": "Layout variant — fit (hugs content), resizable (grid-driven spans), fill (fills parent)"
+    },
+    "data-col-span": {
+      "type": "string",
+      "options": ["3", "6", "9", "12"],
+      "default": "3",
+      "description": "Column span in the layout grid (resizable variant only)"
+    },
+    "data-row-span": {
+      "type": "string",
+      "options": ["1", "2", "3", "4", "5", "6"],
+      "default": "1",
+      "description": "Row span in the layout grid (resizable variant only)"
+    },
+    "data-editable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Edit mode — enables the resize grip (resizable variant only)"
+    },
+    "data-menu-open": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set automatically while a descendant overflow menu is open"
+    }
+  },
+  "slots": {
+    "(default)": "Consumer composition — sherpa-container-header, sherpa-filter-bar, and viz components"
+  },
+  "example": "<sherpa-container data-variant=\"resizable\" data-col-span=\"6\" data-row-span=\"2\"><sherpa-container-header data-title=\"Revenue\" data-menu-button></sherpa-container-header><sherpa-barchart></sherpa-barchart></sherpa-container>"
+}

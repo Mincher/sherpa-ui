@@ -1,22 +1,22 @@
 /**
- * @element sherpa-container-pdf
- * @description Print-optimized container renderer for PDF export via browser print.
+ * @element sherpa-container-pdf-exporter
+ * @description Print-optimized renderer for PDF export via browser print.
  *
- * Accepts a source container element and renders a print-friendly representation
- * with optional chart snapshots, metrics, and data tables.
+ * Accepts a source <sherpa-container> element and renders a print-friendly
+ * representation with optional chart snapshots, metrics, and data tables.
  *
  * @method setData(sourceContainer, options) — Renders the source container
- *   @param {HTMLElement} sourceContainer — The sherpa-data-viz-container to render
+ *   @param {HTMLElement} sourceContainer — The sherpa-container to render
  *   @param {Object} options — Control what to render
  *     @prop {boolean} includeChart — Render chart visual (clone SVG/canvas from shadow DOM)
  *     @prop {boolean} includeMetrics — Render metrics row
  *     @prop {boolean} includeDataGrid — Include tabular data representation
  */
 
-class SherpaContainerPdf extends HTMLElement {
+class SherpaContainerPdfExporter extends HTMLElement {
   /**
    * Render a source container in print-friendly format
-   * @param {HTMLElement} sourceContainer — The sherpa-data-viz-container
+   * @param {HTMLElement} sourceContainer — The sherpa-container
    * @param {Object} options — { includeChart, includeMetrics, includeDataGrid }
    */
   async setData(sourceContainer, options = {}) {
@@ -30,7 +30,7 @@ class SherpaContainerPdf extends HTMLElement {
     this.innerHTML = '';
 
     if (!sourceContainer) {
-      console.warn('sherpa-container-pdf: No source container provided');
+      console.warn('sherpa-container-pdf-exporter: No source container provided');
       return;
     }
 
@@ -322,8 +322,8 @@ class SherpaContainerPdf extends HTMLElement {
   }
 }
 
-if (!customElements.get('sherpa-container-pdf')) {
-  customElements.define('sherpa-container-pdf', SherpaContainerPdf);
+if (!customElements.get('sherpa-container-pdf-exporter')) {
+  customElements.define('sherpa-container-pdf-exporter', SherpaContainerPdfExporter);
 }
 
-export { SherpaContainerPdf };
+export { SherpaContainerPdfExporter };

@@ -1,0 +1,56 @@
+<!--
+  sherpa-container-header.html — Shadow DOM template for sherpa-container-header.
+
+  A reusable header for sherpa-container (and any other container-style host).
+  Owns title/description, optional drag handle, optional open-external button,
+  and optional overflow menu button.
+
+  Bubbles a single `container-action` CustomEvent up to the parent container
+  describing what the user did (open-external | menu-open | menu-close |
+  toggle-filters). Resize-related events emitted by injected menu items
+  (container-increase-cols, etc.) bubble through unchanged.
+
+  Host attributes:
+    data-title          — Heading text
+    data-description    — Secondary text
+    data-open-external  — "true" — show open-external button
+    data-menu-button    — "true" — show overflow menu button
+    data-drag-handle    — "true" — show drag handle (typically when parent is editable)
+    data-menu-open      — set automatically while the overflow menu is open
+-->
+
+<template id="default">
+  <header class="header-row">
+    <div class="drag-handle" aria-label="Drag to reposition">
+      <i
+        class="fa-solid fa-grip-vertical sherpa-icon"
+        data-size="xs"
+        aria-hidden="true"
+      ></i>
+    </div>
+    <dl class="header-labels">
+      <dt class="header-title"></dt>
+      <dd class="header-description"></dd>
+    </dl>
+    <sherpa-button
+      class="open-external-button"
+      data-variant="tertiary"
+      data-size="small"
+      data-icon-start="&#xf08e;"
+      aria-label="Open in view"
+      data-tooltip="Open in view"
+    ></sherpa-button>
+    <span class="action-divider"></span>
+    <sherpa-button
+      class="menu-button"
+      data-type="icon-menu"
+      data-variant="tertiary"
+      data-size="small"
+      data-icon-start="&#xf142;"
+      aria-label="Menu"
+      data-tooltip="Menu"
+      data-menu-position="bottom-end"
+      data-keep-compact
+    ></sherpa-button>
+  </header>
+</template>

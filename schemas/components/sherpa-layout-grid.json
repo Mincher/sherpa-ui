@@ -1,0 +1,35 @@
+{
+  "tagName": "sherpa-layout-grid",
+  "description": "Responsive dashboard grid. Slotted <sherpa-container data-variant=\"resizable\"> children take grid spans from their data-col-span / data-row-span attributes.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-row-height",
+      "type": "string",
+      "description": "CSS length for grid-auto-rows (default: 160px)"
+    },
+    {
+      "name": "data-content",
+      "type": "enum",
+      "description": "\"static\" — opts out of grid; stacks children"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "sherpa-container children"
+    }
+  ],
+  "events": [],
+  "cssProperties": [
+    {
+      "name": "--maxColCount",
+      "description": "Integer column count (default 12, registered)"
+    },
+    {
+      "name": "--row-height",
+      "description": "Row height (default 160px, registered)"
+    }
+  ]
+}

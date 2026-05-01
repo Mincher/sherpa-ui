@@ -1,8 +1,8 @@
-# sherpa-container-pdf
+# sherpa-container-pdf-exporter
 
-> **Category:** page-level · **Base class:** SherpaElement
+> **Category:** core · **Base class:** SherpaElement
 
-Print-optimized container renderer for PDF export via browser print.
+Print-optimized renderer for PDF export via browser print.
 
 ## Methods
 
@@ -32,14 +32,14 @@ Renders the source container
 ### Basic
 
 ```html
-<sherpa-container-pdf></sherpa-container-pdf>
+<sherpa-container-pdf-exporter></sherpa-container-pdf-exporter>
 ```
 
 ## Import
 
 ```js
 // Individual import
-import "sherpa-ui/components/sherpa-container-pdf/sherpa-container-pdf.js";
+import "sherpa-ui/components/sherpa-container-pdf-exporter/sherpa-container-pdf-exporter.js";
 
 // Or import everything
 import "sherpa-ui";
@@ -49,5 +49,5 @@ import "sherpa-ui";
 
 | File | Purpose |
 | ---- | ------- |
-| [`sherpa-container-pdf.js`](sherpa-container-pdf.js) | Component class, lifecycle, events |
-| [`sherpa-container-pdf.css`](sherpa-container-pdf.css) | Styles, variants, states |
+| [`sherpa-container-pdf-exporter.js`](sherpa-container-pdf-exporter.js) | Component class, lifecycle, events |
+| [`sherpa-container-pdf-exporter.css`](sherpa-container-pdf-exporter.css) | Styles, variants, states |
