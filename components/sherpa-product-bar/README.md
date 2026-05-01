@@ -2,7 +2,7 @@
 
 > **Category:** navigation · **Base class:** SherpaElement
 
-Top-level product branding bar with icon, name, navigation, and actions.
+**DEPRECATED — use `sherpa-product-bar-v2` instead.** Top-level product branding bar with icon, name, navigation, and actions.
 
 ## Attributes
 

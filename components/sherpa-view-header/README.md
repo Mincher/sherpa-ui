@@ -12,6 +12,7 @@ View header toolbar with toggles and settings. Manages heading, favorites, feedb
 | `data-show-debug-toggles` | boolean | Show debug toggle controls | — | — |
 | `data-favorite` | boolean | Favorite state | — | — |
 | `data-edit-mode` | boolean | Edit mode active | — | — |
+| `data-back-button` | boolean | Show built-in back button | — | — |
 | `data-export-title` | string | Title for PDF export | — | — |
 
 ## Events
@@ -71,6 +72,19 @@ event.detail = {
 ```js
 element.addEventListener("favoritetoggle", (e) => {
   console.log(e.detail.viewId);
+});
+```
+
+### `viewheaderback`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("viewheaderback", (e) => {
+  // handle event
 });
 ```
 

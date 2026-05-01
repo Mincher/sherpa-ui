@@ -115,6 +115,13 @@
       "bubbles": true,
       "composed": true,
       "detail": null
+    },
+    {
+      "name": "naveditreset",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
     }
   ],
   "methods": [

@@ -206,6 +206,19 @@ element.addEventListener("naveditcancel", (e) => {
 });
 ```
 
+### `naveditreset`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("naveditreset", (e) => {
+  // handle event
+});
+```
+
 ## Methods
 
 | Method | Description |

@@ -1,0 +1,36 @@
+{
+  "tagName": "sherpa-node-row",
+  "description": "sherpa-node-row.js — Generic field row for sherpa-node bodies. Pure layout component. Holds slots; emits no events. Slot presence is auto-mirrored on the host as data-has-{slotname} via SherpaElement's default onSlotChange handler.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-multi",
+      "type": "boolean",
+      "description": "Visually expand for multi-input rows"
+    }
+  ],
+  "slots": [
+    {
+      "name": "label",
+      "description": "Field label"
+    },
+    {
+      "name": "control",
+      "description": "Input/select/chip group"
+    },
+    {
+      "name": "helper",
+      "description": "Optional helper text"
+    },
+    {
+      "name": "input-socket",
+      "description": "Slot in the LEFT gutter"
+    },
+    {
+      "name": "output-socket",
+      "description": "Slot in the RIGHT gutter"
+    }
+  ],
+  "events": []
+}

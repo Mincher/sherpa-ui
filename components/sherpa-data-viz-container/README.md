@@ -47,12 +47,6 @@ These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
 - `--_chart-direction`
-- `--_chart-legend-align`
-- `--_chart-legend-direction`
-- `--_chart-legend-justify`
-- `--_chart-legend-margin-top`
-- `--_chart-legend-width`
-- `--_chart-legend-wrap`
 - `--_editable-display`
 
 ## Usage

@@ -1,6 +1,6 @@
 {
   "tagName": "sherpa-product-bar",
-  "description": "Top-level product branding bar with icon, name, navigation, and actions.",
+  "description": "**DEPRECATED — use `sherpa-product-bar-v2` instead.** Top-level product branding bar with icon, name, navigation, and actions.",
   "category": "navigation",
   "baseClass": "SherpaElement",
   "attributes": [

@@ -176,6 +176,27 @@ element.addEventListener("gridexport", (e) => {
 });
 ```
 
+### `gridaction`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:**
+
+```js
+event.detail = {
+  action: string,
+  data: object,
+  selectedRows: object[],
+};
+```
+
+```js
+element.addEventListener("gridaction", (e) => {
+  console.log(e.detail.action);
+});
+```
+
 ## Methods
 
 | Method | Description |
@@ -191,6 +212,7 @@ element.addEventListener("gridexport", (e) => {
 | `getColumns()` | Returns column definitions |
 | `getCompoundQuery()` | Returns { group, sort, filters, columnFilters, globalSearch } |
 | `setExternalFilters(f)` | Apply external filters from FilterCoordinator |
+| `setActionMenuItems(sections)` | Set secondary action menu items for bulk actions |
 
 ### `setColumnConfig(config)`
 
@@ -215,6 +237,14 @@ Apply external filters from FilterCoordinator
 **Parameters:**
 
 - `f` (`any`) — 
+
+### `setActionMenuItems(sections)`
+
+Set secondary action menu items for bulk actions
+
+**Parameters:**
+
+- `sections` (`any`) — 
 
 ## CSS Parts
 

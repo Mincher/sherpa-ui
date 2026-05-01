@@ -1,17 +1,17 @@
 # sherpa-section-nav
 
-> **Category:** navigation · **Base class:** SherpaElement
+> **Category:** core · **Base class:** SherpaElement
 
 Secondary navigation panel: a heading with optional back button, followed by a vertical list of grouped, selectable items. Designed for Settings-style layouts where the panel sits beside a content area and switches what is rendered there.
 
 ## Attributes
 
-| Attribute | Type | Description |
-| --------- | ---- | ----------- |
-| `data-heading` | string | Panel heading text |
-| `data-show-back` | boolean (`"true"`) | Reveals the back button |
-| `data-active-id` | string | Currently active item id |
-| `data-sections` | string (JSON) | Declarative sections array |
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data-heading` | string | Panel heading text | — | — |
+| `data-show-back` | string | "true" reveals the back button | — | — |
+| `data-active-id` | string | Currently active item id | — | — |
+| `data-sections` | string | JSON-encoded sections array | — | — |
 
 ## Slots
 
@@ -19,23 +19,47 @@ Secondary navigation panel: a heading with optional back button, followed by a v
 | ---- | ----------- |
 | `header-end` | Trailing slot in the header (e.g. icon button) |
 
+Slot usage:
+
+```html
+<sherpa-section-nav>
+  <div slot="header-end"><!-- Trailing slot in the header (e.g. icon button) --></div>
+</sherpa-section-nav>
+```
+
 ## Events
 
 ### `section-nav-back`
 
-Fired when the back button is activated.
 
 **Propagation:** bubbles, composed
+
 **Detail:** none
+
+```js
+element.addEventListener("section-nav-back", (e) => {
+  // handle event
+});
+```
 
 ### `section-nav-select`
 
-Fired when an item is activated.
 
 **Propagation:** bubbles, composed
+
 **Detail:**
+
 ```js
-event.detail = { id: string, action?: string, item: object };
+event.detail = {
+  id: string,
+  item: object,
+};
+```
+
+```js
+element.addEventListener("section-nav-select", (e) => {
+  console.log(e.detail.id);
+});
 ```
 
 ## Methods
@@ -46,54 +70,56 @@ event.detail = { id: string, action?: string, item: object };
 | `setActive(id)` | Mark the item with the given id active |
 | `getActiveId()` | Returns the currently active id |
 
-### Section / item shape
+### `setSections(sections)`
 
-```js
-[
-  {
-    label: "User",
-    items: [
-      { id: "profile", label: "Profile" },
-      { id: "security", label: "Security", icon: "fa-regular fa-shield" },
-      { type: "header", label: "Jane Doe", description: "jane@acme.com" },
-      { id: "sign-out", label: "Sign out", action: "sign-out" },
-    ],
-  },
-]
-```
+Replace the rendered groups + items
+
+**Parameters:**
+
+- `sections` (`any`) — 
+
+### `setActive(id)`
+
+Mark the item with the given id active
+
+**Parameters:**
+
+- `id` (`any`) — 
 
 ## CSS Parts
 
-| Part | Description |
-| ---- | ----------- |
-| `header` | Outer header row |
-| `back` | Back button |
-| `heading` | Panel title |
-| `header-end` | Trailing slot wrapper |
-| `sections` | Scrollable list region |
+Style internal elements from outside the shadow DOM:
+
+- `header`
+- `back`
+- `heading`
+- `header-end`
+- `sections`
+
+```css
+sherpa-section-nav::part(header) {
+  /* custom styles */
+}
+```
 
 ## Usage
 
+### Basic
+
 ```html
-<sherpa-section-nav data-heading="Settings" data-show-back="true">
+<sherpa-section-nav data-heading="value" data-show-back="value" data-active-id="value">
+  <span slot="header-end"><!-- Trailing slot in the header (e.g. icon button) --></span>
 </sherpa-section-nav>
+```
 
-<script type="module">
-  import "sherpa-ui/components/sherpa-section-nav/sherpa-section-nav.js";
+## Import
 
-  const nav = document.querySelector("sherpa-section-nav");
-  nav.setSections([
-    { label: "User",
-      items: [
-        { id: "profile",  label: "Profile" },
-        { id: "security", label: "Security" },
-      ] },
-  ]);
-  nav.setActive("profile");
-  nav.addEventListener("section-nav-select", (e) => {
-    console.log(e.detail.id);
-  });
-</script>
+```js
+// Individual import
+import "sherpa-ui/components/sherpa-section-nav/sherpa-section-nav.js";
+
+// Or import everything
+import "sherpa-ui";
 ```
 
 ## Files
@@ -102,4 +128,4 @@ event.detail = { id: string, action?: string, item: object };
 | ---- | ------- |
 | [`sherpa-section-nav.js`](sherpa-section-nav.js) | Component class, lifecycle, events |
 | [`sherpa-section-nav.css`](sherpa-section-nav.css) | Styles, variants, states |
-| [`sherpa-section-nav.html`](sherpa-section-nav.html) | Shadow DOM template |
+| [`sherpa-section-nav.html`](sherpa-section-nav.html) | Shadow DOM template(s) |

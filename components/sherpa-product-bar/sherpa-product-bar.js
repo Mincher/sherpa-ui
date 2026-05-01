@@ -1,6 +1,9 @@
 /**
  * @element sherpa-product-bar
- * @description Top-level product branding bar with icon, name, navigation, and actions.
+ * @description **DEPRECATED — use `sherpa-product-bar-v2` instead.** Top-level product branding bar with icon, name, navigation, and actions.
+ *
+ * @deprecated Use sherpa-product-bar-v2 instead. This v1 component is kept for
+ * backwards compatibility and will be removed in a future major release.
  *
  * @attr {string}  [data-product-name]  — Product display name
  * @attr {string}  [data-product-icon]  — Font Awesome icon class (e.g. "fa-cube")

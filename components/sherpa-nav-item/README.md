@@ -16,8 +16,10 @@ Available templates:
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-icon` | string | FontAwesome icon class (e.g. "fa-home") | — | — |
+| `data-icon-svg` | string | Inline SVG markup string. Takes precedence over data-icon. | — | — |
+| `data-svg-icon` | string | Key into window.__sherpaNavIcons registry; resolved to data-icon-svg. | — | — |
 | `data-badge` | string | Badge text rendered via internal sherpa-tag | — | — |
-| `data-badge-status` | enum | Badge status — sets the internal sherpa-tag's `data-status` | `success` | `critical`, `info`, `success`, `warning`, `urgent`, `brand` |
+| `data-badge-status` | enum | Badge status (critical \| info \| success \| warning \| urgent \| brand). Defaults to "success". | — | `critical`, `info`, `success`, `warning`, `urgent`, `brand` |
 | `data-variant` | enum | section \| subsection \| child | — | `section`, `subsection`, `child` |
 | `data-state` | enum | selected | — | — |
 
@@ -43,6 +45,7 @@ Style internal elements from outside the shadow DOM:
 - `indicator`
 - `drag`
 - `icon`
+- `dot`
 - `label`
 - `tag`
 - `chevron`
@@ -60,6 +63,7 @@ These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
 - `--_depth`
+- `--_dot-color`
 - `--_indent`
 - `--_item-h`
 - `--_label-weight`
@@ -70,7 +74,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-nav-item data-icon="value" data-badge="value" data-variant="section">
+<sherpa-nav-item data-icon="value" data-icon-svg="value" data-svg-icon="value" data-variant="section">
   <!-- Default slot content -->
   <p>Your content here</p>
 </sherpa-nav-item>

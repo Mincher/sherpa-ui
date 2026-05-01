@@ -25,6 +25,11 @@
       "description": "Edit mode active"
     },
     {
+      "name": "data-back-button",
+      "type": "boolean",
+      "description": "Show built-in back button"
+    },
+    {
       "name": "data-export-title",
       "type": "string",
       "description": "Title for PDF export"
@@ -59,6 +64,13 @@
         "viewId": "string",
         "favorite": "boolean"
       }
+    },
+    {
+      "name": "viewheaderback",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
     }
   ],
   "methods": [

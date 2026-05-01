@@ -1,0 +1,49 @@
+{
+  "tagName": "sherpa-node-header",
+  "description": "sherpa-node-header.js — 48-tall header for sherpa-node. Provides: • Built-in icon shorthand via data-icon=\"fa-...\" (FontAwesome class) • Built-in drill-down button via data-drill-down (used by Group nodes) • Auto-tags slotted sockets with data-location=\"header\" so their CSS picks the correct shape from the locked matrix.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-icon",
+      "type": "string",
+      "description": "FontAwesome class (e.g. \"fa-solid fa-cube\")"
+    },
+    {
+      "name": "data-drill-down",
+      "type": "boolean",
+      "description": "Show built-in drill-down button"
+    }
+  ],
+  "slots": [
+    {
+      "name": "icon",
+      "description": "Custom leading icon (overrides data-icon)"
+    },
+    {
+      "name": "title",
+      "description": "Header title text"
+    },
+    {
+      "name": "actions",
+      "description": "Trailing icons/buttons"
+    },
+    {
+      "name": "input-socket",
+      "description": "Slot in left gutter (control-flow input)"
+    },
+    {
+      "name": "output-socket",
+      "description": "Slot in right gutter (control-flow output)"
+    }
+  ],
+  "events": [
+    {
+      "name": "sherpa-node-drilldown",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ]
+}

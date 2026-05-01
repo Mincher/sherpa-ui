@@ -1,0 +1,53 @@
+{
+  "tagName": "sherpa-node-socket",
+  "description": "sherpa-node-socket.js — Connection-point primitive for sherpa-node. Pure presentational element. Emits a single high-level event on pointerdown so the canvas/connection-manager can drive drag-to-connect.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-direction",
+      "type": "enum",
+      "description": "\"in\" | \"out\""
+    },
+    {
+      "name": "data-location",
+      "type": "enum",
+      "description": "\"header\" | \"row\" (auto-set by parent slot)"
+    },
+    {
+      "name": "data-multi",
+      "type": "boolean",
+      "description": "Input accepts multiple connections"
+    },
+    {
+      "name": "data-connected",
+      "type": "boolean",
+      "description": "Filled with accent color"
+    },
+    {
+      "name": "data-port-name",
+      "type": "string",
+      "description": "Port identifier"
+    },
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "\"default\" | \"true\" | \"false\""
+    },
+    {
+      "name": "data-connection-count",
+      "type": "number",
+      "description": "Set by canvas; drives multi-input height growth"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "sherpa-socket-pointerdown",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ]
+}

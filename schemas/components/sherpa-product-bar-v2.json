@@ -1,0 +1,53 @@
+{
+  "tagName": "sherpa-product-bar-v2",
+  "description": "Light-themed product bar (Apr 2026 redesign). System name trigger + time, optional tabs, central search, right-aligned actions.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-product-name",
+      "type": "string",
+      "description": "System / product display name"
+    },
+    {
+      "name": "data-time",
+      "type": "string",
+      "description": "Time string (\"09:00\")"
+    },
+    {
+      "name": "data-show-system",
+      "type": "string",
+      "description": "\"false\" hides the brand stack"
+    },
+    {
+      "name": "data-show-time",
+      "type": "string",
+      "description": "\"false\" hides the time line"
+    }
+  ],
+  "slots": [
+    {
+      "name": "tabs",
+      "description": "Optional product sub-nav (sets data-has-tabs when populated)"
+    },
+    {
+      "name": "search",
+      "description": "Search control; falls back to a default sherpa-input-search"
+    },
+    {
+      "name": "actions",
+      "description": "Right-aligned icon buttons + Ask N-zo entry point"
+    }
+  ],
+  "events": [
+    {
+      "name": "systemtriggerclick",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "name": "string"
+      }
+    }
+  ]
+}

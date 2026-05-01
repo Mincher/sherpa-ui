@@ -1,0 +1,84 @@
+{
+  "tagName": "sherpa-node",
+  "description": "sherpa-node.js — Host element for a node-graph node. Mirrors data-x / data-y attributes to the --sherpa-node-x/y CSS vars so position is purely declarative and animatable. Exposes getPortPositions() so the host canvas can measure where each socket lives in node-local coordinates (unscaled, top-left origin). Sub-type system: • data-subtypes — JSON array [{value,label}] populates a built-in <select> beneath the header. • data-subtype  — Currently-selected sub-type. • Light-DOM <template class=\"rows-tpl\" data-kind=\"…\" data-subtype=\"…\"> children act as row-prototypes. On subtype change the matching template's content is cloned into light DOM, replacing any rows that came from a previous template clone (those are tagged data-template-row).",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-kind",
+      "type": "enum",
+      "description": "One of: source | group | variable | math |",
+      "enumValues": [
+        "source",
+        "group",
+        "variable",
+        "math"
+      ]
+    },
+    {
+      "name": "data-selected",
+      "type": "boolean",
+      "description": "Highlights the node"
+    },
+    {
+      "name": "data-x",
+      "type": "number",
+      "description": "X position in canvas-local px"
+    },
+    {
+      "name": "data-y",
+      "type": "number",
+      "description": "Y position in canvas-local px"
+    },
+    {
+      "name": "data-w",
+      "type": "number",
+      "description": "Width override in px (default 240)"
+    },
+    {
+      "name": "data-node-id",
+      "type": "string",
+      "description": "Stable node identifier"
+    },
+    {
+      "name": "data-subtypes",
+      "type": "json",
+      "description": "Array<{value,label}>; shows the dropdown"
+    },
+    {
+      "name": "data-subtype",
+      "type": "string",
+      "description": "Current sub-type value"
+    }
+  ],
+  "slots": [
+    {
+      "name": "header",
+      "description": "A <sherpa-node-header>"
+    },
+    {
+      "name": "",
+      "description": "Default: zero or more <sherpa-node-row>s plus optional"
+    },
+    {
+      "name": "footer",
+      "description": "Optional footer"
+    }
+  ],
+  "events": [
+    {
+      "name": "sherpa-node-pointerdown",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "sherpa-node-subtype-change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ]
+}

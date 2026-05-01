@@ -10,9 +10,32 @@
       "description": "FontAwesome icon class (e.g. \"fa-home\")"
     },
     {
+      "name": "data-icon-svg",
+      "type": "string",
+      "description": "Inline SVG markup string. Takes precedence over data-icon."
+    },
+    {
+      "name": "data-svg-icon",
+      "type": "string",
+      "description": "Key into window.__sherpaNavIcons registry; resolved to data-icon-svg."
+    },
+    {
       "name": "data-badge",
       "type": "string",
       "description": "Badge text rendered via internal sherpa-tag"
+    },
+    {
+      "name": "data-badge-status",
+      "type": "enum",
+      "description": "Badge status (critical | info | success | warning | urgent | brand). Defaults to \"success\".",
+      "enumValues": [
+        "critical",
+        "info",
+        "success",
+        "warning",
+        "urgent",
+        "brand"
+      ]
     },
     {
       "name": "data-variant",

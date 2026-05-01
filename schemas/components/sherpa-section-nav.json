@@ -1,0 +1,79 @@
+{
+  "tagName": "sherpa-section-nav",
+  "description": "Secondary navigation panel: a heading with optional back button, followed by a vertical list of grouped, selectable items. Designed for Settings-style layouts where the panel sits beside a content area and switches what is rendered there.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-heading",
+      "type": "string",
+      "description": "Panel heading text"
+    },
+    {
+      "name": "data-show-back",
+      "type": "string",
+      "description": "\"true\" reveals the back button"
+    },
+    {
+      "name": "data-active-id",
+      "type": "string",
+      "description": "Currently active item id"
+    },
+    {
+      "name": "data-sections",
+      "type": "string",
+      "description": "JSON-encoded sections array"
+    }
+  ],
+  "slots": [
+    {
+      "name": "header-end",
+      "description": "Trailing slot in the header (e.g. icon button)"
+    }
+  ],
+  "events": [
+    {
+      "name": "section-nav-back",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "section-nav-select",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "id": "string",
+        "item": "object"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "setSections(sections)",
+      "description": "Replace the rendered groups + items",
+      "params": [
+        {
+          "name": "sections",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setActive(id)",
+      "description": "Mark the item with the given id active",
+      "params": [
+        {
+          "name": "id",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getActiveId()",
+      "description": "Returns the currently active id"
+    }
+  ]
+}

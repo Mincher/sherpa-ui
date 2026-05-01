@@ -1,58 +1,97 @@
 # sherpa-product-bar-v2
 
-> **Category:** navigation · **Base class:** SherpaElement
+> **Category:** core · **Base class:** SherpaElement
 
-Light-themed product bar (Apr 2026 redesign). Replaces the dark
-`sherpa-product-bar` for surfaces that adopt the new product chrome.
-
-48 px tall surface, white background, 1 px hairline bottom rule. Provides
-a system-name trigger, optional tabs, central search, and a right-aligned
-action cluster (icon-only buttons + Ask N-zo button).
+Light-themed product bar (Apr 2026 redesign). System name trigger + time, optional tabs, central search, right-aligned actions.
 
 ## Attributes
 
-| Attribute | Type | Description | Default |
-| --------- | ---- | ----------- | ------- |
-| `data-product-name` | string | System / product display name | — |
-| `data-time` | string | Time string (e.g. `09:00`) | `--:--` |
-| `data-show-system` | `"true"`/`"false"` | Toggle the brand stack | `true` |
-| `data-show-time` | `"true"`/`"false"` | Toggle the time line | `true` |
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data-product-name` | string | System / product display name | — | — |
+| `data-time` | string | Time string ("09:00") | — | — |
+| `data-show-system` | string | "false" hides the brand stack | — | — |
+| `data-show-time` | string | "false" hides the time line | — | — |
 
 ## Slots
 
 | Slot | Description |
 | ---- | ----------- |
-| `tabs` | Optional product sub-nav |
-| `search` | Search control (defaults to `<sherpa-input-search>`) |
+| `tabs` | Optional product sub-nav (sets data-has-tabs when populated) |
+| `search` | Search control; falls back to a default sherpa-input-search |
 | `actions` | Right-aligned icon buttons + Ask N-zo entry point |
+
+Slot usage:
+
+```html
+<sherpa-product-bar-v2>
+  <div slot="tabs"><!-- Optional product sub-nav (sets data-has-tabs when populated) --></div>
+  <div slot="search"><!-- Search control; falls back to a default sherpa-input-search --></div>
+  <div slot="actions"><!-- Right-aligned icon buttons + Ask N-zo entry point --></div>
+</sherpa-product-bar-v2>
+```
 
 ## Events
 
-`systemtriggerclick` — bubbles, composed, `detail: { name: string }`.
-Fired when the system-name trigger is activated.
+### `systemtriggerclick`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:**
+
+```js
+event.detail = {
+  name: string,
+};
+```
+
+```js
+element.addEventListener("systemtriggerclick", (e) => {
+  console.log(e.detail.name);
+});
+```
+
+## CSS Parts
+
+Style internal elements from outside the shadow DOM:
+
+- `brand`
+- `tabs`
+- `search`
+- `actions`
+
+```css
+sherpa-product-bar-v2::part(brand) {
+  /* custom styles */
+}
+```
 
 ## Usage
 
+### Basic
+
 ```html
-<sherpa-product-bar-v2 data-product-name="N-central" data-time="09:00">
-  <sherpa-button
-    slot="actions"
-    data-variant="secondary"
-    data-icon-start="&#xf890;"
-    data-label="Ask N-zo"></sherpa-button>
-  <span slot="actions" class="actions-divider"></span>
-  <sherpa-button slot="actions" data-variant="tertiary" data-icon-start="&#xf492;" aria-label="Lab"></sherpa-button>
-  <sherpa-button slot="actions" data-variant="tertiary" data-icon-start="&#xf0f3;" aria-label="Notifications"></sherpa-button>
-  <sherpa-button slot="actions" data-variant="tertiary" data-icon-start="&#xf2bd;" aria-label="Profile"></sherpa-button>
-  <sherpa-button slot="actions" data-variant="tertiary" data-icon-start="&#xf059;" aria-label="Help"></sherpa-button>
-  <sherpa-button slot="actions" data-variant="tertiary" data-icon-start="&#xf009;" aria-label="App switcher"></sherpa-button>
+<sherpa-product-bar-v2 data-product-name="value" data-time="value" data-show-system="value">
+  <span slot="tabs"><!-- Optional product sub-nav (sets data-has-tabs when populated) --></span>
+  <span slot="search"><!-- Search control; falls back to a default sherpa-input-search --></span>
 </sherpa-product-bar-v2>
+```
+
+## Import
+
+```js
+// Individual import
+import "sherpa-ui/components/sherpa-product-bar-v2/sherpa-product-bar-v2.js";
+
+// Or import everything
+import "sherpa-ui";
 ```
 
 ## Files
 
 | File | Purpose |
 | ---- | ------- |
-| `sherpa-product-bar-v2.js` | Component class |
-| `sherpa-product-bar-v2.css` | Styles |
-| `sherpa-product-bar-v2.html` | Shadow DOM template |
+| [`sherpa-product-bar-v2.js`](sherpa-product-bar-v2.js) | Component class, lifecycle, events |
+| [`sherpa-product-bar-v2.css`](sherpa-product-bar-v2.css) | Styles, variants, states |
+| [`sherpa-product-bar-v2.html`](sherpa-product-bar-v2.html) | Shadow DOM template(s) |

@@ -2,21 +2,30 @@
 
 > **Category:** page-level · **Base class:** SherpaElement
 
-ARCHIVED — No-op stub. PDF export functionality is archived for rework. Registers the custom element so existing imports don't break.
+Print-optimized container renderer for PDF export via browser print.
 
 ## Methods
 
 | Method | Description |
 | ------ | ----------- |
-| `setData(sourceContainer)` | No-op, logs warning |
+| `setData(sourceContainer, options)` | Renders the source container |
 
-### `setData(sourceContainer)`
+### `setData(sourceContainer, options)`
 
-No-op, logs warning
+Renders the source container
 
 **Parameters:**
 
 - `sourceContainer` (`any`) — 
+- `options` (`any`) — 
+
+## Properties
+
+| Property | Type | Description | Access |
+| -------- | ---- | ----------- | ------ |
+| `includeChart` | `boolean` | Render chart visual (clone SVG/canvas from shadow DOM) | read/write |
+| `includeMetrics` | `boolean` | Render metrics row | read/write |
+| `includeDataGrid` | `boolean` | Include tabular data representation | read/write |
 
 ## Usage
 
@@ -41,3 +50,4 @@ import "sherpa-ui";
 | File | Purpose |
 | ---- | ------- |
 | [`sherpa-container-pdf.js`](sherpa-container-pdf.js) | Component class, lifecycle, events |
+| [`sherpa-container-pdf.css`](sherpa-container-pdf.css) | Styles, variants, states |

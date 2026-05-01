@@ -16,13 +16,14 @@
     {
       "name": "data-status",
       "type": "enum",
-      "description": "critical | info | success | warning | urgent",
+      "description": "critical | info | success | warning | urgent | brand",
       "enumValues": [
         "critical",
         "info",
         "success",
         "warning",
-        "urgent"
+        "urgent",
+        "brand"
       ]
     },
     {
