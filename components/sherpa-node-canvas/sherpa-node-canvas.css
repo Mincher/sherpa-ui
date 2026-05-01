@@ -46,7 +46,29 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
 }
+
+.canvas-stack {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Trailing side-panel slot. Width follows the slotted element so a
+   <sherpa-content-section> minimising to its strip reclaims space for
+   the canvas without any consumer-side grid math. The wrapper is
+   hidden when the slot has no content. */
+.side-panel-end {
+  display: flex;
+  flex: 0 0 auto;
+  align-self: stretch;
+}
+:host(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
 
 .layer {
   position: absolute;

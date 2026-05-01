@@ -122,7 +122,11 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   onRender() {
     this.#rootEl     = this.$(".root");
-    this.#bodyEl     = this.$(".canvas-body");
+    // .canvas-body is now a flex row hosting the canvas stack and a
+    // trailing side-panel slot; the canvas's own size — used for
+    // pointer math, ResizeObserver, and the layer canvases — must
+    // come from the stack alone, not the row that includes the panel.
+    this.#bodyEl     = this.$(".canvas-stack") ?? this.$(".canvas-body");
     this.#surfaceEl  = this.$(".surface");
     this.#gridCanvas = this.$(".layer.grid");
     this.#edgesCanvas = this.$(".layer.edges");
@@ -154,7 +158,10 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#listenToNodes();
 
     this.#ro = new ResizeObserver(() => this.#resizeCanvases());
-    this.#ro.observe(this);
+    // Observe the canvas stack so a slotted side-panel collapsing
+    // (changing the stack width without changing the host width)
+    // still triggers a layer-canvas resize.
+    this.#ro.observe(this.#bodyEl ?? this);
     this.#resizeCanvases();
   }
 

@@ -15,13 +15,23 @@
     data-content    — "static" — opts out of grid; stacks children vertically
     data-heading    — Title shown by the embedded view-header
     data-export-title — Forwarded to the embedded view-header
+  Slots:
+    (default)        — sherpa-container resizable children
+    header-actions   — Forwarded to the embedded view-header
+    side-panel-end   — Trailing side panel (typically a sherpa-content-section)
+                       laid out alongside the grid surface; its width
+                       follows the slotted element, so a content-section
+                       that minimises will reclaim space for the grid.
 -->
 
 <template id="default">
   <sherpa-view-header class="grid-header" part="header">
     <slot name="header-actions" slot="view-selection"></slot>
   </sherpa-view-header>
-  <div class="grid-surface" part="surface">
-    <slot></slot>
+  <div class="grid-body">
+    <div class="grid-surface" part="surface">
+      <slot></slot>
+    </div>
+    <slot name="side-panel-end" class="side-panel-end"></slot>
   </div>
 </template>

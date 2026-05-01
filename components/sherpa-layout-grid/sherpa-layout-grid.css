@@ -54,9 +54,29 @@
   display: block;
 }
 
+.grid-body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Trailing side-panel slot. Width follows the slotted element so a
+   <sherpa-content-section> minimising to its strip reclaims space
+   for the grid surface without any consumer-side grid math. */
+.side-panel-end {
+  display: flex;
+  flex: 0 0 auto;
+  align-self: stretch;
+}
+:host(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
+
 .grid-surface {
   display: grid;
   flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
   width: 100%;
   box-sizing: border-box;

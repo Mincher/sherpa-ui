@@ -18,7 +18,15 @@
   Host attributes:
     data-grid          — "crosshair" (default) | "none"
     data-heading       — Title shown when at the root frame
-    data-show-header   — "false" hides the embedded view-header
+    data-show-header  — "false" hides the embedded view-header
+
+  Slots:
+    (default)        — sherpa-node children placed inside the surface
+    header-actions   — Forwarded to the embedded view-header
+    side-panel-end   — Trailing side panel (typically a sherpa-content-section)
+                       laid out alongside the canvas surface; its width
+                       follows the slotted element, so a content-section
+                       that minimises will reclaim space for the canvas.
 -->
 <div class="root">
   <sherpa-view-header class="canvas-header" part="header"
@@ -26,10 +34,13 @@
     <slot name="header-actions" slot="view-selection"></slot>
   </sherpa-view-header>
   <div class="canvas-body">
-    <canvas class="layer grid"></canvas>
-    <canvas class="layer edges"></canvas>
-    <div class="surface">
-      <slot></slot>
+    <div class="canvas-stack">
+      <canvas class="layer grid"></canvas>
+      <canvas class="layer edges"></canvas>
+      <div class="surface">
+        <slot></slot>
+      </div>
     </div>
+    <slot name="side-panel-end" class="side-panel-end"></slot>
   </div>
 </div>
