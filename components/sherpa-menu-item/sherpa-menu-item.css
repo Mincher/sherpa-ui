@@ -99,3 +99,6 @@ mark.text-highlight-match {
   border-radius: var(--sherpa-border-rounding-2xs, 2px);
   padding: 0 2px;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

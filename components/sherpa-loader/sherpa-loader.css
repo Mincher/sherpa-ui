@@ -109,3 +109,6 @@
   --_spinner-size: 48px;
   --_spinner-weight: 4px;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

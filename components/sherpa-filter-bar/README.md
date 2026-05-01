@@ -47,7 +47,7 @@ Slot usage:
 
 ## Events
 
-### `filterchange`
+### `filter-change`
 
 
 **Propagation:** bubbles, composed
@@ -61,12 +61,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("filterchange", (e) => {
+element.addEventListener("filter-change", (e) => {
   console.log(e.detail.filters);
 });
 ```
 
-### `filterclear`
+### `filter-clear`
 
 
 **Propagation:** bubbles, composed
@@ -74,12 +74,12 @@ element.addEventListener("filterchange", (e) => {
 **Detail:** none
 
 ```js
-element.addEventListener("filterclear", (e) => {
+element.addEventListener("filter-clear", (e) => {
   // handle event
 });
 ```
 
-### `containerfilterchange`
+### `container-filter-change`
 
 
 **Propagation:** bubbles, composed
@@ -93,12 +93,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("containerfilterchange", (e) => {
+element.addEventListener("container-filter-change", (e) => {
   console.log(e.detail.filters);
 });
 ```
 
-### `globalfilterchange`
+### `global-filter-change`
 
 
 **Propagation:** does not bubble
@@ -112,7 +112,7 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("globalfilterchange", (e) => {
+element.addEventListener("global-filter-change", (e) => {
   console.log(e.detail.filters);
 });
 ```

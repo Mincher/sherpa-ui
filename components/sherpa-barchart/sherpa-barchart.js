@@ -13,10 +13,10 @@
  * @attr {string}  [data-sort-field]     — Sort field
  * @attr {enum}    [data-sort-direction] — asc | desc
  *
- * @fires sortchange
+ * @fires sort-change
  *   bubbles: true, composed: true
  *   detail: { field: string, direction: "asc" | "desc" }
- * @fires presentationchange
+ * @fires presentation-change
  *   bubbles: true, composed: true
  *   detail: { type: string, data: object }
  *

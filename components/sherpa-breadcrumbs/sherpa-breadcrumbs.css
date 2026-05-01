@@ -122,3 +122,6 @@
 .source-slot {
   display: none !important;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

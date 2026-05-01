@@ -149,9 +149,9 @@ export class SherpaSectionNav extends SherpaElement {
   }
 
   #syncBack() {
-    if (!this.#backEl) return;
-    const show = this.dataset.showBack === "true" || this.hasAttribute("data-show-back-default");
-    this.#backEl.hidden = !show;
+    /* Visibility owned by CSS via :host([data-show-back="true"]) and
+       :host([data-show-back-default]) selectors. No-op kept for symmetry
+       with other #sync* methods. */
   }
 
   #syncFromAttribute() {

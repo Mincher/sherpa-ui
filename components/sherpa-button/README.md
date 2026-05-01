@@ -36,7 +36,7 @@ Set via `data-type` attribute:
 
 ## Events
 
-### `buttonclick`
+### `button-click`
 
 Main button area clicked
 
@@ -45,12 +45,12 @@ Main button area clicked
 **Detail:** none
 
 ```js
-element.addEventListener("buttonclick", (e) => {
+element.addEventListener("button-click", (e) => {
   // handle event
 });
 ```
 
-### `chipremove`
+### `chip-remove`
 
 Close/dismiss button clicked
 
@@ -59,7 +59,7 @@ Close/dismiss button clicked
 **Detail:** none
 
 ```js
-element.addEventListener("chipremove", (e) => {
+element.addEventListener("chip-remove", (e) => {
   // handle event
 });
 ```

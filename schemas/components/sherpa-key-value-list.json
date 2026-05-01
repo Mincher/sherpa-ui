@@ -5,7 +5,7 @@
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "layout",
+      "name": "data-layout",
       "type": "enum",
       "description": "horizontal | vertical (default: horizontal)",
       "enumValues": [
@@ -14,7 +14,7 @@
       ]
     },
     {
-      "name": "density",
+      "name": "data-density",
       "type": "enum",
       "description": "compact | base | comfortable (default: base)",
       "enumValues": [
@@ -34,12 +34,12 @@
       "description": "Show borders (default: true)"
     },
     {
-      "name": "truncate",
+      "name": "data-truncate",
       "type": "boolean",
       "description": "Clip long values with ellipsis"
     },
     {
-      "name": "key-width",
+      "name": "data-key-width",
       "type": "string",
       "description": "Key column width (default: auto)"
     },

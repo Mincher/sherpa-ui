@@ -8,7 +8,7 @@
  * @attr {string}  [data-allowed-sizes]   — Comma-separated page-size options (default: "10,25,50,100")
  * @attr {enum}    [data-density]          — Display density
  *
- * @fires pagechange
+ * @fires page-change
  *   bubbles: true
  *   detail: { page: number, pageSize: number, totalPages: number }
  *
@@ -237,7 +237,7 @@ export class SherpaPagination extends SherpaElement {
 
   #emitChange() {
     this.dispatchEvent(
-      new CustomEvent("pagechange", {
+      new CustomEvent("page-change", {
         bubbles: true,
         detail: {
           page: this.page,

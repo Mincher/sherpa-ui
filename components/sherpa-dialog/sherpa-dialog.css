@@ -205,3 +205,6 @@ sherpa-footer {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :host([data-status]) .dialog { border-color: var(--_status-border); }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

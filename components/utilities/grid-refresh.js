@@ -23,7 +23,7 @@ export async function refreshDataset(contentArea, loader) {
   const ds = await loader();
   if (!ds) return;
   contentArea.dispatchEvent(
-    new CustomEvent('datasetfiltered', {
+    new CustomEvent('dataset-filtered', {
       bubbles: false,
       detail: { records: ds.records, fields: ds.fields },
     })

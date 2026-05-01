@@ -8,12 +8,12 @@ Semantic description list built on the native <dl> element. Content authored as 
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `layout` | enum | horizontal \| vertical (default: horizontal) | — | `horizontal`, `vertical` |
-| `density` | enum | compact \| base \| comfortable (default: base) | — | `compact`, `base`, `comfortable` |
+| `data-layout` | enum | horizontal \| vertical (default: horizontal) | — | `horizontal`, `vertical` |
+| `data-density` | enum | compact \| base \| comfortable (default: base) | — | `compact`, `base`, `comfortable` |
 | `data-striped` | boolean | Alternate row backgrounds | — | — |
 | `data-bordered` | boolean | Show borders (default: true) | — | — |
-| `truncate` | boolean | Clip long values with ellipsis | — | — |
-| `key-width` | string | Key column width (default: auto) | — | — |
+| `data-truncate` | boolean | Clip long values with ellipsis | — | — |
+| `data-key-width` | string | Key column width (default: auto) | — | — |
 | `data-type` | enum | Template variant | — | — |
 
 ## CSS Parts
@@ -41,7 +41,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-key-value-list layout="horizontal" density="compact" key-width="value"></sherpa-key-value-list>
+<sherpa-key-value-list data-layout="horizontal" data-density="compact" data-key-width="value"></sherpa-key-value-list>
 ```
 
 ## Import

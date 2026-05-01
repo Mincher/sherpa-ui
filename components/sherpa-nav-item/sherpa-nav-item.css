@@ -321,4 +321,5 @@
    and caused light-dark() to fall back to the success default (green). */
 :host([data-badge-status="brand"])    { --_dot-color: light-dark(var(--sherpa-color-brand-400), var(--sherpa-color-brand-700)); }
 
-
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

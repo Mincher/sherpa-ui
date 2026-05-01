@@ -33,7 +33,7 @@ Slot usage:
 
 ## Events
 
-### `systemtriggerclick`
+### `system-trigger-click`
 
 
 **Propagation:** bubbles, composed
@@ -47,7 +47,7 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("systemtriggerclick", (e) => {
+element.addEventListener("system-trigger-click", (e) => {
   console.log(e.detail.name);
 });
 ```

@@ -10,16 +10,16 @@
  * @attr {boolean} [data-back-button]        — Show built-in back button
  * @attr {string}  [data-export-title]       — Title for PDF export
  *
- * @fires editmodechange
+ * @fires edit-mode-change
  *   bubbles: true, composed: true
  *   detail: { editMode: boolean }
- * @fires viewexport
+ * @fires view-export
  *   bubbles: true, composed: true
  *   detail: { title: string }
- * @fires favoritetoggle
+ * @fires favorite-toggle
  *   bubbles: true, composed: true
  *   detail: { viewId: string, favorite: boolean }
- * @fires viewheaderback
+ * @fires view-header-back
  *   bubbles: true, composed: true
  *   detail: {}
  *
@@ -73,7 +73,7 @@ export class SherpaViewHeader extends SherpaElement {
     const toggle = this.$('#edit-mode-toggle');
     if (toggle) toggle.dataset.state = on ? 'on' : 'off';
     // Dispatch so app coordinator can toggle containers, body attribute, etc.
-    this.dispatchEvent(new CustomEvent('editmodechange', {
+    this.dispatchEvent(new CustomEvent('edit-mode-change', {
       bubbles: true, composed: true,
       detail: { editMode: on },
     }));
@@ -191,7 +191,7 @@ export class SherpaViewHeader extends SherpaElement {
     
     btn.addEventListener('click', () => {
       const pageTitle = this.getHeading() || this.dataset.exportTitle || 'Export';
-      this.dispatchEvent(new CustomEvent('viewexport', {
+      this.dispatchEvent(new CustomEvent('view-export', {
         bubbles: true, composed: true,
         detail: { title: pageTitle }
       }));
@@ -223,7 +223,7 @@ export class SherpaViewHeader extends SherpaElement {
     btn.addEventListener('click', () => {
       const next = !this.isFavorite();
       this.setFavorite(next);
-      this.dispatchEvent(new CustomEvent('favoritetoggle', {
+      this.dispatchEvent(new CustomEvent('favorite-toggle', {
         bubbles: true, composed: true,
         detail: { viewId: this.#viewId, favorite: next }
       }));
@@ -234,7 +234,7 @@ export class SherpaViewHeader extends SherpaElement {
     const btn = this.$('#back-btn');
     if (!btn) return;
     btn.addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('viewheaderback', {
+      this.dispatchEvent(new CustomEvent('view-header-back', {
         bubbles: true, composed: true,
         detail: {},
       }));
@@ -366,7 +366,7 @@ export class SherpaViewHeader extends SherpaElement {
       trigger.rendered.then(applyTruncation);
     }
 
-    trigger.addEventListener('buttonclick', (e) => {
+    trigger.addEventListener('button-click', (e) => {
       e.stopPropagation();
       if (menu.hasAttribute('open')) menu.hide?.();
       else menu.show?.(trigger);
@@ -403,7 +403,7 @@ export class SherpaViewHeader extends SherpaElement {
         if (v === picked.value) it.setAttribute('data-state', 'selected');
         else it.removeAttribute('data-state');
       });
-      this.dispatchEvent(new CustomEvent('viewselectionchange', {
+      this.dispatchEvent(new CustomEvent('view-selection-change', {
         bubbles: true, composed: true,
         detail: { value: picked.value, item: picked },
       }));

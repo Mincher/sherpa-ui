@@ -43,11 +43,14 @@
   color: var(--sherpa-text-default-body, #111111);
   flex: 0 0 auto;
 }
-/* `all: unset` above clobbers the UA `[hidden]` rule, so reinstate it
-   explicitly — otherwise `data-show-back` becomes a no-op and the back
-   button is always visible. */
-.back[hidden] {
+/* `all: unset` above clobbers UA defaults; hide the back button by default and
+   reveal it only when the host opts in via data-show-back / data-show-back-default. */
+.back {
   display: none;
+}
+:host([data-show-back="true"]) .back,
+:host([data-show-back-default]) .back {
+  display: inline-flex;
 }
 .back:hover {
   background: var(--sherpa-surface-control-secondary-hover, #f5f5f5);
@@ -153,3 +156,6 @@
 .header-item-description {
   color: var(--sherpa-text-default-secondary, #464646);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

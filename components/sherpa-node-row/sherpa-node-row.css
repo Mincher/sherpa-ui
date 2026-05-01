@@ -92,3 +92,6 @@
 :host([data-multi]) {
   min-height: calc(var(--sherpa-node-row-height) + var(--sherpa-space-base));
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

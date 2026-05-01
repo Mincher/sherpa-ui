@@ -98,3 +98,6 @@
 ::slotted([data-tab-active]) {
   display: block !important;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

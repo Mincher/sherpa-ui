@@ -5,6 +5,17 @@
  * Accepts a source <sherpa-container> element and renders a print-friendly
  * representation with optional chart snapshots, metrics, and data tables.
  *
+ * **Architectural exception — light DOM / extends HTMLElement:**
+ * Unlike all other sherpa-* components (which extend SherpaElement and use
+ * shadow DOM), this exporter operates directly on the light DOM tree because
+ * (a) browser print engines have inconsistent support for shadow-DOM content
+ * and (b) it must clone visual nodes (SVGs, canvases) out of other components'
+ * shadow roots and stamp them into print-flow markup that the browser print
+ * pipeline can serialize. Keeping it in light DOM also makes its CSS rules
+ * (loaded via components/index.css) participate directly in the page's print
+ * stylesheet cascade. Do not refactor onto SherpaElement without first
+ * verifying print fidelity in all target browsers.
+ *
  * @method setData(sourceContainer, options) — Renders the source container
  *   @param {HTMLElement} sourceContainer — The sherpa-container to render
  *   @param {Object} options — Control what to render

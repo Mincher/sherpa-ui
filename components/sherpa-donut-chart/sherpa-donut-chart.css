@@ -268,3 +268,6 @@ sherpa-filter-bar {
     font-size: 10px;
   }
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

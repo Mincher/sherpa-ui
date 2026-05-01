@@ -121,3 +121,6 @@
 :host(:not([data-has-actions])) .actions {
   display: none;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

@@ -83,3 +83,6 @@
   align-items: center;
   gap: var(--_padding);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

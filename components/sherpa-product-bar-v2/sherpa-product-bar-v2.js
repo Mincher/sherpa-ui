@@ -12,7 +12,7 @@
  * @slot search  — Search control; falls back to a default sherpa-input-search
  * @slot actions — Right-aligned icon buttons + Ask N-zo entry point
  *
- * @fires systemtriggerclick
+ * @fires system-trigger-click
  *   bubbles: true, composed: true
  *   detail: { name: string }
  *   Fired when the system-name trigger is activated. Hosts can open a
@@ -106,7 +106,7 @@ class SherpaProductBarV2 extends SherpaElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("systemtriggerclick", {
+      new CustomEvent("system-trigger-click", {
         bubbles: true,
         composed: true,
         detail: { name: this.dataset.productName || "" },

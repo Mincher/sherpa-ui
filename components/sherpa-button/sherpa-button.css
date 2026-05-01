@@ -496,3 +496,5 @@
   padding-inline: var(--_button-padding);
 }
 
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

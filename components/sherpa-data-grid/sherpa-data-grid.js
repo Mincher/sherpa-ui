@@ -18,13 +18,13 @@
  *
  * @slot toolbar-leading — Consumer-provided primary action for toolbar
  *
- * @fires selectionchange
+ * @fires selection-change
  *   bubbles: true
  *   detail: { selected: string[], count: number }
- * @fires sortchange
+ * @fires sort-change
  *   bubbles: true
  *   detail: { field: string, direction: "asc" | "desc" }
- * @fires pagechange
+ * @fires page-change
  *   bubbles: true
  *   detail: { page: number, pageSize: number }
  * @fires groupexpand
@@ -33,13 +33,13 @@
  * @fires groupcollapse
  *   bubbles: true
  *   detail: { groupValue: string, field: string }
- * @fires rowaction
+ * @fires row-action
  *   bubbles: true
  *   detail: { rowId: string, rowData: object }
- * @fires gridexport
+ * @fires grid-export
  *   bubbles: true, composed: true
  *   detail: none
- * @fires gridaction
+ * @fires grid-action
  *   bubbles: true, composed: true
  *   detail: { action: string, data: object, selectedRows: object[] }
  *
@@ -211,7 +211,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.addEventListener("click", (e) => this.#onHostClick(e));
 
     const pagination = this.$(".grid-pagination");
-    pagination?.addEventListener("pagechange", (e) => {
+    pagination?.addEventListener("page-change", (e) => {
       const { page, pageSize } = e.detail;
       this.dataset.page = String(page);
       this.dataset.pageSize = String(pageSize);
@@ -244,7 +244,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // "number", "number-range", "datetime-range", "boolean") in f.type;
     // sort/segment chips emit { field, mode, type: "sort"|"segment" }
     // with no values. Accept anything with a non-empty values array.
-    this.addEventListener("filterchange", (e) => {
+    this.addEventListener("filter-change", (e) => {
       this.#valueFilters = (e.detail?.filters || []).filter(
         (f) => Array.isArray(f.values) && f.values.length > 0,
       );
@@ -252,7 +252,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       this.#render();
     });
 
-    this.addEventListener("filterclear", () => {
+    this.addEventListener("filter-clear", () => {
       this.#valueFilters = [];
       this.dataset.page = "1";
       this.#render();
@@ -296,7 +296,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     if (exportBtn) {
       exportBtn.addEventListener("click", () => {
         this.dispatchEvent(
-          new CustomEvent("gridexport", { bubbles: true, composed: true }),
+          new CustomEvent("grid-export", { bubbles: true, composed: true }),
         );
       });
     }
@@ -1036,7 +1036,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
 
     this.dispatchEvent(
-      new CustomEvent("sortchange", {
+      new CustomEvent("sort-change", {
         bubbles: true,
         detail: { field, direction: newDir },
       }),
@@ -1343,7 +1343,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const hasSelection = this.#selectedRows.size > 0;
     this.toggleAttribute("data-has-selection", hasSelection);
     this.dispatchEvent(
-      new CustomEvent("selectionchange", {
+      new CustomEvent("selection-change", {
         bubbles: true,
         detail: {
           selected: Array.from(this.#selectedRows),
@@ -1439,7 +1439,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #onActionMenuSelect(e) {
     const detail = e?.detail || {};
     this.dispatchEvent(
-      new CustomEvent("gridaction", {
+      new CustomEvent("grid-action", {
         bubbles: true,
         composed: true,
         detail: {
@@ -1464,7 +1464,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       const rowData =
         rowId != null ? this.#allRows.find((r) => r._rowId === rowId) : null;
       this.dispatchEvent(
-        new CustomEvent("rowaction", {
+        new CustomEvent("row-action", {
           bubbles: true,
           detail: { rowId, rowData },
         }),

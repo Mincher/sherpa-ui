@@ -174,3 +174,5 @@
    STATUS — subtle border tint (card content keeps default colours)
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

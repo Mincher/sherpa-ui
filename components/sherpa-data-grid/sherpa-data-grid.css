@@ -816,3 +816,6 @@ tr[data-group-child] td.selection-cell {
     --_cell-min-w: 48px;
   }
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

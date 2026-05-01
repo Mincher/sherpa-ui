@@ -48,3 +48,6 @@
 .promo-text:empty {
   display: none;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

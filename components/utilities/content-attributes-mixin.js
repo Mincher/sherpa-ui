@@ -703,7 +703,7 @@ export function ContentAttributesMixin(Base) {
           }
 
           this.dispatchEvent(
-            new CustomEvent("presentationchange", {
+            new CustomEvent("presentation-change", {
               bubbles: true,
               detail: {
                 type,
@@ -746,7 +746,7 @@ export function ContentAttributesMixin(Base) {
       this.#containerFilterHandler = (e) =>
         this.#onContainerFilter(e);
       this.#scopeEl.addEventListener(
-        "containerfilterchange",
+        "container-filter-change",
         this.#containerFilterHandler,
       );
     }
@@ -754,7 +754,7 @@ export function ContentAttributesMixin(Base) {
     #unwireFilterListeners() {
       if (this.#scopeEl && this.#containerFilterHandler) {
         this.#scopeEl.removeEventListener(
-          "containerfilterchange",
+          "container-filter-change",
           this.#containerFilterHandler,
         );
       }
@@ -876,7 +876,7 @@ export function ContentAttributesMixin(Base) {
 
       this.#datasetAncestor = el;
       this.#datasetFilteredHandler = (e) => this.#onDatasetFiltered(e);
-      el.addEventListener("datasetfiltered", this.#datasetFilteredHandler);
+      el.addEventListener("dataset-filtered", this.#datasetFilteredHandler);
 
       // If dataset is already loaded, use cached data immediately
       if (el._filtered) {
@@ -889,7 +889,7 @@ export function ContentAttributesMixin(Base) {
     #unwireDatasetListener() {
       if (this.#datasetAncestor && this.#datasetFilteredHandler) {
         this.#datasetAncestor.removeEventListener(
-          "datasetfiltered",
+          "dataset-filtered",
           this.#datasetFilteredHandler,
         );
       }

@@ -387,3 +387,6 @@
   padding: 0;
   margin: -1px;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

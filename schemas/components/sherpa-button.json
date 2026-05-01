@@ -123,14 +123,14 @@
   "slots": [],
   "events": [
     {
-      "name": "buttonclick",
+      "name": "button-click",
       "description": "Main button area clicked",
       "bubbles": true,
       "composed": true,
       "detail": null
     },
     {
-      "name": "chipremove",
+      "name": "chip-remove",
       "description": "Close/dismiss button clicked",
       "bubbles": true,
       "composed": true,

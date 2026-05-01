@@ -97,3 +97,6 @@
 :host([data-state="off"]) .switch-label {
   color: var(--sherpa-text-default-heading, #1a1a1f);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

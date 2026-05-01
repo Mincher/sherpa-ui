@@ -53,7 +53,7 @@
   ],
   "events": [
     {
-      "name": "filterchange",
+      "name": "filter-change",
       "description": "",
       "bubbles": true,
       "composed": true,
@@ -62,14 +62,14 @@
       }
     },
     {
-      "name": "filterclear",
+      "name": "filter-clear",
       "description": "",
       "bubbles": true,
       "composed": true,
       "detail": null
     },
     {
-      "name": "containerfilterchange",
+      "name": "container-filter-change",
       "description": "",
       "bubbles": true,
       "composed": true,
@@ -78,7 +78,7 @@
       }
     },
     {
-      "name": "globalfilterchange",
+      "name": "global-filter-change",
       "description": "",
       "bubbles": false,
       "composed": false,

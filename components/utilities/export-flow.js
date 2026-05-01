@@ -2,7 +2,7 @@
  * ExportFlow — Wires view-level and container-level export dialogs.
  *
  * Initialises the full export dialog for a content area and auto-wires
- * per-container "containerexport" menu items to mini export dialogs.
+ * per-container "container-export" menu items to mini export dialogs.
  * Replaces ~70 lines of duplicated export boilerplate per view.
  *
  * @module export-flow
@@ -51,34 +51,34 @@ export function initExportFlow(contentArea, options) {
     document.body.appendChild(dialog);
 
     dialog.querySelector('.export-cancel-btn')
-      ?.addEventListener('buttonclick', () => dialog.hide());
+      ?.addEventListener('button-click', () => dialog.hide());
 
     dialog.querySelector('.export-confirm-btn')
-      ?.addEventListener('buttonclick', async () => {
+      ?.addEventListener('button-click', async () => {
         const config = getConfig();
         dialog.hide();
         await exportWithConfig(config);
       });
 
     // Listen for viewexport from sherpa-view-header (bubbles + composed)
-    document.addEventListener('viewexport', () => {
+    document.addEventListener('view-export', () => {
       viewDialog?.show();
     });
 
     // Listen for gridexport from sherpa-data-grid (bubbles + composed)
-    contentArea.addEventListener('gridexport', () => {
+    contentArea.addEventListener('grid-export', () => {
       viewDialog?.show();
     });
   }
 
-  // Per-container export dialogs (wired via menuitemclick + data-event="containerexport")
+  // Per-container export dialogs (wired via menu-item-click + data-event="container-export")
   if (buildExportDialogForContainer) {
     for (const container of contentArea.querySelectorAll('sherpa-container')) {
       if (!container.querySelector('[data-menu]')) continue;
 
-      container.addEventListener('menuitemclick', (e) => {
+      container.addEventListener('menu-item-click', (e) => {
         const menuItem = e.detail?.element;
-        if (menuItem?.getAttribute('data-event') !== 'containerexport') return;
+        if (menuItem?.getAttribute('data-event') !== 'container-export') return;
 
         const key = container.getAttribute('data-title') || 'Container';
 
@@ -88,10 +88,10 @@ export function initExportFlow(contentArea, options) {
           document.body.appendChild(miniDialog);
 
           miniDialog.querySelector('.export-cancel-btn')
-            ?.addEventListener('buttonclick', () => miniDialog.hide());
+            ?.addEventListener('button-click', () => miniDialog.hide());
 
           miniDialog.querySelector('.export-confirm-btn')
-            ?.addEventListener('buttonclick', async () => {
+            ?.addEventListener('button-click', async () => {
               const config = getConfig();
               miniDialog.hide();
               await exportWithConfig(config);

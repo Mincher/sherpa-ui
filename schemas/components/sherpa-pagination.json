@@ -35,7 +35,7 @@
   "slots": [],
   "events": [
     {
-      "name": "pagechange",
+      "name": "page-change",
       "description": "",
       "bubbles": true,
       "composed": false,

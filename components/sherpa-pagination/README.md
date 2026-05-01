@@ -16,7 +16,7 @@ Standalone pagination bar with page navigation and page-size selector.
 
 ## Events
 
-### `pagechange`
+### `page-change`
 
 
 **Propagation:** bubbles
@@ -32,7 +32,7 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("pagechange", (e) => {
+element.addEventListener("page-change", (e) => {
   console.log(e.detail.page);
 });
 ```

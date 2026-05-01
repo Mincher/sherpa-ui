@@ -215,3 +215,6 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

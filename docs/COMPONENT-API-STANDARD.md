@@ -106,7 +106,7 @@ Every `@fires` tag must include:
 If the event has no detail payload:
 
 ```js
- * @fires buttonclick — Fired when the main button area is clicked
+ * @fires button-click — Fired when the main button area is clicked
  *   bubbles: true, composed: true
  *   detail: { }
 ```

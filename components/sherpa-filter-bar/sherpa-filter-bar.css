@@ -99,3 +99,6 @@ slot[name="presets"]:not(:has(::slotted(*))) {
   padding: 0;
   border: none;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

@@ -220,4 +220,5 @@
   margin-top: var(--sherpa-space-xs, 8px);
 }
 
-
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

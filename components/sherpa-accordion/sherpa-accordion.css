@@ -171,3 +171,6 @@ slot[name="actions"] {
 :host([data-has-actions]) slot[name="actions"] {
   display: contents;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

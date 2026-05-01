@@ -246,3 +246,6 @@
 .milestone[data-has-timestamp] .milestone-timestamp {
   display: block;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

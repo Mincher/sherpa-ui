@@ -166,3 +166,6 @@
 :host([data-has-trailing]) .trailing {
   display: flex;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

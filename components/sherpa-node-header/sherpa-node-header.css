@@ -105,3 +105,6 @@
 }
 
 :host([data-drill-down]) .drill-down { display: inline-flex; }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

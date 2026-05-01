@@ -37,10 +37,10 @@
  * @attr {string}  data-menu-template   — Menu template id to stamp from SherpaMenu
  * @attr {boolean} disabled             — Native disabled state
  *
- * @fires buttonclick — Main button area clicked
+ * @fires button-click — Main button area clicked
  *   bubbles: true, composed: true
  *   detail: { }
- * @fires chipremove — Close/dismiss button clicked
+ * @fires chip-remove — Close/dismiss button clicked
  *   bubbles: true, composed: true
  *   detail: { }
  * @fires menu-open — Menu is about to show
@@ -243,7 +243,7 @@ export class SherpaButton extends SherpaElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("buttonclick", {
+      new CustomEvent("button-click", {
         bubbles: true,
         composed: true,
         detail: {},
@@ -270,7 +270,7 @@ export class SherpaButton extends SherpaElement {
   #onCloseClick = (e) => {
     e.stopPropagation();
     this.dispatchEvent(
-      new CustomEvent("chipremove", {
+      new CustomEvent("chip-remove", {
         bubbles: true,
         composed: true,
         detail: {},

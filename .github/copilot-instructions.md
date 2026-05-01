@@ -344,11 +344,11 @@ Five custom events carry the flow through its lifecycle. All use
 
 | Event          | Dispatched when                          | `detail` shape                                        |
 | -------------- | ---------------------------------------- | ----------------------------------------------------- |
-| `flowstart`    | Trigger clicked, dialog about to open    | `{ flow: "add"\|"edit"\|"delete", entity: string }`   |
-| `flowprogress` | User submits (Save / Delete clicked)     | `{ flow, entity, data: object }`                      |
-| `flowcomplete` | API call succeeds                        | `{ flow, entity, data: object }`                      |
-| `flowcancel`   | User cancels (Cancel clicked or dismiss) | `{ flow, entity }`                                    |
-| `flowerror`    | API call fails                           | `{ flow, entity, error: string }`                     |
+| `flow-start`    | Trigger clicked, dialog about to open    | `{ flow: "add"\|"edit"\|"delete", entity: string }`   |
+| `flow-progress` | User submits (Save / Delete clicked)     | `{ flow, entity, data: object }`                      |
+| `flow-complete` | API call succeeds                        | `{ flow, entity, data: object }`                      |
+| `flow-cancel`   | User cancels (Cancel clicked or dismiss) | `{ flow, entity }`                                    |
+| `flow-error`    | API call fails                           | `{ flow, entity, error: string }`                     |
 
 ### Composition
 
@@ -397,16 +397,16 @@ const flow = new FlowManager({
 });
 
 // Add trigger
-addBtn.addEventListener('buttonclick', () => { form.clear(); flow.startAdd(); });
+addBtn.addEventListener('button-click', () => { form.clear(); flow.startAdd(); });
 
 // Edit trigger (row action)
-grid.addEventListener('rowaction', (e) => {
+grid.addEventListener('row-action', (e) => {
   form.populate(e.detail.rowData);
   flow.startEdit(e.detail.rowData);
 });
 
 // Delete trigger (bulk selection)
-deleteBtn.addEventListener('buttonclick', () => {
+deleteBtn.addEventListener('button-click', () => {
   const selected = grid.getSelectedRows() ?? [];
   flow.startDelete(selected, `Delete ${selected.length} device(s)?`);
 });

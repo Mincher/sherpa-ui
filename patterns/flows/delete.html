@@ -4,27 +4,27 @@
   Provides the full lifecycle for deleting an existing entity:
     • Trigger button opens a confirmation dialog with a warning callout
     • User confirms or cancels the destructive action
-    • Delete dispatches flowcomplete + success toast
-    • Cancel dispatches flowcancel and closes the dialog
-    • Errors dispatch flowerror + critical toast
+    • Delete dispatches flow-complete + success toast
+    • Cancel dispatches flow-cancel and closes the dialog
+    • Errors dispatch flow-error + critical toast
 
   Components: sherpa-button, sherpa-dialog, sherpa-callout, sherpa-toast
   Utilities: FlowManager, refreshDataset
 
   Lifecycle (managed by FlowManager — state in JS memory, not DOM):
     1. User clicks delete trigger → app calls flow.startDelete(ids, message)
-    2. FlowManager dispatches flowstart, opens confirmation dialog
+    2. FlowManager dispatches flow-start, opens confirmation dialog
     3. User clicks Delete → FlowManager calls onDelete(ids) callback
-    4a. Success → FlowManager dispatches flowcomplete + SherpaToast.success()
-    4b. Failure → FlowManager dispatches flowerror + SherpaToast.critical()
-    5. Cancel → FlowManager dispatches flowcancel, closes dialog
+    4a. Success → FlowManager dispatches flow-complete + SherpaToast.success()
+    4b. Failure → FlowManager dispatches flow-error + SherpaToast.critical()
+    5. Cancel → FlowManager dispatches flow-cancel, closes dialog
 
   Events (all bubbles: true, composed: true — dispatched by FlowManager):
-    flowstart    — {flow: "delete", entity: string, data: {ids: array}}
-    flowprogress — {flow: "delete", entity: string, data: {ids: array}}
-    flowcomplete — {flow: "delete", entity: string, data: object}
-    flowcancel   — {flow: "delete", entity: string}
-    flowerror    — {flow: "delete", entity: string, error: string}
+    flow-start    — {flow: "delete", entity: string, data: {ids: array}}
+    flow-progress — {flow: "delete", entity: string, data: {ids: array}}
+    flow-complete — {flow: "delete", entity: string, data: object}
+    flow-cancel   — {flow: "delete", entity: string}
+    flow-error    — {flow: "delete", entity: string, error: string}
 
   Setup script:
     import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
@@ -41,7 +41,7 @@
       onRefresh: () => refreshDataset(contentArea, loader),
     });
 
-    deleteBtn.addEventListener('buttonclick', () => {
+    deleteBtn.addEventListener('button-click', () => {
       const selected = grid.getSelectedRows?.() ?? [];
       flow.startDelete(selected, `Delete ${selected.length} item(s)?`);
     });
@@ -70,7 +70,7 @@
       Are you sure you want to delete this entity? This will permanently remove it and all associated data.
     </sherpa-callout>
 
-    <!-- Actions — Delete triggers flowprogress → API → flowcomplete/flowerror -->
+    <!-- Actions — Delete triggers flow-progress → API → flow-complete/flow-error -->
     <sherpa-button slot="footer" data-label="Cancel" data-variant="secondary"></sherpa-button>
     <sherpa-button slot="footer" data-label="Delete" data-variant="primary" data-status="critical"></sherpa-button>
   </sherpa-dialog>

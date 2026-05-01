@@ -72,3 +72,6 @@
 .tooltip-content {
   color: inherit;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

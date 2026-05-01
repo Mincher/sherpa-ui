@@ -171,3 +171,6 @@
   background: var(--sherpa-border-container-default, #d5d5d5);
   margin-inline: var(--sherpa-space-2xs, 4px);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

@@ -589,3 +589,6 @@ sherpa-filter-bar {
     display: flex !important;
   }
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

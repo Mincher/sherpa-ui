@@ -216,3 +216,6 @@
 :host([data-show-debug-toggles]) .debug-toggles {
   display: contents;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

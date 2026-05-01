@@ -17,7 +17,7 @@
   position: absolute;
   display: block;
   width: var(--sherpa-node-w, var(--sherpa-node-width));
-  font-family: var(--sherpa-core-typeface-open-sans-style-name, "Open Sans"), system-ui, sans-serif;
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
   font-size: var(--sherpa-font-base-size, 14px);
   color: var(--sherpa-text-default-body);
   user-select: none;
@@ -147,3 +147,6 @@
 
 /* ── Hide the registered <template> nodes from layout. ─────────── */
 ::slotted(template) { display: none !important; }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

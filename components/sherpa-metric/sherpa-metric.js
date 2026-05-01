@@ -39,8 +39,8 @@ export function setTrendStatusMap(map) {
 }
 
 export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
-  static cssUrl = new URL("./sherpa-metric.css", import.meta.url).href;
-  static htmlUrl = new URL("./sherpa-metric.html", import.meta.url).href;
+  static get cssUrl()  { return new URL("./sherpa-metric.css", import.meta.url).href; }
+  static get htmlUrl() { return new URL("./sherpa-metric.html", import.meta.url).href; }
 
   static get observedAttributes() {
     return [

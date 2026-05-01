@@ -48,7 +48,7 @@ class SherpaTooltip extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-tooltip.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-tooltip.html', import.meta.url).href; }
 
-  static get observedAttributes() { return ['data-visible', 'data-position']; }
+  static get observedAttributes() { return [...super.observedAttributes, 'data-visible', 'data-position']; }
 
   /* ── Private state ────────────────────────────────────────────── */
 

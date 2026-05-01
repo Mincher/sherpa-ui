@@ -17,7 +17,7 @@ View header toolbar with toggles and settings. Manages heading, favorites, feedb
 
 ## Events
 
-### `editmodechange`
+### `edit-mode-change`
 
 
 **Propagation:** bubbles, composed
@@ -31,12 +31,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("editmodechange", (e) => {
+element.addEventListener("edit-mode-change", (e) => {
   console.log(e.detail.editMode);
 });
 ```
 
-### `viewexport`
+### `view-export`
 
 
 **Propagation:** bubbles, composed
@@ -50,12 +50,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("viewexport", (e) => {
+element.addEventListener("view-export", (e) => {
   console.log(e.detail.title);
 });
 ```
 
-### `favoritetoggle`
+### `favorite-toggle`
 
 
 **Propagation:** bubbles, composed
@@ -70,12 +70,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("favoritetoggle", (e) => {
+element.addEventListener("favorite-toggle", (e) => {
   console.log(e.detail.viewId);
 });
 ```
 
-### `viewheaderback`
+### `view-header-back`
 
 
 **Propagation:** bubbles, composed
@@ -83,7 +83,7 @@ element.addEventListener("favoritetoggle", (e) => {
 **Detail:** none
 
 ```js
-element.addEventListener("viewheaderback", (e) => {
+element.addEventListener("view-header-back", (e) => {
   // handle event
 });
 ```

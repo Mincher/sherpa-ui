@@ -197,3 +197,6 @@
   font-size: 0;
   overflow: hidden;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

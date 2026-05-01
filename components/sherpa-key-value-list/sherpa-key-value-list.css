@@ -182,3 +182,6 @@ dd[data-type="monospace"] {
   --_padding-block: var(--sherpa-space-lg, 24px);
   font-size: var(--sherpa-fonts-scale-base, 14px);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

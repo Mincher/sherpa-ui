@@ -225,3 +225,6 @@
     print-color-adjust: exact;
   }
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

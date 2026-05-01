@@ -520,3 +520,6 @@ sherpa-nav-promo {
 .nav-subsection > sherpa-nav-item:nth-of-type(6) {
   --_ripple-i: 6;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

@@ -425,3 +425,6 @@ sherpa-filter-bar {
     padding-bottom: var(--sherpa-space-2xs, 4px);
   }
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

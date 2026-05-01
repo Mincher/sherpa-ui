@@ -40,8 +40,7 @@ export class SherpaNavPromo extends SherpaElement {
   #config = null;
   #ready = false;
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    super.attributeChangedCallback?.(name, oldValue, newValue);
+  onAttributeChanged(name, oldValue, newValue) {
     if (name.startsWith("data-promo-") && oldValue !== newValue) {
       this.#configFromAttributes();
     }

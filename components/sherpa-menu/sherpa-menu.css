@@ -134,3 +134,6 @@
     right: anchor(right);
   }
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

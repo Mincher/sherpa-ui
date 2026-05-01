@@ -46,3 +46,6 @@
 :host([data-has-value]) .search-wrapper {
   display: flex;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

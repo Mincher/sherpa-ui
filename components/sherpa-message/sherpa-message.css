@@ -148,11 +148,10 @@
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 2px);
   background: transparent;
-  color: inherit;
+  color: var(--sherpa-text-default-secondary, currentColor);
   font-size: var(--sherpa-fonts-scale-xs, 12px);
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 150ms ease, background-color 150ms ease;
+  transition: color 150ms ease, background-color 150ms ease;
   align-items: center;
   justify-content: center;
 }
@@ -162,7 +161,7 @@
 }
 
 .message-close:hover {
-  opacity: 1;
+  color: var(--sherpa-text-default-body, inherit);
   background-color: var(--sherpa-surface-control-secondary-hover, rgba(0, 0, 0, 0.06));
 }
 
@@ -175,3 +174,5 @@
   color: var(--_status-icon, var(--sherpa-icon-context-info-on-color-subtle));
 }
 
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

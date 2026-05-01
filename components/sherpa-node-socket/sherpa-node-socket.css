@@ -135,3 +135,6 @@
 /* ── Interactions ──────────────────────────────────────────────── */
 .socket:hover  .socket-shape { transform: scale(1.08); }
 .socket:active .socket-shape { transform: scale(0.95); }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

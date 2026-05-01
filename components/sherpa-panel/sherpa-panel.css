@@ -227,3 +227,6 @@
   overflow: auto;
   padding: var(--sherpa-space-md, 16px);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

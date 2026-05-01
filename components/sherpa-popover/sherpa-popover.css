@@ -151,3 +151,6 @@
   max-height: 400px;
   overflow: auto;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

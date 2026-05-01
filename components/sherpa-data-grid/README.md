@@ -43,7 +43,7 @@ Slot usage:
 
 ## Events
 
-### `selectionchange`
+### `selection-change`
 
 
 **Propagation:** bubbles
@@ -58,12 +58,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("selectionchange", (e) => {
+element.addEventListener("selection-change", (e) => {
   console.log(e.detail.selected);
 });
 ```
 
-### `sortchange`
+### `sort-change`
 
 
 **Propagation:** bubbles
@@ -78,12 +78,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("sortchange", (e) => {
+element.addEventListener("sort-change", (e) => {
   console.log(e.detail.field);
 });
 ```
 
-### `pagechange`
+### `page-change`
 
 
 **Propagation:** bubbles
@@ -98,7 +98,7 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("pagechange", (e) => {
+element.addEventListener("page-change", (e) => {
   console.log(e.detail.page);
 });
 ```
@@ -143,7 +143,7 @@ element.addEventListener("groupcollapse", (e) => {
 });
 ```
 
-### `rowaction`
+### `row-action`
 
 
 **Propagation:** bubbles
@@ -158,12 +158,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("rowaction", (e) => {
+element.addEventListener("row-action", (e) => {
   console.log(e.detail.rowId);
 });
 ```
 
-### `gridexport`
+### `grid-export`
 
 
 **Propagation:** bubbles, composed
@@ -171,12 +171,12 @@ element.addEventListener("rowaction", (e) => {
 **Detail:** none
 
 ```js
-element.addEventListener("gridexport", (e) => {
+element.addEventListener("grid-export", (e) => {
   // handle event
 });
 ```
 
-### `gridaction`
+### `grid-action`
 
 
 **Propagation:** bubbles, composed
@@ -192,7 +192,7 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("gridaction", (e) => {
+element.addEventListener("grid-action", (e) => {
   console.log(e.detail.action);
 });
 ```

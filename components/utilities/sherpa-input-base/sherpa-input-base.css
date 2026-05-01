@@ -375,3 +375,6 @@
 :host([disabled]) .input-helper {
   color: var(--sherpa-text-inactive-default, #7e7e8f);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

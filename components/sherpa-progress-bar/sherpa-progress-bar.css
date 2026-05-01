@@ -114,3 +114,6 @@
 :host(:not([data-value]):not([data-status-text])) .status {
   display: none;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

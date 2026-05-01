@@ -90,7 +90,7 @@ Components dispatch these events (bubble + composed) for app-level integration:
 | ----------------------- | -------------------- | ------------------------------- |
 | `containerfilterchange` | `sherpa-filter-bar`  | `{ filters }`                    |
 | `globalfilterchange`    | `sherpa-filter-bar`  | `{ filters }` (on `document`)   |
-| `containerexport`       | `sherpa-menu-item`   | `{ value }` (bubbles from menu) |
+| `container-export`       | `sherpa-menu-item`   | `{ value }` (bubbles from menu) |
 | `viewexport`            | `sherpa-view-header` | `{ title }`                     |
 
 ## MCP Server

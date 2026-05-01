@@ -244,3 +244,6 @@
   border: 6px solid transparent;
   border-top-color: var(--sherpa-surface-container-elevated-default, rgba(26, 28, 33, 0.92));
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

@@ -41,7 +41,7 @@
   ],
   "events": [
     {
-      "name": "systemtriggerclick",
+      "name": "system-trigger-click",
       "description": "",
       "bubbles": true,
       "composed": true,

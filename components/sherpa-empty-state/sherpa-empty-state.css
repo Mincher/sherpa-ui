@@ -177,3 +177,6 @@
 :host([data-status]) .sherpa-empty-state__illustration {
   color: var(--_status-icon);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

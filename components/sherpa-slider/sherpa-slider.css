@@ -302,3 +302,6 @@
 :host([data-show-inputs]:not([data-type="range"])) .increments {
   padding-left: 0;
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

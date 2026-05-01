@@ -26,7 +26,7 @@ Available templates:
 
 ## Events
 
-### `sortchange`
+### `sort-change`
 
 
 **Propagation:** bubbles, composed
@@ -41,12 +41,12 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("sortchange", (e) => {
+element.addEventListener("sort-change", (e) => {
   console.log(e.detail.field);
 });
 ```
 
-### `presentationchange`
+### `presentation-change`
 
 
 **Propagation:** bubbles, composed
@@ -61,7 +61,7 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("presentationchange", (e) => {
+element.addEventListener("presentation-change", (e) => {
   console.log(e.detail.type);
 });
 ```

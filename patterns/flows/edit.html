@@ -4,9 +4,9 @@
   Provides the full lifecycle for editing an existing entity:
     • Trigger button (row action or toolbar) opens a dialog pre-filled with current values
     • Form fields allow modifying entity data
-    • Save dispatches flowcomplete + success toast
-    • Cancel dispatches flowcancel and closes the dialog
-    • Errors dispatch flowerror + critical toast
+    • Save dispatches flow-complete + success toast
+    • Cancel dispatches flow-cancel and closes the dialog
+    • Errors dispatch flow-error + critical toast
 
   Components: sherpa-button, sherpa-dialog, sherpa-input-text, sherpa-toast
   Utilities: FlowManager, FormManager, refreshDataset
@@ -14,19 +14,19 @@
   Lifecycle (managed by FlowManager — state in JS memory, not DOM):
     1. User clicks edit trigger on a row or toolbar
     2. App calls form.populate(record) then flow.startEdit(record)
-    3. FlowManager dispatches flowstart, opens dialog, sets labels
+    3. FlowManager dispatches flow-start, opens dialog, sets labels
     4. User modifies fields
     5. User clicks Save → FlowManager calls onSave(editingRecord, 'edit')
-    6a. Success → FlowManager dispatches flowcomplete + SherpaToast.success()
-    6b. Failure → FlowManager dispatches flowerror + SherpaToast.critical()
-    7. Cancel → FlowManager dispatches flowcancel, closes dialog
+    6a. Success → FlowManager dispatches flow-complete + SherpaToast.success()
+    6b. Failure → FlowManager dispatches flow-error + SherpaToast.critical()
+    7. Cancel → FlowManager dispatches flow-cancel, closes dialog
 
   Events (all bubbles: true, composed: true — dispatched by FlowManager):
-    flowstart    — {flow: "edit", entity: string, data: object}
-    flowprogress — {flow: "edit", entity: string}
-    flowcomplete — {flow: "edit", entity: string, data: object}
-    flowcancel   — {flow: "edit", entity: string}
-    flowerror    — {flow: "edit", entity: string, error: string}
+    flow-start    — {flow: "edit", entity: string, data: object}
+    flow-progress — {flow: "edit", entity: string}
+    flow-complete — {flow: "edit", entity: string, data: object}
+    flow-cancel   — {flow: "edit", entity: string}
+    flow-error    — {flow: "edit", entity: string, error: string}
 
   Pre-population: Use FormManager.populate(record) — sets each named field's
   value from the record object automatically.
@@ -49,7 +49,7 @@
       onRefresh: () => refreshDataset(contentArea, loader),
     });
 
-    grid.addEventListener('rowaction', (e) => {
+    grid.addEventListener('row-action', (e) => {
       const record = e.detail?.rowData;
       form.populate(record);
       flow.startEdit(record);
@@ -70,14 +70,14 @@
     data-icon-start="&#xf044;">
   </sherpa-button>
 
-  <!-- Dialog — opens on flowstart, pre-populated with existing values -->
+  <!-- Dialog — opens on flow-start, pre-populated with existing values -->
   <sherpa-dialog data-label="Edit Entity" data-size="medium" data-dismissible>
 
     <!-- Form fields — pre-populated by app JS from existing record -->
     <sherpa-input-text data-label="Name" name="name" required placeholder="Enter name"></sherpa-input-text>
     <sherpa-input-text data-label="Description" name="description" placeholder="Enter description"></sherpa-input-text>
 
-    <!-- Actions — Save triggers flowprogress → API → flowcomplete/flowerror -->
+    <!-- Actions — Save triggers flow-progress → API → flow-complete/flow-error -->
     <sherpa-button slot="footer" data-label="Cancel" data-variant="secondary"></sherpa-button>
     <sherpa-button slot="footer" data-label="Save" data-variant="primary"></sherpa-button>
   </sherpa-dialog>

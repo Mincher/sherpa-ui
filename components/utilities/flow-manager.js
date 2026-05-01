@@ -1,8 +1,8 @@
 /**
  * FlowManager — Orchestrates CRUD dialog flows (add / edit / delete).
  *
- * Manages dialog open/close, flow lifecycle events (flowstart, flowprogress,
- * flowcomplete, flowcancel, flowerror), and toast feedback. Discovers DOM
+ * Manages dialog open/close, flow lifecycle events (flow-start, flow-progress,
+ * flow-complete, flow-cancel, flow-error), and toast feedback. Discovers DOM
  * elements via data-flow attributes on buttons and dialog refs you provide.
  *
  * @module flow-manager
@@ -96,7 +96,7 @@ export class FlowManager {
     this.#editingRecord = null;
     this.#addEditDialog.setAttribute('data-label', this.#labels.addTitle);
     if (this.#saveBtn) this.#saveBtn.setAttribute('data-label', this.#labels.saveLabel);
-    this.#dispatch('flowstart', { flow: 'add', entity: this.#entity });
+    this.#dispatch('flow-start', { flow: 'add', entity: this.#entity });
     this.#addEditDialog.show();
   }
 
@@ -109,7 +109,7 @@ export class FlowManager {
     this.#editingRecord = record;
     this.#addEditDialog.setAttribute('data-label', this.#labels.editTitle);
     if (this.#saveBtn) this.#saveBtn.setAttribute('data-label', this.#labels.updateLabel);
-    this.#dispatch('flowstart', { flow: 'edit', entity: this.#entity, data: record });
+    this.#dispatch('flow-start', { flow: 'edit', entity: this.#entity, data: record });
     this.#addEditDialog.show();
   }
 
@@ -130,7 +130,7 @@ export class FlowManager {
       count > 1 ? `${this.#labels.deleteTitle} (${count})` : this.#labels.deleteTitle
     );
 
-    this.#dispatch('flowstart', { flow: 'delete', entity: this.#entity, data: { ids } });
+    this.#dispatch('flow-start', { flow: 'delete', entity: this.#entity, data: { ids } });
     this.#deleteDialog.show();
   }
 
@@ -159,8 +159,8 @@ export class FlowManager {
     this.#saveBtn = this.#addEditDialog.querySelector('[slot="footer"][data-variant="primary"]');
     this.#cancelBtn = this.#addEditDialog.querySelector('[slot="footer"][data-variant="secondary"]');
 
-    this.#saveBtn?.addEventListener('buttonclick', () => this.#handleSave());
-    this.#cancelBtn?.addEventListener('buttonclick', () => this.#handleCancelAddEdit());
+    this.#saveBtn?.addEventListener('button-click', () => this.#handleSave());
+    this.#cancelBtn?.addEventListener('button-click', () => this.#handleCancelAddEdit());
   }
 
   #wireDeleteDialog() {
@@ -169,8 +169,8 @@ export class FlowManager {
     this.#confirmDeleteBtn = this.#deleteDialog.querySelector('[slot="footer"][data-variant="primary"]');
     this.#cancelDeleteBtn = this.#deleteDialog.querySelector('[slot="footer"][data-variant="secondary"]');
 
-    this.#confirmDeleteBtn?.addEventListener('buttonclick', () => this.#handleConfirmDelete());
-    this.#cancelDeleteBtn?.addEventListener('buttonclick', () => this.#handleCancelDelete());
+    this.#confirmDeleteBtn?.addEventListener('button-click', () => this.#handleConfirmDelete());
+    this.#cancelDeleteBtn?.addEventListener('button-click', () => this.#handleCancelDelete());
   }
 
   /* ── Private — handlers ──────────────────────────────────────── */
@@ -182,11 +182,11 @@ export class FlowManager {
     }
 
     const flowType = this.flowType;
-    this.#dispatch('flowprogress', { flow: flowType, entity: this.#entity });
+    this.#dispatch('flow-progress', { flow: flowType, entity: this.#entity });
 
     try {
       const result = await this.#onSave(this.#editingRecord, flowType);
-      this.#dispatch('flowcomplete', { flow: flowType, entity: this.#entity, data: result });
+      this.#dispatch('flow-complete', { flow: flowType, entity: this.#entity, data: result });
 
       const cap = this.#capitalize(this.#entity);
       SherpaToast.success(flowType === 'edit'
@@ -198,13 +198,13 @@ export class FlowManager {
       this.#editingRecord = null;
       this.#onRefresh?.();
     } catch (err) {
-      this.#dispatch('flowerror', { flow: flowType, entity: this.#entity, error: err.message });
+      this.#dispatch('flow-error', { flow: flowType, entity: this.#entity, error: err.message });
       SherpaToast.critical(err.message || `Failed to save ${this.#entity}.`);
     }
   }
 
   #handleCancelAddEdit() {
-    this.#dispatch('flowcancel', { flow: this.flowType, entity: this.#entity });
+    this.#dispatch('flow-cancel', { flow: this.flowType, entity: this.#entity });
     this.#addEditDialog?.hide();
   }
 
@@ -214,12 +214,12 @@ export class FlowManager {
       return;
     }
 
-    this.#dispatch('flowprogress', { flow: 'delete', entity: this.#entity, data: { ids: this.#deleteTargetIds } });
+    this.#dispatch('flow-progress', { flow: 'delete', entity: this.#entity, data: { ids: this.#deleteTargetIds } });
 
     try {
       const result = await this.#onDelete(this.#deleteTargetIds);
       this.#deleteDialog?.hide();
-      this.#dispatch('flowcomplete', { flow: 'delete', entity: this.#entity, data: result });
+      this.#dispatch('flow-complete', { flow: 'delete', entity: this.#entity, data: result });
 
       const count = typeof result === 'number' ? result : this.#deleteTargetIds.length;
       SherpaToast.success(`${count} ${this.#entity}(s) deleted.`);
@@ -227,13 +227,13 @@ export class FlowManager {
       this.#deleteTargetIds = [];
       this.#onRefresh?.();
     } catch (err) {
-      this.#dispatch('flowerror', { flow: 'delete', entity: this.#entity, error: err.message });
+      this.#dispatch('flow-error', { flow: 'delete', entity: this.#entity, error: err.message });
       SherpaToast.critical(err.message || `Failed to delete ${this.#entity}.`);
     }
   }
 
   #handleCancelDelete() {
-    this.#dispatch('flowcancel', { flow: 'delete', entity: this.#entity });
+    this.#dispatch('flow-cancel', { flow: 'delete', entity: this.#entity });
     this.#deleteDialog?.hide();
   }
 

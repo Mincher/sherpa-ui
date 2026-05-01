@@ -111,3 +111,6 @@
 }
 
 :host([data-divider="true"]) .section-header-divider { display: block; }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }

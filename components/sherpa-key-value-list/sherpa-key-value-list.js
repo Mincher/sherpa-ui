@@ -4,13 +4,13 @@
  *   Content authored as <dt>/<dd> pairs. Layout, density, striping and borders
  *   controlled via host attributes and CSS.
  *
- * @attr {enum}    [layout]       — horizontal | vertical (default: horizontal)
- * @attr {enum}    [density]      — compact | base | comfortable (default: base)
- * @attr {boolean} [data-striped]  — Alternate row backgrounds
- * @attr {boolean} [data-bordered] — Show borders (default: true)
- * @attr {boolean} [truncate]      — Clip long values with ellipsis
- * @attr {string}  [key-width]     — Key column width (default: auto)
- * @attr {enum}    [data-type]     — Template variant
+ * @attr {enum}    [data-layout]    — horizontal | vertical (default: horizontal)
+ * @attr {enum}    [data-density]   — compact | base | comfortable (default: base)
+ * @attr {boolean} [data-striped]   — Alternate row backgrounds
+ * @attr {boolean} [data-bordered]  — Show borders (default: true)
+ * @attr {boolean} [data-truncate]  — Clip long values with ellipsis
+ * @attr {string}  [data-key-width] — Key column width (default: auto)
+ * @attr {enum}    [data-type]      — Template variant
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';

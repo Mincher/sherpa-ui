@@ -710,7 +710,7 @@ function generateFlowHTML(flowType, entityName, fields) {
 
     const editTriggerNote = isEdit
       ? `\n// Wire edit trigger (typically from grid rowaction)
-// grid.addEventListener('rowaction', (e) => {
+// grid.addEventListener('row-action', (e) => {
 //   const record = e.detail?.rowData;
 //   if (!record) return;
 //   form.populate(record);
@@ -763,7 +763,7 @@ const flow = new FlowManager({
 });
 
 // Wire add trigger
-document.getElementById('${triggerId}')?.addEventListener('buttonclick', () => {
+document.getElementById('${triggerId}')?.addEventListener('button-click', () => {
   form.clear();
   flow.startAdd();
 });${editTriggerNote}
@@ -814,7 +814,7 @@ const flow = new FlowManager({
 });
 
 // Wire delete trigger (typically from selection)
-// document.getElementById('delete-${slug}-btn')?.addEventListener('buttonclick', () => {
+// document.getElementById('delete-${slug}-btn')?.addEventListener('button-click', () => {
 //   const selected = grid.getSelectedRows?.() ?? [];
 //   if (!selected.length) return;
 //   flow.startDelete(selected);
@@ -1054,7 +1054,7 @@ ${patternSummary}
 4. Custom events use bubbles: true
 5. All components need explicit closing tags (no self-closing)
 6. Use slot="name" for named content projection
-7. CRUD flows use flowstart/flowprogress/flowcomplete/flowcancel/flowerror events (bubbles: true, composed: true)
+7. CRUD flows use flow-start/flow-progress/flow-complete/flow-cancel/flow-error events (bubbles: true, composed: true)
 8. Flow state is tracked in app JS memory — never in DOM attributes
 9. Dialogs use native ::backdrop via showModal() — no custom shim elements
 10. Toast feedback: SherpaToast.success() on complete, SherpaToast.critical() on error

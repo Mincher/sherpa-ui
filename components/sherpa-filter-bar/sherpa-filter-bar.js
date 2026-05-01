@@ -15,16 +15,16 @@
  * @slot (default) — User-added dynamic filter chips + Add button
  * @slot actions  — Clear / Apply / Save buttons
  *
- * @fires filterchange
+ * @fires filter-change
  *   bubbles: true, composed: true
  *   detail: { filters: Array }
- * @fires filterclear
+ * @fires filter-clear
  *   bubbles: true, composed: true
  *   detail: none
- * @fires containerfilterchange
+ * @fires container-filter-change
  *   bubbles: true, composed: true
  *   detail: { filters: Array }
- * @fires globalfilterchange
+ * @fires global-filter-change
  *   bubbles: false, composed: false
  *   detail: { filters: Array }
  *
@@ -79,7 +79,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.#scopeEl = this.parentElement || this.getRootNode()?.host || null;
     if (this.#scopeEl && !this.#sortChangeHandler) {
       this.#sortChangeHandler = (e) => this.#onSortChange(e);
-      this.#scopeEl.addEventListener("sortchange", this.#sortChangeHandler);
+      this.#scopeEl.addEventListener("sort-change", this.#sortChangeHandler);
     }
 
     // Watch for attribute changes on slotted filter chips
@@ -133,7 +133,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.#addButton?.addEventListener("menu-select", this.#onAddMenuSelect);
 
     // Listen for chip removal events (from filter chips' × button)
-    this.addEventListener("chipremove", (e) => {
+    this.addEventListener("chip-remove", (e) => {
       const chip = e.target;
       if (
         chip.tagName === "SHERPA-BUTTON" &&
@@ -147,7 +147,7 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     // Listen for button clicks from behavior chips (mode cycling)
-    this.addEventListener("buttonclick", (e) => {
+    this.addEventListener("button-click", (e) => {
       const chip = e.target;
       // data-filter-field chips: toggle active state on/off
       if (chip?.hasAttribute?.("data-filter-field")) {
@@ -245,7 +245,7 @@ export class SherpaFilterBar extends SherpaElement {
 
     if (this.#scopeEl && this.#sortChangeHandler) {
       this.#scopeEl.removeEventListener(
-        "sortchange",
+        "sort-change",
         this.#sortChangeHandler,
       );
     }
@@ -336,7 +336,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.removeAttribute("data-active");
     this.#populateAddMenu();
     this.dispatchEvent(
-      new CustomEvent("filterclear", { bubbles: true, composed: true }),
+      new CustomEvent("filter-clear", { bubbles: true, composed: true }),
     );
     this.#dispatchContainerFilterChange([]);
     this.#dispatchGlobalFilterChange([]);
@@ -489,7 +489,7 @@ export class SherpaFilterBar extends SherpaElement {
   #emitFilterChange() {
     const filters = this.getFilters();
     this.dispatchEvent(
-      new CustomEvent("filterchange", {
+      new CustomEvent("filter-change", {
         bubbles: true,
         composed: true,
         detail: { filters },
@@ -618,7 +618,7 @@ export class SherpaFilterBar extends SherpaElement {
    */
   #dispatchContainerFilterChange(filters) {
     this.dispatchEvent(
-      new CustomEvent("containerfilterchange", {
+      new CustomEvent("container-filter-change", {
         bubbles: true,
         composed: true,
         detail: { filters },
@@ -633,7 +633,7 @@ export class SherpaFilterBar extends SherpaElement {
   #dispatchGlobalFilterChange(filters) {
     if (!this.hasAttribute("data-global")) return;
     document.dispatchEvent(
-      new CustomEvent("globalfilterchange", {
+      new CustomEvent("global-filter-change", {
         detail: { filters },
       }),
     );

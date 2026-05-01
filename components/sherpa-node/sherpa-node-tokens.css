@@ -67,3 +67,6 @@
   /* Very faint dot/crosshair — much lighter than container borders. */
   --sherpa-node-canvas-grid-color: rgba(0, 0, 0, 0.08);
 }
+
+/* Native [hidden] support */
+:host([hidden]) { display: none; }
