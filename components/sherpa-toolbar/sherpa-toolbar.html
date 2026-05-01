@@ -50,3 +50,19 @@
   </div>
 </template>
 -->
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     ACTIONS — Single horizontal row of action buttons.
+
+     A flat row that distributes its children with the toolbar gap.
+     Intended for in-panel action sets (Import / Export / Reset / Copy)
+     where the leading/center/trailing zoning would be overkill.
+
+     Slots:
+       actions — Action buttons (sherpa-button, etc.)
+     ════════════════════════════════════════════════════════════════════════ -->
+<template id="actions">
+  <div class="toolbar-row actions-row" part="toolbar" role="toolbar">
+    <slot name="actions"></slot>
+  </div>
+</template>

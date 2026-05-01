@@ -18,7 +18,14 @@ export class SherpaToolbar extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-toolbar.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-density'];
+    return [...super.observedAttributes, 'data-density', 'data-template'];
+  }
+
+  /* ── Template selection ───────────────────────────────────────
+     Consumers pick a layout via `data-template="actions"` etc.
+     Defaults to the leading/center/trailing layout. */
+  get templateId() {
+    return this.dataset.template || 'default';
   }
 }
 
