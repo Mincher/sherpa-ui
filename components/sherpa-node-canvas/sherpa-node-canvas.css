@@ -48,5 +48,12 @@
   transform-origin: 0 0;
 }
 
+/* Hidden probe span used by #resolveColor() to resolve token cascades */
+.color-probe {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* Native [hidden] support */
 :host([hidden]) { display: none; }

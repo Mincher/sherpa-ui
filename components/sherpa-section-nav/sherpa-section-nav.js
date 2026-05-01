@@ -76,13 +76,19 @@ export class SherpaSectionNav extends SherpaElement {
   /** @type {HTMLElement|null} */ #headingEl = null;
   /** @type {HTMLButtonElement|null} */ #backEl = null;
   /** @type {HTMLElement|null} */ #sectionsEl = null;
+  /** @type {HTMLTemplateElement|null} */ #groupTpl = null;
+  /** @type {HTMLTemplateElement|null} */ #headerItemTpl = null;
+  /** @type {HTMLTemplateElement|null} */ #itemTpl = null;
 
-  /* ── lifecycle ───────────────────────────────────────────── */
+  /* ── lifecycle ───────────────────────── */
 
   onRender() {
     this.#headingEl = this.$(".heading");
     this.#backEl = this.$(".back");
     this.#sectionsEl = this.$(".sections");
+    this.#groupTpl = this.$("template.group-tpl");
+    this.#headerItemTpl = this.$("template.header-item-tpl");
+    this.#itemTpl = this.$("template.item-tpl");
 
     this.#syncHeading();
     this.#syncBack();
@@ -168,67 +174,62 @@ export class SherpaSectionNav extends SherpaElement {
   #renderSections() {
     if (!this.#sectionsEl) return;
     const activeId = this.getAttribute("data-active-id");
-
-    const html = this.#sections
-      .map((group) => this.#renderGroup(group, activeId))
-      .join("");
-
-    this.#sectionsEl.innerHTML = html;
+    const groups = this.#sections.map((group) => this.#buildGroup(group, activeId));
+    this.#sectionsEl.replaceChildren(...groups);
   }
 
-  #renderGroup(group, activeId) {
-    const label = group?.label ? `
-      <h3 class="group-label text-label-group">${escapeHtml(group.label)}</h3>
-    ` : "";
-    const items = (group?.items || [])
-      .map((it) => this.#renderItem(it, activeId))
-      .join("");
-    return `
-      <section class="group">
-        ${label}
-        <ul class="group-list">${items}</ul>
-      </section>
-    `;
+  #buildGroup(group, activeId) {
+    const node = this.#groupTpl.content.firstElementChild.cloneNode(true);
+    const labelEl = node.querySelector(".group-label");
+    const listEl = node.querySelector(".group-list");
+    if (group?.label) {
+      labelEl.textContent = group.label;
+      labelEl.hidden = false;
+    }
+    for (const it of group?.items || []) {
+      const itemNode = this.#buildItem(it, activeId);
+      if (itemNode) listEl.appendChild(itemNode);
+    }
+    return node;
   }
 
-  #renderItem(item, activeId) {
-    if (!item) return "";
+  #buildItem(item, activeId) {
+    if (!item) return null;
 
     if (item.type === "header") {
-      return `
-        <li class="header-item">
-          <span class="header-item-name text-body">${escapeHtml(item.label || "")}</span>
-          ${item.description ? `<span class="header-item-description text-body-sm">${escapeHtml(item.description)}</span>` : ""}
-        </li>
-      `;
+      const node = this.#headerItemTpl.content.firstElementChild.cloneNode(true);
+      node.querySelector(".header-item-name").textContent = item.label || "";
+      const desc = node.querySelector(".header-item-description");
+      if (item.description) {
+        desc.textContent = item.description;
+        desc.hidden = false;
+      }
+      return node;
     }
 
+    const node = this.#itemTpl.content.firstElementChild.cloneNode(true);
+    const btn = node.querySelector(".item");
     const id = item.id || "";
     const isActive = id && id === activeId;
-    const iconHtml = item.icon
-      ? `<i class="item-icon ${escapeAttr(item.icon)}" aria-hidden="true"></i>`
-      : "";
-    const ariaCurrent = isActive ? `aria-current="page"` : "";
-    const dataActive = isActive ? `data-active="true"` : "";
-    const dataAction = item.action ? `data-action="${escapeAttr(item.action)}"` : "";
-    const dataDisabled = item.disabled ? "disabled" : "";
 
-    return `
-      <li>
-        <button
-          type="button"
-          class="item text-body"
-          data-id="${escapeAttr(id)}"
-          ${dataAction}
-          ${ariaCurrent}
-          ${dataActive}
-          ${dataDisabled}
-        >
-          <span class="item-label">${escapeHtml(item.label || "")}</span>
-          ${iconHtml}
-        </button>
-      </li>
-    `;
+    btn.dataset.id = id;
+    if (item.action) btn.dataset.action = item.action;
+    if (isActive) {
+      btn.dataset.active = "true";
+      btn.setAttribute("aria-current", "page");
+    }
+    if (item.disabled) btn.setAttribute("disabled", "");
+
+    btn.querySelector(".item-label").textContent = item.label || "";
+    const iconEl = btn.querySelector(".item-icon");
+    if (item.icon) {
+      // item.icon is a class string like "fa-regular fa-cog" — split + add
+      for (const cls of item.icon.split(/\s+/).filter(Boolean)) {
+        iconEl.classList.add(cls);
+      }
+      iconEl.hidden = false;
+    }
+    return node;
   }
 
   #syncActiveState() {
@@ -290,16 +291,5 @@ export class SherpaSectionNav extends SherpaElement {
   }
 }
 
-/* ── Helpers ───────────────────────────────────────────────── */
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]));
-}
-
-function escapeAttr(value) {
-  return escapeHtml(value);
-}
 
 customElements.define("sherpa-section-nav", SherpaSectionNav);

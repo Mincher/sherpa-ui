@@ -1045,7 +1045,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     let probe = this.#colorProbe;
     if (!probe) {
       probe = document.createElement("span");
-      probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;";
+      probe.className = "color-probe";
       this.shadowRoot.appendChild(probe);
       this.#colorProbe = probe;
     }

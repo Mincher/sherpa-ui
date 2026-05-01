@@ -173,6 +173,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #rowTpl = null; // Cached <template class="row-tpl">
   #groupRowTpl = null; // Cached <template class="group-row-tpl">
   #cellTpl = null; // Cached <template class="cell-tpl">
+  #boolCellTpl = null; // Cached <template class="bool-cell-tpl">
   #linkCellTpl = null; // Cached <template class="link-cell-tpl">
   #statusCellTpl = null; // Cached <template class="status-cell-tpl">
   #headerCellTpl = null; // Cached <template class="header-cell-tpl">
@@ -197,6 +198,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.#rowTpl = this.$("template.row-tpl");
     this.#groupRowTpl = this.$("template.group-row-tpl");
     this.#cellTpl = this.$("template.cell-tpl");
+    this.#boolCellTpl = this.$("template.bool-cell-tpl");
     this.#linkCellTpl = this.$("template.link-cell-tpl");
     this.#statusCellTpl = this.$("template.status-cell-tpl");
     this.#headerCellTpl = this.$("template.header-cell-tpl");
@@ -742,7 +744,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     switch (type) {
       case "boolean":
         cell = this.#cellTpl.content.cloneNode(true).querySelector("td");
-        cell.innerHTML = this.#renderBooleanCell(value);
+        cell.append(this.#renderBooleanCell(value));
         break;
 
       case "status":
@@ -789,10 +791,15 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       value === "1" ||
       value === "yes" ||
       value === "Yes";
+    const node = this.#boolCellTpl.content.firstElementChild.cloneNode(true);
     if (isTrue) {
-      return '<i class="fa-solid fa-check bool-icon bool-true" aria-label="Yes"></i>';
+      node.classList.add("fa-check", "bool-true");
+      node.setAttribute("aria-label", "Yes");
+    } else {
+      node.classList.add("fa-xmark", "bool-false");
+      node.setAttribute("aria-label", "No");
     }
-    return '<i class="fa-solid fa-xmark bool-icon bool-false" aria-label="No"></i>';
+    return node;
   }
 
   #configureStatusCell(tag, value, column) {

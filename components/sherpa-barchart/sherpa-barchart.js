@@ -78,6 +78,10 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   #originalOrderBy = null;
   #originalSegmentBy = null;
   #tipEl = null;
+  #chartRowTpl = null;
+  #segmentTpl = null;
+  #axisValueTpl = null;
+  #legendItemTpl = null;
   #filterMenuTpl = null;
 
 
@@ -106,6 +110,12 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     // Tooltip element (nested sherpa-tooltip component)
     this.#tipEl = this.$("sherpa-tooltip");
+
+    // Cache cloning prototypes
+    this.#chartRowTpl = this.$("template.chart-row-tpl");
+    this.#segmentTpl = this.$("template.chart-segment-tpl");
+    this.#axisValueTpl = this.$("template.axis-value-tpl");
+    this.#legendItemTpl = this.$("template.legend-item-tpl");
 
     // Tooltip delegation for chart segments
     this.shadowRoot.addEventListener(
@@ -664,11 +674,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
         if (segmentEls.length !== result.segments.length) {
           const bar = row.querySelector(".chart-bar");
           if (bar)
-            bar.innerHTML = this.#createSegments(
-              series,
-              catIdx,
-              niceMax,
-              isStacked,
+            bar.replaceChildren(
+              ...this.#createSegmentNodes(series, catIdx, niceMax, isStacked),
             );
         } else {
           result.segments.forEach((seg, i) => {
@@ -848,30 +855,28 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #renderChart(el, categories, series, niceMax, isStacked) {
-    el.innerHTML = categories
-      .map((cat, catIdx) => {
-        const segments = this.#createSegments(
-          series,
-          catIdx,
-          niceMax,
-          isStacked,
-        );
-        return `<div class="chart-row" style="--_i: ${catIdx}">
-        <span class="chart-label" title="${escapeHtml(cat)}">${escapeHtml(cat)}</span>
-        <div class="chart-bar">${segments}</div>
-      </div>`;
-      })
-      .join("");
+    const rows = categories.map((cat, catIdx) => {
+      const row = this.#chartRowTpl.content.firstElementChild.cloneNode(true);
+      row.style.setProperty("--_i", catIdx);
+      const label = row.querySelector(".chart-label");
+      label.textContent = cat;
+      label.title = cat;
+      const bar = row.querySelector(".chart-bar");
+      bar.append(...this.#createSegmentNodes(series, catIdx, niceMax, isStacked));
+      return row;
+    });
+    el.replaceChildren(...rows);
   }
 
   #renderAxis(el, niceMax) {
     if (!el) return;
     const step = niceMax / (CONFIG.maxGridLines - 1);
-    el.innerHTML = Array.from(
-      { length: CONFIG.maxGridLines },
-      (_, i) =>
-        `<span class="chart-value">${formatCompact(Math.round(step * i))}</span>`,
-    ).join("");
+    const nodes = Array.from({ length: CONFIG.maxGridLines }, (_, i) => {
+      const node = this.#axisValueTpl.content.firstElementChild.cloneNode(true);
+      node.textContent = formatCompact(Math.round(step * i));
+      return node;
+    });
+    el.replaceChildren(...nodes);
   }
 
   #calculateSegmentSizes(series, catIdx, niceMax, isStacked) {
@@ -883,7 +888,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
           const pct = niceMax > 0 ? (value / niceMax) * 100 : 0;
           segments.push({
             percent: pct,
-            tooltip: `${escapeHtml(s.name)}: ${formatCompact(value)}`,
+            tooltip: `${s.name}: ${formatCompact(value)}`,
           });
         }
       });
@@ -894,48 +899,47 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const pct = Math.max(1, (value / niceMax) * 100);
     segments.push({
       percent: pct,
-      tooltip: `${escapeHtml(series[0].name)}: ${formatCompact(value)}`,
+      tooltip: `${series[0].name}: ${formatCompact(value)}`,
     });
     return { segments };
   }
 
-  #createSegments(series, catIdx, niceMax, isStacked) {
+  /** @returns {HTMLElement[]} */
+  #createSegmentNodes(series, catIdx, niceMax, isStacked) {
     if (isStacked) {
-      // Each segment sized as absolute % of niceMax
-      return series
-        .map((s, i) => {
-          const value = s.values[catIdx] || 0;
-          if (value === 0) return ""; // Don't render 0-value segments
-          const pct = niceMax > 0 ? (value / niceMax) * 100 : 0;
-          return this.#segmentHtml(s.name, value, pct, i);
-        })
-        .join("");
+      const nodes = [];
+      series.forEach((s, i) => {
+        const value = s.values[catIdx] || 0;
+        if (value === 0) return; // Don't render 0-value segments
+        const pct = niceMax > 0 ? (value / niceMax) * 100 : 0;
+        nodes.push(this.#buildSegment(s.name, value, pct, i));
+      });
+      return nodes;
     }
 
     const value = series[0]?.values[catIdx] || 0;
     const pct = Math.max(1, (value / niceMax) * 100);
-    return this.#segmentHtml(series[0].name, value, pct, 0);
+    return [this.#buildSegment(series[0].name, value, pct, 0)];
   }
 
-  #segmentHtml(name, value, percent, colorIdx) {
-    return `<div class="chart-segment color-${(colorIdx % CONFIG.numColors) + 1}" 
-                 style="--_segment-size: ${percent}%" 
-                 data-tooltip="${escapeHtml(name)}: ${formatCompact(value)}"></div>`;
+  #buildSegment(name, value, percent, colorIdx) {
+    const node = this.#segmentTpl.content.firstElementChild.cloneNode(true);
+    node.classList.add(`color-${(colorIdx % CONFIG.numColors) + 1}`);
+    node.style.setProperty("--_segment-size", `${percent}%`);
+    node.dataset.tooltip = `${name}: ${formatCompact(value)}`;
+    return node;
   }
 
   #renderLegend(el, series) {
-    el.innerHTML = series
-      .map((s, i) => {
-        // Check if series has any non-zero values
-        const hasData = s.values.some((v) => v > 0);
-        const disabledAttr = hasData ? "" : " data-disabled";
-        return `
-      <div class="chart-legend-item"${disabledAttr}>
-        <span class="chart-legend-key color-${(i % CONFIG.numColors) + 1}"></span>
-        <span class="chart-legend-label">${escapeHtml(s.name)}</span>
-      </div>`;
-      })
-      .join("");
+    const items = series.map((s, i) => {
+      const node = this.#legendItemTpl.content.firstElementChild.cloneNode(true);
+      const hasData = s.values.some((v) => v > 0);
+      if (!hasData) node.dataset.disabled = "";
+      node.querySelector(".chart-legend-key").classList.add(`color-${(i % CONFIG.numColors) + 1}`);
+      node.querySelector(".chart-legend-label").textContent = s.name;
+      return node;
+    });
+    el.replaceChildren(...items);
   }
 
   #resolveFieldAlias(field) {

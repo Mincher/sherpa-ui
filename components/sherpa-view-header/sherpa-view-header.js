@@ -51,6 +51,7 @@ export class SherpaViewHeader extends SherpaElement {
   #pickerItems = [];
   #pickerValue = null;
   #optionSlotObserver = null;
+  #pickerRowTpl = null;
 
   onAttributeChanged(name, oldValue, newValue) {
     switch (name) {
@@ -134,6 +135,7 @@ export class SherpaViewHeader extends SherpaElement {
   // ============ Private Methods ============
 
   onRender() {
+    this.#pickerRowTpl = this.$('template.picker-row-tpl');
     this.#setupSelectors();
     this.#setupExport();
     this.#setupFavorite();
@@ -411,34 +413,21 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #buildPickerRow({ value, label, badge, badgeStatus, checked }) {
-    const li = document.createElement('li');
-    const item = document.createElement('sherpa-menu-item');
-    item.setAttribute('role', 'menuitemradio');
+    const node = this.#pickerRowTpl.content.firstElementChild.cloneNode(true);
+    const item = node.querySelector('sherpa-menu-item');
     item.setAttribute('value', value);
     item.setAttribute('aria-checked', checked ? 'true' : 'false');
     if (checked) item.setAttribute('data-state', 'selected');
 
-    const row = document.createElement('span');
-    row.style.cssText =
-      'display:flex;align-items:center;gap:var(--sherpa-space-sm);inline-size:100%;';
+    node.querySelector('.picker-label').textContent = label;
 
-    const text = document.createElement('span');
-    text.textContent = label;
-    text.style.cssText = 'flex:1 1 auto;min-inline-size:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-    row.appendChild(text);
-
+    const tag = node.querySelector('.picker-badge');
     if (badge) {
-      const tag = document.createElement('sherpa-tag');
-      tag.setAttribute('data-variant', 'secondary');
       if (badgeStatus) tag.setAttribute('data-status', badgeStatus);
-      tag.style.marginInlineStart = 'auto';
       tag.textContent = badge;
-      row.appendChild(tag);
+      tag.hidden = false;
     }
-
-    item.appendChild(row);
-    li.appendChild(item);
-    return li;
+    return node;
   }
 
 }
