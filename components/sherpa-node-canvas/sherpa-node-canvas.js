@@ -326,8 +326,19 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Coordinate helpers ────────────────────────────────────────── */
 
+  /**
+   * Bounding rect of the canvas *body* (the area that hosts the grid /
+   * edges layers + the surface). Falls back to the host's rect before
+   * `onRender` has resolved the body element. All screen-space math
+   * routes through this so that an embedded view-header above the
+   * body doesn't shift node / edge alignment.
+   */
+  #bodyRect() {
+    return (this.#bodyEl ?? this).getBoundingClientRect();
+  }
+
   #screenToWorld(sx, sy) {
-    const r = this.getBoundingClientRect();
+    const r = this.#bodyRect();
     return {
       x: (sx - r.left - this.#viewport.x) / this.#viewport.zoom,
       y: (sy - r.top  - this.#viewport.y) / this.#viewport.zoom,
@@ -351,7 +362,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       `sherpa-node-socket[data-port-name="${CSS.escape(portName)}"]`
     );
     if (!sock) return null;
-    const canvasRect = this.getBoundingClientRect();
+    const canvasRect = this.#bodyRect();
     const r = sock.getBoundingClientRect();
     const { x: vx, y: vy, zoom } = this.#viewport;
     const cx = (r.left + r.right) / 2 - canvasRect.left;
@@ -458,7 +469,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const factor = Math.exp(-e.deltaY * WHEEL_K);
     const newZoom = this.#clampZoom(this.#viewport.zoom * factor);
     if (newZoom === this.#viewport.zoom) return;
-    const r = this.getBoundingClientRect();
+    const r = this.#bodyRect();
     const cx = e.clientX - r.left;
     const cy = e.clientY - r.top;
     const k = newZoom / this.#viewport.zoom;
@@ -793,7 +804,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   /* ── Edge hit-testing ──────────────────────────────────────────── */
 
   #findEdgeAt(clientX, clientY) {
-    const r = this.getBoundingClientRect();
+    const r = this.#bodyRect();
     const sx = clientX - r.left;
     const sy = clientY - r.top;
     let best = -1;
@@ -1010,7 +1021,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   #resizeCanvases() {
     const dpr = window.devicePixelRatio || 1;
-    const r = this.getBoundingClientRect();
+    const r = this.#bodyRect();
     for (const cv of [this.#gridCanvas, this.#edgesCanvas]) {
       if (!cv) continue;
       cv.width  = Math.max(1, Math.floor(r.width  * dpr));
@@ -1029,7 +1040,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #drawGrid() {
     const ctx = this.#gridCtx;
     if (!ctx) return;
-    const r = this.getBoundingClientRect();
+    const r = this.#bodyRect();
     ctx.clearRect(0, 0, r.width, r.height);
     if (this.dataset.grid === "none") return;
 
@@ -1085,7 +1096,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #drawEdges() {
     const ctx = this.#edgesCtx;
     if (!ctx) return;
-    const r = this.getBoundingClientRect();
+    const r = this.#bodyRect();
     ctx.clearRect(0, 0, r.width, r.height);
 
     const counts = this.#multiCounts();
