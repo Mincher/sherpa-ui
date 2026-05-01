@@ -36,6 +36,10 @@
   height: var(--sherpa-node-socket-height);
   position: relative;
   cursor: crosshair;
+  /* Sockets sit inside narrow flex gutters (8px) but render at 16px
+     and overflow visibly. Without this the flex parent shrinks the
+     host below its declared width and the shape looks squished. */
+  flex-shrink: 0;
 
   --_count: 1;
 }
