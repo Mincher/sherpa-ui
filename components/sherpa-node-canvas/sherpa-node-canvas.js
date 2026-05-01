@@ -198,6 +198,15 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#emitViewport();
   }
 
+  /**
+   * Convert client (screen) coordinates to world coordinates inside the
+   * canvas surface. Uses the internal body rect (the canvas-stack), so
+   * any leading `side-panel-start` slot offset is automatically
+   * accounted for — consumers must use this rather than measuring the
+   * host themselves.
+   */
+  screenToWorld(sx, sy) { return this.#screenToWorld(sx, sy); }
+
   getEdges() { return this.#edges.map((e) => ({ ...e })); }
   setEdges(edges) {
     this.#edges = (edges || []).map((e) => this.#normEdge(e));
