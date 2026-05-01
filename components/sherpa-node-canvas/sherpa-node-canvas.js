@@ -459,7 +459,25 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   #clampZoom(z) { return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z)); }
 
+  /**
+   * Returns true when the event originated inside a slotted
+   * `side-panel-*` child (palette, JSON section, etc.). Side-panel
+   * children share the canvas’s light DOM, so wheel / pointer
+   * events bubble up to the host — without this guard the canvas
+   * would steal scroll & click interactions from the panels.
+   */
+  #isFromSidePanel(e) {
+    const path = e.composedPath ? e.composedPath() : [];
+    for (const n of path) {
+      if (n === this) return false;
+      const slot = n?.getAttribute?.("slot");
+      if (slot && slot.startsWith("side-panel-")) return true;
+    }
+    return false;
+  }
+
   #onWheel = (e) => {
+    if (this.#isFromSidePanel(e)) return;
     e.preventDefault();
     // Trackpad pinch gestures are reported as wheel events with
     // ctrlKey=true (synthetic). Treat those — and the explicit
@@ -489,6 +507,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   };
 
   #onPointerDown = (e) => {
+    if (this.#isFromSidePanel(e)) return;
     // Middle-mouse OR space+left = pan.
     if (e.button === 1 || (e.button === 0 && this.#spaceDown)) {
       e.preventDefault();
