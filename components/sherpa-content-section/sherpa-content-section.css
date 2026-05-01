@@ -121,7 +121,7 @@
   gap: var(--sherpa-space-xs, 8px);
   padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
   border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-  background: var(--sherpa-surface-container-subtle, #fafafd);
+  background: var(--sherpa-surface-container-secondary-default, #fafafd);
   flex-shrink: 0;
 }
 
