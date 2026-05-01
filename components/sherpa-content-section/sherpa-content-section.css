@@ -112,6 +112,11 @@
   flex-direction: row-reverse;
 }
 
+/* When anchored on the left, push the minimise button to the trailing
+   edge of the header (after the title + actions) so it sits on the
+   inner edge — matching the right-anchored mirror. */
+:host([data-position="left"]) .minimise-btn { order: 1; }
+
 /* ── Toolbar ──────────────────────────────────────────── */
 
 .section-toolbar {
