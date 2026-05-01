@@ -60,6 +60,18 @@
   word-wrap: break-word;
 }
 
+/* `white-space: pre-wrap` is intended for plain-text messages so that
+   author-supplied newlines render. When the bubble holds rich element
+   children (e.g. <sherpa-proposal-preview>), inheritance of pre-wrap
+   into their shadow DOM turns the whitespace between template elements
+   into visible blank lines. Reset slotted children back to normal so
+   only direct text content honours the pre-wrap. */
+.bubble ::slotted(*) {
+  white-space: normal;
+}
+.bubble ::slotted(*:first-child) { margin-top: 0; }
+.bubble ::slotted(*:last-child)  { margin-bottom: 0; }
+
 /* ── Role: AI (default) ──────────────────────────────────────── */
 :host(:not([data-role="user"])) .message {
   grid-template-columns: 28px 1fr;
