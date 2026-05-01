@@ -77,7 +77,11 @@
   border-width: 1px;
 }
 
-/* Selected state — accent ring */
+/* Selected state — accent ring. Lift above peers so overlapping
+   clicks always hit the selected node. */
+:host([data-selected]) {
+  z-index: 10;
+}
 :host([data-selected]) .node {
   outline: 2px solid var(--sherpa-node-accent);
   outline-offset: 1px;
