@@ -158,7 +158,43 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   /* ── Static factory methods ───────────────────────────────────── */
 
+  static #stylesInjected = false;
+
+  /** Inject the fixed-position container styles once per document. */
+  static #ensureContainerStyles() {
+    if (SherpaToast.#stylesInjected) return;
+    if (document.getElementById('sherpa-toast-container-styles')) {
+      SherpaToast.#stylesInjected = true;
+      return;
+    }
+    const style = document.createElement('style');
+    style.id = 'sherpa-toast-container-styles';
+    style.textContent = `
+      .sherpa-toast-container {
+        position: fixed;
+        z-index: var(--sherpa-z-toast, 1100);
+        display: flex;
+        flex-direction: column;
+        gap: var(--sherpa-space-xs, 8px);
+        padding: var(--sherpa-space-md, 16px);
+        pointer-events: none;
+        max-width: 100vw;
+      }
+      .sherpa-toast-container > * { pointer-events: auto; }
+
+      .sherpa-toast-container[data-position="top-right"]    { top: 0; right: 0; align-items: flex-end; }
+      .sherpa-toast-container[data-position="top-left"]     { top: 0; left: 0;  align-items: flex-start; }
+      .sherpa-toast-container[data-position="bottom-right"] { bottom: 0; right: 0; align-items: flex-end; flex-direction: column-reverse; }
+      .sherpa-toast-container[data-position="bottom-left"]  { bottom: 0; left: 0;  align-items: flex-start; flex-direction: column-reverse; }
+      .sherpa-toast-container[data-position="top-center"]    { top: 0; left: 50%; transform: translateX(-50%); align-items: center; }
+      .sherpa-toast-container[data-position="bottom-center"] { bottom: 0; left: 50%; transform: translateX(-50%); align-items: center; flex-direction: column-reverse; }
+    `;
+    document.head.appendChild(style);
+    SherpaToast.#stylesInjected = true;
+  }
+
   static #getContainer(position) {
+    SherpaToast.#ensureContainerStyles();
     if (!SherpaToast.#containers[position]) {
       const el = document.createElement('div');
       el.className = 'sherpa-toast-container';
