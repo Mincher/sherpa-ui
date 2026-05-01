@@ -45,6 +45,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1"
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "sherpa-ui": "github:Mincher/sherpa-ui"
   }
 }
