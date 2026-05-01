@@ -1357,6 +1357,10 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /** Sync embedded view-header attrs + breadcrumb trail from drill stack. */
   #syncHeader() {
+    // Reflect the current drill depth on the host so consumers can
+    // style nested-frame state (e.g. hide root-only header actions).
+    const depth = this.#drillStack.length;
+    this.setAttribute("data-depth", String(depth));
     const header = this.#viewHeaderEl;
     if (!header) return;
     const stack = this.#drillStack;
