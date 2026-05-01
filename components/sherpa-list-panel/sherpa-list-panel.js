@@ -133,7 +133,8 @@ export class SherpaListPanel extends SherpaElement {
     let matchCount = 0;
 
     for (const item of items) {
-      const matched = (item.textContent || '').toLowerCase().includes(filter);
+      const haystack = this.#getMatchText(item).toLowerCase();
+      const matched = haystack.includes(filter);
       if (matched) {
         item.removeAttribute('hidden');
         matchCount += 1;
@@ -162,6 +163,24 @@ export class SherpaListPanel extends SherpaElement {
     if (typeof CSS !== 'undefined' && CSS.highlights) {
       CSS.highlights.delete(HIGHLIGHT_NAME);
     }
+  }
+
+  /**
+   * Build the searchable haystack for an item. Many sherpa list components
+   * (e.g. <sherpa-list-item>) render their visible label inside their own
+   * shadow DOM, so the host's light-DOM textContent is empty. Fall back to
+   * common text-bearing attributes so the panel can still match those rows.
+   */
+  #getMatchText(item) {
+    const parts = [
+      item.textContent || '',
+      item.getAttribute('data-label') || '',
+      item.getAttribute('data-description') || '',
+      item.getAttribute('data-value') || '',
+      item.getAttribute('aria-label') || '',
+      item.getAttribute('title') || '',
+    ];
+    return parts.join(' ');
   }
 
   /** Build a Range for the first occurrence of `filter` in the item's text descendants. */
