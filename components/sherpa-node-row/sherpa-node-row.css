@@ -83,7 +83,8 @@
 .row-control ::slotted(sherpa-input-time),
 .row-control ::slotted(sherpa-input-date),
 .row-control ::slotted(sherpa-input-search),
-.row-control ::slotted(sherpa-input-password) {
+.row-control ::slotted(sherpa-input-password),
+.row-control ::slotted(sherpa-input-tag) {
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
