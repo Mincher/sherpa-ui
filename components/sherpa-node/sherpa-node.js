@@ -238,9 +238,34 @@ export class SherpaNode extends SherpaElement {
     }
     if (kind === "collection") return subtype || null;
     if (kind === "util") {
-      // util nodes carry their primary value in the first control.
+      // util nodes carry their primary value in the first control,
+      // except concatenate which composes its inputs.
+      if (subtype === "concatenate") {
+        const op = ctrls.operation || "Append";
+        const a = String(inOr("a", "a", ""));
+        const b = String(inOr("b", "b", ""));
+        if (!a && !b) return null;
+        return op === "Prepend" ? `${b}${a}` : `${a}${b}`;
+      }
       const first = Object.values(ctrls).find((v) => v !== "" && v != null);
       return first ?? subtype ?? null;
+    }
+    if (kind === "ai") {
+      // AI nodes surface their selected configuration so downstream
+      // inputs can preview the value flowing through the edge.
+      if (subtype === "model")    return ctrls.model    || null;
+      if (subtype === "delegate") return ctrls.agent    || null;
+      if (subtype === "chat") {
+        if (portName === "response")        return ctrls.response        || null;
+        if (portName === "recommendations") return ctrls.recommendations || null;
+        // Default chat output: prefer response, fall back to preset/type.
+        return ctrls.response || ctrls.preset || ctrls.type || null;
+      }
+      return null;
+    }
+    if (kind === "action") {
+      if (subtype === "ticket") return ctrls.ticketNumber || ctrls.action || null;
+      return null;
     }
     // logic nodes only expose status outputs (handled above).
     return null;
@@ -296,13 +321,16 @@ export class SherpaNode extends SherpaElement {
   }
 
   /** Find the `slot="control"` element inside the row whose input-socket
-      matches `portName`. */
+      matches `portName`. The control's `name` must equal `portName` so
+      that cross-port rows (e.g. an `agent` socket sitting in the `Type`
+      row of ai.chat) don't accidentally write to the wrong control. */
   #getControlForInputPort(portName) {
     const socket = this.querySelector(
       `sherpa-node-row > sherpa-node-socket[data-direction="in"][data-port-name="${CSS.escape(portName)}"]`,
     );
     const row = socket?.closest("sherpa-node-row");
-    return row?.querySelector(":scope > [slot='control']") ?? null;
+    const ctrl = row?.querySelector(`:scope > [slot='control'][name="${CSS.escape(portName)}"]`);
+    return ctrl ?? null;
   }
 
   #onControlChange = (e) => {
