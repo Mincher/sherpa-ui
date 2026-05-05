@@ -13,6 +13,7 @@
  * @attr {string}  data-port-name        — Port identifier
  * @attr {enum}    data-status           — "default" | "true" | "false"
  * @attr {number}  data-connection-count — Set by canvas; drives multi-input height growth
+ * @attr {boolean} data-flow-active       — Group input sockets only: subgraph has a source→output flow; renders larger filled dot
  *
  * @fires sherpa-socket-pointerdown
  *   bubbles: true, composed: true
@@ -44,6 +45,7 @@ export class SherpaNodeSocket extends SherpaElement {
       "data-status",
       "data-port-name",
       "data-connection-count",
+      "data-flow-active",
     ];
   }
 

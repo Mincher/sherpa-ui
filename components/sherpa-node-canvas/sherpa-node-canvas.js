@@ -931,6 +931,72 @@ export class SherpaNodeCanvas extends SherpaElement {
     return map;
   }
 
+  /**
+   * For every group node on the live frame, inspect its cached
+   * subgraph snapshot and decide whether the group's input socket
+   * should display the "flow active" indicator (a larger filled dot
+   * on top of the regular socket frame).
+   *
+   * Rule: indicator is ON when the cached subgraph contains at least
+   * one source node (data-kind="source") with a directed path through
+   * the subgraph's edges to at least one output / outcome node
+   * (data-kind="output").
+   */
+  #syncGroupFlowIndicators() {
+    const groups = this.querySelectorAll('sherpa-node[data-kind="group"]');
+    if (!groups.length) return;
+    for (const group of groups) {
+      const id = group.dataset.nodeId;
+      const snap = id ? this.#subgraphs.get(id) : null;
+      const sock = group.querySelector('sherpa-node-socket[data-direction="in"]');
+      if (!sock) continue;
+      const active = snap ? this.#subgraphHasSourceToOutput(snap) : false;
+      sock.toggleAttribute("data-flow-active", active);
+    }
+  }
+
+  /**
+   * BFS the cloned subgraph snapshot for any directed source→output
+   * path. Returns true on first hit.
+   */
+  #subgraphHasSourceToOutput(snap) {
+    const nodes = snap?.nodes;
+    const edges = snap?.edges;
+    if (!nodes?.length || !edges?.length) return false;
+    const kindById = new Map();
+    for (const n of nodes) {
+      const nid = n?.dataset?.nodeId;
+      const kind = n?.dataset?.kind;
+      if (nid) kindById.set(nid, kind);
+    }
+    // Build forward adjacency: from.nodeId → [to.nodeId, ...].
+    const adj = new Map();
+    for (const e of edges) {
+      const f = e?.from?.nodeId;
+      const t = e?.to?.nodeId;
+      if (!f || !t) continue;
+      let list = adj.get(f);
+      if (!list) { list = []; adj.set(f, list); }
+      list.push(t);
+    }
+    // BFS from each source node.
+    const sources = [...kindById.entries()]
+      .filter(([, k]) => k === "source")
+      .map(([id]) => id);
+    if (!sources.length) return false;
+    const seen = new Set();
+    const queue = [...sources];
+    while (queue.length) {
+      const id = queue.shift();
+      if (seen.has(id)) continue;
+      seen.add(id);
+      if (kindById.get(id) === "output") return true;
+      const next = adj.get(id);
+      if (next) for (const n of next) if (!seen.has(n)) queue.push(n);
+    }
+    return false;
+  }
+
   /* ── Rendering ─────────────────────────────────────────────────── */
 
   #applyTransform() {
@@ -1135,6 +1201,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     ctx.clearRect(0, 0, r.width, r.height);
 
     const counts = this.#multiCounts();
+    this.#syncGroupFlowIndicators();
 
     const css = getComputedStyle(this);
     const colorDefault  = this.#resolveColor("--sherpa-node-edge-color",          "#7a8194");

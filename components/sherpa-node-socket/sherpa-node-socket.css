@@ -159,6 +159,31 @@
   clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
 }
 
+/* ── Group "flow active" indicator ─────────────────────────────────
+   When the canvas detects that a group's subgraph contains a wired
+   path from a source node to an outcome/output node, it sets
+   data-flow-active on the group's input socket. We render a single
+   larger filled dot centred in the socket frame and hide the
+   per-connection dots so the indicators don't visually compete. */
+:host([data-direction="in"][data-flow-active]) .connectors > .connector-dot {
+  display: none;
+}
+:host([data-direction="in"][data-flow-active]) .socket-shape {
+  position: relative;
+}
+:host([data-direction="in"][data-flow-active]) .socket-shape::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--_socket-stroke);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 /* ── Interactions ──────────────────────────────────────────────── */
 .socket:hover  .socket-shape { transform: scale(1.08); }
 .socket:active .socket-shape { transform: scale(0.95); }
