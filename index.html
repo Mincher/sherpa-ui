@@ -484,12 +484,12 @@
       }
 
       // Helper: read the host attribute's current value from the preview.
-      function readHostAttr(attr, target = currentInstance) {
+      function readHostAttr(attrName, target = currentInstance) {
         if (!target) return "";
-        if (attr.startsWith("data-")) {
-          return target.dataset[dataKey(attr)] ?? "";
+        if (attrName.startsWith("data-")) {
+          return target.dataset[dataKey(attrName)] ?? "";
         }
-        return target.getAttribute(attr) ?? "";
+        return target.getAttribute(attrName) ?? "";
       }
 
       // Helper: build a labeled row (label + description) used for switches
@@ -531,7 +531,7 @@
             const group = document.createElement("div");
             group.className = "control-group";
 
-            const currentValue = readHostAttr(attr);
+            const currentValue = readHostAttr(attr.name);
             const sample = sampleValueFor(attr, currentComponent);
 
             if (attr.type === "boolean") {
