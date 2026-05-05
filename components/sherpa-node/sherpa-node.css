@@ -36,6 +36,8 @@
 :host([data-kind="collection"]) { --sherpa-node-accent: var(--sherpa-node-accent-collection); }
 :host([data-kind="util"])       { --sherpa-node-accent: var(--sherpa-node-accent-util); }
 :host([data-kind="output"])     { --sherpa-node-accent: var(--sherpa-node-accent-output); }
+:host([data-kind="ai"])         { --sherpa-node-accent: var(--sherpa-node-accent-ai); }
+:host([data-kind="action"])     { --sherpa-node-accent: var(--sherpa-node-accent-action); }
 
 /* Source + Output kinds default to the tinted body. */
 :host([data-kind="source"]),
@@ -62,10 +64,15 @@
   transition: box-shadow 150ms ease, border-color 150ms ease;
 }
 
-/* Tinted body — used by source + output kinds and any node opting in. */
+/* Tinted body — used by source + output kinds and any node opting in.
+   The action kind and the AI model/chat subtypes also get the tinted
+   body; ai.delegate stays a plain generic node by design. */
 :host([data-tone="tinted"]) .node,
 :host([data-kind="source"]) .node,
-:host([data-kind="output"]) .node {
+:host([data-kind="output"]) .node,
+:host([data-kind="action"]) .node,
+:host([data-kind="ai"][data-subtype="model"]) .node,
+:host([data-kind="ai"][data-subtype="chat"]) .node {
   background: color-mix(in srgb, var(--sherpa-node-accent) 12%, var(--sherpa-surface-container-default));
   border-color: var(--sherpa-node-accent);
 }
