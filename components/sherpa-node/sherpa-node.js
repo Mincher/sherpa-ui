@@ -397,6 +397,19 @@ export class SherpaNode extends SherpaElement {
       `template.rows-tpl[data-kind="${CSS.escape(kind)}"][data-subtype="${CSS.escape(subtype)}"]`
     );
     if (!tpl) return;
+    // Capture existing template-row control values BEFORE removing
+    // them, so we can restore them onto the freshly-cloned template.
+    // Without this, every #applyTemplate run (including the one that
+    // fires when a node is reattached after a subgraph push/pop
+    // snapshot/restore cycle) silently wipes user-set values.
+    const preserved = new Map();
+    for (const ctrl of this.querySelectorAll(
+      ":scope > [data-template-row] [slot='control'][name]"
+    )) {
+      const name = ctrl.getAttribute("name");
+      const v = ctrl.getAttribute("value");
+      if (name && v != null && v !== "") preserved.set(name, v);
+    }
     // Remove rows from a previous template clone (tagged data-template-row).
     for (const old of [...this.querySelectorAll(":scope > [data-template-row]")]) {
       old.remove();
@@ -405,6 +418,15 @@ export class SherpaNode extends SherpaElement {
     // Tag every top-level element so future swaps can find them.
     for (const el of [...clone.children]) {
       if (el.nodeType === 1) el.setAttribute("data-template-row", "");
+    }
+    // Restore preserved values onto the matching freshly-cloned controls
+    // before they hit the live DOM (so attributeChangedCallback only
+    // fires once with the right value).
+    if (preserved.size) {
+      for (const ctrl of clone.querySelectorAll("[slot='control'][name]")) {
+        const name = ctrl.getAttribute("name");
+        if (preserved.has(name)) ctrl.setAttribute("value", preserved.get(name));
+      }
     }
     this.appendChild(clone);
     // Optional: templates may declare helper text for the built-in
