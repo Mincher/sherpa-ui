@@ -65,9 +65,51 @@
         min-height: 0;
       }
 
-      .control-group { display: block; margin-bottom: var(--sherpa-space-sm, 12px); }
-      .controls-section + .controls-section { margin-top: var(--sherpa-space-md, 16px); }
-      #controls-content { padding: var(--sherpa-space-sm, 12px); }
+      /* Wider rails so input controls and labels have room to breathe. */
+      #sidebar-section,
+      #controls-section { --_section-width: 360px; }
+
+      .controls-section + .controls-section { margin-top: var(--sherpa-space-lg, 24px); }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sherpa-space-2xs, 4px);
+        margin-bottom: var(--sherpa-space-sm, 12px);
+      }
+
+      .control-group > sherpa-input-text,
+      .control-group > sherpa-input-number,
+      .control-group > sherpa-input-select { width: 100%; }
+
+      /* Switch row: label on the left, switch on the right. */
+      .control-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sherpa-space-sm, 12px);
+        padding: var(--sherpa-space-2xs, 4px) 0;
+      }
+
+      .control-row-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .control-row-label {
+        font-weight: var(--sherpa-font-weight-semibold, 600);
+        color: var(--sherpa-text-default-label, #1a1a1f);
+        font-size: var(--sherpa-fonts-scale-base, 14px);
+        line-height: 1.3;
+        word-break: break-word;
+      }
+
+      .control-row-description {
+        font-size: var(--sherpa-fonts-scale-sm, 12px);
+        color: var(--sherpa-text-default-secondary, #6a6a75);
+        line-height: 1.3;
+      }
     </style>
   </head>
   <body>
@@ -360,20 +402,17 @@
           await import(`./components/${tag}/${tag}.js`);
           currentInstance = document.createElement(tag);
 
+          // Pre-populate every non-boolean attribute with a sensible test
+          // value so the preview shows real content out of the gate.
           metadata.attributes.forEach((attr) => {
             if (attr.type === "boolean") return;
-            if (attr.type.includes("enum")) {
-              const m = attr.description.match(/([a-z-]+(?:\s*\|\s*[a-z-]+)*)/);
-              if (m) {
-                const opts = m[1].split("|").map((o) => o.trim());
-                setHostAttr(attr.name, opts[0], currentInstance);
-              }
-            } else if (attr.type === "string" && attr.name.includes("label")) {
-              setHostAttr(attr.name, `Sample ${attr.name}`, currentInstance);
+            const sample = sampleValueFor(attr, tag);
+            if (sample !== null && sample !== "") {
+              setHostAttr(attr.name, sample, currentInstance);
             }
           });
 
-          if (metadata.slots.some((s) => !s.name)) {
+          if (metadata.slots.some((s) => !s.name) && !currentInstance.textContent) {
             currentInstance.textContent = "Sample content";
           }
 
@@ -385,6 +424,39 @@
           msg.dataset.label  = `Error loading component: ${error.message}`;
           previewContainer.appendChild(msg);
         }
+      }
+
+      // ── Sample value heuristic per attribute ──
+      // Returns a representative test value to prefill into the preview
+      // (and into the matching control input).
+      function sampleValueFor(attr, tag) {
+        const name = attr.name.replace(/^data-/, "");
+
+        if (attr.type.includes("enum")) {
+          const m = attr.description.match(/([a-z0-9-]+(?:\s*\|\s*[a-z0-9-]+)*)/);
+          if (m) return m[1].split("|").map((o) => o.trim())[0];
+          return "";
+        }
+        if (attr.type === "number") {
+          if (/min/.test(name)) return "0";
+          if (/max/.test(name)) return "100";
+          if (/step/.test(name)) return "1";
+          if (/count|span/.test(name)) return "3";
+          return "42";
+        }
+        if (attr.type === "json") return "";
+
+        // string
+        if (/^icon/.test(name) || name === "icon") return "fa-solid fa-star";
+        if (/illustration/.test(name)) return "empty";
+        if (/heading|title/.test(name)) return "Sample heading";
+        if (/description|helper|placeholder|small-print|empty/.test(name)) {
+          return "Sample descriptive text.";
+        }
+        if (/label/.test(name)) return `Sample ${tag.replace(/^sherpa-/, "")}`;
+        if (/value/.test(name)) return "Sample value";
+        if (/name/.test(name)) return tag.replace(/^sherpa-/, "") + "-field";
+        return `Sample ${name}`;
       }
 
       // ═══════════════════════════════════════════════════════════
@@ -411,6 +483,41 @@
         return header;
       }
 
+      // Helper: read the host attribute's current value from the preview.
+      function readHostAttr(attr, target = currentInstance) {
+        if (!target) return "";
+        if (attr.startsWith("data-")) {
+          return target.dataset[dataKey(attr)] ?? "";
+        }
+        return target.getAttribute(attr) ?? "";
+      }
+
+      // Helper: build a labeled row (label + description) used for switches
+      // and other controls that don't carry their own label slot.
+      function makeControlRow(labelText, descriptionText, controlEl) {
+        const row = document.createElement("div");
+        row.className = "control-row";
+
+        const text = document.createElement("div");
+        text.className = "control-row-text";
+
+        const label = document.createElement("span");
+        label.className = "control-row-label";
+        label.textContent = labelText;
+        text.appendChild(label);
+
+        if (descriptionText) {
+          const desc = document.createElement("span");
+          desc.className = "control-row-description";
+          desc.textContent = descriptionText;
+          text.appendChild(desc);
+        }
+
+        row.appendChild(text);
+        row.appendChild(controlEl);
+        return row;
+      }
+
       function renderControls(metadata) {
         controlsContent.innerHTML = "";
 
@@ -424,10 +531,12 @@
             const group = document.createElement("div");
             group.className = "control-group";
 
+            const currentValue = readHostAttr(attr);
+            const sample = sampleValueFor(attr, currentComponent);
+
             if (attr.type === "boolean") {
               const sw = document.createElement("sherpa-switch");
-              sw.dataset.label = attr.name;
-              sw.dataset.state = "off";
+              sw.dataset.state = currentInstance?.hasAttribute(attr.name) ? "on" : "off";
               sw.addEventListener("change", (e) => {
                 if (!currentInstance) return;
                 currentInstance.toggleAttribute(attr.name, e.detail.checked);
@@ -436,8 +545,11 @@
                   e.detail.checked
                 );
               });
-              group.appendChild(sw);
-            } else if (attr.type.includes("enum")) {
+              section.appendChild(makeControlRow(attr.name, attr.description, sw));
+              return;
+            }
+
+            if (attr.type.includes("enum")) {
               const select = document.createElement("sherpa-input-select");
               select.dataset.label = attr.name;
 
@@ -447,31 +559,41 @@
                 const o = document.createElement("option");
                 o.value = opt;
                 o.textContent = opt;
+                if (opt === (currentValue || sample)) o.selected = true;
                 select.appendChild(o);
               });
+              if (currentValue || sample) {
+                select.setAttribute("value", currentValue || sample);
+              }
 
-              select.addEventListener("change", (e) => {
-                const value = e.detail?.value ?? select.value;
+              const onSelectChange = (e) => {
+                const value = e?.detail?.value ?? select.value ?? "";
                 setHostAttr(attr.name, value);
                 sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
-              });
+              };
+              select.addEventListener("change", onSelectChange);
               group.appendChild(select);
             } else if (attr.type === "number") {
               const input = document.createElement("sherpa-input-number");
               input.dataset.label = attr.name;
               input.setAttribute("placeholder", attr.description);
-              input.addEventListener("change", (e) => {
-                const value = e.detail?.value ?? input.value;
+              if (currentValue || sample) input.setAttribute("value", currentValue || sample);
+
+              const onNumChange = (e) => {
+                const value = e?.detail?.value ?? input.value ?? "";
                 setHostAttr(attr.name, value);
                 sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
-              });
+              };
+              input.addEventListener("input", onNumChange);
+              input.addEventListener("change", onNumChange);
               group.appendChild(input);
             } else if (attr.type === "json") {
               const input = document.createElement("sherpa-input-text");
               input.dataset.label = `${attr.name} (JSON)`;
               input.setAttribute("placeholder", "JSON array or object");
+              if (currentValue) input.setAttribute("value", currentValue);
               input.addEventListener("change", (e) => {
-                const value = e.detail?.value ?? input.value;
+                const value = e?.detail?.value ?? input.value ?? "";
                 try {
                   JSON.parse(value);
                   setHostAttr(attr.name, value);
@@ -485,11 +607,15 @@
               const input = document.createElement("sherpa-input-text");
               input.dataset.label = attr.name;
               input.setAttribute("placeholder", attr.description);
-              input.addEventListener("change", (e) => {
-                const value = e.detail?.value ?? input.value;
+              if (currentValue || sample) input.setAttribute("value", currentValue || sample);
+
+              const onTextChange = (e) => {
+                const value = e?.detail?.value ?? input.value ?? "";
                 setHostAttr(attr.name, value);
                 sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
-              });
+              };
+              input.addEventListener("input", onTextChange);
+              input.addEventListener("change", onTextChange);
               group.appendChild(input);
             }
 
@@ -515,7 +641,7 @@
             if (!slot.name) input.setAttribute("value", "Sample content");
 
             input.addEventListener("change", (e) => {
-              const value = e.detail?.value ?? input.value;
+              const value = e?.detail?.value ?? input.getAttribute("value") ?? "";
               if (!currentInstance) return;
               if (slot.name) {
                 const existing = currentInstance.querySelector(`[slot="${slot.name}"]`);
