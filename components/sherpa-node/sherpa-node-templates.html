@@ -268,13 +268,13 @@
      LOGIC / COMPARE
      ════════════════════════════════════════════════════════════════ -->
 
-<template class="rows-tpl" data-kind="logic" data-subtype="and">
+<template class="rows-tpl" data-kind="logic" data-subtype="and"
+          data-subtype-helper="Returns true if all values are positive.">
   <sherpa-node-header slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
   </sherpa-node-header>
-  <sherpa-node-row><span slot="helper">All inputs must be true.</span></sherpa-node-row>
   <sherpa-node-socket slot="footer-output" data-direction="out" data-port-name="false" data-status="false"></sherpa-node-socket>
 </template>
 
@@ -533,20 +533,20 @@
   </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value</span>
-    <sherpa-input-text slot="control" name="filter" placeholder="All tags"></sherpa-input-text>
+    <sherpa-input-tag slot="control" name="filter" placeholder="All tags"></sherpa-input-tag>
   </sherpa-node-row>
 </template>
 
 <template class="rows-tpl" data-kind="util" data-subtype="concatenate"
-          data-subtype-helper="Creates a string by adding Value B to the chosen end of Value A.">
+          data-subtype-helper="Creates a string by adding Value B to the end of Value A.">
   <sherpa-node-header slot="header">
-    <span slot="title">Concatenate</span>
+    <span slot="title">Modify text</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
   </sherpa-node-header>
   <sherpa-node-row>
-    <span slot="label">Position</span>
-    <sherpa-input-select slot="control" name="position">
-      <option>Start</option><option>End</option>
+    <span slot="label">Operation</span>
+    <sherpa-input-select slot="control" name="operation">
+      <option>Append</option><option>Prepend</option>
     </sherpa-input-select>
   </sherpa-node-row>
   <sherpa-node-row>
@@ -624,7 +624,8 @@
   </sherpa-node-row>
 </template>
 
-<template class="rows-tpl" data-kind="output" data-subtype="outcome">
+<template class="rows-tpl" data-kind="output" data-subtype="outcome"
+          data-subtype-helper="Send a message to recipients via chosen methods.">
   <sherpa-node-header slot="header">
     <span slot="title">Outcome</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
@@ -636,6 +637,12 @@
       <option>Update PSA</option>
       <option>Show action in UI</option>
       <option>Notify</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Severity</span>
+    <sherpa-input-select slot="control" name="severity">
+      <option>Info</option><option>Warning</option><option>Critical</option>
     </sherpa-input-select>
   </sherpa-node-row>
   <sherpa-node-row>
@@ -652,11 +659,11 @@
   </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Recipients</span>
-    <sherpa-input-text slot="control" name="recipients" placeholder="Recipients"></sherpa-input-text>
+    <sherpa-input-tag slot="control" name="recipients" placeholder="Recipients"></sherpa-input-tag>
   </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Method</span>
-    <sherpa-input-text slot="control" name="method" placeholder="Email, SMS"></sherpa-input-text>
+    <sherpa-input-tag slot="control" name="method" placeholder="Email, SMS"></sherpa-input-tag>
   </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Message</span>
@@ -757,7 +764,7 @@
   </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Ticket number</span>
-    <sherpa-input-text slot="control" name="ticketNumber" placeholder="505-1234"></sherpa-input-text>
+    <sherpa-input-search slot="control" name="ticketNumber" placeholder="505-1234"></sherpa-input-search>
   </sherpa-node-row>
 </template>
 
