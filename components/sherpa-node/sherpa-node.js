@@ -306,6 +306,8 @@ export class SherpaNode extends SherpaElement {
   #onControlChange = (e) => {
     // Ignore our own subtype dropdown — that has its own event path.
     if (e.composedPath().includes(this.#subtypeSelect)) return;
+    // Re-evaluate conditional row visibility on every value change.
+    this.#applyShowIf();
     // Driven controls fire change as a side-effect of being written by
     // the canvas; suppress those to avoid an event loop.
     const tgt = e.composedPath().find((n) => n?.hasAttribute?.("data-driven"));
@@ -398,6 +400,9 @@ export class SherpaNode extends SherpaElement {
       if (helper) this.#subtypeSelect.setAttribute("data-helper", helper);
       else this.#subtypeSelect.removeAttribute("data-helper");
     }
+    // Apply data-show-if conditional row visibility, then re-apply
+    // whenever a control value changes (handled in #onControlChange).
+    queueMicrotask(() => this.#applyShowIf());
     // Tell the canvas a template swap may have changed available
     // controls / sockets; defer so the new elements have time to
     // upgrade before the propagation pass reads their values.
@@ -407,6 +412,37 @@ export class SherpaNode extends SherpaElement {
         detail: { nodeId: this.nodeId, reason: "template" },
       }));
     });
+  }
+
+  /**
+   * Evaluate `data-show-if` on every template-cloned row and toggle
+   * the `hidden` attribute. Format: `data-show-if="ctrlName=val|val2"`.
+   * Multiple clauses comma-separated are AND-ed:
+   *   data-show-if="type=Notify, severity=Critical"
+   * The referenced control is matched by its `name` attribute on a
+   * sibling `[slot="control"]` within the same node. Subtype select
+   * is also addressable via the special name "subtype".
+   */
+  #applyShowIf() {
+    const rows = this.querySelectorAll(":scope > [data-template-row][data-show-if]");
+    if (!rows.length) return;
+    const readVal = (name) => {
+      if (name === "subtype") return this.dataset.subtype || "";
+      const ctrl = this.querySelector(`:scope > [data-template-row] > [slot="control"][name="${CSS.escape(name)}"]`);
+      if (!ctrl) return "";
+      return ctrl.getAttribute("value") ?? ctrl.value ?? "";
+    };
+    for (const row of rows) {
+      const expr = row.getAttribute("data-show-if") || "";
+      const clauses = expr.split(",").map((s) => s.trim()).filter(Boolean);
+      const ok = clauses.every((c) => {
+        const [name, vals] = c.split("=").map((s) => s.trim());
+        if (!name || vals == null) return true;
+        const allowed = vals.split("|").map((s) => s.trim());
+        return allowed.includes(String(readVal(name)));
+      });
+      row.toggleAttribute("hidden", !ok);
+    }
   }
 
   #onSubtypeChange = (e) => {
