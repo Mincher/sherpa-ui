@@ -57,6 +57,12 @@ const SUBTYPE_LABELS = {
   default: "Default", trigger: "Trigger",
 };
 
+/** Per-kind label for the subtype picker itself ("Type" by default).
+ *  Logic nodes call it "Operation" to match common UX conventions. */
+const KIND_SUBTYPE_LABELS = {
+  logic: "Operation",
+};
+
 async function loadDoc() {
   if (!_docPromise) {
     _docPromise = fetch(TEMPLATES_URL)
@@ -114,4 +120,7 @@ export async function configureNode(nodeEl, kind, subtype) {
   const subtypes = await getSubtypesForKind(kind);
   nodeEl.dataset.subtypes = JSON.stringify(subtypes);
   nodeEl.dataset.subtype = subtype || subtypes[0]?.value || "";
+  const subtypeLabel = KIND_SUBTYPE_LABELS[kind];
+  if (subtypeLabel) nodeEl.dataset.subtypeLabel = subtypeLabel;
+  else delete nodeEl.dataset.subtypeLabel;
 }

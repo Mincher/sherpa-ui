@@ -149,6 +149,7 @@
   padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px) 0;
 }
 :host([data-subtypes]) .node-subtype { display: block; }
+:host([data-single-subtype]) .node-subtype { display: none; }
 .node-subtype .subtype-select { display: block; width: 100%; }
 
 /* ── Hide the registered <template> nodes from layout. ─────────── */

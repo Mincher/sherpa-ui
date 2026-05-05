@@ -69,6 +69,7 @@ export class SherpaNode extends SherpaElement {
       "data-node-id",
       "data-subtypes",
       "data-subtype",
+      "data-subtype-label",
     ];
   }
 
@@ -107,6 +108,7 @@ export class SherpaNode extends SherpaElement {
     if (name === "data-x" || name === "data-y") this.#syncPosition();
     else if (name === "data-w") this.#syncWidth();
     else if (name === "data-subtypes") this.#syncSubtypeOptions();
+    else if (name === "data-subtype-label") this.#syncSubtypeOptions();
     else if (name === "data-subtype") {
       if (this.#subtypeSelect && this.#subtypeSelect.getAttribute("value") !== this.dataset.subtype) {
         this.#subtypeSelect.setAttribute("value", this.dataset.subtype || "");
@@ -352,6 +354,19 @@ export class SherpaNode extends SherpaElement {
       value: String(o.value ?? ""),
       label: String(o.label ?? o.value ?? ""),
     }));
+    // Hide the subtype select entirely when there's nothing to choose
+    // between — single-subtype nodes have no business showing a
+    // disabled "Type" dropdown. Toggled via host attribute; CSS owns
+    // the actual visibility (see sherpa-node.css).
+    this.toggleAttribute("data-single-subtype", normalised.length <= 1);
+    // Allow per-host relabelling of the subtype select (e.g. logic
+    // nodes label it "Operation" rather than the default "Type").
+    if (this.#subtypeSelect) {
+      const label = this.dataset.subtypeLabel || "Type";
+      if (this.#subtypeSelect.getAttribute("data-label") !== label) {
+        this.#subtypeSelect.setAttribute("data-label", label);
+      }
+    }
     const apply = () => {
       if (typeof this.#subtypeSelect.setOptions !== "function") return;
       this.#subtypeSelect.setOptions(normalised);
