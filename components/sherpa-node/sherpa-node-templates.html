@@ -26,6 +26,23 @@
   </sherpa-node-row>
 </template>
 
+<template class="rows-tpl" data-kind="source" data-subtype="api">
+  <sherpa-node-header slot="header">
+    <span slot="title">API</span>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
+  </sherpa-node-header>
+  <sherpa-node-row>
+    <span slot="label">URL</span>
+    <sherpa-input-text slot="control" name="url" placeholder="https://example.com/api"></sherpa-input-text>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Version</span>
+    <sherpa-input-select slot="control" name="version">
+      <option>v1</option><option>v2</option><option>v3</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+</template>
+
 <!-- ════════════════════════════════════════════════════════════════
      GROUP
      ════════════════════════════════════════════════════════════════ -->
@@ -87,13 +104,13 @@
   <sherpa-node-row>
     <span slot="label">Category</span>
     <sherpa-input-select slot="control" name="category">
-      <option>Asset</option><option>User</option><option>Group</option>
+      <option>Asset</option><option>Asset metrics</option><option>User</option><option>Group</option>
     </sherpa-input-select>
   </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Field</span>
     <sherpa-input-select slot="control" name="field">
-      <option>Name</option><option>Status</option><option>Owner</option>
+      <option>Name</option><option>Status</option><option>Owner</option><option>CPU usage</option><option>Memory usage</option><option>Disk usage</option>
     </sherpa-input-select>
   </sherpa-node-row>
 </template>
@@ -509,8 +526,38 @@
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
   </sherpa-node-header>
   <sherpa-node-row>
-    <span slot="label">Filter</span>
+    <span slot="label">Operation</span>
+    <sherpa-input-select slot="control" name="operation">
+      <option>Includes</option><option>Excludes</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Value</span>
     <sherpa-input-text slot="control" name="filter" placeholder="All tags"></sherpa-input-text>
+  </sherpa-node-row>
+</template>
+
+<template class="rows-tpl" data-kind="util" data-subtype="concatenate">
+  <sherpa-node-header slot="header">
+    <span slot="title">Concatenate</span>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
+  </sherpa-node-header>
+  <sherpa-node-row>
+    <span slot="label">Position</span>
+    <sherpa-input-select slot="control" name="position">
+      <option>Start</option><option>End</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row><span slot="helper">Creates a string by adding Value B to the chosen end of Value A.</span></sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Value A</span>
+    <sherpa-input-text slot="control" name="a" placeholder=""></sherpa-input-text>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="a"></sherpa-node-socket>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Value B</span>
+    <sherpa-input-text slot="control" name="b" placeholder=""></sherpa-input-text>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="b"></sherpa-node-socket>
   </sherpa-node-row>
 </template>
 <template class="rows-tpl" data-kind="util" data-subtype="listen-frequency">
@@ -574,5 +621,162 @@
   </sherpa-node-header>
   <sherpa-node-row>
     <span slot="helper">Terminates the flow.</span>
+  </sherpa-node-row>
+</template>
+
+<template class="rows-tpl" data-kind="output" data-subtype="outcome">
+  <sherpa-node-header slot="header">
+    <span slot="title">Outcome</span>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
+  </sherpa-node-header>
+  <sherpa-node-row>
+    <span slot="label">Type</span>
+    <sherpa-input-select slot="control" name="type">
+      <option>Return value</option>
+      <option>Update PSA</option>
+      <option>Show action in UI</option>
+      <option>Notify</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Location</span>
+    <sherpa-input-select slot="control" name="location">
+      <option>Assets</option><option>Tickets</option><option>Dashboard</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Context</span>
+    <sherpa-input-select slot="control" name="context">
+      <option>CPU usage widget</option><option>Memory widget</option><option>Asset detail</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Recipients</span>
+    <sherpa-input-text slot="control" name="recipients" placeholder="Recipients"></sherpa-input-text>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Method</span>
+    <sherpa-input-text slot="control" name="method" placeholder="Email, SMS"></sherpa-input-text>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Message</span>
+    <sherpa-input-text slot="control" name="message" placeholder="Message"></sherpa-input-text>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="message"></sherpa-node-socket>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Timeout</span>
+    <sherpa-input-number slot="control" name="timeout" value="3000" min="0"></sherpa-input-number>
+  </sherpa-node-row>
+</template>
+
+<!-- ════════════════════════════════════════════════════════════════
+     AI
+     ════════════════════════════════════════════════════════════════ -->
+
+<template class="rows-tpl" data-kind="ai" data-subtype="model">
+  <sherpa-node-header slot="header">
+    <span slot="title">Model</span>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
+  </sherpa-node-header>
+  <sherpa-node-row><span slot="helper">Uses the selected model to process natural language.</span></sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Large Language Model</span>
+    <sherpa-input-select slot="control" name="model">
+      <option>Claude Opus 4.6</option><option>Claude Sonnet 4.6</option><option>GPT-5</option><option>Gemini 2.5</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+</template>
+
+<template class="rows-tpl" data-kind="ai" data-subtype="delegate">
+  <sherpa-node-header slot="header">
+    <span slot="title">Delegate</span>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="model"></sherpa-node-socket>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
+  </sherpa-node-header>
+  <sherpa-node-row><span slot="helper">Uses the selected agent to handle any linked AI interactions.</span></sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Agent</span>
+    <sherpa-input-select slot="control" name="agent">
+      <option>Big N-zo</option><option>Little N-zo</option><option>Custom agent</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+</template>
+
+<template class="rows-tpl" data-kind="ai" data-subtype="chat">
+  <sherpa-node-header slot="header">
+    <span slot="title">Ask N-zo</span>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="agent"></sherpa-node-socket>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
+  </sherpa-node-header>
+  <sherpa-node-row>
+    <span slot="label">Type</span>
+    <sherpa-input-select slot="control" name="type">
+      <option>Preset</option><option>Custom</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Value</span>
+    <sherpa-input-select slot="control" name="preset">
+      <option>Determine likely cause</option><option>Suggest remediation</option><option>Summarise</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Response</span>
+    <sherpa-input-text slot="control" name="response" placeholder="This is what N-zo replied with. We can send this out to other nodes. May need more fields."></sherpa-input-text>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="response"></sherpa-node-socket>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Recommendations</span>
+    <sherpa-input-text slot="control" name="recommendations" placeholder="Remediate: Kill Process"></sherpa-input-text>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="recommendations"></sherpa-node-socket>
+  </sherpa-node-row>
+</template>
+
+<!-- ════════════════════════════════════════════════════════════════
+     ACTION
+     ════════════════════════════════════════════════════════════════ -->
+
+<template class="rows-tpl" data-kind="action" data-subtype="ticket">
+  <sherpa-node-header slot="header">
+    <span slot="title">Action</span>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
+  </sherpa-node-header>
+  <sherpa-node-row>
+    <span slot="label">Module</span>
+    <sherpa-input-select slot="control" name="module">
+      <option>Ticketing</option><option>Assets</option><option>Users</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Action</span>
+    <sherpa-input-select slot="control" name="action">
+      <option>Add to ticket</option><option>Create ticket</option><option>Close ticket</option>
+    </sherpa-input-select>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Ticket number</span>
+    <sherpa-input-text slot="control" name="ticketNumber" placeholder="505-1234"></sherpa-input-text>
+  </sherpa-node-row>
+</template>
+
+<template class="rows-tpl" data-kind="action" data-subtype="notify">
+  <sherpa-node-header slot="header">
+    <span slot="title">Notify</span>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
+    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
+  </sherpa-node-header>
+  <sherpa-node-row>
+    <span slot="label">Recipients</span>
+    <sherpa-input-text slot="control" name="recipients" placeholder="Recipients"></sherpa-input-text>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Method</span>
+    <sherpa-input-text slot="control" name="method" placeholder="Email, SMS"></sherpa-input-text>
+  </sherpa-node-row>
+  <sherpa-node-row>
+    <span slot="label">Message</span>
+    <sherpa-input-text slot="control" name="message" placeholder="Message"></sherpa-input-text>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="message"></sherpa-node-socket>
   </sherpa-node-row>
 </template>

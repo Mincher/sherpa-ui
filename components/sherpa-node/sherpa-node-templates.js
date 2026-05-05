@@ -44,6 +44,15 @@ const SUBTYPE_LABELS = {
   "listen-frequency": "Listen at frequency",
   "listen-status": "Listen for status",
   skill: "Skill",
+  concatenate: "Concatenate",
+  // source
+  api: "API",
+  // output
+  outcome: "Outcome",
+  // ai
+  model: "Model", delegate: "Delegate", chat: "Chat",
+  // action
+  ticket: "Ticket", notify: "Notify",
   // misc
   default: "Default", trigger: "Trigger",
 };
