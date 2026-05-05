@@ -537,14 +537,15 @@
   </sherpa-node-row>
 </template>
 
-<template class="rows-tpl" data-kind="util" data-subtype="concatenate">
+<template class="rows-tpl" data-kind="util" data-subtype="concatenate"
+          data-subtype-helper="Creates a string by adding Value B to the chosen end of Value A.">
   <sherpa-node-header slot="header">
     <span slot="title">Concatenate</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
   </sherpa-node-header>
   <sherpa-node-row>
     <span slot="label">Position</span>
-    <sherpa-input-select slot="control" name="position" data-helper="Creates a string by adding Value B to the chosen end of Value A.">
+    <sherpa-input-select slot="control" name="position">
       <option>Start</option><option>End</option>
     </sherpa-input-select>
   </sherpa-node-row>
@@ -672,20 +673,22 @@
      AI
      ════════════════════════════════════════════════════════════════ -->
 
-<template class="rows-tpl" data-kind="ai" data-subtype="model">
+<template class="rows-tpl" data-kind="ai" data-subtype="model"
+          data-subtype-helper="Uses the selected model to process natural language.">
   <sherpa-node-header slot="header">
     <span slot="title">Model</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
   </sherpa-node-header>
   <sherpa-node-row>
     <span slot="label">Large Language Model</span>
-    <sherpa-input-select slot="control" name="model" data-helper="Uses the selected model to process natural language.">
+    <sherpa-input-select slot="control" name="model">
       <option>Claude Opus 4.6</option><option>Claude Sonnet 4.6</option><option>GPT-5</option><option>Gemini 2.5</option>
     </sherpa-input-select>
   </sherpa-node-row>
 </template>
 
-<template class="rows-tpl" data-kind="ai" data-subtype="delegate">
+<template class="rows-tpl" data-kind="ai" data-subtype="delegate"
+          data-subtype-helper="Uses the selected agent to handle any linked AI interactions.">
   <sherpa-node-header slot="header">
     <span slot="title">Delegate</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="model"></sherpa-node-socket>

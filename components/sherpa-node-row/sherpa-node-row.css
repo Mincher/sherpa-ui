@@ -14,17 +14,6 @@
   min-height: var(--sherpa-node-row-height);
 }
 
-/* Helper-only rows (no control, no label) shouldn't reserve a full
-   60px row track — that pushes them visually far from any sibling
-   input row. Collapse to fit content so they sit snugly below the
-   preceding row. */
-:host([data-has-helper]:not([data-has-control]):not([data-has-label])) {
-  min-height: 0;
-}
-:host([data-has-helper]:not([data-has-control]):not([data-has-label])) .row {
-  padding-top: 0;
-}
-
 .row {
   display: grid;
   grid-template-columns:

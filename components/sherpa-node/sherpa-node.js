@@ -390,6 +390,14 @@ export class SherpaNode extends SherpaElement {
       if (el.nodeType === 1) el.setAttribute("data-template-row", "");
     }
     this.appendChild(clone);
+    // Optional: templates may declare helper text for the built-in
+    // subtype (Type) select via `data-subtype-helper="…"` on the
+    // <template> element — mirror it onto the subtype-select.
+    const helper = tpl.getAttribute("data-subtype-helper") || "";
+    if (this.#subtypeSelect) {
+      if (helper) this.#subtypeSelect.setAttribute("data-helper", helper);
+      else this.#subtypeSelect.removeAttribute("data-helper");
+    }
     // Tell the canvas a template swap may have changed available
     // controls / sockets; defer so the new elements have time to
     // upgrade before the propagation pass reads their values.
