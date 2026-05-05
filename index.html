@@ -18,23 +18,17 @@
       referrerpolicy="no-referrer"
     />
     <link href="css/styles/index.css" rel="stylesheet" />
-    <link id="sherpa-theme" rel="stylesheet" href="/css/styles/sherpa-theme-apex-2-core.css" />
+    <link
+      id="sherpa-theme"
+      rel="stylesheet"
+      href="/css/styles/sherpa-theme-apex-2-core.css"
+    />
     <style>
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
+      /* Minimal layout shell — chrome is composed from sherpa-* components. */
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
       body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-      }
-
-      body {
-        font-family:
-          var(--sherpa-typeface-open-sans-style-name, "Open Sans"), Arial,
-          sans-serif;
+        font-family: var(--sherpa-typeface-open-sans-style-name, "Open Sans"), Arial, sans-serif;
         font-size: var(--sherpa-fonts-scale-base, 14px);
         color: var(--sherpa-text-default-body, #333);
         background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
@@ -42,721 +36,197 @@
         flex-direction: column;
       }
 
-      .site-header {
-        background: var(--sherpa-surface-container-default, #fff);
-        border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        padding: 16px 24px;
-        flex-shrink: 0;
-      }
-
-      .site-header h1 {
-        font-family: var(--sherpa-fonts-context-brand, "Manrope"), sans-serif;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--sherpa-text-default-heading, #222);
-        margin: 0;
-      }
-
       .playground-layout {
         display: flex;
         flex: 1;
-        overflow: hidden;
+        min-height: 0;
       }
-
-      /* ═══════════════════════════════════════════════════════════
-         SIDEBAR — fixed left, scrollable component list
-         ═══════════════════════════════════════════════════════════ */
-
-      .playground-sidebar {
-        width: 280px;
-        background: var(--sherpa-surface-container-default, #fff);
-        border-right: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0;
-      }
-
-      .sidebar-search {
-        padding: 12px 12px;
-        border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        flex-shrink: 0;
-      }
-
-      .sidebar-search input {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        border-radius: 4px;
-        font-size: 0.875rem;
-        font-family: inherit;
-        background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-      }
-
-      .sidebar-search input:focus {
-        outline: none;
-        border-color: var(--sherpa-border-context-info-default, #0066cc);
-        background: var(--sherpa-surface-container-default, #fff);
-      }
-
-      .sidebar-list {
-        flex: 1;
-        overflow-y: auto;
-        list-style: none;
-        margin: 0;
-        padding: 8px 0;
-      }
-
-      .sidebar-item {
-        padding: 0;
-        margin: 0;
-      }
-
-      .sidebar-link {
-        display: block;
-        padding: 10px 12px;
-        color: var(--sherpa-text-default-body, #333);
-        text-decoration: none;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: background 0.15s ease;
-        border-left: 3px solid transparent;
-      }
-
-      .sidebar-link:hover {
-        background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-      }
-
-      .sidebar-link.active {
-        background: var(--sherpa-surface-control-primary-default, #e6f0ff);
-        border-left-color: var(--sherpa-border-context-info-default, #0066cc);
-        color: var(--sherpa-text-context-info-default, #0066cc);
-        font-weight: 600;
-      }
-
-      .sidebar-link .tag-name {
-        display: block;
-        font-family:
-          var(--sherpa-typeface-source-code-pro-style-name, "Source Code Pro"),
-          monospace;
-        font-size: 0.75rem;
-        font-weight: 400;
-        color: var(--sherpa-text-default-secondary, #666);
-        margin-top: 4px;
-      }
-
-      .sidebar-link.active .tag-name {
-        color: var(--sherpa-text-context-info-default, #0066cc);
-      }
-
-      /* ═══════════════════════════════════════════════════════════
-         MAIN CONTENT — scrollable preview + controls
-         ═══════════════════════════════════════════════════════════ */
 
       .playground-main {
         flex: 1;
+        min-width: 0;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: auto;
+        padding: var(--sherpa-space-md, 16px);
+        gap: var(--sherpa-space-md, 16px);
       }
 
-      .playground-empty {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-        text-align: center;
-        color: var(--sherpa-text-default-secondary, #666);
-      }
-
-      .playground-empty-icon {
-        font-size: 3rem;
-        margin-bottom: 16px;
-        opacity: 0.5;
-      }
-
-      .playground-content {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        overflow: hidden;
-      }
-
-      .playground-preview-area {
-        flex: 1;
-        padding: 24px;
-        overflow-y: auto;
-        border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-      }
-
-      .preview-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-      }
-
-      .preview-header h2 {
-        font-family: var(--sherpa-fonts-context-brand, "Manrope"), sans-serif;
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--sherpa-text-default-heading, #222);
-        margin: 0;
-      }
-
-      .preview-container {
-        padding: 24px;
-        background: var(--sherpa-surface-container-default, #fff);
-        border: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        border-radius: 8px;
-        margin-bottom: 24px;
-        min-height: 120px;
+      #preview-container {
+        min-height: 160px;
         display: flex;
         align-items: center;
         justify-content: center;
       }
+      #preview-container > * { flex-shrink: 0; }
 
-      .preview-container > * {
-        flex-shrink: 0;
+      #component-list-panel {
+        flex: 1;
+        min-height: 0;
       }
 
-      .controls-panel {
-        max-height: 50%;
-        overflow-y: auto;
-        padding: 16px;
-        background: var(--sherpa-surface-container-default, #fff);
-        border-top: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-      }
-
-      .controls-section {
-        margin-bottom: 20px;
-      }
-
-      .controls-section-title {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--sherpa-text-default-heading, #222);
-        margin: 0 0 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      .control-group {
-        margin-bottom: 16px;
-      }
-
-      .control-label {
-        display: block;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        color: var(--sherpa-text-default-body, #333);
-        margin-bottom: 6px;
-      }
-
-      .control-input {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        border-radius: 4px;
-        font-family: inherit;
-        font-size: 0.875rem;
-        background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-      }
-
-      .control-input:focus {
-        outline: none;
-        border-color: var(--sherpa-border-context-info-default, #0066cc);
-        background: var(--sherpa-surface-container-default, #fff);
-      }
-
-      .control-checkbox {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-        accent-color: var(--sherpa-border-context-info-default, #0066cc);
-      }
-
-      .control-checkbox-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      textarea.control-input {
-        font-family:
-          var(--sherpa-typeface-source-code-pro-style-name, "Source Code Pro"),
-          monospace;
-        font-size: 0.75rem;
-        min-height: 80px;
-        max-height: 150px;
-        resize: vertical;
-      }
-
-      .event-log {
-        max-height: 200px;
-        overflow-y: auto;
-        background: #f0f0f0;
-        border: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        border-radius: 4px;
-        padding: 8px;
-        font-family:
-          var(--sherpa-typeface-source-code-pro-style-name, "Source Code Pro"),
-          monospace;
-        font-size: 0.75rem;
-        line-height: 1.4;
-      }
-
-      .event-log-entry {
-        padding: 4px 0;
-        border-bottom: 1px solid #e0e0e0;
-        color: #555;
-      }
-
-      .event-log-entry:last-child {
-        border-bottom: none;
-      }
-
-      .event-log-entry strong {
-        color: var(--sherpa-text-context-info-default, #0066cc);
-      }
-
-      .event-log-empty {
-        color: var(--sherpa-text-default-secondary, #666);
-        font-style: italic;
-      }
-
-      .controls-button {
-        padding: 8px 16px;
-        background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-        border: 1px solid var(--sherpa-border-container-default, #e0e0e0);
-        border-radius: 4px;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        cursor: pointer;
-        color: var(--sherpa-text-default-body, #333);
-        transition: background 0.15s ease;
-      }
-
-      .controls-button:hover {
-        background: var(--sherpa-border-container-default, #e0e0e0);
-      }
-
-      .controls-button:active {
-        background: var(--sherpa-border-container-default, #d0d0d0);
-      }
-
-      /* Scrollbar styling */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: var(--sherpa-border-container-default, #d0d0d0);
-        border-radius: 4px;
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-        background: var(--sherpa-border-container-default, #b0b0b0);
-      }
+      .control-group { display: block; margin-bottom: var(--sherpa-space-sm, 12px); }
+      .controls-section + .controls-section { margin-top: var(--sherpa-space-md, 16px); }
+      #controls-content { padding: var(--sherpa-space-sm, 12px); }
     </style>
   </head>
   <body>
-    <!-- Header -->
-    <div class="site-header">
-      <h1>Sherpa UI Component Playground</h1>
-    </div>
+    <!-- Site header -->
+    <sherpa-view-header
+      id="site-header"
+      data-label="Sherpa UI Component Playground"
+    ></sherpa-view-header>
 
-    <!-- Main Layout -->
+    <!-- Main layout -->
     <div class="playground-layout">
-      <!-- Sidebar -->
-      <aside class="playground-sidebar">
-        <div class="sidebar-search">
-          <input
-            id="search-input"
-            type="text"
-            placeholder="Search components..."
-          />
-        </div>
-        <ul class="sidebar-list" id="component-list"></ul>
-      </aside>
+      <!-- Sidebar: left content-section housing a searchable list-panel -->
+      <sherpa-content-section
+        id="sidebar-section"
+        data-position="left"
+        data-heading="Components"
+        data-restore-label="Components"
+      >
+        <sherpa-list-panel
+          id="component-list-panel"
+          data-match="sherpa-list-item"
+          data-empty="No components match"
+        ></sherpa-list-panel>
+      </sherpa-content-section>
 
-      <!-- Main Content -->
+      <!-- Main content -->
       <main class="playground-main">
-        <div id="empty-state" class="playground-empty">
-          <div>
-            <div class="playground-empty-icon">
-              <i class="fa-solid fa-cube"></i>
-            </div>
-            <p>Select a component from the list to preview</p>
-          </div>
-        </div>
+        <sherpa-empty-state
+          id="empty-state"
+          data-label="Select a component"
+          data-description="Pick a component from the sidebar to preview it here."
+          data-illustration="empty"
+        ></sherpa-empty-state>
 
-        <div id="content-area" class="playground-content" style="display: none">
-          <div class="playground-preview-area">
-            <div class="preview-header">
-              <h2 id="preview-title">Component Preview</h2>
-            </div>
-            <div class="preview-container" id="preview-container"></div>
-          </div>
-
-          <div class="controls-panel">
-            <div id="controls-content"></div>
-          </div>
+        <div id="content-area" hidden>
+          <sherpa-section-header
+            id="preview-title-header"
+            data-label="Component Preview"
+            data-divider
+          ></sherpa-section-header>
+          <sherpa-card id="preview-card" data-elevation="sm">
+            <div id="preview-container"></div>
+          </sherpa-card>
         </div>
       </main>
+
+      <!-- Controls: right content-section, minimisable to a strip -->
+      <sherpa-content-section
+        id="controls-section"
+        data-position="right"
+        data-heading="Controls"
+        data-restore-label="Controls"
+      >
+        <div id="controls-content"></div>
+      </sherpa-content-section>
     </div>
 
     <script type="module">
+      // ── Eagerly load sherpa components used in the playground chrome ──
+      import "./components/sherpa-view-header/sherpa-view-header.js";
+      import "./components/sherpa-content-section/sherpa-content-section.js";
+      import "./components/sherpa-list-panel/sherpa-list-panel.js";
+      import "./components/sherpa-list/sherpa-list.js";
+      import "./components/sherpa-list-item/sherpa-list-item.js";
+      import "./components/sherpa-empty-state/sherpa-empty-state.js";
+      import "./components/sherpa-card/sherpa-card.js";
+      import "./components/sherpa-section-header/sherpa-section-header.js";
+      import "./components/sherpa-input-text/sherpa-input-text.js";
+      import "./components/sherpa-input-number/sherpa-input-number.js";
+      import "./components/sherpa-input-select/sherpa-input-select.js";
+      import "./components/sherpa-switch/sherpa-switch.js";
+      import "./components/sherpa-button/sherpa-button.js";
+      import "./components/sherpa-message/sherpa-message.js";
+
       // ═══════════════════════════════════════════════════════════
       // COMPONENT LIST & METADATA
       // ═══════════════════════════════════════════════════════════
 
       const COMPONENTS = [
-        // Layout & Navigation
         { tag: "sherpa-footer", category: "Layout & Navigation", label: "Footer" },
         { tag: "sherpa-nav", category: "Layout & Navigation", label: "Nav" },
-        {
-          tag: "sherpa-nav-item",
-          category: "Layout & Navigation",
-          label: "Nav Item",
-        },
-        {
-          tag: "sherpa-nav-promo",
-          category: "Layout & Navigation",
-          label: "Nav Promo",
-        },
-        {
-          tag: "sherpa-view-header",
-          category: "Layout & Navigation",
-          label: "View Header",
-        },
-        {
-          tag: "sherpa-section-header",
-          category: "Layout & Navigation",
-          label: "Section Header",
-        },
-        {
-          tag: "sherpa-container",
-          category: "Layout & Navigation",
-          label: "Container",
-        },
-        {
-          tag: "sherpa-container-header",
-          category: "Layout & Navigation",
-          label: "Container Header",
-        },
-        {
-          tag: "sherpa-container-pdf-exporter",
-          category: "Layout & Navigation",
-          label: "Container PDF Exporter",
-        },
-        {
-          tag: "sherpa-layout-grid",
-          category: "Layout & Navigation",
-          label: "Layout Grid",
-        },
-        {
-          tag: "sherpa-toolbar",
-          category: "Layout & Navigation",
-          label: "Toolbar",
-        },
+        { tag: "sherpa-nav-item", category: "Layout & Navigation", label: "Nav Item" },
+        { tag: "sherpa-nav-promo", category: "Layout & Navigation", label: "Nav Promo" },
+        { tag: "sherpa-view-header", category: "Layout & Navigation", label: "View Header" },
+        { tag: "sherpa-section-header", category: "Layout & Navigation", label: "Section Header" },
+        { tag: "sherpa-container", category: "Layout & Navigation", label: "Container" },
+        { tag: "sherpa-container-header", category: "Layout & Navigation", label: "Container Header" },
+        { tag: "sherpa-container-pdf-exporter", category: "Layout & Navigation", label: "Container PDF Exporter" },
+        { tag: "sherpa-layout-grid", category: "Layout & Navigation", label: "Layout Grid" },
+        { tag: "sherpa-toolbar", category: "Layout & Navigation", label: "Toolbar" },
 
-        // Data Visualization
-        {
-          tag: "sherpa-data-grid",
-          category: "Data Visualization",
-          label: "Data Grid",
-        },
-        {
-          tag: "sherpa-barchart",
-          category: "Data Visualization",
-          label: "Bar Chart",
-        },
-        {
-          tag: "sherpa-donut-chart",
-          category: "Data Visualization",
-          label: "Donut Chart",
-        },
-        {
-          tag: "sherpa-gauge-chart",
-          category: "Data Visualization",
-          label: "Gauge Chart",
-        },
-        {
-          tag: "sherpa-line-chart",
-          category: "Data Visualization",
-          label: "Line Chart",
-        },
-        {
-          tag: "sherpa-metric",
-          category: "Data Visualization",
-          label: "Metric",
-        },
-        {
-          tag: "sherpa-sparkline",
-          category: "Data Visualization",
-          label: "Sparkline",
-        },
-        {
-          tag: "sherpa-chart-legend",
-          category: "Data Visualization",
-          label: "Chart Legend",
-        },
-        {
-          tag: "sherpa-key-value-list",
-          category: "Data Visualization",
-          label: "Key-Value List",
-        },
+        { tag: "sherpa-data-grid", category: "Data Visualization", label: "Data Grid" },
+        { tag: "sherpa-barchart", category: "Data Visualization", label: "Bar Chart" },
+        { tag: "sherpa-donut-chart", category: "Data Visualization", label: "Donut Chart" },
+        { tag: "sherpa-gauge-chart", category: "Data Visualization", label: "Gauge Chart" },
+        { tag: "sherpa-line-chart", category: "Data Visualization", label: "Line Chart" },
+        { tag: "sherpa-metric", category: "Data Visualization", label: "Metric" },
+        { tag: "sherpa-sparkline", category: "Data Visualization", label: "Sparkline" },
+        { tag: "sherpa-chart-legend", category: "Data Visualization", label: "Chart Legend" },
+        { tag: "sherpa-key-value-list", category: "Data Visualization", label: "Key-Value List" },
 
-        // Controls
         { tag: "sherpa-button", category: "Controls", label: "Button" },
         { tag: "sherpa-switch", category: "Controls", label: "Switch" },
         { tag: "sherpa-stepper", category: "Controls", label: "Stepper" },
         { tag: "sherpa-tag", category: "Controls", label: "Tag" },
-        {
-          tag: "sherpa-pagination",
-          category: "Controls",
-          label: "Pagination",
-        },
-        {
-          tag: "sherpa-slider",
-          category: "Controls",
-          label: "Slider",
-        },
-        {
-          tag: "sherpa-progress-bar",
-          category: "Controls",
-          label: "Progress Bar",
-        },
-        {
-          tag: "sherpa-progress-tracker",
-          category: "Controls",
-          label: "Progress Tracker",
-        },
+        { tag: "sherpa-pagination", category: "Controls", label: "Pagination" },
+        { tag: "sherpa-slider", category: "Controls", label: "Slider" },
+        { tag: "sherpa-progress-bar", category: "Controls", label: "Progress Bar" },
+        { tag: "sherpa-progress-tracker", category: "Controls", label: "Progress Tracker" },
 
-        // Inputs
-        {
-          tag: "sherpa-input-text",
-          category: "Inputs",
-          label: "Text Input",
-        },
-        {
-          tag: "sherpa-input-number",
-          category: "Inputs",
-          label: "Number Input",
-        },
-        {
-          tag: "sherpa-input-password",
-          category: "Inputs",
-          label: "Password Input",
-        },
-        {
-          tag: "sherpa-input-search",
-          category: "Inputs",
-          label: "Search Input",
-        },
-        {
-          tag: "sherpa-input-select",
-          category: "Inputs",
-          label: "Select Input",
-        },
-        {
-          tag: "sherpa-input-date",
-          category: "Inputs",
-          label: "Date Input",
-        },
-        {
-          tag: "sherpa-input-date-range",
-          category: "Inputs",
-          label: "Date Range Input",
-        },
-        {
-          tag: "sherpa-input-time",
-          category: "Inputs",
-          label: "Time Input",
-        },
-        {
-          tag: "sherpa-input-checkbox",
-          category: "Inputs",
-          label: "Checkbox Input",
-        },
-        {
-          tag: "sherpa-input-checkbox-group",
-          category: "Inputs",
-          label: "Checkbox Group",
-        },
-        {
-          tag: "sherpa-input-radio",
-          category: "Inputs",
-          label: "Radio Input",
-        },
-        {
-          tag: "sherpa-input-radio-group",
-          category: "Inputs",
-          label: "Radio Group",
-        },
-        {
-          tag: "sherpa-input-tag",
-          category: "Inputs",
-          label: "Tag Input",
-        },
-        {
-          tag: "sherpa-file-upload",
-          category: "Inputs",
-          label: "File Upload",
-        },
+        { tag: "sherpa-input-text", category: "Inputs", label: "Text Input" },
+        { tag: "sherpa-input-number", category: "Inputs", label: "Number Input" },
+        { tag: "sherpa-input-password", category: "Inputs", label: "Password Input" },
+        { tag: "sherpa-input-search", category: "Inputs", label: "Search Input" },
+        { tag: "sherpa-input-select", category: "Inputs", label: "Select Input" },
+        { tag: "sherpa-input-date", category: "Inputs", label: "Date Input" },
+        { tag: "sherpa-input-date-range", category: "Inputs", label: "Date Range Input" },
+        { tag: "sherpa-input-time", category: "Inputs", label: "Time Input" },
+        { tag: "sherpa-input-checkbox", category: "Inputs", label: "Checkbox Input" },
+        { tag: "sherpa-input-checkbox-group", category: "Inputs", label: "Checkbox Group" },
+        { tag: "sherpa-input-radio", category: "Inputs", label: "Radio Input" },
+        { tag: "sherpa-input-radio-group", category: "Inputs", label: "Radio Group" },
+        { tag: "sherpa-input-tag", category: "Inputs", label: "Tag Input" },
+        { tag: "sherpa-file-upload", category: "Inputs", label: "File Upload" },
 
-        // Feedback & Overlays
         { tag: "sherpa-dialog", category: "Feedback & Overlays", label: "Dialog" },
         { tag: "sherpa-toast", category: "Feedback & Overlays", label: "Toast" },
-        {
-          tag: "sherpa-tooltip",
-          category: "Feedback & Overlays",
-          label: "Tooltip",
-        },
-        {
-          tag: "sherpa-message",
-          category: "Feedback & Overlays",
-          label: "Message",
-        },
-        {
-          tag: "sherpa-empty-state",
-          category: "Feedback & Overlays",
-          label: "Empty State",
-        },
+        { tag: "sherpa-tooltip", category: "Feedback & Overlays", label: "Tooltip" },
+        { tag: "sherpa-message", category: "Feedback & Overlays", label: "Message" },
+        { tag: "sherpa-empty-state", category: "Feedback & Overlays", label: "Empty State" },
         { tag: "sherpa-menu", category: "Feedback & Overlays", label: "Menu" },
-        {
-          tag: "sherpa-menu-item",
-          category: "Feedback & Overlays",
-          label: "Menu Item",
-        },
-        {
-          tag: "sherpa-popover",
-          category: "Feedback & Overlays",
-          label: "Popover",
-        },
-        {
-          tag: "sherpa-callout",
-          category: "Feedback & Overlays",
-          label: "Callout",
-        },
-        {
-          tag: "sherpa-accordion",
-          category: "Feedback & Overlays",
-          label: "Accordion",
-        },
-        {
-          tag: "sherpa-tabs",
-          category: "Feedback & Overlays",
-          label: "Tabs",
-        },
+        { tag: "sherpa-menu-item", category: "Feedback & Overlays", label: "Menu Item" },
+        { tag: "sherpa-popover", category: "Feedback & Overlays", label: "Popover" },
+        { tag: "sherpa-callout", category: "Feedback & Overlays", label: "Callout" },
+        { tag: "sherpa-accordion", category: "Feedback & Overlays", label: "Accordion" },
+        { tag: "sherpa-tabs", category: "Feedback & Overlays", label: "Tabs" },
         { tag: "sherpa-list", category: "Feedback & Overlays", label: "List" },
-        {
-          tag: "sherpa-list-item",
-          category: "Feedback & Overlays",
-          label: "List Item",
-        },
-        {
-          tag: "sherpa-list-panel",
-          category: "Feedback & Overlays",
-          label: "List Panel",
-        },
+        { tag: "sherpa-list-item", category: "Feedback & Overlays", label: "List Item" },
+        { tag: "sherpa-list-panel", category: "Feedback & Overlays", label: "List Panel" },
 
-        // Content & Misc
         { tag: "sherpa-card", category: "Content", label: "Card" },
         { tag: "sherpa-icon", category: "Content", label: "Icon" },
         { tag: "sherpa-filter-bar", category: "Content", label: "Filter Bar" },
-        {
-          tag: "sherpa-section-nav",
-          category: "Content",
-          label: "Section Nav",
-        },
-        {
-          tag: "sherpa-transfer-list",
-          category: "Content",
-          label: "Transfer List",
-        },
-        {
-          tag: "sherpa-product-bar",
-          category: "Content",
-          label: "Product Bar",
-        },
-        {
-          tag: "sherpa-product-bar-v2",
-          category: "Content",
-          label: "Product Bar V2",
-        },
-        {
-          tag: "sherpa-loader",
-          category: "Content",
-          label: "Loader",
-        },
-        {
-          tag: "sherpa-ai-panel",
-          category: "Content",
-          label: "AI Panel",
-        },
-        {
-          tag: "sherpa-chat-message",
-          category: "Content",
-          label: "Chat Message",
-        },
-        {
-          tag: "sherpa-prompt-composer",
-          category: "Content",
-          label: "Prompt Composer",
-        },
-        {
-          tag: "sherpa-content-section",
-          category: "Content",
-          label: "Content Section",
-        },
-        {
-          tag: "sherpa-node",
-          category: "Content",
-          label: "Node",
-        },
-        {
-          tag: "sherpa-node-canvas",
-          category: "Content",
-          label: "Node Canvas",
-        },
-        {
-          tag: "sherpa-node-header",
-          category: "Content",
-          label: "Node Header",
-        },
-        {
-          tag: "sherpa-node-row",
-          category: "Content",
-          label: "Node Row",
-        },
-        {
-          tag: "sherpa-node-socket",
-          category: "Content",
-          label: "Node Socket",
-        },
-        {
-          tag: "sherpa-scheduler",
-          category: "Content",
-          label: "Scheduler",
-        },
-        {
-          tag: "sherpa-panel",
-          category: "Content",
-          label: "Panel",
-        },
-        {
-          tag: "sherpa-view-header",
-          category: "Content",
-          label: "View Header",
-        },
+        { tag: "sherpa-section-nav", category: "Content", label: "Section Nav" },
+        { tag: "sherpa-transfer-list", category: "Content", label: "Transfer List" },
+        { tag: "sherpa-product-bar", category: "Content", label: "Product Bar" },
+        { tag: "sherpa-product-bar-v2", category: "Content", label: "Product Bar V2" },
+        { tag: "sherpa-loader", category: "Content", label: "Loader" },
+        { tag: "sherpa-ai-panel", category: "Content", label: "AI Panel" },
+        { tag: "sherpa-chat-message", category: "Content", label: "Chat Message" },
+        { tag: "sherpa-prompt-composer", category: "Content", label: "Prompt Composer" },
+        { tag: "sherpa-content-section", category: "Content", label: "Content Section" },
+        { tag: "sherpa-node", category: "Content", label: "Node" },
+        { tag: "sherpa-node-canvas", category: "Content", label: "Node Canvas" },
+        { tag: "sherpa-node-header", category: "Content", label: "Node Header" },
+        { tag: "sherpa-node-row", category: "Content", label: "Node Row" },
+        { tag: "sherpa-node-socket", category: "Content", label: "Node Socket" },
+        { tag: "sherpa-scheduler", category: "Content", label: "Scheduler" },
+        { tag: "sherpa-panel", category: "Content", label: "Panel" },
       ];
 
       // ═══════════════════════════════════════════════════════════
@@ -765,30 +235,21 @@
 
       const metadataCache = new Map();
 
-      // Parse JSDoc from JS file content to extract @attr, @slot, @fires
       function parseJSDoc(jsContent) {
-        const metadata = {
-          attributes: [],
-          slots: [],
-          events: [],
-        };
+        const metadata = { attributes: [], slots: [], events: [] };
 
-        // Extract @attr lines: @attr {type} name — description
-        // Strip brackets from name if present: [data-name] -> data-name
         const attrRegex = /@attr\s+\{([^}]+)\}\s+(\[?[^\]\s]+\]?)\s+—\s+(.+?)(?=\n|$)/g;
         let match;
         while ((match = attrRegex.exec(jsContent)) !== null) {
           let [, type, name, description] = match;
-          // Remove brackets from name if present
           name = name.replace(/[\[\]]/g, "").trim();
           metadata.attributes.push({
-            name: name,
+            name,
             type: type.trim(),
             description: description.trim(),
           });
         }
 
-        // Extract @slot lines: @slot [name] — description
         const slotRegex = /@slot\s+(?:\[([^\]]+)\])?(?:\s+—\s+(.+?))?(?=\n|$)/g;
         while ((match = slotRegex.exec(jsContent)) !== null) {
           const [, name, description] = match;
@@ -798,7 +259,6 @@
           });
         }
 
-        // Extract @fires lines: @fires event-name — description
         const firesRegex = /@fires\s+([^\s]+)\s+—\s+(.+?)(?=\n|$)/g;
         while ((match = firesRegex.exec(jsContent)) !== null) {
           const [, eventName, description] = match;
@@ -811,19 +271,12 @@
         return metadata;
       }
 
-      // Fetch and parse component metadata
       async function getComponentMetadata(tag) {
-        if (metadataCache.has(tag)) {
-          return metadataCache.get(tag);
-        }
-
+        if (metadataCache.has(tag)) return metadataCache.get(tag);
         try {
-          const path = `components/${tag}/${tag}.js`;
-          const response = await fetch(path);
-          if (!response.ok) throw new Error(`Failed to fetch ${path}`);
-
-          const jsContent = await response.text();
-          const metadata = parseJSDoc(jsContent);
+          const response = await fetch(`components/${tag}/${tag}.js`);
+          if (!response.ok) throw new Error(`Failed to fetch ${tag}`);
+          const metadata = parseJSDoc(await response.text());
           metadataCache.set(tag, metadata);
           return metadata;
         } catch (error) {
@@ -836,52 +289,43 @@
       // UI INITIALIZATION
       // ═══════════════════════════════════════════════════════════
 
-      const searchInput = document.getElementById("search-input");
-      const componentList = document.getElementById("component-list");
-      const emptyState = document.getElementById("empty-state");
-      const contentArea = document.getElementById("content-area");
-      const previewTitle = document.getElementById("preview-title");
-      const previewContainer = document.getElementById("preview-container");
-      const controlsContent = document.getElementById("controls-content");
+      const componentListPanel = document.getElementById("component-list-panel");
+      const emptyState         = document.getElementById("empty-state");
+      const contentArea        = document.getElementById("content-area");
+      const previewTitleHeader = document.getElementById("preview-title-header");
+      const previewContainer   = document.getElementById("preview-container");
+      const controlsContent    = document.getElementById("controls-content");
 
       let currentComponent = null;
-      let currentInstance = null;
-      let eventLog = [];
-      const MAX_EVENTS = 50;
+      let currentInstance  = null;
+      let eventLog         = [];
+      const MAX_EVENTS     = 50;
 
-      // Populate sidebar
-      function populateSidebar(filter = "") {
-        componentList.innerHTML = "";
-        const filtered = COMPONENTS.filter(
-          (c) =>
-            c.tag.toLowerCase().includes(filter.toLowerCase()) ||
-            c.label.toLowerCase().includes(filter.toLowerCase())
-        );
+      // Build sidebar list-panel content as a sherpa-list of sherpa-list-items
+      function populateSidebar() {
+        const list = document.createElement("sherpa-list");
+        list.dataset.variant = "divided";
 
-        filtered.forEach((component) => {
-          const li = document.createElement("li");
-          li.className = "sidebar-item";
-
-          const a = document.createElement("a");
-          a.className = "sidebar-link";
-          a.dataset.tag = component.tag;
-          a.innerHTML = `${component.label}<span class="tag-name">&lt;${component.tag}&gt;</span>`;
-
-          a.addEventListener("click", (e) => {
-            e.preventDefault();
-            selectComponent(component.tag);
-          });
-
-          li.appendChild(a);
-          componentList.appendChild(li);
+        COMPONENTS.forEach((component) => {
+          const item = document.createElement("sherpa-list-item");
+          item.dataset.label       = component.label;
+          item.dataset.description = `<${component.tag}>`;
+          item.dataset.interactive = "";
+          item.dataset.tag         = component.tag;
+          list.appendChild(item);
         });
+
+        componentListPanel.appendChild(list);
       }
 
       populateSidebar();
 
-      // Search
-      searchInput.addEventListener("input", (e) => {
-        populateSidebar(e.target.value);
+      // sherpa-list-item dispatches `list-item-click` (bubbles + composed).
+      componentListPanel.addEventListener("list-item-click", (e) => {
+        const itemEl = e.composedPath().find(
+          (n) => n instanceof HTMLElement && n.tagName === "SHERPA-LIST-ITEM"
+        );
+        if (itemEl?.dataset.tag) selectComponent(itemEl.dataset.tag);
       });
 
       // ═══════════════════════════════════════════════════════════
@@ -892,364 +336,266 @@
         currentComponent = tag;
         eventLog = [];
 
-        // Update sidebar highlight
-        document.querySelectorAll(".sidebar-link").forEach((link) => {
-          link.classList.remove("active");
-          if (link.dataset.tag === tag) {
-            link.classList.add("active");
-          }
+        componentListPanel.querySelectorAll("sherpa-list-item").forEach((item) => {
+          item.toggleAttribute("data-active", item.dataset.tag === tag);
         });
 
-        // Show content area
-        emptyState.style.display = "none";
-        contentArea.style.display = "flex";
+        emptyState.hidden  = true;
+        contentArea.hidden = false;
 
-        // Update title
         const component = COMPONENTS.find((c) => c.tag === tag);
-        previewTitle.textContent = `${component.label} <${tag}>`;
+        previewTitleHeader.dataset.label = `${component.label}  <${tag}>`;
 
-        // Load metadata
         const metadata = await getComponentMetadata(tag);
-
-        // Create and insert component
         await createComponentPreview(tag, metadata);
-
-        // Render controls
         renderControls(metadata);
 
-        // Save state
         sessionStorage.setItem("selectedComponent", tag);
       }
 
       async function createComponentPreview(tag, metadata) {
-        // Clear previous instance
         previewContainer.innerHTML = "";
 
         try {
-          // Import component module
           await import(`./components/${tag}/${tag}.js`);
-
-          // Create instance
           currentInstance = document.createElement(tag);
 
-          // Set sensible defaults based on metadata
           metadata.attributes.forEach((attr) => {
-            if (attr.type === "boolean") {
-              // Don't set boolean attrs by default
-            } else if (attr.type.includes("enum")) {
-              // Parse enum options
-              const optionsMatch = attr.description.match(
-                /([a-z-]+(?:\s*\|\s*[a-z-]+)*)/
-              );
-              if (optionsMatch) {
-                const options = optionsMatch[1].split("|").map((o) => o.trim());
-                currentInstance.dataset[toCamelCase(attr.name)] = options[0];
+            if (attr.type === "boolean") return;
+            if (attr.type.includes("enum")) {
+              const m = attr.description.match(/([a-z-]+(?:\s*\|\s*[a-z-]+)*)/);
+              if (m) {
+                const opts = m[1].split("|").map((o) => o.trim());
+                setHostAttr(attr.name, opts[0], currentInstance);
               }
             } else if (attr.type === "string" && attr.name.includes("label")) {
-              currentInstance.dataset[toCamelCase(attr.name)] = `Sample ${attr.name}`;
+              setHostAttr(attr.name, `Sample ${attr.name}`, currentInstance);
             }
           });
 
-          // Add some default content for slots
-          if (metadata.slots.length > 0) {
-            const defaultSlot = metadata.slots.find((s) => !s.name);
-            if (defaultSlot) {
-              currentInstance.textContent = "Sample content";
-            }
+          if (metadata.slots.some((s) => !s.name)) {
+            currentInstance.textContent = "Sample content";
           }
 
           previewContainer.appendChild(currentInstance);
         } catch (error) {
           console.error(`Failed to create component ${tag}:`, error);
-          previewContainer.innerHTML = `<p style="color: red;">Error loading component: ${error.message}</p>`;
+          const msg = document.createElement("sherpa-message");
+          msg.dataset.status = "critical";
+          msg.dataset.label  = `Error loading component: ${error.message}`;
+          previewContainer.appendChild(msg);
         }
       }
 
       // ═══════════════════════════════════════════════════════════
-      // CONTROLS PANEL RENDERING
+      // CONTROLS PANEL RENDERING (uses sherpa form components)
       // ═══════════════════════════════════════════════════════════
+
+      function dataKey(attrName) {
+        return toCamelCase(attrName.replace(/^data-/, ""));
+      }
+
+      function setHostAttr(attr, rawValue, target = currentInstance) {
+        if (!target) return;
+        if (attr.startsWith("data-")) {
+          target.dataset[dataKey(attr)] = rawValue;
+        } else {
+          target.setAttribute(attr, rawValue);
+        }
+      }
+
+      function makeSectionHeader(label) {
+        const header = document.createElement("sherpa-section-header");
+        header.dataset.label        = label;
+        header.dataset.headingLevel = "tertiary";
+        return header;
+      }
 
       function renderControls(metadata) {
         controlsContent.innerHTML = "";
 
-        // Attributes
+        // ── Attributes ────────────────────────────────────────
         if (metadata.attributes.length > 0) {
-          const attrSection = document.createElement("div");
-          attrSection.className = "controls-section";
-
-          const title = document.createElement("div");
-          title.className = "controls-section-title";
-          title.textContent = "Attributes";
-          attrSection.appendChild(title);
+          const section = document.createElement("div");
+          section.className = "controls-section";
+          section.appendChild(makeSectionHeader("Attributes"));
 
           metadata.attributes.forEach((attr) => {
             const group = document.createElement("div");
             group.className = "control-group";
 
-            const label = document.createElement("label");
-            label.className = "control-label";
-            label.textContent = attr.name;
-
-            group.appendChild(label);
-
             if (attr.type === "boolean") {
-              const wrapper = document.createElement("div");
-              wrapper.className = "control-checkbox-wrapper";
-
-              const checkbox = document.createElement("input");
-              checkbox.type = "checkbox";
-              checkbox.className = "control-checkbox";
-              checkbox.dataset.attrName = attr.name;
-
-              checkbox.addEventListener("change", (e) => {
-                if (currentInstance) {
-                  currentInstance.toggleAttribute(attr.name, e.target.checked);
-                  sessionStorage.setItem(
-                    `${currentComponent}_${attr.name}`,
-                    e.target.checked
-                  );
-                }
+              const sw = document.createElement("sherpa-switch");
+              sw.dataset.label = attr.name;
+              sw.dataset.state = "off";
+              sw.addEventListener("change", (e) => {
+                if (!currentInstance) return;
+                currentInstance.toggleAttribute(attr.name, e.detail.checked);
+                sessionStorage.setItem(
+                  `${currentComponent}_${attr.name}`,
+                  e.detail.checked
+                );
               });
-
-              wrapper.appendChild(checkbox);
-              wrapper.appendChild(
-                document.createTextNode(attr.description.split(" ")[0])
-              );
-              group.appendChild(wrapper);
+              group.appendChild(sw);
             } else if (attr.type.includes("enum")) {
-              const select = document.createElement("select");
-              select.className = "control-input";
-              select.dataset.attrName = attr.name;
+              const select = document.createElement("sherpa-input-select");
+              select.dataset.label = attr.name;
 
-              // Parse enum options from description: "primary | secondary | tertiary"
-              const optionsMatch = attr.description.match(
-                /([a-z0-9-]+(?:\s*\|\s*[a-z0-9-]+)*)/
-              );
-              if (optionsMatch) {
-                const options = optionsMatch[1]
-                  .split("|")
-                  .map((o) => o.trim());
-                options.forEach((opt) => {
-                  const option = document.createElement("option");
-                  option.value = opt;
-                  option.textContent = opt;
-                  select.appendChild(option);
-                });
-              }
+              const m = attr.description.match(/([a-z0-9-]+(?:\s*\|\s*[a-z0-9-]+)*)/);
+              const opts = m ? m[1].split("|").map((o) => o.trim()) : [];
+              opts.forEach((opt) => {
+                const o = document.createElement("option");
+                o.value = opt;
+                o.textContent = opt;
+                select.appendChild(o);
+              });
 
               select.addEventListener("change", (e) => {
-                if (currentInstance) {
-                  currentInstance.dataset[toCamelCase(attr.name)] = e.target.value;
-                  sessionStorage.setItem(
-                    `${currentComponent}_${attr.name}`,
-                    e.target.value
-                  );
-                }
+                const value = e.detail?.value ?? select.value;
+                setHostAttr(attr.name, value);
+                sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
               });
-
               group.appendChild(select);
             } else if (attr.type === "number") {
-              const input = document.createElement("input");
-              input.type = "number";
-              input.className = "control-input";
-              input.dataset.attrName = attr.name;
-              input.placeholder = attr.description;
-
+              const input = document.createElement("sherpa-input-number");
+              input.dataset.label = attr.name;
+              input.setAttribute("placeholder", attr.description);
               input.addEventListener("change", (e) => {
-                if (currentInstance) {
-                  currentInstance.dataset[toCamelCase(attr.name)] = e.target.value;
-                  sessionStorage.setItem(
-                    `${currentComponent}_${attr.name}`,
-                    e.target.value
-                  );
-                }
+                const value = e.detail?.value ?? input.value;
+                setHostAttr(attr.name, value);
+                sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
               });
-
               group.appendChild(input);
             } else if (attr.type === "json") {
-              const textarea = document.createElement("textarea");
-              textarea.className = "control-input";
-              textarea.dataset.attrName = attr.name;
-              textarea.placeholder = "JSON array or object";
-
-              textarea.addEventListener("change", (e) => {
-                if (currentInstance) {
-                  try {
-                    JSON.parse(e.target.value);
-                    currentInstance.dataset[toCamelCase(attr.name)] = e.target.value;
-                    sessionStorage.setItem(
-                      `${currentComponent}_${attr.name}`,
-                      e.target.value
-                    );
-                  } catch (err) {
-                    alert("Invalid JSON: " + err.message);
-                    textarea.focus();
-                  }
-                }
-              });
-
-              group.appendChild(textarea);
-            } else {
-              // string
-              const input = document.createElement("input");
-              input.type = "text";
-              input.className = "control-input";
-              input.dataset.attrName = attr.name;
-              input.placeholder = attr.description;
-
+              const input = document.createElement("sherpa-input-text");
+              input.dataset.label = `${attr.name} (JSON)`;
+              input.setAttribute("placeholder", "JSON array or object");
               input.addEventListener("change", (e) => {
-                if (currentInstance) {
-                  currentInstance.dataset[toCamelCase(attr.name)] = e.target.value;
-                  sessionStorage.setItem(
-                    `${currentComponent}_${attr.name}`,
-                    e.target.value
-                  );
+                const value = e.detail?.value ?? input.value;
+                try {
+                  JSON.parse(value);
+                  setHostAttr(attr.name, value);
+                  sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
+                } catch (err) {
+                  alert("Invalid JSON: " + err.message);
                 }
               });
-
+              group.appendChild(input);
+            } else {
+              const input = document.createElement("sherpa-input-text");
+              input.dataset.label = attr.name;
+              input.setAttribute("placeholder", attr.description);
+              input.addEventListener("change", (e) => {
+                const value = e.detail?.value ?? input.value;
+                setHostAttr(attr.name, value);
+                sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
+              });
               group.appendChild(input);
             }
 
-            attrSection.appendChild(group);
+            section.appendChild(group);
           });
 
-          controlsContent.appendChild(attrSection);
+          controlsContent.appendChild(section);
         }
 
-        // Slots
+        // ── Slots ─────────────────────────────────────────────
         if (metadata.slots.length > 0) {
-          const slotSection = document.createElement("div");
-          slotSection.className = "controls-section";
-
-          const title = document.createElement("div");
-          title.className = "controls-section-title";
-          title.textContent = "Slots";
-          slotSection.appendChild(title);
+          const section = document.createElement("div");
+          section.className = "controls-section";
+          section.appendChild(makeSectionHeader("Slots"));
 
           metadata.slots.forEach((slot) => {
             const group = document.createElement("div");
             group.className = "control-group";
 
-            const label = document.createElement("label");
-            label.className = "control-label";
-            label.textContent = slot.name ? `Slot: ${slot.name}` : "Default slot";
-            group.appendChild(label);
+            const input = document.createElement("sherpa-input-text");
+            input.dataset.label = slot.name ? `Slot: ${slot.name}` : "Default slot";
+            input.setAttribute("placeholder", slot.description || "HTML content");
+            if (!slot.name) input.setAttribute("value", "Sample content");
 
-            const textarea = document.createElement("textarea");
-            textarea.className = "control-input";
-            textarea.placeholder = "HTML content";
-            textarea.value = slot.name
-              ? ""
-              : "Sample content";
-
-            textarea.addEventListener("change", (e) => {
-              if (currentInstance) {
-                if (slot.name) {
-                  // Named slot
-                  const existing = currentInstance.querySelector(
-                    `[slot="${slot.name}"]`
-                  );
-                  if (existing) {
-                    existing.innerHTML = e.target.value;
-                  } else {
-                    const div = document.createElement("div");
-                    div.slot = slot.name;
-                    div.innerHTML = e.target.value;
-                    currentInstance.appendChild(div);
-                  }
+            input.addEventListener("change", (e) => {
+              const value = e.detail?.value ?? input.value;
+              if (!currentInstance) return;
+              if (slot.name) {
+                const existing = currentInstance.querySelector(`[slot="${slot.name}"]`);
+                if (existing) {
+                  existing.innerHTML = value;
                 } else {
-                  // Default slot
-                  currentInstance.innerHTML = e.target.value;
+                  const div = document.createElement("div");
+                  div.slot = slot.name;
+                  div.innerHTML = value;
+                  currentInstance.appendChild(div);
                 }
-                sessionStorage.setItem(
-                  `${currentComponent}_slot_${slot.name || "default"}`,
-                  e.target.value
-                );
+              } else {
+                currentInstance.innerHTML = value;
               }
+              sessionStorage.setItem(
+                `${currentComponent}_slot_${slot.name || "default"}`,
+                value
+              );
             });
 
-            group.appendChild(textarea);
-            slotSection.appendChild(group);
+            group.appendChild(input);
+            section.appendChild(group);
           });
 
-          controlsContent.appendChild(slotSection);
+          controlsContent.appendChild(section);
         }
 
-        // Events
+        // ── Events ────────────────────────────────────────────
         if (metadata.events.length > 0) {
-          const eventSection = document.createElement("div");
-          eventSection.className = "controls-section";
+          const section = document.createElement("div");
+          section.className = "controls-section";
+          section.appendChild(makeSectionHeader("Event Log"));
 
-          const title = document.createElement("div");
-          title.className = "controls-section-title";
-          title.textContent = "Event Log";
-          eventSection.appendChild(title);
-
-          // Attach event listeners
           metadata.events.forEach((event) => {
-            if (currentInstance) {
-              currentInstance.addEventListener(event.name, (e) => {
-                logEvent(event.name, e.detail);
-              });
-            }
+            currentInstance?.addEventListener(event.name, (e) => {
+              logEvent(event.name, e.detail);
+            });
           });
 
-          // Event log display
-          const logContainer = document.createElement("div");
-          logContainer.className = "control-group";
-
-          const clearBtn = document.createElement("button");
-          clearBtn.className = "controls-button";
-          clearBtn.textContent = "Clear log";
-          clearBtn.addEventListener("click", () => {
+          const clearBtn = document.createElement("sherpa-button");
+          clearBtn.dataset.label     = "Clear log";
+          clearBtn.dataset.variant   = "tertiary";
+          clearBtn.dataset.size      = "small";
+          clearBtn.dataset.iconStart = "\uf2ed"; // fa-trash
+          clearBtn.addEventListener("button-click", () => {
             eventLog = [];
             updateEventLog();
           });
+          section.appendChild(clearBtn);
 
-          logContainer.appendChild(clearBtn);
+          const logList = document.createElement("sherpa-list");
+          logList.id              = "event-log-list";
+          logList.dataset.variant = "divided";
+          logList.dataset.density = "compact";
+          logList.dataset.empty   = "No events yet";
+          section.appendChild(logList);
 
-          const logDisplay = document.createElement("div");
-          logDisplay.className = "event-log";
-          logDisplay.id = "event-log";
-
-          logContainer.appendChild(logDisplay);
-          eventSection.appendChild(logContainer);
-          controlsContent.appendChild(eventSection);
-
+          controlsContent.appendChild(section);
           updateEventLog();
         }
       }
 
       function logEvent(eventName, detail) {
         const timestamp = new Date().toLocaleTimeString();
-        eventLog.unshift({
-          timestamp,
-          name: eventName,
-          detail: detail || {},
-        });
-
-        if (eventLog.length > MAX_EVENTS) {
-          eventLog.pop();
-        }
-
+        eventLog.unshift({ timestamp, name: eventName, detail: detail || {} });
+        if (eventLog.length > MAX_EVENTS) eventLog.pop();
         updateEventLog();
       }
 
       function updateEventLog() {
-        const logDisplay = document.getElementById("event-log");
-        if (!logDisplay) return;
-
-        if (eventLog.length === 0) {
-          logDisplay.innerHTML =
-            '<div class="event-log-entry event-log-empty">No events yet</div>';
-        } else {
-          logDisplay.innerHTML = eventLog
-            .map(
-              (e) =>
-                `<div class="event-log-entry"><strong>${e.timestamp}</strong> — ${e.name}</div>`
-            )
-            .join("");
-        }
+        const list = document.getElementById("event-log-list");
+        if (!list) return;
+        list.innerHTML = "";
+        eventLog.forEach((entry) => {
+          const item = document.createElement("sherpa-list-item");
+          item.dataset.label       = entry.name;
+          item.dataset.description = entry.timestamp;
+          item.dataset.icon        = "fa-solid fa-bolt";
+          list.appendChild(item);
+        });
       }
 
       // ═══════════════════════════════════════════════════════════
@@ -1264,7 +610,6 @@
       // STATE RESTORATION
       // ═══════════════════════════════════════════════════════════
 
-      // Restore previous selection on page load
       const savedComponent = sessionStorage.getItem("selectedComponent");
       if (savedComponent && COMPONENTS.find((c) => c.tag === savedComponent)) {
         selectComponent(savedComponent);
