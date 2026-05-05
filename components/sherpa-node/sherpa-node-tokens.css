@@ -8,17 +8,17 @@
 
 :where(:root, :host) {
   /* ── Per-kind accent (used for socket strokes + tinted bodies) ── */
-  --sherpa-node-accent-source:     var(--sherpa-data-viz-categorical-color-2);   /* phlox    */
-  --sherpa-node-accent-group:      var(--sherpa-data-viz-categorical-color-5);   /* blue     */
-  --sherpa-node-accent-variable:   var(--sherpa-data-viz-categorical-color-2);   /* phlox    */
-  --sherpa-node-accent-math:       var(--sherpa-data-viz-categorical-color-2);   /* phlox    */
-  --sherpa-node-accent-logic:      var(--sherpa-data-viz-categorical-color-5);   /* blue     */
-  --sherpa-node-accent-time:       var(--sherpa-data-viz-categorical-color-5);   /* blue     */
-  --sherpa-node-accent-collection: var(--sherpa-data-viz-categorical-color-2);   /* phlox    */
-  --sherpa-node-accent-util:       var(--sherpa-data-viz-categorical-color-2);   /* phlox    */
-  --sherpa-node-accent-output:     var(--sherpa-data-viz-categorical-color-10);  /* green    */
-  --sherpa-node-accent-ai:         var(--sherpa-data-viz-categorical-color-3);   /* magenta  */
-  --sherpa-node-accent-action:     var(--sherpa-data-viz-categorical-color-7);   /* orange   */
+  --sherpa-node-accent-source:     var(--sherpa-data-viz-categorical-color-3);   /* turquoise */
+  --sherpa-node-accent-group:      var(--sherpa-data-viz-categorical-color-5);   /* blue      */
+  --sherpa-node-accent-variable:   var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
+  --sherpa-node-accent-math:       var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
+  --sherpa-node-accent-logic:      var(--sherpa-data-viz-categorical-color-5);   /* blue      */
+  --sherpa-node-accent-time:       var(--sherpa-data-viz-categorical-color-5);   /* blue      */
+  --sherpa-node-accent-collection: var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
+  --sherpa-node-accent-util:       var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
+  --sherpa-node-accent-output:     var(--sherpa-data-viz-categorical-color-10);  /* green     */
+  --sherpa-node-accent-ai:         var(--sherpa-data-viz-categorical-color-1);   /* purple    */
+  --sherpa-node-accent-action:     var(--sherpa-data-viz-categorical-color-7);   /* orange    */
 
   /* Fallback */
   --sherpa-node-accent-default: var(--sherpa-data-viz-categorical-color-11);
