@@ -62,6 +62,14 @@ export class SherpaInputSelect extends SherpaInputBase {
     }
     // Set initial placeholder option
     this.#ensurePlaceholder();
+    // Re-apply host value attribute now that <option>s exist in the
+    // shadow <select>. Base #syncValue runs before onInputRender, so
+    // at that point the matching <option> wasn't there yet and the
+    // assignment silently dropped to "" / first option.
+    const hostValue = this.getAttribute("value");
+    if (hostValue && this.#selectEl && this.#selectEl.value !== hostValue) {
+      this.#selectEl.value = hostValue;
+    }
   }
 
   onInputDisconnect() {
