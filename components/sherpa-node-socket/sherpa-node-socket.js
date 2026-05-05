@@ -59,24 +59,32 @@ export class SherpaNodeSocket extends SherpaElement {
   }
 
   onAttributeChanged(name) {
-    if (name === "data-connection-count" || name === "data-multi") {
+    if (
+      name === "data-connection-count" ||
+      name === "data-multi" ||
+      name === "data-connected" ||
+      name === "data-direction"
+    ) {
       this.#syncCount();
     }
   }
 
   #syncCount() {
-    const n = parseInt(this.dataset.connectionCount || "1", 10);
-    const count = Number.isFinite(n) && n > 0 ? n : 1;
-    this.style.setProperty("--_count", String(count));
+    const n = parseInt(this.dataset.connectionCount || "0", 10);
+    const count = Number.isFinite(n) && n > 0 ? n : 0;
+    // Drives the host-height growth formula in CSS. Min 1 so the base
+    // 1:1 frame is the resting size when there are no connections.
+    this.style.setProperty("--_count", String(Math.max(1, count)));
 
-    // Per-connection dots only exist on multi-input sockets.
+    // Per-connection dots only exist on input sockets (the template's
+    // .connectors container is hidden via CSS for outputs anyway, but
+    // we also gate here so we never inject dots on outputs).
     if (!this.#connectorsEl || !this.#connectorTpl) return;
-    if (!this.hasAttribute("data-multi")) {
+    if (this.dataset.direction === "out") {
       this.#connectorsEl.replaceChildren();
       return;
     }
-    // Show one dot per active connection (min 1 placeholder so the
-    // socket always shows its anatomy).
+    // Render exactly `count` dots — zero when disconnected.
     const dots = [];
     for (let i = 0; i < count; i++) {
       dots.push(this.#connectorTpl.content.firstElementChild.cloneNode(true));

@@ -70,11 +70,21 @@ export class SherpaInputText extends SherpaInputBase {
   onAttributeChanged(name, oldValue, newValue) {
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'data-multiline') {
-      // Swap template (input ↔ textarea) and rewire on change.
-      this.renderTemplate(this.templateId).then(() => {
-        this.onInputRender();
-        this.onInputConnect();
-      });
+      // Only swap templates after the initial render. The first
+      // parser-driven attribute change fires before the shadow DOM
+      // has been built, and the base #buildWrapper already picks the
+      // correct template from `templateId`. We also skip when the
+      // currently-rendered control already matches the desired tag,
+      // to avoid clobbering freshly-applied values.
+      const current = this.getInputElement();
+      const wantTextarea = this.hasAttribute('data-multiline');
+      const haveTextarea = current?.tagName === 'TEXTAREA';
+      if (current && wantTextarea !== haveTextarea) {
+        this.renderTemplate(this.templateId).then(() => {
+          this.onInputRender();
+          this.onInputConnect();
+        });
+      }
     }
     if (name === 'value' && this.hasAttribute('data-multiline')) {
       // Driven values come in via attribute; resize when they land.

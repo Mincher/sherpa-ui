@@ -53,8 +53,10 @@
 :host([data-status="true"])  { --_socket-stroke: var(--sherpa-node-accent-true); }
 :host([data-status="false"]) { --_socket-stroke: var(--sherpa-node-accent-false); }
 
-/* Connected: fill becomes solid stroke colour. */
-:host([data-connected]) { --_socket-fill: var(--_socket-stroke); }
+/* Fill is ALWAYS the light tint of the stroke (see :host above). The
+   only place the fill becomes solid is the output triangle, via its
+   own background override below. Inputs never flip fill on connect —
+   they show per-connection dots instead. */
 
 /* ── Hit area / button ─────────────────────────────────────────── */
 .socket {
@@ -78,15 +80,16 @@
   transition: background 150ms ease, transform 150ms ease, height 150ms ease;
 }
 
-/* ── Per-connection dots (multi-input only) ────────────────────── */
-/* The dot container sits inside the multi-input shape and lays out
-   one .connector-dot per active connection. JS clones dots from the
-   .connector-tpl prototype to match data-connection-count. */
+/* ── Per-connection dots (all inputs) ─────────────────────────── */
+/* The dot container sits inside every input shape and lays out one
+   .connector-dot per active connection. JS clones dots from the
+   .connector-tpl prototype to match data-connection-count, and
+   renders ZERO dots when the socket is disconnected. */
 .connectors {
   display: none;
 }
 
-:host([data-multi]) .connectors {
+:host([data-direction="in"]) .connectors {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -98,67 +101,41 @@
   gap: 3px;
 }
 
+/* Solid plug in the stroke colour — visible against the light-tinted
+   socket frame. Only rendered when the input is connected. */
 .connector-dot {
   flex-shrink: 0;
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--_socket-fill);
+  background: var(--_socket-stroke);
   border: var(--sherpa-node-socket-stroke-w) solid var(--_socket-stroke);
   box-sizing: border-box;
-  transition: background 150ms ease;
 }
 
-/* When the socket has live connections, each dot becomes a solid plug
-   in the stroke colour (matches the border, no tint mismatch). */
-:host([data-multi][data-connected]) .connector-dot {
-  background: var(--_socket-stroke);
-}
-
-/* Multi-input shapes act as transparent borders that frame the dots —
-   the dots own the fill state, not the outer capsule. */
-:host([data-multi]) .socket-shape {
-  background: transparent;
-}
-:host([data-multi][data-connected]) .socket-shape {
-  background: transparent;
-}
-
-/* ── Header MULTI input: tall capsule ──────────────────────────── */
-:host([data-location="header"][data-direction="in"][data-multi]) {
+/* ── Input growth: every input grows in height per connection ──── */
+/* Formula collapses to base size when --_count = 1, then adds
+   --sherpa-node-socket-multi-step per additional connection. */
+:host([data-direction="in"]) {
   height: calc(
     var(--sherpa-node-socket-size) +
     var(--sherpa-node-socket-multi-step) * (var(--_count) - 1) +
-    8px
+    var(--sherpa-space-xs, 8px)
   );
-  min-height: 24px;
+  min-height: var(--sherpa-node-socket-size);
 }
-:host([data-location="header"][data-direction="in"][data-multi]) .socket-shape {
+
+/* Header input: circle/capsule shape that fills the (growing) host. */
+:host([data-location="header"][data-direction="in"]) .socket-shape {
   width: var(--sherpa-node-socket-size);
   height: 100%;
   border-radius: 999px;
 }
 
-/* ── Row input single: D shape (flat spine on the left, curve on right) ──── */
+/* Row input: D shape (flat spine on the left, curve on the right
+   facing into the node body). 1:1 base, fills the host height. */
 :host([data-location="row"][data-direction="in"]) .socket-shape {
-  width: 12px;
-  height: 18px;
-  /* Flat outer (left) edge — the spine of the D — and curve on
-     the right facing into the node body. */
-  border-radius: 0 999px 999px 0;
-}
-
-/* ── Row input MULTI: taller D ─────────────────────────────────── */
-:host([data-location="row"][data-direction="in"][data-multi]) {
-  height: calc(
-    18px +
-    var(--sherpa-node-socket-multi-step) * (var(--_count) - 1) +
-    6px
-  );
-  min-height: 28px;
-}
-:host([data-location="row"][data-direction="in"][data-multi]) .socket-shape {
-  width: 12px;
+  width: var(--sherpa-node-socket-size);
   height: 100%;
   border-radius: 0 999px 999px 0;
 }
