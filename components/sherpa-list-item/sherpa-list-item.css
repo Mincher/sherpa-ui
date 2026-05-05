@@ -56,6 +56,20 @@
   background: var(--sherpa-surface-container-selected-default, #f8ebff);
 }
 
+:host([data-active]) .label {
+  color: var(--sherpa-text-default-selected, var(--sherpa-text-default-heading, #18191a));
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+:host([data-active]) .description {
+  color: var(--sherpa-text-default-selected-secondary, var(--sherpa-text-default-body, #2e2e33));
+}
+
+:host([data-active]) .icon,
+:host([data-active]) .drag-handle {
+  color: var(--sherpa-icon-default-selected, var(--sherpa-icon-context-default-body, #2e2e33));
+}
+
 /* ── Disabled ────────────────────────────────────────────────── */
 
 :host([disabled]) .list-item-container {
