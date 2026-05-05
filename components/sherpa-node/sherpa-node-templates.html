@@ -544,10 +544,9 @@
   </sherpa-node-header>
   <sherpa-node-row>
     <span slot="label">Position</span>
-    <sherpa-input-select slot="control" name="position">
+    <sherpa-input-select slot="control" name="position" data-helper="Creates a string by adding Value B to the chosen end of Value A.">
       <option>Start</option><option>End</option>
     </sherpa-input-select>
-    <span slot="helper">Creates a string by adding Value B to the chosen end of Value A.</span>
   </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -680,10 +679,9 @@
   </sherpa-node-header>
   <sherpa-node-row>
     <span slot="label">Large Language Model</span>
-    <sherpa-input-select slot="control" name="model">
+    <sherpa-input-select slot="control" name="model" data-helper="Uses the selected model to process natural language.">
       <option>Claude Opus 4.6</option><option>Claude Sonnet 4.6</option><option>GPT-5</option><option>Gemini 2.5</option>
     </sherpa-input-select>
-    <span slot="helper">Uses the selected model to process natural language.</span>
   </sherpa-node-row>
 </template>
 
@@ -698,7 +696,7 @@
     <sherpa-input-select slot="control" name="agent">
       <option>Big N-zo</option><option>Little N-zo</option><option>Custom agent</option>
     </sherpa-input-select>
-    <span slot="helper">Uses the selected agent to handle any linked AI interactions.</span>
+
   </sherpa-node-row>
 </template>
 
