@@ -716,7 +716,6 @@
   <sherpa-node-header slot="header">
     <span slot="title">Ask N-zo</span>
     <sherpa-node-socket slot="input-socket"  data-direction="in"  data-port-name="in"></sherpa-node-socket>
-    <sherpa-node-socket slot="input-socket"  data-direction="in"  data-port-name="agent"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
   </sherpa-node-header>
   <sherpa-node-row>
@@ -724,6 +723,7 @@
     <sherpa-input-select slot="control" name="type">
       <option>Preset</option><option>Custom</option>
     </sherpa-input-select>
+    <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="agent"></sherpa-node-socket>
   </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value</span>
