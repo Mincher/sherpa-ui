@@ -148,7 +148,10 @@
   display: none;
   padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px) 0;
 }
-:host([data-subtypes]) .node-subtype { display: block; }
+/* Subtype picker is opt-in: hosts must set data-show-subtype to expose
+   it on-canvas. Most nodes communicate their kind via the title and
+   never need a visible picker. */
+:host([data-show-subtype]) .node-subtype { display: block; }
 :host([data-single-subtype]) .node-subtype { display: none; }
 .node-subtype .subtype-select { display: block; width: 100%; }
 
