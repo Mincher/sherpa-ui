@@ -48,19 +48,40 @@ export class SherpaNodeSocket extends SherpaElement {
   }
 
   #btnEl = null;
+  #connectorsEl = null;
+  #connectorTpl = null;
 
   onRender() {
     this.#btnEl = this.$(".socket");
+    this.#connectorsEl = this.$(".connectors");
+    this.#connectorTpl = this.shadowRoot?.querySelector(".connector-tpl");
     this.#syncCount();
   }
 
   onAttributeChanged(name) {
-    if (name === "data-connection-count") this.#syncCount();
+    if (name === "data-connection-count" || name === "data-multi") {
+      this.#syncCount();
+    }
   }
 
   #syncCount() {
     const n = parseInt(this.dataset.connectionCount || "1", 10);
-    this.style.setProperty("--_count", String(Number.isFinite(n) && n > 0 ? n : 1));
+    const count = Number.isFinite(n) && n > 0 ? n : 1;
+    this.style.setProperty("--_count", String(count));
+
+    // Per-connection dots only exist on multi-input sockets.
+    if (!this.#connectorsEl || !this.#connectorTpl) return;
+    if (!this.hasAttribute("data-multi")) {
+      this.#connectorsEl.replaceChildren();
+      return;
+    }
+    // Show one dot per active connection (min 1 placeholder so the
+    // socket always shows its anatomy).
+    const dots = [];
+    for (let i = 0; i < count; i++) {
+      dots.push(this.#connectorTpl.content.firstElementChild.cloneNode(true));
+    }
+    this.#connectorsEl.replaceChildren(...dots);
   }
 
   onConnect() {

@@ -19,5 +19,12 @@
       detail: { direction, portName, status, originalEvent }
 -->
 <button class="socket" type="button" tabindex="-1" aria-label="Socket">
-  <span class="socket-shape" aria-hidden="true"></span>
+  <span class="socket-shape" aria-hidden="true">
+    <span class="connectors"></span>
+  </span>
 </button>
+
+<!-- Cloning prototype: one dot per active connection on multi-input sockets. -->
+<template class="connector-tpl">
+  <span class="connector-dot" aria-hidden="true"></span>
+</template>
