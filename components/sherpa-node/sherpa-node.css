@@ -65,12 +65,11 @@
 }
 
 /* Tinted body — used by source + output kinds and any node opting in.
-   The action kind and the AI model/chat subtypes also get the tinted
-   body; ai.delegate stays a plain generic node by design. */
+   The AI model/chat subtypes also get the tinted body; ai.delegate
+   stays a plain generic node by design. */
 :host([data-tone="tinted"]) .node,
 :host([data-kind="source"]) .node,
 :host([data-kind="output"]) .node,
-:host([data-kind="action"]) .node,
 :host([data-kind="ai"][data-subtype="model"]) .node,
 :host([data-kind="ai"][data-subtype="chat"]) .node {
   background: color-mix(in srgb, var(--sherpa-node-accent) 12%, var(--sherpa-surface-container-default));
