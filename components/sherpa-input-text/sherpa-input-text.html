@@ -26,14 +26,10 @@
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     EXAMPLE CUSTOM TEMPLATE — Textarea input
-
-     Consumers can add templates like this for alternative layouts.
-     Each template must have a unique id. The component selects a template
-     via `get templateId()`.
+     MULTILINE — Auto-growing textarea, selected via `data-multiline`.
+     The component sets rows=1 and observes input/value to grow the
+     textarea to fit its content (no internal scrollbar).
      ═══════════════════════════════════════════════════════════════════════ -->
-<!--
-<template id="textarea">
-<textarea class="input-field"></textarea>
+<template id="multiline">
+<textarea class="input-field" rows="1"></textarea>
 </template>
--->

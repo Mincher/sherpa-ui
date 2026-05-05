@@ -18,6 +18,9 @@
  * @attr {number}  [minlength]         — Minimum character length (inherited)
  * @attr {number}  [maxlength]         — Maximum character length (inherited)
  * @attr {boolean} [novalidate]        — Disable built-in validation (inherited)
+ * @attr {boolean} [data-multiline]    — Render as an auto-growing textarea
+ *                                       that expands in height to fit its
+ *                                       content. Newlines are preserved.
  *
  * @fires input
  *   bubbles: true, composed: true
@@ -33,6 +36,62 @@ export class SherpaInputText extends SherpaInputBase {
 
   static get cssUrl()  { return new URL('./sherpa-input-text.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-text.html', import.meta.url).href; }
+
+  static get observedAttributes() {
+    return [...super.observedAttributes, 'data-multiline'];
+  }
+
+  get templateId() {
+    return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
+  }
+
+  async onInputRender() {
+    if (this.hasAttribute('data-multiline')) {
+      // Initial sizing once the textarea exists in the shadow tree.
+      this.#autosize();
+    }
+  }
+
+  onInputConnect() {
+    if (this.hasAttribute('data-multiline')) {
+      const el = this.getInputElement();
+      el?.addEventListener('input', this.#onAutosize);
+      // Re-measure after layout so the initial value gets sized
+      // correctly even when the host was hidden at render time.
+      requestAnimationFrame(() => this.#autosize());
+    }
+  }
+
+  onInputDisconnect() {
+    const el = this.getInputElement();
+    el?.removeEventListener('input', this.#onAutosize);
+  }
+
+  onAttributeChanged(name, oldValue, newValue) {
+    super.onAttributeChanged(name, oldValue, newValue);
+    if (name === 'data-multiline') {
+      // Swap template (input ↔ textarea) and rewire on change.
+      this.renderTemplate(this.templateId).then(() => {
+        this.onInputRender();
+        this.onInputConnect();
+      });
+    }
+    if (name === 'value' && this.hasAttribute('data-multiline')) {
+      // Driven values come in via attribute; resize when they land.
+      requestAnimationFrame(() => this.#autosize());
+    }
+  }
+
+  #onAutosize = () => this.#autosize();
+
+  #autosize() {
+    const el = this.getInputElement();
+    if (!el || el.tagName !== 'TEXTAREA') return;
+    // Reset to shrink before measuring so the textarea can also get
+    // smaller when content is removed.
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }
 }
 
 customElements.define('sherpa-input-text', SherpaInputText);
