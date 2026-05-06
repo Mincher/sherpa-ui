@@ -19,20 +19,19 @@ Complete guide to using and extending the Sherpa design token system.
   │ @layer tokens                                                │
   │   sherpa-primitives.css     (--sherpa-core-*  raw values)    │
   │   sherpa-alias.css          (--sherpa-* semantic abstractions│  generated
-  │                              shared across all themes)       │
-  │   sherpa-fonts.css          (typography composites)          │  generated
-  │   sherpa-status.css         (--_status-* mapping)            │  generated
+  │                              + font composites + [data-status]│
+  │                              → --_status-* mapping)          │
   │ @layer theme                                                 │
   │   sherpa-theme-base.css     (props identical across themes — │  generated
   │                              always @import'd)               │
   │   sherpa-theme-{slug}.css   (per-theme diffs only — loaded   │  generated
   │                              at runtime via <link>)          │
   │ @layer utilities                                             │
-  │   sherpa-text-classes.css     sherpa-icon-classes.css        │
+  │   sherpa-text-classes.css     sherpa-icon-classes.css        │  shadow-DOM
+  │   sherpa-motion-classes.css                                  │  adopted
   │   sherpa-data-viz-classes.css (.color-1 … .color-N from      │  generated
   │                                figma data-viz/categorical)   │
-  │   sherpa-motion-classes.css   sherpa-layout-classes.css      │
-  │   sherpa-control-group-classes.css                           │
+  │   sherpa-app-classes.css    (control-group + layout shells)  │  light-DOM only
   │ @layer components                                            │
   │   sherpa-components.css     (per-variant defaults)           │  generated
   │   components/**/*.css       (Shadow DOM)                     │
@@ -470,10 +469,9 @@ Is the value the same across all themes?
 │         ├── YES → Add to figma-tokens primitives.
 │         │        Output: sherpa-primitives.css (--sherpa-core-*).
 │         └── NO  → Is it a font composite or status mapping?
-│                   ├── font composite → figma-tokens fonts → sherpa-fonts.css
-│                   ├── status mapping  → figma-tokens status → sherpa-status.css
-│                   └── otherwise        → figma-tokens alias → sherpa-alias.css
-│                                          (--sherpa-* semantic alias)
+│                   └── YES or NO → figma-tokens alias → sherpa-alias.css
+│                                  (font composites and [data-status]
+│                                  mapping are appended to the same file)
 └── NO  → Is it a brand colour family scoped to specific themes?
           ├── YES → Add prefix to THEME_SCOPED_FAMILIES in
           │        scripts/generate-css-tokens.js, then add the tokens to

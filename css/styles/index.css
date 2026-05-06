@@ -43,14 +43,9 @@
 /* Core primitives (--sherpa-core-*) — raw design values */
 @import "sherpa-primitives.css" layer(tokens);
 
-/* Semantic aliases (--sherpa-*) — abstract primitives into intent */
+/* Semantic aliases (--sherpa-*) — abstract primitives into intent.
+   Includes font composite tokens and global [data-status] mapping. */
 @import "sherpa-alias.css" layer(tokens);
-
-/* Font composite tokens (typography scale) — base defaults, overridable by theme */
-@import "sherpa-fonts.css" layer(tokens);
-
-/* Global status → --_status-* private property mapping (inherits into shadow DOM) */
-@import "sherpa-status.css" layer(tokens);
 
 /*
  * Theme base — props identical across every theme. Always loaded.
@@ -83,8 +78,7 @@
 @import "sherpa-motion-classes.css" layer(utilities);
 @import "sherpa-text-classes.css" layer(utilities);
 @import "sherpa-data-viz-classes.css" layer(utilities);
-@import "sherpa-control-group-classes.css" layer(utilities);
-@import "sherpa-layout-classes.css" layer(utilities);
+@import "sherpa-app-classes.css" layer(utilities);
 
 /* ── Components ──────────────────────────────────────────────────────── */
 

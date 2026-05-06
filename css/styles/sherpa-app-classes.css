@@ -1,6 +1,81 @@
 /**
- * sherpa-layout-classes.css
- * App shell layout and scroll-under utility.
+ * sherpa-app-classes.css — Light-DOM utility classes for application shells.
+ *
+ * Loaded once via css/styles/index.css. NOT adopted into component shadow
+ * roots — these classes apply to host elements / page-level structure only.
+ *
+ * Sections:
+ *   1. Control Group — composes adjacent controls into a seamless row.
+ *   2. Layout       — page/section grid + container utilities.
+ * ───────────────────────────────────────────────────────────────────────
+ */
+
+/* ─── 1. Control Group ─────────────────────────────────────────────── */
+
+/**
+ * Control Group — wrapper-based pattern for composing adjacent controls
+ * (inputs, buttons, custom elements) into a seamless row.
+ *
+ * The .control-group wrapper owns border, background, border-radius and
+ * overflow:hidden.  It sets --_cg-border-width: 0 and --_cg-border-radius: 0
+ * which inherit into child shadow DOMs, making them borderless and
+ * radiusless automatically.
+ *
+ * Usage:
+ *   <div class="control-group">
+ *     <input      … />
+ *     <sherpa-button … />
+ *   </div>
+ *
+ * No position classes needed — just place elements in the wrapper.
+ */
+
+.control-group {
+  display: inline-flex;
+  gap: 0;
+  vertical-align: middle;
+  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  overflow: hidden;
+  --_cg-border-width: 0;
+  --_cg-border-radius: 0;
+}
+
+.control-group:focus-within {
+  border-color: var(--sherpa-border-control-active-default, #0060df);
+}
+
+/* ── Per-child position tokens (inherit into shadow DOM) ────────── */
+
+.control-group > * {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="start"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-none, 0);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="middle"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-none, 0);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-none, 0);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="end"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-none, 0);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-spacing-offset: -1px;
+}
+
+/* ─── 2. Layout ────────────────────────────────────────────────────── */
+
+/**
+ * Layout — App shell layout and scroll-under utility.
  *
  * Classes provided:
  *   .sherpa-app-layout           — Grid shell: sidebar nav + main area

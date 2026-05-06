@@ -205,3 +205,121 @@
   --sherpa-space-xs: var(--sherpa-core-scale-150);
 }
 
+/* ─── Font composite tokens ─────────────────────────────────────── */
+
+:root {
+  /* ── h1 ── */
+  --sherpa-font-h1-letter-spacing: -0.02;
+  --sherpa-font-h1-line-height: var(--sherpa-fonts-scale-13xl);
+  --sherpa-font-h1-paragraph-spacing: var(--sherpa-fonts-scale-lg);
+  --sherpa-font-h1-size: var(--sherpa-fonts-scale-8xl);
+
+  /* ── h2 ── */
+  --sherpa-font-h2-letter-spacing: -0.02;
+  --sherpa-font-h2-line-height: var(--sherpa-fonts-scale-11xl);
+  --sherpa-font-h2-paragraph-spacing: var(--sherpa-fonts-scale-lg);
+  --sherpa-font-h2-size: var(--sherpa-fonts-scale-6xl);
+
+  /* ── h3 ── */
+  --sherpa-font-h3-letter-spacing: -0.02;
+  --sherpa-font-h3-line-height: var(--sherpa-fonts-scale-9xl);
+  --sherpa-font-h3-paragraph-spacing: var(--sherpa-fonts-scale-xs);
+  --sherpa-font-h3-size: var(--sherpa-fonts-scale-4xl);
+
+  /* ── h4 ── */
+  --sherpa-font-h4-letter-spacing: -0.02;
+  --sherpa-font-h4-line-height: var(--sherpa-fonts-scale-5xl);
+  --sherpa-font-h4-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-h4-size: var(--sherpa-fonts-scale-2xl);
+
+  /* ── h5 ── */
+  --sherpa-font-h5-letter-spacing: -0.02;
+  --sherpa-font-h5-line-height: var(--sherpa-fonts-scale-3xl);
+  --sherpa-font-h5-paragraph-spacing: var(--sherpa-fonts-scale-0);
+  --sherpa-font-h5-size: var(--sherpa-fonts-scale-xl);
+
+  /* ── lg ── */
+  --sherpa-font-lg-letter-spacing: 0.1;
+  --sherpa-font-lg-line-height: var(--sherpa-fonts-scale-2xl);
+  --sherpa-font-lg-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-lg-size: var(--sherpa-fonts-scale-lg);
+
+  /* ── base ── */
+  --sherpa-font-base-letter-spacing: 0.1;
+  --sherpa-font-base-line-height: var(--sherpa-fonts-scale-xl);
+  --sherpa-font-base-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-base-size: var(--sherpa-fonts-scale-base);
+
+  /* ── sm ── */
+  --sherpa-font-sm-letter-spacing: 0.1;
+  --sherpa-font-sm-line-height: var(--sherpa-fonts-scale-base);
+  --sherpa-font-sm-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-sm-size: var(--sherpa-fonts-scale-sm);
+
+  /* ── xs ── */
+  --sherpa-font-xs-letter-spacing: 0.1;
+  --sherpa-font-xs-line-height: var(--sherpa-fonts-scale-base);
+  --sherpa-font-xs-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
+  --sherpa-font-xs-size: var(--sherpa-fonts-scale-xs);
+
+}
+
+/* ─── Global status → --_status-* mapping ──────────────────────── */
+/* Custom properties inherit through shadow DOM, so any descendant   */
+/* web component picks these up via var(--_status-*, fallback).      */
+
+[data-status="critical"] {
+  --_status-border:                      var(--sherpa-border-context-error-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-error-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
+  --_status-icon:                        var(--sherpa-icon-context-error-on-color-subtle);
+  --_status-shadow:                      var(--sherpa-elevation-tint-error);
+}
+
+[data-status="info"] {
+  --_status-border:                      var(--sherpa-border-context-info-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-info-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
+  --_status-icon:                        var(--sherpa-icon-context-info-on-color-subtle);
+  --_status-shadow:                      var(--sherpa-elevation-tint-info);
+}
+
+[data-status="success"] {
+  --_status-border:                      var(--sherpa-border-context-success-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-success-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
+  --_status-icon:                        var(--sherpa-icon-context-success-on-color-subtle);
+  --_status-shadow:                      var(--sherpa-elevation-tint-success);
+}
+
+[data-status="warning"] {
+  --_status-border:                      var(--sherpa-border-context-warning-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-warning-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-subtle-body);
+  --_status-icon:                        var(--sherpa-icon-context-default-on-color-subtle-body);
+  --_status-shadow:                      var(--sherpa-elevation-tint-warning);
+}
+
+[data-status="urgent"] {
+  --_status-border:                      var(--sherpa-border-context-urgent-default);
+  --_status-surface:                     var(--sherpa-surface-control-default);
+  --_status-surface-hover:               var(--sherpa-surface-control-hover);
+  --_status-surface-down:                var(--sherpa-surface-control-down);
+  --_status-text:                        var(--sherpa-text-context-urgent-on-color-subtle);
+  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
+  --_status-icon:                        var(--sherpa-icon-context-urgent-on-color-subtle);
+  --_status-shadow:                      var(--sherpa-elevation-tint-urgent);
+}
+
