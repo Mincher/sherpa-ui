@@ -17,8 +17,8 @@ Complete guide to using and extending the Sherpa design token system.
         ▼  scripts/generate-css-tokens.js
   ┌──────────────────────────────────────────────────────────────┐
   │ @layer tokens                                                │
-  │   sherpa-primitives.css     (--sherpa-core-*  raw values)    │
-  │   sherpa-alias.css          (--sherpa-* semantic abstractions│  generated
+  │   tokens/sherpa-primitives.css     (--sherpa-core-*  raw values)    │
+  │   tokens/sherpa-alias.css          (--sherpa-* semantic abstractions│  generated
   │                              + font composites + [data-status]│
   │                              → --_status-* mapping)          │
   │ @layer theme                                                 │
@@ -467,9 +467,9 @@ Reference tokens in:
 Is the value the same across all themes?
 ├── YES → Is it a raw design value (color hex, px scale)?
 │         ├── YES → Add to figma-tokens primitives.
-│         │        Output: sherpa-primitives.css (--sherpa-core-*).
+│         │        Output: tokens/sherpa-primitives.css (--sherpa-core-*).
 │         └── NO  → Is it a font composite or status mapping?
-│                   └── YES or NO → figma-tokens alias → sherpa-alias.css
+│                   └── YES or NO → figma-tokens alias → tokens/sherpa-alias.css
 │                                  (font composites and [data-status]
 │                                  mapping are appended to the same file)
 └── NO  → Is it a brand colour family scoped to specific themes?

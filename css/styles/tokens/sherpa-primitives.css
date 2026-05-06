@@ -478,7 +478,7 @@
 /* ── Composite Shadow Tokens ─────────────────────────────────────────
  * box-shadow shorthand composites matching Figma effect styles.
  * These combine semantic elevation tokens (from the theme CSS file)
- * with shadow colour tokens (from sherpa-alias.css / theme tints).
+ * with shadow colour tokens (from tokens/sherpa-alias.css / theme tints).
  *
  * Figma style → CSS token mapping:
  *   shadow/default/sm     → --sherpa-shadow-default-sm

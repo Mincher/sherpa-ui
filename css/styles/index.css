@@ -41,11 +41,11 @@
 /* ── Tokens ──────────────────────────────────────────────────────────── */
 
 /* Core primitives (--sherpa-core-*) — raw design values */
-@import "sherpa-primitives.css" layer(tokens);
+@import "tokens/sherpa-primitives.css" layer(tokens);
 
 /* Semantic aliases (--sherpa-*) — abstract primitives into intent.
    Includes font composite tokens and global [data-status] mapping. */
-@import "sherpa-alias.css" layer(tokens);
+@import "tokens/sherpa-alias.css" layer(tokens);
 
 /*
  * Theme base — props identical across every theme. Always loaded.

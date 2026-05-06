@@ -471,7 +471,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | AC-23 | A page with `[data-status="warning"]` on a wrapper | inspecting descendant components that consume `--_status-*` | they render with warning visuals without per-component status CSS | REQ-23 |
 | AC-24 | Any component CSS file | grepping for `@media` | no matches for viewport-based media queries are found (only `@container` may appear) | REQ-24 |
 | AC-25 | A clean checkout | running `node mcp-server/index.js` | the process boots without thrown errors | SC-06, NFR-08 |
-| AC-26 | The Sherpa core token layer | inspecting `css/styles/sherpa-primitives.css` provenance | values match the latest Figma token export | REQ-106 |
+| AC-26 | The Sherpa core token layer | inspecting `css/styles/tokens/sherpa-primitives.css` provenance | values match the latest Figma token export | REQ-106 |
 | AC-27 | A consumer page | importing `components/index.js` via `<script type="module">` only | every component registers as a custom element without a bundler step | REQ-101, REQ-103 |
 | AC-28 | The repository | inspecting [`package.json`](../package.json) `dependencies` | the field is empty or absent | REQ-102 |
 
@@ -708,17 +708,17 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 | Namespace prefix | Purpose | Source files |
 | --- | --- | --- |
-| `--sherpa-core-*` | Raw value primitives (colour scales, spacing scale). Components **MUST NOT** consume directly. | `css/styles/sherpa-primitives.css` |
-| `--sherpa-color-*` | Semantic colour aliases. | `css/styles/sherpa-alias.css`, `sherpa-components.css`, theme files |
+| `--sherpa-core-*` | Raw value primitives (colour scales, spacing scale). Components **MUST NOT** consume directly. | `css/styles/tokens/sherpa-primitives.css` |
+| `--sherpa-color-*` | Semantic colour aliases. | `css/styles/tokens/sherpa-alias.css`, theme files |
 | `--sherpa-surface-*` | Background / surface colours. | `sherpa-components.css`, theme files |
 | `--sherpa-text-*` | Typography colours and sizes. | `sherpa-components.css`, theme files |
 | `--sherpa-icon-*` | Icon colours. | `sherpa-components.css`, theme files |
-| `--sherpa-border-*` | Border colours and widths. | `sherpa-alias.css`, `sherpa-components.css`, theme files |
+| `--sherpa-border-*` | Border colours and widths. | `tokens/sherpa-alias.css`, theme files |
 | `--sherpa-elevation-*` | Shadow / elevation. | `sherpa-components.css`, theme files |
 | `--sherpa-space-*` | Spacing scale. | `sherpa-components.css` |
 | `--sherpa-fonts-*` | Font scales. | `sherpa-fonts.css` |
-| `--sherpa-typeface-*` | Font families and weights. | `sherpa-primitives.css` |
-| `--sherpa-motion-*` | Duration and easing. | `sherpa-primitives.css` |
+| `--sherpa-typeface-*` | Font families and weights. | `tokens/sherpa-primitives.css` |
+| `--sherpa-motion-*` | Duration and easing. | `tokens/sherpa-primitives.css` |
 | `--sherpa-data-viz-*` | Categorical data-viz colours. | `sherpa-data-viz-classes.css` |
 
 #### B.2 Schema shape (per component)
@@ -777,7 +777,7 @@ State is held in JS memory (not in DOM attributes). Each transition emits a cust
 
 For new contributors and AI agents extending the library:
 
-1.  **Tokens** — Figma export → `figma-tokens/` → `css/styles/sherpa-primitives.css` → alias / theme layers.
+1.  **Tokens** — Figma export → `figma-tokens/` → `css/styles/tokens/sherpa-primitives.css` → alias / theme layers.
 2.  **Base classes** — `components/utilities/sherpa-element/`, then `components/utilities/sherpa-input-base/`.
 3.  **Cross-cutting utilities** — `flow-manager`, `form-manager`, `theme-manager`, `status-mixin`, `stylesheet-cache`, formatters.
 4.  **Primitives** — `sherpa-button`, `sherpa-input-*`, `sherpa-dialog`, `sherpa-tooltip`, `sherpa-popover`, `sherpa-tag`, `sherpa-loader`.
