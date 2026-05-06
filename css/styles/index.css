@@ -69,9 +69,6 @@
  */
 @import "sherpa-theme-base.css";
 
-/* Component collection tokens (variant defaults) */
-@import "sherpa-components.css" layer(components);
-
 /* ── Utilities ───────────────────────────────────────────────────────── */
 
 @import "sherpa-icon-classes.css" layer(utilities);
