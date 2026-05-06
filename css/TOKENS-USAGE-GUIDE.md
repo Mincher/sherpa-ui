@@ -1,6 +1,47 @@
 # Design Tokens Usage Guide
 
-Complete guide to using and extending the Apex design token system.
+Complete guide to using and extending the Sherpa design token system.
+
+> **Source of truth:** All tokens flow from `figma-tokens/` through
+> [scripts/generate-css-tokens.js](../scripts/generate-css-tokens.js).
+> The Figma → CSS contract is documented in
+> [scripts/generate-css-tokens.md](../scripts/generate-css-tokens.md).
+> Files marked _generated_ below are overwritten on every
+> `npm run tokens:generate` — do not hand-edit them.
+
+## Architecture at a Glance
+
+```
+  figma-tokens/                          (source of truth — DTCG + figma-variables.json)
+        │
+        ▼  scripts/generate-css-tokens.js
+  ┌──────────────────────────────────────────────────────────────┐
+  │ @layer tokens                                                │
+  │   sherpa-primitives.css     (--sherpa-core-*  raw values)    │
+  │   sherpa-alias.css          (--sherpa-* semantic abstractions│  generated
+  │                              shared across all themes)       │
+  │   sherpa-fonts.css          (typography composites)          │  generated
+  │   sherpa-status.css         (--_status-* mapping)            │  generated
+  │ @layer theme                                                 │
+  │   sherpa-theme-base.css     (props identical across themes — │  generated
+  │                              always @import'd)               │
+  │   sherpa-theme-{slug}.css   (per-theme diffs only — loaded   │  generated
+  │                              at runtime via <link>)          │
+  │ @layer utilities                                             │
+  │   sherpa-text-classes.css     sherpa-icon-classes.css        │
+  │   sherpa-data-viz-classes.css (.color-1 … .color-N from      │  generated
+  │                                figma data-viz/categorical)   │
+  │   sherpa-motion-classes.css   sherpa-layout-classes.css      │
+  │   sherpa-control-group-classes.css                           │
+  │ @layer components                                            │
+  │   sherpa-components.css     (per-variant defaults)           │  generated
+  │   components/**/*.css       (Shadow DOM)                     │
+  └──────────────────────────────────────────────────────────────┘
+```
+
+Later layers override earlier ones; within a layer, source order wins. The
+runtime per-theme `<link>` is later than the base `@import`, so it overrides
+base on a per-property basis without touching the layer cascade.
 
 ## Quick Start
 
@@ -30,9 +71,9 @@ document.documentElement.style.colorScheme = 'dark';     // forced dark
 document.documentElement.style.colorScheme = 'light';    // forced light
 document.documentElement.style.colorScheme = 'light dark'; // auto (OS pref)
 
-// Switch theme (swap CSS file)
-const style = document.getElementById('sherpa-theme');
-style.textContent = '@import url("/css/styles/sherpa-theme-data-protection.css") layer(tokens);';
+// Switch theme (swap CSS file via <link id="sherpa-theme">)
+const link = document.getElementById('sherpa-theme');
+link.href = '/css/styles/sherpa-theme-data-protection.css';
 ```
 
 ---
@@ -250,21 +291,43 @@ document.documentElement.style.colorScheme = 'dark';
 
 ### Theme / Brand Switching
 
-Each theme has its own standalone CSS file. Swap the file via the
-`<style id="sherpa-theme">` element in the `<head>`:
+Themes are split into a **shared base + per-theme diffs**:
+
+- `sherpa-theme-base.css` — properties identical across every theme.
+  Always loaded via `@import` from `index.css`. Declares `color-scheme: light dark`.
+- `sherpa-theme-{slug}.css` — only the properties whose value differs from
+  base. Loaded at runtime via a `<link id="sherpa-theme">` element.
+
+Both files self-declare `@layer theme { ... }`. The `<link>` is later in source
+order than the `@import`, so it overrides base on a per-property basis within
+the layer. Swap the link `href` to change themes — base stays loaded.
 
 ```html
 <!-- In the HTML <head> -->
-<style id="sherpa-theme">
-  @import url("/css/styles/sherpa-theme-apex-2-core.css") layer(tokens);
-</style>
+<link id="sherpa-theme" rel="stylesheet"
+      href="/css/styles/sherpa-theme-apex-2-core.css">
 ```
 
 ```javascript
 // Switch to Data Protection theme
-const el = document.getElementById('sherpa-theme');
-el.textContent = '@import url("/css/styles/sherpa-theme-data-protection.css") layer(tokens);';
+document.getElementById('sherpa-theme').href =
+  '/css/styles/sherpa-theme-data-protection.css';
 ```
+
+#### Theme-Scoped Brand Families
+
+Some colour families are **only defined for specific themes** and intentionally
+live in the theme files rather than the shared alias file:
+
+| Family                     | Defined in                                |
+| -------------------------- | ----------------------------------------- |
+| `--sherpa-color-primary-classic-*` | `sherpa-theme-classic.css` only          |
+| `--sherpa-color-primary-new-*`     | `sherpa-theme-apex-2-core.css`, `sherpa-theme-data-protection.css` |
+
+Do not consume these directly from component CSS unless the component is
+theme-specific. Prefer the abstract `--sherpa-color-brand-*` semantic alias.
+Configured via `THEME_SCOPED_FAMILIES` in
+[scripts/generate-css-tokens.js](../scripts/generate-css-tokens.js).
 
 Available theme files:
 - `sherpa-theme-apex-2-core.css` — Apex 2.0 Core (default)
@@ -382,12 +445,46 @@ Reference tokens in:
 
 ## Best Practices
 
-1. **Always use tokens** — Never hardcode colors, spacing, or sizes
-2. **Favor semantic tokens** — Use `--sherpa-surface-container-default` over `--sherpa-color-brand-base`
-3. **Consistent naming** — Follow the naming convention for custom tokens
-4. **Document custom tokens** — Add JSDoc comments explaining purpose
-5. **Test theme switching** — Ensure all tokens work in light and dark modes
-6. **Regenerate from source** — Don't edit CSS token files directly; process from Figma
+1. **Always use tokens** — Never hardcode colors, spacing, or sizes.
+2. **Favor semantic tokens** — Use `--sherpa-surface-container-default` over
+   `--sherpa-color-brand-base`. Never reference `--sherpa-core-*` primitives
+   from component CSS.
+3. **Always provide a hardcoded fallback** —
+   `var(--sherpa-space-sm, 12px)` not `var(--sherpa-space-sm)`. This guarantees
+   graceful degradation when a token is missing or a theme fails to load.
+   Run `npm run css:fallbacks` to inject literal fallbacks across all
+   component CSS automatically (uses
+   [scripts/inject-css-fallbacks.js](../scripts/inject-css-fallbacks.js)).
+   Use `npm run css:fallbacks:check` to dry-run.
+4. **Consistent naming** — Follow the naming convention for custom tokens.
+5. **Document custom tokens** — Add JSDoc comments explaining purpose.
+6. **Test theme switching** — Verify all tokens work across every theme × mode.
+7. **Regenerate from source** — Don't edit generated CSS files directly;
+   change tokens in Figma and run `npm run tokens:generate`.
+
+## Where Do I Add a New Token?
+
+```
+Is the value the same across all themes?
+├── YES → Is it a raw design value (color hex, px scale)?
+│         ├── YES → Add to figma-tokens primitives.
+│         │        Output: sherpa-primitives.css (--sherpa-core-*).
+│         └── NO  → Is it a font composite or status mapping?
+│                   ├── font composite → figma-tokens fonts → sherpa-fonts.css
+│                   ├── status mapping  → figma-tokens status → sherpa-status.css
+│                   └── otherwise        → figma-tokens alias → sherpa-alias.css
+│                                          (--sherpa-* semantic alias)
+└── NO  → Is it a brand colour family scoped to specific themes?
+          ├── YES → Add prefix to THEME_SCOPED_FAMILIES in
+          │        scripts/generate-css-tokens.js, then add the tokens to
+          │        each owning theme's DTCG folder.
+          └── NO  → Add to each theme's DTCG folder.
+                   Output: sherpa-theme-base.css for shared values,
+                   sherpa-theme-{slug}.css for diffs (computed automatically).
+```
+
+After any change: `npm run tokens:generate` — never hand-edit the generated
+files.
 
 ---
 
