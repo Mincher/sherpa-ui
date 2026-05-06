@@ -13,10 +13,20 @@
  *     → theme (--sherpa-surface-*, --sherpa-text-*, etc.) → modifiers (status, density)
  *
  * Theme architecture:
- *   Themes are loaded via <link id="sherpa-theme"> in the HTML <head>.
- *   Each theme file self-declares @layer theme { ... } so it slots into the
- *   layer ordering between tokens and utilities.
- *   Runtime theme switching: swap the <link> element's href attribute.
+ *   Themes are split into a shared base + per-theme diffs.
+ *     sherpa-theme-base.css         — always loaded via @import below
+ *                                     (props identical across every theme;
+ *                                     declares color-scheme)
+ *     sherpa-theme-{slug}.css       — loaded by consumer via
+ *                                     <link id="sherpa-theme" rel="stylesheet"
+ *                                       href=".../sherpa-theme-{slug}.css">
+ *                                     in the HTML <head>; contains only
+ *                                     properties that differ from base
+ *   Both files self-declare @layer theme { ... } so they slot into the
+ *   layer ordering between tokens and utilities. The runtime <link> is
+ *   later in source order than the @import, so it overrides base on a
+ *   per-property basis within the layer. Swap the <link> href to change
+ *   themes — base stays loaded, only the diff swaps.
  *   Available files: sherpa-theme-apex-2-core.css, sherpa-theme-data-protection.css, sherpa-theme-classic.css
  *   Mode switching: set color-scheme on documentElement via JS
  *     "light dark" → auto (OS preference), "light" → forced light, "dark" → forced dark
@@ -43,15 +53,26 @@
 @import "sherpa-status.css" layer(tokens);
 
 /*
- * Default theme — provides baseline themed tokens when no external <link>
- * overrides it. The file self-declares @layer theme { ... } so it slots
- * into the layer ordering between tokens and utilities.
+ * Theme base — props identical across every theme. Always loaded.
+ * Self-declares @layer theme { ... } so it slots into the layer ordering
+ * between tokens and utilities. Defines color-scheme: light dark on :root.
  *
- * Runtime theme switching: add <link id="sherpa-theme" href="..."> in the
- * HTML <head>. Its @layer theme rules are later in source order and win.
- * Swap the <link> href to change themes dynamically.
+ * Per-theme diffs are loaded via <link id="sherpa-theme"> in the HTML
+ * <head>:
+ *   <link id="sherpa-theme" rel="stylesheet"
+ *         href="css/styles/sherpa-theme-apex-2-core.css">
+ *
+ * Per-theme files only contain properties whose value differs from base.
+ * They are later in source order than this @import, so they override base
+ * on a per-property basis within @layer theme. Swap the <link> href to
+ * change themes at runtime — base stays loaded, only the diff swaps.
+ *
+ * Available per-theme files:
+ *   sherpa-theme-apex-2-core.css
+ *   sherpa-theme-data-protection.css
+ *   sherpa-theme-classic.css
  */
-@import "sherpa-theme-apex-2-core.css";
+@import "sherpa-theme-base.css";
 
 /* Component collection tokens (variant defaults) */
 @import "sherpa-components.css" layer(components);

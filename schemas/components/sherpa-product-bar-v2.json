@@ -42,6 +42,10 @@
     {
       "name": "actions",
       "description": "Right-aligned icon buttons + Ask N-zo entry point"
+    },
+    {
+      "name": "system-menu",
+      "description": "Organisation / scope picker shown when the system-name"
     }
   ],
   "events": [

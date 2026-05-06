@@ -33,7 +33,7 @@
     {
       "name": "data-w",
       "type": "number",
-      "description": "Width override in px (default 240)"
+      "description": "Optional min-width in px. Nodes are"
     },
     {
       "name": "data-node-id",

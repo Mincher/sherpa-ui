@@ -1,12 +1,15 @@
 /**
- * sherpa-data-viz-classes.css — Data Visualization Color Classes
+ * Data Visualization Color Classes
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
  *
  * One class per categorical color. Each class sets a private custom property
  * (--_data-viz-color) and applies it to background-color, color, and
  * border-color so the same class works for bar segments, legend swatches,
  * data labels, and bordered regions.
  *
- * Uses categorical color tokens defined in the themed token files.
+ * Categorical color tokens are defined in sherpa-theme-base.css.
+ * Class count is derived from the Figma export — currently 11 colors.
  */
 
 .color-1 {
