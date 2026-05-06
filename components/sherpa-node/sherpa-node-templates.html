@@ -16,43 +16,21 @@
      SOURCE
      ════════════════════════════════════════════════════════════════ -->
 
-<template class="rows-tpl" data-kind="source" data-subtype="model"
-          data-subtype-helper="Uses the selected model to process natural language.">
+<template class="rows-tpl" data-kind="source" data-subtype="default"
+          data-subtype-helper="Starts the flow from the selected source.">
   <sherpa-node-header slot="header">
-    <span slot="title">Model</span>
+    <span slot="title">Source</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
   </sherpa-node-header>
   <sherpa-node-row>
-    <span slot="label">Large Language Model</span>
-    <sherpa-input-select slot="control" name="model">
-      <option>Claude Opus 4.6</option><option>Claude Sonnet 4.6</option><option>GPT-5</option><option>Gemini 2.5</option>
+    <span slot="label">Source</span>
+    <sherpa-input-select slot="control" name="source">
+      <option>Unified agent</option>
+      <option>API</option>
+      <option>Model</option>
+      <option>Custom</option>
     </sherpa-input-select>
   </sherpa-node-row>
-</template>
-
-<template class="rows-tpl" data-kind="source" data-subtype="api">
-  <sherpa-node-header slot="header">
-    <span slot="title">API</span>
-    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
-  <sherpa-node-row>
-    <span slot="label">URL</span>
-    <sherpa-input-text slot="control" name="url" placeholder="https://example.com/api"></sherpa-input-text>
-  </sherpa-node-row>
-  <sherpa-node-row>
-    <span slot="label">Version</span>
-    <sherpa-input-select slot="control" name="version">
-      <option>v1</option><option>v2</option><option>v3</option>
-    </sherpa-input-select>
-  </sherpa-node-row>
-</template>
-
-<template class="rows-tpl" data-kind="source" data-subtype="unified-agent"
-          data-subtype-helper="Starts the flow from the unified agent.">
-  <sherpa-node-header slot="header">
-    <span slot="title">Unified agent</span>
-    <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
 </template>
 
 <!-- ════════════════════════════════════════════════════════════════
