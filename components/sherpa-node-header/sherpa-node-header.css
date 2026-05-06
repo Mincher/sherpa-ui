@@ -9,14 +9,13 @@
 :host {
   display: block;
   position: relative;
-  min-height: var(--sherpa-node-header-height);
 }
 
 /* ── Flex row: [in-gutter | header-body | out-gutter] ──────────── */
+/* Height is intrinsic — driven by the header-body padding + content. */
 .header {
   display: flex;
   align-items: stretch;
-  min-height: 100%;
 }
 
 .gutter {

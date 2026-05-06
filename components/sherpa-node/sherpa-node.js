@@ -45,7 +45,9 @@
  * @attr {boolean} data-selected — Highlights the node
  * @attr {number}  data-x        — X position in canvas-local px
  * @attr {number}  data-y        — Y position in canvas-local px
- * @attr {number}  data-w        — Width override in px (default 240)
+ * @attr {number}  data-w        — Optional min-width in px. Nodes are
+ *                                 intrinsic-width flex columns by
+ *                                 default; set this to enforce a floor.
  * @attr {string}  data-node-id  — Stable node identifier
  * @attr {json}    data-subtypes — Flat Array<{value,label}> OR grouped
  *                                 Array<{label, options:[{value,label}]}>

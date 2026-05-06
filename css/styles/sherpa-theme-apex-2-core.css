@@ -50,16 +50,16 @@
   --sherpa-surface-container-tertiary-hover: light-dark(var(--sherpa-core-color-basic-monochrome-400), var(--sherpa-color-tones-900));
 
   /* ── Surface — Control (Interactive) ───────────────────────── */
-  --sherpa-surface-control-active-default: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
-  --sherpa-surface-control-active-down: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-700));
-  --sherpa-surface-control-active-hover: light-dark(var(--sherpa-color-brand-200), var(--sherpa-color-brand-600));
+  --sherpa-surface-control-active-default: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-100));
+  --sherpa-surface-control-active-down: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-300));
+  --sherpa-surface-control-active-hover: light-dark(var(--sherpa-color-brand-200), var(--sherpa-color-brand-200));
   --sherpa-surface-control-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-tones-900));
   --sherpa-surface-control-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-tones-1000));
   --sherpa-surface-control-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-900));
   --sherpa-surface-control-inactive: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-900));
-  --sherpa-surface-control-primary-default: var(--sherpa-color-brand-700);
-  --sherpa-surface-control-primary-down: var(--sherpa-color-brand-900);
-  --sherpa-surface-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-surface-control-primary-default: var(--sherpa-color-primary-new-base);
+  --sherpa-surface-control-primary-down: var(--sherpa-color-primary-new-800);
+  --sherpa-surface-control-primary-hover: var(--sherpa-color-primary-new-700);
   --sherpa-surface-control-secondary-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-800));
   --sherpa-surface-control-secondary-down: light-dark(var(--sherpa-color-neutral-300), var(--sherpa-color-neutral-1000));
   --sherpa-surface-control-secondary-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-900));

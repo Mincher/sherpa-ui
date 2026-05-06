@@ -1,22 +1,30 @@
 /**
  * sherpa-node.css
  *
- * Card host. Defaults to white-with-grey-border + drop shadow,
- * matching the standard Figma node. data-tone="tinted" applies the
- * kind accent as a low-alpha body fill + 1px accent stroke (used by
- * source / output kinds).
+ * Card host. Defaults to white-with-grey-border + drop shadow.
  *
- * data-kind="group" is a special skin: tinted info-blue surface
- * with a strong info-blue border (matches the Group node design).
+ * Sizing model: the node is an intrinsic-width flex column. Width is
+ * driven by the widest content row (header title, controls, etc.).
+ * Set `data-w` (→ `--sherpa-node-w`) on the host for an explicit
+ * minimum width override.
+ *
+ * Per-kind colour: only kinds with a real semantic story carry
+ * colour — output is success, group is info, action is warning. All
+ * other kinds (source, variable, math, logic, time, collection, util,
+ * ai/delegate/chat) render as plain neutral cards. The colour is
+ * exposed locally as `--_node-accent` so tints, borders and the
+ * selected outline all share one source of truth.
  */
 
 :host {
-  /* Default accent — overridden per kind below. */
-  --sherpa-node-accent: var(--sherpa-node-accent-default);
+  /* Local accent — semantic, set per kind below. Defaults to neutral. */
+  --_node-accent: var(--sherpa-surface-context-default-strong-default, #6b7280);
 
   position: absolute;
-  display: block;
-  width: var(--sherpa-node-w, var(--sherpa-node-width));
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: var(--sherpa-node-w, 0);
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
   font-size: var(--sherpa-font-base-size, 14px);
   color: var(--sherpa-text-default-body);
@@ -26,38 +34,27 @@
   will-change: transform;
 }
 
-/* ── Per-kind accents (drives sockets + tinted bodies) ─────────── */
-:host([data-kind="source"])     { --sherpa-node-accent: var(--sherpa-node-accent-source); }
-:host([data-kind="group"])      { --sherpa-node-accent: var(--sherpa-node-accent-group); }
-:host([data-kind="variable"])   { --sherpa-node-accent: var(--sherpa-node-accent-variable); }
-:host([data-kind="math"])       { --sherpa-node-accent: var(--sherpa-node-accent-math); }
-:host([data-kind="logic"])      { --sherpa-node-accent: var(--sherpa-node-accent-logic); }
-:host([data-kind="time"])       { --sherpa-node-accent: var(--sherpa-node-accent-time); }
-:host([data-kind="collection"]) { --sherpa-node-accent: var(--sherpa-node-accent-collection); }
-:host([data-kind="util"])       { --sherpa-node-accent: var(--sherpa-node-accent-util); }
-:host([data-kind="output"])     { --sherpa-node-accent: var(--sherpa-node-accent-output); }
-:host([data-kind="delegate"])   { --sherpa-node-accent: var(--sherpa-node-accent-ai); }
-:host([data-kind="chat"])       { --sherpa-node-accent: var(--sherpa-node-accent-ai); }
-:host([data-kind="action"])     { --sherpa-node-accent: var(--sherpa-node-accent-action); }
-
-/* Source + Output kinds default to the tinted body. */
-:host([data-kind="source"]),
+/* ── Per-kind accents (semantic only) ─────────────────────────── */
 :host([data-kind="output"]) {
-  --sherpa-node-tone: tinted;
+  --_node-accent: var(--sherpa-surface-context-success-strong-default, #1f9d55);
+}
+:host([data-kind="action"]) {
+  --_node-accent: var(--sherpa-surface-context-warning-strong-default, #ff8a00);
+}
+:host([data-kind="group"]) {
+  --_node-accent: var(--sherpa-border-context-info-default, #3b82f6);
 }
 
-/* An Output node with no incoming connections is an error state — flip
-   its accent (which drives both the tinted body and border) to the
-   error/red strong token. As soon as any input socket reports
-   data-connected (set by sherpa-node-canvas's #multiCounts pass) the
-   node returns to its default green accent. */
+/* An Output node with no incoming connections is an error state. */
 :host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) {
-  --sherpa-node-accent: var(--sherpa-node-accent-false);
+  --_node-accent: var(--sherpa-surface-context-error-strong-default, #cc1f1a);
 }
 
 /* ── Container ────────────────────────────────────────────────── */
 .node {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: var(--sherpa-surface-container-default);
   border: 1px solid var(--sherpa-border-container-default);
   border-radius: var(--sherpa-node-radius);
@@ -65,21 +62,32 @@
   transition: box-shadow 150ms ease, border-color 150ms ease;
 }
 
-/* Tinted body — used by source + output kinds and any node opting in.
-   The chat kind also gets the tinted body; delegate stays a plain
-   generic node by design. */
-:host([data-tone="tinted"]) .node,
-:host([data-kind="source"]) .node,
-:host([data-kind="output"]) .node,
+/* Tinted body — output (success), action (warning), and chat (info).
+   Body uses the matching subtle surface; border uses the strong accent
+   so the card edge stays legible. The chat kind taps `info-subtle`
+   directly because it has no per-kind --_node-accent override. */
+:host([data-kind="output"]) .node {
+  background: var(--sherpa-surface-context-success-subtle-default, #e6f7ee);
+  border-color: var(--_node-accent);
+}
+:host([data-kind="action"]) .node {
+  background: var(--sherpa-surface-context-warning-subtle-default, #fff5e0);
+  border-color: var(--_node-accent);
+}
 :host([data-kind="chat"]) .node {
-  background: color-mix(in srgb, var(--sherpa-node-accent) 12%, var(--sherpa-surface-container-default));
-  border-color: var(--sherpa-node-accent);
+  background: var(--sherpa-surface-context-info-subtle-default, #e0f2fe);
+  border-color: var(--sherpa-border-context-info-default, #3b82f6);
 }
 
-/* Group node — info-blue surface + border (per design). */
+/* Output-with-no-input flips the body tint to the error subtle. */
+:host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) .node {
+  background: var(--sherpa-surface-context-error-subtle-default, #fde7e7);
+}
+
+/* Group node — info-blue surface + border. */
 :host([data-kind="group"]) .node {
-  background: var(--sherpa-node-group-bg);
-  border-color: var(--sherpa-node-group-border);
+  background: var(--sherpa-surface-context-info-subtle-default, #e0f2fe);
+  border-color: var(--sherpa-border-context-info-default, #3b82f6);
   border-width: 1px;
 }
 
@@ -89,7 +97,7 @@
   z-index: 10;
 }
 :host([data-selected]) .node {
-  outline: 2px solid var(--sherpa-node-accent);
+  outline: 2px solid var(--_node-accent);
   outline-offset: 1px;
 }
 
@@ -103,11 +111,13 @@
 
 /* Footer is itself a 3-column flex row [in-gutter | body | out-gutter]
    so any sockets slotted into footer-input / footer-output sit in the
-   same gutter rail as the rest of the node — no absolute positioning. */
+   same gutter rail as the rest of the node — no absolute positioning.
+   Height is intrinsic — driven by socket size + body padding. */
 .node-footer {
   display: flex;
   align-items: stretch;
   min-height: 0;
+  padding: var(--sherpa-space-xs, 8px) 0;
 }
 .node-footer .gutter {
   flex: 0 0 var(--sherpa-node-socket-gutter);
@@ -132,11 +142,6 @@
    light DOM, not as descendants of `.node-footer` in shadow DOM. */
 :host(:not([data-has-footer]):not([data-has-footer-input]):not([data-has-footer-output])) .node-footer {
   display: none;
-}
-:host([data-has-footer]) .node-footer,
-:host([data-has-footer-input]) .node-footer,
-:host([data-has-footer-output]) .node-footer {
-  min-height: var(--sherpa-node-row-height);
 }
 
 /* ── Sub-type dropdown ─────────────────────────────────────────── */

@@ -1,77 +1,52 @@
 /**
  * sherpa-node-tokens.css
  *
- * Family-level tokens for the sherpa-node primitives. Per-kind
- * accent colours map onto the sherpa-ui data-viz categorical
- * palette so they automatically follow the active theme.
+ * Family-shared tokens for the sherpa-node primitives. Every named
+ * token here is either:
+ *   • a single-hop alias to a semantic sherpa-ui token (so the call
+ *     site reads a meaningful name without inventing a new colour
+ *     intent), or
+ *   • a small geometric constant that has no sherpa-ui equivalent
+ *     (socket dot dimensions, edge stroke widths, canvas grid step).
+ *
+ * Per-kind colour, body tint, and group skin are NOT defined here —
+ * those consume sherpa semantic surface/border tokens directly at the
+ * call site (see sherpa-node.css and sherpa-node-socket.css).
+ *
+ * Node body width / header height / row height are NOT defined here:
+ * nodes are intrinsic flex columns whose dimensions are driven by
+ * their content (header padding, row padding, control widths).
  */
 
 :where(:root, :host) {
-  /* ── Per-kind accent (used for socket strokes + tinted bodies) ── */
-  --sherpa-node-accent-source:     var(--sherpa-data-viz-categorical-color-5);   /* blue      */
-  --sherpa-node-accent-group:      var(--sherpa-data-viz-categorical-color-5);   /* blue      */
-  --sherpa-node-accent-variable:   var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
-  --sherpa-node-accent-math:       var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
-  --sherpa-node-accent-logic:      var(--sherpa-data-viz-categorical-color-5);   /* blue      */
-  --sherpa-node-accent-time:       var(--sherpa-data-viz-categorical-color-5);   /* blue      */
-  --sherpa-node-accent-collection: var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
-  --sherpa-node-accent-util:       var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
-  --sherpa-node-accent-output:     var(--sherpa-data-viz-categorical-color-10);  /* green     */
-  --sherpa-node-accent-ai:         var(--sherpa-data-viz-categorical-color-2);   /* phlox     */
-  --sherpa-node-accent-action:     var(--sherpa-data-viz-categorical-color-7);   /* orange    */
-
-  /* Fallback */
-  --sherpa-node-accent-default: var(--sherpa-data-viz-categorical-color-11);
-
-  /* ── Status accents (true/false output sockets) ───────────────── */
-  --sherpa-node-accent-true:  var(--sherpa-surface-context-success-strong-default);
-  --sherpa-node-accent-false: var(--sherpa-surface-context-error-strong-default);
-
-  /* ── Socket palette (locked, NOT driven by node-kind) ─────────── */
-  /* Header sockets + outputs default to brand purple. Row inputs are
-     blue. true/false outputs override via data-status. */
-  --sherpa-node-socket-purple: var(--sherpa-data-viz-categorical-color-2);
-  --sherpa-node-socket-blue:   var(--sherpa-data-viz-categorical-color-5);
-
-  /* ── Group node skin ──────────────────────────────────────────── */
-  /* Mixed against the container surface so the tint stays fully
-     opaque in both light and dark themes. The aliased
-     `info-subtle-default` slot uses an alpha tint in dark mode which
-     would let the canvas grid bleed through. */
-  --sherpa-node-group-bg: color-mix(
-    in srgb,
-    var(--sherpa-node-accent-group) 12%,
-    var(--sherpa-surface-container-default)
-  );
-  --sherpa-node-group-border: var(--sherpa-border-context-info-default);
-
-  /* ── Geometry (Figma: 240w, 48px header, 60px row, 4px radius) ── */
-  --sherpa-node-width:          240px;
-  --sherpa-node-radius:           4px;
-  --sherpa-node-header-height:   48px;
-  --sherpa-node-row-height:      60px;
-  --sherpa-node-socket-gutter:    8px;
-  --sherpa-node-socket-size:     16px;
-  --sherpa-node-socket-stroke-w:  2px;
-
   /* ── Edge / connector colours ─────────────────────────────────── */
-  /* Default flow edge — brand purple, matching header sockets. */
-  --sherpa-node-edge-color:          var(--sherpa-node-socket-purple);
-  --sherpa-node-edge-color-hover:    var(--sherpa-text-default-body);
-  --sherpa-node-edge-color-selected: var(--sherpa-border-context-info-default);
-  --sherpa-node-edge-color-control:  var(--sherpa-surface-context-warning-strong-default);
-  --sherpa-node-edge-color-true:     var(--sherpa-node-accent-true);
-  --sherpa-node-edge-color-false:    var(--sherpa-node-accent-false);
-  --sherpa-node-edge-color-ghost:    var(--sherpa-border-context-info-default);
+  /* Single-hop aliases. Each maps to the closest semantic sherpa-ui
+     token. Hardcoded fallbacks per project convention. */
+  --sherpa-node-edge-color:          var(--sherpa-surface-context-default-strong-default, #6b7280);
+  --sherpa-node-edge-color-hover:    var(--sherpa-text-default-body,                       #1f2937);
+  --sherpa-node-edge-color-selected: var(--sherpa-border-context-info-default,             #3b82f6);
+  --sherpa-node-edge-color-control:  var(--sherpa-surface-context-warning-strong-default,  #ff8a00);
+  --sherpa-node-edge-color-true:     var(--sherpa-surface-context-success-strong-default,  #1f9d55);
+  --sherpa-node-edge-color-false:    var(--sherpa-surface-context-error-strong-default,    #cc1f1a);
+  --sherpa-node-edge-color-ghost:    var(--sherpa-border-context-info-default,             #3b82f6);
+
+  /* ── Edge stroke widths (no sherpa-ui equivalent) ─────────────── */
   --sherpa-node-edge-width:          1.5px;
   --sherpa-node-edge-width-hover:    2.25px;
   --sherpa-node-edge-width-selected: 2.5px;
 
+  /* ── Socket dot geometry (intrinsic, not tied to layout scale) ── */
+  --sherpa-node-socket-size:     16px;
+  --sherpa-node-socket-stroke-w: 2px;
+  --sherpa-node-socket-gutter:   var(--sherpa-space-sm, 8px);
+
+  /* ── Node body radius ─────────────────────────────────────────── */
+  --sherpa-node-radius: var(--sherpa-radius-sm, 4px);
+
   /* ── Canvas grid ──────────────────────────────────────────────── */
   --sherpa-node-canvas-grid-step:  24px;
   --sherpa-node-canvas-grid-arm:    3px;
-  /* Very faint dot/crosshair — much lighter than container borders. */
-  --sherpa-node-canvas-grid-color: rgba(0, 0, 0, 0.08);
+  --sherpa-node-canvas-grid-color: var(--sherpa-border-container-subtle-default, rgba(0, 0, 0, 0.08));
 }
 
 /* Native [hidden] support */

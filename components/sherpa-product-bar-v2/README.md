@@ -21,6 +21,7 @@ Light-themed product bar (Apr 2026 redesign). System name trigger + time, option
 | `tabs` | Optional product sub-nav (sets data-has-tabs when populated) |
 | `search` | Search control; falls back to a default sherpa-input-search |
 | `actions` | Right-aligned icon buttons + Ask N-zo entry point |
+| `system-menu` | Organisation / scope picker shown when the system-name trigger is activated. Pass a single `<sherpa-menu>` with a flat list of `<sherpa-menu-item>` children — do **not** wrap items in `<ul data-group="…">` groups. |
 
 Slot usage:
 
@@ -31,6 +32,33 @@ Slot usage:
   <div slot="actions"><!-- Right-aligned icon buttons + Ask N-zo entry point --></div>
 </sherpa-product-bar-v2>
 ```
+
+### Organisation dropdown (`system-menu`)
+
+The system-name trigger opens a single, flat list of organisations. Author the
+slot content as `<sherpa-menu-item>` elements directly inside `<sherpa-menu>` —
+no `<ul data-group="…">` wrappers, no group headings.
+
+```html
+<sherpa-product-bar-v2 data-product-name="Acme Corp">
+  <sherpa-menu slot="system-menu">
+    <sherpa-menu-item value="acme">Acme Corp</sherpa-menu-item>
+    <sherpa-menu-item value="globex">Globex</sherpa-menu-item>
+    <sherpa-menu-item value="initech">Initech</sherpa-menu-item>
+  </sherpa-menu>
+</sherpa-product-bar-v2>
+```
+
+> **Don't** group the organisation list:
+>
+> ```html
+> <!-- ❌ Avoid: groups add visual dividers and headings the org picker doesn't need -->
+> <sherpa-menu slot="system-menu">
+>   <ul data-group="orgs">
+>     <li><sherpa-menu-item value="acme">Acme Corp</sherpa-menu-item></li>
+>   </ul>
+> </sherpa-menu>
+> ```
 
 ## Events
 

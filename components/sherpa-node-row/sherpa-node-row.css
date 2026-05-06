@@ -11,7 +11,6 @@
 :host {
   display: block;
   position: relative;
-  min-height: var(--sherpa-node-row-height);
 }
 
 .row {
@@ -20,7 +19,6 @@
     var(--sherpa-node-socket-gutter) 1fr var(--sherpa-node-socket-gutter);
   align-content: center;
   row-gap: var(--sherpa-space-3xs);
-  min-height: inherit;
   padding: var(--sherpa-space-xs) 0;
 }
 
@@ -90,9 +88,9 @@
   width: 100%;
 }
 
-:host([data-multi]) {
-  min-height: calc(var(--sherpa-node-row-height) + var(--sherpa-space-base));
-}
+/* Multi-input rows still grow with stacked socket dots; the socket
+   itself drives extra height intrinsically (see sherpa-node-socket
+   .connectors flex column). No row-level min-height needed. */
 
 /* Native [hidden] support */
 :host([hidden]) { display: none; }

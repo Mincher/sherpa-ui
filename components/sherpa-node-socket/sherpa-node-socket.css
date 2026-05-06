@@ -26,8 +26,10 @@
  */
 
 :host {
-  /* ── Locked palette (NOT driven by node accent) ─────────────── */
-  --_socket-stroke: var(--sherpa-node-socket-purple);
+  /* ── Locked palette (semantic, NOT driven by node accent) ──── */
+  /* Header sockets + outputs default to neutral. Row inputs override
+     to info (blue) below. true/false outputs override via data-status. */
+  --_socket-stroke: var(--sherpa-surface-context-default-strong-default, #6b7280);
   --_socket-fill:
     color-mix(in srgb,
       var(--_socket-stroke) 18%,
@@ -49,14 +51,14 @@
   flex-shrink: 0;
 }
 
-/* Row inputs are blue. */
+/* Row inputs are info (blue). */
 :host([data-location="row"][data-direction="in"]) {
-  --_socket-stroke: var(--sherpa-node-socket-blue);
+  --_socket-stroke: var(--sherpa-surface-context-info-strong-default, #3b82f6);
 }
 
 /* True / false outputs override stroke colour. */
-:host([data-status="true"])  { --_socket-stroke: var(--sherpa-node-accent-true); }
-:host([data-status="false"]) { --_socket-stroke: var(--sherpa-node-accent-false); }
+:host([data-status="true"])  { --_socket-stroke: var(--sherpa-surface-context-success-strong-default, #1f9d55); }
+:host([data-status="false"]) { --_socket-stroke: var(--sherpa-surface-context-error-strong-default,   #cc1f1a); }
 
 /* Fill is ALWAYS the light tint of the stroke (see :host above). The
    only place the fill becomes solid is the output triangle, via its

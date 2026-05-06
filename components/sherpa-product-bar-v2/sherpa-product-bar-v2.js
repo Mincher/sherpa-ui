@@ -10,9 +10,23 @@
  * @attr {string}  [data-show-system-menu]   — "false" hides the dropdown caret
  *                                             and disables the trigger menu
  *
- * @slot tabs    — Optional product sub-nav (sets data-has-tabs when populated)
- * @slot search  — Search control; falls back to a default sherpa-input-search
- * @slot actions — Right-aligned icon buttons + Ask N-zo entry point
+ * @slot tabs        — Optional product sub-nav (sets data-has-tabs when populated)
+ * @slot search      — Search control; falls back to a default sherpa-input-search
+ * @slot actions     — Right-aligned icon buttons + Ask N-zo entry point
+ * @slot system-menu — Organisation / scope picker shown when the system-name
+ *                     trigger is activated. Pass a single <sherpa-menu> with
+ *                     a flat list of <sherpa-menu-item> children — do NOT
+ *                     wrap items in <ul data-group="…"> groups. The org
+ *                     picker is a single, non-grouped list.
+ *
+ *   @example
+ *     <sherpa-product-bar-v2 data-product-name="Acme Corp">
+ *       <sherpa-menu slot="system-menu">
+ *         <sherpa-menu-item value="acme">Acme Corp</sherpa-menu-item>
+ *         <sherpa-menu-item value="globex">Globex</sherpa-menu-item>
+ *         <sherpa-menu-item value="initech">Initech</sherpa-menu-item>
+ *       </sherpa-menu>
+ *     </sherpa-product-bar-v2>
  *
  * @fires system-trigger-click
  *   bubbles: true, composed: true
