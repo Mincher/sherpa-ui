@@ -1276,10 +1276,9 @@ export class SherpaNodeCanvas extends SherpaElement {
   #edgeColor(edgeIdx, palette, state) {
     const edge = this.#edges[edgeIdx];
     if (!edge) return palette.default;
-    if (state === "hover")    return palette.hover;
-    if (state === "selected") return palette.selected;
-    if (edge.control) return palette.control;
-    // Read the from-socket's data-status to colour true/false outputs.
+    // True/false outputs carry their semantic colour through every
+    // state — the connector's identity wins over hover/selected.
+    // (Hover/selected still drive stroke width.)
     const node = this.#nodeById(edge.from.nodeId);
     const sock = node?.querySelector(
       `sherpa-node-socket[data-port-name="${CSS.escape(edge.from.portName)}"]`
@@ -1287,6 +1286,9 @@ export class SherpaNodeCanvas extends SherpaElement {
     const status = sock?.dataset?.status;
     if (status === "true")  return palette.true;
     if (status === "false") return palette.false;
+    if (state === "hover")    return palette.hover;
+    if (state === "selected") return palette.selected;
+    if (edge.control) return palette.control;
     return palette.default;
   }
 
