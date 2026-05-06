@@ -1,34 +1,49 @@
 /**
  * sherpa-node-tokens.css
  *
- * Family-shared tokens for the sherpa-node primitives. Every named
- * token here is either:
- *   • a single-hop alias to a semantic sherpa-ui token (so the call
- *     site reads a meaningful name without inventing a new colour
- *     intent), or
- *   • a small geometric constant that has no sherpa-ui equivalent
- *     (socket dot dimensions, edge stroke widths, canvas grid step).
+ * Family-shared tokens for the sherpa-node primitives. This file is
+ * the ONLY place inside `components/sherpa-node*` that references the
+ * broader sherpa-ui token API (`--sherpa-color-*`,
+ * `--sherpa-surface-*`, `--sherpa-border-*`, etc.). Every other
+ * stylesheet in the family consumes only `--sherpa-node-*` aliases
+ * defined here.
  *
- * Per-kind colour, body tint, and group skin are NOT defined here —
- * those consume sherpa semantic surface/border tokens directly at the
- * call site (see sherpa-node.css and sherpa-node-socket.css).
+ * Three groups of tokens:
+ *   1. Edge / connector palette and stroke widths — driven by the
+ *      node-canvas renderer.
+ *   2. Socket geometry + palette — driven by sherpa-node-socket.
+ *   3. Per-kind body + border palette — driven by sherpa-node.
+ *
+ * Theming model:
+ *   • Borders + connectors + status colours read the role-based
+ *     `--sherpa-surface-context-*-strong-default` family. These are
+ *     opaque in every theme.
+ *   • Tinted bodies read the alias-layer `--sherpa-color-{intent}-100`
+ *     family. These are themed (each theme remaps the alias) AND
+ *     guaranteed opaque, so node bodies never let the canvas grid
+ *     bleed through.
+ *   • Brand purple (chat / Ask N-zo, default connector colour) reads
+ *     the `--sherpa-color-brand-*` alias layer because no
+ *     `--sherpa-surface-context-brand-*` family exists yet. When that
+ *     family lands upstream, swap the brand aliases below to consume
+ *     it without touching component CSS.
  *
  * Node body width / header height / row height are NOT defined here:
  * nodes are intrinsic flex columns whose dimensions are driven by
- * their content (header padding, row padding, control widths).
+ * their content.
  */
 
 :where(:root, :host) {
   /* ── Edge / connector colours ─────────────────────────────────── */
   /* Brand purple is the default carrier colour. Status (true/false)
      overrides win over hover/selected in the canvas renderer. */
-  --sherpa-node-edge-color:          var(--sherpa-color-brand-base,    #c046ff);
-  --sherpa-node-edge-color-hover:    var(--sherpa-color-brand-700,     #8500cc);
-  --sherpa-node-edge-color-selected: var(--sherpa-color-brand-800,     #50007a);
-  --sherpa-node-edge-color-control:  var(--sherpa-color-brand-base,    #c046ff);
-  --sherpa-node-edge-color-true:     var(--sherpa-color-success-700,   #1f9d55);
-  --sherpa-node-edge-color-false:    var(--sherpa-color-critical-700,  #cc1f1a);
-  --sherpa-node-edge-color-ghost:    var(--sherpa-color-brand-base,    #c046ff);
+  --sherpa-node-edge-color:          var(--sherpa-color-brand-base,                        #c046ff);
+  --sherpa-node-edge-color-hover:    var(--sherpa-color-brand-700,                         #8500cc);
+  --sherpa-node-edge-color-selected: var(--sherpa-color-brand-800,                         #50007a);
+  --sherpa-node-edge-color-control:  var(--sherpa-color-brand-base,                        #c046ff);
+  --sherpa-node-edge-color-true:     var(--sherpa-surface-context-success-strong-default,  #1f9d55);
+  --sherpa-node-edge-color-false:    var(--sherpa-surface-context-error-strong-default,    #cc1f1a);
+  --sherpa-node-edge-color-ghost:    var(--sherpa-color-brand-base,                        #c046ff);
 
   /* ── Edge stroke widths (no sherpa-ui equivalent) ─────────────── */
   --sherpa-node-edge-width:          1.5px;
@@ -40,8 +55,45 @@
   --sherpa-node-socket-stroke-w: 2px;
   --sherpa-node-socket-gutter:   var(--sherpa-space-sm, 8px);
 
+  /* ── Socket palette (semantic, themeable) ─────────────────────── */
+  --sherpa-node-socket-stroke:        var(--sherpa-color-brand-base,                       #c046ff);
+  --sherpa-node-socket-stroke-true:   var(--sherpa-surface-context-success-strong-default, #1f9d55);
+  --sherpa-node-socket-stroke-false:  var(--sherpa-surface-context-error-strong-default,   #cc1f1a);
+  --sherpa-node-socket-fill:          var(--sherpa-surface-container-default,              #ffffff);
+
   /* ── Node body radius ─────────────────────────────────────────── */
   --sherpa-node-radius: var(--sherpa-border-rounding-lg, 8px);
+
+  /* ── Per-kind body + border (semantic, themeable, opaque) ────── */
+  /* Body fills tap the alias-layer `--sherpa-color-{intent}-100`
+     so they remain opaque while still flowing through theme
+     remapping. Borders tap the role-based context-strong family
+     (opaque across all themes). */
+
+  /* Default neutral card. */
+  --sherpa-node-body-default:        var(--sherpa-surface-container-default,                #ffffff);
+  --sherpa-node-border-default:      var(--sherpa-border-container-default,                 #d1d5db);
+
+  /* Source — info blue. */
+  --sherpa-node-body-source:         var(--sherpa-color-info-100,                           #d9f2fa);
+  --sherpa-node-border-source:       var(--sherpa-surface-context-info-strong-default,      #0d77ad);
+
+  /* Output — success green. */
+  --sherpa-node-body-output:         var(--sherpa-color-success-100,                        #e6f7ee);
+  --sherpa-node-border-output:       var(--sherpa-surface-context-success-strong-default,   #1f9d55);
+
+  /* Output with no incoming connection — critical red. */
+  --sherpa-node-body-output-error:   var(--sherpa-color-critical-100,                       #fde7e7);
+  --sherpa-node-border-output-error: var(--sherpa-surface-context-error-strong-default,     #cc1f1a);
+
+  /* Group — info blue skin (same intent as source). */
+  --sherpa-node-body-group:          var(--sherpa-color-info-100,                           #d9f2fa);
+  --sherpa-node-border-group:        var(--sherpa-surface-context-info-strong-default,      #0d77ad);
+
+  /* Chat (Ask N-zo) — brand purple. No surface-context-brand family
+     exists yet; swap to it upstream when available. */
+  --sherpa-node-body-chat:           var(--sherpa-color-brand-100,                          #f8ebff);
+  --sherpa-node-border-chat:         var(--sherpa-color-brand-base,                         #c046ff);
 
   /* ── Canvas grid ──────────────────────────────────────────────── */
   --sherpa-node-canvas-grid-step:  24px;

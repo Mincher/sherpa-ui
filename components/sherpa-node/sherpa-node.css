@@ -17,17 +17,18 @@
  * All other kinds (variable, math, logic, time, collection, util,
  * action, ai, delegate) render as plain neutral cards.
  *
- * All tinted fills use the OPAQUE `--sherpa-color-{intent}-100`
- * series (no alpha-mixing) and the OPAQUE `--sherpa-color-{intent}-700`
- * for borders, so nodes never let the canvas grid bleed through.
+ * All colour values resolve through `--sherpa-node-{body,border}-*`
+ * aliases declared in sherpa-node-tokens.css. This file never reads
+ * `--sherpa-color-*` / `--sherpa-surface-*` directly so themes can
+ * retint nodes without touching component CSS.
  *
- * The active accent is exposed locally as `--_node-accent` so tints,
- * borders and the selected outline all share one source of truth.
+ * The active border colour is exposed locally as `--_node-accent` so
+ * the body, border and selected outline all share one source of truth.
  */
 
 :host {
-  /* Local accent — semantic, set per kind below. Defaults to neutral. */
-  --_node-accent: var(--sherpa-border-container-default, #d1d5db);
+  /* Local accent — set per kind below. Defaults to neutral border. */
+  --_node-accent: var(--sherpa-node-border-default);
 
   position: absolute;
   display: flex;
@@ -43,23 +44,15 @@
   will-change: transform;
 }
 
-/* ── Per-kind accents (semantic only, opaque) ─────────────────── */
-:host([data-kind="source"]) {
-  --_node-accent: var(--sherpa-color-info-700, #0d77ad);
-}
-:host([data-kind="output"]) {
-  --_node-accent: var(--sherpa-color-success-700, #1f9d55);
-}
-:host([data-kind="chat"]) {
-  --_node-accent: var(--sherpa-color-brand-700, #8500cc);
-}
-:host([data-kind="group"]) {
-  --_node-accent: var(--sherpa-color-info-700, #0d77ad);
-}
+/* ── Per-kind accents ─────────────────────────────────────────── */
+:host([data-kind="source"]) { --_node-accent: var(--sherpa-node-border-source); }
+:host([data-kind="output"]) { --_node-accent: var(--sherpa-node-border-output); }
+:host([data-kind="chat"])   { --_node-accent: var(--sherpa-node-border-chat); }
+:host([data-kind="group"])  { --_node-accent: var(--sherpa-node-border-group); }
 
 /* An Output node with no incoming connections is an error state. */
 :host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) {
-  --_node-accent: var(--sherpa-color-critical-700, #cc1f1a);
+  --_node-accent: var(--sherpa-node-border-output-error);
 }
 
 /* ── Container ────────────────────────────────────────────────── */
@@ -67,35 +60,22 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--sherpa-surface-container-default);
-  border: 1px solid var(--sherpa-border-container-default);
+  background: var(--sherpa-node-body-default);
+  border: 1px solid var(--_node-accent);
   border-radius: var(--sherpa-node-radius);
   box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
   transition: box-shadow 150ms ease, border-color 150ms ease;
 }
 
-/* Tinted body — opaque `--sherpa-color-{intent}-100` fills + matching
-   strong border. No color-mix, no rgba, no transparency. */
-:host([data-kind="source"]) .node {
-  background: var(--sherpa-color-info-100, #d9f2fa);
-  border-color: var(--_node-accent);
-}
-:host([data-kind="output"]) .node {
-  background: var(--sherpa-color-success-100, #e6f7ee);
-  border-color: var(--_node-accent);
-}
-:host([data-kind="chat"]) .node {
-  background: var(--sherpa-color-brand-100, #f8ebff);
-  border-color: var(--_node-accent);
-}
-:host([data-kind="group"]) .node {
-  background: var(--sherpa-color-info-100, #d9f2fa);
-  border-color: var(--_node-accent);
-}
+/* Tinted body — opaque themed fills via node-local aliases. */
+:host([data-kind="source"]) .node { background: var(--sherpa-node-body-source); }
+:host([data-kind="output"]) .node { background: var(--sherpa-node-body-output); }
+:host([data-kind="chat"])   .node { background: var(--sherpa-node-body-chat); }
+:host([data-kind="group"])  .node { background: var(--sherpa-node-body-group); }
 
 /* Output-with-no-input flips the body tint to the critical tint. */
 :host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) .node {
-  background: var(--sherpa-color-critical-100, #fde7e7);
+  background: var(--sherpa-node-body-output-error);
 }
 
 /* Selected state — accent ring. Lift above peers so overlapping

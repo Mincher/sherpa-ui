@@ -29,10 +29,10 @@
   /* ── Locked palette (semantic, NOT driven by node accent) ──── */
   /* All sockets default to brand purple to match the connectors that
      run between them. true/false outputs override via data-status.
-     No color-mix — fill uses the OPAQUE container surface so the dot
-     reads as a solid disc framed by the stroke ring. */
-  --_socket-stroke: var(--sherpa-color-brand-base, #c046ff);
-  --_socket-fill:   var(--sherpa-surface-container-default, #ffffff);
+     All colour values resolve through `--sherpa-node-socket-*`
+     aliases declared in sherpa-node-tokens.css. */
+  --_socket-stroke: var(--sherpa-node-socket-stroke);
+  --_socket-fill:   var(--sherpa-node-socket-fill);
 
   /* Host is content-sized: a single inline-flex frame whose dimensions
      are driven entirely by the .socket-shape inside. The shape itself
@@ -53,8 +53,8 @@
 /* Row inputs share the brand-purple default — no per-location override. */
 
 /* True / false outputs override stroke colour. */
-:host([data-status="true"])  { --_socket-stroke: var(--sherpa-surface-context-success-strong-default, #1f9d55); }
-:host([data-status="false"]) { --_socket-stroke: var(--sherpa-surface-context-error-strong-default,   #cc1f1a); }
+:host([data-status="true"])  { --_socket-stroke: var(--sherpa-node-socket-stroke-true); }
+:host([data-status="false"]) { --_socket-stroke: var(--sherpa-node-socket-stroke-false); }
 
 /* Fill is ALWAYS the light tint of the stroke (see :host above). The
    only place the fill becomes solid is the output triangle, via its
