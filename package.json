@@ -28,6 +28,8 @@
     "mcp": "node mcp-server/index.js",
     "tokens:extract": "node scripts/extract-figma-vars.js",
     "tokens:generate": "node scripts/generate-css-tokens.js",
+    "css:fallbacks": "node scripts/inject-css-fallbacks.js",
+    "css:fallbacks:check": "node scripts/inject-css-fallbacks.js --dry",
     "build": "npm run tokens:generate && npm run docs && npm run schemas && npm run patterns && npm run component-docs"
   },
   "bin": {

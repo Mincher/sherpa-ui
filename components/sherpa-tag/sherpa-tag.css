@@ -23,10 +23,10 @@
   container-type: normal;
 
   /* Figma: tag collection tokens — color variant defaults (purple) */
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-1);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-1);
-  --_tag-text-default: var(--sherpa-text-default-on-color-body);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
+  --_tag-text-default: var(--sherpa-text-default-on-color-body, #fafafa);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(123,28,230,0.4);
 
   /* Figma: in-theme component token */
@@ -37,121 +37,121 @@
 /* ── Color variants ────────────────────────────────────────────────────── */
 
 :host([data-color="magenta"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-2);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-2);
-  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-2, #c046ff);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-2, #c046ff);
+  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(192,70,255,0.4);
 }
 
 :host([data-color="cyan"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-3);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-3);
-  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-3, #2bd1c1);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-3, #2bd1c1);
+  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(43,209,193,0.4);
 }
 
 :host([data-color="light-blue"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-4);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-4);
-  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-4, #16abe2);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-4, #16abe2);
+  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(22,171,226,0.4);
 }
 
 :host([data-color="blue"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-5);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-5);
-  --_tag-text-default: var(--sherpa-text-default-on-color-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-5, #4141ef);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-5, #4141ef);
+  --_tag-text-default: var(--sherpa-text-default-on-color-label, #ffffff);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(65,65,239,0.4);
 }
 
 :host([data-color="violet"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-6);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-6);
-  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-6, #8197f1);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-6, #8197f1);
+  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(120,146,250,0.4);
 }
 
 :host([data-color="orange"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-7);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-7);
-  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-7, #ffaa01);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-7, #ffaa01);
+  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(255,170,0,0.4);
 }
 
 :host([data-color="pink"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-8);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-8);
-  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-8, #f3689d);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-8, #f3689d);
+  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(243,105,157,0.4);
 }
 
 :host([data-color="rose"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-9);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-9);
-  --_tag-text-default: var(--sherpa-text-default-on-color-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-9, #d1115a);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-9, #d1115a);
+  --_tag-text-default: var(--sherpa-text-default-on-color-label, #ffffff);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(209,16,90,0.4);
 }
 
 :host([data-color="green"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-10);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-10);
-  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-10, #20c173);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-10, #20c173);
+  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(32,193,115,0.4);
 }
 
 :host([data-color="grey"]) {
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-11);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-11);
-  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label);
+  --_tag-border-default: var(--sherpa-data-viz-categorical-color-11, #b2b2bf);
+  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-11, #b2b2bf);
+  --_tag-text-default: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
   --_tag-fill-transparent-bg: rgba(178,178,191,0.4);
 }
 
 /* ── Status — self-contained token mapping ─────────────────────────────── */
 
 :host([data-status="critical"]) {
-  --_status-surface: var(--sherpa-surface-context-error-subtle-default);
-  --_status-border:  var(--sherpa-border-context-error-default);
-  --_status-text:    var(--sherpa-text-context-error-default);
+  --_status-surface: var(--sherpa-surface-context-error-subtle-default, #fff7f5);
+  --_status-border:  var(--sherpa-border-context-error-default, #bf2c09);
+  --_status-text:    var(--sherpa-text-context-error-default, #bf2c09);
 }
 
 :host([data-status="info"]) {
-  --_status-surface: var(--sherpa-surface-context-info-subtle-default);
-  --_status-border:  var(--sherpa-border-context-info-default);
-  --_status-text:    var(--sherpa-text-context-info-default);
+  --_status-surface: var(--sherpa-surface-context-info-subtle-default, #f7fdff);
+  --_status-border:  var(--sherpa-border-context-info-default, #06526f);
+  --_status-text:    var(--sherpa-text-context-info-default, #06526f);
 }
 
 :host([data-status="success"]) {
-  --_status-surface: var(--sherpa-surface-context-success-subtle-default);
-  --_status-border:  var(--sherpa-border-context-success-default);
-  --_status-text:    var(--sherpa-text-context-success-default);
+  --_status-surface: var(--sherpa-surface-context-success-subtle-default, rgba(240, 255, 248, 0.8));
+  --_status-border:  var(--sherpa-border-context-success-default, #048142);
+  --_status-text:    var(--sherpa-text-context-success-default, #048142);
 }
 
 :host([data-status="warning"]) {
-  --_status-surface: var(--sherpa-surface-context-warning-subtle-default);
-  --_status-border:  var(--sherpa-border-context-warning-default);
-  --_status-text:    var(--sherpa-text-context-warning-default);
+  --_status-surface: var(--sherpa-surface-context-warning-subtle-default, #fffbf3);
+  --_status-border:  var(--sherpa-border-context-warning-default, #a77205);
+  --_status-text:    var(--sherpa-text-context-warning-default, #e39b04);
 }
 
 :host([data-status="urgent"]) {
-  --_status-surface: var(--sherpa-surface-context-urgent-subtle-default);
-  --_status-border:  var(--sherpa-border-context-urgent-default);
-  --_status-text:    var(--sherpa-text-context-urgent-default);
+  --_status-surface: var(--sherpa-surface-context-urgent-subtle-default, rgba(253, 226, 193, 0.2));
+  --_status-border:  var(--sherpa-border-context-urgent-default, #b95608);
+  --_status-text:    var(--sherpa-text-context-urgent-default, #b95608);
 }
 
 :host([data-status="brand"]) {
-  --_status-surface: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
-  --_status-border:  light-dark(var(--sherpa-color-brand-400), var(--sherpa-color-brand-700));
-  --_status-text:    light-dark(var(--sherpa-color-brand-700), var(--sherpa-color-brand-200));
+  --_status-surface: light-dark(var(--sherpa-color-brand-100, #f8ebff), var(--sherpa-color-brand-900, #300561));
+  --_status-border:  light-dark(var(--sherpa-color-brand-400, #d485ff), var(--sherpa-color-brand-700, #8500cc));
+  --_status-text:    light-dark(var(--sherpa-color-brand-700, #8500cc), var(--sherpa-color-brand-200, #f2d6ff));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -162,7 +162,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sherpa-space-2xs);
+  padding: var(--sherpa-space-2xs, 8px);
   background: var(--_status-surface, var(--sherpa-surface-context-default-subtle-default, #f5f5f5));
   color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
   border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default, #d4d4d4));

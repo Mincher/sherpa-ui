@@ -54,11 +54,11 @@
 
   &[disabled] {
     cursor: not-allowed;
-    color: var(--sherpa-text-inactive-default);
-    --_indicator-border-color: var(--sherpa-border-control-inactive);
-    --_indicator-bg: var(--sherpa-surface-control-inactive);
-    --_indicator-color: var(--sherpa-text-inactive-default);
-    --_label-color: var(--sherpa-text-inactive-default);
+    color: var(--sherpa-text-inactive-default, #5c5c66);
+    --_indicator-border-color: var(--sherpa-border-control-inactive, #8d8d99);
+    --_indicator-bg: var(--sherpa-surface-control-inactive, #f2f2f2);
+    --_indicator-color: var(--sherpa-text-inactive-default, #5c5c66);
+    --_label-color: var(--sherpa-text-inactive-default, #5c5c66);
   }
 }
 

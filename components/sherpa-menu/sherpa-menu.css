@@ -13,15 +13,20 @@
 /* ── Private tokens ── */
 
 :host {
-  --_shadow: var(--sherpa-shadow-default-md);
-  --_surface: var(--sherpa-surface-container-default);
-  --_border-color: var(--sherpa-border-control-secondary-default);
+  --_shadow: var(--sherpa-shadow-default-md, var(--sherpa-elevation-offset-x-default, 4px)
+    var(--sherpa-elevation-offset-y-default, 4px)
+    var(--sherpa-elevation-blur-default, 12px)
+    var(--sherpa-elevation-spread-default, -2px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
+    0 4px 4px 0 rgba(0, 0, 0, 0.25));
+  --_surface: var(--sherpa-surface-container-default, #ffffff);
+  --_border-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
   --_border-width: var(--sherpa-border-width-base, 1px);
-  --_rounding: var(--sherpa-border-rounding-base);
-  --_text: var(--sherpa-text-default-body);
-  --_gap: var(--sherpa-space-xs);
-  --_gap-sm: var(--sherpa-space-2xs);
-  --_padding: var(--sherpa-space-sm);
+  --_rounding: var(--sherpa-border-rounding-base, 4px);
+  --_text: var(--sherpa-text-default-body, #2e2e33);
+  --_gap: var(--sherpa-space-xs, 12px);
+  --_gap-sm: var(--sherpa-space-2xs, 8px);
+  --_padding: var(--sherpa-space-sm, 16px);
 }
 
 /* ── Host ── */

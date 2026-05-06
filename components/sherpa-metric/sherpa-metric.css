@@ -61,7 +61,7 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--sherpa-text-default-secondary);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -121,38 +121,38 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .metric-card[data-status="info"] {
-  --_background-color: var(--sherpa-surface-context-info-subtle-default);
-  --_border-color: var(--sherpa-border-context-info-default);
-  --_text-color: var(--sherpa-text-context-info-default);
-  --_icon-color: var(--sherpa-icon-context-info-default);
+  --_background-color: var(--sherpa-surface-context-info-subtle-default, #f7fdff);
+  --_border-color: var(--sherpa-border-context-info-default, #06526f);
+  --_text-color: var(--sherpa-text-context-info-default, #06526f);
+  --_icon-color: var(--sherpa-icon-context-info-default, #06526f);
 }
 
 .metric-card[data-status="success"] {
-  --_background-color: var(--sherpa-surface-context-success-subtle-default);
-  --_border-color: var(--sherpa-border-context-success-default);
-  --_text-color: var(--sherpa-text-context-success-default);
-  --_icon-color: var(--sherpa-icon-context-success-default);
+  --_background-color: var(--sherpa-surface-context-success-subtle-default, rgba(240, 255, 248, 0.8));
+  --_border-color: var(--sherpa-border-context-success-default, #048142);
+  --_text-color: var(--sherpa-text-context-success-default, #048142);
+  --_icon-color: var(--sherpa-icon-context-success-default, #048142);
 }
 
 .metric-card[data-status="warning"] {
-  --_background-color: var(--sherpa-surface-context-warning-subtle-default);
-  --_border-color: var(--sherpa-border-context-warning-default);
-  --_text-color: var(--sherpa-text-context-warning-default);
-  --_icon-color: var(--sherpa-icon-context-warning-default);
+  --_background-color: var(--sherpa-surface-context-warning-subtle-default, #fffbf3);
+  --_border-color: var(--sherpa-border-context-warning-default, #a77205);
+  --_text-color: var(--sherpa-text-context-warning-default, #e39b04);
+  --_icon-color: var(--sherpa-icon-context-warning-default, #e39b04);
 }
 
 .metric-card[data-status="critical"] {
-  --_background-color: var(--sherpa-surface-context-error-subtle-default);
-  --_border-color: var(--sherpa-border-context-error-default);
-  --_text-color: var(--sherpa-text-context-error-default);
-  --_icon-color: var(--sherpa-icon-context-error-default);
+  --_background-color: var(--sherpa-surface-context-error-subtle-default, #fff7f5);
+  --_border-color: var(--sherpa-border-context-error-default, #bf2c09);
+  --_text-color: var(--sherpa-text-context-error-default, #bf2c09);
+  --_icon-color: var(--sherpa-icon-context-error-default, #bf2c09);
 }
 
 .metric-card[data-status="urgent"] {
-  --_background-color: var(--sherpa-surface-context-urgent-subtle-default);
-  --_border-color: var(--sherpa-border-context-urgent-default);
-  --_text-color: var(--sherpa-text-context-urgent-default);
-  --_icon-color: var(--sherpa-icon-context-urgent-default);
+  --_background-color: var(--sherpa-surface-context-urgent-subtle-default, rgba(253, 226, 193, 0.2));
+  --_border-color: var(--sherpa-border-context-urgent-default, #b95608);
+  --_text-color: var(--sherpa-text-context-urgent-default, #b95608);
+  --_icon-color: var(--sherpa-icon-context-urgent-default, #b95608);
 }
 
 /* Flat trend uses secondary text regardless of status */
@@ -187,7 +187,7 @@
   font-weight: 400;
   line-height: 1em;
   letter-spacing: 1px;
-  color: var(--sherpa-text-default-heading);
+  color: var(--sherpa-text-default-heading, #18191a);
   margin: 0;
   max-width: 100%;
   min-width: 0;

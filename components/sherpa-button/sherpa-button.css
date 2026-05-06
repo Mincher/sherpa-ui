@@ -45,12 +45,12 @@
   --_button-spacing: var(--sherpa-space-2xs, 4px);
 
   /* Surface / text / icon — set per variant, consumed by .trigger */
-  --_surface:       var(--_status-surface-strong, var(--sherpa-surface-control-primary-default));
-  --_text:          var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body));
-  --_icon-color:    var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body));
+  --_surface:       var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #8500cc));
+  --_text:          var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
+  --_icon-color:    var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
   --_icon-weight:   900;
-  --_surface-hover: var(--_status-surface-strong-hover, var(--sherpa-surface-control-primary-hover));
-  --_surface-down:  var(--_status-surface-strong-down,  var(--sherpa-surface-control-primary-down));
+  --_surface-hover: var(--_status-surface-strong-hover, var(--sherpa-surface-control-primary-hover, #50007a));
+  --_surface-down:  var(--_status-surface-strong-down,  var(--sherpa-surface-control-primary-down, #300561));
   --_border-hover:  var(--_status-border, transparent);
 
   border: var(--sherpa-border-width-xs, 1px) solid var(--_status-border, transparent);
@@ -138,8 +138,8 @@
   height: 16px;
   padding-inline: 4px;
   border-radius: var(--sherpa-border-rounding-round, 999px);
-  background: var(--sherpa-surface-control-secondary-default);
-  color: var(--sherpa-text-default-body);
+  background: var(--sherpa-surface-control-secondary-default, #ffffff);
+  color: var(--sherpa-text-default-body, #2e2e33);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-weight: 700;
   line-height: 1;
@@ -148,8 +148,8 @@
 :host([data-count]) .badge { display: inline-flex; }
 
 :host([data-active]) .badge {
-  background: var(--sherpa-text-active-base);
-  color: var(--sherpa-surface-control-active-default);
+  background: var(--sherpa-text-active-base, #8500cc);
+  color: var(--sherpa-surface-control-active-default, #f8ebff);
 }
 
 
@@ -182,7 +182,7 @@
    ========================================================================== */
 
 :host(:focus-within) {
-  outline: 2px solid var(--sherpa-border-control-active-default);
+  outline: 2px solid var(--sherpa-border-control-active-default, #8500cc);
   outline-offset: 2px;
 }
 
@@ -267,12 +267,12 @@
 
 :host([data-variant="secondary"]) {
   --_surface:       var(--_status-surface, transparent);
-  --_text:          var(--_status-text,     var(--sherpa-text-default-label));
+  --_text:          var(--_status-text,     var(--sherpa-text-default-label, #18191a));
   --_icon-color:    var(--_status-text,     var(--sherpa-icon-context-default-body, #333));
-  --_surface-hover: var(--_status-surface-hover, var(--sherpa-surface-control-secondary-hover));
-  --_surface-down:  var(--_status-surface-down,  var(--sherpa-surface-control-secondary-down));
-  --_border-hover:  var(--_status-border,         var(--sherpa-border-control-secondary-hover));
-  border-color:     var(--_status-border,   var(--sherpa-border-control-secondary-default));
+  --_surface-hover: var(--_status-surface-hover, var(--sherpa-surface-control-secondary-hover, #fafafa));
+  --_surface-down:  var(--_status-surface-down,  var(--sherpa-surface-control-secondary-down, #f2f2f2));
+  --_border-hover:  var(--_status-border,         var(--sherpa-border-control-secondary-hover, #c0c0cc));
+  border-color:     var(--_status-border,   var(--sherpa-border-control-secondary-default, #d5d5d5));
 }
 
 /* Warning edge-case — default warning text lacks contrast on the subtle
@@ -285,11 +285,11 @@
 /* ── Tertiary ────────────────────────────────────────────────────────── */
 
 :host([data-variant="tertiary"]) {
-  --_surface:       var(--sherpa-surface-control-tertiary-default);
-  --_text:          var(--_status-text, var(--sherpa-text-default-label));
-  --_icon-color:    var(--_status-text, var(--sherpa-text-default-label));
-  --_surface-hover: var(--sherpa-surface-control-tertiary-hover);
-  --_surface-down:  var(--sherpa-surface-control-tertiary-down);
+  --_surface:       var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
+  --_text:          var(--_status-text, var(--sherpa-text-default-label, #18191a));
+  --_icon-color:    var(--_status-text, var(--sherpa-text-default-label, #18191a));
+  --_surface-hover: var(--sherpa-surface-control-tertiary-hover, #c0c0cd33);
+  --_surface-down:  var(--sherpa-surface-control-tertiary-down, #b2b2bf40);
   --_border-hover:  transparent;
   border-color:     transparent;
 }
@@ -302,12 +302,12 @@
 /* ── Active (boolean attribute — presence = active) ──────────────────── */
 
 :host([data-active]) {
-  --_surface:       var(--sherpa-surface-control-active-default);
-  --_text:          var(--sherpa-text-active-base);
-  --_icon-color:    var(--sherpa-icon-active-base);
-  --_surface-hover: var(--sherpa-surface-control-active-hover);
-  --_surface-down:  var(--sherpa-surface-control-active-down);
-  border-color:     var(--sherpa-border-control-active-default);
+  --_surface:       var(--sherpa-surface-control-active-default, #f8ebff);
+  --_text:          var(--sherpa-text-active-base, #8500cc);
+  --_icon-color:    var(--sherpa-icon-active-base, #8500cc);
+  --_surface-hover: var(--sherpa-surface-control-active-hover, #f2d6ff);
+  --_surface-down:  var(--sherpa-surface-control-active-down, #e2adff);
+  border-color:     var(--sherpa-border-control-active-default, #8500cc);
 }
 
 /* ── Menu expanded — subtle pressed state on the trigger ─────────────── */
@@ -319,9 +319,9 @@
 /* ── Disabled ────────────────────────────────────────────────────────── */
 
 :host([disabled]) {
-  --_surface:    var(--sherpa-surface-control-inactive);
-  --_text:       var(--sherpa-text-inactive-default);
-  --_icon-color: var(--sherpa-text-inactive-default);
+  --_surface:    var(--sherpa-surface-control-inactive, #f2f2f2);
+  --_text:       var(--sherpa-text-inactive-default, #5c5c66);
+  --_icon-color: var(--sherpa-text-inactive-default, #5c5c66);
   border-color:  var(--_status-border, transparent);
   pointer-events: none;
   cursor: not-allowed;
@@ -341,9 +341,9 @@
   padding: 0;
   border: none;
   border-inline-start: var(--sherpa-border-width-xs, 1px) solid
-    var(--sherpa-border-control-secondary-default);
-  background: var(--sherpa-surface-control-tertiary-default);
-  color: var(--sherpa-text-default-secondary);
+    var(--sherpa-border-control-secondary-default, #d5d5d5);
+  background: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
@@ -352,17 +352,17 @@
 :host([data-dismissable]) .close { display: inline-flex; }
 
 .close:hover {
-  background-color: var(--sherpa-surface-control-secondary-hover);
-  color: var(--sherpa-text-default-body);
+  background-color: var(--sherpa-surface-control-secondary-hover, #fafafa);
+  color: var(--sherpa-text-default-body, #2e2e33);
 }
 
 .close:active {
-  background-color: var(--sherpa-surface-control-secondary-down);
+  background-color: var(--sherpa-surface-control-secondary-down, #f2f2f2);
 }
 
 /* Active state — close inherits active tokens */
 :host([data-active]) .close {
-  border-inline-start-color: var(--sherpa-border-control-active-default);
+  border-inline-start-color: var(--sherpa-border-control-active-default, #8500cc);
   background-color: var(--_surface);
   color: var(--_text);
 }
@@ -387,12 +387,12 @@
   --_button-size:    var(--sherpa-size-lg, 24px);
   --_button-padding: var(--sherpa-space-2xs, 4px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
-  --_surface:        var(--sherpa-surface-control-tertiary-default);
-  --_text:           var(--sherpa-text-default-label);
-  --_icon-color:     var(--sherpa-text-default-label);
-  --_surface-hover:  var(--sherpa-surface-control-secondary-hover);
-  --_surface-down:   var(--sherpa-surface-control-secondary-down);
-  border-color:      var(--sherpa-border-control-secondary-default);
+  --_surface:        var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
+  --_text:           var(--sherpa-text-default-label, #18191a);
+  --_icon-color:     var(--sherpa-text-default-label, #18191a);
+  --_surface-hover:  var(--sherpa-surface-control-secondary-hover, #fafafa);
+  --_surface-down:   var(--sherpa-surface-control-secondary-down, #f2f2f2);
+  border-color:      var(--sherpa-border-control-secondary-default, #d5d5d5);
   font-size:         var(--sherpa-fonts-scale-sm, 12px);
 }
 
@@ -417,27 +417,27 @@
 
 /* Active — button-menu */
 :host([data-type="button-menu"][data-active]) {
-  --_surface:       var(--sherpa-surface-control-active-default);
-  --_text:          var(--sherpa-text-active-base);
-  --_icon-color:    var(--sherpa-icon-active-base, var(--sherpa-text-active-base));
-  --_surface-hover: var(--sherpa-surface-control-active-hover);
-  --_surface-down:  var(--sherpa-surface-control-active-down);
-  border-color:     var(--sherpa-border-control-active-default);
+  --_surface:       var(--sherpa-surface-control-active-default, #f8ebff);
+  --_text:          var(--sherpa-text-active-base, #8500cc);
+  --_icon-color:    var(--sherpa-icon-active-base, var(--sherpa-text-active-base, #8500cc));
+  --_surface-hover: var(--sherpa-surface-control-active-hover, #f2d6ff);
+  --_surface-down:  var(--sherpa-surface-control-active-down, #e2adff);
+  border-color:     var(--sherpa-border-control-active-default, #8500cc);
 }
 
 /* Split mode — visual divider between trigger and menu-trigger */
 :host([data-type="button-menu"][data-split]) .menu-trigger {
   border-inline-start: var(--sherpa-border-width-xs, 1px) solid
-    var(--sherpa-border-control-secondary-default);
+    var(--sherpa-border-control-secondary-default, #d5d5d5);
 }
 
 :host([data-type="button-menu"][data-active][data-split]) .menu-trigger {
-  border-inline-start-color: var(--sherpa-border-control-active-default);
+  border-inline-start-color: var(--sherpa-border-control-active-default, #8500cc);
 }
 
 /* Disabled — button-menu */
 :host([data-type="button-menu"][disabled]) {
-  border-color: var(--sherpa-border-control-inactive);
+  border-color: var(--sherpa-border-control-inactive, #8d8d99);
 }
 
 
@@ -453,7 +453,7 @@
   width: var(--_button-size);
   height: var(--_button-size);
   padding: 0;
-  background-color: var(--sherpa-surface-control-tertiary-default);
+  background-color: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
   color: var(--_icon-color);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   cursor: pointer;
@@ -462,11 +462,11 @@
 }
 
 .menu-trigger:hover {
-  background-color: var(--sherpa-surface-control-secondary-hover);
+  background-color: var(--sherpa-surface-control-secondary-hover, #fafafa);
 }
 
 .menu-trigger:active {
-  background-color: var(--sherpa-surface-control-secondary-down);
+  background-color: var(--sherpa-surface-control-secondary-down, #f2f2f2);
 }
 
 :host([data-active]) .menu-trigger {

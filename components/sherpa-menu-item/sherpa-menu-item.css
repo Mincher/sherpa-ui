@@ -15,19 +15,19 @@
   transition: background-color 0.15s ease;
 
   /* Private aliases */
-  --_gap: var(--sherpa-space-xs);
-  --_padding-y: var(--sherpa-space-2xs);
-  --_padding-x: var(--sherpa-space-sm);
-  --_rounding: var(--sherpa-border-rounding-sm);
-  --_text-secondary: var(--sherpa-text-default-secondary);
+  --_gap: var(--sherpa-space-xs, 12px);
+  --_padding-y: var(--sherpa-space-2xs, 8px);
+  --_padding-x: var(--sherpa-space-sm, 16px);
+  --_rounding: var(--sherpa-border-rounding-sm, 2px);
+  --_text-secondary: var(--sherpa-text-default-secondary, #5c5c66);
   --_font-sm: var(--sherpa-fonts-scale-sm, 12px);
 }
 
 :host(:hover),
-:host(:focus-visible)   { background-color: var(--sherpa-surface-control-hover); }
-:host([checked])        { background-color: var(--sherpa-surface-control-active-default); }
+:host(:focus-visible)   { background-color: var(--sherpa-surface-control-hover, #fafafa); }
+:host([checked])        { background-color: var(--sherpa-surface-control-active-default, #f8ebff); }
 :host([disabled]) {
-  color: var(--sherpa-text-inactive-default);
+  color: var(--sherpa-text-inactive-default, #5c5c66);
   cursor: default;
   pointer-events: none;
 }
@@ -125,7 +125,7 @@ mark.text-highlight-match {
 }
 
 :host([data-variant="danger"][disabled]) {
-  color: var(--sherpa-text-inactive-default);
+  color: var(--sherpa-text-inactive-default, #5c5c66);
 }
 
 /* Native [hidden] support */

@@ -52,7 +52,12 @@
   background-color: var(--_status-surface, var(--sherpa-surface-context-info-subtle-default, #eaf4fe));
   border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-context-info-default, #66afe9));
   border-radius: var(--sherpa-border-rounding-lg, 12px);
-  box-shadow: var(--sherpa-shadow-default-md);
+  box-shadow: var(--sherpa-shadow-default-md, var(--sherpa-elevation-offset-x-default, 4px)
+    var(--sherpa-elevation-offset-y-default, 4px)
+    var(--sherpa-elevation-blur-default, 12px)
+    var(--sherpa-elevation-spread-default, -2px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
+    0 4px 4px 0 rgba(0, 0, 0, 0.25));
   border-left-width: var(--_toast-border-thickness-left);
   transform: translateX(var(--_transform-x));
   opacity: 0;

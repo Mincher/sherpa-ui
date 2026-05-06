@@ -28,10 +28,14 @@
   flex-direction: column;
   container-type: normal;
   background: var(--sherpa-surface-container-default, #ffffff);
-  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default));
+  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default, #d5d5d5));
   border-radius: var(--sherpa-border-rounding-lg, 8px);
   overflow: hidden;
-  box-shadow: var(--sherpa-shadow-default-sm);
+  box-shadow: var(--sherpa-shadow-default-sm, var(--sherpa-elevation-offset-x-small, 2px)
+    var(--sherpa-elevation-offset-y-small, 2px)
+    var(--sherpa-elevation-blur-small, 8px)
+    var(--sherpa-elevation-spread-small, -4px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
   transition:
     box-shadow var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease),
     border-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease),
@@ -42,9 +46,22 @@
 /* ── Elevations ────────────────────────────────────────────────── */
 
 :host([data-elevation="none"]) { box-shadow: none; }
-:host([data-elevation="sm"])   { box-shadow: var(--sherpa-shadow-default-sm); }
-:host([data-elevation="md"])   { box-shadow: var(--sherpa-shadow-default-md); }
-:host([data-elevation="lg"])   { box-shadow: var(--sherpa-shadow-default-lg); }
+:host([data-elevation="sm"])   { box-shadow: var(--sherpa-shadow-default-sm, var(--sherpa-elevation-offset-x-small, 2px)
+    var(--sherpa-elevation-offset-y-small, 2px)
+    var(--sherpa-elevation-blur-small, 8px)
+    var(--sherpa-elevation-spread-small, -4px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2))); }
+:host([data-elevation="md"])   { box-shadow: var(--sherpa-shadow-default-md, var(--sherpa-elevation-offset-x-default, 4px)
+    var(--sherpa-elevation-offset-y-default, 4px)
+    var(--sherpa-elevation-blur-default, 12px)
+    var(--sherpa-elevation-spread-default, -2px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
+    0 4px 4px 0 rgba(0, 0, 0, 0.25)); }
+:host([data-elevation="lg"])   { box-shadow: var(--sherpa-shadow-default-lg, var(--sherpa-elevation-offset-x-large, 8px)
+    var(--sherpa-elevation-offset-y-large, 8px)
+    var(--sherpa-elevation-blur-large, 16px)
+    var(--sherpa-elevation-spread-large, 2px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2))); }
 
 /* ── Selected state ────────────────────────────────────────────── */
 
@@ -54,7 +71,11 @@
   box-shadow:
     0 0 0 var(--sherpa-border-width-base, 1px)
       var(--sherpa-border-control-primary-active, #0066cc),
-    var(--sherpa-shadow-default-sm);
+    var(--sherpa-shadow-default-sm, var(--sherpa-elevation-offset-x-small, 2px)
+    var(--sherpa-elevation-offset-y-small, 2px)
+    var(--sherpa-elevation-blur-small, 8px)
+    var(--sherpa-elevation-spread-small, -4px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
 }
 
 /* ── Interactive ───────────────────────────────────────────────── */
@@ -65,7 +86,12 @@
 
 :host([data-interactive="true"]:hover:not([disabled])) {
   border-color: var(--sherpa-border-container-hover, #ccc);
-  box-shadow: var(--sherpa-shadow-default-md);
+  box-shadow: var(--sherpa-shadow-default-md, var(--sherpa-elevation-offset-x-default, 4px)
+    var(--sherpa-elevation-offset-y-default, 4px)
+    var(--sherpa-elevation-blur-default, 12px)
+    var(--sherpa-elevation-spread-default, -2px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
+    0 4px 4px 0 rgba(0, 0, 0, 0.25));
 }
 
 :host([data-interactive="true"]:active:not([disabled])) {
@@ -78,15 +104,19 @@
   outline: none;
   box-shadow:
     0 0 0 2px var(--sherpa-border-focus, #0066cc),
-    var(--sherpa-shadow-default-sm);
+    var(--sherpa-shadow-default-sm, var(--sherpa-elevation-offset-x-small, 2px)
+    var(--sherpa-elevation-offset-y-small, 2px)
+    var(--sherpa-elevation-blur-small, 8px)
+    var(--sherpa-elevation-spread-small, -4px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
 }
 
 /* ── Disabled ──────────────────────────────────────────────────── */
 
 :host([disabled]) {
-  background: var(--sherpa-surface-container-inactive);
-  border-color: var(--sherpa-border-container-inactive);
-  color: var(--sherpa-text-inactive-default);
+  background: var(--sherpa-surface-container-inactive, #f2f2f2);
+  border-color: var(--sherpa-border-container-inactive, #c0c0cc);
+  color: var(--sherpa-text-inactive-default, #5c5c66);
   cursor: not-allowed;
   pointer-events: none;
 }

@@ -26,9 +26,9 @@
   /* Private — inherited through shadow DOM into menu items */
   --_editable-display: none;
 
-  background-color: var(--sherpa-surface-container-default);
+  background-color: var(--sherpa-surface-container-default, #ffffff);
   border: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-control-secondary-default);
+    var(--sherpa-border-control-secondary-default, #d5d5d5);
   border-radius: var(--sherpa-border-rounding-base, 6px);
   padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
   overflow: clip;
@@ -44,7 +44,7 @@
 }
 
 :host([data-menu-open="true"]) {
-  border-color: var(--sherpa-border-control-primary-default);
+  border-color: var(--sherpa-border-control-primary-default, #8500cc);
   overflow: visible;
   z-index: 10;
 }

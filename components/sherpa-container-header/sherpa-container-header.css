@@ -103,7 +103,7 @@
 .action-divider {
   width: 1px;
   height: var(--sherpa-size-sm, 16px);
-  background-color: var(--sherpa-border-control-secondary-default);
+  background-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
 }
 
 /* ── Drag handle ──────────────────────────────────────────────────────── */
@@ -123,13 +123,13 @@
 }
 
 .drag-handle:hover {
-  color: var(--sherpa-text-default-body);
-  background-color: var(--sherpa-surface-container-hover);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  background-color: var(--sherpa-surface-container-hover, #fafafa);
 }
 
 .drag-handle:active {
   cursor: grabbing;
-  color: var(--sherpa-border-control-primary-default);
+  color: var(--sherpa-border-control-primary-default, #8500cc);
 }
 
 :host([data-drag-handle="true"]) .drag-handle {

@@ -33,7 +33,7 @@
   gap: var(--_gap);
   padding: var(--_padding-sm);
   border-top: var(--_border-width) solid
-    var(--sherpa-border-control-secondary-default);
+    var(--sherpa-border-control-secondary-default, #d5d5d5);
 }
 
 .action-bar-footer slot[name="start"] {

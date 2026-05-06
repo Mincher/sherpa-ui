@@ -12,9 +12,9 @@
   /* Figma: switch collection tokens — default style */
   --_switch-border-outer: var(--sherpa-border-rounding-base, 4px);
   --_switch-border-control: var(--sherpa-border-rounding-sm, 2px);
-  --_switch-fill-default: var(--sherpa-color-neutral-700);
-  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default);
-  --_switch-fill-inactive: var(--sherpa-surface-control-inactive);
+  --_switch-fill-default: var(--sherpa-color-neutral-700, #5c5c66);
+  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default, #048142);
+  --_switch-fill-inactive: var(--sherpa-surface-control-inactive, #f2f2f2);
   --_switch-control-size: var(--sherpa-size-sm, 16px);
 }
 
@@ -24,9 +24,9 @@
 :host([data-style="compact"]) {
   --_switch-border-outer: var(--sherpa-border-rounding-full, 999px);
   --_switch-border-control: var(--sherpa-border-rounding-full, 999px);
-  --_switch-fill-default: var(--sherpa-color-neutral-700);
-  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default);
-  --_switch-fill-inactive: var(--sherpa-surface-control-inactive);
+  --_switch-fill-default: var(--sherpa-color-neutral-700, #5c5c66);
+  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default, #048142);
+  --_switch-fill-inactive: var(--sherpa-surface-control-inactive, #f2f2f2);
   --_switch-control-size: var(--sherpa-size-xs, 12px);
 }
 
@@ -36,16 +36,16 @@
 }
 
 :host([disabled]) .switch-track {
-  background-color: var(--sherpa-surface-control-inactive);
-  border-color: var(--sherpa-border-control-inactive);
+  background-color: var(--sherpa-surface-control-inactive, #f2f2f2);
+  border-color: var(--sherpa-border-control-inactive, #8d8d99);
 }
 
 :host([disabled]) .switch-knob {
-  background-color: var(--sherpa-surface-container-inactive);
+  background-color: var(--sherpa-surface-container-inactive, #f2f2f2);
 }
 
 :host([disabled]) .switch-label {
-  color: var(--sherpa-text-inactive-default);
+  color: var(--sherpa-text-inactive-default, #5c5c66);
 }
 
 /* Track container – default is OFF */

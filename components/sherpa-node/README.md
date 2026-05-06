@@ -12,7 +12,7 @@ sherpa-node.js — Host element for a node-graph node. Mirrors data-x / data-y a
 | `data-selected` | boolean | Highlights the node | — | — |
 | `data-x` | number | X position in canvas-local px | — | — |
 | `data-y` | number | Y position in canvas-local px | — | — |
-| `data-w` | number | Width override in px (default 240) | — | — |
+| `data-w` | number | Optional min-width in px. Nodes are | — | — |
 | `data-node-id` | string | Stable node identifier | — | — |
 | `data-subtypes` | json | Flat Array<{value,label}> OR grouped | — | — |
 | `data-subtype` | string | Current sub-type value | — | — |
@@ -63,6 +63,13 @@ element.addEventListener("sherpa-node-subtype-change", (e) => {
   // handle event
 });
 ```
+
+## Internal CSS Custom Properties
+
+These `--_` prefixed properties are used internally and can be
+influenced by setting `data-*` attributes or status on ancestors:
+
+- `--_node-accent`
 
 ## Usage
 

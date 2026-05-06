@@ -31,8 +31,8 @@
      run between them. true/false outputs override via data-status.
      All colour values resolve through `--sherpa-node-socket-*`
      aliases declared in sherpa-node-tokens.css. */
-  --_socket-stroke: var(--sherpa-node-socket-stroke);
-  --_socket-fill:   var(--sherpa-node-socket-fill);
+  --_socket-stroke: var(--sherpa-node-socket-stroke, #c046ff);
+  --_socket-fill:   var(--sherpa-node-socket-fill, #ffffff);
 
   /* Host is content-sized: a single inline-flex frame whose dimensions
      are driven entirely by the .socket-shape inside. The shape itself
@@ -53,8 +53,8 @@
 /* Row inputs share the brand-purple default — no per-location override. */
 
 /* True / false outputs override stroke colour. */
-:host([data-status="true"])  { --_socket-stroke: var(--sherpa-node-socket-stroke-true); }
-:host([data-status="false"]) { --_socket-stroke: var(--sherpa-node-socket-stroke-false); }
+:host([data-status="true"])  { --_socket-stroke: var(--sherpa-node-socket-stroke-true, #048142); }
+:host([data-status="false"]) { --_socket-stroke: var(--sherpa-node-socket-stroke-false, #dd2c01); }
 
 /* Fill is ALWAYS the light tint of the stroke (see :host above). The
    only place the fill becomes solid is the output triangle, via its
@@ -75,11 +75,11 @@
    even when content (dots) is empty, the shape stays square. Width
    stays fixed; height grows with stacked dots inside. */
 .socket-shape {
-  width: var(--sherpa-node-socket-size);
-  min-width: var(--sherpa-node-socket-size);
-  min-height: var(--sherpa-node-socket-size);
+  width: var(--sherpa-node-socket-size, 16px);
+  min-width: var(--sherpa-node-socket-size, 16px);
+  min-height: var(--sherpa-node-socket-size, 16px);
   background: var(--_socket-fill);
-  border: var(--sherpa-node-socket-stroke-w) solid var(--_socket-stroke);
+  border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
   box-sizing: border-box;
   border-radius: 999px;
   transition: background 150ms ease, transform 150ms ease;
@@ -116,7 +116,7 @@
   height: 8px;
   border-radius: 999px;
   background: var(--_socket-stroke);
-  border: var(--sherpa-node-socket-stroke-w) solid var(--_socket-stroke);
+  border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
   box-sizing: border-box;
 }
 

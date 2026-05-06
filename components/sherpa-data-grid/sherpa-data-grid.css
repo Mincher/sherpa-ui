@@ -178,7 +178,7 @@ thead th {
 }
 
 .primary-headers th.header-cell[data-sorted] {
-  color: var(--sherpa-text-primary-default);
+  color: var(--sherpa-text-primary-default, #8500cc);
 }
 
 /* Flexbox inside the th for label + sort icon */
@@ -205,7 +205,7 @@ thead th {
   height: 32px;
   border-radius: var(--sherpa-border-rounding-base, 4px);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-icon-context-default-secondary);
+  color: var(--sherpa-icon-context-default-secondary, #5c5c66);
   transition: background-color 0.15s;
 }
 
@@ -214,7 +214,7 @@ thead th {
 }
 
 .header-cell[data-sorted] .sort-icon {
-  color: var(--sherpa-icon-primary-default);
+  color: var(--sherpa-icon-primary-default, #8500cc);
 }
 
 /* Numeric columns — right-aligned */
@@ -544,16 +544,16 @@ td .bool-icon {
 }
 
 td .bool-true {
-  color: var(--sherpa-icon-context-success-default);
+  color: var(--sherpa-icon-context-success-default, #048142);
 }
 
 td .bool-false {
-  color: var(--sherpa-icon-context-default-secondary);
+  color: var(--sherpa-icon-context-default-secondary, #5c5c66);
 }
 
 /* Link cells */
 td a {
-  color: var(--sherpa-text-primary-default);
+  color: var(--sherpa-text-primary-default, #8500cc);
   text-decoration: none;
 }
 
@@ -639,7 +639,7 @@ tr.group-parent-row:hover .group-toggle {
 
 .toggle-icon {
   font-size: 8px;
-  color: var(--sherpa-icon-context-default-secondary);
+  color: var(--sherpa-icon-context-default-secondary, #5c5c66);
   transition: transform 0.2s var(--sherpa-motion-easing-default, ease);
 }
 

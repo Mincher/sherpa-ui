@@ -19,7 +19,7 @@
 }
 
 .gutter {
-  flex: 0 0 var(--sherpa-node-socket-gutter);
+  flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
   display: flex;
   align-items: center;
   overflow: visible;
@@ -50,7 +50,7 @@
   height: 24px;
   align-items: center;
   justify-content: center;
-  color: var(--sherpa-text-default-body);
+  color: var(--sherpa-text-default-body, #2e2e33);
   flex: 0 0 auto;
   font-size: 18px;
 }
@@ -65,7 +65,7 @@
   flex: 1 1 auto;
   font-size: var(--sherpa-font-base-size, 16px);
   font-weight: 600;
-  color: var(--sherpa-text-default-heading);
+  color: var(--sherpa-text-default-heading, #18191a);
   line-height: 1.5;
   white-space: nowrap;
   overflow: hidden;
@@ -88,15 +88,15 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: var(--sherpa-surface-container-default);
-  border: 1px solid var(--sherpa-border-container-default);
-  color: var(--sherpa-text-default-body);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: 1px solid var(--sherpa-border-container-default, #d5d5d5);
+  color: var(--sherpa-text-default-body, #2e2e33);
   cursor: pointer;
   font-size: 14px;
   transition: background 150ms ease, border-color 150ms ease;
 }
 .drill-down:hover {
-  background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default));
+  background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default, #ffffff));
   border-color: var(--sherpa-border-container-strong-default);
 }
 .drill-down:active {

@@ -30,11 +30,15 @@
   display: contents;
 
   /* Private aliases */
-  --_surface: var(--sherpa-surface-container-default);
-  --_border-color: var(--sherpa-border-container-default);
+  --_surface: var(--sherpa-surface-container-default, #ffffff);
+  --_border-color: var(--sherpa-border-container-default, #d5d5d5);
   --_border-width: var(--sherpa-border-width-base, 1px);
   --_rounding: var(--sherpa-border-rounding-lg, 8px);
-  --_shadow: var(--sherpa-shadow-default-lg);
+  --_shadow: var(--sherpa-shadow-default-lg, var(--sherpa-elevation-offset-x-large, 8px)
+    var(--sherpa-elevation-offset-y-large, 8px)
+    var(--sherpa-elevation-blur-large, 16px)
+    var(--sherpa-elevation-spread-large, 2px)
+    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
   --_text: var(--sherpa-text-default-body, #2e2e33);
   --_duration: var(--sherpa-motion-duration-base, 200ms);
   --_easing: var(--sherpa-motion-easing-default, ease);
@@ -106,10 +110,10 @@
    ================================================================ */
 
 :host([data-status]) .header-row {
-  border-bottom-color: var(--_status-border-strong, var(--sherpa-border-container-default));
+  border-bottom-color: var(--_status-border-strong, var(--sherpa-border-container-default, #d5d5d5));
 }
 :host([data-status]) .dialog {
-  border-color: var(--_status-border-strong, var(--sherpa-border-container-default));
+  border-color: var(--_status-border-strong, var(--sherpa-border-container-default, #d5d5d5));
 }
 
 /* ================================================================
@@ -142,9 +146,9 @@
   align-items: flex-start;
   gap: var(--sherpa-space-xs, 4px);
   padding: var(--sherpa-space-xs, 4px) var(--sherpa-space-sm, 8px);
-  background-color: var(--sherpa-surface-container-default);
+  background-color: var(--sherpa-surface-container-default, #ffffff);
   border-bottom: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default);
+    var(--sherpa-border-container-default, #d5d5d5);
   border-radius: var(--_rounding) var(--_rounding) 0 0;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -216,7 +220,7 @@ sherpa-footer {
 .dialog-content {
   flex: 1;
   min-height: 1px;
-  padding: var(--sherpa-space-sm);
+  padding: var(--sherpa-space-sm, 16px);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--_border-color) transparent;
@@ -229,7 +233,7 @@ sherpa-footer {
   border-radius: var(--_rounding);
 }
 .dialog-content::-webkit-scrollbar-thumb:hover {
-  background-color: var(--sherpa-border-context-default-hover);
+  background-color: var(--sherpa-border-context-default-hover, #c0c0cc);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

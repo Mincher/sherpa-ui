@@ -373,7 +373,7 @@ export class SherpaViewHeader extends SherpaElement {
       const style = document.createElement('style');
       style.dataset.viewPickerTruncate = '';
       style.textContent = `
-        .trigger { inline-size: 100%; display: inline-flex; align-items: center; justify-content: flex-start; gap: var(--sherpa-space-xs); }
+        .trigger { inline-size: 100%; display: inline-flex; align-items: center; justify-content: flex-start; gap: var(--sherpa-space-xs, 12px); }
         .label { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: start; }
         .icon-end { flex: 0 0 auto; margin-inline-start: auto; }
       `;

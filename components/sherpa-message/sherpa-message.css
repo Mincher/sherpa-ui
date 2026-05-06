@@ -28,7 +28,7 @@
   --_padding-block: var(--sherpa-space-xs, 8px);
   --_padding-inline: var(--sherpa-space-default, 16px);
   --_text-font-size: var(--sherpa-fonts-scale-sm, 12px);
-  --_link-color: var(--sherpa-text-primary-default);
+  --_link-color: var(--sherpa-text-primary-default, #8500cc);
 
   /* Status colour defaults (info) — inherited from global [data-status] rules.
    * Private vars map: --_status-surface → bg, --_status-border → border, --_status-icon → icon */
@@ -40,8 +40,8 @@
   gap: var(--_gap);
   padding: var(--_padding-block) var(--_padding-inline);
   container-type: normal;
-  background-color: var(--_status-surface, var(--sherpa-surface-context-info-subtle-default));
-  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-context-info-default));
+  background-color: var(--_status-surface, var(--sherpa-surface-context-info-subtle-default, #f7fdff));
+  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-context-info-default, #06526f));
   border-radius: var(--sherpa-border-rounding-full, 999px);
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   font-size: var(--_text-font-size);
@@ -97,25 +97,25 @@
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-space-2xs, 4px);
-  color: var(--sherpa-text-default-body);
+  color: var(--sherpa-text-default-body, #2e2e33);
 }
 
 .message-heading {
   display: none;
   font-weight: 600;
-  color: var(--sherpa-text-default-heading);
+  color: var(--sherpa-text-default-heading, #18191a);
 }
 
 .message-heading[data-has-content] { display: block; }
 
 ::slotted([slot="heading"]) {
   font-weight: 600;
-  color: var(--sherpa-text-default-heading);
+  color: var(--sherpa-text-default-heading, #18191a);
 }
 
 .content {
   display: block;
-  color: var(--sherpa-text-default-body);
+  color: var(--sherpa-text-default-body, #2e2e33);
 }
 
 .message-action {
@@ -171,7 +171,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .message-icon {
-  color: var(--_status-icon, var(--sherpa-icon-context-info-on-color-subtle));
+  color: var(--_status-icon, var(--sherpa-icon-context-info-on-color-subtle, #06526f));
 }
 
 /* Native [hidden] support */
