@@ -87,7 +87,7 @@
   height: 28px;
   align-items: center;
   justify-content: center;
-  border-radius: var(--sherpa-radius-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-container-default);
   border: 1px solid var(--sherpa-border-container-default);
   color: var(--sherpa-text-default-body);

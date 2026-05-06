@@ -20,15 +20,15 @@
 
 :where(:root, :host) {
   /* ── Edge / connector colours ─────────────────────────────────── */
-  /* Single-hop aliases. Each maps to the closest semantic sherpa-ui
-     token. Hardcoded fallbacks per project convention. */
-  --sherpa-node-edge-color:          var(--sherpa-surface-context-default-strong-default, #6b7280);
-  --sherpa-node-edge-color-hover:    var(--sherpa-text-default-body,                       #1f2937);
-  --sherpa-node-edge-color-selected: var(--sherpa-border-context-info-default,             #3b82f6);
-  --sherpa-node-edge-color-control:  var(--sherpa-surface-context-warning-strong-default,  #ff8a00);
-  --sherpa-node-edge-color-true:     var(--sherpa-surface-context-success-strong-default,  #1f9d55);
-  --sherpa-node-edge-color-false:    var(--sherpa-surface-context-error-strong-default,    #cc1f1a);
-  --sherpa-node-edge-color-ghost:    var(--sherpa-border-context-info-default,             #3b82f6);
+  /* Brand purple is the default carrier colour. Status (true/false)
+     overrides win over hover/selected in the canvas renderer. */
+  --sherpa-node-edge-color:          var(--sherpa-color-brand-base,    #c046ff);
+  --sherpa-node-edge-color-hover:    var(--sherpa-color-brand-700,     #8500cc);
+  --sherpa-node-edge-color-selected: var(--sherpa-color-brand-800,     #50007a);
+  --sherpa-node-edge-color-control:  var(--sherpa-color-brand-base,    #c046ff);
+  --sherpa-node-edge-color-true:     var(--sherpa-color-success-700,   #1f9d55);
+  --sherpa-node-edge-color-false:    var(--sherpa-color-critical-700,  #cc1f1a);
+  --sherpa-node-edge-color-ghost:    var(--sherpa-color-brand-base,    #c046ff);
 
   /* ── Edge stroke widths (no sherpa-ui equivalent) ─────────────── */
   --sherpa-node-edge-width:          1.5px;
@@ -41,7 +41,7 @@
   --sherpa-node-socket-gutter:   var(--sherpa-space-sm, 8px);
 
   /* ── Node body radius ─────────────────────────────────────────── */
-  --sherpa-node-radius: var(--sherpa-radius-sm, 4px);
+  --sherpa-node-radius: var(--sherpa-border-rounding-lg, 8px);
 
   /* ── Canvas grid ──────────────────────────────────────────────── */
   --sherpa-node-canvas-grid-step:  24px;

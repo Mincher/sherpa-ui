@@ -9,16 +9,25 @@
  * minimum width override.
  *
  * Per-kind colour: only kinds with a real semantic story carry
- * colour — output is success, group is info, action is warning. All
- * other kinds (source, variable, math, logic, time, collection, util,
- * ai/delegate/chat) render as plain neutral cards. The colour is
- * exposed locally as `--_node-accent` so tints, borders and the
- * selected outline all share one source of truth.
+ * colour:
+ *   • source → info (blue)
+ *   • output → success (green); error if it has no incoming connection
+ *   • chat   → brand (purple) — Ask N-zo
+ *   • group  → info (blue) skin
+ * All other kinds (variable, math, logic, time, collection, util,
+ * action, ai, delegate) render as plain neutral cards.
+ *
+ * All tinted fills use the OPAQUE `--sherpa-color-{intent}-100`
+ * series (no alpha-mixing) and the OPAQUE `--sherpa-color-{intent}-700`
+ * for borders, so nodes never let the canvas grid bleed through.
+ *
+ * The active accent is exposed locally as `--_node-accent` so tints,
+ * borders and the selected outline all share one source of truth.
  */
 
 :host {
   /* Local accent — semantic, set per kind below. Defaults to neutral. */
-  --_node-accent: var(--sherpa-surface-context-default-strong-default, #6b7280);
+  --_node-accent: var(--sherpa-border-container-default, #d1d5db);
 
   position: absolute;
   display: flex;
@@ -34,20 +43,23 @@
   will-change: transform;
 }
 
-/* ── Per-kind accents (semantic only) ─────────────────────────── */
-:host([data-kind="output"]) {
-  --_node-accent: var(--sherpa-surface-context-success-strong-default, #1f9d55);
+/* ── Per-kind accents (semantic only, opaque) ─────────────────── */
+:host([data-kind="source"]) {
+  --_node-accent: var(--sherpa-color-info-700, #0d77ad);
 }
-:host([data-kind="action"]) {
-  --_node-accent: var(--sherpa-surface-context-warning-strong-default, #ff8a00);
+:host([data-kind="output"]) {
+  --_node-accent: var(--sherpa-color-success-700, #1f9d55);
+}
+:host([data-kind="chat"]) {
+  --_node-accent: var(--sherpa-color-brand-700, #8500cc);
 }
 :host([data-kind="group"]) {
-  --_node-accent: var(--sherpa-border-context-info-default, #3b82f6);
+  --_node-accent: var(--sherpa-color-info-700, #0d77ad);
 }
 
 /* An Output node with no incoming connections is an error state. */
 :host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) {
-  --_node-accent: var(--sherpa-surface-context-error-strong-default, #cc1f1a);
+  --_node-accent: var(--sherpa-color-critical-700, #cc1f1a);
 }
 
 /* ── Container ────────────────────────────────────────────────── */
@@ -62,33 +74,28 @@
   transition: box-shadow 150ms ease, border-color 150ms ease;
 }
 
-/* Tinted body — output (success), action (warning), and chat (info).
-   Body uses the matching subtle surface; border uses the strong accent
-   so the card edge stays legible. The chat kind taps `info-subtle`
-   directly because it has no per-kind --_node-accent override. */
-:host([data-kind="output"]) .node {
-  background: var(--sherpa-surface-context-success-subtle-default, #e6f7ee);
+/* Tinted body — opaque `--sherpa-color-{intent}-100` fills + matching
+   strong border. No color-mix, no rgba, no transparency. */
+:host([data-kind="source"]) .node {
+  background: var(--sherpa-color-info-100, #d9f2fa);
   border-color: var(--_node-accent);
 }
-:host([data-kind="action"]) .node {
-  background: var(--sherpa-surface-context-warning-subtle-default, #fff5e0);
+:host([data-kind="output"]) .node {
+  background: var(--sherpa-color-success-100, #e6f7ee);
   border-color: var(--_node-accent);
 }
 :host([data-kind="chat"]) .node {
-  background: var(--sherpa-surface-context-info-subtle-default, #e0f2fe);
-  border-color: var(--sherpa-border-context-info-default, #3b82f6);
+  background: var(--sherpa-color-brand-100, #f8ebff);
+  border-color: var(--_node-accent);
 }
-
-/* Output-with-no-input flips the body tint to the error subtle. */
-:host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) .node {
-  background: var(--sherpa-surface-context-error-subtle-default, #fde7e7);
-}
-
-/* Group node — info-blue surface + border. */
 :host([data-kind="group"]) .node {
-  background: var(--sherpa-surface-context-info-subtle-default, #e0f2fe);
-  border-color: var(--sherpa-border-context-info-default, #3b82f6);
-  border-width: 1px;
+  background: var(--sherpa-color-info-100, #d9f2fa);
+  border-color: var(--_node-accent);
+}
+
+/* Output-with-no-input flips the body tint to the critical tint. */
+:host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) .node {
+  background: var(--sherpa-color-critical-100, #fde7e7);
 }
 
 /* Selected state — accent ring. Lift above peers so overlapping
