@@ -6,10 +6,11 @@ Attribute-driven navigation item. Minimal JS — icon synced via data-icon, rest
 
 ## Templates
 
-Available templates:
+Set via `data-type` attribute:
 
 - `item`
 - `divider`
+- `promo`
 
 ## Attributes
 
@@ -22,6 +23,8 @@ Available templates:
 | `data-badge-status` | enum | Badge status (critical \| info \| success \| warning \| urgent \| brand). Defaults to "success". | — | `critical`, `info`, `success`, `warning`, `urgent`, `brand` |
 | `data-variant` | enum | section \| subsection \| child | — | `section`, `subsection`, `child` |
 | `data-state` | enum | selected | — | — |
+| `data-type` | enum | promo — renders a large CTA-style row | — | — |
+| `data-description` | string | Promo description text (data-type="promo" only) | — | — |
 
 ## Slots
 
@@ -50,6 +53,8 @@ Style internal elements from outside the shadow DOM:
 - `tag`
 - `chevron`
 - `delete`
+- `heading`
+- `description`
 
 ```css
 sherpa-nav-item::part(indicator) {

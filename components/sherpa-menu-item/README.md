@@ -19,6 +19,9 @@ Set via `data-type` attribute:
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-type` | enum | checkbox \| radio \| toggle \| heading (default: action) | — | `checkbox`, `radio`, `toggle`, `heading` |
+| `data-variant` | enum | null \| "danger" (red destructive treatment) | — | — |
+| `data-icon` | string | Font Awesome icon name (e.g. "trash") | — | — |
+| `data-icon-weight` | enum | solid (default) \| regular \| light \| thin \| brands | — | `regular`, `light`, `thin`, `brands` |
 | `data-action` | string | Action identifier dispatched in menu-select | — | — |
 | `value` | string | Value associated with this item | — | — |
 | `data-selection` | enum | single \| multiple | — | `single`, `multiple` |
@@ -55,6 +58,7 @@ Slot usage:
 
 Style internal elements from outside the shadow DOM:
 
+- `icon`
 - `label`
 - `description`
 - `chevron`
@@ -62,7 +66,7 @@ Style internal elements from outside the shadow DOM:
 - `toggle`
 
 ```css
-sherpa-menu-item::part(label) {
+sherpa-menu-item::part(icon) {
   /* custom styles */
 }
 ```
@@ -84,7 +88,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-menu-item data-type="checkbox" data-action="value" value="value">
+<sherpa-menu-item data-type="checkbox" data-icon="value">
   <!-- Default slot content -->
   <p>Your content here</p>
 </sherpa-menu-item>

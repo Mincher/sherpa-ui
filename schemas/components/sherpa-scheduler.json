@@ -1,0 +1,39 @@
+{
+  "tagName": "sherpa-scheduler",
+  "description": "Recurrence/schedule picker. Composes sherpa-input-select (frequency), sherpa-input-date, sherpa-input-time, sherpa-input-checkbox-group (weekdays template), sherpa-input-number.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data",
+      "type": "enum",
+      "description": "frequency=weekly] once | hourly | daily | weekly | monthly",
+      "enumValues": [
+        "once",
+        "hourly",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "schedule-change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "SchedulePayload"
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "value",
+      "type": "object",
+      "description": "Current schedule object (getter/setter)"
+    }
+  ]
+}

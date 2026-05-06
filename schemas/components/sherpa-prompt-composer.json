@@ -1,0 +1,60 @@
+{
+  "tagName": "sherpa-prompt-composer",
+  "description": "Auto-growing prompt textarea with circular send button. Designed for AI / chat surfaces.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-placeholder",
+      "type": "string",
+      "description": "Placeholder text."
+    },
+    {
+      "name": "data-disabled",
+      "type": "flag",
+      "description": "Disables input + send."
+    },
+    {
+      "name": "data-max-height",
+      "type": "number",
+      "description": "Max textarea height in px (default 160)."
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "prompt-submit",
+      "description": "Fired on submit (Enter or send button) when",
+      "bubbles": true,
+      "composed": false,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "focus()",
+      "description": "Focus the textarea."
+    },
+    {
+      "name": "clear()",
+      "description": "Clear and reset the textarea height."
+    },
+    {
+      "name": "setBusy(boolean)",
+      "description": "Toggle disabled state.",
+      "params": [
+        {
+          "name": "boolean",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Current textarea value."
+    }
+  ]
+}

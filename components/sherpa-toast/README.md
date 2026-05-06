@@ -120,6 +120,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 - `--_status-border`
 - `--_status-icon`
 - `--_status-surface`
+- `--_status-text`
 - `--_toast-border-thickness-left`
 - `--_transform-x`
 - `--_transform-y`

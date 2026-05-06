@@ -1,0 +1,103 @@
+{
+  "tagName": "sherpa-content-section",
+  "description": "In-flow content section anchored to the left or right of a layout column. Fills the available height, owns its own header (heading + actions), an optional toolbar row, and a scrollable body. Minimisable to a narrow strip on the side it is anchored to.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data",
+      "type": "enum",
+      "description": "position=right]   left | right — anchored side",
+      "enumValues": [
+        "left",
+        "right"
+      ]
+    },
+    {
+      "name": "data",
+      "type": "string",
+      "description": "heading]          Header text"
+    },
+    {
+      "name": "data",
+      "type": "flag",
+      "description": "minimised]        Collapsed to a narrow strip"
+    },
+    {
+      "name": "data-restore",
+      "type": "string",
+      "description": "label]    Optional label shown on the"
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Body content"
+    },
+    {
+      "name": "toolbar",
+      "description": "Toolbar row beneath the header"
+    },
+    {
+      "name": "search",
+      "description": "Sticky search input pinned to the top of the body"
+    },
+    {
+      "name": "actions",
+      "description": "Header trailing actions (buttons / menu)"
+    }
+  ],
+  "events": [
+    {
+      "name": "section-minimise-change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "minimised": "boolean"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "minimise()",
+      "description": "Collapse the section"
+    },
+    {
+      "name": "restore()",
+      "description": "Expand the section"
+    },
+    {
+      "name": "toggle()",
+      "description": "Toggle minimised state"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "header",
+      "description": ""
+    },
+    {
+      "name": "title",
+      "description": ""
+    },
+    {
+      "name": "toolbar",
+      "description": ""
+    },
+    {
+      "name": "body",
+      "description": ""
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--_section-width",
+      "description": "Expanded width (default 320px)"
+    },
+    {
+      "name": "--_section-min-strip",
+      "description": "Minimised strip width (default 40px)"
+    }
+  ]
+}

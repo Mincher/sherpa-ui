@@ -51,12 +51,8 @@
   --sherpa-node-header-height:   48px;
   --sherpa-node-row-height:      60px;
   --sherpa-node-socket-gutter:    8px;
-  --sherpa-node-socket-width:    16px;
-  --sherpa-node-socket-height:   32px;
   --sherpa-node-socket-size:     16px;
   --sherpa-node-socket-stroke-w:  2px;
-  /* Per-connection growth step for multi-input sockets. */
-  --sherpa-node-socket-multi-step: 14px;
 
   /* ── Edge / connector colours ─────────────────────────────────── */
   /* Default flow edge — brand purple, matching header sockets. */

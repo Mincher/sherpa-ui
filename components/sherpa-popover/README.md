@@ -4,6 +4,13 @@
 
 General-purpose floating content container with header.
 
+## Templates
+
+Available templates:
+
+- `default`
+- `paged`
+
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
@@ -12,12 +19,16 @@ General-purpose floating content container with header.
 | `data-open` | boolean | Shows the popover | — | — |
 | `data-anchor` | string | CSS anchor name to position against | — | — |
 | `data-position` | enum | top \| bottom \| left \| right | — | `top`, `bottom`, `left`, `right` |
+| `data-template` | enum | default \| paged | — | `default`, `paged` |
+| `data-page` | number | (paged) Active 0-based page index | — | — |
+| `data-pages` | number | (paged) Total page count for the indicator | — | — |
+| `data-animation` | enum | none (default) \| slide | — | — |
 
 ## Slots
 
 | Slot | Description |
 | ---- | ----------- |
-| `(default)` | Default slot for body content |
+| `(default)` | Default slot for body content (paged: <section data-page="N">) |
 | `icon` | Header icon slot |
 | `header-end` | Header trailing content slot |
 
@@ -47,6 +58,43 @@ element.addEventListener("popover-close", (e) => {
   // handle event
 });
 ```
+
+### `popover-page-change`
+
+(paged) Fired after the active page changes.
+
+**Propagation:** bubbles, composed
+
+**Detail:**
+
+```js
+event.detail = {
+  page: number,
+  total: number,
+};
+```
+
+```js
+element.addEventListener("popover-page-change", (e) => {
+  console.log(e.detail.page);
+});
+```
+
+## Methods
+
+| Method | Description |
+| ------ | ----------- |
+| `nextPage()` | (paged) Advance to the next page if available. |
+| `prevPage()` | (paged) Step back to the previous page if available. |
+| `setPage(index)` | (paged) Jump to a specific 0-based page. |
+
+### `setPage(index)`
+
+(paged) Jump to a specific 0-based page.
+
+**Parameters:**
+
+- `index` (`any`) — 
 
 ## Internal CSS Custom Properties
 

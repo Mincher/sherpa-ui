@@ -23,6 +23,11 @@
       "name": "data-show-time",
       "type": "string",
       "description": "\"false\" hides the time line"
+    },
+    {
+      "name": "data-show-system-menu",
+      "type": "string",
+      "description": "\"false\" hides the dropdown caret"
     }
   ],
   "slots": [

@@ -11,6 +11,15 @@ Available templates:
 - `default`
 - `filter`
 
+## Attributes
+
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data-layout` | enum | "default" (vertical) \| "actions" (compact horizontal row) | — | — |
+| `data-loading` | boolean | Show a spinner instead of slot content | — | — |
+| `data-loading-text` | string | Optional caption shown next to the spinner | — | — |
+| `data-position` | enum | bottom-start (default) \| bottom-end \| top-start \| top-end | — | `bottom-end`, `top-start`, `top-end` |
+
 ## Slots
 
 | Slot | Description |
@@ -100,6 +109,7 @@ Return menu template HTML by id
 Style internal elements from outside the shadow DOM:
 
 - `surface`
+- `loader`
 
 ```css
 sherpa-menu::part(surface) {
@@ -127,7 +137,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-menu>
+<sherpa-menu data-loading-text="value" data-position="bottom-end">
   <!-- Default slot content -->
   <p>Your content here</p>
 </sherpa-menu>

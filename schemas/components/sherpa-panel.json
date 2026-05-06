@@ -16,10 +16,11 @@
     {
       "name": "data-position",
       "type": "enum",
-      "description": "left | right",
+      "description": "left | right | both",
       "enumValues": [
         "left",
-        "right"
+        "right",
+        "both"
       ]
     },
     {

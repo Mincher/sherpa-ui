@@ -1,50 +1,98 @@
 # sherpa-prompt-composer
 
-Auto-growing prompt textarea with a circular send button and a
-gradient border. Designed for AI / chat surfaces.
+> **Category:** core · **Base class:** SherpaElement
 
-- `Enter` submits.
-- `Shift+Enter` inserts a newline.
-- The component does **not** clear itself on submit — the host calls
-  `clear()` once the prompt is accepted, so a slow consumer can keep
-  the prompt visible while it streams a response.
-
-## Usage
-
-```html
-<sherpa-prompt-composer
-  data-placeholder="Ask anything…"
-  data-max-height="180"></sherpa-prompt-composer>
-```
-
-```js
-const composer = document.querySelector("sherpa-prompt-composer");
-composer.addEventListener("prompt-submit", async (e) => {
-  composer.setBusy(true);
-  await runPrompt(e.detail.value);
-  composer.clear();
-  composer.setBusy(false);
-});
-```
+Auto-growing prompt textarea with circular send button. Designed for AI / chat surfaces.
 
 ## Attributes
 
-| Attribute          | Type    | Default | Description                       |
-| ------------------ | ------- | ------- | --------------------------------- |
-| `data-placeholder` | string  | —       | Placeholder text.                 |
-| `data-disabled`    | flag    | —       | Disables input + send.            |
-| `data-max-height`  | number  | `160`   | Max textarea height in px.        |
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data-placeholder` | string | Placeholder text. | — | — |
+| `data-disabled` | flag | Disables input + send. | — | — |
+| `data-max-height` | number | Max textarea height in px (default 160). | — | — |
 
 ## Events
 
-| Event           | Detail        | Description                                   |
-| --------------- | ------------- | --------------------------------------------- |
-| `prompt-submit` | `{ value }`   | Fired with trimmed value when non-empty.      |
+### `prompt-submit`
+
+Fired on submit (Enter or send button) when
+
+**Propagation:** bubbles
+
+**Detail:** none
+
+```js
+element.addEventListener("prompt-submit", (e) => {
+  // handle event
+});
+```
 
 ## Methods
 
-`focus()`, `clear()`, `setBusy(boolean)` plus the `value` property.
+| Method | Description |
+| ------ | ----------- |
+| `focus()` | Focus the textarea. |
+| `clear()` | Clear and reset the textarea height. |
+| `setBusy(boolean)` | Toggle disabled state. |
 
-## Parts
+### `setBusy(boolean)`
 
-`composer`, `input`, `send`.
+Toggle disabled state.
+
+**Parameters:**
+
+- `boolean` (`any`) — 
+
+## Properties
+
+| Property | Type | Description | Access |
+| -------- | ---- | ----------- | ------ |
+| `value` | `string` | Current textarea value. | read/write |
+
+## CSS Parts
+
+Style internal elements from outside the shadow DOM:
+
+- `composer`
+- `input`
+- `send`
+
+```css
+sherpa-prompt-composer::part(composer) {
+  /* custom styles */
+}
+```
+
+## Internal CSS Custom Properties
+
+These `--_` prefixed properties are used internally and can be
+influenced by setting `data-*` attributes or status on ancestors:
+
+- `--_max-height`
+
+## Usage
+
+### Basic
+
+```html
+<sherpa-prompt-composer data-placeholder="value"></sherpa-prompt-composer>
+```
+
+## Import
+
+```js
+// Individual import
+import "sherpa-ui/components/sherpa-prompt-composer/sherpa-prompt-composer.js";
+
+// Or import everything
+import "sherpa-ui";
+```
+
+## Files
+
+| File | Purpose |
+| ---- | ------- |
+| [`sherpa-prompt-composer.js`](sherpa-prompt-composer.js) | Component class, lifecycle, events |
+| [`sherpa-prompt-composer.css`](sherpa-prompt-composer.css) | Styles, variants, states |
+| [`sherpa-prompt-composer.html`](sherpa-prompt-composer.html) | Shadow DOM template(s) |

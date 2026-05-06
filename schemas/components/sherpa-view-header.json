@@ -35,7 +35,20 @@
       "description": "Title for PDF export"
     }
   ],
-  "slots": [],
+  "slots": [
+    {
+      "name": "breadcrumbs",
+      "description": "Optional breadcrumb row above the toolbar"
+    },
+    {
+      "name": "title-icon",
+      "description": "Optional icon shown to the left of the heading label"
+    },
+    {
+      "name": "view-selection",
+      "description": "Optional <sherpa-input-select> for scoped views"
+    }
+  ],
   "events": [
     {
       "name": "edit-mode-change",

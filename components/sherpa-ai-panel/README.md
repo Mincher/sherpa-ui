@@ -1,74 +1,144 @@
 # sherpa-ai-panel
 
-Standalone chrome for AI / chat surfaces. Provides a header (title +
-new-chat / archive / extra controls / close), a scrollable thread
-region, and slots for suggested prompts, composer, and footer.
+> **Category:** core · **Base class:** SherpaElement
 
-Sibling of `sherpa-panel` — same overlay / inline mental model, but
-purpose-built for chat. Application logic (LLM calls, archive
-persistence, message rendering) lives in the host; the component
-emits the events the host needs.
-
-## Usage
-
-```html
-<sherpa-ai-panel
-  data-variant="overlay"
-  data-position="right"
-  data-heading="Ask AI"
-  data-expanded
-  data-can-archive>
-
-  <!-- Default slot = chat thread -->
-  <sherpa-chat-message data-role="user">Hi!</sherpa-chat-message>
-  <sherpa-chat-message data-role="ai" data-avatar-icon="fa-solid fa-wand-magic-sparkles">
-    Hello — how can I help?
-  </sherpa-chat-message>
-
-  <!-- Composer (only shown when slotted) -->
-  <sherpa-prompt-composer
-    slot="composer"
-    data-placeholder="Ask anything…"></sherpa-prompt-composer>
-
-  <!-- Suggestions (only shown when thread is empty) -->
-  <div slot="suggestions">…</div>
-
-  <!-- Footer disclaimer -->
-  <span slot="footer">Ask AI is still learning.</span>
-</sherpa-ai-panel>
-```
+Standalone chrome for AI / chat surfaces.
 
 ## Attributes
 
-| Attribute          | Values                | Default   | Description                                |
-| ------------------ | --------------------- | --------- | ------------------------------------------ |
-| `data-variant`     | `inline` \| `overlay` | `overlay` | Layout mode.                               |
-| `data-position`    | `left` \| `right`     | `right`   | Edge to dock to / border side.             |
-| `data-expanded`    | flag                  | —         | Visible state.                             |
-| `data-heading`     | string                | `Ask AI`  | Header title.                              |
-| `data-width`       | CSS length            | —         | Override panel width.                      |
-| `data-can-archive` | flag                  | —         | Enables the archive button.                |
-| `data-busy`        | flag                  | —         | Disables new-chat + archive.               |
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data` | enum | variant     "inline" \| "overlay" (default "overlay") | — | — |
+| `data` | enum | position    "left" \| "right"     (default "right") | — | — |
+| `data` | flag | expanded    Visible state. | — | — |
+| `data` | string | heading     Header title (default "Ask AI"). | — | — |
+| `data` | string | width       Custom width (CSS value). | — | — |
+| `data-can` | flag | archive Enables archive button. | — | — |
+| `data` | flag | busy        Disables new-chat + archive. | — | — |
 
 ## Events
 
-| Event              | Detail                | Description                                |
-| ------------------ | --------------------- | ------------------------------------------ |
-| `ai-panel-new-chat`| —                     | New-chat button clicked.                   |
-| `ai-panel-archive` | —                     | Archive button clicked (when enabled).     |
-| `panel-close`      | —                     | Close button clicked.                      |
-| `panel-toggle`     | `{ expanded }`        | `data-expanded` changed.                   |
+### `ai-panel-new-chat`
 
-## Slots
+Fired when the "new chat" button is clicked.
 
-| Slot          | Notes                                                            |
-| ------------- | ---------------------------------------------------------------- |
-| (default)     | Chat thread (e.g. `<sherpa-chat-message>` nodes).                |
-| `controls`    | Extra header buttons (rendered before the close button).         |
-| `suggestions` | Suggestion cards. Auto-hidden when the thread has any children.  |
-| `composer`    | Prompt composer (`<sherpa-prompt-composer>` or equivalent).      |
-| `footer`      | Footer disclaimer text.                                          |
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("ai-panel-new-chat", (e) => {
+  // handle event
+});
+```
+
+### `ai-panel-archive`
+
+Fired when the "archive" button is clicked.
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("ai-panel-archive", (e) => {
+  // handle event
+});
+```
+
+### `panel-close`
+
+Fired when the close button is clicked.
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("panel-close", (e) => {
+  // handle event
+});
+```
+
+### `panel-toggle`
+
+Fired when data-expanded changes.
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("panel-toggle", (e) => {
+  // handle event
+});
+```
 
 ## Methods
 
-`open()`, `close()`, `toggle()` plus the `expanded` boolean property.
+| Method | Description |
+| ------ | ----------- |
+| `open()` | Set data-expanded. |
+| `close()` | Remove data-expanded (and dispatch panel-close). |
+| `toggle()` | Toggle data-expanded. |
+
+## Properties
+
+| Property | Type | Description | Access |
+| -------- | ---- | ----------- | ------ |
+| `expanded` | `boolean` | Getter/setter for data-expanded. | read/write |
+
+## CSS Parts
+
+Style internal elements from outside the shadow DOM:
+
+- `panel`
+- `header`
+- `title`
+- `controls`
+- `new-chat-btn`
+- `archive-btn`
+- `close-btn`
+- `thread`
+- `suggestions`
+- `composer`
+- `footer`
+
+```css
+sherpa-ai-panel::part(panel) {
+  /* custom styles */
+}
+```
+
+## Internal CSS Custom Properties
+
+These `--_` prefixed properties are used internally and can be
+influenced by setting `data-*` attributes or status on ancestors:
+
+- `--_panel-width`
+
+## Usage
+
+### Basic
+
+```html
+<sherpa-ai-panel data="value"></sherpa-ai-panel>
+```
+
+## Import
+
+```js
+// Individual import
+import "sherpa-ui/components/sherpa-ai-panel/sherpa-ai-panel.js";
+
+// Or import everything
+import "sherpa-ui";
+```
+
+## Files
+
+| File | Purpose |
+| ---- | ------- |
+| [`sherpa-ai-panel.js`](sherpa-ai-panel.js) | Component class, lifecycle, events |
+| [`sherpa-ai-panel.css`](sherpa-ai-panel.css) | Styles, variants, states |
+| [`sherpa-ai-panel.html`](sherpa-ai-panel.html) | Shadow DOM template(s) |

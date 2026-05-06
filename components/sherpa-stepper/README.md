@@ -4,6 +4,13 @@
 
 Horizontal/vertical step progress indicator. Steps populated from data; CSS handles all visual states.
 
+## Templates
+
+Available templates:
+
+- `default`
+- `timeline`
+
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
@@ -12,6 +19,7 @@ Horizontal/vertical step progress indicator. Steps populated from data; CSS hand
 | `data-linear` | enum | true \| false — steps must complete in order | — | `true`, `false` |
 | `data-show-step-numbers` | enum | true \| false (default: true) | — | `true`, `false` |
 | `data-src` | string | URL to load steps JSON | — | — |
+| `data-template` | enum | default \| timeline (vertical timeline layout) | — | `default`, `timeline` |
 
 ## Events
 

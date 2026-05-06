@@ -3,7 +3,33 @@
   "description": "Menu component (per-instance, no singleton). Light DOM <ul>/<li>/<sherpa-menu-item> content projected through <slot>. Uses popover=\"auto\" for top-layer promotion and light-dismiss. CSS anchor positioning with JS fallback.",
   "category": "navigation",
   "baseClass": "SherpaElement",
-  "attributes": [],
+  "attributes": [
+    {
+      "name": "data-layout",
+      "type": "enum",
+      "description": "\"default\" (vertical) | \"actions\" (compact horizontal row)"
+    },
+    {
+      "name": "data-loading",
+      "type": "boolean",
+      "description": "Show a spinner instead of slot content"
+    },
+    {
+      "name": "data-loading-text",
+      "type": "string",
+      "description": "Optional caption shown next to the spinner"
+    },
+    {
+      "name": "data-position",
+      "type": "enum",
+      "description": "bottom-start (default) | bottom-end | top-start | top-end",
+      "enumValues": [
+        "bottom-end",
+        "top-start",
+        "top-end"
+      ]
+    }
+  ],
   "slots": [
     {
       "name": "",

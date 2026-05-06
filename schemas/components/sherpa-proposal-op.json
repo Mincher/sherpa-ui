@@ -1,0 +1,27 @@
+{
+  "tagName": "sherpa-proposal-op",
+  "description": "Single change row inside <sherpa-proposal-preview>.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data",
+      "type": "enum",
+      "description": "op]     add | remove | update | add-edge | remove-edge",
+      "enumValues": [
+        "add",
+        "remove",
+        "update",
+        "add-edge",
+        "remove-edge"
+      ]
+    },
+    {
+      "name": "data",
+      "type": "string",
+      "description": "label]  Body text describing the change."
+    }
+  ],
+  "slots": [],
+  "events": []
+}

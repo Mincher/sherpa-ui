@@ -4,6 +4,20 @@
 
 Dropdown select input using native <select>. Options provided via light DOM <option> elements or programmatically via setOptions(). Inherits label, description, helper, layout, validation from SherpaInputBase.
 
+## Templates
+
+Available templates:
+
+- `default`
+- `tree`
+
+## Attributes
+
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data-template` | enum | default \| tree (hierarchical picker) | — | `default`, `tree` |
+| `data-tree` | json | (tree) Node forest [{value,label,children?,disabled?}] | — | — |
+
 ## Events
 
 ### `change`
@@ -29,22 +43,31 @@ element.addEventListener("change", (e) => {
 
 | Method | Description |
 | ------ | ----------- |
-| `setOptions(options)` | Set option list: Array<{ value, label, disabled? }> |
+| `setOptions(options)` | Set option list. Accepts either: |
+| `setTree(nodes)` | (tree) Set the node forest |
 
 ### `setOptions(options)`
 
-Set option list: Array<{ value, label, disabled? }>
+Set option list. Accepts either:
 
 **Parameters:**
 
 - `options` (`any`) — 
+
+### `setTree(nodes)`
+
+(tree) Set the node forest
+
+**Parameters:**
+
+- `nodes` (`any`) — 
 
 ## Usage
 
 ### Basic
 
 ```html
-<sherpa-input-select></sherpa-input-select>
+<sherpa-input-select data-template="default"></sherpa-input-select>
 ```
 
 ## Import

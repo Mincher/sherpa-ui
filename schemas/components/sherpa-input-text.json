@@ -77,6 +77,11 @@
       "name": "novalidate",
       "type": "boolean",
       "description": "Disable built-in validation (inherited)"
+    },
+    {
+      "name": "data-multiline",
+      "type": "boolean",
+      "description": "Render as an auto-growing textarea"
     }
   ],
   "slots": [],

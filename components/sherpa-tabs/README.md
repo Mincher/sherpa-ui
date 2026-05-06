@@ -9,12 +9,14 @@ Tabbed content switcher with accessible keyboard navigation. Each direct light-D
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-active-tab` | number | Zero-based index of the selected tab | — | — |
+| `data-load-mode` | enum | eager (default, all panels rendered) \| lazy (panels populated on first activation) | — | — |
 
 ## Slots
 
 | Slot | Description |
 | ---- | ----------- |
 | `(default)` | Default slot for tab panel children (each must have data-tab-label) |
+| `detail` | Trailing content shown to the right of the tab strip (badges, actions) |
 
 Slot usage:
 
@@ -22,6 +24,7 @@ Slot usage:
 <sherpa-tabs>
   <!-- Default slot -->
   <p>Content goes here</p>
+  <div slot="detail"><!-- Trailing content shown to the right of the tab strip (badges, actions) --></div>
 </sherpa-tabs>
 ```
 
@@ -45,6 +48,28 @@ event.detail = {
 
 ```js
 element.addEventListener("tab-change", (e) => {
+  console.log(e.detail.index);
+});
+```
+
+### `tab-load`
+
+(lazy) Fired the first time a tab becomes active. Consumers
+
+**Propagation:** bubbles, composed
+
+**Detail:**
+
+```js
+event.detail = {
+  index: number,
+  label: string,
+  panel: HTMLElement,
+};
+```
+
+```js
+element.addEventListener("tab-load", (e) => {
   console.log(e.detail.index);
 });
 ```
@@ -90,6 +115,7 @@ sherpa-tabs::part(tablist) {
 <sherpa-tabs>
   <!-- Default slot content -->
   <p>Your content here</p>
+  <span slot="detail"><!-- Trailing content shown to the right of the tab strip (badges, actions) --></span>
 </sherpa-tabs>
 ```
 

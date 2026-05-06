@@ -7,12 +7,13 @@
     {
       "name": "data-variant",
       "type": "enum",
-      "description": "fit | resizable | fill",
+      "description": "fit | resizable | fill | worksheet",
       "default": "fit",
       "enumValues": [
         "fit",
         "resizable",
-        "fill"
+        "fill",
+        "worksheet"
       ]
     },
     {
@@ -34,6 +35,17 @@
       "name": "data-menu-open",
       "type": "boolean",
       "description": "Reflected while a descendant menu is open"
+    },
+    {
+      "name": "data-state",
+      "type": "enum",
+      "description": "ready | loading | empty | error",
+      "enumValues": [
+        "ready",
+        "loading",
+        "empty",
+        "error"
+      ]
     }
   ],
   "slots": [

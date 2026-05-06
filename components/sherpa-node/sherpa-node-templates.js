@@ -47,10 +47,12 @@ const SUBTYPE_LABELS = {
   concatenate: "Concatenate",
   // source
   api: "API",
+  model: "Model",
+  "unified-agent": "Unified agent",
   // output
   outcome: "Outcome",
-  // ai
-  model: "Model", delegate: "Delegate", chat: "Chat",
+  // delegate / chat (single-subtype standalone kinds)
+  delegate: "Delegate", chat: "Chat",
   // action
   ticket: "Ticket", notify: "Notify",
   // misc
@@ -108,6 +110,28 @@ export async function getSubtypesForKind(kind) {
     out.push({ value, label });
   }
   return out;
+}
+
+/**
+ * Returns a grouped subtype list suitable for the picker. The catalogue's
+ * built-in subtypes are returned under a "Preset" group; the optional
+ * `customOptions` argument is appended as a "Custom" group when supplied.
+ *
+ * Consumers may use this to seed the picker, then later overwrite
+ * `data-subtypes` on the node with their own grouped JSON to inject
+ * saved-group entries (see components/sherpa-node/README.md).
+ *
+ * @param {string} kind
+ * @param {Array<{value:string,label:string,disabled?:boolean}>} [customOptions]
+ * @returns {Promise<Array<{label:string, options:Array}>>}
+ */
+export async function getGroupedSubtypesForKind(kind, customOptions = []) {
+  const presets = await getSubtypesForKind(kind);
+  const groups = [{ label: "Preset", options: presets }];
+  if (customOptions && customOptions.length) {
+    groups.push({ label: "Custom", options: customOptions });
+  }
+  return groups;
 }
 
 /**

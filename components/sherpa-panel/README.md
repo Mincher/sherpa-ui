@@ -9,7 +9,7 @@ Slide-out or inline panel with header and content area.
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-variant` | enum | inline \| overlay | — | `inline`, `overlay` |
-| `data-position` | enum | left \| right | — | `left`, `right` |
+| `data-position` | enum | left \| right \| both | — | `left`, `right`, `both` |
 | `data-expanded` | boolean | Expanded (visible) state | — | — |
 | `data-heading` | string | Heading text | — | — |
 | `data-width` | string | Custom width (CSS value) | — | — |

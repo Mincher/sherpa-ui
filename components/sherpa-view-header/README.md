@@ -15,6 +15,24 @@ View header toolbar with toggles and settings. Manages heading, favorites, feedb
 | `data-back-button` | boolean | Show built-in back button | — | — |
 | `data-export-title` | string | Title for PDF export | — | — |
 
+## Slots
+
+| Slot | Description |
+| ---- | ----------- |
+| `breadcrumbs` | Optional breadcrumb row above the toolbar |
+| `title-icon` | Optional icon shown to the left of the heading label |
+| `view-selection` | Optional <sherpa-input-select> for scoped views |
+
+Slot usage:
+
+```html
+<sherpa-view-header>
+  <div slot="breadcrumbs"><!-- Optional breadcrumb row above the toolbar --></div>
+  <div slot="title-icon"><!-- Optional icon shown to the left of the heading label --></div>
+  <div slot="view-selection"><!-- Optional <sherpa-input-select> for scoped views --></div>
+</sherpa-view-header>
+```
+
 ## Events
 
 ### `edit-mode-change`
@@ -137,7 +155,10 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-view-header data-label="Example Label" data-export-title="value"></sherpa-view-header>
+<sherpa-view-header data-label="Example Label" data-export-title="value">
+  <span slot="breadcrumbs"><!-- Optional breadcrumb row above the toolbar --></span>
+  <span slot="title-icon"><!-- Optional icon shown to the left of the heading label --></span>
+</sherpa-view-header>
 ```
 
 ## Import

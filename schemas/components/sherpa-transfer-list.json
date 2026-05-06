@@ -1,0 +1,53 @@
+{
+  "tagName": "sherpa-transfer-list",
+  "description": "Two-pane shuttle (available <-> selected). Composes sherpa-list, sherpa-list-item, sherpa-input-checkbox, sherpa-input-search, sherpa-button.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-source-heading",
+      "type": "string",
+      "description": "Available pane heading",
+      "default": "Available"
+    },
+    {
+      "name": "data-target-heading",
+      "type": "string",
+      "description": "Selected pane heading",
+      "default": "Selected"
+    },
+    {
+      "name": "data-search",
+      "type": "boolean",
+      "description": "Show search inputs"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "transfer-change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "values": "string[]"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "setOptions(options)",
+      "description": "options: [{ value, label, selected? }]",
+      "params": [
+        {
+          "name": "options",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getSelectedValues()",
+      "description": "Returns array of currently-selected values"
+    }
+  ]
+}

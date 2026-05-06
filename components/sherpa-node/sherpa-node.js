@@ -8,25 +8,47 @@
  * socket lives in node-local coordinates (unscaled, top-left origin).
  *
  * Sub-type system:
- *   • data-subtypes — JSON array [{value,label}] populates a built-in
- *     <select> beneath the header.
- *   • data-subtype  — Currently-selected sub-type.
+ *   • data-subtypes — JSON. Either a flat array [{value,label}] or a
+ *     grouped array [{label, options:[{value,label}]}]. Grouped form
+ *     renders <optgroup>s in the picker (e.g. "Preset" vs "Custom").
+ *   • data-subtype  — Currently-selected sub-type value.
  *   • Light-DOM <template class="rows-tpl" data-kind="…" data-subtype="…">
  *     children act as row-prototypes. On subtype change the matching
  *     template's content is cloned into light DOM, replacing any rows
  *     that came from a previous template clone (those are tagged
  *     data-template-row).
  *
+ * Custom subtypes (consumer contract):
+ *   The "Custom" group is a hook for consumers to inject saved-graph
+ *   entries (e.g. user-saved subgraphs). Consumers populate it by
+ *   overwriting data-subtypes with their own grouped JSON, e.g.
+ *
+ *     node.dataset.subtypes = JSON.stringify([
+ *       { label: "Preset", options: presetSubtypes },
+ *       { label: "Custom", options: [
+ *         { value: "saved:abc123", label: "Monitor CPU usage" },
+ *       ]},
+ *     ]);
+ *
+ *   When the user picks a "Custom" entry, the consumer should listen
+ *   for sherpa-node-subtype-change, and — if the value matches a saved
+ *   group — replace the source node with a `group`-kind node at the
+ *   same position/id, then push the saved subgraph into it via
+ *   canvas.pushSubgraph(). sherpa-ui ships only the picker mechanism;
+ *   the saved-groups registry is the consumer's concern.
+ *
  * @element sherpa-node
  *
  * @attr {enum}    data-kind     — One of: source | group | variable | math |
- *                                 logic | time | collection | util | output
+ *                                 logic | time | collection | util | output |
+ *                                 delegate | chat | action
  * @attr {boolean} data-selected — Highlights the node
  * @attr {number}  data-x        — X position in canvas-local px
  * @attr {number}  data-y        — Y position in canvas-local px
  * @attr {number}  data-w        — Width override in px (default 240)
  * @attr {string}  data-node-id  — Stable node identifier
- * @attr {json}    data-subtypes — Array<{value,label}>; shows the dropdown
+ * @attr {json}    data-subtypes — Flat Array<{value,label}> OR grouped
+ *                                 Array<{label, options:[{value,label}]}>
  * @attr {string}  data-subtype  — Current sub-type value
  *
  * @fires sherpa-node-pointerdown
@@ -378,15 +400,38 @@ export class SherpaNode extends SherpaElement {
     let opts;
     try { opts = JSON.parse(raw); }
     catch { opts = []; }
-    const normalised = opts.map((o) => ({
-      value: String(o.value ?? ""),
-      label: String(o.label ?? o.value ?? ""),
-    }));
+    // Normalise: each entry is either a flat {value,label} option or a
+    // grouped {label, options:[…]} block. Grouped entries pass through
+    // to <optgroup>; flat entries are stringified for safety.
+    const isGrouped = opts.some((o) => o && Array.isArray(o.options));
+    const normalised = isGrouped
+      ? opts.map((o) => Array.isArray(o?.options)
+          ? {
+              label: String(o.label ?? ""),
+              options: o.options.map((opt) => ({
+                value: String(opt.value ?? ""),
+                label: String(opt.label ?? opt.value ?? ""),
+                disabled: !!opt.disabled,
+              })),
+            }
+          : {
+              value: String(o.value ?? ""),
+              label: String(o.label ?? o.value ?? ""),
+            })
+      : opts.map((o) => ({
+          value: String(o.value ?? ""),
+          label: String(o.label ?? o.value ?? ""),
+        }));
+    // Count selectable options (flat + grouped) to decide whether the
+    // subtype select has anything to choose between.
+    const totalChoices = isGrouped
+      ? normalised.reduce((n, o) => n + (Array.isArray(o.options) ? o.options.length : 1), 0)
+      : normalised.length;
     // Hide the subtype select entirely when there's nothing to choose
     // between — single-subtype nodes have no business showing a
     // disabled "Type" dropdown. Toggled via host attribute; CSS owns
     // the actual visibility (see sherpa-node.css).
-    this.toggleAttribute("data-single-subtype", normalised.length <= 1);
+    this.toggleAttribute("data-single-subtype", totalChoices <= 1);
     // Allow per-host relabelling of the subtype select (e.g. logic
     // nodes label it "Operation" rather than the default "Type").
     if (this.#subtypeSelect) {
@@ -398,7 +443,10 @@ export class SherpaNode extends SherpaElement {
     const apply = () => {
       if (typeof this.#subtypeSelect.setOptions !== "function") return;
       this.#subtypeSelect.setOptions(normalised);
-      const initial = this.dataset.subtype || (normalised[0]?.value ?? "");
+      const firstValue = isGrouped
+        ? normalised.find((g) => g.options?.length)?.options?.[0]?.value
+        : normalised[0]?.value;
+      const initial = this.dataset.subtype || (firstValue ?? "");
       if (initial) this.#subtypeSelect.setAttribute("value", initial);
     };
     // sherpa-input-select upgrades asynchronously; wait if needed.

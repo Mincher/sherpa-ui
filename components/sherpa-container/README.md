@@ -8,11 +8,12 @@ Pure wrapper container for dashboard composition. Owns sizing (variant, col/row 
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data-variant` | enum | fit \| resizable \| fill | `fit` | `fit`, `resizable`, `fill` |
+| `data-variant` | enum | fit \| resizable \| fill \| worksheet | `fit` | `fit`, `resizable`, `fill`, `worksheet` |
 | `data-col-span` | number | Column span: 3 \| 6 \| 9 \| 12 (resizable) | — | — |
 | `data-row-span` | number | Row span: 1–6 (resizable) | — | — |
 | `data-editable` | boolean | Edit mode (enables resize grip) | — | — |
 | `data-menu-open` | boolean | Reflected while a descendant menu is open | — | — |
+| `data-state` | enum | ready \| loading \| empty \| error | — | `ready`, `loading`, `empty`, `error` |
 
 ## Slots
 
@@ -99,7 +100,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-container data-variant="fit">
+<sherpa-container data-variant="fit" data-state="ready">
   <!-- Default slot content -->
   <p>Your content here</p>
 </sherpa-container>
@@ -111,6 +112,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 <sherpa-container data-variant="fit"></sherpa-container>
 <sherpa-container data-variant="resizable"></sherpa-container>
 <sherpa-container data-variant="fill"></sherpa-container>
+<sherpa-container data-variant="worksheet"></sherpa-container>
 ```
 
 ## Import

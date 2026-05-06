@@ -34,6 +34,42 @@
       "name": "data-dismissible",
       "type": "boolean",
       "description": "Shows close button (default: true)"
+    },
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "success | critical | warning | info | urgent",
+      "enumValues": [
+        "success",
+        "critical",
+        "warning",
+        "info",
+        "urgent"
+      ]
+    },
+    {
+      "name": "data-template",
+      "type": "enum",
+      "description": "default | wizard",
+      "enumValues": [
+        "default",
+        "wizard"
+      ]
+    },
+    {
+      "name": "data-page",
+      "type": "number",
+      "description": "(wizard) Active 0-based page index"
+    },
+    {
+      "name": "data-pages",
+      "type": "number",
+      "description": "(wizard) Total page count override"
+    },
+    {
+      "name": "data-finish-label",
+      "type": "string",
+      "description": "(wizard) Label shown on the next button at last page (default: \"Finish\")"
     }
   ],
   "slots": [

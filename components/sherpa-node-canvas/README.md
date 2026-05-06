@@ -85,6 +85,18 @@ element.addEventListener("sherpa-viewport-change", (e) => {
 });
 ```
 
+## CSS Parts
+
+Style internal elements from outside the shadow DOM:
+
+- `header`
+
+```css
+sherpa-node-canvas::part(header) {
+  /* custom styles */
+}
+```
+
 ## Usage
 
 ### Basic

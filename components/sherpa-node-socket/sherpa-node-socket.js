@@ -12,7 +12,7 @@
  * @attr {boolean} data-connected        — Filled with accent color
  * @attr {string}  data-port-name        — Port identifier
  * @attr {enum}    data-status           — "default" | "true" | "false"
- * @attr {number}  data-connection-count — Set by canvas; drives multi-input height growth
+ * @attr {number}  data-connection-count — Set by canvas; drives the count of stacked dots inside input sockets
  * @attr {boolean} data-flow-active       — Group input sockets only: subgraph has a source→output flow; renders larger filled dot
  *
  * @fires sherpa-socket-pointerdown
@@ -74,9 +74,6 @@ export class SherpaNodeSocket extends SherpaElement {
   #syncCount() {
     const n = parseInt(this.dataset.connectionCount || "0", 10);
     const count = Number.isFinite(n) && n > 0 ? n : 0;
-    // Drives the host-height growth formula in CSS. Min 1 so the base
-    // 1:1 frame is the resting size when there are no connections.
-    this.style.setProperty("--_count", String(Math.max(1, count)));
 
     // Per-connection dots only exist on input sockets (the template's
     // .connectors container is hidden via CSS for outputs anyway, but

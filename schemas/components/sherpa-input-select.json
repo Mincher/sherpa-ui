@@ -3,7 +3,22 @@
   "description": "Dropdown select input using native <select>. Options provided via light DOM <option> elements or programmatically via setOptions(). Inherits label, description, helper, layout, validation from SherpaInputBase.",
   "category": "form",
   "baseClass": "SherpaInputBase",
-  "attributes": [],
+  "attributes": [
+    {
+      "name": "data-template",
+      "type": "enum",
+      "description": "default | tree (hierarchical picker)",
+      "enumValues": [
+        "default",
+        "tree"
+      ]
+    },
+    {
+      "name": "data-tree",
+      "type": "json",
+      "description": "(tree) Node forest [{value,label,children?,disabled?}]"
+    }
+  ],
   "slots": [],
   "events": [
     {
@@ -19,10 +34,20 @@
   "methods": [
     {
       "name": "setOptions(options)",
-      "description": "Set option list: Array<{ value, label, disabled? }>",
+      "description": "Set option list. Accepts either:",
       "params": [
         {
           "name": "options",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setTree(nodes)",
+      "description": "(tree) Set the node forest",
+      "params": [
+        {
+          "name": "nodes",
           "type": "any"
         }
       ]

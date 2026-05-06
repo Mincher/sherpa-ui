@@ -1,0 +1,97 @@
+{
+  "tagName": "sherpa-input-checkbox",
+  "description": "Atomic checkbox primitive. Single checkbox with label-on-the-right. Designed for both standalone use (e.g. \"I accept the terms\") and as a child of `sherpa-input-checkbox-group`.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "name",
+      "type": "string",
+      "description": "Form field name"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Submitted value when checked (default \"on\")"
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "description": "Initial / current checked state"
+    },
+    {
+      "name": "indeterminate",
+      "type": "boolean",
+      "description": "Mixed state (overrides checked visually)"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "description": "Required constraint"
+    },
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Inline label text"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Helper line below the label"
+    },
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "critical | warning | success | info | urgent",
+      "enumValues": [
+        "critical",
+        "warning",
+        "success",
+        "info",
+        "urgent"
+      ]
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "change",
+      "description": "User toggled the checkbox.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "checked": "boolean",
+        "value": "string",
+        "indeterminate": "boolean"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "focus()",
+      "description": "Move focus to the underlying native input."
+    }
+  ],
+  "properties": [
+    {
+      "name": "checked",
+      "type": "boolean",
+      "description": "Read/write checked state"
+    },
+    {
+      "name": "indeterminate",
+      "type": "boolean",
+      "description": "Read/write indeterminate state"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Submitted value"
+    }
+  ]
+}

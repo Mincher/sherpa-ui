@@ -16,6 +16,27 @@
       ]
     },
     {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "null | \"danger\" (red destructive treatment)"
+    },
+    {
+      "name": "data-icon",
+      "type": "string",
+      "description": "Font Awesome icon name (e.g. \"trash\")"
+    },
+    {
+      "name": "data-icon-weight",
+      "type": "enum",
+      "description": "solid (default) | regular | light | thin | brands",
+      "enumValues": [
+        "regular",
+        "light",
+        "thin",
+        "brands"
+      ]
+    },
+    {
       "name": "data-action",
       "type": "string",
       "description": "Action identifier dispatched in menu-select"

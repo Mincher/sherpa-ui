@@ -4,6 +4,13 @@
 
 Generic horizontal toolbar with leading/center/trailing content zones and an optional filters row. Pure layout component — no data logic.
 
+## Templates
+
+Available templates:
+
+- `default`
+- `actions`
+
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |

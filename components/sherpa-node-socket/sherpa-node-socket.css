@@ -18,9 +18,11 @@
  * data-location is auto-set by the parent (sherpa-node-header → "header",
  * sherpa-node-row → "row"). Defaults to "header" when absent.
  *
- * Multi-input growth: the canvas writes `data-connection-count="N"` (and
- * matches the inline custom property `--_count`) so the socket grows
- * vertically with the number of incoming connections.
+ * Multi-input growth: the canvas writes `data-connection-count="N"` and
+ * the JS clones N dots into the .connectors container. The shape's
+ * height is content-driven — no calc() formulas, no custom properties.
+ * 0 or 1 dot collapses to the 16×16 minimum; 2+ dots stack and grow
+ * the shape vertically via flex.
  */
 
 :host {
@@ -31,17 +33,20 @@
       var(--_socket-stroke) 18%,
       var(--sherpa-surface-container-default));
 
-  display: inline-block;
-  width:  var(--sherpa-node-socket-width);
-  height: var(--sherpa-node-socket-height);
+  /* Host is content-sized: a single inline-flex frame whose dimensions
+     are driven entirely by the .socket-shape inside. The shape itself
+     enforces a minimum 16×16px floor, so a disconnected or single-dot
+     input renders as a perfect square. Multi-dot inputs grow taller
+     because the dots stack inside via flex column — no JS sizing,
+     no calc() formulas, no --_count plumbing. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   cursor: crosshair;
-  /* Sockets sit inside narrow flex gutters (8px) but render at 16px
-     and overflow visibly. Without this the flex parent shrinks the
-     host below its declared width and the shape looks squished. */
+  /* Sockets sit inside narrow flex gutters (8px) but render at 16px+
+     and overflow visibly. Stops the flex parent from squishing them. */
   flex-shrink: 0;
-
-  --_count: 1;
 }
 
 /* Row inputs are blue. */
@@ -61,30 +66,35 @@
 /* ── Hit area / button ─────────────────────────────────────────── */
 .socket {
   all: unset;
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: crosshair;
 }
 
-/* ── Default shape: header circle ──────────────────────────────── */
+/* ── Default shape: header circle (single, unconnected) ────────── */
+/* Base shape is a 16×16 circle. Min dimensions enforce the floor so
+   even when content (dots) is empty, the shape stays square. Width
+   stays fixed; height grows with stacked dots inside. */
 .socket-shape {
   width: var(--sherpa-node-socket-size);
-  height: var(--sherpa-node-socket-size);
+  min-width: var(--sherpa-node-socket-size);
+  min-height: var(--sherpa-node-socket-size);
   background: var(--_socket-fill);
   border: var(--sherpa-node-socket-stroke-w) solid var(--_socket-stroke);
   box-sizing: border-box;
   border-radius: 999px;
-  transition: background 150ms ease, transform 150ms ease, height 150ms ease;
+  transition: background 150ms ease, transform 150ms ease;
 }
 
-/* ── Per-connection dots (all inputs) ─────────────────────────── */
-/* The dot container sits inside every input shape and lays out one
-   .connector-dot per active connection. JS clones dots from the
-   .connector-tpl prototype to match data-connection-count, and
-   renders ZERO dots when the socket is disconnected. */
+/* ── Per-connection dots (input sockets only) ─────────────────── */
+/* The dots container stacks vertically inside the input shape. The
+   2px vertical padding accounts for the shape's 2px border so a
+   single 8px dot lands exactly inside a 16×16 frame:
+     inner content = 8 + 2 + 2 = 12px ; outer = 12 + 2*border = 16px.
+   0 dots collapses to nothing (the shape's min-height holds the
+   16×16 floor). 2+ dots stack and grow the shape vertically — no
+   JS or calc() required. */
 .connectors {
   display: none;
 }
@@ -93,16 +103,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: center;
   width: 100%;
-  height: 100%;
-  padding: var(--sherpa-space-3xs, 4px) 0;
+  padding: var(--sherpa-space-3xs, 2px) 0;
   box-sizing: border-box;
-  gap: 3px;
+  gap: var(--sherpa-space-3xs, 2px);
 }
 
 /* Solid plug in the stroke colour — visible against the light-tinted
-   socket frame. Only rendered when the input is connected. */
+   socket frame. Only rendered when the input has connections. */
 .connector-dot {
   flex-shrink: 0;
   width: 8px;
@@ -113,37 +122,24 @@
   box-sizing: border-box;
 }
 
-/* ── Input growth: every input grows in height per connection ──── */
-/* Formula collapses to base size when --_count ≤ 1 (no incoming
-   connectors), then adds (multi-step + spacing) per additional
-   connection beyond the first. */
-:host([data-direction="in"]) {
-  height: calc(
-    var(--sherpa-node-socket-size) +
-    (var(--sherpa-node-socket-multi-step) + var(--sherpa-space-xs, 8px)) * (var(--_count) - 1)
-  );
-  min-height: var(--sherpa-node-socket-size);
-}
-
-/* Header input: circle/capsule shape that fills the (growing) host. */
+/* ── Input shape variants ─────────────────────────────────────── */
+/* Header input: pill / capsule (rounded both ends). */
 :host([data-location="header"][data-direction="in"]) .socket-shape {
-  width: var(--sherpa-node-socket-size);
-  height: 100%;
   border-radius: 999px;
 }
 
-/* Row input: D shape (flat spine on the left, curve on the right
-   facing into the node body). 1:1 base, fills the host height. */
+/* Row input: D shape — flat spine on the left, curve on the right
+   facing into the node body. */
 :host([data-location="row"][data-direction="in"]) .socket-shape {
-  width: var(--sherpa-node-socket-size);
-  height: 100%;
   border-radius: 0 999px 999px 0;
 }
 
 /* ── Output disconnected: square (purple/green/red border) ────── */
 :host([data-direction="out"]) .socket-shape {
   width: 14px;
+  min-width: 14px;
   height: 14px;
+  min-height: 14px;
   border-radius: 2px;
   clip-path: none;
 }
@@ -151,7 +147,9 @@
 /* ── Output connected: triangle, solid fill ────────────────────── */
 :host([data-direction="out"][data-connected]) .socket-shape {
   width: 14px;
+  min-width: 14px;
   height: 14px;
+  min-height: 14px;
   border-radius: 0;
   /* Solid fill (no internal border) — the triangle IS the colour. */
   background: var(--_socket-stroke);

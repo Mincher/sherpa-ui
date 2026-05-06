@@ -29,12 +29,36 @@
         "left",
         "right"
       ]
+    },
+    {
+      "name": "data-template",
+      "type": "enum",
+      "description": "default | paged",
+      "enumValues": [
+        "default",
+        "paged"
+      ]
+    },
+    {
+      "name": "data-page",
+      "type": "number",
+      "description": "(paged) Active 0-based page index"
+    },
+    {
+      "name": "data-pages",
+      "type": "number",
+      "description": "(paged) Total page count for the indicator"
+    },
+    {
+      "name": "data-animation",
+      "type": "enum",
+      "description": "none (default) | slide"
     }
   ],
   "slots": [
     {
       "name": "",
-      "description": "Default slot for body content"
+      "description": "Default slot for body content (paged: <section data-page=\"N\">)"
     },
     {
       "name": "icon",
@@ -52,6 +76,36 @@
       "bubbles": true,
       "composed": true,
       "detail": null
+    },
+    {
+      "name": "popover-page-change",
+      "description": "(paged) Fired after the active page changes.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "page": "number",
+        "total": "number"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "nextPage()",
+      "description": "(paged) Advance to the next page if available."
+    },
+    {
+      "name": "prevPage()",
+      "description": "(paged) Step back to the previous page if available."
+    },
+    {
+      "name": "setPage(index)",
+      "description": "(paged) Jump to a specific 0-based page.",
+      "params": [
+        {
+          "name": "index",
+          "type": "any"
+        }
+      ]
     }
   ]
 }

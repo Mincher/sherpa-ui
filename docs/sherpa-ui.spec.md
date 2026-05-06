@@ -1,63 +1,66 @@
 ---
-specKind: sdd
-scope: system
-status: draft
-lastUpdated: 2026-05-01
+
+specKind: sdd  
+scope: system  
+status: draft  
+lastUpdated: 2026-05-01  
 owners:
-  - "Design System Team"
-relatedSpecs:
-  - "docs/COMPONENT-GUIDELINES.md"
-  - "docs/COMPONENT-API-STANDARD.md"
-  - ".github/copilot-instructions.md"
-intendedAgents:
-  - planning
-  - implementation
-  - test-generation
-keywords:
-  - web-components
-  - design-system
-  - design-tokens
-  - shadow-dom
-  - mcp
-  - accessibility
+
+*   "Design System Team"  
+    relatedSpecs:
+*   "docs/COMPONENT-GUIDELINES.md"
+*   "docs/COMPONENT-API-STANDARD.md"
+*   ".github/copilot-instructions.md"  
+    intendedAgents:
+*   planning
+*   implementation
+*   test-generation  
+    keywords:
+*   web-components
+*   design-system
+*   design-tokens
+*   shadow-dom
+*   mcp
+*   accessibility
+
 ---
 
 # Sherpa UI — Spec
 
 ---
 
-## 1. TL;DR
+## 1\. TL;DR
 
-- **What:** Sherpa UI is a framework-agnostic web-component library, design-token system, and Model Context Protocol (MCP) server that together provide the visual language for N-able product surfaces.
-- **Who for:** Product engineers composing UIs across N-able apps, AI agents (e.g. Copilot, Claude) authoring those UIs, and library maintainers extending the system.
-- **Why now:** The architecture has stabilised through several refactor passes; this spec locks the current contract so future work and AI-assisted code generation can be checked against a single source of truth.
-- **Scope boundary:** Library only — components, tokens, utilities, patterns, build artifacts, and the MCP server. Application routing, state management, and product-specific business logic are out of scope.
-- **Status:** draft
+*   **What:** Sherpa UI is a framework-agnostic web-component library, design-token system, and Model Context Protocol (MCP) server that together provide the visual language for N-able product surfaces.
+*   **Who for:** Product engineers composing UIs across N-able apps, AI agents (e.g. Copilot, Claude) authoring those UIs, and library maintainers extending the system.
+*   **Why now:** The architecture has stabilised through several refactor passes; this spec locks the current contract so future work and AI-assisted code generation can be checked against a single source of truth.
+*   **Scope boundary:** Library only — components, tokens, utilities, patterns, build artifacts, and the MCP server. Application routing, state management, and product-specific business logic are out of scope.
+*   **Status:** draft
 
 ---
 
-## 2. Document control & conventions
+## 2\. Document control & conventions
 
 | Field | Value |
 | --- | --- |
 | Spec kind | **SDD** — Spec-Driven Design (requirements + acceptance + contracts; **not** the implementation plan) |
 | Scope | system |
 | Source of truth | This file is the source of truth for **what must be true** of the Sherpa UI library. |
-| Plan boundary | Implementation plans **SHALL** translate IDs from [section 9](#9-normative-requirements), [section 11](#11-acceptance-criteria), and [section 10](#10-contracts) into file-level *how* without re-authoring product intent. |
+| Plan boundary | Implementation plans **SHALL** translate IDs from [section 9](#9-normative-requirements), [section 11](#11-acceptance-criteria), and [section 10](#10-contracts) into file-level _how_ without re-authoring product intent. |
 
 ### 2.1 ID conventions
 
 | Prefix | Used for | Defined in |
 | --- | --- | --- |
 | `GLO-NN` | Glossary entry | [Section 4](#4-glossary--acronyms) |
-| `SC-NN`  | Success criterion | [Section 6](#6-goals-non-goals--success-metrics) |
+| `SC-NN` | Success criterion | [Section 6](#6-goals-non-goals--success-metrics) |
 | `ADR-NN` | Architectural Decision Record | [Section 8](#8-architectural-decisions-adrs) |
 | `REQ-NN` | Functional requirement | [Section 9.1](#91-functional-requirements-req-nn) |
 | `NFR-NN` | Non-functional requirement | [Section 9.2](#92-non-functional-requirements-nfr-nn) |
-| `REQ-1NN`| Engineering constraint | [Section 9.3](#93-engineering-constraints-req-1nn) |
+| `REQ-1NN` | Engineering constraint | [Section 9.3](#93-engineering-constraints-req-1nn) |
 | `CON-NN` | Contract | [Section 10](#10-contracts) |
-| `AC-NN`  | Acceptance criterion | [Section 11](#11-acceptance-criteria) |
-| `RISK-NN`| Risk | [Section 13](#13-risks-assumptions--open-questions) |
+| `AC-NN` | Acceptance criterion | [Section 11](#11-acceptance-criteria) |
+| `RISK-NN` | Risk | [Section 13](#13-risks-assumptions--open-questions) |
 
 ### 2.2 Normative language (RFC 2119)
 
@@ -69,23 +72,23 @@ Capitalised RFC 2119 keywords (**MUST**, **SHALL**, **MUST NOT**, **SHALL NOT**,
 
 ---
 
-## 3. Reading order for AI agents *(informative)*
+## 3\. Reading order for AI agents _(informative)_
 
-1. [Section 1 — TL;DR](#1-tldr)
-2. [Section 2 — Conventions](#2-document-control--conventions)
-3. [Section 4 — Glossary](#4-glossary--acronyms)
-4. [Section 6 — Goals & non-goals](#6-goals-non-goals--success-metrics)
-5. [Section 8 — ADRs](#8-architectural-decisions-adrs)
-6. [Section 9 — Requirements](#9-normative-requirements)
-7. [Section 11 — Acceptance criteria](#11-acceptance-criteria)
-8. [Section 10 — Contracts](#10-contracts)
-9. Appendices as needed
+1.  [Section 1 — TL;DR](#1-tldr)
+2.  [Section 2 — Conventions](#2-document-control--conventions)
+3.  [Section 4 — Glossary](#4-glossary--acronyms)
+4.  [Section 6 — Goals & non-goals](#6-goals-non-goals--success-metrics)
+5.  [Section 8 — ADRs](#8-architectural-decisions-adrs)
+6.  [Section 9 — Requirements](#9-normative-requirements)
+7.  [Section 11 — Acceptance criteria](#11-acceptance-criteria)
+8.  [Section 10 — Contracts](#10-contracts)
+9.  Appendices as needed
 
 Agents working through MCP can also call `get_architecture` for a condensed view of §8–§9.
 
 ---
 
-## 4. Glossary & acronyms
+## 4\. Glossary & acronyms
 
 | ID | Term | Definition |
 | --- | --- | --- |
@@ -105,7 +108,7 @@ Agents working through MCP can also call `get_architecture` for a condensed view
 | GLO-14 | `SherpaInputBase` | Base class for all form inputs. Builds the label/control/help wrapper and bridges native input events to the host. |
 | GLO-15 | `data-*` attribute pattern | Public component API uses `data-` prefixed HTML attributes (e.g. `data-variant`, `data-size`); CSS reads them via `:host([data-*])`. |
 | GLO-16 | Cloning prototype | A `<template class="*-tpl">` declared inside a component's HTML file and cloned at runtime to instantiate repeating structure (rows, segments, items). |
-| GLO-17 | Semantic token | A `--sherpa-*` CSS custom property that names *intent* (e.g. `--sherpa-surface-default`). Components consume only these. |
+| GLO-17 | Semantic token | A `--sherpa-*` CSS custom property that names _intent_ (e.g. `--sherpa-surface-default`). Components consume only these. |
 | GLO-18 | Core token | A `--sherpa-core-*` CSS custom property that names a raw value (e.g. `--sherpa-core-blue-500`). Components **MUST NOT** consume them directly. |
 | GLO-19 | Constructable stylesheet | A `CSSStyleSheet` instance shared across multiple shadow roots via `adoptedStyleSheets`. Sherpa caches one per `cssUrl`. |
 | GLO-20 | Flow | A composed CRUD interaction (add / edit / delete / export) coordinated by `FlowManager`, not a component. |
@@ -116,7 +119,7 @@ Agents working through MCP can also call `get_architecture` for a condensed view
 
 ---
 
-## 5. Background & problem *(informative)*
+## 5\. Background & problem _(informative)_
 
 N-able products historically diverged visually because each app team owned its own primitives. Sherpa UI consolidates those primitives into a single token-driven web-component library that any product can adopt without buying into a JavaScript framework or build pipeline.
 
@@ -126,25 +129,25 @@ This spec exists because the next wave of work (new components, AI-driven flows,
 
 ---
 
-## 6. Goals, non-goals & success metrics
+## 6\. Goals, non-goals & success metrics
 
 ### 6.1 Goals
 
-- A framework-agnostic component library usable from any HTML page via `<script type="module">`.
-- A consistent visual language driven by Figma-sourced semantic tokens.
-- Deterministic component shape (three files, one base class, one attribute pattern) so both humans and AI agents can author safely.
-- Full discoverability of every component, token, utility, and pattern through the MCP server.
-- Composable interactions: CRUD flows, exports, and dialogs assembled from existing components, never bespoke.
+*   A framework-agnostic component library usable from any HTML page via `<script type="module">`.
+*   A consistent visual language driven by Figma-sourced semantic tokens.
+*   Deterministic component shape (three files, one base class, one attribute pattern) so both humans and AI agents can author safely.
+*   Full discoverability of every component, token, utility, and pattern through the MCP server.
+*   Composable interactions: CRUD flows, exports, and dialogs assembled from existing components, never bespoke.
 
-### 6.2 Non-goals *(anti-speculation guard)*
+### 6.2 Non-goals _(anti-speculation guard)_
 
-- Application-level concerns: routing, global state, data fetching, auth.
-- Framework wrappers (React, Vue, Angular).
-- Server-side rendering or build-time CSS extraction.
-- A bundled JavaScript distribution; consumers bring their own bundler if they want one.
-- Visual-regression infrastructure or a dedicated test runner.
-- Animation / motion library beyond simple CSS transitions.
-- Shipping an icon font; consumers load Font Awesome themselves.
+*   Application-level concerns: routing, global state, data fetching, auth.
+*   Framework wrappers (React, Vue, Angular).
+*   Server-side rendering or build-time CSS extraction.
+*   A bundled JavaScript distribution; consumers bring their own bundler if they want one.
+*   Visual-regression infrastructure or a dedicated test runner.
+*   Animation / motion library beyond simple CSS transitions.
+*   Shipping an icon font; consumers load Font Awesome themselves.
 
 ### 6.3 Success criteria
 
@@ -159,7 +162,7 @@ This spec exists because the next wave of work (new components, AI-driven flows,
 
 ---
 
-## 7. Personas & user journeys
+## 7\. Personas & user journeys
 
 ### Persona A — Product Engineer
 
@@ -167,11 +170,11 @@ Goals: compose a feature view quickly using stable primitives. Pains: re-impleme
 
 #### Story P1.1 — Compose a view from existing components
 
-**Why this priority:** This is the dominant use case; the whole library exists for it.
+**Why this priority:** This is the dominant use case; the whole library exists for it.  
 **Independently testable by:** Engineer drops `<sherpa-view-header>`, `<sherpa-filter-bar>`, and `<sherpa-data-grid>` into a page and the result is visually consistent without writing custom CSS.
 
-1. **Given** a blank HTML page importing `components/index.js`, **When** the engineer adds three components with `data-*` attributes, **Then** the page renders with correct layout, tokens, and accessibility roles.
-2. **Given** the engineer needs a CRUD flow, **When** they wire `FlowManager` + `FormManager` to a `<sherpa-dialog>`, **Then** the flow lifecycle events fire with the documented `detail` shapes.
+1.  **Given** a blank HTML page importing `components/index.js`, **When** the engineer adds three components with `data-*` attributes, **Then** the page renders with correct layout, tokens, and accessibility roles.
+2.  **Given** the engineer needs a CRUD flow, **When** they wire `FlowManager` + `FormManager` to a `<sherpa-dialog>`, **Then** the flow lifecycle events fire with the documented `detail` shapes.
 
 ### Persona B — AI Agent
 
@@ -179,11 +182,11 @@ Goals: generate or modify UIs without hallucinating attribute names. Pains: outd
 
 #### Story P1.2 — Generate a flow via MCP
 
-**Why this priority:** AI-assisted authoring is a first-class consumer.
+**Why this priority:** AI-assisted authoring is a first-class consumer.  
 **Independently testable by:** Calling `generate_flow` produces HTML that passes `validate_usage`.
 
-1. **Given** an MCP-connected agent, **When** it calls `query_component` for a tag, **Then** the response includes attributes, events, slots, and source URIs.
-2. **Given** the agent needs library rules, **When** it calls `get_architecture`, **Then** it receives `.github/copilot-instructions.md` and `docs/COMPONENT-GUIDELINES.md` concatenated.
+1.  **Given** an MCP-connected agent, **When** it calls `query_component` for a tag, **Then** the response includes attributes, events, slots, and source URIs.
+2.  **Given** the agent needs library rules, **When** it calls `get_architecture`, **Then** it receives `.github/copilot-instructions.md` and `docs/COMPONENT-GUIDELINES.md` concatenated.
 
 ### Persona C — Library Maintainer
 
@@ -191,24 +194,24 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 
 #### Story P2.1 — Add a new component
 
-**Why this priority:** Sustains the library.
+**Why this priority:** Sustains the library.  
 **Independently testable by:** New component passes the §11 audit ACs and is picked up by `npm run schemas`.
 
 #### Story P3.1 — Switch theme at runtime
 
 **Why this priority:** Required for product theming but not on the critical path.
 
-1. **Given** a host page using `ThemeManager`, **When** the user toggles theme/mode/density, **Then** all components restyle without re-mounting and the choice persists in `localStorage`.
+1.  **Given** a host page using `ThemeManager`, **When** the user toggles theme/mode/density, **Then** all components restyle without re-mounting and the choice persists in `localStorage`.
 
 ### Edge cases
 
-- A consumer omits required `data-*` attributes — components render their default state without throwing.
-- Constructable stylesheets fail to load (offline / 404) — components still render content, only styling is missing.
-- An AI agent requests a non-existent component via MCP — the server returns a clear "unknown component" message rather than throwing.
+*   A consumer omits required `data-*` attributes — components render their default state without throwing.
+*   Constructable stylesheets fail to load (offline / 404) — components still render content, only styling is missing.
+*   An AI agent requests a non-existent component via MCP — the server returns a clear "unknown component" message rather than throwing.
 
 ---
 
-## 8. Architectural decisions (ADRs)
+## 8\. Architectural decisions (ADRs)
 
 ### ADR-01 — Web Components + Shadow DOM, no framework
 
@@ -219,7 +222,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | Options considered | A: React component library · B: Web Components · C: Multi-framework wrappers |
 | **Decision** | Build on the standard Custom Elements + Shadow DOM + HTML Templates platform; ship as ES modules. |
 | Rationale | Zero framework lock-in; encapsulated styles; loadable via plain `<script type="module">`. |
-| Consequences | + portable + small + future-proof · − requires polyfill-free evergreen browsers · − limited DX tooling vs framework-specific kits |
+| Consequences | \+ portable + small + future-proof · − requires polyfill-free evergreen browsers · − limited DX tooling vs framework-specific kits |
 | Linked requirements | REQ-01, REQ-02, REQ-101, REQ-103 |
 
 ### ADR-02 — Three-file split per component
@@ -230,7 +233,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | Context | Mixing structure, presentation, and behaviour in one file invites layer leakage. |
 | **Decision** | Each component lives in `components/<tag>/<tag>.{html,css,js}`. |
 | Rationale | Forces single responsibility per file; makes layer-violation reviews trivial. |
-| Consequences | + clear ownership · − three files to keep in sync per component |
+| Consequences | \+ clear ownership · − three files to keep in sync per component |
 | Linked requirements | REQ-01, REQ-21 |
 
 ### ADR-03 — CSS owns visibility via `:host([data-*])`
@@ -241,7 +244,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | Context | Toggling `.hidden` or `.style.display` from JS scattered visibility logic across layers. |
 | **Decision** | Visibility of internal shadow elements **SHALL** be driven by `:host([data-*])` selectors; JS only sets/removes attributes on the host. |
 | Rationale | One place to read the visual contract; no JS-driven flicker. |
-| Consequences | + declarative · − requires every conditional element to exist in the template up front |
+| Consequences | \+ declarative · − requires every conditional element to exist in the template up front |
 | Linked requirements | REQ-04, REQ-05 |
 
 ### ADR-04 — `data-*` attribute prefix mandatory
@@ -252,7 +255,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | Context | Bare custom attributes (`variant`, `size`) collide with future native HTML attributes and are invisible to standard CSS attribute selectors. |
 | **Decision** | All public component attributes **SHALL** use the `data-` prefix, except native semantics (`hidden`, `disabled`, `role`, `aria-*`, `id`, `slot`). |
 | Rationale | Future-proof; consistent attribute selectors; readable from JS via `dataset`. |
-| Consequences | + safe + consistent · − slightly more verbose markup |
+| Consequences | \+ safe + consistent · − slightly more verbose markup |
 | Linked requirements | REQ-06 |
 
 ### ADR-05 — Semantic tokens only in component CSS
@@ -262,7 +265,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | Status | accepted |
 | **Decision** | Component CSS **SHALL** consume only semantic tokens (`--sherpa-*`). Core tokens (`--sherpa-core-*`) are reserved for the alias layer. |
 | Rationale | Theming and rebranding happen at the alias layer; components stay theme-agnostic. |
-| Consequences | + theme-portable · − requires alias layer for every visual concept |
+| Consequences | \+ theme-portable · − requires alias layer for every visual concept |
 | Linked requirements | REQ-07, REQ-08 |
 
 ### ADR-06 — Cloning template prototypes over `createElement` / `innerHTML`
@@ -273,7 +276,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | Context | Building structural DOM in JS hides the rendered shape from reviewers and AI agents. |
 | **Decision** | Repeating structure **SHALL** be authored as `<template class="*-tpl">` in the component HTML and cloned per use. |
 | Rationale | Template is the single source of truth for shape. |
-| Consequences | + reviewable · − an extra clone step in JS |
+| Consequences | \+ reviewable · − an extra clone step in JS |
 | Linked requirements | REQ-04 |
 
 ### ADR-07 — Custom events bubble; cross shadow only when needed
@@ -332,7 +335,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 
 ---
 
-## 9. Normative requirements
+## 9\. Normative requirements
 
 ### 9.1 Functional requirements (`REQ-NN`)
 
@@ -390,7 +393,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 
 ---
 
-## 10. Contracts
+## 10\. Contracts
 
 ### 10.1 Contract index
 
@@ -404,50 +407,50 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 
 ### 10.2 Persistence contract
 
-- **Shape:** `ThemeManager` reads/writes `theme`, `mode`, and `density` keys.
-- **Storage:** `localStorage`, keys prefixed with `sherpa-` (e.g. `sherpa-theme`, `sherpa-mode`, `sherpa-density`).
-- **Default value:** when no record exists, the defaults defined by `ThemeManager` apply.
-- **Scope:** per-origin; no cross-device sync.
+*   **Shape:** `ThemeManager` reads/writes `theme`, `mode`, and `density` keys.
+*   **Storage:** `localStorage`, keys prefixed with `sherpa-` (e.g. `sherpa-theme`, `sherpa-mode`, `sherpa-density`).
+*   **Default value:** when no record exists, the defaults defined by `ThemeManager` apply.
+*   **Scope:** per-origin; no cross-device sync.
 
 ### 10.3 UI contract
 
-- **Public surface:** `data-*` attributes on the host element; named `<slot>` elements; CSS parts where exposed (`::part(...)`); CSS custom properties prefixed `--sherpa-*` for theming and `--_*` for component-private knobs.
-- **Auto-set host attributes:** `data-has-{slotName}` is added by `SherpaElement` when a named slot has assigned nodes.
-- **States:** visible / hidden / loading / error / disabled — all driven by host `data-*` attributes consumed by `:host([data-*])` selectors.
-- **Stable selectors for tests:** internal class names documented in each component's CSS file header; consumers **SHOULD** use `data-e2e="..."` on host elements rather than reaching into shadow internals.
+*   **Public surface:** `data-*` attributes on the host element; named `<slot>` elements; CSS parts where exposed (`::part(...)`); CSS custom properties prefixed `--sherpa-*` for theming and `--_*` for component-private knobs.
+*   **Auto-set host attributes:** `data-has-{slotName}` is added by `SherpaElement` when a named slot has assigned nodes.
+*   **States:** visible / hidden / loading / error / disabled — all driven by host `data-*` attributes consumed by `:host([data-*])` selectors.
+*   **Stable selectors for tests:** internal class names documented in each component's CSS file header; consumers **SHOULD** use `data-e2e="..."` on host elements rather than reaching into shadow internals.
 
 ### 10.4 API / event contract
 
-- **Naming:** custom event types are kebab-case `<verb>-<noun>` (e.g. `button-click`, `selection-change`, `row-action`, `flow-start`).
-- **Propagation:** `bubbles: true` always; `composed: true` for events that must escape the host's shadow tree (flow events, form value changes).
-- **Detail shape:** documented per component in JSDoc `@fires` blocks; flow events use `{ flow, entity, data?, error? }`.
-- **Idempotency:** dispatched events do not retry; consumers debounce / dedupe as needed.
-- **Inputs:** components read from `data-*` attributes, slot content, and (for inputs) value setters; no global event bus.
+*   **Naming:** custom event types are kebab-case `<verb>-<noun>` (e.g. `button-click`, `selection-change`, `row-action`, `flow-start`).
+*   **Propagation:** `bubbles: true` always; `composed: true` for events that must escape the host's shadow tree (flow events, form value changes).
+*   **Detail shape:** documented per component in JSDoc `@fires` blocks; flow events use `{ flow, entity, data?, error? }`.
+*   **Idempotency:** dispatched events do not retry; consumers debounce / dedupe as needed.
+*   **Inputs:** components read from `data-*` attributes, slot content, and (for inputs) value setters; no global event bus.
 
 ### 10.5 Gating / composition contract
 
-- **Theme cascade:** `ThemeManager` writes `data-theme`, `data-mode`, `data-density` on the document element; tokens defined for those attribute selectors flow through shadow boundaries via inheritable custom properties.
-- **Status cascade:** any ancestor with `[data-status="success|info|warning|critical"]` defines `--_status-*` custom properties that components inherit and consume through fallback chains.
-- **Truth table (status):** `data-status="warning"` on an ancestor → all descendant components that consume `var(--_status-surface, ...)` etc. render with warning visuals, no per-component override needed.
+*   **Theme cascade:** `ThemeManager` writes `data-theme`, `data-mode`, `data-density` on the document element; tokens defined for those attribute selectors flow through shadow boundaries via inheritable custom properties.
+*   **Status cascade:** any ancestor with `[data-status="success|info|warning|critical"]` defines `--_status-*` custom properties that components inherit and consume through fallback chains.
+*   **Truth table (status):** `data-status="warning"` on an ancestor → all descendant components that consume `var(--_status-surface, ...)` etc. render with warning visuals, no per-component override needed.
 
 ### 10.6 Observability contract
 
-- **MCP tools:** schemas, sources, tokens, utilities, patterns, and architecture rules are queryable through registered tools.
-- **MCP resources:** `sherpa://schema/{tag}`, `sherpa://template/{tag}`, `sherpa://component/{tag}/{kind}`, `sherpa://utility/{id}`, `sherpa://pattern/{id}`, `sherpa://guidelines/{slug}`.
-- **Custom events** are the runtime observability surface (see CON-03).
-- **Generated artifacts:** [`components/COMPONENT-API.md`](../components/COMPONENT-API.md), `schemas/components/*.json`, `patterns/index.json`, per-component `README.md`.
+*   **MCP tools:** schemas, sources, tokens, utilities, patterns, and architecture rules are queryable through registered tools.
+*   **MCP resources:** `sherpa://schema/{tag}`, `sherpa://template/{tag}`, `sherpa://component/{tag}/{kind}`, `sherpa://utility/{id}`, `sherpa://pattern/{id}`, `sherpa://guidelines/{slug}`.
+*   **Custom events** are the runtime observability surface (see CON-03).
+*   **Generated artifacts:** [`components/COMPONENT-API.md`](../components/COMPONENT-API.md), `schemas/components/*.json`, `patterns/index.json`, per-component `README.md`.
 
 ---
 
-## 11. Acceptance criteria
+## 11\. Acceptance criteria
 
 | ID | Given | When | Then | Maps to |
 | --- | --- | --- | --- | --- |
 | AC-01 | Any directory under `components/` matching `sherpa-*` | listing its files | exactly one `<tag>.html`, one `<tag>.css`, and one `<tag>.js` exist | REQ-01 |
 | AC-02 | Any component JS file | parsing its class declaration | the class extends `SherpaElement` and declares `cssUrl` + `htmlUrl` getters | REQ-02 |
 | AC-03 | Any component HTML file | parsing top-level templates | a `<template id="default">` is present | REQ-03 |
-| AC-04 | Any component JS file | grepping for `innerHTML\s*=\s*[`'\"]<` or `document\.createElement\(['\"](?!template)` | no matches for structural DOM creation are found | REQ-04 |
-| AC-05 | Any component JS file | grepping for `\.hidden\s*=`, `\.style\.display`, or `classList\.(add\|remove\|toggle)` on `this.$(...)` results | no matches that gate visual state are found | REQ-05 |
+| AC-04 | Any component JS file | grepping for `innerHTML\s*=\s*[`'"\]\<`or`document.createElement(['"](?!template)\` | no matches for structural DOM creation are found | REQ-04 |
+| AC-05 | Any component JS file | grepping for `\.hidden\s*=`, `\.style\.display`, or `classList\.(add|remove|toggle)` on `this.$(...)` results | no matches that gate visual state are found | REQ-05 |
 | AC-06 | Any component HTML template | inspecting host attributes used in selectors | every public attribute uses the `data-` prefix or is a recognised native attribute | REQ-06 |
 | AC-07 | Any component CSS file | grepping for `--sherpa-core-` | no matches are found | REQ-07 |
 | AC-08 | Any `var(--sherpa-...)` reference in component CSS | inspecting the call | a fallback argument is present | REQ-08 |
@@ -474,22 +477,22 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 
 ---
 
-## 12. Out of scope *(normative negative requirements)*
+## 12\. Out of scope _(normative negative requirements)_
 
 The implementation **SHALL NOT** include:
 
-- Framework-specific wrappers (React, Vue, Angular, Svelte).
-- Server-side rendering, build-time CSS extraction, or a bundled distribution.
-- Application concerns: routing, global state managers, authentication, data fetching.
-- Visual-regression test infrastructure or a dedicated test runner.
-- An animation / motion library beyond CSS transitions on tokens.
-- A bundled icon font; consumers load Font Awesome themselves.
-- Polyfills for browsers that do not support Custom Elements, Shadow DOM, or Constructable Stylesheets.
-- A `<sherpa-flow>` component (flows are composed — see ADR-11).
+*   Framework-specific wrappers (React, Vue, Angular, Svelte).
+*   Server-side rendering, build-time CSS extraction, or a bundled distribution.
+*   Application concerns: routing, global state managers, authentication, data fetching.
+*   Visual-regression test infrastructure or a dedicated test runner.
+*   An animation / motion library beyond CSS transitions on tokens.
+*   A bundled icon font; consumers load Font Awesome themselves.
+*   Polyfills for browsers that do not support Custom Elements, Shadow DOM, or Constructable Stylesheets.
+*   A `<sherpa-flow>` component (flows are composed — see ADR-11).
 
 ---
 
-## 13. Risks, assumptions & open questions
+## 13\. Risks, assumptions & open questions
 
 ### 13.1 Risks
 
@@ -503,27 +506,27 @@ The implementation **SHALL NOT** include:
 
 ### 13.2 Assumptions
 
-- Consumers run evergreen Chromium, Firefox, or Safari.
-- Consumers bring their own bundler if they want one; native ESM is the default delivery.
-- Font Awesome is loaded by the host page; the library declares classes and unicode constants but does not ship glyphs.
-- Figma token exports are the canonical source for `--sherpa-core-*`; CSS edits in the primitives layer are not the source of truth.
+*   Consumers run evergreen Chromium, Firefox, or Safari.
+*   Consumers bring their own bundler if they want one; native ESM is the default delivery.
+*   Font Awesome is loaded by the host page; the library declares classes and unicode constants but does not ship glyphs.
+*   Figma token exports are the canonical source for `--sherpa-core-*`; CSS edits in the primitives layer are not the source of truth.
 
 ### 13.3 Open questions
 
 | Marker | Question | Owner | Needed before |
 | --- | --- | --- | --- |
-| *(none)* | — | — | — |
+| _(none)_ | — | — | — |
 
 ---
 
-## 14. Verification matrix
+## 14\. Verification matrix
 
 | AC | Evidence type | Notes |
 | --- | --- | --- |
 | AC-01 | source-tree audit | `find components -mindepth 1 -maxdepth 1 -type d -name 'sherpa-*'` then assert three files |
 | AC-02 | source-tree audit | grep for `extends SherpaElement` and `static get cssUrl` per JS file |
 | AC-03 | source-tree audit | grep for `<template id="default">` per HTML file |
-| AC-04 | source-tree audit | regex grep for `innerHTML\s*=\s*[`'"]<` and structural `createElement` |
+| AC-04 | source-tree audit | regex grep for `innerHTML\s*=\s*[`'"\]\<`and structural`createElement\` |
 | AC-05 | source-tree audit | regex grep for forbidden visibility toggles |
 | AC-06 | source-tree audit | parse host attributes from each `.html` |
 | AC-07 | source-tree audit | grep `--sherpa-core-` under `components/**/*.css` |
@@ -551,53 +554,53 @@ The implementation **SHALL NOT** include:
 
 ---
 
-## 15. Traceability matrix
+## 15\. Traceability matrix
 
 | REQ / NFR | AC(s) | Contract(s) | ADR(s) | Tracker ticket |
 | --- | --- | --- | --- | --- |
-| REQ-01 | AC-01 | CON-02 | ADR-02 | <…> |
-| REQ-02 | AC-02 | CON-02 | ADR-01, ADR-02 | <…> |
-| REQ-03 | AC-03 | CON-02 | ADR-02 | <…> |
-| REQ-04 | AC-04 | CON-02 | ADR-06 | <…> |
-| REQ-05 | AC-05 | CON-02 | ADR-03 | <…> |
-| REQ-06 | AC-06 | CON-02 | ADR-04 | <…> |
-| REQ-07 | AC-07 | CON-02 | ADR-05 | <…> |
-| REQ-08 | AC-08 | CON-02 | ADR-05 | <…> |
-| REQ-09 | AC-09 | CON-03 | ADR-07 | <…> |
-| REQ-10 | AC-10 | CON-02 | — | <…> |
-| REQ-11 | AC-11 | CON-03 | ADR-11 | <…> |
-| REQ-12 | AC-12 | CON-02 | — | <…> |
-| REQ-13 | AC-13 | CON-05 | ADR-09 | <…> |
-| REQ-14 | AC-14 | CON-05 | ADR-09 | <…> |
-| REQ-15 | AC-15 | CON-05 | ADR-09 | <…> |
-| REQ-16 | AC-16 | CON-05 | — | <…> |
-| REQ-17 | AC-17 | CON-05 | — | <…> |
-| REQ-18 | AC-18 | CON-05 | — | <…> |
-| REQ-19 | AC-19 | CON-02 | — | <…> |
-| REQ-20 | AC-20 | CON-02 | — | <…> |
-| REQ-21 | AC-21 | CON-05 | — | <…> |
-| REQ-22 | AC-22 | CON-01, CON-04 | — | <…> |
-| REQ-23 | AC-23 | CON-04 | ADR-12 | <…> |
-| REQ-24 | AC-24 | CON-02 | ADR-10 | <…> |
-| REQ-25 | AC-16, AC-17, AC-18, AC-21 | CON-05 | — | <…> |
-| REQ-101 | AC-27 | — | ADR-01 | <…> |
-| REQ-102 | AC-28 | — | ADR-01 | <…> |
-| REQ-103 | AC-27 | — | ADR-01 | <…> |
-| REQ-104 | AC-16, AC-17, AC-18 | — | — | <…> |
-| REQ-105 | AC-16, AC-17, AC-18 | CON-05 | — | <…> |
-| REQ-106 | AC-26 | — | — | <…> |
-| NFR-01 | manual review | — | ADR-08 | <…> |
-| NFR-02 | AC-04 | CON-02 | — | <…> |
-| NFR-03 | AC-22 (focus visibility) + manual a11y | CON-02 | — | <…> |
-| NFR-04 | manual review | CON-02 | — | <…> |
-| NFR-05 | AC-09 | CON-03 | ADR-07 | <…> |
-| NFR-06 | manual QA | — | ADR-01 | <…> |
-| NFR-07 | manual QA | — | ADR-08 | <…> |
-| NFR-08 | AC-13, AC-14, AC-15, AC-25 | CON-05 | ADR-09 | <…> |
+| REQ-01 | AC-01 | CON-02 | ADR-02 | \<…> |
+| REQ-02 | AC-02 | CON-02 | ADR-01, ADR-02 | \<…> |
+| REQ-03 | AC-03 | CON-02 | ADR-02 | \<…> |
+| REQ-04 | AC-04 | CON-02 | ADR-06 | \<…> |
+| REQ-05 | AC-05 | CON-02 | ADR-03 | \<…> |
+| REQ-06 | AC-06 | CON-02 | ADR-04 | \<…> |
+| REQ-07 | AC-07 | CON-02 | ADR-05 | \<…> |
+| REQ-08 | AC-08 | CON-02 | ADR-05 | \<…> |
+| REQ-09 | AC-09 | CON-03 | ADR-07 | \<…> |
+| REQ-10 | AC-10 | CON-02 | — | \<…> |
+| REQ-11 | AC-11 | CON-03 | ADR-11 | \<…> |
+| REQ-12 | AC-12 | CON-02 | — | \<…> |
+| REQ-13 | AC-13 | CON-05 | ADR-09 | \<…> |
+| REQ-14 | AC-14 | CON-05 | ADR-09 | \<…> |
+| REQ-15 | AC-15 | CON-05 | ADR-09 | \<…> |
+| REQ-16 | AC-16 | CON-05 | — | \<…> |
+| REQ-17 | AC-17 | CON-05 | — | \<…> |
+| REQ-18 | AC-18 | CON-05 | — | \<…> |
+| REQ-19 | AC-19 | CON-02 | — | \<…> |
+| REQ-20 | AC-20 | CON-02 | — | \<…> |
+| REQ-21 | AC-21 | CON-05 | — | \<…> |
+| REQ-22 | AC-22 | CON-01, CON-04 | — | \<…> |
+| REQ-23 | AC-23 | CON-04 | ADR-12 | \<…> |
+| REQ-24 | AC-24 | CON-02 | ADR-10 | \<…> |
+| REQ-25 | AC-16, AC-17, AC-18, AC-21 | CON-05 | — | \<…> |
+| REQ-101 | AC-27 | — | ADR-01 | \<…> |
+| REQ-102 | AC-28 | — | ADR-01 | \<…> |
+| REQ-103 | AC-27 | — | ADR-01 | \<…> |
+| REQ-104 | AC-16, AC-17, AC-18 | — | — | \<…> |
+| REQ-105 | AC-16, AC-17, AC-18 | CON-05 | — | \<…> |
+| REQ-106 | AC-26 | — | — | \<…> |
+| NFR-01 | manual review | — | ADR-08 | \<…> |
+| NFR-02 | AC-04 | CON-02 | — | \<…> |
+| NFR-03 | AC-22 (focus visibility) + manual a11y | CON-02 | — | \<…> |
+| NFR-04 | manual review | CON-02 | — | \<…> |
+| NFR-05 | AC-09 | CON-03 | ADR-07 | \<…> |
+| NFR-06 | manual QA | — | ADR-01 | \<…> |
+| NFR-07 | manual QA | — | ADR-08 | \<…> |
+| NFR-08 | AC-13, AC-14, AC-15, AC-25 | CON-05 | ADR-09 | \<…> |
 
 ---
 
-## 16. Compliance & cross-cutting specs *(by reference)*
+## 16\. Compliance & cross-cutting specs _(by reference)_
 
 | Topic | Spec |
 | --- | --- |
@@ -612,43 +615,43 @@ The implementation **SHALL NOT** include:
 
 ---
 
-## 17. Implementation plan handoff
+## 17\. Implementation plan handoff
 
 The plan is a **separate** document. It translates IDs from this spec into file-level changes and tasks. Plans **SHALL** cite REQ / NFR / AC IDs and **SHALL NOT** restate sections [5](#5-background--problem-informative), [6](#6-goals-non-goals--success-metrics), or [12](#12-out-of-scope-normative-negative-requirements) in prose.
 
-- **Plan location:** `plans/sherpa-ui-<slug>.md`
-- **Inputs the plan must record:** path to this spec + revision (`lastUpdated` value or git SHA).
-- **Plan must contain:** task list mapped to AC IDs, file list per task, commit message convention, and any cross-cutting flags it touches.
+*   **Plan location:** `plans/sherpa-ui-<slug>.md`
+*   **Inputs the plan must record:** path to this spec + revision (`lastUpdated` value or git SHA).
+*   **Plan must contain:** task list mapped to AC IDs, file list per task, commit message convention, and any cross-cutting flags it touches.
 
 Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expects multiple plans authored over time.
 
 ---
 
-## 18. Self-review checklist
+## 18\. Self-review checklist
 
-- [x] No `[NEEDS CLARIFICATION]` markers remain.
-- [x] Every `REQ-` and `NFR-` has at least one `AC-` (or a manual-review entry) in §11/§15.
-- [x] Every `AC-` maps to at least one `REQ-` or `NFR-`.
-- [x] Sections 5–9 contain no implementation file paths in normative text (paths only appear in references and appendices).
-- [x] Every acronym used appears in §4 before its first use.
-- [x] Non-goals are stated explicitly in §6.2 and §12.
-- [x] No speculative requirements; each REQ traces to a story or non-functional driver.
-- [x] Verification evidence is chosen for every AC in §14.
-- [x] Traceability matrix §15 is up to date.
-- [x] Cross-cutting concerns are linked, not duplicated, in §16.
-- [x] Plan handoff §17 points to the conventional plan path.
+*   No `[NEEDS CLARIFICATION]` markers remain.
+*   Every `REQ-` and `NFR-` has at least one `AC-` (or a manual-review entry) in §11/§15.
+*   Every `AC-` maps to at least one `REQ-` or `NFR-`.
+*   Sections 5–9 contain no implementation file paths in normative text (paths only appear in references and appendices).
+*   Every acronym used appears in §4 before its first use.
+*   Non-goals are stated explicitly in §6.2 and §12.
+*   No speculative requirements; each REQ traces to a story or non-functional driver.
+*   Verification evidence is chosen for every AC in §14.
+*   Traceability matrix §15 is up to date.
+*   Cross-cutting concerns are linked, not duplicated, in §16.
+*   Plan handoff §17 points to the conventional plan path.
 
 ---
 
-## 19. Changelog
+## 19\. Changelog
 
 ### 2026-05-01 — initial AS-IS draft
 
-- Initial draft codifying the current Sherpa UI architecture as the source of truth.
+*   Initial draft codifying the current Sherpa UI architecture as the source of truth.
 
 ---
 
-## 20. Appendices
+## 20\. Appendices
 
 ### Appendix A — Module catalog
 
@@ -720,7 +723,7 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 #### B.2 Schema shape (per component)
 
-```json
+```
 {
   "tagName": "sherpa-button",
   "summary": "...",
@@ -749,22 +752,22 @@ State is held in JS memory (not in DOM attributes). Each transition emits a cust
 
 #### C.1 Attribute conventions
 
-- Public attributes: `data-<name>` kebab-case (`data-variant`, `data-icon-start`).
-- Slot occupancy markers: `data-has-<slotName>` (set by `SherpaElement`).
-- Status cascade: `data-status` on any ancestor.
-- PDF / export modes: `data-pdf-mode` for components with print-specific layouts.
+*   Public attributes: `data-<name>` kebab-case (`data-variant`, `data-icon-start`).
+*   Slot occupancy markers: `data-has-<slotName>` (set by `SherpaElement`).
+*   Status cascade: `data-status` on any ancestor.
+*   PDF / export modes: `data-pdf-mode` for components with print-specific layouts.
 
 #### C.2 Event naming
 
-- `<verb>-<noun>` kebab-case: `button-click`, `selection-change`, `row-action`, `filter-change`, `flow-start`.
-- Always `bubbles: true`; add `composed: true` when crossing shadow boundaries.
-- Detail shapes documented per component via JSDoc `@fires`.
+*   `<verb>-<noun>` kebab-case: `button-click`, `selection-change`, `row-action`, `filter-change`, `flow-start`.
+*   Always `bubbles: true`; add `composed: true` when crossing shadow boundaries.
+*   Detail shapes documented per component via JSDoc `@fires`.
 
 #### C.3 Flow event detail shapes
 
 | Event | Detail |
 | --- | --- |
-| `flow-start` | `{ flow: "add"\|"edit"\|"delete", entity: string }` |
+| `flow-start` | `{ flow: "add"|"edit"|"delete", entity: string }` |
 | `flow-progress` | `{ flow, entity, data: object }` |
 | `flow-complete` | `{ flow, entity, data: object }` |
 | `flow-cancel` | `{ flow, entity }` |
@@ -774,22 +777,22 @@ State is held in JS memory (not in DOM attributes). Each transition emits a cust
 
 For new contributors and AI agents extending the library:
 
-1. **Tokens** — Figma export → `figma-tokens/` → `css/styles/sherpa-primitives.css` → alias / theme layers.
-2. **Base classes** — `components/utilities/sherpa-element/`, then `components/utilities/sherpa-input-base/`.
-3. **Cross-cutting utilities** — `flow-manager`, `form-manager`, `theme-manager`, `status-mixin`, `stylesheet-cache`, formatters.
-4. **Primitives** — `sherpa-button`, `sherpa-input-*`, `sherpa-dialog`, `sherpa-tooltip`, `sherpa-popover`, `sherpa-tag`, `sherpa-loader`.
-5. **Composites** — `sherpa-data-grid`, `sherpa-nav`, `sherpa-view-header`, `sherpa-filter-bar`, `sherpa-toolbar`, `sherpa-section-nav`.
-6. **Visualisation** — chart family.
-7. **Patterns** — `patterns/<category>/<id>.html`.
-8. **MCP** — `mcp-server/index.js` (tools / resources / prompts).
-9. **Build artifacts** — re-run `npm run build` to regenerate schemas, READMEs, indices.
+1.  **Tokens** — Figma export → `figma-tokens/` → `css/styles/sherpa-primitives.css` → alias / theme layers.
+2.  **Base classes** — `components/utilities/sherpa-element/`, then `components/utilities/sherpa-input-base/`.
+3.  **Cross-cutting utilities** — `flow-manager`, `form-manager`, `theme-manager`, `status-mixin`, `stylesheet-cache`, formatters.
+4.  **Primitives** — `sherpa-button`, `sherpa-input-*`, `sherpa-dialog`, `sherpa-tooltip`, `sherpa-popover`, `sherpa-tag`, `sherpa-loader`.
+5.  **Composites** — `sherpa-data-grid`, `sherpa-nav`, `sherpa-view-header`, `sherpa-filter-bar`, `sherpa-toolbar`, `sherpa-section-nav`.
+6.  **Visualisation** — chart family.
+7.  **Patterns** — `patterns/<category>/<id>.html`.
+8.  **MCP** — `mcp-server/index.js` (tools / resources / prompts).
+9.  **Build artifacts** — re-run `npm run build` to regenerate schemas, READMEs, indices.
 
-### Appendix E — Foundational reference *(informative)*
+### Appendix E — Foundational reference _(informative)_
 
-- MDN Web Components — Custom Elements, Shadow DOM, HTML Templates.
-- Constructable Stylesheets specification (`adoptedStyleSheets`).
-- CSS Containment Module — `@container` queries.
-- RFC 2119 — normative keywords.
-- WCAG 2.2 AA — accessibility baseline.
-- Model Context Protocol (`@modelcontextprotocol/sdk`) — JSON-RPC over stdio.
-- Figma Variables JSON — token export schema feeding `figma-tokens/`.
+*   MDN Web Components — Custom Elements, Shadow DOM, HTML Templates.
+*   Constructable Stylesheets specification (`adoptedStyleSheets`).
+*   CSS Containment Module — `@container` queries.
+*   RFC 2119 — normative keywords.
+*   WCAG 2.2 AA — accessibility baseline.
+*   Model Context Protocol (`@modelcontextprotocol/sdk`) — JSON-RPC over stdio.
+*   Figma Variables JSON — token export schema feeding `figma-tokens/`.

@@ -1,36 +1,79 @@
 # sherpa-chat-message
 
-Single chat bubble. Two roles — `user` (right-aligned, accent fill)
-and `ai` (left-aligned with a gradient avatar mark, neutral bubble).
+> **Category:** core · **Base class:** SherpaElement
 
-## Usage
-
-```html
-<sherpa-chat-message data-role="user">
-  Where does the cat sit?
-</sherpa-chat-message>
-
-<sherpa-chat-message
-  data-role="ai"
-  data-avatar-icon="fa-solid fa-wand-magic-sparkles">
-  On the mat.
-</sherpa-chat-message>
-```
+Chat bubble for AI / messaging surfaces.
 
 ## Attributes
 
-| Attribute          | Values         | Default | Description                            |
-| ------------------ | -------------- | ------- | -------------------------------------- |
-| `data-role`        | `user` \| `ai` | `ai`    | Drives layout side and bubble colours. |
-| `data-avatar-icon` | FA class       | —       | Default avatar glyph (ai role only).   |
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data` | enum | role         "user" \| "ai" (default "ai"). | — | — |
+| `data-avatar` | string | icon  Font Awesome class for the | — | — |
 
 ## Slots
 
-| Slot      | Notes                                       |
-| --------- | ------------------------------------------- |
-| (default) | Bubble body content.                        |
-| `avatar`  | Custom avatar (image / element). Suppresses the default icon. |
+| Slot | Description |
+| ---- | ----------- |
+| `avatar` | Custom avatar content. Suppresses the default icon. |
+| `(default)` | Bubble body content. |
 
-## Parts
+Slot usage:
 
-`message`, `avatar`, `bubble`.
+```html
+<sherpa-chat-message>
+  <!-- Default slot -->
+  <p>Content goes here</p>
+  <div slot="avatar"><!-- Custom avatar content. Suppresses the default icon. --></div>
+</sherpa-chat-message>
+```
+
+## Properties
+
+| Property | Type | Description | Access |
+| -------- | ---- | ----------- | ------ |
+| `role` | `string` | Getter/setter for data-role. | read/write |
+
+## CSS Parts
+
+Style internal elements from outside the shadow DOM:
+
+- `message`
+- `avatar`
+- `bubble`
+
+```css
+sherpa-chat-message::part(message) {
+  /* custom styles */
+}
+```
+
+## Usage
+
+### Basic
+
+```html
+<sherpa-chat-message data-avatar="value">
+  <!-- Default slot content -->
+  <p>Your content here</p>
+  <span slot="avatar"><!-- Custom avatar content. Suppresses the default icon. --></span>
+</sherpa-chat-message>
+```
+
+## Import
+
+```js
+// Individual import
+import "sherpa-ui/components/sherpa-chat-message/sherpa-chat-message.js";
+
+// Or import everything
+import "sherpa-ui";
+```
+
+## Files
+
+| File | Purpose |
+| ---- | ------- |
+| [`sherpa-chat-message.js`](sherpa-chat-message.js) | Component class, lifecycle, events |
+| [`sherpa-chat-message.css`](sherpa-chat-message.css) | Styles, variants, states |
+| [`sherpa-chat-message.html`](sherpa-chat-message.html) | Shadow DOM template(s) |

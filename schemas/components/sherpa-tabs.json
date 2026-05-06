@@ -8,12 +8,21 @@
       "name": "data-active-tab",
       "type": "number",
       "description": "Zero-based index of the selected tab"
+    },
+    {
+      "name": "data-load-mode",
+      "type": "enum",
+      "description": "eager (default, all panels rendered) | lazy (panels populated on first activation)"
     }
   ],
   "slots": [
     {
       "name": "",
       "description": "Default slot for tab panel children (each must have data-tab-label)"
+    },
+    {
+      "name": "detail",
+      "description": "Trailing content shown to the right of the tab strip (badges, actions)"
     }
   ],
   "events": [
@@ -26,6 +35,17 @@
         "index": "number",
         "label": "string",
         "previousIndex": "number"
+      }
+    },
+    {
+      "name": "tab-load",
+      "description": "(lazy) Fired the first time a tab becomes active. Consumers",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "index": "number",
+        "label": "string",
+        "panel": "HTMLElement"
       }
     }
   ],

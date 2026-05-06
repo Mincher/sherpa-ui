@@ -1,0 +1,35 @@
+{
+  "tagName": "sherpa-proposal-preview",
+  "description": "Agent proposal renderer.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data",
+      "type": "string",
+      "description": "rationale]  Italic rationale shown above the ops."
+    }
+  ],
+  "slots": [
+    {
+      "name": "ops",
+      "description": "One <sherpa-proposal-op> per change."
+    },
+    {
+      "name": "raw",
+      "description": "Raw proposal payload (typically a <pre>)."
+    },
+    {
+      "name": "decision",
+      "description": "Decision controls (typically <sherpa-button> trio)."
+    }
+  ],
+  "events": [],
+  "properties": [
+    {
+      "name": "rationale",
+      "type": "string",
+      "description": "Getter/setter for data-rationale."
+    }
+  ]
+}

@@ -4,6 +4,13 @@
 
 Basic text input. Inherits label, description, helper, layout, validation, and value management from SherpaInputBase.
 
+## Templates
+
+Available templates:
+
+- `default`
+- `multiline`
+
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
@@ -22,6 +29,7 @@ Basic text input. Inherits label, description, helper, layout, validation, and v
 | `minlength` | number | Minimum character length (inherited) | — | — |
 | `maxlength` | number | Maximum character length (inherited) | — | — |
 | `novalidate` | boolean | Disable built-in validation (inherited) | — | — |
+| `data-multiline` | boolean | Render as an auto-growing textarea | — | — |
 
 ## Events
 

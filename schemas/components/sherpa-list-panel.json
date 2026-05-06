@@ -1,0 +1,52 @@
+{
+  "tagName": "sherpa-list-panel",
+  "description": "Searchable panel that wraps consumer-projected list content. Composes sherpa-input-search at the top; the search field string-matches text within slotted children (similar to sherpa-nav search). Items whose text does not contain the filter are hidden via the native `hidden` attribute on the light-DOM element. Matched text is highlighted via the CSS Highlight API (`::highlight(list-panel-match)`).",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-match",
+      "type": "string",
+      "description": "item] CSS selector identifying the",
+      "default": "sherpa-list"
+    },
+    {
+      "name": "data",
+      "type": "string",
+      "description": "empty=\"No results\"]      Empty-state message shown when"
+    },
+    {
+      "name": "data",
+      "type": "flag",
+      "description": "bordered]                Adds a rounded outer border."
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Panel body content (typically <sherpa-list> blocks"
+    },
+    {
+      "name": "search",
+      "description": "Optional override for the default sherpa-input-search."
+    }
+  ],
+  "events": [
+    {
+      "name": "list-panel-search",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string",
+        "matchCount": "number"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "clearSearch()",
+      "description": "Clear the search field and reset visibility."
+    }
+  ]
+}

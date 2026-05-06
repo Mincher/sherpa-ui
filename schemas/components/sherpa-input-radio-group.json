@@ -1,0 +1,104 @@
+{
+  "tagName": "sherpa-input-radio-group",
+  "description": "Group of radios with shared label, description, helper and a single selected value.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "name",
+      "type": "string",
+      "description": "Field name; cascaded to children"
+    },
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "Group legend"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Sub-label below the legend"
+    },
+    {
+      "name": "data-helper",
+      "type": "string",
+      "description": "Helper text below the options"
+    },
+    {
+      "name": "data-orientation",
+      "type": "enum",
+      "description": "vertical (default) | horizontal"
+    },
+    {
+      "name": "data-options",
+      "type": "json",
+      "description": "[{value,label,description?,disabled?}]"
+    },
+    {
+      "name": "data-value",
+      "type": "string",
+      "description": "Currently selected value"
+    },
+    {
+      "name": "data-status",
+      "type": "enum",
+      "description": "critical | warning | success | info | urgent",
+      "enumValues": [
+        "critical",
+        "warning",
+        "success",
+        "info",
+        "urgent"
+      ]
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": ""
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "description": ""
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "change",
+      "description": "Selection changed.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "getValue()",
+      "description": "Returns current value or null."
+    },
+    {
+      "name": "setValue(v)",
+      "description": "Replace current value.",
+      "params": [
+        {
+          "name": "v",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "clear()",
+      "description": "Deselect all."
+    }
+  ],
+  "properties": [
+    {
+      "name": "value",
+      "type": "string",
+      "description": "Currently selected value"
+    }
+  ]
+}

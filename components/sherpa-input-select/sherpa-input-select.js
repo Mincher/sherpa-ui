@@ -12,7 +12,10 @@
  *   bubbles: true, composed: true
  *   detail: { value: string, path?: string[] }
  *
- * @method setOptions(options) — Set option list: Array<{ value, label, disabled? }>
+ * @method setOptions(options) — Set option list. Accepts either:
+ *   • Flat:    Array<{ value, label, disabled? }>
+ *   • Grouped: Array<{ label, options: Array<{ value, label, disabled? }> }>
+ *   Grouped entries become native <optgroup> elements.
  * @method setTree(nodes)      — (tree) Set the node forest
  */
 
@@ -102,7 +105,10 @@ export class SherpaInputSelect extends SherpaInputBase {
 
   /**
    * Programmatically set the option list.
-   * @param {Array<{value: string, label: string, disabled?: boolean}>} options
+   * Accepts either a flat list of options or a grouped list. A grouped
+   * entry is detected by the presence of an `options` array — it is
+   * rendered as a native <optgroup>.
+   * @param {Array<{value: string, label: string, disabled?: boolean} | {label: string, options: Array}>} options
    */
   setOptions(options) {
     if (!this.#selectEl) {
@@ -116,12 +122,17 @@ export class SherpaInputSelect extends SherpaInputBase {
     this.#selectEl.replaceChildren();
     if (placeholder) this.#selectEl.appendChild(placeholder);
 
-    for (const opt of options || []) {
-      const el = document.createElement("option");
-      el.value = opt.value ?? "";
-      el.textContent = opt.label || opt.value || "";
-      if (opt.disabled) el.disabled = true;
-      this.#selectEl.appendChild(el);
+    for (const entry of options || []) {
+      if (entry && Array.isArray(entry.options)) {
+        const group = document.createElement('optgroup');
+        group.label = entry.label || '';
+        for (const opt of entry.options) {
+          group.appendChild(this.#buildOption(opt));
+        }
+        this.#selectEl.appendChild(group);
+      } else {
+        this.#selectEl.appendChild(this.#buildOption(entry));
+      }
     }
     // Re-apply pending value from host attribute (if any) now that the
     // matching <option> exists in the DOM.
@@ -133,12 +144,20 @@ export class SherpaInputSelect extends SherpaInputBase {
 
   /* ── Internal ───────────────────────────────────────────────── */
 
+  #buildOption(opt) {
+    const el = document.createElement('option');
+    el.value = opt?.value ?? '';
+    el.textContent = opt?.label || opt?.value || '';
+    if (opt?.disabled) el.disabled = true;
+    return el;
+  }
+
   #adoptOptions() {
     if (!this.#selectEl) return;
-    // Move <option> children from the host light DOM into the shadow <select>
-    const options = this.querySelectorAll("option");
-    for (const opt of options) {
-      this.#selectEl.appendChild(opt.cloneNode(true));
+    // Move <option> and <optgroup> children from the host light DOM into the shadow <select>
+    const nodes = this.querySelectorAll(':scope > option, :scope > optgroup');
+    for (const node of nodes) {
+      this.#selectEl.appendChild(node.cloneNode(true));
     }
   }
 

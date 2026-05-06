@@ -13,6 +13,11 @@
       "name": "data-content",
       "type": "enum",
       "description": "\"static\" — opts out of grid; stacks children"
+    },
+    {
+      "name": "data-editable",
+      "type": "boolean",
+      "description": "Enables drag-to-reposition for slotted containers"
     }
   ],
   "slots": [
@@ -21,7 +26,19 @@
       "description": "sherpa-container children"
     }
   ],
-  "events": [],
+  "events": [
+    {
+      "name": "layout-reorder",
+      "description": "Fires after a successful reposition.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "from": "number",
+        "to": "number",
+        "order": "string[] }  // order is the"
+      }
+    }
+  ],
   "cssProperties": [
     {
       "name": "--maxColCount",

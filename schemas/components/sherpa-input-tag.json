@@ -1,0 +1,120 @@
+{
+  "tagName": "sherpa-input-tag",
+  "description": "Multi-tag input. Replaces DevExtreme DxTagBox for free-text tag entry. Behaviour: • Type, then press Enter (or the configured separator) to commit a chip. • Press Backspace in an empty field to remove the last chip. • Click ✕ on a chip to remove it. • `data-value` reflects the current array of tag values as JSON.",
+  "category": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": ""
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": ""
+    },
+    {
+      "name": "data-helper",
+      "type": "string",
+      "description": ""
+    },
+    {
+      "name": "data-layout",
+      "type": "enum",
+      "description": "vertical (default) | horizontal"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "description": ""
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "description": ""
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": ""
+    },
+    {
+      "name": "readonly",
+      "type": "boolean",
+      "description": ""
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "description": "Empty array fails validation"
+    },
+    {
+      "name": "data-value",
+      "type": "json",
+      "description": "Array of current tag strings"
+    },
+    {
+      "name": "data-separator",
+      "type": "string",
+      "description": "Extra character that commits a chip",
+      "default": "\",\""
+    },
+    {
+      "name": "data-allow-duplicates",
+      "type": "boolean",
+      "description": "Allow repeated values"
+    },
+    {
+      "name": "data-max-tags",
+      "type": "number",
+      "description": "Hard cap on tag count"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "change",
+      "description": "Tag list changed (add or remove).",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string[]",
+        "action": "'add'|'remove'|'set'"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "add(tag)",
+      "description": "Programmatically add a tag.",
+      "params": [
+        {
+          "name": "tag",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "remove(tag)",
+      "description": "Programmatically remove a tag.",
+      "params": [
+        {
+          "name": "tag",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "clear()",
+      "description": "Remove all tags."
+    }
+  ],
+  "properties": [
+    {
+      "name": "value",
+      "type": "string[]",
+      "description": "Current tag list (read/write)"
+    }
+  ]
+}

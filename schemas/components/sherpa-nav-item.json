@@ -51,6 +51,16 @@
       "name": "data-state",
       "type": "enum",
       "description": "selected"
+    },
+    {
+      "name": "data-type",
+      "type": "enum",
+      "description": "promo — renders a large CTA-style row"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "Promo description text (data-type=\"promo\" only)"
     }
   ],
   "slots": [

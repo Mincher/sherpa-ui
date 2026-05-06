@@ -1,6 +1,6 @@
 {
   "tagName": "sherpa-node",
-  "description": "sherpa-node.js — Host element for a node-graph node. Mirrors data-x / data-y attributes to the --sherpa-node-x/y CSS vars so position is purely declarative and animatable. Exposes getPortPositions() so the host canvas can measure where each socket lives in node-local coordinates (unscaled, top-left origin). Sub-type system: • data-subtypes — JSON array [{value,label}] populates a built-in <select> beneath the header. • data-subtype  — Currently-selected sub-type. • Light-DOM <template class=\"rows-tpl\" data-kind=\"…\" data-subtype=\"…\"> children act as row-prototypes. On subtype change the matching template's content is cloned into light DOM, replacing any rows that came from a previous template clone (those are tagged data-template-row).",
+  "description": "sherpa-node.js — Host element for a node-graph node. Mirrors data-x / data-y attributes to the --sherpa-node-x/y CSS vars so position is purely declarative and animatable. Exposes getPortPositions() so the host canvas can measure where each socket lives in node-local coordinates (unscaled, top-left origin). Sub-type system: • data-subtypes — JSON. Either a flat array [{value,label}] or a grouped array [{label, options:[{value,label}]}]. Grouped form renders <optgroup>s in the picker (e.g. \"Preset\" vs \"Custom\"). • data-subtype  — Currently-selected sub-type value. • Light-DOM <template class=\"rows-tpl\" data-kind=\"…\" data-subtype=\"…\"> children act as row-prototypes. On subtype change the matching template's content is cloned into light DOM, replacing any rows that came from a previous template clone (those are tagged data-template-row). Custom subtypes (consumer contract): The \"Custom\" group is a hook for consumers to inject saved-graph entries (e.g. user-saved subgraphs). Consumers populate it by overwriting data-subtypes with their own grouped JSON, e.g. node.dataset.subtypes = JSON.stringify([ { label: \"Preset\", options: presetSubtypes }, { label: \"Custom\", options: [ { value: \"saved:abc123\", label: \"Monitor CPU usage\" }, ]}, ]); When the user picks a \"Custom\" entry, the consumer should listen for sherpa-node-subtype-change, and — if the value matches a saved group — replace the source node with a `group`-kind node at the same position/id, then push the saved subgraph into it via canvas.pushSubgraph(). sherpa-ui ships only the picker mechanism; the saved-groups registry is the consumer's concern.",
   "category": "core",
   "baseClass": "SherpaElement",
   "attributes": [
@@ -43,7 +43,7 @@
     {
       "name": "data-subtypes",
       "type": "json",
-      "description": "Array<{value,label}>; shows the dropdown"
+      "description": "Flat Array<{value,label}> OR grouped"
     },
     {
       "name": "data-subtype",

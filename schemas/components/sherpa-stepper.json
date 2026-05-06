@@ -32,6 +32,15 @@
       "name": "data-src",
       "type": "string",
       "description": "URL to load steps JSON"
+    },
+    {
+      "name": "data-template",
+      "type": "enum",
+      "description": "default | timeline (vertical timeline layout)",
+      "enumValues": [
+        "default",
+        "timeline"
+      ]
     }
   ],
   "slots": [],

@@ -4,6 +4,13 @@
 
 Modal dialog built on the native HTML <dialog> element. Uses SherpaElement multi-template support. The default template includes a native <header> with a <dl> for title/subtitle and a close button, plus a sherpa-footer for footer content.
 
+## Templates
+
+Available templates:
+
+- `default`
+- `wizard`
+
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
@@ -13,6 +20,11 @@ Modal dialog built on the native HTML <dialog> element. Uses SherpaElement multi
 | `data-size` | enum | small \| medium \| large \| full | — | `small`, `medium`, `large`, `full` |
 | `data-open` | boolean | Dialog visibility | — | — |
 | `data-dismissible` | boolean | Shows close button (default: true) | — | — |
+| `data-status` | enum | success \| critical \| warning \| info \| urgent | — | `success`, `critical`, `warning`, `info`, `urgent` |
+| `data-template` | enum | default \| wizard | — | `default`, `wizard` |
+| `data-page` | number | (wizard) Active 0-based page index | — | — |
+| `data-pages` | number | (wizard) Total page count override | — | — |
+| `data-finish-label` | string | (wizard) Label shown on the next button at last page (default: "Finish") | — | — |
 
 ## Slots
 
@@ -107,7 +119,9 @@ influenced by setting `data-*` attributes or status on ancestors:
 - `--_easing`
 - `--_rounding`
 - `--_shadow`
+- `--_status-`
 - `--_status-border`
+- `--_status-border-strong`
 - `--_surface`
 - `--_text`
 

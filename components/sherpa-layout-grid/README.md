@@ -10,6 +10,7 @@ Responsive dashboard grid. Slotted <sherpa-container data-variant="resizable"> c
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-row-height` | string | CSS length for grid-auto-rows (default: 160px) | — | — |
 | `data-content` | enum | "static" — opts out of grid; stacks children | — | — |
+| `data-editable` | boolean | Enables drag-to-reposition for slotted containers | — | — |
 
 ## Slots
 
@@ -24,6 +25,43 @@ Slot usage:
   <!-- Default slot -->
   <p>Content goes here</p>
 </sherpa-layout-grid>
+```
+
+## Events
+
+### `layout-reorder`
+
+Fires after a successful reposition.
+
+**Propagation:** bubbles, composed
+
+**Detail:**
+
+```js
+event.detail = {
+  from: number,
+  to: number,
+  order: string[] }  // order is the,
+};
+```
+
+```js
+element.addEventListener("layout-reorder", (e) => {
+  console.log(e.detail.from);
+});
+```
+
+## CSS Parts
+
+Style internal elements from outside the shadow DOM:
+
+- `header`
+- `surface`
+
+```css
+sherpa-layout-grid::part(header) {
+  /* custom styles */
+}
 ```
 
 ## Usage

@@ -2,7 +2,7 @@
 
 > **Category:** feedback · **Base class:** SherpaElement
 
-Vertical timeline with status-coloured milestone nodes. Milestones rendered via cloning prototype from template.
+Vertical timeline with status-coloured milestone nodes plus a header row (title + percentage). For a simpler atomic timeline without header chrome, use {@link SherpaStepper} with `data-template="timeline"` directly. This component composes that primitive's visual model and adds the tracker header.
 
 ## Attributes
 
