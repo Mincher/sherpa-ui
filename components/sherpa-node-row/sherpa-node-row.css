@@ -17,7 +17,6 @@
   display: grid;
   grid-template-columns:
     var(--sherpa-node-socket-gutter) 1fr var(--sherpa-node-socket-gutter);
-  align-content: center;
   row-gap: var(--sherpa-space-3xs);
   padding: var(--sherpa-space-xs) 0;
 }
