@@ -287,6 +287,16 @@ export class SherpaNode extends SherpaElement {
       }
       return null;
     }
+    // Standalone AI-family kinds (templates moved these out of kind="ai"
+    // into top-level kinds; mirror the same value-surfacing behaviour
+    // so downstream inputs receive the chosen configuration).
+    if (kind === "model")    return ctrls.model || null;
+    if (kind === "delegate") return ctrls.agent || null;
+    if (kind === "chat") {
+      if (portName === "response")        return ctrls.response        || null;
+      if (portName === "recommendations") return ctrls.recommendations || null;
+      return ctrls.response || ctrls.preset || ctrls.type || null;
+    }
     if (kind === "action") {
       if (subtype === "ticket") return ctrls.ticketNumber || ctrls.action || null;
       return null;
