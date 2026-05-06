@@ -1389,6 +1389,43 @@ export class SherpaNodeCanvas extends SherpaElement {
   /** Current drill depth (0 = root). */
   getDepth() { return this.#drillStack.length; }
 
+  /**
+   * Read the cached subgraph snapshot for a given parent group, or
+   * null if none has been captured yet. The returned snapshot has the
+   * same shape as the one used internally by push/popSubgraph:
+   *
+   *   { nodes: Array<sherpa-node clone>, edges, viewport }
+   *
+   * The nodes are detached cloned elements; consumers should walk
+   * them to extract kind/subtype/controls (mirror serialisation from
+   * #snapshot above).
+   *
+   * Snapshots are populated on popSubgraph(parentId) and consulted on
+   * the next pushSubgraph(parentId).
+   */
+  getSubgraphCache(parentId) {
+    if (!parentId) return null;
+    return this.#subgraphs.get(parentId) || null;
+  }
+
+  /**
+   * Write a subgraph snapshot for a given parent group. Pass null or
+   * undefined as `snapshot` to clear the entry. The next time
+   * pushSubgraph(parentId) runs it will restore from this snapshot
+   * instead of falling through to a consumer-driven build.
+   *
+   * Snapshot shape — `nodes` must be detached <sherpa-node> elements
+   * ready to be appended; `edges` and `viewport` are plain JSON.
+   */
+  setSubgraphCache(parentId, snapshot) {
+    if (!parentId) return;
+    if (!snapshot) {
+      this.#subgraphs.delete(parentId);
+      return;
+    }
+    this.#subgraphs.set(parentId, snapshot);
+  }
+
   /** Read-only copy of the drill stack: top of stack is last. */
   getDrillStack() {
     return this.#drillStack.map((f) => ({ parentId: f.parentId, label: f.label }));
