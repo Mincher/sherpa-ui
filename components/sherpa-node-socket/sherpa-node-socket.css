@@ -114,13 +114,13 @@
 }
 
 /* ── Input growth: every input grows in height per connection ──── */
-/* Formula collapses to base size when --_count = 1, then adds
-   --sherpa-node-socket-multi-step per additional connection. */
+/* Formula collapses to base size when --_count ≤ 1 (no incoming
+   connectors), then adds (multi-step + spacing) per additional
+   connection beyond the first. */
 :host([data-direction="in"]) {
   height: calc(
     var(--sherpa-node-socket-size) +
-    var(--sherpa-node-socket-multi-step) * (var(--_count) - 1) +
-    var(--sherpa-space-xs, 8px)
+    (var(--sherpa-node-socket-multi-step) + var(--sherpa-space-xs, 8px)) * (var(--_count) - 1)
   );
   min-height: var(--sherpa-node-socket-size);
 }
