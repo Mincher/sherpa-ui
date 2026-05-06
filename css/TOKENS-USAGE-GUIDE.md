@@ -321,8 +321,8 @@ live in the theme files rather than the shared alias file:
 
 | Family                     | Defined in                                |
 | -------------------------- | ----------------------------------------- |
-| `--sherpa-color-primary-classic-*` | `sherpa-theme-classic.css` only          |
-| `--sherpa-color-primary-new-*`     | `sherpa-theme-apex-2-core.css`, `sherpa-theme-data-protection.css` |
+| `--sherpa-color-primary-cyan-*` | `sherpa-theme-classic.css` only          |
+| `--sherpa-color-primary-blue-*` | `sherpa-theme-apex-2-core.css`, `sherpa-theme-data-protection.css` |
 
 Do not consume these directly from component CSS unless the component is
 theme-specific. Prefer the abstract `--sherpa-color-brand-*` semantic alias.

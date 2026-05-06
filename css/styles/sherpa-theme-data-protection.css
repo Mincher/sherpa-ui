@@ -51,8 +51,8 @@
   --sherpa-border-control-active-down: var(--sherpa-core-color-extended-turquoise-700);
   --sherpa-border-control-active-hover: var(--sherpa-core-color-extended-turquoise-750);
   --sherpa-border-control-primary-default: var(--sherpa-core-color-extended-turquoise-600);
-  --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
-  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+  --sherpa-border-control-primary-down: var(--sherpa-color-primary-blue-800);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-blue-700);
 
   /* ── Font ──────────────────────────────────────────────────── */
   --sherpa-font-base-size: var(--sherpa-fonts-scale-base);
@@ -68,27 +68,27 @@
   /* ── Text ──────────────────────────────────────────────────── */
   --sherpa-text-active-alt: var(--sherpa-text-default-body);
   --sherpa-text-active-base: light-dark(var(--sherpa-core-color-extended-turquoise-700), var(--sherpa-core-color-extended-turquoise-450));
-  --sherpa-text-primary-default: light-dark(var(--sherpa-core-color-extended-turquoise-600), var(--sherpa-color-primary-new-300));
-  --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
-  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-new-base);
+  --sherpa-text-primary-default: light-dark(var(--sherpa-core-color-extended-turquoise-600), var(--sherpa-color-primary-blue-300));
+  --sherpa-text-primary-on-color: var(--sherpa-color-primary-blue-200);
+  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-blue-base);
 
   /* ── Icon ──────────────────────────────────────────────────── */
   --sherpa-icon-active-alt: var(--sherpa-icon-context-default-body);
   --sherpa-icon-active-base: var(--sherpa-core-color-extended-turquoise-700);
-  --sherpa-icon-primary-default: light-dark(var(--sherpa-core-color-extended-turquoise-600), var(--sherpa-color-primary-new-300));
-  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
-  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-new-base);
+  --sherpa-icon-primary-default: light-dark(var(--sherpa-core-color-extended-turquoise-600), var(--sherpa-color-primary-blue-300));
+  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-blue-200);
+  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-blue-base);
 
   /* ── Theme-scoped Alias Families ───────────────────────────── */
-  --sherpa-color-primary-new-100: var(--sherpa-core-color-basic-blue-0);
-  --sherpa-color-primary-new-1000: var(--sherpa-core-color-extended-neon-blue-750);
-  --sherpa-color-primary-new-200: var(--sherpa-core-color-basic-blue-100);
-  --sherpa-color-primary-new-300: var(--sherpa-core-color-basic-blue-200);
-  --sherpa-color-primary-new-400: var(--sherpa-core-color-basic-blue-300);
-  --sherpa-color-primary-new-500: var(--sherpa-core-color-extended-neon-blue-500);
-  --sherpa-color-primary-new-700: var(--sherpa-core-color-extended-neon-blue-600);
-  --sherpa-color-primary-new-800: var(--sherpa-core-color-extended-neon-blue-650);
-  --sherpa-color-primary-new-900: var(--sherpa-core-color-extended-neon-blue-700);
-  --sherpa-color-primary-new-base: var(--sherpa-core-color-extended-neon-blue-550);
+  --sherpa-color-primary-blue-100: var(--sherpa-core-color-basic-blue-0);
+  --sherpa-color-primary-blue-1000: var(--sherpa-core-color-extended-neon-blue-750);
+  --sherpa-color-primary-blue-200: var(--sherpa-core-color-basic-blue-100);
+  --sherpa-color-primary-blue-300: var(--sherpa-core-color-basic-blue-200);
+  --sherpa-color-primary-blue-400: var(--sherpa-core-color-basic-blue-300);
+  --sherpa-color-primary-blue-500: var(--sherpa-core-color-extended-neon-blue-500);
+  --sherpa-color-primary-blue-700: var(--sherpa-core-color-extended-neon-blue-600);
+  --sherpa-color-primary-blue-800: var(--sherpa-core-color-extended-neon-blue-650);
+  --sherpa-color-primary-blue-900: var(--sherpa-core-color-extended-neon-blue-700);
+  --sherpa-color-primary-blue-base: var(--sherpa-core-color-extended-neon-blue-550);
 }
 } /* @layer theme */
