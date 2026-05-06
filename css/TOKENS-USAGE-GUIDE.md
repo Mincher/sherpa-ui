@@ -31,7 +31,7 @@ Complete guide to using and extending the Sherpa design token system.
   │   sherpa-motion-classes.css                                  │  adopted
   │   sherpa-data-viz-classes.css (.color-1 … .color-N from      │  generated
   │                                figma data-viz/categorical)   │
-  │   sherpa-app-classes.css    (control-group + layout shells)  │  light-DOM only
+  │   sherpa-utility-classes.css (control-group + scroll-under)   │  light-DOM only
   │ @layer components                                            │
   │   sherpa-components.css     (per-variant defaults)           │  generated
   │   components/**/*.css       (Shadow DOM)                     │

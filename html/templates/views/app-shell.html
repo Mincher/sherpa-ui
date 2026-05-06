@@ -27,15 +27,50 @@
       • Drop sherpa-container elements into <sherpa-layout-grid>
 
   Layout classes used:
-    .sherpa-app-layout        — Grid shell: sidebar nav + main area
-    .sherpa-main-content      — Flex column for the main area
+    .sherpa-app-layout        — Grid shell: sidebar nav + main area (defined below)
+    .sherpa-main-content      — Flex column for the main area (defined below)
+    .sherpa-main-content-slot — Scrollable viewport for the content grid (defined below)
     .sherpa-view-header-group — Wrapper for view-header + global filter bar
+                                (published by sherpa-view-header on import)
     .sherpa-scroll-under      — Sticky header with scroll-activated bg + shadow
-    .sherpa-main-content-slot — Scrollable viewport for the content grid
+                                (from sherpa-utility-classes.css)
     <sherpa-layout-grid>      — Responsive 12-col grid (12 → 6 → 3 at breakpoints)
 -->
 
 <template id="app-shell">
+  <style>
+    /* Scaffolding scoped to this template — only stamped once per page. */
+    .sherpa-app-layout {
+      --nav-column-width: calc(var(--sherpa-space-default) * 3);
+      display: grid;
+      grid-template-columns: var(--nav-column-width) 1fr;
+      min-height: 100vh;
+      height: 100vh;
+    }
+    .sherpa-app-layout:has(sherpa-nav[data-pinned="true"]) {
+      --nav-column-width: 320px;
+    }
+    .sherpa-main-content {
+      grid-column: 2;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    .sherpa-main-content-slot {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      container-type: scroll-state;
+      container-name: main-scroller;
+    }
+    .sherpa-main-content-slot > sherpa-layout-grid {
+      width: 100%;
+      min-height: 100%;
+    }
+  </style>
+
   <div class="sherpa-app-layout">
     <sherpa-nav data-pinned="false" data-editable data-searchable></sherpa-nav>
 

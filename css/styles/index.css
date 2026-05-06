@@ -75,7 +75,7 @@
 @import "sherpa-motion-classes.css" layer(utilities);
 @import "sherpa-text-classes.css" layer(utilities);
 @import "sherpa-data-viz-classes.css" layer(utilities);
-@import "sherpa-app-classes.css" layer(utilities);
+@import "sherpa-utility-classes.css" layer(utilities);
 
 /* ── Components ──────────────────────────────────────────────────────── */
 

@@ -42,6 +42,32 @@ import '../sherpa-tag/sherpa-tag.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { ThemeManager } from '../utilities/theme-manager.js';
 
+/**
+ * Light-DOM utility class published by this component.
+ *
+ * .sherpa-view-header-group — A flex-column wrapper that groups a
+ * <sherpa-view-header> with an adjacent <sherpa-filter-bar> (or other
+ * peers) into a single shrink-protected block at the top of a view.
+ *
+ * Adopted onto document.adoptedStyleSheets exactly once on module
+ * import so consumers can use the class anywhere in the document
+ * without a separate global stylesheet.
+ */
+const viewHeaderGroupSheet = new CSSStyleSheet();
+viewHeaderGroupSheet.replaceSync(`
+  .sherpa-view-header-group {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .sherpa-view-header-group > sherpa-filter-bar {
+    padding-inline: var(--sherpa-space-xs, 8px);
+  }
+`);
+if (!document.adoptedStyleSheets.includes(viewHeaderGroupSheet)) {
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, viewHeaderGroupSheet];
+}
+
 export class SherpaViewHeader extends SherpaElement {
   static get cssUrl()  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-view-header.html', import.meta.url).href; }

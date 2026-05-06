@@ -1,12 +1,19 @@
 /**
- * sherpa-app-classes.css — Light-DOM utility classes for application shells.
+ * sherpa-utility-classes.css — Hand-written light-DOM utility classes.
  *
- * Loaded once via css/styles/index.css. NOT adopted into component shadow
- * roots — these classes apply to host elements / page-level structure only.
+ * Loaded once via css/styles/index.css under @layer utilities.
+ * NOT adopted into component shadow roots.
+ *
+ * Generated utilities (data-viz colour classes) live in their own file
+ * (sherpa-data-viz-classes.css) because they are regenerated from
+ * Figma tokens.
+ *
+ * Component-specific light-DOM utilities (e.g. .sherpa-view-header-group)
+ * are published by their owning component on module import.
  *
  * Sections:
- *   1. Control Group — composes adjacent controls into a seamless row.
- *   2. Layout       — page/section grid + container utilities.
+ *   1. Control Group  — composes adjacent controls into a seamless row.
+ *   2. Scroll Under   — sticky element that gains bg + shadow on scroll.
  * ───────────────────────────────────────────────────────────────────────
  */
 
@@ -72,98 +79,11 @@
   --_control-group-spacing-offset: -1px;
 }
 
-/* ─── 2. Layout ────────────────────────────────────────────────────── */
+
+/* ─── 2. Scroll Under ──────────────────────────────────────────────── */
 
 /**
- * Layout — App shell layout and scroll-under utility.
- *
- * Classes provided:
- *   .sherpa-app-layout           — Grid shell: sidebar nav + main area
- *   .sherpa-main-content         — Main content column (flex column)
- *   .sherpa-view-header-group    — Wrapper for view-header + global filter bar
- *   .sherpa-main-content-slot    — Scrollable viewport for main content
- *   .sherpa-scroll-under         — Sticky header with scroll-activated bg
- *
- * The dashboard widget grid (formerly `.sherpa-content-area`) lives in the
- * `<sherpa-layout-grid>` web component.
- */
-
-/* ── App Shell Layout ────────────────────────────────────────────────── */
-/*
- * Grid-based app shell: sidebar nav + main content area.
- *
- * Canonical template: html/templates/views/app-shell.html
- * Stamp it with:  stampViewTemplate("app-shell", document.body)
- *
- * Structure (for reference — prefer stamping the template):
- *   <div class="sherpa-app-layout">
- *     <sherpa-nav>…</sherpa-nav>
- *     <div class="sherpa-main-content">
- *       <header class="sherpa-view-header-group sherpa-scroll-under">
- *         <sherpa-view-header>…</sherpa-view-header>
- *         <sherpa-filter-bar data-global>…preset chips…</sherpa-filter-bar>
- *       </header>
- *       <div class="sherpa-main-content-slot">
- *         <sherpa-layout-grid>…</sherpa-layout-grid>
- *       </div>
- *     </div>
- *   </div>
- */
-
-.sherpa-app-layout {
-  --nav-column-width: calc(var(--sherpa-space-default) * 3);
-  display: grid;
-  grid-template-columns: var(--nav-column-width) 1fr;
-  min-height: 100vh;
-  height: 100vh;
-}
-
-.sherpa-app-layout:has(sherpa-nav[data-pinned="true"]) {
-  --nav-column-width: 320px;
-}
-
-.sherpa-main-content {
-  grid-column: 2;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  height: 100%;
-  overflow: hidden;
-}
-
-.sherpa-main-content-slot {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  container-type: scroll-state;
-  container-name: main-scroller;
-}
-
-.sherpa-main-content-slot > sherpa-layout-grid {
-  width: 100%;
-  min-height: 100%;
-}
-
-/* ── View header group ──────────────────────────────────────────────── */
-/*
- * Wrapper for sherpa-view-header + global sherpa-filter-bar.
- * Sits at the top of .sherpa-main-content as a flex-shrink:0 block.
- * Apply .sherpa-scroll-under alongside for sticky + shadow on scroll.
- */
-
-.sherpa-view-header-group {
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-
-.sherpa-view-header-group > sherpa-filter-bar {
-  padding-inline: var(--sherpa-space-xs, 8px);
-}
-
-/* ── Scroll-under effect ────────────────────────────────────────────── */
-/*
- * Apply .sherpa-scroll-under to any sticky element that should gain
+ * .sherpa-scroll-under — Apply to any sticky element that should gain
  * a background + shadow when content scrolls beneath it.
  *
  * Activation:
