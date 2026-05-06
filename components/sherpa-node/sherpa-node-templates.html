@@ -47,27 +47,12 @@
   </sherpa-node-row>
 </template>
 
-<template class="rows-tpl" data-kind="source" data-subtype="unified-agent">
+<template class="rows-tpl" data-kind="source" data-subtype="unified-agent"
+          data-subtype-helper="Starts the flow from the unified agent.">
   <sherpa-node-header slot="header">
     <span slot="title">Unified agent</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
   </sherpa-node-header>
-  <sherpa-node-row>
-    <span slot="label">Agent</span>
-    <sherpa-input-select slot="control" name="agent">
-      <option>Default agent</option>
-      <option>Endpoint agent</option>
-      <option>Server agent</option>
-    </sherpa-input-select>
-  </sherpa-node-row>
-  <sherpa-node-row>
-    <span slot="label">Scope</span>
-    <sherpa-input-select slot="control" name="scope">
-      <option>All assets</option>
-      <option>Group</option>
-      <option>Tag</option>
-    </sherpa-input-select>
-  </sherpa-node-row>
 </template>
 
 <!-- ════════════════════════════════════════════════════════════════
