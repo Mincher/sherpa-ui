@@ -46,7 +46,10 @@ const SUBTYPE_LABELS = {
   skill: "Skill",
   concatenate: "Concatenate",
   // source
-  // (single subtype: "default" → handled by generic "Default" entry below)
+  "unified-agent": "Unified agent",
+  api: "API",
+  model: "Model",
+  custom: "Custom",
   // output
   outcome: "Outcome",
   // delegate / chat (single-subtype standalone kinds)
