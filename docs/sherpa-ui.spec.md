@@ -450,7 +450,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | AC-02 | Any component JS file | parsing its class declaration | the class extends `SherpaElement` and declares `cssUrl` + `htmlUrl` getters | REQ-02 |
 | AC-03 | Any component HTML file | parsing top-level templates | a `<template id="default">` is present | REQ-03 |
 | AC-04 | Any component JS file | grepping for `innerHTML\s*=\s*[`'"\]\<`or`document.createElement(['"](?!template)\` | no matches for structural DOM creation are found | REQ-04 |
-| AC-05 | Any component JS file | grepping for `\.hidden\s*=`, `\.style\.display`, or `classList\.(add|remove|toggle)` on `this.$(...)` results | no matches that gate visual state are found | REQ-05 |
+| AC-05 | Any component JS file | grepping for `\.hidden\s*=`, `\.style\.display`, or \`classList.(add | remove | toggle)`on`this.$(...)\` results |
 | AC-06 | Any component HTML template | inspecting host attributes used in selectors | every public attribute uses the `data-` prefix or is a recognised native attribute | REQ-06 |
 | AC-07 | Any component CSS file | grepping for `--sherpa-core-` | no matches are found | REQ-07 |
 | AC-08 | Any `var(--sherpa-...)` reference in component CSS | inspecting the call | a fallback argument is present | REQ-08 |
@@ -767,7 +767,7 @@ State is held in JS memory (not in DOM attributes). Each transition emits a cust
 
 | Event | Detail |
 | --- | --- |
-| `flow-start` | `{ flow: "add"|"edit"|"delete", entity: string }` |
+| `flow-start` | \`{ flow: "add" |
 | `flow-progress` | `{ flow, entity, data: object }` |
 | `flow-complete` | `{ flow, entity, data: object }` |
 | `flow-cancel` | `{ flow, entity }` |

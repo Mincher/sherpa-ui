@@ -1,0 +1,210 @@
+/**
+ * sherpa-app-classes.css — Light-DOM utility classes for application shells.
+ *
+ * Loaded once via css/styles/index.css. NOT adopted into component shadow
+ * roots — these classes apply to host elements / page-level structure only.
+ *
+ * Sections:
+ *   1. Control Group — composes adjacent controls into a seamless row.
+ *   2. Layout       — page/section grid + container utilities.
+ * ───────────────────────────────────────────────────────────────────────
+ */
+
+/* ─── 1. Control Group ─────────────────────────────────────────────── */
+
+/**
+ * Control Group — wrapper-based pattern for composing adjacent controls
+ * (inputs, buttons, custom elements) into a seamless row.
+ *
+ * The .control-group wrapper owns border, background, border-radius and
+ * overflow:hidden.  It sets --_cg-border-width: 0 and --_cg-border-radius: 0
+ * which inherit into child shadow DOMs, making them borderless and
+ * radiusless automatically.
+ *
+ * Usage:
+ *   <div class="control-group">
+ *     <input      … />
+ *     <sherpa-button … />
+ *   </div>
+ *
+ * No position classes needed — just place elements in the wrapper.
+ */
+
+.control-group {
+  display: inline-flex;
+  gap: 0;
+  vertical-align: middle;
+  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  overflow: hidden;
+  --_cg-border-width: 0;
+  --_cg-border-radius: 0;
+}
+
+.control-group:focus-within {
+  border-color: var(--sherpa-border-control-active-default, #0060df);
+}
+
+/* ── Per-child position tokens (inherit into shadow DOM) ────────── */
+
+.control-group > * {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="start"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-none, 0);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="middle"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-none, 0);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-none, 0);
+  --_control-group-spacing-offset: -1px;
+}
+
+.control-group > [data-position="end"] {
+  --_control-group-rounding-left: var(--sherpa-border-rounding-none, 0);
+  --_control-group-rounding-right: var(--sherpa-border-rounding-base, 4px);
+  --_control-group-spacing-offset: -1px;
+}
+
+/* ───────────────────────────────────────────────────────────────── */
+/**
+ * sherpa-layout-classes.css
+ * App shell layout and scroll-under utility.
+ *
+ * Classes provided:
+ *   .sherpa-app-layout           — Grid shell: sidebar nav + main area
+ *   .sherpa-main-content         — Main content column (flex column)
+ *   .sherpa-view-header-group    — Wrapper for view-header + global filter bar
+ *   .sherpa-main-content-slot    — Scrollable viewport for main content
+ *   .sherpa-scroll-under         — Sticky header with scroll-activated bg
+ *
+ * The dashboard widget grid (formerly `.sherpa-content-area`) lives in the
+ * `<sherpa-layout-grid>` web component.
+ */
+
+/* ── App Shell Layout ────────────────────────────────────────────────── */
+/*
+ * Grid-based app shell: sidebar nav + main content area.
+ *
+ * Canonical template: html/templates/views/app-shell.html
+ * Stamp it with:  stampViewTemplate("app-shell", document.body)
+ *
+ * Structure (for reference — prefer stamping the template):
+ *   <div class="sherpa-app-layout">
+ *     <sherpa-nav>…</sherpa-nav>
+ *     <div class="sherpa-main-content">
+ *       <header class="sherpa-view-header-group sherpa-scroll-under">
+ *         <sherpa-view-header>…</sherpa-view-header>
+ *         <sherpa-filter-bar data-global>…preset chips…</sherpa-filter-bar>
+ *       </header>
+ *       <div class="sherpa-main-content-slot">
+ *         <sherpa-layout-grid>…</sherpa-layout-grid>
+ *       </div>
+ *     </div>
+ *   </div>
+ */
+
+.sherpa-app-layout {
+  --nav-column-width: calc(var(--sherpa-space-default) * 3);
+  display: grid;
+  grid-template-columns: var(--nav-column-width) 1fr;
+  min-height: 100vh;
+  height: 100vh;
+}
+
+.sherpa-app-layout:has(sherpa-nav[data-pinned="true"]) {
+  --nav-column-width: 320px;
+}
+
+.sherpa-main-content {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sherpa-main-content-slot {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  container-type: scroll-state;
+  container-name: main-scroller;
+}
+
+.sherpa-main-content-slot > sherpa-layout-grid {
+  width: 100%;
+  min-height: 100%;
+}
+
+/* ── View header group ──────────────────────────────────────────────── */
+/*
+ * Wrapper for sherpa-view-header + global sherpa-filter-bar.
+ * Sits at the top of .sherpa-main-content as a flex-shrink:0 block.
+ * Apply .sherpa-scroll-under alongside for sticky + shadow on scroll.
+ */
+
+.sherpa-view-header-group {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sherpa-view-header-group > sherpa-filter-bar {
+  padding-inline: var(--sherpa-space-xs, 8px);
+}
+
+/* ── Scroll-under effect ────────────────────────────────────────────── */
+/*
+ * Apply .sherpa-scroll-under to any sticky element that should gain
+ * a background + shadow when content scrolls beneath it.
+ *
+ * Activation:
+ *   1. CSS-native (Chrome/Safari 133+, Edge 133+): automatic via
+ *      @container scroll-state() — works when the element sits inside
+ *      a scroll-state container. No JS required.
+ *   2. JS fallback (Firefox): set [data-scrolled] attribute on the
+ *      element via IntersectionObserver or scroll listener.
+ *
+ * Consumer setup:
+ *   .my-scroll-area {
+ *     overflow-y: auto;
+ *     container-type: scroll-state;
+ *   }
+ *   <div class="my-scroll-area">
+ *     <header class="sherpa-scroll-under"> … </header>
+ *     …scrollable content…
+ *   </div>
+ */
+
+.sherpa-scroll-under {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  transition:
+    background-color var(--sherpa-motion-duration-fast, 150ms) ease,
+    box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
+}
+
+/* JS fallback — consumer toggles [data-scrolled] on the element */
+.sherpa-scroll-under[data-scrolled] {
+  background-color: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
+  box-shadow: var(--sherpa-shadow-default-sm);
+}
+
+/* CSS scroll-state query (Chrome/Safari/Edge 133+)
+ * scroll-state(scrolled: top) is TRUE when the scroller is at rest
+ * at the top. We want styles when it is NOT at the top → use :not(). */
+@container scroll-state(not scrolled: top) {
+  .sherpa-scroll-under {
+    background-color: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
+    box-shadow: var(--sherpa-shadow-default-sm);
+  }
+}
