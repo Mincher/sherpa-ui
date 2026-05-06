@@ -65,34 +65,54 @@
   --sherpa-node-radius: var(--sherpa-border-rounding-lg, 8px);
 
   /* ── Per-kind body + border (semantic, themeable, opaque) ────── */
-  /* Body fills tap the alias-layer `--sherpa-color-{intent}-100`
-     so they remain opaque while still flowing through theme
-     remapping. Borders tap the role-based context-strong family
-     (opaque across all themes). */
+  /* Body fills are explicit `light-dark()` pairs that thread the
+     themed `--sherpa-color-{intent}-100` (light) and
+     `--sherpa-color-{intent}-900` (dark) alias layers. This keeps
+     fills opaque in both modes while still flowing through theme
+     remapping. The themed `--sherpa-surface-context-*-subtle-default`
+     family is intentionally NOT used here because most themes define
+     its dark variant as a translucent overlay, which would let the
+     canvas grid bleed through. Borders read the role-based
+     context-strong family (opaque across all themes and modes). */
 
   /* Default neutral card. */
   --sherpa-node-body-default:        var(--sherpa-surface-container-default,                #ffffff);
   --sherpa-node-border-default:      var(--sherpa-border-container-default,                 #d1d5db);
 
   /* Source — info blue. */
-  --sherpa-node-body-source:         var(--sherpa-color-info-100,                           #d9f2fa);
+  --sherpa-node-body-source:         light-dark(
+                                       var(--sherpa-color-info-100, #d9f2fa),
+                                       var(--sherpa-color-info-900, #0a4a6b)
+                                     );
   --sherpa-node-border-source:       var(--sherpa-surface-context-info-strong-default,      #0d77ad);
 
   /* Output — success green. */
-  --sherpa-node-body-output:         var(--sherpa-color-success-100,                        #e6f7ee);
+  --sherpa-node-body-output:         light-dark(
+                                       var(--sherpa-color-success-100, #e6f7ee),
+                                       var(--sherpa-color-success-900, #0f4d2a)
+                                     );
   --sherpa-node-border-output:       var(--sherpa-surface-context-success-strong-default,   #1f9d55);
 
   /* Output with no incoming connection — critical red. */
-  --sherpa-node-body-output-error:   var(--sherpa-color-critical-100,                       #fde7e7);
+  --sherpa-node-body-output-error:   light-dark(
+                                       var(--sherpa-color-critical-100, #fde7e7),
+                                       var(--sherpa-color-critical-900, #5a0e0c)
+                                     );
   --sherpa-node-border-output-error: var(--sherpa-surface-context-error-strong-default,     #cc1f1a);
 
   /* Group — info blue skin (same intent as source). */
-  --sherpa-node-body-group:          var(--sherpa-color-info-100,                           #d9f2fa);
+  --sherpa-node-body-group:          light-dark(
+                                       var(--sherpa-color-info-100, #d9f2fa),
+                                       var(--sherpa-color-info-900, #0a4a6b)
+                                     );
   --sherpa-node-border-group:        var(--sherpa-surface-context-info-strong-default,      #0d77ad);
 
   /* Chat (Ask N-zo) — brand purple. No surface-context-brand family
      exists yet; swap to it upstream when available. */
-  --sherpa-node-body-chat:           var(--sherpa-color-brand-100,                          #f8ebff);
+  --sherpa-node-body-chat:           light-dark(
+                                       var(--sherpa-color-brand-100, #f8ebff),
+                                       var(--sherpa-color-brand-900, #3a0066)
+                                     );
   --sherpa-node-border-chat:         var(--sherpa-color-brand-base,                         #c046ff);
 
   /* ── Canvas grid ──────────────────────────────────────────────── */
