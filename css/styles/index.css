@@ -43,9 +43,6 @@
 /* Status — semantic state mapping (--_status-* private vars) */
 @import "sherpa-status.css"              layer(status);
 
-/* Components — light DOM overrides (project-managed) */
-@import "../../components/index.css"    layer(components);
-
 /* Utilities — class-based helpers */
 @import "sherpa-icon-classes.css"       layer(utilities);
 @import "sherpa-motion-classes.css"     layer(utilities);

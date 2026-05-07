@@ -21,7 +21,6 @@
     "mcp-server/"
   ],
   "scripts": {
-    "docs": "node scripts/extract-component-api.js",
     "component-docs": "node scripts/generate-component-docs.js",
     "schemas": "node scripts/extract-component-schemas.js",
     "patterns": "node scripts/extract-pattern-index.js",
@@ -31,7 +30,7 @@
     "tokens:codemod": "node scripts/codemod-compat-aliases.js",
     "css:fallbacks": "node scripts/inject-css-fallbacks.js",
     "css:fallbacks:check": "node scripts/inject-css-fallbacks.js --dry",
-    "build": "npm run tokens:generate && npm run docs && npm run schemas && npm run patterns && npm run component-docs"
+    "build": "npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"
@@ -48,7 +47,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1",
-    "sherpa-ui": "github:Mincher/sherpa-ui"
+    "@modelcontextprotocol/sdk": "^1.27.1"
   }
 }

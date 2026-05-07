@@ -12,8 +12,8 @@
  * and (b) it must clone visual nodes (SVGs, canvases) out of other components'
  * shadow roots and stamp them into print-flow markup that the browser print
  * pipeline can serialize. Keeping it in light DOM also makes its CSS rules
- * (loaded via components/index.css) participate directly in the page's print
- * stylesheet cascade. Do not refactor onto SherpaElement without first
+ * participate directly in the page's print stylesheet cascade.
+ * Do not refactor onto SherpaElement without first
  * verifying print fidelity in all target browsers.
  *
  * @method setData(sourceContainer, options) — Renders the source container

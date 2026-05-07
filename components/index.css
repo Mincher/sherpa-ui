@@ -1,8 +1,0 @@
-/**
- * Component Style Index
- * Import into style.css — light DOM component styles only.
- * Shadow DOM components load their own CSS via SherpaElement.
- *
- * sherpa-container uses shadow-scoped CSS via static cssUrl.
- * Grid positioning rules live in sherpa-layout-grid.
- */
