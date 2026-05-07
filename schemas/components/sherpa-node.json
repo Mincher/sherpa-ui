@@ -49,6 +49,11 @@
       "name": "data-subtype",
       "type": "string",
       "description": "Current sub-type value"
+    },
+    {
+      "name": "data-subtype-label",
+      "type": "string",
+      "description": "Optional label override displayed on the"
     }
   ],
   "slots": [

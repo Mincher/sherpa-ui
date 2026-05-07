@@ -7,18 +7,19 @@
     {
       "name": "data-match",
       "type": "string",
-      "description": "item] CSS selector identifying the",
-      "default": "sherpa-list"
+      "description": "CSS selector identifying the",
+      "default": "sherpa-list-item"
     },
     {
-      "name": "data",
+      "name": "data-empty",
       "type": "string",
-      "description": "empty=\"No results\"]      Empty-state message shown when"
+      "description": "Empty-state message shown when",
+      "default": "\"No results\""
     },
     {
-      "name": "data",
-      "type": "flag",
-      "description": "bordered]                Adds a rounded outer border."
+      "name": "data-bordered",
+      "type": "boolean",
+      "description": "Adds a rounded outer border."
     }
   ],
   "slots": [

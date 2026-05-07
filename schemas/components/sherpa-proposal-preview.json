@@ -5,9 +5,9 @@
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data",
+      "name": "data-rationale",
       "type": "string",
-      "description": "rationale]  Italic rationale shown above the ops."
+      "description": "Italic rationale shown above the ops."
     }
   ],
   "slots": [

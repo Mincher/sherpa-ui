@@ -5,14 +5,14 @@
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data",
+      "name": "data-role",
       "type": "enum",
-      "description": "role         \"user\" | \"ai\" (default \"ai\")."
+      "description": "\"user\" | \"ai\" (default \"ai\")."
     },
     {
-      "name": "data-avatar",
+      "name": "data-avatar-icon",
       "type": "string",
-      "description": "icon  Font Awesome class for the"
+      "description": "Font Awesome class for the"
     }
   ],
   "slots": [

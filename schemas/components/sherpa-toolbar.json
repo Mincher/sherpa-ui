@@ -8,6 +8,15 @@
       "name": "data-density",
       "type": "enum",
       "description": "Display density variant"
+    },
+    {
+      "name": "data-template",
+      "type": "enum",
+      "description": "Layout variant: default | actions (default: default)",
+      "enumValues": [
+        "default",
+        "actions"
+      ]
     }
   ],
   "slots": [

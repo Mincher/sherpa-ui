@@ -9,6 +9,9 @@ sherpa-node-canvas.js — Pan/zoom canvas hosting sherpa-node children. Owns: - 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-grid` | enum | "crosshair" (default) \| "none" | — | — |
+| `data-heading` | string | Root-level heading shown by the canvas header | — | — |
+| `data-show-header` | boolean | Reveals the built-in canvas header strip | — | — |
+| `data-export-title` | string | Title used when exporting the canvas (PDF / image) | — | — |
 
 ## Events
 
@@ -102,7 +105,7 @@ sherpa-node-canvas::part(header) {
 ### Basic
 
 ```html
-<sherpa-node-canvas></sherpa-node-canvas>
+<sherpa-node-canvas data-heading="value" data-export-title="value"></sherpa-node-canvas>
 ```
 
 ## Import

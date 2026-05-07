@@ -8,6 +8,21 @@
       "name": "data-grid",
       "type": "enum",
       "description": "\"crosshair\" (default) | \"none\""
+    },
+    {
+      "name": "data-heading",
+      "type": "string",
+      "description": "Root-level heading shown by the canvas header"
+    },
+    {
+      "name": "data-show-header",
+      "type": "boolean",
+      "description": "Reveals the built-in canvas header strip"
+    },
+    {
+      "name": "data-export-title",
+      "type": "string",
+      "description": "Title used when exporting the canvas (PDF / image)"
     }
   ],
   "slots": [],

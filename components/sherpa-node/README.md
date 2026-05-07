@@ -16,6 +16,7 @@ sherpa-node.js — Host element for a node-graph node. Mirrors data-x / data-y a
 | `data-node-id` | string | Stable node identifier | — | — |
 | `data-subtypes` | json | Flat Array<{value,label}> OR grouped | — | — |
 | `data-subtype` | string | Current sub-type value | — | — |
+| `data-subtype-label` | string | Optional label override displayed on the | — | — |
 
 ## Slots
 

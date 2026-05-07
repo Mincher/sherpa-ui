@@ -8,10 +8,10 @@ In-flow content section anchored to the left or right of a layout column. Fills 
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data` | enum | position=right]   left \| right — anchored side | — | `left`, `right` |
-| `data` | string | heading]          Header text | — | — |
-| `data` | flag | minimised]        Collapsed to a narrow strip | — | — |
-| `data-restore` | string | label]    Optional label shown on the | — | — |
+| `data-position` | enum | left \| right — anchored side | `right` | `left`, `right` |
+| `data-heading` | string | Header text | — | — |
+| `data-minimised` | boolean | Collapsed to a narrow strip | — | — |
+| `data-restore-label` | string | Optional label shown on the | — | — |
 
 ## Slots
 
@@ -92,7 +92,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-content-section data="left" data="value" data-restore="value">
+<sherpa-content-section data-position="left" data-heading="value" data-restore-label="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="toolbar"><!-- Toolbar row beneath the header --></span>

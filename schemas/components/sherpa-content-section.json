@@ -5,28 +5,29 @@
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data",
+      "name": "data-position",
       "type": "enum",
-      "description": "position=right]   left | right — anchored side",
+      "description": "left | right — anchored side",
+      "default": "right",
       "enumValues": [
         "left",
         "right"
       ]
     },
     {
-      "name": "data",
+      "name": "data-heading",
       "type": "string",
-      "description": "heading]          Header text"
+      "description": "Header text"
     },
     {
-      "name": "data",
-      "type": "flag",
-      "description": "minimised]        Collapsed to a narrow strip"
+      "name": "data-minimised",
+      "type": "boolean",
+      "description": "Collapsed to a narrow strip"
     },
     {
-      "name": "data-restore",
+      "name": "data-restore-label",
       "type": "string",
-      "description": "label]    Optional label shown on the"
+      "description": "Optional label shown on the"
     }
   ],
   "slots": [

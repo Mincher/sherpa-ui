@@ -11,6 +11,8 @@
  * @attr {string}  [data-row-height]      — CSS length for grid-auto-rows (default: 160px)
  * @attr {enum}    [data-content]         — "static" — opts out of grid; stacks children
  * @attr {boolean} [data-editable]        — Enables drag-to-reposition for slotted containers
+ * @attr {string}  [data-heading]         — Heading text shown on the grid header strip
+ * @attr {string}  [data-export-title]    — Title used when exporting the grid (PDF / image)
  *
  * @slot (default) — sherpa-container children
  *

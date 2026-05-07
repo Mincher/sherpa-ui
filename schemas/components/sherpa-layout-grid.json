@@ -18,6 +18,16 @@
       "name": "data-editable",
       "type": "boolean",
       "description": "Enables drag-to-reposition for slotted containers"
+    },
+    {
+      "name": "data-heading",
+      "type": "string",
+      "description": "Heading text shown on the grid header strip"
+    },
+    {
+      "name": "data-export-title",
+      "type": "string",
+      "description": "Title used when exporting the grid (PDF / image)"
     }
   ],
   "slots": [

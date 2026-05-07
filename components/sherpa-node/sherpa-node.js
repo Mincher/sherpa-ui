@@ -52,6 +52,9 @@
  * @attr {json}    data-subtypes — Flat Array<{value,label}> OR grouped
  *                                 Array<{label, options:[{value,label}]}>
  * @attr {string}  data-subtype  — Current sub-type value
+ * @attr {string}  data-subtype-label — Optional label override displayed on the
+ *                                  sub-type picker trigger (falls back to the
+ *                                  matching option's label when omitted)
  *
  * @fires sherpa-node-pointerdown
  *   bubbles: true, composed: true

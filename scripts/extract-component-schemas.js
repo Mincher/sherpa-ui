@@ -193,15 +193,24 @@ function parseJSDoc(lines) {
  * @attr {type} name           — Description
  */
 function parseAttr(line) {
-  //          {type}    [name=default]  or name   — desc
+  // Name accepts only [\w-]+ so a hyphen inside a name (e.g. `data-empty`)
+  // can't be confused with the optional em/en-dash separator. Description
+  // greedily captures the rest, with or without an em-dash separator, so
+  // both canonical (`name — desc`) and lazy (`name desc`) forms work.
+  //          {type}    [name=default]   [— ]?desc
   const m = line.match(
-    /^@attr\s+\{(\w+)\}\s+\[?([^\]=\s]+)(?:=([^\]]*))?\]?\s*(?:[—–-]\s*(.*))?$/
+    /^@attr\s+\{(\w+)\}\s+\[?([\w-]+)(?:=([^\]]*))?\]?\s*(?:[—–]\s+)?(.*)$/
   );
   if (!m) return { name: line.replace("@attr ", ""), type: "string", description: "" };
 
+  // Normalise legacy {flag} → {boolean} (the standard recognises only string,
+  // boolean, enum, number, json).
+  let type = m[1].trim();
+  if (type === "flag") type = "boolean";
+
   const attr = {
     name: m[2].trim(),
-    type: m[1].trim(),
+    type,
     description: (m[4] || "").trim(),
   };
 
@@ -247,7 +256,7 @@ function parseSlot(line) {
     };
   }
 
-  const m = stripped.match(/^(\S+)\s*(?:[—–-]\s*(.*))?$/);
+  const m = stripped.match(/^(\S+)\s*(?:[—–]\s*(.*))?$/);
   return {
     name: m ? m[1].trim() : stripped.trim(),
     description: m && m[2] ? m[2].trim() : "",
@@ -261,7 +270,7 @@ function parseSlot(line) {
  *   detail: none
  */
 function parseEvent(line, lines, currentIndex) {
-  const m = line.match(/^@fires\s+(\S+)\s*(?:[—–-]\s*(.*))?$/);
+  const m = line.match(/^@fires\s+(\S+)\s*(?:[—–]\s*(.*))?$/);
   const event = {
     name: m ? m[1] : line.replace("@fires ", "").trim(),
     description: m && m[2] ? m[2].trim() : "",
@@ -322,7 +331,7 @@ function parseDetailObject(str) {
  * @method ClassName.name(params) — (static) Description
  */
 function parseMethod(line) {
-  const m = line.match(/^@method\s+(\S+(?:\([^)]*\))?)\s*(?:[—–-]\s*(.*))?$/);
+  const m = line.match(/^@method\s+(\S+(?:\([^)]*\))?)\s*(?:[—–]\s*(.*))?$/);
   if (!m) return { name: line.replace("@method ", "").trim(), description: "" };
 
   let name = m[1].trim();
@@ -361,7 +370,7 @@ function parseMethod(line) {
  * @prop {type} name — Description
  */
 function parseProp(line) {
-  const m = line.match(/^@prop\s+\{([^}]+)\}\s+(\S+)\s*(?:[—–-]\s*(.*))?$/);
+  const m = line.match(/^@prop\s+\{([^}]+)\}\s+(\S+)\s*(?:[—–]\s*(.*))?$/);
   if (!m) return { name: line.replace("@prop ", "").trim(), type: "any", description: "" };
 
   const prop = {
@@ -382,7 +391,7 @@ function parseProp(line) {
  * @csspart name — Description
  */
 function parseCssPart(line) {
-  const m = line.match(/^@csspart\s+(\S+)\s*(?:[—–-]\s*(.*))?$/);
+  const m = line.match(/^@csspart\s+(\S+)\s*(?:[—–]\s*(.*))?$/);
   return {
     name: m ? m[1].trim() : line.replace("@csspart ", "").trim(),
     description: m && m[2] ? m[2].trim() : "",
@@ -393,7 +402,7 @@ function parseCssPart(line) {
  * @cssprop --name — Description
  */
 function parseCssProp(line) {
-  const m = line.match(/^@cssprop\s+(\S+)\s*(?:[—–-]\s*(.*))?$/);
+  const m = line.match(/^@cssprop\s+(\S+)\s*(?:[—–]\s*(.*))?$/);
   return {
     name: m ? m[1].trim() : line.replace("@cssprop ", "").trim(),
     description: m && m[2] ? m[2].trim() : "",
@@ -453,6 +462,22 @@ function main() {
       console.warn(`  ⚠ ${comp.name}: No @element tag found, skipping`);
       errorCount++;
       continue;
+    }
+
+    // Drift check: every attribute in observedAttributes should also have an
+    // @attr entry in the JSDoc header. Catches authors who add an observed
+    // attribute but forget to document it.
+    const observedMatch = source.match(/observedAttributes[\s\S]*?return\s*\[([\s\S]*?)\]/);
+    if (observedMatch) {
+      const observed = [...observedMatch[1].matchAll(/['"]([\w-]+)['"]/g)]
+        .map((m) => m[1]);
+      const documented = new Set(api.attributes.map((a) => a.name));
+      const undocumented = observed.filter((n) => !documented.has(n));
+      if (undocumented.length) {
+        console.warn(
+          `  ⚠ ${api.tagName}: observedAttributes not documented in JSDoc → ${undocumented.join(", ")}`
+        );
+      }
     }
 
     // Add category

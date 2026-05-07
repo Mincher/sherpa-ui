@@ -4,6 +4,7 @@
  *   zones and an optional filters row. Pure layout component — no data logic.
  *
  * @attr {enum} [data-density] — Display density variant
+ * @attr {enum} [data-template] — Layout variant: default | actions (default: default)
  *
  * @slot leading  — Start zone (title, CTA buttons)
  * @slot center   — Center zone (search — grows to fill)

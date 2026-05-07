@@ -9,7 +9,7 @@ Auto-growing prompt textarea with circular send button. Designed for AI / chat s
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-placeholder` | string | Placeholder text. | — | — |
-| `data-disabled` | flag | Disables input + send. | — | — |
+| `data-disabled` | boolean | Disables input + send. | — | — |
 | `data-max-height` | number | Max textarea height in px (default 160). | — | — |
 
 ## Events

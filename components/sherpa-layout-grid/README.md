@@ -11,6 +11,8 @@ Responsive dashboard grid. Slotted <sherpa-container data-variant="resizable"> c
 | `data-row-height` | string | CSS length for grid-auto-rows (default: 160px) | — | — |
 | `data-content` | enum | "static" — opts out of grid; stacks children | — | — |
 | `data-editable` | boolean | Enables drag-to-reposition for slotted containers | — | — |
+| `data-heading` | string | Heading text shown on the grid header strip | — | — |
+| `data-export-title` | string | Title used when exporting the grid (PDF / image) | — | — |
 
 ## Slots
 
@@ -69,7 +71,7 @@ sherpa-layout-grid::part(header) {
 ### Basic
 
 ```html
-<sherpa-layout-grid data-row-height="value">
+<sherpa-layout-grid data-row-height="value" data-heading="value">
   <!-- Default slot content -->
   <p>Your content here</p>
 </sherpa-layout-grid>

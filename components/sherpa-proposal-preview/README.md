@@ -8,7 +8,7 @@ Agent proposal renderer.
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data` | string | rationale]  Italic rationale shown above the ops. | — | — |
+| `data-rationale` | string | Italic rationale shown above the ops. | — | — |
 
 ## Slots
 
@@ -55,7 +55,7 @@ sherpa-proposal-preview::part(proposal) {
 ### Basic
 
 ```html
-<sherpa-proposal-preview data="value">
+<sherpa-proposal-preview data-rationale="value">
   <span slot="ops"><!-- One <sherpa-proposal-op> per change. --></span>
   <span slot="raw"><!-- Raw proposal payload (typically a <pre>). --></span>
 </sherpa-proposal-preview>

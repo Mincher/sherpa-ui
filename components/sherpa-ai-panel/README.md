@@ -8,13 +8,13 @@ Standalone chrome for AI / chat surfaces.
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data` | enum | variant     "inline" \| "overlay" (default "overlay") | — | — |
-| `data` | enum | position    "left" \| "right"     (default "right") | — | — |
-| `data` | flag | expanded    Visible state. | — | — |
-| `data` | string | heading     Header title (default "Ask AI"). | — | — |
-| `data` | string | width       Custom width (CSS value). | — | — |
-| `data-can` | flag | archive Enables archive button. | — | — |
-| `data` | flag | busy        Disables new-chat + archive. | — | — |
+| `data-variant` | enum | "inline" \| "overlay" (default "overlay") | — | — |
+| `data-position` | enum | "left" \| "right"     (default "right") | — | — |
+| `data-expanded` | boolean | Visible state. | — | — |
+| `data-heading` | string | Header title (default "Ask AI"). | — | — |
+| `data-width` | string | Custom width (CSS value). | — | — |
+| `data-can-archive` | boolean | Enables archive button. | — | — |
+| `data-busy` | boolean | Disables new-chat + archive. | — | — |
 
 ## Events
 
@@ -122,7 +122,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-ai-panel data="value"></sherpa-ai-panel>
+<sherpa-ai-panel data-heading="value"></sherpa-ai-panel>
 ```
 
 ## Import

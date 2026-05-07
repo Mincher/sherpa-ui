@@ -11,7 +11,7 @@
     },
     {
       "name": "data-disabled",
-      "type": "flag",
+      "type": "boolean",
       "description": "Disables input + send."
     },
     {

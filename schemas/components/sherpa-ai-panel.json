@@ -5,39 +5,39 @@
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data",
+      "name": "data-variant",
       "type": "enum",
-      "description": "variant     \"inline\" | \"overlay\" (default \"overlay\")"
+      "description": "\"inline\" | \"overlay\" (default \"overlay\")"
     },
     {
-      "name": "data",
+      "name": "data-position",
       "type": "enum",
-      "description": "position    \"left\" | \"right\"     (default \"right\")"
+      "description": "\"left\" | \"right\"     (default \"right\")"
     },
     {
-      "name": "data",
-      "type": "flag",
-      "description": "expanded    Visible state."
+      "name": "data-expanded",
+      "type": "boolean",
+      "description": "Visible state."
     },
     {
-      "name": "data",
+      "name": "data-heading",
       "type": "string",
-      "description": "heading     Header title (default \"Ask AI\")."
+      "description": "Header title (default \"Ask AI\")."
     },
     {
-      "name": "data",
+      "name": "data-width",
       "type": "string",
-      "description": "width       Custom width (CSS value)."
+      "description": "Custom width (CSS value)."
     },
     {
-      "name": "data-can",
-      "type": "flag",
-      "description": "archive Enables archive button."
+      "name": "data-can-archive",
+      "type": "boolean",
+      "description": "Enables archive button."
     },
     {
-      "name": "data",
-      "type": "flag",
-      "description": "busy        Disables new-chat + archive."
+      "name": "data-busy",
+      "type": "boolean",
+      "description": "Disables new-chat + archive."
     }
   ],
   "slots": [],

@@ -8,9 +8,9 @@ Searchable panel that wraps consumer-projected list content. Composes sherpa-inp
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data-match` | string | item] CSS selector identifying the | `sherpa-list` | — |
-| `data` | string | empty="No results"]      Empty-state message shown when | — | — |
-| `data` | flag | bordered]                Adds a rounded outer border. | — | — |
+| `data-match` | string | CSS selector identifying the | `sherpa-list-item` | — |
+| `data-empty` | string | Empty-state message shown when | `"No results"` | — |
+| `data-bordered` | boolean | Adds a rounded outer border. | — | — |
 
 ## Slots
 
@@ -75,7 +75,7 @@ sherpa-list-panel::part(body) {
 ### Basic
 
 ```html
-<sherpa-list-panel data-match="value" data="value">
+<sherpa-list-panel data-match="value" data-empty="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="search"><!-- Optional override for the default sherpa-input-search. --></span>

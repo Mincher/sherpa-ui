@@ -21,6 +21,9 @@
  * @element sherpa-node-canvas
  *
  * @attr {enum} data-grid — "crosshair" (default) | "none"
+ * @attr {string}  data-heading       — Root-level heading shown by the canvas header
+ * @attr {boolean} data-show-header   — Reveals the built-in canvas header strip
+ * @attr {string}  data-export-title  — Title used when exporting the canvas (PDF / image)
  *
  * @fires sherpa-edge-create
  *   bubbles: true, composed: true

@@ -8,8 +8,8 @@ Single change row inside <sherpa-proposal-preview>.
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data` | enum | op]     add \| remove \| update \| add-edge \| remove-edge | — | `add`, `remove`, `update`, `add-edge`, `remove-edge` |
-| `data` | string | label]  Body text describing the change. | — | — |
+| `data-op` | enum | add \| remove \| update \| add-edge \| remove-edge | — | `add`, `remove`, `update`, `add-edge`, `remove-edge` |
+| `data-label` | string | Body text describing the change. | — | — |
 
 ## CSS Parts
 
@@ -29,7 +29,7 @@ sherpa-proposal-op::part(tag) {
 ### Basic
 
 ```html
-<sherpa-proposal-op data="add" data="value"></sherpa-proposal-op>
+<sherpa-proposal-op data-op="add" data-label="Example Label"></sherpa-proposal-op>
 ```
 
 ## Import

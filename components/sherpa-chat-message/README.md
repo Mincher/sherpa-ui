@@ -8,8 +8,8 @@ Chat bubble for AI / messaging surfaces.
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data` | enum | role         "user" \| "ai" (default "ai"). | — | — |
-| `data-avatar` | string | icon  Font Awesome class for the | — | — |
+| `data-role` | enum | "user" \| "ai" (default "ai"). | — | — |
+| `data-avatar-icon` | string | Font Awesome class for the | — | — |
 
 ## Slots
 
@@ -53,7 +53,7 @@ sherpa-chat-message::part(message) {
 ### Basic
 
 ```html
-<sherpa-chat-message data-avatar="value">
+<sherpa-chat-message data-avatar-icon="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="avatar"><!-- Custom avatar content. Suppresses the default icon. --></span>

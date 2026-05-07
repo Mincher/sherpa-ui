@@ -5,9 +5,10 @@
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data",
+      "name": "data-variant",
       "type": "enum",
-      "description": "variant=default]   default | bordered | divided",
+      "description": "default | bordered | divided",
+      "default": "default",
       "enumValues": [
         "default",
         "bordered",
@@ -15,9 +16,10 @@
       ]
     },
     {
-      "name": "data",
+      "name": "data-density",
       "type": "enum",
-      "description": "density=default]   compact | default | comfortable",
+      "description": "compact | default | comfortable",
+      "default": "default",
       "enumValues": [
         "compact",
         "default",
@@ -25,14 +27,14 @@
       ]
     },
     {
-      "name": "data",
+      "name": "data-heading",
       "type": "string",
-      "description": "heading]           Optional list heading text"
+      "description": "Optional list heading text"
     },
     {
-      "name": "data",
+      "name": "data-empty",
       "type": "string",
-      "description": "empty]             Empty-state message (shown when no"
+      "description": "Empty-state message (shown when no"
     }
   ],
   "slots": [

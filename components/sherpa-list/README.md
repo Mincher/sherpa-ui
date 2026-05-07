@@ -8,10 +8,10 @@ Grouping container for sherpa-list-item children. Provides variant + density sty
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data` | enum | variant=default]   default \| bordered \| divided | — | `default`, `bordered`, `divided` |
-| `data` | enum | density=default]   compact \| default \| comfortable | — | `compact`, `default`, `comfortable` |
-| `data` | string | heading]           Optional list heading text | — | — |
-| `data` | string | empty]             Empty-state message (shown when no | — | — |
+| `data-variant` | enum | default \| bordered \| divided | `default` | `default`, `bordered`, `divided` |
+| `data-density` | enum | compact \| default \| comfortable | `default` | `compact`, `default`, `comfortable` |
+| `data-heading` | string | Optional list heading text | — | — |
+| `data-empty` | string | Empty-state message (shown when no | — | — |
 
 ## Slots
 
@@ -49,11 +49,19 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-list data="default" data="compact" data="value">
+<sherpa-list data-variant="default" data-density="compact" data-heading="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="actions"><!-- Header actions (buttons / menu) --></span>
 </sherpa-list>
+```
+
+### Variants
+
+```html
+<sherpa-list data-variant="default"></sherpa-list>
+<sherpa-list data-variant="bordered"></sherpa-list>
+<sherpa-list data-variant="divided"></sherpa-list>
 ```
 
 ## Import

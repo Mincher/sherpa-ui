@@ -5,9 +5,10 @@
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data",
+      "name": "data-frequency",
       "type": "enum",
-      "description": "frequency=weekly] once | hourly | daily | weekly | monthly",
+      "description": "once | hourly | daily | weekly | monthly",
+      "default": "weekly",
       "enumValues": [
         "once",
         "hourly",
