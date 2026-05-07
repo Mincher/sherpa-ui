@@ -86,12 +86,12 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: var(--sherpa-size-default, 20px);
+  font-size: var(--sherpa-size-md, 20px);
   line-height: 1;
 }
 
 .toast-icon .sherpa-icon {
-  --icon-size: var(--sherpa-size-default, 20px);
+  --icon-size: var(--sherpa-size-md, 20px);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

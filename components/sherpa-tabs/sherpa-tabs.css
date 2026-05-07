@@ -70,13 +70,13 @@
 
 .tab:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-border-focus, #0066cc);
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #0066cc);
 }
 
 /* ── Active tab ──────────────────────────────────────────────── */
 
 .tab[aria-selected="true"] {
-  border-bottom-color: var(--sherpa-border-control-primary-active, #3c5edd);
+  border-bottom-color: var(--sherpa-border-control-active-default, #3c5edd);
   color: var(--sherpa-text-active-base, #3c5edd);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }

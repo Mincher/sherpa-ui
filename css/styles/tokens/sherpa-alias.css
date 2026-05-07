@@ -1,15 +1,149 @@
 /**
- * Alias Tokens (Semantic)
+ * Alias Tokens — Semantic
  * Auto-generated from Figma Variables — do not edit manually.
  * Regenerate: node scripts/generate-css-tokens.js
  *
- * Semantic tokens referencing core primitives.
- * These are referenced by theme tokens via var().
+ * Mode-less semantic tokens (Figma "Alias" collection).
+ * Theme files reference these; switching theme rebinds — switching mode
+ * never touches this layer.
+ *
+ * `@property` registrations at the top of the file enable smooth
+ * interpolation when theme/mode tokens that resolve here animate.
  */
 
-/* Semantic tokens — Alias collection */
-:root {
-  /* ── Border ──────────────────────────────────────────────────── */
+/* ── @property registrations ──────────────────────────────────── */
+/* These let the UA interpolate token swaps (theme/mode change)    */
+
+@property --sherpa-color-brand-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-base { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-brand-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-base { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-blue-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-650 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-base { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-725 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-750 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-cyan-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-info-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-warning-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-urgent-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-critical-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-success-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-0 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-neutral-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-tones-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-effects-shadow-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-effects-shadow-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-400 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-base { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-700 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-800 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-new-1000 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-100 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-200 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-300 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-500 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-600 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-725 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-750 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-900 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --sherpa-color-primary-classic-base { syntax: "<color>"; inherits: true; initial-value: transparent; }
+
+:where(:root) {
+  color-scheme: light dark;
+
+  /* ── Border ────────────────────────────────────────────────── */
   --sherpa-border-rounding-base: var(--sherpa-core-border-radius-200);
   --sherpa-border-rounding-full: var(--sherpa-core-border-radius-1000);
   --sherpa-border-rounding-lg: var(--sherpa-core-border-radius-300);
@@ -25,7 +159,7 @@
   --sherpa-border-width-xl: var(--sherpa-core-border-stroke-500);
   --sherpa-border-width-xs: var(--sherpa-core-border-stroke-100);
 
-  /* ── Color ───────────────────────────────────────────────────── */
+  /* ── Color ─────────────────────────────────────────────────── */
   --sherpa-color-brand-100: var(--sherpa-core-color-extended-phlox-250);
   --sherpa-color-brand-1000: var(--sherpa-core-color-extended-deep-purple-600);
   --sherpa-color-brand-200: var(--sherpa-core-color-extended-phlox-300);
@@ -67,6 +201,48 @@
   --sherpa-color-neutral-700: var(--sherpa-core-color-basic-greyscale-700);
   --sherpa-color-neutral-800: var(--sherpa-core-color-basic-greyscale-900);
   --sherpa-color-neutral-900: var(--sherpa-core-color-basic-greyscale-1000);
+  --sherpa-color-primary-blue-100: var(--sherpa-core-color-basic-blue-0);
+  --sherpa-color-primary-blue-1000: var(--sherpa-core-color-extended-neon-blue-750);
+  --sherpa-color-primary-blue-200: var(--sherpa-core-color-basic-blue-100);
+  --sherpa-color-primary-blue-300: var(--sherpa-core-color-basic-blue-200);
+  --sherpa-color-primary-blue-400: var(--sherpa-core-color-basic-blue-300);
+  --sherpa-color-primary-blue-500: var(--sherpa-core-color-extended-neon-blue-500);
+  --sherpa-color-primary-blue-700: var(--sherpa-core-color-extended-neon-blue-600);
+  --sherpa-color-primary-blue-800: var(--sherpa-core-color-extended-neon-blue-650);
+  --sherpa-color-primary-blue-900: var(--sherpa-core-color-extended-neon-blue-700);
+  --sherpa-color-primary-blue-base: var(--sherpa-core-color-extended-neon-blue-550);
+  --sherpa-color-primary-classic-100: var(--sherpa-core-color-basic-blue-100);
+  --sherpa-color-primary-classic-200: var(--sherpa-core-color-basic-blue-200);
+  --sherpa-color-primary-classic-300: var(--sherpa-core-color-basic-blue-300);
+  --sherpa-color-primary-classic-500: var(--sherpa-core-color-basic-blue-500);
+  --sherpa-color-primary-classic-600: var(--sherpa-core-color-basic-blue-600);
+  --sherpa-color-primary-classic-725: var(--sherpa-core-color-basic-blue-700);
+  --sherpa-color-primary-classic-750: var(--sherpa-core-color-basic-blue-700);
+  --sherpa-color-primary-classic-900: var(--sherpa-core-color-basic-blue-900);
+  --sherpa-color-primary-classic-base: var(--sherpa-core-color-basic-blue-500);
+  --sherpa-color-primary-cyan-100: var(--sherpa-core-color-basic-blue-green-0);
+  --sherpa-color-primary-cyan-1000: var(--sherpa-core-color-basic-blue-green-1000);
+  --sherpa-color-primary-cyan-200: var(--sherpa-core-color-basic-blue-green-100);
+  --sherpa-color-primary-cyan-300: var(--sherpa-core-color-basic-blue-green-200);
+  --sherpa-color-primary-cyan-400: var(--sherpa-core-color-basic-blue-green-300);
+  --sherpa-color-primary-cyan-500: var(--sherpa-core-color-basic-blue-green-500);
+  --sherpa-color-primary-cyan-600: var(--sherpa-core-color-basic-blue-green-600);
+  --sherpa-color-primary-cyan-650: var(--sherpa-core-color-basic-blue-green-650);
+  --sherpa-color-primary-cyan-725: var(--sherpa-core-color-basic-blue-green-725);
+  --sherpa-color-primary-cyan-750: var(--sherpa-core-color-basic-blue-green-750);
+  --sherpa-color-primary-cyan-800: var(--sherpa-core-color-basic-blue-green-800);
+  --sherpa-color-primary-cyan-900: var(--sherpa-core-color-basic-blue-green-900);
+  --sherpa-color-primary-cyan-base: var(--sherpa-core-color-basic-blue-green-700);
+  --sherpa-color-primary-new-100: var(--sherpa-core-color-basic-blue-0);
+  --sherpa-color-primary-new-1000: var(--sherpa-core-color-extended-neon-blue-750);
+  --sherpa-color-primary-new-200: var(--sherpa-core-color-basic-blue-100);
+  --sherpa-color-primary-new-300: var(--sherpa-core-color-basic-blue-200);
+  --sherpa-color-primary-new-400: var(--sherpa-core-color-basic-blue-300);
+  --sherpa-color-primary-new-500: var(--sherpa-core-color-extended-neon-blue-500);
+  --sherpa-color-primary-new-700: var(--sherpa-core-color-extended-neon-blue-600);
+  --sherpa-color-primary-new-800: var(--sherpa-core-color-extended-neon-blue-650);
+  --sherpa-color-primary-new-900: var(--sherpa-core-color-extended-neon-blue-700);
+  --sherpa-color-primary-new-base: var(--sherpa-core-color-extended-neon-blue-550);
   --sherpa-color-success-100: var(--sherpa-core-color-basic-green-0);
   --sherpa-color-success-1000: var(--sherpa-core-color-basic-green-1000);
   --sherpa-color-success-200: var(--sherpa-core-color-basic-green-100);
@@ -108,11 +284,11 @@
   --sherpa-color-warning-800: var(--sherpa-core-color-extended-warm-yellow-800);
   --sherpa-color-warning-900: var(--sherpa-core-color-extended-warm-yellow-900);
 
-  /* ── Effects ─────────────────────────────────────────────────── */
+  /* ── Effects ───────────────────────────────────────────────── */
   --sherpa-effects-shadow-100: var(--sherpa-core-color-extended-slate-200);
   --sherpa-effects-shadow-200: rgba(55,47,79,0.2);
 
-  /* ── Fonts ───────────────────────────────────────────────────── */
+  /* ── Fonts ─────────────────────────────────────────────────── */
   --sherpa-fonts-context-brand: var(--sherpa-core-typeface-manrope-style-name);
   --sherpa-fonts-context-monospaced: var(--sherpa-core-typeface-source-code-pro-style-name);
   --sherpa-fonts-scale-0: 0;
@@ -137,7 +313,7 @@
   --sherpa-fonts-scale-xs: 10px;
   --sherpa-fonts-context-default: var(--sherpa-core-typeface-open-sans-style-name);
 
-  /* ── Size ────────────────────────────────────────────────────── */
+  /* ── Size ──────────────────────────────────────────────────── */
   --sherpa-size-2xl: var(--sherpa-core-scale-400);
   --sherpa-size-2xs: var(--sherpa-core-scale-100);
   --sherpa-size-3xl: var(--sherpa-core-scale-500);
@@ -152,7 +328,7 @@
   --sherpa-size-xl: var(--sherpa-core-scale-350);
   --sherpa-size-xs: var(--sherpa-core-scale-150);
 
-  /* ── Space ───────────────────────────────────────────────────── */
+  /* ── Space ─────────────────────────────────────────────────── */
   --sherpa-space-2xl: var(--sherpa-core-scale-400);
   --sherpa-space-2xs: var(--sherpa-core-scale-50);
   --sherpa-space-3xl: var(--sherpa-core-scale-500);
@@ -167,47 +343,13 @@
   --sherpa-space-xl: var(--sherpa-core-scale-300);
   --sherpa-space-xs: var(--sherpa-core-scale-100);
 
-  /* Base density default (overridden by [data-density]) */
+  /* Base density default — overridden by [data-density] axis */
   --sherpa-space-default: var(--sherpa-core-scale-200);
 }
 
-/* Density overrides — remap space tokens per density mode */
+/* ── Font composite tokens ──────────────────────────────────── */
 
-:root[data-density="compact"] {
-  --sherpa-space-2xl: var(--sherpa-core-scale-350);
-  --sherpa-space-2xs: var(--sherpa-core-scale-25);
-  --sherpa-space-3xl: var(--sherpa-core-scale-450);
-  --sherpa-space-3xs: var(--sherpa-core-scale-25);
-  --sherpa-space-4xl: var(--sherpa-core-scale-500);
-  --sherpa-space-5xl: var(--sherpa-core-scale-600);
-  --sherpa-space-6xl: var(--sherpa-core-scale-700);
-  --sherpa-space-default: var(--sherpa-core-scale-150);
-  --sherpa-space-lg: var(--sherpa-core-scale-200);
-  --sherpa-space-none: var(--sherpa-core-scale-0);
-  --sherpa-space-sm: var(--sherpa-core-scale-100);
-  --sherpa-space-xl: var(--sherpa-core-scale-250);
-  --sherpa-space-xs: var(--sherpa-core-scale-50);
-}
-
-:root[data-density="comfortable"] {
-  --sherpa-space-2xl: var(--sherpa-core-scale-450);
-  --sherpa-space-2xs: var(--sherpa-core-scale-100);
-  --sherpa-space-3xl: var(--sherpa-core-scale-600);
-  --sherpa-space-3xs: var(--sherpa-core-scale-50);
-  --sherpa-space-4xl: var(--sherpa-core-scale-700);
-  --sherpa-space-5xl: var(--sherpa-core-scale-800);
-  --sherpa-space-6xl: var(--sherpa-core-scale-800);
-  --sherpa-space-default: var(--sherpa-core-scale-250);
-  --sherpa-space-lg: var(--sherpa-core-scale-300);
-  --sherpa-space-none: var(--sherpa-core-scale-0);
-  --sherpa-space-sm: var(--sherpa-core-scale-200);
-  --sherpa-space-xl: var(--sherpa-core-scale-350);
-  --sherpa-space-xs: var(--sherpa-core-scale-150);
-}
-
-/* ─── Font composite tokens ─────────────────────────────────────── */
-
-:root {
+:where(:root) {
   /* ── h1 ── */
   --sherpa-font-h1-letter-spacing: -0.02;
   --sherpa-font-h1-line-height: var(--sherpa-fonts-scale-13xl);
@@ -252,7 +394,7 @@
 
   /* ── sm ── */
   --sherpa-font-sm-letter-spacing: 0.1;
-  --sherpa-font-sm-line-height: var(--sherpa-fonts-scale-base);
+  --sherpa-font-sm-line-height: var(--sherpa-fonts-scale-lg);
   --sherpa-font-sm-paragraph-spacing: var(--sherpa-fonts-scale-2xs);
   --sherpa-font-sm-size: var(--sherpa-fonts-scale-sm);
 
@@ -263,63 +405,3 @@
   --sherpa-font-xs-size: var(--sherpa-fonts-scale-xs);
 
 }
-
-/* ─── Global status → --_status-* mapping ──────────────────────── */
-/* Custom properties inherit through shadow DOM, so any descendant   */
-/* web component picks these up via var(--_status-*, fallback).      */
-
-[data-status="critical"] {
-  --_status-border:                      var(--sherpa-border-context-error-default);
-  --_status-surface:                     var(--sherpa-surface-control-default);
-  --_status-surface-hover:               var(--sherpa-surface-control-hover);
-  --_status-surface-down:                var(--sherpa-surface-control-down);
-  --_status-text:                        var(--sherpa-text-context-error-on-color-subtle);
-  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
-  --_status-icon:                        var(--sherpa-icon-context-error-on-color-subtle);
-  --_status-shadow:                      var(--sherpa-elevation-tint-error);
-}
-
-[data-status="info"] {
-  --_status-border:                      var(--sherpa-border-context-info-default);
-  --_status-surface:                     var(--sherpa-surface-control-default);
-  --_status-surface-hover:               var(--sherpa-surface-control-hover);
-  --_status-surface-down:                var(--sherpa-surface-control-down);
-  --_status-text:                        var(--sherpa-text-context-info-on-color-subtle);
-  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
-  --_status-icon:                        var(--sherpa-icon-context-info-on-color-subtle);
-  --_status-shadow:                      var(--sherpa-elevation-tint-info);
-}
-
-[data-status="success"] {
-  --_status-border:                      var(--sherpa-border-context-success-default);
-  --_status-surface:                     var(--sherpa-surface-control-default);
-  --_status-surface-hover:               var(--sherpa-surface-control-hover);
-  --_status-surface-down:                var(--sherpa-surface-control-down);
-  --_status-text:                        var(--sherpa-text-context-success-on-color-subtle);
-  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
-  --_status-icon:                        var(--sherpa-icon-context-success-on-color-subtle);
-  --_status-shadow:                      var(--sherpa-elevation-tint-success);
-}
-
-[data-status="warning"] {
-  --_status-border:                      var(--sherpa-border-context-warning-default);
-  --_status-surface:                     var(--sherpa-surface-control-default);
-  --_status-surface-hover:               var(--sherpa-surface-control-hover);
-  --_status-surface-down:                var(--sherpa-surface-control-down);
-  --_status-text:                        var(--sherpa-text-context-warning-on-color-subtle);
-  --_status-text-on-color:               var(--sherpa-text-default-on-color-subtle-body);
-  --_status-icon:                        var(--sherpa-icon-context-default-on-color-subtle-body);
-  --_status-shadow:                      var(--sherpa-elevation-tint-warning);
-}
-
-[data-status="urgent"] {
-  --_status-border:                      var(--sherpa-border-context-urgent-default);
-  --_status-surface:                     var(--sherpa-surface-control-default);
-  --_status-surface-hover:               var(--sherpa-surface-control-hover);
-  --_status-surface-down:                var(--sherpa-surface-control-down);
-  --_status-text:                        var(--sherpa-text-context-urgent-on-color-subtle);
-  --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
-  --_status-icon:                        var(--sherpa-icon-context-urgent-on-color-subtle);
-  --_status-shadow:                      var(--sherpa-elevation-tint-urgent);
-}
-

@@ -35,7 +35,11 @@
   overflow: hidden;
   width: var(--_w-collapsed);
   background: var(--sherpa-surface-app-product-nav-bg, #ffffff);
-  color: var(--sherpa-text-default-on-color-heading, #ffffff);
+  /* nav-bg is neutral (neutral-0 / neutral-1000), not a saturated brand fill,
+     so use the mode-aware default heading colour rather than the always-white
+     on-color variant. The on-color tokens are only correct on saturated/strong
+     surfaces (e.g. sherpa-button primary, sherpa-tag color). */
+  color: var(--sherpa-text-default-heading, #18191a);
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   transition: width var(--sherpa-motion-duration-base, 0.25s)
@@ -100,7 +104,7 @@ summary {
   overflow: hidden auto;
   gap: var(--sherpa-space-xs, 12px);
   scrollbar-width: thin;
-  scrollbar-color: var(--sherpa-text-default-on-color-secondary, #f2f2f2) transparent;
+  scrollbar-color: var(--sherpa-text-default-secondary, #6a6a75) transparent;
   container-type: scroll-state;
   container-name: nav-scroller;
 }
@@ -212,7 +216,7 @@ summary {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: var(--sherpa-text-default-on-color-secondary, #f2f2f2);
+  color: var(--sherpa-text-default-secondary, #6a6a75);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -220,7 +224,7 @@ summary {
 .nav-divider-line {
   flex: 1;
   height: 1px;
-  background: var(--sherpa-text-default-on-color-secondary, #f2f2f2);
+  background: var(--sherpa-border-container-subtle, #e5e5e5);
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -228,7 +232,7 @@ summary {
    ══════════════════════════════════════════════════════════════════════ */
 
 ::highlight(nav-search-match) {
-  background-color: var(--sherpa-surface-search-highlight);
+  background-color: var(--sherpa-surface-search-highlight, rgba(255, 216, 64, 0.35));
   color: inherit;
 }
 
@@ -250,7 +254,7 @@ summary {
   background: var(--sherpa-surface-app-product-nav-active, #f8ebff);
 
   &::part(indicator) {
-    background: var(--sherpa-surface-app-product-bar-brand);
+    background: var(--sherpa-color-brand-base, #c046ff);
   }
 }
 
@@ -314,7 +318,7 @@ summary {
   }
 
   & .nav-edit-btn {
-    color: var(--sherpa-surface-app-product-bar-brand);
+    color: var(--sherpa-color-brand-base, #c046ff);
   }
 }
 

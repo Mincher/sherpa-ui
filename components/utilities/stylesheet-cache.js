@@ -28,6 +28,28 @@ function _withBust(url) {
 const IMPORT_RE =
   /@import\s+(?:url\(\s*['"]?(.+?)['"]?\s*\)|['"](.+?)['"])\s*;/g;
 
+/* Match url(...) refs that are NOT inside an @import (handled separately).
+   Skips data: URIs and already-absolute URLs. */
+const URL_RE = /url\(\s*(['"]?)(?!data:|https?:|\/\/|#)([^'")]+)\1\s*\)/g;
+
+/**
+ * Rewrite relative url(...) references in CSS text to be absolute against
+ * the CSS file's own URL. Required because constructable stylesheets
+ * resolve url() against the *document* base, not the source CSS URL —
+ * which would break @font-face src paths for stylesheets fetched from a
+ * CDN (e.g. Font Awesome's webfonts/ folder).
+ */
+function absolutiseUrls(css, base) {
+  return css.replace(URL_RE, (match, quote, href) => {
+    try {
+      const abs = new URL(href, base).href;
+      return `url(${quote}${abs}${quote})`;
+    } catch {
+      return match;
+    }
+  });
+}
+
 /**
  * Recursively inline @import rules in CSS text.
  * @param {string} css  — raw CSS text
@@ -46,7 +68,11 @@ async function resolveImports(css, base) {
       if (!resp.ok) throw new Error(resp.status);
       const imported = await resp.text();
       const inlined = await resolveImports(imported, url);
-      resolved = resolved.replace(m[0], inlined);
+      // Absolutise url() refs in the imported CSS against ITS source URL
+      // before splicing into the parent stylesheet — relative paths in the
+      // child must not be re-resolved against the parent's location.
+      const absolutised = absolutiseUrls(inlined, url);
+      resolved = resolved.replace(m[0], absolutised);
     } catch {
       resolved = resolved.replace(m[0], `/* @import failed: ${href} */`);
     }
@@ -68,7 +94,11 @@ export function getSheet(url) {
     const resp = await fetch(_withBust(url));
     if (!resp.ok) throw new Error(`CSS ${resp.status} ${url}`);
     const raw = await resp.text();
-    const css = await resolveImports(raw, url);
+    const imported = await resolveImports(raw, url);
+    // Absolutise url() refs against the source CSS URL — constructable
+    // stylesheets otherwise resolve relative paths against the document,
+    // which breaks @font-face for sheets fetched from a CDN.
+    const css = absolutiseUrls(imported, url);
     const sheet = new CSSStyleSheet();
     await sheet.replace(css);
     return sheet;

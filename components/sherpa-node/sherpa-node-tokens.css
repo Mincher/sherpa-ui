@@ -118,7 +118,7 @@
   /* ── Canvas grid ──────────────────────────────────────────────── */
   --sherpa-node-canvas-grid-step:  24px;
   --sherpa-node-canvas-grid-arm:    3px;
-  --sherpa-node-canvas-grid-color: var(--sherpa-border-container-subtle-default, rgba(0, 0, 0, 0.08));
+  --sherpa-node-canvas-grid-color: var(--sherpa-border-container-subtle, rgba(0, 0, 0, 0.08));
 }
 
 /* Native [hidden] support */

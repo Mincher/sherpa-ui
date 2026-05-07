@@ -1,97 +1,241 @@
 /**
- * Classic — Theme Tokens
+ * Classic — Theme tokens
  * Auto-generated from Figma Variables — do not edit manually.
  * Regenerate: node scripts/generate-css-tokens.js
  *
- * Per-theme overrides for the Classic collection.
- * Loaded after sherpa-theme-base.css; only properties whose value
- * differs from the base appear here.
- * Uses CSS light-dark() for light/dark mode switching.
+ * Diff-only override against the default theme (apex-2-core).
+ *
+ * REQUIRES the default theme to be loaded FIRST. Activate this theme by:
+ *   1. Loading this file (e.g. <link rel="stylesheet" href="themes/classic.css">)
+ *   2. Setting <html data-theme="classic">
+ *
+ * Each mode block re-emits not only props that differ in that mode, but
+ * also any light-diffed prop whose dark/hc value matches the base — this
+ * prevents source-order leak of light overrides into dark/hc cascades.
  */
 
 @layer theme {
-:root {
 
-  /* ── Surface — App Chrome ──────────────────────────────────── */
-  --sherpa-surface-app-background-default: light-dark(var(--sherpa-core-color-basic-monochrome-25), var(--sherpa-core-color-basic-monochrome-950));
+/* ── Light overrides ─────────────────────────── */
+:where(:root[data-theme="classic"]) {
+  --sherpa-surface-app-background-default: var(--sherpa-core-color-basic-monochrome-25);
   --sherpa-surface-app-product-bar-bg: var(--sherpa-color-neutral-1000);
   --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-base);
   --sherpa-surface-app-product-bar-product-text: var(--sherpa-color-neutral-200);
-  --sherpa-surface-app-product-nav-active: rgba(133, 0, 204, 0.2);
-  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-base);
-  --sherpa-surface-app-product-nav-base-icon: light-dark(var(--sherpa-icon-default-on-color-body), var(--sherpa-text-default-on-color-body));
-  --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-on-color-body);
-  --sherpa-surface-app-product-nav-bg: light-dark(var(--sherpa-color-neutral-900), var(--sherpa-color-tones-900));
-  --sherpa-surface-app-product-nav-down: var(--sherpa-color-neutral-1000);
-  --sherpa-surface-app-product-nav-hover: var(--sherpa-color-neutral-1000);
-  --sherpa-surface-app-product-nav-sub-active: rgba(133, 0, 204, 0.4);
+  --sherpa-surface-app-product-nav-bg: var(--sherpa-color-neutral-900);
   --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-tones-1000);
+  --sherpa-surface-app-product-nav-hover: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-down: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-active: rgba(133,0,204,0.2);
+  --sherpa-surface-app-product-nav-sub-active: rgba(133,0,204,0.4);
+  --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-on-color-body);
   --sherpa-surface-app-product-nav-text: var(--sherpa-text-default-on-color-body);
-
-  /* ── Surface — Container ───────────────────────────────────── */
-  --sherpa-surface-container-active-default: light-dark(var(--sherpa-color-brand-100), var(--sherpa-color-brand-900));
-  --sherpa-surface-container-active-down: light-dark(var(--sherpa-color-brand-300), var(--sherpa-color-brand-700));
-  --sherpa-surface-container-active-hover: light-dark(var(--sherpa-color-brand-200), var(--sherpa-color-brand-600));
-
-  /* ── Surface — Control (Interactive) ───────────────────────── */
-  --sherpa-surface-control-active-default: light-dark(var(--sherpa-color-primary-cyan-100), var(--sherpa-color-primary-cyan-900));
-  --sherpa-surface-control-active-down: light-dark(var(--sherpa-color-primary-cyan-300), var(--sherpa-color-primary-cyan-600));
-  --sherpa-surface-control-active-hover: light-dark(var(--sherpa-color-primary-cyan-200), var(--sherpa-color-primary-cyan-500));
-  --sherpa-surface-control-primary-default: var(--sherpa-color-primary-cyan-base);
-  --sherpa-surface-control-primary-down: var(--sherpa-color-primary-cyan-750);
-  --sherpa-surface-control-primary-hover: var(--sherpa-color-primary-cyan-base);
-  --sherpa-surface-control-secondary-default: light-dark(var(--sherpa-color-neutral-0), var(--sherpa-color-neutral-900));
-  --sherpa-surface-control-secondary-hover: light-dark(var(--sherpa-color-neutral-200), var(--sherpa-color-neutral-1000));
-
-  /* ── Border — Container ────────────────────────────────────── */
-  --sherpa-border-container-active: var(--sherpa-color-brand-700);
-
-  /* ── Border — Control (Interactive) ────────────────────────── */
-  --sherpa-border-control-active-default: var(--sherpa-color-primary-cyan-base);
-  --sherpa-border-control-active-down: var(--sherpa-color-primary-cyan-750);
-  --sherpa-border-control-active-hover: var(--sherpa-color-primary-cyan-725);
-  --sherpa-border-control-primary-default: var(--sherpa-color-primary-cyan-600);
-  --sherpa-border-control-primary-down: var(--sherpa-color-primary-cyan-base);
-  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-cyan-base);
-
-  /* ── Font ──────────────────────────────────────────────────── */
-  --sherpa-font-base-size: 13px;
-  --sherpa-font-xs-size: 11px;
-
-  /* ── Component ─────────────────────────────────────────────── */
-  --sherpa-component-accordion-border-color: light-dark(rgba(213, 213, 213, 0), rgba(255, 255, 255, 0));
-  --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-none);
+  --sherpa-surface-app-product-nav-base-icon: var(--sherpa-icon-default-on-color-body);
+  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-base);
+  --sherpa-surface-control-primary-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-surface-control-primary-hover: var(--sherpa-color-primary-classic-base);
+  --sherpa-surface-control-primary-down: var(--sherpa-color-primary-classic-750);
+  --sherpa-surface-control-active-default: var(--sherpa-color-primary-classic-100);
+  --sherpa-surface-control-active-hover: var(--sherpa-color-primary-classic-200);
+  --sherpa-surface-control-active-down: var(--sherpa-color-primary-classic-300);
+  --sherpa-text-active-base: var(--sherpa-color-primary-classic-base);
+  --sherpa-icon-active-base: var(--sherpa-color-primary-classic-base);
+  --sherpa-text-active-alt: var(--sherpa-color-primary-classic-base);
+  --sherpa-icon-active-alt: var(--sherpa-color-primary-classic-base);
+  --sherpa-text-primary-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-icon-primary-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-classic-base);
+  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-classic-base);
+  --sherpa-border-control-primary-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-classic-725);
+  --sherpa-border-control-primary-down: var(--sherpa-color-primary-classic-750);
+  --sherpa-border-control-active-hover: var(--sherpa-color-primary-classic-725);
+  --sherpa-border-control-active-down: var(--sherpa-color-primary-classic-750);
   --sherpa-component-banner-border-rounding: var(--sherpa-border-rounding-lg);
-  --sherpa-component-tag-border-rounding: var(--sherpa-border-rounding-full);
-  --sherpa-component-toast-border-thickness-left: var(--sherpa-border-width-base);
-
-  /* ── Text ──────────────────────────────────────────────────── */
-  --sherpa-text-active-alt: light-dark(var(--sherpa-color-primary-cyan-base), var(--sherpa-color-primary-cyan-400));
-  --sherpa-text-active-base: light-dark(var(--sherpa-color-primary-cyan-base), var(--sherpa-color-primary-cyan-400));
-  --sherpa-text-primary-default: light-dark(var(--sherpa-color-primary-cyan-600), var(--sherpa-color-primary-cyan-300));
-  --sherpa-text-primary-on-color: var(--sherpa-color-primary-cyan-200);
-  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-cyan-600);
-
-  /* ── Icon ──────────────────────────────────────────────────── */
-  --sherpa-icon-active-alt: var(--sherpa-color-primary-cyan-base);
-  --sherpa-icon-active-base: var(--sherpa-color-primary-cyan-base);
-  --sherpa-icon-primary-default: light-dark(var(--sherpa-color-primary-cyan-600), var(--sherpa-color-primary-cyan-300));
-  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-cyan-200);
-  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-cyan-600);
-
-  /* ── Theme-scoped Alias Families ───────────────────────────── */
-  --sherpa-color-primary-cyan-100: var(--sherpa-core-color-basic-blue-green-0);
-  --sherpa-color-primary-cyan-1000: var(--sherpa-core-color-basic-blue-green-1000);
-  --sherpa-color-primary-cyan-200: var(--sherpa-core-color-basic-blue-green-100);
-  --sherpa-color-primary-cyan-300: var(--sherpa-core-color-basic-blue-green-200);
-  --sherpa-color-primary-cyan-400: var(--sherpa-core-color-basic-blue-green-300);
-  --sherpa-color-primary-cyan-500: var(--sherpa-core-color-basic-blue-green-500);
-  --sherpa-color-primary-cyan-600: var(--sherpa-core-color-basic-blue-green-600);
-  --sherpa-color-primary-cyan-650: var(--sherpa-core-color-basic-blue-green-650);
-  --sherpa-color-primary-cyan-725: var(--sherpa-core-color-basic-blue-green-725);
-  --sherpa-color-primary-cyan-750: var(--sherpa-core-color-basic-blue-green-750);
-  --sherpa-color-primary-cyan-800: var(--sherpa-core-color-basic-blue-green-800);
-  --sherpa-color-primary-cyan-900: var(--sherpa-core-color-basic-blue-green-900);
-  --sherpa-color-primary-cyan-base: var(--sherpa-core-color-basic-blue-green-700);
+  --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-none);
+  --sherpa-component-accordion-border-color: rgba(213,213,213,0);
 }
+
+/* ── Dark ──────────────────────────────────────────────────── */
+:where(:root[data-theme="classic"][data-mode="dark"]) {
+  --sherpa-surface-app-background-default: var(--sherpa-core-color-basic-monochrome-950);
+  --sherpa-surface-app-product-bar-bg: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-base);
+  --sherpa-surface-app-product-bar-product-text: var(--sherpa-color-neutral-200);
+  --sherpa-surface-app-product-nav-bg: var(--sherpa-color-tones-900);
+  --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-tones-1000);
+  --sherpa-surface-app-product-nav-hover: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-down: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-active: rgba(133,0,204,0.2);
+  --sherpa-surface-app-product-nav-sub-active: rgba(133,0,204,0.4);
+  --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-on-color-body);
+  --sherpa-surface-app-product-nav-text: var(--sherpa-text-default-on-color-body);
+  --sherpa-surface-app-product-nav-base-icon: var(--sherpa-text-default-on-color-body);
+  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-base);
+  --sherpa-surface-control-primary-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-surface-control-primary-hover: var(--sherpa-color-primary-classic-base);
+  --sherpa-surface-control-primary-down: var(--sherpa-color-primary-classic-750);
+  --sherpa-surface-control-secondary-default: var(--sherpa-color-neutral-900);
+  --sherpa-surface-control-secondary-hover: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-control-active-default: var(--sherpa-color-primary-classic-900);
+  --sherpa-surface-control-active-hover: var(--sherpa-color-primary-classic-500);
+  --sherpa-surface-control-active-down: var(--sherpa-color-primary-classic-600);
+  --sherpa-text-active-base: var(--sherpa-color-primary-classic-base);
+  --sherpa-icon-active-base: var(--sherpa-color-primary-classic-base);
+  --sherpa-text-active-alt: var(--sherpa-color-primary-classic-base);
+  --sherpa-icon-active-alt: var(--sherpa-color-primary-classic-base);
+  --sherpa-text-primary-default: var(--sherpa-color-primary-classic-300);
+  --sherpa-icon-primary-default: var(--sherpa-color-primary-classic-600);
+  --sherpa-text-primary-on-color: var(--sherpa-color-primary-classic-200);
+  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-classic-200);
+  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-classic-600);
+  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-classic-base);
+  --sherpa-border-control-primary-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-classic-725);
+  --sherpa-border-control-primary-down: var(--sherpa-color-primary-classic-750);
+  --sherpa-border-control-active-default: var(--sherpa-color-primary-classic-base);
+  --sherpa-border-control-active-hover: var(--sherpa-color-primary-classic-725);
+  --sherpa-border-control-active-down: var(--sherpa-color-primary-classic-750);
+  --sherpa-component-banner-border-rounding: var(--sherpa-border-rounding-lg);
+  --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-none);
+  --sherpa-component-accordion-border-color: rgba(255,255,255,0);
+}
+
+@media (prefers-color-scheme: dark) {
+  :where(:root[data-theme="classic"]:not([data-mode="light"]):not([data-mode="hc"])) {
+    --sherpa-surface-app-background-default: var(--sherpa-core-color-basic-monochrome-950);
+    --sherpa-surface-app-product-bar-bg: var(--sherpa-color-neutral-1000);
+    --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-base);
+    --sherpa-surface-app-product-bar-product-text: var(--sherpa-color-neutral-200);
+    --sherpa-surface-app-product-nav-bg: var(--sherpa-color-tones-900);
+    --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-tones-1000);
+    --sherpa-surface-app-product-nav-hover: var(--sherpa-color-neutral-1000);
+    --sherpa-surface-app-product-nav-down: var(--sherpa-color-neutral-1000);
+    --sherpa-surface-app-product-nav-active: rgba(133,0,204,0.2);
+    --sherpa-surface-app-product-nav-sub-active: rgba(133,0,204,0.4);
+    --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-on-color-body);
+    --sherpa-surface-app-product-nav-text: var(--sherpa-text-default-on-color-body);
+    --sherpa-surface-app-product-nav-base-icon: var(--sherpa-text-default-on-color-body);
+    --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-base);
+    --sherpa-surface-control-primary-default: var(--sherpa-color-primary-classic-base);
+    --sherpa-surface-control-primary-hover: var(--sherpa-color-primary-classic-base);
+    --sherpa-surface-control-primary-down: var(--sherpa-color-primary-classic-750);
+    --sherpa-surface-control-secondary-default: var(--sherpa-color-neutral-900);
+    --sherpa-surface-control-secondary-hover: var(--sherpa-color-neutral-1000);
+    --sherpa-surface-control-active-default: var(--sherpa-color-primary-classic-900);
+    --sherpa-surface-control-active-hover: var(--sherpa-color-primary-classic-500);
+    --sherpa-surface-control-active-down: var(--sherpa-color-primary-classic-600);
+    --sherpa-text-active-base: var(--sherpa-color-primary-classic-base);
+    --sherpa-icon-active-base: var(--sherpa-color-primary-classic-base);
+    --sherpa-text-active-alt: var(--sherpa-color-primary-classic-base);
+    --sherpa-icon-active-alt: var(--sherpa-color-primary-classic-base);
+    --sherpa-text-primary-default: var(--sherpa-color-primary-classic-300);
+    --sherpa-icon-primary-default: var(--sherpa-color-primary-classic-600);
+    --sherpa-text-primary-on-color: var(--sherpa-color-primary-classic-200);
+    --sherpa-icon-primary-on-color: var(--sherpa-color-primary-classic-200);
+    --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-classic-600);
+    --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-classic-base);
+    --sherpa-border-control-primary-default: var(--sherpa-color-primary-classic-base);
+    --sherpa-border-control-primary-hover: var(--sherpa-color-primary-classic-725);
+    --sherpa-border-control-primary-down: var(--sherpa-color-primary-classic-750);
+    --sherpa-border-control-active-default: var(--sherpa-color-primary-classic-base);
+    --sherpa-border-control-active-hover: var(--sherpa-color-primary-classic-725);
+    --sherpa-border-control-active-down: var(--sherpa-color-primary-classic-750);
+    --sherpa-component-banner-border-rounding: var(--sherpa-border-rounding-lg);
+    --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-none);
+    --sherpa-component-accordion-border-color: rgba(255,255,255,0);
+  }
+}
+
+/* ── High Contrast ─────────────────────────────────────────── */
+:where(:root[data-theme="classic"][data-mode="hc"]) {
+  --sherpa-surface-app-background-default: rgba(255,255,255,1);
+  --sherpa-surface-app-product-bar-bg: rgba(245,245,245,1);
+  --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
+  --sherpa-surface-app-product-bar-product-text: var(--sherpa-color-neutral-200);
+  --sherpa-surface-app-product-nav-bg: rgba(255,255,255,1);
+  --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-hover: rgba(235,235,235,1);
+  --sherpa-surface-app-product-nav-down: rgba(224,224,224,1);
+  --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-900);
+  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-color-brand-900);
+  --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-body);
+  --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-200);
+  --sherpa-surface-app-product-nav-base-icon: var(--sherpa-text-default-on-color-body);
+  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-200);
+  --sherpa-surface-control-primary-default: rgba(51,51,51,1);
+  --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
+  --sherpa-surface-control-primary-down: rgba(51,51,51,1);
+  --sherpa-surface-control-secondary-default: var(--sherpa-color-neutral-800);
+  --sherpa-surface-control-secondary-hover: var(--sherpa-color-neutral-900);
+  --sherpa-surface-control-active-default: var(--sherpa-color-brand-900);
+  --sherpa-surface-control-active-hover: var(--sherpa-color-brand-1000);
+  --sherpa-surface-control-active-down: var(--sherpa-color-brand-1000);
+  --sherpa-text-active-base: var(--sherpa-color-brand-200);
+  --sherpa-icon-active-base: var(--sherpa-color-brand-200);
+  --sherpa-text-active-alt: var(--sherpa-text-default-body);
+  --sherpa-icon-active-alt: var(--sherpa-icon-context-default-body);
+  --sherpa-text-primary-default: var(--sherpa-color-primary-new-300);
+  --sherpa-icon-primary-default: var(--sherpa-color-primary-new-300);
+  --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-new-base);
+  --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-new-700);
+  --sherpa-border-control-primary-default: var(--sherpa-color-primary-new-base);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+  --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
+  --sherpa-border-control-active-default: var(--sherpa-color-brand-200);
+  --sherpa-border-control-active-hover: var(--sherpa-color-brand-300);
+  --sherpa-border-control-active-down: var(--sherpa-color-brand-400);
+  --sherpa-component-banner-border-rounding: var(--sherpa-border-rounding-base);
+  --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-base);
+  --sherpa-component-accordion-border-color: var(--sherpa-border-container-default);
+}
+
+@media (prefers-contrast: more) {
+  :where(:root[data-theme="classic"]:not([data-mode="light"]):not([data-mode="dark"])) {
+    --sherpa-surface-app-background-default: rgba(255,255,255,1);
+    --sherpa-surface-app-product-bar-bg: rgba(245,245,245,1);
+    --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
+    --sherpa-surface-app-product-bar-product-text: var(--sherpa-color-neutral-200);
+    --sherpa-surface-app-product-nav-bg: rgba(255,255,255,1);
+    --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-neutral-1000);
+    --sherpa-surface-app-product-nav-hover: rgba(235,235,235,1);
+    --sherpa-surface-app-product-nav-down: rgba(224,224,224,1);
+    --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-900);
+    --sherpa-surface-app-product-nav-sub-active: var(--sherpa-color-brand-900);
+    --sherpa-surface-app-product-nav-base-text: var(--sherpa-text-default-body);
+    --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-200);
+    --sherpa-surface-app-product-nav-base-icon: var(--sherpa-text-default-on-color-body);
+    --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-200);
+    --sherpa-surface-control-primary-default: rgba(51,51,51,1);
+    --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
+    --sherpa-surface-control-primary-down: rgba(51,51,51,1);
+    --sherpa-surface-control-secondary-default: var(--sherpa-color-neutral-800);
+    --sherpa-surface-control-secondary-hover: var(--sherpa-color-neutral-900);
+    --sherpa-surface-control-active-default: var(--sherpa-color-brand-900);
+    --sherpa-surface-control-active-hover: var(--sherpa-color-brand-1000);
+    --sherpa-surface-control-active-down: var(--sherpa-color-brand-1000);
+    --sherpa-text-active-base: var(--sherpa-color-brand-200);
+    --sherpa-icon-active-base: var(--sherpa-color-brand-200);
+    --sherpa-text-active-alt: var(--sherpa-text-default-body);
+    --sherpa-icon-active-alt: var(--sherpa-icon-context-default-body);
+    --sherpa-text-primary-default: var(--sherpa-color-primary-new-300);
+    --sherpa-icon-primary-default: var(--sherpa-color-primary-new-300);
+    --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
+    --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
+    --sherpa-text-primary-on-color-subtle: var(--sherpa-color-primary-new-base);
+    --sherpa-icon-primary-on-color-subtle: var(--sherpa-color-primary-new-700);
+    --sherpa-border-control-primary-default: var(--sherpa-color-primary-new-base);
+    --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+    --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
+    --sherpa-border-control-active-default: var(--sherpa-color-brand-200);
+    --sherpa-border-control-active-hover: var(--sherpa-color-brand-300);
+    --sherpa-border-control-active-down: var(--sherpa-color-brand-400);
+    --sherpa-component-banner-border-rounding: var(--sherpa-border-rounding-base);
+    --sherpa-component-accordion-border-rounding: var(--sherpa-border-rounding-base);
+    --sherpa-component-accordion-border-color: var(--sherpa-border-container-default);
+  }
+}
+
 } /* @layer theme */

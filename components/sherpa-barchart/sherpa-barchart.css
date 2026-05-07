@@ -206,8 +206,8 @@ sherpa-filter-bar {
 
 /* Bar segments */
 .chart-segment {
-  border-radius: 0 var(--sherpa-border-rounding-xs, 2px)
-    var(--sherpa-border-rounding-xs, 2px) 0;
+  border-radius: 0 var(--sherpa-border-rounding-sm, 2px)
+    var(--sherpa-border-rounding-sm, 2px) 0;
   height: clamp(12px, 100%, 28px);
   width: max(2px, var(--_segment-size, 100%));
   transition:
@@ -334,7 +334,7 @@ sherpa-filter-bar {
 .chart-legend-key {
   width: var(--sherpa-size-sm, 16px);
   height: var(--sherpa-size-sm, 16px);
-  border-radius: var(--sherpa-border-rounding-xs, 3px);
+  border-radius: var(--sherpa-border-rounding-sm, 3px);
   flex-shrink: 0;
 }
 
@@ -413,8 +413,8 @@ sherpa-filter-bar {
     width: clamp(8px, 100%, 40px);
     max-width: 40px;
     height: max(2px, var(--_segment-size, 50%));
-    border-radius: var(--sherpa-border-rounding-xs, 2px)
-      var(--sherpa-border-rounding-xs, 2px) 0 0;
+    border-radius: var(--sherpa-border-rounding-sm, 2px)
+      var(--sherpa-border-rounding-sm, 2px) 0 0;
     animation-name: sherpa-grow-vertical;
   }
 

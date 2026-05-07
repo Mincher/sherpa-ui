@@ -1,0 +1,91 @@
+/**
+ * Apex 2.0 (Purple) — Theme tokens
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Diff-only override against the default theme (apex-2-core).
+ *
+ * REQUIRES the default theme to be loaded FIRST. Activate this theme by:
+ *   1. Loading this file (e.g. <link rel="stylesheet" href="themes/apex-2-purple.css">)
+ *   2. Setting <html data-theme="apex-2-purple">
+ *
+ * Each mode block re-emits not only props that differ in that mode, but
+ * also any light-diffed prop whose dark/hc value matches the base — this
+ * prevents source-order leak of light overrides into dark/hc cascades.
+ */
+
+@layer theme {
+
+/* ── Light overrides ─────────────────────────── */
+:where(:root[data-theme="apex-2-purple"]) {
+  --sherpa-surface-control-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-surface-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-surface-control-primary-down: var(--sherpa-color-brand-900);
+  --sherpa-text-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-icon-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-text-primary-on-color: var(--sherpa-color-brand-200);
+  --sherpa-icon-primary-on-color: var(--sherpa-color-brand-200);
+  --sherpa-border-control-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-border-control-primary-down: var(--sherpa-color-brand-900);
+}
+
+/* ── Dark ──────────────────────────────────────────────────── */
+:where(:root[data-theme="apex-2-purple"][data-mode="dark"]) {
+  --sherpa-surface-control-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-surface-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-surface-control-primary-down: var(--sherpa-color-brand-900);
+  --sherpa-text-primary-default: var(--sherpa-color-brand-200);
+  --sherpa-icon-primary-default: var(--sherpa-color-primary-new-300);
+  --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-border-control-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-border-control-primary-down: var(--sherpa-color-brand-900);
+}
+
+@media (prefers-color-scheme: dark) {
+  :where(:root[data-theme="apex-2-purple"]:not([data-mode="light"]):not([data-mode="hc"])) {
+    --sherpa-surface-control-primary-default: var(--sherpa-color-brand-700);
+    --sherpa-surface-control-primary-hover: var(--sherpa-color-brand-800);
+    --sherpa-surface-control-primary-down: var(--sherpa-color-brand-900);
+    --sherpa-text-primary-default: var(--sherpa-color-brand-200);
+    --sherpa-icon-primary-default: var(--sherpa-color-primary-new-300);
+    --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
+    --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
+    --sherpa-border-control-primary-default: var(--sherpa-color-brand-700);
+    --sherpa-border-control-primary-hover: var(--sherpa-color-brand-800);
+    --sherpa-border-control-primary-down: var(--sherpa-color-brand-900);
+  }
+}
+
+/* ── High Contrast ─────────────────────────────────────────── */
+:where(:root[data-theme="apex-2-purple"][data-mode="hc"]) {
+  --sherpa-surface-control-primary-default: rgba(51,51,51,1);
+  --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
+  --sherpa-surface-control-primary-down: rgba(51,51,51,1);
+  --sherpa-text-primary-default: var(--sherpa-color-primary-new-300);
+  --sherpa-icon-primary-default: var(--sherpa-color-primary-new-300);
+  --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-border-control-primary-default: var(--sherpa-color-primary-new-base);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+  --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
+}
+
+@media (prefers-contrast: more) {
+  :where(:root[data-theme="apex-2-purple"]:not([data-mode="light"]):not([data-mode="dark"])) {
+    --sherpa-surface-control-primary-default: rgba(51,51,51,1);
+    --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
+    --sherpa-surface-control-primary-down: rgba(51,51,51,1);
+    --sherpa-text-primary-default: var(--sherpa-color-primary-new-300);
+    --sherpa-icon-primary-default: var(--sherpa-color-primary-new-300);
+    --sherpa-text-primary-on-color: var(--sherpa-color-primary-new-200);
+    --sherpa-icon-primary-on-color: var(--sherpa-color-primary-new-200);
+    --sherpa-border-control-primary-default: var(--sherpa-color-primary-new-base);
+    --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+    --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
+  }
+}
+
+} /* @layer theme */

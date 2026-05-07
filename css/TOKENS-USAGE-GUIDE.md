@@ -14,33 +14,64 @@ Complete guide to using and extending the Sherpa design token system.
 ```
   figma-tokens/                          (source of truth — DTCG + figma-variables.json)
         │
-        ▼  scripts/generate-css-tokens.js
-  ┌──────────────────────────────────────────────────────────────┐
-  │ @layer tokens                                                │
-  │   tokens/sherpa-primitives.css     (--sherpa-core-*  raw values)    │
-  │   tokens/sherpa-alias.css          (--sherpa-* semantic abstractions│  generated
-  │                              + font composites + [data-status]│
-  │                              → --_status-* mapping)          │
-  │ @layer theme                                                 │
-  │   sherpa-theme-base.css     (props identical across themes — │  generated
-  │                              always @import'd)               │
-  │   sherpa-theme-{slug}.css   (per-theme diffs only — loaded   │  generated
-  │                              at runtime via <link>)          │
-  │ @layer utilities                                             │
-  │   sherpa-text-classes.css     sherpa-icon-classes.css        │  shadow-DOM
-  │   sherpa-motion-classes.css                                  │  adopted
-  │   sherpa-data-viz-classes.css (.color-1 … .color-N from      │  generated
-  │                                figma data-viz/categorical)   │
-  │   sherpa-utility-classes.css (control-group + scroll-under)   │  light-DOM only
-  │ @layer components                                            │
-  │   sherpa-components.css     (per-variant defaults)           │  generated
-  │   components/**/*.css       (Shadow DOM)                     │
-  └──────────────────────────────────────────────────────────────┘
+        ▼  scripts/generate-css-tokens.js   (npm run tokens:generate)
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │ @layer reset                                                         │
+  │   reset.css                          box-sizing, fonts                │  hand
+  │ @layer primitives                                                    │
+  │   tokens/sherpa-primitives.css       --sherpa-core-* raw values       │  hand
+  │ @layer alias                                                         │
+  │   tokens/sherpa-alias.css            --sherpa-* semantic + font       │  generated
+  │                                      composites + @property regs      │
+  │ @layer platform                                                      │
+  │   tokens/sherpa-platform.css         focus ring, z-index, color-      │  generated
+  │                                      scheme contract per data-mode    │
+  │ @layer theme                                                         │
+  │   sherpa-theme-{default-slug}.css    full token surface              │  generated
+  │                                      (light + nested dark + hc)       │  default = always loaded via @import
+  │   sherpa-theme-{extended-slug}.css   diff-only against default       │  generated
+  │                                      (load via <link> + data-theme)   │
+  │ @layer density                                                       │
+  │   sherpa-density-compact.css         [data-density] subtree overrides │  generated
+  │   sherpa-density-comfortable.css                                     │  generated
+  │ @layer status                                                        │
+  │   sherpa-status.css                  [data-status] → --_status-* map  │  generated
+  │ @layer components                                                    │
+  │   components/index.css               light-DOM component overrides    │  hand
+  │   components/**/*.css                Shadow DOM (adopted)             │  hand
+  │ @layer utilities                                                     │
+  │   sherpa-text-classes.css            sherpa-icon-classes.css         │  hand
+  │   sherpa-motion-classes.css          sherpa-utility-classes.css      │  hand
+  │   sherpa-app-classes.css                                             │  hand
+  │   sherpa-data-viz-classes.css        .color-1 … .color-N             │  generated
+  └──────────────────────────────────────────────────────────────────────┘
 ```
 
-Later layers override earlier ones; within a layer, source order wins. The
-runtime per-theme `<link>` is later than the base `@import`, so it overrides
-base on a per-property basis without touching the layer cascade.
+Layer order is established once in `index.css`:
+
+```css
+@layer reset, primitives, alias, platform, theme, density, status, components, utilities;
+```
+
+Later layers override earlier ones unconditionally. Within the **theme**
+layer, the default theme is always present (imported by `index.css`); any
+extended theme is appended via a runtime `<link>` and emits only the
+properties that differ from the default — selectors are wrapped in
+`:where(:root[data-theme="<slug>"])` so its diffs win on attribute match
+without bumping specificity.
+
+### Switching axes (CSS-only contract)
+
+| Axis    | Attribute                               | Notes                                                               |
+| ------- | --------------------------------------- | ------------------------------------------------------------------- |
+| Theme   | `<html data-theme="…">`                 | Required for extended themes; default theme matches bare `:root`.    |
+| Mode    | `<html data-mode="auto\|light\|dark\|hc">` | `auto` honours both `prefers-color-scheme` and `prefers-contrast`. |
+| Density | `[data-density="compact\|base\|comfortable"]` | Applies to any subtree.                                       |
+| Status  | `[data-status="critical\|info\|success\|warning\|urgent"]` | Maps to `--_status-*` private vars.            |
+
+`ThemeManager` writes these attributes on `document.documentElement`; CSS
+owns the visual cascade including `color-scheme`. JS never touches
+`style.colorScheme` directly.
 
 ## Quick Start
 
@@ -290,22 +321,30 @@ document.documentElement.style.colorScheme = 'dark';
 
 ### Theme / Brand Switching
 
-Themes are split into a **shared base + per-theme diffs**:
+Themes are split into a **default theme (full surface) + per-theme diffs**:
 
-- `sherpa-theme-base.css` — properties identical across every theme.
-  Always loaded via `@import` from `index.css`. Declares `color-scheme: light dark`.
-- `sherpa-theme-{slug}.css` — only the properties whose value differs from
-  base. Loaded at runtime via a `<link id="sherpa-theme">` element.
+- `sherpa-theme-{default-slug}.css` — the complete token surface. Always
+  loaded via `@import` from `index.css`. The `apex-2-core` slug is the
+  current default. Its bare-`:root` selectors apply when no `data-theme`
+  attribute is set.
+- `sherpa-theme-{extended-slug}.css` — only the properties whose value
+  differs from the default. Loaded at runtime via a `<link id="sherpa-theme">`
+  element. All selectors are wrapped in `:where(:root[data-theme="<slug>"])`,
+  so the diffs apply only when `<html data-theme="<slug>">` matches.
 
-Both files self-declare `@layer theme { ... }`. The `<link>` is later in source
-order than the `@import`, so it overrides base on a per-property basis within
-the layer. Swap the link `href` to change themes — base stays loaded.
+Both files belong to `@layer theme`. The runtime `<link>` is later in source
+order than the `@import`, so an extended theme overrides the default on a
+per-property basis without bumping specificity.
 
 ```html
-<!-- In the HTML <head> -->
+<!-- In the HTML <head>: default already imported by index.css; this swaps in an extended theme -->
 <link id="sherpa-theme" rel="stylesheet"
-      href="/css/styles/sherpa-theme-apex-2-core.css">
+      href="/css/styles/sherpa-theme-apex-2-purple.css">
+<script>document.documentElement.dataset.theme = 'apex-2-purple';</script>
 ```
+
+`ThemeManager.setTheme(slug)` automates both steps (link href + data-theme
+attribute) and persists the choice to `localStorage`.
 
 ```javascript
 // Switch to Data Protection theme
@@ -477,8 +516,9 @@ Is the value the same across all themes?
           │        scripts/generate-css-tokens.js, then add the tokens to
           │        each owning theme's DTCG folder.
           └── NO  → Add to each theme's DTCG folder.
-                   Output: sherpa-theme-base.css for shared values,
-                   sherpa-theme-{slug}.css for diffs (computed automatically).
+                   Output: sherpa-theme-{default-slug}.css carries the full
+                   surface; extended themes emit only the diffs against it
+                   (computed automatically).
 ```
 
 After any change: `npm run tokens:generate` — never hand-edit the generated

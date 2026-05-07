@@ -53,21 +53,21 @@
 /* ── Active state ────────────────────────────────────────────── */
 
 :host([data-active]) .list-item-container {
-  background: var(--sherpa-surface-container-selected-default, #f8ebff);
+  background: var(--sherpa-surface-container-active-default, #f8ebff);
 }
 
 :host([data-active]) .label {
-  color: var(--sherpa-text-default-selected, var(--sherpa-text-default-heading, #18191a));
+  color: var(--sherpa-text-default-heading, var(--sherpa-text-default-heading, #18191a));
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
 :host([data-active]) .description {
-  color: var(--sherpa-text-default-selected-secondary, var(--sherpa-text-default-body, #2e2e33));
+  color: var(--sherpa-text-default-body, var(--sherpa-text-default-body, #2e2e33));
 }
 
 :host([data-active]) .icon,
 :host([data-active]) .drag-handle {
-  color: var(--sherpa-icon-default-selected, var(--sherpa-icon-context-default-body, #2e2e33));
+  color: var(--sherpa-icon-context-default-body, var(--sherpa-icon-context-default-body, #2e2e33));
 }
 
 /* ── Disabled ────────────────────────────────────────────────── */
@@ -91,7 +91,7 @@
 
 :host([data-interactive]:focus-visible) .list-item-container {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-border-focus, #0066cc);
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #0066cc);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

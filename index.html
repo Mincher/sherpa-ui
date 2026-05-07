@@ -21,96 +21,8 @@
     <link
       id="sherpa-theme"
       rel="stylesheet"
-      href="/css/styles/sherpa-theme-apex-2-core.css"
+      href="/css/styles/sherpa-theme-apex-2-purple.css"
     />
-    <style>
-      /* Minimal layout shell — chrome is composed from sherpa-* components. */
-      * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; height: 100%; }
-      body {
-        font-family: var(--sherpa-typeface-open-sans-style-name, "Open Sans"), Arial, sans-serif;
-        font-size: var(--sherpa-fonts-scale-base, 14px);
-        color: var(--sherpa-text-default-body, #333);
-        background: var(--sherpa-surface-app-product-bg-default, #f5f5f5);
-        display: flex;
-        flex-direction: column;
-      }
-
-      .playground-layout {
-        display: flex;
-        flex: 1;
-        min-height: 0;
-      }
-
-      .playground-main {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: auto;
-        padding: var(--sherpa-space-md, 16px);
-        gap: var(--sherpa-space-md, 16px);
-      }
-
-      #preview-container {
-        min-height: 160px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      #preview-container > * { flex-shrink: 0; }
-
-      #component-list-panel {
-        flex: 1;
-        min-height: 0;
-      }
-
-      /* Wider rails so input controls and labels have room to breathe. */
-      #sidebar-section,
-      #controls-section { --_section-width: 360px; }
-
-      .controls-section + .controls-section { margin-top: var(--sherpa-space-lg, 24px); }
-
-      .control-group {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sherpa-space-2xs, 4px);
-        margin-bottom: var(--sherpa-space-sm, 12px);
-      }
-
-      .control-group > sherpa-input-text,
-      .control-group > sherpa-input-number,
-      .control-group > sherpa-input-select { width: 100%; }
-
-      /* Switch row: label on the left, switch on the right. */
-      .control-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--sherpa-space-sm, 12px);
-        padding: var(--sherpa-space-2xs, 4px) 0;
-      }
-
-      .control-row-text {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-      }
-
-      .control-row-label {
-        font-weight: var(--sherpa-font-weight-semibold, 600);
-        color: var(--sherpa-text-default-label, #1a1a1f);
-        font-size: var(--sherpa-fonts-scale-base, 14px);
-        line-height: 1.3;
-        word-break: break-word;
-      }
-
-      .control-row-description {
-        font-size: var(--sherpa-fonts-scale-sm, 12px);
-        color: var(--sherpa-text-default-secondary, #6a6a75);
-        line-height: 1.3;
-      }
-    </style>
   </head>
   <body>
     <!-- Site header -->
@@ -119,10 +31,18 @@
       data-label="Sherpa UI Component Playground"
     ></sherpa-view-header>
 
-    <!-- Main layout -->
-    <div class="playground-layout">
+    <!-- Global appearance toolbar — applies theme/mode/density/status sandbox-wide -->
+    <sherpa-toolbar id="global-toolbar" data-density="compact" aria-label="Sandbox appearance">
+      <sherpa-input-select slot="trailing" id="global-theme-select" data-size="small" data-label="Theme" data-layout="inline"></sherpa-input-select>
+      <sherpa-input-select slot="trailing" id="global-mode-select" data-size="small" data-label="Mode" data-layout="inline"></sherpa-input-select>
+      <sherpa-input-select slot="trailing" id="global-density-select" data-size="small" data-label="Density" data-layout="inline"></sherpa-input-select>
+    </sherpa-toolbar>
+
+    <!-- Main layout — three-rail dashboard grid: left/main/right via sherpa-layout-grid -->
+    <sherpa-layout-grid data-content="static">
       <!-- Sidebar: left content-section housing a searchable list-panel -->
       <sherpa-content-section
+        slot="side-panel-start"
         id="sidebar-section"
         data-position="left"
         data-heading="Components"
@@ -135,29 +55,27 @@
         ></sherpa-list-panel>
       </sherpa-content-section>
 
-      <!-- Main content -->
-      <main class="playground-main">
-        <sherpa-empty-state
-          id="empty-state"
-          data-label="Select a component"
-          data-description="Pick a component from the sidebar to preview it here."
-          data-illustration="empty"
-        ></sherpa-empty-state>
+      <!-- Main column (default slot, stacked because data-content="static") -->
+      <sherpa-empty-state
+        id="empty-state"
+        data-label="Select a component"
+        data-description="Pick a component from the sidebar to preview it here."
+        data-illustration="empty"
+      ></sherpa-empty-state>
 
-        <div id="content-area" hidden>
-          <sherpa-section-header
-            id="preview-title-header"
-            data-label="Component Preview"
-            data-divider
-          ></sherpa-section-header>
-          <sherpa-card id="preview-card" data-elevation="sm">
-            <div id="preview-container"></div>
-          </sherpa-card>
-        </div>
-      </main>
+      <sherpa-section-header
+        id="preview-title-header"
+        data-label="Component Preview"
+        data-divider
+        hidden
+      ></sherpa-section-header>
+      <sherpa-card id="preview-card" data-elevation="sm" hidden>
+        <div id="preview-container"></div>
+      </sherpa-card>
 
       <!-- Controls: right content-section, minimisable to a strip -->
       <sherpa-content-section
+        slot="side-panel-end"
         id="controls-section"
         data-position="right"
         data-heading="Controls"
@@ -165,7 +83,7 @@
       >
         <div id="controls-content"></div>
       </sherpa-content-section>
-    </div>
+    </sherpa-layout-grid>
 
     <script type="module">
       // ── Eagerly load sherpa components used in the playground chrome ──
@@ -180,150 +98,253 @@
       import "./components/sherpa-input-text/sherpa-input-text.js";
       import "./components/sherpa-input-number/sherpa-input-number.js";
       import "./components/sherpa-input-select/sherpa-input-select.js";
+      import "./components/sherpa-toolbar/sherpa-toolbar.js";
+      import "./components/sherpa-layout-grid/sherpa-layout-grid.js";
+      import "./components/sherpa-input-checkbox/sherpa-input-checkbox.js";
       import "./components/sherpa-switch/sherpa-switch.js";
       import "./components/sherpa-button/sherpa-button.js";
       import "./components/sherpa-message/sherpa-message.js";
+      import "./components/sherpa-callout/sherpa-callout.js";
+
+      import { ThemeManager } from "./components/utilities/theme-manager.js";
+      import { DUMMY_DATA } from "./demo/playground-dummy-data.js";
 
       // ═══════════════════════════════════════════════════════════
-      // COMPONENT LIST & METADATA
+      // APPEARANCE (Theme / Mode / Density via ThemeManager)
       // ═══════════════════════════════════════════════════════════
 
-      const COMPONENTS = [
-        { tag: "sherpa-footer", category: "Layout & Navigation", label: "Footer" },
-        { tag: "sherpa-nav", category: "Layout & Navigation", label: "Nav" },
-        { tag: "sherpa-nav-item", category: "Layout & Navigation", label: "Nav Item" },
-        { tag: "sherpa-nav-promo", category: "Layout & Navigation", label: "Nav Promo" },
-        { tag: "sherpa-view-header", category: "Layout & Navigation", label: "View Header" },
-        { tag: "sherpa-section-header", category: "Layout & Navigation", label: "Section Header" },
-        { tag: "sherpa-container", category: "Layout & Navigation", label: "Container" },
-        { tag: "sherpa-container-header", category: "Layout & Navigation", label: "Container Header" },
-        { tag: "sherpa-container-pdf-exporter", category: "Layout & Navigation", label: "Container PDF Exporter" },
-        { tag: "sherpa-layout-grid", category: "Layout & Navigation", label: "Layout Grid" },
-        { tag: "sherpa-toolbar", category: "Layout & Navigation", label: "Toolbar" },
+      ThemeManager.init({ cssBaseUrl: new URL("./css/styles/", document.baseURI).href });
 
-        { tag: "sherpa-data-grid", category: "Data Visualization", label: "Data Grid" },
-        { tag: "sherpa-barchart", category: "Data Visualization", label: "Bar Chart" },
-        { tag: "sherpa-donut-chart", category: "Data Visualization", label: "Donut Chart" },
-        { tag: "sherpa-gauge-chart", category: "Data Visualization", label: "Gauge Chart" },
-        { tag: "sherpa-line-chart", category: "Data Visualization", label: "Line Chart" },
-        { tag: "sherpa-metric", category: "Data Visualization", label: "Metric" },
-        { tag: "sherpa-sparkline", category: "Data Visualization", label: "Sparkline" },
-        { tag: "sherpa-chart-legend", category: "Data Visualization", label: "Chart Legend" },
-        { tag: "sherpa-key-value-list", category: "Data Visualization", label: "Key-Value List" },
+      // Selectable themes. The default theme (`apex-2-core`) is bundled into
+      // `css/styles/index.css` via @import, so it is always available; selecting
+      // any other entry below loads its diff-only file via the runtime <link>
+      // and sets <html data-theme="…">. Never list `apex-2-core` here — it is
+      // the implicit baseline and selecting it would just re-load itself.
+      const THEMES = [
+        { value: "apex-2-purple", label: "Apex 2 (Purple)" },
+        { value: "apex-2-teal",   label: "Apex 2 (Teal)" },
+        { value: "apex-2-blue",   label: "Apex 2 (Blue)" },
+        { value: "classic",       label: "Classic" },
+      ];
 
-        { tag: "sherpa-button", category: "Controls", label: "Button" },
-        { tag: "sherpa-switch", category: "Controls", label: "Switch" },
-        { tag: "sherpa-stepper", category: "Controls", label: "Stepper" },
-        { tag: "sherpa-tag", category: "Controls", label: "Tag" },
-        { tag: "sherpa-pagination", category: "Controls", label: "Pagination" },
-        { tag: "sherpa-slider", category: "Controls", label: "Slider" },
-        { tag: "sherpa-progress-bar", category: "Controls", label: "Progress Bar" },
-        { tag: "sherpa-progress-tracker", category: "Controls", label: "Progress Tracker" },
+      // Discard any stale persisted theme that isn't a real selectable theme,
+      // otherwise ThemeManager.restore() would set <link> to a non-existent file.
+      const ALLOWED_THEMES = new Set(THEMES.map((t) => t.value));
+      const persisted = localStorage.getItem("sherpa-theme");
+      if (persisted && !ALLOWED_THEMES.has(persisted)) {
+        localStorage.removeItem("sherpa-theme");
+      }
 
-        { tag: "sherpa-input-text", category: "Inputs", label: "Text Input" },
-        { tag: "sherpa-input-number", category: "Inputs", label: "Number Input" },
-        { tag: "sherpa-input-password", category: "Inputs", label: "Password Input" },
-        { tag: "sherpa-input-search", category: "Inputs", label: "Search Input" },
-        { tag: "sherpa-input-select", category: "Inputs", label: "Select Input" },
-        { tag: "sherpa-input-date", category: "Inputs", label: "Date Input" },
-        { tag: "sherpa-input-date-range", category: "Inputs", label: "Date Range Input" },
-        { tag: "sherpa-input-time", category: "Inputs", label: "Time Input" },
-        { tag: "sherpa-input-checkbox", category: "Inputs", label: "Checkbox Input" },
-        { tag: "sherpa-input-checkbox-group", category: "Inputs", label: "Checkbox Group" },
-        { tag: "sherpa-input-radio", category: "Inputs", label: "Radio Input" },
-        { tag: "sherpa-input-radio-group", category: "Inputs", label: "Radio Group" },
-        { tag: "sherpa-input-tag", category: "Inputs", label: "Tag Input" },
-        { tag: "sherpa-file-upload", category: "Inputs", label: "File Upload" },
+      ThemeManager.restore();
+      const MODES = [
+        { value: "auto",  label: "Auto" },
+        { value: "light", label: "Light" },
+        { value: "dark",  label: "Dark" },
+        { value: "hc",    label: "High Contrast" },
+      ];
+      const DENSITIES = [
+        { value: "compact",     label: "Compact" },
+        { value: "base",        label: "Base" },
+        { value: "comfortable", label: "Comfortable" },
+      ];
 
-        { tag: "sherpa-dialog", category: "Feedback & Overlays", label: "Dialog" },
-        { tag: "sherpa-toast", category: "Feedback & Overlays", label: "Toast" },
-        { tag: "sherpa-tooltip", category: "Feedback & Overlays", label: "Tooltip" },
-        { tag: "sherpa-message", category: "Feedback & Overlays", label: "Message" },
-        { tag: "sherpa-empty-state", category: "Feedback & Overlays", label: "Empty State" },
-        { tag: "sherpa-menu", category: "Feedback & Overlays", label: "Menu" },
-        { tag: "sherpa-menu-item", category: "Feedback & Overlays", label: "Menu Item" },
-        { tag: "sherpa-popover", category: "Feedback & Overlays", label: "Popover" },
-        { tag: "sherpa-callout", category: "Feedback & Overlays", label: "Callout" },
-        { tag: "sherpa-accordion", category: "Feedback & Overlays", label: "Accordion" },
-        { tag: "sherpa-tabs", category: "Feedback & Overlays", label: "Tabs" },
-        { tag: "sherpa-list", category: "Feedback & Overlays", label: "List" },
-        { tag: "sherpa-list-item", category: "Feedback & Overlays", label: "List Item" },
-        { tag: "sherpa-list-panel", category: "Feedback & Overlays", label: "List Panel" },
-
-        { tag: "sherpa-card", category: "Content", label: "Card" },
-        { tag: "sherpa-icon", category: "Content", label: "Icon" },
-        { tag: "sherpa-filter-bar", category: "Content", label: "Filter Bar" },
-        { tag: "sherpa-section-nav", category: "Content", label: "Section Nav" },
-        { tag: "sherpa-transfer-list", category: "Content", label: "Transfer List" },
-        { tag: "sherpa-product-bar", category: "Content", label: "Product Bar" },
-        { tag: "sherpa-product-bar-v2", category: "Content", label: "Product Bar V2" },
-        { tag: "sherpa-loader", category: "Content", label: "Loader" },
-        { tag: "sherpa-ai-panel", category: "Content", label: "AI Panel" },
-        { tag: "sherpa-chat-message", category: "Content", label: "Chat Message" },
-        { tag: "sherpa-prompt-composer", category: "Content", label: "Prompt Composer" },
-        { tag: "sherpa-content-section", category: "Content", label: "Content Section" },
-        { tag: "sherpa-node", category: "Content", label: "Node" },
-        { tag: "sherpa-node-canvas", category: "Content", label: "Node Canvas" },
-        { tag: "sherpa-node-header", category: "Content", label: "Node Header" },
-        { tag: "sherpa-node-row", category: "Content", label: "Node Row" },
-        { tag: "sherpa-node-socket", category: "Content", label: "Node Socket" },
-        { tag: "sherpa-scheduler", category: "Content", label: "Scheduler" },
-        { tag: "sherpa-panel", category: "Content", label: "Panel" },
+      // Status overrides applied per-component via [data-status] on the
+      // previewed instance. The empty value clears the override.
+      const STATUS_OVERRIDES = [
+        { value: "",         label: "None (default)" },
+        { value: "critical", label: "Critical" },
+        { value: "warning",  label: "Warning" },
+        { value: "success",  label: "Success" },
+        { value: "info",     label: "Info" },
+        { value: "urgent",   label: "Urgent" },
       ];
 
       // ═══════════════════════════════════════════════════════════
-      // METADATA CACHE & JSDoc PARSER
+      // COMPONENT LIST — categories curated locally; tags pulled from
+      // schemas/components/index.json (the same source the MCP server
+      // reads), so the playground can never drift from MCP.
+      // ═══════════════════════════════════════════════════════════
+
+      // Category display order for the sidebar.
+      const CATEGORY_ORDER = [
+        "Layout & Navigation",
+        "Data Visualization",
+        "Controls",
+        "Inputs",
+        "Feedback & Overlays",
+        "Content",
+        "Uncategorised",
+      ];
+
+      // Curated tag → category mapping. Friendlier than the schema's
+      // coarse `category` field (most components are tagged "core").
+      const CATEGORY_MAP = {
+        "sherpa-footer":                "Layout & Navigation",
+        "sherpa-nav":                   "Layout & Navigation",
+        "sherpa-nav-item":              "Layout & Navigation",
+        "sherpa-nav-promo":             "Layout & Navigation",
+        "sherpa-view-header":           "Layout & Navigation",
+        "sherpa-section-header":        "Layout & Navigation",
+        "sherpa-container":             "Layout & Navigation",
+        "sherpa-container-header":      "Layout & Navigation",
+        "sherpa-container-pdf-exporter":"Layout & Navigation",
+        "sherpa-layout-grid":           "Layout & Navigation",
+        "sherpa-toolbar":               "Layout & Navigation",
+        "sherpa-breadcrumbs":           "Layout & Navigation",
+
+        "sherpa-data-grid":             "Data Visualization",
+        "sherpa-barchart":              "Data Visualization",
+        "sherpa-donut-chart":           "Data Visualization",
+        "sherpa-gauge-chart":           "Data Visualization",
+        "sherpa-line-chart":            "Data Visualization",
+        "sherpa-metric":                "Data Visualization",
+        "sherpa-sparkline":             "Data Visualization",
+        "sherpa-chart-legend":          "Data Visualization",
+        "sherpa-key-value-list":        "Data Visualization",
+
+        "sherpa-button":                "Controls",
+        "sherpa-switch":                "Controls",
+        "sherpa-stepper":               "Controls",
+        "sherpa-tag":                   "Controls",
+        "sherpa-pagination":            "Controls",
+        "sherpa-slider":                "Controls",
+        "sherpa-progress-bar":          "Controls",
+        "sherpa-progress-tracker":      "Controls",
+
+        "sherpa-input-text":            "Inputs",
+        "sherpa-input-number":          "Inputs",
+        "sherpa-input-password":        "Inputs",
+        "sherpa-input-search":          "Inputs",
+        "sherpa-input-select":          "Inputs",
+        "sherpa-input-date":            "Inputs",
+        "sherpa-input-date-range":      "Inputs",
+        "sherpa-input-time":            "Inputs",
+        "sherpa-input-checkbox":        "Inputs",
+        "sherpa-input-checkbox-group":  "Inputs",
+        "sherpa-input-radio":           "Inputs",
+        "sherpa-input-radio-group":     "Inputs",
+        "sherpa-input-tag":             "Inputs",
+        "sherpa-file-upload":           "Inputs",
+
+        "sherpa-dialog":                "Feedback & Overlays",
+        "sherpa-toast":                 "Feedback & Overlays",
+        "sherpa-tooltip":               "Feedback & Overlays",
+        "sherpa-message":               "Feedback & Overlays",
+        "sherpa-empty-state":           "Feedback & Overlays",
+        "sherpa-menu":                  "Feedback & Overlays",
+        "sherpa-menu-item":             "Feedback & Overlays",
+        "sherpa-popover":               "Feedback & Overlays",
+        "sherpa-callout":               "Feedback & Overlays",
+        "sherpa-accordion":             "Feedback & Overlays",
+        "sherpa-tabs":                  "Feedback & Overlays",
+        "sherpa-list":                  "Feedback & Overlays",
+        "sherpa-list-item":             "Feedback & Overlays",
+        "sherpa-list-panel":            "Feedback & Overlays",
+        "sherpa-loader":                "Feedback & Overlays",
+
+        "sherpa-card":                  "Content",
+        "sherpa-icon":                  "Content",
+        "sherpa-filter-bar":            "Content",
+        "sherpa-section-nav":           "Content",
+        "sherpa-transfer-list":         "Content",
+        "sherpa-product-bar":           "Content",
+        "sherpa-product-bar-v2":        "Content",
+        "sherpa-ai-panel":              "Content",
+        "sherpa-chat-message":          "Content",
+        "sherpa-prompt-composer":       "Content",
+        "sherpa-content-section":       "Content",
+        "sherpa-node":                  "Content",
+        "sherpa-node-canvas":           "Content",
+        "sherpa-node-header":           "Content",
+        "sherpa-node-row":              "Content",
+        "sherpa-node-socket":           "Content",
+        "sherpa-scheduler":             "Content",
+        "sherpa-panel":                 "Content",
+        "sherpa-proposal-op":           "Content",
+        "sherpa-proposal-preview":      "Content",
+      };
+
+      function prettyLabel(tag) {
+        return tag
+          .replace(/^sherpa-/, "")
+          .split("-")
+          .map((p) => p[0].toUpperCase() + p.slice(1))
+          .join(" ");
+      }
+
+      // Build the COMPONENTS list from the schema index, sorted A→Z within
+      // each category. Warn at dev time if CATEGORY_MAP and the schema
+      // index drift apart — this keeps the playground aligned with MCP.
+      let COMPONENTS = [];
+      async function loadComponentList() {
+        const res = await fetch("schemas/components/index.json");
+        if (!res.ok) throw new Error("Failed to load schemas/components/index.json");
+        const tags = await res.json();
+
+        // Drift detection (alignment with MCP server's source of truth).
+        const mapped = new Set(Object.keys(CATEGORY_MAP));
+        const indexed = new Set(tags);
+        const missingFromMap = [...indexed].filter((t) => !mapped.has(t));
+        const extraInMap     = [...mapped].filter((t) => !indexed.has(t));
+        if (missingFromMap.length) {
+          console.warn(
+            "[playground] Components in schemas/components/index.json missing from CATEGORY_MAP:",
+            missingFromMap,
+          );
+        }
+        if (extraInMap.length) {
+          console.warn(
+            "[playground] CATEGORY_MAP has tags absent from schemas/components/index.json:",
+            extraInMap,
+          );
+        }
+
+        COMPONENTS = tags
+          .map((tag) => ({
+            tag,
+            label: prettyLabel(tag),
+            category: CATEGORY_MAP[tag] || "Uncategorised",
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
+      }
+
+      // ═══════════════════════════════════════════════════════════
+      // METADATA — read directly from schemas/components/<tag>.json
+      // (the same data the MCP server consumes). Replaces the old
+      // JSDoc-regex parser so enum values, types, and event details
+      // arrive as structured data with no parsing risk.
       // ═══════════════════════════════════════════════════════════
 
       const metadataCache = new Map();
 
-      function parseJSDoc(jsContent) {
-        const metadata = { attributes: [], slots: [], events: [] };
-
-        const attrRegex = /@attr\s+\{([^}]+)\}\s+(\[?[^\]\s]+\]?)\s+—\s+(.+?)(?=\n|$)/g;
-        let match;
-        while ((match = attrRegex.exec(jsContent)) !== null) {
-          let [, type, name, description] = match;
-          name = name.replace(/[\[\]]/g, "").trim();
-          metadata.attributes.push({
-            name,
-            type: type.trim(),
-            description: description.trim(),
-          });
-        }
-
-        const slotRegex = /@slot\s+(?:\[([^\]]+)\])?(?:\s+—\s+(.+?))?(?=\n|$)/g;
-        while ((match = slotRegex.exec(jsContent)) !== null) {
-          const [, name, description] = match;
-          metadata.slots.push({
-            name: name ? name.trim() : "",
-            description: description ? description.trim() : "",
-          });
-        }
-
-        const firesRegex = /@fires\s+([^\s]+)\s+—\s+(.+?)(?=\n|$)/g;
-        while ((match = firesRegex.exec(jsContent)) !== null) {
-          const [, eventName, description] = match;
-          metadata.events.push({
-            name: eventName.trim(),
-            description: description.trim(),
-          });
-        }
-
-        return metadata;
-      }
-
       async function getComponentMetadata(tag) {
         if (metadataCache.has(tag)) return metadataCache.get(tag);
         try {
-          const response = await fetch(`components/${tag}/${tag}.js`);
-          if (!response.ok) throw new Error(`Failed to fetch ${tag}`);
-          const metadata = parseJSDoc(await response.text());
+          const res = await fetch(`schemas/components/${tag}.json`);
+          if (!res.ok) throw new Error(`Failed to fetch schema for ${tag}`);
+          const schema = await res.json();
+          const metadata = {
+            attributes: (schema.attributes || []).map((a) => ({
+              name: a.name,
+              type: a.type,
+              description: a.description || "",
+              enumValues: a.enumValues || null,
+            })),
+            slots: (schema.slots || []).map((s) => ({
+              name: s.name || "",
+              description: s.description || "",
+            })),
+            events: (schema.events || []).map((e) => ({
+              name: e.name,
+              description: e.description || "",
+            })),
+            methods: schema.methods || [],
+          };
           metadataCache.set(tag, metadata);
           return metadata;
         } catch (error) {
           console.warn(`Could not load metadata for ${tag}:`, error);
-          return { attributes: [], slots: [], events: [] };
+          return { attributes: [], slots: [], events: [], methods: [] };
         }
       }
 
@@ -333,36 +354,136 @@
 
       const componentListPanel = document.getElementById("component-list-panel");
       const emptyState         = document.getElementById("empty-state");
-      const contentArea        = document.getElementById("content-area");
+      const contentArea        = null; // legacy hook — preview header + card now toggle individually
       const previewTitleHeader = document.getElementById("preview-title-header");
       const previewContainer   = document.getElementById("preview-container");
+      const previewCard        = document.getElementById("preview-card");
       const controlsContent    = document.getElementById("controls-content");
+
+      // Per-component controls live directly in the right rail.
+      // Appearance (Theme/Mode/Density/Status) is now in the global toolbar.
+      const componentControls = document.createElement("div");
+      controlsContent.appendChild(componentControls);
 
       let currentComponent = null;
       let currentInstance  = null;
+      let currentMetadata  = null;
+      let triggerHost      = null; // optional <div> sibling holding overlay triggers
+      let dummyNote        = null; // optional note element under the preview
       let eventLog         = [];
       const MAX_EVENTS     = 50;
+      const eventHandlers  = []; // [{ target, type, handler }] for cleanup
 
-      // Build sidebar list-panel content as a sherpa-list of sherpa-list-items
+      // Manual attribute overrides applied via the controls panel. Cleared on
+      // component switch. Used to rebuild the preview when an attribute change
+      // targets an attr the component does not include in observedAttributes —
+      // many components rely on attribute selectors in CSS for visual state but
+      // also have JS-driven text/structure that only updates on (re)render.
+      const currentOverrides = new Map();
+      let rebuildTimer = null;
+
+      // Attributes that don't need a rebuild because they are picked up by CSS
+      // attribute selectors (visual state only). Keep this list conservative;
+      // if a component reads one of these in JS at render time, force-rebuild
+      // is still safe — it just costs an extra render.
+      const CSS_DRIVEN_ATTR_RE = /^(?:data-(?:variant|size|status|theme|mode|density|state|expanded|open|active|loading|disabled|selected|checked|orientation|align|position|placement|tone|emphasis|layout|density|width|height))$/;
+
+      // ─── Sidebar list ───────────────────────────────────────────
       function populateSidebar() {
-        const list = document.createElement("sherpa-list");
-        list.dataset.variant = "divided";
+        componentListPanel.innerHTML = "";
 
-        COMPONENTS.forEach((component) => {
-          const item = document.createElement("sherpa-list-item");
-          item.dataset.label       = component.label;
-          item.dataset.description = `<${component.tag}>`;
-          item.dataset.interactive = "";
-          item.dataset.tag         = component.tag;
-          list.appendChild(item);
-        });
+        // Group by category, render each in CATEGORY_ORDER order.
+        const byCategory = new Map();
+        for (const cat of CATEGORY_ORDER) byCategory.set(cat, []);
+        for (const comp of COMPONENTS) {
+          if (!byCategory.has(comp.category)) byCategory.set(comp.category, []);
+          byCategory.get(comp.category).push(comp);
+        }
 
-        componentListPanel.appendChild(list);
+        for (const [category, items] of byCategory) {
+          if (!items.length) continue;
+          const header = document.createElement("sherpa-section-header");
+          header.dataset.label = category;
+          header.dataset.headingLevel = "tertiary";
+          componentListPanel.appendChild(header);
+
+          const list = document.createElement("sherpa-list");
+          list.dataset.variant = "divided";
+
+          // Already alphabetised by COMPONENTS order, but be explicit.
+          items.sort((a, b) => a.label.localeCompare(b.label));
+          for (const comp of items) {
+            const item = document.createElement("sherpa-list-item");
+            item.dataset.label       = comp.label;
+            item.dataset.description = `<${comp.tag}>`;
+            item.dataset.interactive = "";
+            item.dataset.tag         = comp.tag;
+            list.appendChild(item);
+          }
+          componentListPanel.appendChild(list);
+        }
       }
 
-      populateSidebar();
+      // ─── Global appearance toolbar (Theme / Mode / Density) ──────────
+      // Wires the three sandbox-level selects to ThemeManager + <html>
+      // attribute mutations so every component on the page picks up the
+      // change instantly. Status overrides are applied per-component from
+      // the controls panel (see renderControls()) — not globally — so a
+      // component's [data-status] only affects that component's preview
+      // and does not bleed into other UI like the toolbar.
+      function initGlobalToolbar() {
+        wireToolbarSelect(
+          "global-theme-select",
+          THEMES,
+          ThemeManager.getTheme(),
+          (v) => ThemeManager.setTheme(v),
+        );
+        wireToolbarSelect(
+          "global-mode-select",
+          MODES,
+          ThemeManager.getMode(),
+          (v) => {
+            ThemeManager.setMode(v);
+            document.documentElement.dataset.mode = v;
+          },
+        );
+        wireToolbarSelect(
+          "global-density-select",
+          DENSITIES,
+          ThemeManager.getDensity(),
+          (v) => {
+            ThemeManager.setDensity(v);
+            document.documentElement.dataset.density = v;
+          },
+        );
 
-      // sherpa-list-item dispatches `list-item-click` (bubbles + composed).
+        // Reflect persisted appearance on <html> so density-aware page
+        // CSS matches storage on load.
+        document.documentElement.dataset.density = ThemeManager.getDensity();
+        document.documentElement.dataset.mode    = ThemeManager.getMode();
+      }
+
+      function wireToolbarSelect(id, options, currentValue, onChange) {
+        const select = document.getElementById(id);
+        if (!select) return;
+        select.innerHTML = "";
+        for (const opt of options) {
+          const o = document.createElement("option");
+          o.value = opt.value;
+          o.textContent = opt.label;
+          if (opt.value === currentValue) o.selected = true;
+          select.appendChild(o);
+        }
+        if (currentValue !== undefined && currentValue !== null) {
+          select.setAttribute("value", currentValue);
+        }
+        select.addEventListener("change", (e) => {
+          const value = e?.detail?.value ?? select.value ?? "";
+          onChange(value);
+        });
+      }
+
+      // ─── Sidebar click → component selection ────────────────────
       componentListPanel.addEventListener("list-item-click", (e) => {
         const itemEl = e.composedPath().find(
           (n) => n instanceof HTMLElement && n.tagName === "SHERPA-LIST-ITEM"
@@ -377,18 +498,28 @@
       async function selectComponent(tag) {
         currentComponent = tag;
         eventLog = [];
+        currentOverrides.clear();
+        if (rebuildTimer) { clearTimeout(rebuildTimer); rebuildTimer = null; }
+
+        // Remove any stale event listeners attached to the previous instance.
+        for (const { target, type, handler } of eventHandlers) {
+          target.removeEventListener(type, handler);
+        }
+        eventHandlers.length = 0;
 
         componentListPanel.querySelectorAll("sherpa-list-item").forEach((item) => {
           item.toggleAttribute("data-active", item.dataset.tag === tag);
         });
 
-        emptyState.hidden  = true;
-        contentArea.hidden = false;
+        emptyState.hidden          = true;
+        previewTitleHeader.hidden  = false;
+        previewCard.hidden         = false;
 
         const component = COMPONENTS.find((c) => c.tag === tag);
         previewTitleHeader.dataset.label = `${component.label}  <${tag}>`;
 
         const metadata = await getComponentMetadata(tag);
+        currentMetadata = metadata;
         await createComponentPreview(tag, metadata);
         renderControls(metadata);
 
@@ -397,13 +528,16 @@
 
       async function createComponentPreview(tag, metadata) {
         previewContainer.innerHTML = "";
+        triggerHost = null;
+        if (dummyNote) { dummyNote.remove(); dummyNote = null; }
+
+        const preset = DUMMY_DATA[tag] || {};
 
         try {
           await import(`./components/${tag}/${tag}.js`);
           currentInstance = document.createElement(tag);
 
-          // Pre-populate every non-boolean attribute with a sensible test
-          // value so the preview shows real content out of the gate.
+          // 1. Heuristic attribute pre-population (from JSDoc-style metadata).
           metadata.attributes.forEach((attr) => {
             if (attr.type === "boolean") return;
             const sample = sampleValueFor(attr, tag);
@@ -412,11 +546,59 @@
             }
           });
 
-          if (metadata.slots.some((s) => !s.name) && !currentInstance.textContent) {
+          // 2. Preset attribute overrides — wins over heuristic defaults.
+          if (preset.attrs) {
+            for (const [name, value] of Object.entries(preset.attrs)) {
+              setHostAttr(name, value, currentInstance);
+            }
+          }
+
+          // 2b. Manual overrides from the controls panel — wins over presets.
+          //     Removed (null) overrides explicitly delete the attribute.
+          for (const [name, value] of currentOverrides) {
+            if (value === null) {
+              if (name.startsWith("data-")) {
+                delete currentInstance.dataset[dataKey(name)];
+              } else {
+                currentInstance.removeAttribute(name);
+              }
+            } else {
+              setHostAttr(name, value, currentInstance);
+            }
+          }
+
+          // 3. Slot / light-DOM content.
+          if (preset.html) {
+            currentInstance.innerHTML = preset.html;
+          } else if (metadata.slots.some((s) => !s.name) && !currentInstance.textContent) {
             currentInstance.textContent = "Sample content";
           }
 
           previewContainer.appendChild(currentInstance);
+
+          // 4. Optional setup hook for programmatic init (setData, setOptions,
+          //    show(), wiring trigger buttons, etc.). Runs after the element
+          //    is connected so methods are available.
+          if (typeof preset.setup === "function") {
+            try {
+              const result = preset.setup({
+                instance: currentInstance,
+                container: previewContainer,
+                addTrigger: addTriggerButton,
+              });
+              if (result instanceof Promise) await result;
+            } catch (err) {
+              console.error(`[playground] setup() failed for ${tag}:`, err);
+            }
+          }
+
+          // 5. Optional dummy-data note ("loaded with N rows of sample data…").
+          if (preset.note) {
+            dummyNote = document.createElement("sherpa-message");
+            dummyNote.dataset.status = "info";
+            dummyNote.dataset.label  = preset.note.replace(/<[^>]*>/g, "");
+            previewCard.appendChild(dummyNote);
+          }
         } catch (error) {
           console.error(`Failed to create component ${tag}:`, error);
           const msg = document.createElement("sherpa-message");
@@ -426,28 +608,49 @@
         }
       }
 
+      // Helper passed to preset.setup() — appends a trigger button
+      // (e.g. "Open dialog") to a sherpa-toolbar action row beneath the component.
+      function addTriggerButton({ label, iconStart, onClick }) {
+        if (!triggerHost) {
+          triggerHost = document.createElement("sherpa-toolbar");
+          triggerHost.dataset.template = "actions";
+          previewContainer.appendChild(triggerHost);
+        }
+        const btn = document.createElement("sherpa-button");
+        btn.slot            = "actions";
+        btn.dataset.label   = label;
+        btn.dataset.variant = "primary";
+        btn.dataset.size    = "small";
+        if (iconStart) btn.dataset.iconStart = iconStart;
+        btn.addEventListener("button-click", onClick);
+        triggerHost.appendChild(btn);
+        return btn;
+      }
+
       // ── Sample value heuristic per attribute ──
-      // Returns a representative test value to prefill into the preview
-      // (and into the matching control input).
       function sampleValueFor(attr, tag) {
         const name = attr.name.replace(/^data-/, "");
 
-        if (attr.type.includes("enum")) {
-          const m = attr.description.match(/([a-z0-9-]+(?:\s*\|\s*[a-z0-9-]+)*)/);
-          if (m) return m[1].split("|").map((o) => o.trim())[0];
+        if (attr.type === "enum") {
+          if (Array.isArray(attr.enumValues) && attr.enumValues.length) {
+            return attr.enumValues[0];
+          }
           return "";
         }
         if (attr.type === "number") {
           if (/min/.test(name)) return "0";
           if (/max/.test(name)) return "100";
           if (/step/.test(name)) return "1";
-          if (/count|span/.test(name)) return "3";
+          if (/count|span|page-size/.test(name)) return "3";
+          if (/total/.test(name)) return "120";
           return "42";
         }
         if (attr.type === "json") return "";
 
         // string
-        if (/^icon/.test(name) || name === "icon") return "fa-solid fa-star";
+        // Most components expect a Font Awesome unicode codepoint for icon
+        // attrs, not a class string. \uf005 is fa-star.
+        if (/^icon/.test(name) || name === "icon") return "\uf005";
         if (/illustration/.test(name)) return "empty";
         if (/heading|title/.test(name)) return "Sample heading";
         if (/description|helper|placeholder|small-print|empty/.test(name)) {
@@ -460,7 +663,7 @@
       }
 
       // ═══════════════════════════════════════════════════════════
-      // CONTROLS PANEL RENDERING (uses sherpa form components)
+      // CONTROLS PANEL RENDERING
       // ═══════════════════════════════════════════════════════════
 
       function dataKey(attrName) {
@@ -476,14 +679,53 @@
         }
       }
 
+      // Apply a control-driven attribute change. Records the change in
+      // currentOverrides so subsequent rebuilds preserve user intent, mutates
+      // the live instance for immediate visual feedback, and schedules a
+      // preview rebuild when the target component does not observe the
+      // attribute (so JS-driven text/structure picks it up).
+      function applyAttrChange(attrName, value) {
+        const isRemoval = value === null || value === undefined || value === "";
+        if (isRemoval) {
+          currentOverrides.set(attrName, null);
+          if (currentInstance) {
+            if (attrName.startsWith("data-")) {
+              delete currentInstance.dataset[dataKey(attrName)];
+            } else {
+              currentInstance.removeAttribute(attrName);
+            }
+          }
+        } else {
+          currentOverrides.set(attrName, value);
+          setHostAttr(attrName, value);
+        }
+        sessionStorage.setItem(`${currentComponent}_${attrName}`, value ?? "");
+        scheduleRebuildIfNeeded(attrName);
+      }
+
+      function scheduleRebuildIfNeeded(attrName) {
+        if (!currentComponent) return;
+        const ctor = customElements.get(currentComponent);
+        const observed = ctor?.observedAttributes ?? [];
+        if (observed.includes(attrName)) return;
+        if (CSS_DRIVEN_ATTR_RE.test(attrName)) return;
+        // Debounce so rapid keystrokes don't thrash the preview.
+        if (rebuildTimer) clearTimeout(rebuildTimer);
+        rebuildTimer = setTimeout(async () => {
+          rebuildTimer = null;
+          if (!currentComponent || !currentMetadata) return;
+          await createComponentPreview(currentComponent, currentMetadata);
+        }, 80);
+      }
+
       function makeSectionHeader(label) {
         const header = document.createElement("sherpa-section-header");
         header.dataset.label        = label;
         header.dataset.headingLevel = "tertiary";
+        header.dataset.divider      = "";
         return header;
       }
 
-      // Helper: read the host attribute's current value from the preview.
       function readHostAttr(attrName, target = currentInstance) {
         if (!target) return "";
         if (attrName.startsWith("data-")) {
@@ -492,153 +734,180 @@
         return target.getAttribute(attrName) ?? "";
       }
 
-      // Helper: build a labeled row (label + description) used for switches
-      // and other controls that don't carry their own label slot.
+      // Decorate a control element with the row's label/description using
+      // the input components' native data-label / data-description attributes.
+      // No wrapper, no class names — pure component composition.
       function makeControlRow(labelText, descriptionText, controlEl) {
-        const row = document.createElement("div");
-        row.className = "control-row";
+        if (controlEl && labelText) controlEl.dataset.label = labelText;
+        if (controlEl && descriptionText) controlEl.dataset.description = descriptionText;
+        return controlEl;
+      }
 
-        const text = document.createElement("div");
-        text.className = "control-row-text";
+      // Build a single attribute control row bound to `target`. The
+      // applyChange callback owns persistence + rebuild semantics — the
+      // host instance tracks overrides and may trigger a debounced
+      // rebuild, while nested instances just mutate the attr directly.
+      function buildAttrControl(attr, target, applyChange) {
+        const currentValue = readHostAttr(attr.name, target);
 
-        const label = document.createElement("span");
-        label.className = "control-row-label";
-        label.textContent = labelText;
-        text.appendChild(label);
-
-        if (descriptionText) {
-          const desc = document.createElement("span");
-          desc.className = "control-row-description";
-          desc.textContent = descriptionText;
-          text.appendChild(desc);
+        if (attr.type === "boolean") {
+          // sherpa-input-checkbox supports data-label/data-description natively;
+          // sherpa-switch does not, so we use checkbox here for label parity.
+          const cb = document.createElement("sherpa-input-checkbox");
+          if (target?.hasAttribute(attr.name)) cb.setAttribute("checked", "");
+          cb.addEventListener("change", (e) => {
+            const checked = !!(e.detail?.checked ?? cb.hasAttribute("checked"));
+            applyChange(attr.name, checked ? "" : null, { boolean: true, checked });
+          });
+          return makeControlRow(attr.name, attr.description, cb);
         }
 
-        row.appendChild(text);
-        row.appendChild(controlEl);
-        return row;
+        if (attr.type === "enum") {
+          const select = document.createElement("sherpa-input-select");
+          const opts = Array.isArray(attr.enumValues) ? attr.enumValues : [];
+          const blank = document.createElement("option");
+          blank.value = "";
+          blank.textContent = "(unset)";
+          select.appendChild(blank);
+          opts.forEach((opt) => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt;
+            if (opt === currentValue) o.selected = true;
+            select.appendChild(o);
+          });
+          if (currentValue) select.setAttribute("value", currentValue);
+          select.addEventListener("change", (e) => {
+            applyChange(attr.name, e?.detail?.value ?? select.value ?? "");
+          });
+          return makeControlRow(attr.name, attr.description, select);
+        }
+
+        if (attr.type === "number") {
+          const input = document.createElement("sherpa-input-number");
+          if (attr.description) input.setAttribute("placeholder", attr.description);
+          if (currentValue) input.setAttribute("value", currentValue);
+          const onChange = (e) => applyChange(attr.name, e?.detail?.value ?? input.value ?? "");
+          input.addEventListener("input", onChange);
+          input.addEventListener("change", onChange);
+          return makeControlRow(attr.name, attr.description, input);
+        }
+
+        if (attr.type === "json") {
+          const input = document.createElement("sherpa-input-text");
+          input.setAttribute("placeholder", "JSON array or object");
+          if (currentValue) input.setAttribute("value", currentValue);
+          input.addEventListener("change", (e) => {
+            const value = e?.detail?.value ?? input.value ?? "";
+            if (value === "") { applyChange(attr.name, ""); return; }
+            try {
+              JSON.parse(value);
+              applyChange(attr.name, value);
+            } catch (err) {
+              alert("Invalid JSON: " + err.message);
+            }
+          });
+          return makeControlRow(attr.name, attr.description, input);
+        }
+
+        // string (default)
+        const input = document.createElement("sherpa-input-text");
+        if (attr.description) input.setAttribute("placeholder", attr.description);
+        if (currentValue) input.setAttribute("value", currentValue);
+        const onChange = (e) => applyChange(attr.name, e?.detail?.value ?? input.value ?? "");
+        input.addEventListener("input", onChange);
+        input.addEventListener("change", onChange);
+        return makeControlRow(attr.name, attr.description, input);
+      }
+
+      // ── Host applyChange — records override + may rebuild preview.
+      function hostApplyChange(attrName, value, opts = {}) {
+        if (opts.boolean) {
+          if (!currentInstance) return;
+          currentOverrides.set(attrName, opts.checked ? "" : null);
+          currentInstance.toggleAttribute(attrName, opts.checked);
+          sessionStorage.setItem(`${currentComponent}_${attrName}`, opts.checked);
+          scheduleRebuildIfNeeded(attrName);
+          return;
+        }
+        applyAttrChange(attrName, value);
+      }
+
+      // ── Nested applyChange — direct mutation on nested instance.
+      function makeNestedApplyChange(target) {
+        return (attrName, value, opts = {}) => {
+          if (!target) return;
+          if (opts.boolean) {
+            target.toggleAttribute(attrName, opts.checked);
+            return;
+          }
+          const isRemoval = value === null || value === undefined || value === "";
+          if (isRemoval) {
+            if (attrName.startsWith("data-")) {
+              delete target.dataset[dataKey(attrName)];
+            } else {
+              target.removeAttribute(attrName);
+            }
+          } else {
+            setHostAttr(attrName, value, target);
+          }
+        };
+      }
+
+      // Build a "Status" override row that writes [data-status] on `target`.
+      // This replaces the old global toolbar status select — each previewed
+      // component (and each of its nested children) gets its own status
+      // override scoped to that instance, so you can compare e.g. a
+      // critical button next to a success toast on the same canvas.
+      function buildStatusControl(target, applyChange) {
+        const select = document.createElement("sherpa-input-select");
+        const current = readHostAttr("data-status", target);
+        STATUS_OVERRIDES.forEach((opt) => {
+          const o = document.createElement("option");
+          o.value = opt.value;
+          o.textContent = opt.label;
+          if (opt.value === current) o.selected = true;
+          select.appendChild(o);
+        });
+        if (current) select.setAttribute("value", current);
+        select.addEventListener("change", (e) => {
+          applyChange("data-status", e?.detail?.value ?? select.value ?? "");
+        });
+        return makeControlRow(
+          "data-status",
+          "Drive --_status-* tokens for this component only.",
+          select,
+        );
       }
 
       function renderControls(metadata) {
-        controlsContent.innerHTML = "";
+        componentControls.innerHTML = "";
+
+        // ── Status (per-component override) ──────────────────
+        const statusSection = document.createElement("div");
+        statusSection.appendChild(makeSectionHeader("Status"));
+        statusSection.appendChild(buildStatusControl(currentInstance, hostApplyChange));
+        componentControls.appendChild(statusSection);
 
         // ── Attributes ────────────────────────────────────────
         if (metadata.attributes.length > 0) {
           const section = document.createElement("div");
-          section.className = "controls-section";
           section.appendChild(makeSectionHeader("Attributes"));
-
           metadata.attributes.forEach((attr) => {
-            const group = document.createElement("div");
-            group.className = "control-group";
-
-            const currentValue = readHostAttr(attr.name);
-            const sample = sampleValueFor(attr, currentComponent);
-
-            if (attr.type === "boolean") {
-              const sw = document.createElement("sherpa-switch");
-              sw.dataset.state = currentInstance?.hasAttribute(attr.name) ? "on" : "off";
-              sw.addEventListener("change", (e) => {
-                if (!currentInstance) return;
-                currentInstance.toggleAttribute(attr.name, e.detail.checked);
-                sessionStorage.setItem(
-                  `${currentComponent}_${attr.name}`,
-                  e.detail.checked
-                );
-              });
-              section.appendChild(makeControlRow(attr.name, attr.description, sw));
-              return;
-            }
-
-            if (attr.type.includes("enum")) {
-              const select = document.createElement("sherpa-input-select");
-              select.dataset.label = attr.name;
-
-              const m = attr.description.match(/([a-z0-9-]+(?:\s*\|\s*[a-z0-9-]+)*)/);
-              const opts = m ? m[1].split("|").map((o) => o.trim()) : [];
-              opts.forEach((opt) => {
-                const o = document.createElement("option");
-                o.value = opt;
-                o.textContent = opt;
-                if (opt === (currentValue || sample)) o.selected = true;
-                select.appendChild(o);
-              });
-              if (currentValue || sample) {
-                select.setAttribute("value", currentValue || sample);
-              }
-
-              const onSelectChange = (e) => {
-                const value = e?.detail?.value ?? select.value ?? "";
-                setHostAttr(attr.name, value);
-                sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
-              };
-              select.addEventListener("change", onSelectChange);
-              group.appendChild(select);
-            } else if (attr.type === "number") {
-              const input = document.createElement("sherpa-input-number");
-              input.dataset.label = attr.name;
-              input.setAttribute("placeholder", attr.description);
-              if (currentValue || sample) input.setAttribute("value", currentValue || sample);
-
-              const onNumChange = (e) => {
-                const value = e?.detail?.value ?? input.value ?? "";
-                setHostAttr(attr.name, value);
-                sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
-              };
-              input.addEventListener("input", onNumChange);
-              input.addEventListener("change", onNumChange);
-              group.appendChild(input);
-            } else if (attr.type === "json") {
-              const input = document.createElement("sherpa-input-text");
-              input.dataset.label = `${attr.name} (JSON)`;
-              input.setAttribute("placeholder", "JSON array or object");
-              if (currentValue) input.setAttribute("value", currentValue);
-              input.addEventListener("change", (e) => {
-                const value = e?.detail?.value ?? input.value ?? "";
-                try {
-                  JSON.parse(value);
-                  setHostAttr(attr.name, value);
-                  sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
-                } catch (err) {
-                  alert("Invalid JSON: " + err.message);
-                }
-              });
-              group.appendChild(input);
-            } else {
-              const input = document.createElement("sherpa-input-text");
-              input.dataset.label = attr.name;
-              input.setAttribute("placeholder", attr.description);
-              if (currentValue || sample) input.setAttribute("value", currentValue || sample);
-
-              const onTextChange = (e) => {
-                const value = e?.detail?.value ?? input.value ?? "";
-                setHostAttr(attr.name, value);
-                sessionStorage.setItem(`${currentComponent}_${attr.name}`, value);
-              };
-              input.addEventListener("input", onTextChange);
-              input.addEventListener("change", onTextChange);
-              group.appendChild(input);
-            }
-
-            section.appendChild(group);
+            section.appendChild(buildAttrControl(attr, currentInstance, hostApplyChange));
           });
-
-          controlsContent.appendChild(section);
+          componentControls.appendChild(section);
         }
 
         // ── Slots ─────────────────────────────────────────────
         if (metadata.slots.length > 0) {
           const section = document.createElement("div");
-          section.className = "controls-section";
           section.appendChild(makeSectionHeader("Slots"));
 
           metadata.slots.forEach((slot) => {
-            const group = document.createElement("div");
-            group.className = "control-group";
-
             const input = document.createElement("sherpa-input-text");
             input.dataset.label = slot.name ? `Slot: ${slot.name}` : "Default slot";
             input.setAttribute("placeholder", slot.description || "HTML content");
-            if (!slot.name) input.setAttribute("value", "Sample content");
 
             input.addEventListener("change", (e) => {
               const value = e?.detail?.value ?? input.getAttribute("value") ?? "";
@@ -662,23 +931,22 @@
               );
             });
 
-            group.appendChild(input);
-            section.appendChild(group);
+            section.appendChild(input);
           });
 
-          controlsContent.appendChild(section);
+          componentControls.appendChild(section);
         }
 
         // ── Events ────────────────────────────────────────────
         if (metadata.events.length > 0) {
           const section = document.createElement("div");
-          section.className = "controls-section";
           section.appendChild(makeSectionHeader("Event Log"));
 
           metadata.events.forEach((event) => {
-            currentInstance?.addEventListener(event.name, (e) => {
-              logEvent(event.name, e.detail);
-            });
+            if (!currentInstance) return;
+            const handler = (e) => logEvent(event.name, e.detail);
+            currentInstance.addEventListener(event.name, handler);
+            eventHandlers.push({ target: currentInstance, type: event.name, handler });
           });
 
           const clearBtn = document.createElement("sherpa-button");
@@ -699,8 +967,62 @@
           logList.dataset.empty   = "No events yet";
           section.appendChild(logList);
 
-          controlsContent.appendChild(section);
+          componentControls.appendChild(section);
           updateEventLog();
+        }
+
+        // ── Nested components ─────────────────────────────────
+        // When a preset injects nested sherpa-* elements (e.g. a
+        // <sherpa-list> with <sherpa-list-item> children, or a card
+        // composing a header + button), expose each nested instance's
+        // attributes + status in its own controls section. Edits target
+        // the nested element directly — no host rebuild — so changes
+        // survive until the user picks a different component.
+        renderNestedControls();
+      }
+
+      async function renderNestedControls() {
+        if (!currentInstance) return;
+        const nested = Array.from(
+          currentInstance.querySelectorAll("*")
+        ).filter((el) => el.tagName.toLowerCase().startsWith("sherpa-"));
+        if (!nested.length) return;
+
+        // Group by tag so we can fetch metadata once per type, then
+        // render one section per individual instance (with index suffix
+        // when more than one of the same tag is present).
+        const byTag = new Map();
+        for (const el of nested) {
+          const tag = el.tagName.toLowerCase();
+          if (!byTag.has(tag)) byTag.set(tag, []);
+          byTag.get(tag).push(el);
+        }
+
+        for (const [tag, instances] of byTag) {
+          let meta;
+          try {
+            meta = await getComponentMetadata(tag);
+          } catch {
+            continue;
+          }
+          if (!meta) continue;
+          instances.forEach((target, idx) => {
+            const section = document.createElement("div");
+            const suffix = instances.length > 1 ? ` #${idx + 1}` : "";
+            section.appendChild(makeSectionHeader(`<${tag}>${suffix}`));
+
+            const apply = makeNestedApplyChange(target);
+
+            // Status row first — most useful nested override.
+            section.appendChild(buildStatusControl(target, apply));
+
+            // Then any documented attributes.
+            (meta.attributes || []).forEach((attr) => {
+              section.appendChild(buildAttrControl(attr, target, apply));
+            });
+
+            componentControls.appendChild(section);
+          });
         }
       }
 
@@ -733,8 +1055,12 @@
       }
 
       // ═══════════════════════════════════════════════════════════
-      // STATE RESTORATION
+      // BOOTSTRAP
       // ═══════════════════════════════════════════════════════════
+
+      await loadComponentList();
+      populateSidebar();
+      initGlobalToolbar();
 
       const savedComponent = sessionStorage.getItem("selectedComponent");
       if (savedComponent && COMPONENTS.find((c) => c.tag === savedComponent)) {

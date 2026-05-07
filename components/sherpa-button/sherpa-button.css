@@ -137,7 +137,7 @@
   min-width: 16px;
   height: 16px;
   padding-inline: 4px;
-  border-radius: var(--sherpa-border-rounding-round, 999px);
+  border-radius: var(--sherpa-border-rounding-full, 999px);
   background: var(--sherpa-surface-control-secondary-default, #ffffff);
   color: var(--sherpa-text-default-body, #2e2e33);
   font-size: var(--sherpa-fonts-scale-xs, 10px);

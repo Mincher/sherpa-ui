@@ -62,7 +62,7 @@
 }
 
 .legend-item[data-inactive] {
-  color: var(--sherpa-text-default-inactive, #999999);
+  color: var(--sherpa-text-default-placeholder, #999999);
 }
 .legend-item[data-inactive] .legend-swatch {
   background-color: var(--sherpa-surface-control-inactive, #cccccc) !important;

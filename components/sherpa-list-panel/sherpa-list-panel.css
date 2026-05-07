@@ -65,7 +65,7 @@
 
 .panel-empty {
   display: none;
-  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-md, 16px);
+  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
   text-align: center;
   color: var(--sherpa-text-default-secondary, #6a6a75);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
@@ -76,6 +76,6 @@
 /* ── Search highlight ────────────────────────────────── */
 
 ::highlight(list-panel-match) {
-  background-color: var(--sherpa-surface-warning-subtle, #fff3cd);
+  background-color: var(--sherpa-surface-context-warning-subtle-default, #fff3cd);
   color: var(--sherpa-text-default-body, #2e2e33);
 }

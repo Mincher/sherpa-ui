@@ -95,8 +95,8 @@ sherpa-switch { pointer-events: none; }
 /* ── Search highlight ── */
 
 mark.text-highlight-match {
-  background-color: var(--sherpa-surface-search-highlight);
-  border-radius: var(--sherpa-border-rounding-2xs, 2px);
+  background-color: var(--sherpa-surface-search-highlight, rgba(255, 216, 64, 0.35));
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   padding: 0 2px;
 }
 
@@ -120,7 +120,7 @@ mark.text-highlight-match {
 
 :host([data-variant="danger"]:hover),
 :host([data-variant="danger"]:focus-visible) {
-  background-color: var(--sherpa-surface-context-error-subtle, #fbeaee);
+  background-color: var(--sherpa-surface-context-error-subtle-default, #fbeaee);
   color: var(--sherpa-text-context-error-default, #c41337);
 }
 

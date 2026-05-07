@@ -63,7 +63,7 @@
 
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
   min-height: 0;
@@ -131,7 +131,7 @@ sherpa-filter-bar {
 .chart-layout {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-base, 16px);
   flex: 1 1 0;
   min-height: 0;
 }
@@ -367,7 +367,7 @@ sherpa-filter-bar {
   display: flex;
   flex-direction: var(--_chart-legend-direction, row);
   flex-wrap: var(--_chart-legend-wrap, wrap);
-  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-base, 16px);
   justify-content: var(--_chart-legend-justify, center);
   align-self: var(--_chart-legend-align, auto);
   width: var(--_chart-legend-width, auto);
@@ -386,7 +386,7 @@ sherpa-filter-bar {
 .legend-key {
   width: 12px;
   height: 12px;
-  border-radius: var(--sherpa-border-rounding-xs, 2px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   flex-shrink: 0;
 }
 

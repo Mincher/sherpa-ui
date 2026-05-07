@@ -137,7 +137,7 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: var(--sherpa-space-md, 16px);
+  padding: var(--sherpa-space-base, 16px);
 }
 
 /* ── Sticky search slot ──────────────────────────────────
@@ -146,9 +146,9 @@
    beneath) and is hidden when no element occupies the slot. */
 .section-search {
   position: sticky;
-  top: calc(var(--sherpa-space-md, 16px) * -1);
+  top: calc(var(--sherpa-space-base, 16px) * -1);
   z-index: 1;
-  margin: calc(var(--sherpa-space-md, 16px) * -1);
+  margin: calc(var(--sherpa-space-base, 16px) * -1);
   margin-bottom: var(--sherpa-space-sm, 12px);
   padding: var(--sherpa-space-sm, 12px);
   background: var(--sherpa-surface-container-default, #ffffff);

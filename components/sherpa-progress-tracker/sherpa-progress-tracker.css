@@ -39,7 +39,7 @@
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: var(--sherpa-space-md, 16px);
+  padding-bottom: var(--sherpa-space-base, 16px);
 }
 
 :host([data-heading]) .tracker-header {
@@ -77,7 +77,7 @@
 .milestone {
   display: flex;
   align-items: flex-start;
-  gap: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-base, 16px);
   position: relative;
   min-height: 56px;
 

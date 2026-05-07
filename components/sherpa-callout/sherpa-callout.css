@@ -35,7 +35,7 @@
   display: flex;
   flex-direction: column;
   border-radius: var(--sherpa-border-rounding-base, 8px);
-  padding: var(--sherpa-space-md, 16px);
+  padding: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-xs, 13px);
   line-height: var(--sherpa-line-height-default, 1.6);
@@ -77,7 +77,7 @@
 }
 
 :host([data-status="neutral"]) {
-  --_callout-bg: var(--sherpa-surface-subtle-default, #f0f0f2);
+  --_callout-bg: var(--sherpa-surface-container-secondary-default, #f0f0f2);
   --_callout-heading: var(--sherpa-text-default-body, #18191a);
   --_callout-icon: var(--sherpa-text-default-secondary, #5c5c66);
 }
@@ -176,8 +176,8 @@
 .body {
   display: none;
   flex-direction: column;
-  gap: var(--sherpa-space-md, 16px);
-  padding-top: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-base, 16px);
+  padding-top: var(--sherpa-space-base, 16px);
   /* Indent to align with heading (toggle btn 36 + gap 8 + icon 20 + gap 8 = 72px) */
   padding-left: 72px;
 }

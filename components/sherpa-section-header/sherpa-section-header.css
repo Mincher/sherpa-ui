@@ -33,7 +33,7 @@
 
 :host([data-density="compact"]) {
   --_content-gap: var(--sherpa-space-sm, 8px);
-  --_heading-font-size: var(--sherpa-fonts-scale-md, 14px);
+  --_heading-font-size: var(--sherpa-fonts-scale-base, 14px);
 }
 
 :host([data-density="comfortable"]) {

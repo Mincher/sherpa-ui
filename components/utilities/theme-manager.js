@@ -1,11 +1,16 @@
 /**
- * ThemeManager — Standalone utility for managing theme, mode, and density.
+ * ThemeManager — Standalone utility for managing theme, mode, density, status.
  *
- * Handles:
- *   • Theme stylesheet loading (swaps/creates <link id="sherpa-theme"> in <head>)
- *   • Color mode switching via color-scheme CSS property (light / dark / auto)
- *   • Density attribute on <html> element
- *   • Optional localStorage persistence
+ * Single source of truth: every axis is a `data-*` attribute on `<html>`.
+ * CSS owns the visual consequences (including `color-scheme`) — this utility
+ * only writes attributes and (for Theme) loads the matching stylesheet.
+ *
+ *   axis      attribute         CSS handles
+ *   ────────  ────────────────  ──────────────────────────────────────
+ *   Theme     data-theme        Token bindings via :root[data-theme]
+ *   Mode      data-mode         color-scheme + light/dark/HC token blocks
+ *   Density   data-density      Spacing scale via [data-density] subtree
+ *   Status    data-status       --_status-* private vars on subtree
  *
  * Usage:
  *   import { ThemeManager } from '../utilities/theme-manager.js';
@@ -17,20 +22,23 @@
  *   ThemeManager.restore();
  *
  *   // Set values programmatically
- *   ThemeManager.setTheme('apex-2-core');
- *   ThemeManager.setMode('dark');
+ *   ThemeManager.setTheme('apex-2-purple');
+ *   ThemeManager.setMode('dark');     // 'auto' | 'light' | 'dark' | 'hc'
  *   ThemeManager.setDensity('compact');
+ *   ThemeManager.setStatus('warning'); // 'critical'|'info'|'success'|'warning'|'urgent'|null
  *
  * Configuration (passed to init()):
  *   cssBaseUrl       — Base URL for theme CSS files (default: '/css/styles/')
  *   themePrefix      — Filename prefix for theme files (default: 'sherpa-theme-')
- *   storageKeyTheme  — localStorage key for theme (default: 'sherpa-theme')
- *   storageKeyMode   — localStorage key for mode (default: 'sherpa-mode')
- *   storageKeyDensity— localStorage key for density (default: 'sherpa-density')
- *   defaultTheme     — Fallback theme name (default: 'apex-2-core')
- *   defaultMode      — Fallback mode (default: 'auto')
- *   defaultDensity   — Fallback density (default: 'base')
- *   persist          — Whether to save to localStorage (default: true)
+ *   storageKeyTheme  — localStorage key for theme    (default: 'sherpa-theme')
+ *   storageKeyMode   — localStorage key for mode     (default: 'sherpa-mode')
+ *   storageKeyDensity— localStorage key for density  (default: 'sherpa-density')
+ *   storageKeyStatus — localStorage key for status   (default: 'sherpa-status')
+ *   defaultTheme     — Fallback theme slug   (default: 'apex-2-purple')
+ *   defaultMode      — Fallback mode         (default: 'auto')
+ *   defaultDensity   — Fallback density      (default: 'base')
+ *   defaultStatus    — Fallback status       (default: null)
+ *   persist          — Save to localStorage  (default: true)
  */
 
 const _config = {
@@ -39,11 +47,28 @@ const _config = {
   storageKeyTheme: 'sherpa-theme',
   storageKeyMode: 'sherpa-mode',
   storageKeyDensity: 'sherpa-density',
-  defaultTheme: 'apex-2-core',
+  storageKeyStatus: 'sherpa-status',
+  defaultTheme: 'apex-2-purple',
   defaultMode: 'auto',
   defaultDensity: 'base',
+  defaultStatus: null,
   persist: true,
 };
+
+const _root = () => document.documentElement;
+
+function _read(key, fallback) {
+  if (!_config.persist) return fallback;
+  try { return localStorage.getItem(key) ?? fallback; }
+  catch { return fallback; }
+}
+function _write(key, value) {
+  if (!_config.persist) return;
+  try {
+    if (value == null) localStorage.removeItem(key);
+    else               localStorage.setItem(key, value);
+  } catch { /* storage unavailable — silent */ }
+}
 
 export const ThemeManager = {
   /**
@@ -62,19 +87,20 @@ export const ThemeManager = {
     this.setTheme(this.getTheme());
     this.setMode(this.getMode());
     this.setDensity(this.getDensity());
+    this.setStatus(this.getStatus());
   },
 
   // ─── Theme ──────────────────────────────────────────────────
 
-  /** @returns {string} Current theme name (from localStorage or default). */
-  getTheme() {
-    return (_config.persist && localStorage.getItem(_config.storageKeyTheme))
-      || _config.defaultTheme;
-  },
+  /** @returns {string} Current theme slug. */
+  getTheme() { return _read(_config.storageKeyTheme, _config.defaultTheme); },
 
   /**
-   * Apply a theme by swapping the <link id="sherpa-theme"> stylesheet.
-   * @param {string} theme — Theme identifier, e.g. 'apex-2-core'
+   * Apply a theme by swapping the <link id="sherpa-theme"> stylesheet AND
+   * setting <html data-theme="...">. Both changes are needed: the link
+   * provides the diff-overrides for extended themes; the attribute is what
+   * the [data-theme="..."] selectors in those files key off of.
+   * @param {string} theme — Theme slug, e.g. 'apex-2-core'
    */
   setTheme(theme) {
     let link = document.getElementById('sherpa-theme');
@@ -85,41 +111,62 @@ export const ThemeManager = {
       document.head.appendChild(link);
     }
     link.href = `${_config.cssBaseUrl}${_config.themePrefix}${theme}.css`;
-    if (_config.persist) localStorage.setItem(_config.storageKeyTheme, theme);
+    _root().dataset.theme = theme;
+    _write(_config.storageKeyTheme, theme);
   },
 
-  // ─── Mode (light / dark / auto) ─────────────────────────────
+  // ─── Mode (auto / light / dark / hc) ────────────────────────
 
-  /** @returns {string} Current mode (from localStorage or default). */
-  getMode() {
-    return (_config.persist && localStorage.getItem(_config.storageKeyMode))
-      || _config.defaultMode;
-  },
+  /** @returns {string} Current mode. */
+  getMode() { return _read(_config.storageKeyMode, _config.defaultMode); },
 
   /**
-   * Apply color mode.
-   * @param {'light'|'dark'|'auto'} mode
+   * Apply color mode by writing a single attribute. CSS in
+   * `tokens/platform.css` and each theme file handles the visual cascade
+   * (including `color-scheme`). Modes:
+   *   'auto'  → no override; tracks prefers-color-scheme and prefers-contrast
+   *   'light' → forces light tokens regardless of OS preference
+   *   'dark'  → forces dark tokens regardless of OS preference
+   *   'hc'    → forces High Contrast tokens (overrides both light + dark)
+   * @param {'auto'|'light'|'dark'|'hc'} mode
    */
   setMode(mode) {
-    document.documentElement.style.colorScheme =
-      mode === 'auto' ? 'light dark' : mode;
-    if (_config.persist) localStorage.setItem(_config.storageKeyMode, mode);
+    _root().dataset.mode = mode;
+    _write(_config.storageKeyMode, mode);
   },
 
   // ─── Density ────────────────────────────────────────────────
 
-  /** @returns {string} Current density (from localStorage or default). */
-  getDensity() {
-    return (_config.persist && localStorage.getItem(_config.storageKeyDensity))
-      || _config.defaultDensity;
+  /** @returns {string} Current density. */
+  getDensity() { return _read(_config.storageKeyDensity, _config.defaultDensity); },
+
+  /**
+   * Apply density on the document root. Components inside any subtree
+   * with `[data-density]` rescale automatically.
+   * @param {'compact'|'base'|'comfortable'} density
+   */
+  setDensity(density) {
+    _root().dataset.density = density;
+    _write(_config.storageKeyDensity, density);
+  },
+
+  // ─── Status ─────────────────────────────────────────────────
+
+  /** @returns {string|null} Current status (null = no status applied). */
+  getStatus() {
+    const stored = _read(_config.storageKeyStatus, _config.defaultStatus);
+    return stored || null;
   },
 
   /**
-   * Apply density.
-   * @param {string} density — e.g. 'compact', 'base', 'comfortable'
+   * Apply a status mode globally. Components inside the subtree consume
+   * the resulting `--_status-*` private variables via their var() fallbacks.
+   * Pass `null` to clear.
+   * @param {'critical'|'info'|'success'|'warning'|'urgent'|null} status
    */
-  setDensity(density) {
-    document.documentElement.setAttribute('data-density', density);
-    if (_config.persist) localStorage.setItem(_config.storageKeyDensity, density);
+  setStatus(status) {
+    if (status) _root().dataset.status = status;
+    else        delete _root().dataset.status;
+    _write(_config.storageKeyStatus, status);
   },
 };

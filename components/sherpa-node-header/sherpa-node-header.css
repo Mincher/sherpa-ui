@@ -97,7 +97,7 @@
 }
 .drill-down:hover {
   background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default, #ffffff));
-  border-color: var(--sherpa-border-container-strong-default);
+  border-color: var(--sherpa-border-container-default, #d5d5d5);
 }
 .drill-down:active {
   transform: scale(0.96);

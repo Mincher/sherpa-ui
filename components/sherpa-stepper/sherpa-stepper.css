@@ -250,7 +250,7 @@
 /* Vertical connector between timeline steps */
 :host([data-template="timeline"]) .timeline-connector {
   width: 2px;
-  height: var(--sherpa-space-md, 16px);
+  height: var(--sherpa-space-base, 16px);
   margin-left: calc(var(--_indicator-size) / 2 + var(--sherpa-space-sm, 12px));
   background: var(--sherpa-border-container-default, #d5d5dc);
 }

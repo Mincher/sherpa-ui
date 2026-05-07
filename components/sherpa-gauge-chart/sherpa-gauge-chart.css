@@ -183,7 +183,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--sherpa-surface-subtle-default, #9c9ca5);
+  background: var(--sherpa-surface-container-secondary-default, #9c9ca5);
   z-index: 2;
 }
 

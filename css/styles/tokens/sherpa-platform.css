@@ -1,0 +1,71 @@
+/**
+ * Platform Tokens — system constants
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Tokens with no Figma source: font weights, z-index scale, focus rings,
+ * backdrops, content widths. Drop any entry here as soon as Figma adds the
+ * canonical equivalent.
+ */
+
+@property --sherpa-pdf-mode { syntax: "<integer>"; inherits: true; initial-value: 0; }
+
+:where(:root) {
+  /* Font weights */
+  --sherpa-font-weight-regular:  400;
+  --sherpa-font-weight-medium:   500;
+  --sherpa-font-weight-semibold: 600;
+  --sherpa-font-weight-bold:     700;
+
+  /* Default body line-height */
+  --sherpa-line-height-default: 1.5;
+
+  /* Motion — durations and easing (platform constants; no Figma source).
+     Hand-tuned values map to the equivalent --sherpa-core-motion-* primitives
+     but stay independently authored so transitions can be tuned without
+     re-extracting Figma. */
+  --sherpa-motion-duration-fast: 0.15s;
+  --sherpa-motion-duration-base: 0.25s;
+  --sherpa-motion-duration-slow: 0.4s;
+  --sherpa-motion-easing-default: ease-out;
+
+  /* Z-index scale */
+  --sherpa-z-panel:   100;
+  --sherpa-z-popover: 1000;
+  --sherpa-z-toast:   1100;
+
+  /* Modal backdrop tint (sherpa-dialog ::backdrop, view-header scroll-under) */
+  --sherpa-effects-backdrop: rgba(0, 0, 0, 0.4);
+
+  /* Focus ring (consumed by component :focus-visible outlines) */
+  --sherpa-effects-focus-ring: 0 0 0 2px var(--sherpa-color-primary-new-base, #c046ff);
+
+  /* Content width scale */
+  --sherpa-content-width-md: 720px;
+
+  /* Search-result highlight tint */
+  --sherpa-surface-search-highlight: rgba(255, 216, 64, 0.35);
+
+  /* Default AI accent gradient */
+  --sherpa-ai-accent-gradient: linear-gradient(
+    135deg,
+    var(--sherpa-color-brand-base, #c046ff) 0%,
+    var(--sherpa-color-primary-new-base, #5e3df5) 100%
+  );
+
+  /* Hairline divider — used for card/footer/accordion separators, line-chart
+     gridlines, and the node-canvas grid. No Figma source: lighter than
+     border-container-default by intent. */
+  --sherpa-border-container-subtle: rgba(0, 0, 0, 0.08);
+
+  /* Product-bar icon-block background — defaults to the brand surface so the
+     bar's logomark sits on the brand colour by default. */
+  --sherpa-surface-app-product-bar-icon: var(--sherpa-color-brand-base, #c046ff);
+}
+
+/* ── Color-scheme contract ─────────────────────────────────────────── */
+/* JS sets data-mode on :root; the cascade does the rest.              */
+
+:where(:root[data-mode="light"]) { color-scheme: light; }
+:where(:root[data-mode="dark"])  { color-scheme: dark; }
+:where(:root[data-mode="hc"])    { color-scheme: light dark; }

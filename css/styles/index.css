@@ -1,83 +1,55 @@
 /**
- * Sherpa Design System — Token Cascade
+ * Sherpa Design System — Per-axis token cascade
  *
- * Cascade layers (in priority order, lowest → highest):
- *   reset      — box-sizing, margin, font smoothing, body defaults
- *   tokens     — core primitives, semantic aliases, font composites, status mapping
- *   theme      — themed surface/text/border/icon/elevation tokens (loaded via <link>)
- *   utilities  — global reusable classes (text, icon, motion, data-viz, layout, app shell)
- *   components — light DOM component overrides
+ * Cascade layers (lowest → highest):
+ *   reset       — box-sizing, fonts, body defaults
+ *   primitives  — raw design values (colors, scales, motion durations)
+ *   alias       — semantic mode-less tokens; @property registrations
+ *   platform    — system constants (focus ring, z-index, color-scheme contract)
+ *   theme       — themed surface/text/border/icon (LIGHT default + nested dark/hc)
+ *   density     — [data-density] subtree overrides (Compact / Comfortable)
+ *   status      — [data-status] semantic state mapping (--_status-* private vars)
+ *   components  — light DOM component overrides
+ *   utilities   — class-based helpers (.color-N data-viz, text/icon/motion classes)
  *
- * Token hierarchy:
- *   core (--sherpa-core-*) → alias (--sherpa-color-*, --sherpa-size-*, etc.)
- *     → theme (--sherpa-surface-*, --sherpa-text-*, etc.) → modifiers (status, density)
+ * Switching axes (single source of truth — JS sets ATTRIBUTES only):
+ *   Theme    — base theme is always loaded (sherpa-theme-apex-2-core.css).
+ *              To activate an extended theme, append its file AFTER index.css
+ *              and set <html data-theme="<slug>">. Extended themes are diff-only
+ *              against the base, so the load order matters.
+ *   Mode     — set <html data-mode="auto|light|dark|hc"> (default "auto")
+ *              "auto" honours both prefers-color-scheme AND prefers-contrast.
+ *   Density  — set [data-density="compact|base|comfortable"] on any subtree
+ *   Status   — set [data-status="critical|info|success|warning|urgent"] on any element
  *
- * Theme architecture:
- *   Themes are split into a shared base + per-theme diffs.
- *     sherpa-theme-base.css         — always loaded via @import below
- *                                     (props identical across every theme;
- *                                     declares color-scheme)
- *     sherpa-theme-{slug}.css       — loaded by consumer via
- *                                     <link id="sherpa-theme" rel="stylesheet"
- *                                       href=".../sherpa-theme-{slug}.css">
- *                                     in the HTML <head>; contains only
- *                                     properties that differ from base
- *   Both files self-declare @layer theme { ... } so they slot into the
- *   layer ordering between tokens and utilities. The runtime <link> is
- *   later in source order than the @import, so it overrides base on a
- *   per-property basis within the layer. Swap the <link> href to change
- *   themes — base stays loaded, only the diff swaps.
- *   Available files: sherpa-theme-apex-2-core.css, sherpa-theme-data-protection.css, sherpa-theme-classic.css
- *   Mode switching: set color-scheme on documentElement via JS
- *     "light dark" → auto (OS preference), "light" → forced light, "dark" → forced dark
+ * No light-dark(): each theme file declares its light values + nested dark
+ * and HC override blocks (gated by data-mode attr OR a prefers-* media query).
  */
 
-@layer reset, tokens, theme, utilities, components;
+@layer reset, primitives, alias, platform, theme, density, status, components, utilities;
 
-/* ── Reset ────────────────────────────────────────────────────────────── */
+@import "reset.css"                   layer(reset);
+@import "tokens/sherpa-primitives.css" layer(primitives);
+@import "tokens/sherpa-alias.css"      layer(alias);
+@import "tokens/sherpa-platform.css"   layer(platform);
 
-@import "reset.css" layer(reset);
+/* Theme — default always loaded; consumers append an extended theme via JS */
+@import "sherpa-theme-apex-2-core.css";
 
-/* ── Tokens ──────────────────────────────────────────────────────────── */
+/* Density — both files always loaded; activated by [data-density] attribute */
+@import "sherpa-density-compact.css"     layer(density);
+@import "sherpa-density-comfortable.css" layer(density);
 
-/* Core primitives (--sherpa-core-*) — raw design values */
-@import "tokens/sherpa-primitives.css" layer(tokens);
+/* Status — semantic state mapping (--_status-* private vars) */
+@import "sherpa-status.css"              layer(status);
 
-/* Semantic aliases (--sherpa-*) — abstract primitives into intent.
-   Includes font composite tokens and global [data-status] mapping. */
-@import "tokens/sherpa-alias.css" layer(tokens);
+/* Components — light DOM overrides (project-managed) */
+@import "../../components/index.css"    layer(components);
 
-/*
- * Theme base — props identical across every theme. Always loaded.
- * Self-declares @layer theme { ... } so it slots into the layer ordering
- * between tokens and utilities. Defines color-scheme: light dark on :root.
- *
- * Per-theme diffs are loaded via <link id="sherpa-theme"> in the HTML
- * <head>:
- *   <link id="sherpa-theme" rel="stylesheet"
- *         href="css/styles/sherpa-theme-apex-2-core.css">
- *
- * Per-theme files only contain properties whose value differs from base.
- * They are later in source order than this @import, so they override base
- * on a per-property basis within @layer theme. Swap the <link> href to
- * change themes at runtime — base stays loaded, only the diff swaps.
- *
- * Available per-theme files:
- *   sherpa-theme-apex-2-core.css
- *   sherpa-theme-data-protection.css
- *   sherpa-theme-classic.css
- */
-@import "sherpa-theme-base.css";
-
-/* ── Utilities ───────────────────────────────────────────────────────── */
-
-@import "sherpa-icon-classes.css" layer(utilities);
-@import "sherpa-motion-classes.css" layer(utilities);
-@import "sherpa-text-classes.css" layer(utilities);
-@import "sherpa-data-viz-classes.css" layer(utilities);
-@import "sherpa-utility-classes.css" layer(utilities);
-
-/* ── Components ──────────────────────────────────────────────────────── */
-
-@import "../../components/index.css" layer(components);
-
+/* Utilities — class-based helpers */
+@import "sherpa-icon-classes.css"       layer(utilities);
+@import "sherpa-motion-classes.css"     layer(utilities);
+@import "sherpa-text-classes.css"       layer(utilities);
+@import "sherpa-data-viz-classes.css"   layer(utilities);
+@import "sherpa-utility-classes.css"    layer(utilities);
+@import "sherpa-app-classes.css"        layer(utilities);

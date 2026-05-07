@@ -96,8 +96,8 @@
   max-width: 85%;
   padding: 8px 12px;
   border-radius: 12px 12px 2px 12px;
-  background: var(--sherpa-surface-context-info-default, #2563eb);
-  color: var(--sherpa-text-context-info-on-default, #fff);
+  background: var(--sherpa-surface-context-info-subtle-default, #2563eb);
+  color: var(--sherpa-text-context-info-default, #fff);
 }
 
 /* Hide the default avatar icon when nothing was provided. */

@@ -16,7 +16,7 @@
  *   --sherpa-text-default-heading        (system name)
  *   --sherpa-text-default-body           (default body text)
  *   --sherpa-text-default-secondary      (TIME label, caret)
- *   --sherpa-border-focus                (focus outline)
+ *   --sherpa-border-control-primary-default                (focus outline)
  *
  * All of these tokens flip with the active sherpa theme (light / dark /
  * data-protection / classic) so no per-mode overrides are required.
@@ -28,7 +28,7 @@
   width: 100%;
   height: 48px;
   padding-inline: var(--sherpa-space-xs, 8px);
-  gap: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-base, 16px);
 
   background: var(--sherpa-surface-app-product-bar-bg, #ffffff);
   border-block-end: 1px solid var(--sherpa-border-container-default, #d5d5d5);
@@ -75,7 +75,7 @@
 }
 
 .system-trigger:focus-visible {
-  outline: 2px solid var(--sherpa-border-focus, #4c63e5);
+  outline: 2px solid var(--sherpa-border-control-primary-default, #4c63e5);
   outline-offset: 2px;
 }
 

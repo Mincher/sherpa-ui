@@ -69,7 +69,7 @@
 .slider-row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-base, 16px);
 }
 
 /* ================================================================
@@ -116,7 +116,7 @@
 
 .input-low:focus,
 .input-high:focus {
-  outline: 2px solid var(--sherpa-border-focus, #3c5edd);
+  outline: 2px solid var(--sherpa-border-control-primary-default, #3c5edd);
   outline-offset: -1px;
   border-color: transparent;
 }
@@ -225,7 +225,7 @@
 }
 
 .handle:focus-visible {
-  outline: 2px solid var(--sherpa-border-focus, #3c5edd);
+  outline: 2px solid var(--sherpa-border-control-primary-default, #3c5edd);
   outline-offset: 2px;
 }
 
@@ -295,8 +295,8 @@
 
 /* When inputs are shown, align increments with the track area */
 :host([data-show-inputs]) .increments {
-  padding-left: calc(var(--_input-width) + var(--sherpa-space-md, 16px));
-  padding-right: calc(var(--_input-width) + var(--sherpa-space-md, 16px));
+  padding-left: calc(var(--_input-width) + var(--sherpa-space-base, 16px));
+  padding-right: calc(var(--_input-width) + var(--sherpa-space-base, 16px));
 }
 
 :host([data-show-inputs]:not([data-type="range"])) .increments {

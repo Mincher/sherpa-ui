@@ -52,13 +52,13 @@
 }
 
 :host([data-state="selected"]) .nav-item-indicator {
-  background: var(--sherpa-surface-app-product-bar-brand);
+  background: var(--sherpa-color-brand-base, #c046ff);
 }
 
 /* ── Child variant (secondary bg) ── */
 
 :host([data-variant="child"]) {
-  background: var(--sherpa-surface-app-product-nav-secondary);
+  background: var(--sherpa-surface-app-product-nav-base-icon, #fafafa);
 }
 
 :host([data-variant="child"]:hover) {
@@ -113,7 +113,9 @@
 .nav-item-icon {
   display: none;
   font-size: var(--icon-size);
-  color: var(--sherpa-icon-context-default-on-color-heading, #ffffff);
+  /* Icon sits on the parent nav's neutral background; use the mode-aware
+     heading icon token rather than the always-white on-color variant. */
+  color: var(--sherpa-icon-context-default-heading, #18191a);
   position: relative;
 }
 
@@ -283,7 +285,7 @@
 
 /* Subsection headers get secondary background */
 :host([data-variant="subsection"]) {
-  background: var(--sherpa-surface-app-product-nav-secondary);
+  background: var(--sherpa-surface-app-product-nav-base-icon, #fafafa);
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -332,9 +334,9 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-md, 16px);
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-base, 16px);
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: var(--sherpa-surface-context-info-subtle, #eef3ff);
+  background: var(--sherpa-surface-context-info-subtle-default, #eef3ff);
   color: var(--sherpa-text-default-body, #2e2e33);
   cursor: pointer;
   text-decoration: none;
@@ -343,8 +345,8 @@
 }
 
 :host([data-type="promo"]:hover) {
-  background: var(--sherpa-surface-context-info-default, #dde6ff);
-  border-color: var(--sherpa-border-context-info-strong, #8aa4ff);
+  background: var(--sherpa-surface-context-info-subtle-default, #dde6ff);
+  border-color: var(--sherpa-border-context-info-default, #8aa4ff);
 }
 
 :host([data-type="promo"]) .nav-promo-icon {

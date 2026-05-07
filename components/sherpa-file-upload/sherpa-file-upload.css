@@ -63,7 +63,7 @@
   justify-content: center;
   gap: var(--sherpa-space-sm, 8px);
   min-height: 80px;
-  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-md, 16px);
+  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
   background: var(--sherpa-surface-control-default, #ffffff);
   border: 2px dashed var(--sherpa-border-control-default, #c6c6cc);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
@@ -78,7 +78,7 @@
 }
 
 .drop-zone:focus-visible {
-  outline: 2px solid var(--sherpa-border-focus, #3c5edd);
+  outline: 2px solid var(--sherpa-border-control-primary-default, #3c5edd);
   outline-offset: 2px;
 }
 
@@ -179,7 +179,7 @@
   width: 36px;
   height: 36px;
   border-radius: var(--sherpa-border-rounding-sm, 4px);
-  background: var(--sherpa-surface-subtle-default, #f5f5f7);
+  background: var(--sherpa-surface-container-secondary-default, #f5f5f7);
   flex-shrink: 0;
 }
 
@@ -290,7 +290,7 @@
   width: 32px;
   height: 32px;
   border: none;
-  background: var(--sherpa-surface-subtle-default, #fafaff);
+  background: var(--sherpa-surface-container-secondary-default, #fafaff);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   cursor: pointer;
   color: var(--sherpa-text-default-body, #2e2e33);
@@ -326,7 +326,7 @@
    ================================================================ */
 .action-bar {
   display: none;
-  gap: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-base, 16px);
   padding-top: var(--sherpa-space-sm, 8px);
 }
 

@@ -23,6 +23,7 @@
   --sherpa-core-border-radius-200: 4px;
   --sherpa-core-border-radius-300: 8px;
   --sherpa-core-border-radius-400: 16px;
+  --sherpa-core-border-radius-450: 24px;
   --sherpa-core-border-stroke-0: 0px;
   --sherpa-core-border-stroke-100: 0.25px;
   --sherpa-core-border-stroke-200: 0.5px;
@@ -136,6 +137,20 @@
   --sherpa-core-color-basic-blue-900: #060588;
   --sherpa-core-color-basic-blue-1000: #0a0b60;
 
+  /* ── Adlumin Blue Test ─────────────────────────────────── */
+  /* Base: #3585F9 — Adlumin product theme palette */
+  --sherpa-core-color-basic-adlumin-blue-test-0: #ecf0fe;
+  --sherpa-core-color-basic-adlumin-blue-test-100: #d0dbfd;
+  --sherpa-core-color-basic-adlumin-blue-test-200: #a3bbfc;
+  --sherpa-core-color-basic-adlumin-blue-test-300: #749ffb;
+  --sherpa-core-color-basic-adlumin-blue-test-base: #3585f9;
+  --sherpa-core-color-basic-adlumin-blue-test-500: #1f75e4;
+  --sherpa-core-color-basic-adlumin-blue-test-600: #1861be;
+  --sherpa-core-color-basic-adlumin-blue-test-700: #104a95;
+  --sherpa-core-color-basic-adlumin-blue-test-800: #08336a;
+  --sherpa-core-color-basic-adlumin-blue-test-900: #031c40;
+  --sherpa-core-color-basic-adlumin-blue-test-1000: #01102a;
+
   /* ── Blue Green ───────────────────────────────────────── */
   /* Base: #16ABE2 */
   --sherpa-core-color-basic-blue-green-0: #f7fdff;
@@ -234,7 +249,7 @@
   /* Base: #DD2C01 */
   --sherpa-core-color-basic-red-0: #fff7f5;
   --sherpa-core-color-basic-red-50: #fff7f5;
-  --sherpa-core-color-basic-red-100: #f8c4b8;
+  --sherpa-core-color-basic-red-100: #ffd7ca;
   --sherpa-core-color-basic-red-200: #f79780;
   --sherpa-core-color-basic-red-300: #f37253;
   --sherpa-core-color-basic-red-400: #f1441a;

@@ -3,7 +3,7 @@
   grid-template-columns: 16px 1fr;
   gap: 6px;
   align-items: baseline;
-  font-family: var(--sherpa-fonts-mono, "Source Code Pro", ui-monospace, monospace);
+  font-family: var(--sherpa-fonts-context-monospaced, "Source Code Pro", ui-monospace, monospace);
   font-size: 12px;
   color: var(--sherpa-text-default-body, #2e2e33);
 }

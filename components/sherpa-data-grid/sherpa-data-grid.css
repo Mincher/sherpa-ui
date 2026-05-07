@@ -720,12 +720,12 @@ tr[data-group-child] td.selection-cell {
    ═══════════════════════════════════════════════════════════════ */
 
 ::highlight(data-grid-search) {
-  background-color: var(--sherpa-surface-search-highlight);
+  background-color: var(--sherpa-surface-search-highlight, rgba(255, 216, 64, 0.35));
   color: inherit;
 }
 
 ::highlight(data-grid-col-search) {
-  background-color: var(--sherpa-surface-search-highlight);
+  background-color: var(--sherpa-surface-search-highlight, rgba(255, 216, 64, 0.35));
   color: inherit;
 }
 

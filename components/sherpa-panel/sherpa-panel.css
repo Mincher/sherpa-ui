@@ -242,7 +242,7 @@
 .content {
   flex: 1;
   overflow: auto;
-  padding: var(--sherpa-space-md, 16px);
+  padding: var(--sherpa-space-base, 16px);
 }
 
 /* Native [hidden] support */

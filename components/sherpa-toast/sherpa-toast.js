@@ -176,7 +176,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
         display: flex;
         flex-direction: column;
         gap: var(--sherpa-space-xs, 8px);
-        padding: var(--sherpa-space-md, 16px);
+        padding: var(--sherpa-space-base, 16px);
         pointer-events: none;
         max-width: 100vw;
       }

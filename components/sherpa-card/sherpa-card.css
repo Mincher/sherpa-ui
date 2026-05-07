@@ -66,11 +66,11 @@
 /* ── Selected state ────────────────────────────────────────────── */
 
 :host([data-selected="true"]) {
-  border-color: var(--sherpa-border-control-primary-active, #0066cc);
-  background: var(--sherpa-surface-container-selected-default, #f0f7ff);
+  border-color: var(--sherpa-border-control-active-default, #0066cc);
+  background: var(--sherpa-surface-container-active-default, #f0f7ff);
   box-shadow:
     0 0 0 var(--sherpa-border-width-base, 1px)
-      var(--sherpa-border-control-primary-active, #0066cc),
+      var(--sherpa-border-control-active-default, #0066cc),
     var(--sherpa-shadow-default-sm, var(--sherpa-elevation-offset-x-small, 2px)
     var(--sherpa-elevation-offset-y-small, 2px)
     var(--sherpa-elevation-blur-small, 8px)
@@ -85,7 +85,7 @@
 }
 
 :host([data-interactive="true"]:hover:not([disabled])) {
-  border-color: var(--sherpa-border-container-hover, #ccc);
+  border-color: var(--sherpa-border-control-hover, #ccc);
   box-shadow: var(--sherpa-shadow-default-md, var(--sherpa-elevation-offset-x-default, 4px)
     var(--sherpa-elevation-offset-y-default, 4px)
     var(--sherpa-elevation-blur-default, 12px)
@@ -103,7 +103,7 @@
 :host(:focus-visible) {
   outline: none;
   box-shadow:
-    0 0 0 2px var(--sherpa-border-focus, #0066cc),
+    0 0 0 2px var(--sherpa-border-control-primary-default, #0066cc),
     var(--sherpa-shadow-default-sm, var(--sherpa-elevation-offset-x-small, 2px)
     var(--sherpa-elevation-offset-y-small, 2px)
     var(--sherpa-elevation-blur-small, 8px)

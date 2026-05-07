@@ -73,7 +73,7 @@
 
 .list-empty {
   display: none;
-  padding: var(--sherpa-space-md, 16px);
+  padding: var(--sherpa-space-base, 16px);
   text-align: center;
   color: var(--sherpa-text-default-secondary, #6a6a75);
   font-size: var(--sherpa-fonts-scale-sm, 14px);

@@ -144,7 +144,7 @@ function initAttrState(a) {
   // Theme (brand)
   const themeSel = $("[data-theme-select]");
   if (themeSel) {
-    const stored = localStorage.getItem("sherpa-theme") || "apex-2-core";
+    const stored = localStorage.getItem("sherpa-theme") || "apex-2-purple";
     themeSel.value = stored;
     applyTheme(stored);
     themeSel.addEventListener("change", (e) => {

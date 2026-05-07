@@ -8,7 +8,7 @@
 :host {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-space-base, 16px);
   align-items: stretch;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   color: var(--sherpa-text-default-body, #2e2e33);
