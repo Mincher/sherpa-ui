@@ -3,6 +3,7 @@
  * SherpaPopover — General-purpose floating content container with header.
  *
  * @element sherpa-popover
+ * @category overlay
  *
  * @attr {string}  data-heading    — Header title text
  * @attr {boolean} data-open       — Shows the popover

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-gauge-chart",
   "description": "Semicircle gauge using CSS conic-gradient.",
-  "category": "data-viz",
+  "category": "media",
+  "tier": 4,
+  "group": "data-viz",
   "baseClass": "SherpaElement",
   "attributes": [
     {

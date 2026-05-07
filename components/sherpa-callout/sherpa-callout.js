@@ -1,5 +1,6 @@
 /**
  * @element sherpa-callout
+ * @category feedback
  * @description Inline contextual callout with status variants and
  *   expandable/dismissible body.
  *

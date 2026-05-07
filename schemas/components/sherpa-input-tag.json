@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-tag",
   "description": "Multi-tag input. Replaces DevExtreme DxTagBox for free-text tag entry. Behaviour: • Type, then press Enter (or the configured separator) to commit a chip. • Press Backspace in an empty field to remove the last chip. • Click ✕ on a chip to remove it. • `data-value` reflects the current array of tag values as JSON.",
-  "category": "core",
+  "category": "input",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

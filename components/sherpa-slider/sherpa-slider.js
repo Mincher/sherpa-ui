@@ -1,5 +1,6 @@
 /**
  * @element sherpa-slider
+ * @category control
  * @description Single or dual-handle range slider with optional numeric inputs.
  *   Pointer event drag with setPointerCapture. Keyboard arrows with step.
  *

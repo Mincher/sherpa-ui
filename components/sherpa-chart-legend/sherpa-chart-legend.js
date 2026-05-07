@@ -1,5 +1,6 @@
 /**
  * @element sherpa-chart-legend
+ * @category media
  * @description Standalone chart legend with optional interactive link items.
  *
  * @attr {enum}    [data-orientation] — horizontal | vertical (default: horizontal)

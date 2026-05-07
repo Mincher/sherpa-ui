@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-view-header",
   "description": "View header toolbar with toggles and settings. Manages heading, favorites, feedback popover, and export intent.",
-  "category": "page-level",
+  "category": "shell",
+  "tier": 1,
+  "group": "page-level",
   "baseClass": "SherpaElement",
   "attributes": [
     {
@@ -33,13 +35,14 @@
       "name": "data-export-title",
       "type": "string",
       "description": "Title for PDF export"
+    },
+    {
+      "name": "data-breadcrumbs",
+      "type": "json",
+      "description": "Breadcrumb trail. JSON array"
     }
   ],
   "slots": [
-    {
-      "name": "breadcrumbs",
-      "description": "Optional breadcrumb row above the toolbar"
-    },
     {
       "name": "title-icon",
       "description": "Optional icon shown to the left of the heading label"

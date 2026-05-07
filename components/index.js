@@ -17,6 +17,7 @@ export * from "./sherpa-nav-item/sherpa-nav-item.js";
 export * from "./sherpa-nav-promo/sherpa-nav-promo.js";
 export * from "./sherpa-view-header/sherpa-view-header.js";
 export * from "./sherpa-layout-grid/sherpa-layout-grid.js";
+export * from "./sherpa-layout-view/sherpa-layout-view.js";
 export * from "./sherpa-container/sherpa-container.js";
 export * from "./sherpa-container-header/sherpa-container-header.js";
 

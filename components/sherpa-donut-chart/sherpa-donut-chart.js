@@ -1,5 +1,6 @@
 /**
  * @element sherpa-donut-chart
+ * @category media
  * @description Donut / pie chart using CSS conic-gradient.
  *   Supports declarative query loading via ContentAttributesMixin
  *   or programmatic setData().

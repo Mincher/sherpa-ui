@@ -1,5 +1,6 @@
 /**
  * @element sherpa-list-item
+ * @category content
  * @description Versatile list item with leading, content, and trailing areas.
  *   Supports labels, descriptions, icons, drag handles, and slotted trailing actions.
  *

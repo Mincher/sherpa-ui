@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-dialog",
   "description": "Modal dialog built on the native HTML <dialog> element. Uses SherpaElement multi-template support. The default template includes a native <header> with a <dl> for title/subtitle and a close button, plus a sherpa-footer for footer content.",
-  "category": "layout",
+  "category": "overlay",
+  "tier": 2,
+  "group": "layout",
   "baseClass": "SherpaElement",
   "attributes": [
     {
@@ -79,11 +81,17 @@
     },
     {
       "name": "heading",
-      "description": "Custom heading content (replaces attribute-driven title)"
+      "description": "Custom heading content (replaces attribute-driven title)",
+      "accepts": [
+        "content"
+      ]
     },
     {
       "name": "footer",
-      "description": "Footer action content (inside sherpa-footer)"
+      "description": "Footer action content (inside sherpa-footer)",
+      "accepts": [
+        "control"
+      ]
     }
   ],
   "events": [

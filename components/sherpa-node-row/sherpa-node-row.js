@@ -6,6 +6,7 @@
  * via SherpaElement's default onSlotChange handler.
  *
  * @element sherpa-node-row
+ * @category content
  *
  * @attr {boolean} data-multi  — Visually expand for multi-input rows
  *

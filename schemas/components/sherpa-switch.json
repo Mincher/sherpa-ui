@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-switch",
   "description": "Toggle switch component.",
-  "category": "core",
+  "category": "control",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

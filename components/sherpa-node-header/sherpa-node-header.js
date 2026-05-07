@@ -8,6 +8,7 @@
  *     CSS picks the correct shape from the locked matrix.
  *
  * @element sherpa-node-header
+ * @category content
  *
  * @attr {string}  data-icon        — FontAwesome class (e.g. "fa-solid fa-cube")
  * @attr {boolean} data-drill-down  — Show built-in drill-down button

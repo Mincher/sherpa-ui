@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-progress-bar",
   "description": "Horizontal progress indicator — determinate or indeterminate. Sets role=\"progressbar\" with appropriate ARIA values.",
-  "category": "feedback",
+  "category": "display",
+  "tier": 4,
+  "group": "feedback",
   "baseClass": "SherpaElement",
   "attributes": [
     {

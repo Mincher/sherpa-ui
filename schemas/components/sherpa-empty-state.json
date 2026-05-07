@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-empty-state",
   "description": "Empty-state placeholder with illustration, heading, description, and action slots.",
-  "category": "data-display",
+  "category": "feedback",
+  "tier": 4,
+  "group": "data-display",
   "baseClass": "SherpaElement",
   "attributes": [
     {
@@ -44,7 +46,10 @@
     },
     {
       "name": "actions",
-      "description": "CTA buttons"
+      "description": "CTA buttons",
+      "accepts": [
+        "control"
+      ]
     },
     {
       "name": "footer",

@@ -1,5 +1,6 @@
 /**
  * @element sherpa-breadcrumbs
+ * @category control
  * @description Navigation breadcrumb trail with optional collapse.
  *   Reads slotted children (anchors/spans) and renders a styled list
  *   with chevron separators. Middle items collapse behind "…" when

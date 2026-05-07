@@ -2,6 +2,8 @@
   "tagName": "sherpa-toast",
   "description": "Toast notification with auto-dismiss, status variants, and static factory methods for programmatic creation.",
   "category": "feedback",
+  "tier": 4,
+  "group": "feedback",
   "baseClass": "SherpaElement",
   "attributes": [
     {

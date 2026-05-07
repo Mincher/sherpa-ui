@@ -1,5 +1,6 @@
 /**
  * @element sherpa-content-section
+ * @category container
  * @description In-flow content section anchored to the left or right of a
  *   layout column. Fills the available height, owns its own header (heading +
  *   actions), an optional toolbar row, and a scrollable body. Minimisable to
@@ -14,6 +15,9 @@
  * @attr {flag}    [data-minimised]        Collapsed to a narrow strip
  * @attr {string}  [data-restore-label]    Optional label shown on the
  *                                         vertical restore strip
+ * @attr {flag}    [data-flush]            Remove the body padding so the
+ *                                         slotted content owns its gutters
+ *                                         (useful for list panels / grids).
  *
  * @slot (default) — Body content
  * @slot toolbar   — Toolbar row beneath the header

@@ -1,5 +1,6 @@
 /**
  * @element sherpa-message
+ * @category feedback
  * @description Alert / notification message with status variants.
  *
  * @attr {enum}    [data-status]      — success | critical | warning | info | urgent

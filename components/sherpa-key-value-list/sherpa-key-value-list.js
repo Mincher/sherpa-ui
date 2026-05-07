@@ -1,5 +1,6 @@
 /**
  * @element sherpa-key-value-list
+ * @category content
  * @description Semantic description list built on the native <dl> element.
  *   Content authored as <dt>/<dd> pairs. Layout, density, striping and borders
  *   controlled via host attributes and CSS.

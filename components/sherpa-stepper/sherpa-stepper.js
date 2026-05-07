@@ -1,5 +1,6 @@
 /**
  * @element sherpa-stepper
+ * @category content
  * @description Horizontal/vertical step progress indicator.
  *   Steps populated from data; CSS handles all visual states.
  *

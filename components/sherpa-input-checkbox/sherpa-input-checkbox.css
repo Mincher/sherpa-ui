@@ -36,3 +36,20 @@
   gap: var(--sherpa-space-3xs, 2px);
   min-width: 0;
 }
+
+/* ── Status tint ─────────────────────────────────────────
+   When the host carries [data-status], the global sherpa-status.css
+   defines --_status-* on the host; those custom properties inherit
+   through the shadow boundary so we can colour the native checkmark
+   and label without per-status selectors. */
+:host([data-status]) .sherpa-check:not(:checked):not(:indeterminate) {
+  border-color: var(--_status-border, var(--sherpa-border-control-secondary-default, #9a9aad));
+}
+:host([data-status]) .sherpa-check:checked,
+:host([data-status]) .sherpa-check:indeterminate {
+  background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #0060df));
+  border-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #0060df));
+}
+:host([data-status]) .check-description {
+  color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+}

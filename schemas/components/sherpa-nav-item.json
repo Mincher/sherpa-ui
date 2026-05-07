@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-nav-item",
   "description": "Attribute-driven navigation item. Minimal JS — icon synced via data-icon, rest is declarative. Selection and interaction managed by parent sherpa-nav. Chevron rotation via CSS ::part(chevron).",
-  "category": "navigation",
+  "category": "nav",
+  "tier": 1,
+  "group": "navigation",
   "baseClass": "SherpaElement",
   "attributes": [
     {

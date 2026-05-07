@@ -39,11 +39,13 @@
  */
 
 import { getSheet } from "../stylesheet-cache.js";
+import { getCategory, getTier } from "../component-categories.js";
 
 // ── Class-level caches ─────────────────────────────────────────────
 const _htmlCache = new Map();
 const _templateMapCache = new Map();
 const _classSheets = new Map();
+const _warnedRejections = new Set();
 
 // ── Shared stylesheet URLs ─────────────────────────────────────────
 const BASE_URL = new URL("./sherpa-base.css", import.meta.url).href;
@@ -98,6 +100,17 @@ export class SherpaElement extends HTMLElement {
   static get sharedStyles() {
     return [BASE_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL];
   }
+
+  /**
+   * When `true`, slot allowlists declared via `<slot data-accepts="...">`
+   * are enforced at runtime. Disallowed children are flagged with
+   * `data-slot-rejected="true"` (hidden by global CSS) and a warning is
+   * logged once per (host-tag, slot-name, child-tag) triple.
+   *
+   * Default `false` for back-compat — Phase 3 of the slot taxonomy roll-out
+   * flips this on after a soak period observing console warnings.
+   */
+  static strictSlots = false;
 
   /* ── Observed attributes ──────────────────────────────────────── */
 
@@ -310,8 +323,99 @@ export class SherpaElement extends HTMLElement {
 
   #wireSlots() {
     for (const slot of this.#shadow.querySelectorAll("slot")) {
-      slot.addEventListener("slotchange", () => this.onSlotChange(slot));
+      slot.addEventListener("slotchange", () => {
+        this.#validateSlot(slot);
+        this.onSlotChange(slot);
+      });
+      this.#validateSlot(slot);
       this.onSlotChange(slot);
+    }
+  }
+
+  /**
+   * Validate slotted children against (a) the composition tier rule and
+   * (b) the slot's `data-accepts` allowlist. The tier rule applies even
+   * to slots without `data-accepts`: a child whose tier is *lower*
+   * (more page-level) than its host's tier is rejected. See
+   * docs/COMPONENT-CATEGORIES.md §4.
+   *
+   * Always logs (so warnings surface during the warn-only phase), but
+   * only flags `data-slot-rejected` when `SherpaElement.strictSlots` is
+   * true. The flag pairs with a global CSS rule that hides rejected
+   * children.
+   */
+  #validateSlot(slotEl) {
+    const acceptsAttr = slotEl.getAttribute("data-accepts");
+    const hostTag = this.localName;
+    const hostTier = getTier(hostTag);
+    const slotName = slotEl.name || "(default)";
+
+    // Unconstrained slot with no tier info: nothing to validate.
+    if (!acceptsAttr && hostTier == null) {
+      for (const node of slotEl.assignedElements()) {
+        node.removeAttribute("data-slot-rejected");
+      }
+      return;
+    }
+
+    const accepts = acceptsAttr
+      ? acceptsAttr.split(",").map((s) => s.trim()).filter(Boolean)
+      : null;
+    const allowHtml = accepts ? accepts.includes("html") : true;
+
+    for (const node of slotEl.assignedElements()) {
+      const tag = node.localName;
+      const isSherpa = tag.startsWith("sherpa-");
+      const category = isSherpa ? getCategory(tag) : null;
+      const childTier = isSherpa ? getTier(tag) : null;
+
+      // 1. Tier rule — applies whether or not data-accepts is set.
+      let rejected = false;
+      let reason = "";
+      if (
+        isSherpa &&
+        hostTier != null &&
+        childTier != null &&
+        childTier < hostTier
+      ) {
+        rejected = true;
+        reason =
+          `tier ${childTier} (${category}) cannot be slotted into ` +
+          `tier ${hostTier} host`;
+      }
+
+      // 2. Allowlist rule — only when data-accepts present.
+      if (!rejected && accepts) {
+        const allowed =
+          (isSherpa && category && accepts.includes(category)) ||
+          (!isSherpa && allowHtml);
+        if (!allowed) {
+          rejected = true;
+          reason =
+            `not in data-accepts. Allowed: ${accepts.join(", ")}. ` +
+            (isSherpa
+              ? `Got category: ${category || "unknown"}.`
+              : `Non-sherpa elements need data-accepts="...,html".`);
+        }
+      }
+
+      if (!rejected) {
+        node.removeAttribute("data-slot-rejected");
+        continue;
+      }
+
+      const warnKey = `${hostTag}|${slotName}|${tag}`;
+      if (!_warnedRejections.has(warnKey)) {
+        _warnedRejections.add(warnKey);
+        console.warn(
+          `[sherpa] <${tag}> not allowed in <${hostTag}> slot="${slotName}": ${reason}`
+        );
+      }
+      if (SherpaElement.strictSlots) {
+        node.setAttribute("data-slot-rejected", "true");
+      } else {
+        node.removeAttribute("data-slot-rejected");
+      }
     }
   }
 

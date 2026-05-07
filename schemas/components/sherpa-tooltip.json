@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-tooltip",
   "description": "Singleton tooltip with CSS anchor positioning fallback. Operates as a singleton: one tooltip instance shared across the page. Use the exported Tooltip API or declarative data-tooltip attributes.",
-  "category": "core",
+  "category": "overlay",
+  "tier": 2,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

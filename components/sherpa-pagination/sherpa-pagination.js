@@ -1,5 +1,6 @@
 /**
  * @element sherpa-pagination
+ * @category control
  * @description Standalone pagination bar with page navigation and page-size selector.
  *
  * @attr {number}  [data-page=1]          — Current 1-based page

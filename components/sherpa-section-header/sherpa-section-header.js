@@ -1,5 +1,6 @@
 /**
  * @element sherpa-section-header
+ * @category content
  * @description Section heading with slots for badge, description, and actions.
  *
  * @attr {string}  [data-label]         — Section title text

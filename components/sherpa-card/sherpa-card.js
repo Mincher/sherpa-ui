@@ -6,6 +6,7 @@
  * supporting both attribute-based headings and slotted custom content.
  *
  * @element sherpa-card
+ * @category container
  *
  * @attr {string}  data-label       — Card title text
  * @attr {string}  data-description  — Card subtitle text

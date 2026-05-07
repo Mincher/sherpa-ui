@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-checkbox-group",
   "description": "Group of checkboxes with shared label, description, helper, and an optional pre-stamped `weekdays` template.",
-  "category": "core",
+  "category": "input",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

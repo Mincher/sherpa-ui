@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-barchart",
   "description": "Adaptive bar chart with automatic orientation. Supports stacked bars, category limiting, and responsive legend. Extends ContentAttributesMixin(SherpaElement) for data pipeline.",
-  "category": "data-viz",
+  "category": "media",
+  "tier": 4,
+  "group": "data-viz",
   "baseClass": "SherpaElement",
   "attributes": [
     {

@@ -2,6 +2,8 @@
   "tagName": "sherpa-message",
   "description": "Alert / notification message with status variants.",
   "category": "feedback",
+  "tier": 4,
+  "group": "feedback",
   "baseClass": "SherpaElement",
   "attributes": [
     {
@@ -33,7 +35,10 @@
     },
     {
       "name": "action",
-      "description": "Action link or button"
+      "description": "Action link or button",
+      "accepts": [
+        "control"
+      ]
     }
   ],
   "events": [

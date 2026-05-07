@@ -1,5 +1,6 @@
 /**
  * @element sherpa-menu-item
+ * @category overlay
  * @description Attribute-driven menu item with multiple template variants.
  *   Templates: default, checkbox, radio, toggle, heading.
  *

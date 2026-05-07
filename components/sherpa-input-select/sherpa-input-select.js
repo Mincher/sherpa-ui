@@ -1,5 +1,6 @@
 /**
  * @element sherpa-input-select
+ * @category input
  * @extends SherpaInputBase
  * @description Dropdown select input using native <select>. Options provided
  *   via light DOM <option> elements or programmatically via setOptions().

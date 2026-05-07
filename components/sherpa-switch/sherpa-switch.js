@@ -3,6 +3,7 @@
  * SherpaSwitch — Toggle switch component.
  *
  * @element sherpa-switch
+ * @category control
  *
  * @attr {enum}    data-state — on | off
  * @attr {boolean} disabled   — Native disabled state

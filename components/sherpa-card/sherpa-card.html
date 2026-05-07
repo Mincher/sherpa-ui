@@ -30,13 +30,13 @@
     <dt class="header-title"></dt>
     <dd class="header-description"></dd>
   </dl>
-  <slot name="header"></slot>
+  <slot name="header" data-accepts="content"></slot>
 </header>
 <div class="card-content" part="content">
   <slot></slot>
 </div>
 <div class="card-footer" part="footer">
-  <slot name="footer"></slot>
+  <slot name="footer" data-accepts="control,content"></slot>
 </div>
 </template>
 

@@ -1,5 +1,6 @@
 /**
  * @element sherpa-gauge-chart
+ * @category media
  * @description Semicircle gauge using CSS conic-gradient.
  *
  * @attr {string}  [data-title]   — Chart heading text

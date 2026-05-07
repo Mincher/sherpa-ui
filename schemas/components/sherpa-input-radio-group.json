@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-radio-group",
   "description": "Group of radios with shared label, description, helper and a single selected value.",
-  "category": "core",
+  "category": "input",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

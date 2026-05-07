@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-menu-item",
   "description": "Attribute-driven menu item with multiple template variants. Templates: default, checkbox, radio, toggle, heading.",
-  "category": "navigation",
+  "category": "overlay",
+  "tier": 2,
+  "group": "navigation",
   "baseClass": "SherpaElement",
   "attributes": [
     {

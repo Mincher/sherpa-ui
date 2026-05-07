@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-card",
   "description": "Container component with header, content, and footer areas. Uses a native <header> with a <dl> for the card header area, supporting both attribute-based headings and slotted custom content.",
-  "category": "layout",
+  "category": "container",
+  "tier": 2,
+  "group": "layout",
   "baseClass": "SherpaElement",
   "attributes": [
     {
@@ -48,11 +50,18 @@
     },
     {
       "name": "header",
-      "description": "Custom heading content (replaces attribute-driven title)"
+      "description": "Custom heading content (replaces attribute-driven title)",
+      "accepts": [
+        "content"
+      ]
     },
     {
       "name": "footer",
-      "description": "Card footer content"
+      "description": "Card footer content",
+      "accepts": [
+        "control",
+        "content"
+      ]
     }
   ],
   "events": [

@@ -1,5 +1,6 @@
 /**
  * @element sherpa-input-text
+ * @category input
  * @extends SherpaInputBase
  * @description Basic text input. Inherits label, description, helper, layout,
  *   validation, and value management from SherpaInputBase.

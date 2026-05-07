@@ -90,13 +90,14 @@
 
 /* ==========================================================================
    Icons — shown/hidden via :host attribute selectors
+   data-icon-start / data-icon-end accept a Font Awesome class string
+   (e.g. "fa-solid fa-star"). JS sets the FA classes on .icon-start /
+   .icon-end; the global FA stylesheet (adopted into the shadow root)
+   provides font-family, font-weight and the glyph codepoint.
    ========================================================================== */
 
 .icon-start,
 .icon-end {
-  font-family: "Font Awesome 6 Free";
-  font-weight: var(--_icon-weight);
-  font-style: normal;
   color: var(--_icon-color);
   display: none;
   flex-shrink: 0;
@@ -105,12 +106,6 @@
 
 :host([data-icon-start]) .icon-start { display: inline-flex; }
 :host([data-icon-end]) .icon-end     { display: inline-flex; }
-
-/* ── Icon weight overrides ───────────────────────────────────────────── */
-
-:host([data-icon-weight="regular"]) { --_icon-weight: 400; }
-:host([data-icon-weight="light"])   { --_icon-weight: 300; }
-:host([data-icon-weight="thin"])    { --_icon-weight: 100; }
 
 
 /* ==========================================================================

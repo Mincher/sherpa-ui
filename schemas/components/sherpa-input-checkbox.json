@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-checkbox",
   "description": "Atomic checkbox primitive. Single checkbox with label-on-the-right. Designed for both standalone use (e.g. \"I accept the terms\") and as a child of `sherpa-input-checkbox-group`.",
-  "category": "core",
+  "category": "input",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

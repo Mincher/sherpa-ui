@@ -1,5 +1,6 @@
 /**
  * @element sherpa-metric
+ * @category display
  * @description KPI card with value, trend, and sparkline.
  *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
  *   Trend-derived colouring via data-status on internal .metric-card.

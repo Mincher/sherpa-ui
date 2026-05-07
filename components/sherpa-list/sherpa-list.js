@@ -1,5 +1,6 @@
 /**
  * @element sherpa-list
+ * @category content
  * @description Grouping container for sherpa-list-item children. Provides
  *   variant + density styling, an optional heading row with actions slot,
  *   and an automatic empty-state.

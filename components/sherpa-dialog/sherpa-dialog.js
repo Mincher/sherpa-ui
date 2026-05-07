@@ -7,6 +7,7 @@
  * plus a sherpa-footer for footer content.
  *
  * @element sherpa-dialog
+ * @category overlay
  *
  * @attr {string}  data-label       — Dialog title text
  * @attr {string}  data-subtitle    — Dialog subtitle text

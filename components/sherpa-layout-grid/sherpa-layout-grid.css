@@ -12,6 +12,10 @@
  * Host attributes:
  *   data-row-height — CSS length, sets grid-auto-rows (default 160px)
  *   data-content    — "static" — opt out of the grid (stacks children)
+ *   data-fill       — "viewport" — clamp the layout to the available
+ *                     viewport height. The host caps at 100dvh (or fills
+ *                     its flex parent), the grid surface scrolls
+ *                     independently and side panels stay anchored.
  *
  * Container query breakpoints (queries the host's own inline-size):
  *   ≥1200px → 12 cols, 640–1199px → 6 cols, <640px → 3 cols
@@ -43,6 +47,30 @@
 
 :host([hidden]) {
   display: none;
+}
+
+/* ── Viewport-fill mode ───────────────────────────────────────
+   When [data-fill="viewport"] the host releases its intrinsic
+   min-content floor (so it can shrink to its flex parent's
+   constrained height) and the grid surface owns vertical scrolling.
+   The side-panel slots stay pinned because they live in a
+   non-scrolling flex row.
+
+   The page is responsible for constraining the layout-grid's
+   ancestor chain — typically by setting:
+     html, body { height: 100dvh; overflow: hidden; }
+   so that `flex: 1` resolves against a finite viewport height. */
+:host([data-fill="viewport"]) {
+  min-height: 0;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+:host([data-fill="viewport"]) .grid-body {
+  min-height: 0;
+}
+:host([data-fill="viewport"]) .grid-surface {
+  overflow: auto;
+  min-height: 0;
 }
 
 .grid-header {

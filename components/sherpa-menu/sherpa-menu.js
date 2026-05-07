@@ -1,5 +1,6 @@
 /**
  * @element sherpa-menu
+ * @category overlay
  * @description Menu component (per-instance, no singleton). Light DOM
  *   <ul>/<li>/<sherpa-menu-item> content projected through <slot>.
  *   Uses popover="auto" for top-layer promotion and light-dismiss.

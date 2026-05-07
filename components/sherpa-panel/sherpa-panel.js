@@ -3,6 +3,7 @@
  * SherpaPanel — Slide-out or inline panel with header and content area.
  *
  * @element sherpa-panel
+ * @category container
  *
  * @attr {enum}    data-variant   — inline | overlay
  * @attr {enum}    data-position  — left | right | both

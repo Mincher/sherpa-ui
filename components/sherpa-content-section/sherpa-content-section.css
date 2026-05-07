@@ -138,6 +138,20 @@
   min-height: 0;
   overflow: auto;
   padding: var(--sherpa-space-base, 16px);
+  /* Flex column so a slotted child with `flex: 1` (e.g. sherpa-list-panel)
+     can fill the available height and own its own internal scrolling. */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Opt-in: remove default body padding so the slotted content owns its
+   own gutters (useful for list panels / data grids that already pad). */
+:host([data-flush]) .section-body {
+  padding: 0;
+}
+:host([data-flush]) .section-search {
+  margin: 0;
+  margin-bottom: var(--sherpa-space-sm, 12px);
 }
 
 /* ── Sticky search slot ──────────────────────────────────

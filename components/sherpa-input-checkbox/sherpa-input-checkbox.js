@@ -6,6 +6,7 @@
  * use (e.g. "I accept the terms") and as a child of `sherpa-input-checkbox-group`.
  *
  * @element sherpa-input-checkbox
+ * @category input
  *
  * @attr {string}  [name]             — Form field name
  * @attr {string}  [value]            — Submitted value when checked (default "on")

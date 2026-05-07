@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-transfer-list",
   "description": "Two-pane shuttle (available <-> selected). Composes sherpa-list, sherpa-list-item, sherpa-input-checkbox, sherpa-input-search, sherpa-button.",
-  "category": "core",
+  "category": "data",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

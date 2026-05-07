@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-chart-legend",
   "description": "Standalone chart legend with optional interactive link items.",
-  "category": "data-viz",
+  "category": "media",
+  "tier": 4,
+  "group": "data-viz",
   "baseClass": "SherpaElement",
   "attributes": [
     {

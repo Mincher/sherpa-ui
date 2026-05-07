@@ -1,5 +1,6 @@
 /**
  * @element sherpa-container-pdf-exporter
+ * @category shell
  * @description Print-optimized renderer for PDF export via browser print.
  *
  * Accepts a source <sherpa-container> element and renders a print-friendly

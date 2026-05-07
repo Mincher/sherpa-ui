@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-list",
   "description": "Grouping container for sherpa-list-item children. Provides variant + density styling, an optional heading row with actions slot, and an automatic empty-state.",
-  "category": "core",
+  "category": "content",
+  "tier": 3,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {
@@ -44,7 +46,10 @@
     },
     {
       "name": "actions",
-      "description": "Header actions (buttons / menu)"
+      "description": "Header actions (buttons / menu)",
+      "accepts": [
+        "control"
+      ]
     }
   ],
   "events": [],

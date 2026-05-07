@@ -1,5 +1,6 @@
 /**
  * @element sherpa-input-search
+ * @category input
  * @extends SherpaInputBase
  * @description Search input with magnifying glass icon and clear button.
  *   Inherits label, description, helper, layout, validation from SherpaInputBase.

@@ -4,6 +4,7 @@
  * send button. Designed for AI / chat surfaces.
  *
  * @element sherpa-prompt-composer
+ * @category input
  *
  * @attr {string}  data-placeholder — Placeholder text.
  * @attr {flag}    data-disabled    — Disables input + send.

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-data-grid",
   "description": "Advanced data grid with grouping, selection, sorting, and pagination. Extends ContentAttributesMixin(SherpaElement) for data pipeline. Uses native <table> for sticky headers and full-width row backgrounds.",
-  "category": "data-display",
+  "category": "data",
+  "tier": 4,
+  "group": "data-display",
   "baseClass": "SherpaElement",
   "attributes": [
     {

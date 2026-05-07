@@ -1,5 +1,6 @@
 /**
  * @element sherpa-transfer-list
+ * @category data
  * @description Two-pane shuttle (available <-> selected). Composes
  *   sherpa-list, sherpa-list-item, sherpa-input-checkbox,
  *   sherpa-input-search, sherpa-button.

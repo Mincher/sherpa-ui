@@ -19,6 +19,7 @@
  *   - crosshair grid drawn beneath edges.
  *
  * @element sherpa-node-canvas
+ * @category data
  *
  * @attr {enum} data-grid — "crosshair" (default) | "none"
  * @attr {string}  data-heading       — Root-level heading shown by the canvas header

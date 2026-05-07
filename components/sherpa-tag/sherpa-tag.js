@@ -3,6 +3,7 @@
  * SherpaTag — Compact label component with variant and status support.
  *
  * @element sherpa-tag
+ * @category control
  *
  * @attr {enum}    data-variant   — primary | secondary
  * @attr {enum}    data-status    — critical | info | success | warning | urgent | brand

@@ -21,6 +21,7 @@ in a fixed order. This is the **only** accepted format.
  * logic, delegation patterns, or anything a consumer needs to know.
  *
  * @element sherpa-example
+ * @category control
  *
  * @attr {string}  data-label         — Text label
  * @attr {enum}    data-variant       — primary | secondary | tertiary
@@ -58,9 +59,10 @@ in a fixed order. This is the **only** accepted format.
 
 ### 1.1 Tag Reference
 
-| Tag        | Required | Format                                                        | Notes                                                                 |
-| ---------- | -------- | ------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `@element` | ✅        | `@element sherpa-tag-name`                                    | Custom element tag name                                               |
+| Tag         | Required | Format                                                        | Notes                                                                 |
+| ----------- | -------- | ------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `@element`  | ✅        | `@element sherpa-tag-name`                                    | Custom element tag name                                               |
+| `@category` | ✅        | `@category role`                                              | One of the roles in [COMPONENT-CATEGORIES.md](./COMPONENT-CATEGORIES.md) |
 | `@attr`    | ✅        | `@attr {type} name — description`                             | One per observed attribute                                            |
 | `@slot`    | ✅        | `@slot [name] — description`                                  | Omit name for default slot                                            |
 | `@fires`   | ✅        | `@fires event-name — description` then indented bubbles/detail | One per dispatched CustomEvent                                        |
@@ -128,13 +130,31 @@ Tags must appear in this order within the JSDoc block:
 
 1. Filename + class description (free text)
 2. `@element`
-3. `@attr` (grouped: `data-*` first, then native attributes)
-4. `@slot`
-5. `@fires`
-6. `@method`
-7. `@prop`
-8. `@csspart`
-9. `@cssprop`
+3. `@category`
+4. `@attr` (grouped: `data-*` first, then native attributes)
+5. `@slot`
+6. `@fires`
+7. `@method`
+8. `@prop`
+9. `@csspart`
+10. `@cssprop`
+
+### 1.7 Slot Allowlists (`data-accepts`)
+
+A `<slot>` element in a component's HTML template may declare which component
+roles it accepts via `data-accepts="role[,role]"`. The list is comma-separated
+and uses the roles defined in [COMPONENT-CATEGORIES.md](./COMPONENT-CATEGORIES.md).
+Slots without `data-accepts` are unconstrained.
+
+```html
+<slot name="actions" data-accepts="control"></slot>
+<slot name="footer"  data-accepts="control,content"></slot>
+```
+
+The schema generator reads `data-accepts` from the template HTML and surfaces
+it on each entry of `slots[].accepts` in the generated JSON. The JSDoc
+`@slot` tag remains a free-text human description — it does **not** need to
+repeat the accepts list.
 
 ---
 

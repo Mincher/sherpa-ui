@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-container-pdf-exporter",
   "description": "Print-optimized renderer for PDF export via browser print.",
-  "category": "core",
+  "category": "shell",
+  "tier": 1,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [],
   "slots": [],

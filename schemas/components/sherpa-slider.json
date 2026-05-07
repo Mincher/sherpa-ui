@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-slider",
   "description": "Single or dual-handle range slider with optional numeric inputs. Pointer event drag with setPointerCapture. Keyboard arrows with step.",
-  "category": "form",
+  "category": "control",
+  "tier": 4,
+  "group": "form",
   "baseClass": "SherpaElement",
   "attributes": [
     {

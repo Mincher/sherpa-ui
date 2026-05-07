@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-filter-bar",
   "description": "Horizontal filter bar with zoned layout. Supports global and local (container-scoped) modes. Template variants: default (global) | local.",
-  "category": "page-level",
+  "category": "data",
+  "tier": 4,
+  "group": "page-level",
   "baseClass": "SherpaElement",
   "attributes": [
     {

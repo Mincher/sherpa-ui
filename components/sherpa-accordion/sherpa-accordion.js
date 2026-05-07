@@ -6,6 +6,7 @@
  * data-label and data-icon attributes into the shadow DOM.
  *
  * @element sherpa-accordion
+ * @category container
  *
  * @attr {string}  data-label  — Heading text for the summary row
  * @attr {string}  data-icon   — FontAwesome unicode for optional leading icon
@@ -63,7 +64,20 @@ export class SherpaAccordion extends SherpaElement {
   }
 
   #syncIcon() {
-    if (this.#iconEl) this.#iconEl.textContent = this.dataset.icon || '';
+    if (!this.#iconEl) return;
+    // data-icon accepts either a Font Awesome class string
+    // (e.g. "fa-solid fa-star") or a single FA unicode codepoint.
+    const v = this.dataset.icon || '';
+    if (/\bfa-/.test(v)) {
+      this.#iconEl.className = `trigger-icon ${v}`.trim();
+      this.#iconEl.textContent = '';
+      this.#iconEl.style.fontFamily = '';
+    } else {
+      this.#iconEl.className = 'trigger-icon';
+      this.#iconEl.textContent = v;
+      this.#iconEl.style.fontFamily = v ? '"Font Awesome 6 Free"' : '';
+      this.#iconEl.style.fontWeight = v ? '900' : '';
+    }
   }
 
   /** Mirror the host `open` attribute to the inner <details>. */

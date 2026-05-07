@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-footer",
   "description": "Reusable footer with multiple template variants. Template selected via data-type attribute.",
-  "category": "page-level",
+  "category": "shell",
+  "tier": 1,
+  "group": "page-level",
   "baseClass": "SherpaElement",
   "attributes": [
     {

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-donut-chart",
   "description": "Donut / pie chart using CSS conic-gradient. Supports declarative query loading via ContentAttributesMixin or programmatic setData().",
-  "category": "data-viz",
+  "category": "media",
+  "tier": 4,
+  "group": "data-viz",
   "baseClass": "SherpaElement",
   "attributes": [
     {

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-text",
   "description": "Basic text input. Inherits label, description, helper, layout, validation, and value management from SherpaInputBase.",
-  "category": "form",
+  "category": "input",
+  "tier": 4,
+  "group": "form",
   "baseClass": "SherpaInputBase",
   "attributes": [
     {

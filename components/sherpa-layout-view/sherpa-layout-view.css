@@ -1,0 +1,106 @@
+/**
+ * sherpa-layout-view.css — Body-content view layout.
+ *
+ * Structure:
+ *   :host (flex column, viewport-bounded)
+ *   ├── <sherpa-view-header part="header">
+ *   └── .view-body (flex row)
+ *       ├── <slot name="side-panel-start">
+ *       ├── .view-content (flex column, scrollable)
+ *       │     └── <slot>
+ *       └── <slot name="side-panel-end">
+ *
+ * Host attributes consumed:
+ *   data-heading       {string} — embedded view-header label
+ *   data-export-title  {string} — embedded view-header export title
+ *   data-fill          {enum}   — viewport (default) | parent
+ *   data-pad           {flag}   — apply padding inside the content column
+ *   data-gap           {enum}   — sm | base | lg — gap between stacked
+ *                                 content children
+ *   data-has-side-panel-start {flag} — auto-set by SherpaElement when slot filled
+ *   data-has-side-panel-end   {flag} — auto-set by SherpaElement when slot filled
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+:host([hidden]) { display: none; }
+
+/* ── Fill modes ──────────────────────────────────────────
+   viewport (default): clamp the layout to the available viewport
+   so the rails stay anchored and only .view-content scrolls.
+   The page is responsible for ensuring the layout's flex
+   ancestors don't grow beyond the viewport — typically:
+     html, body { height: 100dvh; overflow: hidden; }
+   Use data-fill="parent" when embedding inside another layout
+   that already owns the viewport constraint. */
+:host,
+:host([data-fill="viewport"]) {
+  flex: 1 1 auto;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+:host([data-fill="parent"]) {
+  flex: 1 1 auto;
+  max-height: none;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.view-header {
+  flex: 0 0 auto;
+  display: none;
+}
+:host([data-heading]) .view-header { display: block; }
+
+/* ── Body row (rails + content) ──────────────────────── */
+
+.view-body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Side-panel slots take the natural width of their slotted element
+   (e.g. a sherpa-content-section whose width follows its expanded /
+   minimised state). */
+.side-panel-start,
+.side-panel-end {
+  display: flex;
+  flex: 0 0 auto;
+  align-self: stretch;
+}
+:host(:not([data-has-side-panel-start])) .side-panel-start { display: none; }
+:host(:not([data-has-side-panel-end]))   .side-panel-end   { display: none; }
+
+/* ── Content column ─────────────────────────────────── */
+
+.view-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+:host([data-pad]) .view-content {
+  padding: var(--sherpa-space-base, 16px);
+}
+
+:host([data-gap="sm"])   .view-content { gap: var(--sherpa-space-sm,   12px); }
+:host([data-gap="base"]) .view-content { gap: var(--sherpa-space-base, 16px); }
+:host([data-gap="lg"])   .view-content { gap: var(--sherpa-space-lg,   24px); }

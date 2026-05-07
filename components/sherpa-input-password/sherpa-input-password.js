@@ -1,5 +1,6 @@
 /**
  * @element sherpa-input-password
+ * @category input
  * @extends SherpaInputBase
  * @description Password input with show/hide toggle button. Inherits label,
  *   description, helper, layout, validation from SherpaInputBase.

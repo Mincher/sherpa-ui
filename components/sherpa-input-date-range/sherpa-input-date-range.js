@@ -1,5 +1,6 @@
 /**
  * @element sherpa-input-date-range
+ * @category input
  * @extends SherpaInputBase
  * @description Date range picker composing two native date inputs (start / end).
  *   Inherits label, description, helper, layout, validation from SherpaInputBase.

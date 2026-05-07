@@ -1,5 +1,6 @@
 /**
  * @element sherpa-empty-state
+ * @category feedback
  * @description Empty-state placeholder with illustration, heading, description,
  *   and action slots.
  *

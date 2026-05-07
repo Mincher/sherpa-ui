@@ -1,5 +1,6 @@
 /**
  * @element sherpa-progress-bar
+ * @category display
  * @description Horizontal progress indicator — determinate or indeterminate.
  *   Sets role="progressbar" with appropriate ARIA values.
  *

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-popover",
   "description": "General-purpose floating content container with header.",
-  "category": "core",
+  "category": "overlay",
+  "tier": 2,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

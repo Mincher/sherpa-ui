@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-icon",
   "description": "Atomic icon primitive. Renders either a Font Awesome glyph (default template) or a registered inline SVG (svg template). Replaces the ad-hoc `<i class=\"fa-... sherpa-icon\">` pattern used elsewhere in the library and gives consumers a single, declarative way to reference icons by name.",
-  "category": "core",
+  "category": "media",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-select",
   "description": "Dropdown select input using native <select>. Options provided via light DOM <option> elements or programmatically via setOptions(). Inherits label, description, helper, layout, validation from SherpaInputBase.",
-  "category": "form",
+  "category": "input",
+  "tier": 4,
+  "group": "form",
   "baseClass": "SherpaInputBase",
   "attributes": [
     {

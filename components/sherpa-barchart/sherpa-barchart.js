@@ -1,5 +1,6 @@
 /**
  * @element sherpa-barchart
+ * @category media
  * @description Adaptive bar chart with automatic orientation.
  *   Supports stacked bars, category limiting, and responsive legend.
  *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.

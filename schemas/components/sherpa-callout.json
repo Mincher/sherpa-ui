@@ -2,6 +2,8 @@
   "tagName": "sherpa-callout",
   "description": "Inline contextual callout with status variants and expandable/dismissible body.",
   "category": "feedback",
+  "tier": 4,
+  "group": "feedback",
   "baseClass": "SherpaElement",
   "attributes": [
     {
@@ -49,7 +51,10 @@
     },
     {
       "name": "action",
-      "description": "Optional action link/button"
+      "description": "Optional action link/button",
+      "accepts": [
+        "control"
+      ]
     }
   ],
   "events": [

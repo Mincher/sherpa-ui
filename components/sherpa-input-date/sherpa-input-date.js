@@ -1,5 +1,6 @@
 /**
  * @element sherpa-input-date
+ * @category input
  * @extends SherpaInputBase
  * @description Date input using the native browser date picker.
  *   Inherits label, description, helper, layout, validation from SherpaInputBase.

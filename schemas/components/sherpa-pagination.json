@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-pagination",
   "description": "Standalone pagination bar with page navigation and page-size selector.",
-  "category": "data-display",
+  "category": "control",
+  "tier": 4,
+  "group": "data-display",
   "baseClass": "SherpaElement",
   "attributes": [
     {

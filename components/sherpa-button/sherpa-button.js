@@ -19,6 +19,7 @@
  *   SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.
  *
  * @element sherpa-button
+ * @category control
  *
  * @attr {enum}    data-type            — default | icon | button-menu | icon-menu
  * @attr {string}  data-label           — Button text label
@@ -195,12 +196,29 @@ export class SherpaButton extends SherpaElement {
 
   /* ── Icons sync ───────────────────────────────────────────────── */
 
+  // data-icon-start / data-icon-end accept a Font Awesome class string
+  // (e.g. "fa-solid fa-star"). Legacy templates may still pass a single
+  // FA unicode codepoint (e.g. "\uf005" via &#xf005;) — in that case the
+  // value is rendered as textContent and the global font-family fallback
+  // (set inline below) lets FA's @font-face show the glyph.
   #syncIcons() {
-    if (this.#iconStartEl) {
-      this.#iconStartEl.textContent = this.dataset.iconStart ?? "";
-    }
-    if (this.#iconEndEl) {
-      this.#iconEndEl.textContent = this.dataset.iconEnd ?? "";
+    if (this.#iconStartEl) this.#applyIconValue(this.#iconStartEl, 'icon-start', this.dataset.iconStart);
+    if (this.#iconEndEl)   this.#applyIconValue(this.#iconEndEl,   'icon-end',   this.dataset.iconEnd);
+  }
+
+  #applyIconValue(el, baseClass, value) {
+    const v = value || '';
+    // FA class strings contain "fa-" tokens. Single-char or short non-class
+    // values are treated as unicode glyphs.
+    if (/\bfa-/.test(v)) {
+      el.className = `${baseClass} ${v}`.trim();
+      el.textContent = '';
+      el.style.fontFamily = '';
+    } else {
+      el.className = baseClass;
+      el.textContent = v;
+      el.style.fontFamily = v ? '"Font Awesome 6 Free"' : '';
+      el.style.fontWeight = v ? '900' : '';
     }
   }
 

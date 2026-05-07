@@ -1,5 +1,6 @@
 /**
  * @element sherpa-nav-promo
+ * @category nav
  * @description Promotional callout for the navigation footer. Includes a
  *   dismiss button and a CTA link in addition to the title/message body.
  *   For a simpler promo entry without dismiss/link chrome, use

@@ -8,6 +8,7 @@
  * declarative way to reference icons by name.
  *
  * @element sherpa-icon
+ * @category media
  *
  * @attr {string} name        — Icon identifier. If `SherpaIcon.register(name, svg)`
  *                              has been called, the registered SVG is rendered;

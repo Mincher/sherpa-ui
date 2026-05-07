@@ -4,6 +4,7 @@
  * helper and a single selected value.
  *
  * @element sherpa-input-radio-group
+ * @category input
  *
  * @attr {string}  [name]              — Field name; cascaded to children
  * @attr {string}  [data-label]        — Group legend

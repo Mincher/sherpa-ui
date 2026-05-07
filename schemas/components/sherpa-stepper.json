@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-stepper",
   "description": "Horizontal/vertical step progress indicator. Steps populated from data; CSS handles all visual states.",
-  "category": "form",
+  "category": "content",
+  "tier": 3,
+  "group": "form",
   "baseClass": "SherpaElement",
   "attributes": [
     {

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-date",
   "description": "Date input using the native browser date picker. Inherits label, description, helper, layout, validation from SherpaInputBase.",
-  "category": "form",
+  "category": "input",
+  "tier": 4,
+  "group": "form",
   "baseClass": "SherpaInputBase",
   "attributes": [
     {

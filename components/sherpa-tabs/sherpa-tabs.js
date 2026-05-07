@@ -7,6 +7,7 @@
  * manages panel visibility by setting data-tab-active on the matching child.
  *
  * @element sherpa-tabs
+ * @category content
  *
  * @attr {number}  data-active-tab — Zero-based index of the selected tab
  * @attr {enum}    data-load-mode  — eager (default, all panels rendered) | lazy (panels populated on first activation)

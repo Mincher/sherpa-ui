@@ -1,0 +1,82 @@
+<!--
+  view-with-rails — Body-content view bounded to the viewport with
+  optional left/right side rails and a scrolling content column.
+
+  Uses the sherpa-layout-view primitive — the body-area sibling of
+  sherpa-layout-grid. Provides:
+    • Embedded view header
+    • Left rail (filters / list navigation) — sticky search, scrolls
+      independently
+    • Right rail (details / inspector) — scrolls independently
+    • Centre content column — scrolls independently
+
+  The whole region is clamped to 100dvh so the rails stay anchored
+  while the user scrolls within any one column. The page is responsible
+  for ensuring the layout's flex ancestors don't grow past the viewport
+  — typically:
+      html, body { height: 100dvh; overflow: hidden; }
+
+  Components: sherpa-layout-view, sherpa-content-section,
+              sherpa-list-panel, sherpa-data-grid, sherpa-key-value-list
+
+  Customisation:
+    • data-heading on sherpa-layout-view sets the embedded view-header label
+    • data-fill="parent" if embedded inside another viewport-bound layout
+    • data-pad / data-gap for the content column
+    • Either rail may be omitted by removing the slotted content-section
+    • Use slot="search" on the rail's content-section for a sticky
+      search bar pinned to the top of that rail
+-->
+
+<template id="view-with-rails"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-layout-view, sherpa-content-section, sherpa-list-panel, sherpa-data-grid">
+
+  <sherpa-layout-view data-heading="Devices" data-pad data-gap="base">
+
+    <!-- Header trailing actions -->
+    <sherpa-toolbar slot="header-actions">
+      <sherpa-button data-label="Add" data-variant="primary" data-icon-start="&#xf067;"></sherpa-button>
+    </sherpa-toolbar>
+
+    <!-- Left rail: searchable filter / navigation list -->
+    <sherpa-content-section
+      slot="side-panel-start"
+      data-position="left"
+      data-heading="Filters"
+      data-restore-label="Filters"
+      data-flush>
+      <sherpa-list-panel
+        data-match="sherpa-list-item"
+        data-empty="No filters match">
+        <sherpa-list>
+          <sherpa-list-item data-label="All devices"></sherpa-list-item>
+          <sherpa-list-item data-label="Online"></sherpa-list-item>
+          <sherpa-list-item data-label="Offline"></sherpa-list-item>
+          <sherpa-list-item data-label="Needs attention"></sherpa-list-item>
+        </sherpa-list>
+      </sherpa-list-panel>
+    </sherpa-content-section>
+
+    <!-- Centre content -->
+    <sherpa-filter-bar></sherpa-filter-bar>
+    <sherpa-data-grid></sherpa-data-grid>
+    <sherpa-pagination></sherpa-pagination>
+
+    <!-- Right rail: details / inspector with sticky search -->
+    <sherpa-content-section
+      slot="side-panel-end"
+      data-position="right"
+      data-heading="Details"
+      data-restore-label="Details">
+      <sherpa-input-search
+        slot="search"
+        data-name="details-search"
+        data-placeholder="Search details"
+        data-hide-label></sherpa-input-search>
+      <sherpa-key-value-list></sherpa-key-value-list>
+    </sherpa-content-section>
+
+  </sherpa-layout-view>
+</template>

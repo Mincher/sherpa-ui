@@ -3,6 +3,7 @@
  * SherpaAIPanel — Standalone chrome for AI / chat surfaces.
  *
  * @element sherpa-ai-panel
+ * @category container
  *
  * @attr {enum}    data-variant     "inline" | "overlay" (default "overlay")
  * @attr {enum}    data-position    "left" | "right"     (default "right")

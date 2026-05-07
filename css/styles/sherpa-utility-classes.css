@@ -128,3 +128,13 @@
     box-shadow: var(--sherpa-shadow-default-sm);
   }
 }
+
+/* ─── Slot allowlist enforcement ─────────────────────────────────────
+ * Children rejected by SherpaElement slot validation (when
+ * SherpaElement.strictSlots is enabled) are flagged with
+ * data-slot-rejected="true". Hide them globally; consumers can
+ * override during migration if needed.
+ */
+[data-slot-rejected="true"] {
+  display: none !important;
+}

@@ -38,6 +38,7 @@
  *   the saved-groups registry is the consumer's concern.
  *
  * @element sherpa-node
+ * @category content
  *
  * @attr {enum}    data-kind     — One of: source | group | variable | math |
  *                                 logic | time | collection | util | output |

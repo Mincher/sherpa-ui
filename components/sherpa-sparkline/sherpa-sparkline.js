@@ -1,5 +1,6 @@
 /**
  * @element sherpa-sparkline
+ * @category media
  * @description CSS-driven sparkline. JS sets raw data values as CSS custom
  *   properties; CSS handles normalisation via calc() and visual rendering
  *   (clip-path polygons per segment).

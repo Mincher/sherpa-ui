@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-tag",
   "description": "Compact label component with variant and status support.",
-  "category": "core",
+  "category": "control",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

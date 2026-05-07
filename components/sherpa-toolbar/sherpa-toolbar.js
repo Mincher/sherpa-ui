@@ -1,5 +1,6 @@
 /**
  * @element sherpa-toolbar
+ * @category content
  * @description Generic horizontal toolbar with leading/center/trailing content
  *   zones and an optional filters row. Pure layout component — no data logic.
  *

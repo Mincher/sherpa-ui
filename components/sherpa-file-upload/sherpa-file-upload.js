@@ -1,5 +1,6 @@
 /**
  * @element sherpa-file-upload
+ * @category input
  * @description File upload drop zone with drag-and-drop, file list,
  *   and per-file progress/status tracking. Consumer handles actual upload;
  *   call setFileState/setFileProgress to update UI.

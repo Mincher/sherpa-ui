@@ -60,3 +60,9 @@
   flex-wrap: wrap;
   gap: var(--sherpa-space-sm, 12px);
 }
+
+/* ── Status tint ── see sherpa-input-checkbox-group.css for rationale */
+:host([data-status]) .group-helper {
+  color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+}
+

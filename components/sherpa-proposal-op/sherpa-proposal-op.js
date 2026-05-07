@@ -3,6 +3,7 @@
  * SherpaProposalOp — Single change row inside <sherpa-proposal-preview>.
  *
  * @element sherpa-proposal-op
+ * @category content
  *
  * @attr {enum}   [data-op]     add | remove | update | add-edge | remove-edge
  * @attr {string} [data-label]  Body text describing the change.

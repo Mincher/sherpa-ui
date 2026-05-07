@@ -10,7 +10,7 @@
     </button>
     <h2 class="section-title" part="title"></h2>
     <div class="header-actions">
-      <slot name="actions"></slot>
+      <slot name="actions" data-accepts="control"></slot>
     </div>
   </header>
 
@@ -20,7 +20,7 @@
 
   <div class="section-body" part="body">
     <div class="section-search" part="search">
-      <slot name="search"></slot>
+      <slot name="search" data-accepts="input"></slot>
     </div>
     <slot></slot>
   </div>

@@ -6,6 +6,7 @@
  * technology announces when the loader appears or its label changes.
  *
  * @element sherpa-loader
+ * @category feedback
  *
  * @attr {string}  data-label       — Loading text beside the spinner
  * @attr {enum}    data-orientation  — horizontal | vertical

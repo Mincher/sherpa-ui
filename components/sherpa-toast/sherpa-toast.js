@@ -1,5 +1,6 @@
 /**
  * @element sherpa-toast
+ * @category feedback
  * @description Toast notification with auto-dismiss, status variants,
  *   and static factory methods for programmatic creation.
  *

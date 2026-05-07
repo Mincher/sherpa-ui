@@ -1,5 +1,6 @@
 /**
  * @element sherpa-view-header
+ * @category shell
  * @description View header toolbar with toggles and settings.
  *   Manages heading, favorites, feedback popover, and export intent.
  *
@@ -9,8 +10,10 @@
  * @attr {boolean} [data-edit-mode]          — Edit mode active
  * @attr {boolean} [data-back-button]        — Show built-in back button
  * @attr {string}  [data-export-title]       — Title for PDF export
+ * @attr {json}    [data-breadcrumbs]        — Breadcrumb trail. JSON array
+ *   of `{label, href?}` objects. Renders the inline breadcrumb row when
+ *   present; hidden otherwise.
  *
- * @slot breadcrumbs — Optional breadcrumb row above the toolbar
  * @slot title-icon  — Optional icon shown to the left of the heading label
  * @slot view-selection — Optional <sherpa-input-select> for scoped views
  *
@@ -38,6 +41,7 @@ import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-tag/sherpa-tag.js';
+import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { ThemeManager } from '../utilities/theme-manager.js';
@@ -73,7 +77,7 @@ export class SherpaViewHeader extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-view-header.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-back-button', 'data-export-title'];
+    return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-back-button', 'data-export-title', 'data-breadcrumbs'];
   }
 
   #viewId = null;
@@ -95,6 +99,9 @@ export class SherpaViewHeader extends SherpaElement {
         break;
       case 'data-edit-mode':
         this.#applyEditMode(newValue === 'true');
+        break;
+      case 'data-breadcrumbs':
+        this.#syncBreadcrumbs(newValue);
         break;
     }
   }
@@ -172,7 +179,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#setupBackButton();
     this.#setupEditMode();
     this.#setupOptionSlotWatcher();
-    this.#setupBreadcrumbsSlotWatcher();
+    this.#syncBreadcrumbs(this.dataset.breadcrumbs);
 
     // Apply any attributes that were set before render completed
     const heading = this.dataset.label;
@@ -244,10 +251,8 @@ export class SherpaViewHeader extends SherpaElement {
     const btn = this.$('#favorite-btn');
     if (!btn) return;
     btn.dataset.favorite = on.toString();
-    // Toggle between filled and outlined star via the icon-start attribute
-    btn.setAttribute('data-icon-start', on ? '\uf005' : '\uf005');
-    if (!on) btn.setAttribute('data-icon-weight', 'regular');
-    else btn.removeAttribute('data-icon-weight');
+    // Toggle between filled (solid) and outlined (regular) star via FA classes.
+    btn.setAttribute('data-icon-start', on ? 'fa-solid fa-star' : 'fa-regular fa-star');
   }
 
   #setupFavorite() {
@@ -275,20 +280,34 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   /**
-   * Reflect whether the `breadcrumbs` slot has any assigned nodes onto a
-   * host attribute (`data-has-breadcrumbs`) so the CSS can show the row.
+   * Drive the inline <sherpa-breadcrumbs> from the JSON `data-breadcrumbs`
+   * attribute. Each entry: `{label, href?}`. When the array is empty or
+   * the attribute is missing/invalid, the row is hidden via
+   * `data-has-breadcrumbs`.
    */
-  #setupBreadcrumbsSlotWatcher() {
-    const slot = this.shadowRoot?.querySelector('slot[name="breadcrumbs"]');
-    if (!slot) return;
-    const sync = () => {
-      const has = slot.assignedNodes({ flatten: true }).some((n) =>
-        n.nodeType === 1 || (n.nodeType === 3 && n.textContent.trim())
-      );
-      this.toggleAttribute('data-has-breadcrumbs', has);
-    };
-    slot.addEventListener('slotchange', sync);
-    sync();
+  #syncBreadcrumbs(raw) {
+    const crumbsEl = this.$('#view-breadcrumbs');
+    if (!crumbsEl) return;
+    let items = [];
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) items = parsed;
+      } catch {
+        // Ignore malformed JSON; treat as empty.
+      }
+    }
+    crumbsEl.innerHTML = '';
+    items.forEach((item) => {
+      if (!item || typeof item !== 'object') return;
+      const label = String(item.label ?? '').trim();
+      if (!label) return;
+      const node = item.href ? document.createElement('a') : document.createElement('span');
+      if (item.href) node.href = String(item.href);
+      node.textContent = label;
+      crumbsEl.appendChild(node);
+    });
+    this.toggleAttribute('data-has-breadcrumbs', items.length > 0);
   }
 
   // ============ View-selection Picker ============

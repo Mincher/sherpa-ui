@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-panel",
   "description": "Slide-out or inline panel with header and content area.",
-  "category": "layout",
+  "category": "container",
+  "tier": 2,
+  "group": "layout",
   "baseClass": "SherpaElement",
   "attributes": [
     {

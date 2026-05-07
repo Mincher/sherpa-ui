@@ -11,6 +11,7 @@
  * its host into any ancestor — no re-dispatching required.
  *
  * @element sherpa-container-header
+ * @category content
  *
  * @attr {string}  [data-title]          — Heading text
  * @attr {string}  [data-description]    — Secondary text (hidden when empty)

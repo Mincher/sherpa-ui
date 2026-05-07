@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-ai-panel",
   "description": "Standalone chrome for AI / chat surfaces.",
-  "category": "core",
+  "category": "container",
+  "tier": 2,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

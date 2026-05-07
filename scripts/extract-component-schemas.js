@@ -21,9 +21,9 @@ const ROOT = path.resolve(__dirname, "..");
 const COMPONENTS_DIR = path.join(ROOT, "components");
 const OUT_DIR = path.join(ROOT, "schemas", "components");
 
-/* ── Category map ──────────────────────────────────────────────── */
+/* ── Category map (legacy `group` — layout-oriented sidebar grouping) ─ */
 
-const CATEGORY_MAP = {
+const GROUP_MAP = {
   "sherpa-button":              "core",
   "sherpa-tag":                 "core",
   "sherpa-switch":              "core",
@@ -79,7 +79,70 @@ const CATEGORY_MAP = {
   "sherpa-container-pdf":       "page-level",
 };
 
+/* ── Role taxonomy (new `category` — see docs/COMPONENT-CATEGORIES.md) ── */
+
+const VALID_CATEGORIES = new Set([
+  "shell",
+  "control",
+  "input",
+  "display",
+  "feedback",
+  "container",
+  "content",
+  "nav",
+  "overlay",
+  "media",
+  "data",
+]);
+
+/* ── Composition tiers (see docs/COMPONENT-CATEGORIES.md §4) ──
+ * A slot may host children whose tier number is >= the host's tier
+ * (i.e. equal-or-deeper in the application structure). */
+const ROLE_TIERS = Object.freeze({
+  shell:     1,
+  nav:       1,
+  container: 2,
+  overlay:   2,
+  content:   3,
+  control:   4,
+  input:     4,
+  display:   4,
+  feedback:  4,
+  media:     4,
+  data:      4,
+});
+
+function tierOf(role) {
+  return ROLE_TIERS[role] ?? null;
+}
+
 /* ── Helpers ───────────────────────────────────────────────────── */
+
+/**
+ * Scan template HTML for `<slot ... data-accepts="...">` declarations.
+ * Returns Map<slotName, string[]> where slotName is "" for the default slot.
+ */
+function parseSlotAccepts(html) {
+  const map = new Map();
+  // Strip HTML comments first so commented-out templates are ignored.
+  const stripped = html.replace(/<!--[\s\S]*?-->/g, "");
+  // Match every <slot ...> tag; capture the attribute span
+  const slotRe = /<slot\b([^>]*)>/g;
+  let m;
+  while ((m = slotRe.exec(stripped)) !== null) {
+    const attrs = m[1];
+    const acceptsMatch = attrs.match(/data-accepts\s*=\s*["']([^"']+)["']/);
+    if (!acceptsMatch) continue;
+    const nameMatch = attrs.match(/\bname\s*=\s*["']([^"']+)["']/);
+    const name = nameMatch ? nameMatch[1] : "";
+    const accepts = acceptsMatch[1]
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    map.set(name, accepts);
+  }
+  return map;
+}
 
 /** Extract the first JSDoc block (/** ... *​/) from source */
 function extractJSDoc(source) {
@@ -107,6 +170,7 @@ function jsdocLines(block) {
 function parseJSDoc(lines) {
   const result = {
     tagName: null,
+    category: null,
     description: "",
     extendedDescription: "",
     baseClass: "SherpaElement",
@@ -139,6 +203,8 @@ function parseJSDoc(lines) {
 
     if (line.startsWith("@element ")) {
       result.tagName = line.replace("@element ", "").trim();
+    } else if (line.startsWith("@category ")) {
+      result.category = line.replace("@category ", "").trim();
     } else if (line.startsWith("@extends ")) {
       result.baseClass = line.replace("@extends ", "").trim();
     } else if (line.startsWith("@description ")) {
@@ -443,6 +509,7 @@ function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const index = [];
+  const categoryMap = {};
   let errorCount = 0;
 
   for (const comp of components) {
@@ -480,8 +547,56 @@ function main() {
       }
     }
 
-    // Add category
-    api.category = CATEGORY_MAP[api.tagName] || "core";
+    // Add legacy layout group
+    api.group = GROUP_MAP[api.tagName] || "core";
+
+    // Validate / default the role category
+    if (api.category && !VALID_CATEGORIES.has(api.category)) {
+      console.warn(
+        `  ⚠ ${api.tagName}: unknown @category "${api.category}" (valid: ${[...VALID_CATEGORIES].join(", ")})`
+      );
+    }
+    if (!api.category) {
+      console.warn(`  ⚠ ${api.tagName}: missing @category JSDoc tag`);
+    }
+
+    // Stamp tier on the schema for downstream consumers.
+    const hostTier = tierOf(api.category);
+    if (hostTier) api.tier = hostTier;
+
+    // Merge data-accepts from the HTML template into slots[].accepts,
+    // and validate every entry against the tier rule.
+    const htmlPath = path.join(
+      COMPONENTS_DIR,
+      comp.name,
+      `${comp.name}.html`
+    );
+    if (fs.existsSync(htmlPath)) {
+      const html = fs.readFileSync(htmlPath, "utf8");
+      const slotAccepts = parseSlotAccepts(html);
+      for (const slot of api.slots) {
+        const key = slot.name || "";
+        if (slotAccepts.has(key)) {
+          slot.accepts = slotAccepts.get(key);
+          if (hostTier) {
+            for (const role of slot.accepts) {
+              if (role === "html") continue;
+              const childTier = tierOf(role);
+              if (childTier == null) {
+                console.warn(
+                  `  ⚠ ${api.tagName} slot="${key || "(default)"}": unknown role "${role}" in data-accepts`
+                );
+              } else if (childTier < hostTier) {
+                console.warn(
+                  `  ⚠ ${api.tagName} (tier ${hostTier}) slot="${key || "(default)"}": ` +
+                  `role "${role}" is tier ${childTier} — violates same-tier-or-below rule`
+                );
+              }
+            }
+          }
+        }
+      }
+    }
 
     // Clean up empty arrays / strings
     const output = {
@@ -490,7 +605,9 @@ function main() {
     };
 
     if (api.extendedDescription) output.extendedDescription = api.extendedDescription;
-    output.category = api.category;
+    if (api.category) output.category = api.category;
+    if (api.tier) output.tier = api.tier;
+    output.group = api.group;
     output.baseClass = api.baseClass;
     output.attributes = api.attributes;
     output.slots = api.slots;
@@ -503,6 +620,7 @@ function main() {
     const outPath = path.join(OUT_DIR, `${api.tagName}.json`);
     fs.writeFileSync(outPath, JSON.stringify(output, null, 2) + "\n");
     index.push(api.tagName);
+    if (api.category) categoryMap[api.tagName] = api.category;
 
     const counts = [
       `${api.attributes.length}a`,
@@ -520,7 +638,53 @@ function main() {
     JSON.stringify(index, null, 2) + "\n"
   );
 
+  // Write generated tag → category map for runtime slot validation.
+  // Consumed by SherpaElement (components/utilities/sherpa-element/sherpa-element.js).
+  const categoriesModulePath = path.join(
+    ROOT,
+    "components",
+    "utilities",
+    "component-categories.js"
+  );
+  // Build tag→tier map by composing categoryMap with ROLE_TIERS.
+  const tierMap = {};
+  for (const [tag, role] of Object.entries(categoryMap)) {
+    const t = tierOf(role);
+    if (t) tierMap[tag] = t;
+  }
+  const categoriesModule =
+    "/**\n" +
+    " * component-categories.js\n" +
+    " * GENERATED by scripts/extract-component-schemas.js — do not edit by hand.\n" +
+    " *\n" +
+    " * Maps every sherpa-* custom element tag name to its role category and\n" +
+    " * composition tier. Roles + tiers are defined in docs/COMPONENT-CATEGORIES.md.\n" +
+    " */\n\n" +
+    "export const COMPONENT_CATEGORIES = Object.freeze(" +
+    JSON.stringify(categoryMap, null, 2) +
+    ");\n\n" +
+    "export const ROLE_TIERS = Object.freeze(" +
+    JSON.stringify(ROLE_TIERS, null, 2) +
+    ");\n\n" +
+    "export const COMPONENT_TIERS = Object.freeze(" +
+    JSON.stringify(tierMap, null, 2) +
+    ");\n\n" +
+    "/** Look up the role category for a given tag name. Returns null if unknown. */\n" +
+    "export function getCategory(tagName) {\n" +
+    "  if (!tagName) return null;\n" +
+    "  return COMPONENT_CATEGORIES[tagName.toLowerCase()] || null;\n" +
+    "}\n\n" +
+    "/** Look up the composition tier (1–4) for a given tag name. Null if unknown. */\n" +
+    "export function getTier(tagName) {\n" +
+    "  if (!tagName) return null;\n" +
+    "  return COMPONENT_TIERS[tagName.toLowerCase()] || null;\n" +
+    "}\n";
+  fs.writeFileSync(categoriesModulePath, categoriesModule);
+
   console.log(`\nDone: ${index.length} schemas written to schemas/components/`);
+  console.log(
+    `      ${Object.keys(categoryMap).length} components categorised → components/utilities/component-categories.js`
+  );
   if (errorCount) console.log(`  ${errorCount} components skipped due to errors`);
 }
 

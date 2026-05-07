@@ -1,5 +1,6 @@
 /**
  * @element sherpa-list-panel
+ * @category container
  * @description Searchable panel that wraps consumer-projected list content.
  *   Composes sherpa-input-search at the top; the search field string-matches
  *   text within slotted children (similar to sherpa-nav search). Items whose

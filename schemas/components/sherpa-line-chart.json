@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-line-chart",
   "description": "Line / area chart using CSS clip-path segments. JS sets raw data as CSS custom properties; CSS normalises via calc() and renders clip-path polygons. Zero polygon computation in JS.",
-  "category": "data-viz",
+  "category": "media",
+  "tier": 4,
+  "group": "data-viz",
   "baseClass": "SherpaElement",
   "attributes": [
     {

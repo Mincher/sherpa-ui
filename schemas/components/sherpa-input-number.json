@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-number",
   "description": "Numerical input with stepper buttons. Inherits label, description, helper, layout, validation, and value management from SherpaInputBase.",
-  "category": "form",
+  "category": "input",
+  "tier": 4,
+  "group": "form",
   "baseClass": "SherpaInputBase",
   "attributes": [
     {

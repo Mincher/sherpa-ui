@@ -27,10 +27,10 @@
  *   beneath the preview, used to drive overlays (dialog/menu/toast/etc.).
  */
 
-const FA_PLAY    = '\uf04b';
-const FA_BELL    = '\uf0f3';
-const FA_CARET   = '\uf0d7';
-const FA_ELLIPSIS = '\uf141';
+const FA_PLAY    = 'fa-solid fa-play';
+const FA_BELL    = 'fa-solid fa-bell';
+const FA_CARET   = 'fa-solid fa-caret-down';
+const FA_ELLIPSIS = 'fa-solid fa-ellipsis';
 
 // Reusable bits ─────────────────────────────────────────────────────
 
@@ -241,7 +241,7 @@ export const DUMMY_DATA = {
   },
 
   'sherpa-button': {
-    attrs: { 'data-label': 'Save changes', 'data-variant': 'primary', 'data-icon-start': '\uf0c7' },
+    attrs: { 'data-label': 'Save changes', 'data-variant': 'primary' },
   },
 
   'sherpa-icon': {
@@ -315,7 +315,7 @@ export const DUMMY_DATA = {
 
   'sherpa-toolbar': {
     html: `
-      <sherpa-button data-label="New" data-variant="primary" data-icon-start="\uf067"></sherpa-button>
+      <sherpa-button data-label="New" data-variant="primary"></sherpa-button>
       <sherpa-button data-label="Filter" data-variant="tertiary"></sherpa-button>
       <sherpa-button data-label="Export" data-variant="tertiary"></sherpa-button>
     `,

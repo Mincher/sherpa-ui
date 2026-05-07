@@ -10,6 +10,7 @@
  *   • `data-value` reflects the current array of tag values as JSON.
  *
  * @element sherpa-input-tag
+ * @category input
  *
  * @attr {string}  [data-label]
  * @attr {string}  [data-description]

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-scheduler",
   "description": "Recurrence/schedule picker. Composes sherpa-input-select (frequency), sherpa-input-date, sherpa-input-time, sherpa-input-checkbox-group (weekdays template), sherpa-input-number.",
-  "category": "core",
+  "category": "data",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

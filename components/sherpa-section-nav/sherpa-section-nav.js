@@ -1,5 +1,6 @@
 /**
  * @element sherpa-section-nav
+ * @category nav
  * @description Secondary navigation panel: a heading with optional back
  *   button, followed by a vertical list of grouped, selectable items.
  *   Designed for Settings-style layouts where the panel sits beside a

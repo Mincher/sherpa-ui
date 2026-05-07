@@ -57,17 +57,17 @@
 }
 
 :host([data-active]) .label {
-  color: var(--sherpa-text-default-heading, var(--sherpa-text-default-heading, #18191a));
+  color: var(--sherpa-text-active-base, var(--sherpa-text-default-heading, #18191a));
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
 :host([data-active]) .description {
-  color: var(--sherpa-text-default-body, var(--sherpa-text-default-body, #2e2e33));
+  color: var(--sherpa-text-active-base, var(--sherpa-text-default-body, #2e2e33));
 }
 
 :host([data-active]) .icon,
 :host([data-active]) .drag-handle {
-  color: var(--sherpa-icon-context-default-body, var(--sherpa-icon-context-default-body, #2e2e33));
+  color: var(--sherpa-text-active-base, var(--sherpa-icon-context-default-body, #2e2e33));
 }
 
 /* ── Disabled ────────────────────────────────────────────────── */

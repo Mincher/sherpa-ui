@@ -139,6 +139,21 @@
     ]
   },
   {
+    "id": "view-with-rails",
+    "name": "Viewport-bound view with optional left/right side rails",
+    "category": "layouts",
+    "file": "patterns/layouts/view-with-rails.html",
+    "description": "Provides a body-content view clamped to the viewport with side rails that scroll independently of the centre content column",
+    "status": "stable",
+    "components": [
+      "sherpa-layout-view",
+      "sherpa-content-section",
+      "sherpa-list-panel",
+      "sherpa-data-grid",
+      "sherpa-key-value-list"
+    ]
+  },
+  {
     "id": "settings-form",
     "name": "Settings page with grouped form sections",
     "category": "layouts",

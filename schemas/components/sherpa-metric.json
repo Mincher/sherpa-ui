@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-metric",
   "description": "KPI card with value, trend, and sparkline. Extends ContentAttributesMixin(SherpaElement) for data pipeline. Trend-derived colouring via data-status on internal .metric-card.",
-  "category": "data-display",
+  "category": "display",
+  "tier": 4,
+  "group": "data-display",
   "baseClass": "SherpaElement",
   "attributes": [
     {

@@ -4,6 +4,7 @@
  * description, helper, and an optional pre-stamped `weekdays` template.
  *
  * @element sherpa-input-checkbox-group
+ * @category input
  *
  * @attr {string}  [name]              — Group field name; cascaded to children
  * @attr {string}  [data-label]        — Group legend

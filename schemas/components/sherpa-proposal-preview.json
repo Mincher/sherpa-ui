@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-proposal-preview",
   "description": "Agent proposal renderer.",
-  "category": "core",
+  "category": "content",
+  "tier": 3,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

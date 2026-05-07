@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-search",
   "description": "Search input with magnifying glass icon and clear button. Inherits label, description, helper, layout, validation from SherpaInputBase.",
-  "category": "form",
+  "category": "input",
+  "tier": 4,
+  "group": "form",
   "baseClass": "SherpaInputBase",
   "attributes": [],
   "slots": [],

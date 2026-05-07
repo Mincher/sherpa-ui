@@ -1,5 +1,6 @@
 /**
  * @element sherpa-input-time
+ * @category input
  * @extends SherpaInputBase
  * @description Time input using the native browser time picker.
  *   Inherits label, description, helper, layout, validation from SherpaInputBase.

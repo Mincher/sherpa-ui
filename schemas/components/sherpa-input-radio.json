@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-input-radio",
   "description": "Atomic radio primitive. Single radio with label-on-the-right. Use multiple instances sharing a `name` to form a logical group, or wrap in `sherpa-input-radio-group` which manages the shared name + value coordination.",
-  "category": "core",
+  "category": "input",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

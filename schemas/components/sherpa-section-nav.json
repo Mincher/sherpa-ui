@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-section-nav",
   "description": "Secondary navigation panel: a heading with optional back button, followed by a vertical list of grouped, selectable items. Designed for Settings-style layouts where the panel sits beside a content area and switches what is rendered there.",
-  "category": "core",
+  "category": "nav",
+  "tier": 1,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

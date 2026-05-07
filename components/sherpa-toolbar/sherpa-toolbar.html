@@ -27,11 +27,11 @@
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="toolbar-row" part="toolbar" role="toolbar">
-    <div class="leading"><slot name="leading"></slot></div>
-    <div class="center"><slot name="center"></slot></div>
-    <div class="trailing"><slot name="trailing"></slot></div>
+    <div class="leading"><slot name="leading" data-accepts="control,input,display,content"></slot></div>
+    <div class="center"><slot name="center" data-accepts="control,input,display,content"></slot></div>
+    <div class="trailing"><slot name="trailing" data-accepts="control,input,display,content"></slot></div>
   </div>
-  <div class="filters-row" part="filters"><slot name="filters"></slot></div>
+  <div class="filters-row" part="filters"><slot name="filters" data-accepts="control,input"></slot></div>
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -63,6 +63,6 @@
      ════════════════════════════════════════════════════════════════════════ -->
 <template id="actions">
   <div class="toolbar-row actions-row" part="toolbar" role="toolbar">
-    <slot name="actions"></slot>
+    <slot name="actions" data-accepts="control"></slot>
   </div>
 </template>

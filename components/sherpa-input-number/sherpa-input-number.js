@@ -1,5 +1,6 @@
 /**
  * @element sherpa-input-number
+ * @category input
  * @extends SherpaInputBase
  * @description Numerical input with stepper buttons. Inherits label, description,
  *   helper, layout, validation, and value management from SherpaInputBase.

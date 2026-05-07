@@ -1,5 +1,6 @@
 /**
  * @element sherpa-scheduler
+ * @category data
  * @description Recurrence/schedule picker. Composes sherpa-input-select
  *   (frequency), sherpa-input-date, sherpa-input-time,
  *   sherpa-input-checkbox-group (weekdays template), sherpa-input-number.

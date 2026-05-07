@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-proposal-op",
   "description": "Single change row inside <sherpa-proposal-preview>.",
-  "category": "core",
+  "category": "content",
+  "tier": 3,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

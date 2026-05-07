@@ -30,7 +30,7 @@
         <dt class="header-title"></dt>
         <dd class="header-description"></dd>
       </dl>
-      <slot name="heading"></slot>
+      <slot name="heading" data-accepts="content"></slot>
       <sherpa-button
         class="close-button"
         data-variant="tertiary"
@@ -45,7 +45,7 @@
     </div>
 
     <sherpa-footer data-type="slot" part="footer">
-      <slot name="footer"></slot>
+      <slot name="footer" data-accepts="control"></slot>
     </sherpa-footer>
   </dialog>
 </template>
@@ -86,7 +86,7 @@
     <sherpa-footer data-type="slot" part="footer">
       <sherpa-button class="wizard-back" data-variant="secondary" data-label="Back"></sherpa-button>
       <sherpa-button class="wizard-next" data-variant="primary" data-label="Next"></sherpa-button>
-      <slot name="footer"></slot>
+      <slot name="footer" data-accepts="control"></slot>
     </sherpa-footer>
   </dialog>
 </template>

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-menu",
   "description": "Menu component (per-instance, no singleton). Light DOM <ul>/<li>/<sherpa-menu-item> content projected through <slot>. Uses popover=\"auto\" for top-layer promotion and light-dismiss. CSS anchor positioning with JS fallback.",
-  "category": "navigation",
+  "category": "overlay",
+  "tier": 2,
+  "group": "navigation",
   "baseClass": "SherpaElement",
   "attributes": [
     {

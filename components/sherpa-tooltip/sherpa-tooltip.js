@@ -6,6 +6,7 @@
  * Use the exported Tooltip API or declarative data-tooltip attributes.
  *
  * @element sherpa-tooltip
+ * @category overlay
  *
  * @attr {boolean} data-visible   — Whether the tooltip is currently shown
  * @attr {enum}    data-position  — top | bottom | left | right

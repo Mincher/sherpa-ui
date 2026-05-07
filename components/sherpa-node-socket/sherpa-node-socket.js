@@ -5,6 +5,7 @@
  * pointerdown so the canvas/connection-manager can drive drag-to-connect.
  *
  * @element sherpa-node-socket
+ * @category content
  *
  * @attr {enum}    data-direction        — "in" | "out"
  * @attr {enum}    data-location         — "header" | "row" (auto-set by parent slot)

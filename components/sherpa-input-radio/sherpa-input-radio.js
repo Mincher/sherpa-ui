@@ -7,6 +7,7 @@
  * which manages the shared name + value coordination.
  *
  * @element sherpa-input-radio
+ * @category input
  *
  * @attr {string}  [name]             — Form field name (radios sharing a name group together)
  * @attr {string}  [value]            — Value submitted when selected

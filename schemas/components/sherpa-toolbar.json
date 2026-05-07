@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-toolbar",
   "description": "Generic horizontal toolbar with leading/center/trailing content zones and an optional filters row. Pure layout component — no data logic.",
-  "category": "page-level",
+  "category": "content",
+  "tier": 3,
+  "group": "page-level",
   "baseClass": "SherpaElement",
   "attributes": [
     {
@@ -22,19 +24,41 @@
   "slots": [
     {
       "name": "leading",
-      "description": "Start zone (title, CTA buttons)"
+      "description": "Start zone (title, CTA buttons)",
+      "accepts": [
+        "control",
+        "input",
+        "display",
+        "content"
+      ]
     },
     {
       "name": "center",
-      "description": "Center zone (search — grows to fill)"
+      "description": "Center zone (search — grows to fill)",
+      "accepts": [
+        "control",
+        "input",
+        "display",
+        "content"
+      ]
     },
     {
       "name": "trailing",
-      "description": "End zone (icon buttons, overflow menu)"
+      "description": "End zone (icon buttons, overflow menu)",
+      "accepts": [
+        "control",
+        "input",
+        "display",
+        "content"
+      ]
     },
     {
       "name": "filters",
-      "description": "Below the toolbar row (filter bar, chips)"
+      "description": "Below the toolbar row (filter bar, chips)",
+      "accepts": [
+        "control",
+        "input"
+      ]
     }
   ],
   "events": []

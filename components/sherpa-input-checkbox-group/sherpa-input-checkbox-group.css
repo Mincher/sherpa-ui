@@ -70,6 +70,14 @@
   gap: var(--sherpa-space-sm, 12px);
 }
 
+/* ── Status tint ─────────────────────────────────────────
+   The group itself surfaces the validation tone; child checkboxes
+   inherit --_status-* through the shadow boundary and carry their
+   own visual treatment. */
+:host([data-status]) .group-helper {
+  color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+}
+
 /* ── Weekdays template ──────────────────────────────────────────── */
 
 .group-options-weekdays {

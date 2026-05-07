@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-section-header",
   "description": "Section heading with slots for badge, description, and actions.",
-  "category": "page-level",
+  "category": "content",
+  "tier": 3,
+  "group": "page-level",
   "baseClass": "SherpaElement",
   "attributes": [
     {

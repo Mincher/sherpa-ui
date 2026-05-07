@@ -492,12 +492,15 @@ server.registerTool(
   async ({ category }) => {
     let components = [...schemas.values()];
     if (category) {
-      components = components.filter((c) => c.category === category);
+      components = components.filter(
+        (c) => c.group === category || c.category === category
+      );
     }
     const list = components.map((c) => ({
       tagName: c.tagName,
       description: c.description,
       category: c.category,
+      group: c.group,
       attributes: c.attributes.length,
       slots: c.slots.length,
       events: c.events.length,

@@ -1,0 +1,78 @@
+{
+  "tagName": "sherpa-layout-view",
+  "description": "Body-content view layout. An embedded <sherpa-view-header> sits at the top, optional left/right side rails flank a scrollable content column. The whole region is bounded to the viewport height by default so the rails stay anchored and only the content column scrolls.",
+  "category": "shell",
+  "tier": 1,
+  "group": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-heading",
+      "type": "string",
+      "description": "Header title (shown when present)"
+    },
+    {
+      "name": "data-export-title",
+      "type": "string",
+      "description": "Forwarded to embedded view-header"
+    },
+    {
+      "name": "data-fill",
+      "type": "enum",
+      "description": "viewport | parent",
+      "default": "viewport",
+      "enumValues": [
+        "viewport",
+        "parent"
+      ]
+    },
+    {
+      "name": "data-pad",
+      "type": "boolean",
+      "description": "Apply padding inside the content column"
+    },
+    {
+      "name": "data-gap",
+      "type": "enum",
+      "description": "sm | base | lg — gap between",
+      "enumValues": [
+        "sm",
+        "base",
+        "lg"
+      ]
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Body content (stacked vertically)"
+    },
+    {
+      "name": "header-actions",
+      "description": "Forwarded to the embedded view-header's"
+    },
+    {
+      "name": "side-panel-start",
+      "description": "Leading rail (typically sherpa-content-section)"
+    },
+    {
+      "name": "side-panel-end",
+      "description": "Trailing rail (typically sherpa-content-section)"
+    }
+  ],
+  "events": [],
+  "cssParts": [
+    {
+      "name": "header",
+      "description": ""
+    },
+    {
+      "name": "body",
+      "description": ""
+    },
+    {
+      "name": "content",
+      "description": ""
+    }
+  ]
+}

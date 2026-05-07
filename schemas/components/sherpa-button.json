@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-button",
   "description": "Multi-template button web component. Four templates (selected via data-type → get templateId()): default       — Standard button: icon(s) + label + badge + optional close icon          — Icon-only square button button-menu   — Button + menu trigger side by side (action menu) icon-menu     — Icon-only menu trigger (overflow menus) The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: button-menu and icon-menu types are inherently menu triggers — no data-menu attribute needed. For default/icon types, add data-menu=\"true\". button-menu has two modes: unified (default) or split (data-split). If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.",
-  "category": "core",
+  "category": "control",
+  "tier": 4,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {

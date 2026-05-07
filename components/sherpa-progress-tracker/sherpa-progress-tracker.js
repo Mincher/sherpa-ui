@@ -1,5 +1,6 @@
 /**
  * @element sherpa-progress-tracker
+ * @category content
  * @description Vertical timeline with status-coloured milestone nodes plus a
  *   header row (title + percentage). For a simpler atomic timeline without
  *   header chrome, use {@link SherpaStepper} with `data-template="timeline"`

@@ -1,7 +1,9 @@
 {
   "tagName": "sherpa-layout-grid",
   "description": "Responsive dashboard grid. Slotted <sherpa-container data-variant=\"resizable\"> children take grid spans from their data-col-span / data-row-span attributes.",
-  "category": "core",
+  "category": "shell",
+  "tier": 1,
+  "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [
     {
