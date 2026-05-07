@@ -1111,12 +1111,8 @@ server.registerTool(
     if (copilot) {
       parts.push("# Sherpa UI — Copilot Instructions\n\n" + copilot);
     }
-    const guidelines = readDoc("COMPONENT-GUIDELINES.md");
-    if (guidelines) {
-      parts.push("\n\n---\n\n# Component Guidelines\n\n" + guidelines);
-    }
     if (!parts.length) {
-      return { content: [{ type: "text", text: "Architecture documents not found." }] };
+      return { content: [{ type: "text", text: "Architecture document not found." }] };
     }
     return { content: [{ type: "text", text: parts.join("") }] };
   }
@@ -1126,12 +1122,11 @@ server.registerTool(
 
 // Static guideline documents
 const GUIDE_FILES = {
-  "component-guidelines": { file: "COMPONENT-GUIDELINES.md", name: "Component Guidelines" },
+  "copilot-instructions": { file: "copilot-instructions.md", name: "Copilot Instructions (canonical agent guidance)" },
   "api-standard": { file: "COMPONENT-API-STANDARD.md", name: "Component API Standard" },
   "component-template": { file: "COMPONENT-TEMPLATE.md", name: "Component Template" },
   "token-usage": { file: "TOKENS-USAGE-GUIDE.md", name: "Design Token Usage Guide" },
   "text-styles": { file: "TEXT-STYLES.md", name: "Text Styles Reference" },
-  "copilot-instructions": { file: "copilot-instructions.md", name: "Copilot Instructions" },
 };
 
 for (const [slug, info] of Object.entries(GUIDE_FILES)) {

@@ -419,8 +419,8 @@ or extending it.
 Returns the canonical architecture rules for the library: layer separation
 (HTML / CSS / JS), the `SherpaElement` base class lifecycle, the `data-*`
 attribute pattern, the cloning-template pattern, anti-patterns, and CRUD
-flow composition. Combines `copilot-instructions.md` and
-`COMPONENT-GUIDELINES.md`.
+flow composition. Sourced from `.github/copilot-instructions.md` — the
+single canonical agent-guidance document for this repository.
 
 **Use when:** Read this *once* at the start of any non-trivial task before
 generating components, flows, or modifying existing code.
@@ -435,12 +435,11 @@ The AI can read these reference documents directly from the server:
 
 | URI                                        | What it contains                               |
 | ------------------------------------------ | ---------------------------------------------- |
-| `sherpa://guidelines/component-guidelines`  | How to build components (HTML/CSS/JS layers)   |
+| `sherpa://guidelines/copilot-instructions`  | Canonical agent guidance — full coding rules   |
 | `sherpa://guidelines/api-standard`          | JSDoc format and attribute naming conventions  |
 | `sherpa://guidelines/component-template`    | Starter template for new components            |
 | `sherpa://guidelines/token-usage`           | How to use design tokens correctly             |
 | `sherpa://guidelines/text-styles`           | Typography scale and text utility classes      |
-| `sherpa://guidelines/copilot-instructions`  | Full coding rules for this component library   |
 | `sherpa://schema/{tagName}`                 | JSON schema for any component                  |
 | `sherpa://template/{tagName}`               | Raw HTML template for any component            |
 | `sherpa://component/{tagName}/css`          | Raw CSS source for any component               |

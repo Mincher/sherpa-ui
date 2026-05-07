@@ -127,7 +127,7 @@ component schemas), and a `build_ui` prompt. See
 npm run build              # Generate tokens + API docs + schemas
 npm run tokens:extract     # Fetch variables from Figma REST API
 npm run tokens:generate    # Generate CSS from figma-variables.json
-npm run docs               # Generate COMPONENT-API.md
 npm run schemas            # Generate component JSON schemas
+npm run component-docs     # Generate per-component README.md files
 npm run mcp                # Start the MCP server
 ```

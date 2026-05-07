@@ -8,7 +8,6 @@ owners:
 
 *   "Design System Team"  
     relatedSpecs:
-*   "docs/COMPONENT-GUIDELINES.md"
 *   "docs/COMPONENT-API-STANDARD.md"
 *   ".github/copilot-instructions.md"  
     intendedAgents:
@@ -125,7 +124,7 @@ N-able products historically diverged visually because each app team owned its o
 
 The library has been refactored in passes — first to enforce a strict three-file split per component (HTML / CSS / JS), then to push all visual state into CSS via `data-*` attributes, then to expose the entire surface to AI agents through an MCP server. The result is a deterministic library shape: every component looks the same, behaves the same way, and is discoverable by both humans and machines.
 
-This spec exists because the next wave of work (new components, AI-driven flows, design-token migrations) needs a stable contract to plan against. Without it, drift between the architecture rules in `.github/copilot-instructions.md`, the build artifacts, and what AI agents actually emit will accumulate silently.
+This spec exists because the next wave of work (new components, AI-driven flows, design-token migrations) needs a stable contract to plan against. Without it, drift between the architecture rules in `.github/copilot-instructions.md` (the canonical agent-guidance document), the build artifacts, and what AI agents actually emit will accumulate silently.
 
 ---
 
@@ -155,7 +154,7 @@ This spec exists because the next wave of work (new components, AI-driven flows,
 | --- | --- |
 | SC-01 | A new component can be added by following [`docs/COMPONENT-TEMPLATE.md`](COMPONENT-TEMPLATE.md) without modifying any other file beyond the build-artifact regeneration. |
 | SC-02 | `npm run build` regenerates schemas, READMEs, the API index, and the patterns index without manual edits. |
-| SC-03 | Every component documented in [`components/COMPONENT-API.md`](../components/COMPONENT-API.md) has a corresponding JSON schema accessible via MCP `sherpa://schema/{tag}`. |
+| SC-03 | Every component under `components/sherpa-*/` has a corresponding JSON schema accessible via MCP `sherpa://schema/{tag}`. |
 | SC-04 | An AI agent connected to the MCP server can discover any component's full surface (schema + html + css + js + readme) without reading workspace files. |
 | SC-05 | The library has zero runtime third-party dependencies in [`package.json`](../package.json). |
 | SC-06 | The MCP server boots cleanly (no thrown errors) on `node mcp-server/index.js`. |
@@ -186,7 +185,7 @@ Goals: generate or modify UIs without hallucinating attribute names. Pains: outd
 **Independently testable by:** Calling `generate_flow` produces HTML that passes `validate_usage`.
 
 1.  **Given** an MCP-connected agent, **When** it calls `query_component` for a tag, **Then** the response includes attributes, events, slots, and source URIs.
-2.  **Given** the agent needs library rules, **When** it calls `get_architecture`, **Then** it receives `.github/copilot-instructions.md` and `docs/COMPONENT-GUIDELINES.md` concatenated.
+2.  **Given** the agent needs library rules, **When** it calls `get_architecture`, **Then** it receives `.github/copilot-instructions.md` (the single canonical agent-guidance document).
 
 ### Persona C — Library Maintainer
 
@@ -356,7 +355,6 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | REQ-13 | Every component **SHALL** be discoverable through MCP at `sherpa://schema/{tag}`. |
 | REQ-14 | Every component's source files **SHALL** be readable through MCP at `sherpa://component/{tag}/{kind}` for `kind` in `html`, `css`, `js`, `readme`. |
 | REQ-15 | Every pattern under `patterns/<category>/` **SHALL** be readable through MCP at `sherpa://pattern/{id}`. |
-| REQ-16 | A generated component-API index **SHALL** be produced at `components/COMPONENT-API.md` by `npm run docs`. |
 | REQ-17 | Each component directory **SHALL** contain a generated `README.md` produced by `npm run component-docs`. |
 | REQ-18 | Patterns **SHALL** be authored as standalone HTML files under `patterns/<category>/<id>.html` and indexed by `npm run patterns`. |
 | REQ-19 | Shadow DOM `:host` selectors **SHALL** use the functional `:host(:not(...))` form; the chained form `:host:not(...)` is forbidden. |
@@ -365,7 +363,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | REQ-22 | Theme, mode, and density selection **SHALL** be managed through `ThemeManager` and persisted in `localStorage` under the `sherpa-` key prefix. |
 | REQ-23 | Status visuals **SHALL** consume `--_status-*` private custom properties cascaded from a `[data-status]` ancestor; per-component status colour blocks are forbidden. |
 | REQ-24 | Component-internal responsive behaviour **SHALL** use `@container` queries; viewport media queries (`@media (max-width: ...)`) **MUST NOT** appear in `components/**/*.css`. |
-| REQ-25 | Public-API artifacts (schemas, READMEs, `COMPONENT-API.md`, `patterns/index.json`) **SHALL** be regenerated by `npm run build` from the source files alone, without manual edits. |
+| REQ-25 | Public-API artifacts (schemas, READMEs, `patterns/index.json`) **SHALL** be regenerated by `npm run build` from the source files alone, without manual edits. |
 
 ### 9.2 Non-functional requirements (`NFR-NN`)
 
@@ -388,7 +386,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | REQ-102 | The library **SHALL** have zero runtime third-party dependencies declared in [`package.json`](../package.json). |
 | REQ-103 | Components **SHALL** be loadable via a single `<script type="module" src="components/index.js">` in any HTML host. |
 | REQ-104 | The full build pipeline **SHALL** run via `npm run build`. |
-| REQ-105 | Generated artifacts (schemas, READMEs, `COMPONENT-API.md`, `patterns/index.json`) **SHALL** be reproducible from source; manual edits to generated files are forbidden. |
+| REQ-105 | Generated artifacts (schemas, READMEs, `patterns/index.json`) **SHALL** be reproducible from source; manual edits to generated files are forbidden. |
 | REQ-106 | The Figma token export pipeline (`npm run tokens:extract` → `npm run tokens:generate`) is the source of truth for `--sherpa-core-*` values. |
 
 ---
@@ -438,7 +436,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 *   **MCP tools:** schemas, sources, tokens, utilities, patterns, and architecture rules are queryable through registered tools.
 *   **MCP resources:** `sherpa://schema/{tag}`, `sherpa://template/{tag}`, `sherpa://component/{tag}/{kind}`, `sherpa://utility/{id}`, `sherpa://pattern/{id}`, `sherpa://guidelines/{slug}`.
 *   **Custom events** are the runtime observability surface (see CON-03).
-*   **Generated artifacts:** [`components/COMPONENT-API.md`](../components/COMPONENT-API.md), `schemas/components/*.json`, `patterns/index.json`, per-component `README.md`.
+*   **Generated artifacts:** `schemas/components/*.json`, `patterns/index.json`, per-component `README.md`.
 
 ---
 
@@ -461,7 +459,6 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | AC-13 | The MCP server | calling `sherpa://schema/{tag}` for any tag returned by `list_components` | a JSON schema is returned | REQ-13 |
 | AC-14 | The MCP server | calling `sherpa://component/{tag}/{kind}` for `kind` in `html`/`css`/`js`/`readme` | the source file content is returned | REQ-14 |
 | AC-15 | The MCP server | calling `sherpa://pattern/{id}` for any id in `patterns/index.json` | the pattern HTML is returned | REQ-15 |
-| AC-16 | The repository | running `npm run docs` | [`components/COMPONENT-API.md`](../components/COMPONENT-API.md) is regenerated and lists every component | REQ-16, REQ-25 |
 | AC-17 | Any component directory | running `npm run component-docs` | a `README.md` is generated | REQ-17 |
 | AC-18 | Any HTML file under `patterns/` | running `npm run patterns` | the file is indexed in `patterns/index.json` | REQ-18 |
 | AC-19 | Any component CSS file | grepping for `:host:not(` | no matches are found (only `:host(:not(` appears) | REQ-19 |
@@ -498,11 +495,11 @@ The implementation **SHALL NOT** include:
 
 | ID | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- | --- |
-| RISK-01 | Schema extractor drifts from JSDoc conventions, breaking MCP responses. | med | high | CI runs `npm run build` clean; AC-16/AC-21 cover the regeneration path. |
+| RISK-01 | Schema extractor drifts from JSDoc conventions, breaking MCP responses. | med | high | CI runs `npm run build` clean; AC-21 covers the regeneration path. |
 | RISK-02 | Shadow DOM styling limitations force consumers to fork components. | low | med | Expose `--_*` private vars + CSS parts; document escape hatches per component. |
 | RISK-03 | AI agents invent components or attributes instead of calling MCP. | med | med | `get_architecture` tool + `validate_usage` provide strong guardrails. |
 | RISK-04 | No automated test suite means regressions slip through review. | med | med | Verification (§14) leans on source-tree audits + MCP smoke tests + manual QA until a runner is adopted. |
-| RISK-05 | Component count drift between docs (`53` / `62` / `66`) confuses readers. | low | low | Treat the live filesystem as the source of truth; let `npm run docs` update the inventory. |
+| RISK-05 | Component count drift between docs (`53` / `62` / `66`) confuses readers. | low | low | Treat the live filesystem as the source of truth. |
 
 ### 13.2 Assumptions
 
@@ -538,7 +535,6 @@ The implementation **SHALL NOT** include:
 | AC-13 | MCP smoke test | issue a resource read for each tag |
 | AC-14 | MCP smoke test | issue a resource read for each `(tag, kind)` |
 | AC-15 | MCP smoke test | issue a resource read for each pattern id |
-| AC-16 | build artifact | re-run `npm run docs` and diff is empty |
 | AC-17 | build artifact | re-run `npm run component-docs` and diff is empty |
 | AC-18 | build artifact | re-run `npm run patterns` and diff is empty |
 | AC-19 | source-tree audit | grep `:host:not(` |
@@ -604,14 +600,12 @@ The implementation **SHALL NOT** include:
 
 | Topic | Spec |
 | --- | --- |
-| Component authoring rules | [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) |
-| Component guidelines | [`docs/COMPONENT-GUIDELINES.md`](COMPONENT-GUIDELINES.md) |
+| Component authoring rules | [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) (canonical agent guidance) |
 | Component API standard (JSDoc) | [`docs/COMPONENT-API-STANDARD.md`](COMPONENT-API-STANDARD.md) |
 | Component starter template | [`docs/COMPONENT-TEMPLATE.md`](COMPONENT-TEMPLATE.md) |
 | Token usage guide | [`css/TOKENS-USAGE-GUIDE.md`](../css/TOKENS-USAGE-GUIDE.md) |
 | Text styles | [`css/TEXT-STYLES.md`](../css/TEXT-STYLES.md) |
 | MCP server reference | [`mcp-server/README.md`](../mcp-server/README.md) |
-| Generated component API index | [`components/COMPONENT-API.md`](../components/COMPONENT-API.md) |
 
 ---
 
@@ -700,7 +694,7 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 `sherpa-button`, `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-progress-bar`, `sherpa-stepper`, `sherpa-tag`, `sherpa-toolbar`, `sherpa-view-header`, `sherpa-footer`, `sherpa-filter-bar`, `sherpa-container-pdf`, `sherpa-data-viz-container`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-file-upload`, `sherpa-accordion`.
 
-> Authoritative per-component documentation lives in `components/<tag>/README.md` and the generated [`components/COMPONENT-API.md`](../components/COMPONENT-API.md).
+> Authoritative per-component documentation lives in `components/<tag>/README.md`.
 
 ### Appendix B — Data model
 
