@@ -1,37 +1,21 @@
 /**
- * @component sherpa-callout
- *
+ * sherpa-callout.css — Phase 2 Modernization (CSS Nesting)
  * Inline contextual callout with status variants and collapsible body.
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-status=info]  info | warning | critical | success | neutral | tip
- * @attr {string}  [data-heading]      Heading text
- * @attr {boolean} [data-expanded]     Expanded (body visible)
- * @attr {boolean} [data-dismissible]  Show toggle/dismiss button
- * @attr {string}  [data-icon]         Override status icon (FA codepoint)
+ * Host attributes:
+ *   data-status      — info (default) | warning | critical | success | neutral | tip
+ *   data-heading     — Heading text
+ *   data-expanded    — Expanded state (body visible when dismissible)
+ *   data-dismissible — Show toggle/dismiss button
+ *   data-icon        — Override status icon (FA codepoint)
+ *   data-has-action  — Action slot present
  *
- * ── Slots ─────────────────────────────────────────────────────
- * heading — Override heading text
- * default — Body content
- * action  — Optional action link/button
- *
- * ── Events ────────────────────────────────────────────────────
- * callout-toggle  — { expanded: boolean }
- * callout-dismiss — {}
- *
- * ── Architecture notes ────────────────────────────────────────
- * HTML — header (toggle + icon + heading) + body (slot + action slot).
- * CSS  — status colours via --_callout-* private vars driven by
- *        :host([data-status="*"]) selectors. Body hidden when collapsed.
- *        Toggle icon rotates on expand.
- * JS   — toggles data-expanded, dispatches events, syncs heading text
- *        and status icon.
+ * Slots:
+ *   heading — Override heading text
+ *   default — Body content
+ *   action  — Optional action link/button
  */
 
-/* ================================================================
-   :host — base layout (Figma: horizontal flex, padding sm/12,
-   gap xs/8, border 1px, radius base/4, body/default/base typography)
-   ================================================================ */
 :host {
   display: flex;
   flex-direction: row;
@@ -46,178 +30,162 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 0.1px;
   background: var(--_callout-bg, var(--sherpa-surface-context-info-subtle-default, #f7fdff));
-  /* Callout sits on a light status-tinted surface in every mode, so body
-     text uses the on-color-subtle body token which stays dark (neutral-900)
-     in both light and dark modes. */
   color: var(--sherpa-text-default-on-color-subtle-body, #2e2e33);
   box-sizing: border-box;
 
-  --_callout-bg:      var(--sherpa-surface-context-info-subtle-default, #d9f2fa);
-  --_callout-border:  var(--sherpa-border-context-info-default, #07526f);
-  --_callout-text:    var(--sherpa-text-context-info-on-color-subtle, #07526f);
+  /* ── Status defaults (info) ────────────────────────– */
+  --_callout-bg: var(--sherpa-surface-context-info-subtle-default, #d9f2fa);
+  --_callout-border: var(--sherpa-border-context-info-default, #07526f);
+  --_callout-text: var(--sherpa-text-context-info-on-color-subtle, #07526f);
   --_callout-heading: var(--sherpa-text-context-info-on-color-subtle, #07526f);
-  --_callout-icon:    var(--sherpa-icon-context-info-on-color-subtle, #07526f);
+  --_callout-icon: var(--sherpa-icon-context-info-on-color-subtle, #07526f);
+
+  /* ──────────────────────────────────────────────────────────
+     STATUS VARIANTS
+     ────────────────────────────────────────────────────────── */
+  /* Warning */
+  &[data-status="warning"] {
+    --_callout-bg: var(--sherpa-surface-context-warning-subtle-default, #fdeecf);
+    --_callout-border: var(--sherpa-border-context-warning-default, #a77206);
+    --_callout-text: var(--sherpa-text-context-warning-on-color-subtle, #a77206);
+    --_callout-heading: var(--sherpa-text-context-warning-on-color-subtle, #a77206);
+    --_callout-icon: var(--sherpa-icon-context-warning-on-color-subtle, #a77206);
+  }
+
+  /* Critical */
+  &[data-status="critical"] {
+    --_callout-bg: var(--sherpa-surface-context-error-subtle-default, #ffd7ca);
+    --_callout-border: var(--sherpa-border-context-error-default, #bf2c09);
+    --_callout-text: var(--sherpa-text-context-error-on-color-subtle, #bf2c09);
+    --_callout-heading: var(--sherpa-text-context-error-on-color-subtle, #bf2c09);
+    --_callout-icon: var(--sherpa-icon-context-error-on-color-subtle, #bf2c09);
+  }
+
+  /* Success */
+  &[data-status="success"] {
+    --_callout-bg: var(--sherpa-surface-context-success-subtle-default, #c1f7dd);
+    --_callout-border: var(--sherpa-border-context-success-default, #016f38);
+    --_callout-text: var(--sherpa-text-context-success-on-color-subtle, #016f38);
+    --_callout-heading: var(--sherpa-text-context-success-on-color-subtle, #016f38);
+    --_callout-icon: var(--sherpa-icon-context-success-on-color-subtle, #016f38);
+  }
+
+  /* Neutral */
+  &[data-status="neutral"] {
+    --_callout-bg: var(--sherpa-surface-container-secondary-default, #f0f0f2);
+    --_callout-border: var(--sherpa-border-container-default, #d5d5d5);
+    --_callout-text: var(--sherpa-text-default-body, #18191a);
+    --_callout-heading: var(--sherpa-text-default-body, #18191a);
+    --_callout-icon: var(--sherpa-text-default-secondary, #5c5c66);
+  }
+
+  /* Tip */
+  &[data-status="tip"] {
+    --_callout-bg: var(--sherpa-surface-context-default-subtle-default, #f8ebff);
+    --_callout-border: var(--sherpa-text-primary-default, #7b2fa0);
+    --_callout-text: var(--sherpa-text-primary-default, #7b2fa0);
+    --_callout-heading: var(--sherpa-text-primary-default, #7b2fa0);
+    --_callout-icon: var(--sherpa-text-primary-default, #7b2fa0);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     STATUS ICON
+     ────────────────────────────────────────────────────────── */
+  & .status-icon {
+    font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+    font-weight: 900;
+    font-style: normal;
+    font-size: 16px;
+    color: var(--_callout-icon);
+    flex-shrink: 0;
+    width: 16px;
+    height: var(--sherpa-font-base-line-height, 20px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     CONTENT STACK
+     ────────────────────────────────────────────────────────── */
+  & .content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-xs, 8px);
+  }
+
+  /* ── Heading ────────────────────────────────────────– */
+  & .heading-area { min-width: 0; }
+
+  & .heading-text {
+    font-size: var(--sherpa-font-base-size, 14px);
+    font-weight: var(--sherpa-font-weight-semibold, 600);
+    line-height: var(--sherpa-font-base-line-height, 20px);
+    color: var(--_callout-heading);
+  }
+
+  &(:not([data-heading])) .heading-area { display: none; }
+
+  /* ── Body (collapsible) ────────────────────────────– */
+  & .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-xs, 8px);
+  }
+
+  /* Collapse when dismissible + has heading + not expanded */
+  &[data-dismissible][data-heading]:not([data-expanded]) .body { display: none; }
+
+  & .body-content { color: inherit; }
+
+  /* ── Action area ────────────────────────────────────– */
+  & .action-area { display: none; }
+
+  &[data-has-action] .action-area { display: block; }
+
+  & ::slotted([slot="action"]) {
+    color: var(--sherpa-text-primary-default, #7b2fa0);
+    font-size: var(--sherpa-font-base-size, 14px);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     TOGGLE BUTTON (dismissible mode)
+     ────────────────────────────────────────────────────────── */
+  & .toggle-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--sherpa-size-md, 20px);
+    height: var(--sherpa-size-md, 20px);
+    border: none;
+    background: transparent;
+    border-radius: var(--sherpa-border-rounding-base, 4px);
+    cursor: pointer;
+    color: var(--_callout-icon);
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.12s ease;
+
+    &:hover { background: var(--sherpa-surface-control-tertiary-hover, rgba(0, 0, 0, 0.06)); }
+  }
+
+  &[data-dismissible] .toggle-btn { display: inline-flex; }
+
+  & .toggle-icon {
+    font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+    font-weight: 900;
+    font-style: normal;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+  }
+
+  &[data-expanded] .toggle-icon { transform: rotate(180deg); }
+  &(:not([data-expanded])) .toggle-icon { transform: rotate(-90deg); }
+
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
 }
-
-
-/* ================================================================
-   Status variants — use `on-color-subtle` for text/icon (Figma)
-   ================================================================ */
-:host([data-status="info"]) {
-  --_callout-bg:      var(--sherpa-surface-context-info-subtle-default, #d9f2fa);
-  --_callout-border:  var(--sherpa-border-context-info-default, #07526f);
-  --_callout-text:    var(--sherpa-text-context-info-on-color-subtle, #07526f);
-  --_callout-heading: var(--sherpa-text-context-info-on-color-subtle, #07526f);
-  --_callout-icon:    var(--sherpa-icon-context-info-on-color-subtle, #07526f);
-}
-
-:host([data-status="warning"]) {
-  --_callout-bg:      var(--sherpa-surface-context-warning-subtle-default, #fdeecf);
-  --_callout-border:  var(--sherpa-border-context-warning-default, #a77206);
-  --_callout-text:    var(--sherpa-text-context-warning-on-color-subtle, #a77206);
-  --_callout-heading: var(--sherpa-text-context-warning-on-color-subtle, #a77206);
-  --_callout-icon:    var(--sherpa-icon-context-warning-on-color-subtle, #a77206);
-}
-
-:host([data-status="critical"]) {
-  --_callout-bg:      var(--sherpa-surface-context-error-subtle-default, #ffd7ca);
-  --_callout-border:  var(--sherpa-border-context-error-default, #bf2c09);
-  --_callout-text:    var(--sherpa-text-context-error-on-color-subtle, #bf2c09);
-  --_callout-heading: var(--sherpa-text-context-error-on-color-subtle, #bf2c09);
-  --_callout-icon:    var(--sherpa-icon-context-error-on-color-subtle, #bf2c09);
-}
-
-:host([data-status="success"]) {
-  --_callout-bg:      var(--sherpa-surface-context-success-subtle-default, #c1f7dd);
-  --_callout-border:  var(--sherpa-border-context-success-default, #016f38);
-  --_callout-text:    var(--sherpa-text-context-success-on-color-subtle, #016f38);
-  --_callout-heading: var(--sherpa-text-context-success-on-color-subtle, #016f38);
-  --_callout-icon:    var(--sherpa-icon-context-success-on-color-subtle, #016f38);
-}
-
-:host([data-status="neutral"]) {
-  --_callout-bg:      var(--sherpa-surface-container-secondary-default, #f0f0f2);
-  --_callout-border:  var(--sherpa-border-container-default, #d5d5d5);
-  --_callout-text:    var(--sherpa-text-default-body, #18191a);
-  --_callout-heading: var(--sherpa-text-default-body, #18191a);
-  --_callout-icon:    var(--sherpa-text-default-secondary, #5c5c66);
-}
-
-:host([data-status="tip"]) {
-  --_callout-bg:      var(--sherpa-surface-context-default-subtle-default, #f8ebff);
-  --_callout-border:  var(--sherpa-text-primary-default, #7b2fa0);
-  --_callout-text:    var(--sherpa-text-primary-default, #7b2fa0);
-  --_callout-heading: var(--sherpa-text-primary-default, #7b2fa0);
-  --_callout-icon:    var(--sherpa-text-primary-default, #7b2fa0);
-}
-
-
-/* ================================================================
-   Status icon — 16x16 to match Figma
-   ================================================================ */
-.status-icon {
-  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
-  font-weight: 900;
-  font-style: normal;
-  font-size: 16px;
-  color: var(--_callout-icon);
-  flex-shrink: 0;
-  width: 16px;
-  height: var(--sherpa-font-base-line-height, 20px); /* align to first text line */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-/* ================================================================
-   Content stack — heading + body + action
-   ================================================================ */
-.content {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-xs, 8px);
-}
-
-/* ── Heading ────────────────────────────────────────────────── */
-.heading-area { min-width: 0; }
-
-.heading-text {
-  font-size: var(--sherpa-font-base-size, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: var(--sherpa-font-base-line-height, 20px);
-  color: var(--_callout-heading);
-}
-
-:host(:not([data-heading])) .heading-area {
-  display: none;
-}
-
-/* ── Body — collapsible ─────────────────────────────────────── */
-.body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-xs, 8px);
-}
-
-/* When dismissible + has heading, body collapses unless expanded */
-:host([data-dismissible][data-heading]:not([data-expanded])) .body {
-  display: none;
-}
-
-.body-content { color: inherit; }
-
-/* ── Action area ────────────────────────────────────────────── */
-.action-area { display: none; }
-:host([data-has-action]) .action-area { display: block; }
-
-::slotted([slot="action"]) {
-  color: var(--sherpa-text-primary-default, #7b2fa0);
-  font-size: var(--sherpa-font-base-size, 14px);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-
-/* ================================================================
-   Toggle button — only when dismissible
-   ================================================================ */
-.toggle-btn {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--sherpa-size-md, 20px);
-  height: var(--sherpa-size-md, 20px);
-  border: none;
-  background: transparent;
-  border-radius: var(--sherpa-border-rounding-base, 4px);
-  cursor: pointer;
-  color: var(--_callout-icon);
-  padding: 0;
-  flex-shrink: 0;
-  transition: background 0.12s ease;
-}
-
-:host([data-dismissible]) .toggle-btn {
-  display: inline-flex;
-}
-
-.toggle-btn:hover {
-  background: var(--sherpa-surface-control-tertiary-hover, rgba(0, 0, 0, 0.06));
-}
-
-.toggle-icon {
-  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
-  font-weight: 900;
-  font-style: normal;
-  font-size: 12px;
-  transition: transform 0.2s ease;
-}
-
-:host([data-expanded]) .toggle-icon { transform: rotate(180deg); }
-:host(:not([data-expanded])) .toggle-icon { transform: rotate(-90deg); }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

@@ -1,6 +1,13 @@
 /**
- * sherpa-input-radio.css — Atomic radio primitive.
- * Visuals come from utilities/sherpa-check.css (shared with checkbox).
+ * sherpa-input-radio.css — Phase 2 Modernization (CSS Nesting)
+ * Atomic radio primitive using shared sherpa-check.css visuals.
+ *
+ * Status tint: radio keeps white face; status colours border + dot.
+ * Status uses --_status-* tokens cascading through shadow boundaries.
+ *
+ * Host attributes:
+ *   disabled    — Disabled state (no pointer events)
+ *   data-status — Status colour scheme (critical, warning, success, etc.)
  */
 
 @import '../utilities/sherpa-check.css';
@@ -9,37 +16,48 @@
   display: inline-flex;
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
-}
 
-:host([hidden]) { display: none; }
+  /* ── Hidden state ────────────────────────────── */
+  &[hidden] { display: none; }
 
-:host([disabled]) { pointer-events: none; }
+  /* ── Disabled state ──────────────────────────– */
+  &[disabled] { pointer-events: none; }
 
-.check-label { width: 100%; }
+  /* ── Child elements ──────────────────────────– */
+  & .check-label { width: 100%; }
 
-.check-text-wrapper:has(.check-text:empty):has(.check-description:empty) {
-  display: none;
-}
+  /* Hide text wrapper when no label/description (compact selector mode) */
+  & .check-text-wrapper:has(.check-text:empty):has(.check-description:empty) {
+    display: none;
+  }
 
-.check-text-wrapper {
-  display: inline-flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-3xs, 2px);
-  min-width: 0;
-}
+  & .check-text-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-3xs, 2px);
+    min-width: 0;
+  }
 
-/* ── Status tint ── radio keeps white face; status colours border + dot */
-:host([data-status]) .sherpa-check {
-  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
-}
-:host([data-status]) .sherpa-check:checked {
-  background: var(--sherpa-surface-control-default, #ffffff);
-  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
-}
-:host([data-status]) .sherpa-check[type="radio"]:checked::after {
-  background-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
-}
-:host([data-status]) .check-description {
-  color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+  /* ── Status tint ──────────────────────────────
+     Radio keeps white face; status colours border + dot.
+     [data-status] cascades --_status-* through shadow boundary. */
+  &[data-status] {
+    & .sherpa-check {
+      border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
+    }
+
+    & .sherpa-check:checked {
+      background: var(--sherpa-surface-control-default, #ffffff);
+      border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
+    }
+
+    & .sherpa-check[type="radio"]:checked::after {
+      background-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
+    }
+
+    & .check-description {
+      color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+    }
+  }
 }
 

@@ -1,109 +1,114 @@
 /**
- * @component sherpa-chat-message
+ * sherpa-chat-message.css — Phase 2 Modernization (CSS Nesting)
+ * Single message bubble for chat/AI surfaces with role-based layout.
  *
- * Single message bubble for chat / AI surfaces. Two roles —
- * "user" (right-aligned, accent fill) and "ai" (left-aligned with
- * an avatar mark, neutral bubble).
+ * Host attributes:
+ *   data-role           — "user" (right-aligned, accent) | "ai" (left, avatar)
+ *   data-avatar-icon    — Font Awesome class for default ai avatar glyph
+ *   data-has-avatar     — Avatar slot present (auto-set by SherpaElement)
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {enum}    [data-role=ai]      "user" | "ai"
- * @attr {string}  [data-avatar-icon]  Font Awesome class for the
- *                                     default ai avatar glyph.
- *
- * ── Slots ─────────────────────────────────────────────────────
- * avatar   — Custom avatar (image / element). Defaults to a
- *            gradient circle with the FA icon for "ai" role.
- * default  — Bubble body content.
- *
- * ── Parts ─────────────────────────────────────────────────────
- * message, avatar, bubble.
+ * Slots:
+ *   avatar — Custom avatar (image/element), defaults to gradient circle
+ *   default — Bubble body content
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-}
-:host([hidden]) { display: none; }
 
-.message {
-  display: grid;
-  gap: var(--sherpa-space-xs, 8px);
-  max-width: 100%;
-}
+  /* ──────────────────────────────────────────────────────────
+     MESSAGE GRID LAYOUT
+     ────────────────────────────────────────────────────────── */
+  & .message {
+    display: grid;
+    gap: var(--sherpa-space-xs, 8px);
+    max-width: 100%;
+  }
 
-/* ── Avatar ──────────────────────────────────────────────────── */
-.avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: #fff;
-  background: var(--sherpa-ai-accent-gradient,
-    radial-gradient(circle at 30% 30%, #b794f4 0%, #7c3aed 50%, #06b6d4 100%));
-  flex-shrink: 0;
-}
-.avatar-icon {
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-style: normal;
-  line-height: 1;
-}
+  /* ──────────────────────────────────────────────────────────
+     AVATAR (ai role default)
+     ────────────────────────────────────────────────────────── */
+  & .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #fff;
+    background: var(--sherpa-ai-accent-gradient,
+      radial-gradient(circle at 30% 30%, #b794f4 0%, #7c3aed 50%, #06b6d4 100%));
+    flex-shrink: 0;
+  }
 
-/* ── Bubble ──────────────────────────────────────────────────── */
-.bubble {
-  font-size: var(--sherpa-fonts-scale-sm, 13px);
-  line-height: var(--sherpa-line-height-default, 1.45);
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
+  & .avatar-icon {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-style: normal;
+    line-height: 1;
+  }
 
-/* `white-space: pre-wrap` is intended for plain-text messages so that
-   author-supplied newlines render. When the bubble holds rich element
-   children (e.g. <sherpa-proposal-preview>), inheritance of pre-wrap
-   into their shadow DOM turns the whitespace between template elements
-   into visible blank lines. Reset slotted children back to normal so
-   only direct text content honours the pre-wrap. */
-.bubble ::slotted(*) {
-  white-space: normal;
-}
-.bubble ::slotted(*:first-child) { margin-top: 0; }
-.bubble ::slotted(*:last-child)  { margin-bottom: 0; }
+  /* ──────────────────────────────────────────────────────────
+     BUBBLE (message content)
+     ────────────────────────────────────────────────────────── */
+  & .bubble {
+    font-size: var(--sherpa-fonts-scale-sm, 13px);
+    line-height: var(--sherpa-line-height-default, 1.45);
+    white-space: pre-wrap;
+    word-wrap: break-word;
 
-/* ── Role: AI (default) ──────────────────────────────────────── */
-:host(:not([data-role="user"])) .message {
-  grid-template-columns: 28px 1fr;
-  align-items: start;
-}
-:host(:not([data-role="user"])) .bubble {
-  background: var(--sherpa-surface-container-hover, #f3f4f6);
-  border: 1px solid var(--sherpa-border-container-default, #e5e7eb);
-  border-radius: 2px 12px 12px 12px;
-  padding: 10px 12px;
-}
+    /* Reset slotted children to normal whitespace (rich content) */
+    & ::slotted(*) {
+      white-space: normal;
 
-/* ── Role: user ──────────────────────────────────────────────── */
-:host([data-role="user"]) .message {
-  grid-template-columns: 1fr;
-  justify-items: end;
-}
-:host([data-role="user"]) .avatar {
-  display: none;
-}
-:host([data-role="user"]) .bubble {
-  max-width: 85%;
-  padding: 8px 12px;
-  border-radius: 12px 12px 2px 12px;
-  background: var(--sherpa-surface-context-info-subtle-default, #2563eb);
-  color: var(--sherpa-text-context-info-default, #fff);
-}
+      &:first-child { margin-top: 0; }
+      &:last-child { margin-bottom: 0; }
+    }
+  }
 
-/* Hide the default avatar icon when nothing was provided. */
-:host(:not([data-avatar-icon]):not([data-role="user"])) .avatar-icon {
-  display: none;
-}
+  /* ──────────────────────────────────────────────────────────
+     AI ROLE (default: left-aligned with avatar)
+     ────────────────────────────────────────────────────────── */
+  &(:not([data-role="user"])) .message {
+    grid-template-columns: 28px 1fr;
+    align-items: start;
+  }
 
-/* When the consumer supplies an avatar via slot, suppress the icon. */
-:host([data-has-avatar]) .avatar-icon { display: none; }
+  &(:not([data-role="user"])) .bubble {
+    background: var(--sherpa-surface-container-hover, #f3f4f6);
+    border: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+    border-radius: 2px 12px 12px 12px;
+    padding: 10px 12px;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     USER ROLE (right-aligned, accent background)
+     ────────────────────────────────────────────────────────── */
+  &[data-role="user"] .message {
+    grid-template-columns: 1fr;
+    justify-items: end;
+  }
+
+  &[data-role="user"] .avatar { display: none; }
+
+  &[data-role="user"] .bubble {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 12px 12px 2px 12px;
+    background: var(--sherpa-surface-context-info-subtle-default, #2563eb);
+    color: var(--sherpa-text-context-info-default, #fff);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     AVATAR ICON VISIBILITY
+     ────────────────────────────────────────────────────────── */
+  &(:not([data-avatar-icon]):not([data-role="user"])) .avatar-icon {
+    display: none;
+  }
+
+  &[data-has-avatar] .avatar-icon { display: none; }
+
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
+}

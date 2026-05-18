@@ -1,30 +1,25 @@
 /**
+ * sherpa-popover.css — Phase 2 Modernization (CSS Nesting)
  * @component sherpa-popover
  *
  * General-purpose floating content container with header and optional arrow.
  * Uses the Popover API and CSS anchor positioning (with JS fallback).
  *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-heading]          Header title text
- * @attr {flag}    [data-open]             Shows the popover
- * @attr {string}  [data-anchor]           CSS anchor name (--anchor-name) to position against
- * @attr {string}  [data-position=bottom]  top | bottom | left | right — preferred placement
+ * Host attributes:
+ *   data-heading        — Header title text
+ *   data-open          — Shows the popover (display: block)
+ *   data-anchor        — CSS anchor name (--anchor-name) to position against
+ *   data-position      — top | bottom | left | right (default: bottom)
+ *   data-animation     — slide (slide-in animation)
+ *   data-template      — paged (multi-page wizard mode)
+ *   data-page          — 0-5 (current page index in paged mode)
  *
- * ── Slots ─────────────────────────────────────────────────────
- * default     — Body content
- * icon        — Leading icon in the header
- * header-end  — Trailing content in the header (tags, badges)
- *
- * ── Architecture notes ────────────────────────────────────────
- * HTML — header (icon slot + heading + header-end slot + close button) + body (slot).
- * CSS  — fixed positioning via CSS anchor positioning with @supports fallback,
- *        drop shadow, optional arrow via ::before.
- * JS   — manages open state, click-outside dismiss, anchor fallback positioning.
+ * Slots:
+ *   default     — Body content
+ *   icon        — Leading icon in header
+ *   header-end  — Trailing content in header
  */
 
-/* ================================================================
-   :host — base (hidden by default)
-   ================================================================ */
 :host {
   display: none;
   position: fixed;
@@ -45,213 +40,212 @@
   color: var(--sherpa-text-default-body, #18191a);
   box-sizing: border-box;
   overflow: visible;
-}
 
+  /* ──────────────────────────────────────────────────────────
+     OPEN STATE
+     ────────────────────────────────────────────────────────── */
+  &[data-open] { display: block; }
 
-:host([data-open]) {
-  display: block;
-}
+  /* ──────────────────────────────────────────────────────────
+     ANCHOR POSITIONING (@supports fallback for older browsers)
+     ────────────────────────────────────────────────────────── */
+  @supports (anchor-name: --test) {
+    &[data-open] { position-anchor: var(--_popover-anchor); }
 
-/* ── CSS anchor positioning ────────────────────────────────── */
-@supports (anchor-name: --test) {
-  :host([data-open]) {
-    position-anchor: var(--_popover-anchor);
+    /* Bottom (default) */
+    &[data-open],
+    &[data-open][data-position="bottom"] {
+      top: anchor(bottom, 0);
+      left: anchor(center);
+      translate: -50% var(--sherpa-space-xs, 8px);
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+    }
+
+    /* Top */
+    &[data-open][data-position="top"] {
+      bottom: anchor(top, 0);
+      left: anchor(center);
+      translate: -50% calc(var(--sherpa-space-xs, 8px) * -1);
+    }
+
+    /* Left */
+    &[data-open][data-position="left"] {
+      right: anchor(left, 0);
+      top: anchor(center);
+      translate: calc(var(--sherpa-space-xs, 8px) * -1) -50%;
+    }
+
+    /* Right */
+    &[data-open][data-position="right"] {
+      left: anchor(right, 0);
+      top: anchor(center);
+      translate: var(--sherpa-space-xs, 8px) -50%;
+    }
   }
 
-  /* Bottom (default) */
-  :host([data-open]),
-  :host([data-open][data-position="bottom"]) {
-    top: anchor(bottom, 0);
-    left: anchor(center);
-    translate: -50% var(--sherpa-space-xs, 8px);
-    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  /* ──────────────────────────────────────────────────────────
+     HEADER
+     ────────────────────────────────────────────────────────── */
+  & .popover-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-xs, 8px);
+    padding: var(--sherpa-space-sm, 12px);
+    background: var(--sherpa-surface-container-default, #ffffff);
+    border-bottom: var(--sherpa-border-width-base, 1px) solid
+      var(--sherpa-border-container-default, #d7d7dc);
+    border-radius: var(--sherpa-border-rounding-sm, 4px) var(--sherpa-border-rounding-sm, 4px) 0 0;
   }
 
-  /* Top */
-  :host([data-open][data-position="top"]) {
-    bottom: anchor(top, 0);
-    left: anchor(center);
-    translate: -50% calc(var(--sherpa-space-xs, 8px) * -1);
+  &(:not([data-heading]):not([data-has-icon]):not([data-has-header-end])) .popover-header {
+    display: none;
   }
 
-  /* Left */
-  :host([data-open][data-position="left"]) {
-    right: anchor(left, 0);
-    top: anchor(center);
-    translate: calc(var(--sherpa-space-xs, 8px) * -1) -50%;
+  & .header-title {
+    flex: 1;
+    font-weight: var(--sherpa-font-weight-semibold, 600);
+    line-height: var(--sherpa-line-height-default, 1.4);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  /* Right */
-  :host([data-open][data-position="right"]) {
-    left: anchor(right, 0);
-    top: anchor(center);
-    translate: var(--sherpa-space-xs, 8px) -50%;
+  &(:not([data-heading])) .header-title { display: none; }
+
+  /* ── Close button ──────────────────────────────────── */
+  & .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: var(--sherpa-border-rounding-sm, 4px);
+    background: transparent;
+    color: var(--sherpa-text-default-secondary, #5c5c66);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--sherpa-surface-container-hover, #f0f0f5);
+      color: var(--sherpa-text-default-body, #18191a);
+    }
   }
-}
 
-/* ================================================================
-   Popover header
-   ================================================================ */
-.popover-header {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-sm, 12px);
-  background: var(--sherpa-surface-container-default, #ffffff);
-  border-bottom: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default, #d7d7dc);
-  border-radius: var(--sherpa-border-rounding-sm, 4px) var(--sherpa-border-rounding-sm, 4px) 0 0;
-}
-
-:host(:not([data-heading]):not([data-has-icon]):not([data-has-header-end]))
-  .popover-header {
-  display: none;
-}
-
-.header-title {
-  flex: 1;
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: var(--sherpa-line-height-default, 1.4);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-:host(:not([data-heading])) .header-title {
-  display: none;
-}
-
-/* ── Close button ──────────────────────────────────────────── */
-.close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
-  background: transparent;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
-  cursor: pointer;
-  font-size: 12px;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.close-btn:hover {
-  background: var(--sherpa-surface-container-hover, #f0f0f5);
-  color: var(--sherpa-text-default-body, #18191a);
-}
-
-/* ================================================================
-   Body
-   ================================================================ */
-.body {
-  padding: var(--sherpa-space-2xs, 4px) 0;
-  max-height: 400px;
-  overflow: auto;
-}
-
-/* ================================================================
-   Paged template — wizard-style multi-page popover
-   ================================================================ */
-
-.body-paged {
-  padding: var(--sherpa-space-sm, 12px);
-}
-
-.body-paged ::slotted(section[data-page]) {
-  display: none;
-}
-
-/* Show only the section matching the host's data-page index. */
-:host([data-page="0"]) .body-paged ::slotted(section[data-page="0"]),
-:host([data-page="1"]) .body-paged ::slotted(section[data-page="1"]),
-:host([data-page="2"]) .body-paged ::slotted(section[data-page="2"]),
-:host([data-page="3"]) .body-paged ::slotted(section[data-page="3"]),
-:host([data-page="4"]) .body-paged ::slotted(section[data-page="4"]),
-:host([data-page="5"]) .body-paged ::slotted(section[data-page="5"]) {
-  display: block;
-}
-
-.page-back {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
-  cursor: pointer;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
-}
-
-.page-back:hover {
-  background: var(--sherpa-surface-container-hover, #f0f0f5);
-  color: var(--sherpa-text-default-body, #18191a);
-}
-
-/* Show back button when in paged template (it's only present in that template). */
-:host([data-template="paged"]) .page-back { display: inline-flex; }
-
-/* Hide back button on first page. */
-:host([data-template="paged"][data-page="0"]) .page-back,
-:host([data-template="paged"]:not([data-page])) .page-back {
-  visibility: hidden;
-}
-
-.popover-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-sm, 12px);
-  border-top: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default, #d7d7dc);
-}
-
-.page-indicator {
-  color: var(--sherpa-text-default-secondary, #5c5c66);
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
-}
-
-/* ================================================================
-   Slide-in animation
-   ================================================================ */
-
-@media (prefers-reduced-motion: no-preference) {
-  :host([data-animation="slide"][data-open]) {
-    animation: sherpa-popover-slide-in 180ms ease-out both;
+  /* ──────────────────────────────────────────────────────────
+     BODY
+     ────────────────────────────────────────────────────────── */
+  & .body {
+    padding: var(--sherpa-space-2xs, 4px) 0;
+    max-height: 400px;
+    overflow: auto;
   }
-  :host([data-animation="slide"][data-open][data-position="top"]) {
-    animation-name: sherpa-popover-slide-in-top;
+
+  /* ──────────────────────────────────────────────────────────
+     PAGED TEMPLATE (multi-page wizard mode)
+     ────────────────────────────────────────────────────────── */
+  & .body-paged {
+    padding: var(--sherpa-space-sm, 12px);
+
+    & ::slotted(section[data-page]) { display: none; }
   }
-  :host([data-animation="slide"][data-open][data-position="left"]) {
-    animation-name: sherpa-popover-slide-in-left;
+
+  &[data-page="0"] .body-paged ::slotted(section[data-page="0"]),
+  &[data-page="1"] .body-paged ::slotted(section[data-page="1"]),
+  &[data-page="2"] .body-paged ::slotted(section[data-page="2"]),
+  &[data-page="3"] .body-paged ::slotted(section[data-page="3"]),
+  &[data-page="4"] .body-paged ::slotted(section[data-page="4"]),
+  &[data-page="5"] .body-paged ::slotted(section[data-page="5"]) {
+    display: block;
   }
-  :host([data-animation="slide"][data-open][data-position="right"]) {
-    animation-name: sherpa-popover-slide-in-right;
+
+  /* ── Back button (paged mode) ──────────────────────– */
+  & .page-back {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--sherpa-text-default-secondary, #5c5c66);
+    cursor: pointer;
+    border-radius: var(--sherpa-border-rounding-sm, 4px);
+
+    &:hover {
+      background: var(--sherpa-surface-container-hover, #f0f0f5);
+      color: var(--sherpa-text-default-body, #18191a);
+    }
   }
+
+  &[data-template="paged"] .page-back { display: inline-flex; }
+
+  &[data-template="paged"][data-page="0"] .page-back,
+  &[data-template="paged"]:not([data-page]) .page-back {
+    visibility: hidden;
+  }
+
+  /* ── Footer (paged mode) ───────────────────────────– */
+  & .popover-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sherpa-space-sm, 12px);
+    padding: var(--sherpa-space-sm, 12px);
+    border-top: var(--sherpa-border-width-base, 1px) solid
+      var(--sherpa-border-container-default, #d7d7dc);
+  }
+
+  & .page-indicator {
+    color: var(--sherpa-text-default-secondary, #5c5c66);
+    font-size: var(--sherpa-fonts-scale-sm, 12px);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     SLIDE-IN ANIMATION
+     ────────────────────────────────────────────────────────── */
+  @media (prefers-reduced-motion: no-preference) {
+    &[data-animation="slide"][data-open] {
+      animation: sherpa-popover-slide-in 180ms ease-out both;
+    }
+
+    &[data-animation="slide"][data-open][data-position="top"] {
+      animation-name: sherpa-popover-slide-in-top;
+    }
+
+    &[data-animation="slide"][data-open][data-position="left"] {
+      animation-name: sherpa-popover-slide-in-left;
+    }
+
+    &[data-animation="slide"][data-open][data-position="right"] {
+      animation-name: sherpa-popover-slide-in-right;
+    }
+  }
+
+  /* ── Hidden state ──────────────────────────────────────── */
+  &[hidden] { display: none; }
 }
 
+/* Animation keyframes (top-level, outside :host) */
 @keyframes sherpa-popover-slide-in {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
 @keyframes sherpa-popover-slide-in-top {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
 @keyframes sherpa-popover-slide-in-left {
   from { opacity: 0; transform: translateX(6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
 @keyframes sherpa-popover-slide-in-right {
   from { opacity: 0; transform: translateX(-6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

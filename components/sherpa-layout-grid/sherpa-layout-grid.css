@@ -43,169 +43,104 @@
   margin: 0;
   background-color: transparent;
   box-sizing: border-box;
+
+  &[data-fill="viewport"] {
+    min-height: 0;
+    max-height: 100dvh;
+    overflow: hidden;
+
+    & .grid-body { min-height: 0; }
+    & .grid-surface { overflow: auto; min-height: 0; }
+  }
+
+  & .grid-header {
+    flex: 0 0 auto;
+    display: none;
+  }
+
+  &[data-heading] .grid-header { display: block; }
+
+  & .grid-body {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+  }
+
+  & .side-panel-start,
+  & .side-panel-end {
+    display: flex;
+    flex: 0 0 auto;
+    align-self: stretch;
+  }
+
+  &(:not([data-has-side-panel-start])) .side-panel-start { display: none; }
+  &(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
+
+  & .grid-surface {
+    display: grid;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+    box-sizing: border-box;
+    container-type: inline-size;
+    container-name: sherpa-layout-grid;
+    --maxColCount: 12;
+    --row-height: var(--sherpa-space-default, 16px);
+    --row-height: calc(var(--sherpa-space-default, 16px) * 10);
+    grid-template-columns: repeat(var(--maxColCount), 1fr);
+    grid-auto-rows: var(--row-height);
+    padding: var(--sherpa-space-sm, 12px);
+    gap: var(--sherpa-space-xs, 8px);
+    align-content: start;
+  }
+
+  &[data-content="static"] .grid-surface {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    grid-auto-rows: auto;
+  }
+
+  &[data-editable] ::slotted(sherpa-container) { cursor: grab; }
+  &[data-editable] ::slotted(sherpa-container[data-dragging]) {
+    opacity: 0.5;
+    cursor: grabbing;
+  }
+  &[data-editable] ::slotted(sherpa-container[data-drop-target]) {
+    outline: 2px dashed var(--sherpa-border-control-active-default, #3c5edd);
+    outline-offset: -2px;
+  }
+
+  &[hidden] { display: none; }
 }
 
-:host([hidden]) {
-  display: none;
-}
-
-/* ── Viewport-fill mode ───────────────────────────────────────
-   When [data-fill="viewport"] the host releases its intrinsic
-   min-content floor (so it can shrink to its flex parent's
-   constrained height) and the grid surface owns vertical scrolling.
-   The side-panel slots stay pinned because they live in a
-   non-scrolling flex row.
-
-   The page is responsible for constraining the layout-grid's
-   ancestor chain — typically by setting:
-     html, body { height: 100dvh; overflow: hidden; }
-   so that `flex: 1` resolves against a finite viewport height. */
-:host([data-fill="viewport"]) {
-  min-height: 0;
-  max-height: 100dvh;
-  overflow: hidden;
-}
-:host([data-fill="viewport"]) .grid-body {
-  min-height: 0;
-}
-:host([data-fill="viewport"]) .grid-surface {
-  overflow: auto;
-  min-height: 0;
-}
-
-.grid-header {
-  flex: 0 0 auto;
-  display: none;
-}
-
-:host([data-heading]) .grid-header {
-  display: block;
-}
-
-.grid-body {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-}
-
-/* Side-panel slots. Width follows the slotted element so a
-   <sherpa-content-section> minimising to its strip reclaims space
-   for the grid surface without any consumer-side grid math. */
-.side-panel-start,
-.side-panel-end {
-  display: flex;
-  flex: 0 0 auto;
-  align-self: stretch;
-}
-:host(:not([data-has-side-panel-start])) .side-panel-start { display: none; }
-:host(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
-
-.grid-surface {
-  display: grid;
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  width: 100%;
-  box-sizing: border-box;
-
-  container-type: inline-size;
-  container-name: sherpa-layout-grid;
-
-  --maxColCount: 12;
-  --row-height: var(--sherpa-space-default, 16px);
-  --row-height: calc(var(--sherpa-space-default, 16px) * 10);
-
-  grid-template-columns: repeat(var(--maxColCount), 1fr);
-  grid-auto-rows: var(--row-height);
-  padding: var(--sherpa-space-sm, 12px);
-  gap: var(--sherpa-space-xs, 8px);
-  align-content: start;
-}
-
-:host([data-content="static"]) .grid-surface {
-  display: flex;
-  flex-direction: column;
-  grid-template-columns: none;
-  grid-auto-rows: auto;
-}
-
-/* ──────────────────────────────────────────────────────────────────────
-   Grid positioning — sherpa-container[data-variant="resizable"] spans
-   ────────────────────────────────────────────────────────────────────── */
-
-::slotted(sherpa-container[data-variant="resizable"]) {
-  grid-column: span 3;
-}
-::slotted(sherpa-container[data-variant="resizable"][data-col-span="6"]) {
-  grid-column: span 6;
-}
-::slotted(sherpa-container[data-variant="resizable"][data-col-span="9"]) {
-  grid-column: span 9;
-}
-::slotted(sherpa-container[data-variant="resizable"][data-col-span="12"]) {
-  grid-column: span 12;
-}
-
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="2"]) {
-  grid-row: span 2;
-}
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="3"]) {
-  grid-row: span 3;
-}
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="4"]) {
-  grid-row: span 4;
-}
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="5"]) {
-  grid-row: span 5;
-}
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="6"]) {
-  grid-row: span 6;
-}
-
-/* ──────────────────────────────────────────────────────────────────────
-   Mid breakpoint: 6 columns — cap col-spans at 6
-   ────────────────────────────────────────────────────────────────────── */
+::slotted(sherpa-container[data-variant="resizable"]) { grid-column: span 3; }
+::slotted(sherpa-container[data-variant="resizable"][data-col-span="6"]) { grid-column: span 6; }
+::slotted(sherpa-container[data-variant="resizable"][data-col-span="9"]) { grid-column: span 9; }
+::slotted(sherpa-container[data-variant="resizable"][data-col-span="12"]) { grid-column: span 12; }
+::slotted(sherpa-container[data-variant="resizable"][data-row-span="2"]) { grid-row: span 2; }
+::slotted(sherpa-container[data-variant="resizable"][data-row-span="3"]) { grid-row: span 3; }
+::slotted(sherpa-container[data-variant="resizable"][data-row-span="4"]) { grid-row: span 4; }
+::slotted(sherpa-container[data-variant="resizable"][data-row-span="5"]) { grid-row: span 5; }
+::slotted(sherpa-container[data-variant="resizable"][data-row-span="6"]) { grid-row: span 6; }
 
 @container sherpa-layout-grid (max-width: 1199px) {
-  .grid-surface {
+  :host .grid-surface {
     --maxColCount: 6;
     grid-template-columns: repeat(6, 1fr);
   }
   ::slotted(sherpa-container[data-variant="resizable"][data-col-span="9"]),
-  ::slotted(sherpa-container[data-variant="resizable"][data-col-span="12"]) {
-    grid-column: span 6;
-  }
+  ::slotted(sherpa-container[data-variant="resizable"][data-col-span="12"]) { grid-column: span 6; }
 }
 
-/* ──────────────────────────────────────────────────────────────────────
-   Small breakpoint: 3 columns — every container goes full-width
-   ────────────────────────────────────────────────────────────────────── */
-
 @container sherpa-layout-grid (max-width: 639px) {
-  .grid-surface {
+  :host .grid-surface {
     --maxColCount: 3;
     grid-template-columns: repeat(3, 1fr);
   }
-  ::slotted(sherpa-container) {
-    grid-column-end: span 3 !important;
-  }
-}
-
-/* ==================================================================
-   Editable mode — draggable containers (reposition)
-   ================================================================== */
-
-:host([data-editable]) ::slotted(sherpa-container) {
-  cursor: grab;
-}
-:host([data-editable]) ::slotted(sherpa-container[data-dragging]) {
-  opacity: 0.5;
-  cursor: grabbing;
-}
-:host([data-editable]) ::slotted(sherpa-container[data-drop-target]) {
-  outline: 2px dashed var(--sherpa-border-control-active-default, #3c5edd);
-  outline-offset: -2px;
+  ::slotted(sherpa-container) { grid-column-end: span 3 !important; }
 }

@@ -1,6 +1,13 @@
 /**
- * sherpa-input-radio-group.css — Group of radios with shared label,
- * description and helper. Visual treatment matches sherpa-input-checkbox-group.
+ * sherpa-input-radio-group.css — Phase 2 Modernization (CSS Nesting)
+ * Group of radios with shared label, description, and helper.
+ * Visual treatment mirrors sherpa-input-checkbox-group.
+ *
+ * Host attributes:
+ *   disabled            — Disables all radios (no pointer events)
+ *   required            — Shows required indicator
+ *   data-status         — Status colour scheme cascaded from parent
+ *   data-orientation    — "horizontal" for row layout (default: vertical column)
  */
 
 :host {
@@ -8,61 +15,71 @@
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
   color: var(--sherpa-text-default-body, #333);
-}
 
-:host([hidden]) { display: none; }
+  /* ── Hidden state ────────────────────────────────────────── */
+  &[hidden] { display: none; }
 
-:host([disabled]) { pointer-events: none; }
+  /* ── Disabled state ──────────────────────────────────────– */
+  &[disabled] { pointer-events: none; }
 
-.group-wrapper {
-  border: 0;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-2xs, 4px);
-  min-width: 0;
-}
+  /* ── Group wrapper (fieldset) ──────────────────────────── */
+  & .group-wrapper {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-2xs, 4px);
+    min-width: 0;
+  }
 
-.group-legend {
-  display: block;
-  margin: 0;
-  padding: 0;
-  color: var(--sherpa-text-default-label, #1a1a1f);
-}
+  /* ── Group legend (label) ──────────────────────────────– */
+  & .group-legend {
+    display: block;
+    margin: 0;
+    padding: 0;
+    color: var(--sherpa-text-default-label, #1a1a1f);
 
-.group-legend:has(.group-label:empty) { display: none; }
+    &:has(.group-label:empty) { display: none; }
+  }
 
-.group-required {
-  display: none;
-  color: var(--sherpa-text-context-error-default, #c41337);
-  margin-inline-start: 2px;
-}
-:host([required]) .group-required { display: inline; }
+  /* ── Required indicator ────────────────────────────────– */
+  & .group-required {
+    display: none;
+    color: var(--sherpa-text-context-error-default, #c41337);
+    margin-inline-start: 2px;
+  }
 
-.group-description,
-.group-helper {
-  margin: 0;
-  color: var(--sherpa-text-default-secondary, #6a6a7a);
-}
-.group-description:empty,
-.group-helper:empty { display: none; }
+  &[required] .group-required { display: inline; }
 
-.group-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-xs, 8px);
-  margin-block: var(--sherpa-space-2xs, 4px);
-}
+  /* ── Description + helper text ────────────────────────– */
+  & .group-description,
+  & .group-helper {
+    margin: 0;
+    color: var(--sherpa-text-default-secondary, #6a6a7a);
 
-:host([data-orientation="horizontal"]) .group-options {
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: var(--sherpa-space-sm, 12px);
-}
+    &:empty { display: none; }
+  }
 
-/* ── Status tint ── see sherpa-input-checkbox-group.css for rationale */
-:host([data-status]) .group-helper {
-  color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+  /* ── Options layout (vertical column default) ──────────– */
+  & .group-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-xs, 8px);
+    margin-block: var(--sherpa-space-2xs, 4px);
+  }
+
+  &[data-orientation="horizontal"] .group-options {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--sherpa-space-sm, 12px);
+  }
+
+  /* ── Status tint ────────────────────────────────────────–
+     Group surfaces validation tone; children inherit --_status-* through
+     shadow boundary. See sherpa-input-checkbox-group.css for rationale. */
+  &[data-status] .group-helper {
+    color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+  }
 }
 

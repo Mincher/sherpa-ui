@@ -19,6 +19,10 @@
    Host
    ═══════════════════════════════════════════════════════════════════════════ */
 
+i {
+  font-style: normal;
+}
+
 :host {
   --_gap: var(--sherpa-space-xs, 8px);
   --_padding-block: var(--sherpa-space-xs, 8px);
@@ -39,97 +43,67 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
   color: var(--sherpa-text-default-body, #2e2e33);
   transition: opacity 150ms ease;
-}
 
-:host([hidden]) { display: none; }
+  &[data-density="compact"] {
+    --_padding-block: var(--sherpa-space-2xs, 4px);
+    --_padding-inline: var(--sherpa-space-xs, 8px);
+    --_gap: var(--sherpa-space-2xs, 4px);
+    --_text-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Density
-   ═══════════════════════════════════════════════════════════════════════════ */
+  &[data-density="comfortable"] {
+    --_padding-block: var(--sherpa-space-sm, 12px);
+    --_padding-inline: var(--sherpa-space-default, 16px);
+    --_gap: var(--sherpa-space-sm, 12px);
+    --_text-font-size: var(--sherpa-fonts-scale-base, 14px);
+  }
 
-:host([data-density="compact"]) {
-  --_padding-block: var(--sherpa-space-2xs, 4px);
-  --_padding-inline: var(--sherpa-space-xs, 8px);
-  --_gap: var(--sherpa-space-2xs, 4px);
-  --_text-font-size: var(--sherpa-fonts-scale-sm, 12px);
-}
+  & .message-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--sherpa-size-lg, 20px);
+    height: var(--sherpa-size-lg, 20px);
+    color: var(--_status-surface-strong, var(--sherpa-surface-context-default-strong-default, #6f7174));
 
-:host([data-density="comfortable"]) {
-  --_padding-block: var(--sherpa-space-sm, 12px);
-  --_padding-inline: var(--sherpa-space-default, 16px);
-  --_gap: var(--sherpa-space-sm, 12px);
-  --_text-font-size: var(--sherpa-fonts-scale-base, 14px);
-}
+    & .sherpa-icon { --icon-size: var(--sherpa-size-sm, 16px); }
+  }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Leading status icon
-   ═══════════════════════════════════════════════════════════════════════════ */
+  & .message-content {
+    flex: 1;
+    min-width: 0;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sherpa-space-2xs, 4px);
+  }
 
-.message-icon {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--sherpa-size-lg, 20px);
-  height: var(--sherpa-size-lg, 20px);
-  color: var(--_status-surface-strong, var(--sherpa-surface-context-default-strong-default, #6f7174));
-}
+  & .message-label { color: var(--sherpa-text-default-body, #2e2e33); }
 
-.message-icon .sherpa-icon {
-  --icon-size: var(--sherpa-size-sm, 16px);
-}
+  & .message-action {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sherpa-space-3xs, 2px);
+    color: var(--sherpa-text-primary-default, #8500cc);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Content (label + inline action link)
-   ═══════════════════════════════════════════════════════════════════════════ */
+    &[hidden] { display: none; }
+    &:hover { text-decoration: underline; }
+  }
 
-.message-content {
-  flex: 1;
-  min-width: 0;
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--sherpa-space-2xs, 4px);
-}
+  & .message-action-icon { --icon-size: var(--sherpa-size-xs, 12px); }
 
-.message-label {
-  color: var(--sherpa-text-default-body, #2e2e33);
-}
+  & .message-close {
+    display: none;
+    flex-shrink: 0;
+    margin-left: auto;
+    margin-block: calc((var(--sherpa-font-base-line-height, 20px) - var(--sherpa-size-xl, 24px)) / 2);
+  }
 
-.message-action {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sherpa-space-3xs, 2px);
-  color: var(--sherpa-text-primary-default, #8500cc);
-  text-decoration: none;
-  font-weight: 600;
-  cursor: pointer;
-}
+  &[data-dismissible]:not([data-dismissible="false"]) .message-close { display: inline-flex; }
 
-.message-action[hidden] { display: none; }
-
-.message-action:hover {
-  text-decoration: underline;
-}
-
-.message-action-icon {
-  --icon-size: var(--sherpa-size-xs, 12px);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   Close button (sherpa-button tertiary icon-only)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.message-close {
-  display: none;
-  flex-shrink: 0;
-  margin-left: auto;
-  /* Absorb the button's height beyond the message line so it does not
-     expand the banner. Equivalent to negative vertical margin equal to
-     half the overflow (button-height − line-height) / 2. */
-  margin-block: calc((var(--sherpa-font-base-line-height, 20px) - var(--sherpa-size-xl, 24px)) / 2);
-}
-
-:host([data-dismissible]:not([data-dismissible="false"])) .message-close {
-  display: inline-flex;
+  &[hidden] { display: none; }
 }

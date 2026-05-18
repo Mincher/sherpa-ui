@@ -11,11 +11,6 @@
  */
 
 
-/* ═══════════════════════════════════════════════════════════════
-   Host
-   ═══════════════════════════════════════════════════════════════ */
-
-
 :host {
   --_pagination-h: 40px;
   --_pagination-gap: var(--sherpa-space-xs, 8px);
@@ -36,155 +31,105 @@
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-text-default-body, #111);
   container: sherpa-pagination / inline-size;
+
+  & .pagination-results {
+    display: flex;
+    align-items: center;
+    gap: var(--_pagination-gap);
+  }
+
+  & .pagination-label { white-space: nowrap; color: var(--sherpa-text-default-secondary, #555); }
+
+  & .page-size-select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: var(--sherpa-border-width-sm, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
+    border-radius: var(--sherpa-border-rounding-sm, 4px);
+    background: var(--sherpa-surface-container-default, #fff);
+    color: var(--sherpa-text-default-body, #111);
+    font-family: inherit;
+    font-size: inherit;
+    padding: 2px 24px 2px 8px;
+    height: var(--_btn-size);
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 10px 6px;
+    min-width: 56px;
+
+    &:focus-visible {
+      outline: 2px solid var(--sherpa-border-control-primary-default, #0066cc);
+      outline-offset: -1px;
+    }
+  }
+
+  & .pagination-info { white-space: nowrap; color: var(--sherpa-text-default-secondary, #555); }
+
+  & .pagination-pager {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  & .page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--_btn-size);
+    height: var(--_btn-size);
+    padding: 0;
+    border: var(--sherpa-border-width-sm, 1px) solid transparent;
+    border-radius: var(--sherpa-border-rounding-sm, 4px);
+    background: none;
+    color: var(--sherpa-text-default-body, #111);
+    font-size: var(--sherpa-fonts-scale-sm, 12px);
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease;
+
+    &:hover:not(:disabled) {
+      background: var(--sherpa-surface-container-hover, #f0f0f0);
+      border-color: var(--sherpa-border-container-default, #d5d5d5);
+    }
+
+    &:active:not(:disabled) { background: var(--sherpa-surface-container-down, #e0e0e0); }
+
+    &:focus-visible {
+      outline: 2px solid var(--sherpa-border-control-primary-default, #0066cc);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      color: var(--sherpa-text-inactive-default, #aaa);
+      cursor: default;
+    }
+  }
+
+  & .page-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding-inline: 4px;
+    white-space: nowrap;
+  }
+
+  & .page-current { font-weight: 600; }
+  & .page-separator { color: var(--sherpa-text-default-secondary, #555); }
+  & .page-total { color: var(--sherpa-text-default-secondary, #555); }
+
+  &[data-density="compact"] {
+    --_pagination-h: 32px;
+    --_btn-size: 24px;
+    font-size: var(--sherpa-fonts-scale-xs, 10px);
+
+    & .page-size-select { padding: 1px 20px 1px 6px; min-width: 48px; }
+  }
+
+  &[hidden] { display: none; }
 }
-
-
-/* ═══════════════════════════════════════════════════════════════
-   Results (rows-per-page)
-   ═══════════════════════════════════════════════════════════════ */
-
-.pagination-results {
-  display: flex;
-  align-items: center;
-  gap: var(--_pagination-gap);
-}
-
-.pagination-label {
-  white-space: nowrap;
-  color: var(--sherpa-text-default-secondary, #555);
-}
-
-.page-size-select {
-  appearance: none;
-  -webkit-appearance: none;
-  border: var(--sherpa-border-width-sm, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
-  background: var(--sherpa-surface-container-default, #fff);
-  color: var(--sherpa-text-default-body, #111);
-  font-family: inherit;
-  font-size: inherit;
-  padding: 2px 24px 2px 8px;
-  height: var(--_btn-size);
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
-  background-size: 10px 6px;
-  min-width: 56px;
-}
-
-.page-size-select:focus-visible {
-  outline: 2px solid var(--sherpa-border-control-primary-default, #0066cc);
-  outline-offset: -1px;
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-   Info (row range)
-   ═══════════════════════════════════════════════════════════════ */
-
-.pagination-info {
-  white-space: nowrap;
-  color: var(--sherpa-text-default-secondary, #555);
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-   Pager (page navigation)
-   ═══════════════════════════════════════════════════════════════ */
-
-.pagination-pager {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.page-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--_btn-size);
-  height: var(--_btn-size);
-  padding: 0;
-  border: var(--sherpa-border-width-sm, 1px) solid transparent;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
-  background: none;
-  color: var(--sherpa-text-default-body, #111);
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
-  cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--sherpa-surface-container-hover, #f0f0f0);
-  border-color: var(--sherpa-border-container-default, #d5d5d5);
-}
-
-.page-btn:active:not(:disabled) {
-  background: var(--sherpa-surface-container-down, #e0e0e0);
-}
-
-.page-btn:focus-visible {
-  outline: 2px solid var(--sherpa-border-control-primary-default, #0066cc);
-  outline-offset: -1px;
-}
-
-.page-btn:disabled {
-  color: var(--sherpa-text-inactive-default, #aaa);
-  cursor: default;
-}
-
-.page-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding-inline: 4px;
-  white-space: nowrap;
-}
-
-.page-current {
-  font-weight: 600;
-}
-
-.page-separator {
-  color: var(--sherpa-text-default-secondary, #555);
-}
-
-.page-total {
-  color: var(--sherpa-text-default-secondary, #555);
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-   Density: compact
-   ═══════════════════════════════════════════════════════════════ */
-
-:host([data-density="compact"]) {
-  --_pagination-h: 32px;
-  --_btn-size: 24px;
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
-}
-
-:host([data-density="compact"]) .page-size-select {
-  padding: 1px 20px 1px 6px;
-  min-width: 48px;
-}
-
-
-/* ═══════════════════════════════════════════════════════════════
-   Container query — hide info at narrow widths
-   ═══════════════════════════════════════════════════════════════ */
 
 @container sherpa-pagination (max-width: 400px) {
-  .pagination-info {
-    display: none;
-  }
-
-  .page-btn.page-first,
-  .page-btn.page-last {
-    display: none;
-  }
+  :host .pagination-info { display: none; }
+  :host .page-btn.page-first,
+  :host .page-btn.page-last { display: none; }
 }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

@@ -1,8 +1,16 @@
 /**
- * sherpa-input-search.css — Search input with icon and clear button.
+ * sherpa-input-search.css — Phase 2 Modernization (CSS Nesting)
+ * Search input with icon and clear button, organized under :host nesting.
+ *
  * Base styles imported from sherpa-input-base.css.
+ *
+ * Host attributes:
+ *   data-has-value — Shows clear button when input has content
  */
+
 @import "../utilities/sherpa-input-base/sherpa-input-base.css";
+
+i { font-style: normal; }
 
 .search-wrapper {
   display: flex;
@@ -38,14 +46,14 @@
   flex-shrink: 0;
 }
 
-/* Show clear button + control-group layout when input has a value */
-:host([data-has-value]) .search-clear {
-  display: inline-flex;
-}
+:host {
+  /* ── With value state ────────────────────────
+     Show clear button + control-group layout when input has value */
+  &[data-has-value] {
+    & .search-clear { display: inline-flex; }
+    & .search-wrapper { display: flex; }
+  }
 
-:host([data-has-value]) .search-wrapper {
-  display: flex;
+  /* ── Hidden state ────────────────────────── */
+  &[hidden] { display: none; }
 }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

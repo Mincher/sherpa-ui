@@ -48,141 +48,97 @@
   /* Sockets sit inside narrow flex gutters (8px) but render at 16px+
      and overflow visibly. Stops the flex parent from squishing them. */
   flex-shrink: 0;
-}
 
-/* Row inputs share the brand-purple default — no per-location override. */
-
-/* True / false outputs override stroke colour. */
-:host([data-status="true"])  { --_socket-stroke: var(--sherpa-node-socket-stroke-true, #048142); }
-:host([data-status="false"]) { --_socket-stroke: var(--sherpa-node-socket-stroke-false, #dd2c01); }
+  &[data-status="true"]  { --_socket-stroke: var(--sherpa-node-socket-stroke-true, #048142); }
+  &[data-status="false"] { --_socket-stroke: var(--sherpa-node-socket-stroke-false, #dd2c01); }
 
 /* Fill is ALWAYS the light tint of the stroke (see :host above). The
    only place the fill becomes solid is the output triangle, via its
    own background override below. Inputs never flip fill on connect —
    they show per-connection dots instead. */
 
-/* ── Hit area / button ─────────────────────────────────────────── */
-.socket {
-  all: unset;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: crosshair;
-}
+  & .socket {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair;
+  }
 
-/* ── Default shape: header circle (single, unconnected) ────────── */
-/* Base shape is a 16×16 circle. Min dimensions enforce the floor so
-   even when content (dots) is empty, the shape stays square. Width
-   stays fixed; height grows with stacked dots inside. */
-.socket-shape {
-  width: var(--sherpa-node-socket-size, 16px);
-  min-width: var(--sherpa-node-socket-size, 16px);
-  min-height: var(--sherpa-node-socket-size, 16px);
-  background: var(--_socket-fill);
-  border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
-  box-sizing: border-box;
-  border-radius: 999px;
-  transition: background 150ms ease, transform 150ms ease;
-}
+  & .socket-shape {
+    width: var(--sherpa-node-socket-size, 16px);
+    min-width: var(--sherpa-node-socket-size, 16px);
+    min-height: var(--sherpa-node-socket-size, 16px);
+    background: var(--_socket-fill);
+    border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
+    box-sizing: border-box;
+    border-radius: 999px;
+    transition: background 150ms ease, transform 150ms ease;
+  }
 
-/* ── Per-connection dots (input sockets only) ─────────────────── */
-/* The dots container stacks vertically inside the input shape. The
-   2px vertical padding accounts for the shape's 2px border so a
-   single 8px dot lands exactly inside a 16×16 frame:
-     inner content = 8 + 2 + 2 = 12px ; outer = 12 + 2*border = 16px.
-   0 dots collapses to nothing (the shape's min-height holds the
-   16×16 floor). 2+ dots stack and grow the shape vertically — no
-   JS or calc() required. */
-.connectors {
-  display: none;
-}
+  & .connectors { display: none; }
 
-:host([data-direction="in"]) .connectors {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: var(--sherpa-space-3xs, 2px) 0;
-  box-sizing: border-box;
-  gap: var(--sherpa-space-3xs, 2px);
-}
+  &[data-direction="in"] .connectors {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--sherpa-space-3xs, 2px) 0;
+    box-sizing: border-box;
+    gap: var(--sherpa-space-3xs, 2px);
+  }
 
-/* Solid plug in the stroke colour — visible against the light-tinted
-   socket frame. Only rendered when the input has connections. */
-.connector-dot {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--_socket-stroke);
-  border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
-  box-sizing: border-box;
-}
+  & .connector-dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--_socket-stroke);
+    border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
+    box-sizing: border-box;
+  }
 
-/* ── Input shape variants ─────────────────────────────────────── */
-/* Header input: pill / capsule (rounded both ends). */
-:host([data-location="header"][data-direction="in"]) .socket-shape {
-  border-radius: 999px;
-}
+  &[data-location="header"][data-direction="in"] .socket-shape { border-radius: 999px; }
+  &[data-location="row"][data-direction="in"] .socket-shape { border-radius: 0 999px 999px 0; }
 
-/* Row input: D shape — flat spine on the left, curve on the right
-   facing into the node body. */
-:host([data-location="row"][data-direction="in"]) .socket-shape {
-  border-radius: 0 999px 999px 0;
-}
+  &[data-direction="out"] .socket-shape {
+    width: 14px;
+    min-width: 14px;
+    height: 14px;
+    min-height: 14px;
+    border-radius: 2px;
+    clip-path: none;
+  }
 
-/* ── Output disconnected: square (purple/green/red border) ────── */
-:host([data-direction="out"]) .socket-shape {
-  width: 14px;
-  min-width: 14px;
-  height: 14px;
-  min-height: 14px;
-  border-radius: 2px;
-  clip-path: none;
-}
+  &[data-direction="out"][data-connected] .socket-shape {
+    width: 14px;
+    min-width: 14px;
+    height: 14px;
+    min-height: 14px;
+    border-radius: 0;
+    background: var(--_socket-stroke);
+    border: none;
+    clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+  }
 
-/* ── Output connected: triangle, solid fill ────────────────────── */
-:host([data-direction="out"][data-connected]) .socket-shape {
-  width: 14px;
-  min-width: 14px;
-  height: 14px;
-  min-height: 14px;
-  border-radius: 0;
-  /* Solid fill (no internal border) — the triangle IS the colour. */
-  background: var(--_socket-stroke);
-  border: none;
-  clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
-}
+  &[data-direction="in"][data-flow-active] .connectors > .connector-dot { display: none; }
+  &[data-direction="in"][data-flow-active] .socket-shape { position: relative; }
+  &[data-direction="in"][data-flow-active] .socket-shape::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--_socket-stroke);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
 
-/* ── Group "flow active" indicator ─────────────────────────────────
-   When the canvas detects that a group's subgraph contains a wired
-   path from a source node to an outcome/output node, it sets
-   data-flow-active on the group's input socket. We render a single
-   larger filled dot centred in the socket frame and hide the
-   per-connection dots so the indicators don't visually compete. */
-:host([data-direction="in"][data-flow-active]) .connectors > .connector-dot {
-  display: none;
-}
-:host([data-direction="in"][data-flow-active]) .socket-shape {
-  position: relative;
-}
-:host([data-direction="in"][data-flow-active]) .socket-shape::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--_socket-stroke);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
+  & .socket:hover  .socket-shape { transform: scale(1.08); }
+  & .socket:active .socket-shape { transform: scale(0.95); }
 
-/* ── Interactions ──────────────────────────────────────────────── */
-.socket:hover  .socket-shape { transform: scale(1.08); }
-.socket:active .socket-shape { transform: scale(0.95); }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }
+  &[hidden] { display: none; }
+}

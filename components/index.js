@@ -99,6 +99,10 @@ export * from "./sherpa-input-tag/sherpa-input-tag.js";
 // Atomic primitives
 export * from "./sherpa-icon/sherpa-icon.js";
 
+// Utility components
+export * from "./sherpa-code-block/sherpa-code-block.js";
+export * from "./sherpa-attribute-controls/sherpa-attribute-controls.js";
+
 // Composite components
 export * from "./sherpa-list/sherpa-list.js";
 export * from "./sherpa-list-panel/sherpa-list-panel.js";

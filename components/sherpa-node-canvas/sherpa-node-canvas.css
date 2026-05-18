@@ -1,5 +1,17 @@
 /**
- * sherpa-node-canvas.css — Pan/zoom container.
+ * sherpa-node-canvas.css — Phase 2 Modernization (CSS Nesting)
+ * Pan/zoom container for node graph editing with grid background.
+ *
+ * Host attributes:
+ *   data-grabbing           — Pan cursor (grabbing)
+ *   data-space-down         — Pan cursor (grab)
+ *   data-show-header        — Show/hide canvas header
+ *   data-has-side-panel-*   — Side panel present (auto-set by SherpaElement)
+ *
+ * CSS properties:
+ *   --sherpa-node-canvas-grid-step  — Grid crosshair spacing (72px default)
+ *   --sherpa-node-canvas-grid-arm   — Crosshair line width (3px default)
+ *   --sherpa-node-canvas-grid-color — Grid colour
  */
 
 :host {
@@ -8,94 +20,98 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  /* Tinted backdrop — node surfaces use the white container token, so
-     the canvas needs its own subtle tint or every node would be
-     white-on-white and invisible. */
+
   background: var(--sherpa-surface-app-background-default, #eef0f3);
   contain: strict;
   touch-action: none;
 
-  /* Crosshair grid tuning. The colour resolves through a probe
-     element so light/dark switches automatically pick up the
-     correct theme variant. Step is in *world* units. */
+  /* Grid configuration (world units) */
   --sherpa-node-canvas-grid-step: 72px;
-  --sherpa-node-canvas-grid-arm:  3px;
+  --sherpa-node-canvas-grid-arm: 3px;
   --sherpa-node-canvas-grid-color: var(--sherpa-border-container-subtle, var(--sherpa-border-container-default, currentColor));
+
+  /* ──────────────────────────────────────────────────────────
+     CURSOR STATES
+     ────────────────────────────────────────────────────────── */
+  &[data-grabbing] { cursor: grabbing; }
+  &[data-space-down] { cursor: grab; }
+
+  /* ──────────────────────────────────────────────────────────
+     ROOT LAYOUT (flex column)
+     ────────────────────────────────────────────────────────── */
+  & .root {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Canvas header ──────────────────────────────────────– */
+  & .canvas-header { flex: 0 0 auto; }
+
+  &[data-show-header="false"] .canvas-header { display: none; }
+
+  /* ── Canvas body (flex row for stacked layout) ────────– */
+  & .canvas-body {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  /* ── Canvas stack (scrollable content area) ──────────– */
+  & .canvas-stack {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     SIDE PANELS (start/end slots)
+     ────────────────────────────────────────────────────────── */
+  & .side-panel-start,
+  & .side-panel-end {
+    display: flex;
+    flex: 0 0 auto;
+    align-self: stretch;
+  }
+
+  &(:not([data-has-side-panel-start])) .side-panel-start { display: none; }
+  &(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
+
+  /* ──────────────────────────────────────────────────────────
+     RENDERING LAYERS (absolute positioning)
+     ────────────────────────────────────────────────────────── */
+  & .layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* ── Node surface container (transform-origin) ────────– */
+  & .surface {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+  }
+
+  /* ── Colour probe (token resolution helper) ──────────– */
+  & .color-probe {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
 }
-
-:host([data-grabbing])    { cursor: grabbing; }
-:host([data-space-down])  { cursor: grab; }
-
-.root {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.canvas-header {
-  flex: 0 0 auto;
-}
-
-:host([data-show-header="false"]) .canvas-header {
-  display: none;
-}
-
-.canvas-body {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-}
-
-.canvas-stack {
-  position: relative;
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* Side-panel slots. Width follows the slotted element so a
-   <sherpa-content-section> minimising to its strip reclaims space for
-   the canvas without any consumer-side grid math. The wrappers are
-   hidden when the slot has no content (data-has-{slot} is set
-   automatically by the sherpa-element base). */
-.side-panel-start,
-.side-panel-end {
-  display: flex;
-  flex: 0 0 auto;
-  align-self: stretch;
-}
-:host(:not([data-has-side-panel-start])) .side-panel-start { display: none; }
-:host(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
-
-.layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.surface {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  transform-origin: 0 0;
-}
-
-/* Hidden probe span used by #resolveColor() to resolve token cascades */
-.color-probe {
-  position: absolute;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

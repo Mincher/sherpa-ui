@@ -323,10 +323,207 @@ and produces JSON files conforming to `schemas/component-schema.json`.
 
 ---
 
+## 4.1 Phase 2: CSS Modernization (CSS Nesting)
+
+**Status**: Active (as of May 2026)  
+**Scope**: New component CSS files and refactored components  
+**Migration**: Gradual rollout; existing flat CSS remains valid
+
+### CSS Nesting Architecture
+
+Phase 2 modernization uses **CSS Nesting** to reduce boilerplate and improve maintainability. All selectors are organized hierarchically under `:host` with the `&` selector.
+
+**Pattern structure:**
+
+```css
+/**
+ * sherpa-example.css — Phase 2 Modernization (CSS Nesting)
+ * Shadow DOM styles organized under :host with & nesting.
+ * 
+ * Architecture:
+ *   All host selectors and child rules nested under :host {} block.
+ *   Child elements always nested (& .element).
+ *   Variants/states organized by feature section.
+ *   Use comments to separate logical sections.
+ */
+
+:host {
+  /* ── Host-level defaults ────────────────────────── */
+  display: inline-flex;
+  gap: var(--sherpa-space-xs, 8px);
+  color: var(--sherpa-text-default-body);
+  transition: background var(--sherpa-motion-duration-fast, 0.15s);
+
+  /* ── Variant 1: Primary ────────────────────────── */
+  &[data-variant="primary"] {
+    background: var(--sherpa-surface-control-primary-default);
+  }
+
+  /* ── Variant 2: Secondary ─────────────────────── */
+  &[data-variant="secondary"] {
+    background: var(--sherpa-surface-control-secondary-default);
+  }
+
+  /* ── Size variants ────────────────────────────── */
+  &[data-size="small"] {
+    height: var(--sherpa-size-xl, 28px);
+    padding-inline: var(--sherpa-space-xs, 8px);
+  }
+
+  &[data-size="large"] {
+    height: var(--sherpa-size-3xl, 40px);
+    padding-inline: var(--sherpa-space-sm, 12px);
+  }
+
+  /* ── Interactive state ────────────────────────── */
+  &[data-interactive="true"]:hover {
+    background: var(--sherpa-surface-control-primary-hover);
+  }
+
+  /* ── Disabled state ───────────────────────────── */
+  &[disabled] {
+    cursor: not-allowed;
+    pointer-events: none;
+    color: var(--sherpa-text-inactive-default);
+    background: var(--sherpa-surface-control-inactive-default);
+  }
+
+  /* ── Child elements ───────────────────────────– */
+  & .icon {
+    display: none;
+    width: var(--sherpa-size-sm, 16px);
+    height: var(--sherpa-size-sm, 16px);
+  }
+
+  &[data-icon-start] .icon {
+    display: inline-flex;
+  }
+
+  & .label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Hidden state ────────────────────────────── */
+  &[hidden] { display: none; }
+}
+```
+
+### Benefits
+
+1. **Reduced boilerplate** — 30%–54% fewer lines vs flat selectors
+2. **Improved readability** — Related rules grouped hierarchically
+3. **Maintained scope** — Child elements naturally scoped under :host
+4. **Better organization** — Features organized into logical sections
+5. **100% compatibility** — Identical rendering to flat CSS
+
+### Migration Path
+
+**For new components:**
+- Use CSS nesting from the start
+- Organize under `:host` block
+- Use comments to mark sections
+
+**For existing components:**
+- Continue using flat `:host()` selectors (no breaking changes)
+- Refactor incrementally when modifying existing CSS
+- Follow Phase 2 Testing Guide before merging
+
+### Progressive Enhancement
+
+**Browser support:**
+- ✅ Modern (Chrome 112+, Firefox 117+, Safari 17.5+, Edge 112+): Native nesting
+- ✅ Older (Chrome 99+, Firefox 97+, Safari 15.4+, Edge 99+): PostCSS fallback (if configured)
+
+**Fallback strategy:**
+- Build system flattens nesting to flat `:host()` selectors for pre-Chrome-112 support
+- No runtime cost; purely build-time transformation
+- See `/css/styles/sherpa-feature-detection.css` for @supports patterns
+
+### When NOT to Use Nesting
+
+Avoid nesting in these cases:
+
+1. **Global CSS** (not in shadow DOM components)
+   - Use flat selectors or CSS modules
+   - Nesting is for scoped shadow CSS only
+
+2. **Light DOM components**
+   - Use flat selectors or BEM methodology
+   - Nesting has no scope advantage in light DOM
+
+3. **Pseudo-elements requiring :host isolation**
+   - Use compound selectors: `:host(:not([disabled]))`
+   - Functional form required (see Copilot Instructions §15)
+
+### CSS Nesting vs Flat Selectors
+
+**Before (flat):**
+```css
+:host { display: flex; }
+:host([data-variant="primary"]) { background: #color1; }
+:host([data-variant="secondary"]) { background: #color2; }
+:host([disabled]) { cursor: not-allowed; }
+:host([disabled]) .label { color: #gray; }
+.label { min-width: 0; }
+:host([hidden]) { display: none; }
+```
+
+**After (nesting):**
+```css
+:host {
+  display: flex;
+  
+  &[data-variant="primary"] { background: #color1; }
+  &[data-variant="secondary"] { background: #color2; }
+  
+  &[disabled] {
+    cursor: not-allowed;
+    & .label { color: #gray; }
+  }
+  
+  & .label { min-width: 0; }
+  
+  &[hidden] { display: none; }
+}
+```
+
+**Size comparison:**
+- Flat: 7 selectors × ~50 chars = ~350 chars
+- Nested: 1 :host + 6 & selectors = ~280 chars (20% reduction)
+- Large components see 30%–54% reduction
+
+### Documentation Requirements
+
+Update CSS file JSDoc header to note Phase 2 status:
+
+```css
+/**
+ * sherpa-example.css — Phase 2 Modernization (CSS Nesting)
+ * Shadow DOM styles for SherpaExample component.
+ * 
+ * Phase 2 patterns:
+ *   - CSS Nesting under :host with & selector
+ *   - All host attributes nested hierarchically
+ *   - Sections organized by feature (variants, states, children)
+ *   - Progressive enhancement via @supports (if needed)
+ *
+ * Host attributes consumed:
+ *   data-variant    {enum}    — primary | secondary | tertiary
+ *   data-size       {enum}    — small | medium | large
+ *   data-active     {boolean} — Active state
+ *   disabled        {boolean} — Disabled state
+ */
+```
+
+---
+
 ## 5 Checklist
 
 Before committing any component, verify:
 
+**API & Documentation:**
 - [ ] JS file has `@element` tag with correct tag name
 - [ ] Every observed attribute has an `@attr` tag with correct type
 - [ ] Every `<slot>` in the HTML template has a matching `@slot` tag
@@ -338,6 +535,26 @@ Before committing any component, verify:
 - [ ] No bare custom attributes — all component-specific attributes use `data-*`
 - [ ] Events use `bubbles: true`; `composed: true` only when crossing shadow for app code
 - [ ] Tag order follows §1.6
+
+**Phase 2 CSS Modernization (if using CSS Nesting):**
+- [ ] CSS file header includes "Phase 2 Modernization (CSS Nesting)" annotation
+- [ ] All host selectors organized under single `:host { }` block
+- [ ] Child element rules nested with `& .class` pattern
+- [ ] Variants/states organized into logical comment-separated sections
+- [ ] All tokens use fallback chains: `var(--sherpa-token, hardcoded-value)`
+- [ ] No bare custom attributes in selectors (use `data-*`)
+- [ ] `:host()` compound selectors use functional form: `:host(:not([disabled]))`
+- [ ] Disabled state uses inactive tokens, not opacity
+- [ ] `:host([hidden]) { display: none; }` declared
+- [ ] CSS syntax valid (brace balance = 0)
+
+**Testing (Phase 3):**
+- [ ] Visual parity verified across baseline browsers (Chrome 99+, Firefox 97+, Safari 15.4+, Edge 99+)
+- [ ] All states tested (hover, active, focus, disabled, variants)
+- [ ] Slot projection works correctly
+- [ ] No console errors or warnings
+- [ ] Responsive behavior intact
+- [ ] File size reduction verified (if refactored from flat CSS)
 
 ---
 
@@ -355,3 +572,4 @@ For existing components being updated to this standard:
 8. **Add `@slot` tags** for every `<slot>` in the HTML template.
 9. **Add `@method`/`@prop` tags** for public API not covered by attributes.
 10. **Update CSS JSDoc header** to list all host attributes consumed in selectors.
+11. **(Phase 2) Refactor CSS to use nesting** — Organize under `:host { }`, nest child rules with `& .class`, organize variants/states into sections.

@@ -1,115 +1,105 @@
 /**
- * @component sherpa-chart-legend
+ * sherpa-chart-legend.css — Phase 2 Modernization (CSS Nesting)
+ * Standalone chart legend with colour keys, labels, and optional values.
  *
- * Standalone chart legend component with colour keys, labels and
- * optional values. Supports horizontal and vertical orientations.
- *
- * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-orientation=horizontal] horizontal | vertical
- * @attr {boolean} [data-loading]                Dims legend
- *
- * ── Architecture notes ────────────────────────────────────────
- * HTML — .legend-list wraps cloned .legend-item elements.
- *        Each item has .legend-key (colour swatch), .legend-label,
- *        and .legend-value.
- * CSS  — Flex layout, orientation via :host([data-orientation]).
- *        Inactive items get reduced opacity. Key swatch is 20×20
- *        with small rounding matching Figma specs.
- * JS   — setItems() clones prototype, sets colour/text/state.
+ * Host attributes:
+ *   data-orientation — horizontal (default, flex-wrap) | vertical (column)
+ *   data-loading     — Dim legend (opacity 0.4, pointer-events none)
  */
 
-/* ================================================================
-   :host — base layout
-   ================================================================ */
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   box-sizing: border-box;
+
+  /* ──────────────────────────────────────────────────────────
+     LOADING VARIANT (dimmed)
+     ────────────────────────────────────────────────────────── */
+  &[data-loading] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     LEGEND LIST (flex wrap with gap)
+     ────────────────────────────────────────────────────────── */
+  & .legend-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-lg, 24px);
+    align-items: center;
+  }
+
+  &[data-orientation="vertical"] .legend-list {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     LEGEND ITEM (key + label + value)
+     ────────────────────────────────────────────────────────── */
+  & .legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-xs, 8px);
+    font-size: var(--sherpa-fonts-scale-sm, 14px);
+    color: var(--sherpa-text-default-body, #18191a);
+    cursor: default;
+    transition: color 0.15s ease;
+
+    /* ── Inactive state ─────────────────────────────────────– */
+    &[data-inactive] {
+      color: var(--sherpa-text-default-placeholder, #999999);
+
+      & .legend-swatch {
+        background-color: var(--sherpa-surface-control-inactive, #cccccc) !important;
+      }
+    }
+
+    /* ── Linkable state ────────────────────────────────────– */
+    &[data-link] {
+      cursor: pointer;
+
+      &:hover .legend-label { text-decoration: underline; }
+    }
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     LEGEND KEY (colour swatch, 20×20)
+     ────────────────────────────────────────────────────────── */
+  & .legend-key {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--sherpa-border-rounding-sm, 4px);
+    flex-shrink: 0;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     LEGEND LABEL & VALUE
+     ────────────────────────────────────────────────────────── */
+  & .legend-label {
+    white-space: nowrap;
+    color: var(--sherpa-text-default-body, #18191a);
+  }
+
+  & .legend-value {
+    display: none;
+    font-weight: var(--sherpa-font-weight-semibold, 600);
+    color: var(--sherpa-text-default-heading, #18191a);
+  }
+
+  & .legend-item[data-has-value] .legend-value { display: inline; }
+
+  /* ──────────────────────────────────────────────────────────
+     DATA-VIZ CATEGORICAL COLOUR PALETTE
+     ────────────────────────────────────────────────────────── */
+  & .color-1 { background-color: var(--sherpa-data-viz-categorical-color-1, #7b1ce6); }
+  & .color-2 { background-color: var(--sherpa-data-viz-categorical-color-2, #16abe2); }
+  & .color-3 { background-color: var(--sherpa-data-viz-categorical-color-3, #2bd1c1); }
+  & .color-4 { background-color: var(--sherpa-data-viz-categorical-color-4, #ffaa00); }
+  & .color-5 { background-color: var(--sherpa-data-viz-categorical-color-5, #f3699d); }
+  & .color-6 { background-color: var(--sherpa-data-viz-categorical-color-6, #c046ff); }
+
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
 }
-
-
-:host([data-loading]) {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-/* ================================================================
-   Legend list — horizontal (default) or vertical
-   ================================================================ */
-.legend-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-lg, 24px);
-  align-items: center;
-}
-
-:host([data-orientation="vertical"]) .legend-list {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-/* ================================================================
-   Legend item
-   ================================================================ */
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
-  color: var(--sherpa-text-default-body, #18191a);
-  cursor: default;
-  transition: color 0.15s ease;
-}
-
-.legend-item[data-inactive] {
-  color: var(--sherpa-text-default-placeholder, #999999);
-}
-.legend-item[data-inactive] .legend-swatch {
-  background-color: var(--sherpa-surface-control-inactive, #cccccc) !important;
-}
-
-.legend-item[data-link] {
-  cursor: pointer;
-}
-
-.legend-item[data-link]:hover .legend-label {
-  text-decoration: underline;
-}
-
-/* ── Colour key swatch ───────────────────────────────────────── */
-.legend-key {
-  width: 20px;
-  height: 20px;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
-  flex-shrink: 0;
-}
-
-/* ── Label ───────────────────────────────────────────────────── */
-.legend-label {
-  white-space: nowrap;
-  color: var(--sherpa-text-default-body, #18191a);
-}
-
-/* ── Value (optional) ────────────────────────────────────────── */
-.legend-value {
-  display: none;
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-text-default-heading, #18191a);
-}
-
-.legend-item[data-has-value] .legend-value {
-  display: inline;
-}
-
-/* ================================================================
-   Data-viz categorical colour classes
-   ================================================================ */
-.color-1 { background-color: var(--sherpa-data-viz-categorical-color-1, #7b1ce6); }
-.color-2 { background-color: var(--sherpa-data-viz-categorical-color-2, #16abe2); }
-.color-3 { background-color: var(--sherpa-data-viz-categorical-color-3, #2bd1c1); }
-.color-4 { background-color: var(--sherpa-data-viz-categorical-color-4, #ffaa00); }
-.color-5 { background-color: var(--sherpa-data-viz-categorical-color-5, #f3699d); }
-.color-6 { background-color: var(--sherpa-data-viz-categorical-color-6, #c046ff); }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

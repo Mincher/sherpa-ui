@@ -1,21 +1,29 @@
 /**
- * sherpa-input-text.css — Text input styles.
+ * sherpa-input-text.css — Text input styles (Phase 2 Modernization).
+ *
  * Base styles imported from sherpa-input-base.css.
+ * Uses CSS Nesting for multiline mode organization.
+ *
+ * Attributes:
+ *   data-multiline — textarea with auto-grow behavior
  */
+
 @import '../utilities/sherpa-input-base/sherpa-input-base.css';
 
-/* ── Multiline (textarea) auto-grow mode ─────────────────────────
-   Selected when the host has `data-multiline`. The component sizes
-   the textarea to its content via JS (sets explicit height in px),
-   so we drop the fixed single-line height and disable resize/scroll
-   chrome. */
-:host([data-multiline]) .input-field {
-  height: auto;
-  min-height: var(--sherpa-size-2xl, 32px);
-  padding-block: calc((var(--sherpa-size-2xl, 32px) - var(--sherpa-font-base-line-height, 20px)) / 2);
-  resize: none;
-  overflow: hidden;
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: var(--sherpa-font-base-line-height, 20px);
+:host {
+  /* ── Multiline (textarea) auto-grow mode ─────────────────────────
+     Selected when the host has `data-multiline`. The component sizes
+     the textarea to its content via JS (sets explicit height in px),
+     so we drop the fixed single-line height and disable resize/scroll
+     chrome. */
+  &[data-multiline] .input-field {
+    height: auto;
+    min-height: var(--sherpa-size-2xl, 32px);
+    padding-block: calc((var(--sherpa-size-2xl, 32px) - var(--sherpa-font-base-line-height, 20px)) / 2);
+    resize: none;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: var(--sherpa-font-base-line-height, 20px);
+  }
 }

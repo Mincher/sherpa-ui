@@ -1,4 +1,5 @@
 /**
+ * sherpa-input-date-range.css — Phase 2 Modernization (CSS Nesting)
  * @component sherpa-input-date-range
  *
  * Date range picker with start and end date fields.
@@ -18,25 +19,14 @@
  * @attr {boolean} [disabled]          Disabled state
  * @attr {boolean} [readonly]          Readonly state
  * @attr {boolean} [required]          Required state
- *
- * ── Events ────────────────────────────────────────────────────
- * change — { start, end } — fired when either date changes
- * input  — { start, end } — fired during input
- *
- * ── Architecture notes ────────────────────────────────────────
- * HTML — control-group with two native date inputs + separator.
- * CSS  — imports sherpa-input-base.css; adds range-specific styles:
- *        separator, equal-width inputs, inline layout.
- * JS   — extends SherpaInputBase; bridges data-value-start/end attrs
- *        to native inputs; enforces start ≤ end constraint.
  */
 
-/* Base styles */
 @import '../utilities/sherpa-input-base/sherpa-input-base.css';
 
-/* ================================================================
-   Control group — horizontal pair of date inputs
-   ================================================================ */
+/* ═══════════════════════════════════════════════════════════════
+   CONTROL GROUP — horizontal pair of date inputs
+   ═══════════════════════════════════════════════════════════════ */
+
 .control-group {
   display: flex;
   align-items: center;
@@ -50,9 +40,10 @@
   min-width: 0;
 }
 
-/* ================================================================
-   Range separator
-   ================================================================ */
+/* ═══════════════════════════════════════════════════════════════
+   RANGE SEPARATOR
+   ═══════════════════════════════════════════════════════════════ */
+
 .range-separator {
   display: flex;
   align-items: center;

@@ -1,13 +1,14 @@
 /**
- * sherpa-list-panel.css — Searchable panel containing list content.
+ * sherpa-list-panel.css — Phase 2 Modernization (CSS Nesting)
+ * Searchable panel containing list content with sticky header.
  *
- * Host attributes consumed:
- *   data-empty            — Empty-state message text
- *   data-empty-visible    — Set by JS when search yields no matches
- *   data-bordered         — Adds outer border + radius
+ * Host attributes:
+ *   data-empty         — Empty-state message text
+ *   data-empty-visible — Show empty state when search yields no matches (set by JS)
+ *   data-bordered      — Add outer border and border-radius
  *
  * CSS Highlight API:
- *   ::highlight(list-panel-match) — applied by JS to matched text ranges.
+ *   ::highlight(list-panel-match) — Applied by JS to matched text ranges
  */
 
 :host {
@@ -18,63 +19,57 @@
   color: var(--sherpa-text-default-body, #2e2e33);
   background: var(--sherpa-surface-container-default, #ffffff);
   box-sizing: border-box;
+
+  /* ── Bordered variant ───────────────────────────────– */
+  &[data-bordered] {
+    border: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+    border-radius: var(--sherpa-border-rounding-lg, 12px);
+    overflow: hidden;
+  }
+
+  /* ── Header / search (sticky) ───────────────────────– */
+  & .panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-xs, 8px);
+    padding: var(--sherpa-space-sm, 12px);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--sherpa-surface-container-default, #ffffff);
+    border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  }
+
+  & .panel-search { width: 100%; }
+
+  /* ── Body (scrollable list container) ───────────────– */
+  & .panel-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 var(--sherpa-space-sm, 12px) var(--sherpa-space-sm, 12px);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-sm, 12px);
+  }
+
+  /* ── Empty state (hidden by default) ───────────────– */
+  & .panel-empty {
+    display: none;
+    padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
+    text-align: center;
+    color: var(--sherpa-text-default-secondary, #6a6a75);
+    font-size: var(--sherpa-fonts-scale-sm, 14px);
+  }
+
+  &[data-empty-visible] .panel-empty { display: block; }
+
+  /* ── Hidden state ───────────────────────────────────– */
+  &[hidden] { display: none; }
 }
 
-:host([hidden]) { display: none; }
-
-:host([data-bordered]) {
-  border: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-  border-radius: var(--sherpa-border-rounding-lg, 12px);
-  overflow: hidden;
-}
-
-/* ── Header / search ───────────────────────────────────
-   Sticky-pinned to the top of the panel so the search input
-   stays visible while the list body scrolls beneath it. */
-
-.panel-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-sm, 12px);
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--sherpa-surface-container-default, #ffffff);
-  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-}
-
-.panel-search {
-  width: 100%;
-}
-
-/* ── Body ────────────────────────────────────────────── */
-
-.panel-body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 0 var(--sherpa-space-sm, 12px) var(--sherpa-space-sm, 12px);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-sm, 12px);
-}
-
-/* ── Empty state ─────────────────────────────────────── */
-
-.panel-empty {
-  display: none;
-  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
-  text-align: center;
-  color: var(--sherpa-text-default-secondary, #6a6a75);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
-}
-
-:host([data-empty-visible]) .panel-empty { display: block; }
-
-/* ── Search highlight ────────────────────────────────── */
-
+/* ── Search highlight (CSS Highlight API) ─────────────── */
 ::highlight(list-panel-match) {
   background-color: var(--sherpa-surface-context-warning-subtle-default, #fff3cd);
   color: var(--sherpa-text-default-body, #2e2e33);

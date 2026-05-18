@@ -12,6 +12,10 @@
  * utility class from sherpa-utility-classes.css to the host element.
  */
 
+i {
+  font-style: normal;
+}
+
 :host {
   display: block;
 }

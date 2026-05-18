@@ -11,15 +11,8 @@
  * Architecture:
  *   :host is a wrapper providing border, border-radius, and overflow.
  *   .trigger <button> is the primary interactive element.
- *   .close is a dismiss button (default + button-menu, shown via data-dismissable).
+ *   .close is a dismiss button (shown via data-dismissable).
  *   .menu-trigger is a clickable div that opens a menu (button-menu template).
- *
- *   Variants (primary/secondary/tertiary) set CSS custom properties at
- *   :host level. Child elements consume them via var().
- *
- * Status — global token inheritance:
- *   Fallback-chain pattern: primary uses --_status-surface-strong,
- *   secondary uses --_status-surface, tertiary uses --_status-text.
  *
  * Host attributes:
  *   data-type, data-label, data-icon-start, data-icon-end, data-icon-weight,
@@ -28,8 +21,12 @@
  *
  * data-variant {enum} — primary | secondary | tertiary | tertiary-on-color
  * data-size    {enum} — 2x-small | x-small | small | base | large (default: base)
+ * data-status  {enum} — critical | warning | success | info | urgent
+ * data-type    {enum} — default | icon | button-menu | icon-menu
+ *
+ * Status — global token inheritance:
+ *   --_status-surface-strong, --_status-text-on-color, etc. from sherpa-status.css
  */
-
 
 /* ==========================================================================
    Host — wrapper with border / radius
@@ -42,12 +39,10 @@
   vertical-align: middle;
   overflow: hidden;
 
-  /* Sizing tokens — consumed by children */
-  --_button-size: var(--sherpa-size-2xl, 32px);
+  --_button-size:    var(--sherpa-size-2xl, 32px);
   --_button-padding: var(--sherpa-space-xs, 8px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
 
-  /* Surface / text / icon — set per variant, consumed by .trigger */
   --_surface:       var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #8500cc));
   --_text:          var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
   --_icon-color:    var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
@@ -62,11 +57,13 @@
   transition: border-color 0.15s;
 }
 
-
+:host([hidden]) { display: none; }
 
 /* ==========================================================================
-   Trigger — <button>, primary variant default
+   Shadow DOM children
    ========================================================================== */
+
+/* ── Trigger ──────────────────────────────────────────────────────────────── */
 
 .trigger {
   display: inline-flex;
@@ -77,33 +74,25 @@
   padding-block: var(--_button-padding);
   padding-inline: var(--sherpa-space-xs, 8px);
   flex: 1 1 auto;
-
   background-color: var(--_surface);
   color: var(--_text);
   border: none;
   border-radius: 0;
-
-  /* Typography — Figma body/default/base (medium size). Per-size overrides
-     below adjust font-size + line-height to match the matching body token. */
   font: inherit;
   font-size: var(--sherpa-font-base-size, 14px);
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 0.1px;
-
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
   transition: background-color 0.15s, color 0.15s;
 }
 
+.trigger:focus-visible { outline: none; }
 
-/* ==========================================================================
-   Icons — shown/hidden via :host attribute selectors
-   data-icon-start / data-icon-end accept a Font Awesome class string
-   (e.g. "fa-solid fa-star"). JS sets the FA classes on .icon-start /
-   .icon-end; the global FA stylesheet (adopted into the shadow root)
-   provides font-family, font-weight and the glyph codepoint.
-   ========================================================================== */
+i { font-style: normal; }
+
+/* ── Icons ────────────────────────────────────────────────────────────────── */
 
 .icon-start,
 .icon-end {
@@ -113,26 +102,12 @@
   line-height: 1;
 }
 
-:host([data-icon-start]) .icon-start { display: inline-flex; }
-:host([data-icon-end]) .icon-end     { display: inline-flex; }
+/* ── Label ────────────────────────────────────────────────────────────────── */
 
+.label       { display: inline; }
+.label:empty { display: none; }
 
-/* ==========================================================================
-   Label
-   ========================================================================== */
-
-.label {
-  display: inline;
-}
-
-.label:empty {
-  display: none;
-}
-
-
-/* ==========================================================================
-   Badge — count pill (hidden by default)
-   ========================================================================== */
+/* ── Badge ────────────────────────────────────────────────────────────────── */
 
 .badge {
   display: none;
@@ -149,18 +124,65 @@
   line-height: 1;
 }
 
-:host([data-count]) .badge { display: inline-flex; }
+/* ── Close / dismiss button ──────────────────────────────────────────────── */
 
-:host([data-active]) .badge {
-  background: var(--sherpa-text-active-base, #8500cc);
-  color: var(--sherpa-surface-control-active-default, #f8ebff);
+.close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--_button-size);
+  height: var(--_button-size);
+  padding: 0;
+  border: none;
+  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default, #d5d5d5);
+  background: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
 }
 
+.close:hover  { background-color: var(--sherpa-surface-control-secondary-hover, #fafafa); color: var(--sherpa-text-default-body, #2e2e33); }
+.close:active { background-color: var(--sherpa-surface-control-secondary-down, #f2f2f2); }
+.close:focus-visible { outline: none; }
+
+/* ── Menu trigger ────────────────────────────────────────────────────────── */
+
+.menu-trigger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--_button-size);
+  height: var(--_button-size);
+  padding: 0;
+  background-color: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
+  color: var(--_icon-color);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.menu-trigger:hover  { background-color: var(--sherpa-surface-control-secondary-hover, #fafafa); }
+.menu-trigger:active { background-color: var(--sherpa-surface-control-secondary-down, #f2f2f2); }
 
 /* ==========================================================================
-   Icon-only mode — data-type="icon" template (square trigger)
-   Also applies to default template when no label is set.
+   Host attribute selectors — ALL as standalone :host([...]) functional form.
+   CSS nesting & inside :host{} desugars to :host[attr] (chained), which is
+   invalid in shadow DOM. All compound :host selectors go here.
    ========================================================================== */
+
+/* ── Icon visibility ──────────────────────────────────────────────────────── */
+
+:host([data-icon-start]) .icon-start { display: inline-flex; }
+:host([data-icon-end])   .icon-end   { display: inline-flex; }
+
+/* ── Badge visibility ─────────────────────────────────────────────────────── */
+
+:host([data-count]) .badge { display: inline-flex; }
+
+/* ── Icon-only layout ─────────────────────────────────────────────────────── */
 
 :host([data-type="icon"]) .trigger,
 :host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])) .trigger {
@@ -180,92 +202,44 @@
   padding-inline: var(--sherpa-space-xs, 8px);
 }
 
-
-/* ==========================================================================
-   Focus — on the host via :focus-within (respects border-radius)
-   ========================================================================== */
+/* ── Focus ────────────────────────────────────────────────────────────────── */
 
 :host(:focus-within) {
   outline: 2px solid var(--sherpa-border-control-active-default, #8500cc);
   outline-offset: 2px;
 }
 
-.trigger:focus-visible,
-.close:focus-visible {
-  outline: none;
-}
-
-
-/* ==========================================================================
-   Sizes — Figma `button (size)` variable mode only changes height,
-   padding, and inner spacing. Typography stays body/default/base across
-   all sizes (14/20/0.1) — set once on .trigger above.
-   ========================================================================== */
+/* ── Sizes ────────────────────────────────────────────────────────────────── */
 
 :host([data-size="small"]) {
-  --_button-size: var(--sherpa-size-lg, 24px);
+  --_button-size:    var(--sherpa-size-lg, 24px);
   --_button-padding: var(--sherpa-space-2xs, 4px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
 }
-
-:host([data-size="small"]) .trigger {
-  padding-inline: var(--sherpa-space-2xs, 4px);
-}
+:host([data-size="small"]) .trigger { padding-inline: var(--sherpa-space-2xs, 4px); }
 
 :host([data-size="x-small"]) {
-  --_button-size: var(--sherpa-size-md, 20px);
+  --_button-size:    var(--sherpa-size-md, 20px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
 }
-
-:host([data-size="x-small"]) .trigger {
-  padding-inline: var(--sherpa-space-3xs, 2px);
-}
+:host([data-size="x-small"]) .trigger { padding-inline: var(--sherpa-space-3xs, 2px); }
 
 :host([data-size="2x-small"]) {
-  --_button-size: var(--sherpa-size-sm, 16px);
+  --_button-size:    var(--sherpa-size-sm, 16px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
 }
-
-:host([data-size="2x-small"]) .trigger {
-  padding-inline: var(--sherpa-space-3xs, 2px);
-}
+:host([data-size="2x-small"]) .trigger { padding-inline: var(--sherpa-space-3xs, 2px); }
 
 :host([data-size="large"]) {
-  --_button-size: var(--sherpa-size-4xl, 48px);
+  --_button-size:    var(--sherpa-size-4xl, 48px);
   --_button-padding: var(--sherpa-space-sm, 12px);
   --_button-spacing: var(--sherpa-space-xs, 8px);
 }
+:host([data-size="large"]) .trigger { padding-inline: var(--sherpa-space-sm, 12px); }
 
-:host([data-size="large"]) .trigger {
-  padding-inline: var(--sherpa-space-sm, 12px);
-}
-
-
-/* ==========================================================================
-   Hover / Down — trigger
-   ========================================================================== */
-
-:host(:not([disabled])) .trigger:hover {
-  background-color: var(--_surface-hover);
-}
-
-:host(:not([disabled])) .trigger:active {
-  background-color: var(--_surface-down);
-}
-
-/* Border hover — standard buttons only */
-:host(:not([disabled]):hover) {
-  border-color: var(--_border-hover);
-}
-
-
-/* ==========================================================================
-   Variants — set private vars at :host, children consume them
-   ========================================================================== */
-
-/* ── Secondary ───────────────────────────────────────────────────────── */
+/* ── Variants ─────────────────────────────────────────────────────────────── */
 
 :host([data-variant="secondary"]) {
   --_surface:       var(--_status-surface, transparent);
@@ -277,14 +251,11 @@
   border-color:     var(--_status-border,   var(--sherpa-border-control-secondary-default, #d5d5d5));
 }
 
-/* Warning edge-case — default warning text lacks contrast on the subtle
-   secondary surface, so we use the same on-color text as primary. */
+/* Warning on secondary: use on-color text for legibility */
 :host([data-variant="secondary"][data-status="warning"]) {
   --_text:       var(--_status-text-on-color);
   --_icon-color: var(--_status-text-on-color);
 }
-
-/* ── Tertiary ────────────────────────────────────────────────────────── */
 
 :host([data-variant="tertiary"]) {
   --_surface:       var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
@@ -295,8 +266,6 @@
   --_border-hover:  transparent;
   border-color:     transparent;
 }
-/* ── Tertiary on color ─────────────────────────────────────────────── */
-/* For use on dark / coloured surfaces. Transparent fill, white text + icon. */
 
 :host([data-variant="tertiary-on-color"]) {
   --_surface:       var(--sherpa-surface-control-tertiary-on-color-default, transparent);
@@ -315,11 +284,7 @@
   border-color:  transparent;
 }
 
-/* ==========================================================================
-   States
-   ========================================================================== */
-
-/* ── Active (boolean attribute — presence = active) ──────────────────── */
+/* ── Active state ─────────────────────────────────────────────────────────── */
 
 :host([data-active]) {
   --_surface:       var(--sherpa-surface-control-active-default, #f8ebff);
@@ -330,13 +295,22 @@
   border-color:     var(--sherpa-border-control-active-default, #8500cc);
 }
 
-/* ── Menu expanded — subtle pressed state on the trigger ─────────────── */
-
-:host([aria-expanded="true"]:not([disabled])) .trigger {
-  background-color: var(--_surface-hover);
+:host([data-active]) .badge {
+  background: var(--sherpa-text-active-base, #8500cc);
+  color: var(--sherpa-surface-control-active-default, #f8ebff);
 }
 
-/* ── Disabled ────────────────────────────────────────────────────────── */
+:host([data-active]) .close {
+  border-inline-start-color: var(--sherpa-border-control-active-default, #8500cc);
+  background-color: var(--_surface);
+  color: var(--_text);
+}
+
+:host([data-active]) .close:hover  { background-color: var(--_surface-hover); }
+:host([data-active]) .close:active { background-color: var(--_surface-down); }
+:host([data-active]) .menu-trigger { background-color: var(--_surface); }
+
+/* ── Disabled state ───────────────────────────────────────────────────────── */
 
 :host([disabled]) {
   --_surface:    var(--sherpa-surface-control-inactive, #f2f2f2);
@@ -347,88 +321,42 @@
   cursor: not-allowed;
 }
 
+/* ── Hover / active states — trigger ─────────────────────────────────────── */
 
-/* ==========================================================================
-   Close / dismiss button (shown via data-dismissable)
-   ========================================================================== */
+:host(:not([disabled])) .trigger:hover  { background-color: var(--_surface-hover); }
+:host(:not([disabled])) .trigger:active { background-color: var(--_surface-down); }
+:host(:not([disabled]):hover) { border-color: var(--_border-hover); }
 
-.close {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--_button-size);
-  height: var(--_button-size);
-  padding: 0;
-  border: none;
-  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
-    var(--sherpa-border-control-secondary-default, #d5d5d5);
-  background: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
+/* ── Dismiss (close) button visibility ───────────────────────────────────── */
 
 :host([data-dismissable]) .close { display: inline-flex; }
 
-.close:hover {
-  background-color: var(--sherpa-surface-control-secondary-hover, #fafafa);
-  color: var(--sherpa-text-default-body, #2e2e33);
-}
+/* ── Menu expanded ────────────────────────────────────────────────────────── */
 
-.close:active {
-  background-color: var(--sherpa-surface-control-secondary-down, #f2f2f2);
-}
-
-/* Active state — close inherits active tokens */
-:host([data-active]) .close {
-  border-inline-start-color: var(--sherpa-border-control-active-default, #8500cc);
-  background-color: var(--_surface);
-  color: var(--_text);
-}
-
-:host([data-active]) .close:hover {
+:host([aria-expanded="true"]:not([disabled])) .trigger {
   background-color: var(--_surface-hover);
 }
 
-:host([data-active]) .close:active {
-  background-color: var(--_surface-down);
+:host([aria-expanded="true"]:not([data-active]):not([disabled])) .menu-trigger {
+  background-color: var(--_surface-hover);
 }
 
+:host([data-active]:not([disabled])) .menu-trigger:hover  { background-color: var(--_surface-hover); }
+:host([data-active]:not([disabled])) .menu-trigger:active { background-color: var(--_surface-down); }
 
-/* ==========================================================================
-   button-menu — Button + menu trigger side by side (action menu)
-   Small / tertiary / bordered by default. Trigger + menu-trigger + close.
-   Unified (default): clicking anywhere opens the menu.
-   Split (data-split): left = buttonclick, right chevron = menu.
-   ========================================================================== */
+/* ── button-menu type ─────────────────────────────────────────────────────── */
 
-/* Visual styling only — sizing/spacing comes from the shared :host([data-size=*]) rules
-   above, so button-menu responds to data-size like every other button type. */
 :host([data-type="button-menu"]) {
-  --_surface:        var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
-  --_text:           var(--sherpa-text-default-label, #18191a);
-  --_icon-color:     var(--sherpa-text-default-label, #18191a);
-  --_surface-hover:  var(--sherpa-surface-control-secondary-hover, #fafafa);
-  --_surface-down:   var(--sherpa-surface-control-secondary-down, #f2f2f2);
-  border-color:      var(--sherpa-border-control-secondary-default, #d5d5d5);
+  --_surface:       var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
+  --_text:          var(--sherpa-text-default-label, #18191a);
+  --_icon-color:    var(--sherpa-text-default-label, #18191a);
+  --_surface-hover: var(--sherpa-surface-control-secondary-hover, #fafafa);
+  --_surface-down:  var(--sherpa-surface-control-secondary-down, #f2f2f2);
+  border-color:     var(--sherpa-border-control-secondary-default, #d5d5d5);
 }
 
-:host([data-type="button-menu"]) .menu-trigger {
-  display: inline-flex;
-}
+:host([data-type="button-menu"]) .menu-trigger { display: inline-flex; }
 
-/* Boolean filter chips — no dropdown menu, acts as a simple toggle */
-:host([data-filter-type="boolean"]) .menu-trigger {
-  display: none;
-}
-
-/* No-dropdown mode — hides the chevron dropdown, acts as a cycle-only button */
-:host([data-no-dropdown]) .menu-trigger {
-  display: none;
-}
-
-/* Active — button-menu */
 :host([data-type="button-menu"][data-active]) {
   --_surface:       var(--sherpa-surface-control-active-default, #f8ebff);
   --_text:          var(--sherpa-text-active-base, #8500cc);
@@ -438,7 +366,6 @@
   border-color:     var(--sherpa-border-control-active-default, #8500cc);
 }
 
-/* Split mode — visual divider between trigger and menu-trigger */
 :host([data-type="button-menu"][data-split]) .menu-trigger {
   border-inline-start: var(--sherpa-border-width-xs, 1px) solid
     var(--sherpa-border-control-secondary-default, #d5d5d5);
@@ -448,66 +375,16 @@
   border-inline-start-color: var(--sherpa-border-control-active-default, #8500cc);
 }
 
-/* Disabled — button-menu */
 :host([data-type="button-menu"][disabled]) {
   border-color: var(--sherpa-border-control-inactive, #8d8d99);
 }
 
+:host([data-filter-type="boolean"]) .menu-trigger { display: none; }
+:host([data-no-dropdown])           .menu-trigger { display: none; }
 
-/* ==========================================================================
-   Menu trigger — clickable div with chevron (button-menu template)
-   Hidden by default; shown only for button-menu type.
-   ========================================================================== */
-
-.menu-trigger {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--_button-size);
-  height: var(--_button-size);
-  padding: 0;
-  background-color: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
-  color: var(--_icon-color);
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background-color 0.15s;
-}
-
-.menu-trigger:hover {
-  background-color: var(--sherpa-surface-control-secondary-hover, #fafafa);
-}
-
-.menu-trigger:active {
-  background-color: var(--sherpa-surface-control-secondary-down, #f2f2f2);
-}
-
-:host([data-active]) .menu-trigger {
-  background-color: var(--_surface);
-}
-
-:host([aria-expanded="true"]:not([data-active]):not([disabled])) .menu-trigger {
-  background-color: var(--_surface-hover);
-}
-
-:host([data-active]:not([disabled])) .menu-trigger:hover {
-  background-color: var(--_surface-hover);
-}
-
-:host([data-active]:not([disabled])) .menu-trigger:active {
-  background-color: var(--_surface-down);
-}
-
-
-/* ==========================================================================
-   icon-menu — Icon-only menu trigger (overflow menus)
-   Always functions as a menu trigger. No native <select>.
-   ========================================================================== */
+/* ── icon-menu type ───────────────────────────────────────────────────────── */
 
 :host([data-type="icon-menu"]) .trigger {
   aspect-ratio: 1;
   padding-inline: var(--_button-padding);
 }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

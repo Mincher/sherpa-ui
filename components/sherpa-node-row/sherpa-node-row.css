@@ -1,95 +1,87 @@
 /**
- * sherpa-node-row.css
- *
- * Grid layout: [in-gutter | control | out-gutter] with label and helper
- * spanning all three columns. Sockets align to the vertical center of
- * the control (not the row body), so labels/helpers don't push them
- * off-axis. The control's outer edges line up with the subtype-select
- * above (both inset 12px from the node edge).
+ * sherpa-node-row.css — Phase 2 Modernization (CSS Nesting)
+ * Grid layout for node canvas row: [in-gutter | control | out-gutter]
+ * Label and helper span full width; sockets align to control center.
  */
 
 :host {
   display: block;
   position: relative;
+
+  /* ──────────────────────────────────────────────────────────
+     ROW GRID (3 columns: in-gutter | control | out-gutter)
+     ────────────────────────────────────────────────────────── */
+  & .row {
+    display: grid;
+    grid-template-columns:
+      var(--sherpa-node-socket-gutter, 16px) 1fr var(--sherpa-node-socket-gutter, 16px);
+    row-gap: var(--sherpa-space-3xs, 4px);
+    padding: var(--sherpa-space-xs, 12px) 0;
+  }
+
+  /* ── Label + Helper (full-width, span all columns) ─– */
+  & .row-label,
+  & .row-helper {
+    grid-column: 1 / -1;
+    padding: 0 var(--sherpa-space-sm, 16px);
+  }
+
+  & .row-label {
+    font-size: var(--sherpa-font-sm-size, 12px);
+    font-weight: 600;
+    color: var(--sherpa-text-default-label, #18191a);
+    line-height: 1.4;
+
+    &:not([data-has-content]) { display: none; }
+  }
+
+  & .row-helper {
+    font-size: var(--sherpa-font-xs-size, 10px);
+    color: var(--sherpa-text-default-secondary, #5c5c66);
+    line-height: 1.4;
+
+    &:not([data-has-content]) { display: none; }
+  }
+
+  /* ── Gutters (socket containers, vertically centered) ––– */
+  & .gutter {
+    display: flex;
+    align-items: center;
+    overflow: visible;
+  }
+
+  & .gutter-in { justify-content: flex-start; }
+  & .gutter-out { justify-content: flex-end; }
+
+  /* Sockets centered on node edge via half-width translate */
+  & .gutter-in ::slotted(*) { transform: translateX(-50%); }
+  & .gutter-out ::slotted(*) { transform: translateX(50%); }
+
+  /* ── Control (flex row for inputs) ──────────────────– */
+  & .row-control {
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-xs, 12px);
+    min-height: var(--sherpa-size-md, 20px);
+    padding: 0 var(--sherpa-space-2xs, 8px);
+    color: var(--sherpa-text-default-body, #2e2e33);
+    min-width: 0;
+
+    /* Input elements fill available width */
+    & ::slotted(sherpa-input-text),
+    & ::slotted(sherpa-input-number),
+    & ::slotted(sherpa-input-select),
+    & ::slotted(sherpa-input-time),
+    & ::slotted(sherpa-input-date),
+    & ::slotted(sherpa-input-search),
+    & ::slotted(sherpa-input-password),
+    & ::slotted(sherpa-input-tag) {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+    }
+  }
+
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
 }
-
-.row {
-  display: grid;
-  grid-template-columns:
-    var(--sherpa-node-socket-gutter, 16px) 1fr var(--sherpa-node-socket-gutter, 16px);
-  row-gap: var(--sherpa-space-3xs, 4px);
-  padding: var(--sherpa-space-xs, 12px) 0;
-}
-
-/* Label + helper span the full width and re-introduce the body
-   horizontal padding so they line up with the subtype select. */
-.row-label,
-.row-helper {
-  grid-column: 1 / -1;
-  padding: 0 var(--sherpa-space-sm, 16px);
-}
-
-.row-label {
-  font-size: var(--sherpa-font-sm-size, 12px);
-  font-weight: 600;
-  color: var(--sherpa-text-default-label, #18191a);
-  line-height: 1.4;
-}
-.row-label:not([data-has-content]) { display: none; }
-
-.row-helper {
-  font-size: var(--sherpa-font-xs-size, 10px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
-  line-height: 1.4;
-}
-.row-helper:not([data-has-content]) { display: none; }
-
-/* Socket gutters — sit at the node edge, vertically centered on the
-   control row only (label/helper are above/below in their own rows). */
-.gutter {
-  display: flex;
-  align-items: center;
-  overflow: visible;
-}
-.gutter-in  { justify-content: flex-start; }
-.gutter-out { justify-content: flex-end; }
-
-/* Sockets centered on the node's outer edge via half-width translate. */
-.gutter-in  ::slotted(*) { transform: translateX(-50%); }
-.gutter-out ::slotted(*) { transform: translateX( 50%); }
-
-/* Control sits between the gutters. Inner padding pulls its outer
-   edges to 12px from the node edge (8px gutter + 4px) — matching
-   `.subtype-select` inside `.node-subtype`. */
-.row-control {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 12px);
-  min-height: var(--sherpa-size-md, 20px);
-  padding: 0 var(--sherpa-space-2xs, 8px);
-  color: var(--sherpa-text-default-body, #2e2e33);
-  min-width: 0;
-}
-
-/* Inputs are full sherpa-input-* components — height, border, focus,
-   and disabled visuals are owned by the input. We only need to make
-   them fill the available row width. */
-.row-control ::slotted(sherpa-input-text),
-.row-control ::slotted(sherpa-input-number),
-.row-control ::slotted(sherpa-input-select),
-.row-control ::slotted(sherpa-input-time),
-.row-control ::slotted(sherpa-input-date),
-.row-control ::slotted(sherpa-input-search),
-.row-control ::slotted(sherpa-input-password),
-.row-control ::slotted(sherpa-input-tag) {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: 100%;
-}
-
-/* Multi-input rows still grow with stacked socket dots; the socket
-   itself drives extra height intrinsically (see sherpa-node-socket
-   .connectors flex column). No row-level min-height needed. */
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

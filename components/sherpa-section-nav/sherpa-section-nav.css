@@ -1,9 +1,9 @@
 /**
- * sherpa-section-nav.css — Secondary navigation panel styles.
- *
- * All values come from Sherpa design tokens so the panel adapts to
- * light / dark / data-protection / classic themes automatically.
+ * sherpa-section-nav.css — Phase 2 Modernization (CSS Nesting)
+ * Secondary navigation panel with optional header, sections, and items.
  */
+
+i { font-style: normal; }
 
 :host {
   display: flex;
@@ -16,146 +16,120 @@
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
   overflow: hidden;
   box-sizing: border-box;
-}
 
-/* ── Header ─────────────────────────────────────────────────────── */
-.header {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-base, 16px);
-}
+  & .header {
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-xs, 8px);
+    padding: var(--sherpa-space-base, 16px);
+  }
 
-/* Opt-in divider beneath the header. */
-:host([data-divider]) .header {
-  border-block-end: 1px solid var(--sherpa-border-container-default, #d5d5d5);
-}
+  &[data-divider] .header { border-block-end: 1px solid var(--sherpa-border-container-default, #d5d5d5); }
 
-.back {
-  all: unset;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--sherpa-border-rounding-base, 4px);
-  cursor: pointer;
-  color: var(--sherpa-text-default-body, #111111);
-  flex: 0 0 auto;
-}
-/* `all: unset` above clobbers UA defaults; hide the back button by default and
-   reveal it only when the host opts in via data-show-back / data-show-back-default. */
-.back {
-  display: none;
-}
-:host([data-show-back="true"]) .back,
-:host([data-show-back-default]) .back {
-  display: inline-flex;
-}
-.back:hover {
-  background: var(--sherpa-surface-control-secondary-hover, #f5f5f5);
-}
-.back:focus-visible {
-  outline: var(--sherpa-border-width-base, 2px) solid var(--sherpa-border-control-primary-default, #4c63e5);
-  outline-offset: 2px;
-}
+  & .back {
+    all: unset;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--sherpa-border-rounding-base, 4px);
+    cursor: pointer;
+    color: var(--sherpa-text-default-body, #111111);
+    flex: 0 0 auto;
 
-.heading {
-  margin: 0;
-  flex: 1 1 auto;
-  color: var(--sherpa-text-default-heading, #111111);
-}
+    &:hover { background: var(--sherpa-surface-control-secondary-hover, #f5f5f5); }
+    &:focus-visible {
+      outline: var(--sherpa-border-width-base, 2px) solid var(--sherpa-border-control-primary-default, #4c63e5);
+      outline-offset: 2px;
+    }
+  }
 
-.header-end {
-  display: inline-flex;
-  align-items: center;
-  flex: 0 0 auto;
-}
-.header-end:not([data-has-content]) {
-  display: none;
-}
+  &[data-show-back="true"] .back,
+  &[data-show-back-default] .back { display: inline-flex; }
 
-/* ── Sections list ──────────────────────────────────────────────── */
-.sections {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding-block: var(--sherpa-space-xs, 8px);
-}
+  & .heading {
+    margin: 0;
+    flex: 1 1 auto;
+    color: var(--sherpa-text-default-heading, #111111);
+  }
 
-.group {
-  display: flex;
-  flex-direction: column;
-}
+  & .header-end {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
 
-.group-label {
-  margin: 0;
-  padding: var(--sherpa-space-base, 16px) var(--sherpa-space-base, 16px) var(--sherpa-space-2xs, 4px);
-  color: var(--sherpa-text-default-secondary, #464646);
-}
+    &:not([data-has-content]) { display: none; }
+  }
 
-.group-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+  & .sections {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-block: var(--sherpa-space-xs, 8px);
+  }
 
-/* ── Item — interactive button ──────────────────────────────────── */
-.item {
-  all: unset;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sherpa-space-xs, 8px);
-  width: 100%;
-  box-sizing: border-box;
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-base, 16px) var(--sherpa-space-xs, 8px) var(--sherpa-space-xl, 24px);
-  cursor: pointer;
-  font-family: inherit;
-  color: var(--sherpa-text-default-body, #111111);
-}
-.item:hover {
-  background: var(--sherpa-surface-control-secondary-hover, #f5f5f5);
-}
-.item:focus-visible {
-  outline: var(--sherpa-border-width-base, 2px) solid var(--sherpa-border-control-primary-default, #4c63e5);
-  outline-offset: -2px;
-}
-.item[aria-current="page"],
-.item[data-active="true"] {
-  background: var(--sherpa-surface-app-product-nav-active, #f8ebff);
-  color: inherit;
-}
+  & .group { display: flex; flex-direction: column; }
 
-.item-label {
-  flex: 1 1 auto;
-  min-width: 0;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
+  & .group-label {
+    margin: 0;
+    padding: var(--sherpa-space-base, 16px) var(--sherpa-space-base, 16px) var(--sherpa-space-2xs, 4px);
+    color: var(--sherpa-text-default-secondary, #464646);
+  }
 
-.item-icon {
-  flex: 0 0 auto;
-  color: var(--sherpa-text-default-secondary, #464646);
-}
+  & .group-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 
-/* ── Header item — non-interactive (e.g. user name + email) ─────── */
-.header-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-base, 16px) var(--sherpa-space-2xs, 4px) var(--sherpa-space-xl, 24px);
-  color: var(--sherpa-text-default-body, #111111);
-}
-.header-item-name {
-  color: var(--sherpa-text-default-heading, #111111);
-}
-.header-item-description {
-  color: var(--sherpa-text-default-secondary, #464646);
-}
+  & .item {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sherpa-space-xs, 8px);
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-base, 16px) var(--sherpa-space-xs, 8px) var(--sherpa-space-xl, 24px);
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--sherpa-text-default-body, #111111);
 
-/* Native [hidden] support */
-:host([hidden]) { display: none; }
+    &:hover { background: var(--sherpa-surface-control-secondary-hover, #f5f5f5); }
+    &:focus-visible {
+      outline: var(--sherpa-border-width-base, 2px) solid var(--sherpa-border-control-primary-default, #4c63e5);
+      outline-offset: -2px;
+    }
+    &[aria-current="page"],
+    &[data-active="true"] { background: var(--sherpa-surface-app-product-nav-active, #f8ebff); }
+  }
+
+  & .item-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  & .item-icon {
+    flex: 0 0 auto;
+    color: var(--sherpa-text-default-secondary, #464646);
+  }
+
+  & .header-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-base, 16px) var(--sherpa-space-2xs, 4px) var(--sherpa-space-xl, 24px);
+    color: var(--sherpa-text-default-body, #111111);
+  }
+
+  & .header-item-name { color: var(--sherpa-text-default-heading, #111111); }
+  & .header-item-description { color: var(--sherpa-text-default-secondary, #464646); }
+
+  &[hidden] { display: none; }
+}

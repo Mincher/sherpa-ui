@@ -1,20 +1,19 @@
 /**
- * sherpa-content-section.css — In-flow side content section.
+ * sherpa-content-section.css — Phase 2 Modernization (CSS Nesting)
+ * In-flow side content section with minimize/restore controls.
  *
  * Distinct from sherpa-panel:
- *   - sherpa-panel       → fixed/overlay drawers anchored to the viewport.
- *   - sherpa-content-section → in-flow column inside a layout, fills its
- *     allotted height, can be minimised to a narrow strip on the side it
- *     is anchored to.
+ *   - sherpa-panel → fixed/overlay drawers anchored to the viewport
+ *   - sherpa-content-section → in-flow column inside a layout, fills height
  *
- * Host attributes consumed:
- *   data-position   — left | right (which side the section anchors to;
- *                     drives chevron direction + restore-strip placement)
- *   data-heading    — Heading text shown in the header
- *   data-minimised  — When present, header/toolbar/body collapse to a
- *                     narrow restore strip on the anchored side.
- *   data-has-actions — Auto-set by SherpaElement when [slot=actions] is filled
- *   data-has-toolbar — Auto-set by SherpaElement when [slot=toolbar] is filled
+ * Host attributes:
+ *   data-position     — left | right (which side the section anchors to)
+ *   data-heading      — Heading text shown in the header
+ *   data-minimised    — Collapse to narrow restore strip on anchored side
+ *   data-has-actions  — Actions slot present (auto-set by SherpaElement)
+ *   data-has-toolbar  — Toolbar slot present (auto-set by SherpaElement)
+ *   data-has-search   — Search slot present (auto-set by SherpaElement)
+ *   data-flush        — Remove body padding (content owns gutters)
  */
 
 :host {
@@ -34,183 +33,168 @@
   --_section-min-strip: 40px;
   width: var(--_section-width);
   flex-shrink: 0;
-}
 
-:host([hidden]) { display: none; }
+  /* ──────────────────────────────────────────────────────────
+     HEADER
+     ────────────────────────────────────────────────────────── */
+  & .section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-xs, 8px);
+    padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+    border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+    flex-shrink: 0;
+    min-height: 48px;
+    box-sizing: border-box;
+  }
 
-/* ── Header ───────────────────────────────────────────── */
+  & .section-title {
+    flex: 1;
+    margin: 0;
+    font-size: var(--sherpa-fonts-scale-base, 16px);
+    font-weight: var(--sherpa-font-weight-semibold, 600);
+    line-height: var(--sherpa-line-height-default, 1.5);
+    color: var(--sherpa-text-default-heading, #18191a);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-  flex-shrink: 0;
-  min-height: 48px;
-  box-sizing: border-box;
-}
+  &(:not([data-heading])) .section-title { display: none; }
 
-.section-title {
-  flex: 1;
-  margin: 0;
-  font-size: var(--sherpa-fonts-scale-base, 16px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: var(--sherpa-line-height-default, 1.5);
-  color: var(--sherpa-text-default-heading, #18191a);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  & .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-xs, 8px);
+    flex-shrink: 0;
+  }
 
-:host(:not([data-heading])) .section-title { display: none; }
+  &(:not([data-has-actions])) .header-actions { display: none; }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  flex-shrink: 0;
-}
+  /* ── Minimise / restore controls ───────────────────– */
+  & .minimise-btn,
+  & .restore-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sherpa-space-xs, 8px);
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--sherpa-text-default-body, #2e2e33);
+    cursor: pointer;
+    border-radius: var(--sherpa-border-rounding-sm, 4px);
 
-:host(:not([data-has-actions])) .header-actions { display: none; }
+    &:hover { background: var(--sherpa-surface-container-hover, #f0f0f5); }
+  }
 
-/* ── Minimise / restore controls ──────────────────────── */
+  & .minimise-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
 
-.minimise-btn,
-.restore-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sherpa-space-xs, 8px);
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--sherpa-text-default-body, #2e2e33);
-  cursor: pointer;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
-}
+  /* Chevron direction — points toward the anchored side */
+  &[data-position="left"] .minimise-icon::before { content: "\f053"; } /* chevron-left */
+  &[data-position="right"] .minimise-icon::before { content: "\f054"; } /* chevron-right */
+  &(:not([data-position])) .minimise-icon::before { content: "\f053"; }
 
-.minimise-btn {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-}
+  /* When right-anchored, reverse header order so chevron sits on screen edge */
+  &[data-position="right"] .section-header { flex-direction: row-reverse; }
 
-.minimise-btn:hover,
-.restore-btn:hover {
-  background: var(--sherpa-surface-container-hover, #f0f0f5);
-}
+  /* When left-anchored, push minimise button to trailing edge */
+  &[data-position="left"] .minimise-btn { order: 1; }
 
-/* Chevron direction — points toward the anchored side. */
-:host([data-position="left"]) .minimise-icon::before  { content: "\f053"; } /* chevron-left */
-:host([data-position="right"]) .minimise-icon::before { content: "\f054"; } /* chevron-right */
-:host(:not([data-position])) .minimise-icon::before   { content: "\f053"; }
+  /* ──────────────────────────────────────────────────────────
+     TOOLBAR
+     ────────────────────────────────────────────────────────── */
+  & .section-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-xs, 8px);
+    padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+    border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+    background: var(--sherpa-surface-container-secondary-default, #fafafd);
+    flex-shrink: 0;
+  }
 
-/* When anchored on the right, header order is reversed so the minimise
-   chevron sits closest to the screen edge. */
-:host([data-position="right"]) .section-header {
-  flex-direction: row-reverse;
-}
+  &(:not([data-has-toolbar])) .section-toolbar { display: none; }
 
-/* When anchored on the left, push the minimise button to the trailing
-   edge of the header (after the title + actions) so it sits on the
-   inner edge — matching the right-anchored mirror. */
-:host([data-position="left"]) .minimise-btn { order: 1; }
+  /* ──────────────────────────────────────────────────────────
+     BODY (scrollable content area)
+     ────────────────────────────────────────────────────────── */
+  & .section-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: var(--sherpa-space-base, 16px);
+    display: flex;
+    flex-direction: column;
+  }
 
-/* ── Toolbar ──────────────────────────────────────────── */
+  /* Opt-in: remove body padding (content owns gutters) */
+  &[data-flush] .section-body { padding: 0; }
+  &[data-flush] .section-search { margin: 0; margin-bottom: var(--sherpa-space-sm, 12px); }
 
-.section-toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-  background: var(--sherpa-surface-container-secondary-default, #fafafd);
-  flex-shrink: 0;
-}
+  /* ── Sticky search slot ────────────────────────────– */
+  & .section-search {
+    position: sticky;
+    top: calc(var(--sherpa-space-base, 16px) * -1);
+    z-index: 1;
+    margin: calc(var(--sherpa-space-base, 16px) * -1);
+    margin-bottom: var(--sherpa-space-sm, 12px);
+    padding: var(--sherpa-space-sm, 12px);
+    background: var(--sherpa-surface-container-default, #ffffff);
+    border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  }
 
-:host(:not([data-has-toolbar])) .section-toolbar { display: none; }
+  &(:not([data-has-search])) .section-search { display: none; }
 
-/* ── Body ─────────────────────────────────────────────── */
+  /* ──────────────────────────────────────────────────────────
+     RESTORE STRIP (visible when minimised)
+     ────────────────────────────────────────────────────────── */
+  & .restore-btn {
+    display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--sherpa-space-xs, 8px) 0;
+    gap: var(--sherpa-space-xs, 8px);
+    color: var(--sherpa-text-default-secondary, #5c5c66);
+  }
 
-.section-body {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: var(--sherpa-space-base, 16px);
-  /* Flex column so a slotted child with `flex: 1` (e.g. sherpa-list-panel)
-     can fill the available height and own its own internal scrolling. */
-  display: flex;
-  flex-direction: column;
-}
+  /* Label sits below button, rotated 90° to read vertically */
+  & .restore-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: var(--sherpa-fonts-scale-sm, 14px);
+    font-weight: var(--sherpa-font-weight-semibold, 600);
 
-/* Opt-in: remove default body padding so the slotted content owns its
-   own gutters (useful for list panels / data grids that already pad). */
-:host([data-flush]) .section-body {
-  padding: 0;
-}
-:host([data-flush]) .section-search {
-  margin: 0;
-  margin-bottom: var(--sherpa-space-sm, 12px);
-}
+    &:empty { display: none; }
+  }
 
-/* ── Sticky search slot ──────────────────────────────────
-   Sits at the top of the scrolling body. The wrapper is
-   sticky (so it stays pinned while body content scrolls
-   beneath) and is hidden when no element occupies the slot. */
-.section-search {
-  position: sticky;
-  top: calc(var(--sherpa-space-base, 16px) * -1);
-  z-index: 1;
-  margin: calc(var(--sherpa-space-base, 16px) * -1);
-  margin-bottom: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-sm, 12px);
-  background: var(--sherpa-surface-container-default, #ffffff);
-  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-}
-:host(:not([data-has-search])) .section-search { display: none; }
+  /* Restore chevron points away from anchored side (toward content) */
+  &[data-position="left"] .restore-icon::before { content: "\f054"; }
+  &[data-position="right"] .restore-icon::before { content: "\f053"; }
+  &(:not([data-position])) .restore-icon::before { content: "\f054"; }
 
-/* ── Restore strip (default hidden) ───────────────────── */
+  /* ──────────────────────────────────────────────────────────
+     MINIMISED STATE
+     ────────────────────────────────────────────────────────── */
+  &[data-minimised] {
+    width: var(--_section-min-strip);
+  }
 
-.restore-btn {
-  display: none;
-  width: 100%;
-  height: 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: var(--sherpa-space-xs, 8px) 0;
-  gap: var(--sherpa-space-xs, 8px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
-}
+  &[data-minimised] .section-header,
+  &[data-minimised] .section-toolbar,
+  &[data-minimised] .section-body {
+    display: none;
+  }
 
-/* Label sits below the button, rotated 90° so it reads vertically. */
-.restore-label {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-}
+  &[data-minimised] .restore-btn { display: flex; }
 
-.restore-label:empty { display: none; }
-
-/* Restore chevron points away from the anchored side (toward content). */
-:host([data-position="left"]) .restore-icon::before  { content: "\f054"; }
-:host([data-position="right"]) .restore-icon::before { content: "\f053"; }
-:host(:not([data-position])) .restore-icon::before   { content: "\f054"; }
-
-/* ── Minimised state ──────────────────────────────────── */
-
-:host([data-minimised]) {
-  width: var(--_section-min-strip);
-}
-
-:host([data-minimised]) .section-header,
-:host([data-minimised]) .section-toolbar,
-:host([data-minimised]) .section-body {
-  display: none;
-}
-
-:host([data-minimised]) .restore-btn {
-  display: flex;
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
 }

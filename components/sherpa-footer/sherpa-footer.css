@@ -1,11 +1,11 @@
 /**
- * sherpa-footer.css
- * Shared styles for all footer template variants.
+ * sherpa-footer.css — Phase 2 Modernization (CSS Nesting)
+ * Page footer with action-bar and slot variants.
+ *
+ * Host attributes:
+ *   data-show-cancel — Show cancel button (action-bar mode)
+ *   data-show-apply  — Show apply button (action-bar mode)
  */
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   BASE STYLES
-   ═══════════════════════════════════════════════════════════════════════════ */
 
 :host {
   display: block;
@@ -15,74 +15,65 @@
   --_padding-sm: var(--sherpa-space-sm, 8px);
   --_padding: var(--sherpa-space-default, 16px);
   --_border-width: var(--sherpa-border-width-base, 1px);
+
+  /* ──────────────────────────────────────────────────────────
+     FOOTER WRAPPER
+     ────────────────────────────────────────────────────────── */
+  & .footer { box-sizing: border-box; }
+
+  /* ──────────────────────────────────────────────────────────
+     ACTION-BAR FOOTER (cancel / apply buttons)
+     ────────────────────────────────────────────────────────── */
+  & .action-bar-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--_gap);
+    padding: var(--_padding-sm);
+    border-top: var(--_border-width) solid
+      var(--sherpa-border-control-secondary-default, #d5d5d5);
+  }
+
+  & .action-bar-footer slot[name="start"] {
+    flex: 1;
+    min-width: 0;
+  }
+
+  & .action-buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--_gap);
+    flex-shrink: 0;
+
+    & sherpa-button { flex-shrink: 0; }
+  }
+
+  /* Button visibility toggles */
+  &[data-show-cancel="false"] .cancel-button { display: none; }
+
+  &[data-show-apply="false"] .apply-button { display: none; }
+
+  /* ──────────────────────────────────────────────────────────
+     SLOT FOOTER (passthrough content)
+     ────────────────────────────────────────────────────────── */
+  & .slot-footer {
+    display: none;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--_gap);
+    padding: var(--_padding-sm) var(--_padding);
+    border-top: var(--_border-width) solid
+      var(--sherpa-border-container-subtle, #f0f0f5);
+
+    &[data-has-content] { display: flex; }
+  }
+
+  & ::slotted(*) {
+    display: flex;
+    align-items: center;
+    gap: var(--_padding);
+  }
+
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
 }
-
-
-.footer {
-  box-sizing: border-box;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ACTION-BAR FOOTER (cancel / apply)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.action-bar-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--_gap);
-  padding: var(--_padding-sm);
-  border-top: var(--_border-width) solid
-    var(--sherpa-border-control-secondary-default, #d5d5d5);
-}
-
-.action-bar-footer slot[name="start"] {
-  flex: 1;
-  min-width: 0;
-}
-
-.action-buttons {
-  display: flex;
-  align-items: center;
-  gap: var(--_gap);
-  flex-shrink: 0;
-}
-
-.action-buttons sherpa-button {
-  flex-shrink: 0;
-}
-
-/* Cancel/apply visibility — CSS-driven via host attributes */
-:host([data-show-cancel="false"]) .cancel-button {
-  display: none;
-}
-:host([data-show-apply="false"]) .apply-button {
-  display: none;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SLOT FOOTER (passthrough)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.slot-footer {
-  display: none;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--_gap);
-  padding: var(--_padding-sm) var(--_padding);
-  border-top: var(--_border-width) solid
-    var(--sherpa-border-container-subtle, #f0f0f5);
-}
-
-.slot-footer[data-has-content] {
-  display: flex;
-}
-
-::slotted(*) {
-  display: flex;
-  align-items: center;
-  gap: var(--_padding);
-}
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

@@ -1,109 +1,130 @@
 /**
- * sherpa-node-header.css — 48px header per Figma.
+ * sherpa-node-header.css — Phase 2 Modernization (CSS Nesting)
+ * 48px header row for node canvas with sockets on left/right gutters.
  *
- * Title is heavy 16px/600 in default text colour. Per-spec the only
- * coloured chrome on the header itself is the gutter sockets; the
- * built-in drill-down button is rendered in a neutral surface tile.
+ * Layout: [in-gutter | header-body (icon + title + actions) | out-gutter]
+ * Title is 16px/600 in default text color. Drill-down button is neutral surface.
+ *
+ * Host attributes:
+ *   data-icon           — Built-in icon (no slot needed)
+ *   data-drill-down     — Show drill-down button
+ *
+ * Slots:
+ *   icon — Leading icon element
+ *   title — Title text (optional)
+ *   gutter-in, gutter-out — Socket elements
+ *   actions — Trailing action elements
  */
+
+i { font-style: normal; }
 
 :host {
   display: block;
   position: relative;
-}
 
-/* ── Flex row: [in-gutter | header-body | out-gutter] ──────────── */
-/* Height is intrinsic — driven by the header-body padding + content. */
-.header {
-  display: flex;
-  align-items: stretch;
-}
+  /* ──────────────────────────────────────────────────────────
+     HEADER FLEX ROW (gutter-in | body | gutter-out)
+     ────────────────────────────────────────────────────────── */
+  & .header {
+    display: flex;
+    align-items: stretch;
+  }
 
-.gutter {
-  flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
-  display: flex;
-  align-items: center;
-  overflow: visible;
-}
-.gutter-in  { justify-content: flex-start; }
-.gutter-out { justify-content: flex-end; }
+  /* ── Gutter zones (flex-aligned for natural socket flow) ───– */
+  & .gutter {
+    flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
+    display: flex;
+    align-items: center;
+    overflow: visible;
+  }
 
-/* Sockets sit naturally in flex flow but get visually centered on the
-   node's outer edge via a half-width translate. Works for any socket
-   shape (circle, capsule, D, square, triangle) because translateX(50%)
-   is relative to the slotted element's own intrinsic width. */
-.gutter-in  ::slotted(*) { transform: translateX(-50%); }
-.gutter-out ::slotted(*) { transform: translateX( 50%); }
+  & .gutter-in { justify-content: flex-start; }
+  & .gutter-out { justify-content: flex-end; }
 
-.header-body {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-  min-width: 0;
-}
+  /* ── Sockets positioned half-width outside the gutter ────– */
+  & .gutter-in ::slotted(*) { transform: translateX(-50%); }
+  & .gutter-out ::slotted(*) { transform: translateX(50%); }
 
-/* ── Icon slot + built-in shorthand ────────────────────────────── */
-.icon {
-  display: inline-flex;
-  width: 24px;
-  height: 24px;
-  align-items: center;
-  justify-content: center;
-  color: var(--sherpa-text-default-body, #2e2e33);
-  flex: 0 0 auto;
-  font-size: 18px;
-}
-/* Hide whole icon container if neither a slotted icon nor a data-icon
-   shorthand were provided. Slot wrapper gets data-has-content from
-   SherpaElement; built-in <i> is hidden unless host[data-icon]. */
-:host(:not([data-icon])) .icon-built-in { display: none; }
-.icon:not([data-has-content]):not([data-has-built-in]) { display: none; }
+  /* ──────────────────────────────────────────────────────────
+     HEADER BODY (icon + title + actions)
+     ────────────────────────────────────────────────────────── */
+  & .header-body {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-xs, 8px);
+    padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+    min-width: 0;
+  }
 
-/* ── Title ─────────────────────────────────────────────────────── */
-.title {
-  flex: 1 1 auto;
-  font-size: var(--sherpa-font-base-size, 16px);
-  font-weight: 600;
-  color: var(--sherpa-text-default-heading, #18191a);
-  line-height: 1.5;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  /* ──────────────────────────────────────────────────────────
+     ICON (leading, 24x24)
+     ────────────────────────────────────────────────────────── */
+  & .icon {
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+    color: var(--sherpa-text-default-body, #2e2e33);
+    flex: 0 0 auto;
+    font-size: 18px;
+  }
 
-/* ── Actions: built-in drill-down + slotted ────────────────────── */
-.actions {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sherpa-space-2xs, 4px);
-  flex: 0 0 auto;
-}
+  /* Hide icon container if empty and no built-in shorthand */
+  &(:not([data-icon])) .icon-built-in { display: none; }
+  & .icon:not([data-has-content]):not([data-has-built-in]) { display: none; }
 
-.drill-down {
-  all: unset;
-  display: none;
-  width: 28px;
-  height: 28px;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: var(--sherpa-surface-container-default, #ffffff);
-  border: 1px solid var(--sherpa-border-container-default, #d5d5d5);
-  color: var(--sherpa-text-default-body, #2e2e33);
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 150ms ease, border-color 150ms ease;
-}
-.drill-down:hover {
-  background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default, #ffffff));
-  border-color: var(--sherpa-border-container-default, #d5d5d5);
-}
-.drill-down:active {
-  transform: scale(0.96);
-}
+  /* ──────────────────────────────────────────────────────────
+     TITLE (16px/600, truncated)
+     ────────────────────────────────────────────────────────── */
+  & .title {
+    flex: 1 1 auto;
+    font-size: var(--sherpa-font-base-size, 16px);
+    font-weight: 600;
+    color: var(--sherpa-text-default-heading, #18191a);
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-:host([data-drill-down]) .drill-down { display: inline-flex; }
+  /* ──────────────────────────────────────────────────────────
+     ACTIONS (trailing zone: drill-down + slotted)
+     ────────────────────────────────────────────────────────── */
+  & .actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sherpa-space-2xs, 4px);
+    flex: 0 0 auto;
+  }
 
-/* Native [hidden] support */
-:host([hidden]) { display: none; }
+  /* ── Drill-down button (conditional) ──────────────────– */
+  & .drill-down {
+    all: unset;
+    display: none;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--sherpa-border-rounding-base, 4px);
+    background: var(--sherpa-surface-container-default, #ffffff);
+    border: 1px solid var(--sherpa-border-container-default, #d5d5d5);
+    color: var(--sherpa-text-default-body, #2e2e33);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 150ms ease, border-color 150ms ease;
+
+    &:hover {
+      background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default, #ffffff));
+      border-color: var(--sherpa-border-container-default, #d5d5d5);
+    }
+
+    &:active { transform: scale(0.96); }
+  }
+
+  &[data-drill-down] .drill-down { display: inline-flex; }
+
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
+}

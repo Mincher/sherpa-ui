@@ -1,20 +1,19 @@
 
 /**
- * sherpa-dialog.css
+ * sherpa-dialog.css — Phase 2 Modernization (CSS Nesting)
  * Shadow DOM styles for the SherpaDialog web component.
  *
  * Uses the native HTML <dialog> element with ::backdrop pseudo-element.
  * The sherpa-header and sherpa-footer slotted children handle their own
  * rendering and events.
  *
- * Status strategy: :host([data-status="..."]) — border-only treatment
- *   - .dialog is the native <dialog> visual panel (border, background, shadow)
- *   - Status border applied to .dialog via :host attribute selectors
- *
  * Host attributes:
- *   status        — success | critical | warning | info | urgent
- *   open          — dialog visibility (reflected by native <dialog>)
- *   size          — small | medium (default) | large | full
+ *   data-status       — success | critical | warning | info | urgent
+ *   data-size         — small | medium (default) | large | full
+ *   data-template     — wizard (multi-page mode)
+ *   data-page         — 0-5 (current page in wizard mode)
+ *   data-has-heading  — Custom heading slot present
+ *   data-dismissible  — true | false (show close button)
  *
  * Slots:
  *   header    — sherpa-header (type="dialog") for title / close button
@@ -22,14 +21,10 @@
  *   footer    — sherpa-footer or custom footer content
  */
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   HOST
-   ═══════════════════════════════════════════════════════════════════════════ */
-
 :host {
   display: contents;
 
-  /* Private aliases */
+  /* ── Private token aliases ────────────────────────────── */
   --_surface: var(--sherpa-surface-container-default, #ffffff);
   --_border-color: var(--sherpa-border-container-default, #d5d5d5);
   --_border-width: var(--sherpa-border-width-base, 1px);
@@ -42,37 +37,164 @@
   --_text: var(--sherpa-text-default-body, #2e2e33);
   --_duration: var(--sherpa-motion-duration-base, 200ms);
   --_easing: var(--sherpa-motion-easing-default, ease);
+
+  /* ──────────────────────────────────────────────────────────
+     DIALOG ELEMENT
+     ────────────────────────────────────────────────────────── */
+  & .dialog:not([open]) { display: none; }
+
+  & .dialog {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    width: 600px;
+    max-width: 90vw;
+    padding: 0;
+    background-color: var(--_surface);
+    border: var(--_border-width) solid var(--_border-color);
+    border-radius: var(--_rounding);
+    box-shadow: var(--_shadow);
+    overflow: clip;
+    color: var(--_text);
+
+    /* ── Open animation ────────────────────────────────– */
+    &[open] { animation: dialog-show var(--_duration) var(--_easing) forwards; }
+
+    /* ── Backdrop ──────────────────────────────────────– */
+    &::backdrop {
+      background-color: var(--sherpa-effects-backdrop, oklch(0 0 0 / 0.5));
+      animation: backdrop-show var(--_duration) var(--_easing) forwards;
+    }
+  }
+
+  /* ── Size variants ──────────────────────────────────────── */
+  &[data-size="small"] .dialog { width: 400px; }
+  &[data-size="large"] .dialog { width: 800px; }
+  &[data-size="full"] .dialog {
+    width: 90vw;
+    height: 90vh;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     STATUS (border-only treatment via inherited --_status-*)
+     ────────────────────────────────────────────────────────── */
+  &[data-status] .header-row {
+    border-bottom-color: var(--_status-border-strong, var(--sherpa-border-container-default, #d5d5d5));
+  }
+
+  &[data-status] .dialog {
+    border-color: var(--_status-border, var(--sherpa-border-container-default, #d5d5d5));
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     WIZARD TEMPLATE (multi-page mode)
+     ────────────────────────────────────────────────────────── */
+  & .dialog-wizard ::slotted(section[data-page]) { display: none; }
+
+  &[data-template="wizard"][data-page="0"] ::slotted(section[data-page="0"]),
+  &[data-template="wizard"][data-page="1"] ::slotted(section[data-page="1"]),
+  &[data-template="wizard"][data-page="2"] ::slotted(section[data-page="2"]),
+  &[data-template="wizard"][data-page="3"] ::slotted(section[data-page="3"]),
+  &[data-template="wizard"][data-page="4"] ::slotted(section[data-page="4"]),
+  &[data-template="wizard"][data-page="5"] ::slotted(section[data-page="5"]) {
+    display: block;
+  }
+
+  & .wizard-step-indicator {
+    margin-inline-start: auto;
+    margin-inline-end: var(--sherpa-space-sm, 12px);
+    color: var(--sherpa-text-default-secondary, #6a6a7a);
+    font-size: var(--sherpa-fonts-scale-sm, 12px);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     HEADER
+     ────────────────────────────────────────────────────────── */
+  & .header-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sherpa-space-xs, 4px);
+    padding: var(--sherpa-space-xs, 4px) var(--sherpa-space-sm, 8px);
+    background-color: var(--sherpa-surface-container-default, #ffffff);
+    border-bottom: var(--sherpa-border-width-base, 1px) solid
+      var(--sherpa-border-container-default, #d5d5d5);
+    border-radius: var(--_rounding) var(--_rounding) 0 0;
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
+
+  & .header-labels {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+    gap: var(--sherpa-space-3xs, 2px);
+    overflow: hidden;
+    margin: 0;
+  }
+
+  & .header-title {
+    margin: 0;
+    font-size: var(--sherpa-fonts-scale-base, 14px);
+    font-weight: 600;
+    line-height: var(--sherpa-font-base-line-height, 20px);
+    color: var(--sherpa-text-default-heading, #1a1a1f);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  & .header-description {
+    margin: 0;
+    font-size: var(--sherpa-font-sm-size, 12px);
+    line-height: var(--sherpa-font-sm-line-height, 16px);
+    color: var(--sherpa-text-default-secondary, #6a6a75);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    &:empty { display: none; }
+  }
+
+  &[data-has-heading] .header-labels { display: none; }
+
+  /* ── Close button ───────────────────────────────────── */
+  & .close-button { display: inline-flex; flex-shrink: 0; }
+
+  &[data-dismissible="false"] .close-button { display: none; }
+
+  /* ──────────────────────────────────────────────────────────
+     FOOTER
+     ────────────────────────────────────────────────────────── */
+  & sherpa-footer { flex-shrink: 0; }
+
+  /* ──────────────────────────────────────────────────────────
+     CONTENT AREA
+     ────────────────────────────────────────────────────────── */
+  & .dialog-content {
+    flex: 1;
+    min-height: 1px;
+    padding: var(--sherpa-space-sm, 16px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--_border-color) transparent;
+
+    /* Webkit scrollbar styling */
+    &::-webkit-scrollbar { width: 8px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--_border-color);
+      border-radius: var(--_rounding);
+
+      &:hover { background-color: var(--sherpa-border-context-default-hover, #c0c0cc); }
+    }
+  }
+
+  /* ── Hidden state ───────────────────────────────────── */
+  &[hidden] { display: none; }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   DIALOG (native <dialog> element)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.dialog:not([open]) {
-  display: none;
-}
-
-.dialog {
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh;
-  width: 600px;
-  max-width: 90vw;
-  padding: 0;
-  background-color: var(--_surface);
-  border: var(--_border-width) solid var(--_border-color);
-  border-radius: var(--_rounding);
-  box-shadow: var(--_shadow);
-  overflow: clip;
-  color: var(--_text);
-}
-
-/* ── Open animation ────────────────────────────────────────────── */
-
-.dialog[open] {
-  animation: dialog-show var(--_duration) var(--_easing) forwards;
-}
-
+/* Animation keyframes (top-level, outside :host) */
 @keyframes dialog-show {
   from {
     transform: scale(0.95) translateY(-10px);
@@ -84,163 +206,7 @@
   }
 }
 
-/* ── Backdrop ──────────────────────────────────────────────────── */
-
-.dialog::backdrop {
-  background-color: var(--sherpa-effects-backdrop, oklch(0 0 0 / 0.5));
-  animation: backdrop-show var(--_duration) var(--_easing) forwards;
-}
-
 @keyframes backdrop-show {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-
-/* ── Size variants ─────────────────────────────────────────────── */
-
-:host([data-size="small"]) .dialog  { width: 400px; }
-:host([data-size="large"]) .dialog  { width: 800px; }
-:host([data-size="full"]) .dialog {
-  width: 90vw;
-  height: 90vh;
-}
-
-/* ================================================================
-   Status — colour the header strip via inherited --_status-* tokens
-   ================================================================ */
-
-:host([data-status]) .header-row {
-  border-bottom-color: var(--_status-border-strong, var(--sherpa-border-container-default, #d5d5d5));
-}
-:host([data-status]) .dialog {
-  border-color: var(--_status-border-strong, var(--sherpa-border-container-default, #d5d5d5));
-}
-
-/* ================================================================
-   Wizard template — page sections + step indicator
-   ================================================================ */
-
-.dialog-wizard ::slotted(section[data-page]) { display: none; }
-:host([data-template="wizard"][data-page="0"]) ::slotted(section[data-page="0"]),
-:host([data-template="wizard"][data-page="1"]) ::slotted(section[data-page="1"]),
-:host([data-template="wizard"][data-page="2"]) ::slotted(section[data-page="2"]),
-:host([data-template="wizard"][data-page="3"]) ::slotted(section[data-page="3"]),
-:host([data-template="wizard"][data-page="4"]) ::slotted(section[data-page="4"]),
-:host([data-template="wizard"][data-page="5"]) ::slotted(section[data-page="5"]) {
-  display: block;
-}
-
-.wizard-step-indicator {
-  margin-inline-start: auto;
-  margin-inline-end: var(--sherpa-space-sm, 12px);
-  color: var(--sherpa-text-default-secondary, #6a6a7a);
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   HEADER
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.header-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sherpa-space-xs, 4px);
-  padding: var(--sherpa-space-xs, 4px) var(--sherpa-space-sm, 8px);
-  background-color: var(--sherpa-surface-container-default, #ffffff);
-  border-bottom: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default, #d5d5d5);
-  border-radius: var(--_rounding) var(--_rounding) 0 0;
-  flex-shrink: 0;
-  box-sizing: border-box;
-}
-
-.header-labels {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 0;
-  min-width: 0;
-  gap: var(--sherpa-space-3xs, 2px);
-  overflow: hidden;
-  margin: 0;
-}
-
-.header-title {
-  margin: 0;
-  font-size: var(--sherpa-fonts-scale-base, 14px);
-  font-weight: 600;
-  line-height: var(--sherpa-font-base-line-height, 20px);
-  color: var(--sherpa-text-default-heading, #1a1a1f);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.header-description {
-  margin: 0;
-  font-size: var(--sherpa-font-sm-size, 12px);
-  line-height: var(--sherpa-font-sm-line-height, 16px);
-  color: var(--sherpa-text-default-secondary, #6a6a75);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.header-description:empty {
-  display: none;
-}
-
-/* Hide default labels when custom heading content is slotted */
-:host([data-has-heading]) .header-labels {
-  display: none;
-}
-
-/* ── Close button ──────────────────────────────────────────────── */
-
-.close-button {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
-:host([data-dismissible="false"]) .close-button {
-  display: none;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   FOOTER
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-sherpa-footer {
-  flex-shrink: 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   CONTENT
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.dialog-content {
-  flex: 1;
-  min-height: 1px;
-  padding: var(--sherpa-space-sm, 16px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--_border-color) transparent;
-}
-
-.dialog-content::-webkit-scrollbar { width: 8px; }
-.dialog-content::-webkit-scrollbar-track { background: transparent; }
-.dialog-content::-webkit-scrollbar-thumb {
-  background-color: var(--_border-color);
-  border-radius: var(--_rounding);
-}
-.dialog-content::-webkit-scrollbar-thumb:hover {
-  background-color: var(--sherpa-border-context-default-hover, #c0c0cc);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   STATUS — border-only accent
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-:host([data-status]) .dialog { border-color: var(--_status-border); }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

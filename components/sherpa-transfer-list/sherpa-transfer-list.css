@@ -13,32 +13,33 @@
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   color: var(--sherpa-text-default-body, #2e2e33);
   min-height: 240px;
-}
 
-:host([hidden]) { display: none; }
+  & .pane {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-xs, 8px);
+    min-width: 0;
+  }
 
-.pane {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-xs, 8px);
-  min-width: 0;
-}
+  & .pane-search {
+    display: none;
+    width: 100%;
+  }
 
-.pane-search {
-  display: none;
-  width: 100%;
-}
-:host([data-search]) .pane-search { display: block; }
+  &[data-search] .pane-search { display: block; }
 
-.pane-list {
-  flex: 1;
-  overflow: auto;
-  min-height: 0;
-}
+  & .pane-list {
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
+  }
 
-.control-column {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--sherpa-space-xs, 8px);
+  & .control-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--sherpa-space-xs, 8px);
+  }
+
+  &[hidden] { display: none; }
 }

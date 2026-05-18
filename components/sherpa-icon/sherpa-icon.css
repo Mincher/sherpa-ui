@@ -41,6 +41,10 @@
 :host([data-size="5xl"]) { --icon-size: var(--sherpa-size-5xl, 56px); }
 :host([data-size="6xl"]) { --icon-size: var(--sherpa-size-6xl, 64px); }
 
+i {
+  font-style: normal;
+}
+
 .icon-glyph,
 .icon-svg {
   --icon-size: inherit;

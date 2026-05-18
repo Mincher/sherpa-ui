@@ -1,4 +1,14 @@
 
+/**
+ * sherpa-section-header.css — Phase 2 Modernization (CSS Nesting)
+ * Section header with optional title, description, badge, and actions.
+ *
+ * Host attributes:
+ *   data-heading-level — primary (default) | secondary | tertiary
+ *   data-density        — default | compact | comfortable
+ *   data-divider        — Show bottom divider (true | false)
+ */
+
 :host {
   display: block;
 
@@ -8,109 +18,122 @@
   --_heading-color: var(--sherpa-text-default-heading, #1a1a1f);
   --_heading-line-height: var(--sherpa-font-lg-line-height, 24px);
   --_content-gap: var(--sherpa-space-default, 16px);
+
+  /* ──────────────────────────────────────────────────────────
+     HEADING LEVEL VARIANTS
+     ────────────────────────────────────────────────────────── */
+  &[data-heading-level="secondary"] {
+    --_heading-font-size: var(--sherpa-font-base-size, 14px);
+    --_heading-text-transform: none;
+    --_heading-letter-spacing: 0.1px;
+    --_heading-line-height: var(--sherpa-font-base-line-height, 20px);
+    --_heading-color: var(--sherpa-text-default-heading, #1a1a1f);
+  }
+
+  &[data-heading-level="tertiary"] {
+    --_heading-font-size: var(--sherpa-font-sm-size, 12px);
+    --_heading-text-transform: uppercase;
+    --_heading-letter-spacing: 0.5px;
+    --_heading-line-height: var(--sherpa-fonts-scale-lg, 16px);
+    --_heading-color: var(--sherpa-text-default-secondary, #6a6a75);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     DENSITY VARIANTS (spacing & font scaling)
+     ────────────────────────────────────────────────────────── */
+  &[data-density="compact"] {
+    --_content-gap: var(--sherpa-space-sm, 8px);
+    --_heading-font-size: var(--sherpa-fonts-scale-base, 14px);
+  }
+
+  &[data-density="comfortable"] {
+    --_content-gap: var(--sherpa-space-lg, 24px);
+    --_heading-font-size: var(--sherpa-fonts-scale-xl, 22px);
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     LAYOUT CONTAINERS
+     ────────────────────────────────────────────────────────── */
+  & .section-header-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-sm, 8px);
+  }
+
+  & .section-header-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--_content-gap);
+  }
+
+  & .section-header-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sherpa-space-xs, 4px);
+  }
+
+  & .heading-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sherpa-space-sm, 8px);
+    flex-wrap: wrap;
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     HEADING ELEMENTS
+     ────────────────────────────────────────────────────────── */
+  & .header-title {
+    margin: 0;
+    color: var(--_heading-color);
+    font-size: var(--_heading-font-size);
+    font-weight: 600;
+    line-height: var(--_heading-line-height);
+    text-transform: var(--_heading-text-transform);
+    letter-spacing: var(--_heading-letter-spacing);
+  }
+
+  & .default-heading { display: inline; }
+
+  & .badge-slot {
+    display: none;
+
+    &[data-has-content] { display: inline-flex; }
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     DESCRIPTION & ACTIONS
+     ────────────────────────────────────────────────────────── */
+  & .header-description {
+    display: none;
+    color: var(--sherpa-text-default-secondary, #6a6a75);
+
+    &[data-has-content] { display: block; }
+  }
+
+  & .section-header-actions {
+    display: none;
+    align-items: center;
+    gap: var(--sherpa-space-sm, 8px);
+    flex-shrink: 0;
+
+    &[data-has-content] { display: flex; }
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     DIVIDER (conditional bottom border)
+     ────────────────────────────────────────────────────────── */
+  & .section-header-divider {
+    display: none;
+    margin: var(--sherpa-space-sm, 8px) 0 0;
+    border: none;
+    border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+  }
+
+  &[data-divider="true"] .section-header-divider { display: block; }
+
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
 }
-
-
-/* ---- heading-type variants ---- */
-
-:host([data-heading-level="secondary"]) {
-  --_heading-font-size: var(--sherpa-font-base-size, 14px);
-  --_heading-text-transform: none;
-  --_heading-letter-spacing: 0.1px;
-  --_heading-line-height: var(--sherpa-font-base-line-height, 20px);
-  --_heading-color: var(--sherpa-text-default-heading, #1a1a1f);
-}
-
-:host([data-heading-level="tertiary"]) {
-  --_heading-font-size: var(--sherpa-font-sm-size, 12px);
-  --_heading-text-transform: uppercase;
-  --_heading-letter-spacing: 0.5px;
-  --_heading-line-height: var(--sherpa-fonts-scale-lg, 16px);
-  --_heading-color: var(--sherpa-text-default-secondary, #6a6a75);
-}
-
-/* ---- density variants ---- */
-
-:host([data-density="compact"]) {
-  --_content-gap: var(--sherpa-space-sm, 8px);
-  --_heading-font-size: var(--sherpa-fonts-scale-base, 14px);
-}
-
-:host([data-density="comfortable"]) {
-  --_content-gap: var(--sherpa-space-lg, 24px);
-  --_heading-font-size: var(--sherpa-fonts-scale-xl, 22px);
-}
-
-/* ---- layout ---- */
-
-.section-header-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-sm, 8px);
-}
-
-.section-header-content {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--_content-gap);
-}
-
-.section-header-left {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-space-xs, 4px);
-}
-
-.heading-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-sm, 8px);
-  flex-wrap: wrap;
-}
-
-.header-title {
-  margin: 0;
-  color: var(--_heading-color);
-  font-size: var(--_heading-font-size);
-  font-weight: 600;
-  line-height: var(--_heading-line-height);
-  text-transform: var(--_heading-text-transform);
-  letter-spacing: var(--_heading-letter-spacing);
-}
-
-.default-heading { display: inline; }
-/* .default-heading uses native [hidden] attribute — no CSS rule needed */
-
-.badge-slot { display: none; }
-.badge-slot[data-has-content] { display: inline-flex; }
-
-.header-description {
-  display: none;
-  color: var(--sherpa-text-default-secondary, #6a6a75);
-}
-
-.header-description[data-has-content] { display: block; }
-
-.section-header-actions {
-  display: none;
-  align-items: center;
-  gap: var(--sherpa-space-sm, 8px);
-  flex-shrink: 0;
-}
-
-.section-header-actions[data-has-content] { display: flex; }
-
-.section-header-divider {
-  display: none;
-  margin: var(--sherpa-space-sm, 8px) 0 0;
-  border: none;
-  border-top: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
-}
-
-:host([data-divider="true"]) .section-header-divider { display: block; }
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

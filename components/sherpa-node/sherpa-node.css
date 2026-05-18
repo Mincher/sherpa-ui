@@ -27,7 +27,6 @@
  */
 
 :host {
-  /* Local accent — set per kind below. Defaults to neutral border. */
   --_node-accent: var(--sherpa-node-border-default, #d5d5d5);
 
   position: absolute;
@@ -42,86 +41,74 @@
   contain: layout style;
   transform: translate3d(var(--sherpa-node-x, 0px), var(--sherpa-node-y, 0px), 0);
   will-change: transform;
-}
 
-/* ── Per-kind accents ─────────────────────────────────────────── */
-:host([data-kind="source"]) { --_node-accent: var(--sherpa-node-border-source, #0179aa); }
-:host([data-kind="output"]) { --_node-accent: var(--sherpa-node-border-output, #048142); }
-:host([data-kind="chat"])   { --_node-accent: var(--sherpa-node-border-chat, #c046ff); }
-:host([data-kind="group"])  { --_node-accent: var(--sherpa-node-border-group, #0179aa); }
+  &[data-kind="source"] { --_node-accent: var(--sherpa-node-border-source, #0179aa); }
+  &[data-kind="output"] { --_node-accent: var(--sherpa-node-border-output, #048142); }
+  &[data-kind="chat"]   { --_node-accent: var(--sherpa-node-border-chat, #c046ff); }
+  &[data-kind="group"]  { --_node-accent: var(--sherpa-node-border-group, #0179aa); }
 
-/* An Output node with no incoming connections is an error state. */
-:host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) {
-  --_node-accent: var(--sherpa-node-border-output-error, #dd2c01);
-}
+  &[data-kind="output"]:not(:has(sherpa-node-socket[data-direction="in"][data-connected])) {
+    --_node-accent: var(--sherpa-node-border-output-error, #dd2c01);
+  }
 
-/* ── Container ────────────────────────────────────────────────── */
-.node {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  background: var(--sherpa-node-body-default, #ffffff);
-  border: 1px solid var(--_node-accent);
-  border-radius: var(--sherpa-node-radius, 8px);
-  box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
-  transition: box-shadow 150ms ease, border-color 150ms ease;
-}
+  & .node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--sherpa-node-body-default, #ffffff);
+    border: 1px solid var(--_node-accent);
+    border-radius: var(--sherpa-node-radius, 8px);
+    box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
+    transition: box-shadow 150ms ease, border-color 150ms ease;
+  }
 
-/* Tinted body — opaque themed fills via node-local aliases. */
-:host([data-kind="source"]) .node { background: var(--sherpa-node-body-source, #f7fdff); }
-:host([data-kind="output"]) .node { background: var(--sherpa-node-body-output, #f0fff8); }
-:host([data-kind="chat"])   .node { background: var(--sherpa-node-body-chat, #f8ebff); }
-:host([data-kind="group"])  .node { background: var(--sherpa-node-body-group, #f7fdff); }
+  &[data-kind="source"] .node { background: var(--sherpa-node-body-source, #f7fdff); }
+  &[data-kind="output"] .node { background: var(--sherpa-node-body-output, #f0fff8); }
+  &[data-kind="chat"]   .node { background: var(--sherpa-node-body-chat, #f8ebff); }
+  &[data-kind="group"]  .node { background: var(--sherpa-node-body-group, #f7fdff); }
 
-/* Output-with-no-input flips the body tint to the critical tint. */
-:host([data-kind="output"]):not(:has(sherpa-node-socket[data-direction="in"][data-connected])) .node {
-  background: var(--sherpa-node-body-output-error, #fff7f5);
-}
+  &[data-kind="output"]:not(:has(sherpa-node-socket[data-direction="in"][data-connected])) .node {
+    background: var(--sherpa-node-body-output-error, #fff7f5);
+  }
 
-/* Selected state — accent ring. Lift above peers so overlapping
-   clicks always hit the selected node. */
-:host([data-selected]) {
-  z-index: 10;
-}
-:host([data-selected]) .node {
-  outline: 2px solid var(--_node-accent);
-  outline-offset: 1px;
-}
+  &[data-selected] {
+    z-index: 10;
 
-/* ── Slot wrappers ─────────────────────────────────────────────── */
-.node-header { display: block; }
+    & .node {
+      outline: 2px solid var(--_node-accent);
+      outline-offset: 1px;
+    }
+  }
 
-.node-rows {
-  display: flex;
-  flex-direction: column;
-}
+  & .node-header { display: block; }
+  & .node-rows { display: flex; flex-direction: column; }
 
-/* Footer is itself a 3-column flex row [in-gutter | body | out-gutter]
-   so any sockets slotted into footer-input / footer-output sit in the
-   same gutter rail as the rest of the node — no absolute positioning.
-   Height is intrinsic — driven by socket size + body padding. */
-.node-footer {
-  display: flex;
-  align-items: stretch;
-  min-height: 0;
-  padding: var(--sherpa-space-xs, 8px) 0;
-}
-.node-footer .gutter {
-  flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
-  display: flex;
-  align-items: center;
-  overflow: visible;
-}
-.node-footer .gutter-in  { justify-content: flex-start; }
-.node-footer .gutter-out { justify-content: flex-end; }
-.node-footer .gutter-in  ::slotted(*) { transform: translateX(-50%); }
-.node-footer .gutter-out ::slotted(*) { transform: translateX( 50%); }
-.footer-body {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  padding: 0 var(--sherpa-space-sm, 12px);
+  & .node-footer {
+    display: flex;
+    align-items: stretch;
+    min-height: 0;
+    padding: var(--sherpa-space-xs, 8px) 0;
+  }
+
+  & .node-footer .gutter {
+    flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
+    display: flex;
+    align-items: center;
+    overflow: visible;
+  }
+
+  & .node-footer .gutter-in  { justify-content: flex-start; }
+  & .node-footer .gutter-out { justify-content: flex-end; }
+  & .node-footer .gutter-in  ::slotted(*) { transform: translateX(-50%); }
+  & .node-footer .gutter-out ::slotted(*) { transform: translateX(50%); }
+
+  & .footer-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--sherpa-space-sm, 12px);
+  }
 }
 /* Hide footer entirely when no slot in this region has any content.
    `data-has-{slot}` is auto-mirrored on the host by SherpaElement.

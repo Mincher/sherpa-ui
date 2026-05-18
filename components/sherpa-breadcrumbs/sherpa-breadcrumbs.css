@@ -1,86 +1,75 @@
 /**
- * sherpa-breadcrumbs.css
- * Shadow DOM styles for the SherpaBreadcrumbs web component.
+ * sherpa-breadcrumbs.css — Phase 2 Modernization (CSS Nesting)
+ * Navigation breadcrumb trail with links and current page indicator.
  *
  * Authoring model:
- *   The template ships the entire crumb structure. Consumers either accept
- *   the default or override via data-src. CSS keys off semantic markup —
- *   anchors are historic crumbs, [aria-current="page"] is the current crumb.
+ *   Template ships the entire crumb structure. Consumers override via data-src
+ *   or accept the default. CSS keys off semantic markup — anchors are historic
+ *   crumbs, [aria-current="page"] is the current page.
  *
  * Visual contract:
- *   - Historic crumbs (links): SemiBold 12px / 16px in primary colour, underline on hover
- *   - Current crumb: regular 12px / 16px in default body colour, no separator
+ *   - Historic crumbs (links): SemiBold 12px/16px in primary colour, underline on hover
+ *   - Current crumb: Regular weight, default body colour, no link affordance
  */
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   HOST
-   ═══════════════════════════════════════════════════════════════════════════ */
 
 :host {
   display: block;
-}
 
-:host([hidden]) { display: none; }
+  /* ──────────────────────────────────────────────────────────
+     BREADCRUMB LIST (flex row)
+     ────────────────────────────────────────────────────────── */
+  & .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+  }
 
+  /* ── Individual crumb ──────────────────────────────– */
+  & .crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+  }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   BREADCRUMB LIST
-   ═══════════════════════════════════════════════════════════════════════════ */
+  /* ── Crumb text (historic = linked; current = plain) ─– */
+  & .crumb-text {
+    color: var(--sherpa-text-primary-default, #3c5edd);
+    cursor: pointer;
+    text-decoration: none;
+    padding: var(--sherpa-space-2xs, 4px) 0;
+    font-size: var(--sherpa-font-sm-size, 12px);
+    line-height: var(--sherpa-fonts-scale-lg, 16px);
+    letter-spacing: 0.1px;
+    font-weight: var(--sherpa-font-weight-semibold, 600);
 
-.breadcrumb-list {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 0;
-}
+    &:hover { text-decoration: underline; }
 
-/* ── Individual crumb ────────────────────────────────────────── */
+    /* Current page (aria-current) — not a link */
+    &[aria-current="page"] {
+      color: var(--sherpa-text-default-body, #2e2e33);
+      cursor: default;
+      font-weight: 400;
 
-.crumb {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-}
+      &:hover { text-decoration: none; }
+    }
+  }
 
-/* Historic crumbs (link-styled): SemiBold 12px / 16px in primary colour */
-.crumb-text {
-  color: var(--sherpa-text-primary-default, #3c5edd);
-  cursor: pointer;
-  text-decoration: none;
-  padding: var(--sherpa-space-2xs, 4px) 0;
-  font-size: var(--sherpa-font-sm-size, 12px);
-  line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-}
+  /* ── Separator (forward slash) ───────────────────────– */
+  & .separator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--sherpa-space-default, 16px);
+    height: var(--sherpa-space-default, 16px);
+    font-size: var(--sherpa-font-sm-size, 12px);
+    color: var(--sherpa-text-default-body, #2e2e33);
+    flex-shrink: 0;
+  }
 
-.crumb-text:hover {
-  text-decoration: underline;
-}
-
-/* Current crumb: regular weight, default body colour, no link affordance */
-.crumb-text[aria-current="page"] {
-  color: var(--sherpa-text-default-body, #2e2e33);
-  cursor: default;
-  font-weight: 400;
-}
-
-.crumb-text[aria-current="page"]:hover {
-  text-decoration: none;
-}
-
-/* ── Separator (forward slash) ───────────────────────────────── */
-
-.separator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--sherpa-space-default, 16px);
-  height: var(--sherpa-space-default, 16px);
-  font-size: var(--sherpa-font-sm-size, 12px);
-  color: var(--sherpa-text-default-body, #2e2e33);
-  flex-shrink: 0;
+  /* ── Hidden state ───────────────────────────────────────– */
+  &[hidden] { display: none; }
 }

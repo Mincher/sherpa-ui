@@ -1,5 +1,9 @@
 /**
- * sherpa-input-date.css — Date input using the native date picker.
- * Base styles imported from sherpa-input-base.css.
+ * sherpa-input-date.css — Phase 2 Modernization (CSS Nesting)
+ * Date input using the native date picker.
+ *
+ * All visual styling provided by sherpa-input-base.css (imported below).
+ * No component-specific CSS needed; base template handles structure.
  */
+
 @import '../utilities/sherpa-input-base/sherpa-input-base.css';

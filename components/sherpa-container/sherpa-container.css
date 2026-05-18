@@ -23,120 +23,98 @@
   flex-direction: column;
   gap: var(--sherpa-space-sm, 12px);
 
-  /* Private — inherited through shadow DOM into menu items */
   --_editable-display: none;
 
   background-color: var(--sherpa-surface-container-default, #ffffff);
-  border: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-control-secondary-default, #d5d5d5);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #d5d5d5);
   border-radius: var(--sherpa-border-rounding-base, 6px);
   padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
   overflow: clip;
   position: relative;
   box-sizing: border-box;
-
-  /* Named container scope so descendant charts can query us. */
   container: sherpa-container / size;
-}
 
-:host([hidden]) {
-  display: none;
-}
+  &[data-menu-open="true"] {
+    border-color: var(--sherpa-border-control-primary-default, #8500cc);
+    overflow: visible;
+    z-index: 10;
+  }
 
-:host([data-menu-open="true"]) {
-  border-color: var(--sherpa-border-control-primary-default, #8500cc);
-  overflow: visible;
-  z-index: 10;
-}
+  &[data-variant="fit"] {
+    width: fit-content;
+    height: fit-content;
+  }
 
-/* ── Variants ─────────────────────────────────────────────────── */
+  &[data-variant="fill"],
+  &[data-variant="resizable"] {
+    width: 100%;
+    height: 100%;
+  }
 
-:host([data-variant="fit"]) {
-  width: fit-content;
-  height: fit-content;
-}
+  & ::slotted([data-viz]) {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    overflow: clip;
+    border-radius: var(--sherpa-border-rounding-base, 6px);
+  }
 
-:host([data-variant="fill"]),
-:host([data-variant="resizable"]) {
-  width: 100%;
-  height: 100%;
-}
+  &[data-variant="resizable"][data-editable] {
+    overflow: auto;
+    resize: both;
+    --_editable-display: block;
+  }
 
-/* ── Slotted children — viz fills available space ─────────────── */
+  &[data-variant="worksheet"] {
+    width: 100%;
+    max-width: var(--sherpa-content-width-md, 960px);
+    margin-inline: auto;
+    padding: var(--sherpa-space-xl, 32px);
+    gap: var(--sherpa-space-lg, 24px);
+    background-color: var(--sherpa-surface-container-default, #ffffff);
+    box-shadow: var(--sherpa-shadow-default-sm, 0 1px 2px rgba(0,0,0,0.06));
+  }
 
-::slotted([data-viz]) {
-  flex: 1 1 0;
-  min-height: 0;
-  width: 100%;
-  overflow: clip;
-  border-radius: var(--sherpa-border-rounding-base, 6px);
-}
+  & .state-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sherpa-space-base, 16px);
+    background: var(--sherpa-surface-container-default, #ffffff);
+    z-index: 5;
+  }
 
-/* ── Edit mode ────────────────────────────────────────────────── */
+  & .state-slot { display: none; }
+  & .state-default { color: var(--sherpa-text-default-secondary, #6a6a7a); }
 
-:host([data-variant="resizable"][data-editable]) {
-  overflow: auto;
-  resize: both;
-  --_editable-display: block;
-}
+  & .state-default-loading {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid var(--sherpa-border-control-secondary-default, #d7d7dc);
+    border-top-color: var(--sherpa-border-control-primary-default, #4a90e2);
+    animation: sherpa-container-spin 700ms linear infinite;
+  }
 
-/* ================================================================
-   Worksheet variant — document-style page surface for forms / wizards
-   ================================================================ */
+  &[data-state="loading"] .state-overlay,
+  &[data-state="empty"]   .state-overlay,
+  &[data-state="error"]   .state-overlay {
+    display: flex;
+  }
 
-:host([data-variant="worksheet"]) {
-  width: 100%;
-  max-width: var(--sherpa-content-width-md, 960px);
-  margin-inline: auto;
-  padding: var(--sherpa-space-xl, 32px);
-  gap: var(--sherpa-space-lg, 24px);
-  background-color: var(--sherpa-surface-container-default, #ffffff);
-  box-shadow: var(--sherpa-shadow-default-sm, 0 1px 2px rgba(0,0,0,0.06));
-}
+  &[data-state="loading"] .state-loading { display: contents; }
+  &[data-state="empty"]   .state-empty   { display: contents; }
+  &[data-state="error"]   .state-error   { display: contents; }
 
-/* ================================================================
-   data-state overlay — loading / empty / error
-   ================================================================ */
+  &[data-state="loading"] ::slotted(:not([slot])),
+  &[data-state="empty"]   ::slotted(:not([slot])),
+  &[data-state="error"]   ::slotted(:not([slot])) {
+    visibility: hidden;
+  }
 
-.state-overlay {
-  display: none;
-  position: absolute;
-  inset: 0;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sherpa-space-base, 16px);
-  background: var(--sherpa-surface-container-default, #ffffff);
-  z-index: 5;
-}
-
-.state-slot { display: none; }
-.state-default { color: var(--sherpa-text-default-secondary, #6a6a7a); }
-
-/* Loading — simple CSS spinner fallback when no slotted content */
-.state-default-loading {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 3px solid var(--sherpa-border-control-secondary-default, #d7d7dc);
-  border-top-color: var(--sherpa-border-control-primary-default, #4a90e2);
-  animation: sherpa-container-spin 700ms linear infinite;
+  &[hidden] { display: none; }
 }
 
 @keyframes sherpa-container-spin { to { transform: rotate(360deg); } }
-
-:host([data-state="loading"]) .state-overlay,
-:host([data-state="empty"])   .state-overlay,
-:host([data-state="error"])   .state-overlay {
-  display: flex;
-}
-
-:host([data-state="loading"]) .state-loading { display: contents; }
-:host([data-state="empty"])   .state-empty   { display: contents; }
-:host([data-state="error"])   .state-error   { display: contents; }
-
-/* While a state overlay is shown, hide the default slotted content. */
-:host([data-state="loading"]) ::slotted(:not([slot])),
-:host([data-state="empty"])   ::slotted(:not([slot])),
-:host([data-state="error"])   ::slotted(:not([slot])) {
-  visibility: hidden;
-}
