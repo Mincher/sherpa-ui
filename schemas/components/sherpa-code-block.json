@@ -2,6 +2,7 @@
   "tagName": "sherpa-code-block",
   "description": "Syntax-highlighted, copyable code display with optional line numbers. Uses Prism.js (v1.29+) for syntax highlighting. Supports auto-language detection from content inspection. Emits code-copied event on clipboard success.",
   "category": "utility",
+  "tier": 5,
   "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [

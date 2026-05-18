@@ -2,6 +2,7 @@
   "tagName": "sherpa-attribute-controls",
   "description": "Auto-generates interactive form controls from a target component's attributes. Introspects JSDoc, CSS selectors, or common naming patterns to determine control types and valid values. Supports grouping, presets, custom validators, and bidirectional sync.",
   "category": "utility",
+  "tier": 5,
   "group": "core",
   "baseClass": "SherpaElement",
   "attributes": [

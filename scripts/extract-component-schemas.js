@@ -93,11 +93,15 @@ const VALID_CATEGORIES = new Set([
   "overlay",
   "media",
   "data",
+  "utility",
 ]);
 
 /* ── Composition tiers (see docs/COMPONENT-CATEGORIES.md §4) ──
  * A slot may host children whose tier number is >= the host's tier
- * (i.e. equal-or-deeper in the application structure). */
+ * (i.e. equal-or-deeper in the application structure).
+ *
+ * Tier 5 (`utility`) is reserved for docs-site / developer tooling
+ * components that are not part of the public application UI taxonomy. */
 const ROLE_TIERS = Object.freeze({
   shell:     1,
   nav:       1,
@@ -110,6 +114,7 @@ const ROLE_TIERS = Object.freeze({
   feedback:  4,
   media:     4,
   data:      4,
+  utility:   5,
 });
 
 /* ── Role display metadata (docs sidebar + home grid) ──
@@ -127,6 +132,7 @@ const ROLE_META = [
   { id: "feedback",  label: "Feedback",   icon: "fa-solid fa-bell" },
   { id: "media",     label: "Media",      icon: "fa-solid fa-chart-bar" },
   { id: "data",      label: "Data",       icon: "fa-solid fa-table" },
+  { id: "utility",   label: "Utilities",  icon: "fa-solid fa-screwdriver-wrench" },
 ];
 
 function tierOf(role) {

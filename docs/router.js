@@ -104,6 +104,15 @@ const CATEGORIES = [
     icon: 'fa-solid fa-table',
     description: 'Interactive datasets — data grids, transfer lists, schedulers, filter bars.',
   },
+
+  // ─ Tier 5 ─ Docs / developer tooling
+  {
+    id: 'utility',
+    label: 'Utilities',
+    tier: 5,
+    icon: 'fa-solid fa-screwdriver-wrench',
+    description: 'Docs-site and developer tooling components — code blocks, attribute control panels. Not part of the public application UI taxonomy.',
+  },
 ];
 
 /** Look up the role id for a tag. Returns 'uncategorised' if unknown. */

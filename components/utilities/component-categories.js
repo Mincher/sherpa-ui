@@ -101,12 +101,14 @@ export const ROLE_TIERS = Object.freeze({
   "display": 4,
   "feedback": 4,
   "media": 4,
-  "data": 4
+  "data": 4,
+  "utility": 5
 });
 
 export const COMPONENT_TIERS = Object.freeze({
   "sherpa-accordion": 2,
   "sherpa-ai-panel": 2,
+  "sherpa-attribute-controls": 5,
   "sherpa-barchart": 4,
   "sherpa-breadcrumbs": 4,
   "sherpa-button": 4,
@@ -114,6 +116,7 @@ export const COMPONENT_TIERS = Object.freeze({
   "sherpa-card": 2,
   "sherpa-chart-legend": 4,
   "sherpa-chat-message": 3,
+  "sherpa-code-block": 5,
   "sherpa-container": 2,
   "sherpa-container-header": 3,
   "sherpa-container-pdf-exporter": 1,

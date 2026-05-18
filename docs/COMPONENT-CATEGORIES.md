@@ -25,6 +25,7 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 | `feedback`  | 4 | Status, messages, notifications.                                  | `sherpa-message`, `sherpa-callout`, `sherpa-toast`, `sherpa-loader`, `sherpa-empty-state` |
 | `media`     | 4 | Charts, illustrations, visual media.                              | `sherpa-barchart`, `sherpa-line-chart`, `sherpa-donut-chart`, `sherpa-gauge-chart`, `sherpa-chart-legend` |
 | `data`      | 4 | Interactive datasets.                                             | `sherpa-data-grid`, `sherpa-transfer-list`, `sherpa-scheduler`, `sherpa-filter-bar` |
+| `utility`   | 5 | Docs-site / developer tooling. Not part of the public application UI taxonomy and not slot-composable. | `sherpa-code-block`, `sherpa-attribute-controls` |
 
 > Some components naturally span two purposes (e.g. `sherpa-gauge-chart` is
 > both `media` and `display`). Pick the **primary** role.
