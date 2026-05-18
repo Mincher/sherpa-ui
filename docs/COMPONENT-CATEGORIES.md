@@ -14,11 +14,11 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 
 | Role        | Tier | Purpose                                                        | Examples                                                                                                              |
 | ----------- | :--: | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `shell`     | 1 | Top-level page scaffolding.                                       | `sherpa-view-header`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-nav`, `sherpa-layout-grid`, `sherpa-layout-view`, `sherpa-footer`, `sherpa-container-pdf-exporter` |
+| `shell`     | 1 | Top-level page scaffolding.                                       | `sherpa-view-header`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-nav`, `sherpa-layout-grid`, `sherpa-layout-view`, `sherpa-container-pdf-exporter` |
 | `nav`       | 1 | Navigation chrome children, only inside the `shell` nav rail.     | `sherpa-nav-item`, `sherpa-nav-promo`, `sherpa-section-nav` |
-| `container` | 2 | Surfaces that hold other components.                              | `sherpa-card`, `sherpa-container`, `sherpa-content-section`, `sherpa-accordion`, `sherpa-panel`, `sherpa-list-panel`, `sherpa-ai-panel` |
+| `container` | 2 | Surfaces that hold other components.                              | `sherpa-card`, `sherpa-container`, `sherpa-container-header`, `sherpa-content-section`, `sherpa-accordion`, `sherpa-panel`, `sherpa-list-panel`, `sherpa-ai-panel`, `sherpa-footer` |
 | `overlay`   | 2 | Floating UI surfaces.                                             | `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-menu`, `sherpa-menu-item` |
-| `content`   | 3 | Structural sub-elements (headings, toolbars, tabs, lists).        | `sherpa-section-header`, `sherpa-container-header`, `sherpa-toolbar`, `sherpa-list`, `sherpa-list-item`, `sherpa-key-value-list`, `sherpa-tabs`, `sherpa-stepper`, `sherpa-progress-tracker` |
+| `content`   | 3 | Structural sub-elements (headings, toolbars, tabs, lists).        | `sherpa-section-header`, `sherpa-toolbar`, `sherpa-list`, `sherpa-list-item`, `sherpa-key-value-list`, `sherpa-tabs`, `sherpa-stepper`, `sherpa-progress-tracker` |
 | `control`   | 4 | Actionable / clickable controls.                                  | `sherpa-button`, `sherpa-switch`, `sherpa-tag`, `sherpa-slider`, `sherpa-pagination`, `sherpa-breadcrumbs` |
 | `input`     | 4 | Form fields capturing user data.                                  | `sherpa-input-text`, `sherpa-input-number`, `sherpa-input-select`, `sherpa-input-date`, `sherpa-input-checkbox`, `sherpa-file-upload` |
 | `display`   | 4 | Read-only data presentation primitives.                           | `sherpa-metric`, `sherpa-sparkline`, `sherpa-progress-bar`, `sherpa-gauge-chart` |
