@@ -110,28 +110,9 @@ textarea:not([rows]) {
   min-height: 10em;
 }
 
-/* ── Validation States (Modern Pseudo-Classes) ─────────────── */
-
-@supports selector(:user-valid) {
-  input:user-valid {
-    /* Validation styles applied in component CSS */
-  }
-
-  input:user-invalid {
-    /* Validation styles applied in component CSS */
-  }
-}
-
-@supports not selector(:user-valid) {
-  /* Fallback: components use custom .validated / .invalid classes */
-  input.validated {
-    /* Fallback validation indicator */
-  }
-
-  input.invalid {
-    /* Fallback validation indicator */
-  }
-}
+/* ── Validation States ─────────────────────────────────────── */
+/* Validation visual states are handled in component CSS.
+ * :user-valid / :user-invalid are used directly in component shadow DOM. */
 
 /* ==================== Lists ==================== */
 

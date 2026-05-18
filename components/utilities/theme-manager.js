@@ -7,7 +7,8 @@
  *
  *   axis      attribute         CSS handles
  *   ────────  ────────────────  ──────────────────────────────────────
- *   Theme     data-theme        Token bindings via :root[data-theme]
+ *   Theme     data-theme        Token bindings via :root[data-theme="..."]
+ *                               (all themes bundled in index.css — no link swap)
  *   Mode      data-mode         color-scheme + light/dark/HC token blocks
  *   Density   data-density      Spacing scale via [data-density] subtree
  *   Status    data-status       --_status-* private vars on subtree
@@ -15,7 +16,7 @@
  * Usage:
  *   import { ThemeManager } from '../utilities/theme-manager.js';
  *
- *   // Initialise with a CSS base URL for theme files
+ *   Init with a CSS base URL for theme files
  *   ThemeManager.init({ cssBaseUrl: '/css/styles/' });
  *
  *   // Apply preferences (reads from localStorage if available)
@@ -28,8 +29,6 @@
  *   ThemeManager.setStatus('warning'); // 'critical'|'info'|'success'|'warning'|'urgent'|null
  *
  * Configuration (passed to init()):
- *   cssBaseUrl       — Base URL for theme CSS files (default: '/css/styles/')
- *   themePrefix      — Filename prefix for theme files (default: 'sherpa-theme-')
  *   storageKeyTheme  — localStorage key for theme    (default: 'sherpa-theme')
  *   storageKeyMode   — localStorage key for mode     (default: 'sherpa-mode')
  *   storageKeyDensity— localStorage key for density  (default: 'sherpa-density')
@@ -42,8 +41,6 @@
  */
 
 const _config = {
-  cssBaseUrl: '/css/styles/',
-  themePrefix: 'sherpa-theme-',
   storageKeyTheme: 'sherpa-theme',
   storageKeyMode: 'sherpa-mode',
   storageKeyDensity: 'sherpa-density',
@@ -96,21 +93,13 @@ export const ThemeManager = {
   getTheme() { return _read(_config.storageKeyTheme, _config.defaultTheme); },
 
   /**
-   * Apply a theme by swapping the <link id="sherpa-theme"> stylesheet AND
-   * setting <html data-theme="...">. Both changes are needed: the link
-   * provides the diff-overrides for extended themes; the attribute is what
-   * the [data-theme="..."] selectors in those files key off of.
-   * @param {string} theme — Theme slug, e.g. 'apex-2-core'
+   * Apply a theme by setting <html data-theme="...">.
+   * All extended themes are bundled in sherpa-themes-extended.css (loaded by
+   * index.css) — no dynamic stylesheet swap is needed. The [data-theme="..."]
+   * selectors in that file activate only the matching theme at zero cost.
+   * @param {string} theme — Theme slug, e.g. 'apex-2-purple', 'classic'
    */
   setTheme(theme) {
-    let link = document.getElementById('sherpa-theme');
-    if (!link) {
-      link = document.createElement('link');
-      link.id = 'sherpa-theme';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-    link.href = `${_config.cssBaseUrl}${_config.themePrefix}${theme}.css`;
     _root().dataset.theme = theme;
     _write(_config.storageKeyTheme, theme);
   },

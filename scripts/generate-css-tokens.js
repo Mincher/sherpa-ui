@@ -623,45 +623,99 @@ function emitThemeFile(themeEntry, maps, refMaps) {
   }
 
   lines.push('} /* @layer theme */\n');
-  write(`sherpa-theme-${slug}.css`, lines.join(''));
+  if (isDefault) {
+    write(`sherpa-theme-${slug}.css`, lines.join(''));
+  } else {
+    return lines.join('');
+  }
 }
 
 function emitThemes() {
   const baseMaps = buildThemeMaps(baseThemeName);
   console.log(`  Building theme "${baseThemeName}" → sherpa-theme-${baseThemeSlug}.css`);
   emitThemeFile({ name: baseThemeName, slug: baseThemeSlug }, baseMaps, null);
+
+  const extParts = [];
   for (const ext of (themesMeta?.extended || [])) {
-    console.log(`  Building extended theme "${ext.name}" → sherpa-theme-${ext.slug}.css (diff vs base)`);
+    console.log(`  Building extended theme "${ext.name}" → sherpa-themes-extended.css`);
     const extMaps = buildThemeMaps(ext.name);
-    emitThemeFile({ name: ext.name, slug: ext.slug }, extMaps, baseMaps);
+    const content = emitThemeFile({ name: ext.name, slug: ext.slug }, extMaps, baseMaps);
+    if (content) extParts.push(content);
+  }
+  if (extParts.length > 0) {
+    const fileHeader = header(
+      'Extended Theme Overrides — Apex 2.0 (Blue / Purple / Teal) + Classic',
+      'Diff-only overrides against the default theme (apex-2-core).\n' +
+      ' * All extended themes bundled in one file; [data-theme="..."] selectors\n' +
+      ' * ensure only the active theme\'s tokens apply.\n' +
+      ' *\n' +
+      ' * Activate: set <html data-theme="apex-2-blue|apex-2-purple|apex-2-teal|classic">.\n' +
+      ' * The default theme (apex-2-core) requires no data-theme attribute.',
+    );
+    write('sherpa-themes-extended.css', fileHeader + '\n' + extParts.join('\n'));
   }
 }
 
-// ─── Emit: density/{compact,comfortable}.css ─────────────────────────
+// ─── Emit: sherpa-overrides.css (density + status) ───────────────────
 
-function emitDensity() {
+function emitOverrides() {
+  const lines = [];
+  lines.push(header(
+    'Density & Status Overrides',
+    'Attribute-driven overrides — both axes in one file.\n' +
+    ' *\n' +
+    ' *   Density  [data-density="compact|comfortable"]\n' +
+    ' *            Applies to any subtree. Tokens cascade — descendant components\n' +
+    ' *            automatically rescale. The base density requires no attribute.\n' +
+    ' *\n' +
+    ' *   Status   [data-status="critical|info|success|warning|urgent"]\n' +
+    ' *            Set on any element or the document root. Descendant components\n' +
+    ' *            consume the resulting --_status-* private vars via var() fallbacks.\n' +
+    ' *            Custom properties inherit through shadow DOM — no per-component\n' +
+    ' *            status block needed.',
+  ));
+
+  // ── Density ──
+  lines.push('\n/* ─── Density ────────────────────────────────────────────────────── */\n\n');
+  lines.push('@layer density {\n\n');
   for (const mode of ['Compact', 'Comfortable']) {
     const slug = mode.toLowerCase();
-    const lines = [];
-    lines.push(header(
-      `Density — ${mode}`,
-      `Cascading density overrides. Apply to any subtree with [data-density="${slug}"].\n` +
-      ' * Tokens cascade — descendant components automatically rescale.',
-    ));
-    lines.push('@layer density {\n');
     lines.push(`  :where([data-density="${slug}"]) {\n`);
     const spaceVars = density.vars
       .filter(v => v.n.startsWith('space/'))
       .sort((a, b) => a.n.localeCompare(b.n));
     for (const v of spaceVars) {
       const val = formatVal(v.v[mode], v.t);
-      lines.push(`    --sherpa-${sanitize(v.n)}: ${val};\n`);
+      const prop = `--sherpa-${sanitize(v.n)}`;
+      const pad = ' '.repeat(Math.max(1, 24 - prop.length));
+      lines.push(`    ${prop}:${pad}${val};\n`);
     }
-    lines.push('  }\n');
-    lines.push('} /* @layer density */\n');
-    write(`sherpa-density-${slug}.css`, lines.join(''));
+    lines.push('  }\n\n');
   }
+  lines.push('} /* @layer density */\n');
+
+  // ── Status ──
+  lines.push('\n\n/* ─── Status ─────────────────────────────────────────────────────── */\n\n');
+  lines.push('@layer status {\n\n');
+  for (const mode of ['critical', 'info', 'success', 'warning', 'urgent']) {
+    lines.push(`  :where([data-status="${mode}"]) {\n`);
+    for (const v of status.vars) {
+      const prop = STATUS_PROP_MAP[v.n];
+      if (!prop) continue;
+      const raw = v.v[mode];
+      if (raw === undefined) continue;
+      const isIcon = v.n.startsWith('icon/');
+      const val = isIcon ? formatValIcon(raw, v.t) : formatVal(raw, v.t);
+      const pad = ' '.repeat(Math.max(1, 38 - prop.length));
+      lines.push(`    ${prop}:${pad}${val};\n`);
+    }
+    lines.push('  }\n\n');
+  }
+  lines.push('} /* @layer status */\n');
+
+  write('sherpa-overrides.css', lines.join(''));
 }
+
 
 // ─── Emit: status/status.css ─────────────────────────────────────────
 
@@ -684,34 +738,9 @@ const STATUS_PROP_MAP = {
 };
 
 function emitStatus() {
-  const lines = [];
-  lines.push(header(
-    'Status — semantic state mapping',
-    `One block per status mode. Set [data-status="<mode>"] on any element\n` +
-    ` * (or the document root) — descendant components consume the\n` +
-    ` * resulting --_status-* private vars through their var() fallbacks.\n` +
-    ` * Custom properties inherit through shadow DOM, so component CSS\n` +
-    ` * never needs a per-status block.`,
-  ));
-  lines.push('@layer status {\n\n');
-
-  for (const mode of ['critical', 'info', 'success', 'warning', 'urgent']) {
-    lines.push(`  :where([data-status="${mode}"]) {\n`);
-    for (const v of status.vars) {
-      const prop = STATUS_PROP_MAP[v.n];
-      if (!prop) continue;
-      const raw = v.v[mode];
-      if (raw === undefined) continue;
-      const isIcon = v.n.startsWith('icon/');
-      const val = isIcon ? formatValIcon(raw, v.t) : formatVal(raw, v.t);
-      const pad = ' '.repeat(Math.max(1, 38 - prop.length));
-      lines.push(`    ${prop}:${pad}${val};\n`);
-    }
-    lines.push('  }\n\n');
-  }
-
-  lines.push('} /* @layer status */\n');
-  write('sherpa-status.css', lines.join(''));
+  // Deprecated: status is now emitted by emitOverrides() into sherpa-overrides.css
+  // This stub is kept for backwards-compat in case external code calls it.
+  console.warn('  ⚠ emitStatus() is deprecated — use emitOverrides() instead');
 }
 
 // ─── Emit: utilities/data-viz.css ────────────────────────────────────
@@ -827,8 +856,7 @@ emitPrimitives();
 emitAlias();
 emitPlatform();
 emitThemes();
-emitDensity();
-emitStatus();
+emitOverrides();
 emitDataViz();
 emitIndex();
 

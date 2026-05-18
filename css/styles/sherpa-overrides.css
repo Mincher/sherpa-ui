@@ -1,14 +1,61 @@
 /**
- * Status — semantic state mapping
+ * Density & Status Overrides
  * Auto-generated from Figma Variables — do not edit manually.
  * Regenerate: node scripts/generate-css-tokens.js
  *
- * One block per status mode. Set [data-status="<mode>"] on any element
- * (or the document root) — descendant components consume the
- * resulting --_status-* private vars through their var() fallbacks.
- * Custom properties inherit through shadow DOM, so component CSS
- * never needs a per-status block.
+ * Attribute-driven overrides — both axes in one file:
+ *
+ *   Density  [data-density="compact|comfortable"]
+ *            Applies to any subtree. Tokens cascade — descendant components
+ *            automatically rescale. The base density requires no attribute.
+ *
+ *   Status   [data-status="critical|info|success|warning|urgent"]
+ *            Set on any element or the document root. Descendant components
+ *            consume the resulting --_status-* private vars via var() fallbacks.
+ *            Custom properties inherit through shadow DOM — no per-component
+ *            status block needed.
  */
+
+/* ─── Density ────────────────────────────────────────────────────── */
+
+@layer density {
+
+  :where([data-density="compact"]) {
+    --sherpa-space-2xl:     var(--sherpa-core-scale-350);
+    --sherpa-space-2xs:     var(--sherpa-core-scale-25);
+    --sherpa-space-3xl:     var(--sherpa-core-scale-450);
+    --sherpa-space-3xs:     var(--sherpa-core-scale-25);
+    --sherpa-space-4xl:     var(--sherpa-core-scale-500);
+    --sherpa-space-5xl:     var(--sherpa-core-scale-600);
+    --sherpa-space-6xl:     var(--sherpa-core-scale-700);
+    --sherpa-space-default: var(--sherpa-core-scale-150);
+    --sherpa-space-lg:      var(--sherpa-core-scale-200);
+    --sherpa-space-none:    var(--sherpa-core-scale-0);
+    --sherpa-space-sm:      var(--sherpa-core-scale-100);
+    --sherpa-space-xl:      var(--sherpa-core-scale-250);
+    --sherpa-space-xs:      var(--sherpa-core-scale-50);
+  }
+
+  :where([data-density="comfortable"]) {
+    --sherpa-space-2xl:     var(--sherpa-core-scale-450);
+    --sherpa-space-2xs:     var(--sherpa-core-scale-100);
+    --sherpa-space-3xl:     var(--sherpa-core-scale-600);
+    --sherpa-space-3xs:     var(--sherpa-core-scale-50);
+    --sherpa-space-4xl:     var(--sherpa-core-scale-700);
+    --sherpa-space-5xl:     var(--sherpa-core-scale-800);
+    --sherpa-space-6xl:     var(--sherpa-core-scale-800);
+    --sherpa-space-default: var(--sherpa-core-scale-250);
+    --sherpa-space-lg:      var(--sherpa-core-scale-300);
+    --sherpa-space-none:    var(--sherpa-core-scale-0);
+    --sherpa-space-sm:      var(--sherpa-core-scale-200);
+    --sherpa-space-xl:      var(--sherpa-core-scale-350);
+    --sherpa-space-xs:      var(--sherpa-core-scale-150);
+  }
+
+} /* @layer density */
+
+
+/* ─── Status ─────────────────────────────────────────────────────── */
 
 @layer status {
 

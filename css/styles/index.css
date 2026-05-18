@@ -19,9 +19,10 @@
  *
  * Switching axes (single source of truth — JS sets ATTRIBUTES only):
  *   Theme    — base theme is always loaded (sherpa-theme-apex-2-core.css).
- *              To activate an extended theme, append its file AFTER index.css
- *              and set <html data-theme="<slug>">. Extended themes are diff-only
- *              against the base, so the load order matters.
+ *              All extended themes (blue/purple/teal/classic) are also bundled
+ *              in sherpa-themes-extended.css — always loaded, zero cost when
+ *              inactive because selectors are gated on [data-theme="<slug>"].
+ *              To activate: set <html data-theme="<slug>"> (JS attribute only).
  *   Mode     — set <html data-mode="auto|light|dark|hc"> (default "auto")
  *              "auto" honours both prefers-color-scheme AND prefers-contrast.
  *   Density  — set [data-density="compact|base|comfortable"] on any subtree
@@ -39,18 +40,18 @@
 @import "tokens/sherpa-alias.css"      layer(alias);
 @import "tokens/sherpa-platform.css"   layer(platform);
 
-/* Theme — default always loaded; consumers append an extended theme via JS */
+/* Theme — default (no data-theme attr required) */
 @import "sherpa-theme-apex-2-core.css";
 
 /* Hand-maintained theme overrides (must come AFTER generated theme) */
 @import "sherpa-theme-context-overrides.css";
 
-/* Density — both files always loaded; activated by [data-density] attribute */
-@import "sherpa-density-compact.css"     layer(density);
-@import "sherpa-density-comfortable.css" layer(density);
+/* Extended themes — all four variants in one file; [data-theme] selectors
+ * ensure only the active theme fires. Activate: set <html data-theme="..."> */
+@import "sherpa-themes-extended.css";
 
-/* Status — semantic state mapping (--_status-* private vars) */
-@import "sherpa-status.css"              layer(status);
+/* Density & Status — attribute-driven overrides; both axes in one file */
+@import "sherpa-overrides.css";
 
 /* Utilities — class-based helpers (sub-layered for cascade control) */
 @import "sherpa-icon-classes.css"       layer(utilities.icons);
