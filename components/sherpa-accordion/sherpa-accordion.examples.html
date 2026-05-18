@@ -21,10 +21,19 @@
 </template>
 
 <template data-label="With icons" data-layout="col">
-  <sherpa-accordion data-label="Billing"  data-icon="&#xf155;" open>
+  <sherpa-accordion data-label="Billing"  data-icon="fa-solid fa-credit-card" open>
     <p>Manage your plan, payment methods, and invoices here.</p>
   </sherpa-accordion>
-  <sherpa-accordion data-label="Security" data-icon="&#xf023;">
+  <sherpa-accordion data-label="Security" data-icon="fa-solid fa-lock">
     <p>Two-factor authentication, API keys, and session management.</p>
+  </sherpa-accordion>
+  <sherpa-accordion data-label="Notifications" data-icon="fa-solid fa-bell">
+    <p>Configure email, push, and in-app notification preferences.</p>
+  </sherpa-accordion>
+</template>
+
+<template data-label="Disabled" data-layout="col">
+  <sherpa-accordion data-label="Locked section" data-icon="fa-solid fa-lock" disabled>
+    <p>This content will not be reachable until the disabled attribute is removed.</p>
   </sherpa-accordion>
 </template>

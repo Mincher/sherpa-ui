@@ -9,7 +9,28 @@
     data-setup       (optional) name of an exported setup fn from sherpa-input-radio.examples.js
 -->
 <template data-label="States" data-layout="col">
-  <sherpa-input-radio data-label="Standard"  name="ex-radio" value="standard" checked></sherpa-input-radio>
-  <sherpa-input-radio data-label="Express"   name="ex-radio" value="express"></sherpa-input-radio>
-  <sherpa-input-radio data-label="Overnight" name="ex-radio" value="overnight" disabled></sherpa-input-radio>
+  <sherpa-input-radio name="ex-states" data-label="Unselected"></sherpa-input-radio>
+  <sherpa-input-radio name="ex-states" data-label="Selected" checked></sherpa-input-radio>
+  <sherpa-input-radio name="ex-states" data-label="Disabled" disabled></sherpa-input-radio>
+  <sherpa-input-radio name="ex-states" data-label="Disabled selected" checked disabled></sherpa-input-radio>
+</template>
+
+<template data-label="With description" data-layout="col">
+  <sherpa-input-radio
+    name="ex-desc"
+    data-label="Free plan"
+    data-description="1 user, 1 GB storage, community support."
+    checked>
+  </sherpa-input-radio>
+  <sherpa-input-radio
+    name="ex-desc"
+    data-label="Pro plan"
+    data-description="Unlimited users, 1 TB storage, priority support.">
+  </sherpa-input-radio>
+</template>
+
+<template data-label="Status" data-layout="col">
+  <sherpa-input-radio name="ex-status" data-label="Critical" data-status="critical"></sherpa-input-radio>
+  <sherpa-input-radio name="ex-status" data-label="Warning"  data-status="warning"></sherpa-input-radio>
+  <sherpa-input-radio name="ex-status" data-label="Success"  data-status="success" checked></sherpa-input-radio>
 </template>

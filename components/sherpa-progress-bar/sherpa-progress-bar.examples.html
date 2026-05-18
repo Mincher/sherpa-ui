@@ -8,14 +8,19 @@
     data-preview     (optional) "false" → hide live preview, show code only
     data-setup       (optional) name of an exported setup fn from sherpa-progress-bar.examples.js
 -->
-<template data-label="Values" data-layout="col">
-  <sherpa-progress-bar data-label="25%"  value="25"  max="100"></sherpa-progress-bar>
-  <sherpa-progress-bar data-label="60%"  value="60"  max="100"></sherpa-progress-bar>
-  <sherpa-progress-bar data-label="100%" value="100" max="100"></sherpa-progress-bar>
+<template data-label="Determinate" data-layout="col">
+  <sherpa-progress-bar data-label="Upload"   data-value="25"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="Sync"     data-value="60"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="Complete" data-value="100"></sherpa-progress-bar>
 </template>
 
-<template data-label="Status" data-layout="col">
-  <sherpa-progress-bar data-label="Upload complete"   value="100" max="100" data-status="success"></sherpa-progress-bar>
-  <sherpa-progress-bar data-label="Storage warning"    value="80"  max="100" data-status="warning"></sherpa-progress-bar>
-  <sherpa-progress-bar data-label="Critical threshold" value="45"  max="100" data-status="critical"></sherpa-progress-bar>
+<template data-label="Indeterminate" data-description="Use for operations of unknown duration.">
+  <sherpa-progress-bar data-label="Working…" data-variant="indeterminate"></sherpa-progress-bar>
+</template>
+
+<template data-label="Status colours" data-layout="col">
+  <sherpa-progress-bar data-label="In progress" data-value="40" data-status-text="40% complete"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="Warning"     data-value="80" data-status-text="Approaching limit" data-status="warning"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="Critical"    data-value="95" data-status-text="Almost full"        data-status="critical"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="Success"     data-value="100" data-status-text="Done"              data-status="success"></sherpa-progress-bar>
 </template>

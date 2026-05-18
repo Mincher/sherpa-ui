@@ -9,11 +9,23 @@
     data-setup       (optional) name of an exported setup fn from sherpa-switch.examples.js
 -->
 <template data-label="On and off">
-  <sherpa-switch data-label="Notifications" checked></sherpa-switch>
-  <sherpa-switch data-label="Dark mode"></sherpa-switch>
+  <sherpa-switch data-label="Enable notifications"></sherpa-switch>
+  <sherpa-switch data-label="Enabled" checked></sherpa-switch>
 </template>
 
 <template data-label="Disabled">
-  <sherpa-switch data-label="Enabled (locked)" checked disabled></sherpa-switch>
-  <sherpa-switch data-label="Off (locked)" disabled></sherpa-switch>
+  <sherpa-switch data-label="Off (disabled)" disabled></sherpa-switch>
+  <sherpa-switch data-label="On (disabled)"  checked disabled></sherpa-switch>
+</template>
+
+<template data-label="With description" data-layout="col">
+  <sherpa-switch
+    data-label="Email digest"
+    data-description="Weekly summary of activity in your account.">
+  </sherpa-switch>
+  <sherpa-switch
+    data-label="Two-factor auth"
+    data-description="Require a code from your authenticator app on sign-in."
+    checked>
+  </sherpa-switch>
 </template>

@@ -8,6 +8,13 @@
     data-preview     (optional) "false" → hide live preview, show code only
     data-setup       (optional) name of an exported setup fn from sherpa-tooltip.examples.js
 -->
-<template data-label="Hover for tooltip" data-layout="block" data-setup="tooltip-0">
+<template data-label="Positions" data-description="data-position controls the side the tooltip is anchored to.">
+  <sherpa-tooltip data-position="top"    data-visible>Top tooltip</sherpa-tooltip>
+  <sherpa-tooltip data-position="bottom" data-visible>Bottom tooltip</sherpa-tooltip>
+  <sherpa-tooltip data-position="left"   data-visible>Left tooltip</sherpa-tooltip>
+  <sherpa-tooltip data-position="right"  data-visible>Right tooltip</sherpa-tooltip>
+</template>
+
+<template data-label="Imperative API" data-description="Most usage goes through SherpaTooltip.show(target, text)." data-layout="block" data-setup="tooltip-0">
   <sherpa-button data-variant="secondary" data-label="Hover me"></sherpa-button>
 </template>

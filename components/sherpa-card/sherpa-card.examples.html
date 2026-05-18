@@ -8,21 +8,26 @@
     data-preview     (optional) "false" → hide live preview, show code only
     data-setup       (optional) name of an exported setup fn from sherpa-card.examples.js
 -->
-<template data-label="With title and footer action" data-layout="block">
-  <sherpa-card data-label="System overview" data-description="Last updated 2 mins ago" data-elevation="sm">
-    <p>Monitor your infrastructure health at a glance. CPU, memory, and network utilisation across all nodes.</p>
-    <sherpa-button slot="footer" data-variant="tertiary" data-label="View details" data-icon-end="fa-solid fa-arrow-right"></sherpa-button>
-  </sherpa-card>
+<template data-label="Basic">
+  <sherpa-card data-label="Standard card" data-description="A card pairs a label and description with optional slotted content."></sherpa-card>
 </template>
 
-<template data-label="Elevation levels">
-  <sherpa-card data-label="Flat"   data-elevation="none"><p>No shadow</p></sherpa-card>
-  <sherpa-card data-label="Small"  data-elevation="sm"><p>Subtle lift</p></sherpa-card>
-  <sherpa-card data-label="Medium" data-elevation="md"><p>Card lift</p></sherpa-card>
-  <sherpa-card data-label="Large"  data-elevation="lg"><p>Floating</p></sherpa-card>
+<template data-label="Elevation" data-description="Elevation controls the drop-shadow depth.">
+  <sherpa-card data-label="None" data-description="No shadow."           data-elevation="none"></sherpa-card>
+  <sherpa-card data-label="Small" data-description="Subtle shadow."      data-elevation="sm"></sherpa-card>
+  <sherpa-card data-label="Medium" data-description="Standard shadow."   data-elevation="md"></sherpa-card>
+  <sherpa-card data-label="Large" data-description="Pronounced shadow."  data-elevation="lg"></sherpa-card>
 </template>
 
-<template data-label="Interactive and selectable">
-  <sherpa-card data-label="Option A" data-interactive data-selected><p>Selected state</p></sherpa-card>
-  <sherpa-card data-label="Option B" data-interactive><p>Click to select</p></sherpa-card>
+<template data-label="Interactive" data-description="data-interactive turns the card into a focusable surface with hover / focus states.">
+  <sherpa-card data-label="Click me" data-description="Hover and tab to see the states." data-interactive></sherpa-card>
+</template>
+
+<template data-label="Selectable" data-description="data-selectable + data-selected drives the selected visual.">
+  <sherpa-card data-label="Standard plan" data-description="Single workspace, 5 GB storage." data-selectable></sherpa-card>
+  <sherpa-card data-label="Pro plan"      data-description="Unlimited workspaces, 1 TB storage." data-selectable data-selected></sherpa-card>
+</template>
+
+<template data-label="Disabled">
+  <sherpa-card data-label="Disabled card" data-description="Cannot be interacted with." data-interactive disabled></sherpa-card>
 </template>

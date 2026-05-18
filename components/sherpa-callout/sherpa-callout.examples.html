@@ -8,13 +8,29 @@
     data-preview     (optional) "false" → hide live preview, show code only
     data-setup       (optional) name of an exported setup fn from sherpa-callout.examples.js
 -->
-<template data-label="Status variants" data-description="Callouts communicate persistent contextual messages in-page." data-layout="col">
-  <sherpa-callout data-status="info"     data-label="Update available"   data-description="Version 3.4.1 is ready to install. Restart required."></sherpa-callout>
-  <sherpa-callout data-status="success"  data-label="Changes saved"       data-description="Your configuration has been applied to all regions."></sherpa-callout>
-  <sherpa-callout data-status="warning"  data-label="Trial expiring soon" data-description="Your trial ends in 3 days. Upgrade to keep access."></sherpa-callout>
-  <sherpa-callout data-status="critical" data-label="Connection lost"     data-description="Unable to reach the server. Check your network and retry."></sherpa-callout>
+<template data-label="Status variants" data-layout="col">
+  <sherpa-callout data-status="info"     data-heading="Heads up"          data-label="A new region is available in the deployment dropdown."></sherpa-callout>
+  <sherpa-callout data-status="success"  data-heading="Saved"             data-label="Your changes were saved successfully."></sherpa-callout>
+  <sherpa-callout data-status="warning"  data-heading="Approaching limit" data-label="You are using 92% of your monthly quota."></sherpa-callout>
+  <sherpa-callout data-status="critical" data-heading="Action required"   data-label="One device has been offline for more than 24 hours."></sherpa-callout>
+  <sherpa-callout data-status="neutral"  data-heading="FYI"               data-label="Maintenance window scheduled for Sunday 02:00 UTC."></sherpa-callout>
+  <sherpa-callout data-status="tip"      data-heading="Tip"               data-label="Press ⌘K from anywhere to open the command palette."></sherpa-callout>
 </template>
 
-<template data-label="With dismiss button" data-layout="col">
-  <sherpa-callout data-status="info" data-label="New dashboard available" data-description="Try the redesigned analytics dashboard." data-close-button></sherpa-callout>
+<template data-label="Dismissible" data-description="data-dismissible renders a close button that hides the callout.">
+  <sherpa-callout data-status="info" data-heading="Welcome to Sherpa UI" data-label="Take the product tour to see what's new." data-dismissible></sherpa-callout>
+</template>
+
+<template data-label="Expanded with body content" data-description="Default-slot content sits below the heading / label.">
+  <sherpa-callout data-status="warning" data-heading="Deploy paused" data-label="Two devices reported a checksum mismatch." data-expanded>
+    <p>The following devices need attention before the deploy can resume:</p>
+    <ul>
+      <li>acme-device-01 — region EU</li>
+      <li>beta-probe-14 — region APAC</li>
+    </ul>
+  </sherpa-callout>
+</template>
+
+<template data-label="Custom icon">
+  <sherpa-callout data-status="info" data-icon="fa-solid fa-rocket" data-heading="New release" data-label="v2.4.0 includes 12 bug fixes and 3 new components."></sherpa-callout>
 </template>

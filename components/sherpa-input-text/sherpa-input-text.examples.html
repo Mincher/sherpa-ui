@@ -8,20 +8,44 @@
     data-preview     (optional) "false" → hide live preview, show code only
     data-setup       (optional) name of an exported setup fn from sherpa-input-text.examples.js
 -->
-<template data-label="Basic" data-layout="block">
-  <sherpa-input-text data-label="Full name" placeholder="Enter your name"></sherpa-input-text>
+<template data-label="Default">
+  <sherpa-input-text data-label="First name" placeholder="Ada"></sherpa-input-text>
 </template>
 
-<template data-label="With helper text" data-layout="block">
-  <sherpa-input-text data-label="Username" data-helper="3–20 characters, letters and numbers only" placeholder="your_username"></sherpa-input-text>
+<template data-label="With description and helper" data-description="data-description sits below the label; data-helper sits below the field.">
+  <sherpa-input-text
+    data-label="Email"
+    data-description="We will only contact you about account changes."
+    data-helper="Use the address you signed up with."
+    placeholder="you@example.com">
+  </sherpa-input-text>
 </template>
 
-<template data-label="Required and disabled" data-layout="col">
-  <sherpa-input-text data-label="Email address" placeholder="name@company.com" required></sherpa-input-text>
-  <sherpa-input-text data-label="Account ID"    value="ACC-00124" disabled></sherpa-input-text>
+<template data-label="Layouts" data-description="Stacked is the default; horizontal puts the label on the left.">
+  <sherpa-input-text data-label="Stacked"    data-layout="stacked"    placeholder="Stacked layout"></sherpa-input-text>
+  <sherpa-input-text data-label="Horizontal" data-layout="horizontal" placeholder="Label on the left"></sherpa-input-text>
 </template>
 
-<template data-label="Validation states" data-layout="col">
-  <sherpa-input-text data-label="Email"    data-helper="Please enter a valid email address." data-status="critical" value="not-an-email"></sherpa-input-text>
-  <sherpa-input-text data-label="Password" data-helper="Strong password!"                      data-status="success" value="••••••••••"></sherpa-input-text>
+<template data-label="Required and pre-filled">
+  <sherpa-input-text data-label="Username" required value="ada-lovelace"></sherpa-input-text>
+</template>
+
+<template data-label="Disabled and readonly">
+  <sherpa-input-text data-label="Disabled" value="Cannot edit" disabled></sherpa-input-text>
+  <sherpa-input-text data-label="Readonly" value="Read only"   readonly></sherpa-input-text>
+</template>
+
+<template data-label="Status states" data-description="data-status drives the border and helper-text colour.">
+  <sherpa-input-text data-label="Critical" data-status="critical" data-helper="Password is too short."  value="abc"></sherpa-input-text>
+  <sherpa-input-text data-label="Warning"  data-status="warning"  data-helper="Check this value."        value="!!"></sherpa-input-text>
+  <sherpa-input-text data-label="Success"  data-status="success"  data-helper="Looks good."              value="ada@dev"></sherpa-input-text>
+</template>
+
+<template data-label="Multiline" data-description="Renders as a textarea while keeping the same label / helper API.">
+  <sherpa-input-text
+    data-label="Notes"
+    data-multiline
+    placeholder="Type a longer note…"
+    rows="4">
+  </sherpa-input-text>
 </template>
