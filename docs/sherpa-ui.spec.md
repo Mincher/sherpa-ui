@@ -672,7 +672,7 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 #### Navigation (9)
 
-`sherpa-nav`, `sherpa-nav-item`, `sherpa-nav-promo`, `sherpa-breadcrumbs`, `sherpa-pagination`, `sherpa-tabs`, `sherpa-menu`, `sherpa-menu-item`, `sherpa-nav-section`.
+`sherpa-nav`, `sherpa-nav-item`, `sherpa-breadcrumbs`, `sherpa-pagination`, `sherpa-tabs`, `sherpa-menu`, `sherpa-menu-item`, `sherpa-nav-section`.
 
 #### Data visualisation (7)
 

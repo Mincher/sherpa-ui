@@ -15,7 +15,7 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 | Role        | Tier | Purpose                                                        | Examples                                                                                                              |
 | ----------- | :--: | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `shell`     | 1 | Top-level page scaffolding.                                       | `sherpa-view-header`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-nav`, `sherpa-layout-grid`, `sherpa-layout-view`, `sherpa-container-pdf-exporter` |
-| `nav`       | 1 | Navigation chrome children, only inside the `shell` nav rail.     | `sherpa-nav-item`, `sherpa-nav-promo`, `sherpa-nav-section` |
+| `nav`       | 1 | Navigation chrome children, only inside the `shell` nav rail.     | `sherpa-nav-item`, `sherpa-nav-section` |
 | `container` | 2 | Surfaces that hold other components.                              | `sherpa-card`, `sherpa-container`, `sherpa-container-header`, `sherpa-content-section`, `sherpa-accordion`, `sherpa-panel`, `sherpa-list-panel`, `sherpa-ai-panel`, `sherpa-footer` |
 | `overlay`   | 2 | Floating UI surfaces.                                             | `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-menu`, `sherpa-menu-item` |
 | `content`   | 3 | Structural sub-elements (headings, toolbars, tabs, lists).        | `sherpa-section-header`, `sherpa-toolbar`, `sherpa-list`, `sherpa-list-item`, `sherpa-key-value-list`, `sherpa-tabs`, `sherpa-stepper`, `sherpa-progress-tracker` |
@@ -111,7 +111,7 @@ additional role-level filter on top of the tier rule.
 
 ### Why `nav` is tier 1
 
-`nav` components (`sherpa-nav-item`, `sherpa-nav-promo`, `sherpa-nav-section`)
+`nav` components (`sherpa-nav-item`, `sherpa-nav-section`)
 are children of the `sherpa-nav` shell rail and never belong inside a
 container or content host. Pairing them with `shell` at tier 1 enforces this
 naturally.

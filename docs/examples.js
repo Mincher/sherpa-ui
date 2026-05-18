@@ -725,6 +725,16 @@ const navExamples = [
   <sherpa-nav-item data-label="Settings"  data-icon="fa-solid fa-gear"></sherpa-nav-item>
 </sherpa-nav>`,
   },
+  {
+    label: 'With footer promo',
+    layout: 'block',
+    html: `<sherpa-nav style="height: 360px;"
+  data-promo-title="Upgrade to Pro"
+  data-promo-message="Unlock advanced analytics and reporting."
+  data-promo-link-text="Learn more"
+  data-promo-link-url="#"
+></sherpa-nav>`,
+  },
 ];
 
 const navItemExamples = [
@@ -734,14 +744,6 @@ const navItemExamples = [
     html: `<sherpa-nav-item data-label="Dashboard" data-icon="fa-solid fa-gauge"></sherpa-nav-item>
 <sherpa-nav-item data-label="Devices"   data-icon="fa-solid fa-server"  data-active></sherpa-nav-item>
 <sherpa-nav-item data-label="Reports"   data-icon="fa-solid fa-chart-line" disabled></sherpa-nav-item>`,
-  },
-];
-
-const navPromoExamples = [
-  {
-    label: 'Upgrade promo',
-    layout: 'block',
-    html: `<sherpa-nav-promo data-label="Upgrade to Pro" data-description="Unlock advanced analytics and reporting." data-icon="fa-solid fa-bolt"></sherpa-nav-promo>`,
   },
 ];
 
@@ -1274,7 +1276,6 @@ export const EXAMPLES = {
   'sherpa-view-header':       viewHeaderExamples,
   'sherpa-nav':               navExamples,
   'sherpa-nav-item':          navItemExamples,
-  'sherpa-nav-promo':         navPromoExamples,
   'sherpa-container':         containerExamples,
   'sherpa-container-header':  containerHeaderExamples,
   'sherpa-content-section':   contentSectionExamples,

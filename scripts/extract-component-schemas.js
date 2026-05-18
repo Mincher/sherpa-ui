@@ -37,7 +37,6 @@ const GROUP_MAP = {
   "sherpa-dialog":              "layout",
   "sherpa-nav":                 "navigation",
   "sherpa-nav-item":            "navigation",
-  "sherpa-nav-promo":           "navigation",
   "sherpa-breadcrumbs":         "navigation",
   "sherpa-menu":                "navigation",
   "sherpa-menu-item":           "navigation",

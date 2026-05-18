@@ -262,7 +262,7 @@ summary {
    ══════════════════════════════════════════════════════════════════════ */
 
 .sherpa-nav-root[data-mode="edit"] {
-  & sherpa-nav-promo,
+  & .nav-promo,
   & .nav-header > :is(.nav-search, [data-nav-target="home"], .nav-divider),
   & .nav-footer [data-nav-target="settings"] {
     display: none;
@@ -407,7 +407,7 @@ summary {
 .nav-product-name,
 .nav-toolbar-actions,
 .nav-divider-label,
-sherpa-nav-promo {
+.nav-promo {
   display: none;
 }
 
@@ -423,8 +423,11 @@ sherpa-nav-promo {
   .nav-divider-label {
     display: inline;
   }
-  sherpa-nav-promo {
+  .nav-promo {
     display: flex;
+  }
+  .nav-promo[hidden] {
+    display: none;
   }
 
   .nav-search {
@@ -522,6 +525,50 @@ sherpa-nav-promo {
 }
 .nav-subsection > sherpa-nav-item:nth-of-type(6) {
   --_ripple-i: 6;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   NAV-PROMO — promotional callout in the footer.
+   Folded in from former sherpa-nav-promo element; rescoped to .nav-promo.
+   Host-level data-promo-* attributes drive the inner content via JS.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-promo {
+  display: flex;
+  align-items: start;
+  gap: var(--sherpa-space-xs, 12px);
+  padding: var(--sherpa-space-xs, 12px) var(--sherpa-space-default, 20px);
+  margin: var(--sherpa-space-xs, 12px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-app-product-nav-promo-bg, var(--sherpa-surface-container-strong-default));
+}
+.nav-promo[data-dismissed] {
+  display: none !important;
+}
+.nav-promo .promo-indicator {
+  width: 4px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: var(--sherpa-icon-context-success-default, #048142);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+}
+.nav-promo .promo-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--sherpa-space-xs, 12px);
+}
+.nav-promo .promo-title {
+  font-weight: 600;
+}
+.nav-promo .promo-link {
+  color: var(--sherpa-text-primary-on-color, #d4d9ff);
+  font-weight: 600;
+  cursor: pointer;
+}
+.nav-promo .promo-link:empty,
+.nav-promo .promo-text:empty {
+  display: none;
 }
 
 /* Native [hidden] support */

@@ -15,6 +15,26 @@
       "name": "data-active-target",
       "type": "string",
       "description": "Selector or ID of the currently active nav item"
+    },
+    {
+      "name": "data-promo-title",
+      "type": "string",
+      "description": "Footer promo heading text (shows the promo when set)"
+    },
+    {
+      "name": "data-promo-message",
+      "type": "string",
+      "description": "Footer promo body message"
+    },
+    {
+      "name": "data-promo-link-text",
+      "type": "string",
+      "description": "Footer promo CTA link label"
+    },
+    {
+      "name": "data-promo-link-url",
+      "type": "string",
+      "description": "Footer promo CTA link URL"
     }
   ],
   "slots": [],
@@ -124,6 +144,13 @@
       "bubbles": true,
       "composed": true,
       "detail": null
+    },
+    {
+      "name": "navpromodismiss",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
     }
   ],
   "methods": [
@@ -197,6 +224,16 @@
         },
         {
           "name": "icon",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setPromoConfig(config)",
+      "description": "Populate footer promo: { title, message, link: { text, url } }; pass null to clear",
+      "params": [
+        {
+          "name": "config",
           "type": "any"
         }
       ]
