@@ -12,7 +12,6 @@
 
 import { ThemeManager }        from '/components/utilities/theme-manager.js';
 import { COMPONENT_CATEGORIES } from '/components/utilities/component-categories.js';
-import { EXAMPLES }             from './examples.js';
 
 // ── Role taxonomy ────────────────────────────────────────────────────────────
 // The 11 roles defined in docs/COMPONENT-CATEGORIES.md. Listed in tier order
@@ -344,8 +343,6 @@ async function getExamples(tag, schema) {
   const html = await loadExamplesHtml(tag);
   const fromHtml = await parseExamplesFromHtml(tag, html);
   if (fromHtml?.length) return fromHtml;
-  // Legacy fallback while migration is in progress.
-  if (EXAMPLES[tag]?.length) return EXAMPLES[tag];
   return [buildAutoExample(tag, schema)];
 }
 
