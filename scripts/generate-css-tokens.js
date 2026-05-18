@@ -82,7 +82,7 @@ const aliasNames     = new Set(aliases.vars.map(v => v.n));
 // ─── Utilities ───────────────────────────────────────────────────────
 
 function sanitize(name) {
-  return name.replace(/ -> /g, '-').replace(/\//g, '-').replace(/ /g, '-').toLowerCase();
+  return name.replace(/ -> /g, '-').replace(/\//g, '-').replace(/ /g, '-').replace(/[\[\]]/g, '').toLowerCase();
 }
 
 /** Figma "critical" → CSS "error" everywhere it appears in a token name. */

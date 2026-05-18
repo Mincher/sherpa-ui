@@ -556,17 +556,17 @@
   --sherpa-default: var(--sherpa-color-info-700);
 
   /* ── [DEPRECATED] data-viz / categorical ─────────────── */
-  --sherpa-[deprecated]-data-viz-categorical-color-1: var(--sherpa-core-color-basic-purple-500);
-  --sherpa-[deprecated]-data-viz-categorical-color-2: var(--sherpa-core-color-extended-phlox-500);
-  --sherpa-[deprecated]-data-viz-categorical-color-3: var(--sherpa-core-color-extended-turquoise-550);
-  --sherpa-[deprecated]-data-viz-categorical-color-4: var(--sherpa-core-color-basic-blue-green-500);
-  --sherpa-[deprecated]-data-viz-categorical-color-5: var(--sherpa-core-color-basic-blue-500);
-  --sherpa-[deprecated]-data-viz-categorical-color-6: var(--sherpa-core-color-extended-neon-blue-400);
-  --sherpa-[deprecated]-data-viz-categorical-color-7: var(--sherpa-core-color-extended-chrome-orange-500);
-  --sherpa-[deprecated]-data-viz-categorical-color-8: var(--sherpa-core-color-extended-razamatazz-400);
-  --sherpa-[deprecated]-data-viz-categorical-color-9: var(--sherpa-core-color-extended-razamatazz-550);
-  --sherpa-[deprecated]-data-viz-categorical-color-10: var(--sherpa-core-color-basic-green-500);
-  --sherpa-[deprecated]-data-viz-categorical-color-11: var(--sherpa-core-color-basic-greyscale-500);
+  --sherpa-deprecated-data-viz-categorical-color-1: var(--sherpa-core-color-basic-purple-500);
+  --sherpa-deprecated-data-viz-categorical-color-2: var(--sherpa-core-color-extended-phlox-500);
+  --sherpa-deprecated-data-viz-categorical-color-3: var(--sherpa-core-color-extended-turquoise-550);
+  --sherpa-deprecated-data-viz-categorical-color-4: var(--sherpa-core-color-basic-blue-green-500);
+  --sherpa-deprecated-data-viz-categorical-color-5: var(--sherpa-core-color-basic-blue-500);
+  --sherpa-deprecated-data-viz-categorical-color-6: var(--sherpa-core-color-extended-neon-blue-400);
+  --sherpa-deprecated-data-viz-categorical-color-7: var(--sherpa-core-color-extended-chrome-orange-500);
+  --sherpa-deprecated-data-viz-categorical-color-8: var(--sherpa-core-color-extended-razamatazz-400);
+  --sherpa-deprecated-data-viz-categorical-color-9: var(--sherpa-core-color-extended-razamatazz-550);
+  --sherpa-deprecated-data-viz-categorical-color-10: var(--sherpa-core-color-basic-green-500);
+  --sherpa-deprecated-data-viz-categorical-color-11: var(--sherpa-core-color-basic-greyscale-500);
 }
 
 /* ── Dark ──────────────────────────────────────────────────── */
@@ -785,17 +785,17 @@
   --sherpa-icon-status-success-on-color-subtle: var(--sherpa-color-success-700);
   --sherpa-surface-button-tertiary-default: var(--sherpa-core-color-basic-monochrome-900);
   --sherpa-default: var(--sherpa-color-info-600);
-  --sherpa-[deprecated]-data-viz-categorical-color-1: var(--sherpa-core-color-basic-purple-400);
-  --sherpa-[deprecated]-data-viz-categorical-color-2: var(--sherpa-core-color-extended-phlox-400);
-  --sherpa-[deprecated]-data-viz-categorical-color-3: var(--sherpa-core-color-extended-turquoise-450);
-  --sherpa-[deprecated]-data-viz-categorical-color-4: var(--sherpa-core-color-basic-blue-green-400);
-  --sherpa-[deprecated]-data-viz-categorical-color-5: var(--sherpa-core-color-basic-blue-400);
-  --sherpa-[deprecated]-data-viz-categorical-color-6: var(--sherpa-core-color-extended-neon-blue-300);
-  --sherpa-[deprecated]-data-viz-categorical-color-7: var(--sherpa-core-color-extended-chrome-orange-400);
-  --sherpa-[deprecated]-data-viz-categorical-color-8: var(--sherpa-core-color-extended-razamatazz-350);
-  --sherpa-[deprecated]-data-viz-categorical-color-9: var(--sherpa-core-color-extended-razamatazz-450);
-  --sherpa-[deprecated]-data-viz-categorical-color-10: var(--sherpa-core-color-basic-green-400);
-  --sherpa-[deprecated]-data-viz-categorical-color-11: var(--sherpa-core-color-basic-greyscale-300);
+  --sherpa-deprecated-data-viz-categorical-color-1: var(--sherpa-core-color-basic-purple-400);
+  --sherpa-deprecated-data-viz-categorical-color-2: var(--sherpa-core-color-extended-phlox-400);
+  --sherpa-deprecated-data-viz-categorical-color-3: var(--sherpa-core-color-extended-turquoise-450);
+  --sherpa-deprecated-data-viz-categorical-color-4: var(--sherpa-core-color-basic-blue-green-400);
+  --sherpa-deprecated-data-viz-categorical-color-5: var(--sherpa-core-color-basic-blue-400);
+  --sherpa-deprecated-data-viz-categorical-color-6: var(--sherpa-core-color-extended-neon-blue-300);
+  --sherpa-deprecated-data-viz-categorical-color-7: var(--sherpa-core-color-extended-chrome-orange-400);
+  --sherpa-deprecated-data-viz-categorical-color-8: var(--sherpa-core-color-extended-razamatazz-350);
+  --sherpa-deprecated-data-viz-categorical-color-9: var(--sherpa-core-color-extended-razamatazz-450);
+  --sherpa-deprecated-data-viz-categorical-color-10: var(--sherpa-core-color-basic-green-400);
+  --sherpa-deprecated-data-viz-categorical-color-11: var(--sherpa-core-color-basic-greyscale-300);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1014,17 +1014,17 @@
     --sherpa-icon-status-success-on-color-subtle: var(--sherpa-color-success-700);
     --sherpa-surface-button-tertiary-default: var(--sherpa-core-color-basic-monochrome-900);
     --sherpa-default: var(--sherpa-color-info-600);
-    --sherpa-[deprecated]-data-viz-categorical-color-1: var(--sherpa-core-color-basic-purple-400);
-    --sherpa-[deprecated]-data-viz-categorical-color-2: var(--sherpa-core-color-extended-phlox-400);
-    --sherpa-[deprecated]-data-viz-categorical-color-3: var(--sherpa-core-color-extended-turquoise-450);
-    --sherpa-[deprecated]-data-viz-categorical-color-4: var(--sherpa-core-color-basic-blue-green-400);
-    --sherpa-[deprecated]-data-viz-categorical-color-5: var(--sherpa-core-color-basic-blue-400);
-    --sherpa-[deprecated]-data-viz-categorical-color-6: var(--sherpa-core-color-extended-neon-blue-300);
-    --sherpa-[deprecated]-data-viz-categorical-color-7: var(--sherpa-core-color-extended-chrome-orange-400);
-    --sherpa-[deprecated]-data-viz-categorical-color-8: var(--sherpa-core-color-extended-razamatazz-350);
-    --sherpa-[deprecated]-data-viz-categorical-color-9: var(--sherpa-core-color-extended-razamatazz-450);
-    --sherpa-[deprecated]-data-viz-categorical-color-10: var(--sherpa-core-color-basic-green-400);
-    --sherpa-[deprecated]-data-viz-categorical-color-11: var(--sherpa-core-color-basic-greyscale-300);
+    --sherpa-deprecated-data-viz-categorical-color-1: var(--sherpa-core-color-basic-purple-400);
+    --sherpa-deprecated-data-viz-categorical-color-2: var(--sherpa-core-color-extended-phlox-400);
+    --sherpa-deprecated-data-viz-categorical-color-3: var(--sherpa-core-color-extended-turquoise-450);
+    --sherpa-deprecated-data-viz-categorical-color-4: var(--sherpa-core-color-basic-blue-green-400);
+    --sherpa-deprecated-data-viz-categorical-color-5: var(--sherpa-core-color-basic-blue-400);
+    --sherpa-deprecated-data-viz-categorical-color-6: var(--sherpa-core-color-extended-neon-blue-300);
+    --sherpa-deprecated-data-viz-categorical-color-7: var(--sherpa-core-color-extended-chrome-orange-400);
+    --sherpa-deprecated-data-viz-categorical-color-8: var(--sherpa-core-color-extended-razamatazz-350);
+    --sherpa-deprecated-data-viz-categorical-color-9: var(--sherpa-core-color-extended-razamatazz-450);
+    --sherpa-deprecated-data-viz-categorical-color-10: var(--sherpa-core-color-basic-green-400);
+    --sherpa-deprecated-data-viz-categorical-color-11: var(--sherpa-core-color-basic-greyscale-300);
   }
 }
 

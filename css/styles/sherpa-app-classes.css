@@ -213,7 +213,7 @@
 
   /* CSS scroll-state query (Chrome/Safari/Edge 133+)
    * Fires when the nearest scroll-state container is NOT at the top. */
-  @container scroll-state(not scrolled: top) {
+  @container scroll-state(scrollable: top) {
     & {
       background-color: var(--sherpa-surface-app-background-default, #f5f5f5);
       box-shadow: var(--sherpa-shadow-default-sm);
