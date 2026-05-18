@@ -10,136 +10,111 @@
  * so it stays in sync with the MCP server's source of truth.
  */
 
-import { ThemeManager } from '/components/utilities/theme-manager.js';
-import { EXAMPLES }     from './examples.js';
+import { ThemeManager }        from '/components/utilities/theme-manager.js';
+import { COMPONENT_CATEGORIES } from '/components/utilities/component-categories.js';
+import { EXAMPLES }             from './examples.js';
 
-// ── Category definitions ─────────────────────────────────────────────────────
-
-const CATEGORY_MAP = {
-  'sherpa-footer':                 'Layout & Navigation',
-  'sherpa-nav':                    'Layout & Navigation',
-  'sherpa-nav-item':               'Layout & Navigation',
-  'sherpa-nav-promo':              'Layout & Navigation',
-  'sherpa-view-header':            'Layout & Navigation',
-  'sherpa-section-header':         'Layout & Navigation',
-  'sherpa-container':              'Layout & Navigation',
-  'sherpa-container-header':       'Layout & Navigation',
-  'sherpa-container-pdf-exporter': 'Layout & Navigation',
-  'sherpa-layout-grid':            'Layout & Navigation',
-  'sherpa-layout-view':            'Layout & Navigation',
-  'sherpa-toolbar':                'Layout & Navigation',
-  'sherpa-breadcrumbs':            'Layout & Navigation',
-
-  'sherpa-data-grid':              'Data Visualization',
-  'sherpa-barchart':               'Data Visualization',
-  'sherpa-donut-chart':            'Data Visualization',
-  'sherpa-gauge-chart':            'Data Visualization',
-  'sherpa-line-chart':             'Data Visualization',
-  'sherpa-metric':                 'Data Visualization',
-  'sherpa-sparkline':              'Data Visualization',
-  'sherpa-chart-legend':           'Data Visualization',
-  'sherpa-key-value-list':         'Data Visualization',
-
-  'sherpa-button':                 'Controls',
-  'sherpa-switch':                 'Controls',
-  'sherpa-stepper':                'Controls',
-  'sherpa-tag':                    'Controls',
-  'sherpa-pagination':             'Controls',
-  'sherpa-slider':                 'Controls',
-  'sherpa-progress-bar':           'Controls',
-  'sherpa-progress-tracker':       'Controls',
-
-  'sherpa-input-text':             'Inputs',
-  'sherpa-input-number':           'Inputs',
-  'sherpa-input-password':         'Inputs',
-  'sherpa-input-search':           'Inputs',
-  'sherpa-input-select':           'Inputs',
-  'sherpa-input-date':             'Inputs',
-  'sherpa-input-date-range':       'Inputs',
-  'sherpa-input-time':             'Inputs',
-  'sherpa-input-checkbox':         'Inputs',
-  'sherpa-input-checkbox-group':   'Inputs',
-  'sherpa-input-radio':            'Inputs',
-  'sherpa-input-radio-group':      'Inputs',
-  'sherpa-input-tag':              'Inputs',
-  'sherpa-file-upload':            'Inputs',
-
-  'sherpa-dialog':                 'Feedback & Overlays',
-  'sherpa-toast':                  'Feedback & Overlays',
-  'sherpa-tooltip':                'Feedback & Overlays',
-  'sherpa-message':                'Feedback & Overlays',
-  'sherpa-empty-state':            'Feedback & Overlays',
-  'sherpa-menu':                   'Feedback & Overlays',
-  'sherpa-menu-item':              'Feedback & Overlays',
-  'sherpa-popover':                'Feedback & Overlays',
-  'sherpa-callout':                'Feedback & Overlays',
-  'sherpa-accordion':              'Feedback & Overlays',
-  'sherpa-tabs':                   'Feedback & Overlays',
-  'sherpa-list':                   'Feedback & Overlays',
-  'sherpa-list-item':              'Feedback & Overlays',
-  'sherpa-list-panel':             'Feedback & Overlays',
-  'sherpa-loader':                 'Feedback & Overlays',
-
-  'sherpa-card':                   'Content',
-  'sherpa-icon':                   'Content',
-  'sherpa-filter-bar':             'Content',
-  'sherpa-section-nav':            'Content',
-  'sherpa-transfer-list':          'Content',
-  'sherpa-product-bar':            'Content',
-  'sherpa-product-bar-v2':         'Content',
-  'sherpa-ai-panel':               'Content',
-  'sherpa-chat-message':           'Content',
-  'sherpa-prompt-composer':        'Content',
-  'sherpa-content-section':        'Content',
-  'sherpa-node':                   'Content',
-  'sherpa-node-canvas':            'Content',
-  'sherpa-node-header':            'Content',
-  'sherpa-node-row':               'Content',
-  'sherpa-node-socket':            'Content',
-  'sherpa-scheduler':              'Content',
-  'sherpa-panel':                  'Content',
-  'sherpa-proposal-op':            'Content',
-  'sherpa-proposal-preview':       'Content',
-};
+// ── Role taxonomy ────────────────────────────────────────────────────────────
+// The 11 roles defined in docs/COMPONENT-CATEGORIES.md. Listed in tier order
+// (1 → 4). The role id is also the route id (#/category/<role>) and matches
+// the @category value emitted into every schema and COMPONENT_CATEGORIES.
 
 const CATEGORIES = [
+  // ─ Tier 1 ─ Page chrome
   {
-    id: 'layout-navigation',
-    label: 'Layout & Navigation',
+    id: 'shell',
+    label: 'Shell',
+    tier: 1,
+    icon: 'fa-solid fa-window-maximize',
+    description: 'Top-level page scaffolding — product bars, navigation rails, view headers, and the layout grid that frames every view.',
+  },
+  {
+    id: 'nav',
+    label: 'Navigation',
+    tier: 1,
+    icon: 'fa-solid fa-bars',
+    description: 'Children of the nav rail — nav items, promos, and section navigators.',
+  },
+
+  // ─ Tier 2 ─ Surfaces
+  {
+    id: 'container',
+    label: 'Containers',
+    tier: 2,
     icon: 'fa-solid fa-table-columns',
-    description: 'Shells, rails, headers, breadcrumbs, and the building blocks that decide where everything else goes on the page.',
+    description: 'Surfaces that hold other components — cards, panels, accordions, content sections.',
   },
   {
-    id: 'data-visualization',
-    label: 'Data Visualization',
-    icon: 'fa-solid fa-chart-bar',
-    description: 'Grids, charts, metrics, and sparklines for turning rows of numbers into something a person can actually read.',
+    id: 'overlay',
+    label: 'Overlays',
+    tier: 2,
+    icon: 'fa-solid fa-clone',
+    description: 'Floating surfaces that appear above the page — dialogs, popovers, tooltips, menus.',
   },
-  {
-    id: 'controls',
-    label: 'Controls',
-    icon: 'fa-solid fa-hand-pointer',
-    description: 'Buttons, switches, tabs, and steppers — the things people click, tap, and toggle.',
-  },
-  {
-    id: 'inputs',
-    label: 'Inputs',
-    icon: 'fa-solid fa-keyboard',
-    description: 'Form fields with labels, validation, and helper text wired in — text, select, date, file, and everything between.',
-  },
-  {
-    id: 'feedback-overlays',
-    label: 'Feedback & Overlays',
-    icon: 'fa-solid fa-bell',
-    description: 'Toasts, dialogs, tooltips, popovers, and menus that surface above the page when the moment calls for it.',
-  },
+
+  // ─ Tier 3 ─ Structural sub-elements
   {
     id: 'content',
     label: 'Content',
+    tier: 3,
     icon: 'fa-solid fa-layer-group',
-    description: 'Cards, panels, list items, and rich containers that organise the content inside a view.',
+    description: 'Structural sub-elements within surfaces — section headers, toolbars, tabs, lists, steppers.',
+  },
+
+  // ─ Tier 4 ─ Leaf primitives
+  {
+    id: 'control',
+    label: 'Controls',
+    tier: 4,
+    icon: 'fa-solid fa-hand-pointer',
+    description: 'Actionable controls — buttons, switches, tags, sliders, pagination, breadcrumbs.',
+  },
+  {
+    id: 'input',
+    label: 'Inputs',
+    tier: 4,
+    icon: 'fa-solid fa-keyboard',
+    description: 'Form fields that capture user data — text, select, date, checkbox, file upload, and the rest.',
+  },
+  {
+    id: 'display',
+    label: 'Displays',
+    tier: 4,
+    icon: 'fa-solid fa-eye',
+    description: 'Read-only presentation primitives — metrics, sparklines, progress bars, gauges.',
+  },
+  {
+    id: 'feedback',
+    label: 'Feedback',
+    tier: 4,
+    icon: 'fa-solid fa-bell',
+    description: 'Status, messages, and notifications — callouts, toasts, loaders, empty states.',
+  },
+  {
+    id: 'media',
+    label: 'Media',
+    tier: 4,
+    icon: 'fa-solid fa-chart-bar',
+    description: 'Charts, illustrations, and visual media — bar, line, donut, gauge, and chart legends.',
+  },
+  {
+    id: 'data',
+    label: 'Data',
+    tier: 4,
+    icon: 'fa-solid fa-table',
+    description: 'Interactive datasets — data grids, transfer lists, schedulers, filter bars.',
   },
 ];
+
+/** Look up the role id for a tag. Returns 'uncategorised' if unknown. */
+function categoryOf(tag) {
+  return COMPONENT_CATEGORIES[tag] || 'uncategorised';
+}
+
+/** Look up the display label for a role id. */
+function categoryLabel(id) {
+  return CATEGORIES.find(c => c.id === id)?.label ?? id;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -384,7 +359,7 @@ async function loadComponents() {
       .map(tag => ({
         tag,
         label: prettyLabel(tag),
-        category: CATEGORY_MAP[tag] || 'Uncategorised',
+        category: categoryOf(tag),
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
   } catch (err) {
@@ -504,7 +479,7 @@ async function renderRoute(route) {
 
   if (route.type === 'category') {
     const catDef = CATEGORIES.find(c => c.id === route.id) ?? { id: route.id, label: route.id, icon: 'fa-solid fa-folder', description: '' };
-    const items = components.filter(c => slugify(c.category) === route.id);
+    const items = components.filter(c => c.category === route.id);
     setViewHeading(catDef.label, [
       { label: 'Home', href: '#/' },
     ]);
@@ -518,8 +493,8 @@ async function renderRoute(route) {
     const schema = await loadSchema(route.tag);
     const comp   = components.find(c => c.tag === route.tag);
     const label  = comp?.label ?? prettyLabel(route.tag);
-    const catLabel = CATEGORY_MAP[route.tag] ?? 'Uncategorised';
-    const catId    = slugify(catLabel);
+    const catId    = categoryOf(route.tag);
+    const catLabel = categoryLabel(catId);
     setViewHeading(label, [
       { label: 'Home', href: '#/' },
       { label: catLabel,   href: `#/category/${catId}` },
@@ -593,7 +568,7 @@ async function renderHomePage() {
 
   const frag = document.createDocumentFragment();
   for (const cat of CATEGORIES) {
-    const count = components.filter(c => slugify(c.category) === cat.id).length;
+    const count = components.filter(c => c.category === cat.id).length;
     const node  = tpl.content.firstElementChild.cloneNode(true);
     node.dataset.label       = cat.label;
     node.dataset.description = cat.description ?? '';

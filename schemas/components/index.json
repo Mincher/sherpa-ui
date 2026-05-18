@@ -1,6 +1,7 @@
 [
   "sherpa-accordion",
   "sherpa-ai-panel",
+  "sherpa-attribute-controls",
   "sherpa-barchart",
   "sherpa-breadcrumbs",
   "sherpa-button",
@@ -8,6 +9,7 @@
   "sherpa-card",
   "sherpa-chart-legend",
   "sherpa-chat-message",
+  "sherpa-code-block",
   "sherpa-container",
   "sherpa-container-header",
   "sherpa-container-pdf-exporter",

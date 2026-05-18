@@ -9,6 +9,7 @@
 export const COMPONENT_CATEGORIES = Object.freeze({
   "sherpa-accordion": "container",
   "sherpa-ai-panel": "container",
+  "sherpa-attribute-controls": "utility",
   "sherpa-barchart": "media",
   "sherpa-breadcrumbs": "control",
   "sherpa-button": "control",
@@ -16,6 +17,7 @@ export const COMPONENT_CATEGORIES = Object.freeze({
   "sherpa-card": "container",
   "sherpa-chart-legend": "media",
   "sherpa-chat-message": "content",
+  "sherpa-code-block": "utility",
   "sherpa-container": "container",
   "sherpa-container-header": "content",
   "sherpa-container-pdf-exporter": "shell",
