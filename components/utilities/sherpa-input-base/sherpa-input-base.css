@@ -75,14 +75,13 @@
 /* Horizontal layout */
 :host([data-layout="horizontal"]) .input-wrapper {
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--sherpa-space-sm, 12px);
 }
 
 :host([data-layout="horizontal"]) .input-header {
   flex: 0 0 auto;
-  min-width: 120px;
-  padding-top: var(--sherpa-space-2xs, 4px);
+  min-width: var(--sherpa-input-label-width, 0px);
 }
 
 :host([data-layout="horizontal"]) .input-content {

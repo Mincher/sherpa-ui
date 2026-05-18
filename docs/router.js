@@ -11,6 +11,7 @@
  */
 
 import { ThemeManager } from '/components/utilities/theme-manager.js';
+import { EXAMPLES }     from './examples.js';
 
 // ── Category definitions ─────────────────────────────────────────────────────
 // Mirrors the CATEGORY_MAP in demo/playground.js — keep in sync.
@@ -162,11 +163,84 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+/** Strip common leading indentation from a template-literal HTML string. */
+function dedentHtml(str) {
+  const lines = str.split('\n');
+  const nonEmpty = lines.filter(l => l.trim().length > 0);
+  if (!nonEmpty.length) return str.trim();
+  const indent = Math.min(...nonEmpty.map(l => l.match(/^(\s*)/)[1].length));
+  return lines.map(l => l.slice(indent)).join('\n').trim();
+}
+
+/** Syntax-highlight all <pre><code> blocks inside the outlet. */
+function highlightOutlet() {
+  if (typeof window.hljs === 'undefined') return;
+  outlet?.querySelectorAll('pre code').forEach(el => window.hljs.highlightElement(el));
+}
+
+/** Build a single example block (preview + code). */
+function buildExampleBlock(ex) {
+  const html     = ex.html.trim();
+  const layout   = ex.layout ?? 'row';
+  const showPrev = ex.preview !== false;
+
+  return `
+    <div class="docs-example">
+      <div class="docs-example-header">
+        <h3 class="docs-example-label">${escapeHtml(ex.label)}</h3>
+        ${ex.description ? `<p class="docs-example-desc">${escapeHtml(ex.description)}</p>` : ''}
+      </div>
+      ${showPrev ? `<div class="docs-example-preview" data-layout="${escapeHtml(layout)}">${html}</div>` : ''}
+      <div class="docs-code-block">
+        <div class="docs-code-header">
+          <span class="docs-code-lang">HTML</span>
+          <button class="docs-copy-btn" type="button" aria-label="Copy code">
+            <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy
+          </button>
+        </div>
+        <pre><code class="language-html">${escapeHtml(dedentHtml(html))}</code></pre>
+      </div>
+    </div>`;
+}
+
+/** Generate a minimal auto-example from a component schema. */
+function buildAutoExample(tag, schema) {
+  const attrs = schema.attributes ?? [];
+  const parts = [];
+
+  const labelAttr = attrs.find(a => a.name === 'data-label');
+  if (labelAttr) parts.push(`data-label="${prettyLabel(tag)}"`);
+
+  const variantAttr = attrs.find(a => a.name === 'data-variant' && a.enumValues?.length);
+  if (variantAttr) parts.push(`data-variant="${variantAttr.enumValues[0]}"`);
+
+  const attrStr = parts.length ? ' ' + parts.join(' ') : '';
+  const hasDefaultSlot = (schema.slots ?? []).some(s => s.name === '');
+  const inner = hasDefaultSlot ? `\n  <!-- slotted content -->\n` : '';
+
+  return {
+    label: 'Basic usage',
+    layout: 'row',
+    html: `<${tag}${attrStr}>${inner}</${tag}>`,
+  };
+}
+
+/** Build the full examples section HTML for a component page. */
+function buildExamplesSection(tag, schema) {
+  const examples = EXAMPLES[tag] ?? [buildAutoExample(tag, schema)];
+  if (!examples.length) return '';
+
+  return `
+    <section class="docs-examples-section">
+      <h2 class="docs-section-heading">Examples</h2>
+      ${examples.map(buildExampleBlock).join('')}
+    </section>`;
+}
+
 // ── State ─────────────────────────────────────────────────────────────────────
 
 /** @type {Array<{tag: string, label: string, category: string}>} */
 let components = [];
-let navBuilt = false;
 const schemaCache = new Map();
 
 // ── Theme management ──────────────────────────────────────────────────────────
@@ -214,17 +288,17 @@ async function initAppearanceSelects() {
   modeEl.setOptions?.(MODES);
   densityEl.setOptions?.(DENSITIES);
 
-  themeEl.setValue?.(ThemeManager.getTheme());
-  modeEl.setValue?.(ThemeManager.getMode());
-  densityEl.setValue?.(ThemeManager.getDensity());
+  themeEl.value   = ThemeManager.getTheme();
+  modeEl.value    = ThemeManager.getMode();
+  densityEl.value = ThemeManager.getDensity();
 
-  themeEl.addEventListener('select-change', e => ThemeManager.setTheme(e.detail?.value));
-  modeEl.addEventListener('select-change', e => {
+  themeEl.addEventListener('change', e => ThemeManager.setTheme(e.detail?.value));
+  modeEl.addEventListener('change', e => {
     const v = e.detail?.value;
     ThemeManager.setMode(v);
     document.documentElement.dataset.mode = v;
   });
-  densityEl.addEventListener('select-change', e => {
+  densityEl.addEventListener('change', e => {
     const v = e.detail?.value;
     ThemeManager.setDensity(v);
     document.documentElement.dataset.density = v;
@@ -264,72 +338,49 @@ async function loadSchema(tag) {
 }
 
 // ── Sidebar navigation ────────────────────────────────────────────────────────
+// Nav HTML lives in docs/nav.html (loaded via data-src in index.html).
+// Re-generate with: node scripts/generate-nav.js
 
-function buildNav() {
-  const navPanel = document.getElementById('docs-nav-panel');
-  if (!navPanel || navBuilt) return;
-  navBuilt = true;
+function initNav() {
+  const nav = document.getElementById('docs-nav-panel');
+  if (!nav) return;
 
-  // Overview item
-  const overview = document.createElement('sherpa-list-item');
-  overview.dataset.label       = 'Overview';
-  overview.dataset.icon        = 'fa-solid fa-house';
-  overview.dataset.interactive = '';
-  overview.dataset.route       = '/';
-  navPanel.appendChild(overview);
-
-  // Group components by category
-  const grouped = new Map(CATEGORIES.map(c => [c.label, []]));
-  for (const comp of components) {
-    const cat = comp.category;
-    if (!grouped.has(cat)) grouped.set(cat, []);
-    grouped.get(cat).push(comp);
-  }
-
-  for (const cat of CATEGORIES) {
-    const items = grouped.get(cat.label) ?? [];
-    if (!items.length) continue;
-
-    // Category section header
-    const header = document.createElement('sherpa-section-header');
-    header.dataset.label        = cat.label;
-    header.dataset.headingLevel = 'tertiary';
-    navPanel.appendChild(header);
-
-    // Individual component links
-    for (const comp of items) {
-      const item = document.createElement('sherpa-list-item');
-      item.dataset.label       = comp.label;
-      item.dataset.interactive = '';
-      item.dataset.route       = `/components/${comp.tag}`;
-      navPanel.appendChild(item);
-    }
-  }
-
-  // Click handler — delegate from list panel
-  navPanel.addEventListener('list-item-click', e => {
-    const route = e.detail?.item?.dataset?.route
-      ?? e.composedPath().find(n => n instanceof HTMLElement && n.dataset?.route)?.dataset?.route;
+  // Listen for navigation clicks
+  nav.addEventListener('navitemclick', e => {
+    const route = e.detail?.route;
     if (route) navigate(route);
   });
+
+  // Home shortcut — nav fires 'navhome' for data-nav-target="home" items
+  nav.addEventListener('navhome', () => navigate('/'));
 }
 
 function setActiveNavItem(path) {
-  const navPanel = document.getElementById('docs-nav-panel');
-  if (!navPanel) return;
-
-  navPanel.querySelectorAll('sherpa-list-item[data-active]').forEach(el => {
-    delete el.dataset.active;
-  });
+  const nav = document.getElementById('docs-nav-panel');
+  if (!nav) return;
 
   const normalised = path.startsWith('/') ? path : `/${path}`;
-  const target = navPanel.querySelector(`sherpa-list-item[data-route="${CSS.escape(normalised)}"]`);
-  if (target) target.dataset.active = '';
+  // Derive itemId: '/' → home item, '/components/:tag' → tag
+  const itemId = normalised === '/' ? '/' : normalised.replace(/^\/components\//, '');
+  nav.setActiveItem?.(itemId);
+}
+
+function setViewHeading(heading) {
+  const view = document.getElementById('docs-view');
+  if (view) view.dataset.heading = heading;
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
 
 const outlet = document.getElementById('docs-outlet');
+
+// Delegated card-click → route navigation. Each navigable card carries
+// a data-route attribute set when populated from its cloning prototype.
+outlet?.addEventListener('card-click', e => {
+  const card = e.composedPath().find(n => n instanceof HTMLElement && n.tagName === 'SHERPA-CARD');
+  const route = card?.dataset?.route;
+  if (route) navigate(route);
+});
 
 function parseHash(hash) {
   const path = (hash || '').replace(/^#/, '') || '/';
@@ -361,38 +412,48 @@ async function renderCurrentRoute() {
 
   const path = (window.location.hash || '#/').replace(/^#/, '') || '/';
   setActiveNavItem(path);
-  outlet?.scrollTo?.({ top: 0, behavior: 'instant' });
+  // Reset scroll on the layout-view's internal content column
+  const viewContent = document.getElementById('docs-view')?.shadowRoot?.querySelector('[part="content"]');
+  viewContent?.scrollTo?.({ top: 0, behavior: 'instant' });
 }
 
 async function renderRoute(route) {
   if (!outlet) return;
 
   if (route.type === 'home') {
-    outlet.innerHTML = buildHomePage();
+    setViewHeading('Sherpa UI');
+    await renderHomePage();
     bindOutletLinks();
+    highlightOutlet();
     return;
   }
 
   if (route.type === 'category') {
     const catDef = CATEGORIES.find(c => c.id === route.id) ?? { id: route.id, label: route.id, icon: 'fa-solid fa-folder', description: '' };
     const items = components.filter(c => slugify(c.category) === route.id);
-    outlet.innerHTML = buildCategoryPage(catDef, items);
+    setViewHeading(catDef.label);
+    await renderCategoryPage(catDef, items);
     bindOutletLinks();
+    highlightOutlet();
     return;
   }
 
   if (route.type === 'component') {
     const schema = await loadSchema(route.tag);
     const comp   = components.find(c => c.tag === route.tag);
+    setViewHeading(comp?.label ?? prettyLabel(route.tag));
     outlet.innerHTML = schema
       ? buildComponentPage(route.tag, comp?.label ?? prettyLabel(route.tag), schema)
       : buildNotFound(`<${route.tag}>`);
     bindOutletLinks();
+    highlightOutlet();
     return;
   }
 
+  setViewHeading('Not found');
   outlet.innerHTML = buildNotFound(escapeHtml(route.path ?? ''));
   bindOutletLinks();
+  highlightOutlet();
 }
 
 /** Intercept all anchor clicks inside the outlet that use hash-based routes. */
@@ -406,62 +467,102 @@ function bindOutletLinks() {
   });
 }
 
-// ── Page builders ─────────────────────────────────────────────────────────────
+// ── Page partials (HTML-first) ────────────────────────────────────────────────
+// Page chrome lives in docs/pages/*.html. JS only fetches the partial,
+// clones it into the outlet, then populates dynamic regions and clones
+// cloning-prototype templates per data row.
 
-function buildHomePage() {
-  const categoryCards = CATEGORIES.map(cat => {
-    const count = components.filter(c => slugify(c.category) === cat.id).length;
-    return `
-      <a href="#/category/${cat.id}" class="docs-category-card" aria-label="${escapeHtml(cat.label)} — ${count} components">
-        <span class="docs-category-card-icon"><i class="${escapeHtml(cat.icon)}" aria-hidden="true"></i></span>
-        <h3 class="docs-category-card-title">${escapeHtml(cat.label)}</h3>
-        <p class="docs-category-card-desc">${escapeHtml(cat.description)}</p>
-        <span class="docs-category-card-count">${count} component${count !== 1 ? 's' : ''}</span>
-      </a>`;
-  }).join('');
+const partialCache = new Map();
 
-  return `
-    <div class="docs-page docs-home-page">
-      <header class="docs-page-header">
-        <h1 class="docs-page-title">Design System</h1>
-        <p class="docs-page-subtitle">
-          Sherpa UI is a component library built on Web Components, design tokens, and a
-          progressive-enhancement philosophy. Browse the categories below or search in
-          the sidebar to find a component.
-        </p>
-      </header>
-      <section class="docs-category-grid" aria-label="Component categories">
-        ${categoryCards}
-      </section>
-    </div>`;
+async function loadPagePartial(name) {
+  if (partialCache.has(name)) return partialCache.get(name);
+  const res = await fetch(`/docs/pages/${name}.html`);
+  if (!res.ok) throw new Error(`Failed to load partial: ${name}`);
+  const html = await res.text();
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  partialCache.set(name, tpl);
+  return tpl;
 }
 
-function buildCategoryPage(cat, items) {
-  const cards = items.length
-    ? items.map(comp => `
-        <a href="#/components/${escapeHtml(comp.tag)}" class="docs-component-card" aria-label="${escapeHtml(comp.label)}">
-          <code class="docs-component-card-tag">&lt;${escapeHtml(comp.tag)}&gt;</code>
-          <h3 class="docs-component-card-title">${escapeHtml(comp.label)}</h3>
-        </a>`).join('')
-    : `<p class="docs-empty-note">No components in this category.</p>`;
+async function mountPartial(name) {
+  const tpl  = await loadPagePartial(name);
+  outlet.replaceChildren(tpl.content.cloneNode(true));
+  return outlet;
+}
 
-  return `
-    <div class="docs-page docs-category-page">
-      <header class="docs-page-header">
-        <p class="docs-page-eyebrow">
-          <a href="#/" class="docs-back-link"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Overview</a>
-        </p>
-        <h1 class="docs-page-title">
-          <i class="${escapeHtml(cat.icon)}" aria-hidden="true"></i>
-          ${escapeHtml(cat.label)}
-        </h1>
-        ${cat.description ? `<p class="docs-page-subtitle">${escapeHtml(cat.description)}</p>` : ''}
-        <p class="docs-page-count">${items.length} component${items.length !== 1 ? 's' : ''}</p>
-      </header>
-      <div class="docs-component-grid" role="list">
-        ${cards}
-      </div>
-    </div>`;
+/** Convert a Font Awesome class string ('fa-solid fa-house') to a sherpa-icon name ('house'). */
+function faToIconName(faClass) {
+  if (!faClass) return '';
+  const tokens = faClass.split(/\s+/);
+  const glyph  = tokens.find(t => t.startsWith('fa-') && !/^fa-(solid|regular|light|thin|duotone|brands)$/.test(t));
+  return glyph ? glyph.replace(/^fa-/, '') : '';
+}
+
+// ── Page builders ─────────────────────────────────────────────────────────────
+
+async function renderHomePage() {
+  await mountPartial('home');
+
+  const grid = outlet.querySelector('[data-region="category-cards"]');
+  const tpl  = outlet.querySelector('template.category-card-tpl');
+  if (!grid || !tpl) return;
+
+  const frag = document.createDocumentFragment();
+  for (const cat of CATEGORIES) {
+    const count = components.filter(c => slugify(c.category) === cat.id).length;
+    const node  = tpl.content.firstElementChild.cloneNode(true);
+    node.dataset.label       = cat.label;
+    node.dataset.description = cat.description ?? '';
+    node.dataset.route       = `/category/${cat.id}`;
+    node.setAttribute('aria-label', `${cat.label} — ${count} components`);
+
+    const icon = node.querySelector('sherpa-icon');
+    if (icon) icon.setAttribute('name', faToIconName(cat.icon));
+
+    const count$ = document.createElement('span');
+    count$.slot = 'footer';
+    count$.textContent = `${count} component${count !== 1 ? 's' : ''}`;
+    node.appendChild(count$);
+
+    frag.appendChild(node);
+  }
+  grid.appendChild(frag);
+}
+
+async function renderCategoryPage(cat, items) {
+  await mountPartial('category');
+
+  const header = outlet.querySelector('sherpa-section-header[data-region="header"]');
+  if (header) {
+    header.dataset.label = cat.label;
+    const icon = header.querySelector('sherpa-icon[data-region="header-icon"]');
+    if (icon) icon.setAttribute('name', faToIconName(cat.icon));
+    const desc = header.querySelector('[data-region="header-description"]');
+    if (desc) desc.textContent = cat.description ?? '';
+  }
+
+  const grid  = outlet.querySelector('[data-region="component-cards"]');
+  const empty = outlet.querySelector('[data-region="empty"]');
+  const tpl   = outlet.querySelector('template.component-card-tpl');
+
+  if (!items.length) {
+    if (empty) empty.hidden = false;
+    return;
+  }
+  if (empty) empty.hidden = true;
+
+  if (!grid || !tpl) return;
+  const frag = document.createDocumentFragment();
+  for (const comp of items) {
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    node.dataset.label       = comp.label;
+    node.dataset.description = `<${comp.tag}>`;
+    node.dataset.route       = `/components/${comp.tag}`;
+    node.setAttribute('aria-label', comp.label);
+    frag.appendChild(node);
+  }
+  grid.appendChild(frag);
 }
 
 function buildComponentPage(tag, label, schema) {
@@ -579,10 +680,15 @@ function buildComponentPage(tag, label, schema) {
         <code class="docs-component-tag-display">&lt;${escapeHtml(tag)}&gt;</code>
         ${description ? `<p class="docs-page-subtitle">${escapeHtml(description)}</p>` : ''}
       </header>
-      ${attrsHtml}
-      ${slotsHtml}
-      ${eventsHtml}
-      ${methodsHtml}
+      ${buildExamplesSection(tag, schema)}
+      ${(attrsHtml || slotsHtml || eventsHtml || methodsHtml) ? `
+      <details class="docs-api-details" open>
+        <summary class="docs-api-summary">API Reference</summary>
+        ${attrsHtml}
+        ${slotsHtml}
+        ${eventsHtml}
+        ${methodsHtml}
+      </details>` : ''}
     </div>`;
 }
 
@@ -604,14 +710,19 @@ function buildNotFound(what) {
 async function init() {
   initTheme();
 
+  initNav();
   await loadComponents();
-  buildNav();
   initAppearanceSelects();
 
-  // Playground back-link
-  const playgroundBtn = document.getElementById('playground-btn');
-  playgroundBtn?.addEventListener('button-click', () => {
-    window.location.href = '/index.html';
+  // Copy button delegation — one handler for the whole outlet lifetime
+  outlet?.addEventListener('click', e => {
+    const btn = e.composedPath().find(n => n instanceof HTMLElement && n.classList?.contains('docs-copy-btn'));
+    if (!btn) return;
+    const code = btn.closest('.docs-code-block')?.querySelector('code')?.textContent ?? '';
+    navigator.clipboard.writeText(code).catch(() => {});
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i> Copied';
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
   });
 
   window.addEventListener('hashchange', handleHashChange);

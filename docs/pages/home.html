@@ -1,0 +1,36 @@
+<!--
+  docs/pages/home.html — Home page partial.
+  Fetched by router.js, cloned into #docs-outlet.
+
+  Dynamic regions are populated by JS via these hooks:
+    [data-region="category-cards"]  — host for cloned category cards
+    template.category-card-tpl      — cloning prototype for one card
+-->
+<div class="docs-page docs-home-page">
+
+  <sherpa-section-header
+    data-label="Design System"
+    data-heading-level="primary"
+    data-divider="true"
+  >
+    <p slot="description">
+      Sherpa UI is a component library built on Web Components, design tokens,
+      and a progressive-enhancement philosophy. Browse the categories below or
+      search in the sidebar to find a component.
+    </p>
+  </sherpa-section-header>
+
+  <div class="docs-card-grid" data-region="category-cards" aria-label="Component categories"></div>
+
+  <template class="category-card-tpl">
+    <sherpa-card
+      data-interactive="true"
+      data-elevation="sm"
+      tabindex="0"
+      role="link"
+    >
+      <sherpa-icon slot="header" data-size="lg"></sherpa-icon>
+    </sherpa-card>
+  </template>
+
+</div>
