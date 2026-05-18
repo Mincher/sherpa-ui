@@ -1,13 +1,15 @@
 <!--
   sherpa-input-date — Live examples.
   Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-input-date.examples.js
 -->
-<template data-label="Basic" data-layout="block">
-  <sherpa-input-date data-label="Date of birth"></sherpa-input-date>
+<template data-label="Default">
+  <sherpa-input-date data-label="Start date" value="2026-05-18"></sherpa-input-date>
+</template>
+
+<template data-label="Bounded range">
+  <sherpa-input-date data-label="Delivery date" value="2026-06-01" min="2026-05-18" max="2026-12-31" data-helper="Must be within the next six months."></sherpa-input-date>
+</template>
+
+<template data-label="Required">
+  <sherpa-input-date data-label="Birth date" required></sherpa-input-date>
 </template>

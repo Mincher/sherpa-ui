@@ -1,14 +1,19 @@
 <!--
   sherpa-input-number — Live examples.
   Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-input-number.examples.js
 -->
-<template data-label="With constraints" data-layout="col">
-  <sherpa-input-number data-label="Quantity"    min="1"  max="99"  value="1"  data-helper="Maximum 99 units"></sherpa-input-number>
-  <sherpa-input-number data-label="Retry limit" min="0"  max="10"  step="1" value="3"></sherpa-input-number>
+<template data-label="Default">
+  <sherpa-input-number data-label="Quantity" value="1" min="0" max="100" step="1"></sherpa-input-number>
+</template>
+
+<template data-label="Decimal step">
+  <sherpa-input-number data-label="Price" value="9.99" min="0" step="0.01"></sherpa-input-number>
+</template>
+
+<template data-label="Bounded range">
+  <sherpa-input-number data-label="Volume" data-helper="0–11" value="7" min="0" max="11" step="1"></sherpa-input-number>
+</template>
+
+<template data-label="Disabled">
+  <sherpa-input-number data-label="Locked" value="42" disabled></sherpa-input-number>
 </template>

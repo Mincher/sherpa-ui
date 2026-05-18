@@ -1,18 +1,42 @@
 <!--
   sherpa-input-checkbox-group — Live examples.
   Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-input-checkbox-group.examples.js
 -->
-<template data-label="Notification channels" data-layout="block">
-  <sherpa-input-checkbox-group data-label="Notification channels" data-helper="Select all that apply">
-    <sherpa-input-checkbox data-label="Email"             value="email" checked></sherpa-input-checkbox>
-    <sherpa-input-checkbox data-label="SMS"               value="sms"></sherpa-input-checkbox>
-    <sherpa-input-checkbox data-label="Push notification" value="push" checked></sherpa-input-checkbox>
-    <sherpa-input-checkbox data-label="Slack"             value="slack"></sherpa-input-checkbox>
+<template data-label="Vertical group" data-layout="block">
+  <sherpa-input-checkbox-group
+    data-label="Notify me when"
+    data-options='[
+      {"label":"A device goes offline","value":"offline"},
+      {"label":"CPU exceeds 80%","value":"cpu"},
+      {"label":"A deploy completes","value":"deploy"}
+    ]'
+    data-value='["offline"]'>
+  </sherpa-input-checkbox-group>
+</template>
+
+<template data-label="Horizontal group" data-layout="block">
+  <sherpa-input-checkbox-group
+    data-label="Regions"
+    data-orientation="horizontal"
+    data-options='[
+      {"label":"EU","value":"eu"},
+      {"label":"US","value":"us"},
+      {"label":"APAC","value":"apac"}
+    ]'
+    data-value='["eu","us"]'>
+  </sherpa-input-checkbox-group>
+</template>
+
+<template data-label="Required with status" data-layout="block">
+  <sherpa-input-checkbox-group
+    data-label="Channels"
+    required
+    data-status="critical"
+    data-helper="Select at least one channel."
+    data-options='[
+      {"label":"Email","value":"email"},
+      {"label":"SMS","value":"sms"},
+      {"label":"Push","value":"push"}
+    ]'>
   </sherpa-input-checkbox-group>
 </template>

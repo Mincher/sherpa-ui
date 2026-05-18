@@ -1,13 +1,15 @@
 <!--
   sherpa-input-search — Live examples.
   Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-input-search.examples.js
 -->
-<template data-label="Basic" data-layout="block">
-  <sherpa-input-search data-label="Search" placeholder="Search components…"></sherpa-input-search>
+<template data-label="Default">
+  <sherpa-input-search data-label="Search devices" placeholder="Search by name or ID…"></sherpa-input-search>
+</template>
+
+<template data-label="With initial value">
+  <sherpa-input-search data-label="Filter" value="acme" placeholder="Type to filter…"></sherpa-input-search>
+</template>
+
+<template data-label="Disabled">
+  <sherpa-input-search data-label="Disabled" placeholder="Cannot search" disabled></sherpa-input-search>
 </template>

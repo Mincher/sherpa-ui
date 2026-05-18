@@ -1,13 +1,21 @@
 <!--
   sherpa-breadcrumbs — Live examples.
   Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-breadcrumbs.examples.js
 -->
-<template data-label="Navigation trail" data-layout="block">
-  <sherpa-breadcrumbs data-items='[{"label":"Home","href":"#/"},{"label":"Settings","href":"#/settings"},{"label":"Notifications"}]'></sherpa-breadcrumbs>
+<template data-label="Default" data-layout="block">
+  <sherpa-breadcrumbs data-items='[
+    {"label":"Home","href":"#/"},
+    {"label":"Devices","href":"#/devices"},
+    {"label":"acme-device-01"}
+  ]'></sherpa-breadcrumbs>
+</template>
+
+<template data-label="Deeper hierarchy" data-layout="block">
+  <sherpa-breadcrumbs data-items='[
+    {"label":"Home","href":"#/"},
+    {"label":"Customers","href":"#/customers"},
+    {"label":"Acme Corp","href":"#/customers/acme"},
+    {"label":"Devices","href":"#/customers/acme/devices"},
+    {"label":"acme-device-01"}
+  ]'></sherpa-breadcrumbs>
 </template>
