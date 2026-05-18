@@ -109,6 +109,7 @@ const CATEGORY_MAP = {
   "sherpa-container-header":      "Layout & Navigation",
   "sherpa-container-pdf-exporter":"Layout & Navigation",
   "sherpa-layout-grid":           "Layout & Navigation",
+  "sherpa-layout-view":           "Layout & Navigation",
   "sherpa-toolbar":               "Layout & Navigation",
   "sherpa-breadcrumbs":           "Layout & Navigation",
 
@@ -1356,6 +1357,11 @@ function toCamelCase(str) {
 await loadComponentList();
 populateSidebar();
 initGlobalToolbar();
+
+// Docs link button in the toolbar
+document.getElementById("docs-link-btn")?.addEventListener("button-click", () => {
+  window.location.href = "/docs/";
+});
 
 const savedComponent = sessionStorage.getItem("selectedComponent");
 if (savedComponent && COMPONENTS.find((c) => c.tag === savedComponent)) {
