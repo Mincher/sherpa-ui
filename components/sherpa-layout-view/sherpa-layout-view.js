@@ -47,6 +47,7 @@ export class SherpaLayoutView extends SherpaElement {
       ...super.observedAttributes,
       'data-heading',
       'data-export-title',
+      'data-breadcrumbs',
     ];
   }
 
@@ -58,7 +59,7 @@ export class SherpaLayoutView extends SherpaElement {
   }
 
   onAttributeChanged(name) {
-    if (name === 'data-heading' || name === 'data-export-title') {
+    if (name === 'data-heading' || name === 'data-export-title' || name === 'data-breadcrumbs') {
       this.#syncHeader();
     }
   }
@@ -72,6 +73,9 @@ export class SherpaLayoutView extends SherpaElement {
     const exportTitle = this.getAttribute('data-export-title');
     if (exportTitle != null) header.setAttribute('data-export-title', exportTitle);
     else header.removeAttribute('data-export-title');
+    const breadcrumbs = this.getAttribute('data-breadcrumbs');
+    if (breadcrumbs != null) header.setAttribute('data-breadcrumbs', breadcrumbs);
+    else header.removeAttribute('data-breadcrumbs');
   }
 }
 

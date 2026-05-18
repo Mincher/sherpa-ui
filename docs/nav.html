@@ -2,11 +2,10 @@
   docs/nav.html — Static navigation template for the Sherpa UI docs shell.
   Loaded by <sherpa-nav data-src="/docs/nav.html"> via fetch().
 
-  Re-generate with:  node scripts/generate-nav.js
-  Keep in sync with: docs/router.js  (CATEGORY_MAP, CATEGORIES)
-                     schemas/components/index.json
+  This file is hand-maintained. Edit it directly when adding components or
+  reorganising sections.
 -->
-<div class="sherpa-nav-root" data-pinned="false" data-mode="default">
+<div class="sherpa-nav-root" data-pinned="false" data-mode="default" data-searchable>
 
   <header class="nav-header">
     <div class="nav-toolbar">
@@ -27,6 +26,24 @@
       </div>
     </div>
 
+    <!-- Search -->
+    <div class="nav-search" role="search">
+      <sherpa-nav-item
+        class="nav-search-icon"
+        data-nav-target="search"
+        data-icon="fa-solid fa-magnifying-glass"
+        tabindex="0"
+        role="button"
+        aria-label="Search"
+        >Search</sherpa-nav-item
+      >
+      <sherpa-input-search
+        class="nav-search-input"
+        placeholder="Type here to filter…"
+        aria-label="Filter navigation"
+      ></sherpa-input-search>
+    </div>
+
     <sherpa-nav-item
       data-nav-target="home"
       data-item-id="/"
@@ -34,8 +51,8 @@
       data-route="/"
       tabindex="0"
       role="button"
-      aria-label="Overview"
-    >Overview</sherpa-nav-item>
+      aria-label="Home"
+    >Home</sherpa-nav-item>
   </header>
 
   <div class="nav-sections" role="tree">

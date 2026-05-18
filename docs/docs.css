@@ -17,20 +17,33 @@
 /* ── App shell ────────────────────────────────────────────────────────────── */
 
 .docs-shell {
-  display: flex;
+  display: block;
+  position: relative;
   height: 100dvh;
   overflow: hidden;
+  /* Collapsed nav rail width — matches --_w-collapsed inside sherpa-nav
+     (calc(--sherpa-space-default * 3) = 60px). Reserved as a left gutter so
+     the nav can overlay-expand on hover without pushing content. */
+  --docs-nav-rail: 60px;
 }
 
 #docs-nav-panel {
-  flex: 0 0 auto;
-  height: 100%;
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 200;
   /* Always-dark nav regardless of page colour-mode */
   --sherpa-surface-app-product-nav-bg:     var(--sherpa-color-neutral-1000, #18191a);
   --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-neutral-1000, #18191a);
   --sherpa-surface-app-product-nav-hover:  var(--sherpa-color-neutral-900, #2e2e33);
   --sherpa-surface-app-product-nav-down:   var(--sherpa-color-neutral-900, #2e2e33);
   --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-900, #300561);
+}
+
+#docs-view {
+  height: 100%;
+  width: calc(100% - var(--docs-nav-rail));
+  margin-inline-start: var(--docs-nav-rail);
 }
 
 /* ── Outlet scroll ─────────────────────────────────────────────────────────── */
@@ -93,9 +106,41 @@
 
 .docs-page-subtitle {
   font: var(--sherpa-text-body-lg, 400 16px/1.6 system-ui);
-  color: var(--sherpa-text-default-subtle, #555);
+  color: var(--sherpa-text-default-body, #1a1a1a);
   margin: 0;
-  max-width: 64ch;
+  max-width: 72ch;
+}
+
+.docs-impl-notes {
+  margin-block-start: var(--sherpa-space-sm, 12px);
+  max-width: 72ch;
+  font: var(--sherpa-text-body-md, 400 14px/1.6 system-ui);
+  color: var(--sherpa-text-default-body, #1a1a1a);
+}
+
+.docs-impl-notes > summary {
+  cursor: pointer;
+  font: var(--sherpa-text-label-sm, 500 12px/1.4 system-ui);
+  color: var(--sherpa-text-default-subtle, #555);
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  padding-block: var(--sherpa-space-2xs, 4px);
+}
+
+.docs-impl-notes > summary::-webkit-details-marker { display: none; }
+
+.docs-impl-notes > summary::before {
+  content: '\203A';
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.docs-impl-notes[open] > summary::before { transform: rotate(90deg); }
+
+.docs-impl-notes > p {
+  margin: var(--sherpa-space-xs, 8px) 0 0;
 }
 
 .docs-page-count {

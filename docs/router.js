@@ -14,7 +14,7 @@ import { ThemeManager } from '/components/utilities/theme-manager.js';
 import { EXAMPLES }     from './examples.js';
 
 // ── Category definitions ─────────────────────────────────────────────────────
-// Mirrors the CATEGORY_MAP in demo/playground.js — keep in sync.
+
 const CATEGORY_MAP = {
   'sherpa-footer':                 'Layout & Navigation',
   'sherpa-nav':                    'Layout & Navigation',
@@ -107,37 +107,37 @@ const CATEGORIES = [
     id: 'layout-navigation',
     label: 'Layout & Navigation',
     icon: 'fa-solid fa-table-columns',
-    description: 'Structural layout, navigation rails, headers, and view composition components.',
+    description: 'Shells, rails, headers, breadcrumbs, and the building blocks that decide where everything else goes on the page.',
   },
   {
     id: 'data-visualization',
     label: 'Data Visualization',
     icon: 'fa-solid fa-chart-bar',
-    description: 'Charts, grids, metrics, and data display components.',
+    description: 'Grids, charts, metrics, and sparklines for turning rows of numbers into something a person can actually read.',
   },
   {
     id: 'controls',
     label: 'Controls',
     icon: 'fa-solid fa-hand-pointer',
-    description: 'Buttons, switches, steppers, and other interactive controls.',
+    description: 'Buttons, switches, tabs, and steppers — the things people click, tap, and toggle.',
   },
   {
     id: 'inputs',
     label: 'Inputs',
     icon: 'fa-solid fa-keyboard',
-    description: 'Form inputs, selects, checkboxes, date pickers, and more.',
+    description: 'Form fields with labels, validation, and helper text wired in — text, select, date, file, and everything between.',
   },
   {
     id: 'feedback-overlays',
     label: 'Feedback & Overlays',
     icon: 'fa-solid fa-bell',
-    description: 'Toasts, dialogs, tooltips, menus, and other overlay patterns.',
+    description: 'Toasts, dialogs, tooltips, popovers, and menus that surface above the page when the moment calls for it.',
   },
   {
     id: 'content',
     label: 'Content',
     icon: 'fa-solid fa-layer-group',
-    description: 'Cards, panels, AI panel, scheduler, and rich content containers.',
+    description: 'Cards, panels, list items, and rich containers that organise the content inside a view.',
   },
 ];
 
@@ -172,11 +172,43 @@ function dedentHtml(str) {
   return lines.map(l => l.slice(indent)).join('\n').trim();
 }
 
+/**
+ * Split a JSDoc-style description into a clean lead sentence and a list of
+ * supporting paragraphs. Bullet markers (•, -, *) and parenthetical class-name
+ * prefixes (e.g. `sherpa-foo.js — …`) are stripped from the lead so the
+ * subtitle reads as prose. Remaining content is broken at sentence boundaries
+ * and surfaced behind a collapsible "Implementation notes" disclosure.
+ */
+function splitDescription(raw) {
+  const text = String(raw ?? '').replace(/\s+/g, ' ').trim();
+  if (!text) return { lead: '', rest: [] };
+
+  // Drop "sherpa-foo.js —" / "sherpa-foo —" prefixes from JSDoc dumps.
+  const cleaned = text.replace(/^sherpa-[a-z0-9-]+(?:\.js)?\s*[—–-]\s*/i, '');
+
+  // Split into sentences on ". " (keeping abbreviations intact is best-effort).
+  const sentences = cleaned
+    .split(/(?<=[.!?])\s+(?=[A-Z(])/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  if (!sentences.length) return { lead: cleaned, rest: [] };
+
+  return {
+    lead: sentences[0].replace(/[.!?]+$/, '') + '.',
+    rest: sentences.slice(1),
+  };
+}
+
 /** Syntax-highlight all <pre><code> blocks inside the outlet. */
 function highlightOutlet() {
   if (typeof window.hljs === 'undefined') return;
   outlet?.querySelectorAll('pre code').forEach(el => window.hljs.highlightElement(el));
 }
+
+/** Pending setup() callbacks keyed by data-setup-key on preview divs. */
+const pendingSetups = new Map();
+let setupCounter = 0;
 
 /** Build a single example block (preview + code). */
 function buildExampleBlock(ex) {
@@ -184,13 +216,20 @@ function buildExampleBlock(ex) {
   const layout   = ex.layout ?? 'row';
   const showPrev = ex.preview !== false;
 
+  let setupAttr = '';
+  if (showPrev && typeof ex.setup === 'function') {
+    const key = `setup-${++setupCounter}`;
+    pendingSetups.set(key, ex.setup);
+    setupAttr = ` data-setup-key="${key}"`;
+  }
+
   return `
     <div class="docs-example">
       <div class="docs-example-header">
         <h3 class="docs-example-label">${escapeHtml(ex.label)}</h3>
         ${ex.description ? `<p class="docs-example-desc">${escapeHtml(ex.description)}</p>` : ''}
       </div>
-      ${showPrev ? `<div class="docs-example-preview" data-layout="${escapeHtml(layout)}">${html}</div>` : ''}
+      ${showPrev ? `<div class="docs-example-preview" data-layout="${escapeHtml(layout)}"${setupAttr}>${html}</div>` : ''}
       <div class="docs-code-block">
         <div class="docs-code-header">
           <span class="docs-code-lang">HTML</span>
@@ -201,6 +240,35 @@ function buildExampleBlock(ex) {
         <pre><code class="language-html">${escapeHtml(dedentHtml(html))}</code></pre>
       </div>
     </div>`;
+}
+
+/**
+ * Run any pending setup() callbacks for examples just mounted in the outlet.
+ * Waits one microtask + custom-element upgrade so child components have
+ * called connectedCallback / onRender before setData/setOptions/etc fire.
+ */
+async function runPendingSetups() {
+  if (!pendingSetups.size || !outlet) return;
+  const nodes = outlet.querySelectorAll('[data-setup-key]');
+  // Wait for any sherpa components inside to finish rendering.
+  const renderPromises = [];
+  nodes.forEach(node => {
+    node.querySelectorAll('*').forEach(el => {
+      if (el.tagName?.startsWith('SHERPA-') && el.rendered) renderPromises.push(el.rendered);
+    });
+  });
+  if (renderPromises.length) {
+    try { await Promise.all(renderPromises); } catch { /* ignore */ }
+  }
+  for (const node of nodes) {
+    const key = node.dataset.setupKey;
+    const fn  = pendingSetups.get(key);
+    if (!fn) continue;
+    pendingSetups.delete(key);
+    try { await fn(node); } catch (err) {
+      console.warn('[docs] example setup failed:', err);
+    }
+  }
 }
 
 /** Generate a minimal auto-example from a component schema. */
@@ -339,7 +407,7 @@ async function loadSchema(tag) {
 
 // ── Sidebar navigation ────────────────────────────────────────────────────────
 // Nav HTML lives in docs/nav.html (loaded via data-src in index.html).
-// Re-generate with: node scripts/generate-nav.js
+
 
 function initNav() {
   const nav = document.getElementById('docs-nav-panel');
@@ -365,9 +433,15 @@ function setActiveNavItem(path) {
   nav.setActiveItem?.(itemId);
 }
 
-function setViewHeading(heading) {
+function setViewHeading(heading, breadcrumbs = null) {
   const view = document.getElementById('docs-view');
-  if (view) view.dataset.heading = heading;
+  if (!view) return;
+  view.dataset.heading = heading;
+  if (breadcrumbs && breadcrumbs.length) {
+    view.setAttribute('data-breadcrumbs', JSON.stringify(breadcrumbs));
+  } else {
+    view.removeAttribute('data-breadcrumbs');
+  }
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
@@ -431,7 +505,9 @@ async function renderRoute(route) {
   if (route.type === 'category') {
     const catDef = CATEGORIES.find(c => c.id === route.id) ?? { id: route.id, label: route.id, icon: 'fa-solid fa-folder', description: '' };
     const items = components.filter(c => slugify(c.category) === route.id);
-    setViewHeading(catDef.label);
+    setViewHeading(catDef.label, [
+      { label: 'Home', href: '#/' },
+    ]);
     await renderCategoryPage(catDef, items);
     bindOutletLinks();
     highlightOutlet();
@@ -441,16 +517,23 @@ async function renderRoute(route) {
   if (route.type === 'component') {
     const schema = await loadSchema(route.tag);
     const comp   = components.find(c => c.tag === route.tag);
-    setViewHeading(comp?.label ?? prettyLabel(route.tag));
+    const label  = comp?.label ?? prettyLabel(route.tag);
+    const catLabel = CATEGORY_MAP[route.tag] ?? 'Uncategorised';
+    const catId    = slugify(catLabel);
+    setViewHeading(label, [
+      { label: 'Home', href: '#/' },
+      { label: catLabel,   href: `#/category/${catId}` },
+    ]);
     outlet.innerHTML = schema
-      ? buildComponentPage(route.tag, comp?.label ?? prettyLabel(route.tag), schema)
+      ? buildComponentPage(route.tag, label, schema)
       : buildNotFound(`<${route.tag}>`);
     bindOutletLinks();
     highlightOutlet();
+    runPendingSetups();
     return;
   }
 
-  setViewHeading('Not found');
+  setViewHeading('Not found', [{ label: 'Home', href: '#/' }]);
   outlet.innerHTML = buildNotFound(escapeHtml(route.path ?? ''));
   bindOutletLinks();
   highlightOutlet();
@@ -533,13 +616,14 @@ async function renderHomePage() {
 async function renderCategoryPage(cat, items) {
   await mountPartial('category');
 
-  const header = outlet.querySelector('sherpa-section-header[data-region="header"]');
-  if (header) {
-    header.dataset.label = cat.label;
-    const icon = header.querySelector('sherpa-icon[data-region="header-icon"]');
-    if (icon) icon.setAttribute('name', faToIconName(cat.icon));
-    const desc = header.querySelector('[data-region="header-description"]');
-    if (desc) desc.textContent = cat.description ?? '';
+  const desc = outlet.querySelector('[data-region="header-description"]');
+  if (desc) {
+    if (cat.description) {
+      desc.textContent = cat.description;
+      desc.hidden = false;
+    } else {
+      desc.hidden = true;
+    }
   }
 
   const grid  = outlet.querySelector('[data-region="component-cards"]');
@@ -566,21 +650,11 @@ async function renderCategoryPage(cat, items) {
 }
 
 function buildComponentPage(tag, label, schema) {
-  const description = schema.description ?? '';
+  const { lead, rest } = splitDescription(schema.description);
   const attrs       = schema.attributes ?? [];
   const slots       = schema.slots ?? [];
   const events      = schema.events ?? [];
   const methods     = schema.methods ?? [];
-
-  const catLabel = CATEGORY_MAP[tag] ?? 'Uncategorised';
-  const catId    = slugify(catLabel);
-
-  const breadcrumb = `
-    <p class="docs-page-eyebrow">
-      <a href="#/" class="docs-back-link"><i class="fa-solid fa-house" aria-hidden="true"></i> Overview</a>
-      <span aria-hidden="true">›</span>
-      <a href="#/category/${escapeHtml(catId)}" class="docs-back-link">${escapeHtml(catLabel)}</a>
-    </p>`;
 
   const attrsHtml = attrs.length ? `
     <section class="docs-api-section">
@@ -675,10 +749,13 @@ function buildComponentPage(tag, label, schema) {
   return `
     <div class="docs-page docs-component-page">
       <header class="docs-page-header">
-        ${breadcrumb}
-        <h1 class="docs-page-title">${escapeHtml(label)}</h1>
         <code class="docs-component-tag-display">&lt;${escapeHtml(tag)}&gt;</code>
-        ${description ? `<p class="docs-page-subtitle">${escapeHtml(description)}</p>` : ''}
+        ${lead ? `<p class="docs-page-subtitle">${escapeHtml(lead)}</p>` : ''}
+        ${rest.length ? `
+        <details class="docs-impl-notes">
+          <summary>Implementation notes</summary>
+          ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+        </details>` : ''}
       </header>
       ${buildExamplesSection(tag, schema)}
       ${(attrsHtml || slotsHtml || eventsHtml || methodsHtml) ? `
@@ -696,10 +773,6 @@ function buildNotFound(what) {
   return `
     <div class="docs-page docs-not-found-page">
       <header class="docs-page-header">
-        <p class="docs-page-eyebrow">
-          <a href="#/" class="docs-back-link"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Overview</a>
-        </p>
-        <h1 class="docs-page-title">Not Found</h1>
         <p class="docs-page-subtitle">No documentation found for <code>${what}</code>.</p>
       </header>
     </div>`;
