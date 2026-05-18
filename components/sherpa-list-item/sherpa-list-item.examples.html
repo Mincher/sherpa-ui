@@ -16,8 +16,8 @@
   <sherpa-list-item data-label="Active"           data-icon="fa-solid fa-star"   data-interactive data-active></sherpa-list-item>
 </template>
 
-<template data-label="Status" data-layout="col">
-  <sherpa-list-item data-label="Build succeeded"      data-description="2 mins ago"   data-status="success"></sherpa-list-item>
-  <sherpa-list-item data-label="High CPU usage"        data-description="12 mins ago"  data-status="warning"></sherpa-list-item>
-  <sherpa-list-item data-label="SSL certificate expiring" data-description="5 days"    data-status="critical"></sherpa-list-item>
+<template data-label="With trailing tag" data-layout="col">
+  <sherpa-list-item data-label="Build succeeded"      data-description="2 mins ago"><sherpa-tag slot="trailing" data-status="success">Success</sherpa-tag></sherpa-list-item>
+  <sherpa-list-item data-label="High CPU usage"        data-description="12 mins ago"><sherpa-tag slot="trailing" data-status="warning">Warning</sherpa-tag></sherpa-list-item>
+  <sherpa-list-item data-label="SSL certificate expiring" data-description="5 days"><sherpa-tag slot="trailing" data-status="critical">Critical</sherpa-tag></sherpa-list-item>
 </template>

@@ -18,11 +18,11 @@
   </sherpa-list>
 </template>
 
-<template data-label="Bordered with status" data-layout="block">
+<template data-label="Bordered list" data-layout="block">
   <sherpa-list data-variant="bordered" data-heading="Recent events">
-    <sherpa-list-item data-label="Deployment succeeded"     data-description="v2.4.1 — 2 mins ago"    data-status="success"></sherpa-list-item>
-    <sherpa-list-item data-label="High CPU usage detected"  data-description="web-01 — 12 mins ago"  data-status="warning"></sherpa-list-item>
-    <sherpa-list-item data-label="Database backup complete" data-description="prod-db — 1 hour ago"  data-status="info"></sherpa-list-item>
-    <sherpa-list-item data-label="SSL certificate expiring" data-description="api.example.com — 5d" data-status="critical"></sherpa-list-item>
+    <sherpa-list-item data-label="Deployment succeeded"     data-description="v2.4.1 — 2 mins ago"><sherpa-tag slot="trailing" data-status="success">Success</sherpa-tag></sherpa-list-item>
+    <sherpa-list-item data-label="High CPU usage detected"  data-description="web-01 — 12 mins ago"><sherpa-tag slot="trailing" data-status="warning">Warning</sherpa-tag></sherpa-list-item>
+    <sherpa-list-item data-label="Database backup complete" data-description="prod-db — 1 hour ago"><sherpa-tag slot="trailing" data-status="info">Info</sherpa-tag></sherpa-list-item>
+    <sherpa-list-item data-label="SSL certificate expiring" data-description="api.example.com — 5d"><sherpa-tag slot="trailing" data-status="critical">Critical</sherpa-tag></sherpa-list-item>
   </sherpa-list>
 </template>

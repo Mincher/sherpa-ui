@@ -2,27 +2,27 @@
   sherpa-metric — Live examples.
 -->
 <template data-label="KPI cards">
-  <sherpa-metric data-label="Total devices" data-value="1,284" data-trend="up"   data-trend-value="+12%"></sherpa-metric>
-  <sherpa-metric data-label="Uptime"        data-value="99.97%" data-trend="flat" data-status="success"></sherpa-metric>
-  <sherpa-metric data-label="Open alerts"   data-value="7"      data-trend="up"   data-status="warning"></sherpa-metric>
+  <sherpa-metric data-label="Total devices" value="1,284"  data-trend="up"   data-delta="+12%"></sherpa-metric>
+  <sherpa-metric data-label="Uptime"        value="99.97%" data-trend="flat" data-status="success"></sherpa-metric>
+  <sherpa-metric data-label="Open alerts"   value="7"      data-trend="up"   data-status="warning"></sherpa-metric>
 </template>
 
 <template data-label="Trend directions">
-  <sherpa-metric data-label="Revenue"  data-value="$48.2k" data-trend="up"   data-trend-value="+8.4%"></sherpa-metric>
-  <sherpa-metric data-label="Churn"    data-value="2.1%"   data-trend="down" data-trend-value="-0.3 pp"></sherpa-metric>
-  <sherpa-metric data-label="Sessions" data-value="12,400" data-trend="flat" data-trend-value="0%"></sherpa-metric>
+  <sherpa-metric data-label="Revenue"  value="$48.2k" data-trend="up"   data-delta="+8.4%"></sherpa-metric>
+  <sherpa-metric data-label="Churn"    value="2.1%"   data-trend="down" data-delta="-0.3 pp"></sherpa-metric>
+  <sherpa-metric data-label="Sessions" value="12,400" data-trend="flat" data-delta="0%"></sherpa-metric>
 </template>
 
 <template data-label="Status variants">
-  <sherpa-metric data-label="Healthy"   data-value="312" data-status="success"></sherpa-metric>
-  <sherpa-metric data-label="At risk"   data-value="14"  data-status="warning"></sherpa-metric>
-  <sherpa-metric data-label="Failing"   data-value="3"   data-status="critical"></sherpa-metric>
-  <sherpa-metric data-label="Urgent"    data-value="1"   data-status="urgent"></sherpa-metric>
+  <sherpa-metric data-label="Healthy" value="312" data-status="success"></sherpa-metric>
+  <sherpa-metric data-label="At risk" value="14"  data-status="warning"></sherpa-metric>
+  <sherpa-metric data-label="Failing" value="3"   data-status="critical"></sherpa-metric>
+  <sherpa-metric data-label="Urgent"  value="1"   data-status="urgent"></sherpa-metric>
 </template>
 
 <template data-label="Inside containers" data-layout="block">
   <sherpa-container data-col-span="4" style="max-width: 320px;">
     <sherpa-container-header data-title="Devices online"></sherpa-container-header>
-    <sherpa-metric data-label="Devices online" data-value="1,284" data-trend="up" data-trend-value="+12 since yesterday"></sherpa-metric>
+    <sherpa-metric data-label="Devices online" value="1,284" data-trend="up" data-delta="+12 since yesterday"></sherpa-metric>
   </sherpa-container>
 </template>

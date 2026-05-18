@@ -9,9 +9,9 @@
     data-setup       (optional) name of an exported setup fn from sherpa-gauge-chart.examples.js
 -->
 <template data-label="Single value gauge" data-layout="block" data-setup="gauge-chart-0">
-  <sherpa-gauge-chart data-value-field="value" data-min="0" data-max="100" style="height: 200px;"></sherpa-gauge-chart>
+  <sherpa-gauge-chart data-value="72" data-min="0" data-max="100" data-label="CPU usage" style="height: 200px;"></sherpa-gauge-chart>
 </template>
 
-<template data-label="With thresholds" data-preview="false">
-  <sherpa-gauge-chart data-value-field="value" data-min="0" data-max="100" data-thresholds="60,85" style="height: 200px;"></sherpa-gauge-chart>
+<template data-label="Series variant" data-preview="false">
+  <sherpa-gauge-chart data-value="88" data-min="0" data-max="100" data-label="Memory" data-variant="series" style="height: 200px;"></sherpa-gauge-chart>
 </template>

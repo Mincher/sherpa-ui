@@ -8,24 +8,29 @@
     data-preview     (optional) "false" → hide live preview, show code only
     data-setup       (optional) name of an exported setup fn from sherpa-switch.examples.js
 -->
-<template data-label="On and off">
-  <sherpa-switch data-label="Enable notifications"></sherpa-switch>
-  <sherpa-switch data-label="Enabled" checked></sherpa-switch>
+<template data-label="On and off" data-layout="col">
+  <label style="display:flex;align-items:center;gap:12px;"><sherpa-switch></sherpa-switch>Enable notifications</label>
+  <label style="display:flex;align-items:center;gap:12px;"><sherpa-switch data-state="on"></sherpa-switch>Already enabled</label>
 </template>
 
-<template data-label="Disabled">
-  <sherpa-switch data-label="Off (disabled)" disabled></sherpa-switch>
-  <sherpa-switch data-label="On (disabled)"  checked disabled></sherpa-switch>
+<template data-label="Disabled" data-layout="col">
+  <label style="display:flex;align-items:center;gap:12px;"><sherpa-switch disabled></sherpa-switch>Off (disabled)</label>
+  <label style="display:flex;align-items:center;gap:12px;"><sherpa-switch data-state="on" disabled></sherpa-switch>On (disabled)</label>
 </template>
 
 <template data-label="With description" data-layout="col">
-  <sherpa-switch
-    data-label="Email digest"
-    data-description="Weekly summary of activity in your account.">
-  </sherpa-switch>
-  <sherpa-switch
-    data-label="Two-factor auth"
-    data-description="Require a code from your authenticator app on sign-in."
-    checked>
-  </sherpa-switch>
+  <label style="display:flex;align-items:flex-start;gap:12px;">
+    <sherpa-switch></sherpa-switch>
+    <span style="display:flex;flex-direction:column;">
+      <strong>Email digest</strong>
+      <small>Weekly summary of activity in your account.</small>
+    </span>
+  </label>
+  <label style="display:flex;align-items:flex-start;gap:12px;">
+    <sherpa-switch data-state="on"></sherpa-switch>
+    <span style="display:flex;flex-direction:column;">
+      <strong>Two-factor auth</strong>
+      <small>Require a code from your authenticator app on sign-in.</small>
+    </span>
+  </label>
 </template>

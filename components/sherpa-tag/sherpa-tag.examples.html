@@ -1,37 +1,30 @@
 <!--
   sherpa-tag — Live examples.
 -->
-<template data-label="Variants" data-description="Default, primary, and secondary variants for visual hierarchy.">
-  <sherpa-tag data-label="Default"></sherpa-tag>
-  <sherpa-tag data-label="Primary"   data-variant="primary"></sherpa-tag>
-  <sherpa-tag data-label="Secondary" data-variant="secondary"></sherpa-tag>
-  <sherpa-tag data-label="Subtle"    data-variant="subtle"></sherpa-tag>
+<template data-label="Variants" data-description="Primary and secondary variants for visual hierarchy.">
+  <sherpa-tag>Default</sherpa-tag>
+  <sherpa-tag data-variant="primary">Primary</sherpa-tag>
+  <sherpa-tag data-variant="secondary">Secondary</sherpa-tag>
 </template>
 
 <template data-label="Status" data-description="Status drives the colour scheme automatically.">
-  <sherpa-tag data-label="Critical" data-status="critical"></sherpa-tag>
-  <sherpa-tag data-label="Warning"  data-status="warning"></sherpa-tag>
-  <sherpa-tag data-label="Success"  data-status="success"></sherpa-tag>
-  <sherpa-tag data-label="Info"     data-status="info"></sherpa-tag>
-  <sherpa-tag data-label="Urgent"   data-status="urgent"></sherpa-tag>
-  <sherpa-tag data-label="Brand"    data-status="brand"></sherpa-tag>
+  <sherpa-tag data-status="critical">Critical</sherpa-tag>
+  <sherpa-tag data-status="warning">Warning</sherpa-tag>
+  <sherpa-tag data-status="success">Success</sherpa-tag>
+  <sherpa-tag data-status="info">Info</sherpa-tag>
+  <sherpa-tag data-status="urgent">Urgent</sherpa-tag>
+  <sherpa-tag data-status="brand">Brand</sherpa-tag>
 </template>
 
-<template data-label="Sizes">
-  <sherpa-tag data-label="Small" data-size="small"></sherpa-tag>
-  <sherpa-tag data-label="Base"  data-size="base"></sherpa-tag>
-  <sherpa-tag data-label="Large" data-size="large"></sherpa-tag>
+<template data-label="With leading icon" data-description="Place an icon in the slot before the label text.">
+  <sherpa-tag data-status="success"><i class="fa-solid fa-circle-check"></i> Active</sherpa-tag>
+  <sherpa-tag data-status="warning"><i class="fa-solid fa-clock"></i> Pending</sherpa-tag>
+  <sherpa-tag data-status="critical"><i class="fa-solid fa-triangle-exclamation"></i> Error</sherpa-tag>
+  <sherpa-tag><i class="fa-solid fa-pen"></i> Draft</sherpa-tag>
 </template>
 
-<template data-label="With leading icon" data-description="data-icon-start renders a Font Awesome glyph before the label.">
-  <sherpa-tag data-label="Active"  data-icon-start="fa-solid fa-circle-check"       data-status="success"></sherpa-tag>
-  <sherpa-tag data-label="Pending" data-icon-start="fa-solid fa-clock"               data-status="warning"></sherpa-tag>
-  <sherpa-tag data-label="Error"   data-icon-start="fa-solid fa-triangle-exclamation" data-status="critical"></sherpa-tag>
-  <sherpa-tag data-label="Draft"   data-icon-start="fa-solid fa-pen"></sherpa-tag>
-</template>
-
-<template data-label="Collapsed" data-description="data-collapsed renders the tag as an icon-only chip.">
-  <sherpa-tag data-label="Active"  data-collapsed="true" data-icon-start="fa-solid fa-circle-check" data-status="success"></sherpa-tag>
-  <sherpa-tag data-label="Warning" data-collapsed="true" data-icon-start="fa-solid fa-clock"        data-status="warning"></sherpa-tag>
-  <sherpa-tag data-label="Error"   data-collapsed="true" data-icon-start="fa-solid fa-xmark"        data-status="critical"></sherpa-tag>
+<template data-label="Collapsed" data-description="data-collapsed renders the tag as a small circular indicator.">
+  <sherpa-tag data-collapsed data-status="success">Active</sherpa-tag>
+  <sherpa-tag data-collapsed data-status="warning">Warning</sherpa-tag>
+  <sherpa-tag data-collapsed data-status="critical">Error</sherpa-tag>
 </template>
