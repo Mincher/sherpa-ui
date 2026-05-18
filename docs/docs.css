@@ -21,10 +21,19 @@
   position: relative;
   height: 100dvh;
   overflow: hidden;
-  /* Collapsed nav rail width — matches --_w-collapsed inside sherpa-nav
-     (calc(--sherpa-space-default * 3) = 60px). Reserved as a left gutter so
-     the nav can overlay-expand on hover without pushing content. */
-  --docs-nav-rail: 60px;
+  /* Reserved left gutter for the nav. Defaults to the nav's collapsed
+     rail width (--_w-collapsed inside sherpa-nav = calc(space-default * 3)
+     = 60px). When the nav is pinned open, sherpa-nav mirrors data-pinned
+     onto its host and we widen the rail so the content area reflows —
+     when unpinned, the nav overlay-expands on hover without pushing
+     content. Hover/search/edit expansion is purely visual; only
+     data-pinned drives the layout. */
+  --docs-nav-rail: calc(var(--sherpa-space-default, 20px) * 3);
+}
+
+/* Pinned nav → reserve full expanded width so content sits beside the nav. */
+.docs-shell:has(> #docs-nav-panel[data-pinned="true"]) {
+  --docs-nav-rail: 320px;
 }
 
 #docs-nav-panel {
@@ -32,18 +41,16 @@
   inset-block: 0;
   inset-inline-start: 0;
   z-index: 200;
-  /* Always-dark nav regardless of page colour-mode */
-  --sherpa-surface-app-product-nav-bg:     var(--sherpa-color-neutral-1000, #18191a);
-  --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-neutral-1000, #18191a);
-  --sherpa-surface-app-product-nav-hover:  var(--sherpa-color-neutral-900, #2e2e33);
-  --sherpa-surface-app-product-nav-down:   var(--sherpa-color-neutral-900, #2e2e33);
-  --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-900, #300561);
 }
 
 #docs-view {
   height: 100%;
   width: calc(100% - var(--docs-nav-rail));
   margin-inline-start: var(--docs-nav-rail);
+  transition: width var(--sherpa-motion-duration-base, 0.25s)
+              var(--sherpa-motion-easing-default, ease-out),
+              margin-inline-start var(--sherpa-motion-duration-base, 0.25s)
+              var(--sherpa-motion-easing-default, ease-out);
 }
 
 /* ── Outlet scroll ─────────────────────────────────────────────────────────── */
