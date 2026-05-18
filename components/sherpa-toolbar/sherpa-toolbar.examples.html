@@ -1,0 +1,17 @@
+<!--
+  sherpa-toolbar — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-toolbar.examples.js
+-->
+<template data-label="Basic toolbar" data-layout="block">
+  <sherpa-toolbar>
+    <sherpa-button slot="leading" data-variant="primary"   data-label="Add"    data-icon-start="fa-solid fa-plus"></sherpa-button>
+    <sherpa-button slot="leading" data-variant="secondary" data-label="Export" data-icon-start="fa-solid fa-download"></sherpa-button>
+    <sherpa-button slot="trailing" data-variant="tertiary" data-type="icon"    data-icon-start="fa-solid fa-gear"></sherpa-button>
+  </sherpa-toolbar>
+</template>

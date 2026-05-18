@@ -1,0 +1,16 @@
+<!--
+  sherpa-node-row — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-node-row.examples.js
+-->
+<template data-label="Row with sockets" data-layout="block">
+  <sherpa-node-row data-label="input → output">
+    <sherpa-node-socket slot="left"  data-direction="in"></sherpa-node-socket>
+    <sherpa-node-socket slot="right" data-direction="out"></sherpa-node-socket>
+  </sherpa-node-row>
+</template>

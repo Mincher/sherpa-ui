@@ -1,0 +1,21 @@
+<!--
+  sherpa-node — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-node.examples.js
+-->
+<template data-label="Single node" data-layout="block">
+  <sherpa-node data-label="Filter rows" data-x="20" data-y="20" style="position: relative; height: 180px; display:block;">
+    <sherpa-node-header slot="header" data-label="Filter rows" data-icon="fa-solid fa-filter"></sherpa-node-header>
+    <sherpa-node-row data-label="input">
+      <sherpa-node-socket slot="left" data-direction="in"></sherpa-node-socket>
+    </sherpa-node-row>
+    <sherpa-node-row data-label="output">
+      <sherpa-node-socket slot="right" data-direction="out"></sherpa-node-socket>
+    </sherpa-node-row>
+  </sherpa-node>
+</template>

@@ -1,0 +1,20 @@
+<!--
+  sherpa-callout — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-callout.examples.js
+-->
+<template data-label="Status variants" data-description="Callouts communicate persistent contextual messages in-page." data-layout="col">
+  <sherpa-callout data-status="info"     data-label="Update available"   data-description="Version 3.4.1 is ready to install. Restart required."></sherpa-callout>
+  <sherpa-callout data-status="success"  data-label="Changes saved"       data-description="Your configuration has been applied to all regions."></sherpa-callout>
+  <sherpa-callout data-status="warning"  data-label="Trial expiring soon" data-description="Your trial ends in 3 days. Upgrade to keep access."></sherpa-callout>
+  <sherpa-callout data-status="critical" data-label="Connection lost"     data-description="Unable to reach the server. Check your network and retry."></sherpa-callout>
+</template>
+
+<template data-label="With dismiss button" data-layout="col">
+  <sherpa-callout data-status="info" data-label="New dashboard available" data-description="Try the redesigned analytics dashboard." data-close-button></sherpa-callout>
+</template>

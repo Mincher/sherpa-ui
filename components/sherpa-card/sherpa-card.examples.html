@@ -1,0 +1,28 @@
+<!--
+  sherpa-card — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-card.examples.js
+-->
+<template data-label="With title and footer action" data-layout="block">
+  <sherpa-card data-label="System overview" data-description="Last updated 2 mins ago" data-elevation="sm">
+    <p>Monitor your infrastructure health at a glance. CPU, memory, and network utilisation across all nodes.</p>
+    <sherpa-button slot="footer" data-variant="tertiary" data-label="View details" data-icon-end="fa-solid fa-arrow-right"></sherpa-button>
+  </sherpa-card>
+</template>
+
+<template data-label="Elevation levels">
+  <sherpa-card data-label="Flat"   data-elevation="none"><p>No shadow</p></sherpa-card>
+  <sherpa-card data-label="Small"  data-elevation="sm"><p>Subtle lift</p></sherpa-card>
+  <sherpa-card data-label="Medium" data-elevation="md"><p>Card lift</p></sherpa-card>
+  <sherpa-card data-label="Large"  data-elevation="lg"><p>Floating</p></sherpa-card>
+</template>
+
+<template data-label="Interactive and selectable">
+  <sherpa-card data-label="Option A" data-interactive data-selected><p>Selected state</p></sherpa-card>
+  <sherpa-card data-label="Option B" data-interactive><p>Click to select</p></sherpa-card>
+</template>

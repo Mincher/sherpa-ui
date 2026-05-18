@@ -1,0 +1,26 @@
+<!--
+  sherpa-tabs — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-tabs.examples.js
+-->
+<template data-label="Basic" data-description="Each direct child with data-tab-label becomes a tab panel." data-layout="block">
+  <sherpa-tabs>
+    <div data-tab-label="Overview">
+      <p>Overview panel. Tabs activate on click or keyboard arrow navigation.</p>
+    </div>
+    <div data-tab-label="Configuration">
+      <p>Configuration panel. Each panel is a standard light-DOM element.</p>
+    </div>
+    <div data-tab-label="Logs">
+      <p>Logs panel. The active tab index is tracked via <code>data-active-tab</code>.</p>
+    </div>
+    <div data-tab-label="Alerts">
+      <p>Alerts panel. Add as many tabs as needed.</p>
+    </div>
+  </sherpa-tabs>
+</template>

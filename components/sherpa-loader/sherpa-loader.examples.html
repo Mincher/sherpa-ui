@@ -1,0 +1,15 @@
+<!--
+  sherpa-loader — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-loader.examples.js
+-->
+<template data-label="Sizes" data-description="The loader spins continuously. Use data-size to scale it.">
+  <sherpa-loader data-size="small"></sherpa-loader>
+  <sherpa-loader data-size="base"></sherpa-loader>
+  <sherpa-loader data-size="large"></sherpa-loader>
+</template>

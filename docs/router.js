@@ -277,11 +277,81 @@ function buildAutoExample(tag, schema) {
   };
 }
 
-/** Build the full examples section HTML for a component page. */
-function buildExamplesSection(tag, schema) {
-  const examples = EXAMPLES[tag] ?? [buildAutoExample(tag, schema)];
-  if (!examples.length) return '';
+/* ── Per-component examples (HTML-template loader) ──────────────────────────
+ * Each component owns its examples in /components/<tag>/<tag>.examples.html.
+ * The file contains one <template> per example, with metadata on the template:
+ *
+ *   <template
+ *     data-label="Variants"
+ *     data-description="Optional one-line description"
+ *     data-layout="row"            // row (default) | col | block
+ *     data-preview="false"         // omit live preview, code only
+ *     data-setup="with-data">      // dynamic-import sibling *.examples.js
+ *     <sherpa-…>…</sherpa-…>
+ *   </template>
+ *
+ * Setup callbacks (rare — only chart setData / select setOptions) live in a
+ * sibling /components/<tag>/<tag>.examples.js whose default export is an
+ * object keyed by data-setup name: { 'with-data': (root) => {…} }.
+ */
+const examplesHtmlCache  = new Map();
+const examplesSetupCache = new Map();
 
+async function loadExamplesHtml(tag) {
+  if (examplesHtmlCache.has(tag)) return examplesHtmlCache.get(tag);
+  const promise = fetch(`/components/${tag}/${tag}.examples.html`)
+    .then(r => (r.ok ? r.text() : null))
+    .catch(() => null);
+  examplesHtmlCache.set(tag, promise);
+  return promise;
+}
+
+async function loadExamplesSetup(tag) {
+  if (examplesSetupCache.has(tag)) return examplesSetupCache.get(tag);
+  const promise = import(`/components/${tag}/${tag}.examples.js`)
+    .then(m => (m.default && typeof m.default === 'object' ? m.default : null))
+    .catch(() => null);
+  examplesSetupCache.set(tag, promise);
+  return promise;
+}
+
+async function parseExamplesFromHtml(tag, html) {
+  if (!html) return null;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const tpls = [...doc.querySelectorAll('template')];
+  if (!tpls.length) return null;
+
+  // Lazily load setup module only when at least one template needs it.
+  const needsSetup = tpls.some(t => t.dataset.setup);
+  const setupMap = needsSetup ? await loadExamplesSetup(tag) : null;
+
+  return tpls.map(t => {
+    const tmp = document.createElement('div');
+    tmp.appendChild(t.content.cloneNode(true));
+    const innerHtml = tmp.innerHTML;
+    return {
+      label:       t.dataset.label || 'Example',
+      description: t.dataset.description || '',
+      layout:      t.dataset.layout || 'row',
+      preview:     t.dataset.preview !== 'false',
+      html:        innerHtml,
+      setup:       setupMap?.[t.dataset.setup] || null,
+    };
+  });
+}
+
+async function getExamples(tag, schema) {
+  const html = await loadExamplesHtml(tag);
+  const fromHtml = await parseExamplesFromHtml(tag, html);
+  if (fromHtml?.length) return fromHtml;
+  // Legacy fallback while migration is in progress.
+  if (EXAMPLES[tag]?.length) return EXAMPLES[tag];
+  return [buildAutoExample(tag, schema)];
+}
+
+/** Build the full examples section HTML for a component page. */
+function buildExamplesSection(tag, examples) {
+  if (!examples?.length) return '';
   return `
     <section class="docs-examples-section">
       <h2 class="docs-section-heading">Examples</h2>
@@ -508,8 +578,9 @@ async function renderRoute(route) {
       { label: 'Home', href: '#/' },
       { label: catLabel,   href: `#/category/${catId}` },
     ]);
+    const examples = schema ? await getExamples(route.tag, schema) : [];
     outlet.innerHTML = schema
-      ? buildComponentPage(route.tag, label, schema)
+      ? buildComponentPage(route.tag, label, schema, examples)
       : buildNotFound(`<${route.tag}>`);
     bindOutletLinks();
     highlightOutlet();
@@ -633,7 +704,7 @@ async function renderCategoryPage(cat, items) {
   grid.appendChild(frag);
 }
 
-function buildComponentPage(tag, label, schema) {
+function buildComponentPage(tag, label, schema, examples) {
   const { lead, rest } = splitDescription(schema.description);
   const attrs       = schema.attributes ?? [];
   const slots       = schema.slots ?? [];
@@ -741,7 +812,7 @@ function buildComponentPage(tag, label, schema) {
           ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
         </details>` : ''}
       </header>
-      ${buildExamplesSection(tag, schema)}
+      ${buildExamplesSection(tag, examples)}
       ${(attrsHtml || slotsHtml || eventsHtml || methodsHtml) ? `
       <details class="docs-api-details" open>
         <summary class="docs-api-summary">API Reference</summary>

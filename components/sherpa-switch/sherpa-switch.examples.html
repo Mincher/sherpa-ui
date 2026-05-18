@@ -1,0 +1,19 @@
+<!--
+  sherpa-switch — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-switch.examples.js
+-->
+<template data-label="On and off">
+  <sherpa-switch data-label="Notifications" checked></sherpa-switch>
+  <sherpa-switch data-label="Dark mode"></sherpa-switch>
+</template>
+
+<template data-label="Disabled">
+  <sherpa-switch data-label="Enabled (locked)" checked disabled></sherpa-switch>
+  <sherpa-switch data-label="Off (locked)" disabled></sherpa-switch>
+</template>

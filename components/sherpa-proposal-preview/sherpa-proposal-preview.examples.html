@@ -1,0 +1,17 @@
+<!--
+  sherpa-proposal-preview — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-proposal-preview.examples.js
+-->
+<template data-label="Proposal summary" data-layout="block">
+  <sherpa-proposal-preview data-label="Security hardening" data-description="3 proposed changes">
+    <sherpa-proposal-op data-label="Add rate limit on /api/login" data-status="warning"></sherpa-proposal-op>
+    <sherpa-proposal-op data-label="Rotate API keys"              data-status="info"></sherpa-proposal-op>
+    <sherpa-proposal-op data-label="Disable legacy TLS"           data-status="critical"></sherpa-proposal-op>
+  </sherpa-proposal-preview>
+</template>

@@ -1,0 +1,42 @@
+<!--
+  sherpa-input-select — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-input-select.examples.js
+-->
+<template data-label="Basic" data-layout="block">
+  <sherpa-input-select data-label="Region">
+    <option value="">Select a region…</option>
+    <option value="eur">Europe</option>
+    <option value="nam">North America</option>
+    <option value="apac">Asia-Pacific</option>
+    <option value="me">Middle East</option>
+  </sherpa-input-select>
+</template>
+
+<template data-label="With helper and required" data-layout="block">
+  <sherpa-input-select data-label="Timezone" data-helper="Used for scheduled reports" required>
+    <option value="">Choose a timezone…</option>
+    <option value="utc">UTC</option>
+    <option value="gmt1">GMT+1 (London)</option>
+    <option value="gmt2">GMT+2 (Paris)</option>
+    <option value="et">US Eastern</option>
+    <option value="pt">US Pacific</option>
+  </sherpa-input-select>
+</template>
+
+<template data-label="Inline layout" data-description="Use data-layout=&quot;inline&quot; to place the label and select on one line — ideal for compact toolbars." data-layout="col">
+  <sherpa-input-select data-label="Theme" data-layout="inline" data-size="small">
+    <option value="apex-2-purple">Apex 2 (Purple)</option>
+    <option value="apex-2-teal">Apex 2 (Teal)</option>
+    <option value="classic">Classic</option>
+  </sherpa-input-select>
+</template>
+
+<template data-label="Options via setOptions()" data-description="For large or dynamic option lists, set the options programmatically." data-layout="block" data-setup="input-select-3">
+  <sherpa-input-select data-label="Fruit" data-placeholder="Pick one…"></sherpa-input-select>
+</template>

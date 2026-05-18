@@ -1,0 +1,18 @@
+<!--
+  sherpa-nav-section — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-nav-section.examples.js
+-->
+<template data-label="Section navigation" data-layout="block">
+  <sherpa-nav-section>
+    <sherpa-list-item data-label="Overview" data-icon="fa-solid fa-house"    data-interactive data-active></sherpa-list-item>
+    <sherpa-list-item data-label="Devices"  data-icon="fa-solid fa-server"   data-interactive></sherpa-list-item>
+    <sherpa-list-item data-label="Alerts"   data-icon="fa-solid fa-bell"     data-interactive></sherpa-list-item>
+    <sherpa-list-item data-label="Settings" data-icon="fa-solid fa-gear"     data-interactive></sherpa-list-item>
+  </sherpa-nav-section>
+</template>

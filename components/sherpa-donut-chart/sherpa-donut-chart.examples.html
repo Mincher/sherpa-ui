@@ -1,0 +1,13 @@
+<!--
+  sherpa-donut-chart — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-donut-chart.examples.js
+-->
+<template data-label="Categorical donut" data-layout="block" data-setup="donut-chart-0">
+  <sherpa-donut-chart data-category="category" data-value-field="value" style="height: 240px;"></sherpa-donut-chart>
+</template>

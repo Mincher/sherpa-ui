@@ -1,0 +1,21 @@
+<!--
+  sherpa-progress-bar — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-progress-bar.examples.js
+-->
+<template data-label="Values" data-layout="col">
+  <sherpa-progress-bar data-label="25%"  value="25"  max="100"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="60%"  value="60"  max="100"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="100%" value="100" max="100"></sherpa-progress-bar>
+</template>
+
+<template data-label="Status" data-layout="col">
+  <sherpa-progress-bar data-label="Upload complete"   value="100" max="100" data-status="success"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="Storage warning"    value="80"  max="100" data-status="warning"></sherpa-progress-bar>
+  <sherpa-progress-bar data-label="Critical threshold" value="45"  max="100" data-status="critical"></sherpa-progress-bar>
+</template>

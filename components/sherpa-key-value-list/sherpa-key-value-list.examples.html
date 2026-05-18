@@ -1,0 +1,27 @@
+<!--
+  sherpa-key-value-list — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-key-value-list.examples.js
+-->
+<template data-label="Device details" data-layout="block">
+  <sherpa-key-value-list>
+    <dt>Hostname</dt>   <dd>web-srv-01</dd>
+    <dt>IP address</dt> <dd>10.0.1.42</dd>
+    <dt>Status</dt>     <dd>Online</dd>
+    <dt>Last seen</dt>  <dd>Just now</dd>
+    <dt>Region</dt>     <dd>EU West</dd>
+  </sherpa-key-value-list>
+</template>
+
+<template data-label="Vertical layout" data-layout="block">
+  <sherpa-key-value-list data-layout="vertical">
+    <dt>Hostname</dt>   <dd>web-srv-01</dd>
+    <dt>IP address</dt> <dd>10.0.1.42</dd>
+    <dt>Status</dt>     <dd>Online</dd>
+  </sherpa-key-value-list>
+</template>

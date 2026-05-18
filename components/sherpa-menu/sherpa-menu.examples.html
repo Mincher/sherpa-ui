@@ -1,0 +1,19 @@
+<!--
+  sherpa-menu — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-menu.examples.js
+-->
+<template data-label="Action menu" data-layout="block" data-setup="menu-0">
+  <sherpa-button data-variant="tertiary" data-label="More" data-icon-end="fa-solid fa-caret-down"></sherpa-button>
+  
+  <sherpa-menu>
+    <sherpa-menu-item data-label="Edit"      data-icon="fa-solid fa-pen"></sherpa-menu-item>
+    <sherpa-menu-item data-label="Duplicate" data-icon="fa-solid fa-copy"></sherpa-menu-item>
+    <sherpa-menu-item data-label="Delete"    data-icon="fa-solid fa-trash" data-status="critical"></sherpa-menu-item>
+  </sherpa-menu>
+</template>

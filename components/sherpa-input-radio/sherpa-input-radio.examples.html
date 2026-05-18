@@ -1,0 +1,15 @@
+<!--
+  sherpa-input-radio — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-input-radio.examples.js
+-->
+<template data-label="States" data-layout="col">
+  <sherpa-input-radio data-label="Standard"  name="ex-radio" value="standard" checked></sherpa-input-radio>
+  <sherpa-input-radio data-label="Express"   name="ex-radio" value="express"></sherpa-input-radio>
+  <sherpa-input-radio data-label="Overnight" name="ex-radio" value="overnight" disabled></sherpa-input-radio>
+</template>

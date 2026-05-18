@@ -1,0 +1,16 @@
+<!--
+  sherpa-message — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-message.examples.js
+-->
+<template data-label="Status variants" data-layout="col">
+  <sherpa-message data-status="info"     data-label="Scheduled maintenance on Sunday 22:00 UTC"></sherpa-message>
+  <sherpa-message data-status="success"  data-label="Report generated successfully"></sherpa-message>
+  <sherpa-message data-status="warning"  data-label="Rate limit approaching — 90% used"></sherpa-message>
+  <sherpa-message data-status="critical" data-label="Authentication failed — check your API key"></sherpa-message>
+</template>

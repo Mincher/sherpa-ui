@@ -1,0 +1,27 @@
+<!--
+  sherpa-input-text — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-input-text.examples.js
+-->
+<template data-label="Basic" data-layout="block">
+  <sherpa-input-text data-label="Full name" placeholder="Enter your name"></sherpa-input-text>
+</template>
+
+<template data-label="With helper text" data-layout="block">
+  <sherpa-input-text data-label="Username" data-helper="3–20 characters, letters and numbers only" placeholder="your_username"></sherpa-input-text>
+</template>
+
+<template data-label="Required and disabled" data-layout="col">
+  <sherpa-input-text data-label="Email address" placeholder="name@company.com" required></sherpa-input-text>
+  <sherpa-input-text data-label="Account ID"    value="ACC-00124" disabled></sherpa-input-text>
+</template>
+
+<template data-label="Validation states" data-layout="col">
+  <sherpa-input-text data-label="Email"    data-helper="Please enter a valid email address." data-status="critical" value="not-an-email"></sherpa-input-text>
+  <sherpa-input-text data-label="Password" data-helper="Strong password!"                      data-status="success" value="••••••••••"></sherpa-input-text>
+</template>

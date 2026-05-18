@@ -1,0 +1,13 @@
+<!--
+  sherpa-gauge-chart — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-gauge-chart.examples.js
+-->
+<template data-label="Single value gauge" data-layout="block" data-setup="gauge-chart-0">
+  <sherpa-gauge-chart data-value-field="value" data-min="0" data-max="100" style="height: 200px;"></sherpa-gauge-chart>
+</template>

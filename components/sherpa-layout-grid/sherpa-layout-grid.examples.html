@@ -1,0 +1,17 @@
+<!--
+  sherpa-layout-grid — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-layout-grid.examples.js
+-->
+<template data-label="3-column grid" data-description="sherpa-layout-grid is a 12/6/3 dashboard grid for resizable containers." data-layout="block">
+  <sherpa-layout-grid data-columns="3" data-gap="md">
+    <sherpa-card data-label="Card A" data-elevation="sm"><p>Body A</p></sherpa-card>
+    <sherpa-card data-label="Card B" data-elevation="sm"><p>Body B</p></sherpa-card>
+    <sherpa-card data-label="Card C" data-elevation="sm"><p>Body C</p></sherpa-card>
+  </sherpa-layout-grid>
+</template>

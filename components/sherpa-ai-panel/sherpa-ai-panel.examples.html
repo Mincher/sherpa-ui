@@ -1,0 +1,18 @@
+<!--
+  sherpa-ai-panel — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-ai-panel.examples.js
+-->
+<template data-label="AI panel" data-layout="block">
+  <sherpa-ai-panel data-heading="Sherpa Assistant" style="height: 360px;">
+    <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
+      <p>Hi! Ask me about your devices or alerts.</p>
+    </sherpa-chat-message>
+    <sherpa-prompt-composer slot="composer" data-placeholder="Ask anything…"></sherpa-prompt-composer>
+  </sherpa-ai-panel>
+</template>

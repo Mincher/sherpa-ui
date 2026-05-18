@@ -1,0 +1,25 @@
+<!--
+  sherpa-icon — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-icon.examples.js
+-->
+<template data-label="Sizes">
+  <sherpa-icon name="bolt" data-size="xs"></sherpa-icon>
+  <sherpa-icon name="bolt" data-size="sm"></sherpa-icon>
+  <sherpa-icon name="bolt" data-size="md"></sherpa-icon>
+  <sherpa-icon name="bolt" data-size="lg"></sherpa-icon>
+  <sherpa-icon name="bolt" data-size="xl"></sherpa-icon>
+  <sherpa-icon name="bolt" data-size="2xl"></sherpa-icon>
+</template>
+
+<template data-label="Status colours">
+  <sherpa-icon name="circle-check"       data-status="success"  data-size="lg"></sherpa-icon>
+  <sherpa-icon name="triangle-exclamation" data-status="warning"  data-size="lg"></sherpa-icon>
+  <sherpa-icon name="circle-xmark"         data-status="critical" data-size="lg"></sherpa-icon>
+  <sherpa-icon name="circle-info"          data-status="info"     data-size="lg"></sherpa-icon>
+</template>

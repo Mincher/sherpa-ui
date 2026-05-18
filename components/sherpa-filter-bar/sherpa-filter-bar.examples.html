@@ -1,0 +1,18 @@
+<!--
+  sherpa-filter-bar — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-filter-bar.examples.js
+-->
+<template data-label="Filter chips" data-layout="block">
+  <sherpa-filter-bar>
+    <sherpa-button data-variant="tertiary" data-label="Status: online" data-icon-end="fa-solid fa-xmark"></sherpa-button>
+    <sherpa-button data-variant="tertiary" data-label="Region: EU"     data-icon-end="fa-solid fa-xmark"></sherpa-button>
+    <sherpa-button data-variant="tertiary" data-label="Type: probe"    data-icon-end="fa-solid fa-xmark"></sherpa-button>
+    <sherpa-button data-variant="tertiary" data-label="Clear all"></sherpa-button>
+  </sherpa-filter-bar>
+</template>

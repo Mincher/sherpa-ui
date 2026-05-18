@@ -1,0 +1,13 @@
+<!--
+  sherpa-transfer-list — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-transfer-list.examples.js
+-->
+<template data-label="Two-pane transfer" data-description="Items can be moved between the available and selected lists." data-layout="block" data-setup="transfer-list-0">
+  <sherpa-transfer-list data-label-source="Available" data-label-target="Selected" style="height: 280px;"></sherpa-transfer-list>
+</template>
