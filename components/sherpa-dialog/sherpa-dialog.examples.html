@@ -16,3 +16,24 @@
     <sherpa-callout slot="footer" data-status="warning" data-label="Once started, this action cannot be cancelled."></sherpa-callout>
   </sherpa-dialog>
 </template>
+
+<template data-label="Size variants — markup only" data-preview="false">
+  <sherpa-dialog data-label="Small dialog"  data-size="small"  data-dismissible></sherpa-dialog>
+  <sherpa-dialog data-label="Medium dialog" data-size="medium" data-dismissible></sherpa-dialog>
+  <sherpa-dialog data-label="Large dialog"  data-size="large"  data-dismissible></sherpa-dialog>
+  <sherpa-dialog data-label="Full screen"   data-size="full"   data-dismissible></sherpa-dialog>
+</template>
+
+<template data-label="Status header" data-preview="false">
+  <sherpa-dialog data-label="Delete device?" data-subtitle="acme-device-01" data-size="small" data-status="critical" data-dismissible>
+    <p>This will permanently remove the device and its configuration. This action cannot be undone.</p>
+    <sherpa-button slot="footer" data-variant="secondary" data-label="Cancel"></sherpa-button>
+    <sherpa-button slot="footer" data-variant="primary"   data-status="critical" data-label="Delete"></sherpa-button>
+  </sherpa-dialog>
+</template>
+
+<template data-label="Wizard template" data-preview="false">
+  <sherpa-dialog data-label="Connect a new device" data-template="wizard" data-page="1" data-pages="3" data-finish-label="Connect" data-dismissible>
+    <p>Step 1 — Choose the device type.</p>
+  </sherpa-dialog>
+</template>

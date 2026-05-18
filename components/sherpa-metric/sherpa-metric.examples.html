@@ -1,15 +1,28 @@
 <!--
   sherpa-metric — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-metric.examples.js
 -->
 <template data-label="KPI cards">
   <sherpa-metric data-label="Total devices" data-value="1,284" data-trend="up"   data-trend-value="+12%"></sherpa-metric>
-  <sherpa-metric data-label="Uptime"         data-value="99.97%" data-trend="flat" data-status="success"></sherpa-metric>
-  <sherpa-metric data-label="Open alerts"    data-value="7"       data-trend="up"   data-status="warning"></sherpa-metric>
+  <sherpa-metric data-label="Uptime"        data-value="99.97%" data-trend="flat" data-status="success"></sherpa-metric>
+  <sherpa-metric data-label="Open alerts"   data-value="7"      data-trend="up"   data-status="warning"></sherpa-metric>
+</template>
+
+<template data-label="Trend directions">
+  <sherpa-metric data-label="Revenue"  data-value="$48.2k" data-trend="up"   data-trend-value="+8.4%"></sherpa-metric>
+  <sherpa-metric data-label="Churn"    data-value="2.1%"   data-trend="down" data-trend-value="-0.3 pp"></sherpa-metric>
+  <sherpa-metric data-label="Sessions" data-value="12,400" data-trend="flat" data-trend-value="0%"></sherpa-metric>
+</template>
+
+<template data-label="Status variants">
+  <sherpa-metric data-label="Healthy"   data-value="312" data-status="success"></sherpa-metric>
+  <sherpa-metric data-label="At risk"   data-value="14"  data-status="warning"></sherpa-metric>
+  <sherpa-metric data-label="Failing"   data-value="3"   data-status="critical"></sherpa-metric>
+  <sherpa-metric data-label="Urgent"    data-value="1"   data-status="urgent"></sherpa-metric>
+</template>
+
+<template data-label="Inside containers" data-layout="block">
+  <sherpa-container data-col-span="4" style="max-width: 320px;">
+    <sherpa-container-header data-title="Devices online"></sherpa-container-header>
+    <sherpa-metric data-label="Devices online" data-value="1,284" data-trend="up" data-trend-value="+12 since yesterday"></sherpa-metric>
+  </sherpa-container>
 </template>

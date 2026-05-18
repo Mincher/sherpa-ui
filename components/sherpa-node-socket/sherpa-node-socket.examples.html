@@ -1,14 +1,13 @@
 <!--
   sherpa-node-socket — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-node-socket.examples.js
 -->
-<template data-label="Directions">
-  <sherpa-node-socket data-direction="in"></sherpa-node-socket>
-  <sherpa-node-socket data-direction="out"></sherpa-node-socket>
+<template data-label="Directions" data-layout="col">
+  <sherpa-node-socket data-direction="input"  data-port-name="value-in"></sherpa-node-socket>
+  <sherpa-node-socket data-direction="output" data-port-name="value-out"></sherpa-node-socket>
+</template>
+
+<template data-label="Connection states" data-layout="col">
+  <sherpa-node-socket data-direction="input"  data-port-name="connected"   data-connected data-connection-count="1"></sherpa-node-socket>
+  <sherpa-node-socket data-direction="output" data-port-name="multi"       data-multi data-connected data-connection-count="3"></sherpa-node-socket>
+  <sherpa-node-socket data-direction="output" data-port-name="flow-active" data-connected data-flow-active></sherpa-node-socket>
 </template>

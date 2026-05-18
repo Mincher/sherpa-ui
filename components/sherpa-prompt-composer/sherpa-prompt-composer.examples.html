@@ -1,13 +1,18 @@
 <!--
   sherpa-prompt-composer — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-prompt-composer.examples.js
 -->
-<template data-label="Prompt input" data-layout="block">
+<template data-label="Default" data-layout="block">
   <sherpa-prompt-composer data-placeholder="Ask anything…"></sherpa-prompt-composer>
+</template>
+
+<template data-label="With pre-filled prompt" data-layout="block">
+  <sherpa-prompt-composer data-placeholder="Ask anything…" value="Summarise yesterday's alerts"></sherpa-prompt-composer>
+</template>
+
+<template data-label="Disabled" data-layout="block">
+  <sherpa-prompt-composer data-placeholder="Sending…" data-disabled></sherpa-prompt-composer>
+</template>
+
+<template data-label="Tall composer" data-description="data-max-height caps how tall the textarea can grow." data-layout="block">
+  <sherpa-prompt-composer data-placeholder="Write a long prompt…" data-max-height="240"></sherpa-prompt-composer>
 </template>

@@ -1,13 +1,7 @@
 <!--
   sherpa-node-header — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-node-header.examples.js
 -->
-<template data-label="Header" data-layout="block">
-  <sherpa-node-header data-label="Filter rows" data-icon="fa-solid fa-filter"></sherpa-node-header>
+<template data-label="Default" data-layout="col">
+  <sherpa-node-header data-icon="fa-solid fa-database">Source node</sherpa-node-header>
+  <sherpa-node-header data-icon="fa-solid fa-calculator" data-drill-down>Math op</sherpa-node-header>
 </template>

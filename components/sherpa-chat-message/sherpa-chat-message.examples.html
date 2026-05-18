@@ -1,12 +1,5 @@
 <!--
   sherpa-chat-message — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-chat-message.examples.js
 -->
 <template data-label="Assistant + user" data-layout="col">
   <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
@@ -14,5 +7,28 @@
   </sherpa-chat-message>
   <sherpa-chat-message data-author="You" data-author-variant="user" data-timestamp="now">
     <p>Summarise yesterday's alerts.</p>
+  </sherpa-chat-message>
+</template>
+
+<template data-label="Multi-turn conversation" data-layout="col">
+  <sherpa-chat-message data-author="Assistant" data-timestamp="10:42">
+    <p>Yesterday there were 12 alerts. 9 resolved automatically, 3 still need attention:</p>
+    <ul>
+      <li>acme-device-01 — high CPU at 23:14</li>
+      <li>beta-probe-14 — offline since 18:02</li>
+      <li>edge-router-9  — checksum mismatch on deploy</li>
+    </ul>
+  </sherpa-chat-message>
+  <sherpa-chat-message data-author="You" data-author-variant="user" data-timestamp="10:43">
+    <p>Open a ticket for beta-probe-14.</p>
+  </sherpa-chat-message>
+  <sherpa-chat-message data-author="Assistant" data-timestamp="10:43">
+    <p>Ticket <strong>SUP-2841</strong> created and assigned to the Networking team.</p>
+  </sherpa-chat-message>
+</template>
+
+<template data-label="With custom avatar icon" data-layout="col">
+  <sherpa-chat-message data-author="Sherpa AI" data-avatar-icon="fa-solid fa-sparkles" data-timestamp="now">
+    <p>Here is a summary of today's activity.</p>
   </sherpa-chat-message>
 </template>

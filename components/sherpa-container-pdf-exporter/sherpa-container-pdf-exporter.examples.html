@@ -1,17 +1,11 @@
 <!--
   sherpa-container-pdf-exporter — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-container-pdf-exporter.examples.js
 -->
-<template data-label="Export trigger" data-description="Wraps a printable region and provides a button to export it." data-layout="block">
-  <sherpa-container-pdf-exporter data-label="Export to PDF">
-    <sherpa-container data-heading="Devices">
-      <sherpa-metric data-label="Total devices" data-value="1,284" data-trend="up" data-trend-value="+12%"></sherpa-metric>
+<template data-label="Print-ready wrapper" data-description="Wrap any container or layout in this element to enable PDF/print export." data-layout="block">
+  <sherpa-container-pdf-exporter data-title="Weekly device report">
+    <sherpa-container>
+      <sherpa-container-header data-title="Devices online" data-description="Snapshot exported for the print/PDF pipeline."></sherpa-container-header>
+      <sherpa-metric data-label="Online" data-value="1,284" data-status="success"></sherpa-metric>
     </sherpa-container>
   </sherpa-container-pdf-exporter>
 </template>

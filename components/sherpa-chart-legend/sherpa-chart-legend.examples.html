@@ -1,12 +1,5 @@
 <!--
   sherpa-chart-legend — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-chart-legend.examples.js
 -->
 <template data-label="Series legend" data-layout="block">
   <sherpa-chart-legend>
@@ -15,4 +8,17 @@
     <span data-color="#16a34a">Social</span>
     <span data-color="#ea580c">Search</span>
   </sherpa-chart-legend>
+</template>
+
+<template data-label="Vertical orientation" data-layout="block">
+  <sherpa-chart-legend data-orientation="vertical">
+    <span data-color="var(--sherpa-data-viz-1)">North</span>
+    <span data-color="var(--sherpa-data-viz-2)">South</span>
+    <span data-color="var(--sherpa-data-viz-3)">East</span>
+    <span data-color="var(--sherpa-data-viz-4)">West</span>
+  </sherpa-chart-legend>
+</template>
+
+<template data-label="Loading" data-layout="block">
+  <sherpa-chart-legend data-loading></sherpa-chart-legend>
 </template>

@@ -1,26 +1,16 @@
 <!--
   sherpa-node-canvas — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-node-canvas.examples.js
 -->
-<template data-label="Two connected nodes" data-layout="block">
-  <sherpa-node-canvas style="height: 360px;">
-    <sherpa-node data-label="Source" data-x="40"  data-y="40">
-      <sherpa-node-header slot="header" data-label="Source" data-icon="fa-solid fa-database"></sherpa-node-header>
-      <sherpa-node-row data-label="rows">
-        <sherpa-node-socket slot="right" data-direction="out" id="src-out"></sherpa-node-socket>
-      </sherpa-node-row>
+<template data-label="Node canvas" data-description="Composes node primitives into a graph editor." data-layout="block">
+  <sherpa-node-canvas data-heading="Pipeline" data-show-header data-grid style="height: 360px;">
+    <sherpa-node data-kind="source" data-node-id="src" data-x="40" data-y="60">
+      <sherpa-node-header data-icon="fa-solid fa-database">Devices</sherpa-node-header>
+      <sherpa-node-row><sherpa-node-socket data-direction="output" data-port-name="rows"></sherpa-node-socket><span>rows</span></sherpa-node-row>
     </sherpa-node>
-    <sherpa-node data-label="Sink" data-x="280" data-y="80">
-      <sherpa-node-header slot="header" data-label="Sink" data-icon="fa-solid fa-flag-checkered"></sherpa-node-header>
-      <sherpa-node-row data-label="input">
-        <sherpa-node-socket slot="left" data-direction="in" id="sink-in"></sherpa-node-socket>
-      </sherpa-node-row>
+    <sherpa-node data-kind="math" data-node-id="agg" data-x="280" data-y="60" data-subtype="avg" data-subtype-label="Average">
+      <sherpa-node-header data-icon="fa-solid fa-calculator">Aggregate</sherpa-node-header>
+      <sherpa-node-row><sherpa-node-socket data-direction="input"  data-port-name="value"></sherpa-node-socket><span>value</span></sherpa-node-row>
+      <sherpa-node-row><sherpa-node-socket data-direction="output" data-port-name="result"></sherpa-node-socket><span>result</span></sherpa-node-row>
     </sherpa-node>
   </sherpa-node-canvas>
 </template>

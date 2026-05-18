@@ -1,17 +1,28 @@
 <!--
   sherpa-ai-panel — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-ai-panel.examples.js
 -->
-<template data-label="AI panel" data-layout="block">
+<template data-label="Inline panel" data-layout="block">
   <sherpa-ai-panel data-heading="Sherpa Assistant" style="height: 360px;">
     <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
-      <p>Hi! Ask me about your devices or alerts.</p>
+      <p>Hi! Ask me about your devices, alerts, or deploys.</p>
+    </sherpa-chat-message>
+    <sherpa-prompt-composer slot="composer" data-placeholder="Ask anything…"></sherpa-prompt-composer>
+  </sherpa-ai-panel>
+</template>
+
+<template data-label="Busy state" data-description="data-busy shows a loader while a response is being generated." data-layout="block">
+  <sherpa-ai-panel data-heading="Sherpa Assistant" data-busy style="height: 320px;">
+    <sherpa-chat-message data-author="You" data-author-variant="user" data-timestamp="now">
+      <p>Generate this week's status report.</p>
+    </sherpa-chat-message>
+    <sherpa-prompt-composer slot="composer" data-placeholder="Working…" data-disabled></sherpa-prompt-composer>
+  </sherpa-ai-panel>
+</template>
+
+<template data-label="Expanded with archive" data-layout="block">
+  <sherpa-ai-panel data-heading="Sherpa Assistant" data-can-archive data-expanded style="height: 360px;">
+    <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
+      <p>Ready when you are.</p>
     </sherpa-chat-message>
     <sherpa-prompt-composer slot="composer" data-placeholder="Ask anything…"></sherpa-prompt-composer>
   </sherpa-ai-panel>
