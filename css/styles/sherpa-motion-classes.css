@@ -11,17 +11,10 @@
  * Shadow DOM note:
  *   SherpaElement injects this file as a <link> into each shadow root,
  *   so @keyframes defined here are available inside shadow DOM.
+ *
+ * Motion duration tokens (--sherpa-motion-duration-*, --sherpa-motion-easing-default)
+ * are defined in tokens/sherpa-platform.css and inherited through shadow boundaries.
  */
-
-
-/* ── Tokens ────────────────────────────────────────────────────────────── */
-
-:root {
-  --sherpa-motion-duration-fast: 0.15s;
-  --sherpa-motion-duration-base: 0.25s;
-  --sherpa-motion-duration-slow: 0.4s;
-  --sherpa-motion-easing-default: ease-out;
-}
 
 
 /* ── Expand (vertical) ─────────────────────────────────────────────────── */
@@ -34,31 +27,35 @@
  *   </div>
  */
 
-.sherpa-motion-expand-vertical > .expand-content {
-  display: flex;
-  flex-direction: column;
-  max-height: 0;
-  overflow: clip;
-  transition: max-height var(--sherpa-motion-duration-slow) var(--sherpa-motion-easing-default);
-}
+.sherpa-motion-expand-vertical {
+  & > .expand-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 0;
+    overflow: clip;
+    transition: max-height var(--sherpa-motion-duration-slow) var(--sherpa-motion-easing-default);
+  }
 
-.sherpa-motion-expand-vertical[data-open] > .expand-content {
-  max-height: var(--expand-max-height, 1000px);
+  &[data-open] > .expand-content {
+    max-height: var(--expand-max-height, 1000px);
+  }
 }
 
 
 /* ── Expand (horizontal) ───────────────────────────────────────────────── */
 
-.sherpa-motion-expand-horizontal > .expand-content {
-  display: flex;
-  flex-direction: column;
-  max-width: 0;
-  overflow: clip;
-  transition: max-width var(--sherpa-motion-duration-base) var(--sherpa-motion-easing-default);
-}
+.sherpa-motion-expand-horizontal {
+  & > .expand-content {
+    display: flex;
+    flex-direction: column;
+    max-width: 0;
+    overflow: clip;
+    transition: max-width var(--sherpa-motion-duration-base) var(--sherpa-motion-easing-default);
+  }
 
-.sherpa-motion-expand-horizontal[data-open] > .expand-content {
-  max-width: var(--expand-max-width, 1000px);
+  &[data-open] > .expand-content {
+    max-width: var(--expand-max-width, 1000px);
+  }
 }
 
 

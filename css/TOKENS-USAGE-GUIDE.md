@@ -39,11 +39,12 @@ Complete guide to using and extending the Sherpa design token system.
   │ @layer components                                                    │
   │   components/index.css               light-DOM component overrides    │  hand
   │   components/**/*.css                Shadow DOM (adopted)             │  hand
-  │ @layer utilities                                                     │
-  │   sherpa-text-classes.css            sherpa-icon-classes.css         │  hand
-  │   sherpa-motion-classes.css          sherpa-utility-classes.css      │  hand
-  │   sherpa-app-classes.css                                             │  hand
-  │   sherpa-data-viz-classes.css        .color-1 … .color-N             │  generated
+  │ @layer utilities (sub-layered)                                       │
+  │   utilities.icons  sherpa-icon-classes.css                          │  hand
+  │   utilities.motion sherpa-motion-classes.css                        │  hand
+  │   utilities.text   sherpa-text-classes.css                          │  hand
+  │   utilities.dataviz sherpa-data-viz-classes.css (.color-1…N)        │  generated
+  │   utilities.layout sherpa-app-classes.css                           │  hand
   └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -51,6 +52,7 @@ Layer order is established once in `index.css`:
 
 ```css
 @layer reset, primitives, alias, platform, theme, density, status, components, utilities;
+@layer utilities.icons, utilities.motion, utilities.text, utilities.dataviz, utilities.layout;
 ```
 
 Later layers override earlier ones unconditionally. Within the **theme**

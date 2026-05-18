@@ -8,71 +8,69 @@
  * border-color so the same class works for bars, swatches, labels, regions.
  */
 
-@layer utilities {
-  .color-1 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-1);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-2 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-2);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-3 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-3);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-4 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-4);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-5 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-5);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-6 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-6);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-7 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-7);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-8 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-8);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-9 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-9);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-10 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-10);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-  .color-11 {
-    --_data-viz-color: var(--sherpa-data-viz-categorical-color-11);
-    background-color: var(--_data-viz-color);
-    color: var(--_data-viz-color);
-    border-color: var(--_data-viz-color);
-  }
-} /* @layer utilities */
+.color-1 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-1);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-2 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-2);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-3 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-3);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-4 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-4);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-5 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-5);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-6 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-6);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-7 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-7);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-8 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-8);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-9 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-9);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-10 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-10);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}
+.color-11 {
+  --_data-viz-color: var(--sherpa-data-viz-categorical-color-11);
+  background-color: var(--_data-viz-color);
+  color: var(--_data-viz-color);
+  border-color: var(--_data-viz-color);
+}

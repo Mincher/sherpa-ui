@@ -37,13 +37,14 @@
    SHARED BASE — common properties for default-font text classes
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.text-h1, .text-h2, .text-h3, .text-h4, .text-h5,
-.text-body-lg, .text-body, .text-body-base, .text-body-sm, .text-body-xs,
-.text-emphasis-lg, .text-emphasis, .text-emphasis-base, .text-emphasis-sm, .text-emphasis-xs,
-.text-heading-lg, .text-heading-md, .text-heading-sm,
-.text-label, .text-label-subheader, .text-label-group,
-.text-nav-item, .text-metric-delta, .text-title-component,
-.content-title {
+:is(
+  .text-h1, .text-h2, .text-h3, .text-h4, .text-h5,
+  .text-body-lg, .text-body, .text-body-base, .text-body-sm, .text-body-xs,
+  .text-emphasis-lg, .text-emphasis, .text-emphasis-base, .text-emphasis-sm, .text-emphasis-xs,
+  .text-heading-lg, .text-heading-md, .text-heading-sm,
+  .text-label, .text-label-subheader, .text-label-group,
+  .text-nav-item, .text-metric-delta, .text-title-component
+) {
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   color: var(--sherpa-text-default-body);
 }
@@ -379,21 +380,4 @@
 .text-nowrap { white-space: nowrap; }
 
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   LEGACY ALIASES
-   ═══════════════════════════════════════════════════════════════════════════ */
 
-.content-title {
-  font-size: var(--sherpa-font-sm-size, 12px);
-  font-weight: 600;
-  line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--sherpa-text-default-secondary);
-  margin: 0;
-  flex: 1 1 0;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}

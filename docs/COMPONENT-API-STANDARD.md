@@ -439,7 +439,7 @@ Phase 2 modernization uses **CSS Nesting** to reduce boilerplate and improve mai
 **Fallback strategy:**
 - Build system flattens nesting to flat `:host()` selectors for pre-Chrome-112 support
 - No runtime cost; purely build-time transformation
-- See `/css/styles/sherpa-feature-detection.css` for @supports patterns
+- Use `@supports (selector(:has(*)))` and similar feature queries for progressive enhancement
 
 ### When NOT to Use Nesting
 

@@ -11,6 +11,11 @@
  *   status      — [data-status] semantic state mapping (--_status-* private vars)
  *   components  — light DOM component overrides
  *   utilities   — class-based helpers (.color-N data-viz, text/icon/motion classes)
+ *     ↳ utilities.icons   — icon font + .sherpa-icon sizing
+ *     ↳ utilities.motion  — animation keyframes + transition utilities
+ *     ↳ utilities.text    — typography classes
+ *     ↳ utilities.dataviz — data-viz color classes
+ *     ↳ utilities.layout  — control-group, app-shell, scroll-under patterns
  *
  * Switching axes (single source of truth — JS sets ATTRIBUTES only):
  *   Theme    — base theme is always loaded (sherpa-theme-apex-2-core.css).
@@ -27,6 +32,7 @@
  */
 
 @layer reset, primitives, alias, platform, theme, density, status, components, utilities;
+@layer utilities.icons, utilities.motion, utilities.text, utilities.dataviz, utilities.layout;
 
 @import "reset.css"                   layer(reset);
 @import "tokens/sherpa-primitives.css" layer(primitives);
@@ -46,10 +52,9 @@
 /* Status — semantic state mapping (--_status-* private vars) */
 @import "sherpa-status.css"              layer(status);
 
-/* Utilities — class-based helpers */
-@import "sherpa-icon-classes.css"       layer(utilities);
-@import "sherpa-motion-classes.css"     layer(utilities);
-@import "sherpa-text-classes.css"       layer(utilities);
-@import "sherpa-data-viz-classes.css"   layer(utilities);
-@import "sherpa-utility-classes.css"    layer(utilities);
-@import "sherpa-app-classes.css"        layer(utilities);
+/* Utilities — class-based helpers (sub-layered for cascade control) */
+@import "sherpa-icon-classes.css"       layer(utilities.icons);
+@import "sherpa-motion-classes.css"     layer(utilities.motion);
+@import "sherpa-text-classes.css"       layer(utilities.text);
+@import "sherpa-data-viz-classes.css"   layer(utilities.dataviz);
+@import "sherpa-app-classes.css"        layer(utilities.layout);

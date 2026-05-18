@@ -731,18 +731,18 @@ function emitDataViz() {
     'Data Visualization Color Classes',
     `One class per categorical color. Each class sets a private custom property\n` +
     ` * (--_data-viz-color) and applies it to background-color, color, and\n` +
-    ` * border-color so the same class works for bars, swatches, labels, regions.`,
+    ` * border-color so the same class works for bars, swatches, labels, regions.\n` +
+    ` *\n` +
+    ` * Layer assignment is handled by @import layer(utilities.dataviz) in index.css.`,
   ));
-  lines.push('@layer utilities {\n');
   for (const i of sorted) {
-    lines.push(`  .color-${i} {\n`);
-    lines.push(`    --_data-viz-color: var(--sherpa-data-viz-categorical-color-${i});\n`);
-    lines.push(`    background-color: var(--_data-viz-color);\n`);
-    lines.push(`    color: var(--_data-viz-color);\n`);
-    lines.push(`    border-color: var(--_data-viz-color);\n`);
-    lines.push(`  }\n`);
+    lines.push(`.color-${i} {\n`);
+    lines.push(`  --_data-viz-color: var(--sherpa-data-viz-categorical-color-${i});\n`);
+    lines.push(`  background-color: var(--_data-viz-color);\n`);
+    lines.push(`  color: var(--_data-viz-color);\n`);
+    lines.push(`  border-color: var(--_data-viz-color);\n`);
+    lines.push(`}\n`);
   }
-  lines.push('} /* @layer utilities */\n');
   write('sherpa-data-viz-classes.css', lines.join(''));
 }
 
@@ -767,6 +767,11 @@ function emitIndex() {
  *   status      — [data-status] semantic state mapping (--_status-* private vars)
  *   components  — light DOM component overrides
  *   utilities   — class-based helpers (.color-N data-viz, text/icon/motion classes)
+ *     ↳ utilities.icons   — icon font + .sherpa-icon sizing
+ *     ↳ utilities.motion  — animation keyframes + transition utilities
+ *     ↳ utilities.text    — typography classes
+ *     ↳ utilities.dataviz — data-viz color classes
+ *     ↳ utilities.layout  — control-group, app-shell, scroll-under patterns
  *
  * Switching axes (single source of truth — JS sets ATTRIBUTES only):
  *   Theme    — base theme is always loaded (sherpa-theme-${baseThemeSlug}.css).
@@ -783,6 +788,7 @@ function emitIndex() {
  */
 
 @layer reset, primitives, alias, platform, theme, density, status, components, utilities;
+@layer utilities.icons, utilities.motion, utilities.text, utilities.dataviz, utilities.layout;
 
 @import "reset.css"                   layer(reset);
 @import "tokens/sherpa-primitives.css" layer(primitives);
@@ -799,13 +805,12 @@ function emitIndex() {
 /* Status — semantic state mapping (--_status-* private vars) */
 @import "sherpa-status.css"              layer(status);
 
-/* Utilities — class-based helpers */
-@import "sherpa-icon-classes.css"       layer(utilities);
-@import "sherpa-motion-classes.css"     layer(utilities);
-@import "sherpa-text-classes.css"       layer(utilities);
-@import "sherpa-data-viz-classes.css"   layer(utilities);
-@import "sherpa-utility-classes.css"    layer(utilities);
-@import "sherpa-app-classes.css"        layer(utilities);
+/* Utilities — class-based helpers (sub-layered for cascade control) */
+@import "sherpa-icon-classes.css"       layer(utilities.icons);
+@import "sherpa-motion-classes.css"     layer(utilities.motion);
+@import "sherpa-text-classes.css"       layer(utilities.text);
+@import "sherpa-data-viz-classes.css"   layer(utilities.dataviz);
+@import "sherpa-app-classes.css"        layer(utilities.layout);
 `;
   write('index.css', css);
 }
