@@ -687,16 +687,16 @@ const listPanelExamples = [
   },
 ];
 
-const sectionNavExamples = [
+const navSectionExamples = [
   {
     label: 'Section navigation',
     layout: 'block',
-    html: `<sherpa-section-nav>
+    html: `<sherpa-nav-section>
   <sherpa-list-item data-label="Overview" data-icon="fa-solid fa-house"    data-interactive data-active></sherpa-list-item>
   <sherpa-list-item data-label="Devices"  data-icon="fa-solid fa-server"   data-interactive></sherpa-list-item>
   <sherpa-list-item data-label="Alerts"   data-icon="fa-solid fa-bell"     data-interactive></sherpa-list-item>
   <sherpa-list-item data-label="Settings" data-icon="fa-solid fa-gear"     data-interactive></sherpa-list-item>
-</sherpa-section-nav>`,
+</sherpa-nav-section>`,
   },
 ];
 
@@ -1269,7 +1269,7 @@ export const EXAMPLES = {
   // Layout & Navigation
   'sherpa-breadcrumbs':       breadcrumbsExamples,
   'sherpa-section-header':    sectionHeaderExamples,
-  'sherpa-section-nav':       sectionNavExamples,
+  'sherpa-nav-section':       navSectionExamples,
   'sherpa-toolbar':           toolbarExamples,
   'sherpa-view-header':       viewHeaderExamples,
   'sherpa-nav':               navExamples,

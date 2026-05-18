@@ -1,5 +1,5 @@
 /**
- * @element sherpa-section-nav
+ * @element sherpa-nav-section
  * @category nav
  * @description Secondary navigation panel: a heading with optional back
  *   button, followed by a vertical list of grouped, selectable items.
@@ -30,11 +30,11 @@
  *
  * @slot header-end — Trailing slot in the header (e.g. icon button)
  *
- * @fires section-nav-back
+ * @fires nav-section-back
  *   bubbles: true, composed: true
  *   detail: none
  *
- * @fires section-nav-select
+ * @fires nav-section-select
  *   bubbles: true, composed: true
  *   detail: { id: string, action?: string, item: object }
  *
@@ -52,13 +52,13 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
-export class SherpaSectionNav extends SherpaElement {
+export class SherpaNavSection extends SherpaElement {
   static get cssUrl() {
-    return new URL("./sherpa-section-nav.css", import.meta.url).href;
+    return new URL("./sherpa-nav-section.css", import.meta.url).href;
   }
 
   static get htmlUrl() {
-    return new URL("./sherpa-section-nav.html", import.meta.url).href;
+    return new URL("./sherpa-nav-section.html", import.meta.url).href;
   }
 
   static get observedAttributes() {
@@ -248,7 +248,7 @@ export class SherpaSectionNav extends SherpaElement {
 
   #onBack = () => {
     this.dispatchEvent(
-      new CustomEvent("section-nav-back", {
+      new CustomEvent("nav-section-back", {
         bubbles: true,
         composed: true,
       }),
@@ -275,7 +275,7 @@ export class SherpaSectionNav extends SherpaElement {
     const item = this.#findItem(id);
     if (!action) this.setActive(id);
     this.dispatchEvent(
-      new CustomEvent("section-nav-select", {
+      new CustomEvent("nav-section-select", {
         bubbles: true,
         composed: true,
         detail: { id, action, item },
@@ -293,4 +293,4 @@ export class SherpaSectionNav extends SherpaElement {
 }
 
 
-customElements.define("sherpa-section-nav", SherpaSectionNav);
+customElements.define("sherpa-nav-section", SherpaNavSection);

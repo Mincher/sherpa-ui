@@ -1,4 +1,4 @@
-# sherpa-section-nav
+# sherpa-nav-section
 
 > **Category:** nav · **Base class:** SherpaElement
 
@@ -22,14 +22,14 @@ Secondary navigation panel: a heading with optional back button, followed by a v
 Slot usage:
 
 ```html
-<sherpa-section-nav>
+<sherpa-nav-section>
   <div slot="header-end"><!-- Trailing slot in the header (e.g. icon button) --></div>
-</sherpa-section-nav>
+</sherpa-nav-section>
 ```
 
 ## Events
 
-### `section-nav-back`
+### `nav-section-back`
 
 
 **Propagation:** bubbles, composed
@@ -37,12 +37,12 @@ Slot usage:
 **Detail:** none
 
 ```js
-element.addEventListener("section-nav-back", (e) => {
+element.addEventListener("nav-section-back", (e) => {
   // handle event
 });
 ```
 
-### `section-nav-select`
+### `nav-section-select`
 
 
 **Propagation:** bubbles, composed
@@ -57,7 +57,7 @@ event.detail = {
 ```
 
 ```js
-element.addEventListener("section-nav-select", (e) => {
+element.addEventListener("nav-section-select", (e) => {
   console.log(e.detail.id);
 });
 ```
@@ -97,7 +97,7 @@ Style internal elements from outside the shadow DOM:
 - `sections`
 
 ```css
-sherpa-section-nav::part(header) {
+sherpa-nav-section::part(header) {
   /* custom styles */
 }
 ```
@@ -107,16 +107,16 @@ sherpa-section-nav::part(header) {
 ### Basic
 
 ```html
-<sherpa-section-nav data-heading="value" data-show-back="value" data-active-id="value">
+<sherpa-nav-section data-heading="value" data-show-back="value" data-active-id="value">
   <span slot="header-end"><!-- Trailing slot in the header (e.g. icon button) --></span>
-</sherpa-section-nav>
+</sherpa-nav-section>
 ```
 
 ## Import
 
 ```js
 // Individual import
-import "sherpa-ui/components/sherpa-section-nav/sherpa-section-nav.js";
+import "sherpa-ui/components/sherpa-nav-section/sherpa-nav-section.js";
 
 // Or import everything
 import "sherpa-ui";
@@ -126,6 +126,6 @@ import "sherpa-ui";
 
 | File | Purpose |
 | ---- | ------- |
-| [`sherpa-section-nav.js`](sherpa-section-nav.js) | Component class, lifecycle, events |
-| [`sherpa-section-nav.css`](sherpa-section-nav.css) | Styles, variants, states |
-| [`sherpa-section-nav.html`](sherpa-section-nav.html) | Shadow DOM template(s) |
+| [`sherpa-nav-section.js`](sherpa-nav-section.js) | Component class, lifecycle, events |
+| [`sherpa-nav-section.css`](sherpa-nav-section.css) | Styles, variants, states |
+| [`sherpa-nav-section.html`](sherpa-nav-section.html) | Shadow DOM template(s) |

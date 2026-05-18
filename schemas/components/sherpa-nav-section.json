@@ -1,5 +1,5 @@
 {
-  "tagName": "sherpa-section-nav",
+  "tagName": "sherpa-nav-section",
   "description": "Secondary navigation panel: a heading with optional back button, followed by a vertical list of grouped, selectable items. Designed for Settings-style layouts where the panel sits beside a content area and switches what is rendered there.",
   "category": "nav",
   "tier": 1,
@@ -35,14 +35,14 @@
   ],
   "events": [
     {
-      "name": "section-nav-back",
+      "name": "nav-section-back",
       "description": "",
       "bubbles": true,
       "composed": true,
       "detail": null
     },
     {
-      "name": "section-nav-select",
+      "name": "nav-section-select",
       "description": "",
       "bubbles": true,
       "composed": true,
