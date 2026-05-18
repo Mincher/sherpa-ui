@@ -84,6 +84,12 @@
       "name": "data-multiline",
       "type": "boolean",
       "description": "Render as an auto-growing textarea"
+    },
+    {
+      "name": "data-status",
+      "type": "string",
+      "description": "",
+      "inherited": "StatusMixin"
     }
   ],
   "slots": [],

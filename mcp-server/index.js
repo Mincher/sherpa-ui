@@ -7,31 +7,34 @@
  * Model Context Protocol (MCP). Transport: stdio.
  *
  * Tools:
- *   query_component       — Look up a component's full API
- *   list_components       — List all components with optional category filter
- *   generate_component    — Generate valid HTML for a component
- *   get_component_source  — Read a component's html / css / js / README
- *   search_api            — Search across all schemas (attrs, events, slots, etc.)
- *   browse_tokens         — Search design tokens by name or purpose
- *   list_token_groups     — List token namespaces grouped by file
- *   list_utilities        — List utility modules under components/utilities
- *   get_utility           — Read a utility module's source
- *   get_architecture      — Layered architecture rules + base-class lifecycle
- *   validate_usage        — Check component HTML for common mistakes
- *   list_patterns         — List view layout and UX patterns
- *   get_pattern           — Get full HTML for a pattern
- *   compose_view          — Compose a complete view from layout + components
- *   generate_flow         — Generate a CRUD flow (add/edit/delete) for an entity
+ *   query_component         — Look up a component's full API (incl. inherited attrs)
+ *   list_components         — List all components with optional category filter
+ *   generate_component      — Generate valid HTML for a component
+ *   get_component_source    — Read a component's html / css / js / examples / README
+ *   get_component_examples  — Parsed examples from a component's .examples.html
+ *   list_component_examples — List every component that ships canonical examples
+ *   search_api              — Search across all schemas (attrs, events, slots, etc.)
+ *   browse_tokens           — Search design tokens by name or purpose
+ *   list_token_groups       — List token namespaces grouped by file
+ *   list_utilities          — List utility modules under components/utilities
+ *   get_utility             — Read a utility module's source
+ *   get_architecture        — Layered architecture rules + base-class lifecycle
+ *   validate_usage          — Schema-aware audit of component HTML
+ *   list_patterns           — List view layout and UX patterns
+ *   get_pattern             — Get full HTML for a pattern
+ *   compose_view            — Compose a complete view from layout + components
+ *   generate_flow           — Generate a CRUD flow (add/edit/delete) for an entity
  *
  * Resources:
- *   sherpa://guidelines/*           — Component guidelines, API standard, token usage
- *   sherpa://schema/{tag}           — Raw JSON schema per component
- *   sherpa://template/{tag}         — Raw HTML template for a component
- *   sherpa://component/{tag}/css    — Component CSS source
- *   sherpa://component/{tag}/js     — Component JS source
- *   sherpa://component/{tag}/readme — Component README
- *   sherpa://utility/{id}           — Utility module source
- *   sherpa://pattern/{id}           — View layout / UX pattern HTML
+ *   sherpa://guidelines/*             — Component guidelines, API standard, token usage
+ *   sherpa://schema/{tag}             — Raw JSON schema per component (with inherited attrs)
+ *   sherpa://template/{tag}           — Raw HTML template for a component
+ *   sherpa://component/{tag}/css      — Component CSS source
+ *   sherpa://component/{tag}/js       — Component JS source
+ *   sherpa://component/{tag}/examples — Per-component .examples.html
+ *   sherpa://component/{tag}/readme   — Component README
+ *   sherpa://utility/{id}             — Utility module source
+ *   sherpa://pattern/{id}             — View layout / UX pattern HTML
  *
  * Prompts:
  *   build_ui              — Guided prompt for building a UI layout
@@ -153,6 +156,7 @@ function readComponentSource(tagName, kind) {
     css: `${tagName}.css`,
     js: `${tagName}.js`,
     html: `${tagName}.html`,
+    examples: `${tagName}.examples.html`,
     readme: "README.md",
   };
   const filename = map[kind];
@@ -368,6 +372,52 @@ function generateComponentHTML(schema, attrs = {}, slotContent = {}) {
 
 /* ── Validation ────────────────────────────────────────────────── */
 
+/**
+ * Per-tag attribute audit. For every <sherpa-*> tag in the HTML, parse the
+ * attributes used and check them against the component's schema. Catches the
+ * #1 source of broken examples: using attribute names the component doesn't
+ * actually observe.
+ */
+function auditTagAttributes(html) {
+  const issues = [];
+  const STANDARD = new Set([
+    "class", "id", "style", "hidden", "slot", "part", "role", "tabindex",
+    "aria-label", "aria-hidden", "aria-expanded", "aria-controls",
+    "aria-describedby", "aria-current",
+    "disabled", "readonly", "required", "name", "value", "placeholder", "type",
+    "min", "max", "step", "pattern", "minlength", "maxlength", "novalidate",
+    "open", "checked", "selected", "for", "href", "src", "alt", "title",
+    "autofocus", "autocomplete", "multiple",
+  ]);
+
+  // Match <sherpa-foo ...> or <sherpa-foo ... /> capturing the attr span
+  const tagRe = /<(sherpa-[a-z0-9-]+)([^>]*?)\/?>/g;
+  let m;
+  while ((m = tagRe.exec(html))) {
+    const tag = m[1];
+    const schema = schemas.get(tag);
+    if (!schema) continue; // unknown-component is reported elsewhere
+    const declared = new Set((schema.attributes || []).map((a) => a.name));
+
+    // Strip quoted values so words inside attr values aren't read as attrs
+    const stripped = (m[2] || "")
+      .replace(/=\s*"[^"]*"/g, "")
+      .replace(/=\s*'[^']*'/g, "");
+
+    for (const tok of stripped.split(/\s+/)) {
+      const attr = tok.trim().toLowerCase();
+      if (!attr || !/^[a-z][\w-]*$/.test(attr)) continue;
+      if (STANDARD.has(attr) || attr.startsWith("aria-")) continue;
+      if (declared.has(attr)) continue;
+      issues.push({
+        severity: "error",
+        message: `<${tag}> uses unknown attribute "${attr}" — not in component schema. Run query_component to see the real attribute surface.`,
+      });
+    }
+  }
+  return issues;
+}
+
 function validateUsage(html) {
   const issues = [];
 
@@ -379,26 +429,8 @@ function validateUsage(html) {
     }
   }
 
-  // Check for bare custom attributes (should use data-* prefix)
-  const attrMatches = html.matchAll(/<sherpa-[a-z-]+\s([^>]+)>/g);
-  for (const m of attrMatches) {
-    const attrStr = m[1];
-    // Find bare attributes that aren't standard HTML
-    const bareAttrs = attrStr.matchAll(/\b([a-z][a-z-]*?)(?:=|[\s>])/g);
-    const STANDARD = new Set(["class", "id", "style", "hidden", "slot", "role", "tabindex",
-      "aria-label", "aria-hidden", "aria-expanded", "aria-controls", "aria-describedby",
-      "disabled", "readonly", "required", "name", "value", "placeholder", "type",
-      "min", "max", "step", "pattern", "minlength", "maxlength", "novalidate", "open"]);
-    for (const am of bareAttrs) {
-      const attr = am[1];
-      if (!attr.startsWith("data-") && !attr.startsWith("aria-") && !STANDARD.has(attr)) {
-        issues.push({
-          severity: "warning",
-          message: `Attribute "${attr}" should use data-* prefix (e.g. data-${attr})`,
-        });
-      }
-    }
-  }
+  // Per-tag attribute audit against schemas
+  issues.push(...auditTagAttributes(html));
 
   // Check for self-closing custom elements
   const selfClosing = html.matchAll(/<(sherpa-[a-z-]+)\s[^>]*\/>/g);
@@ -467,6 +499,7 @@ server.registerTool(
       html: `sherpa://template/${tagName}`,
       css: `sherpa://component/${tagName}/css`,
       js: `sherpa://component/${tagName}/js`,
+      examples: `sherpa://component/${tagName}/examples`,
       readme: `sherpa://component/${tagName}/readme`,
     };
 
@@ -955,10 +988,10 @@ server.registerTool(
   "get_component_source",
   {
     title: "Get Component Source",
-    description: "Read the canonical source file (HTML template / CSS / JS / README) for a Sherpa UI component. Use this when the schema isn't enough — e.g. to inspect CSS custom properties, internal classes, or actual template structure.",
+    description: "Read the canonical source file (HTML template / CSS / JS / examples / README) for a Sherpa UI component. Use this when the schema isn't enough — e.g. to inspect CSS custom properties, internal classes, the raw .examples.html file, or actual template structure.",
     inputSchema: {
       tagName: z.string().describe("Component tag name (e.g. sherpa-button)"),
-      kind: z.enum(["html", "css", "js", "readme"]).describe("Which source file to read"),
+      kind: z.enum(["html", "css", "js", "examples", "readme"]).describe("Which source file to read"),
     },
   },
   async ({ tagName, kind }) => {
@@ -972,6 +1005,91 @@ server.registerTool(
     return { content: [{ type: "text", text: src }] };
   }
 );
+
+/* ── Per-component examples ────────────────────────────────────── */
+
+/**
+ * Parse `<template data-label data-description data-layout data-preview data-setup>`
+ * blocks from a component's .examples.html into structured entries.
+ *
+ * This is the same contract `docs/router.js` uses to render the examples
+ * tab on the docs site — keeping it in one place means anything generated
+ * by the MCP renders correctly out of the box.
+ */
+function parseExampleTemplates(html) {
+  const examples = [];
+  const re = /<template\b([^>]*)>([\s\S]*?)<\/template>/g;
+  let m;
+  while ((m = re.exec(html))) {
+    const attrStr = m[1] || "";
+    const body = m[2];
+    const get = (name) => {
+      const re = new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`);
+      const mm = attrStr.match(re);
+      return mm ? mm[1] : undefined;
+    };
+    const id = get("id");
+    const label = get("data-label");
+    if (!label && !id) continue; // not an example block
+    examples.push({
+      id,
+      label: label || id,
+      description: get("data-description") || "",
+      layout: get("data-layout") || "default",
+      preview: body.trim(),
+      setup: get("data-setup") || null,
+    });
+  }
+  return examples;
+}
+
+server.registerTool(
+  "get_component_examples",
+  {
+    title: "Get Component Examples",
+    description: "Return the structured examples for a component. Each example carries { id, label, description, layout, preview, setup } parsed from the per-component .examples.html file. Use this BEFORE generating new HTML for a component — every example is guaranteed to use the real, current API.",
+    inputSchema: {
+      tagName: z.string().describe("Component tag name (e.g. sherpa-button)"),
+      format: z.enum(["json", "raw"]).optional().describe("'json' (default) returns parsed example entries; 'raw' returns the full .examples.html file"),
+    },
+  },
+  async ({ tagName, format }) => {
+    const src = readComponentSource(tagName, "examples");
+    if (src == null) {
+      return { content: [{ type: "text", text: `No examples file for ${tagName} (expected ${tagName}.examples.html).` }] };
+    }
+    if (format === "raw") {
+      return { content: [{ type: "text", text: src }] };
+    }
+    const examples = parseExampleTemplates(src);
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({ tagName, count: examples.length, examples }, null, 2),
+      }],
+    };
+  }
+);
+
+server.registerTool(
+  "list_component_examples",
+  {
+    title: "List Component Examples",
+    description: "List every component that ships with a .examples.html file, with the count of example blocks per file. Use this to discover what concrete usage patterns are already documented.",
+    inputSchema: {},
+  },
+  async () => {
+    const rows = [];
+    for (const tag of schemas.keys()) {
+      const src = readComponentSource(tag, "examples");
+      if (src == null) continue;
+      const examples = parseExampleTemplates(src);
+      rows.push({ tagName: tag, examples: examples.length, labels: examples.map((e) => e.label) });
+    }
+    return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+  }
+);
+
 
 server.registerTool(
   "search_api",
@@ -1236,6 +1354,7 @@ server.registerResource(
 const COMPONENT_SOURCE_KINDS = {
   css: { mime: "text/css", label: "CSS" },
   js: { mime: "application/javascript", label: "JS" },
+  examples: { mime: "text/html", label: "Examples" },
   readme: { mime: "text/markdown", label: "README" },
 };
 

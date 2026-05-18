@@ -225,13 +225,15 @@ CSS it writes, rather than hardcoding colours and spacing.
 
 ---
 
-### `validate_usage` — Catch common mistakes
+### `validate_usage` — Schema-aware audit of component HTML
 
 Checks a block of HTML for issues:
 
 - **Unknown components** — tags that don't exist in the library
-- **Missing `data-*` prefix** — bare attributes like `variant="primary"`
-  instead of `data-variant="primary"`
+- **Unknown attributes per component** — e.g. `<sherpa-callout data-label>`
+  when the component actually observes `data-heading`. The check uses the
+  generated schemas (including inherited attrs from base classes and mixins),
+  so it catches the #1 cause of broken examples.
 - **Self-closing custom elements** — `<sherpa-button/>` instead of
   `<sherpa-button></sherpa-button>`
 - **Opacity-based disabled styling** — should use inactive tokens instead
@@ -239,17 +241,15 @@ Checks a block of HTML for issues:
 **Input:**
 ```json
 {
-  "html": "<sherpa-button variant=\"primary\"/><sherpa-fake-thing>test</sherpa-fake-thing>"
+  "html": "<sherpa-callout data-label=\"Heads up\"></sherpa-callout>"
 }
 ```
 
 **Output:**
 ```
-Found 3 issue(s):
+Found 1 issue(s):
 
-ERROR: Unknown component: <sherpa-fake-thing>
-WARNING: Attribute "variant" should use data-* prefix (e.g. data-variant)
-ERROR: <sherpa-button/> is self-closing — custom elements require explicit closing tags
+ERROR: <sherpa-callout> uses unknown attribute "data-label" — not in component schema. Run query_component to see the real attribute surface.
 ```
 
 **Use when:** You want to verify generated HTML before using it, or as a
@@ -341,20 +341,48 @@ with correct event conventions, rather than improvising the structure.
 
 ### `get_component_source` — Read the canonical source
 
-Returns the raw HTML template, CSS, JS, or README for a component. Use this
-when the JSON schema isn't enough — for example, when you need to see the
-actual internal class names, CSS custom properties, lifecycle hooks, or how
-the component handles a specific edge case.
+Returns the raw HTML template, CSS, JS, examples file, or README for a
+component. Use this when the JSON schema isn't enough — for example, when you
+need to see the actual internal class names, CSS custom properties, lifecycle
+hooks, or how the component handles a specific edge case.
 
 **Input:**
 ```json
 { "tagName": "sherpa-button", "kind": "css" }
 ```
 
-`kind`: `html` | `css` | `js` | `readme`
+`kind`: `html` | `css` | `js` | `examples` | `readme`
 
 **Use when:** The agent needs deep knowledge of a component's implementation,
 not just its public API.
+
+---
+
+### `get_component_examples` — Get canonical, schema-true examples
+
+Returns the structured examples from a component's `.examples.html` file —
+the same blocks rendered on the docs site. Each entry has `{ id, label,
+description, layout, preview, setup }`. **Every example is guaranteed to use
+the real, current API**, so this is the safest source for building new docs
+or copy-pasteable snippets.
+
+**Input:**
+```json
+{ "tagName": "sherpa-button" }
+```
+
+Optional `format`: `json` (default — parsed entries) or `raw` (full file).
+
+**Use this before `generate_component`** when you want to follow an existing
+authoring pattern rather than synthesise one from scratch.
+
+---
+
+### `list_component_examples` — Discover what's already documented
+
+Lists every component that ships with a `.examples.html` file, including the
+labels of each example block. Use as a starting point when planning new docs
+or finding prior art.
 
 ---
 

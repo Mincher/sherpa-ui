@@ -512,6 +512,96 @@ function parseDefault(val, type) {
   return val;
 }
 
+/* ── Base-class / mixin attribute resolution ───────────────────── */
+
+/**
+ * Resolve every attribute (and slot/event) contributed by base classes and
+ * mixins in a component's `extends` chain.
+ *
+ * We walk the JS source's `class Foo extends Expr { ... }` clause, pull every
+ * capitalised identifier from `Expr` (covers `Base`, `Mixin(Base)`,
+ * `M1(M2(Base))`, etc.), resolve each identifier via its matching `import`
+ * statement, then recursively extract:
+ *   • JSDoc `@attr` tags
+ *   • `observedAttributes` quoted strings
+ *
+ * Returns a Map<attrName, { name, type, description, inherited }> so callers
+ * can merge inherited attrs without overwriting the component's own entries.
+ */
+function extractInheritedAttrs(jsPath, visited = new Set()) {
+  const inherited = new Map();
+  if (!fs.existsSync(jsPath) || visited.has(jsPath)) return inherited;
+  visited.add(jsPath);
+
+  const src = fs.readFileSync(jsPath, "utf8");
+
+  // 1) Find the class declaration and its extends expression
+  const ext = src.match(/class\s+\w+\s+extends\s+([\w()\s,]+?)\s*\{/);
+  if (!ext) return inherited;
+
+  // 2) Pull every capitalised identifier from the expression
+  const idents = [...new Set(ext[1].match(/\b[A-Z]\w*/g) || [])];
+
+  for (const ident of idents) {
+    // 3) Resolve the identifier to a source file via its import
+    const impRe = new RegExp(
+      `import\\s*\\{[^}]*\\b${ident}\\b[^}]*\\}\\s*from\\s*['"]([^'"]+)['"]`
+    );
+    const imp = src.match(impRe);
+    if (!imp) continue;
+
+    let basePath;
+    try {
+      basePath = new URL(imp[1], "file://" + jsPath).pathname;
+    } catch {
+      continue;
+    }
+    if (!fs.existsSync(basePath)) continue;
+
+    const baseSrc = fs.readFileSync(basePath, "utf8");
+
+    // 3a) @attr JSDoc tags in the base file
+    const baseJsdoc = extractJSDoc(baseSrc);
+    if (baseJsdoc) {
+      const baseLines = jsdocLines(baseJsdoc);
+      for (const raw of baseLines) {
+        const line = raw.trim();
+        if (line.startsWith("@attr ")) {
+          const attr = parseAttr(line);
+          if (attr?.name && !inherited.has(attr.name)) {
+            inherited.set(attr.name, { ...attr, inherited: ident });
+          }
+        }
+      }
+    }
+
+    // 3b) Bare observedAttributes strings (fallback when @attr not present)
+    const obsBlocks = baseSrc.matchAll(
+      /observedAttributes\s*\(\s*\)\s*\{[\s\S]*?return\s*\[([\s\S]*?)\]/g
+    );
+    for (const ob of obsBlocks) {
+      for (const m of ob[1].matchAll(/['"]([a-z][\w-]*)['"]/g)) {
+        const name = m[1];
+        if (!inherited.has(name)) {
+          inherited.set(name, {
+            name,
+            type: name.startsWith("data-") ? "string" : "string",
+            description: "",
+            inherited: ident,
+          });
+        }
+      }
+    }
+
+    // 4) Recurse — the base class may itself extend / wrap something
+    for (const [k, v] of extractInheritedAttrs(basePath, visited)) {
+      if (!inherited.has(k)) inherited.set(k, v);
+    }
+  }
+
+  return inherited;
+}
+
 /* ── Discovery ─────────────────────────────────────────────────── */
 
 /** Find all sherpa-* component directories under components/ */
@@ -559,6 +649,18 @@ function main() {
       console.warn(`  ⚠ ${comp.name}: No @element tag found, skipping`);
       errorCount++;
       continue;
+    }
+
+    // Merge attributes inherited from base classes + mixins so the
+    // emitted schema reflects the FULL public attribute surface, not
+    // just the attrs the subclass declares directly. Crucial for the
+    // MCP server + docs / validators that read these schemas.
+    const inherited = extractInheritedAttrs(comp.jsPath);
+    const ownNames = new Set(api.attributes.map((a) => a.name));
+    for (const [name, attr] of inherited) {
+      if (!ownNames.has(name)) {
+        api.attributes.push(attr);
+      }
     }
 
     // Drift check: every attribute in observedAttributes should also have an
