@@ -43,14 +43,11 @@
 /* Theme — default (no data-theme attr required) */
 @import "sherpa-theme-apex-2-core.css";
 
-/* Hand-maintained theme overrides (must come AFTER generated theme) */
-@import "sherpa-theme-context-overrides.css";
-
 /* Extended themes — all four variants in one file; [data-theme] selectors
  * ensure only the active theme fires. Activate: set <html data-theme="..."> */
 @import "sherpa-themes-extended.css";
 
-/* Density & Status — attribute-driven overrides; both axes in one file */
+/* Theme corrections, Density & Status — all non-base attribute-driven overrides */
 @import "sherpa-overrides.css";
 
 /* Utilities — class-based helpers (sub-layered for cascade control) */

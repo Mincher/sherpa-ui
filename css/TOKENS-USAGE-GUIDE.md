@@ -334,24 +334,21 @@ Themes are split into a **default theme (full surface) + per-theme diffs**:
   element. All selectors are wrapped in `:where(:root[data-theme="<slug>"])`,
   so the diffs apply only when `<html data-theme="<slug>">` matches.
 
-Both files belong to `@layer theme`. The runtime `<link>` is later in source
-order than the `@import`, so an extended theme overrides the default on a
-per-property basis without bumping specificity.
+Both the base theme and all extended themes belong to `@layer theme`. All themes
+are bundled into `index.css` via `sherpa-themes-extended.css` — no runtime
+`<link>` swap is needed. To activate a theme, set `data-theme` on `<html>`:
 
 ```html
-<!-- In the HTML <head>: default already imported by index.css; this swaps in an extended theme -->
-<link id="sherpa-theme" rel="stylesheet"
-      href="/css/styles/sherpa-theme-apex-2-purple.css">
-<script>document.documentElement.dataset.theme = 'apex-2-purple';</script>
+<!-- In the HTML <head>: all themes bundled in index.css — just set the attribute -->
+<html data-theme="apex-2-purple">
 ```
 
-`ThemeManager.setTheme(slug)` automates both steps (link href + data-theme
-attribute) and persists the choice to `localStorage`.
+`ThemeManager.setTheme(slug)` sets `data-theme` and persists the choice to
+`localStorage`. No link loading is required.
 
 ```javascript
-// Switch to Data Protection theme
-document.getElementById('sherpa-theme').href =
-  '/css/styles/sherpa-theme-data-protection.css';
+ThemeManager.setTheme('apex-2-blue');
+// equivalent to: document.documentElement.dataset.theme = 'apex-2-blue'
 ```
 
 #### Theme-Scoped Brand Families
@@ -361,18 +358,20 @@ live in the theme files rather than the shared alias file:
 
 | Family                     | Defined in                                |
 | -------------------------- | ----------------------------------------- |
-| `--sherpa-color-primary-cyan-*` | `sherpa-theme-classic.css` only          |
-| `--sherpa-color-primary-blue-*` | `sherpa-theme-apex-2-core.css`, `sherpa-theme-data-protection.css` |
+| `--sherpa-color-primary-cyan-*` | `classic` theme only          |
+| `--sherpa-color-primary-blue-*` | `sherpa-theme-apex-2-core.css` |
 
 Do not consume these directly from component CSS unless the component is
 theme-specific. Prefer the abstract `--sherpa-color-brand-*` semantic alias.
 Configured via `THEME_SCOPED_FAMILIES` in
 [scripts/generate-css-tokens.js](../scripts/generate-css-tokens.js).
 
-Available theme files:
-- `sherpa-theme-apex-2-core.css` — Apex 2.0 Core (default)
-- `sherpa-theme-data-protection.css` — N-able Data Protection
-- `sherpa-theme-classic.css` — Classic
+Available themes (all bundled in `sherpa-themes-extended.css`):
+- `sherpa-theme-apex-2-core.css` — Apex 2.0 Core (default, no `data-theme` required)
+- `data-theme="apex-2-purple"` — Apex 2.0 (Purple)
+- `data-theme="apex-2-teal"` — Apex 2.0 (Teal)
+- `data-theme="apex-2-blue"` — Apex 2.0 (Blue)
+- `data-theme="classic"` — Classic
 
 ---
 

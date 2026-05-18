@@ -34,13 +34,13 @@ import {
 // APPEARANCE (Theme / Mode / Density via ThemeManager)
 // ═══════════════════════════════════════════════════════════
 
-ThemeManager.init({ cssBaseUrl: new URL("../css/styles/", import.meta.url).href });
+ThemeManager.init();
 
-// Selectable themes. The default theme (`apex-2-core`) is bundled into
-// `css/styles/index.css` via @import, so it is always available; selecting
-// any other entry below loads its diff-only file via the runtime <link>
-// and sets <html data-theme="…">. Never list `apex-2-core` here — it is
-// the implicit baseline and selecting it would just re-load itself.
+// Selectable themes. All themes are bundled into `css/styles/index.css` via
+// sherpa-themes-extended.css — always loaded at zero cost. Selecting a theme
+// sets <html data-theme="…"> which activates its [data-theme="..."] selectors.
+// Never list `apex-2-core` here — it is the implicit baseline (no data-theme
+// attribute required) and has no selectable slot.
 const THEMES = [
   { value: "apex-2-purple", label: "Apex 2 (Purple)" },
   { value: "apex-2-teal",   label: "Apex 2 (Teal)" },
@@ -48,8 +48,7 @@ const THEMES = [
   { value: "classic",       label: "Classic" },
 ];
 
-// Discard any stale persisted theme that isn't a real selectable theme,
-// otherwise ThemeManager.restore() would set <link> to a non-existent file.
+// Discard any stale persisted theme that isn't a real selectable theme.
 const ALLOWED_THEMES = new Set(THEMES.map((t) => t.value));
 const persisted = localStorage.getItem("sherpa-theme");
 if (persisted && !ALLOWED_THEMES.has(persisted)) {

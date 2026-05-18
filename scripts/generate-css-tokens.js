@@ -661,8 +661,14 @@ function emitThemes() {
 function emitOverrides() {
   const lines = [];
   lines.push(header(
-    'Density & Status Overrides',
-    'Attribute-driven overrides — both axes in one file.\n' +
+    'Theme Corrections, Density & Status Overrides',
+    'Three axes of non-base overrides, all in one file.\n' +
+    ' *\n' +
+    ' *   Theme corrections  [@layer theme]\n' +
+    ' *            Hand-maintained fixes for Figma-generated aliases that resolve\n' +
+    ' *            to values that are visually incorrect. These patches come AFTER\n' +
+    ' *            sherpa-theme-apex-2-core.css and sherpa-themes-extended.css in\n' +
+    ' *            the @layer theme order so they win over the generated values.\n' +
     ' *\n' +
     ' *   Density  [data-density="compact|comfortable"]\n' +
     ' *            Applies to any subtree. Tokens cascade — descendant components\n' +
@@ -674,6 +680,40 @@ function emitOverrides() {
     ' *            Custom properties inherit through shadow DOM — no per-component\n' +
     ' *            status block needed.',
   ));
+
+  // ── Theme corrections ──
+  // The Figma-generated alias for surface/context/<x>/subtle/default resolves
+  // to color/<x>/100, which is near-white on most themes. Bump to -200 so
+  // status callouts/banners have enough chroma to register as a status colour.
+  // Only the `default` step is shifted; hover/down are left so the ramp is intact.
+  lines.push('\n/* ─── Theme corrections ─────────────────────────────────────────────── */\n\n');
+  lines.push('@layer theme {\n\n');
+  lines.push('  :where(:root) {\n');
+  lines.push('    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n');
+  lines.push('    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n');
+  lines.push('    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n');
+  lines.push('    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);\n');
+  lines.push('    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);\n');
+  lines.push('  }\n\n');
+  lines.push('  /* Dark — apex-2-core dark block uses translucent fills that read as\n');
+  lines.push('     near-invisible on dark surfaces; re-pin to the same -200 step. */\n');
+  lines.push('  @media (prefers-color-scheme: dark) {\n');
+  lines.push('    :where(:root:not([data-mode="light"]):not([data-mode="hc"])) {\n');
+  lines.push('      --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n');
+  lines.push('      --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n');
+  lines.push('      --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n');
+  lines.push('      --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);\n');
+  lines.push('      --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);\n');
+  lines.push('    }\n');
+  lines.push('  }\n\n');
+  lines.push('  :where(:root[data-mode="dark"]) {\n');
+  lines.push('    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n');
+  lines.push('    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n');
+  lines.push('    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n');
+  lines.push('    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);\n');
+  lines.push('    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);\n');
+  lines.push('  }\n\n');
+  lines.push('} /* @layer theme */\n\n');
 
   // ── Density ──
   lines.push('\n/* ─── Density ────────────────────────────────────────────────────── */\n\n');
@@ -804,9 +844,10 @@ function emitIndex() {
  *
  * Switching axes (single source of truth — JS sets ATTRIBUTES only):
  *   Theme    — base theme is always loaded (sherpa-theme-${baseThemeSlug}.css).
- *              To activate an extended theme, append its file AFTER index.css
- *              and set <html data-theme="<slug>">. Extended themes are diff-only
- *              against the base, so the load order matters.
+ *              All extended themes (blue/purple/teal/classic) are also bundled
+ *              in sherpa-themes-extended.css — always loaded, zero cost when
+ *              inactive because selectors are gated on [data-theme="<slug>"].
+ *              To activate: set <html data-theme="<slug>"> (JS attribute only).
  *   Mode     — set <html data-mode="auto|light|dark|hc"> (default "auto")
  *              "auto" honours both prefers-color-scheme AND prefers-contrast.
  *   Density  — set [data-density="compact|base|comfortable"] on any subtree
@@ -824,15 +865,15 @@ function emitIndex() {
 @import "tokens/sherpa-alias.css"      layer(alias);
 @import "tokens/sherpa-platform.css"   layer(platform);
 
-/* Theme — default always loaded; consumers append an extended theme via JS */
+/* Theme — default (no data-theme attr required) */
 @import "sherpa-theme-${baseThemeSlug}.css";
 
-/* Density — both files always loaded; activated by [data-density] attribute */
-@import "sherpa-density-compact.css"     layer(density);
-@import "sherpa-density-comfortable.css" layer(density);
+/* Extended themes — all four variants in one file; [data-theme] selectors
+ * ensure only the active theme fires. Activate: set <html data-theme="..."> */
+@import "sherpa-themes-extended.css";
 
-/* Status — semantic state mapping (--_status-* private vars) */
-@import "sherpa-status.css"              layer(status);
+/* Theme corrections, Density & Status — all non-base attribute-driven overrides */
+@import "sherpa-overrides.css";
 
 /* Utilities — class-based helpers (sub-layered for cascade control) */
 @import "sherpa-icon-classes.css"       layer(utilities.icons);

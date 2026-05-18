@@ -4,147 +4,29 @@
  * Regenerate: node scripts/generate-css-tokens.js
  *
  * Diff-only overrides against the default theme (apex-2-core).
- * All four extended themes are bundled in one file; the [data-theme="..."]
- * selectors ensure only the active theme's tokens apply.
+ * All extended themes bundled in one file; [data-theme="..."] selectors
+ * ensure only the active theme's tokens apply.
  *
- * Activate by setting <html data-theme="apex-2-blue|apex-2-purple|apex-2-teal|classic">.
+ * Activate: set <html data-theme="apex-2-blue|apex-2-purple|apex-2-teal|classic">.
  * The default theme (apex-2-core) requires no data-theme attribute.
  */
 
-/* ═══════════════════════════════════════════════════════════════════ */
-/* apex-2-blue                                                         */
-/* ═══════════════════════════════════════════════════════════════════ */
 
-@layer theme {
-
-/* ── Light overrides ─────────────────────────── */
-:where(:root[data-theme="apex-2-blue"]) {
-  --sherpa-surface-app-product-bar-product-block: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  --sherpa-surface-app-product-nav-active: var(--sherpa-core-color-basic-adlumin-blue-test-100);
-  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-core-color-basic-adlumin-blue-test-100);
-  --sherpa-surface-app-product-nav-text: var(--sherpa-core-color-basic-adlumin-blue-test-700);
-  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-core-color-basic-adlumin-blue-test-700);
-  --sherpa-surface-container-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-0);
-  --sherpa-surface-container-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-100);
-  --sherpa-surface-container-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-surface-control-primary-default: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  --sherpa-surface-control-primary-hover: var(--sherpa-core-color-basic-adlumin-blue-test-500);
-  --sherpa-surface-control-primary-down: var(--sherpa-core-color-basic-adlumin-blue-test-600);
-  --sherpa-surface-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-0);
-  --sherpa-surface-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-100);
-  --sherpa-surface-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-text-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  --sherpa-icon-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  --sherpa-border-container-active: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  --sherpa-border-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  --sherpa-border-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-500);
-  --sherpa-border-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-600);
-}
-
-/* ── Dark ──────────────────────────────────────────────────── */
-:where(:root[data-theme="apex-2-blue"][data-mode="dark"]) {
-  --sherpa-surface-app-product-bar-product-block: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  --sherpa-surface-app-product-nav-active: var(--sherpa-core-color-basic-adlumin-blue-test-900);
-  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-core-color-basic-adlumin-blue-test-900);
-  --sherpa-surface-app-product-nav-text: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-surface-container-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-0);
-  --sherpa-surface-container-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-100);
-  --sherpa-surface-container-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-surface-control-primary-default: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  --sherpa-surface-control-primary-hover: var(--sherpa-core-color-basic-adlumin-blue-test-500);
-  --sherpa-surface-control-primary-down: var(--sherpa-core-color-basic-adlumin-blue-test-600);
-  --sherpa-surface-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-900);
-  --sherpa-surface-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-800);
-  --sherpa-surface-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-700);
-  --sherpa-text-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-icon-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-border-container-active: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-border-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-  --sherpa-border-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-300);
-  --sherpa-border-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-}
-
-@media (prefers-color-scheme: dark) {
-  :where(:root[data-theme="apex-2-blue"]:not([data-mode="light"]):not([data-mode="hc"])) {
-    --sherpa-surface-app-product-bar-product-block: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-    --sherpa-surface-app-product-nav-active: var(--sherpa-core-color-basic-adlumin-blue-test-900);
-    --sherpa-surface-app-product-nav-sub-active: var(--sherpa-core-color-basic-adlumin-blue-test-900);
-    --sherpa-surface-app-product-nav-text: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-    --sherpa-surface-app-product-nav-active-icon: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-    --sherpa-surface-container-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-0);
-    --sherpa-surface-container-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-100);
-    --sherpa-surface-container-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-    --sherpa-surface-control-primary-default: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-    --sherpa-surface-control-primary-hover: var(--sherpa-core-color-basic-adlumin-blue-test-500);
-    --sherpa-surface-control-primary-down: var(--sherpa-core-color-basic-adlumin-blue-test-600);
-    --sherpa-surface-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-900);
-    --sherpa-surface-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-800);
-    --sherpa-surface-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-700);
-    --sherpa-text-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-    --sherpa-icon-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-    --sherpa-border-container-active: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-    --sherpa-border-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-200);
-    --sherpa-border-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-300);
-    --sherpa-border-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-base);
-  }
-}
-
-/* ── High Contrast ─────────────────────────────────────────── */
-:where(:root[data-theme="apex-2-blue"][data-mode="hc"]) {
-  --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
-  --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-900);
-  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-color-brand-900);
-  --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-200);
-  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-200);
-  --sherpa-surface-container-active-default: rgba(245,245,245,1);
-  --sherpa-surface-container-active-hover: rgba(235,235,235,1);
-  --sherpa-surface-container-active-down: rgba(248,215,218,1);
-  --sherpa-surface-control-primary-default: rgba(51,51,51,1);
-  --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
-  --sherpa-surface-control-primary-down: rgba(51,51,51,1);
-  --sherpa-surface-control-active-default: var(--sherpa-color-brand-900);
-  --sherpa-surface-control-active-hover: var(--sherpa-color-brand-1000);
-  --sherpa-surface-control-active-down: var(--sherpa-color-brand-1000);
-  --sherpa-text-active-base: var(--sherpa-color-brand-200);
-  --sherpa-icon-active-base: var(--sherpa-color-brand-200);
-  --sherpa-border-container-active: var(--sherpa-color-brand-200);
-  --sherpa-border-control-active-default: var(--sherpa-color-brand-200);
-  --sherpa-border-control-active-hover: var(--sherpa-color-brand-300);
-  --sherpa-border-control-active-down: var(--sherpa-color-brand-400);
-}
-
-@media (prefers-contrast: more) {
-  :where(:root[data-theme="apex-2-blue"]:not([data-mode="light"]):not([data-mode="dark"])) {
-    --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
-    --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-900);
-    --sherpa-surface-app-product-nav-sub-active: var(--sherpa-color-brand-900);
-    --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-200);
-    --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-200);
-    --sherpa-surface-container-active-default: rgba(245,245,245,1);
-    --sherpa-surface-container-active-hover: rgba(235,235,235,1);
-    --sherpa-surface-container-active-down: rgba(248,215,218,1);
-    --sherpa-surface-control-primary-default: rgba(51,51,51,1);
-    --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
-    --sherpa-surface-control-primary-down: rgba(51,51,51,1);
-    --sherpa-surface-control-active-default: var(--sherpa-color-brand-900);
-    --sherpa-surface-control-active-hover: var(--sherpa-color-brand-1000);
-    --sherpa-surface-control-active-down: var(--sherpa-color-brand-1000);
-    --sherpa-text-active-base: var(--sherpa-color-brand-200);
-    --sherpa-icon-active-base: var(--sherpa-color-brand-200);
-    --sherpa-border-container-active: var(--sherpa-color-brand-200);
-    --sherpa-border-control-active-default: var(--sherpa-color-brand-200);
-    --sherpa-border-control-active-hover: var(--sherpa-color-brand-300);
-    --sherpa-border-control-active-down: var(--sherpa-color-brand-400);
-  }
-}
-
-} /* @layer theme — apex-2-blue */
-
-
-/* ═══════════════════════════════════════════════════════════════════ */
-/* apex-2-purple                                                       */
-/* ═══════════════════════════════════════════════════════════════════ */
+/**
+ * Apex 2.0 (Purple) — Theme tokens
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Diff-only override against the default theme (apex-2-core).
+ *
+ * REQUIRES the default theme to be loaded FIRST. Activate this theme by:
+ *   1. Loading this file (e.g. <link rel="stylesheet" href="themes/apex-2-purple.css">)
+ *   2. Setting <html data-theme="apex-2-purple">
+ *
+ * Each mode block re-emits not only props that differ in that mode, but
+ * also any light-diffed prop whose dark/hc value matches the base — this
+ * prevents source-order leak of light overrides into dark/hc cascades.
+ */
 
 @layer theme {
 
@@ -220,12 +102,23 @@
   }
 }
 
-} /* @layer theme — apex-2-purple */
+} /* @layer theme */
 
-
-/* ═══════════════════════════════════════════════════════════════════ */
-/* apex-2-teal                                                         */
-/* ═══════════════════════════════════════════════════════════════════ */
+/**
+ * Apex 2.0 (Teal) — Theme tokens
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Diff-only override against the default theme (apex-2-core).
+ *
+ * REQUIRES the default theme to be loaded FIRST. Activate this theme by:
+ *   1. Loading this file (e.g. <link rel="stylesheet" href="themes/apex-2-teal.css">)
+ *   2. Setting <html data-theme="apex-2-teal">
+ *
+ * Each mode block re-emits not only props that differ in that mode, but
+ * also any light-diffed prop whose dark/hc value matches the base — this
+ * prevents source-order leak of light overrides into dark/hc cascades.
+ */
 
 @layer theme {
 
@@ -396,12 +289,165 @@
   }
 }
 
-} /* @layer theme — apex-2-teal */
+} /* @layer theme */
 
+/**
+ * Apex 2.0 (Blue) — Theme tokens
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Diff-only override against the default theme (apex-2-core).
+ *
+ * REQUIRES the default theme to be loaded FIRST. Activate this theme by:
+ *   1. Loading this file (e.g. <link rel="stylesheet" href="themes/apex-2-blue.css">)
+ *   2. Setting <html data-theme="apex-2-blue">
+ *
+ * Each mode block re-emits not only props that differ in that mode, but
+ * also any light-diffed prop whose dark/hc value matches the base — this
+ * prevents source-order leak of light overrides into dark/hc cascades.
+ */
 
-/* ═══════════════════════════════════════════════════════════════════ */
-/* classic                                                             */
-/* ═══════════════════════════════════════════════════════════════════ */
+@layer theme {
+
+/* ── Light overrides ─────────────────────────── */
+:where(:root[data-theme="apex-2-blue"]) {
+  --sherpa-surface-app-product-bar-product-block: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  --sherpa-surface-app-product-nav-active: var(--sherpa-core-color-basic-adlumin-blue-test-100);
+  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-core-color-basic-adlumin-blue-test-100);
+  --sherpa-surface-app-product-nav-text: var(--sherpa-core-color-basic-adlumin-blue-test-700);
+  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-core-color-basic-adlumin-blue-test-700);
+  --sherpa-surface-container-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-0);
+  --sherpa-surface-container-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-100);
+  --sherpa-surface-container-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-surface-control-primary-default: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  --sherpa-surface-control-primary-hover: var(--sherpa-core-color-basic-adlumin-blue-test-500);
+  --sherpa-surface-control-primary-down: var(--sherpa-core-color-basic-adlumin-blue-test-600);
+  --sherpa-surface-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-0);
+  --sherpa-surface-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-100);
+  --sherpa-surface-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-text-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  --sherpa-icon-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  --sherpa-border-container-active: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  --sherpa-border-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  --sherpa-border-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-500);
+  --sherpa-border-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-600);
+}
+
+/* ── Dark ──────────────────────────────────────────────────── */
+:where(:root[data-theme="apex-2-blue"][data-mode="dark"]) {
+  --sherpa-surface-app-product-bar-product-block: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  --sherpa-surface-app-product-nav-active: var(--sherpa-core-color-basic-adlumin-blue-test-900);
+  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-core-color-basic-adlumin-blue-test-900);
+  --sherpa-surface-app-product-nav-text: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-surface-container-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-0);
+  --sherpa-surface-container-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-100);
+  --sherpa-surface-container-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-surface-control-primary-default: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  --sherpa-surface-control-primary-hover: var(--sherpa-core-color-basic-adlumin-blue-test-500);
+  --sherpa-surface-control-primary-down: var(--sherpa-core-color-basic-adlumin-blue-test-600);
+  --sherpa-surface-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-900);
+  --sherpa-surface-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-800);
+  --sherpa-surface-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-700);
+  --sherpa-text-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-icon-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-border-container-active: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-border-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+  --sherpa-border-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-300);
+  --sherpa-border-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+}
+
+@media (prefers-color-scheme: dark) {
+  :where(:root[data-theme="apex-2-blue"]:not([data-mode="light"]):not([data-mode="hc"])) {
+    --sherpa-surface-app-product-bar-product-block: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+    --sherpa-surface-app-product-nav-active: var(--sherpa-core-color-basic-adlumin-blue-test-900);
+    --sherpa-surface-app-product-nav-sub-active: var(--sherpa-core-color-basic-adlumin-blue-test-900);
+    --sherpa-surface-app-product-nav-text: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+    --sherpa-surface-app-product-nav-active-icon: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+    --sherpa-surface-container-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-0);
+    --sherpa-surface-container-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-100);
+    --sherpa-surface-container-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+    --sherpa-surface-control-primary-default: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+    --sherpa-surface-control-primary-hover: var(--sherpa-core-color-basic-adlumin-blue-test-500);
+    --sherpa-surface-control-primary-down: var(--sherpa-core-color-basic-adlumin-blue-test-600);
+    --sherpa-surface-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-900);
+    --sherpa-surface-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-800);
+    --sherpa-surface-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-700);
+    --sherpa-text-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+    --sherpa-icon-active-base: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+    --sherpa-border-container-active: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+    --sherpa-border-control-active-default: var(--sherpa-core-color-basic-adlumin-blue-test-200);
+    --sherpa-border-control-active-hover: var(--sherpa-core-color-basic-adlumin-blue-test-300);
+    --sherpa-border-control-active-down: var(--sherpa-core-color-basic-adlumin-blue-test-base);
+  }
+}
+
+/* ── High Contrast ─────────────────────────────────────────── */
+:where(:root[data-theme="apex-2-blue"][data-mode="hc"]) {
+  --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
+  --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-900);
+  --sherpa-surface-app-product-nav-sub-active: var(--sherpa-color-brand-900);
+  --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-200);
+  --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-200);
+  --sherpa-surface-container-active-default: rgba(245,245,245,1);
+  --sherpa-surface-container-active-hover: rgba(235,235,235,1);
+  --sherpa-surface-container-active-down: rgba(248,215,218,1);
+  --sherpa-surface-control-primary-default: rgba(51,51,51,1);
+  --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
+  --sherpa-surface-control-primary-down: rgba(51,51,51,1);
+  --sherpa-surface-control-active-default: var(--sherpa-color-brand-900);
+  --sherpa-surface-control-active-hover: var(--sherpa-color-brand-1000);
+  --sherpa-surface-control-active-down: var(--sherpa-color-brand-1000);
+  --sherpa-text-active-base: var(--sherpa-color-brand-200);
+  --sherpa-icon-active-base: var(--sherpa-color-brand-200);
+  --sherpa-border-container-active: var(--sherpa-color-brand-200);
+  --sherpa-border-control-active-default: var(--sherpa-color-brand-200);
+  --sherpa-border-control-active-hover: var(--sherpa-color-brand-300);
+  --sherpa-border-control-active-down: var(--sherpa-color-brand-400);
+}
+
+@media (prefers-contrast: more) {
+  :where(:root[data-theme="apex-2-blue"]:not([data-mode="light"]):not([data-mode="dark"])) {
+    --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
+    --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-900);
+    --sherpa-surface-app-product-nav-sub-active: var(--sherpa-color-brand-900);
+    --sherpa-surface-app-product-nav-text: var(--sherpa-color-brand-200);
+    --sherpa-surface-app-product-nav-active-icon: var(--sherpa-color-brand-200);
+    --sherpa-surface-container-active-default: rgba(245,245,245,1);
+    --sherpa-surface-container-active-hover: rgba(235,235,235,1);
+    --sherpa-surface-container-active-down: rgba(248,215,218,1);
+    --sherpa-surface-control-primary-default: rgba(51,51,51,1);
+    --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
+    --sherpa-surface-control-primary-down: rgba(51,51,51,1);
+    --sherpa-surface-control-active-default: var(--sherpa-color-brand-900);
+    --sherpa-surface-control-active-hover: var(--sherpa-color-brand-1000);
+    --sherpa-surface-control-active-down: var(--sherpa-color-brand-1000);
+    --sherpa-text-active-base: var(--sherpa-color-brand-200);
+    --sherpa-icon-active-base: var(--sherpa-color-brand-200);
+    --sherpa-border-container-active: var(--sherpa-color-brand-200);
+    --sherpa-border-control-active-default: var(--sherpa-color-brand-200);
+    --sherpa-border-control-active-hover: var(--sherpa-color-brand-300);
+    --sherpa-border-control-active-down: var(--sherpa-color-brand-400);
+  }
+}
+
+} /* @layer theme */
+
+/**
+ * Classic — Theme tokens
+ * Auto-generated from Figma Variables — do not edit manually.
+ * Regenerate: node scripts/generate-css-tokens.js
+ *
+ * Diff-only override against the default theme (apex-2-core).
+ *
+ * REQUIRES the default theme to be loaded FIRST. Activate this theme by:
+ *   1. Loading this file (e.g. <link rel="stylesheet" href="themes/classic.css">)
+ *   2. Setting <html data-theme="classic">
+ *
+ * Each mode block re-emits not only props that differ in that mode, but
+ * also any light-diffed prop whose dark/hc value matches the base — this
+ * prevents source-order leak of light overrides into dark/hc cascades.
+ */
 
 @layer theme {
 
@@ -627,4 +673,4 @@
   }
 }
 
-} /* @layer theme — classic */
+} /* @layer theme */

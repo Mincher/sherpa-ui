@@ -1,9 +1,15 @@
 /**
- * Density & Status Overrides
+ * Theme Corrections, Density & Status Overrides
  * Auto-generated from Figma Variables — do not edit manually.
  * Regenerate: node scripts/generate-css-tokens.js
  *
- * Attribute-driven overrides — both axes in one file:
+ * Three axes of non-base overrides, all in one file.
+ *
+ *   Theme corrections  [@layer theme]
+ *            Hand-maintained fixes for Figma-generated aliases that resolve
+ *            to values that are visually incorrect. These patches come AFTER
+ *            sherpa-theme-apex-2-core.css and sherpa-themes-extended.css in
+ *            the @layer theme order so they win over the generated values.
  *
  *   Density  [data-density="compact|comfortable"]
  *            Applies to any subtree. Tokens cascade — descendant components
@@ -16,40 +22,76 @@
  *            status block needed.
  */
 
+
+/* ─── Theme corrections ─────────────────────────────────────────────── */
+
+@layer theme {
+
+  :where(:root) {
+    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);
+    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);
+    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);
+    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);
+    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);
+  }
+
+  /* Dark — apex-2-core dark block uses translucent fills that read as
+     near-invisible on dark surfaces; re-pin to the same -200 step. */
+  @media (prefers-color-scheme: dark) {
+    :where(:root:not([data-mode="light"]):not([data-mode="hc"])) {
+      --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);
+      --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);
+      --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);
+      --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);
+      --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);
+    }
+  }
+
+  :where(:root[data-mode="dark"]) {
+    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);
+    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);
+    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);
+    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);
+    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);
+  }
+
+} /* @layer theme */
+
+
 /* ─── Density ────────────────────────────────────────────────────── */
 
 @layer density {
 
   :where([data-density="compact"]) {
-    --sherpa-space-2xl:     var(--sherpa-core-scale-350);
-    --sherpa-space-2xs:     var(--sherpa-core-scale-25);
-    --sherpa-space-3xl:     var(--sherpa-core-scale-450);
-    --sherpa-space-3xs:     var(--sherpa-core-scale-25);
-    --sherpa-space-4xl:     var(--sherpa-core-scale-500);
-    --sherpa-space-5xl:     var(--sherpa-core-scale-600);
-    --sherpa-space-6xl:     var(--sherpa-core-scale-700);
-    --sherpa-space-default: var(--sherpa-core-scale-150);
-    --sherpa-space-lg:      var(--sherpa-core-scale-200);
-    --sherpa-space-none:    var(--sherpa-core-scale-0);
-    --sherpa-space-sm:      var(--sherpa-core-scale-100);
-    --sherpa-space-xl:      var(--sherpa-core-scale-250);
-    --sherpa-space-xs:      var(--sherpa-core-scale-50);
+    --sherpa-space-2xl:      var(--sherpa-core-scale-350);
+    --sherpa-space-2xs:      var(--sherpa-core-scale-25);
+    --sherpa-space-3xl:      var(--sherpa-core-scale-450);
+    --sherpa-space-3xs:      var(--sherpa-core-scale-25);
+    --sherpa-space-4xl:      var(--sherpa-core-scale-500);
+    --sherpa-space-5xl:      var(--sherpa-core-scale-600);
+    --sherpa-space-6xl:      var(--sherpa-core-scale-700);
+    --sherpa-space-default:  var(--sherpa-core-scale-150);
+    --sherpa-space-lg:       var(--sherpa-core-scale-200);
+    --sherpa-space-none:     var(--sherpa-core-scale-0);
+    --sherpa-space-sm:       var(--sherpa-core-scale-100);
+    --sherpa-space-xl:       var(--sherpa-core-scale-250);
+    --sherpa-space-xs:       var(--sherpa-core-scale-50);
   }
 
   :where([data-density="comfortable"]) {
-    --sherpa-space-2xl:     var(--sherpa-core-scale-450);
-    --sherpa-space-2xs:     var(--sherpa-core-scale-100);
-    --sherpa-space-3xl:     var(--sherpa-core-scale-600);
-    --sherpa-space-3xs:     var(--sherpa-core-scale-50);
-    --sherpa-space-4xl:     var(--sherpa-core-scale-700);
-    --sherpa-space-5xl:     var(--sherpa-core-scale-800);
-    --sherpa-space-6xl:     var(--sherpa-core-scale-800);
-    --sherpa-space-default: var(--sherpa-core-scale-250);
-    --sherpa-space-lg:      var(--sherpa-core-scale-300);
-    --sherpa-space-none:    var(--sherpa-core-scale-0);
-    --sherpa-space-sm:      var(--sherpa-core-scale-200);
-    --sherpa-space-xl:      var(--sherpa-core-scale-350);
-    --sherpa-space-xs:      var(--sherpa-core-scale-150);
+    --sherpa-space-2xl:      var(--sherpa-core-scale-450);
+    --sherpa-space-2xs:      var(--sherpa-core-scale-100);
+    --sherpa-space-3xl:      var(--sherpa-core-scale-600);
+    --sherpa-space-3xs:      var(--sherpa-core-scale-50);
+    --sherpa-space-4xl:      var(--sherpa-core-scale-700);
+    --sherpa-space-5xl:      var(--sherpa-core-scale-800);
+    --sherpa-space-6xl:      var(--sherpa-core-scale-800);
+    --sherpa-space-default:  var(--sherpa-core-scale-250);
+    --sherpa-space-lg:       var(--sherpa-core-scale-300);
+    --sherpa-space-none:     var(--sherpa-core-scale-0);
+    --sherpa-space-sm:       var(--sherpa-core-scale-200);
+    --sherpa-space-xl:       var(--sherpa-core-scale-350);
+    --sherpa-space-xs:       var(--sherpa-core-scale-150);
   }
 
 } /* @layer density */
