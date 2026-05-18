@@ -1,6 +1,6 @@
 # sherpa-gauge-chart
 
-> **Category:** data-viz · **Base class:** SherpaElement
+> **Category:** media · **Base class:** SherpaElement
 
 Semicircle gauge using CSS conic-gradient.
 

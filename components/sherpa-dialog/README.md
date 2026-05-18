@@ -1,6 +1,6 @@
 # sherpa-dialog
 
-> **Category:** layout · **Base class:** SherpaElement
+> **Category:** overlay · **Base class:** SherpaElement
 
 Modal dialog built on the native HTML <dialog> element. Uses SherpaElement multi-template support. The default template includes a native <header> with a <dl> for title/subtitle and a close button, plus a sherpa-footer for footer content.
 

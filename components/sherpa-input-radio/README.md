@@ -1,6 +1,6 @@
 # sherpa-input-radio
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** input · **Base class:** SherpaElement
 
 Atomic radio primitive. Single radio with label-on-the-right. Use multiple instances sharing a `name` to form a logical group, or wrap in `sherpa-input-radio-group` which manages the shared name + value coordination.
 
@@ -52,6 +52,15 @@ element.addEventListener("change", (e) => {
 | -------- | ---- | ----------- | ------ |
 | `checked` | `boolean` | Read/write checked state | read/write |
 | `value` | `string` | Submitted value | read/write |
+
+## Internal CSS Custom Properties
+
+These `--_` prefixed properties are used internally and can be
+influenced by setting `data-*` attributes or status on ancestors:
+
+- `--_status-border`
+- `--_status-surface-strong`
+- `--_status-text`
 
 ## Usage
 

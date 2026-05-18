@@ -1,6 +1,6 @@
 # sherpa-donut-chart
 
-> **Category:** data-viz · **Base class:** SherpaElement
+> **Category:** media · **Base class:** SherpaElement
 
 Donut / pie chart using CSS conic-gradient. Supports declarative query loading via ContentAttributesMixin or programmatic setData().
 

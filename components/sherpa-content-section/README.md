@@ -1,6 +1,6 @@
 # sherpa-content-section
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** container · **Base class:** SherpaElement
 
 In-flow content section anchored to the left or right of a layout column. Fills the available height, owns its own header (heading + actions), an optional toolbar row, and a scrollable body. Minimisable to a narrow strip on the side it is anchored to.
 
@@ -12,6 +12,7 @@ In-flow content section anchored to the left or right of a layout column. Fills 
 | `data-heading` | string | Header text | — | — |
 | `data-minimised` | boolean | Collapsed to a narrow strip | — | — |
 | `data-restore-label` | string | Optional label shown on the | — | — |
+| `data-flush` | boolean | Remove the body padding so the | — | — |
 
 ## Slots
 

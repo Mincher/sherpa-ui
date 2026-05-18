@@ -1,6 +1,6 @@
 # sherpa-filter-bar
 
-> **Category:** page-level · **Base class:** SherpaElement
+> **Category:** data · **Base class:** SherpaElement
 
 Horizontal filter bar with zoned layout. Supports global and local (container-scoped) modes. Template variants: default (global) | local.
 

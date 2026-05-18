@@ -292,21 +292,25 @@ export class SherpaViewHeader extends SherpaElement {
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) items = parsed;
+        if (Array.isArray(parsed)) {
+          items = parsed
+            .filter((it) => it && typeof it === 'object')
+            .map((it) => {
+              const label = String(it.label ?? '').trim();
+              if (!label) return null;
+              return it.href ? { label, href: String(it.href) } : { label };
+            })
+            .filter(Boolean);
+        }
       } catch {
         // Ignore malformed JSON; treat as empty.
       }
     }
-    crumbsEl.innerHTML = '';
-    items.forEach((item) => {
-      if (!item || typeof item !== 'object') return;
-      const label = String(item.label ?? '').trim();
-      if (!label) return;
-      const node = item.href ? document.createElement('a') : document.createElement('span');
-      if (item.href) node.href = String(item.href);
-      node.textContent = label;
-      crumbsEl.appendChild(node);
-    });
+    if (items.length) {
+      crumbsEl.dataset.items = JSON.stringify(items);
+    } else {
+      delete crumbsEl.dataset.items;
+    }
     this.toggleAttribute('data-has-breadcrumbs', items.length > 0);
   }
 

@@ -1,6 +1,6 @@
 # sherpa-popover
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** overlay · **Base class:** SherpaElement
 
 General-purpose floating content container with header.
 

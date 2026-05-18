@@ -1,6 +1,6 @@
 # sherpa-nav-promo
 
-> **Category:** navigation · **Base class:** SherpaElement
+> **Category:** nav · **Base class:** SherpaElement
 
 Promotional callout for the navigation footer. Includes a dismiss button and a CTA link in addition to the title/message body. For a simpler promo entry without dismiss/link chrome, use {@link SherpaNavItem} with `data-type="promo"` directly.
 

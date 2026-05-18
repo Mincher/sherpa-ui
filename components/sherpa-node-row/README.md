@@ -1,6 +1,6 @@
 # sherpa-node-row
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 sherpa-node-row.js — Generic field row for sherpa-node bodies. Pure layout component. Holds slots; emits no events. Slot presence is auto-mirrored on the host as data-has-{slotname} via SherpaElement's default onSlotChange handler.
 

@@ -1,57 +1,38 @@
 <!--
-  sherpa-message.html — Templates for sherpa-message.
+  sherpa-message.html — Banner / inline message.
 
   Templates:
-    • default — Icon + heading/body/action content + close button
-    • (custom) — Consumers can add additional <template id="..."> blocks here
-                  to define alternative message layouts. Use the component's
-                  `get templateId()` override to select a template by id.
+    • default — Status icon + label + optional inline action link + dismiss button
 
   Host attributes:
-    data-status      — "success" | "critical" | "warning" | "info" | "urgent"
-    data-dismissible — "true" | "false" — shows close button
-
-  Custom templates:
-    To define a custom layout, add a new <template id="my-layout"> block
-    below the default. Override `get templateId()` in a subclass or set it
-    dynamically to select the template at render time.
+    data-status        — "success" | "critical" | "warning" | "info" | "urgent"
+    data-label         — Message text
+    data-action-label  — Optional action link text (renders trailing link)
+    data-action-href   — Optional href for the action link
+    data-action-icon   — FA classes for trailing link icon (default: fa-solid fa-arrow-up-right-from-square)
+    data-dismissible   — Presence (or "true") shows the close button
 -->
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Icon + content + close button
-     ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <span class="message-icon" part="icon">
   <i class="sherpa-icon default-icon" data-size="sm" aria-hidden="true"></i>
 </span>
 
 <div class="message-content" part="content">
-  <div class="message-heading" part="heading"><slot name="heading"></slot></div>
-  <div class="content" part="body"><slot></slot></div>
-  <div class="message-action" part="action"><slot name="action" data-accepts="control"></slot></div>
+  <span class="message-label text-body-md" part="label"></span>
+  <a class="message-action text-body-md" part="action" hidden>
+    <span class="message-action-label"></span>
+    <i class="message-action-icon sherpa-icon" data-size="xs" aria-hidden="true"></i>
+  </a>
 </div>
 
-<button type="button" class="message-close" part="close" aria-label="Dismiss">
-  <i class="fa-solid fa-xmark sherpa-icon" data-size="sm" aria-hidden="true"></i>
-</button>
+<sherpa-button
+  class="message-close"
+  part="close"
+  data-type="icon"
+  data-variant="tertiary"
+  data-size="small"
+  data-icon-start="fa-solid fa-xmark"
+  aria-label="Dismiss"
+></sherpa-button>
 </template>
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     EXAMPLE CUSTOM TEMPLATE — Banner (no close button or action slot)
-
-     Consumers can add templates like this for alternative layouts.
-     Each template must have a unique id. The component selects a template
-     via `get templateId()`.
-     ═══════════════════════════════════════════════════════════════════════ -->
-<!--
-<template id="banner">
-<span class="message-icon" part="icon">
-  <i class="sherpa-icon default-icon" data-size="sm" aria-hidden="true"></i>
-</span>
-
-<div class="message-content" part="content">
-  <div class="message-heading" part="heading"><slot name="heading"></slot></div>
-  <div class="content" part="body"><slot></slot></div>
-</div>
-</template>
--->

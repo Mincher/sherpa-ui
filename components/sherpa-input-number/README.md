@@ -1,6 +1,6 @@
 # sherpa-input-number
 
-> **Category:** form · **Base class:** SherpaInputBase
+> **Category:** input · **Base class:** SherpaInputBase
 
 Numerical input with stepper buttons. Inherits label, description, helper, layout, validation, and value management from SherpaInputBase.
 

@@ -1,6 +1,6 @@
 # sherpa-menu-item
 
-> **Category:** navigation · **Base class:** SherpaElement
+> **Category:** overlay · **Base class:** SherpaElement
 
 Attribute-driven menu item with multiple template variants. Templates: default, checkbox, radio, toggle, heading.
 

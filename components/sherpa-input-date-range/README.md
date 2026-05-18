@@ -1,6 +1,6 @@
 # sherpa-input-date-range
 
-> **Category:** form · **Base class:** SherpaInputBase
+> **Category:** input · **Base class:** SherpaInputBase
 
 Date range picker composing two native date inputs (start / end). Inherits label, description, helper, layout, validation from SherpaInputBase. Start ≤ end constraint soft-enforced via min/max on native inputs.
 

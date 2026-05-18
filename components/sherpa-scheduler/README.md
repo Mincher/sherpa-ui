@@ -1,6 +1,6 @@
 # sherpa-scheduler
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** data · **Base class:** SherpaElement
 
 Recurrence/schedule picker. Composes sherpa-input-select (frequency), sherpa-input-date, sherpa-input-time, sherpa-input-checkbox-group (weekdays template), sherpa-input-number.
 

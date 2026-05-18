@@ -1,6 +1,6 @@
 # sherpa-line-chart
 
-> **Category:** data-viz · **Base class:** SherpaElement
+> **Category:** media · **Base class:** SherpaElement
 
 Line / area chart using CSS clip-path segments. JS sets raw data as CSS custom properties; CSS normalises via calc() and renders clip-path polygons. Zero polygon computation in JS.
 

@@ -1,6 +1,6 @@
 # sherpa-panel
 
-> **Category:** layout · **Base class:** SherpaElement
+> **Category:** container · **Base class:** SherpaElement
 
 Slide-out or inline panel with header and content area.
 

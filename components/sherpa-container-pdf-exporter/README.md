@@ -1,6 +1,6 @@
 # sherpa-container-pdf-exporter
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** shell · **Base class:** SherpaElement
 
 Print-optimized renderer for PDF export via browser print.
 

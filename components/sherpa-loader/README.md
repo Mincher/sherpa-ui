@@ -1,6 +1,6 @@
 # sherpa-loader
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** feedback · **Base class:** SherpaElement
 
 Animated loading indicator with spinner and optional label. Sets role="status" and aria-live="polite" on the host so assistive technology announces when the loader appears or its label changes.
 

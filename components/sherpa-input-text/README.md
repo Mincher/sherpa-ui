@@ -1,6 +1,6 @@
 # sherpa-input-text
 
-> **Category:** form · **Base class:** SherpaInputBase
+> **Category:** input · **Base class:** SherpaInputBase
 
 Basic text input. Inherits label, description, helper, layout, validation, and value management from SherpaInputBase.
 

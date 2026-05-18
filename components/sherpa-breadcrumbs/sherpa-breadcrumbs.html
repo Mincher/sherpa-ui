@@ -1,34 +1,35 @@
 <!--
   sherpa-breadcrumbs.html — Navigation breadcrumb trail.
 
-  Templates:
-    • default — Semantic <nav> with <ol> breadcrumb list
+  Authoring model:
+    The template below is the entire rendered structure. Consumers who need
+    different crumbs override it by pointing data-src at their own HTML file
+    that exports a <template id="default"> with the same shape.
 
-  Each slotted child (typically <a> or <span>) becomes a breadcrumb item.
-  JS clones the crumb prototype for each, adding a separator chevron.
-  The last item is styled as the "current" page.
+  Markup contract:
+    • <nav aria-label="Breadcrumb"> wrapping an <ol class="breadcrumb-list">
+    • Historic crumbs:  <li class="crumb"><a class="crumb-text" href="…">Label</a><span class="separator" aria-hidden="true">/</span></li>
+    • Current crumb:    <li class="crumb"><span class="crumb-text" aria-current="page">Label</span></li>
+    • The current crumb has no separator; CSS keys off [aria-current="page"].
 
   Host attributes:
-    data-max-items — Max items before collapsing middle items to "…"
-
-  Slots:
-    (default) — Breadcrumb items (<a> or <span> elements)
+    data-src — URL of an alternative breadcrumbs template
 -->
 
 <template id="default">
 <nav aria-label="Breadcrumb" class="breadcrumb-nav">
   <ol class="breadcrumb-list">
-    <template class="crumb-tpl">
-      <li class="crumb">
-        <span class="crumb-text text-body-sm"></span>
-        <i class="separator fa-solid fa-chevron-right" aria-hidden="true"></i>
-      </li>
-    </template>
-    <li class="crumb crumb-ellipsis" aria-hidden="true">
-      <button class="ellipsis-btn text-body-sm" type="button" aria-label="Show all breadcrumbs">…</button>
-      <i class="separator fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <li class="crumb">
+      <a class="crumb-text" href="#">Home</a>
+      <span class="separator" aria-hidden="true">/</span>
+    </li>
+    <li class="crumb">
+      <a class="crumb-text" href="#">Section</a>
+      <span class="separator" aria-hidden="true">/</span>
+    </li>
+    <li class="crumb">
+      <span class="crumb-text" aria-current="page">Current page</span>
     </li>
   </ol>
-  <slot class="source-slot"></slot>
 </nav>
 </template>

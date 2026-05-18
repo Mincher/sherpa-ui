@@ -1,6 +1,6 @@
 # sherpa-menu
 
-> **Category:** navigation · **Base class:** SherpaElement
+> **Category:** overlay · **Base class:** SherpaElement
 
 Menu component (per-instance, no singleton). Light DOM <ul>/<li>/<sherpa-menu-item> content projected through <slot>. Uses popover="auto" for top-layer promotion and light-dismiss. CSS anchor positioning with JS fallback.
 

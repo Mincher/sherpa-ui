@@ -1,6 +1,6 @@
 # sherpa-file-upload
 
-> **Category:** form · **Base class:** SherpaElement
+> **Category:** input · **Base class:** SherpaElement
 
 File upload drop zone with drag-and-drop, file list, and per-file progress/status tracking. Consumer handles actual upload; call setFileState/setFileProgress to update UI.
 

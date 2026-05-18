@@ -1,6 +1,6 @@
 # sherpa-proposal-preview
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Agent proposal renderer.
 

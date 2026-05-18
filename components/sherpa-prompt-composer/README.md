@@ -1,6 +1,6 @@
 # sherpa-prompt-composer
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** input · **Base class:** SherpaElement
 
 Auto-growing prompt textarea with circular send button. Designed for AI / chat surfaces.
 

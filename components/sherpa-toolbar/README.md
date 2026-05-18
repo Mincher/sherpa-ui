@@ -1,6 +1,6 @@
 # sherpa-toolbar
 
-> **Category:** page-level · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Generic horizontal toolbar with leading/center/trailing content zones and an optional filters row. Pure layout component — no data logic.
 

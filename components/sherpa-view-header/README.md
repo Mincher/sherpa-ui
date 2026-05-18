@@ -1,6 +1,6 @@
 # sherpa-view-header
 
-> **Category:** page-level · **Base class:** SherpaElement
+> **Category:** shell · **Base class:** SherpaElement
 
 View header toolbar with toggles and settings. Manages heading, favorites, feedback popover, and export intent.
 
@@ -14,12 +14,12 @@ View header toolbar with toggles and settings. Manages heading, favorites, feedb
 | `data-edit-mode` | boolean | Edit mode active | — | — |
 | `data-back-button` | boolean | Show built-in back button | — | — |
 | `data-export-title` | string | Title for PDF export | — | — |
+| `data-breadcrumbs` | json | Breadcrumb trail. JSON array | — | — |
 
 ## Slots
 
 | Slot | Description |
 | ---- | ----------- |
-| `breadcrumbs` | Optional breadcrumb row above the toolbar |
 | `title-icon` | Optional icon shown to the left of the heading label |
 | `view-selection` | Optional <sherpa-input-select> for scoped views |
 
@@ -27,7 +27,6 @@ Slot usage:
 
 ```html
 <sherpa-view-header>
-  <div slot="breadcrumbs"><!-- Optional breadcrumb row above the toolbar --></div>
   <div slot="title-icon"><!-- Optional icon shown to the left of the heading label --></div>
   <div slot="view-selection"><!-- Optional <sherpa-input-select> for scoped views --></div>
 </sherpa-view-header>
@@ -156,8 +155,8 @@ influenced by setting `data-*` attributes or status on ancestors:
 
 ```html
 <sherpa-view-header data-label="Example Label" data-export-title="value">
-  <span slot="breadcrumbs"><!-- Optional breadcrumb row above the toolbar --></span>
   <span slot="title-icon"><!-- Optional icon shown to the left of the heading label --></span>
+  <span slot="view-selection"><!-- Optional <sherpa-input-select> for scoped views --></span>
 </sherpa-view-header>
 ```
 

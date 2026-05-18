@@ -1,6 +1,6 @@
 # sherpa-ai-panel
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** container · **Base class:** SherpaElement
 
 Standalone chrome for AI / chat surfaces.
 

@@ -30,6 +30,7 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
+import '../sherpa-input-radio/sherpa-input-radio.js';
 
 let _gid = 0;
 

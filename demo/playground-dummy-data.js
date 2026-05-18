@@ -90,18 +90,18 @@ export const DUMMY_DATA = {
   'sherpa-input-checkbox-group': {
     attrs: { 'data-label': 'Select toppings' },
     html: `
-      <label><input type="checkbox" value="cheese" checked /> Cheese</label>
-      <label><input type="checkbox" value="ham" /> Ham</label>
-      <label><input type="checkbox" value="mushroom" /> Mushroom</label>
+      <sherpa-input-checkbox name="toppings" value="cheese" data-label="Cheese" checked></sherpa-input-checkbox>
+      <sherpa-input-checkbox name="toppings" value="ham" data-label="Ham"></sherpa-input-checkbox>
+      <sherpa-input-checkbox name="toppings" value="mushroom" data-label="Mushroom"></sherpa-input-checkbox>
     `,
   },
 
   'sherpa-input-radio-group': {
     attrs: { 'data-label': 'Delivery speed' },
     html: `
-      <label><input type="radio" name="rg-demo" value="standard" checked /> Standard</label>
-      <label><input type="radio" name="rg-demo" value="express" /> Express</label>
-      <label><input type="radio" name="rg-demo" value="overnight" /> Overnight</label>
+      <sherpa-input-radio name="rg-demo" value="standard" data-label="Standard" checked></sherpa-input-radio>
+      <sherpa-input-radio name="rg-demo" value="express" data-label="Express"></sherpa-input-radio>
+      <sherpa-input-radio name="rg-demo" value="overnight" data-label="Overnight"></sherpa-input-radio>
     `,
   },
 
@@ -213,11 +213,13 @@ export const DUMMY_DATA = {
   },
 
   'sherpa-breadcrumbs': {
-    html: `
-      <a href="#">Home</a>
-      <a href="#">Devices</a>
-      <a href="#">Acme device 01</a>
-    `,
+    attrs: {
+      'data-items': JSON.stringify([
+        { label: 'Home', href: '#' },
+        { label: 'Devices', href: '#' },
+        { label: 'Acme device 01' },
+      ]),
+    },
   },
 
   'sherpa-pagination': {
@@ -258,23 +260,26 @@ export const DUMMY_DATA = {
     attrs: {
       'data-label':       'Acme device 01',
       'data-description': 'Healthy. Last sync: 2 min ago.',
-      'data-elevation':   'sm',
+      'data-elevation':   'none',
     },
     html: `<p>Click to see device details, recent telemetry and configuration.</p>`,
   },
 
   'sherpa-callout': {
     attrs: {
-      'data-status': 'warning',
-      'data-label':  'Heads up',
+      'data-status':  'warning',
+      'data-heading': 'Heads up',
     },
     html: `<p>This action cannot be undone. Please confirm before continuing.</p>`,
   },
 
   'sherpa-message': {
     attrs: {
-      'data-status': 'info',
-      'data-label':  'Backup completed successfully.',
+      'data-status':       'info',
+      'data-label':        'Backup completed successfully.',
+      'data-action-label': 'View report',
+      'data-action-href':  '#',
+      'data-dismissible':  '',
     },
   },
 
@@ -478,7 +483,7 @@ export const DUMMY_DATA = {
     },
     html: `
       <p>This will deploy your configuration to all devices in the selected region.</p>
-      <sherpa-callout slot="footer" data-status="warning" data-label="Once started, this action cannot be cancelled."></sherpa-callout>
+      <sherpa-callout slot="footer" data-status="warning" data-heading="Once started, this action cannot be cancelled."></sherpa-callout>
     `,
     setup({ instance, addTrigger }) {
       addTrigger({

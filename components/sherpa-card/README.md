@@ -1,6 +1,6 @@
 # sherpa-card
 
-> **Category:** layout · **Base class:** SherpaElement
+> **Category:** container · **Base class:** SherpaElement
 
 Container component with header, content, and footer areas. Uses a native <header> with a <dl> for the card header area, supporting both attribute-based headings and slotted custom content.
 

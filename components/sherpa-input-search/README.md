@@ -1,6 +1,6 @@
 # sherpa-input-search
 
-> **Category:** form · **Base class:** SherpaInputBase
+> **Category:** input · **Base class:** SherpaInputBase
 
 Search input with magnifying glass icon and clear button. Inherits label, description, helper, layout, validation from SherpaInputBase.
 

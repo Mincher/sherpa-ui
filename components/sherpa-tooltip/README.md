@@ -1,6 +1,6 @@
 # sherpa-tooltip
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** overlay · **Base class:** SherpaElement
 
 Singleton tooltip with CSS anchor positioning fallback. Operates as a singleton: one tooltip instance shared across the page. Use the exported Tooltip API or declarative data-tooltip attributes.
 

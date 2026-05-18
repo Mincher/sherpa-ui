@@ -1,6 +1,6 @@
 # sherpa-product-bar-v2
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** shell · **Base class:** SherpaElement
 
 Light-themed product bar (Apr 2026 redesign). System name trigger + time, optional tabs, central search, right-aligned actions.
 

@@ -1,6 +1,6 @@
 # sherpa-input-checkbox
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** input · **Base class:** SherpaElement
 
 Atomic checkbox primitive. Single checkbox with label-on-the-right. Designed for both standalone use (e.g. "I accept the terms") and as a child of `sherpa-input-checkbox-group`.
 
@@ -55,6 +55,16 @@ element.addEventListener("change", (e) => {
 | `checked` | `boolean` | Read/write checked state | read/write |
 | `indeterminate` | `boolean` | Read/write indeterminate state | read/write |
 | `value` | `string` | Submitted value | read/write |
+
+## Internal CSS Custom Properties
+
+These `--_` prefixed properties are used internally and can be
+influenced by setting `data-*` attributes or status on ancestors:
+
+- `--_status-`
+- `--_status-border`
+- `--_status-surface-strong`
+- `--_status-text`
 
 ## Usage
 

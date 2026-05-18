@@ -1,6 +1,6 @@
 # sherpa-empty-state
 
-> **Category:** data-display · **Base class:** SherpaElement
+> **Category:** feedback · **Base class:** SherpaElement
 
 Empty-state placeholder with illustration, heading, description, and action slots.
 

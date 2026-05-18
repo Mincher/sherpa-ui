@@ -1,6 +1,6 @@
 # sherpa-node-header
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 sherpa-node-header.js — 48-tall header for sherpa-node. Provides: • Built-in icon shorthand via data-icon="fa-..." (FontAwesome class) • Built-in drill-down button via data-drill-down (used by Group nodes) • Auto-tags slotted sockets with data-location="header" so their CSS picks the correct shape from the locked matrix.
 

@@ -1,6 +1,6 @@
 # sherpa-list-item
 
-> **Category:** data-display · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Versatile list item with leading, content, and trailing areas. Supports labels, descriptions, icons, drag handles, and slotted trailing actions.
 

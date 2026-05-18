@@ -1,6 +1,6 @@
 # sherpa-list
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Grouping container for sherpa-list-item children. Provides variant + density styling, an optional heading row with actions slot, and an automatic empty-state.
 

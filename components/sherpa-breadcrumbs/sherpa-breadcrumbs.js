@@ -1,156 +1,133 @@
 /**
  * @element sherpa-breadcrumbs
  * @category control
- * @description Navigation breadcrumb trail with optional collapse.
- *   Reads slotted children (anchors/spans) and renders a styled list
- *   with chevron separators. Middle items collapse behind "…" when
- *   count exceeds data-max-items.
+ * @description Navigation breadcrumb trail. The default template renders a
+ *   <nav><ol> of crumbs (anchors + a current-page span).
  *
- * @attr {number} [data-max-items] — Maximum visible items before collapsing (default: unlimited)
+ *   Three authoring modes (no slots — HTML-first):
+ *     1. Defaults: drop in <sherpa-breadcrumbs></sherpa-breadcrumbs> and use
+ *        the example crumbs from the default template.
+ *     2. Static override: point data-src at an HTML file exporting a
+ *        <template id="default"> with the same shape — the entire breadcrumb
+ *        markup is replaced.
+ *     3. Dynamic data: set data-items to a JSON array of {label, href?}
+ *        objects. The last entry is rendered as the current page
+ *        (aria-current="page", no link, no separator).
  *
- * @slot (default) — Breadcrumb items: <a href="…"> or <span>
+ *   JS only delegates clicks and emits a normalized event.
+ *
+ * @attr {string} [data-src]   — URL of an alternative breadcrumbs template HTML
+ * @attr {json}   [data-items] — JSON array of {label: string, href?: string}
  *
  * @fires breadcrumb-click
  *   bubbles: true, composed: true
- *   detail: { index: number, href: string, label: string }
- *
- * @prop {number} maxItems — Getter/setter for data-max-items
+ *   detail: { index: number, href: string, label: string, current: boolean }
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 export class SherpaBreadcrumbs extends SherpaElement {
 
-  /* ── Config ───────────────────────────────────────────────────── */
-
   static get cssUrl()  { return new URL('./sherpa-breadcrumbs.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-breadcrumbs.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-max-items'];
+    return [...super.observedAttributes, 'data-src', 'data-items'];
   }
 
-  /* ── Cached refs ──────────────────────────────────────────────── */
-
-  #listEl      = null;
-  #crumbTpl    = null;
-  #ellipsisEl  = null;
-  #crumbs      = [];  // rendered <li> elements
-  #items       = [];  // source slotted elements
-
-  /* ── Lifecycle ────────────────────────────────────────────────── */
+  #ready = false;
 
   onRender() {
-    this.#listEl     = this.$('.breadcrumb-list');
-    this.#crumbTpl   = this.$('.crumb-tpl');
-    this.#ellipsisEl = this.$('.crumb-ellipsis');
+    this.#ready = true;
+    this.shadowRoot.addEventListener('click', this.#onClick);
+    if (this.dataset.items) this.#syncItems(this.dataset.items);
+  }
 
-    // Wire ellipsis expand button
-    const ellipsisBtn = this.$('.ellipsis-btn');
-    if (ellipsisBtn) {
-      ellipsisBtn.addEventListener('click', this.#handleEllipsisClick);
+  onAttributeChanged(name, _old, newValue) {
+    if (!this.#ready) return;
+    if (name === 'data-src' && newValue) {
+      this.renderFromUrl(newValue);
+    } else if (name === 'data-items') {
+      this.#syncItems(newValue);
     }
   }
 
-  onAttributeChanged(name) {
-    if (name === 'data-max-items') {
-      this.#applyCollapse();
+  /* ── Dynamic items ───────────────────────────────────────────── */
+
+  #syncItems(raw) {
+    const list = this.$('.breadcrumb-list');
+    if (!list) return;
+
+    let items = [];
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) items = parsed;
+      } catch {
+        // Malformed JSON — leave default template content in place.
+        return;
+      }
     }
-  }
+    if (!items.length) return;
 
-  onSlotChange() {
-    this.#buildCrumbs();
-  }
+    list.replaceChildren();
+    const lastIndex = items.length - 1;
+    items.forEach((item, i) => {
+      if (!item || typeof item !== 'object') return;
+      const label = String(item.label ?? '').trim();
+      if (!label) return;
 
-  /* ── Public API ───────────────────────────────────────────────── */
+      const li = document.createElement('li');
+      li.className = 'crumb';
 
-  get maxItems() {
-    const v = parseInt(this.dataset.maxItems, 10);
-    return Number.isFinite(v) && v > 0 ? v : Infinity;
-  }
-  set maxItems(v) {
-    v && Number.isFinite(v) ? (this.dataset.maxItems = String(v)) : delete this.dataset.maxItems;
-  }
+      const isCurrent = i === lastIndex;
+      const text = document.createElement(isCurrent ? 'span' : 'a');
+      text.className = 'crumb-text';
+      text.textContent = label;
+      if (isCurrent) {
+        text.setAttribute('aria-current', 'page');
+      } else if (item.href) {
+        text.setAttribute('href', String(item.href));
+      } else {
+        text.setAttribute('href', '#');
+      }
+      li.appendChild(text);
 
-  /* ── Build breadcrumbs from slotted children ──────────────────── */
-
-  #buildCrumbs() {
-    if (!this.#listEl || !this.#crumbTpl) return;
-
-    // Read slotted children
-    const slot = this.$('.source-slot');
-    const assigned = slot ? slot.assignedElements() : [];
-    this.#items = assigned;
-
-    // Remove previous rendered crumbs
-    this.#crumbs.forEach(el => el.remove());
-    this.#crumbs = [];
-
-    // Clone prototype for each item
-    this.#items.forEach((item, i) => {
-      const fragment = this.#crumbTpl.content.cloneNode(true);
-      const li = fragment.querySelector('.crumb');
-      const textEl = li.querySelector('.crumb-text');
-
-      // Use item's text content as the crumb label
-      textEl.textContent = item.textContent.trim();
-      li.dataset.index = String(i);
-
-      // If source is an anchor, make the crumb clickable
-      if (item.tagName === 'A' && item.href) {
-        textEl.dataset.href = item.href;
-        textEl.addEventListener('click', this.#handleCrumbClick);
+      if (!isCurrent) {
+        const sep = document.createElement('span');
+        sep.className = 'separator';
+        sep.setAttribute('aria-hidden', 'true');
+        sep.textContent = '/';
+        li.appendChild(sep);
       }
 
-      // Insert before the ellipsis element
-      this.#listEl.insertBefore(li, this.#ellipsisEl);
-      this.#crumbs.push(li);
-    });
-
-    this.#applyCollapse();
-  }
-
-  #applyCollapse() {
-    const max = this.maxItems;
-    const total = this.#crumbs.length;
-
-    if (total <= max || max === Infinity) {
-      // No collapse needed
-      this.removeAttribute('data-collapsed');
-      this.#crumbs.forEach(c => c.removeAttribute('data-collapsed-hidden'));
-      return;
-    }
-
-    // Collapse: show first item, ellipsis, last (max - 1) items
-    this.setAttribute('data-collapsed', '');
-    const visibleTail = max - 1; // items shown after ellipsis
-    this.#crumbs.forEach((c, i) => {
-      const isFirst = i === 0;
-      const isTail = i >= total - visibleTail;
-      c.toggleAttribute('data-collapsed-hidden', !isFirst && !isTail);
+      list.appendChild(li);
     });
   }
 
-  /* ── Event handlers ───────────────────────────────────────────── */
+  /* ── Click delegation ────────────────────────────────────────── */
 
-  #handleCrumbClick = (e) => {
-    const textEl = e.currentTarget;
-    const li = textEl.closest('.crumb');
-    const index = parseInt(li?.dataset.index, 10);
-    const href = textEl.dataset.href || '';
-    const label = textEl.textContent;
+  #onClick = (e) => {
+    const text = e.composedPath().find(
+      n => n instanceof HTMLElement && n.classList?.contains('crumb-text')
+    );
+    if (!text) return;
+
+    const list = this.$('.breadcrumb-list');
+    const crumbs = list ? Array.from(list.querySelectorAll('.crumb-text')) : [];
+    const index = crumbs.indexOf(text);
+    const isCurrent = text.getAttribute('aria-current') === 'page';
 
     this.dispatchEvent(new CustomEvent('breadcrumb-click', {
       bubbles: true,
       composed: true,
-      detail: { index, href, label },
+      detail: {
+        index,
+        href: text.getAttribute('href') || '',
+        label: text.textContent.trim(),
+        current: isCurrent,
+      },
     }));
-  };
-
-  #handleEllipsisClick = () => {
-    // Expand all crumbs
-    this.removeAttribute('data-collapsed');
-    this.#crumbs.forEach(c => c.removeAttribute('data-collapsed-hidden'));
   };
 }
 

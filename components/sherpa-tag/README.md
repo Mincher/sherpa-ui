@@ -1,6 +1,6 @@
 # sherpa-tag
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** control · **Base class:** SherpaElement
 
 Compact label component with variant and status support.
 

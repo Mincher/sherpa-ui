@@ -1,6 +1,6 @@
 # sherpa-chart-legend
 
-> **Category:** data-viz · **Base class:** SherpaElement
+> **Category:** media · **Base class:** SherpaElement
 
 Standalone chart legend with optional interactive link items.
 

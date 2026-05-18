@@ -1,6 +1,6 @@
 # sherpa-product-bar
 
-> **Category:** navigation · **Base class:** SherpaElement
+> **Category:** shell · **Base class:** SherpaElement
 
 **DEPRECATED — use `sherpa-product-bar-v2` instead.** Top-level product branding bar with icon, name, navigation, and actions.
 

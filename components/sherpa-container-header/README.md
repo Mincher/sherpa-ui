@@ -1,6 +1,6 @@
 # sherpa-container-header
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Header row for sherpa-container. Renders title, description, and optional action buttons (drag handle, open-external, overflow menu). Built to be slotted as a light-DOM child of sherpa-container, but works inside any host element. Events from the embedded sherpa-button (menu-open, menu-close, buttonclick) bubble and compose out of the header's shadow DOM and continue through its host into any ancestor — no re-dispatching required.
 

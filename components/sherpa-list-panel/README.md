@@ -1,6 +1,6 @@
 # sherpa-list-panel
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** container · **Base class:** SherpaElement
 
 Searchable panel that wraps consumer-projected list content. Composes sherpa-input-search at the top; the search field string-matches text within slotted children (similar to sherpa-nav search). Items whose text does not contain the filter are hidden via the native `hidden` attribute on the light-DOM element. Matched text is highlighted via the CSS Highlight API (`::highlight(list-panel-match)`).
 

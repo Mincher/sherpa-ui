@@ -1,6 +1,6 @@
 # sherpa-input-date
 
-> **Category:** form · **Base class:** SherpaInputBase
+> **Category:** input · **Base class:** SherpaInputBase
 
 Date input using the native browser date picker. Inherits label, description, helper, layout, validation from SherpaInputBase.
 

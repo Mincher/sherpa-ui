@@ -1,6 +1,6 @@
 # sherpa-proposal-op
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Single change row inside <sherpa-proposal-preview>.
 

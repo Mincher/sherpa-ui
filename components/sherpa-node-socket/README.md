@@ -1,6 +1,6 @@
 # sherpa-node-socket
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 sherpa-node-socket.js — Connection-point primitive for sherpa-node. Pure presentational element. Emits a single high-level event on pointerdown so the canvas/connection-manager can drive drag-to-connect.
 

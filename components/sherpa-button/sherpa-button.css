@@ -25,6 +25,9 @@
  *   data-type, data-label, data-icon-start, data-icon-end, data-icon-weight,
  *   data-variant, data-size, data-active, data-status, data-dismissable,
  *   data-count, data-split, disabled
+ *
+ * data-variant {enum} — primary | secondary | tertiary | tertiary-on-color
+ * data-size    {enum} — 2x-small | x-small | small | base | large (default: base)
  */
 
 
@@ -72,7 +75,7 @@
   gap: var(--_button-spacing);
   height: var(--_button-size);
   padding-block: var(--_button-padding);
-  padding-inline: var(--sherpa-space-sm, 12px);
+  padding-inline: var(--sherpa-space-xs, 8px);
   flex: 1 1 auto;
 
   background-color: var(--_surface);
@@ -80,10 +83,16 @@
   border: none;
   border-radius: 0;
 
+  /* Typography — Figma body/default/base (medium size). Per-size overrides
+     below adjust font-size + line-height to match the matching body token. */
+  font: inherit;
+  font-size: var(--sherpa-font-base-size, 14px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
+
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  font: inherit;
   transition: background-color 0.15s, color 0.15s;
 }
 
@@ -188,36 +197,35 @@
 
 
 /* ==========================================================================
-   Sizes
+   Sizes — Figma `button (size)` variable mode only changes height,
+   padding, and inner spacing. Typography stays body/default/base across
+   all sizes (14/20/0.1) — set once on .trigger above.
    ========================================================================== */
 
 :host([data-size="small"]) {
   --_button-size: var(--sherpa-size-lg, 24px);
   --_button-padding: var(--sherpa-space-2xs, 4px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 
 :host([data-size="small"]) .trigger {
-  padding-inline: var(--sherpa-space-xs, 8px);
+  padding-inline: var(--sherpa-space-2xs, 4px);
 }
 
 :host([data-size="x-small"]) {
   --_button-size: var(--sherpa-size-md, 20px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 
 :host([data-size="x-small"]) .trigger {
-  padding-inline: var(--sherpa-space-2xs, 4px);
+  padding-inline: var(--sherpa-space-3xs, 2px);
 }
 
 :host([data-size="2x-small"]) {
   --_button-size: var(--sherpa-size-sm, 16px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
 }
 
 :host([data-size="2x-small"]) .trigger {
@@ -228,11 +236,10 @@
   --_button-size: var(--sherpa-size-4xl, 48px);
   --_button-padding: var(--sherpa-space-sm, 12px);
   --_button-spacing: var(--sherpa-space-xs, 8px);
-  font-size: var(--sherpa-fonts-scale-lg, 16px);
 }
 
 :host([data-size="large"]) .trigger {
-  padding-inline: var(--sherpa-space-default, 16px);
+  padding-inline: var(--sherpa-space-sm, 12px);
 }
 
 
@@ -288,7 +295,25 @@
   --_border-hover:  transparent;
   border-color:     transparent;
 }
+/* ── Tertiary on color ─────────────────────────────────────────────── */
+/* For use on dark / coloured surfaces. Transparent fill, white text + icon. */
 
+:host([data-variant="tertiary-on-color"]) {
+  --_surface:       var(--sherpa-surface-control-tertiary-on-color-default, transparent);
+  --_text:          var(--sherpa-text-default-on-color-label, #fafafa);
+  --_icon-color:    var(--sherpa-icon-context-default-on-color-label, #fafafa);
+  --_surface-hover: var(--sherpa-surface-control-tertiary-on-color-hover, rgba(255, 255, 255, 0.12));
+  --_surface-down:  var(--sherpa-surface-control-tertiary-on-color-down, rgba(255, 255, 255, 0.2));
+  --_border-hover:  transparent;
+  border-color:     transparent;
+}
+
+:host([data-variant="tertiary-on-color"][disabled]) {
+  --_surface:    var(--sherpa-surface-control-tertiary-on-color-inactive, rgba(255, 255, 255, 0.2));
+  --_text:       var(--sherpa-text-default-on-color-placeholder, #999);
+  --_icon-color: var(--sherpa-text-default-on-color-placeholder, #999);
+  border-color:  transparent;
+}
 
 /* ==========================================================================
    States
@@ -378,22 +403,15 @@
    Split (data-split): left = buttonclick, right chevron = menu.
    ========================================================================== */
 
+/* Visual styling only — sizing/spacing comes from the shared :host([data-size=*]) rules
+   above, so button-menu responds to data-size like every other button type. */
 :host([data-type="button-menu"]) {
-  --_button-size:    var(--sherpa-size-lg, 24px);
-  --_button-padding: var(--sherpa-space-2xs, 4px);
-  --_button-spacing: var(--sherpa-space-2xs, 4px);
   --_surface:        var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
   --_text:           var(--sherpa-text-default-label, #18191a);
   --_icon-color:     var(--sherpa-text-default-label, #18191a);
   --_surface-hover:  var(--sherpa-surface-control-secondary-hover, #fafafa);
   --_surface-down:   var(--sherpa-surface-control-secondary-down, #f2f2f2);
   border-color:      var(--sherpa-border-control-secondary-default, #d5d5d5);
-  font-size:         var(--sherpa-fonts-scale-sm, 12px);
-}
-
-:host([data-type="button-menu"]) .trigger {
-  font-weight: 600;
-  letter-spacing: 0.1px;
 }
 
 :host([data-type="button-menu"]) .menu-trigger {

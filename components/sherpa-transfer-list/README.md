@@ -1,6 +1,6 @@
 # sherpa-transfer-list
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** data · **Base class:** SherpaElement
 
 Two-pane shuttle (available <-> selected). Composes sherpa-list, sherpa-list-item, sherpa-input-checkbox, sherpa-input-search, sherpa-button.
 

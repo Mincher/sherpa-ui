@@ -1,6 +1,6 @@
 # sherpa-key-value-list
 
-> **Category:** data-display · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Semantic description list built on the native <dl> element. Content authored as <dt>/<dd> pairs. Layout, density, striping and borders controlled via host attributes and CSS.
 

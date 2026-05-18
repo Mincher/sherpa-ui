@@ -1,6 +1,6 @@
 # sherpa-progress-bar
 
-> **Category:** feedback · **Base class:** SherpaElement
+> **Category:** display · **Base class:** SherpaElement
 
 Horizontal progress indicator — determinate or indeterminate. Sets role="progressbar" with appropriate ARIA values.
 

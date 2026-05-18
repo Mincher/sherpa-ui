@@ -1,6 +1,6 @@
 # sherpa-chat-message
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Chat bubble for AI / messaging surfaces.
 

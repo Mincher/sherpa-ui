@@ -1,6 +1,6 @@
 # sherpa-button
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** control · **Base class:** SherpaElement
 
 Multi-template button web component. Four templates (selected via data-type → get templateId()): default — Standard button: icon(s) + label + badge + optional close icon — Icon-only square button button-menu — Button + menu trigger side by side (action menu) icon-menu — Icon-only menu trigger (overflow menus) The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: button-menu and icon-menu types are inherently menu triggers — no data-menu attribute needed. For default/icon types, add data-menu="true". button-menu has two modes: unified (default) or split (data-split). If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.
 
@@ -19,8 +19,8 @@ Set via `data-type` attribute:
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-type` | enum | default \| icon \| button-menu \| icon-menu | — | `default`, `icon`, `button-menu`, `icon-menu` |
 | `data-label` | string | Button text label | — | — |
-| `data-variant` | enum | primary \| secondary \| tertiary \| ghost | — | `primary`, `secondary`, `tertiary`, `ghost` |
-| `data-size` | enum | small \| medium \| large | — | `small`, `medium`, `large` |
+| `data-variant` | enum | primary \| secondary \| tertiary \| tertiary-on-color | — | `primary`, `secondary`, `tertiary`, `tertiary-on-color` |
+| `data-size` | enum | 2x-small \| x-small \| small \| base (default) \| large | — | `2x-small`, `x-small`, `small`, `base` |
 | `data-active` | boolean | Active/pressed toggle state | — | — |
 | `data-status` | enum | critical \| warning \| success \| info \| urgent | — | `critical`, `warning`, `success`, `info`, `urgent` |
 | `data-icon-start` | string | Leading icon (Font Awesome unicode) | — | — |
@@ -201,15 +201,16 @@ influenced by setting `data-*` attributes or status on ancestors:
 <sherpa-button data-variant="primary" data-label="Primary"></sherpa-button>
 <sherpa-button data-variant="secondary" data-label="Secondary"></sherpa-button>
 <sherpa-button data-variant="tertiary" data-label="Tertiary"></sherpa-button>
-<sherpa-button data-variant="ghost" data-label="Ghost"></sherpa-button>
+<sherpa-button data-variant="tertiary-on-color" data-label="Tertiary-on-color"></sherpa-button>
 ```
 
 ### Sizes
 
 ```html
+<sherpa-button data-size="2x-small" data-label="2x-small"></sherpa-button>
+<sherpa-button data-size="x-small" data-label="X-small"></sherpa-button>
 <sherpa-button data-size="small" data-label="Small"></sherpa-button>
-<sherpa-button data-size="medium" data-label="Medium"></sherpa-button>
-<sherpa-button data-size="large" data-label="Large"></sherpa-button>
+<sherpa-button data-size="base" data-label="Base"></sherpa-button>
 ```
 
 ### Disabled

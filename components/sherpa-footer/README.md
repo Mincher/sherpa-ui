@@ -1,6 +1,6 @@
 # sherpa-footer
 
-> **Category:** page-level · **Base class:** SherpaElement
+> **Category:** shell · **Base class:** SherpaElement
 
 Reusable footer with multiple template variants. Template selected via data-type attribute.
 

@@ -1,6 +1,6 @@
 # sherpa-input-time
 
-> **Category:** form · **Base class:** SherpaInputBase
+> **Category:** input · **Base class:** SherpaInputBase
 
 Time input using the native browser time picker. Inherits label, description, helper, layout, validation from SherpaInputBase.
 

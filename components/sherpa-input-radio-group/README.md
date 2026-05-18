@@ -1,6 +1,6 @@
 # sherpa-input-radio-group
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** input · **Base class:** SherpaElement
 
 Group of radios with shared label, description, helper and a single selected value.
 
@@ -75,6 +75,13 @@ sherpa-input-radio-group::part(wrapper) {
   /* custom styles */
 }
 ```
+
+## Internal CSS Custom Properties
+
+These `--_` prefixed properties are used internally and can be
+influenced by setting `data-*` attributes or status on ancestors:
+
+- `--_status-text`
 
 ## Usage
 

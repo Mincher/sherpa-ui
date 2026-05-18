@@ -91,12 +91,13 @@
       "attributes": [
         { "name": "data-label", "type": "string" },
         { "name": "data-description", "type": "string" },
+        { "name": "data-selectable", "type": "boolean" },
         { "name": "data-selected", "type": "boolean" },
         { "name": "data-interactive", "type": "boolean" },
         {
           "name": "data-elevation",
           "type": "enum",
-          "default": "sm",
+          "default": "none",
           "options": ["none", "sm", "md", "lg"]
         },
         { "name": "disabled", "type": "boolean" }

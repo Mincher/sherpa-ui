@@ -25,21 +25,23 @@
     {
       "name": "data-variant",
       "type": "enum",
-      "description": "primary | secondary | tertiary | ghost",
+      "description": "primary | secondary | tertiary | tertiary-on-color",
       "enumValues": [
         "primary",
         "secondary",
         "tertiary",
-        "ghost"
+        "tertiary-on-color"
       ]
     },
     {
       "name": "data-size",
       "type": "enum",
-      "description": "small | medium | large",
+      "description": "2x-small | x-small | small | base | large (default: base)",
       "enumValues": [
+        "2x-small",
+        "x-small",
         "small",
-        "medium",
+        "base",
         "large"
       ]
     },

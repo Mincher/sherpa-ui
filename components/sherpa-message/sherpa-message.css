@@ -1,22 +1,18 @@
-
 /**
  * sherpa-message.css
- * Shadow DOM styles for the SherpaMessage web component.
+ * Shadow DOM styles for the SherpaMessage web component (Banner).
  *
- * Status: container style queries resolve --status into subtle tokens
- * on :host (tinted bg, border, icon colour). Text is NOT status-coloured
- * — body/heading elements keep default text tokens.
+ * Status scope: full — bg, border, icon and link-text all status-tinted via
+ * --_status-* private variables (set globally by sherpa-status.css).
  *
  * Host attributes:
- *   data-status       — success | critical | warning | info (default) | neutral
- *   data-dismissible  — "true" shows close button
+ *   data-status       — info (default visual) | success | warning | critical | urgent
+ *   data-label        — message text
+ *   data-action-label — optional inline link text
+ *   data-action-href  — optional link href
+ *   data-action-icon  — FA classes for trailing link icon
+ *   data-dismissible  — presence shows close button
  *   data-density      — compact | comfortable
- *
- * Slots:
- *   icon     — custom status icon
- *   heading  — optional heading
- *   (default)— message body
- *   action   — action link / button
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -24,14 +20,10 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :host {
-  --_gap: var(--sherpa-space-sm, 12px);
+  --_gap: var(--sherpa-space-xs, 8px);
   --_padding-block: var(--sherpa-space-xs, 8px);
-  --_padding-inline: var(--sherpa-space-default, 16px);
-  --_text-font-size: var(--sherpa-fonts-scale-sm, 12px);
-  --_link-color: var(--sherpa-text-primary-default, #8500cc);
-
-  /* Status colour defaults (info) — inherited from global [data-status] rules.
-   * Private vars map: --_status-surface → bg, --_status-border → border, --_status-icon → icon */
+  --_padding-inline: var(--sherpa-space-sm, 12px);
+  --_text-font-size: var(--sherpa-fonts-scale-base, 14px);
 
   box-sizing: border-box;
   display: flex;
@@ -39,48 +31,48 @@
   width: 100%;
   gap: var(--_gap);
   padding: var(--_padding-block) var(--_padding-inline);
-  container-type: normal;
-  background-color: var(--_status-surface, var(--sherpa-surface-context-info-subtle-default, #f7fdff));
-  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-context-info-default, #06526f));
-  border-radius: var(--sherpa-border-rounding-full, 999px);
+  background-color: var(--_status-surface-subtle, var(--sherpa-surface-context-default-subtle-default, #ffffff));
+  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default, #c5c5c8));
+  border-radius: var(--sherpa-component-banner-border-rounding, var(--sherpa-border-rounding-base, 4px));
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   font-size: var(--_text-font-size);
   line-height: var(--sherpa-font-base-line-height, 20px);
+  color: var(--sherpa-text-default-body, #2e2e33);
   transition: opacity 150ms ease;
 }
 
+:host([hidden]) { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Density
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :host([data-density="compact"]) {
-  --_padding-block: var(--sherpa-space-xs, 8px);
-  --_padding-inline: var(--sherpa-space-sm, 12px);
-  --_gap: var(--sherpa-space-xs, 8px);
-  --_text-font-size: var(--sherpa-fonts-scale-xs, 10px);
+  --_padding-block: var(--sherpa-space-2xs, 4px);
+  --_padding-inline: var(--sherpa-space-xs, 8px);
+  --_gap: var(--sherpa-space-2xs, 4px);
+  --_text-font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 
 :host([data-density="comfortable"]) {
-  --_padding-block: var(--sherpa-space-default, 16px);
-  --_padding-inline: var(--sherpa-space-lg, 24px);
-  --_gap: var(--sherpa-space-default, 16px);
+  --_padding-block: var(--sherpa-space-sm, 12px);
+  --_padding-inline: var(--sherpa-space-default, 16px);
+  --_gap: var(--sherpa-space-sm, 12px);
   --_text-font-size: var(--sherpa-fonts-scale-base, 14px);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Icon slot
+   Leading status icon
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .message-icon {
   flex-shrink: 0;
-  width: var(--sherpa-size-sm, 16px);
-  height: var(--sherpa-size-sm, 16px);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--sherpa-size-sm, 16px);
-  line-height: 1;
+  width: var(--sherpa-size-lg, 20px);
+  height: var(--sherpa-size-lg, 20px);
+  color: var(--_status-surface-strong, var(--sherpa-surface-context-default-strong-default, #6f7174));
 }
 
 .message-icon .sherpa-icon {
@@ -88,91 +80,56 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Content
+   Content (label + inline action link)
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .message-content {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
   gap: var(--sherpa-space-2xs, 4px);
-  color: var(--sherpa-text-default-body, #2e2e33);
 }
 
-.message-heading {
-  display: none;
-  font-weight: 600;
-  color: var(--sherpa-text-default-heading, #18191a);
-}
-
-.message-heading[data-has-content] { display: block; }
-
-::slotted([slot="heading"]) {
-  font-weight: 600;
-  color: var(--sherpa-text-default-heading, #18191a);
-}
-
-.content {
-  display: block;
+.message-label {
   color: var(--sherpa-text-default-body, #2e2e33);
 }
 
 .message-action {
-  display: none;
-}
-
-.message-action[data-has-content] { display: block; }
-
-::slotted([slot="action"]) {
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+  color: var(--sherpa-text-primary-default, #8500cc);
   text-decoration: none;
-  color: var(--_link-color);
+  font-weight: 600;
   cursor: pointer;
 }
 
-::slotted([slot="action"]:hover) {
+.message-action[hidden] { display: none; }
+
+.message-action:hover {
   text-decoration: underline;
 }
 
+.message-action-icon {
+  --icon-size: var(--sherpa-size-xs, 12px);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
-   Close button
+   Close button (sherpa-button tertiary icon-only)
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .message-close {
   display: none;
   flex-shrink: 0;
-  width: var(--sherpa-size-lg, 24px);
-  height: var(--sherpa-size-lg, 24px);
-  padding: var(--sherpa-space-3xs, 4px);
-  border: none;
-  border-radius: var(--sherpa-border-rounding-sm, 2px);
-  background: transparent;
-  color: var(--sherpa-text-default-secondary, currentColor);
-  font-size: var(--sherpa-fonts-scale-xs, 12px);
-  cursor: pointer;
-  transition: color 150ms ease, background-color 150ms ease;
-  align-items: center;
-  justify-content: center;
+  margin-left: auto;
+  /* Absorb the button's height beyond the message line so it does not
+     expand the banner. Equivalent to negative vertical margin equal to
+     half the overflow (button-height − line-height) / 2. */
+  margin-block: calc((var(--sherpa-font-base-line-height, 20px) - var(--sherpa-size-xl, 24px)) / 2);
 }
 
-:host([data-dismissible="true"]) .message-close {
+:host([data-dismissible]:not([data-dismissible="false"])) .message-close {
   display: inline-flex;
 }
-
-.message-close:hover {
-  color: var(--sherpa-text-default-body, inherit);
-  background-color: var(--sherpa-surface-control-secondary-hover, rgba(0, 0, 0, 0.06));
-}
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   STATUS — subtle treatment (tinted bg, border, icon; text stays default)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.message-icon {
-  color: var(--_status-icon, var(--sherpa-icon-context-info-on-color-subtle, #06526f));
-}
-
-/* Native [hidden] support */
-:host([hidden]) { display: none; }

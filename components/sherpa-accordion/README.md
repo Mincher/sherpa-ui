@@ -1,6 +1,6 @@
 # sherpa-accordion
 
-> **Category:** layout · **Base class:** SherpaElement
+> **Category:** container · **Base class:** SherpaElement
 
 Collapsible content panel using native <details>/<summary>. The browser handles expand/collapse natively. JS only syncs the data-label and data-icon attributes into the shadow DOM.
 

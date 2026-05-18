@@ -11,6 +11,7 @@
  * @attr {string}  data-label       — Card title text
  * @attr {string}  data-description  — Card subtitle text
  * @attr {boolean} data-selected     — Selected/active state
+ * @attr {boolean} data-selectable   — Renders a built-in radio indicator footer; click toggles `data-selected`
  * @attr {boolean} data-interactive  — Makes card clickable
  * @attr {enum}    data-elevation    — none | sm | md | lg
  * @attr {boolean} disabled          — Native disabled state
@@ -41,7 +42,7 @@ export class SherpaCard extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-card.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-selected', 'data-interactive', 'disabled', 'data-elevation', 'data-label', 'data-description'];
+    return [...super.observedAttributes, 'data-selected', 'data-selectable', 'data-interactive', 'disabled', 'data-elevation', 'data-label', 'data-description'];
   }
 
   /** @type {HTMLElement|null} */
@@ -59,9 +60,14 @@ export class SherpaCard extends SherpaElement {
   }
 
   onConnect() {
-    if (this.interactive && !this.hasAttribute('tabindex')) {
+    // Selectable cards are implicitly interactive.
+    if (this.selectable && !this.interactive) {
+      this.dataset.interactive = 'true';
+    }
+    if ((this.interactive || this.selectable) && !this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '0');
     }
+    this.#syncAria();
     this.addEventListener('keydown', this.#handleKeydown);
     this.addEventListener('click', this.#handleClick);
   }
@@ -72,8 +78,11 @@ export class SherpaCard extends SherpaElement {
   }
 
   onAttributeChanged(name) {
-    if (name === 'data-interactive') {
+    if (name === 'data-interactive' || name === 'data-selectable') {
       this.#updateInteractive();
+      this.#syncAria();
+    } else if (name === 'data-selected') {
+      this.#syncAria();
     } else if (name === 'data-label') {
       this.#syncHeading();
     } else if (name === 'data-description') {
@@ -89,10 +98,13 @@ export class SherpaCard extends SherpaElement {
   get interactive() { return this.dataset.interactive === 'true'; }
   set interactive(v){ this.dataset.interactive = v ? 'true' : 'false'; }
 
+  get selectable() { return this.dataset.selectable === 'true'; }
+  set selectable(v){ v ? this.dataset.selectable = 'true' : delete this.dataset.selectable; }
+
   get disabled()    { return this.hasAttribute('disabled'); }
   set disabled(v)   { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
 
-  get elevation()   { return this.dataset.elevation || 'sm'; }
+  get elevation()   { return this.dataset.elevation || 'none'; }
   set elevation(v)  { v ? this.dataset.elevation = v : delete this.dataset.elevation; }
 
   get heading()     { return this.dataset.label || ''; }
@@ -104,10 +116,21 @@ export class SherpaCard extends SherpaElement {
   /* ── Private ──────────────────────────────────────────────────── */
 
   #updateInteractive() {
-    if (this.interactive) {
+    const focusable = this.interactive || this.selectable;
+    if (focusable) {
       if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
     } else {
       this.removeAttribute('tabindex');
+    }
+  }
+
+  #syncAria() {
+    if (this.selectable) {
+      this.setAttribute('role', 'radio');
+      this.setAttribute('aria-checked', this.selected ? 'true' : 'false');
+    } else if (this.getAttribute('role') === 'radio') {
+      this.removeAttribute('role');
+      this.removeAttribute('aria-checked');
     }
   }
 
@@ -120,16 +143,23 @@ export class SherpaCard extends SherpaElement {
   }
 
   #handleClick = () => {
-    if (this.interactive && !this.disabled) {
+    if (this.disabled) return;
+    if (this.selectable) {
+      const next = !this.selected;
+      this.selected = next;
+      this.dispatchEvent(new CustomEvent('card-select', { bubbles: true, composed: true, detail: { selected: next } }));
+    }
+    if (this.interactive) {
       this.dispatchEvent(new CustomEvent('card-click', { bubbles: true, composed: true }));
     }
   };
 
   #handleKeydown = (e) => {
-    if (this.disabled || !this.interactive) return;
+    if (this.disabled) return;
+    if (!(this.interactive || this.selectable)) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      this.dispatchEvent(new CustomEvent('card-click', { bubbles: true, composed: true }));
+      this.#handleClick();
     }
   };
 }

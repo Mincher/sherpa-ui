@@ -2,33 +2,18 @@
 
 > **Category:** feedback · **Base class:** SherpaElement
 
-Alert / notification message with status variants.
+Banner / inline message with status variants.
 
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-status` | enum | success \| critical \| warning \| info \| urgent | — | `success`, `critical`, `warning`, `info`, `urgent` |
+| `data-label` | string | Message text | — | — |
+| `data-action-label` | string | Inline action link text | — | — |
+| `data-action-href` | string | Inline action link href | — | — |
+| `data-action-icon` | string | FA classes for trailing link icon | — | — |
 | `data-dismissible` | boolean | Show close button | — | — |
-
-## Slots
-
-| Slot | Description |
-| ---- | ----------- |
-| `heading` | Optional heading text |
-| `(default)` | Message content |
-| `action` | Action link or button |
-
-Slot usage:
-
-```html
-<sherpa-message>
-  <!-- Default slot -->
-  <p>Content goes here</p>
-  <div slot="heading"><!-- Optional heading text --></div>
-  <div slot="action"><!-- Action link or button --></div>
-</sherpa-message>
-```
 
 ## Events
 
@@ -42,6 +27,25 @@ Slot usage:
 ```js
 element.addEventListener("close", (e) => {
   // handle event
+});
+```
+
+### `action`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:**
+
+```js
+event.detail = {
+  href: string,
+};
+```
+
+```js
+element.addEventListener("action", (e) => {
+  console.log(e.detail.href);
 });
 ```
 
@@ -64,8 +68,7 @@ Style internal elements from outside the shadow DOM:
 
 - `icon`
 - `content`
-- `heading`
-- `body`
+- `label`
 - `action`
 - `close`
 
@@ -81,12 +84,12 @@ These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
 - `--_gap`
-- `--_link-color`
 - `--_padding-block`
 - `--_padding-inline`
+- `--_status-`
 - `--_status-border`
-- `--_status-icon`
-- `--_status-surface`
+- `--_status-surface-strong`
+- `--_status-surface-subtle`
 - `--_text-font-size`
 
 ## Usage
@@ -94,12 +97,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-message data-status="success">
-  <!-- Default slot content -->
-  <p>Your content here</p>
-  <span slot="heading"><!-- Optional heading text --></span>
-  <span slot="action"><!-- Action link or button --></span>
-</sherpa-message>
+<sherpa-message data-status="success" data-label="Example Label" data-action-label="value"></sherpa-message>
 ```
 
 ## Import

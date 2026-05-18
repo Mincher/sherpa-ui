@@ -1,29 +1,15 @@
 # sherpa-breadcrumbs
 
-> **Category:** navigation · **Base class:** SherpaElement
+> **Category:** control · **Base class:** SherpaElement
 
-Navigation breadcrumb trail with optional collapse. Reads slotted children (anchors/spans) and renders a styled list with chevron separators. Middle items collapse behind "…" when count exceeds data-max-items.
+Navigation breadcrumb trail. The default template renders a <nav><ol> of crumbs (anchors + a current-page span).
 
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data-max-items` | number | Maximum visible items before collapsing (default: unlimited) | — | — |
-
-## Slots
-
-| Slot | Description |
-| ---- | ----------- |
-| `(default)` | Breadcrumb items: <a href="…"> or <span> |
-
-Slot usage:
-
-```html
-<sherpa-breadcrumbs>
-  <!-- Default slot -->
-  <p>Content goes here</p>
-</sherpa-breadcrumbs>
-```
+| `data-src` | string | URL of an alternative breadcrumbs template HTML | — | — |
+| `data-items` | json | JSON array of {label: string, href?: string} | — | — |
 
 ## Events
 
@@ -39,6 +25,7 @@ event.detail = {
   index: number,
   href: string,
   label: string,
+  current: boolean,
 };
 ```
 
@@ -48,21 +35,12 @@ element.addEventListener("breadcrumb-click", (e) => {
 });
 ```
 
-## Properties
-
-| Property | Type | Description | Access |
-| -------- | ---- | ----------- | ------ |
-| `maxItems` | `number` | Getter/setter for data-max-items | read/write |
-
 ## Usage
 
 ### Basic
 
 ```html
-<sherpa-breadcrumbs>
-  <!-- Default slot content -->
-  <p>Your content here</p>
-</sherpa-breadcrumbs>
+<sherpa-breadcrumbs data-src="value"></sherpa-breadcrumbs>
 ```
 
 ## Import

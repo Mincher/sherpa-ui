@@ -1,6 +1,6 @@
 # sherpa-section-header
 
-> **Category:** page-level · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Section heading with slots for badge, description, and actions.
 

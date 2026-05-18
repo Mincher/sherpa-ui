@@ -1,6 +1,6 @@
 # sherpa-layout-grid
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** shell · **Base class:** SherpaElement
 
 Responsive dashboard grid. Slotted <sherpa-container data-variant="resizable"> children take grid spans from their data-col-span / data-row-span attributes.
 

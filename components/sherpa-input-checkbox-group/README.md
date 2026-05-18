@@ -1,6 +1,6 @@
 # sherpa-input-checkbox-group
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** input · **Base class:** SherpaElement
 
 Group of checkboxes with shared label, description, helper, and an optional pre-stamped `weekdays` template.
 
@@ -84,6 +84,14 @@ sherpa-input-checkbox-group::part(wrapper) {
   /* custom styles */
 }
 ```
+
+## Internal CSS Custom Properties
+
+These `--_` prefixed properties are used internally and can be
+influenced by setting `data-*` attributes or status on ancestors:
+
+- `--_status-`
+- `--_status-text`
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # sherpa-stepper
 
-> **Category:** form · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Horizontal/vertical step progress indicator. Steps populated from data; CSS handles all visual states.
 

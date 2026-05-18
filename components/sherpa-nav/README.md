@@ -1,6 +1,6 @@
 # sherpa-nav
 
-> **Category:** navigation · **Base class:** SherpaElement
+> **Category:** shell · **Base class:** SherpaElement
 
 Collapsible navigation sidebar with search and edit modes. Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html, override via data-src). CSS Highlight API for search (::highlight(nav-search-match)).
 

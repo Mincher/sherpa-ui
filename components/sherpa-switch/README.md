@@ -1,6 +1,6 @@
 # sherpa-switch
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** control · **Base class:** SherpaElement
 
 Toggle switch component.
 

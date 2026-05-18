@@ -36,6 +36,9 @@
 /* Theme — default always loaded; consumers append an extended theme via JS */
 @import "sherpa-theme-apex-2-core.css";
 
+/* Hand-maintained theme overrides (must come AFTER generated theme) */
+@import "sherpa-theme-context-overrides.css";
+
 /* Density — both files always loaded; activated by [data-density] attribute */
 @import "sherpa-density-compact.css"     layer(density);
 @import "sherpa-density-comfortable.css" layer(density);

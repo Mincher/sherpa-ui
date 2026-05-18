@@ -1,6 +1,6 @@
 # sherpa-container
 
-> **Category:** core · **Base class:** SherpaElement
+> **Category:** container · **Base class:** SherpaElement
 
 Pure wrapper container for dashboard composition. Owns sizing (variant, col/row span) and exposes a named container query scope (`sherpa-container`) so descendant viz components (charts, grids) can adapt their internal layout via container queries.
 

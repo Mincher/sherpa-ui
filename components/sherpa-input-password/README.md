@@ -1,6 +1,6 @@
 # sherpa-input-password
 
-> **Category:** form · **Base class:** SherpaInputBase
+> **Category:** input · **Base class:** SherpaInputBase
 
 Password input with show/hide toggle button. Inherits label, description, helper, layout, validation from SherpaInputBase.
 

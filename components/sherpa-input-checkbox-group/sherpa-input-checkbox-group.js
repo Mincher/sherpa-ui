@@ -32,6 +32,7 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
+import '../sherpa-input-checkbox/sherpa-input-checkbox.js';
 
 export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
 

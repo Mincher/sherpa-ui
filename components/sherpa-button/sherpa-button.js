@@ -23,8 +23,8 @@
  *
  * @attr {enum}    data-type            — default | icon | button-menu | icon-menu
  * @attr {string}  data-label           — Button text label
- * @attr {enum}    data-variant         — primary | secondary | tertiary | ghost
- * @attr {enum}    data-size            — small | medium | large
+ * @attr {enum}    data-variant         — primary | secondary | tertiary | tertiary-on-color
+ * @attr {enum}    data-size            — 2x-small | x-small | small | base | large (default: base)
  * @attr {boolean} data-active          — Active/pressed toggle state
  * @attr {enum}    data-status          — critical | warning | success | info | urgent
  * @attr {string}  data-icon-start      — Leading icon (Font Awesome unicode)
@@ -137,6 +137,9 @@ export class SherpaButton extends SherpaElement {
     const type = this.dataset.type;
     if (!type && !this.dataset.variant) {
       this.dataset.variant = "primary";
+    }
+    if (!this.dataset.size) {
+      this.dataset.size = "base";
     }
 
     if (this.hasAttribute("disabled")) {

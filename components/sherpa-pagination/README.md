@@ -1,6 +1,6 @@
 # sherpa-pagination
 
-> **Category:** data-display · **Base class:** SherpaElement
+> **Category:** control · **Base class:** SherpaElement
 
 Standalone pagination bar with page navigation and page-size selector.
 

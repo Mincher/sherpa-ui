@@ -28,13 +28,16 @@
   min-width: 0;
 }
 
-/* ── Status tint ── see sherpa-input-checkbox.css for rationale */
-:host([data-status]) .sherpa-check:not(:checked) {
-  border-color: var(--_status-border, var(--sherpa-border-control-secondary-default, #9a9aad));
+/* ── Status tint ── radio keeps white face; status colours border + dot */
+:host([data-status]) .sherpa-check {
+  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
 }
 :host([data-status]) .sherpa-check:checked {
-  background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #0060df));
-  border-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #0060df));
+  background: var(--sherpa-surface-control-default, #ffffff);
+  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
+}
+:host([data-status]) .sherpa-check[type="radio"]:checked::after {
+  background-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
 }
 :host([data-status]) .check-description {
   color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));

@@ -55,6 +55,30 @@
 
 .sherpa-check[type="radio"] {
   border-radius: 50%;
+  /* Figma radio: 1px brand border at rest, not 2px secondary grey */
+  border-width: var(--sherpa-border-width-base, 1px);
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+.sherpa-check[type="radio"]:hover:not(:disabled) {
+  border-color: var(--sherpa-border-control-primary-hover, #173382);
+  background: var(--sherpa-surface-control-hover, #fafafa);
+}
+
+/* Selected radio keeps a white face with brand dot, not a filled circle */
+.sherpa-check[type="radio"]:checked {
+  background: var(--sherpa-surface-control-default, #ffffff);
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+.sherpa-check[type="radio"]:checked:hover:not(:disabled) {
+  border-color: var(--sherpa-border-control-primary-hover, #173382);
+}
+
+.sherpa-check[type="radio"]:disabled,
+.sherpa-check[type="radio"]:disabled:checked {
+  border-color: var(--sherpa-border-control-inactive, #8d8d99);
+  background: var(--sherpa-surface-control-default, #ffffff);
 }
 
 /* ── Hover ──────────────────────────────────────────────────────── */
@@ -64,8 +88,8 @@
   background: var(--sherpa-surface-control-hover, #f5f5f8);
 }
 
-.sherpa-check:checked:hover:not(:disabled),
-.sherpa-check:indeterminate:hover:not(:disabled) {
+.sherpa-check[type="checkbox"]:checked:hover:not(:disabled),
+.sherpa-check[type="checkbox"]:indeterminate:hover:not(:disabled) {
   background: var(--sherpa-border-control-primary-default, #004fc4);
   border-color: var(--sherpa-border-control-primary-default, #004fc4);
 }
@@ -83,9 +107,9 @@
   outline-offset: 2px;
 }
 
-/* ── Checked state ──────────────────────────────────────────────── */
+/* ── Checked state (checkbox only — radios keep white face) ─────── */
 
-.sherpa-check:checked {
+.sherpa-check[type="checkbox"]:checked {
   background: var(--sherpa-surface-control-primary-default, #0060df);
   border-color: var(--sherpa-surface-control-primary-default, #0060df);
 }
@@ -107,24 +131,28 @@
   -webkit-mask-position: center;
 }
 
-/* Radio dot */
+/* Radio dot — 10px brand-blue dot (Figma: 14px inner with 2px white inset) */
 .sherpa-check[type="radio"]:checked::after {
   content: "";
   display: block;
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: var(--sherpa-surface-control-primary-default, #3c5edd);
+}
+
+.sherpa-check[type="radio"]:disabled:checked::after {
+  background-color: var(--sherpa-surface-control-inactive, #f2f2f2);
 }
 
 /* ── Indeterminate state (checkbox only) ────────────────────────── */
 
-.sherpa-check:indeterminate {
+.sherpa-check[type="checkbox"]:indeterminate {
   background: var(--sherpa-surface-control-primary-default, #0060df);
   border-color: var(--sherpa-surface-control-primary-default, #0060df);
 }
 
-.sherpa-check:indeterminate::after {
+.sherpa-check[type="checkbox"]:indeterminate::after {
   content: "";
   display: block;
   width: 8px;
@@ -140,13 +168,13 @@
   pointer-events: none;
 }
 
-.sherpa-check:disabled:checked,
-.sherpa-check:disabled:indeterminate {
+.sherpa-check[type="checkbox"]:disabled:checked,
+.sherpa-check[type="checkbox"]:disabled:indeterminate {
   background: var(--sherpa-surface-control-inactive, #dddde6);
   border-color: var(--sherpa-surface-control-inactive, #dddde6);
 }
 
-.sherpa-check:disabled:not(:checked):not(:indeterminate) {
+.sherpa-check[type="checkbox"]:disabled:not(:checked):not(:indeterminate) {
   border-color: var(--sherpa-border-control-inactive, #7e7e8f);
   background: var(--sherpa-surface-control-inactive, #dddde6);
 }

@@ -1,6 +1,6 @@
 # sherpa-tabs
 
-> **Category:** layout · **Base class:** SherpaElement
+> **Category:** content · **Base class:** SherpaElement
 
 Tabbed content switcher with accessible keyboard navigation. Each direct light-DOM child with a data-tab-label attribute becomes a tab. The component creates shadow-DOM tab buttons from a cloning prototype and manages panel visibility by setting data-tab-active on the matching child.
 
