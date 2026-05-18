@@ -1,17 +1,33 @@
 <!--
   sherpa-layout-grid — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-layout-grid.examples.js
 -->
-<template data-label="3-column grid" data-description="sherpa-layout-grid is a 12/6/3 dashboard grid for resizable containers." data-layout="block">
-  <sherpa-layout-grid data-columns="3" data-gap="md">
-    <sherpa-card data-label="Card A" data-elevation="sm"><p>Body A</p></sherpa-card>
-    <sherpa-card data-label="Card B" data-elevation="sm"><p>Body B</p></sherpa-card>
-    <sherpa-card data-label="Card C" data-elevation="sm"><p>Body C</p></sherpa-card>
+<template data-label="Basic grid" data-description="A responsive grid that arranges sherpa-container children." data-layout="block">
+  <sherpa-layout-grid data-heading="Dashboard" data-row-height="120">
+    <sherpa-container data-col-span="6">
+      <sherpa-container-header data-title="Devices online"></sherpa-container-header>
+      <sherpa-metric data-label="Devices online" data-value="1,284" data-delta="+12"></sherpa-metric>
+    </sherpa-container>
+    <sherpa-container data-col-span="6">
+      <sherpa-container-header data-title="Alerts"></sherpa-container-header>
+      <sherpa-metric data-label="Active alerts" data-value="7" data-status="critical"></sherpa-metric>
+    </sherpa-container>
+    <sherpa-container data-col-span="12">
+      <sherpa-container-header data-title="Traffic"></sherpa-container-header>
+      <p style="padding: 16px;">Chart goes here.</p>
+    </sherpa-container>
+  </sherpa-layout-grid>
+</template>
+
+<template data-label="Editable" data-description="data-editable enables drag-and-resize from each container's header." data-layout="block">
+  <sherpa-layout-grid data-heading="Editable dashboard" data-editable data-row-height="120">
+    <sherpa-container data-col-span="4" data-editable>
+      <sherpa-container-header data-title="Tile A" data-drag-handle></sherpa-container-header>
+    </sherpa-container>
+    <sherpa-container data-col-span="4" data-editable>
+      <sherpa-container-header data-title="Tile B" data-drag-handle></sherpa-container-header>
+    </sherpa-container>
+    <sherpa-container data-col-span="4" data-editable>
+      <sherpa-container-header data-title="Tile C" data-drag-handle></sherpa-container-header>
+    </sherpa-container>
   </sherpa-layout-grid>
 </template>

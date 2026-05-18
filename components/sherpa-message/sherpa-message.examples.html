@@ -1,16 +1,18 @@
 <!--
   sherpa-message — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-message.examples.js
 -->
 <template data-label="Status variants" data-layout="col">
-  <sherpa-message data-status="info"     data-label="Scheduled maintenance on Sunday 22:00 UTC"></sherpa-message>
-  <sherpa-message data-status="success"  data-label="Report generated successfully"></sherpa-message>
-  <sherpa-message data-status="warning"  data-label="Rate limit approaching — 90% used"></sherpa-message>
-  <sherpa-message data-status="critical" data-label="Authentication failed — check your API key"></sherpa-message>
+  <sherpa-message data-status="info"     data-label="A new region is available."></sherpa-message>
+  <sherpa-message data-status="success"  data-label="Settings saved."></sherpa-message>
+  <sherpa-message data-status="warning"  data-label="You are approaching your quota."></sherpa-message>
+  <sherpa-message data-status="critical" data-label="Two devices are offline."></sherpa-message>
+  <sherpa-message data-status="urgent"   data-label="Action required: security update."></sherpa-message>
+</template>
+
+<template data-label="With action link" data-layout="col">
+  <sherpa-message data-status="info" data-label="Beta features are now available." data-action-label="View" data-action-href="#/" data-action-icon="fa-solid fa-arrow-right"></sherpa-message>
+</template>
+
+<template data-label="Dismissible" data-layout="col">
+  <sherpa-message data-status="success" data-label="Backup completed." data-dismissible></sherpa-message>
 </template>

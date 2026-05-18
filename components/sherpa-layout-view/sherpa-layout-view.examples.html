@@ -1,16 +1,20 @@
 <!--
   sherpa-layout-view — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-layout-view.examples.js
 -->
-<template data-label="View shell" data-layout="block">
-  <sherpa-layout-view data-heading="Dashboard" style="height: 360px;">
-    <sherpa-button slot="header-actions" data-variant="primary" data-size="small" data-label="Add device" data-icon-start="fa-solid fa-plus"></sherpa-button>
-    <p>Layout view provides a scrollable content column with header actions slotted in.</p>
+<template data-label="Default" data-description="A wrapper that gives a view its heading, padding and gap rhythm." data-layout="block">
+  <sherpa-layout-view data-heading="Settings" data-pad data-gap="base">
+    <sherpa-content-section data-heading="Profile">
+      <p>Profile section content.</p>
+    </sherpa-content-section>
+    <sherpa-content-section data-heading="Security">
+      <p>Security section content.</p>
+    </sherpa-content-section>
+  </sherpa-layout-view>
+</template>
+
+<template data-label="Gap sizes" data-layout="block">
+  <sherpa-layout-view data-pad data-gap="lg">
+    <sherpa-content-section data-heading="Section 1"><p>Larger gap between sections.</p></sherpa-content-section>
+    <sherpa-content-section data-heading="Section 2"><p>Useful for spacious dashboards.</p></sherpa-content-section>
   </sherpa-layout-view>
 </template>

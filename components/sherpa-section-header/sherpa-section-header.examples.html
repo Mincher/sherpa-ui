@@ -1,28 +1,16 @@
 <!--
   sherpa-section-header — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-section-header.examples.js
 -->
-<template data-label="Heading levels" data-layout="col">
-  <sherpa-section-header data-label="Primary heading"   data-heading-level="primary"></sherpa-section-header>
-  <sherpa-section-header data-label="Secondary heading" data-heading-level="secondary"></sherpa-section-header>
-  <sherpa-section-header data-label="Tertiary heading"  data-heading-level="tertiary"></sherpa-section-header>
+<template data-label="Primary" data-layout="block">
+  <sherpa-section-header data-label="Account" data-heading-level="primary"></sherpa-section-header>
 </template>
 
-<template data-label="With divider and description" data-layout="col">
-  <sherpa-section-header data-label="User management" data-divider>
-    <span slot="description">Manage roles, permissions, and team members.</span>
-  </sherpa-section-header>
+<template data-label="Secondary with divider" data-layout="block">
+  <sherpa-section-header data-label="Security" data-heading-level="secondary" data-divider></sherpa-section-header>
 </template>
 
-<template data-label="With actions" data-layout="col">
-  <sherpa-section-header data-label="Connected devices" data-divider>
-    <span slot="description">15 devices online</span>
-    <sherpa-button slot="actions" data-variant="primary" data-size="small" data-label="Add device" data-icon-start="fa-solid fa-plus"></sherpa-button>
+<template data-label="Tertiary with actions" data-layout="block">
+  <sherpa-section-header data-label="API tokens" data-heading-level="tertiary">
+    <sherpa-button slot="actions" data-variant="primary" data-size="small" data-label="New token" data-icon-start="fa-solid fa-plus"></sherpa-button>
   </sherpa-section-header>
 </template>

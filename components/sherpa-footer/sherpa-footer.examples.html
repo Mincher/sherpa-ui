@@ -1,16 +1,18 @@
 <!--
   sherpa-footer — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-footer.examples.js
 -->
-<template data-label="Dialog footer" data-layout="block">
-  <sherpa-footer>
-    <sherpa-button data-variant="tertiary" data-label="Cancel"></sherpa-button>
-    <sherpa-button data-variant="primary"  data-label="Save"></sherpa-button>
+<template data-label="Action bar — default" data-layout="block">
+  <sherpa-footer data-type="action-bar" data-show-cancel data-show-apply data-apply-label="Save changes"></sherpa-footer>
+</template>
+
+<template data-label="Action bar — destructive" data-layout="block">
+  <sherpa-footer data-type="action-bar" data-show-cancel data-show-apply data-apply-label="Delete" data-cancel-label="Keep"></sherpa-footer>
+</template>
+
+<template data-label="Slot template" data-layout="block">
+  <sherpa-footer data-type="slot">
+    <sherpa-button slot="start" data-variant="tertiary" data-label="Learn more" data-icon-end="fa-solid fa-arrow-up-right"></sherpa-button>
+    <sherpa-button slot="end"   data-variant="secondary" data-label="Cancel"></sherpa-button>
+    <sherpa-button slot="end"   data-variant="primary"   data-label="Confirm"></sherpa-button>
   </sherpa-footer>
 </template>

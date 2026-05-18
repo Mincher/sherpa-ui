@@ -1,15 +1,24 @@
 <!--
   sherpa-nav-item — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-nav-item.examples.js
 -->
-<template data-label="States" data-layout="col">
-  <sherpa-nav-item data-label="Dashboard" data-icon="fa-solid fa-gauge"></sherpa-nav-item>
-  <sherpa-nav-item data-label="Devices"   data-icon="fa-solid fa-server"  data-active></sherpa-nav-item>
-  <sherpa-nav-item data-label="Reports"   data-icon="fa-solid fa-chart-line" disabled></sherpa-nav-item>
+<template data-label="Default" data-layout="col">
+  <sherpa-nav-item data-icon="fa-solid fa-house"   data-label="Home"></sherpa-nav-item>
+  <sherpa-nav-item data-icon="fa-solid fa-gauge"   data-label="Dashboard"></sherpa-nav-item>
+  <sherpa-nav-item data-icon="fa-solid fa-gear"    data-label="Settings"></sherpa-nav-item>
+</template>
+
+<template data-label="Active state" data-layout="col">
+  <sherpa-nav-item data-icon="fa-solid fa-gauge"  data-label="Dashboard" data-state="active"></sherpa-nav-item>
+  <sherpa-nav-item data-icon="fa-solid fa-bell"   data-label="Alerts"></sherpa-nav-item>
+</template>
+
+<template data-label="With badge" data-layout="col">
+  <sherpa-nav-item data-icon="fa-solid fa-bell"     data-label="Alerts"  data-badge="7" data-badge-status="critical"></sherpa-nav-item>
+  <sherpa-nav-item data-icon="fa-solid fa-envelope" data-label="Inbox"   data-badge="12" data-badge-status="info"></sherpa-nav-item>
+</template>
+
+<template data-label="Variants" data-layout="col">
+  <sherpa-nav-item data-icon="fa-solid fa-folder"     data-label="Section item"     data-variant="section"></sherpa-nav-item>
+  <sherpa-nav-item data-icon="fa-solid fa-file"       data-label="Subsection item"  data-variant="subsection"></sherpa-nav-item>
+  <sherpa-nav-item                                    data-label="Child item"       data-variant="child"></sherpa-nav-item>
 </template>

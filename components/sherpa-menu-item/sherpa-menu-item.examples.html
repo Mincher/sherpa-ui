@@ -1,16 +1,23 @@
 <!--
   sherpa-menu-item — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-menu-item.examples.js
 -->
-<template data-label="Variants" data-layout="col">
-  <sherpa-menu-item data-label="Edit"        data-icon="fa-solid fa-pen"></sherpa-menu-item>
-  <sherpa-menu-item data-label="Duplicate"   data-icon="fa-solid fa-copy"></sherpa-menu-item>
-  <sherpa-menu-item data-label="Delete"      data-icon="fa-solid fa-trash" data-status="critical"></sherpa-menu-item>
-  <sherpa-menu-item data-label="Disabled"    data-icon="fa-solid fa-ban" disabled></sherpa-menu-item>
+<template data-label="Default" data-layout="col">
+  <sherpa-menu-item data-icon="fa-solid fa-pen-to-square" data-action="rename">Rename</sherpa-menu-item>
+  <sherpa-menu-item data-icon="fa-solid fa-copy"          data-action="duplicate" data-description="Make a copy in the same workspace">Duplicate</sherpa-menu-item>
+  <sherpa-menu-item data-icon="fa-solid fa-trash"         data-action="delete" data-variant="critical">Delete</sherpa-menu-item>
+</template>
+
+<template data-label="Types" data-layout="col">
+  <sherpa-menu-item data-type="checkbox" checked>Checkbox</sherpa-menu-item>
+  <sherpa-menu-item data-type="radio" name="ex" value="a" checked>Radio</sherpa-menu-item>
+  <sherpa-menu-item data-type="toggle" checked>Toggle</sherpa-menu-item>
+  <sherpa-menu-item data-type="heading">Heading</sherpa-menu-item>
+</template>
+
+<template data-label="With submenu indicator" data-layout="col">
+  <sherpa-menu-item data-icon="fa-solid fa-share" data-has-submenu>Share</sherpa-menu-item>
+</template>
+
+<template data-label="Disabled" data-layout="col">
+  <sherpa-menu-item data-icon="fa-solid fa-trash" disabled>Delete (no permission)</sherpa-menu-item>
 </template>

@@ -1,13 +1,21 @@
 <!--
   sherpa-view-header — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-view-header.examples.js
 -->
-<template data-label="Basic" data-layout="block">
-  <sherpa-view-header data-label="Device Management"></sherpa-view-header>
+<template data-label="Default" data-layout="block">
+  <sherpa-view-header data-label="Devices"></sherpa-view-header>
+</template>
+
+<template data-label="With breadcrumbs and actions" data-layout="block">
+  <sherpa-view-header
+    data-label="acme-device-01"
+    data-breadcrumbs='[{"label":"Home","href":"#/"},{"label":"Devices","href":"#/devices"},{"label":"acme-device-01"}]'
+    data-back-button
+    data-favorite>
+    <sherpa-button slot="actions" data-variant="secondary" data-label="Export"></sherpa-button>
+    <sherpa-button slot="actions" data-variant="primary"   data-label="Edit"></sherpa-button>
+  </sherpa-view-header>
+</template>
+
+<template data-label="Edit mode" data-layout="block">
+  <sherpa-view-header data-label="Dashboard" data-edit-mode></sherpa-view-header>
 </template>

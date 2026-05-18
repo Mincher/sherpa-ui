@@ -1,15 +1,37 @@
 <!--
   sherpa-container — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-container.examples.js
 -->
-<template data-label="Basic container" data-layout="block">
-  <sherpa-container data-heading="Devices">
-    <p>Container body content. Containers compose a header and a content region.</p>
+<template data-label="Default (fit)" data-description="Wraps any block of content with the standard surface, border and padding." data-layout="block">
+  <sherpa-container>
+    <sherpa-container-header data-title="Devices" data-description="Overview of recent activity"></sherpa-container-header>
+    <p style="padding: 16px;">Container body content.</p>
+  </sherpa-container>
+</template>
+
+<template data-label="State — loading" data-layout="block">
+  <sherpa-container data-state="loading">
+    <sherpa-container-header data-title="Loading…"></sherpa-container-header>
+    <div style="height: 120px;"></div>
+  </sherpa-container>
+</template>
+
+<template data-label="State — empty" data-layout="block">
+  <sherpa-container data-state="empty">
+    <sherpa-container-header data-title="Devices"></sherpa-container-header>
+    <sherpa-empty-state data-label="No devices yet" data-description="Add your first device to get started."></sherpa-empty-state>
+  </sherpa-container>
+</template>
+
+<template data-label="State — error" data-layout="block">
+  <sherpa-container data-state="error">
+    <sherpa-container-header data-title="Devices"></sherpa-container-header>
+    <sherpa-empty-state data-label="Something went wrong" data-description="We could not load the device list." data-illustration="error"></sherpa-empty-state>
+  </sherpa-container>
+</template>
+
+<template data-label="Editable + menu" data-layout="block">
+  <sherpa-container data-editable>
+    <sherpa-container-header data-title="Editable card" data-description="Drag, menu, and resize affordances appear" data-menu-button data-drag-handle></sherpa-container-header>
+    <p style="padding: 16px;">Editable container body.</p>
   </sherpa-container>
 </template>

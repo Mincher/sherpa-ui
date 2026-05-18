@@ -1,21 +1,16 @@
 <!--
   sherpa-list-panel — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-list-panel.examples.js
 -->
-<template data-label="Filterable list panel" data-description="List panel adds search filtering across slotted sherpa-list-items." data-layout="block">
-  <sherpa-list-panel data-heading="Devices" data-match="sherpa-list-item" data-empty="No devices match your search.">
-    <sherpa-list data-variant="divided">
-      <sherpa-list-item data-label="Acme device 01"   data-description="online · EU"  data-interactive></sherpa-list-item>
-      <sherpa-list-item data-label="Acme device 02"   data-description="offline · US" data-interactive></sherpa-list-item>
-      <sherpa-list-item data-label="Beta probe 14"    data-description="online · EU"  data-interactive></sherpa-list-item>
-      <sherpa-list-item data-label="Gamma sensor 09"  data-description="warning · APAC" data-interactive></sherpa-list-item>
-      <sherpa-list-item data-label="Delta gateway 03" data-description="online · US"  data-interactive></sherpa-list-item>
+<template data-label="Default" data-layout="block">
+  <sherpa-list-panel data-bordered>
+    <sherpa-list>
+      <sherpa-list-item data-label="Devices"   data-icon="fa-solid fa-microchip" data-description="1,284 active"></sherpa-list-item>
+      <sherpa-list-item data-label="Alerts"    data-icon="fa-solid fa-bell"      data-description="7 unresolved"></sherpa-list-item>
+      <sherpa-list-item data-label="Settings"  data-icon="fa-solid fa-gear"></sherpa-list-item>
     </sherpa-list>
   </sherpa-list-panel>
+</template>
+
+<template data-label="Empty state" data-layout="block">
+  <sherpa-list-panel data-bordered data-empty="No items to display"></sherpa-list-panel>
 </template>

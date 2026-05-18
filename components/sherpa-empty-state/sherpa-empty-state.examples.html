@@ -1,26 +1,18 @@
 <!--
   sherpa-empty-state — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-empty-state.examples.js
 -->
-<template data-label="Basic" data-layout="block">
-  <sherpa-empty-state
-    data-label="No results found"
-    data-description="Try adjusting your search or filters."
-    data-illustration="search">
+<template data-label="Default" data-layout="block">
+  <sherpa-empty-state data-label="No devices yet" data-description="Add your first device to start monitoring."></sherpa-empty-state>
+</template>
+
+<template data-label="With illustration + action" data-layout="block">
+  <sherpa-empty-state data-label="No results" data-description="Try adjusting your filters or search query." data-illustration="search" data-small-print="Search is case-insensitive.">
+    <sherpa-button slot="actions" data-variant="primary" data-label="Clear filters" data-icon-start="fa-solid fa-filter-circle-xmark"></sherpa-button>
   </sherpa-empty-state>
 </template>
 
-<template data-label="With action" data-layout="block">
-  <sherpa-empty-state
-    data-label="No devices configured"
-    data-description="Add your first device to get started monitoring your network."
-    data-illustration="empty">
-    <sherpa-button slot="actions" data-variant="primary" data-label="Add device" data-icon-start="fa-solid fa-plus"></sherpa-button>
+<template data-label="Error variant" data-layout="block">
+  <sherpa-empty-state data-label="Could not load data" data-description="There was a network error. Please try again." data-illustration="error">
+    <sherpa-button slot="actions" data-variant="secondary" data-label="Retry" data-icon-start="fa-solid fa-rotate"></sherpa-button>
   </sherpa-empty-state>
 </template>

@@ -1,15 +1,14 @@
 <!--
   sherpa-panel — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-panel.examples.js
 -->
-<template data-label="Basic panel" data-layout="block">
-  <sherpa-panel data-heading="Recent activity">
-    <p>Panels wrap related content with a heading and optional actions.</p>
+<template data-label="Inline panel" data-layout="block">
+  <sherpa-panel data-variant="inline" data-position="right" data-heading="Filters" data-expanded data-width="320">
+    <p style="padding: 16px;">An inline panel pushes adjacent content aside.</p>
+  </sherpa-panel>
+</template>
+
+<template data-label="Overlay panel" data-description="Overlay panels float above content without reflowing the layout." data-layout="block">
+  <sherpa-panel data-variant="overlay" data-position="right" data-heading="Details" data-width="360">
+    <p style="padding: 16px;">Click the trigger in the host page to open.</p>
   </sherpa-panel>
 </template>

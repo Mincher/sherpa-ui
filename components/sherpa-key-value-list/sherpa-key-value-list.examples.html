@@ -1,27 +1,36 @@
 <!--
   sherpa-key-value-list — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-key-value-list.examples.js
 -->
-<template data-label="Device details" data-layout="block">
+<template data-label="Horizontal (default)" data-layout="block">
   <sherpa-key-value-list>
-    <dt>Hostname</dt>   <dd>web-srv-01</dd>
-    <dt>IP address</dt> <dd>10.0.1.42</dd>
-    <dt>Status</dt>     <dd>Online</dd>
-    <dt>Last seen</dt>  <dd>Just now</dd>
-    <dt>Region</dt>     <dd>EU West</dd>
+    <dt>Status</dt><dd>Online</dd>
+    <dt>Region</dt><dd>EU (Frankfurt)</dd>
+    <dt>Last seen</dt><dd>2 minutes ago</dd>
+    <dt>IP address</dt><dd>192.0.2.42</dd>
   </sherpa-key-value-list>
 </template>
 
 <template data-label="Vertical layout" data-layout="block">
   <sherpa-key-value-list data-layout="vertical">
-    <dt>Hostname</dt>   <dd>web-srv-01</dd>
-    <dt>IP address</dt> <dd>10.0.1.42</dd>
-    <dt>Status</dt>     <dd>Online</dd>
+    <dt>Account ID</dt><dd>acc_01HZX7Y8…</dd>
+    <dt>Plan</dt><dd>Pro</dd>
+    <dt>Created</dt><dd>2024-03-12</dd>
+  </sherpa-key-value-list>
+</template>
+
+<template data-label="Striped + bordered" data-layout="block">
+  <sherpa-key-value-list data-striped data-bordered>
+    <dt>CPU</dt><dd>42%</dd>
+    <dt>Memory</dt><dd>3.2 GB / 8 GB</dd>
+    <dt>Disk</dt><dd>112 GB / 500 GB</dd>
+    <dt>Network</dt><dd>1.2 MB/s</dd>
+  </sherpa-key-value-list>
+</template>
+
+<template data-label="Compact density" data-layout="block">
+  <sherpa-key-value-list data-density="compact" data-striped>
+    <dt>Build</dt><dd>v2.4.0</dd>
+    <dt>Commit</dt><dd>83fcb2e</dd>
+    <dt>Deployed</dt><dd>2 hours ago</dd>
   </sherpa-key-value-list>
 </template>

@@ -1,19 +1,32 @@
 <!--
   sherpa-menu — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-menu.examples.js
 -->
-<template data-label="Action menu" data-layout="block" data-setup="menu-0">
-  <sherpa-button data-variant="tertiary" data-label="More" data-icon-end="fa-solid fa-caret-down"></sherpa-button>
-  
+<template data-label="Default" data-layout="block">
   <sherpa-menu>
-    <sherpa-menu-item data-label="Edit"      data-icon="fa-solid fa-pen"></sherpa-menu-item>
-    <sherpa-menu-item data-label="Duplicate" data-icon="fa-solid fa-copy"></sherpa-menu-item>
-    <sherpa-menu-item data-label="Delete"    data-icon="fa-solid fa-trash" data-status="critical"></sherpa-menu-item>
+    <sherpa-menu-item data-action="rename" data-icon="fa-solid fa-pen-to-square">Rename</sherpa-menu-item>
+    <sherpa-menu-item data-action="duplicate" data-icon="fa-solid fa-copy">Duplicate</sherpa-menu-item>
+    <sherpa-menu-item data-action="delete" data-icon="fa-solid fa-trash" data-variant="critical">Delete</sherpa-menu-item>
   </sherpa-menu>
+</template>
+
+<template data-label="With heading and checkboxes" data-layout="block">
+  <sherpa-menu>
+    <sherpa-menu-item data-type="heading">Display</sherpa-menu-item>
+    <sherpa-menu-item data-type="checkbox" data-action="show-online" checked>Show online</sherpa-menu-item>
+    <sherpa-menu-item data-type="checkbox" data-action="show-offline">Show offline</sherpa-menu-item>
+    <sherpa-menu-item data-type="checkbox" data-action="show-errors">Show errors</sherpa-menu-item>
+  </sherpa-menu>
+</template>
+
+<template data-label="Radio group" data-layout="block">
+  <sherpa-menu>
+    <sherpa-menu-item data-type="heading">Sort by</sherpa-menu-item>
+    <sherpa-menu-item data-type="radio" name="sort" value="name" checked>Name</sherpa-menu-item>
+    <sherpa-menu-item data-type="radio" name="sort" value="updated">Last updated</sherpa-menu-item>
+    <sherpa-menu-item data-type="radio" name="sort" value="status">Status</sherpa-menu-item>
+  </sherpa-menu>
+</template>
+
+<template data-label="Loading" data-layout="block">
+  <sherpa-menu data-loading data-loading-text="Fetching options…" style="min-width: 240px;"></sherpa-menu>
 </template>

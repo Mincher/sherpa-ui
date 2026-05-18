@@ -1,18 +1,22 @@
 <!--
   sherpa-nav-section — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-nav-section.examples.js
 -->
-<template data-label="Section navigation" data-layout="block">
-  <sherpa-nav-section>
-    <sherpa-list-item data-label="Overview" data-icon="fa-solid fa-house"    data-interactive data-active></sherpa-list-item>
-    <sherpa-list-item data-label="Devices"  data-icon="fa-solid fa-server"   data-interactive></sherpa-list-item>
-    <sherpa-list-item data-label="Alerts"   data-icon="fa-solid fa-bell"     data-interactive></sherpa-list-item>
-    <sherpa-list-item data-label="Settings" data-icon="fa-solid fa-gear"     data-interactive></sherpa-list-item>
+<template data-label="Default" data-description="A nav-section groups a heading and a list of nav items." data-layout="block">
+  <sherpa-nav-section data-heading="Workspaces" data-active-id="prod"
+    data-sections='[
+      {"id":"prod","label":"Production","icon":"fa-solid fa-server"},
+      {"id":"staging","label":"Staging","icon":"fa-solid fa-flask"},
+      {"id":"dev","label":"Development","icon":"fa-solid fa-code"}
+    ]'>
+  </sherpa-nav-section>
+</template>
+
+<template data-label="With back button" data-layout="block">
+  <sherpa-nav-section data-heading="Acme Corp" data-show-back data-active-id="devices"
+    data-sections='[
+      {"id":"overview","label":"Overview","icon":"fa-solid fa-house"},
+      {"id":"devices","label":"Devices","icon":"fa-solid fa-microchip","badge":"284"},
+      {"id":"users","label":"Users","icon":"fa-solid fa-users"}
+    ]'>
   </sherpa-nav-section>
 </template>
