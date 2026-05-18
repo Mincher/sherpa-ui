@@ -18,75 +18,74 @@
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #2e2e38);
   box-sizing: border-box;
-
   /* ──────────────────────────────────────────────────────────
-     PANEL VARIANT (background surface)
-     ────────────────────────────────────────────────────────── */
-  &[data-panel] {
-    background: var(--sherpa-surface-container-default, #ffffff);
-    border-radius: var(--sherpa-border-rounding-base, 8px);
-  }
-
+             PANEL VARIANT (background surface)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     ORIENTATION VARIANTS
-     ────────────────────────────────────────────────────────── */
-  &[data-orientation="vertical"] {
-    flex-direction: column;
-    text-align: center;
-  }
-
+             ORIENTATION VARIANTS
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     LABEL (conditional visibility)
-     ────────────────────────────────────────────────────────── */
-  &(:not([data-label])) .label { display: none; }
-
-  & .label { line-height: var(--sherpa-line-height-default, 1.4); }
-
+             LABEL (conditional visibility)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     SPINNER (track + rotating worm arc)
-     ────────────────────────────────────────────────────────── */
-  & .spinner {
-    --_spinner-size: 20px;
-    --_spinner-weight: 2px;
-
-    flex-shrink: 0;
-    width: var(--_spinner-size);
-    height: var(--_spinner-size);
-    border-radius: 50%;
-    border: var(--_spinner-weight) solid var(--sherpa-border-container-default, #d7d7dc);
-    position: relative;
-    box-sizing: border-box;
-
-    /* ── Worm arc (rotating via animation) ──────────────– */
-    &::after {
-      content: "";
-      position: absolute;
-      inset: calc(var(--_spinner-weight) * -1);
-      border-radius: 50%;
-      border: var(--_spinner-weight) solid
-        var(
-          --_status-border,
-          var(--sherpa-border-control-active-default, #c046ff)
-        );
-      border-block-start-color: transparent;
-      animation: sherpa-spin 0.8s linear infinite;
-    }
-  }
-
+             SPINNER (track + rotating worm arc)
+             ────────────────────────────────────────────────────────── */
   /* ── Size variants ──────────────────────────────────────– */
-  &[data-size="small"] .spinner {
-    --_spinner-size: 12px;
-    --_spinner-weight: 1px;
-  }
-
-  &[data-size="large"] .spinner {
-    --_spinner-size: 48px;
-    --_spinner-weight: 4px;
-  }
-
   /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
 }
+:host([data-panel]) {
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border-radius: var(--sherpa-border-rounding-base, 8px);
+}
+:host([data-orientation="vertical"]) {
+  flex-direction: column;
+  text-align: center;
+}
+:host(:not([data-label])) .label {
+  display: none;
+}
+:host .label {
+  line-height: var(--sherpa-line-height-default, 1.4);
+}
+:host .spinner {
+  --_spinner-size: 20px;
+      --_spinner-weight: 2px;
+  
+      flex-shrink: 0;
+      width: var(--_spinner-size);
+      height: var(--_spinner-size);
+      border-radius: 50%;
+      border: var(--_spinner-weight) solid var(--sherpa-border-container-default, #d7d7dc);
+      position: relative;
+      box-sizing: border-box;
+  
+      /* ── Worm arc (rotating via animation) ──────────────– */
+      &::after {
+        content: "";
+        position: absolute;
+        inset: calc(var(--_spinner-weight) * -1);
+        border-radius: 50%;
+        border: var(--_spinner-weight) solid
+          var(
+            --_status-border,
+            var(--sherpa-border-control-active-default, #c046ff)
+          );
+        border-block-start-color: transparent;
+        animation: sherpa-spin 0.8s linear infinite;
+      }
+}
+:host([data-size="small"]) .spinner {
+  --_spinner-size: 12px;
+      --_spinner-weight: 1px;
+}
+:host([data-size="large"]) .spinner {
+  --_spinner-size: 48px;
+      --_spinner-weight: 4px;
+}
+:host([hidden]) {
+  display: none;
+}
+
 
 /* ──────────────────────────────────────────────────────────────
    SPIN ANIMATION (360° rotation)

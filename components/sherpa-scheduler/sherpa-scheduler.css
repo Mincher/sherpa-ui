@@ -13,34 +13,34 @@
   gap: var(--sherpa-space-sm, 12px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   color: var(--sherpa-text-default-body, #2e2e33);
-
-  & .row {
-    display: none;
-    flex-wrap: wrap;
-    gap: var(--sherpa-space-sm, 12px);
-    align-items: flex-end;
-
-    & > * { flex: 1 1 160px; min-width: 0; }
-  }
-
-  & .row-frequency { display: flex; }
-
   /* Conditional rows shown per frequency */
-  &[data-frequency="once"] .row-once,
-  &[data-frequency="hourly"] .row-hourly,
-  &[data-frequency="daily"] .row-time,
-  &[data-frequency="weekly"] .row-time,
-  &[data-frequency="weekly"] .row-weekly,
-  &[data-frequency="monthly"] .row-time,
-  &[data-frequency="monthly"] .row-monthly {
-    display: flex;
-  }
-
   /* Default to weekly when no frequency set */
-  &(:not([data-frequency])) .row-time,
-  &(:not([data-frequency])) .row-weekly {
-    display: flex;
-  }
-
-  &[hidden] { display: none; }
 }
+:host .row {
+  display: none;
+      flex-wrap: wrap;
+      gap: var(--sherpa-space-sm, 12px);
+      align-items: flex-end;
+  
+      & > * { flex: 1 1 160px; min-width: 0; }
+}
+:host .row-frequency {
+  display: flex;
+}
+:host([data-frequency="once"]) .row-once,
+:host([data-frequency="hourly"]) .row-hourly,
+:host([data-frequency="daily"]) .row-time,
+:host([data-frequency="weekly"]) .row-time,
+:host([data-frequency="weekly"]) .row-weekly,
+:host([data-frequency="monthly"]) .row-time,
+:host([data-frequency="monthly"]) .row-monthly {
+  display: flex;
+}
+:host(:not([data-frequency])) .row-time,
+:host(:not([data-frequency])) .row-weekly {
+  display: flex;
+}
+:host([hidden]) {
+  display: none;
+}
+

@@ -23,190 +23,184 @@
   box-sizing: border-box;
   overflow: hidden;
   height: 100%;
-
   /* ──────────────────────────────────────────────────────────
-     COLLAPSED STATE (inline variant default)
-     ────────────────────────────────────────────────────────── */
-  &(:not([data-expanded])) {
-    width: 40px;
-    padding: var(--sherpa-space-xs, 8px) 0;
-    align-items: center;
-
-    & .panel-body { display: none; }
-    & .collapse-trigger { display: none; }
-  }
-
+             COLLAPSED STATE (inline variant default)
+             ────────────────────────────────────────────────────────── */
   /* ── Collapse trigger (narrow panel only) ───────────────– */
-  & .collapse-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: var(--sherpa-border-rounding-sm, 4px);
-    background: var(--sherpa-surface-container-default, #fafaff);
-    color: var(--sherpa-text-default-body, #2e2e33);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 0;
-
-    &:hover { background: var(--sherpa-surface-container-hover, #f0f0f5); }
-  }
-
   /* ──────────────────────────────────────────────────────────
-     EXPANDED STATE (full panel)
-     ────────────────────────────────────────────────────────── */
-  &[data-expanded] {
-    width: var(--_panel-width, 480px);
-
-    & .panel-body {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-  }
-
+             EXPANDED STATE (full panel)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     OVERLAY VARIANT (fixed position, with scrim)
-     ────────────────────────────────────────────────────────── */
-  &[data-variant="overlay"] {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    z-index: var(--sherpa-z-panel, 900);
-    box-shadow: var(--sherpa-shadow-default-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
-    width: var(--_panel-width, 560px);
-
-    & .collapse-trigger { display: none; }
-
-    &(:not([data-expanded])) {
-      display: none;
-      width: 0;
-    }
-  }
-
+             OVERLAY VARIANT (fixed position, with scrim)
+             ────────────────────────────────────────────────────────── */
   /* Anchored right → round left (inner) corners */
-  &[data-variant="overlay"][data-position="right"],
-  &[data-variant="overlay"]:not([data-position]) {
-    right: 0;
-    border-top-left-radius: var(--sherpa-border-rounding-lg, 12px);
-    border-bottom-left-radius: var(--sherpa-border-rounding-lg, 12px);
-  }
-
   /* Anchored left → round right (inner) corners */
-  &[data-variant="overlay"][data-position="left"] {
-    left: 0;
-    border-top-right-radius: var(--sherpa-border-rounding-lg, 12px);
-    border-bottom-right-radius: var(--sherpa-border-rounding-lg, 12px);
-  }
-
   /* Full-width drawer (both sides) */
-  &[data-variant="overlay"][data-position="both"] {
-    left: 0;
-    right: 0;
-    width: auto;
-    max-width: none;
-    border-radius: 0;
-  }
-
   /* ──────────────────────────────────────────────────────────
-     PANEL HEADER
-     ────────────────────────────────────────────────────────── */
-  & .panel-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-    flex-shrink: 0;
-  }
-
-  & .header-row {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    min-height: 32px;
-  }
-
-  & .header-title {
-    flex: 1;
-    font-size: var(--sherpa-fonts-scale-base, 16px);
-    font-weight: var(--sherpa-font-weight-semibold, 600);
-    line-height: var(--sherpa-line-height-default, 1.5);
-    color: var(--sherpa-text-default-heading, #18191a);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  &[data-variant="overlay"] .header-title {
-    color: var(--sherpa-text-primary-default, #3c5edd);
-  }
-
-  &(:not([data-heading])) .header-title { display: none; }
-
+             PANEL HEADER
+             ────────────────────────────────────────────────────────── */
   /* ── Controls ──────────────────────────────────────────– */
-  & .controls {
-    display: flex;
-    align-items: center;
-    gap: var(--sherpa-space-xs, 8px);
-    flex-shrink: 0;
-  }
-
   /* Close button */
-  & .close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: var(--sherpa-border-rounding-sm, 4px);
-    background: var(--sherpa-surface-container-default, #fafaff);
-    color: var(--sherpa-text-default-body, #2e2e33);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 0;
-
-    &:hover { background: var(--sherpa-surface-container-hover, #f0f0f5); }
-  }
-
   /* ── Metadata row ──────────────────────────────────────– */
-  & .metadata {
-    display: flex;
-    align-items: center;
-    gap: var(--sherpa-space-sm, 12px);
-    font-size: var(--sherpa-fonts-scale-sm, 14px);
-    color: var(--sherpa-text-default-secondary, #5c5c66);
-    min-height: 20px;
-  }
-
-  &(:not([data-has-metadata])) .metadata { display: none; }
-
   /* ──────────────────────────────────────────────────────────
-     ACTION BAR
-     ────────────────────────────────────────────────────────── */
-  & .action-bar {
-    display: flex;
-    align-items: center;
-    gap: var(--sherpa-space-xs, 8px);
-    padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-    background: var(--sherpa-surface-container-default, #fdfdfd);
-    flex-shrink: 0;
-  }
-
-  &(:not([data-has-actions])) .action-bar { display: none; }
-
+             ACTION BAR
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     CONTENT AREA
-     ────────────────────────────────────────────────────────── */
-  & .content {
-    flex: 1;
-    overflow: auto;
-    padding: var(--sherpa-space-base, 16px);
-  }
-
+             CONTENT AREA
+             ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
 }
+:host(:not([data-expanded])) {
+  width: 40px;
+  padding: var(--sherpa-space-xs, 8px) 0;
+  align-items: center;
+}
+:host(:not([data-expanded])) .panel-body {
+  display: none;
+}
+:host(:not([data-expanded])) .collapse-trigger {
+  display: none;
+}
+
+:host .collapse-trigger {
+  display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: var(--sherpa-border-rounding-sm, 4px);
+      background: var(--sherpa-surface-container-default, #fafaff);
+      color: var(--sherpa-text-default-body, #2e2e33);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+  
+      &:hover { background: var(--sherpa-surface-container-hover, #f0f0f5); }
+}
+:host([data-expanded]) {
+  width: var(--_panel-width, 480px);
+}
+:host([data-expanded]) .panel-body {
+  display: flex;
+          flex-direction: column;
+          height: 100%;
+          overflow: hidden;
+}
+
+:host([data-variant="overlay"]) {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: var(--sherpa-z-panel, 900);
+  box-shadow: var(--sherpa-shadow-default-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
+  width: var(--_panel-width, 560px);
+}
+:host([data-variant="overlay"]) .collapse-trigger {
+  display: none;
+}
+:host([data-variant="overlay"]:not([data-expanded])) {
+  display: none;
+  width: 0;
+}
+
+:host([data-variant="overlay"][data-position="right"]),
+:host([data-variant="overlay"]:not([data-position])) {
+  right: 0;
+      border-top-left-radius: var(--sherpa-border-rounding-lg, 12px);
+      border-bottom-left-radius: var(--sherpa-border-rounding-lg, 12px);
+}
+:host([data-variant="overlay"][data-position="left"]) {
+  left: 0;
+  border-top-right-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-bottom-right-radius: var(--sherpa-border-rounding-lg, 12px);
+}
+:host([data-variant="overlay"][data-position="both"]) {
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: none;
+  border-radius: 0;
+}
+:host .panel-header {
+  display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      flex-shrink: 0;
+}
+:host .header-row {
+  display: flex;
+      align-items: center;
+      gap: 0;
+      min-height: 32px;
+}
+:host .header-title {
+  flex: 1;
+      font-size: var(--sherpa-fonts-scale-base, 16px);
+      font-weight: var(--sherpa-font-weight-semibold, 600);
+      line-height: var(--sherpa-line-height-default, 1.5);
+      color: var(--sherpa-text-default-heading, #18191a);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+}
+:host([data-variant="overlay"]) .header-title {
+  color: var(--sherpa-text-primary-default, #3c5edd);
+}
+:host(:not([data-heading])) .header-title {
+  display: none;
+}
+:host .controls {
+  display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-xs, 8px);
+      flex-shrink: 0;
+}
+:host .close-btn {
+  display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: var(--sherpa-border-rounding-sm, 4px);
+      background: var(--sherpa-surface-container-default, #fafaff);
+      color: var(--sherpa-text-default-body, #2e2e33);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+  
+      &:hover { background: var(--sherpa-surface-container-hover, #f0f0f5); }
+}
+:host .metadata {
+  display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-sm, 12px);
+      font-size: var(--sherpa-fonts-scale-sm, 14px);
+      color: var(--sherpa-text-default-secondary, #5c5c66);
+      min-height: 20px;
+}
+:host(:not([data-has-metadata])) .metadata {
+  display: none;
+}
+:host .action-bar {
+  display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-xs, 8px);
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      background: var(--sherpa-surface-container-default, #fdfdfd);
+      flex-shrink: 0;
+}
+:host(:not([data-has-actions])) .action-bar {
+  display: none;
+}
+:host .content {
+  flex: 1;
+      overflow: auto;
+      padding: var(--sherpa-space-base, 16px);
+}
+:host([hidden]) {
+  display: none;
+}
+

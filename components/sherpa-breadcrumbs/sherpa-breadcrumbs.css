@@ -14,62 +14,60 @@
 
 :host {
   display: block;
-
   /* ──────────────────────────────────────────────────────────
-     BREADCRUMB LIST (flex row)
-     ────────────────────────────────────────────────────────── */
-  & .breadcrumb-list {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 0;
-  }
-
+             BREADCRUMB LIST (flex row)
+             ────────────────────────────────────────────────────────── */
   /* ── Individual crumb ──────────────────────────────– */
-  & .crumb {
-    display: inline-flex;
-    align-items: center;
-    gap: 0;
-  }
-
   /* ── Crumb text (historic = linked; current = plain) ─– */
-  & .crumb-text {
-    color: var(--sherpa-text-primary-default, #3c5edd);
-    cursor: pointer;
-    text-decoration: none;
-    padding: var(--sherpa-space-2xs, 4px) 0;
-    font-size: var(--sherpa-font-sm-size, 12px);
-    line-height: var(--sherpa-fonts-scale-lg, 16px);
-    letter-spacing: 0.1px;
-    font-weight: var(--sherpa-font-weight-semibold, 600);
-
-    &:hover { text-decoration: underline; }
-
-    /* Current page (aria-current) — not a link */
-    &[aria-current="page"] {
-      color: var(--sherpa-text-default-body, #2e2e33);
-      cursor: default;
-      font-weight: 400;
-
-      &:hover { text-decoration: none; }
-    }
-  }
-
   /* ── Separator (forward slash) ───────────────────────– */
-  & .separator {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--sherpa-space-default, 16px);
-    height: var(--sherpa-space-default, 16px);
-    font-size: var(--sherpa-font-sm-size, 12px);
-    color: var(--sherpa-text-default-body, #2e2e33);
-    flex-shrink: 0;
-  }
-
   /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
 }
+:host .breadcrumb-list {
+  display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 0;
+}
+:host .crumb {
+  display: inline-flex;
+      align-items: center;
+      gap: 0;
+}
+:host .crumb-text {
+  color: var(--sherpa-text-primary-default, #3c5edd);
+      cursor: pointer;
+      text-decoration: none;
+      padding: var(--sherpa-space-2xs, 4px) 0;
+      font-size: var(--sherpa-font-sm-size, 12px);
+      line-height: var(--sherpa-fonts-scale-lg, 16px);
+      letter-spacing: 0.1px;
+      font-weight: var(--sherpa-font-weight-semibold, 600);
+  
+      &:hover { text-decoration: underline; }
+  
+      /* Current page (aria-current) — not a link */
+      &[aria-current="page"] {
+        color: var(--sherpa-text-default-body, #2e2e33);
+        cursor: default;
+        font-weight: 400;
+  
+        &:hover { text-decoration: none; }
+      }
+}
+:host .separator {
+  display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--sherpa-space-default, 16px);
+      height: var(--sherpa-space-default, 16px);
+      font-size: var(--sherpa-font-sm-size, 12px);
+      color: var(--sherpa-text-default-body, #2e2e33);
+      flex-shrink: 0;
+}
+:host([hidden]) {
+  display: none;
+}
+

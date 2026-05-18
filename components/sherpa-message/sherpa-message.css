@@ -28,7 +28,6 @@ i {
   --_padding-block: var(--sherpa-space-xs, 8px);
   --_padding-inline: var(--sherpa-space-sm, 12px);
   --_text-font-size: var(--sherpa-fonts-scale-base, 14px);
-
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -43,67 +42,66 @@ i {
   line-height: var(--sherpa-font-base-line-height, 20px);
   color: var(--sherpa-text-default-body, #2e2e33);
   transition: opacity 150ms ease;
-
-  &[data-density="compact"] {
-    --_padding-block: var(--sherpa-space-2xs, 4px);
-    --_padding-inline: var(--sherpa-space-xs, 8px);
-    --_gap: var(--sherpa-space-2xs, 4px);
-    --_text-font-size: var(--sherpa-fonts-scale-sm, 12px);
-  }
-
-  &[data-density="comfortable"] {
-    --_padding-block: var(--sherpa-space-sm, 12px);
-    --_padding-inline: var(--sherpa-space-default, 16px);
-    --_gap: var(--sherpa-space-sm, 12px);
-    --_text-font-size: var(--sherpa-fonts-scale-base, 14px);
-  }
-
-  & .message-icon {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--sherpa-size-lg, 20px);
-    height: var(--sherpa-size-lg, 20px);
-    color: var(--_status-surface-strong, var(--sherpa-surface-context-default-strong-default, #6f7174));
-
-    & .sherpa-icon { --icon-size: var(--sherpa-size-sm, 16px); }
-  }
-
-  & .message-content {
-    flex: 1;
-    min-width: 0;
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--sherpa-space-2xs, 4px);
-  }
-
-  & .message-label { color: var(--sherpa-text-default-body, #2e2e33); }
-
-  & .message-action {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sherpa-space-3xs, 2px);
-    color: var(--sherpa-text-primary-default, #8500cc);
-    text-decoration: none;
-    font-weight: 600;
-    cursor: pointer;
-
-    &[hidden] { display: none; }
-    &:hover { text-decoration: underline; }
-  }
-
-  & .message-action-icon { --icon-size: var(--sherpa-size-xs, 12px); }
-
-  & .message-close {
-    display: none;
-    flex-shrink: 0;
-    margin-left: auto;
-    margin-block: calc((var(--sherpa-font-base-line-height, 20px) - var(--sherpa-size-xl, 24px)) / 2);
-  }
-
-  &[data-dismissible]:not([data-dismissible="false"]) .message-close { display: inline-flex; }
-
-  &[hidden] { display: none; }
 }
+:host([data-density="compact"]) {
+  --_padding-block: var(--sherpa-space-2xs, 4px);
+  --_padding-inline: var(--sherpa-space-xs, 8px);
+  --_gap: var(--sherpa-space-2xs, 4px);
+  --_text-font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+:host([data-density="comfortable"]) {
+  --_padding-block: var(--sherpa-space-sm, 12px);
+  --_padding-inline: var(--sherpa-space-default, 16px);
+  --_gap: var(--sherpa-space-sm, 12px);
+  --_text-font-size: var(--sherpa-fonts-scale-base, 14px);
+}
+:host .message-icon {
+  flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--sherpa-size-lg, 20px);
+      height: var(--sherpa-size-lg, 20px);
+      color: var(--_status-surface-strong, var(--sherpa-surface-context-default-strong-default, #6f7174));
+  
+      & .sherpa-icon { --icon-size: var(--sherpa-size-sm, 16px); }
+}
+:host .message-content {
+  flex: 1;
+      min-width: 0;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: var(--sherpa-space-2xs, 4px);
+}
+:host .message-label {
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+:host .message-action {
+  display: inline-flex;
+      align-items: center;
+      gap: var(--sherpa-space-3xs, 2px);
+      color: var(--sherpa-text-primary-default, #8500cc);
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+  
+      &[hidden] { display: none; }
+      &:hover { text-decoration: underline; }
+}
+:host .message-action-icon {
+  --icon-size: var(--sherpa-size-xs, 12px);
+}
+:host .message-close {
+  display: none;
+      flex-shrink: 0;
+      margin-left: auto;
+      margin-block: calc((var(--sherpa-font-base-line-height, 20px) - var(--sherpa-size-xl, 24px)) / 2);
+}
+:host([data-dismissible]:not([data-dismissible="false"])) .message-close {
+  display: inline-flex;
+}
+:host([hidden]) {
+  display: none;
+}
+

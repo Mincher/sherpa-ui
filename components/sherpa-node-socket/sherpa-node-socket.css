@@ -28,117 +28,124 @@
 :host {
   /* ── Locked palette (semantic, NOT driven by node accent) ──── */
   /* All sockets default to brand purple to match the connectors that
-     run between them. true/false outputs override via data-status.
-     All colour values resolve through `--sherpa-node-socket-*`
-     aliases declared in sherpa-node-tokens.css. */
+       run between them. true/false outputs override via data-status.
+       All colour values resolve through `--sherpa-node-socket-*`
+       aliases declared in sherpa-node-tokens.css. */
   --_socket-stroke: var(--sherpa-node-socket-stroke, #c046ff);
   --_socket-fill:   var(--sherpa-node-socket-fill, #ffffff);
-
   /* Host is content-sized: a single inline-flex frame whose dimensions
-     are driven entirely by the .socket-shape inside. The shape itself
-     enforces a minimum 16×16px floor, so a disconnected or single-dot
-     input renders as a perfect square. Multi-dot inputs grow taller
-     because the dots stack inside via flex column — no JS sizing,
-     no calc() formulas, no --_count plumbing. */
+       are driven entirely by the .socket-shape inside. The shape itself
+       enforces a minimum 16×16px floor, so a disconnected or single-dot
+       input renders as a perfect square. Multi-dot inputs grow taller
+       because the dots stack inside via flex column — no JS sizing,
+       no calc() formulas, no --_count plumbing. */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: relative;
   cursor: crosshair;
   /* Sockets sit inside narrow flex gutters (8px) but render at 16px+
-     and overflow visibly. Stops the flex parent from squishing them. */
+       and overflow visibly. Stops the flex parent from squishing them. */
   flex-shrink: 0;
-
-  &[data-status="true"]  { --_socket-stroke: var(--sherpa-node-socket-stroke-true, #048142); }
-  &[data-status="false"] { --_socket-stroke: var(--sherpa-node-socket-stroke-false, #dd2c01); }
-
-/* Fill is ALWAYS the light tint of the stroke (see :host above). The
-   only place the fill becomes solid is the output triangle, via its
-   own background override below. Inputs never flip fill on connect —
-   they show per-connection dots instead. */
-
-  & .socket {
-    all: unset;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: crosshair;
-  }
-
-  & .socket-shape {
-    width: var(--sherpa-node-socket-size, 16px);
-    min-width: var(--sherpa-node-socket-size, 16px);
-    min-height: var(--sherpa-node-socket-size, 16px);
-    background: var(--_socket-fill);
-    border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
-    box-sizing: border-box;
-    border-radius: 999px;
-    transition: background 150ms ease, transform 150ms ease;
-  }
-
-  & .connectors { display: none; }
-
-  &[data-direction="in"] .connectors {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: var(--sherpa-space-3xs, 2px) 0;
-    box-sizing: border-box;
-    gap: var(--sherpa-space-3xs, 2px);
-  }
-
-  & .connector-dot {
-    flex-shrink: 0;
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: var(--_socket-stroke);
-    border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
-    box-sizing: border-box;
-  }
-
-  &[data-location="header"][data-direction="in"] .socket-shape { border-radius: 999px; }
-  &[data-location="row"][data-direction="in"] .socket-shape { border-radius: 0 999px 999px 0; }
-
-  &[data-direction="out"] .socket-shape {
-    width: 14px;
-    min-width: 14px;
-    height: 14px;
-    min-height: 14px;
-    border-radius: 2px;
-    clip-path: none;
-  }
-
-  &[data-direction="out"][data-connected] .socket-shape {
-    width: 14px;
-    min-width: 14px;
-    height: 14px;
-    min-height: 14px;
-    border-radius: 0;
-    background: var(--_socket-stroke);
-    border: none;
-    clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
-  }
-
-  &[data-direction="in"][data-flow-active] .connectors > .connector-dot { display: none; }
-  &[data-direction="in"][data-flow-active] .socket-shape { position: relative; }
-  &[data-direction="in"][data-flow-active] .socket-shape::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: var(--_socket-stroke);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-
-  & .socket:hover  .socket-shape { transform: scale(1.08); }
-  & .socket:active .socket-shape { transform: scale(0.95); }
-
-  &[hidden] { display: none; }
+  /* Fill is ALWAYS the light tint of the stroke (see :host above). The
+     only place the fill becomes solid is the output triangle, via its
+     own background override below. Inputs never flip fill on connect —
+     they show per-connection dots instead. */
 }
+:host([data-status="true"]) {
+  --_socket-stroke: var(--sherpa-node-socket-stroke-true, #048142);
+}
+:host([data-status="false"]) {
+  --_socket-stroke: var(--sherpa-node-socket-stroke-false, #dd2c01);
+}
+:host .socket {
+  all: unset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: crosshair;
+}
+:host .socket-shape {
+  width: var(--sherpa-node-socket-size, 16px);
+      min-width: var(--sherpa-node-socket-size, 16px);
+      min-height: var(--sherpa-node-socket-size, 16px);
+      background: var(--_socket-fill);
+      border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
+      box-sizing: border-box;
+      border-radius: 999px;
+      transition: background 150ms ease, transform 150ms ease;
+}
+:host .connectors {
+  display: none;
+}
+:host([data-direction="in"]) .connectors {
+  display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: var(--sherpa-space-3xs, 2px) 0;
+      box-sizing: border-box;
+      gap: var(--sherpa-space-3xs, 2px);
+}
+:host .connector-dot {
+  flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--_socket-stroke);
+      border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
+      box-sizing: border-box;
+}
+:host([data-location="header"][data-direction="in"]) .socket-shape {
+  border-radius: 999px;
+}
+:host([data-location="row"][data-direction="in"]) .socket-shape {
+  border-radius: 0 999px 999px 0;
+}
+:host([data-direction="out"]) .socket-shape {
+  width: 14px;
+      min-width: 14px;
+      height: 14px;
+      min-height: 14px;
+      border-radius: 2px;
+      clip-path: none;
+}
+:host([data-direction="out"][data-connected]) .socket-shape {
+  width: 14px;
+      min-width: 14px;
+      height: 14px;
+      min-height: 14px;
+      border-radius: 0;
+      background: var(--_socket-stroke);
+      border: none;
+      clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+}
+:host([data-direction="in"][data-flow-active]) .connectors > .connector-dot {
+  display: none;
+}
+:host([data-direction="in"][data-flow-active]) .socket-shape {
+  position: relative;
+}
+:host([data-direction="in"][data-flow-active]) .socket-shape::after {
+  content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--_socket-stroke);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+}
+:host .socket:hover  .socket-shape {
+  transform: scale(1.08);
+}
+:host .socket:active .socket-shape {
+  transform: scale(0.95);
+}
+:host([hidden]) {
+  display: none;
+}
+

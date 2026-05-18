@@ -19,72 +19,72 @@
   --_filter-bar-py: var(--sherpa-space-xs, 8px);
   --_filter-bar-px: var(--sherpa-space-xs, 8px);
   --_filter-bar-gap: var(--sherpa-space-2xs, 4px);
-
   display: block;
-
   /* ──────────────────────────────────────────────────────────
-     DENSITY VARIANT
-     ────────────────────────────────────────────────────────── */
-  &[data-density="compact"] {
-    --_filter-bar-py: var(--sherpa-space-3xs, 2px);
-  }
-
+       DENSITY VARIANT
+       ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     FILTER SURFACE (flex container)
-     ────────────────────────────────────────────────────────── */
-  & .filter-surface {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--_filter-bar-gap);
-    width: 100%;
-    padding-block: var(--_filter-bar-py);
-    box-sizing: border-box;
-  }
-
+       FILTER SURFACE (flex container)
+       ────────────────────────────────────────────────────────── */
   /* ── Embedded variant (no padding/border) ───────────– */
-  &[data-embedded] .filter-surface { padding: 0; border: none; }
-
   /* ──────────────────────────────────────────────────────────
-     SLOT ZONES (toggle | group | sort | presets | actions)
-     ────────────────────────────────────────────────────────── */
-  & slot[name="toggle"],
-  & slot[name="group"],
-  & slot[name="sort"],
-  & slot[name="presets"],
-  & slot[name="actions"] {
-    display: flex;
-    align-items: center;
-    gap: var(--_filter-bar-gap);
-    flex-shrink: 0;
-  }
-
+       SLOT ZONES (toggle | group | sort | presets | actions)
+       ────────────────────────────────────────────────────────── */
   /* ── Actions slot pins to trailing edge ─────────────– */
-  & slot[name="actions"] { margin-inline-start: auto; }
-
   /* ── Zone dividers (right border when content) ──────– */
-  & slot[name="group"]:has(::slotted(:not([hidden]))),
-  & slot[name="sort"]:has(::slotted(:not([hidden]))),
-  & slot[name="presets"]:has(::slotted(:not([hidden]))) {
-    padding-inline-end: var(--_filter-bar-gap);
-    border-inline-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e5);
-  }
-
   /* ── Hide empty slots to prevent phantom gap ────────– */
-  & slot[name="toggle"]:not(:has(::slotted(*))),
-  & slot[name="group"]:not(:has(::slotted(*))),
-  & slot[name="sort"]:not(:has(::slotted(*))),
-  & slot[name="presets"]:not(:has(::slotted(*))) {
-    display: none;
-  }
-
-  &(:not([data-active])) slot[name="actions"] { display: none; }
-
   /* ──────────────────────────────────────────────────────────
-     ADD FILTER BUTTON
-     ────────────────────────────────────────────────────────── */
-  & .add-filter-button { flex-shrink: 0; }
-
+       ADD FILTER BUTTON
+       ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
 }
+:host([data-density="compact"]) {
+  --_filter-bar-py: var(--sherpa-space-3xs, 2px);
+}
+:host .filter-surface {
+  display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--_filter-bar-gap);
+      width: 100%;
+      padding-block: var(--_filter-bar-py);
+      box-sizing: border-box;
+}
+:host([data-embedded]) .filter-surface {
+  padding: 0; border: none;
+}
+:host slot[name="toggle"],
+:host slot[name="group"],
+:host slot[name="sort"],
+:host slot[name="presets"],
+:host slot[name="actions"] {
+  display: flex;
+      align-items: center;
+      gap: var(--_filter-bar-gap);
+      flex-shrink: 0;
+}
+:host slot[name="actions"] {
+  margin-inline-start: auto;
+}
+:host slot[name="group"]:has(::slotted(:not([hidden]))),
+:host slot[name="sort"]:has(::slotted(:not([hidden]))),
+:host slot[name="presets"]:has(::slotted(:not([hidden]))) {
+  padding-inline-end: var(--_filter-bar-gap);
+      border-inline-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e5);
+}
+:host slot[name="toggle"]:not(:has(::slotted(*))),
+:host slot[name="group"]:not(:has(::slotted(*))),
+:host slot[name="sort"]:not(:has(::slotted(*))),
+:host slot[name="presets"]:not(:has(::slotted(*))) {
+  display: none;
+}
+:host(:not([data-active])) slot[name="actions"] {
+  display: none;
+}
+:host .add-filter-button {
+  flex-shrink: 0;
+}
+:host([hidden]) {
+  display: none;
+}
+

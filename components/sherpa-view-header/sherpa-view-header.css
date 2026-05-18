@@ -266,4 +266,6 @@ i {
 }
 
 /* Native [hidden] support */
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}

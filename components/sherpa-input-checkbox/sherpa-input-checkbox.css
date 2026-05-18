@@ -16,44 +16,44 @@
   display: inline-flex;
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
-
   /* ── Hidden state ────────────────────────────── */
-  &[hidden] { display: none; }
-
   /* ── Disabled state ──────────────────────────── */
-  &[disabled] { pointer-events: none; }
-
   /* ── Child elements ──────────────────────────– */
-  & .check-label { width: 100%; }
-
   /* Hide text wrapper when no label/description text (compact selector mode) */
-  & .check-text-wrapper:has(.check-text:empty):has(.check-description:empty) {
-    display: none;
-  }
-
-  & .check-text-wrapper {
-    display: inline-flex;
-    flex-direction: column;
-    gap: var(--sherpa-space-3xs, 2px);
-    min-width: 0;
-  }
-
   /* ── Status tint ──────────────────────────────
-     [data-status] cascades --_status-* through shadow boundary.
-     Colours the native checkmark and label without per-status selectors. */
-  &[data-status] .sherpa-check:not(:checked):not(:indeterminate) {
-    border-color: var(--_status-border, var(--sherpa-border-control-secondary-default, #9a9aad));
-  }
-
-  &[data-status] {
-    & .sherpa-check:checked,
-    & .sherpa-check:indeterminate {
-      background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #0060df));
-      border-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #0060df));
-    }
-
-    & .check-description {
-      color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
-    }
-  }
+       [data-status] cascades --_status-* through shadow boundary.
+       Colours the native checkmark and label without per-status selectors. */
 }
+:host([hidden]) {
+  display: none;
+}
+:host([disabled]) {
+  pointer-events: none;
+}
+:host .check-label {
+  width: 100%;
+}
+:host .check-text-wrapper:has(.check-text:empty):has(.check-description:empty) {
+  display: none;
+}
+:host .check-text-wrapper {
+  display: inline-flex;
+      flex-direction: column;
+      gap: var(--sherpa-space-3xs, 2px);
+      min-width: 0;
+}
+:host([data-status]) .sherpa-check:not(:checked):not(:indeterminate) {
+  border-color: var(--_status-border, var(--sherpa-border-control-secondary-default, #9a9aad));
+}
+:host([data-status]) {
+  & .sherpa-check:checked,
+      & .sherpa-check:indeterminate {
+        background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #0060df));
+        border-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #0060df));
+      }
+  
+      & .check-description {
+        color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+      }
+}
+

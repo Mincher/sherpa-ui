@@ -26,132 +26,129 @@ i {
   flex-direction: column;
   background: var(--sherpa-surface-container-default, #ffffff);
   border: var(--sherpa-component-accordion-border-width, 1px) solid
-    var(--sherpa-component-accordion-border-color, #d5d5d5);
+            var(--sherpa-component-accordion-border-color, #d5d5d5);
   border-radius: var(--sherpa-component-accordion-border-rounding, 4px);
   overflow: hidden;
-
   /* ──────────────────────────────────────────────────────────
-     DETAILS — remove default marker
-     ────────────────────────────────────────────────────────── */
-  & details {
-    display: flex;
-    flex-direction: column;
-  }
-
+             DETAILS — remove default marker
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     SUMMARY / TRIGGER ROW
-     ────────────────────────────────────────────────────────── */
-  & summary.trigger {
-    display: flex;
-    align-items: center;
-    gap: var(--sherpa-space-default, 16px);
-    padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
-    background: var(--sherpa-surface-container-default, #ffffff);
-    cursor: pointer;
-    user-select: none;
-    list-style: none;
-    transition:
-      background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
-
-    /* Remove default disclosure triangle in all browsers */
-    &::-webkit-details-marker { display: none; }
-    &::marker { display: none; content: ""; }
-
-    &:hover { background: var(--sherpa-surface-container-hover, #fafafa); }
-
-    &:focus-visible {
-      outline: none;
-      box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #0066cc);
-      border-radius: var(--sherpa-component-accordion-border-rounding, 4px);
-    }
-  }
-
-  & details[open] summary.trigger {
-    border-bottom: var(--sherpa-component-accordion-border-width, 1px) solid
-      var(--sherpa-component-accordion-border-color, #d5d5d5);
-  }
-
+             SUMMARY / TRIGGER ROW
+             ────────────────────────────────────────────────────────── */
   /* ── Trigger layout ────────────────────────────────────– */
-  & .trigger-left {
-    display: flex;
-    align-items: center;
-    gap: var(--sherpa-space-2xs, 4px);
-    flex: 1;
-    min-width: 0;
-  }
-
-  & .trigger-right {
-    display: flex;
-    align-items: center;
-    gap: var(--sherpa-space-sm, 12px);
-    flex-shrink: 0;
-  }
-
   /* ── Label ──────────────────────────────────────────────– */
-  & .trigger-label {
-    color: var(--sherpa-text-default-label, #18191a);
-  }
-
-  &(:not([data-label])) .trigger-label { display: none; }
-
   /* ── Leading icon ───────────────────────────────────────– */
-  & .trigger-icon {
-    display: none;
-    color: var(--sherpa-icon-context-default-body, #2e2e33);
-    font-size: var(--sherpa-fonts-scale-base, 14px);
-  }
-
-  &[data-icon] .trigger-icon { display: inline-flex; }
-
   /* ── Chevron (rotates on open) ──────────────────────────– */
-  & .chevron {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--sherpa-space-default, 16px);
-    height: var(--sherpa-space-default, 16px);
-    font-size: var(--sherpa-fonts-scale-sm, 12px);
-    color: var(--sherpa-icon-context-default-body, #2e2e33);
-    transition:
-      transform var(--sherpa-motion-duration-base, 0.2s) var(--sherpa-motion-easing-default, ease);
-  }
-
-  & details[open] .chevron { transform: rotate(-180deg); }
-
   /* ──────────────────────────────────────────────────────────
-     PANEL / CONTENT AREA
-     ────────────────────────────────────────────────────────── */
-  & .panel { padding: var(--sherpa-space-xs, 8px); }
-
+             PANEL / CONTENT AREA
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     DISABLED STATE
-     ────────────────────────────────────────────────────────── */
-  &[disabled] {
-    pointer-events: none;
-
-    & summary.trigger {
-      background: var(--sherpa-surface-container-inactive, #f5f5f5);
-      color: var(--sherpa-text-inactive-default, #a0a0a0);
-      cursor: not-allowed;
-    }
-
-    & .trigger-label {
-      color: var(--sherpa-text-inactive-default, #a0a0a0);
-    }
-
-    & .chevron,
-    & .trigger-icon {
-      color: var(--sherpa-icon-inactive-default, #a0a0a0);
-    }
-  }
-
+             DISABLED STATE
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     ACTIONS SLOT (hidden when empty via data-has-actions)
-     ────────────────────────────────────────────────────────── */
-  & slot[name="actions"] { display: none; }
-
-  &[data-has-actions] slot[name="actions"] { display: contents; }
-
+             ACTIONS SLOT (hidden when empty via data-has-actions)
+             ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
 }
+:host details {
+  display: flex;
+      flex-direction: column;
+}
+:host summary.trigger {
+  display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-default, 16px);
+      padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
+      background: var(--sherpa-surface-container-default, #ffffff);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      transition:
+        background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+  
+      /* Remove default disclosure triangle in all browsers */
+      &::-webkit-details-marker { display: none; }
+      &::marker { display: none; content: ""; }
+  
+      &:hover { background: var(--sherpa-surface-container-hover, #fafafa); }
+  
+      &:focus-visible {
+        outline: none;
+        box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #0066cc);
+        border-radius: var(--sherpa-component-accordion-border-rounding, 4px);
+      }
+}
+:host details[open] summary.trigger {
+  border-bottom: var(--sherpa-component-accordion-border-width, 1px) solid
+        var(--sherpa-component-accordion-border-color, #d5d5d5);
+}
+:host .trigger-left {
+  display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-2xs, 4px);
+      flex: 1;
+      min-width: 0;
+}
+:host .trigger-right {
+  display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-sm, 12px);
+      flex-shrink: 0;
+}
+:host .trigger-label {
+  color: var(--sherpa-text-default-label, #18191a);
+}
+:host(:not([data-label])) .trigger-label {
+  display: none;
+}
+:host .trigger-icon {
+  display: none;
+      color: var(--sherpa-icon-context-default-body, #2e2e33);
+      font-size: var(--sherpa-fonts-scale-base, 14px);
+}
+:host([data-icon]) .trigger-icon {
+  display: inline-flex;
+}
+:host .chevron {
+  display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--sherpa-space-default, 16px);
+      height: var(--sherpa-space-default, 16px);
+      font-size: var(--sherpa-fonts-scale-sm, 12px);
+      color: var(--sherpa-icon-context-default-body, #2e2e33);
+      transition:
+        transform var(--sherpa-motion-duration-base, 0.2s) var(--sherpa-motion-easing-default, ease);
+}
+:host details[open] .chevron {
+  transform: rotate(-180deg);
+}
+:host .panel {
+  padding: var(--sherpa-space-xs, 8px);
+}
+:host([disabled]) {
+  pointer-events: none;
+}
+:host([disabled]) summary.trigger {
+  background: var(--sherpa-surface-container-inactive, #f5f5f5);
+          color: var(--sherpa-text-inactive-default, #a0a0a0);
+          cursor: not-allowed;
+}
+:host([disabled]) .trigger-label {
+  color: var(--sherpa-text-inactive-default, #a0a0a0);
+}
+:host([disabled]) .chevron,
+:host([disabled]) .trigger-icon {
+  color: var(--sherpa-icon-inactive-default, #a0a0a0);
+}
+
+:host slot[name="actions"] {
+  display: none;
+}
+:host([data-has-actions]) slot[name="actions"] {
+  display: contents;
+}
+:host([hidden]) {
+  display: none;
+}
+

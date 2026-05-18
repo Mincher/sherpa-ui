@@ -231,13 +231,13 @@ export const CURATION = {
       "data-label":       { group: "data",    featured: true },
       "data-description": { group: "data",    featured: true },
       "data-icon":        { group: "data" },
-      "data-selected":    { group: "state",   featured: true },
+      "data-active":      { group: "state",   featured: true },
       "disabled":         { group: "state" },
     },
     presets: [
       { id: "basic",    label: "Basic",    attrs: { "data-label": "Acme Corp",       "data-description": "12 active devices" } },
       { id: "icon",     label: "With icon", attrs: { "data-label": "Settings",       "data-icon": "fa-solid fa-gear" } },
-      { id: "selected", label: "Selected", attrs: { "data-label": "Current page",   "data-selected": "true" } },
+      { id: "active",   label: "Active",   attrs: { "data-label": "Current page",   "data-active": "" } },
     ],
   },
 };

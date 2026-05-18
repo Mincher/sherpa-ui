@@ -15,72 +15,67 @@
   --_toolbar-py: var(--sherpa-space-xs, 8px);
   --_toolbar-px: var(--sherpa-space-sm, 12px);
   --_toolbar-gap: var(--sherpa-space-xs, 8px);
-
   display: flex;
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-
   /* ── Compact density variant ────────────────────────– */
-  &[data-density="compact"] {
-    --_toolbar-py: var(--sherpa-space-2xs, 4px);
-  }
-
   /* ──────────────────────────────────────────────────────────
-     TOOLBAR ROW (main flex container)
-     ────────────────────────────────────────────────────────── */
-  & .toolbar-row {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: var(--_toolbar-gap);
-    padding-block: var(--_toolbar-py);
-    padding-inline: 0px;
-    box-sizing: border-box;
-  }
-
+             TOOLBAR ROW (main flex container)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     ZONES (leading / center / trailing)
-     ────────────────────────────────────────────────────────── */
-  & .leading,
-  & .trailing {
-    display: flex;
-    align-items: center;
-    gap: var(--_toolbar-gap);
-    flex-shrink: 0;
-  }
-
-  & .center {
-    display: flex;
-    align-items: center;
-    gap: var(--_toolbar-gap);
-    flex: 1 1 0;
-    min-width: 0;
-
-    &:not(:has(*)) { display: none; }
-  }
-
+             ZONES (leading / center / trailing)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     ACTIONS ROW (flat button row)
-     ────────────────────────────────────────────────────────── */
-  & .actions-row {
-    flex-wrap: wrap;
-
-    & ::slotted(*) { flex: 0 0 auto; }
-  }
-
+             ACTIONS ROW (flat button row)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     FILTERS ROW (optional filters below toolbar)
-     ────────────────────────────────────────────────────────── */
-  & .filters-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--sherpa-space-xs, 4px);
-
-    &:not(:has(*)) { display: none; }
-  }
-
+             FILTERS ROW (optional filters below toolbar)
+             ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
 }
+:host([data-density="compact"]) {
+  --_toolbar-py: var(--sherpa-space-2xs, 4px);
+}
+:host .toolbar-row {
+  display: flex;
+      align-items: center;
+      width: 100%;
+      gap: var(--_toolbar-gap);
+      padding-block: var(--_toolbar-py);
+      padding-inline: 0px;
+      box-sizing: border-box;
+}
+:host .leading,
+:host .trailing {
+  display: flex;
+      align-items: center;
+      gap: var(--_toolbar-gap);
+      flex-shrink: 0;
+}
+:host .center {
+  display: flex;
+      align-items: center;
+      gap: var(--_toolbar-gap);
+      flex: 1 1 0;
+      min-width: 0;
+  
+      &:not(:has(*)) { display: none; }
+}
+:host .actions-row {
+  flex-wrap: wrap;
+  
+      & ::slotted(*) { flex: 0 0 auto; }
+}
+:host .filters-row {
+  display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--sherpa-space-xs, 4px);
+  
+      &:not(:has(*)) { display: none; }
+}
+:host([hidden]) {
+  display: none;
+}
+

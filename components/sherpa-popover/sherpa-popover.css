@@ -30,204 +30,196 @@
   max-width: 400px;
   background: var(--sherpa-surface-container-default, #ffffff);
   border: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default, #d7d7dc);
+            var(--sherpa-border-container-default, #d7d7dc);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.08),
-    0 4px 12px rgba(0, 0, 0, 0.12);
+            0 1px 4px rgba(0, 0, 0, 0.08),
+            0 4px 12px rgba(0, 0, 0, 0.12);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #18191a);
   box-sizing: border-box;
   overflow: visible;
-
   /* ──────────────────────────────────────────────────────────
-     OPEN STATE
-     ────────────────────────────────────────────────────────── */
-  &[data-open] { display: block; }
-
+             OPEN STATE
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     ANCHOR POSITIONING (@supports fallback for older browsers)
-     ────────────────────────────────────────────────────────── */
+             ANCHOR POSITIONING (@supports fallback for older browsers)
+             ────────────────────────────────────────────────────────── */
   @supports (anchor-name: --test) {
-    &[data-open] { position-anchor: var(--_popover-anchor); }
-
-    /* Bottom (default) */
-    &[data-open],
-    &[data-open][data-position="bottom"] {
-      top: anchor(bottom, 0);
-      left: anchor(center);
-      translate: -50% var(--sherpa-space-xs, 8px);
-      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
-    }
-
-    /* Top */
-    &[data-open][data-position="top"] {
-      bottom: anchor(top, 0);
-      left: anchor(center);
-      translate: -50% calc(var(--sherpa-space-xs, 8px) * -1);
-    }
-
-    /* Left */
-    &[data-open][data-position="left"] {
-      right: anchor(left, 0);
-      top: anchor(center);
-      translate: calc(var(--sherpa-space-xs, 8px) * -1) -50%;
-    }
-
-    /* Right */
-    &[data-open][data-position="right"] {
-      left: anchor(right, 0);
-      top: anchor(center);
-      translate: var(--sherpa-space-xs, 8px) -50%;
-    }
-  }
-
+            &[data-open] { position-anchor: var(--_popover-anchor); }
+        
+            /* Bottom (default) */
+            &[data-open],
+            &[data-open][data-position="bottom"] {
+              top: anchor(bottom, 0);
+              left: anchor(center);
+              translate: -50% var(--sherpa-space-xs, 8px);
+              position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+            }
+        
+            /* Top */
+            &[data-open][data-position="top"] {
+              bottom: anchor(top, 0);
+              left: anchor(center);
+              translate: -50% calc(var(--sherpa-space-xs, 8px) * -1);
+            }
+        
+            /* Left */
+            &[data-open][data-position="left"] {
+              right: anchor(left, 0);
+              top: anchor(center);
+              translate: calc(var(--sherpa-space-xs, 8px) * -1) -50%;
+            }
+        
+            /* Right */
+            &[data-open][data-position="right"] {
+              left: anchor(right, 0);
+              top: anchor(center);
+              translate: var(--sherpa-space-xs, 8px) -50%;
+            }
+          }
   /* ──────────────────────────────────────────────────────────
-     HEADER
-     ────────────────────────────────────────────────────────── */
-  & .popover-header {
-    display: flex;
-    align-items: center;
-    gap: var(--sherpa-space-xs, 8px);
-    padding: var(--sherpa-space-sm, 12px);
-    background: var(--sherpa-surface-container-default, #ffffff);
-    border-bottom: var(--sherpa-border-width-base, 1px) solid
-      var(--sherpa-border-container-default, #d7d7dc);
-    border-radius: var(--sherpa-border-rounding-sm, 4px) var(--sherpa-border-rounding-sm, 4px) 0 0;
-  }
-
-  &(:not([data-heading]):not([data-has-icon]):not([data-has-header-end])) .popover-header {
-    display: none;
-  }
-
-  & .header-title {
-    flex: 1;
-    font-weight: var(--sherpa-font-weight-semibold, 600);
-    line-height: var(--sherpa-line-height-default, 1.4);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  &(:not([data-heading])) .header-title { display: none; }
-
+             HEADER
+             ────────────────────────────────────────────────────────── */
   /* ── Close button ──────────────────────────────────── */
-  & .close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border: none;
-    border-radius: var(--sherpa-border-rounding-sm, 4px);
-    background: transparent;
-    color: var(--sherpa-text-default-secondary, #5c5c66);
-    cursor: pointer;
-    font-size: 12px;
-    padding: 0;
-    flex-shrink: 0;
-
-    &:hover {
-      background: var(--sherpa-surface-container-hover, #f0f0f5);
-      color: var(--sherpa-text-default-body, #18191a);
-    }
-  }
-
   /* ──────────────────────────────────────────────────────────
-     BODY
-     ────────────────────────────────────────────────────────── */
-  & .body {
-    padding: var(--sherpa-space-2xs, 4px) 0;
-    max-height: 400px;
-    overflow: auto;
-  }
-
+             BODY
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     PAGED TEMPLATE (multi-page wizard mode)
-     ────────────────────────────────────────────────────────── */
-  & .body-paged {
-    padding: var(--sherpa-space-sm, 12px);
-
-    & ::slotted(section[data-page]) { display: none; }
-  }
-
-  &[data-page="0"] .body-paged ::slotted(section[data-page="0"]),
-  &[data-page="1"] .body-paged ::slotted(section[data-page="1"]),
-  &[data-page="2"] .body-paged ::slotted(section[data-page="2"]),
-  &[data-page="3"] .body-paged ::slotted(section[data-page="3"]),
-  &[data-page="4"] .body-paged ::slotted(section[data-page="4"]),
-  &[data-page="5"] .body-paged ::slotted(section[data-page="5"]) {
-    display: block;
-  }
-
+             PAGED TEMPLATE (multi-page wizard mode)
+             ────────────────────────────────────────────────────────── */
   /* ── Back button (paged mode) ──────────────────────– */
-  & .page-back {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--sherpa-text-default-secondary, #5c5c66);
-    cursor: pointer;
-    border-radius: var(--sherpa-border-rounding-sm, 4px);
-
-    &:hover {
-      background: var(--sherpa-surface-container-hover, #f0f0f5);
-      color: var(--sherpa-text-default-body, #18191a);
-    }
-  }
-
-  &[data-template="paged"] .page-back { display: inline-flex; }
-
-  &[data-template="paged"][data-page="0"] .page-back,
-  &[data-template="paged"]:not([data-page]) .page-back {
-    visibility: hidden;
-  }
-
   /* ── Footer (paged mode) ───────────────────────────– */
-  & .popover-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sherpa-space-sm, 12px);
-    padding: var(--sherpa-space-sm, 12px);
-    border-top: var(--sherpa-border-width-base, 1px) solid
-      var(--sherpa-border-container-default, #d7d7dc);
-  }
-
-  & .page-indicator {
-    color: var(--sherpa-text-default-secondary, #5c5c66);
-    font-size: var(--sherpa-fonts-scale-sm, 12px);
-  }
-
   /* ──────────────────────────────────────────────────────────
-     SLIDE-IN ANIMATION
-     ────────────────────────────────────────────────────────── */
+             SLIDE-IN ANIMATION
+             ────────────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: no-preference) {
-    &[data-animation="slide"][data-open] {
-      animation: sherpa-popover-slide-in 180ms ease-out both;
-    }
-
-    &[data-animation="slide"][data-open][data-position="top"] {
-      animation-name: sherpa-popover-slide-in-top;
-    }
-
-    &[data-animation="slide"][data-open][data-position="left"] {
-      animation-name: sherpa-popover-slide-in-left;
-    }
-
-    &[data-animation="slide"][data-open][data-position="right"] {
-      animation-name: sherpa-popover-slide-in-right;
-    }
-  }
-
+            &[data-animation="slide"][data-open] {
+              animation: sherpa-popover-slide-in 180ms ease-out both;
+            }
+        
+            &[data-animation="slide"][data-open][data-position="top"] {
+              animation-name: sherpa-popover-slide-in-top;
+            }
+        
+            &[data-animation="slide"][data-open][data-position="left"] {
+              animation-name: sherpa-popover-slide-in-left;
+            }
+        
+            &[data-animation="slide"][data-open][data-position="right"] {
+              animation-name: sherpa-popover-slide-in-right;
+            }
+          }
   /* ── Hidden state ──────────────────────────────────────── */
-  &[hidden] { display: none; }
 }
+:host([data-open]) {
+  display: block;
+}
+:host .popover-header {
+  display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-xs, 8px);
+      padding: var(--sherpa-space-sm, 12px);
+      background: var(--sherpa-surface-container-default, #ffffff);
+      border-bottom: var(--sherpa-border-width-base, 1px) solid
+        var(--sherpa-border-container-default, #d7d7dc);
+      border-radius: var(--sherpa-border-rounding-sm, 4px) var(--sherpa-border-rounding-sm, 4px) 0 0;
+}
+:host(:not([data-heading]):not([data-has-icon]):not([data-has-header-end])) .popover-header {
+  display: none;
+}
+:host .header-title {
+  flex: 1;
+      font-weight: var(--sherpa-font-weight-semibold, 600);
+      line-height: var(--sherpa-line-height-default, 1.4);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+}
+:host(:not([data-heading])) .header-title {
+  display: none;
+}
+:host .close-btn {
+  display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: var(--sherpa-border-rounding-sm, 4px);
+      background: transparent;
+      color: var(--sherpa-text-default-secondary, #5c5c66);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      flex-shrink: 0;
+  
+      &:hover {
+        background: var(--sherpa-surface-container-hover, #f0f0f5);
+        color: var(--sherpa-text-default-body, #18191a);
+      }
+}
+:host .body {
+  padding: var(--sherpa-space-2xs, 4px) 0;
+      max-height: 400px;
+      overflow: auto;
+}
+:host .body-paged {
+  padding: var(--sherpa-space-sm, 12px);
+  
+      & ::slotted(section[data-page]) { display: none; }
+}
+:host([data-page="0"]) .body-paged ::slotted(section[data-page="0"]),
+:host([data-page="1"]) .body-paged ::slotted(section[data-page="1"]),
+:host([data-page="2"]) .body-paged ::slotted(section[data-page="2"]),
+:host([data-page="3"]) .body-paged ::slotted(section[data-page="3"]),
+:host([data-page="4"]) .body-paged ::slotted(section[data-page="4"]),
+:host([data-page="5"]) .body-paged ::slotted(section[data-page="5"]) {
+  display: block;
+}
+:host .page-back {
+  display: none;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--sherpa-text-default-secondary, #5c5c66);
+      cursor: pointer;
+      border-radius: var(--sherpa-border-rounding-sm, 4px);
+  
+      &:hover {
+        background: var(--sherpa-surface-container-hover, #f0f0f5);
+        color: var(--sherpa-text-default-body, #18191a);
+      }
+}
+:host([data-template="paged"]) .page-back {
+  display: inline-flex;
+}
+:host([data-template="paged"][data-page="0"]) .page-back,
+:host([data-template="paged"]:not([data-page])) .page-back {
+  visibility: hidden;
+}
+:host .popover-footer {
+  display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sherpa-space-sm, 12px);
+      padding: var(--sherpa-space-sm, 12px);
+      border-top: var(--sherpa-border-width-base, 1px) solid
+        var(--sherpa-border-container-default, #d7d7dc);
+}
+:host .page-indicator {
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+      font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+:host([hidden]) {
+  display: none;
+}
+
 
 /* Animation keyframes (top-level, outside :host) */
 @keyframes sherpa-popover-slide-in {

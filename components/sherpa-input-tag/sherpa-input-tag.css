@@ -86,22 +86,24 @@
 
 :host {
   /* ── Disabled state ────────────────────────────────────── */
-  &[disabled] {
-    & .tag-chip {
-      background: var(--sherpa-surface-control-inactive, #dddde6);
-      color: var(--sherpa-text-inactive-default, #7e7e8f);
-    }
-
-    & .tag-chip-remove { display: none; }
-  }
-
   /* ── Readonly state ────────────────────────────────────– */
-  &[readonly] {
-    & .tag-chip {
-      background: var(--sherpa-surface-control-inactive, #dddde6);
-      color: var(--sherpa-text-inactive-default, #7e7e8f);
-    }
-
-    & .tag-chip-remove { display: none; }
-  }
 }
+
+:host([disabled]) .tag-chip {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+          color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+:host([disabled]) .tag-chip-remove {
+  display: none;
+}
+
+
+:host([readonly]) .tag-chip {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+          color: var(--sherpa-text-inactive-default, #7e7e8f);
+}
+:host([readonly]) .tag-chip-remove {
+  display: none;
+}
+
+

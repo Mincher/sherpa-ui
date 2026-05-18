@@ -374,111 +374,100 @@ sherpa-filter-bar {
 
 :host([data-orientation="vertical"]) {
   .chart-area {
-    flex-direction: row;
-  }
+            flex-direction: row;
+          }
   .chart-rows {
-    flex-direction: row;
-  }
-
+            flex-direction: row;
+          }
   .chart-row {
-    flex-direction: column;
-    flex: 1 1 0;
-    width: auto;
-    min-width: 40px;
-    height: 100%;
-    justify-content: flex-end;
-  }
-
+            flex-direction: column;
+            flex: 1 1 0;
+            width: auto;
+            min-width: 40px;
+            height: 100%;
+            justify-content: flex-end;
+          }
   .chart-label {
-    flex: 0 0 auto;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    text-align: center;
-    padding-right: 0;
-    padding-top: var(--sherpa-space-2xs, 8px);
-    order: 1;
-  }
-
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            text-align: center;
+            padding-right: 0;
+            padding-top: var(--sherpa-space-2xs, 8px);
+            order: 1;
+          }
   .chart-bar {
-    flex-direction: column-reverse;
-    align-items: center;
-    padding: 0 2px;
-    border-left: none;
-    border-bottom: var(--sherpa-border-width-base, 1px) solid
-      var(--sherpa-border-control-secondary-default, #d5d5d5);
-  }
-
+            flex-direction: column-reverse;
+            align-items: center;
+            padding: 0 2px;
+            border-left: none;
+            border-bottom: var(--sherpa-border-width-base, 1px) solid
+              var(--sherpa-border-control-secondary-default, #d5d5d5);
+          }
   .chart-segment {
-    width: clamp(8px, 100%, 40px);
-    max-width: 40px;
-    height: max(2px, var(--_segment-size, 50%));
-    border-radius: var(--sherpa-border-rounding-sm, 2px)
-      var(--sherpa-border-rounding-sm, 2px) 0 0;
-    animation-name: sherpa-grow-vertical;
-  }
-
+            width: clamp(8px, 100%, 40px);
+            max-width: 40px;
+            height: max(2px, var(--_segment-size, 50%));
+            border-radius: var(--sherpa-border-rounding-sm, 2px)
+              var(--sherpa-border-rounding-sm, 2px) 0 0;
+            animation-name: sherpa-grow-vertical;
+          }
   .chart-axis {
-    flex-direction: column-reverse;
-    padding-top: 0;
-    padding-right: var(--sherpa-space-xs, 12px);
-    order: -1;
-    width: auto;
-    height: 100%;
-  }
-
+            flex-direction: column-reverse;
+            padding-top: 0;
+            padding-right: var(--sherpa-space-xs, 12px);
+            order: -1;
+            width: auto;
+            height: 100%;
+          }
   .chart-axis-pad {
-    display: none;
-  }
-
+            display: none;
+          }
   .chart-axis-values {
-    flex-direction: column-reverse;
-    border-left: none;
-    padding-bottom: calc(
-      var(--sherpa-fonts-scale-sm, 12px) + var(--sherpa-space-2xs, 4px)
-    );
-  }
-
+            flex-direction: column-reverse;
+            border-left: none;
+            padding-bottom: calc(
+              var(--sherpa-fonts-scale-sm, 12px) + var(--sherpa-space-2xs, 4px)
+            );
+          }
   .chart-value {
-    text-align: right;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    &:first-child,
-    &:last-child {
-      text-align: right;
-    }
-  }
-
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            &:first-child,
+            &:last-child {
+              text-align: right;
+            }
+          }
   .chart-value::before {
-    bottom: auto;
-    left: auto;
-    right: 100%;
-    top: 50%;
-    width: 9999px;
-    height: 1px;
-  }
-
+            bottom: auto;
+            left: auto;
+            right: 100%;
+            top: 50%;
+            width: 9999px;
+            height: 1px;
+          }
   .chart-value:first-child::before {
-    left: auto;
-    right: 100%;
-    top: 50%;
-  }
+            left: auto;
+            right: 100%;
+            top: 50%;
+          }
   .chart-value:last-child::before {
-    left: auto;
-    right: 100%;
-    top: 50%;
-  }
-
+            left: auto;
+            right: 100%;
+            top: 50%;
+          }
   .chart-legend {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: auto;
-    min-width: fit-content;
-    max-width: 120px;
-  }
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+            width: auto;
+            min-width: fit-content;
+            max-width: 120px;
+          }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -491,19 +480,18 @@ sherpa-filter-bar {
 
 :host([data-minimal]) {
   min-height: 60px;
-
   .chart-legend {
-    display: none;
-  }
+            display: none;
+          }
   .chart-axis {
-    display: none;
-  }
+            display: none;
+          }
   .chart-label {
-    display: none;
-  }
+            display: none;
+          }
   .chart-bar {
-    border-left: none;
-  }
+            border-left: none;
+          }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -578,17 +566,18 @@ sherpa-filter-bar {
   min-height: 250px;
   flex: 0 0 auto !important;
   overflow: visible !important;
-
   .chart-header {
-    display: none;
-  }
+            display: none;
+          }
   .chart-area {
-    min-height: 220px;
-  }
+            min-height: 220px;
+          }
   .chart-legend {
-    display: flex !important;
-  }
+            display: flex !important;
+          }
 }
 
 /* Native [hidden] support */
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}

@@ -21,110 +21,115 @@ i { font-style: normal; }
 :host {
   display: block;
   position: relative;
-
   /* ──────────────────────────────────────────────────────────
-     HEADER FLEX ROW (gutter-in | body | gutter-out)
-     ────────────────────────────────────────────────────────── */
-  & .header {
-    display: flex;
-    align-items: stretch;
-  }
-
+             HEADER FLEX ROW (gutter-in | body | gutter-out)
+             ────────────────────────────────────────────────────────── */
   /* ── Gutter zones (flex-aligned for natural socket flow) ───– */
-  & .gutter {
-    flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
-    display: flex;
-    align-items: center;
-    overflow: visible;
-  }
-
-  & .gutter-in { justify-content: flex-start; }
-  & .gutter-out { justify-content: flex-end; }
-
   /* ── Sockets positioned half-width outside the gutter ────– */
-  & .gutter-in ::slotted(*) { transform: translateX(-50%); }
-  & .gutter-out ::slotted(*) { transform: translateX(50%); }
-
   /* ──────────────────────────────────────────────────────────
-     HEADER BODY (icon + title + actions)
-     ────────────────────────────────────────────────────────── */
-  & .header-body {
-    flex: 1 1 auto;
-    display: flex;
-    align-items: center;
-    gap: var(--sherpa-space-xs, 8px);
-    padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-    min-width: 0;
-  }
-
+             HEADER BODY (icon + title + actions)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     ICON (leading, 24x24)
-     ────────────────────────────────────────────────────────── */
-  & .icon {
-    display: inline-flex;
-    width: 24px;
-    height: 24px;
-    align-items: center;
-    justify-content: center;
-    color: var(--sherpa-text-default-body, #2e2e33);
-    flex: 0 0 auto;
-    font-size: 18px;
-  }
-
+             ICON (leading, 24x24)
+             ────────────────────────────────────────────────────────── */
   /* Hide icon container if empty and no built-in shorthand */
-  &(:not([data-icon])) .icon-built-in { display: none; }
-  & .icon:not([data-has-content]):not([data-has-built-in]) { display: none; }
-
   /* ──────────────────────────────────────────────────────────
-     TITLE (16px/600, truncated)
-     ────────────────────────────────────────────────────────── */
-  & .title {
-    flex: 1 1 auto;
-    font-size: var(--sherpa-font-base-size, 16px);
-    font-weight: 600;
-    color: var(--sherpa-text-default-heading, #18191a);
-    line-height: 1.5;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
+             TITLE (16px/600, truncated)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     ACTIONS (trailing zone: drill-down + slotted)
-     ────────────────────────────────────────────────────────── */
-  & .actions {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sherpa-space-2xs, 4px);
-    flex: 0 0 auto;
-  }
-
+             ACTIONS (trailing zone: drill-down + slotted)
+             ────────────────────────────────────────────────────────── */
   /* ── Drill-down button (conditional) ──────────────────– */
-  & .drill-down {
-    all: unset;
-    display: none;
-    width: 28px;
-    height: 28px;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--sherpa-border-rounding-base, 4px);
-    background: var(--sherpa-surface-container-default, #ffffff);
-    border: 1px solid var(--sherpa-border-container-default, #d5d5d5);
-    color: var(--sherpa-text-default-body, #2e2e33);
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 150ms ease, border-color 150ms ease;
-
-    &:hover {
-      background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default, #ffffff));
-      border-color: var(--sherpa-border-container-default, #d5d5d5);
-    }
-
-    &:active { transform: scale(0.96); }
-  }
-
-  &[data-drill-down] .drill-down { display: inline-flex; }
-
   /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
 }
+:host .header {
+  display: flex;
+      align-items: stretch;
+}
+:host .gutter {
+  flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
+      display: flex;
+      align-items: center;
+      overflow: visible;
+}
+:host .gutter-in {
+  justify-content: flex-start;
+}
+:host .gutter-out {
+  justify-content: flex-end;
+}
+:host .gutter-in ::slotted(*) {
+  transform: translateX(-50%);
+}
+:host .gutter-out ::slotted(*) {
+  transform: translateX(50%);
+}
+:host .header-body {
+  flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-xs, 8px);
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      min-width: 0;
+}
+:host .icon {
+  display: inline-flex;
+      width: 24px;
+      height: 24px;
+      align-items: center;
+      justify-content: center;
+      color: var(--sherpa-text-default-body, #2e2e33);
+      flex: 0 0 auto;
+      font-size: 18px;
+}
+:host(:not([data-icon])) .icon-built-in {
+  display: none;
+}
+:host .icon:not([data-has-content]):not([data-has-built-in]) {
+  display: none;
+}
+:host .title {
+  flex: 1 1 auto;
+      font-size: var(--sherpa-font-base-size, 16px);
+      font-weight: 600;
+      color: var(--sherpa-text-default-heading, #18191a);
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+}
+:host .actions {
+  display: inline-flex;
+      align-items: center;
+      gap: var(--sherpa-space-2xs, 4px);
+      flex: 0 0 auto;
+}
+:host .drill-down {
+  all: unset;
+      display: none;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--sherpa-border-rounding-base, 4px);
+      background: var(--sherpa-surface-container-default, #ffffff);
+      border: 1px solid var(--sherpa-border-container-default, #d5d5d5);
+      color: var(--sherpa-text-default-body, #2e2e33);
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 150ms ease, border-color 150ms ease;
+  
+      &:hover {
+        background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default, #ffffff));
+        border-color: var(--sherpa-border-container-default, #d5d5d5);
+      }
+  
+      &:active { transform: scale(0.96); }
+}
+:host([data-drill-down]) .drill-down {
+  display: inline-flex;
+}
+:host([hidden]) {
+  display: none;
+}
+

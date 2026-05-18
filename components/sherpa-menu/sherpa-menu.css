@@ -19,11 +19,11 @@
 
 :host {
   --_shadow: var(--sherpa-shadow-default-md, var(--sherpa-elevation-offset-x-default, 4px)
-    var(--sherpa-elevation-offset-y-default, 4px)
-    var(--sherpa-elevation-blur-default, 12px)
-    var(--sherpa-elevation-spread-default, -2px)
-    var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
-    0 4px 4px 0 rgba(0, 0, 0, 0.25));
+            var(--sherpa-elevation-offset-y-default, 4px)
+            var(--sherpa-elevation-blur-default, 12px)
+            var(--sherpa-elevation-spread-default, -2px)
+            var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
+            0 4px 4px 0 rgba(0, 0, 0, 0.25));
   --_surface: var(--sherpa-surface-container-default, #ffffff);
   --_border-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
   --_border-width: var(--sherpa-border-width-base, 1px);
@@ -32,7 +32,6 @@
   --_gap: var(--sherpa-space-xs, 12px);
   --_gap-sm: var(--sherpa-space-2xs, 8px);
   --_padding: var(--sherpa-space-sm, 16px);
-
   display: none;
   background-color: var(--_surface);
   border: var(--_border-width) solid var(--_border-color);
@@ -43,151 +42,150 @@
   box-sizing: border-box;
   color: var(--_text);
   outline: none;
-
   /* ──────────────────────────────────────────────────────────
-     OPEN STATE
-     ────────────────────────────────────────────────────────── */
-  &[open] { display: block; }
-
+             OPEN STATE
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     MENU SURFACE (shadow DOM wrapper)
-     ────────────────────────────────────────────────────────── */
-  & .menu-surface {
-    display: flex;
-    flex-direction: column;
-    gap: var(--_gap);
-    padding: var(--_padding);
-    box-sizing: border-box;
-    overflow: auto;
-  }
-
+             MENU SURFACE (shadow DOM wrapper)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     LAYOUT VARIANTS
-     ────────────────────────────────────────────────────────── */
+             LAYOUT VARIANTS
+             ────────────────────────────────────────────────────────── */
   /* Actions layout: horizontal row of icon buttons */
-  &[data-layout="actions"] {
-    min-width: auto;
+  /* ──────────────────────────────────────────────────────────
+             LOADER STATE
+             ────────────────────────────────────────────────────────── */
+  /* ──────────────────────────────────────────────────────────
+             SLOTTED CONTENT
+             ────────────────────────────────────────────────────────── */
+  /* Item lists (ul elements) */
+  /* Explicit dividers (hr elements) */
+  /* Hidden items (search filtering) */
+  /* ──────────────────────────────────────────────────────────
+             POPOVER MODE (fixed positioning with anchor)
+             ────────────────────────────────────────────────────────── */
+  @supports (anchor-name: --test) {
+            /* Bottom-start (default): menu drops below, left-aligned */
+            &[popover][open] {
+              position-anchor: var(--sherpa-menu-anchor);
+              top: anchor(bottom);
+              left: anchor(left);
+              position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+            }
+        
+            /* Bottom-end: menu drops below, right-aligned */
+            &[popover][open][data-position="bottom-end"] {
+              left: auto;
+              right: anchor(right);
+            }
+        
+            /* Top-start: menu opens above, left-aligned */
+            &[popover][open][data-position="top-start"] {
+              top: auto;
+              bottom: anchor(top);
+            }
+        
+            /* Top-end: menu opens above, right-aligned */
+            &[popover][open][data-position="top-end"] {
+              top: auto;
+              bottom: anchor(top);
+              left: auto;
+              right: anchor(right);
+            }
+          }
+  /* ── Hidden state ───────────────────────────────────────– */
+}
+:host([open]) {
+  display: block;
+}
+:host .menu-surface {
+  display: flex;
+      flex-direction: column;
+      gap: var(--_gap);
+      padding: var(--_padding);
+      box-sizing: border-box;
+      overflow: auto;
+}
+:host([data-layout="actions"]) {
+  min-width: auto;
+}
+:host([data-layout="actions"]) .menu-surface {
+  flex-direction: row;
+          align-items: center;
+          gap: var(--_gap-sm);
+          padding: var(--_gap-sm);
+}
+:host([data-layout="actions"]) ::slotted(ul) {
+  flex-direction: row;
+  padding: 0;
+  border-bottom: none;
+  gap: var(--_gap-sm);
+}
 
-    & .menu-surface {
-      flex-direction: row;
+:host .menu-loader {
+  display: none;
       align-items: center;
       gap: var(--_gap-sm);
-      padding: var(--_gap-sm);
-    }
-
-    & ::slotted(ul) {
-      flex-direction: row;
-      padding: 0;
-      border-bottom: none;
-      gap: var(--_gap-sm);
-    }
-  }
-
-  /* ──────────────────────────────────────────────────────────
-     LOADER STATE
-     ────────────────────────────────────────────────────────── */
-  & .menu-loader {
-    display: none;
-    align-items: center;
-    gap: var(--_gap-sm);
-    padding: var(--_gap-sm) var(--_padding);
-    color: var(--_text);
-    min-height: var(--sherpa-size-3xl, 36px);
-  }
-
-  & .menu-loader-spinner {
-    display: inline-block;
-    width: var(--sherpa-size-md, 16px);
-    height: var(--sherpa-size-md, 16px);
-    border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
-    border-top-color: var(--sherpa-border-control-active-default, #0060df);
-    border-radius: 50%;
-    animation: sherpa-menu-spin 700ms linear infinite;
-  }
-
-  & .menu-loader-text:empty { display: none; }
-
-  &[data-loading] {
-    & .menu-loader { display: inline-flex; }
-    & ::slotted(*) { display: none !important; }
-  }
-
-  /* ──────────────────────────────────────────────────────────
-     SLOTTED CONTENT
-     ────────────────────────────────────────────────────────── */
-  /* Item lists (ul elements) */
-  & ::slotted(ul) {
-    display: flex;
-    flex-direction: column;
-    gap: var(--_gap-sm);
-    list-style: none;
-    margin: 0;
-    padding: 0 0 var(--_gap-sm) 0;
-    border-bottom: var(--_border-width) solid var(--_border-color);
-  }
-
-  & ::slotted(ul:last-child) {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-
-  /* Explicit dividers (hr elements) */
-  & ::slotted(hr) {
-    height: 1px;
-    border: none;
-    background-color: var(--_border-color);
-    margin: var(--_gap-sm) 0;
-  }
-
-  /* Hidden items (search filtering) */
-  & ::slotted([hidden]) { display: none !important; }
-
-  /* ──────────────────────────────────────────────────────────
-     POPOVER MODE (fixed positioning with anchor)
-     ────────────────────────────────────────────────────────── */
-  &[popover] {
-    position: fixed;
-    margin: 0;
-    inset: auto;
-    z-index: 10000;
-    overflow: visible;
-  }
-
-  &[popover][open] { display: block; }
-
-  @supports (anchor-name: --test) {
-    /* Bottom-start (default): menu drops below, left-aligned */
-    &[popover][open] {
-      position-anchor: var(--sherpa-menu-anchor);
-      top: anchor(bottom);
-      left: anchor(left);
-      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
-    }
-
-    /* Bottom-end: menu drops below, right-aligned */
-    &[popover][open][data-position="bottom-end"] {
-      left: auto;
-      right: anchor(right);
-    }
-
-    /* Top-start: menu opens above, left-aligned */
-    &[popover][open][data-position="top-start"] {
-      top: auto;
-      bottom: anchor(top);
-    }
-
-    /* Top-end: menu opens above, right-aligned */
-    &[popover][open][data-position="top-end"] {
-      top: auto;
-      bottom: anchor(top);
-      left: auto;
-      right: anchor(right);
-    }
-  }
-
-  /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
+      padding: var(--_gap-sm) var(--_padding);
+      color: var(--_text);
+      min-height: var(--sherpa-size-3xl, 36px);
 }
+:host .menu-loader-spinner {
+  display: inline-block;
+      width: var(--sherpa-size-md, 16px);
+      height: var(--sherpa-size-md, 16px);
+      border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+      border-top-color: var(--sherpa-border-control-active-default, #0060df);
+      border-radius: 50%;
+      animation: sherpa-menu-spin 700ms linear infinite;
+}
+:host .menu-loader-text:empty {
+  display: none;
+}
+
+:host([data-loading]) .menu-loader {
+  display: inline-flex;
+}
+:host([data-loading]) ::slotted(*) {
+  display: none !important;
+}
+
+:host ::slotted(ul) {
+  display: flex;
+      flex-direction: column;
+      gap: var(--_gap-sm);
+      list-style: none;
+      margin: 0;
+      padding: 0 0 var(--_gap-sm) 0;
+      border-bottom: var(--_border-width) solid var(--_border-color);
+}
+:host ::slotted(ul:last-child) {
+  padding-bottom: 0;
+      border-bottom: none;
+}
+:host ::slotted(hr) {
+  height: 1px;
+      border: none;
+      background-color: var(--_border-color);
+      margin: var(--_gap-sm) 0;
+}
+:host ::slotted([hidden]) {
+  display: none !important;
+}
+:host([popover]) {
+  position: fixed;
+  margin: 0;
+  inset: auto;
+  z-index: 10000;
+  overflow: visible;
+}
+:host([popover][open]) {
+  display: block;
+}
+:host([hidden]) {
+  display: none;
+}
+
 
 /* Animation keyframes (top-level, outside :host) */
 @keyframes sherpa-menu-spin {

@@ -44,7 +44,6 @@ i {
   --_group-parent-bg: var(--sherpa-surface-container-default, #fff);
   --_stripe-bg: var(--sherpa-surface-container-secondary-default, #f8f8f810);
   --_pin-offset: 0px;
-
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
@@ -59,95 +58,128 @@ i {
   color: var(--sherpa-text-default-body, #111);
   container-type: inline-size;
   container-name: data-grid;
-
-  & .grid-toolbar { display: none; }
-  &[data-show-toolbar] .grid-toolbar { display: flex; }
-
-  & .actions-btn { display: none; }
-  &[data-has-selection] .actions-btn { display: inline-flex; }
-
-  & .toolbar-trailing { display: flex; align-items: center; gap: var(--sherpa-space-2xs, 4px); }
-  & .global-search { width: 200px; }
-
-  & sherpa-filter-bar { display: none; flex-shrink: 0; }
-  &[data-filters] sherpa-filter-bar { display: flex; padding-bottom: var(--sherpa-space-xs, 8px); }
-
-  & .table-container { flex: 1 1 0; min-height: 0; overflow: auto; container-type: scroll-state; }
-
-  & .empty-state { display: none; padding: var(--sherpa-space-2xl, 48px) var(--sherpa-space-lg, 24px); text-align: center; }
-  &[data-empty] .empty-state { display: block; }
-  &[data-empty] .table-container { display: none; }
-  &[data-empty] .grid-pagination { display: none; }
-
-  & .grid-pagination { flex-shrink: 0; }
-  &(:not([data-show-pagination="true"])) .grid-pagination { display: none; }
-
-  &[data-loading] tbody { opacity: 0.5; pointer-events: none; }
-
-  &[data-pdf-mode] .grid-pagination { display: none; }
-  &[data-pdf-mode] .selection-cell,
-  &[data-pdf-mode] th.selection-col { display: none; }
-  &[data-pdf-mode] .action-cell,
-  &[data-pdf-mode] th.action-col { display: none; }
-  &[data-pdf-mode] .secondary-headers { display: none; }
-
-  &[data-density="compact"] {
-    --_cell-h: 24px;
-    --_header-h: 28px;
-    font-size: var(--sherpa-font-xs-size, 10px);
-    line-height: var(--sherpa-fonts-scale-lg, 16px);
-  }
-
-  &[data-density="comfortable"] {
-    --_cell-h: 40px;
-    --_header-h: 48px;
-  }
-
-  &[data-selectable="true"] { --_pin-offset: var(--_selection-col-w); }
-
-  &(:not([data-selectable="true"])) .selection-cell,
-  &(:not([data-selectable="true"])) th.selection-col { display: none; }
-
-  &(:not([data-show-actions="true"])) .action-cell,
-  &(:not([data-show-actions="true"])) th.action-col { display: none; }
-
-  &(:not([data-show-secondary-headers="true"])) .secondary-headers { display: none; }
-
-  & table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    table-layout: fixed;
-  }
-
-  & thead {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-
-    & th {
-      padding: 0 var(--_cell-px);
-      height: var(--_header-h);
-      text-align: left;
-      vertical-align: middle;
-      background-color: var(--_header-bg);
-      border-bottom: var(--_border);
-      border-right: var(--_border-right);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: var(--_cell-min-w);
-      font-weight: 600;
-      font-size: var(--sherpa-font-base-size, 14px);
-      line-height: var(--sherpa-font-base-line-height, 20px);
-      letter-spacing: 0.1px;
-      color: var(--sherpa-text-default-label, #464646);
-      font-family: inherit;
-    }
-  }
-
-  &[hidden] { display: none; }
 }
+:host .grid-toolbar {
+  display: none;
+}
+:host([data-show-toolbar]) .grid-toolbar {
+  display: flex;
+}
+:host .actions-btn {
+  display: none;
+}
+:host([data-has-selection]) .actions-btn {
+  display: inline-flex;
+}
+:host .toolbar-trailing {
+  display: flex; align-items: center; gap: var(--sherpa-space-2xs, 4px);
+}
+:host .global-search {
+  width: 200px;
+}
+:host sherpa-filter-bar {
+  display: none; flex-shrink: 0;
+}
+:host([data-filters]) sherpa-filter-bar {
+  display: flex; padding-bottom: var(--sherpa-space-xs, 8px);
+}
+:host .table-container {
+  flex: 1 1 0; min-height: 0; overflow: auto; container-type: scroll-state;
+}
+:host .empty-state {
+  display: none; padding: var(--sherpa-space-2xl, 48px) var(--sherpa-space-lg, 24px); text-align: center;
+}
+:host([data-empty]) .empty-state {
+  display: block;
+}
+:host([data-empty]) .table-container {
+  display: none;
+}
+:host([data-empty]) .grid-pagination {
+  display: none;
+}
+:host .grid-pagination {
+  flex-shrink: 0;
+}
+:host(:not([data-show-pagination="true"])) .grid-pagination {
+  display: none;
+}
+:host([data-loading]) tbody {
+  opacity: 0.5; pointer-events: none;
+}
+:host([data-pdf-mode]) .grid-pagination {
+  display: none;
+}
+:host([data-pdf-mode]) .selection-cell,
+:host([data-pdf-mode]) th.selection-col {
+  display: none;
+}
+:host([data-pdf-mode]) .action-cell,
+:host([data-pdf-mode]) th.action-col {
+  display: none;
+}
+:host([data-pdf-mode]) .secondary-headers {
+  display: none;
+}
+:host([data-density="compact"]) {
+  --_cell-h: 24px;
+  --_header-h: 28px;
+  font-size: var(--sherpa-font-xs-size, 10px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+}
+:host([data-density="comfortable"]) {
+  --_cell-h: 40px;
+  --_header-h: 48px;
+}
+:host([data-selectable="true"]) {
+  --_pin-offset: var(--_selection-col-w);
+}
+:host(:not([data-selectable="true"])) .selection-cell,
+:host(:not([data-selectable="true"])) th.selection-col {
+  display: none;
+}
+:host(:not([data-show-actions="true"])) .action-cell,
+:host(:not([data-show-actions="true"])) th.action-col {
+  display: none;
+}
+:host(:not([data-show-secondary-headers="true"])) .secondary-headers {
+  display: none;
+}
+:host table {
+  width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+}
+:host thead {
+  position: sticky;
+      top: 0;
+      z-index: 2;
+  
+      & th {
+        padding: 0 var(--_cell-px);
+        height: var(--_header-h);
+        text-align: left;
+        vertical-align: middle;
+        background-color: var(--_header-bg);
+        border-bottom: var(--_border);
+        border-right: var(--_border-right);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: var(--_cell-min-w);
+        font-weight: 600;
+        font-size: var(--sherpa-font-base-size, 14px);
+        line-height: var(--sherpa-font-base-line-height, 20px);
+        letter-spacing: 0.1px;
+        color: var(--sherpa-text-default-label, #464646);
+        font-family: inherit;
+      }
+}
+:host([hidden]) {
+  display: none;
+}
+
 
 /* Primary header cells — sortable */
 .primary-headers th.header-cell {
@@ -803,4 +835,6 @@ tr[data-group-child] td.selection-cell {
 }
 
 /* Native [hidden] support */
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}

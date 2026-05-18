@@ -26,7 +26,6 @@
   --_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 16px) * 2));
   --_label-weight: 500;
   --_indent: var(--sherpa-space-default, 20px);
-
   color-scheme: dark;
   container: sherpa-nav / inline-size;
   interpolate-size: allow-keywords;
@@ -36,14 +35,14 @@
   width: var(--_w-collapsed);
   background: var(--sherpa-surface-app-product-nav-bg, #ffffff);
   /* nav-bg is neutral (neutral-0 / neutral-1000), not a saturated brand fill,
-     so use the mode-aware default heading colour rather than the always-white
-     on-color variant. The on-color tokens are only correct on saturated/strong
-     surfaces (e.g. sherpa-button primary, sherpa-tag color). */
+             so use the mode-aware default heading colour rather than the always-white
+             on-color variant. The on-color tokens are only correct on saturated/strong
+             surfaces (e.g. sherpa-button primary, sherpa-tag color). */
   color: var(--sherpa-text-default-heading, #18191a);
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   transition: width var(--sherpa-motion-duration-base, 0.25s)
-    var(--sherpa-motion-easing-default, ease-out);
+            var(--sherpa-motion-easing-default, ease-out);
   z-index: 200;
   user-select: none;
 }
@@ -526,4 +525,6 @@ sherpa-nav-promo {
 }
 
 /* Native [hidden] support */
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}

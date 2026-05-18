@@ -16,91 +16,90 @@
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-
   /* ──────────────────────────────────────────────────────────
-     COMPOSER WRAPPER (gradient border + grid layout)
-     ────────────────────────────────────────────────────────── */
-  & .composer {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: end;
-    gap: var(--sherpa-space-xs, 8px);
-    padding: var(--sherpa-space-xs, 10px) var(--sherpa-space-sm, 12px);
-    border-radius: 14px;
-    background:
-      linear-gradient(
-        var(--sherpa-surface-container-default, #fff),
-        var(--sherpa-surface-container-default, #fff)
-      ) padding-box,
-      var(--sherpa-ai-accent-gradient,
-        linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%)
-      ) border-box;
-    border: 1.5px solid transparent;
-    transition: box-shadow 120ms ease;
-
-    &:focus-within { box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12); }
-  }
-
+             COMPOSER WRAPPER (gradient border + grid layout)
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     INPUT TEXTAREA
-     ────────────────────────────────────────────────────────── */
-  & .composer-input {
-    all: unset;
-    font-family: inherit;
-    font-size: var(--sherpa-fonts-scale-sm, 13px);
-    line-height: var(--sherpa-line-height-default, 1.45);
-    min-height: 22px;
-    max-height: var(--_max-height, 160px);
-    resize: none;
-    overflow-y: auto;
-    color: var(--sherpa-text-default-body, #2e2e33);
-    width: 100%;
-    box-sizing: border-box;
-
-    &::placeholder { color: var(--sherpa-text-default-placeholder, #94a3b8); }
-
-    &:disabled {
-      color: var(--sherpa-text-inactive-default, #b0b0b8);
-      cursor: not-allowed;
-    }
-  }
-
+             INPUT TEXTAREA
+             ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
-     SEND BUTTON (circular, gradient hover)
-     ────────────────────────────────────────────────────────── */
-  & .composer-send {
-    all: unset;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: var(--sherpa-surface-container-hover, #e5e7eb);
-    color: var(--sherpa-text-default-secondary, #6b7280);
-    font-size: 12px;
-    transition: background-color 120ms ease, color 120ms ease;
-    flex-shrink: 0;
-
-    &:hover {
-      background: var(--sherpa-surface-context-info-subtle-default, #2563eb);
-      color: var(--sherpa-text-context-info-default, #fff);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--sherpa-border-context-info-default, #2563eb);
-      outline-offset: 2px;
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-      background: var(--sherpa-surface-control-inactive, #e5e7eb);
-      color: var(--sherpa-text-inactive-default, #b0b0b8);
-    }
-  }
-
+             SEND BUTTON (circular, gradient hover)
+             ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
-  &[hidden] { display: none; }
 }
+:host .composer {
+  position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: var(--sherpa-space-xs, 8px);
+      padding: var(--sherpa-space-xs, 10px) var(--sherpa-space-sm, 12px);
+      border-radius: 14px;
+      background:
+        linear-gradient(
+          var(--sherpa-surface-container-default, #fff),
+          var(--sherpa-surface-container-default, #fff)
+        ) padding-box,
+        var(--sherpa-ai-accent-gradient,
+          linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%)
+        ) border-box;
+      border: 1.5px solid transparent;
+      transition: box-shadow 120ms ease;
+  
+      &:focus-within { box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12); }
+}
+:host .composer-input {
+  all: unset;
+      font-family: inherit;
+      font-size: var(--sherpa-fonts-scale-sm, 13px);
+      line-height: var(--sherpa-line-height-default, 1.45);
+      min-height: 22px;
+      max-height: var(--_max-height, 160px);
+      resize: none;
+      overflow-y: auto;
+      color: var(--sherpa-text-default-body, #2e2e33);
+      width: 100%;
+      box-sizing: border-box;
+  
+      &::placeholder { color: var(--sherpa-text-default-placeholder, #94a3b8); }
+  
+      &:disabled {
+        color: var(--sherpa-text-inactive-default, #b0b0b8);
+        cursor: not-allowed;
+      }
+}
+:host .composer-send {
+  all: unset;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--sherpa-surface-container-hover, #e5e7eb);
+      color: var(--sherpa-text-default-secondary, #6b7280);
+      font-size: 12px;
+      transition: background-color 120ms ease, color 120ms ease;
+      flex-shrink: 0;
+  
+      &:hover {
+        background: var(--sherpa-surface-context-info-subtle-default, #2563eb);
+        color: var(--sherpa-text-context-info-default, #fff);
+      }
+  
+      &:focus-visible {
+        outline: 2px solid var(--sherpa-border-context-info-default, #2563eb);
+        outline-offset: 2px;
+      }
+  
+      &:disabled {
+        cursor: not-allowed;
+        background: var(--sherpa-surface-control-inactive, #e5e7eb);
+        color: var(--sherpa-text-inactive-default, #b0b0b8);
+      }
+}
+:host([hidden]) {
+  display: none;
+}
+

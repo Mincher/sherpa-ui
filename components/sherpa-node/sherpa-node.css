@@ -28,7 +28,6 @@
 
 :host {
   --_node-accent: var(--sherpa-node-border-default, #d5d5d5);
-
   position: absolute;
   display: flex;
   flex-direction: column;
@@ -41,75 +40,93 @@
   contain: layout style;
   transform: translate3d(var(--sherpa-node-x, 0px), var(--sherpa-node-y, 0px), 0);
   will-change: transform;
-
-  &[data-kind="source"] { --_node-accent: var(--sherpa-node-border-source, #0179aa); }
-  &[data-kind="output"] { --_node-accent: var(--sherpa-node-border-output, #048142); }
-  &[data-kind="chat"]   { --_node-accent: var(--sherpa-node-border-chat, #c046ff); }
-  &[data-kind="group"]  { --_node-accent: var(--sherpa-node-border-group, #0179aa); }
-
-  &[data-kind="output"]:not(:has(sherpa-node-socket[data-direction="in"][data-connected])) {
-    --_node-accent: var(--sherpa-node-border-output-error, #dd2c01);
-  }
-
-  & .node {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    background: var(--sherpa-node-body-default, #ffffff);
-    border: 1px solid var(--_node-accent);
-    border-radius: var(--sherpa-node-radius, 8px);
-    box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
-    transition: box-shadow 150ms ease, border-color 150ms ease;
-  }
-
-  &[data-kind="source"] .node { background: var(--sherpa-node-body-source, #f7fdff); }
-  &[data-kind="output"] .node { background: var(--sherpa-node-body-output, #f0fff8); }
-  &[data-kind="chat"]   .node { background: var(--sherpa-node-body-chat, #f8ebff); }
-  &[data-kind="group"]  .node { background: var(--sherpa-node-body-group, #f7fdff); }
-
-  &[data-kind="output"]:not(:has(sherpa-node-socket[data-direction="in"][data-connected])) .node {
-    background: var(--sherpa-node-body-output-error, #fff7f5);
-  }
-
-  &[data-selected] {
-    z-index: 10;
-
-    & .node {
-      outline: 2px solid var(--_node-accent);
-      outline-offset: 1px;
-    }
-  }
-
-  & .node-header { display: block; }
-  & .node-rows { display: flex; flex-direction: column; }
-
-  & .node-footer {
-    display: flex;
-    align-items: stretch;
-    min-height: 0;
-    padding: var(--sherpa-space-xs, 8px) 0;
-  }
-
-  & .node-footer .gutter {
-    flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
-    display: flex;
-    align-items: center;
-    overflow: visible;
-  }
-
-  & .node-footer .gutter-in  { justify-content: flex-start; }
-  & .node-footer .gutter-out { justify-content: flex-end; }
-  & .node-footer .gutter-in  ::slotted(*) { transform: translateX(-50%); }
-  & .node-footer .gutter-out ::slotted(*) { transform: translateX(50%); }
-
-  & .footer-body {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    padding: 0 var(--sherpa-space-sm, 12px);
-  }
 }
+:host([data-kind="source"]) {
+  --_node-accent: var(--sherpa-node-border-source, #0179aa);
+}
+:host([data-kind="output"]) {
+  --_node-accent: var(--sherpa-node-border-output, #048142);
+}
+:host([data-kind="chat"]) {
+  --_node-accent: var(--sherpa-node-border-chat, #c046ff);
+}
+:host([data-kind="group"]) {
+  --_node-accent: var(--sherpa-node-border-group, #0179aa);
+}
+:host([data-kind="output"]:not(:has(sherpa-node-socket[data-direction="in"][data-connected]))) {
+  --_node-accent: var(--sherpa-node-border-output-error, #dd2c01);
+}
+:host .node {
+  position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--sherpa-node-body-default, #ffffff);
+      border: 1px solid var(--_node-accent);
+      border-radius: var(--sherpa-node-radius, 8px);
+      box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
+      transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+:host([data-kind="source"]) .node {
+  background: var(--sherpa-node-body-source, #f7fdff);
+}
+:host([data-kind="output"]) .node {
+  background: var(--sherpa-node-body-output, #f0fff8);
+}
+:host([data-kind="chat"])   .node {
+  background: var(--sherpa-node-body-chat, #f8ebff);
+}
+:host([data-kind="group"])  .node {
+  background: var(--sherpa-node-body-group, #f7fdff);
+}
+:host([data-kind="output"]:not(:has(sherpa-node-socket[data-direction="in"][data-connected]))) .node {
+  background: var(--sherpa-node-body-output-error, #fff7f5);
+}
+:host([data-selected]) {
+  z-index: 10;
+  
+      & .node {
+        outline: 2px solid var(--_node-accent);
+        outline-offset: 1px;
+      }
+}
+:host .node-header {
+  display: block;
+}
+:host .node-rows {
+  display: flex; flex-direction: column;
+}
+:host .node-footer {
+  display: flex;
+      align-items: stretch;
+      min-height: 0;
+      padding: var(--sherpa-space-xs, 8px) 0;
+}
+:host .node-footer .gutter {
+  flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
+      display: flex;
+      align-items: center;
+      overflow: visible;
+}
+:host .node-footer .gutter-in {
+  justify-content: flex-start;
+}
+:host .node-footer .gutter-out {
+  justify-content: flex-end;
+}
+:host .node-footer .gutter-in  ::slotted(*) {
+  transform: translateX(-50%);
+}
+:host .node-footer .gutter-out ::slotted(*) {
+  transform: translateX(50%);
+}
+:host .footer-body {
+  flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 var(--sherpa-space-sm, 12px);
+}
+
 /* Hide footer entirely when no slot in this region has any content.
    `data-has-{slot}` is auto-mirrored on the host by SherpaElement.
    `:has()` cannot be used here because the slotted children live in
@@ -138,4 +155,6 @@
 ::slotted(template) { display: none !important; }
 
 /* Native [hidden] support */
-:host([hidden]) { display: none; }
+:host([hidden]) {
+  display: none;
+}

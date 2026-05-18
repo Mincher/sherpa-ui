@@ -48,12 +48,14 @@ i { font-style: normal; }
 
 :host {
   /* ── With value state ────────────────────────
-     Show clear button + control-group layout when input has value */
-  &[data-has-value] {
-    & .search-clear { display: inline-flex; }
-    & .search-wrapper { display: flex; }
-  }
-
+       Show clear button + control-group layout when input has value */
   /* ── Hidden state ────────────────────────── */
-  &[hidden] { display: none; }
 }
+:host([data-has-value]) {
+  & .search-clear { display: inline-flex; }
+      & .search-wrapper { display: flex; }
+}
+:host([hidden]) {
+  display: none;
+}
+

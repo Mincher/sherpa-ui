@@ -43,80 +43,81 @@
   margin: 0;
   background-color: transparent;
   box-sizing: border-box;
-
-  &[data-fill="viewport"] {
-    min-height: 0;
-    max-height: 100dvh;
-    overflow: hidden;
-
-    & .grid-body { min-height: 0; }
-    & .grid-surface { overflow: auto; min-height: 0; }
-  }
-
-  & .grid-header {
-    flex: 0 0 auto;
-    display: none;
-  }
-
-  &[data-heading] .grid-header { display: block; }
-
-  & .grid-body {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-  }
-
-  & .side-panel-start,
-  & .side-panel-end {
-    display: flex;
-    flex: 0 0 auto;
-    align-self: stretch;
-  }
-
-  &(:not([data-has-side-panel-start])) .side-panel-start { display: none; }
-  &(:not([data-has-side-panel-end])) .side-panel-end { display: none; }
-
-  & .grid-surface {
-    display: grid;
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 0;
-    width: 100%;
-    box-sizing: border-box;
-    container-type: inline-size;
-    container-name: sherpa-layout-grid;
-    --maxColCount: 12;
-    --row-height: var(--sherpa-space-default, 16px);
-    --row-height: calc(var(--sherpa-space-default, 16px) * 10);
-    grid-template-columns: repeat(var(--maxColCount), 1fr);
-    grid-auto-rows: var(--row-height);
-    padding: var(--sherpa-space-sm, 12px);
-    gap: var(--sherpa-space-xs, 8px);
-    align-content: start;
-  }
-
-  &[data-content="static"] .grid-surface {
-    display: flex;
-    flex-direction: column;
-    grid-template-columns: none;
-    grid-auto-rows: auto;
-  }
-
-  &[data-editable] ::slotted(sherpa-container) { cursor: grab; }
-  &[data-editable] ::slotted(sherpa-container[data-dragging]) {
-    opacity: 0.5;
-    cursor: grabbing;
-  }
-  &[data-editable] ::slotted(sherpa-container[data-drop-target]) {
-    outline: 2px dashed var(--sherpa-border-control-active-default, #3c5edd);
-    outline-offset: -2px;
-  }
-
-  &[hidden] { display: none; }
 }
+:host([data-fill="viewport"]) {
+  min-height: 0;
+      max-height: 100dvh;
+      overflow: hidden;
+  
+      & .grid-body { min-height: 0; }
+      & .grid-surface { overflow: auto; min-height: 0; }
+}
+:host .grid-header {
+  flex: 0 0 auto;
+      display: none;
+}
+:host([data-heading]) .grid-header {
+  display: block;
+}
+:host .grid-body {
+  display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+}
+:host .side-panel-start,
+:host .side-panel-end {
+  display: flex;
+      flex: 0 0 auto;
+      align-self: stretch;
+}
+:host(:not([data-has-side-panel-start])) .side-panel-start {
+  display: none;
+}
+:host(:not([data-has-side-panel-end])) .side-panel-end {
+  display: none;
+}
+:host .grid-surface {
+  display: grid;
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      width: 100%;
+      box-sizing: border-box;
+      container-type: inline-size;
+      container-name: sherpa-layout-grid;
+      --maxColCount: 12;
+      --row-height: var(--sherpa-space-default, 16px);
+      --row-height: calc(var(--sherpa-space-default, 16px) * 10);
+      grid-template-columns: repeat(var(--maxColCount), 1fr);
+      grid-auto-rows: var(--row-height);
+      padding: var(--sherpa-space-sm, 12px);
+      gap: var(--sherpa-space-xs, 8px);
+      align-content: start;
+}
+:host([data-content="static"]) .grid-surface {
+  display: flex;
+      flex-direction: column;
+      grid-template-columns: none;
+      grid-auto-rows: auto;
+}
+:host([data-editable]) ::slotted(sherpa-container) {
+  cursor: grab;
+}
+:host([data-editable]) ::slotted(sherpa-container[data-dragging]) {
+  opacity: 0.5;
+      cursor: grabbing;
+}
+:host([data-editable]) ::slotted(sherpa-container[data-drop-target]) {
+  outline: 2px dashed var(--sherpa-border-control-active-default, #3c5edd);
+      outline-offset: -2px;
+}
+:host([hidden]) {
+  display: none;
+}
+
 
 ::slotted(sherpa-container[data-variant="resizable"]) { grid-column: span 3; }
 ::slotted(sherpa-container[data-variant="resizable"][data-col-span="6"]) { grid-column: span 6; }
