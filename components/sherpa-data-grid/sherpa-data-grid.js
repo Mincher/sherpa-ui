@@ -148,6 +148,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       "data-show-actions",
       "data-show-secondary-headers",
       "data-show-pagination",
+      "data-preset-filters",
+      "data-src",
+      "data-action-menu",
       ...CONTENT_ATTRIBUTES,
     ];
   }
@@ -181,6 +184,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #searchCellTpl = null; // Cached <template class="search-cell-tpl">
   #metadataSpanTpl = null; // Cached <template class="metadata-span-tpl">
   #expandedGroups = new Set(); // Group values currently expanded
+  #seededGroups = new Set(); // Group values whose default mode has been applied
   #columnConfig = {}; // Per-field config from consumer { field: { type?, statusMap? } }
   #filterMenuTpl = null; // Injected light-DOM <template data-menu> for filter toggle
   #actionMenuSections = []; // Consumer-defined secondary actions for the Actions menu
@@ -243,16 +247,25 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
 
     // Filter bar events — value filters from dynamic filter chips.
-    // sherpa-filter-bar emits the chip's actual filter type ("text",
-    // "number", "number-range", "datetime-range", "boolean") in f.type;
-    // sort/segment chips emit { field, mode, type: "sort"|"segment" }
-    // with no values. Accept anything with a non-empty values array.
+    // Sort/segment chips drive data-sort-* / data-segment-* attributes
+    // via the ContentAttributesMixin's container-filter-change handler;
+    // we only own value-filter state here. The mixin handles
+    // container-filter-change (dispatched right after filter-change) by
+    // writing the sort/segment attrs with reaction suppressed and then
+    // running its own aggregate pipeline — but when the grid has no
+    // upstream records (data set directly via setData()), that pipeline
+    // is a no-op, so we always re-render here in a microtask to pick up
+    // whatever attrs the mixin just wrote.
     this.addEventListener("filter-change", (e) => {
-      this.#valueFilters = (e.detail?.filters || []).filter(
+      const filters = e.detail?.filters || [];
+
+      // Value filters (text/number/date/boolean chips)
+      this.#valueFilters = filters.filter(
         (f) => Array.isArray(f.values) && f.values.length > 0,
       );
+
       this.dataset.page = "1";
-      this.#render();
+      queueMicrotask(() => this.#render());
     });
 
     this.addEventListener("filter-clear", () => {
@@ -312,6 +325,10 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.#filterMenuTpl = injectFilterMenu(this);
     this.addEventListener("toggle-filters", this.#onToggleFilters);
     this.addEventListener("menu-populate", this.#onMenuPopulate);
+
+    // Declarative initial state from attributes (no JS required).
+    this.#syncActionMenuFromAttr();
+    if (this.hasAttribute("data-src")) this.#loadFromSrc(this.getAttribute("data-src"));
   }
 
   onDisconnect() {
@@ -327,6 +344,22 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   onAttributeChanged(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
+    if (name === "data-src") {
+      if (newValue) this.#loadFromSrc(newValue);
+      return;
+    }
+    if (name === "data-action-menu") {
+      this.#syncActionMenuFromAttr();
+      return;
+    }
+    if (name === "data-preset-filters") {
+      const bar = this.$("sherpa-filter-bar");
+      if (bar) {
+        if (newValue == null) bar.removeAttribute("data-preset-filters");
+        else bar.setAttribute("data-preset-filters", newValue);
+      }
+      return;
+    }
     if (
       [
         "data-sort-field",
@@ -342,11 +375,16 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       if (name === "data-segment-field") {
         this.#expandedGroups.clear();
         this.#searchExpandedGroups.clear();
+        this.#seededGroups.clear();
         this.#columnFilters = {};
       }
       // Respond to segment-mode changes
-      if (name === "data-segment-mode" && newValue === "collapsed") {
-        this.#expandedGroups.clear();
+      if (name === "data-segment-mode") {
+        // Re-seed against the new default on next render
+        this.#seededGroups.clear();
+        if (newValue === "collapsed") {
+          this.#expandedGroups.clear();
+        }
       }
       if (this.#data) {
         this.dataset.page = "1";
@@ -444,6 +482,22 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.#inferColumnTypes();
 
     await this.rendered;
+
+    // Propagate columns + rows to the embedded filter-bar so its
+    // Group / Sort / Add filter menus populate from the live dataset.
+    const bar = this.$("sherpa-filter-bar");
+    bar?.setAvailableColumns?.(this.#columns, this.#allRows);
+    // Forward declared preset filters to the bar
+    const presets = this.getAttribute("data-preset-filters");
+    if (bar && presets && bar.getAttribute("data-preset-filters") !== presets) {
+      bar.setAttribute("data-preset-filters", presets);
+    }
+
+    // Reflect any initial sort/group state from host attributes onto
+    // the filter-bar chips so consumers can declare initial state via
+    // data-sort-field / data-sort-direction / data-segment-field /
+    // data-segment-mode and have the chips light up on first paint.
+    this._syncFilterBarState?.();
 
     this.#render();
   }
@@ -831,12 +885,13 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       this.#searchExpandedGroups.clear();
     }
 
-    // Apply default mode for groups not yet tracked
+    // Apply default mode for groups the first time we see them. Tracking
+    // seeded groups separately means the default never re-applies after the
+    // user has explicitly toggled a group — click-to-collapse sticks even
+    // when data-segment-mode="expanded".
     for (const group of groups) {
-      if (
-        !this.#expandedGroups.has(group.label) &&
-        !this.#searchExpandedGroups.has(group.label)
-      ) {
+      if (!this.#seededGroups.has(group.label)) {
+        this.#seededGroups.add(group.label);
         if (groupMode === "expanded") this.#expandedGroups.add(group.label);
       }
       // Auto-expand matching groups during search
@@ -1438,6 +1493,31 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.#actionMenuSections = sections || [];
   }
 
+  /** Parse the JSON `data-action-menu` attribute and load its sections. */
+  #syncActionMenuFromAttr() {
+    const raw = this.getAttribute("data-action-menu");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) this.setActionMenuItems(parsed);
+    } catch (e) {
+      console.warn("sherpa-data-grid: invalid data-action-menu JSON:", e);
+    }
+  }
+
+  /** Fetch `{ columns, rows }` JSON from the given URL and load it. */
+  async #loadFromSrc(src) {
+    if (!src) return;
+    this.setAttribute("data-loading", "");
+    try {
+      const data = await fetch(src).then((r) => r.json());
+      await this.setData(data);
+    } catch (e) {
+      this.removeAttribute("data-loading");
+      console.warn("sherpa-data-grid: failed to load data-src:", e);
+    }
+  }
+
   #populateActionMenu() {
     const btn = this.$(".actions-btn");
     if (!btn) return;
@@ -1509,6 +1589,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
 
     // View actions
+    const hasFilters = this.hasAttribute("data-filters");
+    const filterBarHidden =
+      this.getAttribute("data-hide-filter-bar") === "true";
     const viewItems = [
       {
         value: "toggle-column-search",
@@ -1516,6 +1599,13 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         data: { action: "toggle-column-search" },
       },
     ];
+    if (hasFilters) {
+      viewItems.push({
+        value: "toggle-filter-bar",
+        text: filterBarHidden ? "Show filter bar" : "Hide filter bar",
+        data: { action: "toggle-filter-bar" },
+      });
+    }
 
     const densities = [
       { value: "", label: "Default density" },
@@ -1563,6 +1653,16 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
           "data-show-secondary-headers",
           current ? "false" : "true",
         );
+        break;
+      }
+      case "toggle-filter-bar": {
+        const current =
+          this.getAttribute("data-hide-filter-bar") === "true";
+        if (current) {
+          this.removeAttribute("data-hide-filter-bar");
+        } else {
+          this.setAttribute("data-hide-filter-bar", "true");
+        }
         break;
       }
       case "set-density": {

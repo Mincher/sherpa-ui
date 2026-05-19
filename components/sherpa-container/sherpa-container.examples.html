@@ -33,7 +33,14 @@
       data-title="Devices online"
       data-description="Last 24 hours"
       data-menu-button
-    ></sherpa-container-header>
+    >
+      <template data-menu>
+        <sherpa-menu-item data-action="refresh"   data-icon="fa-solid fa-arrows-rotate">Refresh</sherpa-menu-item>
+        <sherpa-menu-item data-action="configure" data-icon="fa-solid fa-sliders">Configure metric</sherpa-menu-item>
+        <sherpa-menu-item data-action="export"    data-icon="fa-solid fa-download">Export</sherpa-menu-item>
+        <sherpa-menu-item data-action="remove"    data-icon="fa-solid fa-trash" data-variant="critical">Remove tile</sherpa-menu-item>
+      </template>
+    </sherpa-container-header>
     <div style="padding: 0 16px 16px;">
       <sherpa-metric data-label="Devices online" value="1,284" data-trend="up" data-delta="+12% vs yesterday" data-status="success"></sherpa-metric>
     </div>
@@ -72,6 +79,15 @@
       data-menu-button
     >
       <sherpa-button slot="actions" data-variant="tertiary" data-size="small" data-icon-start="&#xf019;" data-label="Export"></sherpa-button>
+      <template data-menu>
+        <sherpa-menu-item data-type="heading">Range</sherpa-menu-item>
+        <sherpa-menu-item data-type="radio" name="range" value="1h" checked>Last hour</sherpa-menu-item>
+        <sherpa-menu-item data-type="radio" name="range" value="24h">Last 24 hours</sherpa-menu-item>
+        <sherpa-menu-item data-type="radio" name="range" value="7d">Last 7 days</sherpa-menu-item>
+        <sherpa-menu-item data-type="heading">Actions</sherpa-menu-item>
+        <sherpa-menu-item data-action="download" data-icon="fa-solid fa-download">Download PNG</sherpa-menu-item>
+        <sherpa-menu-item data-action="copy"     data-icon="fa-solid fa-copy">Copy data</sherpa-menu-item>
+      </template>
     </sherpa-container-header>
     <div style="padding: 0 16px 16px;">
       <sherpa-barchart style="height: 220px;"></sherpa-barchart>
@@ -145,7 +161,14 @@
       data-description="Across all monitored services"
       data-menu-button
       data-drag-handle
-    ></sherpa-container-header>
+    >
+      <template data-menu>
+        <sherpa-menu-item data-action="acknowledge" data-icon="fa-solid fa-check">Acknowledge all</sherpa-menu-item>
+        <sherpa-menu-item data-action="mute"        data-icon="fa-solid fa-bell-slash">Mute for 1 hour</sherpa-menu-item>
+        <sherpa-menu-item data-action="rules"       data-icon="fa-solid fa-gear">Edit alert rules</sherpa-menu-item>
+        <sherpa-menu-item data-action="remove"      data-icon="fa-solid fa-trash" data-variant="critical">Remove tile</sherpa-menu-item>
+      </template>
+    </sherpa-container-header>
     <div style="padding: 0 16px 16px;">
       <sherpa-metric data-label="Active alerts" value="7" data-trend="up" data-delta="+3 in last hour" data-status="warning"></sherpa-metric>
     </div>

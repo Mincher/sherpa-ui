@@ -1,31 +1,16 @@
-<!--
-  sherpa-filter-bar — Live examples.
--->
-<template data-label="Default" data-layout="block">
+<!-- sherpa-filter-bar — Live examples. See sherpa-filter-bar.html for attribute docs. -->
+<template data-label="Loaded from JSON — Devices" data-description="data-src points at a JSON descriptor. The bar populates its Add menu, Sort menu, and Group menu from fields[]." data-layout="block">
   <sherpa-filter-bar
-    data-active='[{"field":"status","operator":"equals","value":"online"}]'
-    data-available-fields='[
-      {"name":"status","label":"Status","type":"enum","values":["online","offline","error"]},
-      {"name":"region","label":"Region","type":"enum","values":["EU","US","APAC"]},
-      {"name":"last_seen","label":"Last seen","type":"date"}
-    ]'>
+    data-src="/components/sherpa-filter-bar/sherpa-filter-bar.devices.json">
+    <sherpa-button slot="group" data-type="button-menu" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none"></sherpa-button>
+    <sherpa-button slot="sort"  data-type="button-menu" data-split data-behavior="sort"    data-label="Sort"  data-icon-start="&#xf0dc;" data-menu-scope="none"></sherpa-button>
   </sherpa-filter-bar>
 </template>
 
-<template data-label="With preset filters" data-layout="block">
+<template data-label="Loaded from JSON — Alerts with presets" data-description="The same JSON also declares presetFilters[]; the bar auto-creates one chip per preset, populated from each field's values. Sort and Group menus are populated from fields[]." data-layout="block">
   <sherpa-filter-bar
-    data-preset-filters='[{"label":"Online","filters":[{"field":"status","operator":"equals","value":"online"}]},{"label":"Errors","filters":[{"field":"status","operator":"equals","value":"error"}]}]'
-    data-available-fields='[
-      {"name":"status","label":"Status","type":"enum","values":["online","offline","error"]},
-      {"name":"region","label":"Region","type":"enum","values":["EU","US","APAC"]}
-    ]'>
-  </sherpa-filter-bar>
-</template>
-
-<template data-label="Compact density" data-layout="block">
-  <sherpa-filter-bar
-    data-density="compact"
-    data-active='[{"field":"region","operator":"equals","value":"EU"}]'
-    data-available-fields='[{"name":"region","label":"Region","type":"enum","values":["EU","US","APAC"]}]'>
+    data-src="/components/sherpa-filter-bar/sherpa-filter-bar.alerts.json">
+    <sherpa-button slot="group" data-type="button-menu" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none"></sherpa-button>
+    <sherpa-button slot="sort"  data-type="button-menu" data-split data-behavior="sort"    data-label="Sort"  data-icon-start="&#xf0dc;" data-menu-scope="none"></sherpa-button>
   </sherpa-filter-bar>
 </template>

@@ -17,5 +17,12 @@
 </template>
 
 <template data-label="With external link + menu" data-layout="block">
-  <sherpa-container-header data-title="API usage" data-description="Last 30 days" data-open-external data-menu-button></sherpa-container-header>
+  <sherpa-container-header data-title="API usage" data-description="Last 30 days" data-open-external data-menu-button>
+    <template data-menu>
+      <sherpa-menu-item data-action="refresh" data-icon="fa-solid fa-arrows-rotate">Refresh</sherpa-menu-item>
+      <sherpa-menu-item data-action="export"  data-icon="fa-solid fa-download">Export CSV</sherpa-menu-item>
+      <sherpa-menu-item data-action="share"   data-icon="fa-solid fa-share-nodes">Share link</sherpa-menu-item>
+      <sherpa-menu-item data-action="remove"  data-icon="fa-solid fa-trash" data-variant="critical">Remove from dashboard</sherpa-menu-item>
+    </template>
+  </sherpa-container-header>
 </template>

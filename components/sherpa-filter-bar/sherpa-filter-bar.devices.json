@@ -1,0 +1,11 @@
+{
+  "fields": [
+    { "field": "status",      "name": "Status",      "type": "string", "values": ["online", "offline", "warning"] },
+    { "field": "region",      "name": "Region",      "type": "string", "values": ["NA", "EU", "APAC"] },
+    { "field": "environment", "name": "Environment", "type": "string", "values": ["prod", "staging", "dev"] },
+    { "field": "cpu",         "name": "CPU %",       "type": "number", "values": ["0-25", "25-50", "50-75", "75-100"] },
+    { "field": "memory",      "name": "Memory %",    "type": "number", "values": ["0-25", "25-50", "50-75", "75-100"] },
+    { "field": "last_seen",   "name": "Last seen",   "type": "date"   }
+  ],
+  "presetFilters": ["status", "region", "environment"]
+}

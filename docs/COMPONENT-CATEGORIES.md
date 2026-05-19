@@ -16,7 +16,7 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 | ----------- | :--: | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `shell`     | 1 | Top-level page scaffolding.                                       | `sherpa-view-header`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-nav`, `sherpa-layout-grid`, `sherpa-layout-view`, `sherpa-container-pdf-exporter` |
 | `nav`       | 1 | Navigation chrome children, only inside the `shell` nav rail.     | `sherpa-nav-item`, `sherpa-nav-section` |
-| `container` | 2 | Surfaces that hold other components.                              | `sherpa-card`, `sherpa-container`, `sherpa-container-header`, `sherpa-content-section`, `sherpa-accordion`, `sherpa-panel`, `sherpa-list-panel`, `sherpa-ai-panel`, `sherpa-footer` |
+| `container` | 2 | Surfaces that hold other components.                              | `sherpa-card`, `sherpa-container`, `sherpa-container-header`, `sherpa-accordion`, `sherpa-panel`, `sherpa-ai-panel`, `sherpa-footer` |
 | `overlay`   | 2 | Floating UI surfaces.                                             | `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-menu`, `sherpa-menu-item` |
 | `content`   | 3 | Structural sub-elements (headings, toolbars, tabs, lists).        | `sherpa-section-header`, `sherpa-toolbar`, `sherpa-list`, `sherpa-list-item`, `sherpa-key-value-list`, `sherpa-tabs`, `sherpa-stepper`, `sherpa-progress-tracker` |
 | `control`   | 4 | Actionable / clickable controls.                                  | `sherpa-button`, `sherpa-switch`, `sherpa-tag`, `sherpa-slider`, `sherpa-pagination`, `sherpa-breadcrumbs` |
@@ -25,7 +25,7 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 | `feedback`  | 4 | Status, messages, notifications.                                  | `sherpa-message`, `sherpa-callout`, `sherpa-toast`, `sherpa-loader`, `sherpa-empty-state` |
 | `media`     | 4 | Charts, illustrations, visual media.                              | `sherpa-barchart`, `sherpa-line-chart`, `sherpa-donut-chart`, `sherpa-gauge-chart`, `sherpa-chart-legend` |
 | `data`      | 4 | Interactive datasets.                                             | `sherpa-data-grid`, `sherpa-transfer-list`, `sherpa-scheduler`, `sherpa-filter-bar` |
-| `utility`   | 5 | Docs-site / developer tooling. Not part of the public application UI taxonomy and not slot-composable. | `sherpa-code-block`, `sherpa-attribute-controls` |
+| `utility`   | 5 | Docs-site / developer tooling. Not part of the public application UI taxonomy and not slot-composable. | `sherpa-code-block` |
 
 > Some components naturally span two purposes (e.g. `sherpa-gauge-chart` is
 > both `media` and `display`). Pick the **primary** role.

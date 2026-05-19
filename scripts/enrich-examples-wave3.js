@@ -71,26 +71,6 @@ const FILES = {
 </template>
 `,
 
-'sherpa-content-section': `
-<template data-label="Heading and body" data-layout="block">
-  <sherpa-content-section data-heading="Account details">
-    <p>Wrapped sections give content a clear heading and consistent spacing.</p>
-  </sherpa-content-section>
-</template>
-
-<template data-label="Minimisable" data-description="data-minimised collapses the section behind a restore label." data-layout="block">
-  <sherpa-content-section data-heading="Advanced settings" data-minimised data-restore-label="Show advanced">
-    <p>These options are hidden by default.</p>
-  </sherpa-content-section>
-</template>
-
-<template data-label="Flush — no padding" data-layout="block">
-  <sherpa-content-section data-heading="Data table" data-flush>
-    <p style="background: var(--sherpa-surface-control-secondary-default); padding: 16px;">Flush content sits edge-to-edge.</p>
-  </sherpa-content-section>
-</template>
-`,
-
 'sherpa-panel': `
 <template data-label="Inline panel" data-layout="block">
   <sherpa-panel data-variant="inline" data-position="right" data-heading="Filters" data-expanded data-width="320">
@@ -141,19 +121,19 @@ const FILES = {
 'sherpa-layout-view': `
 <template data-label="Default" data-description="A wrapper that gives a view its heading, padding and gap rhythm." data-layout="block">
   <sherpa-layout-view data-heading="Settings" data-pad data-gap="base">
-    <sherpa-content-section data-heading="Profile">
+    <sherpa-panel data-bordered data-heading="Profile" data-expanded>
       <p>Profile section content.</p>
-    </sherpa-content-section>
-    <sherpa-content-section data-heading="Security">
+    </sherpa-panel>
+    <sherpa-panel data-bordered data-heading="Security" data-expanded>
       <p>Security section content.</p>
-    </sherpa-content-section>
+    </sherpa-panel>
   </sherpa-layout-view>
 </template>
 
 <template data-label="Gap sizes" data-layout="block">
   <sherpa-layout-view data-pad data-gap="lg">
-    <sherpa-content-section data-heading="Section 1"><p>Larger gap between sections.</p></sherpa-content-section>
-    <sherpa-content-section data-heading="Section 2"><p>Useful for spacious dashboards.</p></sherpa-content-section>
+    <sherpa-panel data-bordered data-heading="Section 1" data-expanded><p>Larger gap between sections.</p></sherpa-panel>
+    <sherpa-panel data-bordered data-heading="Section 2" data-expanded><p>Useful for spacious dashboards.</p></sherpa-panel>
   </sherpa-layout-view>
 </template>
 `,
@@ -295,22 +275,6 @@ const FILES = {
     <sherpa-button data-variant="secondary" data-size="small" data-type="icon" data-icon-start="fa-solid fa-bold"></sherpa-button>
     <sherpa-button data-variant="secondary" data-size="small" data-type="icon" data-icon-start="fa-solid fa-italic"></sherpa-button>
   </sherpa-toolbar>
-</template>
-`,
-
-'sherpa-list-panel': `
-<template data-label="Default" data-layout="block">
-  <sherpa-list-panel data-bordered>
-    <sherpa-list>
-      <sherpa-list-item data-label="Devices"   data-icon="fa-solid fa-microchip" data-description="1,284 active"></sherpa-list-item>
-      <sherpa-list-item data-label="Alerts"    data-icon="fa-solid fa-bell"      data-description="7 unresolved"></sherpa-list-item>
-      <sherpa-list-item data-label="Settings"  data-icon="fa-solid fa-gear"></sherpa-list-item>
-    </sherpa-list>
-  </sherpa-list-panel>
-</template>
-
-<template data-label="Empty state" data-layout="block">
-  <sherpa-list-panel data-bordered data-empty="No items to display"></sherpa-list-panel>
 </template>
 `,
 

@@ -61,17 +61,24 @@
 }
 :host .bubble {
   font-size: var(--sherpa-fonts-scale-sm, 13px);
-      line-height: var(--sherpa-line-height-default, 1.45);
-      white-space: pre-wrap;
-      word-wrap: break-word;
-  
-      /* Reset slotted children to normal whitespace (rich content) */
-      & ::slotted(*) {
-        white-space: normal;
-  
-        &:first-child { margin-top: 0; }
-        &:last-child { margin-bottom: 0; }
-      }
+  line-height: var(--sherpa-line-height-default, 1.45);
+  /*
+   * NOTE: deliberately NOT using pre-wrap here.
+   * Slotted whitespace text nodes (newlines + indentation in author HTML)
+   * would render as real line breaks under pre-wrap, inflating bubble
+   * height. Wrap multi-line plain text in <p>/<br>.
+   */
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Flatten slotted resets — nesting + ::slotted can be unreliable. */
+:host .bubble ::slotted(*) {
+  margin: 0;
+}
+:host .bubble ::slotted(* + *) {
+  margin-top: var(--sherpa-space-xs, 8px);
 }
 :host(:not([data-role="user"])) .message {
   grid-template-columns: 28px 1fr;
@@ -81,7 +88,7 @@
   background: var(--sherpa-surface-container-hover, #f3f4f6);
       border: 1px solid var(--sherpa-border-container-default, #e5e7eb);
       border-radius: 2px 12px 12px 12px;
-      padding: 10px 12px;
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
 }
 :host([data-role="user"]) .message {
   grid-template-columns: 1fr;
@@ -92,7 +99,7 @@
 }
 :host([data-role="user"]) .bubble {
   max-width: 85%;
-      padding: 8px 12px;
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
       border-radius: 12px 12px 2px 12px;
       background: var(--sherpa-surface-context-info-subtle-default, #2563eb);
       color: var(--sherpa-text-context-info-default, #fff);

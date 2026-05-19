@@ -43,75 +43,65 @@
   /* ──────────────────────────────────────────────────────────
              OPEN STATE
              ────────────────────────────────────────────────────────── */
-  /* ──────────────────────────────────────────────────────────
-             ANCHOR POSITIONING (@supports fallback for older browsers)
-             ────────────────────────────────────────────────────────── */
-  @supports (anchor-name: --test) {
-            &[data-open] { position-anchor: var(--_popover-anchor); }
-        
-            /* Bottom (default) */
-            &[data-open],
-            &[data-open][data-position="bottom"] {
-              top: anchor(bottom, 0);
-              left: anchor(center);
-              translate: -50% var(--sherpa-space-xs, 8px);
-              position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
-            }
-        
-            /* Top */
-            &[data-open][data-position="top"] {
-              bottom: anchor(top, 0);
-              left: anchor(center);
-              translate: -50% calc(var(--sherpa-space-xs, 8px) * -1);
-            }
-        
-            /* Left */
-            &[data-open][data-position="left"] {
-              right: anchor(left, 0);
-              top: anchor(center);
-              translate: calc(var(--sherpa-space-xs, 8px) * -1) -50%;
-            }
-        
-            /* Right */
-            &[data-open][data-position="right"] {
-              left: anchor(right, 0);
-              top: anchor(center);
-              translate: var(--sherpa-space-xs, 8px) -50%;
-            }
-          }
-  /* ──────────────────────────────────────────────────────────
-             HEADER
-             ────────────────────────────────────────────────────────── */
-  /* ── Close button ──────────────────────────────────── */
-  /* ──────────────────────────────────────────────────────────
-             BODY
-             ────────────────────────────────────────────────────────── */
-  /* ──────────────────────────────────────────────────────────
-             PAGED TEMPLATE (multi-page wizard mode)
-             ────────────────────────────────────────────────────────── */
-  /* ── Back button (paged mode) ──────────────────────– */
-  /* ── Footer (paged mode) ───────────────────────────– */
-  /* ──────────────────────────────────────────────────────────
-             SLIDE-IN ANIMATION
-             ────────────────────────────────────────────────────────── */
-  @media (prefers-reduced-motion: no-preference) {
-            &[data-animation="slide"][data-open] {
-              animation: sherpa-popover-slide-in 180ms ease-out both;
-            }
-        
-            &[data-animation="slide"][data-open][data-position="top"] {
-              animation-name: sherpa-popover-slide-in-top;
-            }
-        
-            &[data-animation="slide"][data-open][data-position="left"] {
-              animation-name: sherpa-popover-slide-in-left;
-            }
-        
-            &[data-animation="slide"][data-open][data-position="right"] {
-              animation-name: sherpa-popover-slide-in-right;
-            }
-          }
   /* ── Hidden state ──────────────────────────────────────── */
+}
+
+/* ──────────────────────────────────────────────────────────
+   ANCHOR POSITIONING (@supports fallback for older browsers)
+   ────────────────────────────────────────────────────────── */
+@supports (anchor-name: --test) {
+  :host([data-open]) { position-anchor: var(--_popover-anchor); }
+
+  /* Bottom (default) */
+  :host([data-open]),
+  :host([data-open][data-position="bottom"]) {
+    top: anchor(bottom, 0);
+    left: anchor(center);
+    translate: -50% var(--sherpa-space-xs, 8px);
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+
+  /* Top */
+  :host([data-open][data-position="top"]) {
+    bottom: anchor(top, 0);
+    left: anchor(center);
+    translate: -50% calc(var(--sherpa-space-xs, 8px) * -1);
+  }
+
+  /* Left */
+  :host([data-open][data-position="left"]) {
+    right: anchor(left, 0);
+    top: anchor(center);
+    translate: calc(var(--sherpa-space-xs, 8px) * -1) -50%;
+  }
+
+  /* Right */
+  :host([data-open][data-position="right"]) {
+    left: anchor(right, 0);
+    top: anchor(center);
+    translate: var(--sherpa-space-xs, 8px) -50%;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   SLIDE-IN ANIMATION
+   ────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  :host([data-animation="slide"][data-open]) {
+    animation: sherpa-popover-slide-in 180ms ease-out both;
+  }
+
+  :host([data-animation="slide"][data-open][data-position="top"]) {
+    animation-name: sherpa-popover-slide-in-top;
+  }
+
+  :host([data-animation="slide"][data-open][data-position="left"]) {
+    animation-name: sherpa-popover-slide-in-left;
+  }
+
+  :host([data-animation="slide"][data-open][data-position="right"]) {
+    animation-name: sherpa-popover-slide-in-right;
+  }
 }
 :host([data-open]) {
   display: block;

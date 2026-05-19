@@ -53,11 +53,11 @@
     },
     {
       "name": "side-panel-start",
-      "description": "Leading rail (typically sherpa-content-section)"
+      "description": "Leading rail (typically sherpa-panel)"
     },
     {
       "name": "side-panel-end",
-      "description": "Trailing rail (typically sherpa-content-section)"
+      "description": "Trailing rail (typically sherpa-panel)"
     }
   ],
   "events": [],

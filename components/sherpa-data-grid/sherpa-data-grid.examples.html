@@ -1,21 +1,82 @@
 <!--
   sherpa-data-grid — Live examples.
-  Data and column config are supplied via setData() — see sherpa-data-grid.examples.js.
+  100% declarative: data is loaded via `data-src` (fetches a JSON
+  fixture of { columns, rows }) and the Actions menu is populated via
+  the `data-action-menu` JSON attribute.
 -->
-<template data-label="Devices grid" data-description="Default selectable grid with row actions and pagination." data-layout="block" data-setup="devices-base">
-  <sherpa-data-grid data-selectable data-show-actions data-show-pagination data-page-size="6" style="height: 380px;"></sherpa-data-grid>
+<template data-label="Devices grid" data-description="Default grid with a toolbar primary action and pagination. Data is loaded declaratively via data-src." data-layout="block">
+  <sherpa-data-grid
+    data-src="/demo/fixtures/devices.json"
+    data-show-pagination
+    data-page-size="6"
+    style="height: 380px;">
+    <sherpa-button slot="toolbar-leading" data-variant="primary" data-icon-start="&#xf067;" data-label="Add device"></sherpa-button>
+  </sherpa-data-grid>
 </template>
 
-<template data-label="Compact density" data-description="data-density=&quot;compact&quot; reduces row height — ideal for ops dashboards with 20+ rows." data-layout="block" data-setup="alerts-compact">
-  <sherpa-data-grid data-density="compact" data-show-pagination data-page-size="10" style="height: 420px;"></sherpa-data-grid>
+<template data-label="Bulk actions" data-description="data-selectable shows row + group checkboxes (groups expanded by default so both levels are visible). The Actions menu is populated declaratively via data-action-menu and appears whenever rows are selected." data-layout="block">
+  <sherpa-data-grid
+    data-src="/demo/fixtures/devices.json"
+    data-selectable
+    data-segment-field="region"
+    data-segment-mode="expanded"
+    data-show-actions
+    data-action-menu='[{"items":[{"value":"export","text":"Export selected"},{"value":"duplicate","text":"Duplicate"}]},{"heading":"Status","items":[{"value":"mark-online","text":"Mark as online"},{"value":"mark-offline","text":"Mark as offline"}]},{"items":[{"value":"delete","text":"Delete"}]}]'
+    style="height: 520px;">
+    <sherpa-button slot="toolbar-leading" data-variant="primary" data-icon-start="&#xf067;" data-label="Add device"></sherpa-button>
+  </sherpa-data-grid>
 </template>
 
-<template data-label="Grouped rows" data-description="data-segment-field clusters rows under expandable section headers." data-layout="block" data-setup="devices-grouped">
-  <sherpa-data-grid data-segment-field="region" data-show-actions style="height: 420px;"></sherpa-data-grid>
+<template data-label="With row actions" data-description="data-show-actions adds a trailing actions column that renders an overflow menu for each row. Selecting an item fires a row-action event with the row data and chosen value." data-layout="block">
+  <sherpa-data-grid
+    data-src="/demo/fixtures/devices.json"
+    data-show-actions
+    data-action-menu='[{"items":[{"value":"edit","text":"Edit"},{"value":"duplicate","text":"Duplicate"}]},{"items":[{"value":"delete","text":"Delete"}]}]'
+    style="height: 380px;"></sherpa-data-grid>
 </template>
 
-<template data-label="Sorted column" data-description="data-sort-field + data-sort-direction set the initial sort." data-layout="block" data-setup="devices-sorted">
-  <sherpa-data-grid data-sort-field="cpu" data-sort-direction="desc" data-show-pagination data-page-size="6" style="height: 380px;"></sherpa-data-grid>
+<template data-label="With pagination" data-description="data-show-pagination + data-page-size enable the built-in pager. The grid handles page navigation and row windowing internally." data-layout="block">
+  <sherpa-data-grid
+    data-src="/demo/fixtures/devices.json"
+    data-show-pagination
+    data-page-size="5"
+    style="height: 380px;"></sherpa-data-grid>
+</template>
+
+<template data-label="With preset + ad-hoc filters" data-description="data-preset-filters renders persistent chips for the listed columns; the Add button lets users append filters for any other column." data-layout="block">
+  <sherpa-data-grid
+    data-src="/demo/fixtures/devices.json"
+    data-preset-filters="status,region"
+    data-show-pagination
+    data-page-size="6"
+    style="height: 380px;"></sherpa-data-grid>
+</template>
+
+<template data-label="Alerts grid" data-description="Alerts dataset with preset filters for severity and source." data-layout="block">
+  <sherpa-data-grid
+    data-src="/demo/fixtures/alerts.json"
+    data-preset-filters="severity,source"
+    data-show-pagination
+    data-page-size="10"
+    style="height: 420px;"></sherpa-data-grid>
+</template>
+
+<template data-label="Grouped rows" data-description="data-segment-field clusters rows under expandable section headers." data-layout="block">
+  <sherpa-data-grid
+    data-src="/demo/fixtures/devices.json"
+    data-segment-field="region"
+    data-show-actions
+    style="height: 420px;"></sherpa-data-grid>
+</template>
+
+<template data-label="Sorted column" data-description="data-sort-field + data-sort-direction set the initial sort." data-layout="block">
+  <sherpa-data-grid
+    data-src="/demo/fixtures/devices.json"
+    data-sort-field="cpu"
+    data-sort-direction="desc"
+    data-show-pagination
+    data-page-size="6"
+    style="height: 380px;"></sherpa-data-grid>
 </template>
 
 <template data-label="Loading state" data-description="Skeleton rows while the dataset is being fetched." data-layout="block">

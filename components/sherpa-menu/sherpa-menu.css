@@ -61,39 +61,40 @@
   /* Item lists (ul elements) */
   /* Explicit dividers (hr elements) */
   /* Hidden items (search filtering) */
-  /* ──────────────────────────────────────────────────────────
-             POPOVER MODE (fixed positioning with anchor)
-             ────────────────────────────────────────────────────────── */
-  @supports (anchor-name: --test) {
-            /* Bottom-start (default): menu drops below, left-aligned */
-            &[popover][open] {
-              position-anchor: var(--sherpa-menu-anchor);
-              top: anchor(bottom);
-              left: anchor(left);
-              position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
-            }
-        
-            /* Bottom-end: menu drops below, right-aligned */
-            &[popover][open][data-position="bottom-end"] {
-              left: auto;
-              right: anchor(right);
-            }
-        
-            /* Top-start: menu opens above, left-aligned */
-            &[popover][open][data-position="top-start"] {
-              top: auto;
-              bottom: anchor(top);
-            }
-        
-            /* Top-end: menu opens above, right-aligned */
-            &[popover][open][data-position="top-end"] {
-              top: auto;
-              bottom: anchor(top);
-              left: auto;
-              right: anchor(right);
-            }
-          }
   /* ── Hidden state ───────────────────────────────────────– */
+}
+
+/* ──────────────────────────────────────────────────────────
+   POPOVER MODE (fixed positioning with anchor)
+   ────────────────────────────────────────────────────────── */
+@supports (anchor-name: --test) {
+  /* Bottom-start (default): menu drops below, left-aligned */
+  :host([popover][open]) {
+    position-anchor: var(--sherpa-menu-anchor);
+    top: anchor(bottom);
+    left: anchor(left);
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+
+  /* Bottom-end: menu drops below, right-aligned */
+  :host([popover][open][data-position="bottom-end"]) {
+    left: auto;
+    right: anchor(right);
+  }
+
+  /* Top-start: menu opens above, left-aligned */
+  :host([popover][open][data-position="top-start"]) {
+    top: auto;
+    bottom: anchor(top);
+  }
+
+  /* Top-end: menu opens above, right-aligned */
+  :host([popover][open][data-position="top-end"]) {
+    top: auto;
+    bottom: anchor(top);
+    left: auto;
+    right: anchor(right);
+  }
 }
 :host([open]) {
   display: block;

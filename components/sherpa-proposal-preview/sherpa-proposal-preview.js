@@ -3,7 +3,7 @@
  * SherpaProposalPreview — Agent proposal renderer.
  *
  * @element sherpa-proposal-preview
- * @category content
+ * @category ai
  *
  * @attr {string} [data-rationale]  Italic rationale shown above the ops.
  *

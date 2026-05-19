@@ -246,6 +246,5 @@ import { SherpaCodeBlock } from '@sherpa-ui/components';
 
 ## Related
 
-- [sherpa-attribute-controls](../sherpa-attribute-controls/) — Interactive attribute explorer for components
 - [Prism.js Documentation](https://prismjs.com/)
 - [Sherpa UI Tokens](../../css/TOKENS-USAGE-GUIDE.md)

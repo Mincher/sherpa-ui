@@ -277,7 +277,15 @@ export function ContentAttributesMixin(Base) {
       if (this.limit && rows.length > this.limit) rows = rows.slice(0, this.limit);
 
       const displayName = this.name || formatFieldName(this.datasetName || '');
-      const segmentField = this.segmentField || null;
+      // When the user has toggled segmentation off via the filter bar,
+      // data-segment-mode is "off" but data-segment-field is preserved so
+      // the chip retains its selection. Honour the off state here by not
+      // forwarding segmentBy to the grid — otherwise setData() will flip
+      // data-segment-mode back to "on" and re-render groups.
+      const segmentMode = this.getAttribute("data-segment-mode");
+      const segmentField = segmentMode === "off"
+        ? null
+        : this.segmentField || null;
       this.setData({
         _fromCascade: true,
         name: displayName,
@@ -480,7 +488,7 @@ export function ContentAttributesMixin(Base) {
       // Sync chip state BEFORE populating menus so that
       // #populateColumnsMenu sees the current data-field and
       // marks the correct radio item as selected.
-      this.#syncFilterBarState();
+      this._syncFilterBarState();
 
       // Push field metadata to local filter bar (triggers menu population)
       this.#syncFilterBarFields();
@@ -489,7 +497,7 @@ export function ContentAttributesMixin(Base) {
       this.#aggregate();
 
       // Re-sync after aggregate in case fields changed
-      this.#syncFilterBarState();
+      this._syncFilterBarState();
     }
 
     /**
@@ -511,7 +519,7 @@ export function ContentAttributesMixin(Base) {
      * Sync the embedded filter bar's segment and sort chips to match
      * the host's current data-segment-field / data-sort-field attributes.
      */
-    #syncFilterBarState() {
+    _syncFilterBarState() {
       const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
       if (!bar) return;
 
@@ -521,7 +529,7 @@ export function ContentAttributesMixin(Base) {
         const raw = bar.getAttribute("data-available-fields");
         if (raw) {
           for (const col of JSON.parse(raw)) {
-            fieldNames.set(col.field, col.name || col.field);
+            fieldNames.set(col.field, col.name || col.label || col.field);
           }
         }
       } catch { /* ignore malformed JSON */ }
@@ -546,10 +554,15 @@ export function ContentAttributesMixin(Base) {
 
         if (field && mode !== "off") {
           segChip.dataset.field = field;
-          segChip.dataset.label = displayName(field);
+          segChip.dataset.label = `Group: ${displayName(field)}`;
           segChip.toggleAttribute("data-active", true);
+        } else if (field) {
+          // Field retained but toggled off — keep field & label, deactivate
+          segChip.removeAttribute("data-active");
         } else {
-          // Retain chip field/label — just deactivate
+          // Sort fully cleared (e.g. "None" picked) — reset chip completely
+          delete segChip.dataset.field;
+          segChip.dataset.label = "Group";
           segChip.removeAttribute("data-active");
         }
       }
@@ -580,14 +593,26 @@ export function ContentAttributesMixin(Base) {
           }
         } else {
           const field = this.getAttribute("data-sort-field");
-          if (field) {
+          if (field && dir && dir !== "off") {
             sortChip.dataset.field = field;
-            sortChip.dataset.label = displayName(field);
-            sortChip.dataset.mode = dir || "asc";
+            sortChip.dataset.label = `Sort: ${displayName(field)}`;
+            sortChip.dataset.mode = dir;
+            sortChip.dataset.iconStart =
+              dir === "desc" ? "\uf063" : "\uf062";
             sortChip.toggleAttribute("data-active", true);
-          } else {
-            // Retain chip field/label — just deactivate
+          } else if (field) {
+            // Field retained but direction is off (cycle-off) — keep field & label, deactivate
+            sortChip.dataset.field = field;
+            sortChip.dataset.label = `Sort: ${displayName(field)}`;
             sortChip.dataset.mode = "off";
+            sortChip.dataset.iconStart = "\uf0dc";
+            sortChip.removeAttribute("data-active");
+          } else {
+            // Sort fully cleared (e.g. "None" picked) — reset chip completely
+            delete sortChip.dataset.field;
+            sortChip.dataset.label = "Sort";
+            sortChip.dataset.mode = "off";
+            sortChip.dataset.iconStart = "\uf0dc";
             sortChip.removeAttribute("data-active");
           }
         }
@@ -787,16 +812,15 @@ export function ContentAttributesMixin(Base) {
       this._suppressAttrReaction = true;
 
       // Sort attrs
-      if (sortFilter) {
-        if (sortFilter.field) {
-          this.setAttribute("data-sort-field", sortFilter.field);
-        }
+      if (sortFilter && sortFilter.field) {
+        this.setAttribute("data-sort-field", sortFilter.field);
         this.setAttribute(
           "data-sort-direction",
-          sortFilter.mode || "asc",
+          sortFilter.mode === "off" ? "off" : (sortFilter.mode || "asc"),
         );
       } else {
-        // Keep field so the chip retains its selection; set direction to off
+        // Sort fully cleared (e.g. "None" picked) — remove field too
+        this.removeAttribute("data-sort-field");
         this.setAttribute("data-sort-direction", "off");
       }
 
@@ -806,12 +830,24 @@ export function ContentAttributesMixin(Base) {
           "data-segment-field",
           segmentFilter.field,
         );
-        this.setAttribute(
-          "data-segment-mode",
-          segmentFilter.mode || "on",
-        );
+        // The filter-bar chip only knows "on"/"off"; the host attribute
+        // additionally supports "expanded"/"collapsed" as default-state
+        // hints. Treat all three of "on"/"expanded"/"collapsed" as "active",
+        // so a chip reporting "on" should not downgrade an existing
+        // "expanded"/"collapsed" value declared in markup.
+        const existing = this.getAttribute("data-segment-mode");
+        const chipMode = segmentFilter.mode;
+        if (chipMode === "off") {
+          this.setAttribute("data-segment-mode", "off");
+        } else if (chipMode === "expanded" || chipMode === "collapsed") {
+          this.setAttribute("data-segment-mode", chipMode);
+        } else if (existing !== "expanded" && existing !== "collapsed") {
+          this.setAttribute("data-segment-mode", chipMode || "on");
+        }
+        // else: preserve existing "expanded"/"collapsed"
       } else {
-        // Keep field so the chip retains its selection; set mode to off
+        // Segment fully cleared (e.g. "None" picked) — remove field too
+        this.removeAttribute("data-segment-field");
         this.setAttribute("data-segment-mode", "off");
       }
 
@@ -819,7 +855,7 @@ export function ContentAttributesMixin(Base) {
 
       // Single authoritative re-aggregate + render.
       this.#aggregate();
-      this.#syncFilterBarState();
+      this._syncFilterBarState();
     }
 
     /* ── Lifecycle ──────────────────────────────────────────── */
@@ -836,7 +872,7 @@ export function ContentAttributesMixin(Base) {
           name === "data-sort-field" ||
           name === "data-sort-direction")
       ) {
-        this.#syncFilterBarState();
+        this._syncFilterBarState();
       }
     }
 

@@ -6,6 +6,11 @@
  *
  * @attr {enum}    [data-density]          — Display density variant
  * @attr {boolean} [data-active]           — Whether filters are active
+ * @attr {string}  [data-src]              — URL of a JSON file describing the filter bar
+ *                                            (and optionally the parent data grid).
+ *                                            Shape: { fields: [...], presetFilters: [...] }
+ *                                            Fetched on connect and whenever the attribute changes;
+ *                                            populates data-available-fields and data-preset-filters.
  * @attr {json}    [data-preset-filters]   — Preset filter configuration JSON
  * @attr {json}    [data-available-fields] — Field definitions: [{ field, name, type }]
  *
@@ -59,6 +64,7 @@ export class SherpaFilterBar extends SherpaElement {
       ...super.observedAttributes,
       "data-density",
       "data-active",
+      "data-src",
       "data-preset-filters",
       "data-available-fields",
     ];
@@ -72,7 +78,6 @@ export class SherpaFilterBar extends SherpaElement {
   #pendingEmit = false; // Microtask debounce for observer-driven filterchange
   #sortChangeHandler = null; // Bound handler for sortchange events
   #syncingSort = false; // Guard against re-entrant filterchange during sort sync
-  #refreshingOptions = false; // Guard against re-entrant option refresh
   #scopeEl = null; // Parent element used as event scope for sortchange
 
   onConnect() {
@@ -95,7 +100,7 @@ export class SherpaFilterBar extends SherpaElement {
           this.#pendingEmit = false;
           // Skip re-entrant filterchange when we are syncing chip
           // state from a viz child's sortchange event or mixin sync.
-          if (this.#syncingSort || this.#refreshingOptions || this.hasAttribute("data-syncing")) return;
+          if (this.#syncingSort || this.hasAttribute("data-syncing")) return;
           this.#emitFilterChange();
         });
       }
@@ -111,8 +116,16 @@ export class SherpaFilterBar extends SherpaElement {
 
     // Listen for slotchange on all zone slots to track chip additions/removals
     for (const slot of this.$$("slot")) {
-      slot.addEventListener("slotchange", () => this.#syncActiveState());
+      slot.addEventListener("slotchange", () => {
+        this.#applyDefaultSizing();
+        this.#syncActiveState();
+        this.#syncUserFiltersFlag();
+        this.#sealChipMenus();
+      });
     }
+    this.#applyDefaultSizing();
+    this.#syncUserFiltersFlag();
+    this.#sealChipMenus();
 
     // Clear button delegation — look for click on actions-slotted button
     this.addEventListener("click", (e) => {
@@ -175,13 +188,6 @@ export class SherpaFilterBar extends SherpaElement {
 
       // ── New API: data-filter-field chips ──
       if (chip?.hasAttribute?.("data-filter-field")) {
-        const filterType = chip.getAttribute("data-filter-type") || "text";
-        const value = e.detail?.value;
-        if (filterType === "datetime-range" && value) {
-          // Update label from TIME_RANGE_PRESETS if applicable
-          const preset = TIME_RANGE_PRESETS.find(p => p.key === value);
-          if (preset) chip.dataset.label = preset.label;
-        }
         // Activate chip when any value is checked
         const values = chip.getSelectedValues?.() ?? [];
         const wasActive = chip.hasAttribute("data-active");
@@ -203,17 +209,22 @@ export class SherpaFilterBar extends SherpaElement {
       const behavior = chip.getAttribute("data-behavior");
       if (behavior === "sort" || behavior === "segment") {
         const field = e.detail?.value;
+        const prefix = behavior === "sort" ? "Sort" : "Group";
         if (field) {
           chip.dataset.field = field;
           const col = this.#columns.find(c => c.field === field);
-          if (col) chip.dataset.label = col.name || formatFieldName(field);
+          const valueLabel = col?.name || formatFieldName(field);
+          chip.dataset.label = `${prefix}: ${valueLabel}`;
+          // Reset to default mode for a newly-picked field
+          // (clear any stale "off" mode left over from a previous cycle).
+          chip.dataset.mode = behavior === "sort" ? "asc" : "on";
           chip.toggleAttribute("data-active", true);
           // Observer picks up the data-field/data-active mutations and dispatches.
         } else {
-          // Deactivate
+          // Deactivate (e.g. user picked "None")
           delete chip.dataset.field;
           delete chip.dataset.mode;
-          chip.dataset.label = behavior === "sort" ? "Sort" : "Group";
+          chip.dataset.label = prefix;
           chip.removeAttribute("data-active");
           // Observer picks up the data-field/data-mode/data-active mutations and dispatches.
         }
@@ -255,11 +266,40 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   onAttributeChanged(name, _old, newValue) {
+    if (name === "data-src" && newValue) {
+      this.#loadFromSrc(newValue);
+    }
     if (name === "data-preset-filters" && newValue) {
       this.#initPresetChips(newValue);
     }
     if (name === "data-available-fields") {
       this.#syncAvailableFields();
+    }
+  }
+
+  /**
+   * Fetch a JSON descriptor and populate data-available-fields /
+   * data-preset-filters from it. The same JSON can drive both this
+   * filter bar and the parent data grid that owns it.
+   *
+   * Expected shape:
+   *   {
+   *     "fields":         [{ field, name, type, values? }, ...],
+   *     "presetFilters":  ["fieldName", ...]   // optional
+   *   }
+   */
+  async #loadFromSrc(src) {
+    if (!src) return;
+    try {
+      const data = await fetch(src).then((r) => r.json());
+      if (Array.isArray(data?.fields)) {
+        this.setAttribute("data-available-fields", JSON.stringify(data.fields));
+      }
+      if (Array.isArray(data?.presetFilters)) {
+        this.setAttribute("data-preset-filters", data.presetFilters.join(","));
+      }
+    } catch (e) {
+      console.warn("sherpa-filter-bar: failed to load data-src:", e);
     }
   }
 
@@ -302,6 +342,53 @@ export class SherpaFilterBar extends SherpaElement {
     }
 
     this.#populateAddMenu();
+  }
+
+  /** Toggle data-has-user-filters when ad-hoc filter chips appear in the default slot. */
+  #syncUserFiltersFlag() {
+    const has = !!this.querySelector(
+      ":scope > sherpa-button[data-filter-field]:not([slot])",
+    );
+    this.toggleAttribute("data-has-user-filters", has);
+  }
+
+  /**
+   * Force every filter/sort/preset chip in this bar to ignore ancestor
+   * `<template data-menu>` templates. This prevents container-level menu
+   * items (e.g. the data-grid's "Show / hide filters" toggle) from leaking
+   * into individual chip menus when the bar is rendered inside a viz host.
+   */
+  #sealChipMenus() {
+    const chips = this.querySelectorAll(
+      "sherpa-button[data-filter-field], sherpa-button[data-behavior='sort'], sherpa-button[data-behavior='segment']",
+    );
+    for (const chip of chips) {
+      if (chip.getAttribute("data-menu-scope") !== "none") {
+        chip.setAttribute("data-menu-scope", "none");
+      }
+    }
+  }
+
+  /**
+   * Filter bars use a one-step-down button scale ("small") by default for
+   * all sherpa-button children — preset chips, ad-hoc filter chips, the
+   * built-in Add button, and any consumer-slotted toggle / sort / group
+   * buttons. Consumers can still override per-button by setting
+   * `data-size` explicitly in markup.
+   */
+  #applyDefaultSizing() {
+    const buttons = this.querySelectorAll("sherpa-button");
+    for (const btn of buttons) {
+      // Treat missing OR the global default ("base") as "no explicit choice"
+      // and downscale to "small". sherpa-button.onRender() sets data-size
+      // to "base" on upgrade, so checking hasAttribute alone is unreliable.
+      const size = btn.getAttribute("data-size");
+      if (!size || size === "base") btn.setAttribute("data-size", "small");
+    }
+    if (this.#addButton) {
+      const size = this.#addButton.getAttribute("data-size");
+      if (!size || size === "base") this.#addButton.setAttribute("data-size", "small");
+    }
   }
 
   /** Check if any slotted filter chip has an active filter and update host attribute. */
@@ -378,6 +465,8 @@ export class SherpaFilterBar extends SherpaElement {
     const chip = document.createElement("sherpa-button");
     chip.setAttribute("data-type", "button-menu");
     chip.setAttribute("data-split", "");
+    chip.setAttribute("data-menu-scope", "none");
+    chip.setAttribute("data-size", "small");
     chip.setAttribute("data-filter-field", "_timerange");
     chip.setAttribute("data-filter-type", "datetime-range");
     chip.setAttribute("slot", "presets");
@@ -417,6 +506,8 @@ export class SherpaFilterBar extends SherpaElement {
       const chip = document.createElement("sherpa-button");
       chip.setAttribute("data-type", "button-menu");
       chip.setAttribute("data-split", "");
+      chip.setAttribute("data-menu-scope", "none");
+      chip.setAttribute("data-size", "small");
       chip.setAttribute("data-filter-field", field);
       chip.setAttribute("data-filter-type", filterType);
       chip.setAttribute("slot", "presets");
@@ -440,20 +531,24 @@ export class SherpaFilterBar extends SherpaElement {
     const usedFields = this.#getUsedFilterFields();
     const available = this.#columns.filter((c) => !usedFields.has(c.field));
 
-    if (available.length > 0) {
-      this.#addButton.setMenuItems(
-        available.map((col) => ({
-          value: col.field,
-          text: col.name || formatFieldName(col.field),
-        })),
-      );
-    }
-
-    // Hide when no columns exist at all
-    this.#addButton?.toggleAttribute(
-      "hidden",
-      this.#columns.length === 0,
+    // Always re-sync menu items (including clearing to empty) so the
+    // previously-shown set never lingers and lets users re-add the last field.
+    this.#addButton.setMenuItems(
+      available.map((col) => ({
+        value: col.field,
+        text: col.name || formatFieldName(col.field),
+      })),
     );
+
+    // Hide only when no columns are configured at all; otherwise disable
+    // when every column is already in use so the button stays visible but
+    // unclickable.
+    const noColumns = this.#columns.length === 0;
+    this.#addButton.toggleAttribute("hidden", noColumns);
+    this.#addButton.toggleAttribute("disabled", !noColumns && available.length === 0);
+    // Reflect Add-button visibility on the host so CSS can light up the
+    // Custom-zone divider even when no ad-hoc filter chips exist yet.
+    this.toggleAttribute("data-has-add", !noColumns);
   }
 
   /** Handle selection from the "Add filter" menu. */
@@ -470,6 +565,8 @@ export class SherpaFilterBar extends SherpaElement {
     const chip = document.createElement("sherpa-button");
     chip.setAttribute("data-type", "button-menu");
     chip.setAttribute("data-split", "");
+    chip.setAttribute("data-menu-scope", "none");
+    chip.setAttribute("data-size", "small");
     chip.setAttribute("data-filter-field", field);
     chip.setAttribute("data-filter-type", filterType);
     chip.setAttribute("data-dismissable", "");
@@ -504,9 +601,10 @@ export class SherpaFilterBar extends SherpaElement {
     // Global scope — dispatch on document so all viz children receive it.
     this.#dispatchGlobalFilterChange(filters);
 
-    // Cascade: narrow available options on other filter chips to values
-    // that exist in the subset produced by all other active filters.
-    this.#refreshFilterOptions();
+    // Update "(count)" suffixes on each chip's menu options so users can see
+    // how many rows each value would yield in combination with other active
+    // filters. Mutates textContent in place — checked state is preserved.
+    this.#refreshOptionCounts();
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -518,7 +616,17 @@ export class SherpaFilterBar extends SherpaElement {
     if (!this.#applied) return [];
 
     return this.#getFilterChips()
-      .filter((chip) => chip.hasAttribute("data-active"))
+      .filter((chip) => {
+        // Sort/segment chips report their field even when paused (off)
+        // so the host can remember the selected field across cycle-offs.
+        // The field is only fully cleared by picking "None" from the
+        // chip menu (which deletes data-field on the chip).
+        const behavior = chip.getAttribute("data-behavior");
+        if (behavior === "sort" || behavior === "segment") {
+          return chip.hasAttribute("data-field");
+        }
+        return chip.hasAttribute("data-active");
+      })
       .map((chip) => {
         // ── data-filter-field chips ──
         if (chip.hasAttribute("data-filter-field")) {
@@ -600,12 +708,20 @@ export class SherpaFilterBar extends SherpaElement {
     if (field && direction !== "off") {
       sortChip.dataset.field = field;
       const col = this.#columns.find(c => c.field === field);
-      if (col) sortChip.dataset.label = col.name || formatFieldName(field);
+      const valueLabel = col?.name || formatFieldName(field);
+      sortChip.dataset.label = `Sort: ${valueLabel}`;
       sortChip.dataset.mode = direction;
       sortChip.toggleAttribute("data-active", true);
     } else {
+      // Sort paused — preserve the remembered field and "Sort: <Field>"
+      // label so the user can re-engage the same field via another click
+      // cycle. The field is only cleared when the user explicitly picks
+      // "None" from the menu.
       sortChip.dataset.mode = "off";
       sortChip.removeAttribute("data-active");
+      if (!sortChip.dataset.field) {
+        sortChip.dataset.label = "Sort";
+      }
     }
     // Clear flag after microtask so the MutationObserver callback
     // (which also fires as a microtask) sees it as true and skips.
@@ -665,13 +781,37 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /**
-   * Get rows filtered by all active value filters except one field.
-   * Used for cascading AND logic — each filter's options reflect
-   * only the subset produced by all other active filters.
-   * @param {string} excludeField — field to exclude from filtering
+   * Get unique values for a field from the best available source.
+   * When a column declares an explicit `values` array, those values
+   * are always shown (preserving their order). When rows are present,
+   * any extra observed values are appended after the declared set.
+   * Options are never reduced by other active filters — every chip
+   * always exposes the full set of values it could ever filter on.
+   * @param {string} field — column field name
+   * @returns {string[]}
+   */
+  #getValuesForField(field) {
+    const col = this.#columns.find((c) => c.field === field);
+    const declared = col?.values?.length ? col.values.map(String) : [];
+    if (this.#rows.length) {
+      const extracted = this.#extractUniqueValues(field, this.#rows);
+      if (!declared.length) return extracted;
+      const seen = new Set(declared.map((v) => v.toLowerCase()));
+      const extras = extracted.filter((v) => !seen.has(String(v).toLowerCase()));
+      return [...declared, ...extras];
+    }
+    return declared;
+  }
+
+  /**
+   * Get rows that match all currently-active value filters except those on
+   * `excludeField`. Used to compute "(count)" suffixes that reflect how many
+   * rows each candidate value would yield in combination with the other
+   * active filters.
+   * @param {string} excludeField
    * @returns {Array<Object>}
    */
-  #getFilteredRows(excludeField) {
+  #getFilteredRowsExcluding(excludeField) {
     if (!this.#rows.length) return this.#rows;
     const filters = this.getFilters().filter(
       (f) => f.field !== excludeField && f.type !== "sort" && f.type !== "segment",
@@ -681,84 +821,49 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /**
-   * Get unique values for a field from the best available source.
-   * When a column declares an explicit `values` array, those values
-   * are always shown (preserving their order). When rows are present,
-   * any extra observed values are appended after the declared set.
-   *   1. Declared `col.values` (always shown when present)
-   *   2. Extracted from filtered row data (cascading AND)
-   * @param {string} field — column field name
-   * @returns {string[]}
+   * Count how many rows in `scopeRows` carry each value of `field`.
+   * Comparison is case-insensitive on stringified values to match how the
+   * chip's value attributes are produced.
+   * @param {string} field
+   * @param {Array<Object>} scopeRows
+   * @returns {Map<string, number>} key = lowercased value, value = count
    */
-  #getValuesForField(field) {
-    const col = this.#columns.find((c) => c.field === field);
-    const declared = col?.values?.length ? col.values.map(String) : [];
-    if (this.#rows.length) {
-      const extracted = this.#extractUniqueValues(field, this.#getFilteredRows(field));
-      if (!declared.length) return extracted;
-      // Union: declared values first (preserve their order), then any
-      // observed values not in the declared set.
-      const seen = new Set(declared.map((v) => v.toLowerCase()));
-      const extras = extracted.filter((v) => !seen.has(String(v).toLowerCase()));
-      return [...declared, ...extras];
+  #countValuesIn(field, scopeRows) {
+    const counts = new Map();
+    for (const row of scopeRows) {
+      const raw = row?.[field];
+      if (raw === null || raw === undefined || raw === "") continue;
+      const key = String(raw).toLowerCase();
+      counts.set(key, (counts.get(key) ?? 0) + 1);
     }
-    return declared;
+    return counts;
   }
 
   /**
-   * Refresh all filter chip menus to reflect cascading AND logic.
-   * Each chip's available values are narrowed to only those present
-   * in rows that match all other active filters. Preserves checked
-   * state for values that still exist in the narrowed set.
+   * Mutate each filter chip's menu items so their label reads `"<value> (N)"`
+   * where N is how many rows would match if that value were selected in
+   * combination with the chip's other active filters. Touches only
+   * textContent so existing checked / aria-checked state is preserved.
    */
-  #refreshFilterOptions() {
-    if (this.#refreshingOptions || !this.#rows.length) return;
-    this.#refreshingOptions = true;
-
-    let needsReemit = false;
-
+  #refreshOptionCounts() {
+    if (!this.#rows.length) return;
     for (const chip of this.#getFilterChips()) {
       if (!chip.hasAttribute("data-filter-field")) continue;
       const filterType = chip.getAttribute("data-filter-type") || "text";
       if (filterType !== "text" && filterType !== "number") continue;
 
       const field = chip.getAttribute("data-filter-field");
-      const prevSelected = chip.getSelectedValues?.() ?? [];
-      const prevSet = new Set(prevSelected.map((v) => String(v).toLowerCase()));
-
-      const availableValues = this.#getValuesForField(field);
-
-      const items = availableValues.map((v) => ({
-        value: v,
-        text: v,
-        selected: prevSet.has(String(v).toLowerCase()),
-      }));
-
-      chip.setMenuItems?.(items, { selection: "checkbox", group: "values" });
-
-      // Count how many previously selected values survived
-      const survivingCount = items.filter((i) => i.selected).length;
-
-      if (survivingCount !== prevSelected.length) {
-        this.#syncFilterChipLabel(chip, survivingCount);
-        if (survivingCount === 0 && chip.hasAttribute("data-active")) {
-          chip.removeAttribute("data-active");
-        }
-        needsReemit = true;
+      const scope = this.#getFilteredRowsExcluding(field);
+      const counts = this.#countValuesIn(field, scope);
+      const items = chip.menuElement?.querySelectorAll("sherpa-menu-item") ?? [];
+      for (const item of items) {
+        const base = item.dataset.baseText;
+        if (base === undefined) continue;
+        const key = (item.getAttribute("value") ?? base).toLowerCase();
+        const n = counts.get(key) ?? 0;
+        item.textContent = `${base} (${n})`;
       }
     }
-
-    if (needsReemit) {
-      this.#syncActiveState();
-      // Re-dispatch with corrected filter state after lost selections
-      const filters = this.getFilters();
-      this.#dispatchContainerFilterChange(filters);
-      this.#dispatchGlobalFilterChange(filters);
-    }
-
-    queueMicrotask(() => {
-      this.#refreshingOptions = false;
-    });
   }
 
   /**
@@ -783,6 +888,12 @@ export class SherpaFilterBar extends SherpaElement {
         if (values.length) {
           const items = values.map((v) => ({ value: v, text: v }));
           chip.setMenuItems?.(items, { selection: "checkbox", group: "values" });
+          // Stash the raw label so #refreshOptionCounts can re-append the
+          // "(N)" suffix without losing the original text.
+          for (const el of chip.menuElement?.querySelectorAll("sherpa-menu-item") ?? []) {
+            el.dataset.baseText = el.textContent.trim();
+          }
+          this.#refreshOptionCounts();
         }
         break;
       }
@@ -804,19 +915,23 @@ export class SherpaFilterBar extends SherpaElement {
 
   /**
    * Update a filter chip's label and badge based on selection count.
-   * 1 selected  → label = selected item's text, no badge.
-   * >1 selected → label = default field name, badge = count.
-   * 0 selected  → label = default field name, no badge.
+   * All active chips follow the canonical "Label: value" format:
+   *   1 selected  → "Label: SelectedValue", no badge.
+   *   >1 selected → "Label:" + numeric badge (count).
+   *   0 selected  → "Label" (default), no badge.
    */
   #syncFilterChipLabel(chip, count) {
-    const defaultLabel = chip.dataset.defaultLabel || chip.dataset.label;
+    const defaultLabel = chip.dataset.defaultLabel || chip.dataset.label || "";
     if (count === 1) {
       const menuEl = chip.menuElement ?? chip.querySelector("sherpa-menu");
       const checked = menuEl?.querySelector("sherpa-menu-item[checked]");
-      chip.dataset.label = checked?.textContent?.trim() || defaultLabel;
+      // Prefer the stashed base text (without the "(N)" count suffix that
+      // #refreshOptionCounts appends) so the chip label stays clean.
+      const value = checked?.dataset.baseText ?? checked?.textContent?.trim();
+      chip.dataset.label = value ? `${defaultLabel}: ${value}` : defaultLabel;
       delete chip.dataset.count;
     } else if (count > 1) {
-      chip.dataset.label = defaultLabel;
+      chip.dataset.label = `${defaultLabel}:`;
       chip.dataset.count = String(count);
     } else {
       chip.dataset.label = defaultLabel;
@@ -832,11 +947,14 @@ export class SherpaFilterBar extends SherpaElement {
       ? this.#columns.filter(c => this.#inferFilterType(c.type) === "text")
       : this.#columns;
     const currentField = chip.getAttribute("data-field");
-    const items = cols.map(c => ({
-      value: c.field,
-      text: c.name || formatFieldName(c.field),
-      selected: c.field === currentField,
-    }));
+    const items = [
+      { value: "", text: "None", selected: !currentField },
+      ...cols.map(c => ({
+        value: c.field,
+        text: c.name || formatFieldName(c.field),
+        selected: c.field === currentField,
+      })),
+    ];
     chip.setMenuItems?.(items, { selection: "radio", group: "columns" });
   }
 
@@ -914,7 +1032,19 @@ export class SherpaFilterBar extends SherpaElement {
     return { start, end: now };
   }
 
-  /** Cycle sort mode: off → asc → desc → off (field), off → desc → asc → off (value/time). */
+  /**
+   * Cycle sort mode on the main-button click.
+   *
+   * Field sort:  off → asc → desc → off (cycling never clears the
+   *              chosen field — `data-field` and the "Sort: <Field>"
+   *              label are preserved across the off state so the user
+   *              can keep cycling indefinitely).
+   * Time sort:   off → desc (Newest first) → asc (Oldest first) → off
+   * Value sort:  off → desc (Largest first) → asc (Smallest first) → off
+   *
+   * To clear the chosen field entirely, the user must pick "None"
+   * from the menu — handled in the menu-select listener.
+   */
   #cycleSortMode(chip) {
     const current = chip.dataset.mode;
     const sortType = chip.dataset.sortType;
@@ -952,7 +1082,14 @@ export class SherpaFilterBar extends SherpaElement {
         chip.removeAttribute("data-active");
       }
     } else {
-      // Field sort: off → asc → desc → off
+      // Field sort: off → asc → desc → off.
+      // Never clear data-field or the "Sort: <Field>" label — the user
+      // should be able to cycle off → asc → desc indefinitely on the
+      // same field. The only way to clear the field is the menu "None".
+      //
+      // If no field is selected, the chip's main-button is a no-op —
+      // the user must pick a field from the menu first.
+      if (!chip.hasAttribute("data-field")) return;
       if (!current || current === "off") {
         chip.dataset.mode = "asc";
         chip.dataset.iconStart = "\uf062"; // fa-arrow-up
@@ -969,16 +1106,22 @@ export class SherpaFilterBar extends SherpaElement {
     // Observer picks up the data-mode/data-active mutations and dispatches.
   }
 
-  /** Cycle segment mode: inactive → active → inactive. */
+  /**
+   * Cycle segment mode: off → on → off.  Field is preserved across
+   * the off state — the user must pick "None" from the menu to fully
+   * clear it.
+   */
   #cycleSegmentMode(chip) {
     // No field selected yet — user must pick from the dropdown first
     if (!chip.hasAttribute("data-field")) return;
     if (chip.hasAttribute("data-active")) {
+      chip.dataset.mode = "off";
       chip.removeAttribute("data-active");
     } else {
+      chip.dataset.mode = "on";
       chip.toggleAttribute("data-active", true);
     }
-    // Observer picks up the data-active mutation and dispatches.
+    // Observer picks up the data-mode/data-active mutation and dispatches.
   }
 
   /**

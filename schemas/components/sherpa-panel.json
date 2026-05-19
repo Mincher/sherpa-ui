@@ -1,6 +1,6 @@
 {
   "tagName": "sherpa-panel",
-  "description": "Slide-out or inline panel with header and content area.",
+  "description": "Inline column or overlay drawer with header, optional toolbar, optional search row, scrollable content area, and optional action-bar footer. Inline panels collapse to a narrow strip with a chevron toggle and an optional vertical restore label. Use the built-in `data-search` flag (or a `slot=\"search\"` override) to turn the panel into a searchable list panel.",
   "category": "container",
   "tier": 2,
   "group": "layout",
@@ -36,9 +36,39 @@
       "description": "Heading text"
     },
     {
+      "name": "data-restore-label",
+      "type": "string",
+      "description": "Vertical label shown on the collapsed strip"
+    },
+    {
       "name": "data-width",
       "type": "string",
       "description": "Custom width (CSS value)"
+    },
+    {
+      "name": "data-bordered",
+      "type": "boolean",
+      "description": "Adds a rounded outer border"
+    },
+    {
+      "name": "data-flush",
+      "type": "boolean",
+      "description": "Removes content padding (slotted child owns gutters)"
+    },
+    {
+      "name": "data-search",
+      "type": "boolean",
+      "description": "Renders a built-in search row and filters slotted items"
+    },
+    {
+      "name": "data-search-match",
+      "type": "string",
+      "description": "CSS selector for searchable items (default: `sherpa-list-item`)"
+    },
+    {
+      "name": "data-empty",
+      "type": "string",
+      "description": "Empty-state message when search yields zero matches (default: `No results`)"
     }
   ],
   "slots": [
@@ -48,15 +78,23 @@
     },
     {
       "name": "controls",
-      "description": "Header control buttons"
+      "description": "Header control buttons (placed before the collapse button)"
     },
     {
       "name": "metadata",
-      "description": "Metadata content area"
+      "description": "Metadata row below the heading"
+    },
+    {
+      "name": "search",
+      "description": "Overrides the built-in search field (sherpa-input-search)"
+    },
+    {
+      "name": "toolbar",
+      "description": "Toolbar row between the header and the content area"
     },
     {
       "name": "actions",
-      "description": "Action bar content"
+      "description": "Action bar pinned to the bottom of the panel"
     }
   ],
   "events": [
@@ -71,10 +109,26 @@
     },
     {
       "name": "panel-close",
-      "description": "Fired when the close button is clicked",
+      "description": "Fired when the collapse / close button is clicked",
       "bubbles": true,
       "composed": true,
       "detail": null
+    },
+    {
+      "name": "panel-search",
+      "description": "Fired when the search filter changes",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string",
+        "matchCount": "number"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "name": "clearSearch()",
+      "description": "Clear the search field and reset visibility"
     }
   ]
 }

@@ -20,8 +20,8 @@ Body-content view layout. An embedded <sherpa-view-header> sits at the top, opti
 | ---- | ----------- |
 | `(default)` | Body content (stacked vertically) |
 | `header-actions` | Forwarded to the embedded view-header's |
-| `side-panel-start` | Leading rail (typically sherpa-content-section) |
-| `side-panel-end` | Trailing rail (typically sherpa-content-section) |
+| `side-panel-start` | Leading rail (typically sherpa-panel) |
+| `side-panel-end` | Trailing rail (typically sherpa-panel) |
 
 Slot usage:
 
@@ -30,8 +30,8 @@ Slot usage:
   <!-- Default slot -->
   <p>Content goes here</p>
   <div slot="header-actions"><!-- Forwarded to the embedded view-header's --></div>
-  <div slot="side-panel-start"><!-- Leading rail (typically sherpa-content-section) --></div>
-  <div slot="side-panel-end"><!-- Trailing rail (typically sherpa-content-section) --></div>
+  <div slot="side-panel-start"><!-- Leading rail (typically sherpa-panel) --></div>
+  <div slot="side-panel-end"><!-- Trailing rail (typically sherpa-panel) --></div>
 </sherpa-layout-view>
 ```
 
@@ -58,7 +58,7 @@ sherpa-layout-view::part(header) {
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="header-actions"><!-- Forwarded to the embedded view-header's --></span>
-  <span slot="side-panel-start"><!-- Leading rail (typically sherpa-content-section) --></span>
+  <span slot="side-panel-start"><!-- Leading rail (typically sherpa-panel) --></span>
 </sherpa-layout-view>
 ```
 

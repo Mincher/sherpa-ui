@@ -27,8 +27,8 @@
  * @slot (default)        — Body content (stacked vertically)
  * @slot header-actions   — Forwarded to the embedded view-header's
  *                          view-selection slot
- * @slot side-panel-start — Leading rail (typically sherpa-content-section)
- * @slot side-panel-end   — Trailing rail (typically sherpa-content-section)
+ * @slot side-panel-start — Leading rail (typically sherpa-panel)
+ * @slot side-panel-end   — Trailing rail (typically sherpa-panel)
  *
  * @csspart header
  * @csspart body

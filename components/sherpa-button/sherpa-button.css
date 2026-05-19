@@ -19,7 +19,7 @@
  *   data-variant, data-size, data-active, data-status, data-dismissable,
  *   data-count, data-split, disabled
  *
- * data-variant {enum} — primary | secondary | tertiary | tertiary-on-color
+ * data-variant {enum} — primary | secondary | tertiary | tertiary-on-color | ai
  * data-size    {enum} — 2x-small | x-small | small | base | large (default: base)
  * data-status  {enum} — critical | warning | success | info | urgent
  * data-type    {enum} — default | icon | button-menu | icon-menu
@@ -41,7 +41,7 @@
 
   --_button-size:    var(--sherpa-size-2xl, 32px);
   --_button-padding: var(--sherpa-space-xs, 8px);
-  --_button-spacing: var(--sherpa-space-2xs, 4px);
+  --_button-spacing: var(--sherpa-space-xs, 8px);
 
   --_surface:       var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #8500cc));
   --_text:          var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
@@ -282,6 +282,54 @@ i { font-style: normal; }
   --_text:       var(--sherpa-text-default-on-color-placeholder, #999);
   --_icon-color: var(--sherpa-text-default-on-color-placeholder, #999);
   border-color:  transparent;
+}
+
+/* ── AI variant ───────────────────────────────────────────────────────────── */
+/*
+ * Gradient-border button used to invoke AI surfaces (e.g. the AI panel).
+ * The host renders a 1.5px gradient ring via background-clip; the inner
+ * .trigger paints a solid surface so the gradient only shows in the border.
+ */
+:host([data-variant="ai"]) {
+  --_surface:       var(--sherpa-surface-container-default, #fff);
+  --_text:          var(--sherpa-text-default-body, #2e2e33);
+  --_icon-color:    var(--sherpa-text-default-body, #2e2e33);
+  --_surface-hover: var(--sherpa-surface-container-hover, #f3f4f6);
+  --_surface-down:  var(--sherpa-surface-container-hover, #e5e7eb);
+  --_border-hover:  transparent;
+
+  border-color: transparent;
+  border-width: 1.5px;
+  background:
+    linear-gradient(var(--_surface), var(--_surface)) padding-box,
+    var(--sherpa-ai-accent-gradient,
+      linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%)) border-box;
+  transition: filter 120ms ease, border-color 0.15s;
+}
+
+:host([data-variant="ai"]:hover) {
+  filter: brightness(1.05);
+}
+
+:host([data-variant="ai"][data-active]) {
+  --_surface:       var(--sherpa-surface-control-active-default, #1f2937);
+  --_text:          var(--sherpa-text-default-on-color-body, #fafafa);
+  --_icon-color:    var(--sherpa-text-default-on-color-body, #fafafa);
+  --_surface-hover: var(--sherpa-surface-control-active-hover, #111827);
+  --_surface-down:  var(--sherpa-surface-control-active-down, #0b1220);
+
+  border-color: transparent;
+  background:
+    linear-gradient(var(--_surface), var(--_surface)) padding-box,
+    var(--sherpa-ai-accent-gradient,
+      linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%)) border-box;
+}
+
+:host([data-variant="ai"][disabled]) {
+  --_surface:    var(--sherpa-surface-control-inactive-default, #f2f2f5);
+  --_text:       var(--sherpa-text-inactive-default, #b0b0b8);
+  --_icon-color: var(--sherpa-text-inactive-default, #b0b0b8);
+  filter: grayscale(0.6);
 }
 
 /* ── Active state ─────────────────────────────────────────────────────────── */

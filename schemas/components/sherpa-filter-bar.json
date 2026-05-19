@@ -17,6 +17,11 @@
       "description": "Whether filters are active"
     },
     {
+      "name": "data-src",
+      "type": "string",
+      "description": "URL of a JSON file describing the filter bar"
+    },
+    {
       "name": "data-preset-filters",
       "type": "json",
       "description": "Preset filter configuration JSON"

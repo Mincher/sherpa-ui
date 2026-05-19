@@ -42,8 +42,15 @@
       z-index: 10;
 }
 :host([data-variant="fit"]) {
-  width: fit-content;
-      height: fit-content;
+  /* "fit" fills its parent's inline size, capped by any inline max-width
+     the consumer sets. True content-hugging via fit-content cannot work
+     here: every composed Sherpa child (header, list, grid) uses
+     container-type: inline-size which applies inline-size containment,
+     so descendants contribute 0 to the host's intrinsic inline size and
+     fit-content collapses to padding-only. Filling + max-width matches
+     every real usage in the examples and produces card-shaped output. */
+  width: 100%;
+      height: auto;
 }
 :host([data-variant="fill"]),
 :host([data-variant="resizable"]) {

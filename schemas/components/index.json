@@ -1,7 +1,6 @@
 [
   "sherpa-accordion",
   "sherpa-ai-panel",
-  "sherpa-attribute-controls",
   "sherpa-barchart",
   "sherpa-breadcrumbs",
   "sherpa-button",
@@ -13,7 +12,6 @@
   "sherpa-container",
   "sherpa-container-header",
   "sherpa-container-pdf-exporter",
-  "sherpa-content-section",
   "sherpa-data-grid",
   "sherpa-dialog",
   "sherpa-donut-chart",
@@ -42,7 +40,6 @@
   "sherpa-line-chart",
   "sherpa-list",
   "sherpa-list-item",
-  "sherpa-list-panel",
   "sherpa-loader",
   "sherpa-menu",
   "sherpa-menu-item",

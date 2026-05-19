@@ -17,8 +17,24 @@ Available templates:
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-density` | enum | Display density variant | — | — |
 | `data-active` | boolean | Whether filters are active | — | — |
+| `data-src` | string | URL of a JSON file describing the filter bar. Fetched on connect / change; populates `data-available-fields` and `data-preset-filters`. | — | — |
 | `data-preset-filters` | json | Preset filter configuration JSON | — | — |
 | `data-available-fields` | json | Field definitions: [{ field, name, type }] | — | — |
+
+### `data-src` JSON shape
+
+```json
+{
+  "fields": [
+    { "field": "status", "name": "Status", "type": "enum" },
+    { "field": "region", "name": "Region", "type": "enum" }
+  ],
+  "presetFilters": ["status", "region"]
+}
+```
+
+The same JSON file can describe a sibling data grid's columns — the filter bar
+will only consume `fields` and `presetFilters`.
 
 ## Slots
 

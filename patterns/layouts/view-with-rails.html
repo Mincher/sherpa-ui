@@ -16,22 +16,22 @@
   — typically:
       html, body { height: 100dvh; overflow: hidden; }
 
-  Components: sherpa-layout-view, sherpa-content-section,
-              sherpa-list-panel, sherpa-data-grid, sherpa-key-value-list
+  Components: sherpa-layout-view, sherpa-panel, sherpa-data-grid,
+              sherpa-key-value-list
 
   Customisation:
     • data-heading on sherpa-layout-view sets the embedded view-header label
     • data-fill="parent" if embedded inside another viewport-bound layout
     • data-pad / data-gap for the content column
-    • Either rail may be omitted by removing the slotted content-section
-    • Use slot="search" on the rail's content-section for a sticky
+    • Either rail may be omitted by removing the slotted sherpa-panel
+    • Use slot="search" on the rail's sherpa-panel for a sticky
       search bar pinned to the top of that rail
 -->
 
 <template id="view-with-rails"
   data-pattern-category="layouts"
   data-pattern-status="stable"
-  data-pattern-components="sherpa-layout-view, sherpa-content-section, sherpa-list-panel, sherpa-data-grid">
+  data-pattern-components="sherpa-layout-view, sherpa-panel, sherpa-data-grid">
 
   <sherpa-layout-view data-heading="Devices" data-pad data-gap="base">
 
@@ -41,42 +41,39 @@
     </sherpa-toolbar>
 
     <!-- Left rail: searchable filter / navigation list -->
-    <sherpa-content-section
+    <sherpa-panel
       slot="side-panel-start"
+      data-bordered
       data-position="left"
       data-heading="Filters"
       data-restore-label="Filters"
-      data-flush>
-      <sherpa-list-panel
-        data-match="sherpa-list-item"
-        data-empty="No filters match">
-        <sherpa-list>
-          <sherpa-list-item data-label="All devices"></sherpa-list-item>
-          <sherpa-list-item data-label="Online"></sherpa-list-item>
-          <sherpa-list-item data-label="Offline"></sherpa-list-item>
-          <sherpa-list-item data-label="Needs attention"></sherpa-list-item>
-        </sherpa-list>
-      </sherpa-list-panel>
-    </sherpa-content-section>
+      data-search
+      data-search-match="sherpa-list-item"
+      data-empty="No filters match"
+      data-expanded>
+      <sherpa-list>
+        <sherpa-list-item data-label="All devices"></sherpa-list-item>
+        <sherpa-list-item data-label="Online"></sherpa-list-item>
+        <sherpa-list-item data-label="Offline"></sherpa-list-item>
+        <sherpa-list-item data-label="Needs attention"></sherpa-list-item>
+      </sherpa-list>
+    </sherpa-panel>
 
     <!-- Centre content -->
     <sherpa-filter-bar></sherpa-filter-bar>
     <sherpa-data-grid></sherpa-data-grid>
     <sherpa-pagination></sherpa-pagination>
 
-    <!-- Right rail: details / inspector with sticky search -->
-    <sherpa-content-section
+    <!-- Right rail: details / inspector -->
+    <sherpa-panel
       slot="side-panel-end"
+      data-bordered
       data-position="right"
       data-heading="Details"
-      data-restore-label="Details">
-      <sherpa-input-search
-        slot="search"
-        data-name="details-search"
-        data-placeholder="Search details"
-        data-hide-label></sherpa-input-search>
+      data-restore-label="Details"
+      data-expanded>
       <sherpa-key-value-list></sherpa-key-value-list>
-    </sherpa-content-section>
+    </sherpa-panel>
 
   </sherpa-layout-view>
 </template>

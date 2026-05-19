@@ -66,17 +66,42 @@
 :host slot[name="actions"] {
   margin-inline-start: auto;
 }
-:host slot[name="group"]:has(::slotted(:not([hidden]))),
-:host slot[name="sort"]:has(::slotted(:not([hidden]))),
-:host slot[name="presets"]:has(::slotted(:not([hidden]))) {
-  padding-inline-end: var(--_filter-bar-gap);
-      border-inline-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e5);
-}
 :host slot[name="toggle"]:not(:has(::slotted(*))),
 :host slot[name="group"]:not(:has(::slotted(*))),
 :host slot[name="sort"]:not(:has(::slotted(*))),
 :host slot[name="presets"]:not(:has(::slotted(*))) {
   display: none;
+}
+:host(:not([data-has-toggle]))  slot[name="toggle"],
+:host(:not([data-has-group]))   slot[name="group"],
+:host(:not([data-has-sort]))    slot[name="sort"],
+:host(:not([data-has-presets])) slot[name="presets"],
+:host(:not([data-has-actions])) slot[name="actions"] {
+  display: none;
+}
+:host .zone-divider {
+  display: none;
+  flex-shrink: 0;
+  align-self: center;
+  width: var(--sherpa-border-width-base, 1px);
+  height: 16px;
+  background: var(--sherpa-border-container-default, #e0e0e5);
+}
+/* Divider before the Presets zone — visible when presets exist and any
+   Grouping/Sorting content precedes them. */
+:host([data-has-presets][data-has-sort]) .zone-divider[data-divider="before-presets"],
+:host([data-has-presets][data-has-group]) .zone-divider[data-divider="before-presets"] {
+  display: block;
+}
+/* Divider before the Custom zone — visible when the custom zone has any
+   content (user filter chips or the Add button) and any earlier zone exists. */
+:host([data-has-user-filters][data-has-sort])    .zone-divider[data-divider="before-custom"],
+:host([data-has-user-filters][data-has-group])   .zone-divider[data-divider="before-custom"],
+:host([data-has-user-filters][data-has-presets]) .zone-divider[data-divider="before-custom"],
+:host([data-has-add][data-has-sort])    .zone-divider[data-divider="before-custom"],
+:host([data-has-add][data-has-group])   .zone-divider[data-divider="before-custom"],
+:host([data-has-add][data-has-presets]) .zone-divider[data-divider="before-custom"] {
+  display: block;
 }
 :host(:not([data-active])) slot[name="actions"] {
   display: none;

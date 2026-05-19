@@ -1,7 +1,7 @@
 {
   "tagName": "sherpa-chat-message",
   "description": "Chat bubble for AI / messaging surfaces.",
-  "category": "content",
+  "category": "ai",
   "tier": 3,
   "group": "core",
   "baseClass": "SherpaElement",

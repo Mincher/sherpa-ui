@@ -83,6 +83,9 @@ i {
 :host([data-filters]) sherpa-filter-bar {
   display: flex; padding-bottom: var(--sherpa-space-xs, 8px);
 }
+:host([data-filters][data-hide-filter-bar="true"]) sherpa-filter-bar {
+  display: none;
+}
 :host .table-container {
   flex: 1 1 0; min-height: 0; overflow: auto; container-type: scroll-state;
 }
@@ -101,7 +104,8 @@ i {
 :host .grid-pagination {
   flex-shrink: 0;
 }
-:host(:not([data-show-pagination="true"])) .grid-pagination {
+:host(:not([data-show-pagination])) .grid-pagination,
+:host([data-show-pagination="false"]) .grid-pagination {
   display: none;
 }
 :host([data-loading]) tbody {
@@ -131,18 +135,23 @@ i {
   --_cell-h: 40px;
   --_header-h: 48px;
 }
-:host([data-selectable="true"]) {
+:host([data-selectable]:not([data-selectable="false"])) {
   --_pin-offset: var(--_selection-col-w);
 }
-:host(:not([data-selectable="true"])) .selection-cell,
-:host(:not([data-selectable="true"])) th.selection-col {
+:host(:not([data-selectable])) .selection-cell,
+:host([data-selectable="false"]) .selection-cell,
+:host(:not([data-selectable])) th.selection-col,
+:host([data-selectable="false"]) th.selection-col {
   display: none;
 }
-:host(:not([data-show-actions="true"])) .action-cell,
-:host(:not([data-show-actions="true"])) th.action-col {
+:host(:not([data-show-actions])) .action-cell,
+:host([data-show-actions="false"]) .action-cell,
+:host(:not([data-show-actions])) th.action-col,
+:host([data-show-actions="false"]) th.action-col {
   display: none;
 }
-:host(:not([data-show-secondary-headers="true"])) .secondary-headers {
+:host(:not([data-show-secondary-headers])) .secondary-headers,
+:host([data-show-secondary-headers="false"]) .secondary-headers {
   display: none;
 }
 :host table {
@@ -393,6 +402,15 @@ th.selection-col {
   position: sticky;
   left: 0;
   z-index: 1;
+}
+
+/* Re-assert center + zero padding on the header cell, because the nested
+   `:host thead { & th { ... } }` rule above has higher specificity than
+   `th.selection-col` and would otherwise force left alignment + cell padding. */
+:host thead th.selection-col,
+:host thead th.action-col {
+  text-align: center;
+  padding: 0;
 }
 
 .action-cell,
@@ -775,7 +793,8 @@ tr[data-group-child] td.selection-cell {
   flex-shrink: 0;
 }
 
-:host(:not([data-show-pagination="true"])) .grid-pagination {
+:host(:not([data-show-pagination])) .grid-pagination,
+:host([data-show-pagination="false"]) .grid-pagination {
   display: none;
 }
 

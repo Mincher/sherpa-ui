@@ -20,11 +20,23 @@
     actions   — Clear action (slot="actions")
 
   Host attributes:
-    data-density  — "compact" | "comfortable"
-    data-active   — Present when any filter is active
-    data-embedded — No top border (for embedding inside other components)
-    data-global   — Dispatches globalfilterchange on document (for page-level bars)
-    data-type     — "local" selects the local template (default: full layout)
+    data-src              — URL of a JSON file describing the filter bar.
+                            Shape: { fields: [...], presetFilters?: [...] }
+                            The same JSON can be reused to describe a parent
+                            data grid's columns/records — keep them in one
+                            place so the bar and grid stay in sync. Fetched
+                            on connect and on attribute change; populates
+                            data-available-fields and data-preset-filters.
+    data-available-fields — JSON array of field defs: [{ field, name, type }].
+                            Usually set via data-src; can be set directly.
+    data-preset-filters   — Comma-separated field names (or JSON array) that
+                            should appear as preset chips. Usually set via
+                            data-src.
+    data-density          — "compact" | "comfortable"
+    data-active           — Present when any filter is active (auto-reflected)
+    data-embedded         — No top border (for embedding inside other components)
+    data-global           — Dispatches globalfilterchange on document (page-level bars)
+    data-type             — "local" selects the local template (default: full layout)
 
   Custom templates:
     To define a custom layout, add a new <template id="my-layout"> block
@@ -41,15 +53,19 @@
     <slot name="toggle"></slot>
     <slot name="group"></slot>
     <slot name="sort"></slot>
+    <span class="zone-divider" data-divider="before-presets" aria-hidden="true"></span>
     <slot name="presets"></slot>
+    <span class="zone-divider" data-divider="before-custom" aria-hidden="true"></span>
     <slot></slot>
     <sherpa-button
       class="add-filter-button"
-      data-type="button-menu"
+      data-menu="true"
+      data-menu-scope="none"
       data-variant="secondary"
-      data-icon-start="&#xf067;"
-      data-label="Add"
       data-size="small"
+      data-icon-start="&#xf067;"
+      data-icon-end="&#xf078;"
+      data-label="Add"
       hidden
     ></sherpa-button>
     <slot name="actions"></slot>
@@ -66,6 +82,7 @@
   <div class="filter-surface">
     <slot name="group"></slot>
     <slot name="sort"></slot>
+    <span class="zone-divider" aria-hidden="true"></span>
     <slot name="presets"></slot>
     <slot name="actions"></slot>
   </div>

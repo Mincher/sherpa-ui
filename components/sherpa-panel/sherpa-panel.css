@@ -2,17 +2,34 @@
  * sherpa-panel.css — Phase 2 Modernization (CSS Nesting)
  * @component sherpa-panel
  *
- * Slide-out or inline panel with header, optional action bar, and content slot.
- * Supports inline (left/right, collapsible) and overlay (fixed position) modes.
+ * Inline column or overlay drawer with header, optional toolbar, optional
+ * search row, scrollable content area, and optional action-bar footer.
+ * Inline panels collapse to a narrow strip with a chevron toggle and an
+ * optional vertical restore label. Overlay panels close to an X.
  *
  * Host attributes:
  *   data-variant       — inline | overlay (layout mode)
- *   data-position      — left | right | both (side/drawer placement)
+ *   data-position      — left | right | both (anchored side / drawer placement)
  *   data-expanded      — Panel is open/visible (collapsed = narrow trigger)
  *   data-heading       — Panel heading text
+ *   data-restore-label — Vertical label shown on the collapsed strip
  *   data-width         — Custom panel width (CSS value)
+ *   data-bordered      — Adds a rounded outer border (use as inset card)
+ *   data-flush         — Remove content padding (slotted child owns gutters)
+ *   data-search        — Render a built-in search row that filters slotted items
+ *   data-empty         — Empty-state message text (paired with data-search)
+ *   data-empty-visible — Show empty state when search yields no matches (set by JS)
  *   data-has-metadata  — Metadata row present (set by JS)
+ *   data-has-toolbar   — Toolbar slot present (set by JS)
  *   data-has-actions   — Action bar present (set by JS)
+ *
+ * Chevron iconography (inline variant):
+ *   Collapse button (in header) and restore trigger (on the strip) both use
+ *   `fa-chevron-left` / `fa-chevron-right` whose direction is derived from
+ *   `data-position`. Overlay variant uses `fa-xmark` for the close button.
+ *
+ * Search highlight:
+ *   ::highlight(panel-search-match) — Applied by JS to matched text ranges
  */
 
 :host {
@@ -58,26 +75,49 @@
 :host(:not([data-expanded])) .panel-body {
   display: none;
 }
-:host(:not([data-expanded])) .collapse-trigger {
+
+:host([data-expanded]) .collapse-trigger {
+  display: none;
+}
+:host([data-variant="overlay"]) .collapse-trigger {
   display: none;
 }
 
 :host .collapse-trigger {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border: none;
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      background: var(--sherpa-surface-container-default, #fafaff);
-      color: var(--sherpa-text-default-body, #2e2e33);
-      cursor: pointer;
-      font-size: 14px;
-      padding: 0;
-  
-      &:hover { background: var(--sherpa-surface-container-hover, #f0f0f5); }
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sherpa-space-xs, 8px);
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: transparent;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  cursor: pointer;
+  font-size: 14px;
+  padding: var(--sherpa-space-xs, 8px) 0;
 }
+:host .collapse-trigger:hover {
+  background: var(--sherpa-surface-container-hover, #f0f0f5);
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+:host .collapse-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 1;
+}
+:host .collapse-label:empty { display: none; }
+
+/* ── Chevron direction (inline variant) ──────────────────────
+   Collapsed trigger → chevron points INWARD (toward content) to suggest expand.
+   Position=right (default) anchored to right side → trigger sits to expand leftward → chevron-left.
+   Position=left  anchored to left side  → trigger sits to expand rightward → chevron-right. */
+:host .collapse-icon::before { content: "\f053"; } /* default chevron-left */
+:host([data-position="left"]) .collapse-icon::before { content: "\f054"; } /* chevron-right */
 :host([data-expanded]) {
   width: var(--_panel-width, 480px);
 }
@@ -96,9 +136,6 @@
   box-shadow: var(--sherpa-shadow-default-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
   width: var(--_panel-width, 560px);
 }
-:host([data-variant="overlay"]) .collapse-trigger {
-  display: none;
-}
 :host([data-variant="overlay"]:not([data-expanded])) {
   display: none;
   width: 0;
@@ -107,13 +144,17 @@
 :host([data-variant="overlay"][data-position="right"]),
 :host([data-variant="overlay"]:not([data-position])) {
   right: 0;
-      border-top-left-radius: var(--sherpa-border-rounding-lg, 12px);
-      border-bottom-left-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-top-left-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-bottom-left-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 :host([data-variant="overlay"][data-position="left"]) {
   left: 0;
   border-top-right-radius: var(--sherpa-border-rounding-lg, 12px);
   border-bottom-right-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 :host([data-variant="overlay"][data-position="both"]) {
   left: 0;
@@ -159,20 +200,28 @@
 }
 :host .close-btn {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border: none;
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      background: var(--sherpa-surface-container-default, #fafaff);
-      color: var(--sherpa-text-default-body, #2e2e33);
-      cursor: pointer;
-      font-size: 14px;
-      padding: 0;
-  
-      &:hover { background: var(--sherpa-surface-container-hover, #f0f0f5); }
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: transparent;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
 }
+:host .close-btn:hover {
+  background: var(--sherpa-surface-container-hover, #f0f0f5);
+  color: var(--sherpa-text-default-body, #2e2e33);
+}
+
+/* Header close/minimise button icon — chevron for inline, xmark for overlay.
+   Inline chevron points OUTWARD (toward the anchored edge) to suggest collapse. */
+:host .close-icon::before { content: "\f054"; } /* default chevron-right (right-anchored) */
+:host([data-position="left"]) .close-icon::before { content: "\f053"; } /* chevron-left */
+:host([data-variant="overlay"]) .close-icon::before { content: "\f00d"; } /* xmark */
 :host .metadata {
   display: flex;
       align-items: center;
@@ -184,23 +233,71 @@
 :host(:not([data-has-metadata])) .metadata {
   display: none;
 }
+:host .panel-search-row {
+  display: none;
+  padding-top: var(--sherpa-space-xs, 8px);
+}
+:host([data-search]) .panel-search-row {
+  display: block;
+}
+:host .panel-search { width: 100%; }
 :host .action-bar {
   display: flex;
       align-items: center;
       gap: var(--sherpa-space-xs, 8px);
       padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
       background: var(--sherpa-surface-container-default, #fdfdfd);
+      border-top: 1px solid var(--sherpa-border-container-default, #d5d5dc);
       flex-shrink: 0;
 }
 :host(:not([data-has-actions])) .action-bar {
   display: none;
 }
+:host .toolbar {
+  display: none;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border-bottom: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  background: var(--sherpa-surface-container-secondary-default, #fafafd);
+  flex-shrink: 0;
+}
+:host([data-has-toolbar]) .toolbar { display: flex; }
+
 :host .content {
   flex: 1;
-      overflow: auto;
-      padding: var(--sherpa-space-base, 16px);
+  overflow: auto;
+  padding: var(--sherpa-space-base, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 12px);
+  min-height: 0;
+}
+:host([data-flush]) .content {
+  padding: 0;
+  gap: 0;
+}
+:host .panel-empty {
+  display: none;
+      padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
+      text-align: center;
+      color: var(--sherpa-text-default-secondary, #5c5c66);
+      font-size: var(--sherpa-fonts-scale-sm, 14px);
+}
+:host([data-empty-visible]) .panel-empty {
+  display: block;
+}
+:host([data-bordered]) {
+  border: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  border-radius: var(--sherpa-border-rounding-lg, 12px);
 }
 :host([hidden]) {
   display: none;
+}
+
+/* ── Search highlight (CSS Highlight API) ─────────────── */
+::highlight(panel-search-match) {
+  background-color: var(--sherpa-surface-context-warning-subtle-default, #fff3cd);
+  color: var(--sherpa-text-default-body, #2e2e33);
 }
 

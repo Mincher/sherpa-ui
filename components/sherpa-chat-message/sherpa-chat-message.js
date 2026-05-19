@@ -3,7 +3,7 @@
  * SherpaChatMessage — Chat bubble for AI / messaging surfaces.
  *
  * @element sherpa-chat-message
- * @category content
+ * @category ai
  *
  * @attr {enum}   data-role         "user" | "ai" (default "ai").
  * @attr {string} data-avatar-icon  Font Awesome class for the

@@ -147,8 +147,7 @@
     "status": "stable",
     "components": [
       "sherpa-layout-view",
-      "sherpa-content-section",
-      "sherpa-list-panel",
+      "sherpa-panel",
       "sherpa-data-grid",
       "sherpa-key-value-list"
     ]
