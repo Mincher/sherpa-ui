@@ -1,17 +1,19 @@
 <!--
   sherpa-donut-chart — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-donut-chart.examples.js
+  Data is supplied programmatically via setData() — see sherpa-donut-chart.examples.js.
 -->
-<template data-label="Categorical donut" data-layout="block" data-setup="donut-chart-0">
-  <sherpa-donut-chart data-category="category" data-value-field="value" style="height: 240px;"></sherpa-donut-chart>
+<template data-label="Traffic source distribution" data-description="Categorical donut with auto-coloured segments and external legend." data-layout="block" data-setup="traffic-sources">
+  <sherpa-donut-chart data-title="Sessions by source — this month" style="height: 260px;"></sherpa-donut-chart>
 </template>
 
-<template data-label="With center label" data-preview="false">
-  <sherpa-donut-chart data-category="category" data-value-field="value" data-inner-label="Total" style="height: 240px;"></sherpa-donut-chart>
+<template data-label="Donut with centre label" data-description="data-inner-label and data-inner-sublabel render large/small text in the donut hole." data-layout="block" data-setup="alerts-by-severity">
+  <sherpa-donut-chart data-title="Open alerts by severity" data-inner-label="38" data-inner-sublabel="Total open" style="height: 260px;"></sherpa-donut-chart>
+</template>
+
+<template data-label="Pie variant — Plan distribution" data-description="Switches to a solid pie when data-variant=&quot;pie&quot;." data-layout="block" data-setup="plan-distribution">
+  <sherpa-donut-chart data-title="Customers by plan" data-variant="pie" style="height: 260px;"></sherpa-donut-chart>
+</template>
+
+<template data-label="Loading state" data-description="Skeleton displayed while the chart waits for data." data-layout="block">
+  <sherpa-donut-chart data-title="Storage usage" data-loading style="height: 220px;"></sherpa-donut-chart>
 </template>

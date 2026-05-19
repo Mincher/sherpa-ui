@@ -832,8 +832,22 @@ function main() {
  * <sherpa-nav-item data-variant="child"> per component sorted alphabetically.
  */
 function writeDocsNav(outPath, categoryMap) {
+  // Child components whose docs are merged into a parent's page. Mirror of
+  // MERGED_CHILDREN in docs/router.js — kept in sync by hand. Children remain
+  // in the schema index (for direct links + MCP) but are hidden from the
+  // sidebar so the parent's combined page is the canonical entry point.
+  const MERGED_CHILDREN = new Set([
+    "sherpa-nav-item",
+    "sherpa-nav-section",
+    "sherpa-node-header",
+    "sherpa-node-row",
+    "sherpa-node-socket",
+    "sherpa-list-item",
+  ]);
+
   const byRole = new Map(ROLE_META.map((r) => [r.id, []]));
   for (const [tag, role] of Object.entries(categoryMap)) {
+    if (MERGED_CHILDREN.has(tag)) continue;
     if (!byRole.has(role)) byRole.set(role, []);
     byRole.get(role).push(tag);
   }

@@ -1,21 +1,19 @@
 <!--
   sherpa-line-chart — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-line-chart.examples.js
+  Data is supplied programmatically via setData() — see sherpa-line-chart.examples.js.
 -->
-<template data-label="Time series" data-layout="block" data-setup="line-chart-0">
-  <sherpa-line-chart data-category="date" data-value-field="value" style="height: 240px;"></sherpa-line-chart>
+<template data-label="Daily active users" data-description="Single-series line chart over a 14-day window." data-layout="block" data-setup="daily-active-users">
+  <sherpa-line-chart data-title="Daily active users — last 14 days" style="height: 260px;"></sherpa-line-chart>
 </template>
 
-<template data-label="Multi-series" data-preview="false">
-  <sherpa-line-chart data-category="date" data-value-field="value" data-series="region" style="height: 240px;"></sherpa-line-chart>
+<template data-label="Multi-series — Response time by region" data-description="Multiple named series render as separate lines with a legend." data-layout="block" data-setup="response-time-regions">
+  <sherpa-line-chart data-title="P95 response time (ms)" data-segment-field="region" style="height: 280px;"></sherpa-line-chart>
 </template>
 
-<template data-label="With area fill" data-preview="false">
-  <sherpa-line-chart data-category="date" data-value-field="value" data-variant="area" style="height: 240px;"></sherpa-line-chart>
+<template data-label="Area variant — Storage growth" data-description="data-variant=&quot;area&quot; fills the region beneath the line." data-layout="block" data-setup="storage-growth">
+  <sherpa-line-chart data-title="Total storage used (TB)" data-variant="area" style="height: 240px;"></sherpa-line-chart>
+</template>
+
+<template data-label="Loading state" data-description="Skeleton placeholder while data is in flight." data-layout="block">
+  <sherpa-line-chart data-title="Revenue trend" data-loading style="height: 220px;"></sherpa-line-chart>
 </template>

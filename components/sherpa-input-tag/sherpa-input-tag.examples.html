@@ -1,19 +1,22 @@
 <!--
   sherpa-input-tag — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
 -->
-<template data-label="Default">
-  <sherpa-input-tag data-label="Topics" placeholder="Type and press Enter…" data-value="design, tokens"></sherpa-input-tag>
+<template data-label="Issue labels" data-description="Pre-populated tags representing the saved state of a form.">
+  <sherpa-input-tag data-label="Labels" placeholder="Add a label…" data-value="bug, regression, mobile" style="min-width: 360px;"></sherpa-input-tag>
 </template>
 
-<template data-label="Comma-separated entry">
-  <sherpa-input-tag data-label="Recipients" placeholder="email@example.com, …" data-separator="," data-helper="Press Enter or comma to add."></sherpa-input-tag>
+<template data-label="Email recipients" data-description="data-separator=&quot;,&quot; lets users paste comma-separated emails in one go.">
+  <sherpa-input-tag data-label="Recipients" placeholder="name@example.com, …" data-separator="," data-helper="Press Enter or comma to add." data-value="ops@acme.io, oncall@acme.io" style="min-width: 360px;"></sherpa-input-tag>
 </template>
 
-<template data-label="Capped at max tags">
-  <sherpa-input-tag data-label="Categories" data-max-tags="3" data-helper="Up to 3 tags." placeholder="Add up to 3…"></sherpa-input-tag>
+<template data-label="Capped at max tags" data-description="data-max-tags hides the input once the limit is reached.">
+  <sherpa-input-tag data-label="Top 3 categories" data-max-tags="3" data-helper="Add up to 3." data-value="performance, security" placeholder="Add another…" style="min-width: 360px;"></sherpa-input-tag>
 </template>
 
-<template data-label="Disabled">
-  <sherpa-input-tag data-label="Locked" data-value="alpha, beta" disabled></sherpa-input-tag>
+<template data-label="Validation error" data-description="data-status=&quot;critical&quot; surfaces an inline error message.">
+  <sherpa-input-tag data-label="Domains" data-value="acme.io, invalid-domain" data-status="critical" data-helper="&quot;invalid-domain&quot; is not a valid hostname." style="min-width: 360px;"></sherpa-input-tag>
+</template>
+
+<template data-label="Disabled" data-description="Pre-populated tags are read-only when the field is disabled.">
+  <sherpa-input-tag data-label="Inherited tags" data-value="team-platform, project-orion" disabled style="min-width: 360px;"></sherpa-input-tag>
 </template>

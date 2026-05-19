@@ -1,11 +1,21 @@
 <!--
   sherpa-input-time — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
 -->
-<template data-label="Default">
+<template data-label="Default" data-description="Native time picker bound to a value.">
   <sherpa-input-time data-label="Meeting time" value="14:30"></sherpa-input-time>
 </template>
 
-<template data-label="With step">
-  <sherpa-input-time data-label="Slot" value="09:00" step="900" data-helper="15-minute increments."></sherpa-input-time>
+<template data-label="15-minute slots" data-description="step in seconds (900 = 15 minutes) snaps to common booking intervals.">
+  <sherpa-input-time data-label="Booking slot" value="09:00" step="900" data-helper="15-minute increments."></sherpa-input-time>
+</template>
+
+<template data-label="Required with bounds" data-description="min and max constrain to working hours.">
+  <sherpa-input-time data-label="Start of shift" required min="06:00" max="22:00" data-helper="Must be within working hours (06:00–22:00)."></sherpa-input-time>
+</template>
+
+<template data-label="Start → end pair" data-description="Combine two sherpa-input-time fields for a time range." data-layout="block">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sherpa-space-default); max-width: 420px;">
+    <sherpa-input-time data-label="Start" value="09:00" step="900"></sherpa-input-time>
+    <sherpa-input-time data-label="End"   value="17:30" step="900"></sherpa-input-time>
+  </div>
 </template>

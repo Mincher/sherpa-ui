@@ -1,16 +1,40 @@
 <!--
   sherpa-node-canvas — Live examples.
 -->
-<template data-label="Node canvas" data-description="Composes node primitives into a graph editor." data-layout="block">
-  <sherpa-node-canvas data-heading="Pipeline" data-show-header data-grid style="height: 360px;">
+<template data-label="Data pipeline" data-description="A five-node pipeline: source → filter → aggregate → threshold → alert sink." data-layout="block">
+  <sherpa-node-canvas data-heading="Alerting pipeline" data-show-header data-grid style="height: 420px;">
     <sherpa-node data-kind="source" data-node-id="src" data-x="40" data-y="60">
-      <sherpa-node-header data-icon="fa-solid fa-database">Devices</sherpa-node-header>
-      <sherpa-node-row><sherpa-node-socket data-direction="output" data-port-name="rows"></sherpa-node-socket><span>rows</span></sherpa-node-row>
+      <sherpa-node-header data-icon="fa-solid fa-database">Device telemetry</sherpa-node-header>
+      <sherpa-node-row><sherpa-node-socket data-direction="output" data-port-name="rows" data-connected data-connection-count="1"></sherpa-node-socket><span>rows</span></sherpa-node-row>
     </sherpa-node>
-    <sherpa-node data-kind="math" data-node-id="agg" data-x="280" data-y="60" data-subtype="avg" data-subtype-label="Average">
+
+    <sherpa-node data-kind="filter" data-node-id="filter" data-x="260" data-y="40">
+      <sherpa-node-header data-icon="fa-solid fa-filter">Filter</sherpa-node-header>
+      <sherpa-node-row><sherpa-node-socket data-direction="input"  data-port-name="rows" data-connected data-connection-count="1"></sherpa-node-socket><span>region = EU</span></sherpa-node-row>
+      <sherpa-node-row><sherpa-node-socket data-direction="output" data-port-name="rows" data-connected data-connection-count="1"></sherpa-node-socket><span>rows</span></sherpa-node-row>
+    </sherpa-node>
+
+    <sherpa-node data-kind="math" data-node-id="agg" data-x="480" data-y="40"
+      data-subtypes='[{"value":"sum","label":"Sum"},{"value":"avg","label":"Average"},{"value":"max","label":"Max"}]'
+      data-subtype="avg" data-subtype-label="Average">
       <sherpa-node-header data-icon="fa-solid fa-calculator">Aggregate</sherpa-node-header>
-      <sherpa-node-row><sherpa-node-socket data-direction="input"  data-port-name="value"></sherpa-node-socket><span>value</span></sherpa-node-row>
-      <sherpa-node-row><sherpa-node-socket data-direction="output" data-port-name="result"></sherpa-node-socket><span>result</span></sherpa-node-row>
+      <sherpa-node-row><sherpa-node-socket data-direction="input"  data-port-name="value" data-connected data-connection-count="1"></sherpa-node-socket><span>cpu</span></sherpa-node-row>
+      <sherpa-node-row><sherpa-node-socket data-direction="output" data-port-name="result" data-connected data-connection-count="1"></sherpa-node-socket><span>avg(cpu)</span></sherpa-node-row>
+    </sherpa-node>
+
+    <sherpa-node data-kind="variable" data-node-id="threshold" data-x="480" data-y="220">
+      <sherpa-node-header data-icon="fa-solid fa-square-root-variable">Threshold</sherpa-node-header>
+      <sherpa-node-row><span>80</span><sherpa-node-socket data-direction="output" data-port-name="value" data-connected data-connection-count="1"></sherpa-node-socket></sherpa-node-row>
+    </sherpa-node>
+
+    <sherpa-node data-kind="sink" data-node-id="alert" data-x="720" data-y="120" data-selected>
+      <sherpa-node-header data-icon="fa-solid fa-bell">Fire alert</sherpa-node-header>
+      <sherpa-node-row><sherpa-node-socket data-direction="input" data-port-name="value" data-connected data-connection-count="1"></sherpa-node-socket><span>value</span></sherpa-node-row>
+      <sherpa-node-row><sherpa-node-socket data-direction="input" data-port-name="threshold" data-connected data-connection-count="1"></sherpa-node-socket><span>threshold</span></sherpa-node-row>
     </sherpa-node>
   </sherpa-node-canvas>
+</template>
+
+<template data-label="Empty canvas" data-description="The canvas shows its background grid even with no nodes \u2014 a drop target for the first node.\"" data-layout="block">
+  <sherpa-node-canvas data-heading="New pipeline" data-show-header data-grid style="height: 240px;"></sherpa-node-canvas>
 </template>

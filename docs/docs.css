@@ -69,103 +69,34 @@
 
 /* ── Page header ───────────────────────────────────────────────────────────── */
 
-.docs-page-header {
-  padding-block: var(--sherpa-space-xl, 32px) var(--sherpa-space-lg, 24px);
-  border-bottom: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
-  margin-block-end: var(--sherpa-space-xl, 32px);
+/* Component page header chrome lives in sherpa-section-header. */
+
+.docs-impl-notes,
+.docs-api-accordion {
+  display: block;
+  margin-block: var(--sherpa-space-default, 16px);
 }
 
-.docs-page-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
-  font: var(--sherpa-text-label-sm, 500 12px/1.4 system-ui);
-  color: var(--sherpa-text-default-subtle, #666);
-  margin-block-end: var(--sherpa-space-sm, 12px);
-}
-
-.docs-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sherpa-space-2xs, 4px);
-  color: var(--sherpa-text-default-subtle, #666);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.docs-back-link:hover {
-  color: var(--sherpa-text-default-body, #1a1a1a);
-}
-
-.docs-page-title {
-  font: var(--sherpa-text-heading-lg, 600 28px/1.25 system-ui);
-  color: var(--sherpa-text-default-heading, #111);
+.docs-impl-notes p {
   margin: 0 0 var(--sherpa-space-xs, 8px);
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-sm, 12px);
-}
-
-.docs-page-title > i {
-  color: var(--sherpa-icon-default-subtle, #888);
-  font-size: 0.75em;
-}
-
-.docs-page-subtitle {
-  font: var(--sherpa-text-body-lg, 400 16px/1.6 system-ui);
-  color: var(--sherpa-text-default-body, #1a1a1a);
-  margin: 0;
-  max-width: 72ch;
-}
-
-.docs-impl-notes {
-  margin-block-start: var(--sherpa-space-sm, 12px);
   max-width: 72ch;
   font: var(--sherpa-text-body-md, 400 14px/1.6 system-ui);
   color: var(--sherpa-text-default-body, #1a1a1a);
 }
 
-.docs-impl-notes > summary {
-  cursor: pointer;
-  font: var(--sherpa-text-label-sm, 500 12px/1.4 system-ui);
-  color: var(--sherpa-text-default-subtle, #555);
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sherpa-space-2xs, 4px);
-  padding-block: var(--sherpa-space-2xs, 4px);
+/* ── Merged sub-component sections ────────────────────────────────────────
+   Used when a parent docs page (sherpa-nav, sherpa-node, sherpa-list) folds
+   its children's documentation into the same scroll surface. */
+
+.docs-children-group {
+  display: block;
+  margin-block-start: var(--sherpa-space-3xl, 64px);
 }
 
-.docs-impl-notes > summary::-webkit-details-marker { display: none; }
-
-.docs-impl-notes > summary::before {
-  content: '\203A';
-  display: inline-block;
-  transition: transform 0.15s ease;
-}
-
-.docs-impl-notes[open] > summary::before { transform: rotate(90deg); }
-
-.docs-impl-notes > p {
-  margin: var(--sherpa-space-xs, 8px) 0 0;
-}
-
-.docs-page-count {
-  margin-block-start: var(--sherpa-space-xs, 8px);
-  font: var(--sherpa-text-label-sm, 500 12px/1.4 system-ui);
-  color: var(--sherpa-text-default-subtle, #888);
-}
-
-.docs-component-tag-display {
-  display: inline-block;
-  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
-  font-size: var(--sherpa-text-size-body-md, 14px);
-  color: var(--sherpa-text-default-subtle, #666);
-  background: var(--sherpa-surface-container-subtle-default, rgba(0,0,0,0.04));
-  border: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
-  border-radius: var(--sherpa-border-rounding-base, 4px);
-  padding: 2px var(--sherpa-space-xs, 8px);
-  margin-block: var(--sherpa-space-xs, 8px) 0;
+.docs-child-section {
+  display: block;
+  margin-block-start: var(--sherpa-space-2xl, 48px);
+  scroll-margin-block-start: var(--sherpa-space-default, 16px);
 }
 
 /* ── Card grid layout ──────────────────────────────────────────────────────
@@ -188,14 +119,6 @@
 
 .docs-api-section {
   margin-block-end: var(--sherpa-space-2xl, 48px);
-}
-
-.docs-api-heading {
-  font: var(--sherpa-text-heading-sm, 600 18px/1.3 system-ui);
-  color: var(--sherpa-text-default-heading, #111);
-  margin: 0 0 var(--sherpa-space-sm, 12px);
-  padding-block-end: var(--sherpa-space-xs, 8px);
-  border-bottom: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
 }
 
 .docs-table-wrap {
@@ -247,17 +170,6 @@
   white-space: nowrap;
 }
 
-.docs-type-badge {
-  display: inline-block;
-  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
-  font-size: 11px;
-  color: var(--sherpa-text-context-info-default, #0066cc);
-  background: var(--sherpa-surface-context-info-subtle-default, rgba(0,102,204,0.08));
-  border-radius: var(--sherpa-border-rounding-base, 4px);
-  padding: 1px var(--sherpa-space-2xs, 4px);
-  white-space: nowrap;
-}
-
 .docs-enum-values {
   display: flex;
   flex-wrap: wrap;
@@ -274,44 +186,18 @@
   padding: 1px var(--sherpa-space-2xs, 4px);
 }
 
-/* ── Not-found page ─────────────────────────────────────────────────────────── */
-
-.docs-not-found-page .docs-page-title {
-  color: var(--sherpa-text-context-error-default, #cc0000);
-}
-
 /* ── Examples section ──────────────────────────────────────────────────────── */
 
 .docs-examples-section {
   margin-block-end: var(--sherpa-space-2xl, 48px);
 }
 
-.docs-section-heading {
-  font: var(--sherpa-text-heading-sm, 600 18px/1.3 system-ui);
-  color: var(--sherpa-text-default-heading, #111);
-  margin: 0 0 var(--sherpa-space-default, 16px);
-  padding-block-end: var(--sherpa-space-xs, 8px);
-  border-bottom: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
-}
-
 .docs-example {
-  margin-block-end: var(--sherpa-space-2xl, 48px);
+  margin-block: var(--sherpa-space-default, 16px) var(--sherpa-space-2xl, 48px);
 }
 
-.docs-example-header {
+.docs-example > sherpa-section-header {
   margin-block-end: var(--sherpa-space-sm, 12px);
-}
-
-.docs-example-label {
-  font: var(--sherpa-text-label-lg, 600 14px/1.3 system-ui);
-  color: var(--sherpa-text-default-heading, #111);
-  margin: 0 0 var(--sherpa-space-2xs, 4px);
-}
-
-.docs-example-desc {
-  font: var(--sherpa-text-body-sm, 400 13px/1.5 system-ui);
-  color: var(--sherpa-text-default-subtle, #666);
-  margin: 0;
 }
 
 .docs-example-preview {
@@ -325,7 +211,12 @@
   border-radius: var(--sherpa-border-rounding-md, 8px) var(--sherpa-border-rounding-md, 8px) 0 0;
   border-bottom: none;
   min-height: 64px;
+  /* Let large examples scroll horizontally instead of crushing children. */
+  overflow: auto;
 }
+
+/* Row/col flex previews: never shrink children below their natural width. */
+.docs-example-preview > * { flex-shrink: 0; }
 
 :host([data-layout="col"]) .docs-example-preview,
 .docs-example-preview[data-layout="col"] {
@@ -364,25 +255,6 @@
   letter-spacing: 0.06em;
 }
 
-.docs-copy-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sherpa-space-2xs, 4px);
-  padding: 2px var(--sherpa-space-xs, 8px);
-  font: var(--sherpa-text-label-sm, 600 12px/1.4 system-ui);
-  color: rgba(255,255,255,0.55);
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: var(--sherpa-border-rounding-base, 4px);
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.docs-copy-btn:hover {
-  color: #fff;
-  border-color: rgba(255,255,255,0.35);
-}
-
 .docs-code-block pre {
   margin: 0;
   padding: var(--sherpa-space-default, 16px);
@@ -395,25 +267,4 @@
 .docs-code-block pre code {
   font-family: var(--sherpa-font-family-mono, ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace);
   background: transparent !important;
-}
-
-/* ── API reference collapsible ──────────────────────────────────────────────── */
-
-.docs-api-details {
-  margin-block-end: var(--sherpa-space-2xl, 48px);
-}
-
-.docs-api-details > summary.docs-api-summary {
-  cursor: pointer;
-  list-style: revert;
-  font: var(--sherpa-text-heading-sm, 600 18px/1.3 system-ui);
-  color: var(--sherpa-text-default-heading, #111);
-  padding-block-end: var(--sherpa-space-xs, 8px);
-  border-bottom: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
-  margin-block-end: var(--sherpa-space-default, 16px);
-  user-select: none;
-}
-
-.docs-api-details[open] > summary.docs-api-summary {
-  margin-block-end: var(--sherpa-space-xl, 32px);
 }

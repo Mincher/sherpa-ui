@@ -1,22 +1,28 @@
 <!--
   sherpa-sparkline — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
-  Attributes:
-    data-label       (required) example heading
-    data-description (optional) one-line summary
-    data-layout      (optional) row (default) | col | block
-    data-preview     (optional) "false" → hide live preview, show code only
-    data-setup       (optional) name of an exported setup fn from sherpa-sparkline.examples.js
 -->
-<template data-label="Inline sparkline" data-layout="block">
-  <sherpa-sparkline data-values="12,18,15,22,19,28,24,30,27,35" style="width: 200px; height: 48px;"></sherpa-sparkline>
+<template data-label="Inline metric trend" data-description="Combine with sherpa-metric or text labels to give a small visual signal." data-layout="col">
+  <div style="display:flex; align-items:center; gap: var(--sherpa-space-default); padding: var(--sherpa-space-sm); border: 1px solid var(--sherpa-border-container-default); border-radius: var(--sherpa-border-rounding-base);">
+    <div style="min-width: 160px;">
+      <div style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-meta);">Sign-ups (7d)</div>
+      <div style="font: var(--sherpa-text-heading-md); color: var(--sherpa-text-default-body);">+248</div>
+    </div>
+    <sherpa-sparkline data-values="12,18,15,22,19,28,24" data-unit="sign-ups" style="width: 200px; height: 48px;"></sherpa-sparkline>
+  </div>
+  <div style="display:flex; align-items:center; gap: var(--sherpa-space-default); padding: var(--sherpa-space-sm); border: 1px solid var(--sherpa-border-container-default); border-radius: var(--sherpa-border-rounding-base);">
+    <div style="min-width: 160px;">
+      <div style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-meta);">Errors (7d)</div>
+      <div style="font: var(--sherpa-text-heading-md); color: var(--sherpa-text-default-body);">12</div>
+    </div>
+    <sherpa-sparkline data-values="30,25,20,18,14,10,12" data-unit="errors" style="width: 200px; height: 48px;"></sherpa-sparkline>
+  </div>
 </template>
 
-<template data-label="Bar variant" data-layout="col">
-  <sherpa-sparkline data-values="4,8,6,10,7,12,9,14" data-variant="bar" style="width: 200px; height: 48px;"></sherpa-sparkline>
-  <sherpa-sparkline data-values="30,25,20,15,10,8,6,4" data-variant="bar" style="width: 200px; height: 48px;"></sherpa-sparkline>
+<template data-label="Bar variant — Activity" data-description="Bar mode reads the same data-values but renders discrete bars." data-layout="col">
+  <sherpa-sparkline data-values="4,8,6,10,7,12,9,14,11,16" data-variant="bar" data-unit="commits" style="width: 240px; height: 48px;"></sherpa-sparkline>
+  <sherpa-sparkline data-values="30,25,20,15,10,8,6,4,3,2" data-variant="bar" data-unit="bugs" style="width: 240px; height: 48px;"></sherpa-sparkline>
 </template>
 
-<template data-label="With unit" data-layout="block">
-  <sherpa-sparkline data-values="42,55,48,60,72,68,80" data-unit="req/s" style="width: 200px; height: 48px;"></sherpa-sparkline>
+<template data-label="With unit label" data-description="data-unit appears in the tooltip when hovering individual points." data-layout="block">
+  <sherpa-sparkline data-values="42,55,48,60,72,68,80,76,82,90,86,94" data-unit="req/s" style="width: 320px; height: 56px;"></sherpa-sparkline>
 </template>

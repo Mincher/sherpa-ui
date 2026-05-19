@@ -1,19 +1,22 @@
 <!--
   sherpa-input-number — Live examples.
-  Each <template> renders one example block in the docs site (docs/router.js).
 -->
-<template data-label="Default">
+<template data-label="Quantity selector" data-description="Whole numbers, default step of 1.">
   <sherpa-input-number data-label="Quantity" value="1" min="0" max="100" step="1"></sherpa-input-number>
 </template>
 
-<template data-label="Decimal step">
-  <sherpa-input-number data-label="Price" value="9.99" min="0" step="0.01"></sherpa-input-number>
+<template data-label="Price input" data-description="Decimal precision via step=&quot;0.01&quot;.">
+  <sherpa-input-number data-label="Price (USD)" value="19.99" min="0" step="0.01"></sherpa-input-number>
 </template>
 
-<template data-label="Bounded range">
-  <sherpa-input-number data-label="Volume" data-helper="0–11" value="7" min="0" max="11" step="1"></sherpa-input-number>
+<template data-label="Memory allocation" data-description="Bounded range with helper showing units.">
+  <sherpa-input-number data-label="Container memory (MB)" value="1024" min="128" max="8192" step="128" data-helper="128 MB – 8 GB in 128 MB increments."></sherpa-input-number>
 </template>
 
-<template data-label="Disabled">
-  <sherpa-input-number data-label="Locked" value="42" disabled></sherpa-input-number>
+<template data-label="Validation error" data-description="data-status=&quot;critical&quot; renders the inline error.">
+  <sherpa-input-number data-label="Seats" value="0" min="1" max="50" data-status="critical" data-helper="You need at least 1 seat."></sherpa-input-number>
+</template>
+
+<template data-label="Disabled" data-description="Read-only because the value is inherited from the parent plan.">
+  <sherpa-input-number data-label="Inherited quota" value="42" disabled></sherpa-input-number>
 </template>

@@ -124,6 +124,25 @@ function categoryLabel(id) {
   return CATEGORIES.find(c => c.id === id)?.label ?? id;
 }
 
+// ── Merged child components ──────────────────────────────────────────────────
+// Children whose docs are folded into a parent's page. Children stay routable
+// (deep links + MCP keep working) but are hidden from the sidebar and category
+// grids; visiting their route redirects to the parent's anchor.
+const MERGED_CHILDREN = {
+  'sherpa-nav-item':    'sherpa-nav',
+  'sherpa-nav-section': 'sherpa-nav',
+  'sherpa-node-header': 'sherpa-node',
+  'sherpa-node-row':    'sherpa-node',
+  'sherpa-node-socket': 'sherpa-node',
+  'sherpa-list-item':   'sherpa-list',
+};
+
+/** Inverse map: parent tag → ordered list of child tags. */
+const PARENT_TO_CHILDREN = Object.entries(MERGED_CHILDREN).reduce((acc, [child, parent]) => {
+  (acc[parent] ??= []).push(child);
+  return acc;
+}, {});
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function prettyLabel(tag) {
@@ -208,17 +227,24 @@ function buildExampleBlock(ex) {
 
   return `
     <div class="docs-example">
-      <div class="docs-example-header">
-        <h3 class="docs-example-label">${escapeHtml(ex.label)}</h3>
-        ${ex.description ? `<p class="docs-example-desc">${escapeHtml(ex.description)}</p>` : ''}
-      </div>
+      <sherpa-section-header
+        data-label="${escapeHtml(ex.label)}"
+        data-heading-level="tertiary"
+      >
+        ${ex.description ? `<p slot="description">${escapeHtml(ex.description)}</p>` : ''}
+      </sherpa-section-header>
       ${showPrev ? `<div class="docs-example-preview" data-layout="${escapeHtml(layout)}"${setupAttr}>${html}</div>` : ''}
       <div class="docs-code-block">
         <div class="docs-code-header">
           <span class="docs-code-lang">HTML</span>
-          <button class="docs-copy-btn" type="button" aria-label="Copy code">
-            <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy
-          </button>
+          <sherpa-button
+            class="docs-copy-btn"
+            data-variant="tertiary"
+            data-size="small"
+            data-icon-start="&#xf0c5;"
+            data-label="Copy"
+            aria-label="Copy code"
+          ></sherpa-button>
         </div>
         <pre><code class="language-html">${escapeHtml(dedentHtml(html))}</code></pre>
       </div>
@@ -351,7 +377,11 @@ function buildExamplesSection(tag, examples) {
   if (!examples?.length) return '';
   return `
     <section class="docs-examples-section">
-      <h2 class="docs-section-heading">Examples</h2>
+      <sherpa-section-header
+        data-label="Examples"
+        data-heading-level="secondary"
+        data-divider="true"
+      ></sherpa-section-header>
       ${examples.map(buildExampleBlock).join('')}
     </section>`;
 }
@@ -443,6 +473,11 @@ async function loadComponents() {
   }
 }
 
+/** Components visible in the sidebar / category grids (merged children removed). */
+function visibleComponents() {
+  return components.filter(c => !MERGED_CHILDREN[c.tag]);
+}
+
 async function loadSchema(tag) {
   if (schemaCache.has(tag)) return schemaCache.get(tag);
   try {
@@ -531,15 +566,34 @@ function handleHashChange() {
   renderCurrentRoute();
 }
 
+/** When a merged-child route is redirected, the child anchor is parked here
+ * so the post-render flush can scroll the parent page to the right section. */
+let pendingScrollAnchor = null;
+
 async function renderCurrentRoute() {
   const route = parseHash(window.location.hash);
   await renderRoute(route);
 
   const path = (window.location.hash || '#/').replace(/^#/, '') || '/';
   setActiveNavItem(path);
-  // Reset scroll on the layout-view's internal content column
+
+  // Scroll: either reset to top, or jump to a pending child-section anchor.
   const viewContent = document.getElementById('docs-view')?.shadowRoot?.querySelector('[part="content"]');
-  viewContent?.scrollTo?.({ top: 0, behavior: 'instant' });
+  if (pendingScrollAnchor && outlet) {
+    const id = pendingScrollAnchor;
+    pendingScrollAnchor = null;
+    requestAnimationFrame(() => {
+      const target = outlet.querySelector(`#${CSS.escape(id)}`);
+      if (target && viewContent) {
+        const top = target.offsetTop;
+        viewContent.scrollTo({ top, behavior: 'instant' });
+      } else {
+        target?.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    });
+  } else {
+    viewContent?.scrollTo?.({ top: 0, behavior: 'instant' });
+  }
 }
 
 async function renderRoute(route) {
@@ -555,7 +609,7 @@ async function renderRoute(route) {
 
   if (route.type === 'category') {
     const catDef = CATEGORIES.find(c => c.id === route.id) ?? { id: route.id, label: route.id, icon: 'fa-solid fa-folder', description: '' };
-    const items = components.filter(c => c.category === route.id);
+    const items = visibleComponents().filter(c => c.category === route.id);
     setViewHeading(catDef.label, [
       { label: 'Home', href: '#/' },
     ]);
@@ -566,6 +620,14 @@ async function renderRoute(route) {
   }
 
   if (route.type === 'component') {
+    // Redirect merged child routes → parent page, anchored at the child section.
+    const mergedParent = MERGED_CHILDREN[route.tag];
+    if (mergedParent) {
+      pendingScrollAnchor = `child-${route.tag}`;
+      navigate(`/components/${mergedParent}`);
+      return;
+    }
+
     const schema = await loadSchema(route.tag);
     const comp   = components.find(c => c.tag === route.tag);
     const label  = comp?.label ?? prettyLabel(route.tag);
@@ -576,8 +638,21 @@ async function renderRoute(route) {
       { label: catLabel,   href: `#/category/${catId}` },
     ]);
     const examples = schema ? await getExamples(route.tag, schema) : [];
+
+    // Pre-fetch any merged children's schema + examples in parallel so we can
+    // render them as sub-sections under the parent's API.
+    const childTags = PARENT_TO_CHILDREN[route.tag] ?? [];
+    const children = childTags.length
+      ? await Promise.all(childTags.map(async (childTag) => {
+          const childSchema = await loadSchema(childTag);
+          if (!childSchema) return null;
+          const childExamples = await getExamples(childTag, childSchema);
+          return { tag: childTag, label: prettyLabel(childTag), schema: childSchema, examples: childExamples };
+        })).then(list => list.filter(Boolean))
+      : [];
+
     outlet.innerHTML = schema
-      ? buildComponentPage(route.tag, label, schema, examples)
+      ? buildComponentPage(route.tag, label, schema, examples, children)
       : buildNotFound(`<${route.tag}>`);
     bindOutletLinks();
     highlightOutlet();
@@ -645,7 +720,7 @@ async function renderHomePage() {
 
   const frag = document.createDocumentFragment();
   for (const cat of CATEGORIES) {
-    const count = components.filter(c => c.category === cat.id).length;
+    const count = visibleComponents().filter(c => c.category === cat.id).length;
     const node  = tpl.content.firstElementChild.cloneNode(true);
     node.dataset.label       = cat.label;
     node.dataset.description = cat.description ?? '';
@@ -701,16 +776,22 @@ async function renderCategoryPage(cat, items) {
   grid.appendChild(frag);
 }
 
-function buildComponentPage(tag, label, schema, examples) {
-  const { lead, rest } = splitDescription(schema.description);
-  const attrs       = schema.attributes ?? [];
-  const slots       = schema.slots ?? [];
-  const events      = schema.events ?? [];
-  const methods     = schema.methods ?? [];
+/** Build the four API tables (attributes / slots / events / methods) for a
+ * given schema. Returns an HTML string of `<section>`s; empty string when the
+ * schema has none of them. */
+function buildApiSections(schema) {
+  const attrs   = schema.attributes ?? [];
+  const slots   = schema.slots ?? [];
+  const events  = schema.events ?? [];
+  const methods = schema.methods ?? [];
 
   const attrsHtml = attrs.length ? `
     <section class="docs-api-section">
-      <h2 class="docs-api-heading">Attributes</h2>
+      <sherpa-section-header
+        data-label="Attributes"
+        data-heading-level="tertiary"
+        data-divider="true"
+      ></sherpa-section-header>
       <div class="docs-table-wrap" role="region" aria-label="Attributes table" tabindex="0">
         <table class="docs-table">
           <thead>
@@ -724,7 +805,7 @@ function buildComponentPage(tag, label, schema, examples) {
             ${attrs.map(a => `
               <tr>
                 <td><code class="docs-attr-name">${escapeHtml(a.name)}</code></td>
-                <td><span class="docs-type-badge">${escapeHtml(a.type ?? '')}</span>${a.enumValues?.length ? `<br><span class="docs-enum-values">${a.enumValues.map(v => `<code>${escapeHtml(v)}</code>`).join(' | ')}</span>` : ''}</td>
+                <td><sherpa-tag data-variant="secondary" data-status="info">${escapeHtml(a.type ?? '')}</sherpa-tag>${a.enumValues?.length ? `<div class="docs-enum-values">${a.enumValues.map(v => `<code>${escapeHtml(v)}</code>`).join(' ')}</div>` : ''}</td>
                 <td>${escapeHtml(a.description ?? '')}</td>
               </tr>`).join('')}
           </tbody>
@@ -734,7 +815,11 @@ function buildComponentPage(tag, label, schema, examples) {
 
   const slotsHtml = slots.length ? `
     <section class="docs-api-section">
-      <h2 class="docs-api-heading">Slots</h2>
+      <sherpa-section-header
+        data-label="Slots"
+        data-heading-level="tertiary"
+        data-divider="true"
+      ></sherpa-section-header>
       <div class="docs-table-wrap" role="region" aria-label="Slots table" tabindex="0">
         <table class="docs-table">
           <thead>
@@ -756,7 +841,11 @@ function buildComponentPage(tag, label, schema, examples) {
 
   const eventsHtml = events.length ? `
     <section class="docs-api-section">
-      <h2 class="docs-api-heading">Events</h2>
+      <sherpa-section-header
+        data-label="Events"
+        data-heading-level="tertiary"
+        data-divider="true"
+      ></sherpa-section-header>
       <div class="docs-table-wrap" role="region" aria-label="Events table" tabindex="0">
         <table class="docs-table">
           <thead>
@@ -778,7 +867,11 @@ function buildComponentPage(tag, label, schema, examples) {
 
   const methodsHtml = methods.length ? `
     <section class="docs-api-section">
-      <h2 class="docs-api-heading">Methods</h2>
+      <sherpa-section-header
+        data-label="Methods"
+        data-heading-level="tertiary"
+        data-divider="true"
+      ></sherpa-section-header>
       <div class="docs-table-wrap" role="region" aria-label="Methods table" tabindex="0">
         <table class="docs-table">
           <thead>
@@ -798,35 +891,94 @@ function buildComponentPage(tag, label, schema, examples) {
       </div>
     </section>` : '';
 
+  return { attrsHtml, slotsHtml, eventsHtml, methodsHtml };
+}
+
+/** Wrap the four API sections in the collapsible "API Reference" accordion. */
+function buildApiAccordion(schema, label = 'API Reference') {
+  const { attrsHtml, slotsHtml, eventsHtml, methodsHtml } = buildApiSections(schema);
+  if (!attrsHtml && !slotsHtml && !eventsHtml && !methodsHtml) return '';
+  return `
+    <sherpa-accordion class="docs-api-accordion" data-label="${escapeHtml(label)}" open>
+      ${attrsHtml}
+      ${slotsHtml}
+      ${eventsHtml}
+      ${methodsHtml}
+    </sherpa-accordion>`;
+}
+
+/** Render one merged-child sub-section: heading + description + examples + API. */
+function buildChildSection(child) {
+  const { lead, rest } = splitDescription(child.schema.description);
+  return `
+    <section id="child-${escapeHtml(child.tag)}" class="docs-child-section">
+      <sherpa-section-header
+        data-label="${escapeHtml(child.label)}"
+        data-heading-level="secondary"
+        data-divider="true"
+      >
+        <sherpa-tag slot="badge" data-variant="secondary">&lt;${escapeHtml(child.tag)}&gt;</sherpa-tag>
+        ${lead ? `<p slot="description">${escapeHtml(lead)}</p>` : ''}
+      </sherpa-section-header>
+
+      ${rest.length ? `
+      <sherpa-accordion class="docs-impl-notes" data-label="Implementation notes">
+        ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+      </sherpa-accordion>` : ''}
+
+      ${buildExamplesSection(child.tag, child.examples)}
+      ${buildApiAccordion(child.schema, `${child.label} API`)}
+    </section>`;
+}
+
+function buildComponentPage(tag, label, schema, examples, children = []) {
+  const { lead, rest } = splitDescription(schema.description);
+  const apiHtml = buildApiAccordion(schema);
+
+  const childrenHtml = children.length ? `
+    <section class="docs-children-group">
+      <sherpa-section-header
+        data-label="Sub-components"
+        data-heading-level="secondary"
+        data-divider="true"
+      >
+        <p slot="description">Child components scoped to <code>&lt;${escapeHtml(tag)}&gt;</code>. Each is also reachable directly via its own tag.</p>
+      </sherpa-section-header>
+      ${children.map(buildChildSection).join('')}
+    </section>` : '';
+
   return `
     <div class="docs-page docs-component-page">
-      <header class="docs-page-header">
-        <code class="docs-component-tag-display">&lt;${escapeHtml(tag)}&gt;</code>
-        ${lead ? `<p class="docs-page-subtitle">${escapeHtml(lead)}</p>` : ''}
-        ${rest.length ? `
-        <details class="docs-impl-notes">
-          <summary>Implementation notes</summary>
-          ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
-        </details>` : ''}
-      </header>
+      <sherpa-section-header
+        data-label="${escapeHtml(label)}"
+        data-heading-level="primary"
+        data-divider="true"
+      >
+        <sherpa-tag slot="badge" data-variant="secondary">&lt;${escapeHtml(tag)}&gt;</sherpa-tag>
+        ${lead ? `<p slot="description">${escapeHtml(lead)}</p>` : ''}
+      </sherpa-section-header>
+
+      ${rest.length ? `
+      <sherpa-accordion class="docs-impl-notes" data-label="Implementation notes">
+        ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+      </sherpa-accordion>` : ''}
+
       ${buildExamplesSection(tag, examples)}
-      ${(attrsHtml || slotsHtml || eventsHtml || methodsHtml) ? `
-      <details class="docs-api-details" open>
-        <summary class="docs-api-summary">API Reference</summary>
-        ${attrsHtml}
-        ${slotsHtml}
-        ${eventsHtml}
-        ${methodsHtml}
-      </details>` : ''}
+      ${apiHtml}
+      ${childrenHtml}
     </div>`;
 }
 
 function buildNotFound(what) {
   return `
     <div class="docs-page docs-not-found-page">
-      <header class="docs-page-header">
-        <p class="docs-page-subtitle">No documentation found for <code>${what}</code>.</p>
-      </header>
+      <sherpa-section-header
+        data-label="Not found"
+        data-heading-level="primary"
+        data-divider="true"
+      >
+        <p slot="description">No documentation found for <code>${what}</code>.</p>
+      </sherpa-section-header>
     </div>`;
 }
 
@@ -839,15 +991,23 @@ async function init() {
   await loadComponents();
   initAppearanceSelects();
 
-  // Copy button delegation — one handler for the whole outlet lifetime
-  outlet?.addEventListener('click', e => {
-    const btn = e.composedPath().find(n => n instanceof HTMLElement && n.classList?.contains('docs-copy-btn'));
+  // Copy button delegation — one handler for the whole outlet lifetime.
+  // sherpa-button emits button-click; toggle the icon/label via data-* only.
+  outlet?.addEventListener('button-click', e => {
+    const btn = e.composedPath().find(
+      n => n instanceof HTMLElement && n.tagName === 'SHERPA-BUTTON' && n.classList?.contains('docs-copy-btn')
+    );
     if (!btn) return;
     const code = btn.closest('.docs-code-block')?.querySelector('code')?.textContent ?? '';
     navigator.clipboard.writeText(code).catch(() => {});
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i> Copied';
-    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    const origIcon  = btn.dataset.iconStart;
+    const origLabel = btn.dataset.label;
+    btn.dataset.iconStart = '\uf00c'; // fa-check
+    btn.dataset.label     = 'Copied';
+    setTimeout(() => {
+      btn.dataset.iconStart = origIcon;
+      btn.dataset.label     = origLabel;
+    }, 2000);
   });
 
   window.addEventListener('hashchange', handleHashChange);
