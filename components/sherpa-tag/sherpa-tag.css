@@ -3,9 +3,9 @@
  * Shadow DOM styles for the SherpaTag web component.
  *
  * Status tokens:
- *   When used in light DOM, global [data-status] rules in
- *   sherpa-status-tokens.css set --_status-* properties on the host.
- *   When nested inside another component's shadow DOM, the :host
+ *   Global [data-status] rules in css/styles/sherpa-overrides.css (@layer
+ *   status) set --_status-* on the host; tag consumes --_status-surface-subtle
+ *   for its tinted background. When nested inside another component's shadow DOM, the :host
  *   rules below provide the same mapping so the tag is self-contained.
  *
  * Attributes:
@@ -96,31 +96,11 @@
       --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
       --_tag-fill-transparent-bg: rgba(178,178,191,0.4);
 }
-:host([data-status="critical"]) {
-  --_status-surface: var(--sherpa-surface-context-error-subtle-default, #fff7f5);
-      --_status-border:  var(--sherpa-border-context-error-default, #bf2c09);
-      --_status-text:    var(--sherpa-text-context-error-default, #bf2c09);
-}
-:host([data-status="info"]) {
-  --_status-surface: var(--sherpa-surface-context-info-subtle-default, #f7fdff);
-      --_status-border:  var(--sherpa-border-context-info-default, #06526f);
-      --_status-text:    var(--sherpa-text-context-info-default, #06526f);
-}
-:host([data-status="success"]) {
-  --_status-surface: var(--sherpa-surface-context-success-subtle-default, rgba(240, 255, 248, 0.8));
-      --_status-border:  var(--sherpa-border-context-success-default, #048142);
-      --_status-text:    var(--sherpa-text-context-success-default, #048142);
-}
-:host([data-status="warning"]) {
-  --_status-surface: var(--sherpa-surface-context-warning-subtle-default, #fffbf3);
-      --_status-border:  var(--sherpa-border-context-warning-default, #a77205);
-      --_status-text:    var(--sherpa-text-context-warning-default, #e39b04);
-}
-:host([data-status="urgent"]) {
-  --_status-surface: var(--sherpa-surface-context-urgent-subtle-default, rgba(253, 226, 193, 0.2));
-      --_status-border:  var(--sherpa-border-context-urgent-default, #b95608);
-      --_status-text:    var(--sherpa-text-context-urgent-default, #b95608);
-}
+/* Status — critical|info|success|warning|urgent are provided globally by
+   `css/styles/sherpa-overrides.css` (@layer status). The tag consumes
+   `--_status-surface-subtle` for its tinted background; `--_status-border`
+   and `--_status-text` flow through the global cascade unchanged.
+   `brand` is tag-specific and stays local. */
 :host([data-status="brand"]) {
   --_status-surface: light-dark(var(--sherpa-color-brand-100, #f8ebff), var(--sherpa-color-brand-900, #300561));
       --_status-border:  light-dark(var(--sherpa-color-brand-400, #d485ff), var(--sherpa-color-brand-700, #8500cc));
@@ -131,7 +111,7 @@
       align-items: center;
       justify-content: center;
       padding: var(--sherpa-space-2xs, 8px);
-      background: var(--_status-surface, var(--sherpa-surface-context-default-subtle-default, #f5f5f5));
+      background: var(--_status-surface-subtle, var(--sherpa-surface-context-default-subtle-default, #f5f5f5));
       color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
       border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default, #d4d4d4));
       border-radius: var(--_tag-border-rounding, var(--sherpa-border-rounding-full, 999px));
@@ -143,7 +123,7 @@
       box-sizing: border-box;
 }
 :host([data-variant="secondary"]) .tag-wrapper {
-  background: var(--_status-surface, var(--sherpa-surface-container-default, #e5e5e5));
+  background: var(--_status-surface-subtle, var(--sherpa-surface-container-default, #e5e5e5));
       color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
       border-color: var(--_status-border, var(--sherpa-border-container-default, #bfbfbf));
 }

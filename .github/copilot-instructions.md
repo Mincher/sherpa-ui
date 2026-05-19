@@ -262,6 +262,59 @@ optional features (status, control groups) activate only when set:
 }
 ```
 
+### Cascade-of-private-vars (the component-level `if()` pattern)
+
+This is the canonical way to express variant/state-driven property cascades.
+It is preferred over native CSS `if()` inside components — it requires no
+bridge layer (no `--sherpa-*: custom-ident` mirror), works in every browser,
+and reads as the same cascade the rest of the codebase uses.
+
+**Shape:**
+
+```css
+:host {
+  /* 1. Declare defaults for every private var the body will consume */
+  --_bg:     var(--sherpa-surface-control-primary-default);
+  --_fg:     var(--sherpa-text-default-on-color-body);
+  --_border: transparent;
+}
+
+/* 2. Override only the vars that change per axis */
+:host([data-variant="secondary"]) {
+  --_bg: var(--sherpa-surface-control-secondary-default);
+  --_fg: var(--sherpa-text-default-body);
+}
+:host([data-variant="tertiary"]) {
+  --_bg:     transparent;
+  --_border: var(--sherpa-border-container-default);
+}
+
+/* 3. The body rule is written exactly once */
+:host {
+  background:    var(--_bg);
+  color:         var(--_fg);
+  border:        var(--sherpa-border-width-xs, 1px) solid var(--_border);
+}
+```
+
+Canonical example: [components/sherpa-button/sherpa-button.css](../components/sherpa-button/sherpa-button.css).
+
+**Why this beats native `if()` in components:**
+
+- No `@supports` gate, no platform mirror token, no fallback duplication.
+- Compound axes are expressed by adding more attribute selectors
+  (`:host([data-variant="primary"][data-active="true"]) { --_bg: ... }`),
+  which is identical to the if() author experience without the parser cost.
+- Inherits cleanly through shadow DOM, so a parent setting `--_status-*`
+  (e.g. `[data-status="critical"]` in `css/styles/sherpa-overrides.css`)
+  cascades into descendant components for free.
+
+**When native `if()` is still worth it:** token-layer definitions that need
+to react to multiple platform axes simultaneously (mode × density × status)
+in a single declaration. Components themselves should not use `if()` — the
+cascade pattern above is shorter, debuggable in DevTools, and universally
+supported.
+
 ### Control group pattern
 
 Components that can be grouped (buttons, inputs, filter chips) read two
