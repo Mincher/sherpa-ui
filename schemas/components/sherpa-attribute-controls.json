@@ -1,0 +1,248 @@
+{
+  "tagName": "sherpa-attribute-controls",
+  "description": "Auto-generates interactive form controls from a target component's attributes. Introspects JSDoc, CSS selectors, or common naming patterns to determine control types and valid values. Supports grouping, presets, custom validators, and bidirectional sync.",
+  "category": "utility",
+  "tier": 5,
+  "group": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-target",
+      "type": "string",
+      "description": "CSS selector for target component (required)"
+    },
+    {
+      "name": "data-exclude",
+      "type": "string",
+      "description": "Comma-separated attributes to skip"
+    },
+    {
+      "name": "data-order",
+      "type": "string",
+      "description": "Comma-separated attributes; render order"
+    },
+    {
+      "name": "data-readonly",
+      "type": "string",
+      "description": "Comma-separated attributes (no edit)"
+    },
+    {
+      "name": "data-disabled",
+      "type": "string",
+      "description": "Comma-separated attributes (hide)"
+    },
+    {
+      "name": "data-grouped",
+      "type": "boolean",
+      "description": "Group controls by category"
+    },
+    {
+      "name": "data-grouping-strategy",
+      "type": "enum",
+      "description": "auto | none | by-prefix | by-category",
+      "enumValues": [
+        "auto",
+        "none",
+        "by-prefix",
+        "by-category"
+      ]
+    },
+    {
+      "name": "data-control-types",
+      "type": "string",
+      "description": "\"size:radio,variant:select,disabled:switch\""
+    },
+    {
+      "name": "data-labels",
+      "type": "string",
+      "description": "JSON override labels"
+    },
+    {
+      "name": "data-introspection-strategy",
+      "type": "enum",
+      "description": "auto | jsdoc | css | patterns | override",
+      "enumValues": [
+        "auto",
+        "jsdoc",
+        "css",
+        "patterns",
+        "override"
+      ]
+    },
+    {
+      "name": "data-presets",
+      "type": "string",
+      "description": "JSON preset configurations"
+    },
+    {
+      "name": "data-observe-target",
+      "type": "boolean",
+      "description": "Watch target for external changes"
+    },
+    {
+      "name": "data-debounce",
+      "type": "number",
+      "description": "Debounce ms for updates",
+      "default": 50
+    },
+    {
+      "name": "data-validate",
+      "type": "boolean",
+      "description": "Enable validation feedback"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "controls-change",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "control-input",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "target-found",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "target-not-found",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "introspection-complete",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "control-error",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "target-changed",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "setTarget(target)",
+      "description": "",
+      "params": [
+        {
+          "name": "target",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "refreshUI()",
+      "description": ""
+    },
+    {
+      "name": "getControlState()",
+      "description": ""
+    },
+    {
+      "name": "setValues(values)",
+      "description": "",
+      "params": [
+        {
+          "name": "values",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "applyPreset(presetName)",
+      "description": "",
+      "params": [
+        {
+          "name": "presetName",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setValidator(attribute, validator)",
+      "description": "",
+      "params": [
+        {
+          "name": "attribute",
+          "type": "any"
+        },
+        {
+          "name": "validator",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "setControlType(attribute, controlType, config)",
+      "description": "",
+      "params": [
+        {
+          "name": "attribute",
+          "type": "any"
+        },
+        {
+          "name": "controlType",
+          "type": "any"
+        },
+        {
+          "name": "config",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "getAttributeConfig(attribute)",
+      "description": "",
+      "params": [
+        {
+          "name": "attribute",
+          "type": "any"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "targetComponent",
+      "type": "HTMLElement|null",
+      "description": "Read-only: resolved target element",
+      "readonly": true
+    },
+    {
+      "name": "hasTarget",
+      "type": "boolean",
+      "description": "Read-only: is target found?",
+      "readonly": true
+    },
+    {
+      "name": "introspectionStrategy",
+      "type": "string|null",
+      "description": "Read-only: successful strategy",
+      "readonly": true
+    }
+  ]
+}

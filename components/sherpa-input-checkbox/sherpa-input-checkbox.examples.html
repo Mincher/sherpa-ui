@@ -1,0 +1,34 @@
+<!--
+  sherpa-input-checkbox — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-input-checkbox.examples.js
+-->
+<template data-label="States" data-layout="col">
+  <sherpa-input-checkbox data-label="Unchecked"></sherpa-input-checkbox>
+  <sherpa-input-checkbox data-label="Checked" checked></sherpa-input-checkbox>
+  <sherpa-input-checkbox data-label="Indeterminate" indeterminate></sherpa-input-checkbox>
+  <sherpa-input-checkbox data-label="Disabled" disabled></sherpa-input-checkbox>
+  <sherpa-input-checkbox data-label="Disabled checked" checked disabled></sherpa-input-checkbox>
+</template>
+
+<template data-label="With description" data-layout="col">
+  <sherpa-input-checkbox
+    data-label="Subscribe to product updates"
+    data-description="Once a month — no spam, unsubscribe anytime.">
+  </sherpa-input-checkbox>
+</template>
+
+<template data-label="Required" data-layout="col">
+  <sherpa-input-checkbox data-label="I accept the terms" required></sherpa-input-checkbox>
+</template>
+
+<template data-label="Status states" data-layout="col">
+  <sherpa-input-checkbox data-label="Critical" data-status="critical" data-description="This selection is invalid."></sherpa-input-checkbox>
+  <sherpa-input-checkbox data-label="Warning"  data-status="warning"  data-description="Double-check this option." checked></sherpa-input-checkbox>
+  <sherpa-input-checkbox data-label="Success"  data-status="success"  data-description="Verified." checked></sherpa-input-checkbox>
+</template>

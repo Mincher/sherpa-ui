@@ -7,6 +7,10 @@
  *
  * @attr {string}  [data-src]            — URL for the nav template HTML (default: sherpa-nav.html)
  * @attr {string}  [data-active-target]  — Selector or ID of the currently active nav item
+ * @attr {string}  [data-promo-title]    — Footer promo heading text (shows the promo when set)
+ * @attr {string}  [data-promo-message]  — Footer promo body message
+ * @attr {string}  [data-promo-link-text]— Footer promo CTA link label
+ * @attr {string}  [data-promo-link-url] — Footer promo CTA link URL
  *
  * @fires navhome
  *   bubbles: true, composed: true
@@ -44,6 +48,9 @@
  * @fires naveditreset
  *   bubbles: true, composed: true
  *   detail: none
+ * @fires navpromodismiss
+ *   bubbles: true, composed: true
+ *   detail: none
  *
  * @method startSearch           — Enter search mode
  * @method endSearch             — Exit search mode
@@ -52,6 +59,7 @@
  * @method isFavorite(itemId)    — Returns boolean
  * @method setFavorite(itemId, label, favorite) — Toggle favorite state
  * @method addToRecent(route, label, icon) — Push item to recent list
+ * @method setPromoConfig(config) — Populate footer promo: { title, message, link: { text, url } }; pass null to clear
  *
  * @prop {boolean} isPinned   — Whether the sidebar is pinned open
  * @prop {boolean} isSearching — Whether search mode is active
@@ -62,7 +70,6 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
 import "../sherpa-nav-item/sherpa-nav-item.js";
-import "../sherpa-nav-promo/sherpa-nav-promo.js";
 
 import { setupDragSort } from "../utilities/drag-sort.js";
 
@@ -77,7 +84,15 @@ export class SherpaNav extends SherpaElement {
   }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, "data-src", "data-active-target"];
+    return [
+      ...super.observedAttributes,
+      "data-src",
+      "data-active-target",
+      "data-promo-title",
+      "data-promo-message",
+      "data-promo-link-text",
+      "data-promo-link-url",
+    ];
   }
 
   #searchField = null;
@@ -98,6 +113,9 @@ export class SherpaNav extends SherpaElement {
   // can restore it after the new template renders — otherwise the new
   // template's own data-pinned default would clobber the user's choice.
   #lastPinned = null;
+  // Programmatic footer-promo config set via setPromoConfig(); takes
+  // precedence over data-promo-* host attributes when present.
+  #promoConfig = null;
 
   /** @returns {HTMLElement|null} The .sherpa-nav-root wrapper inside the shadow root. */
   get #root() {
@@ -126,6 +144,8 @@ export class SherpaNav extends SherpaElement {
     this.#syncInitialState();
     this.#hydrateQuickAccess();
     this.#syncSectionBadges();
+    this.#wirePromo();
+    this.#syncPromo();
 
     // Apply data-active-target if set before render
     const target = this.dataset.activeTarget;
@@ -160,6 +180,9 @@ export class SherpaNav extends SherpaElement {
       } else {
         this.#clearAllActiveStates();
       }
+    }
+    if (name.startsWith("data-promo-") && this.#ready) {
+      this.#syncPromo();
     }
   }
 
@@ -324,6 +347,60 @@ export class SherpaNav extends SherpaElement {
     for (let i = max; i < items.length; i++) items[i].remove();
     this.#persistQuickAccess('recent');
     this.#syncSectionBadges();
+  }
+
+  /**
+   * Populate the footer promo callout. Pass null/undefined to clear.
+   * Takes precedence over data-promo-* host attributes until cleared.
+   * @param {{ title?: string, message?: string, link?: { text: string, url: string } } | null} config
+   */
+  setPromoConfig(config) {
+    this.#promoConfig = config || null;
+    if (this.#ready) this.#syncPromo();
+  }
+
+  // ═══════════════════ Footer Promo ════════════════════════════════
+
+  #wirePromo() {
+    const close = this.$(".nav-promo .promo-close");
+    if (!close || close.dataset.wired === "true") return;
+    close.dataset.wired = "true";
+    close.addEventListener("click", () => {
+      const promo = this.$(".nav-promo");
+      if (promo) promo.dataset.dismissed = "";
+      this.#emit("navpromodismiss", {});
+    });
+  }
+
+  #syncPromo() {
+    const promo = this.$(".nav-promo");
+    if (!promo) return;
+    const cfg = this.#promoConfig || this.#promoConfigFromAttrs();
+    const titleEl = promo.querySelector(".promo-title");
+    const textEl = promo.querySelector(".promo-text");
+    const linkEl = promo.querySelector(".promo-link");
+    if (titleEl) titleEl.textContent = cfg?.title || "";
+    if (textEl) textEl.textContent = cfg?.message || "";
+    if (linkEl) {
+      linkEl.textContent = cfg?.link?.text || "";
+      if (cfg?.link?.url) linkEl.dataset.url = cfg.link.url;
+      else delete linkEl.dataset.url;
+    }
+    const hasContent = !!(cfg?.title || cfg?.message || cfg?.link?.text);
+    promo.toggleAttribute("hidden", !hasContent);
+  }
+
+  #promoConfigFromAttrs() {
+    const title = this.dataset.promoTitle;
+    const message = this.dataset.promoMessage;
+    const linkText = this.dataset.promoLinkText;
+    const linkUrl = this.dataset.promoLinkUrl;
+    if (!title && !message && !linkText) return null;
+    return {
+      title: title || "",
+      message: message || "",
+      link: { text: linkText || "", url: linkUrl || "" },
+    };
   }
 
   // ═══════════════════ Recents & Favorites — Persistence ═══════════

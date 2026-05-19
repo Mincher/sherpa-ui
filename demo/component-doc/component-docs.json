@@ -567,7 +567,7 @@
       "label": "Navigation",
       "description": "Collapsible navigation sidebar with search and edit modes. Loads nav template via renderFromUrl().",
       "path": "components/sherpa-nav",
-      "nestedComponents": ["sherpa-nav-item", "sherpa-nav-promo"],
+      "nestedComponents": ["sherpa-nav-item"],
       "attributes": [
         { "name": "data-src", "type": "string" },
         { "name": "data-home-href", "type": "string", "default": "/home.html" },
@@ -616,33 +616,6 @@
       "defaultContent": "Nav item label",
       "wrapperHtml": "<div style=\"width:260px; background:var(--sherpa-surface-container-default); border-radius:var(--sherpa-border-rounding-base); padding:var(--sherpa-space-xs) 0;\"><sherpa-nav-item data-variant=\"section\" data-icon=\"\uf015\">Dashboard</sherpa-nav-item><sherpa-nav-item data-variant=\"subsection\" data-state=\"selected\">Overview</sherpa-nav-item><sherpa-nav-item data-variant=\"subsection\">Analytics</sherpa-nav-item><sherpa-nav-item data-variant=\"section\" data-icon=\"\uf013\">Settings</sherpa-nav-item></div>",
       "componentSelector": "sherpa-nav-item[data-state=\"selected\"]"
-    },
-    "sherpa-nav-promo": {
-      "component": "sherpa-nav-promo",
-      "label": "Nav Promo",
-      "description": "Promotional callout inside navigation footer. Self-configures from data attributes.",
-      "path": "components/sherpa-nav-promo",
-      "attributes": [
-        {
-          "name": "data-promo-title",
-          "type": "string",
-          "default": "What's New"
-        },
-        {
-          "name": "data-promo-message",
-          "type": "string",
-          "default": "Check out the latest features"
-        },
-        {
-          "name": "data-promo-link-text",
-          "type": "string",
-          "default": "Learn more"
-        },
-        { "name": "data-promo-link-url", "type": "string", "default": "#" },
-        { "name": "data-dismissed", "type": "boolean" }
-      ],
-      "slots": [],
-      "controls": { "defaultSlot": false, "namedSlots": false }
     },
     "sherpa-section-header": {
       "component": "sherpa-section-header",

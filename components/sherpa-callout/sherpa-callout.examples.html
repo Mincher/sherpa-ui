@@ -1,0 +1,36 @@
+<!--
+  sherpa-callout — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-callout.examples.js
+-->
+<template data-label="Status variants" data-layout="col">
+  <sherpa-callout data-status="info"     data-heading="Heads up">A new region is available in the deployment dropdown.</sherpa-callout>
+  <sherpa-callout data-status="success"  data-heading="Saved">Your changes were saved successfully.</sherpa-callout>
+  <sherpa-callout data-status="warning"  data-heading="Approaching limit">You are using 92% of your monthly quota.</sherpa-callout>
+  <sherpa-callout data-status="critical" data-heading="Action required">One device has been offline for more than 24 hours.</sherpa-callout>
+  <sherpa-callout data-status="neutral"  data-heading="FYI">Maintenance window scheduled for Sunday 02:00 UTC.</sherpa-callout>
+  <sherpa-callout data-status="tip"      data-heading="Tip">Press ⌘K from anywhere to open the command palette.</sherpa-callout>
+</template>
+
+<template data-label="Dismissible" data-description="data-dismissible renders a close button that hides the callout.">
+  <sherpa-callout data-status="info" data-heading="Welcome to Sherpa UI" data-dismissible>Take the product tour to see what's new.</sherpa-callout>
+</template>
+
+<template data-label="Expanded with body content" data-description="Default-slot content sits below the heading / label.">
+  <sherpa-callout data-status="warning" data-heading="Deploy paused" data-expanded>
+    <p>Two devices reported a checksum mismatch. The following devices need attention before the deploy can resume:</p>
+    <ul>
+      <li>acme-device-01 — region EU</li>
+      <li>beta-probe-14 — region APAC</li>
+    </ul>
+  </sherpa-callout>
+</template>
+
+<template data-label="Custom icon">
+  <sherpa-callout data-status="info" data-icon="fa-solid fa-rocket" data-heading="New release">v2.4.0 includes 12 bug fixes and 3 new components.</sherpa-callout>
+</template>

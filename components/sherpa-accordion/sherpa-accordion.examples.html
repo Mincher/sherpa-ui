@@ -1,0 +1,39 @@
+<!--
+  sherpa-accordion — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-accordion.examples.js
+-->
+<template data-label="Multiple panels" data-layout="col">
+  <sherpa-accordion data-label="What is Sherpa UI?" open>
+    <p>Sherpa UI is a Web Component design system built on progressive enhancement. HTML owns structure, CSS owns presentation, and JS owns data and events.</p>
+  </sherpa-accordion>
+  <sherpa-accordion data-label="How do I install it?">
+    <p>Copy the components directory into your project and import the component you need. No build step required.</p>
+  </sherpa-accordion>
+  <sherpa-accordion data-label="Does it support dark mode?">
+    <p>Yes — set <code>data-mode="dark"</code> on the root element, or <code>data-mode="auto"</code> to follow the system preference.</p>
+  </sherpa-accordion>
+</template>
+
+<template data-label="With icons" data-layout="col">
+  <sherpa-accordion data-label="Billing"  data-icon="fa-solid fa-credit-card" open>
+    <p>Manage your plan, payment methods, and invoices here.</p>
+  </sherpa-accordion>
+  <sherpa-accordion data-label="Security" data-icon="fa-solid fa-lock">
+    <p>Two-factor authentication, API keys, and session management.</p>
+  </sherpa-accordion>
+  <sherpa-accordion data-label="Notifications" data-icon="fa-solid fa-bell">
+    <p>Configure email, push, and in-app notification preferences.</p>
+  </sherpa-accordion>
+</template>
+
+<template data-label="Disabled" data-layout="col">
+  <sherpa-accordion data-label="Locked section" data-icon="fa-solid fa-lock" disabled>
+    <p>This content will not be reachable until the disabled attribute is removed.</p>
+  </sherpa-accordion>
+</template>

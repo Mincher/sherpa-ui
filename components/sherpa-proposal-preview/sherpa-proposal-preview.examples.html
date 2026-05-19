@@ -1,0 +1,17 @@
+<!--
+  sherpa-proposal-preview — Live examples.
+-->
+<template data-label="Default" data-layout="block">
+  <sherpa-proposal-preview data-rationale="Suggested changes to bring your network into the desired baseline.">
+    <sherpa-proposal-op data-op="add"    data-label="Add device acme-edge-09"></sherpa-proposal-op>
+    <sherpa-proposal-op data-op="update" data-label="Update region for acme-device-01 to EU"></sherpa-proposal-op>
+    <sherpa-proposal-op data-op="remove" data-label="Remove device beta-probe-14"></sherpa-proposal-op>
+  </sherpa-proposal-preview>
+</template>
+
+<template data-label="With graph operations" data-layout="block">
+  <sherpa-proposal-preview data-rationale="Rebalance edge traffic to reduce cross-region hops.">
+    <sherpa-proposal-op data-op="add-edge"    data-label="Connect acme-edge-09 → core-router-1"></sherpa-proposal-op>
+    <sherpa-proposal-op data-op="remove-edge" data-label="Disconnect beta-probe-14 → core-router-2"></sherpa-proposal-op>
+  </sherpa-proposal-preview>
+</template>

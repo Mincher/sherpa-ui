@@ -1,0 +1,31 @@
+<!--
+  sherpa-content-section — Live examples.
+-->
+<template data-label="Heading and body" data-description="Gives content a consistent heading with the right spacing rhythm." data-layout="block">
+  <sherpa-content-section data-heading="Account details" data-description="Used to identify you across the platform.">
+    <div style="display: grid; gap: var(--sherpa-space-default); max-width: 480px;">
+      <sherpa-input-text data-label="Display name" value="Alex Doe"></sherpa-input-text>
+      <sherpa-input-text data-label="Email" value="alex@acme.io" type="email"></sherpa-input-text>
+    </div>
+  </sherpa-content-section>
+</template>
+
+<template data-label="Minimisable" data-description="data-minimised collapses the section behind a restore label." data-layout="block">
+  <sherpa-content-section data-heading="Advanced settings" data-description="Tweak only when you know what you're doing." data-minimised data-restore-label="Show advanced">
+    <div style="display: grid; gap: var(--sherpa-space-default); max-width: 480px;">
+      <sherpa-input-number data-label="Request timeout (ms)" value="5000" min="100" max="60000" step="100"></sherpa-input-number>
+      <sherpa-input-number data-label="Max retries" value="3" min="0" max="10"></sherpa-input-number>
+      <sherpa-switch data-label="Verbose logging"></sherpa-switch>
+    </div>
+  </sherpa-content-section>
+</template>
+
+<template data-label="Flush — edge-to-edge child" data-description="data-flush removes padding so a table, grid, or chart can stretch to the edges." data-layout="block">
+  <sherpa-content-section data-heading="Recent transactions" data-flush>
+    <sherpa-list>
+      <sherpa-list-item data-label="Stripe payout"     data-description="Mar 18, 2026"><sherpa-tag slot="trailing" data-status="success">+$2,480</sherpa-tag></sherpa-list-item>
+      <sherpa-list-item data-label="Refund — ORD-3812" data-description="Mar 17, 2026"><sherpa-tag slot="trailing" data-status="critical">−$49</sherpa-tag></sherpa-list-item>
+      <sherpa-list-item data-label="Subscription renewal" data-description="Mar 16, 2026"><sherpa-tag slot="trailing" data-status="info">$199</sherpa-tag></sherpa-list-item>
+    </sherpa-list>
+  </sherpa-content-section>
+</template>

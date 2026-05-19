@@ -1,0 +1,42 @@
+<!--
+  sherpa-input-checkbox-group — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+-->
+<template data-label="Vertical group" data-layout="block">
+  <sherpa-input-checkbox-group
+    data-label="Notify me when"
+    data-options='[
+      {"label":"A device goes offline","value":"offline"},
+      {"label":"CPU exceeds 80%","value":"cpu"},
+      {"label":"A deploy completes","value":"deploy"}
+    ]'
+    data-value='["offline"]'>
+  </sherpa-input-checkbox-group>
+</template>
+
+<template data-label="Horizontal group" data-layout="block">
+  <sherpa-input-checkbox-group
+    data-label="Regions"
+    data-orientation="horizontal"
+    data-options='[
+      {"label":"EU","value":"eu"},
+      {"label":"US","value":"us"},
+      {"label":"APAC","value":"apac"}
+    ]'
+    data-value='["eu","us"]'>
+  </sherpa-input-checkbox-group>
+</template>
+
+<template data-label="Required with status" data-layout="block">
+  <sherpa-input-checkbox-group
+    data-label="Channels"
+    required
+    data-status="critical"
+    data-helper="Select at least one channel."
+    data-options='[
+      {"label":"Email","value":"email"},
+      {"label":"SMS","value":"sms"},
+      {"label":"Push","value":"push"}
+    ]'>
+  </sherpa-input-checkbox-group>
+</template>

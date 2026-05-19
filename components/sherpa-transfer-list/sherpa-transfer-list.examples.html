@@ -1,0 +1,23 @@
+<!--
+  sherpa-transfer-list — Live examples.
+-->
+<template data-label="Assign permissions" data-description="Move items between Available and Selected. Source items can be searched and bulk-moved." data-layout="block" data-setup="transfer-permissions">
+  <sherpa-transfer-list data-source-heading="Available permissions" data-target-heading="Granted to role" data-search style="height: 320px;"></sherpa-transfer-list>
+</template>
+
+<template data-label="Pick regions" data-description="Without the search input — best for short, fixed-length lists." data-layout="block" data-setup="transfer-regions">
+  <sherpa-transfer-list data-source-heading="All regions" data-target-heading="Enabled regions" style="height: 260px;"></sherpa-transfer-list>
+</template>
+
+<template data-label="In a settings dialog" data-description="Composed inside a sherpa-container as it would appear in a real flow." data-layout="block" data-setup="transfer-members">
+  <sherpa-container data-variant="fit" style="max-width: 640px;">
+    <sherpa-container-header slot="header" data-title="Add members to team" data-description="Choose who can collaborate on this project."></sherpa-container-header>
+    <div slot="body" style="padding: var(--sherpa-space-default);">
+      <sherpa-transfer-list data-source-heading="Workspace" data-target-heading="Members" data-search style="height: 280px;"></sherpa-transfer-list>
+    </div>
+    <div slot="footer" style="display: flex; justify-content: flex-end; gap: var(--sherpa-space-sm); padding: var(--sherpa-space-default);">
+      <sherpa-button data-variant="tertiary" data-label="Cancel"></sherpa-button>
+      <sherpa-button data-variant="primary"  data-label="Save members"></sherpa-button>
+    </div>
+  </sherpa-container>
+</template>

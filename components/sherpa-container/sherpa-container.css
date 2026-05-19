@@ -3,7 +3,7 @@
  * Pure wrapper: sizing variants + named container scope for descendants.
  *
  * Structure (shadow DOM):
- *   :host (block, container: sherpa-container / size)
+ *   :host (block, container: sherpa-container / inline-size)
  *   └── <slot>
  *
  * Host attributes:
@@ -14,8 +14,12 @@
  *   data-menu-open {boolean} — set while overflow menu is open
  *
  * Container query scope:
- *   container: sherpa-container / size  — descendant viz can query both
- *                                          inline-size and aspect-ratio.
+ *   container: sherpa-container / inline-size  — descendant viz can query
+ *                                                inline-size. (Not `size`,
+ *                                                which would apply
+ *                                                `contain: size` and prevent
+ *                                                children from contributing
+ *                                                to the host's block size.)
  */
 
 :host {
@@ -30,7 +34,7 @@
   overflow: clip;
   position: relative;
   box-sizing: border-box;
-  container: sherpa-container / size;
+  container: sherpa-container / inline-size;
 }
 :host([data-menu-open="true"]) {
   border-color: var(--sherpa-border-control-primary-default, #8500cc);

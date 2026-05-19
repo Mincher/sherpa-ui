@@ -1,0 +1,42 @@
+<!--
+  sherpa-input-radio-group — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+-->
+<template data-label="Vertical group" data-layout="block">
+  <sherpa-input-radio-group
+    data-label="Billing cycle"
+    data-options='[
+      {"label":"Monthly","value":"monthly","description":"Cancel anytime."},
+      {"label":"Annual","value":"annual","description":"Two months free."},
+      {"label":"Custom","value":"custom","description":"Talk to sales."}
+    ]'
+    data-value="annual">
+  </sherpa-input-radio-group>
+</template>
+
+<template data-label="Horizontal group" data-layout="block">
+  <sherpa-input-radio-group
+    data-label="Size"
+    data-orientation="horizontal"
+    data-options='[
+      {"label":"S","value":"s"},
+      {"label":"M","value":"m"},
+      {"label":"L","value":"l"},
+      {"label":"XL","value":"xl"}
+    ]'
+    data-value="m">
+  </sherpa-input-radio-group>
+</template>
+
+<template data-label="Required" data-layout="block">
+  <sherpa-input-radio-group
+    data-label="Region"
+    required
+    data-helper="Choose a region for your deployment."
+    data-options='[
+      {"label":"EU (Frankfurt)","value":"eu"},
+      {"label":"US (Virginia)","value":"us"},
+      {"label":"APAC (Tokyo)","value":"apac"}
+    ]'>
+  </sherpa-input-radio-group>
+</template>

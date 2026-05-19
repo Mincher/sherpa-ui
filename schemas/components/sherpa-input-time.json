@@ -20,6 +20,96 @@
       "name": "step",
       "type": "number",
       "description": "Step increment in seconds"
+    },
+    {
+      "name": "data-label",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "data-description",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "data-helper",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "data-layout",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "disabled",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "readonly",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "required",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "pattern",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "minlength",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "maxlength",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "novalidate",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "data-status",
+      "type": "string",
+      "description": "",
+      "inherited": "StatusMixin"
     }
   ],
   "slots": [],

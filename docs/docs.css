@@ -1,0 +1,270 @@
+/* =============================================================================
+   docs/docs.css — Shell-specific layout + documentation page styles.
+
+   Applies to the docs shell (docs/index.html) and all injected page
+   partials. Does NOT override Sherpa component styles.
+
+   Host attributes used:
+     #docs-outlet            — Router injection target; scrolls independently
+     .docs-page              — Injected page wrapper
+     .docs-page-header       — Page hero section
+     .docs-category-grid     — Home-page category card grid
+     .docs-component-grid    — Category-page component card grid
+     .docs-api-section       — API reference block (attributes / slots / events)
+     .docs-table             — API reference table
+============================================================================= */
+
+/* ── App shell ────────────────────────────────────────────────────────────── */
+
+.docs-shell {
+  display: block;
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  /* Reserved left gutter for the nav. Defaults to the nav's collapsed
+     rail width (--_w-collapsed inside sherpa-nav = calc(space-default * 3)
+     = 60px). When the nav is pinned open, sherpa-nav mirrors data-pinned
+     onto its host and we widen the rail so the content area reflows —
+     when unpinned, the nav overlay-expands on hover without pushing
+     content. Hover/search/edit expansion is purely visual; only
+     data-pinned drives the layout. */
+  --docs-nav-rail: calc(var(--sherpa-space-default, 20px) * 3);
+}
+
+/* Pinned nav → reserve full expanded width so content sits beside the nav. */
+.docs-shell:has(> #docs-nav-panel[data-pinned="true"]) {
+  --docs-nav-rail: 320px;
+}
+
+#docs-nav-panel {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 200;
+}
+
+#docs-view {
+  height: 100%;
+  width: calc(100% - var(--docs-nav-rail));
+  margin-inline-start: var(--docs-nav-rail);
+  transition: width var(--sherpa-motion-duration-base, 0.25s)
+              var(--sherpa-motion-easing-default, ease-out),
+              margin-inline-start var(--sherpa-motion-duration-base, 0.25s)
+              var(--sherpa-motion-easing-default, ease-out);
+}
+
+/* ── Outlet scroll ─────────────────────────────────────────────────────────── */
+
+#docs-outlet {
+  padding: var(--sherpa-space-default, 16px);
+}
+
+/* ── Page wrapper ──────────────────────────────────────────────────────────── */
+
+.docs-page {
+  max-width: 960px;
+  margin-inline: auto;
+  padding-block-end: var(--sherpa-space-2xl, 48px);
+}
+
+/* ── Page header ───────────────────────────────────────────────────────────── */
+
+/* Component page header chrome lives in sherpa-section-header. */
+
+.docs-impl-notes,
+.docs-api-accordion {
+  display: block;
+  margin-block: var(--sherpa-space-default, 16px);
+}
+
+.docs-impl-notes p {
+  margin: 0 0 var(--sherpa-space-xs, 8px);
+  max-width: 72ch;
+  font: var(--sherpa-text-body-md, 400 14px/1.6 system-ui);
+  color: var(--sherpa-text-default-body, #1a1a1a);
+}
+
+/* ── Merged sub-component sections ────────────────────────────────────────
+   Used when a parent docs page (sherpa-nav, sherpa-node, sherpa-list) folds
+   its children's documentation into the same scroll surface. */
+
+.docs-children-group {
+  display: block;
+  margin-block-start: var(--sherpa-space-3xl, 64px);
+}
+
+.docs-child-section {
+  display: block;
+  margin-block-start: var(--sherpa-space-2xl, 48px);
+  scroll-margin-block-start: var(--sherpa-space-default, 16px);
+}
+
+/* ── Card grid layout ──────────────────────────────────────────────────────
+   The docs use sherpa-card for category + component cards. The grid itself
+   is a legitimate layout primitive (no sherpa-layout-grid equivalent — that
+   component targets resizable dashboard containers, not auto-fill grids). */
+
+.docs-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sherpa-space-default, 16px);
+}
+
+.docs-category-page .docs-card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--sherpa-space-sm, 12px);
+}
+
+/* ── API reference ─────────────────────────────────────────────────────────── */
+
+.docs-api-section {
+  margin-block-end: var(--sherpa-space-2xl, 48px);
+}
+
+.docs-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--sherpa-border-container-default, rgba(0,0,0,0.1));
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+}
+
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--sherpa-text-body-sm, 400 13px/1.5 system-ui);
+  color: var(--sherpa-text-default-body, #333);
+}
+
+.docs-table thead {
+  background: var(--sherpa-surface-container-subtle-default, rgba(0,0,0,0.03));
+}
+
+.docs-table th {
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  text-align: left;
+  font: var(--sherpa-text-label-sm, 600 12px/1.4 system-ui);
+  color: var(--sherpa-text-default-subtle, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--sherpa-border-container-default, rgba(0,0,0,0.1));
+}
+
+.docs-table td {
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  vertical-align: top;
+  border-bottom: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.06));
+}
+
+.docs-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.docs-table tbody tr:hover td {
+  background: var(--sherpa-surface-container-subtle-default, rgba(0,0,0,0.02));
+}
+
+.docs-attr-name {
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--sherpa-text-default-body, #1a1a1a);
+  white-space: nowrap;
+}
+
+.docs-enum-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-block-start: 4px;
+}
+
+.docs-enum-values code {
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--sherpa-text-default-subtle, #666);
+  background: var(--sherpa-surface-container-subtle-default, rgba(0,0,0,0.04));
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  padding: 1px var(--sherpa-space-2xs, 4px);
+}
+
+/* ── Examples section ──────────────────────────────────────────────────────── */
+
+.docs-examples-section {
+  margin-block-end: var(--sherpa-space-2xl, 48px);
+}
+
+.docs-example {
+  margin-block: var(--sherpa-space-default, 16px) var(--sherpa-space-2xl, 48px);
+}
+
+.docs-example > sherpa-section-header {
+  margin-block-end: var(--sherpa-space-sm, 12px);
+}
+
+.docs-example-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-default, 16px) var(--sherpa-space-lg, 24px);
+  background: var(--sherpa-surface-app-background-default, #f5f5f5);
+  border: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
+  border-radius: var(--sherpa-border-rounding-md, 8px) var(--sherpa-border-rounding-md, 8px) 0 0;
+  border-bottom: none;
+  min-height: 64px;
+  /* Let large examples scroll horizontally instead of crushing children. */
+  overflow: auto;
+}
+
+/* Row/col flex previews: never shrink children below their natural width. */
+.docs-example-preview > * { flex-shrink: 0; }
+
+:host([data-layout="col"]) .docs-example-preview,
+.docs-example-preview[data-layout="col"] {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.docs-example-preview[data-layout="block"] {
+  display: block;
+}
+
+.docs-code-block {
+  border: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
+  border-radius: var(--sherpa-border-rounding-md, 8px);
+  overflow: hidden;
+}
+
+.docs-example-preview + .docs-code-block {
+  border-top: none;
+  border-radius: 0 0 var(--sherpa-border-rounding-md, 8px) var(--sherpa-border-rounding-md, 8px);
+}
+
+.docs-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  background: #1e2030;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.docs-code-lang {
+  font: 600 11px/1 var(--sherpa-font-family-mono, ui-monospace, monospace);
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.docs-code-block pre {
+  margin: 0;
+  padding: var(--sherpa-space-default, 16px);
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  background: #1e2030;
+}
+
+.docs-code-block pre code {
+  font-family: var(--sherpa-font-family-mono, ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace);
+  background: transparent !important;
+}

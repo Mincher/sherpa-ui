@@ -1,0 +1,31 @@
+<!--
+  sherpa-product-bar-v2 — Live examples.
+-->
+<template data-label="Default" data-description="Brand stack with product name, time, and a system menu caret.\"" data-layout="block">
+  <sherpa-product-bar-v2 data-product-name="Acme Console" data-time="09:42"></sherpa-product-bar-v2>
+</template>
+
+<template data-label="With sub-nav tabs" data-description="Slot a sherpa-tabs element into the tabs slot for product-level navigation.\"" data-layout="block">
+  <sherpa-product-bar-v2 data-product-name="Sherpa Platform" data-time="10:08">
+    <sherpa-tabs slot="tabs"
+      data-items='[
+        {"label":"Overview","value":"overview"},
+        {"label":"Devices","value":"devices"},
+        {"label":"Alerts","value":"alerts"},
+        {"label":"Reports","value":"reports"}
+      ]'
+      data-value="devices"></sherpa-tabs>
+  </sherpa-product-bar-v2>
+</template>
+
+<template data-label="With trailing actions" data-description="Action buttons live on the right via the actions slot.\"" data-layout="block">
+  <sherpa-product-bar-v2 data-product-name="Acme Cloud" data-time="14:21">
+    <sherpa-button slot="actions" data-variant="tertiary" data-type="icon" data-icon-start="fa-solid fa-magnifying-glass" aria-label="Search"></sherpa-button>
+    <sherpa-button slot="actions" data-variant="tertiary" data-type="icon" data-icon-start="fa-solid fa-bell"               aria-label="Notifications"></sherpa-button>
+    <sherpa-button slot="actions" data-variant="tertiary" data-type="icon" data-icon-start="fa-solid fa-circle-question"    aria-label="Help"></sherpa-button>
+  </sherpa-product-bar-v2>
+</template>
+
+<template data-label="Minimal — no system menu or time" data-layout="block">
+  <sherpa-product-bar-v2 data-product-name="Embedded App" data-show-time="false" data-show-system-menu="false"></sherpa-product-bar-v2>
+</template>

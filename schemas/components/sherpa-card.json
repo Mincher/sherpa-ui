@@ -22,6 +22,11 @@
       "description": "Selected/active state"
     },
     {
+      "name": "data-selectable",
+      "type": "boolean",
+      "description": "Renders a built-in radio indicator footer; click toggles `data-selected`"
+    },
+    {
       "name": "data-interactive",
       "type": "boolean",
       "description": "Makes card clickable"

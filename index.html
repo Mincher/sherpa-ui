@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" data-theme="apex-2-purple">
   <head>
-    <title>Sherpa UI — Component Playground</title>
+    <title>Sherpa UI — Design System</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,147 +17,65 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-    <link href="css/styles/index.css" rel="stylesheet" />
+    <!-- Syntax highlighting -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link href="/css/styles/index.css" rel="stylesheet" />
+    <link href="/docs/docs.css" rel="stylesheet" />
     <style>
-      /* Lock the playground shell to the viewport so the layout-grid
-         (data-fill="viewport") can hand vertical scrolling to the
-         main column while the side panels stay anchored & scroll
-         independently. */
-      html, body {
-        height: 100dvh;
-        min-height: 0;
-        overflow: hidden;
-      }
-
-      /* ── Controls panel curation styling ─────────────────────────
-         The controls panel groups attributes into <details> blocks and
-         renders preset chips above them. Keep this scoped to the
-         playground shell — components themselves stay untouched. */
-      #controls-content .attr-group,
-      #controls-content .nested-group {
-        margin-block: var(--sherpa-space-sm, 8px);
-        border: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
-        border-radius: var(--sherpa-border-rounding-base, 4px);
-        background: var(--sherpa-surface-container-subtle-default, transparent);
-      }
-      #controls-content .attr-group > summary,
-      #controls-content .nested-group > summary {
-        cursor: pointer;
-        padding: var(--sherpa-space-xs, 6px) var(--sherpa-space-sm, 10px);
-        font: var(--sherpa-text-label-md, 600 12px/1.4 system-ui);
-        color: var(--sherpa-text-default-body, #333);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        list-style: revert;
-      }
-      #controls-content .attr-group[open] > summary,
-      #controls-content .nested-group[open] > summary {
-        border-bottom: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.06));
-      }
-      #controls-content .attr-group > .attr-group-body,
-      #controls-content .nested-group > .nested-group-body {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sherpa-space-xs, 8px);
-        padding: var(--sherpa-space-sm, 10px);
-      }
-      #controls-content .preset-section {
-        margin-block: var(--sherpa-space-sm, 8px);
-      }
-      #controls-content .preset-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--sherpa-space-xs, 6px);
-        padding-block: var(--sherpa-space-xs, 6px);
-      }
-      #controls-content .toggleable-attr {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sherpa-space-2xs, 4px);
-      }
-      #controls-content .toggleable-attr > .toggleable-attr-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--sherpa-space-sm, 8px);
-      }
-      #controls-content .toggleable-attr > .toggleable-attr-header > .toggleable-attr-label {
-        font: var(--sherpa-text-label-sm, 600 12px/1.4 system-ui, sans-serif);
-        color: var(--sherpa-text-default-body, #1a1a1a);
-        font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
-      }
-      #controls-content .toggleable-attr > sherpa-input-text[hidden] {
-        display: none;
-      }
+      html, body { margin: 0; height: 100dvh; overflow: hidden; }
     </style>
   </head>
   <body>
-    <!-- Site header -->
-    <sherpa-view-header
-      id="site-header"
-      data-label="Sherpa UI Component Playground"
-    ></sherpa-view-header>
 
-    <!-- Global appearance toolbar — applies theme/mode/density/status sandbox-wide -->
-    <sherpa-toolbar id="global-toolbar" data-density="compact" aria-label="Sandbox appearance">
-      <sherpa-input-select slot="trailing" id="global-theme-select" data-size="small" data-label="Theme" data-layout="inline"></sherpa-input-select>
-      <sherpa-input-select slot="trailing" id="global-mode-select" data-size="small" data-label="Mode" data-layout="inline"></sherpa-input-select>
-      <sherpa-input-select slot="trailing" id="global-density-select" data-size="small" data-label="Density" data-layout="inline"></sherpa-input-select>
-    </sherpa-toolbar>
+    <!-- ── App shell ────────────────────────────────────────────────────── -->
+    <div class="docs-shell">
 
-    <!-- Body layout — viewport-bound view with left list rail + right
-         controls rail. Uses sherpa-layout-view (the body-content sibling
-         of sherpa-layout-grid). The site header and global toolbar above
-         sit outside the view region; sherpa-layout-view fills the rest
-         of the viewport via data-fill="viewport" and lets each rail +
-         the centre column scroll independently. -->
-    <sherpa-layout-view data-fill="viewport" data-pad data-gap="base">
-      <!-- Sidebar: left content-section housing a searchable list-panel -->
-      <sherpa-content-section
-        slot="side-panel-start"
-        id="sidebar-section"
-        data-position="left"
-        data-heading="Components"
-        data-restore-label="Components"
-        data-flush
-      >
-        <sherpa-list-panel
-          id="component-list-panel"
-          data-match="sherpa-list-item"
-          data-empty="No components match"
-        ></sherpa-list-panel>
-      </sherpa-content-section>
+      <!-- Left — full-height nav -->
+      <sherpa-nav
+        id="docs-nav-panel"
+        data-src="/docs/nav.html"
+        data-track-recents="false"
+      ></sherpa-nav>
 
-      <!-- Centre column (default slot — stacked, scrolls independently) -->
-      <sherpa-empty-state
-        id="empty-state"
-        data-label="Select a component"
-        data-description="Pick a component from the sidebar to preview it here."
-        data-illustration="empty"
-      ></sherpa-empty-state>
+      <!-- Right — layout view with embedded view header -->
+      <sherpa-layout-view id="docs-view" data-fill="parent" data-heading="Sherpa UI">
 
-      <sherpa-section-header
-        id="preview-title-header"
-        data-label="Component Preview"
-        data-divider
-        hidden
-      ></sherpa-section-header>
-      <sherpa-card id="preview-card" data-elevation="sm" hidden>
-        <div id="preview-container"></div>
-      </sherpa-card>
+        <!-- Appearance controls forwarded to the view header's view-selection area -->
+        <sherpa-input-select
+          slot="header-actions"
+          id="theme-select"
+          data-size="small"
+          data-label="Theme"
+          data-layout="horizontal"
+        ></sherpa-input-select>
+        <sherpa-input-select
+          slot="header-actions"
+          id="mode-select"
+          data-size="small"
+          data-label="Mode"
+          data-layout="horizontal"
+        ></sherpa-input-select>
+        <sherpa-input-select
+          slot="header-actions"
+          id="density-select"
+          data-size="small"
+          data-label="Density"
+          data-layout="horizontal"
+        ></sherpa-input-select>
 
-      <!-- Controls: right content-section, minimisable to a strip -->
-      <sherpa-content-section
-        slot="side-panel-end"
-        id="controls-section"
-        data-position="right"
-        data-heading="Controls"
-        data-restore-label="Controls"
-      >
-        <div id="controls-content"></div>
-      </sherpa-content-section>
-    </sherpa-layout-view>
+        <!-- Router outlet -->
+        <main id="docs-outlet" aria-live="polite" aria-label="Documentation content">
+          <!-- Page content injected by router.js -->
+        </main>
 
-    <script type="module" src="./demo/playground.js"></script>
+      </sherpa-layout-view>
+    </div>
+
+    <script type="module" src="/components/index.js"></script>
+    <script type="module" src="/docs/router.js"></script>
   </body>
 </html>

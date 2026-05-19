@@ -1,0 +1,43 @@
+<!--
+  sherpa-layout-view — Live examples.
+-->
+<template data-label="Settings view" data-description="A wrapper that gives a view its heading, padding, and gap rhythm." data-layout="block">
+  <sherpa-layout-view data-heading="Account settings" data-pad data-gap="base">
+    <sherpa-content-section data-heading="Profile" data-description="How you appear across the platform.">
+      <div style="display: grid; gap: var(--sherpa-space-default); max-width: 480px;">
+        <sherpa-input-text data-label="Full name" value="Alex Doe"></sherpa-input-text>
+        <sherpa-input-text data-label="Email" value="alex@acme.io" type="email"></sherpa-input-text>
+      </div>
+    </sherpa-content-section>
+    <sherpa-content-section data-heading="Security" data-description="Sign-in and authentication.">
+      <div style="display: grid; gap: var(--sherpa-space-default); max-width: 480px;">
+        <sherpa-switch data-label="Two-factor authentication" checked></sherpa-switch>
+        <sherpa-switch data-label="Session timeout after 30 min idle"></sherpa-switch>
+      </div>
+    </sherpa-content-section>
+    <sherpa-content-section data-heading="Notifications">
+      <sherpa-input-checkbox-group
+        data-label="Email me when"
+        data-options='[{"label":"A deploy completes","value":"deploy"},{"label":"An alert fires","value":"alert"},{"label":"Weekly summary","value":"summary"}]'
+        data-value='["alert","summary"]'>
+      </sherpa-input-checkbox-group>
+    </sherpa-content-section>
+  </sherpa-layout-view>
+</template>
+
+<template data-label="Larger gap rhythm" data-description="data-gap=&quot;lg&quot; spaces sections further apart — useful for spacious dashboards." data-layout="block">
+  <sherpa-layout-view data-heading="Reports" data-pad data-gap="lg">
+    <sherpa-content-section data-heading="Q1 summary">
+      <p>Revenue up 18% quarter-over-quarter, with strongest growth in EMEA.</p>
+    </sherpa-content-section>
+    <sherpa-content-section data-heading="Top regions">
+      <p>NA contributed 48% of new MRR, followed by EU (32%) and APAC (20%).</p>
+    </sherpa-content-section>
+  </sherpa-layout-view>
+</template>
+
+<template data-label="Without padding" data-description="Omit data-pad when the view sits inside a parent that already provides padding." data-layout="block">
+  <sherpa-layout-view data-heading="Embedded view" data-gap="sm">
+    <p>Compact, no outer padding — the parent owns the layout.</p>
+  </sherpa-layout-view>
+</template>

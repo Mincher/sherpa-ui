@@ -1,0 +1,18 @@
+<!--
+  sherpa-footer — Live examples.
+-->
+<template data-label="Action bar — default" data-layout="block">
+  <sherpa-footer data-type="action-bar" data-show-cancel data-show-apply data-apply-label="Save changes"></sherpa-footer>
+</template>
+
+<template data-label="Action bar — destructive" data-layout="block">
+  <sherpa-footer data-type="action-bar" data-show-cancel data-show-apply data-apply-label="Delete" data-cancel-label="Keep"></sherpa-footer>
+</template>
+
+<template data-label="Slot template" data-layout="block">
+  <sherpa-footer data-type="slot">
+    <sherpa-button slot="start" data-variant="tertiary" data-label="Learn more" data-icon-end="fa-solid fa-arrow-up-right"></sherpa-button>
+    <sherpa-button slot="end"   data-variant="secondary" data-label="Cancel"></sherpa-button>
+    <sherpa-button slot="end"   data-variant="primary"   data-label="Confirm"></sherpa-button>
+  </sherpa-footer>
+</template>

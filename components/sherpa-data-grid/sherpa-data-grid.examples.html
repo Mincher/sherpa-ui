@@ -1,0 +1,23 @@
+<!--
+  sherpa-data-grid — Live examples.
+  Data and column config are supplied via setData() — see sherpa-data-grid.examples.js.
+-->
+<template data-label="Devices grid" data-description="Default selectable grid with row actions and pagination." data-layout="block" data-setup="devices-base">
+  <sherpa-data-grid data-selectable data-show-actions data-show-pagination data-page-size="6" style="height: 380px;"></sherpa-data-grid>
+</template>
+
+<template data-label="Compact density" data-description="data-density=&quot;compact&quot; reduces row height — ideal for ops dashboards with 20+ rows." data-layout="block" data-setup="alerts-compact">
+  <sherpa-data-grid data-density="compact" data-show-pagination data-page-size="10" style="height: 420px;"></sherpa-data-grid>
+</template>
+
+<template data-label="Grouped rows" data-description="data-segment-field clusters rows under expandable section headers." data-layout="block" data-setup="devices-grouped">
+  <sherpa-data-grid data-segment-field="region" data-show-actions style="height: 420px;"></sherpa-data-grid>
+</template>
+
+<template data-label="Sorted column" data-description="data-sort-field + data-sort-direction set the initial sort." data-layout="block" data-setup="devices-sorted">
+  <sherpa-data-grid data-sort-field="cpu" data-sort-direction="desc" data-show-pagination data-page-size="6" style="height: 380px;"></sherpa-data-grid>
+</template>
+
+<template data-label="Loading state" data-description="Skeleton rows while the dataset is being fetched." data-layout="block">
+  <sherpa-data-grid data-loading style="height: 320px;"></sherpa-data-grid>
+</template>

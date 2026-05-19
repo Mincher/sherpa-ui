@@ -1,0 +1,21 @@
+<!--
+  sherpa-container-header — Live examples.
+-->
+<template data-label="Title only" data-layout="block">
+  <sherpa-container-header data-title="Devices"></sherpa-container-header>
+</template>
+
+<template data-label="Title and description" data-layout="block">
+  <sherpa-container-header data-title="Devices" data-description="All devices reporting in the last 24 hours."></sherpa-container-header>
+</template>
+
+<template data-label="With actions slot" data-layout="block">
+  <sherpa-container-header data-title="Devices" data-description="All devices in your account.">
+    <sherpa-button slot="actions" data-variant="secondary" data-size="small" data-label="Filter" data-icon-start="fa-solid fa-filter"></sherpa-button>
+    <sherpa-button slot="actions" data-variant="primary"   data-size="small" data-label="Add device" data-icon-start="fa-solid fa-plus"></sherpa-button>
+  </sherpa-container-header>
+</template>
+
+<template data-label="With external link + menu" data-layout="block">
+  <sherpa-container-header data-title="API usage" data-description="Last 30 days" data-open-external data-menu-button></sherpa-container-header>
+</template>

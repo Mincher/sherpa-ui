@@ -1,0 +1,24 @@
+<!--
+  sherpa-input-search — Live examples.
+-->
+<template data-label="Default" data-description="Search input with magnifier icon and clear affordance.">
+  <sherpa-input-search data-label="Search devices" placeholder="Search by name or ID…" style="min-width: 320px;"></sherpa-input-search>
+</template>
+
+<template data-label="With initial value" data-description="value pre-populates the field; the clear button appears automatically.">
+  <sherpa-input-search data-label="Filter" value="acme gateway" placeholder="Type to filter…" style="min-width: 320px;"></sherpa-input-search>
+</template>
+
+<template data-label="Disabled" data-description="Used when the underlying dataset is empty or not yet loaded.">
+  <sherpa-input-search data-label="Disabled" placeholder="Cannot search" disabled style="min-width: 320px;"></sherpa-input-search>
+</template>
+
+<template data-label="In a toolbar above results" data-description="Common pattern: search field beside a results count and bulk actions." data-layout="block">
+  <div style="display: flex; align-items: end; justify-content: space-between; gap: var(--sherpa-space-default); padding: var(--sherpa-space-sm) var(--sherpa-space-default); border: 1px solid var(--sherpa-border-container-default); border-radius: var(--sherpa-border-rounding-base); background: var(--sherpa-surface-container-default);">
+    <sherpa-input-search data-label="Search alerts" value="latency" placeholder="Search…" style="flex: 1; max-width: 360px;"></sherpa-input-search>
+    <div style="display: flex; align-items: center; gap: var(--sherpa-space-sm); padding-block-end: 6px;">
+      <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-meta);">12 of 240 results</span>
+      <sherpa-button data-variant="tertiary" data-size="small" data-label="Clear filters"></sherpa-button>
+    </div>
+  </div>
+</template>

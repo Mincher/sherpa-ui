@@ -672,7 +672,7 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 #### Navigation (9)
 
-`sherpa-nav`, `sherpa-nav-item`, `sherpa-nav-promo`, `sherpa-breadcrumbs`, `sherpa-pagination`, `sherpa-tabs`, `sherpa-menu`, `sherpa-menu-item`, `sherpa-section-nav`.
+`sherpa-nav`, `sherpa-nav-item`, `sherpa-breadcrumbs`, `sherpa-pagination`, `sherpa-tabs`, `sherpa-menu`, `sherpa-menu-item`, `sherpa-nav-section`.
 
 #### Data visualisation (7)
 
@@ -775,7 +775,7 @@ For new contributors and AI agents extending the library:
 2.  **Base classes** — `components/utilities/sherpa-element/`, then `components/utilities/sherpa-input-base/`.
 3.  **Cross-cutting utilities** — `flow-manager`, `form-manager`, `theme-manager`, `status-mixin`, `stylesheet-cache`, formatters.
 4.  **Primitives** — `sherpa-button`, `sherpa-input-*`, `sherpa-dialog`, `sherpa-tooltip`, `sherpa-popover`, `sherpa-tag`, `sherpa-loader`.
-5.  **Composites** — `sherpa-data-grid`, `sherpa-nav`, `sherpa-view-header`, `sherpa-filter-bar`, `sherpa-toolbar`, `sherpa-section-nav`.
+5.  **Composites** — `sherpa-data-grid`, `sherpa-nav`, `sherpa-view-header`, `sherpa-filter-bar`, `sherpa-toolbar`, `sherpa-nav-section`.
 6.  **Visualisation** — chart family.
 7.  **Patterns** — `patterns/<category>/<id>.html`.
 8.  **MCP** — `mcp-server/index.js` (tools / resources / prompts).

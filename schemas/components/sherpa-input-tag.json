@@ -71,6 +71,42 @@
       "name": "data-max-tags",
       "type": "number",
       "description": "Hard cap on tag count"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "pattern",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "minlength",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "maxlength",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "novalidate",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaInputBase"
+    },
+    {
+      "name": "data-status",
+      "type": "string",
+      "description": "",
+      "inherited": "StatusMixin"
     }
   ],
   "slots": [],

@@ -1,0 +1,23 @@
+<!--
+  sherpa-tooltip — Live examples.
+-->
+<template data-label="Positions" data-description="data-position anchors the tooltip to a side of its trigger. data-visible forces it open for documentation." data-layout="row">
+  <sherpa-tooltip data-position="top"    data-visible>Anchored above</sherpa-tooltip>
+  <sherpa-tooltip data-position="bottom" data-visible>Anchored below</sherpa-tooltip>
+  <sherpa-tooltip data-position="left"   data-visible>Anchored left</sherpa-tooltip>
+  <sherpa-tooltip data-position="right"  data-visible>Anchored right</sherpa-tooltip>
+</template>
+
+<template data-label="Multi-line content" data-description="Tooltips wrap long content up to a max width and keep their arrow centred on the trigger." data-layout="block">
+  <sherpa-tooltip data-position="top" data-visible style="max-width: 280px;">
+    Reassign all unassigned devices in the EU region to the new gateway pool. This cannot be undone.
+  </sherpa-tooltip>
+</template>
+
+<template data-label="Imperative API on an icon button" data-description="SherpaTooltip.show(target, text) is the common way to attach a tooltip to a control with no visible label." data-layout="block" data-setup="tooltip-icon-btn">
+  <sherpa-button data-variant="secondary" data-type="icon" data-icon-start="fa-solid fa-circle-info" aria-label="More information"></sherpa-button>
+</template>
+
+<template data-label="Imperative API on a text button" data-description="Hover or focus to see the tooltip appear via the imperative API." data-layout="block" data-setup="tooltip-text-btn">
+  <sherpa-button data-variant="secondary" data-label="Sync now" data-icon-start="fa-solid fa-rotate"></sherpa-button>
+</template>

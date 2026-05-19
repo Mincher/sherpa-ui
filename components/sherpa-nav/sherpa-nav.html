@@ -289,8 +289,24 @@
 
   <!-- Footer -->
   <footer class="nav-footer">
-    <!-- Promo (hidden by default — shown when alternate template provides one) -->
-    <sherpa-nav-promo hidden></sherpa-nav-promo>
+    <!-- Promo (hidden by default — populated via host data-promo-* attrs or setPromoConfig()) -->
+    <div class="nav-promo" hidden>
+      <div class="promo-indicator"></div>
+      <div class="promo-content">
+        <span class="promo-title"></span>
+        <span class="promo-message"
+          ><span class="promo-text"></span> <span class="promo-link"></span
+        ></span>
+      </div>
+      <sherpa-button
+        class="promo-close"
+        data-variant="tertiary"
+        data-size="small"
+        data-icon-start="&#xf00d;"
+        title="Dismiss"
+        aria-label="Dismiss notification"
+      ></sherpa-button>
+    </div>
 
     <!-- Settings -->
     <sherpa-nav-item

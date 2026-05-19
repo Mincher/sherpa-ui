@@ -1,0 +1,23 @@
+<!--
+  sherpa-menu-item — Live examples.
+-->
+<template data-label="Default" data-layout="col">
+  <sherpa-menu-item data-icon="fa-solid fa-pen-to-square" data-action="rename">Rename</sherpa-menu-item>
+  <sherpa-menu-item data-icon="fa-solid fa-copy"          data-action="duplicate" data-description="Make a copy in the same workspace">Duplicate</sherpa-menu-item>
+  <sherpa-menu-item data-icon="fa-solid fa-trash"         data-action="delete" data-variant="critical">Delete</sherpa-menu-item>
+</template>
+
+<template data-label="Types" data-layout="col">
+  <sherpa-menu-item data-type="checkbox" checked>Checkbox</sherpa-menu-item>
+  <sherpa-menu-item data-type="radio" name="ex" value="a" checked>Radio</sherpa-menu-item>
+  <sherpa-menu-item data-type="toggle" checked>Toggle</sherpa-menu-item>
+  <sherpa-menu-item data-type="heading">Heading</sherpa-menu-item>
+</template>
+
+<template data-label="With submenu indicator" data-layout="col">
+  <sherpa-menu-item data-icon="fa-solid fa-share" data-has-submenu>Share</sherpa-menu-item>
+</template>
+
+<template data-label="Disabled" data-layout="col">
+  <sherpa-menu-item data-icon="fa-solid fa-trash" disabled>Delete (no permission)</sherpa-menu-item>
+</template>

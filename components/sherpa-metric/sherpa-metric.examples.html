@@ -1,0 +1,30 @@
+<!--
+  sherpa-metric — Live examples.
+-->
+<template data-label="KPI cards">
+  <sherpa-metric data-label="Total devices" value="1,284"  data-trend="up"   data-delta="+12%"></sherpa-metric>
+  <sherpa-metric data-label="Uptime"        value="99.97%" data-trend="flat" data-status="success"></sherpa-metric>
+  <sherpa-metric data-label="Open alerts"   value="7"      data-trend="up"   data-status="warning"></sherpa-metric>
+</template>
+
+<template data-label="Trend directions">
+  <sherpa-metric data-label="Revenue"  value="$48.2k" data-trend="up"   data-delta="+8.4%"></sherpa-metric>
+  <sherpa-metric data-label="Churn"    value="2.1%"   data-trend="down" data-delta="-0.3 pp"></sherpa-metric>
+  <sherpa-metric data-label="Sessions" value="12,400" data-trend="flat" data-delta="0%"></sherpa-metric>
+</template>
+
+<template data-label="Status variants">
+  <sherpa-metric data-label="Healthy" value="312" data-status="success"></sherpa-metric>
+  <sherpa-metric data-label="At risk" value="14"  data-status="warning"></sherpa-metric>
+  <sherpa-metric data-label="Failing" value="3"   data-status="critical"></sherpa-metric>
+  <sherpa-metric data-label="Urgent"  value="1"   data-status="urgent"></sherpa-metric>
+</template>
+
+<template data-label="Inside containers" data-layout="block">
+  <sherpa-container data-variant="resizable" data-col-span="4" style="max-width: 320px;">
+    <sherpa-container-header data-title="Devices online"></sherpa-container-header>
+    <div style="padding: 0 16px 16px;">
+      <sherpa-metric data-label="Devices online" value="1,284" data-trend="up" data-delta="+12 since yesterday"></sherpa-metric>
+    </div>
+  </sherpa-container>
+</template>

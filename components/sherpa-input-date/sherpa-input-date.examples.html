@@ -1,0 +1,33 @@
+<!--
+  sherpa-input-date — Live examples.
+-->
+<template data-label="Default" data-description="Native date picker with a friendly label.">
+  <sherpa-input-date data-label="Start date" value="2026-05-18"></sherpa-input-date>
+</template>
+
+<template data-label="Bounded range" data-description="min and max constrain selectable dates and surface in browser validation.">
+  <sherpa-input-date data-label="Delivery date" value="2026-06-01" min="2026-05-18" max="2026-12-31" data-helper="Must be within the next six months."></sherpa-input-date>
+</template>
+
+<template data-label="Required" data-description="required triggers form validation when the field is empty.">
+  <sherpa-input-date data-label="Birth date" required></sherpa-input-date>
+</template>
+
+<template data-label="Validation error" data-description="data-status=&quot;critical&quot; + data-helper renders an inline error.">
+  <sherpa-input-date data-label="Renewal date" value="2024-01-01" data-status="critical" data-helper="Renewal date must be in the future."></sherpa-input-date>
+</template>
+
+<template data-label="In a form" data-description="Compose with sherpa-input-text and sherpa-button for a realistic scheduling form." data-layout="block">
+  <sherpa-container data-variant="fit" style="max-width: 480px;">
+    <sherpa-container-header slot="header" data-title="Schedule maintenance" data-description="Pick a date and assign an owner."></sherpa-container-header>
+    <div slot="body" style="display: grid; gap: var(--sherpa-space-default); padding: var(--sherpa-space-default);">
+      <sherpa-input-date data-label="Maintenance date" value="2026-06-15" min="2026-05-18" required></sherpa-input-date>
+      <sherpa-input-text data-label="Owner" value="sre-oncall@acme.io" required></sherpa-input-text>
+      <sherpa-input-text data-label="Change ticket" placeholder="CHG-XXXX"></sherpa-input-text>
+    </div>
+    <div slot="footer" style="display: flex; gap: var(--sherpa-space-sm); justify-content: flex-end; padding: var(--sherpa-space-default);">
+      <sherpa-button data-variant="tertiary" data-label="Cancel"></sherpa-button>
+      <sherpa-button data-variant="primary" data-label="Schedule"></sherpa-button>
+    </div>
+  </sherpa-container>
+</template>

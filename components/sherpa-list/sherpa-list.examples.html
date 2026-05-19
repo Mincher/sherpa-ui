@@ -1,0 +1,28 @@
+<!--
+  sherpa-list — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-list.examples.js
+-->
+<template data-label="Divided list with icons" data-layout="block">
+  <sherpa-list data-variant="divided">
+    <sherpa-list-item data-label="Dashboard" data-icon="fa-solid fa-chart-pie"   data-interactive></sherpa-list-item>
+    <sherpa-list-item data-label="Devices"   data-description="24 online" data-icon="fa-solid fa-server"   data-interactive></sherpa-list-item>
+    <sherpa-list-item data-label="Alerts"    data-description="3 unread"  data-icon="fa-solid fa-bell"     data-interactive></sherpa-list-item>
+    <sherpa-list-item data-label="Reports"   data-icon="fa-solid fa-file-lines" data-interactive></sherpa-list-item>
+    <sherpa-list-item data-label="Settings"  data-icon="fa-solid fa-gear"       data-interactive></sherpa-list-item>
+  </sherpa-list>
+</template>
+
+<template data-label="Bordered list" data-layout="block">
+  <sherpa-list data-variant="bordered" data-heading="Recent events">
+    <sherpa-list-item data-label="Deployment succeeded"     data-description="v2.4.1 — 2 mins ago"><sherpa-tag slot="trailing" data-status="success">Success</sherpa-tag></sherpa-list-item>
+    <sherpa-list-item data-label="High CPU usage detected"  data-description="web-01 — 12 mins ago"><sherpa-tag slot="trailing" data-status="warning">Warning</sherpa-tag></sherpa-list-item>
+    <sherpa-list-item data-label="Database backup complete" data-description="prod-db — 1 hour ago"><sherpa-tag slot="trailing" data-status="info">Info</sherpa-tag></sherpa-list-item>
+    <sherpa-list-item data-label="SSL certificate expiring" data-description="api.example.com — 5d"><sherpa-tag slot="trailing" data-status="critical">Critical</sherpa-tag></sherpa-list-item>
+  </sherpa-list>
+</template>

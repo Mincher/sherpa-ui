@@ -1,0 +1,36 @@
+<!--
+  sherpa-switch — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-switch.examples.js
+-->
+<template data-label="On and off" data-layout="col">
+  <label style="display:flex;align-items:center;gap:12px;"><sherpa-switch></sherpa-switch>Enable notifications</label>
+  <label style="display:flex;align-items:center;gap:12px;"><sherpa-switch data-state="on"></sherpa-switch>Already enabled</label>
+</template>
+
+<template data-label="Disabled" data-layout="col">
+  <label style="display:flex;align-items:center;gap:12px;"><sherpa-switch disabled></sherpa-switch>Off (disabled)</label>
+  <label style="display:flex;align-items:center;gap:12px;"><sherpa-switch data-state="on" disabled></sherpa-switch>On (disabled)</label>
+</template>
+
+<template data-label="With description" data-layout="col">
+  <label style="display:flex;align-items:flex-start;gap:12px;">
+    <sherpa-switch></sherpa-switch>
+    <span style="display:flex;flex-direction:column;">
+      <strong>Email digest</strong>
+      <small>Weekly summary of activity in your account.</small>
+    </span>
+  </label>
+  <label style="display:flex;align-items:flex-start;gap:12px;">
+    <sherpa-switch data-state="on"></sherpa-switch>
+    <span style="display:flex;flex-direction:column;">
+      <strong>Two-factor auth</strong>
+      <small>Require a code from your authenticator app on sign-in.</small>
+    </span>
+  </label>
+</template>

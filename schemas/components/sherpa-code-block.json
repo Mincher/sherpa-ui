@@ -1,0 +1,142 @@
+{
+  "tagName": "sherpa-code-block",
+  "description": "Syntax-highlighted, copyable code display with optional line numbers. Uses Prism.js (v1.29+) for syntax highlighting. Supports auto-language detection from content inspection. Emits code-copied event on clipboard success.",
+  "category": "utility",
+  "tier": 5,
+  "group": "core",
+  "baseClass": "SherpaElement",
+  "attributes": [
+    {
+      "name": "data-language",
+      "type": "enum",
+      "description": "auto | html | css | js | jsx | tsx | json | yaml | bash | python | java | go | rust | sql",
+      "enumValues": [
+        "auto",
+        "html",
+        "css",
+        "js",
+        "jsx",
+        "tsx",
+        "json",
+        "yaml",
+        "bash",
+        "python",
+        "java",
+        "go",
+        "rust",
+        "sql"
+      ]
+    },
+    {
+      "name": "data-line-numbers",
+      "type": "boolean",
+      "description": "Show line numbers (Prism plugin)"
+    },
+    {
+      "name": "data-line-start",
+      "type": "number",
+      "description": "Starting line number for snippet context",
+      "default": 1
+    },
+    {
+      "name": "data-max-height",
+      "type": "string",
+      "description": "Max height before scrollable (e.g., \"300px\")"
+    },
+    {
+      "name": "data-copy-button-label",
+      "type": "string",
+      "description": "Button text (default: \"Copy code\")"
+    },
+    {
+      "name": "data-copy-toast-message",
+      "type": "string",
+      "description": "Toast message (default: \"Copied to clipboard!\")"
+    },
+    {
+      "name": "data-theme",
+      "type": "enum",
+      "description": "light | dark | auto (inherits from page mode)",
+      "default": "auto",
+      "enumValues": [
+        "light",
+        "dark",
+        "auto"
+      ]
+    },
+    {
+      "name": "data-supported-languages",
+      "type": "string",
+      "description": "Read-only: comma-separated supported langs"
+    },
+    {
+      "name": "data-highlight-error",
+      "type": "string",
+      "description": "Read-only: error message if highlighting failed"
+    }
+  ],
+  "slots": [],
+  "events": [
+    {
+      "name": "code-copied",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "code-highlight-error",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "code-language-detected",
+      "description": "",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    }
+  ],
+  "methods": [
+    {
+      "name": "highlightCode(code, language)",
+      "description": "",
+      "params": [
+        {
+          "name": "code",
+          "type": "any"
+        },
+        {
+          "name": "language",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "reloadHighlighter()",
+      "description": ""
+    }
+  ],
+  "properties": [
+    {
+      "name": "supportedLanguages",
+      "type": "string",
+      "description": "Read-only: comma-separated list of supported languages",
+      "readonly": true
+    },
+    {
+      "name": "highlightError",
+      "type": "string|null",
+      "description": "Read-only: error message if highlighting failed",
+      "readonly": true
+    },
+    {
+      "name": "detectedLanguage",
+      "type": "string|null",
+      "description": "Read-only: detected language after rendering",
+      "readonly": true
+    }
+  ]
+}

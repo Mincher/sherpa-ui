@@ -1,0 +1,42 @@
+<!--
+  sherpa-button — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-button.examples.js
+-->
+<template data-label="Variants" data-description="Four variants covering the full action hierarchy from primary CTA to ghost.">
+  <sherpa-button data-variant="primary"          data-label="Primary"></sherpa-button>
+  <sherpa-button data-variant="secondary"        data-label="Secondary"></sherpa-button>
+  <sherpa-button data-variant="tertiary"         data-label="Tertiary"></sherpa-button>
+  <sherpa-button data-variant="tertiary-on-color" data-label="On Color"></sherpa-button>
+</template>
+
+<template data-label="Sizes">
+  <sherpa-button data-variant="primary" data-size="large"   data-label="Large"></sherpa-button>
+  <sherpa-button data-variant="primary" data-size="base"    data-label="Base"></sherpa-button>
+  <sherpa-button data-variant="primary" data-size="small"   data-label="Small"></sherpa-button>
+  <sherpa-button data-variant="primary" data-size="x-small" data-label="X-Small"></sherpa-button>
+  <sherpa-button data-variant="primary" data-size="2x-small" data-label="2X-Small"></sherpa-button>
+</template>
+
+<template data-label="With icons">
+  <sherpa-button data-variant="primary"   data-label="Add item"  data-icon-start="fa-solid fa-plus"></sherpa-button>
+  <sherpa-button data-variant="secondary"  data-label="Download"  data-icon-end="fa-solid fa-download"></sherpa-button>
+  <sherpa-button data-variant="tertiary"   data-type="icon"       data-icon-start="fa-solid fa-ellipsis"></sherpa-button>
+</template>
+
+<template data-label="Disabled">
+  <sherpa-button data-variant="primary"   data-label="Primary"   disabled></sherpa-button>
+  <sherpa-button data-variant="secondary"  data-label="Secondary" disabled></sherpa-button>
+  <sherpa-button data-variant="tertiary"   data-label="Tertiary"  disabled></sherpa-button>
+</template>
+
+<template data-label="Status" data-description="Apply data-status to drive status colour tokens on the button.">
+  <sherpa-button data-variant="primary" data-label="Critical" data-status="critical"></sherpa-button>
+  <sherpa-button data-variant="primary" data-label="Warning"  data-status="warning"></sherpa-button>
+  <sherpa-button data-variant="primary" data-label="Success"  data-status="success"></sherpa-button>
+</template>

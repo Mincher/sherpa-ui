@@ -1,0 +1,22 @@
+<!--
+  sherpa-nav-section — Live examples.
+-->
+<template data-label="Default" data-description="A nav-section groups a heading and a list of nav items." data-layout="block">
+  <sherpa-nav-section data-heading="Workspaces" data-active-id="prod"
+    data-sections='[
+      {"id":"prod","label":"Production","icon":"fa-solid fa-server"},
+      {"id":"staging","label":"Staging","icon":"fa-solid fa-flask"},
+      {"id":"dev","label":"Development","icon":"fa-solid fa-code"}
+    ]'>
+  </sherpa-nav-section>
+</template>
+
+<template data-label="With back button" data-layout="block">
+  <sherpa-nav-section data-heading="Acme Corp" data-show-back data-active-id="devices"
+    data-sections='[
+      {"id":"overview","label":"Overview","icon":"fa-solid fa-house"},
+      {"id":"devices","label":"Devices","icon":"fa-solid fa-microchip","badge":"284"},
+      {"id":"users","label":"Users","icon":"fa-solid fa-users"}
+    ]'>
+  </sherpa-nav-section>
+</template>

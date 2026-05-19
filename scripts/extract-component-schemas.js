@@ -37,7 +37,6 @@ const GROUP_MAP = {
   "sherpa-dialog":              "layout",
   "sherpa-nav":                 "navigation",
   "sherpa-nav-item":            "navigation",
-  "sherpa-nav-promo":           "navigation",
   "sherpa-breadcrumbs":         "navigation",
   "sherpa-menu":                "navigation",
   "sherpa-menu-item":           "navigation",
@@ -93,11 +92,15 @@ const VALID_CATEGORIES = new Set([
   "overlay",
   "media",
   "data",
+  "utility",
 ]);
 
 /* ── Composition tiers (see docs/COMPONENT-CATEGORIES.md §4) ──
  * A slot may host children whose tier number is >= the host's tier
- * (i.e. equal-or-deeper in the application structure). */
+ * (i.e. equal-or-deeper in the application structure).
+ *
+ * Tier 5 (`utility`) is reserved for docs-site / developer tooling
+ * components that are not part of the public application UI taxonomy. */
 const ROLE_TIERS = Object.freeze({
   shell:     1,
   nav:       1,
@@ -110,10 +113,37 @@ const ROLE_TIERS = Object.freeze({
   feedback:  4,
   media:     4,
   data:      4,
+  utility:   5,
 });
+
+/* ── Role display metadata (docs sidebar + home grid) ──
+ * Listed in tier order (1 → 4). Edit alongside ROLE_TIERS when adding
+ * a new role per docs/COMPONENT-CATEGORIES.md §6. */
+const ROLE_META = [
+  { id: "shell",     label: "Shell",      icon: "fa-solid fa-window-maximize" },
+  { id: "nav",       label: "Navigation", icon: "fa-solid fa-bars" },
+  { id: "container", label: "Containers", icon: "fa-solid fa-table-columns" },
+  { id: "overlay",   label: "Overlays",   icon: "fa-solid fa-clone" },
+  { id: "content",   label: "Content",    icon: "fa-solid fa-layer-group" },
+  { id: "control",   label: "Controls",   icon: "fa-solid fa-hand-pointer" },
+  { id: "input",     label: "Inputs",     icon: "fa-solid fa-keyboard" },
+  { id: "display",   label: "Displays",   icon: "fa-solid fa-eye" },
+  { id: "feedback",  label: "Feedback",   icon: "fa-solid fa-bell" },
+  { id: "media",     label: "Media",      icon: "fa-solid fa-chart-bar" },
+  { id: "data",      label: "Data",       icon: "fa-solid fa-table" },
+  { id: "utility",   label: "Utilities",  icon: "fa-solid fa-screwdriver-wrench" },
+];
 
 function tierOf(role) {
   return ROLE_TIERS[role] ?? null;
+}
+
+function prettyLabel(tag) {
+  return tag
+    .replace(/^sherpa-/, "")
+    .split("-")
+    .map((p) => p[0].toUpperCase() + p.slice(1))
+    .join(" ");
 }
 
 /* ── Helpers ───────────────────────────────────────────────────── */
@@ -482,6 +512,96 @@ function parseDefault(val, type) {
   return val;
 }
 
+/* ── Base-class / mixin attribute resolution ───────────────────── */
+
+/**
+ * Resolve every attribute (and slot/event) contributed by base classes and
+ * mixins in a component's `extends` chain.
+ *
+ * We walk the JS source's `class Foo extends Expr { ... }` clause, pull every
+ * capitalised identifier from `Expr` (covers `Base`, `Mixin(Base)`,
+ * `M1(M2(Base))`, etc.), resolve each identifier via its matching `import`
+ * statement, then recursively extract:
+ *   • JSDoc `@attr` tags
+ *   • `observedAttributes` quoted strings
+ *
+ * Returns a Map<attrName, { name, type, description, inherited }> so callers
+ * can merge inherited attrs without overwriting the component's own entries.
+ */
+function extractInheritedAttrs(jsPath, visited = new Set()) {
+  const inherited = new Map();
+  if (!fs.existsSync(jsPath) || visited.has(jsPath)) return inherited;
+  visited.add(jsPath);
+
+  const src = fs.readFileSync(jsPath, "utf8");
+
+  // 1) Find the class declaration and its extends expression
+  const ext = src.match(/class\s+\w+\s+extends\s+([\w()\s,]+?)\s*\{/);
+  if (!ext) return inherited;
+
+  // 2) Pull every capitalised identifier from the expression
+  const idents = [...new Set(ext[1].match(/\b[A-Z]\w*/g) || [])];
+
+  for (const ident of idents) {
+    // 3) Resolve the identifier to a source file via its import
+    const impRe = new RegExp(
+      `import\\s*\\{[^}]*\\b${ident}\\b[^}]*\\}\\s*from\\s*['"]([^'"]+)['"]`
+    );
+    const imp = src.match(impRe);
+    if (!imp) continue;
+
+    let basePath;
+    try {
+      basePath = new URL(imp[1], "file://" + jsPath).pathname;
+    } catch {
+      continue;
+    }
+    if (!fs.existsSync(basePath)) continue;
+
+    const baseSrc = fs.readFileSync(basePath, "utf8");
+
+    // 3a) @attr JSDoc tags in the base file
+    const baseJsdoc = extractJSDoc(baseSrc);
+    if (baseJsdoc) {
+      const baseLines = jsdocLines(baseJsdoc);
+      for (const raw of baseLines) {
+        const line = raw.trim();
+        if (line.startsWith("@attr ")) {
+          const attr = parseAttr(line);
+          if (attr?.name && !inherited.has(attr.name)) {
+            inherited.set(attr.name, { ...attr, inherited: ident });
+          }
+        }
+      }
+    }
+
+    // 3b) Bare observedAttributes strings (fallback when @attr not present)
+    const obsBlocks = baseSrc.matchAll(
+      /observedAttributes\s*\(\s*\)\s*\{[\s\S]*?return\s*\[([\s\S]*?)\]/g
+    );
+    for (const ob of obsBlocks) {
+      for (const m of ob[1].matchAll(/['"]([a-z][\w-]*)['"]/g)) {
+        const name = m[1];
+        if (!inherited.has(name)) {
+          inherited.set(name, {
+            name,
+            type: name.startsWith("data-") ? "string" : "string",
+            description: "",
+            inherited: ident,
+          });
+        }
+      }
+    }
+
+    // 4) Recurse — the base class may itself extend / wrap something
+    for (const [k, v] of extractInheritedAttrs(basePath, visited)) {
+      if (!inherited.has(k)) inherited.set(k, v);
+    }
+  }
+
+  return inherited;
+}
+
 /* ── Discovery ─────────────────────────────────────────────────── */
 
 /** Find all sherpa-* component directories under components/ */
@@ -529,6 +649,18 @@ function main() {
       console.warn(`  ⚠ ${comp.name}: No @element tag found, skipping`);
       errorCount++;
       continue;
+    }
+
+    // Merge attributes inherited from base classes + mixins so the
+    // emitted schema reflects the FULL public attribute surface, not
+    // just the attrs the subclass declares directly. Crucial for the
+    // MCP server + docs / validators that read these schemas.
+    const inherited = extractInheritedAttrs(comp.jsPath);
+    const ownNames = new Set(api.attributes.map((a) => a.name));
+    for (const [name, attr] of inherited) {
+      if (!ownNames.has(name)) {
+        api.attributes.push(attr);
+      }
     }
 
     // Drift check: every attribute in observedAttributes should also have an
@@ -681,11 +813,163 @@ function main() {
     "}\n";
   fs.writeFileSync(categoriesModulePath, categoriesModule);
 
+  // ── Generate docs/nav.html ────────────────────────────────────────
+  // Static nav template for the docs shell, grouped by role (tier order).
+  const navPath = path.join(ROOT, "docs", "nav.html");
+  writeDocsNav(navPath, categoryMap);
+
   console.log(`\nDone: ${index.length} schemas written to schemas/components/`);
   console.log(
     `      ${Object.keys(categoryMap).length} components categorised → components/utilities/component-categories.js`
   );
+  console.log(`      docs/nav.html regenerated`);
   if (errorCount) console.log(`  ${errorCount} components skipped due to errors`);
+}
+
+/**
+ * Emit docs/nav.html from the tag→role map, grouped by role in tier order.
+ * Each role becomes one <details> section under .nav-sections, with one
+ * <sherpa-nav-item data-variant="child"> per component sorted alphabetically.
+ */
+function writeDocsNav(outPath, categoryMap) {
+  // Child components whose docs are merged into a parent's page. Mirror of
+  // MERGED_CHILDREN in docs/router.js — kept in sync by hand. Children remain
+  // in the schema index (for direct links + MCP) but are hidden from the
+  // sidebar so the parent's combined page is the canonical entry point.
+  const MERGED_CHILDREN = new Set([
+    "sherpa-nav-item",
+    "sherpa-nav-section",
+    "sherpa-node-header",
+    "sherpa-node-row",
+    "sherpa-node-socket",
+    "sherpa-list-item",
+  ]);
+
+  const byRole = new Map(ROLE_META.map((r) => [r.id, []]));
+  for (const [tag, role] of Object.entries(categoryMap)) {
+    if (MERGED_CHILDREN.has(tag)) continue;
+    if (!byRole.has(role)) byRole.set(role, []);
+    byRole.get(role).push(tag);
+  }
+  for (const list of byRole.values()) list.sort();
+
+  // Group roles by tier for visual separators (nav-group blocks).
+  const tiers = new Map(); // tier → [{ id, label, icon, tags }]
+  for (const meta of ROLE_META) {
+    const tier = ROLE_TIERS[meta.id];
+    if (!tiers.has(tier)) tiers.set(tier, []);
+    tiers.get(tier).push({ ...meta, tags: byRole.get(meta.id) ?? [] });
+  }
+
+  const lines = [];
+  lines.push("<!--");
+  lines.push("  docs/nav.html — Navigation template for the Sherpa UI docs shell.");
+  lines.push("  Loaded by <sherpa-nav data-src=\"/docs/nav.html\"> via fetch().");
+  lines.push("");
+  lines.push("  GENERATED by scripts/extract-component-schemas.js — do not edit by hand.");
+  lines.push("  Sections are grouped by role (see docs/COMPONENT-CATEGORIES.md).");
+  lines.push("-->");
+  lines.push('<div class="sherpa-nav-root" data-pinned="false" data-mode="default" data-searchable>');
+  lines.push("");
+  lines.push('  <header class="nav-header">');
+  lines.push('    <div class="nav-toolbar">');
+  lines.push('      <svg class="nav-logo" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">');
+  lines.push('        <path d="M0 0H3.80301L12.9974 9.83439V13.9026H9.19381L4.59663 8.98333V13.9002H0V0ZM8.39098 4.91692H12.9876V0H8.39098V4.91692Z" fill="currentColor"/>');
+  lines.push('        <path fill-rule="evenodd" clip-rule="evenodd" d="M12.9974 9.83439H17.594V4.91689H8.40023L12.9974 9.83439Z" fill="#C046FF"/>');
+  lines.push("      </svg>");
+  lines.push('      <span class="nav-product-name text-heading-lg">Sherpa UI</span>');
+  lines.push('      <div class="nav-toolbar-actions">');
+  lines.push("        <sherpa-button");
+  lines.push('          class="nav-pin-btn"');
+  lines.push('          data-variant="tertiary"');
+  lines.push('          data-size="small"');
+  lines.push('          data-icon-start="&#xf08d;"');
+  lines.push('          title="Pin navigation"');
+  lines.push('          aria-label="Pin navigation"');
+  lines.push("        ></sherpa-button>");
+  lines.push("      </div>");
+  lines.push("    </div>");
+  lines.push("");
+  lines.push("    <!-- Search -->");
+  lines.push('    <div class="nav-search" role="search">');
+  lines.push("      <sherpa-nav-item");
+  lines.push('        class="nav-search-icon"');
+  lines.push('        data-nav-target="search"');
+  lines.push('        data-icon="fa-solid fa-magnifying-glass"');
+  lines.push('        tabindex="0"');
+  lines.push('        role="button"');
+  lines.push('        aria-label="Search"');
+  lines.push("        >Search</sherpa-nav-item");
+  lines.push("      >");
+  lines.push("      <sherpa-input-search");
+  lines.push('        class="nav-search-input"');
+  lines.push('        placeholder="Type here to filter…"');
+  lines.push('        aria-label="Filter navigation"');
+  lines.push("      ></sherpa-input-search>");
+  lines.push("    </div>");
+  lines.push("");
+  lines.push("    <sherpa-nav-item");
+  lines.push('      data-nav-target="home"');
+  lines.push('      data-item-id="/"');
+  lines.push('      data-icon="fa-solid fa-house"');
+  lines.push('      data-route="/"');
+  lines.push('      tabindex="0"');
+  lines.push('      role="button"');
+  lines.push('      aria-label="Home"');
+  lines.push("    >Home</sherpa-nav-item>");
+  lines.push("  </header>");
+  lines.push("");
+  lines.push('  <div class="nav-sections" role="tree">');
+
+  const sortedTiers = [...tiers.keys()].sort((a, b) => a - b);
+  for (const tier of sortedTiers) {
+    lines.push(`    <div class="nav-group" data-group-index="${tier}">`);
+    for (const role of tiers.get(tier)) {
+      if (!role.tags.length) continue;
+      lines.push(`      <details class="nav-section" data-section-id="${role.id}" open>`);
+      lines.push("        <summary>");
+      lines.push("          <sherpa-nav-item");
+      lines.push('            data-variant="section"');
+      lines.push(`            data-icon="${role.icon}"`);
+      lines.push('            tabindex="0"');
+      lines.push('            role="button"');
+      lines.push(`          >${escapeHtml(role.label)}</sherpa-nav-item>`);
+      lines.push("        </summary>");
+      for (const tag of role.tags) {
+        lines.push("        <sherpa-nav-item");
+        lines.push('          data-variant="child"');
+        lines.push(`          data-item-id="${tag}"`);
+        lines.push(`          data-route="/components/${tag}"`);
+        lines.push('          tabindex="0"');
+        lines.push('          role="button"');
+        lines.push(`        >${escapeHtml(prettyLabel(tag))}</sherpa-nav-item>`);
+      }
+      lines.push("      </details>");
+    }
+    lines.push("    </div>");
+  }
+
+  lines.push("  </div>");
+  lines.push("");
+  lines.push('  <template class="nav-item-tpl">');
+  lines.push('    <sherpa-nav-item data-variant="child" tabindex="0" role="button"></sherpa-nav-item>');
+  lines.push("  </template>");
+  lines.push('  <template class="badge-tpl">');
+  lines.push('    <sherpa-tag slot="badge" data-status="success"></sherpa-tag>');
+  lines.push("  </template>");
+  lines.push("");
+  lines.push("</div>");
+  lines.push("");
+
+  fs.writeFileSync(outPath, lines.join("\n"));
+}
+
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 main();

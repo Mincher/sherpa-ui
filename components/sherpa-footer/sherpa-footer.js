@@ -1,6 +1,6 @@
 /**
  * @element sherpa-footer
- * @category shell
+ * @category container
  * @description Reusable footer with multiple template variants.
  *   Template selected via data-type attribute.
  *

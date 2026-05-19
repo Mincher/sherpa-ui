@@ -1,0 +1,15 @@
+<!--
+  sherpa-file-upload — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+-->
+<template data-label="Default" data-layout="block">
+  <sherpa-file-upload data-label="Profile photo" data-accept="image/*" data-helper="JPG or PNG, max 5 MB." data-max-size="5242880"></sherpa-file-upload>
+</template>
+
+<template data-label="Multiple files" data-layout="block">
+  <sherpa-file-upload data-label="Attach files" data-multiple data-max-files="5" data-helper="Up to 5 files, any type."></sherpa-file-upload>
+</template>
+
+<template data-label="Disabled" data-layout="block">
+  <sherpa-file-upload data-label="Locked uploader" disabled></sherpa-file-upload>
+</template>

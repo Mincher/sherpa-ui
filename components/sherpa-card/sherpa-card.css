@@ -153,9 +153,6 @@
   
       &:empty { display: none; }
 }
-:host([data-has-header]) .header-labels {
-  display: none;
-}
 :host .card-content {
   flex: 1;
       padding: var(--sherpa-space-sm, 12px);

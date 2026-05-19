@@ -1,0 +1,157 @@
+<!--
+  sherpa-container — Live examples.
+  Each example composes a real header (sherpa-container-header), body content
+  (real subcomponents), and a footer row appropriate to the container's purpose.
+  Footers use a plain <div> as the last child — sherpa-container has a single
+  default slot and any trailing element naturally becomes the footer band.
+-->
+
+<template data-label="Default (fit) — detail card" data-description="Header + key/value body + footer action. Typical 'overview' card with no fixed height." data-layout="block">
+  <sherpa-container style="max-width: 480px;">
+    <sherpa-container-header
+      data-title="Device details"
+      data-description="api-edge-04 — eu-west-1"
+    >
+      <sherpa-tag slot="actions" data-status="success">Online</sherpa-tag>
+    </sherpa-container-header>
+    <sherpa-key-value-list data-striped style="padding: 0 16px;">
+      <dt>Status</dt><dd>Online</dd>
+      <dt>Region</dt><dd>EU (Frankfurt)</dd>
+      <dt>Last seen</dt><dd>2 minutes ago</dd>
+      <dt>IP address</dt><dd>192.0.2.42</dd>
+    </sherpa-key-value-list>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+      <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-subtle);">Updated 2 min ago</span>
+      <sherpa-button data-variant="tertiary" data-size="small" data-label="View device" data-icon-end="&#xf061;"></sherpa-button>
+    </div>
+  </sherpa-container>
+</template>
+
+<template data-label="Resizable — KPI card" data-description="Resizable variant with col/row span. Body is a single sherpa-metric; footer shows trend context." data-layout="block">
+  <sherpa-container data-variant="resizable" data-col-span="4" data-row-span="2" style="max-width: 360px;">
+    <sherpa-container-header
+      data-title="Devices online"
+      data-description="Last 24 hours"
+      data-menu-button
+    ></sherpa-container-header>
+    <div style="padding: 0 16px 16px;">
+      <sherpa-metric data-label="Devices online" value="1,284" data-trend="up" data-delta="+12% vs yesterday" data-status="success"></sherpa-metric>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+      <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-subtle);">12 added today</span>
+      <sherpa-button data-variant="tertiary" data-size="small" data-label="Open dashboard" data-icon-end="&#xf08e;"></sherpa-button>
+    </div>
+  </sherpa-container>
+</template>
+
+<template data-label="Fill — list card with pagination" data-description="Fill variant occupies the full height of its parent. Body is a divided sherpa-list; footer is sherpa-pagination." data-layout="block">
+  <sherpa-container data-variant="fill" style="max-width: 560px; height: 420px;">
+    <sherpa-container-header
+      data-title="Recent events"
+      data-description="Across all environments"
+    >
+      <sherpa-tag slot="actions" data-variant="secondary">24 new</sherpa-tag>
+      <sherpa-button slot="actions" data-variant="tertiary" data-size="small" data-icon-start="&#xf0b0;" data-label="Filter"></sherpa-button>
+    </sherpa-container-header>
+    <sherpa-list data-variant="divided" style="flex: 1; overflow: auto;">
+      <sherpa-list-item data-label="Deployment succeeded"     data-description="v2.4.1 — 2 mins ago" data-icon="fa-solid fa-rocket"      data-interactive><sherpa-tag slot="trailing" data-status="success">Success</sherpa-tag></sherpa-list-item>
+      <sherpa-list-item data-label="High CPU usage"            data-description="web-01 — 12 mins ago" data-icon="fa-solid fa-microchip"   data-interactive><sherpa-tag slot="trailing" data-status="warning">Warning</sherpa-tag></sherpa-list-item>
+      <sherpa-list-item data-label="Database backup complete"  data-description="prod-db — 1 hour ago" data-icon="fa-solid fa-database"    data-interactive><sherpa-tag slot="trailing" data-status="info">Info</sherpa-tag></sherpa-list-item>
+      <sherpa-list-item data-label="SSL certificate expiring"  data-description="api.example.com — 5d" data-icon="fa-solid fa-lock"        data-interactive><sherpa-tag slot="trailing" data-status="critical">Critical</sherpa-tag></sherpa-list-item>
+      <sherpa-list-item data-label="New device registered"     data-description="edge-07 — 3 hours ago" data-icon="fa-solid fa-circle-plus" data-interactive><sherpa-tag slot="trailing" data-status="info">Info</sherpa-tag></sherpa-list-item>
+    </sherpa-list>
+    <sherpa-pagination data-total-rows="120" data-page="1" data-page-size="5" data-density="compact" style="border-top: 1px solid var(--sherpa-border-container-subtle-default);"></sherpa-pagination>
+  </sherpa-container>
+</template>
+
+<template data-label="Worksheet — chart card with summary footer" data-description="Worksheet variant for dashboard composition. Body is a chart; footer summarises the data shown." data-layout="block">
+  <sherpa-container data-variant="worksheet" style="max-width: 520px;">
+    <sherpa-container-header
+      data-title="Requests per minute"
+      data-description="Last 60 minutes"
+      data-menu-button
+    >
+      <sherpa-button slot="actions" data-variant="tertiary" data-size="small" data-icon-start="&#xf019;" data-label="Export"></sherpa-button>
+    </sherpa-container-header>
+    <div style="padding: 0 16px 16px;">
+      <sherpa-barchart style="height: 220px;"></sherpa-barchart>
+    </div>
+    <sherpa-key-value-list data-layout="horizontal" style="padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+      <dt>Peak</dt><dd>1,842 rpm</dd>
+      <dt>Avg</dt><dd>1,210 rpm</dd>
+      <dt>Errors</dt><dd>0.4%</dd>
+    </sherpa-key-value-list>
+  </sherpa-container>
+</template>
+
+<template data-label="State — loading" data-description="Loading overlay sits over the live header + body composition." data-layout="block">
+  <sherpa-container data-state="loading" style="max-width: 480px;">
+    <sherpa-container-header
+      data-title="Devices"
+      data-description="All devices in your account"
+    >
+      <sherpa-button slot="actions" data-variant="tertiary" data-size="small" data-icon-start="&#xf2f1;" data-label="Refresh"></sherpa-button>
+    </sherpa-container-header>
+    <sherpa-key-value-list style="padding: 0 16px;">
+      <dt>Total</dt><dd>—</dd>
+      <dt>Online</dt><dd>—</dd>
+      <dt>Offline</dt><dd>—</dd>
+    </sherpa-key-value-list>
+    <div style="display: flex; justify-content: flex-end; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+      <sherpa-button data-variant="tertiary" data-size="small" data-label="View all"></sherpa-button>
+    </div>
+  </sherpa-container>
+</template>
+
+<template data-label="State — empty" data-description="Empty state replaces the body; header stays visible so the user can add data." data-layout="block">
+  <sherpa-container data-state="empty" style="max-width: 480px; min-height: 280px;">
+    <sherpa-container-header
+      data-title="Devices"
+      data-description="Connect your first device to start monitoring"
+    >
+      <sherpa-button slot="actions" data-variant="primary" data-size="small" data-icon-start="&#x2b;" data-label="Add device"></sherpa-button>
+    </sherpa-container-header>
+    <sherpa-empty-state
+      slot="empty"
+      data-label="No devices yet"
+      data-description="Add your first device to get started."
+    >
+      <sherpa-button slot="actions" data-variant="primary" data-size="small" data-icon-start="&#x2b;" data-label="Add device"></sherpa-button>
+    </sherpa-empty-state>
+  </sherpa-container>
+</template>
+
+<template data-label="State — error" data-description="Error overlay with a retry action. Header still shows the section title." data-layout="block">
+  <sherpa-container data-state="error" style="max-width: 480px; min-height: 280px;">
+    <sherpa-container-header
+      data-title="Devices"
+      data-description="All devices in your account"
+    ></sherpa-container-header>
+    <sherpa-empty-state
+      slot="error"
+      data-label="Something went wrong"
+      data-description="We could not load the device list."
+      data-illustration="error"
+    >
+      <sherpa-button slot="actions" data-variant="secondary" data-size="small" data-icon-start="&#xf2f1;" data-label="Retry"></sherpa-button>
+    </sherpa-empty-state>
+  </sherpa-container>
+</template>
+
+<template data-label="Editable + menu — dashboard tile" data-description="Editable resizable card with drag handle and overflow menu. Body is a metric; footer offers a quick action." data-layout="block">
+  <sherpa-container data-variant="resizable" data-col-span="6" data-row-span="2" data-editable style="max-width: 420px;">
+    <sherpa-container-header
+      data-title="Active alerts"
+      data-description="Across all monitored services"
+      data-menu-button
+      data-drag-handle
+    ></sherpa-container-header>
+    <div style="padding: 0 16px 16px;">
+      <sherpa-metric data-label="Active alerts" value="7" data-trend="up" data-delta="+3 in last hour" data-status="warning"></sherpa-metric>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+      <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-subtle);">2 critical · 5 warnings</span>
+      <sherpa-button data-variant="tertiary" data-size="small" data-label="Triage alerts" data-icon-end="&#xf061;"></sherpa-button>
+    </div>
+  </sherpa-container>
+</template>

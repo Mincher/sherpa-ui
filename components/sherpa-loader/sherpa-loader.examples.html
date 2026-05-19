@@ -1,0 +1,24 @@
+<!--
+  sherpa-loader — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+  Attributes:
+    data-label       (required) example heading
+    data-description (optional) one-line summary
+    data-layout      (optional) row (default) | col | block
+    data-preview     (optional) "false" → hide live preview, show code only
+    data-setup       (optional) name of an exported setup fn from sherpa-loader.examples.js
+-->
+<template data-label="Sizes">
+  <sherpa-loader data-size="small"  data-label="Loading…"></sherpa-loader>
+  <sherpa-loader data-size="default" data-label="Loading…"></sherpa-loader>
+  <sherpa-loader data-size="large"  data-label="Loading…"></sherpa-loader>
+</template>
+
+<template data-label="Orientation">
+  <sherpa-loader data-orientation="horizontal" data-label="Fetching data…"></sherpa-loader>
+  <sherpa-loader data-orientation="vertical"   data-label="Fetching data…"></sherpa-loader>
+</template>
+
+<template data-label="Panel" data-description="data-panel renders the loader inside a bordered surface for use as a full-region loading state." data-layout="block">
+  <sherpa-loader data-panel data-label="Loading workspace…" style="height: 160px;"></sherpa-loader>
+</template>

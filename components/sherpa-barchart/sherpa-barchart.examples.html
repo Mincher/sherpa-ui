@@ -1,0 +1,23 @@
+<!--
+  sherpa-barchart — Live examples.
+  Data is supplied programmatically via setData() — see sherpa-barchart.examples.js.
+-->
+<template data-label="Vertical bars — Traffic by source" data-description="Default vertical orientation. Sherpa picks the axis based on label length and bar count." data-layout="block" data-setup="vertical-traffic">
+  <sherpa-barchart data-title="Sessions by source — last 7 days" data-orientation="vertical" style="height: 260px;"></sherpa-barchart>
+</template>
+
+<template data-label="Horizontal bars — Devices by region" data-description="Horizontal orientation keeps long category labels legible." data-layout="block" data-setup="horizontal-devices">
+  <sherpa-barchart data-title="Active devices by region" data-orientation="horizontal" data-sort-field="value" data-sort-direction="desc" style="height: 240px;"></sherpa-barchart>
+</template>
+
+<template data-label="Stacked — Revenue by region" data-description="Use data-stacked with data-segment-field to stack a second dimension per category." data-layout="block" data-setup="stacked-revenue">
+  <sherpa-barchart data-title="Monthly revenue by region" data-segment-field="region" data-stacked style="height: 280px;"></sherpa-barchart>
+</template>
+
+<template data-label="Sorted descending — Top campaigns" data-description="Bars sort by the value field; descending puts the best performers first." data-layout="block" data-setup="sorted-campaigns">
+  <sherpa-barchart data-title="Top campaigns by conversions" data-orientation="horizontal" data-sort-field="value" data-sort-direction="desc" style="height: 260px;"></sherpa-barchart>
+</template>
+
+<template data-label="Loading state" data-description="Display the loading skeleton while data is in flight." data-layout="block">
+  <sherpa-barchart data-title="Active alerts by service" data-loading style="height: 220px;"></sherpa-barchart>
+</template>

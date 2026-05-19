@@ -1,0 +1,31 @@
+<!--
+  sherpa-filter-bar — Live examples.
+-->
+<template data-label="Default" data-layout="block">
+  <sherpa-filter-bar
+    data-active='[{"field":"status","operator":"equals","value":"online"}]'
+    data-available-fields='[
+      {"name":"status","label":"Status","type":"enum","values":["online","offline","error"]},
+      {"name":"region","label":"Region","type":"enum","values":["EU","US","APAC"]},
+      {"name":"last_seen","label":"Last seen","type":"date"}
+    ]'>
+  </sherpa-filter-bar>
+</template>
+
+<template data-label="With preset filters" data-layout="block">
+  <sherpa-filter-bar
+    data-preset-filters='[{"label":"Online","filters":[{"field":"status","operator":"equals","value":"online"}]},{"label":"Errors","filters":[{"field":"status","operator":"equals","value":"error"}]}]'
+    data-available-fields='[
+      {"name":"status","label":"Status","type":"enum","values":["online","offline","error"]},
+      {"name":"region","label":"Region","type":"enum","values":["EU","US","APAC"]}
+    ]'>
+  </sherpa-filter-bar>
+</template>
+
+<template data-label="Compact density" data-layout="block">
+  <sherpa-filter-bar
+    data-density="compact"
+    data-active='[{"field":"region","operator":"equals","value":"EU"}]'
+    data-available-fields='[{"name":"region","label":"Region","type":"enum","values":["EU","US","APAC"]}]'>
+  </sherpa-filter-bar>
+</template>

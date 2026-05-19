@@ -26,7 +26,44 @@
   --_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 16px) * 2));
   --_label-weight: 500;
   --_indent: var(--sherpa-space-default, 20px);
-  color-scheme: dark;
+
+  /* ── Mode-invariant colour pin ─────────────────────────────────────
+     sherpa-nav is always rendered as a dark sidebar: dark surface with
+     white text/icons, regardless of `data-mode` (light / dark / hc).
+     We re-declare every mode-variable token consumed by the nav (and
+     its nested sherpa-nav-item) using fixed values. Direct declarations
+     on :host beat any inherited theme value, and they cascade into the
+     nav's shadow DOM AND into nested custom elements (sherpa-nav-item,
+     sherpa-tag) via custom-property inheritance — so the entire nav
+     subtree stays pinned.                                             */
+  color-scheme: dark only;
+
+  /* Surface — dark sidebar chrome */
+  --sherpa-surface-app-product-nav-bg:           var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-sub-bg:       var(--sherpa-color-neutral-1000);
+  --sherpa-surface-app-product-nav-hover:        var(--sherpa-color-neutral-900);
+  --sherpa-surface-app-product-nav-active:       var(--sherpa-color-brand-900);
+  --sherpa-surface-container-default:            var(--sherpa-color-neutral-1000);
+  --sherpa-surface-context-info-subtle-default:  var(--sherpa-color-neutral-900);
+
+  /* Text — always white */
+  --sherpa-text-default-heading:                 var(--sherpa-color-neutral-0);
+  --sherpa-text-default-body:                    var(--sherpa-color-neutral-0);
+  --sherpa-text-default-secondary:               var(--sherpa-color-neutral-400);
+  --sherpa-text-context-info-default:            var(--sherpa-color-neutral-0);
+
+  /* Icons — always white */
+  --sherpa-icon-context-default-heading:         var(--sherpa-color-neutral-0);
+  --sherpa-icon-context-error-default:           var(--sherpa-color-critical-400);
+  --sherpa-icon-context-success-default:         var(--sherpa-color-success-400);
+  --sherpa-icon-inactive-on-color:               var(--sherpa-color-neutral-400);
+
+  /* Borders */
+  --sherpa-border-context-error-default:         var(--sherpa-color-critical-400);
+  --sherpa-border-context-info-default:          var(--sherpa-color-neutral-0);
+  --sherpa-border-context-urgent-default:        var(--sherpa-color-urgent-400);
+  --sherpa-border-context-warning-default:       var(--sherpa-color-warning-400);
+
   container: sherpa-nav / inline-size;
   interpolate-size: allow-keywords;
   display: block;
@@ -34,10 +71,6 @@
   overflow: hidden;
   width: var(--_w-collapsed);
   background: var(--sherpa-surface-app-product-nav-bg, #ffffff);
-  /* nav-bg is neutral (neutral-0 / neutral-1000), not a saturated brand fill,
-             so use the mode-aware default heading colour rather than the always-white
-             on-color variant. The on-color tokens are only correct on saturated/strong
-             surfaces (e.g. sherpa-button primary, sherpa-tag color). */
   color: var(--sherpa-text-default-heading, #18191a);
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
@@ -262,7 +295,7 @@ summary {
    ══════════════════════════════════════════════════════════════════════ */
 
 .sherpa-nav-root[data-mode="edit"] {
-  & sherpa-nav-promo,
+  & .nav-promo,
   & .nav-header > :is(.nav-search, [data-nav-target="home"], .nav-divider),
   & .nav-footer [data-nav-target="settings"] {
     display: none;
@@ -407,7 +440,7 @@ summary {
 .nav-product-name,
 .nav-toolbar-actions,
 .nav-divider-label,
-sherpa-nav-promo {
+.nav-promo {
   display: none;
 }
 
@@ -423,8 +456,11 @@ sherpa-nav-promo {
   .nav-divider-label {
     display: inline;
   }
-  sherpa-nav-promo {
+  .nav-promo {
     display: flex;
+  }
+  .nav-promo[hidden] {
+    display: none;
   }
 
   .nav-search {
@@ -522,6 +558,50 @@ sherpa-nav-promo {
 }
 .nav-subsection > sherpa-nav-item:nth-of-type(6) {
   --_ripple-i: 6;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   NAV-PROMO — promotional callout in the footer.
+   Folded in from former sherpa-nav-promo element; rescoped to .nav-promo.
+   Host-level data-promo-* attributes drive the inner content via JS.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.nav-promo {
+  display: flex;
+  align-items: start;
+  gap: var(--sherpa-space-xs, 12px);
+  padding: var(--sherpa-space-xs, 12px) var(--sherpa-space-default, 20px);
+  margin: var(--sherpa-space-xs, 12px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-app-product-nav-promo-bg, var(--sherpa-surface-container-strong-default));
+}
+.nav-promo[data-dismissed] {
+  display: none !important;
+}
+.nav-promo .promo-indicator {
+  width: 4px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: var(--sherpa-icon-context-success-default, #048142);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+}
+.nav-promo .promo-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--sherpa-space-xs, 12px);
+}
+.nav-promo .promo-title {
+  font-weight: 600;
+}
+.nav-promo .promo-link {
+  color: var(--sherpa-text-primary-on-color, #d4d9ff);
+  font-weight: 600;
+  cursor: pointer;
+}
+.nav-promo .promo-link:empty,
+.nav-promo .promo-text:empty {
+  display: none;
 }
 
 /* Native [hidden] support */

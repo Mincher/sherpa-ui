@@ -14,7 +14,6 @@ export { stampViewTemplate } from "./utilities/view-templates.js";
 // Core layout components
 export * from "./sherpa-nav/sherpa-nav.js";
 export * from "./sherpa-nav-item/sherpa-nav-item.js";
-export * from "./sherpa-nav-promo/sherpa-nav-promo.js";
 export * from "./sherpa-view-header/sherpa-view-header.js";
 export * from "./sherpa-layout-grid/sherpa-layout-grid.js";
 export * from "./sherpa-layout-view/sherpa-layout-view.js";
@@ -77,7 +76,7 @@ export * from "./sherpa-prompt-composer/sherpa-prompt-composer.js";
 export * from "./sherpa-proposal-preview/sherpa-proposal-preview.js";
 export * from "./sherpa-proposal-op/sherpa-proposal-op.js";
 export * from "./sherpa-section-header/sherpa-section-header.js";
-export * from "./sherpa-section-nav/sherpa-section-nav.js";
+export * from "./sherpa-nav-section/sherpa-nav-section.js";
 export * from "./sherpa-stepper/sherpa-stepper.js";
 export * from "./sherpa-toast/sherpa-toast.js";
 
