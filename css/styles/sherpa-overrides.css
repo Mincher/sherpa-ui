@@ -94,6 +94,77 @@
     --sherpa-space-xs:       var(--sherpa-core-scale-150);
   }
 
+  /* ── Modern: native CSS if() (Chrome 137+) ──────────────────── */
+  @supports (color: if(style(--x: y): red; else: blue)) {
+    :where([data-density]) {
+      --sherpa-space-2xl: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-350);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-450);
+        else: var(--sherpa-core-scale-400)
+      );
+      --sherpa-space-2xs: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-25);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-100);
+        else: var(--sherpa-core-scale-50)
+      );
+      --sherpa-space-3xl: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-450);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-600);
+        else: var(--sherpa-core-scale-500)
+      );
+      --sherpa-space-3xs: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-25);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-50);
+        else: var(--sherpa-core-scale-25)
+      );
+      --sherpa-space-4xl: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-500);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-700);
+        else: var(--sherpa-core-scale-600)
+      );
+      --sherpa-space-5xl: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-600);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-800);
+        else: var(--sherpa-core-scale-700)
+      );
+      --sherpa-space-6xl: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-700);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-800);
+        else: var(--sherpa-core-scale-800)
+      );
+      --sherpa-space-default: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-150);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-250);
+        else: var(--sherpa-core-scale-200)
+      );
+      --sherpa-space-lg: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-200);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-300);
+        else: var(--sherpa-core-scale-250)
+      );
+      --sherpa-space-none: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-0);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-0);
+        else: var(--sherpa-core-scale-0)
+      );
+      --sherpa-space-sm: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-100);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-200);
+        else: var(--sherpa-core-scale-150)
+      );
+      --sherpa-space-xl: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-250);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-350);
+        else: var(--sherpa-core-scale-300)
+      );
+      --sherpa-space-xs: if(
+        style(--sherpa-density: compact):     var(--sherpa-core-scale-50);
+        style(--sherpa-density: comfortable): var(--sherpa-core-scale-150);
+        else: var(--sherpa-core-scale-100)
+      );
+    }
+  }
+
 } /* @layer density */
 
 
@@ -189,6 +260,132 @@
     --_status-icon:                        var(--sherpa-icon-context-urgent-on-color-subtle);
     --_status-icon-on-color:               var(--sherpa-icon-context-default-on-color-body);
     --_status-shadow:                      var(--sherpa-elevation-tint-urgent);
+  }
+
+  /* ── Modern: native CSS if() (Chrome 137+) ──────────────────── */
+  @supports (color: if(style(--x: y): red; else: blue)) {
+    :where([data-status]) {
+      --_status-border: if(
+        style(--sherpa-status: critical): var(--sherpa-border-context-error-default);
+        style(--sherpa-status: info    ): var(--sherpa-border-context-info-default);
+        style(--sherpa-status: success ): var(--sherpa-border-context-success-default);
+        style(--sherpa-status: warning ): var(--sherpa-border-context-warning-default);
+        style(--sherpa-status: urgent  ): var(--sherpa-border-context-urgent-default);
+        else: revert-layer
+      );
+      --_status-surface: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-control-default);
+        style(--sherpa-status: info    ): var(--sherpa-surface-control-default);
+        style(--sherpa-status: success ): var(--sherpa-surface-control-default);
+        style(--sherpa-status: warning ): var(--sherpa-surface-control-default);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-control-default);
+        else: revert-layer
+      );
+      --_status-surface-hover: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-control-hover);
+        style(--sherpa-status: info    ): var(--sherpa-surface-control-hover);
+        style(--sherpa-status: success ): var(--sherpa-surface-control-hover);
+        style(--sherpa-status: warning ): var(--sherpa-surface-control-hover);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-control-hover);
+        else: revert-layer
+      );
+      --_status-surface-down: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-control-down);
+        style(--sherpa-status: info    ): var(--sherpa-surface-control-down);
+        style(--sherpa-status: success ): var(--sherpa-surface-control-down);
+        style(--sherpa-status: warning ): var(--sherpa-surface-control-down);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-control-down);
+        else: revert-layer
+      );
+      --_status-surface-strong: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-context-error-strong-default);
+        style(--sherpa-status: info    ): var(--sherpa-surface-context-info-strong-default);
+        style(--sherpa-status: success ): var(--sherpa-surface-context-success-strong-default);
+        style(--sherpa-status: warning ): var(--sherpa-surface-context-warning-strong-default);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-context-urgent-strong-default);
+        else: revert-layer
+      );
+      --_status-surface-strong-hover: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-context-error-strong-hover);
+        style(--sherpa-status: info    ): var(--sherpa-surface-context-info-strong-hover);
+        style(--sherpa-status: success ): var(--sherpa-surface-context-success-strong-hover);
+        style(--sherpa-status: warning ): var(--sherpa-surface-context-warning-strong-hover);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-context-urgent-strong-hover);
+        else: revert-layer
+      );
+      --_status-surface-strong-down: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-context-error-strong-down);
+        style(--sherpa-status: info    ): var(--sherpa-surface-context-info-strong-down);
+        style(--sherpa-status: success ): var(--sherpa-surface-context-success-strong-down);
+        style(--sherpa-status: warning ): var(--sherpa-surface-context-warning-strong-down);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-context-urgent-strong-down);
+        else: revert-layer
+      );
+      --_status-surface-subtle: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-context-error-subtle-default);
+        style(--sherpa-status: info    ): var(--sherpa-surface-context-info-subtle-default);
+        style(--sherpa-status: success ): var(--sherpa-surface-context-success-subtle-default);
+        style(--sherpa-status: warning ): var(--sherpa-surface-context-warning-subtle-default);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-context-urgent-subtle-default);
+        else: revert-layer
+      );
+      --_status-surface-subtle-hover: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-context-error-subtle-hover);
+        style(--sherpa-status: info    ): var(--sherpa-surface-context-info-subtle-hover);
+        style(--sherpa-status: success ): var(--sherpa-surface-context-success-subtle-hover);
+        style(--sherpa-status: warning ): var(--sherpa-surface-context-warning-subtle-hover);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-context-urgent-subtle-hover);
+        else: revert-layer
+      );
+      --_status-surface-subtle-down: if(
+        style(--sherpa-status: critical): var(--sherpa-surface-context-error-subtle-down);
+        style(--sherpa-status: info    ): var(--sherpa-surface-context-info-subtle-down);
+        style(--sherpa-status: success ): var(--sherpa-surface-context-success-subtle-down);
+        style(--sherpa-status: warning ): var(--sherpa-surface-context-warning-subtle-down);
+        style(--sherpa-status: urgent  ): var(--sherpa-surface-context-urgent-subtle-down);
+        else: revert-layer
+      );
+      --_status-text: if(
+        style(--sherpa-status: critical): var(--sherpa-text-context-error-on-color-subtle);
+        style(--sherpa-status: info    ): var(--sherpa-text-context-info-on-color-subtle);
+        style(--sherpa-status: success ): var(--sherpa-text-context-success-on-color-subtle);
+        style(--sherpa-status: warning ): var(--sherpa-text-context-warning-on-color-subtle);
+        style(--sherpa-status: urgent  ): var(--sherpa-text-context-urgent-on-color-subtle);
+        else: revert-layer
+      );
+      --_status-text-on-color: if(
+        style(--sherpa-status: critical): var(--sherpa-text-default-on-color-body);
+        style(--sherpa-status: info    ): var(--sherpa-text-default-on-color-body);
+        style(--sherpa-status: success ): var(--sherpa-text-default-on-color-body);
+        style(--sherpa-status: warning ): var(--sherpa-text-default-on-color-subtle-body);
+        style(--sherpa-status: urgent  ): var(--sherpa-text-default-on-color-body);
+        else: revert-layer
+      );
+      --_status-icon: if(
+        style(--sherpa-status: critical): var(--sherpa-icon-context-error-on-color-subtle);
+        style(--sherpa-status: info    ): var(--sherpa-icon-context-info-on-color-subtle);
+        style(--sherpa-status: success ): var(--sherpa-icon-context-success-on-color-subtle);
+        style(--sherpa-status: warning ): var(--sherpa-icon-context-default-on-color-subtle-body);
+        style(--sherpa-status: urgent  ): var(--sherpa-icon-context-urgent-on-color-subtle);
+        else: revert-layer
+      );
+      --_status-icon-on-color: if(
+        style(--sherpa-status: critical): var(--sherpa-icon-context-default-on-color-body);
+        style(--sherpa-status: info    ): var(--sherpa-icon-context-default-on-color-body);
+        style(--sherpa-status: success ): var(--sherpa-icon-context-default-on-color-body);
+        style(--sherpa-status: warning ): var(--sherpa-icon-context-warning-on-color);
+        style(--sherpa-status: urgent  ): var(--sherpa-icon-context-default-on-color-body);
+        else: revert-layer
+      );
+      --_status-shadow: if(
+        style(--sherpa-status: critical): var(--sherpa-elevation-tint-error);
+        style(--sherpa-status: info    ): var(--sherpa-elevation-tint-info);
+        style(--sherpa-status: success ): var(--sherpa-elevation-tint-success);
+        style(--sherpa-status: warning ): var(--sherpa-elevation-tint-warning);
+        style(--sherpa-status: urgent  ): var(--sherpa-elevation-tint-urgent);
+        else: revert-layer
+      );
+    }
   }
 
 } /* @layer status */

@@ -309,12 +309,69 @@ function emitFontsBlock() {
 // every legacy name from component CSS so this file stays clean).
 
 function emitPlatform() {
+  // ── Axis bridge ─────────────────────────────────────────────────────────
+  // Native CSS if() (Chrome 137+) tests CUSTOM PROPERTIES via style(),
+  // not raw attributes. The bridge below mirrors every axis attribute into
+  // a custom-ident custom property so theme/density/status declarations can
+  // collapse to single if()-based assignments.
+  //
+  //   data-mode    → --sherpa-mode    (light | dark | hc)
+  //   data-density → --sherpa-density (base | compact | comfortable)
+  //   data-theme   → --sherpa-theme   (apex-2-core | apex-2-purple | …)
+  //   data-status  → --sherpa-status  (none | critical | info | success | warning | urgent)
+  //
+  // Mode also resolves `prefers-color-scheme` / `prefers-contrast` here, so
+  // downstream `if(style(--sherpa-mode: dark))` never needs media() branches.
+  const themeSlugs = [
+    baseThemeSlug,
+    ...((themesMeta?.extended || []).map(t => t.slug)),
+  ];
+
   const css = `${header(
     'Platform Tokens — system constants',
     'Tokens with no Figma source: font weights, z-index scale, focus rings,\n' +
     ' * backdrops, content widths. Drop any entry here as soon as Figma adds the\n' +
-    ' * canonical equivalent.',
+    ' * canonical equivalent.\n' +
+    ' *\n' +
+    ' * Also declares the AXIS BRIDGE: registered custom properties\n' +
+    ' * (--sherpa-mode / --sherpa-density / --sherpa-theme / --sherpa-status)\n' +
+    ' * that mirror their corresponding data-* attributes so theme, density, and\n' +
+    ' * status tokens can be expressed with native CSS if() (Chrome 137+).',
   )}@property --sherpa-pdf-mode { syntax: "<integer>"; inherits: true; initial-value: 0; }
+
+/* ── Axis bridge: attribute → custom-ident custom property ─────────── */
+/* Used by native CSS if() declarations throughout the token cascade.  */
+
+@property --sherpa-mode    { syntax: "<custom-ident>"; inherits: true; initial-value: light; }
+@property --sherpa-density { syntax: "<custom-ident>"; inherits: true; initial-value: base;  }
+@property --sherpa-theme   { syntax: "<custom-ident>"; inherits: true; initial-value: ${baseThemeSlug}; }
+@property --sherpa-status  { syntax: "<custom-ident>"; inherits: true; initial-value: none;  }
+
+/* Mode — explicit attribute wins; OS preference resolves "auto" */
+:where(:root[data-mode="light"]) { --sherpa-mode: light; }
+:where(:root[data-mode="dark"])  { --sherpa-mode: dark;  }
+:where(:root[data-mode="hc"])    { --sherpa-mode: hc;    }
+@media (prefers-color-scheme: dark) {
+  :where(:root:not([data-mode="light"]):not([data-mode="hc"])) { --sherpa-mode: dark; }
+}
+@media (prefers-contrast: more) {
+  :where(:root:not([data-mode="light"]):not([data-mode="dark"])) { --sherpa-mode: hc; }
+}
+
+/* Density — applies to any subtree */
+:where([data-density="compact"])     { --sherpa-density: compact;     }
+:where([data-density="comfortable"]) { --sherpa-density: comfortable; }
+
+/* Theme — registered slugs only */
+${themeSlugs.map(s => `:where(:root[data-theme="${s}"]) { --sherpa-theme: ${s}; }`).join('\n')}
+
+/* Status — applies to any element/subtree */
+:where([data-status="critical"]) { --sherpa-status: critical; }
+:where([data-status="info"])     { --sherpa-status: info;     }
+:where([data-status="success"])  { --sherpa-status: success;  }
+:where([data-status="warning"])  { --sherpa-status: warning;  }
+:where([data-status="urgent"])   { --sherpa-status: urgent;   }
+
 
 :where(:root) {
   /* Font weights */
@@ -622,6 +679,39 @@ function emitThemeFile(themeEntry, maps, refMaps) {
     lines.push('  }\n}\n\n');
   }
 
+  // ── Modern: native CSS if() unified per-token resolution ─────────────
+  // Chrome 137+: each token with dark/HC overrides collapses to a single
+  // if()-based declaration that reads the --sherpa-mode bridge variable.
+  // The classic blocks above remain as fallback for browsers without if().
+  // Because every selector uses :where() (zero specificity), source-order
+  // decides — and this @supports block comes last, so it wins where supported.
+  if (darkOut.size > 0 || hcOut.size > 0) {
+    const allModeKeys = new Set([...darkOut.keys(), ...hcOut.keys()]);
+    const orderedKeys = maps.orderByProp.filter(k => allModeKeys.has(k));
+    // Some extended-theme keys may live outside the default orderByProp.
+    for (const k of allModeKeys) if (!orderedKeys.includes(k)) orderedKeys.push(k);
+
+    lines.push('/* ── Modern: native CSS if() (Chrome 137+) ───────────────────── */\n');
+    lines.push('@supports (color: if(style(--x: y): red; else: blue)) {\n');
+    lines.push(`  ${modeSel('')} {\n`);
+    for (const propName of orderedKeys) {
+      const dv = darkOut.get(propName);
+      const hv = hcOut.get(propName);
+      const lv = isDefault
+        ? maps.light.get(propName)
+        : (lightOut.get(propName) ?? refMaps.light.get(propName));
+      if (lv == null) continue; // can't form an else branch — skip safely
+
+      const branches = [];
+      if (dv != null) branches.push(`      style(--sherpa-mode: dark): ${dv};`);
+      if (hv != null) branches.push(`      style(--sherpa-mode: hc):   ${hv};`);
+      branches.push(`      else: ${lv}`);
+      lines.push(`    ${propName}: if(\n${branches.join('\n')}\n    );\n`);
+    }
+    lines.push('  }\n');
+    lines.push('}\n\n');
+  }
+
   lines.push('} /* @layer theme */\n');
   if (isDefault) {
     write(`sherpa-theme-${slug}.css`, lines.join(''));
@@ -718,13 +808,13 @@ function emitOverrides() {
   // ── Density ──
   lines.push('\n/* ─── Density ────────────────────────────────────────────────────── */\n\n');
   lines.push('@layer density {\n\n');
+  const densitySpaceVars = density.vars
+    .filter(v => v.n.startsWith('space/'))
+    .sort((a, b) => a.n.localeCompare(b.n));
   for (const mode of ['Compact', 'Comfortable']) {
     const slug = mode.toLowerCase();
     lines.push(`  :where([data-density="${slug}"]) {\n`);
-    const spaceVars = density.vars
-      .filter(v => v.n.startsWith('space/'))
-      .sort((a, b) => a.n.localeCompare(b.n));
-    for (const v of spaceVars) {
+    for (const v of densitySpaceVars) {
       const val = formatVal(v.v[mode], v.t);
       const prop = `--sherpa-${sanitize(v.n)}`;
       const pad = ' '.repeat(Math.max(1, 24 - prop.length));
@@ -732,12 +822,33 @@ function emitOverrides() {
     }
     lines.push('  }\n\n');
   }
+
+  // Modern: native CSS if() — one declaration per density-driven token.
+  // Selector matches any element carrying a data-density attribute; the
+  // bridge variable --sherpa-density picks the per-mode value.
+  lines.push('  /* ── Modern: native CSS if() (Chrome 137+) ──────────────────── */\n');
+  lines.push('  @supports (color: if(style(--x: y): red; else: blue)) {\n');
+  lines.push('    :where([data-density]) {\n');
+  for (const v of densitySpaceVars) {
+    const compactVal = formatVal(v.v.Compact, v.t);
+    const comfortableVal = formatVal(v.v.Comfortable, v.t);
+    const baseVal = v.v.Base !== undefined ? formatVal(v.v.Base, v.t) : 'revert-layer';
+    const prop = `--sherpa-${sanitize(v.n)}`;
+    lines.push(`      ${prop}: if(\n`);
+    lines.push(`        style(--sherpa-density: compact):     ${compactVal};\n`);
+    lines.push(`        style(--sherpa-density: comfortable): ${comfortableVal};\n`);
+    lines.push(`        else: ${baseVal}\n`);
+    lines.push(`      );\n`);
+  }
+  lines.push('    }\n');
+  lines.push('  }\n\n');
   lines.push('} /* @layer density */\n');
 
   // ── Status ──
   lines.push('\n\n/* ─── Status ─────────────────────────────────────────────────────── */\n\n');
   lines.push('@layer status {\n\n');
-  for (const mode of ['critical', 'info', 'success', 'warning', 'urgent']) {
+  const statusModes = ['critical', 'info', 'success', 'warning', 'urgent'];
+  for (const mode of statusModes) {
     lines.push(`  :where([data-status="${mode}"]) {\n`);
     for (const v of status.vars) {
       const prop = STATUS_PROP_MAP[v.n];
@@ -751,6 +862,29 @@ function emitOverrides() {
     }
     lines.push('  }\n\n');
   }
+
+  // Modern: native CSS if() — selector matches any element with data-status
+  // attribute; the bridge variable --sherpa-status picks the per-status value.
+  lines.push('  /* ── Modern: native CSS if() (Chrome 137+) ──────────────────── */\n');
+  lines.push('  @supports (color: if(style(--x: y): red; else: blue)) {\n');
+  lines.push('    :where([data-status]) {\n');
+  for (const v of status.vars) {
+    const prop = STATUS_PROP_MAP[v.n];
+    if (!prop) continue;
+    const isIcon = v.n.startsWith('icon/');
+    const branches = [];
+    for (const mode of statusModes) {
+      const raw = v.v[mode];
+      if (raw === undefined) continue;
+      const val = isIcon ? formatValIcon(raw, v.t) : formatVal(raw, v.t);
+      branches.push(`        style(--sherpa-status: ${mode.padEnd(8)}): ${val};`);
+    }
+    if (branches.length === 0) continue;
+    branches.push(`        else: revert-layer`);
+    lines.push(`      ${prop}: if(\n${branches.join('\n')}\n      );\n`);
+  }
+  lines.push('    }\n');
+  lines.push('  }\n\n');
   lines.push('} /* @layer status */\n');
 
   write('sherpa-overrides.css', lines.join(''));

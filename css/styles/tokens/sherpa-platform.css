@@ -6,9 +6,52 @@
  * Tokens with no Figma source: font weights, z-index scale, focus rings,
  * backdrops, content widths. Drop any entry here as soon as Figma adds the
  * canonical equivalent.
+ *
+ * Also declares the AXIS BRIDGE: registered custom properties
+ * (--sherpa-mode / --sherpa-density / --sherpa-theme / --sherpa-status)
+ * that mirror their corresponding data-* attributes so theme, density, and
+ * status tokens can be expressed with native CSS if() (Chrome 137+).
  */
 
 @property --sherpa-pdf-mode { syntax: "<integer>"; inherits: true; initial-value: 0; }
+
+/* ── Axis bridge: attribute → custom-ident custom property ─────────── */
+/* Used by native CSS if() declarations throughout the token cascade.  */
+
+@property --sherpa-mode    { syntax: "<custom-ident>"; inherits: true; initial-value: light; }
+@property --sherpa-density { syntax: "<custom-ident>"; inherits: true; initial-value: base;  }
+@property --sherpa-theme   { syntax: "<custom-ident>"; inherits: true; initial-value: apex-2-core; }
+@property --sherpa-status  { syntax: "<custom-ident>"; inherits: true; initial-value: none;  }
+
+/* Mode — explicit attribute wins; OS preference resolves "auto" */
+:where(:root[data-mode="light"]) { --sherpa-mode: light; }
+:where(:root[data-mode="dark"])  { --sherpa-mode: dark;  }
+:where(:root[data-mode="hc"])    { --sherpa-mode: hc;    }
+@media (prefers-color-scheme: dark) {
+  :where(:root:not([data-mode="light"]):not([data-mode="hc"])) { --sherpa-mode: dark; }
+}
+@media (prefers-contrast: more) {
+  :where(:root:not([data-mode="light"]):not([data-mode="dark"])) { --sherpa-mode: hc; }
+}
+
+/* Density — applies to any subtree */
+:where([data-density="compact"])     { --sherpa-density: compact;     }
+:where([data-density="comfortable"]) { --sherpa-density: comfortable; }
+
+/* Theme — registered slugs only */
+:where(:root[data-theme="apex-2-core"]) { --sherpa-theme: apex-2-core; }
+:where(:root[data-theme="apex-2-purple"]) { --sherpa-theme: apex-2-purple; }
+:where(:root[data-theme="apex-2-teal"]) { --sherpa-theme: apex-2-teal; }
+:where(:root[data-theme="apex-2-blue"]) { --sherpa-theme: apex-2-blue; }
+:where(:root[data-theme="classic"]) { --sherpa-theme: classic; }
+
+/* Status — applies to any element/subtree */
+:where([data-status="critical"]) { --sherpa-status: critical; }
+:where([data-status="info"])     { --sherpa-status: info;     }
+:where([data-status="success"])  { --sherpa-status: success;  }
+:where([data-status="warning"])  { --sherpa-status: warning;  }
+:where([data-status="urgent"])   { --sherpa-status: urgent;   }
+
 
 :where(:root) {
   /* Font weights */
