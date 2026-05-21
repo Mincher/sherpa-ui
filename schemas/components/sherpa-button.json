@@ -1,6 +1,6 @@
 {
   "tagName": "sherpa-button",
-  "description": "Multi-template button web component. Four templates (selected via data-type → get templateId()): default       — Standard button: icon(s) + label + badge + optional close icon          — Icon-only square button button-menu   — Button + menu trigger side by side (action menu) icon-menu     — Icon-only menu trigger (overflow menus) The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: button-menu and icon-menu types are inherently menu triggers — no data-menu attribute needed. For default/icon types, add data-menu=\"true\". button-menu has two modes: unified (default) or split (data-split). If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.",
+  "description": "Multi-template button web component. Two templates (selected via data-type → get templateId()): default       — Standard button: icon(s) + label + badge icon          — Icon-only square button For compound button patterns (split, dismissable chip), compose separate sherpa-button elements inside a .grouped wrapper. The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: Any button with data-menu=\"true\" acts as a menu trigger. If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.",
   "category": "control",
   "tier": 4,
   "group": "core",
@@ -9,12 +9,10 @@
     {
       "name": "data-type",
       "type": "enum",
-      "description": "default | icon | button-menu | icon-menu",
+      "description": "default | icon",
       "enumValues": [
         "default",
-        "icon",
-        "button-menu",
-        "icon-menu"
+        "icon"
       ]
     },
     {
@@ -83,24 +81,14 @@
       ]
     },
     {
-      "name": "data-dismissable",
-      "type": "boolean",
-      "description": "Shows close/remove button (chip mode)"
-    },
-    {
       "name": "data-count",
       "type": "number",
       "description": "Badge count"
     },
     {
-      "name": "data-split",
-      "type": "boolean",
-      "description": "Split button-menu into action + trigger"
-    },
-    {
       "name": "data-menu",
       "type": "boolean",
-      "description": "Enable menu trigger on default/icon types"
+      "description": "Enable menu trigger on any button type"
     },
     {
       "name": "data-menu-position",
@@ -122,6 +110,18 @@
       "name": "disabled",
       "type": "boolean",
       "description": "Native disabled state"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [],
@@ -129,13 +129,6 @@
     {
       "name": "button-click",
       "description": "Main button area clicked",
-      "bubbles": true,
-      "composed": true,
-      "detail": null
-    },
-    {
-      "name": "chip-remove",
-      "description": "Close/dismiss button clicked",
       "bubbles": true,
       "composed": true,
       "detail": null

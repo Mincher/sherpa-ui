@@ -24,9 +24,6 @@
        [data-status] cascades --_status-* through shadow boundary.
        Colours the native checkmark and label without per-status selectors. */
 }
-:host([hidden]) {
-  display: none;
-}
 :host([disabled]) {
   pointer-events: none;
 }

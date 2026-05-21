@@ -1,6 +1,6 @@
 /**
- * sherpa-container-header.js
- * SherpaContainerHeader — Header row for sherpa-container.
+ * sherpa-header.js
+ * SherpaHeader — Header row for sherpa-container.
  *
  * Renders title, description, and optional action buttons (drag handle,
  * open-external, overflow menu). Built to be slotted as a light-DOM child
@@ -10,7 +10,7 @@
  * bubble and compose out of the header's shadow DOM and continue through
  * its host into any ancestor — no re-dispatching required.
  *
- * @element sherpa-container-header
+ * @element sherpa-header
  * @category container
  *
  * @attr {string}  [data-title]          — Heading text
@@ -24,13 +24,13 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
-export class SherpaContainerHeader extends SherpaElement {
+export class SherpaHeader extends SherpaElement {
   static get htmlUrl() {
-    return new URL("./sherpa-container-header.html", import.meta.url).href;
+    return new URL("./sherpa-header.html", import.meta.url).href;
   }
 
   static get cssUrl() {
-    return new URL("./sherpa-container-header.css", import.meta.url).href;
+    return new URL("./sherpa-header.css", import.meta.url).href;
   }
 
   static get observedAttributes() {
@@ -72,4 +72,4 @@ export class SherpaContainerHeader extends SherpaElement {
   }
 }
 
-customElements.define("sherpa-container-header", SherpaContainerHeader);
+customElements.define("sherpa-header", SherpaHeader);

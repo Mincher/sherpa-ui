@@ -38,7 +38,4 @@
       justify-content: center;
       gap: var(--sherpa-space-xs, 8px);
 }
-:host([hidden]) {
-  display: none;
-}
 

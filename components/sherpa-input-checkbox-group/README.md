@@ -26,6 +26,8 @@ Available templates:
 | `data-template` | string | "default" (default) \| "weekdays" | — | — |
 | `disabled` | boolean | Disable all children | — | — |
 | `required` | boolean | At least one selection required | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 

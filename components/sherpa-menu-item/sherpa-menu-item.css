@@ -6,13 +6,12 @@
   align-items: center;
   gap: var(--_gap);
   inline-size: 100%;
-  box-sizing: border-box;
   padding: var(--_padding-y) var(--_padding-x);
   border-radius: var(--_rounding);
   cursor: pointer;
   outline: none;
   user-select: none;
-  transition: background-color 0.15s ease;
+  transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   /* Private aliases */
   --_gap: var(--sherpa-space-xs, 12px);
   --_padding-y: var(--sherpa-space-2xs, 8px);
@@ -97,8 +96,5 @@
 }
 :host([data-variant="danger"][disabled]) {
   color: var(--sherpa-text-inactive-default, #5c5c66);
-}
-:host([hidden]) {
-  display: none;
 }
 

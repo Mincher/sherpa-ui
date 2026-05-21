@@ -31,9 +31,6 @@
   /* ── Weekday button ────────────────────────────────────– */
   /* ── Hidden weekday input (checkbox) ────────────────── */
 }
-:host([hidden]) {
-  display: none;
-}
 :host([disabled]) {
   pointer-events: none;
   opacity: 1;
@@ -105,7 +102,7 @@
       color: var(--sherpa-text-default-body, #333);
       cursor: pointer;
       user-select: none;
-      transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+      transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out), color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   
       &:hover:not(:has(:disabled)) {
         background: var(--sherpa-surface-control-hover, #f5f5f8);

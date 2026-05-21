@@ -3,19 +3,9 @@
   Each <template> renders one example block in the docs site (docs/router.js).
 -->
 <template data-label="Default" data-layout="block">
-  <sherpa-breadcrumbs data-items='[
-    {"label":"Home","href":"#/"},
-    {"label":"Devices","href":"#/devices"},
-    {"label":"acme-device-01"}
-  ]'></sherpa-breadcrumbs>
+  <sherpa-breadcrumbs data-src-json="/components/sherpa-breadcrumbs/sherpa-breadcrumbs.default.json"></sherpa-breadcrumbs>
 </template>
 
 <template data-label="Deeper hierarchy" data-layout="block">
-  <sherpa-breadcrumbs data-items='[
-    {"label":"Home","href":"#/"},
-    {"label":"Customers","href":"#/customers"},
-    {"label":"Acme Corp","href":"#/customers/acme"},
-    {"label":"Devices","href":"#/customers/acme/devices"},
-    {"label":"acme-device-01"}
-  ]'></sherpa-breadcrumbs>
+  <sherpa-breadcrumbs data-src-json="/components/sherpa-breadcrumbs/sherpa-breadcrumbs.deep.json"></sherpa-breadcrumbs>
 </template>

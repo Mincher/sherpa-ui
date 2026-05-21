@@ -18,6 +18,8 @@ Group of radios with shared label, description, helper and a single selected val
 | `data-status` | enum | critical \| warning \| success \| info \| urgent | — | `critical`, `warning`, `success`, `info`, `urgent` |
 | `disabled` | boolean |  | — | — |
 | `required` | boolean |  | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -81,6 +83,7 @@ sherpa-input-radio-group::part(wrapper) {
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
+- `--_status-`
 - `--_status-text`
 
 ## Usage

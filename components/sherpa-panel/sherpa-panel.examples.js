@@ -27,4 +27,42 @@ export default {
     panel.addEventListener("panel-toggle", syncTrigger);
     panel.addEventListener("panel-close", syncTrigger);
   },
+
+  "ai-trigger"(root) {
+    const trigger = root.querySelector(".ai-trigger");
+    const panel = root.querySelector(".ai-panel");
+    if (!trigger || !panel) return;
+
+    trigger.addEventListener("button-click", () => {
+      panel.setAttribute("data-expanded", "");
+    });
+
+    const syncTrigger = () => {
+      trigger.style.visibility = panel.hasAttribute("data-expanded")
+        ? "hidden"
+        : "visible";
+    };
+    syncTrigger();
+    panel.addEventListener("panel-toggle", syncTrigger);
+    panel.addEventListener("panel-close", syncTrigger);
+  },
+
+  "ai-trigger"(root) {
+    const trigger = root.querySelector(".ai-trigger");
+    const panel = root.querySelector(".ai-panel");
+    if (!trigger || !panel) return;
+
+    trigger.addEventListener("button-click", () => {
+      panel.setAttribute("data-expanded", "");
+    });
+
+    const syncTrigger = () => {
+      trigger.style.visibility = panel.hasAttribute("data-expanded")
+        ? "hidden"
+        : "visible";
+    };
+    syncTrigger();
+    panel.addEventListener("panel-toggle", syncTrigger);
+    panel.addEventListener("panel-close", syncTrigger);
+  },
 };

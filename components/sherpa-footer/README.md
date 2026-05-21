@@ -1,6 +1,6 @@
 # sherpa-footer
 
-> **Category:** shell · **Base class:** SherpaElement
+> **Category:** container · **Base class:** SherpaElement
 
 Reusable footer with multiple template variants. Template selected via data-type attribute.
 
@@ -10,17 +10,21 @@ Set via `data-type` attribute:
 
 - `action-bar`
 - `slot`
+- `card-select`
 
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data-type` | enum | action-bar \| slot (default: slot) | — | `action-bar`, `slot` |
+| `data-type` | enum | action-bar \| slot \| card-select (default: slot) | — | `action-bar`, `slot`, `card-select` |
 | `data-cancel-label` | string | Cancel button text (action-bar) | — | — |
 | `data-apply-label` | string | Apply button text (action-bar) | — | — |
 | `data-show-cancel` | boolean | Show cancel button (default: true) | — | — |
 | `data-show-apply` | boolean | Show apply button (default: true) | — | — |
 | `data-apply-closes` | boolean | Apply auto-closes parent (default: true) | — | — |
+| `data-selected` | boolean | Drives radio checked state (card-select) | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 

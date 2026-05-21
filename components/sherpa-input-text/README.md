@@ -30,6 +30,9 @@ Available templates:
 | `maxlength` | number | Maximum character length (inherited) | — | — |
 | `novalidate` | boolean | Disable built-in validation (inherited) | — | — |
 | `data-multiline` | boolean | Render as an auto-growing textarea | — | — |
+| `data-status` | string |  | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 

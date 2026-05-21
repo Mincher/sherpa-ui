@@ -117,7 +117,7 @@ i { font-style: normal; }
       color: var(--sherpa-text-default-body, #2e2e33);
       cursor: pointer;
       font-size: 14px;
-      transition: background 150ms ease, border-color 150ms ease;
+      transition: background var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   
       &:hover {
         background: var(--sherpa-surface-container-hover, var(--sherpa-surface-container-default, #ffffff));
@@ -128,8 +128,5 @@ i { font-style: normal; }
 }
 :host([data-drill-down]) .drill-down {
   display: inline-flex;
-}
-:host([hidden]) {
-  display: none;
 }
 

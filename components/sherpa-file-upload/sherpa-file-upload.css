@@ -36,7 +36,6 @@
   gap: var(--sherpa-space-sm, 8px);
   width: 100%;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  box-sizing: border-box;
 }
 :host .label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
@@ -58,7 +57,7 @@
       border: 2px dashed var(--sherpa-border-control-default, #c6c6cc);
       border-radius: var(--sherpa-border-rounding-sm, 4px);
       cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease;
+      transition: background var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
       outline: none;
   
       &:hover {
@@ -302,12 +301,4 @@
       padding: 0;
       margin: -1px;
 }
-:host([hidden]) {
-  display: none;
-}
-
-
-
-
-
 

@@ -1,5 +1,5 @@
 /**
- * sherpa-container-header.css — Shadow-scoped styles
+ * sherpa-header.css — Shadow-scoped styles
  * Header row for sherpa-container: drag-handle → labels → action buttons.
  *
  * Structure (shadow DOM):
@@ -19,20 +19,20 @@
  *   data-drag-handle   {boolean} — show drag handle
  *
  * Container query:
- *   container-name: sherpa-container-header (inline-size)
+ *   container-name: sherpa-header (inline-size)
  */
 
 :host {
   display: block;
   flex-shrink: 0;
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
   container-type: inline-size;
-  container-name: sherpa-container-header;
+  container-name: sherpa-header;
 }
 :host .header-row {
   display: flex;
       align-items: center;
       gap: var(--sherpa-space-xs, 4px);
-      box-sizing: border-box;
 }
 :host .header-labels {
   display: flex;
@@ -50,7 +50,7 @@
       line-height: var(--sherpa-font-base-line-height, 20px);
       letter-spacing: 0.1px;
       text-transform: uppercase;
-      color: var(--sherpa-text-default-label, var(--sherpa-text-default-heading, #1a1a1f));
+      color: var(--_selected-text, var(--sherpa-text-default-label, var(--sherpa-text-default-heading, #1a1a1f)));
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -59,7 +59,7 @@
   margin: 0;
       font-size: var(--sherpa-font-sm-size, 12px);
       line-height: var(--sherpa-font-sm-line-height, 16px);
-      color: var(--sherpa-text-default-secondary, #6a6a75);
+      color: var(--_selected-text, var(--sherpa-text-default-secondary, #6a6a75));
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -95,7 +95,7 @@
       cursor: grab;
       flex-shrink: 0;
       border-radius: var(--sherpa-border-rounding-sm, 4px);
-      transition: color 0.15s ease, background-color 0.15s ease;
+      transition: color var(--sherpa-motion-transition-fast, 0.15s ease-out), background-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   
       &:hover {
         color: var(--sherpa-text-default-body, #2e2e33);
@@ -110,22 +110,18 @@
 :host([data-drag-handle="true"]) .drag-handle {
   display: inline-flex;
 }
-:host([hidden]) {
-  display: none;
-}
 
-
-@container sherpa-container-header (max-width: 200px) {
+@container sherpa-header (max-width: 200px) {
   :host .header-row { gap: var(--sherpa-space-2xs, 2px); }
   :host .header-description { display: none; }
   :host .action-divider { display: none; }
 }
 
-@container sherpa-container-header (max-width: 150px) {
+@container sherpa-header (max-width: 150px) {
   :host .open-external-button { display: none !important; }
   :host .action-divider { display: none !important; }
 }
 
-@container sherpa-container-header (max-width: 120px) {
+@container sherpa-header (max-width: 120px) {
   :host .header-title { font-size: var(--sherpa-fonts-scale-sm, 12px); }
 }

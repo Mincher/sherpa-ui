@@ -1,17 +1,29 @@
 /**
  * sherpa-container.css — Shadow-scoped styles
- * Pure wrapper: sizing variants + named container scope for descendants.
+ * Universal container: dashboard composition wrapper and standalone card.
  *
  * Structure (shadow DOM):
- *   :host (block, container: sherpa-container / inline-size)
- *   └── <slot>
+ *   :host (flex column, container: sherpa-container / inline-size)
+ *   ├── .card-header   (slot="header" — hidden when empty)
+ *   ├── .card-content  (default slot — padding + gap)
+ *   ├── slot[footer]   (slot="footer")
+ *   └── .state-overlay (loading | empty | error)
  *
  * Host attributes:
- *   data-variant   {enum}    — "fit" | "resizable" | "fill"
- *   data-col-span  {number}  — "3" | "6" | "9" | "12" (resizable only)
- *   data-row-span  {number}  — "1"–"6" (resizable only)
- *   data-editable  {boolean} — enables resize grip
- *   data-menu-open {boolean} — set while overflow menu is open
+ *   data-variant     {enum}    — "fit" | "resizable" | "fill" | "worksheet"
+ *   data-col-span    {number}  — "3" | "6" | "9" | "12" (resizable only)
+ *   data-row-span    {number}  — "1"–"6" (resizable only)
+ *   data-editable    {boolean} — enables resize grip
+ *   data-menu-open   {boolean} — set while overflow menu is open
+ *   data-interactive {boolean} — clickable surface
+ *   data-selectable  {boolean} — radio-option selection
+ *   data-selected    {boolean} — active / selected state
+ *   data-elevation   {enum}    — none | sm | md | lg
+ *   disabled         {boolean} — disabled state
+ *
+ * Consumes:
+ *   --_status-border  — status system border colour
+ *   --_selected-surface / --_selected-border / --_selected-text — selected state
  *
  * Container query scope:
  *   container: sherpa-container / inline-size  — descendant viz can query
@@ -25,17 +37,20 @@
 :host {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-sm, 12px);
   --_editable-display: none;
-  background-color: var(--sherpa-surface-container-default, #ffffff);
-  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #d5d5d5);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-control-secondary-default, #d5d5d5));
   border-radius: var(--sherpa-border-rounding-base, 6px);
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
   overflow: clip;
   position: relative;
-  box-sizing: border-box;
   container: sherpa-container / inline-size;
+  transition:
+    box-shadow var(--sherpa-motion-transition-fast, 0.15s ease-out),
+    background-color var(--sherpa-motion-transition-fast, 0.15s ease-out),
+    border-color var(--sherpa-motion-transition-fast, 0.15s ease-out),
+    transform var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
+:host([hidden]) { display: none; }
 :host([data-menu-open="true"]) {
   border-color: var(--sherpa-border-control-primary-default, #8500cc);
       overflow: visible;
@@ -71,12 +86,14 @@
 }
 :host([data-variant="worksheet"]) {
   width: 100%;
-      max-width: var(--sherpa-content-width-md, 960px);
-      margin-inline: auto;
-      padding: var(--sherpa-space-xl, 32px);
-      gap: var(--sherpa-space-lg, 24px);
-      background-color: var(--sherpa-surface-container-default, #ffffff);
-      box-shadow: var(--sherpa-shadow-default-sm, 0 1px 2px rgba(0,0,0,0.06));
+  max-width: var(--sherpa-content-width-md, 960px);
+  margin-inline: auto;
+  background-color: var(--sherpa-surface-container-default, #ffffff);
+  box-shadow: var(--sherpa-shadow-default-sm, 0 1px 2px rgba(0,0,0,0.06));
+}
+:host([data-variant="worksheet"]) .card-content {
+  padding: var(--sherpa-space-xl, 32px);
+  gap: var(--sherpa-space-lg, 24px);
 }
 :host .state-overlay {
   display: none;
@@ -95,8 +112,8 @@
   color: var(--sherpa-text-default-secondary, #6a6a7a);
 }
 :host .state-default-loading {
-  width: 28px;
-      height: 28px;
+  width: var(--sherpa-size-xl, 28px);
+      height: var(--sherpa-size-xl, 28px);
       border-radius: 50%;
       border: 3px solid var(--sherpa-border-control-secondary-default, #d7d7dc);
       border-top-color: var(--sherpa-border-control-primary-default, #4a90e2);
@@ -121,9 +138,88 @@
 :host([data-state="error"])   ::slotted(:not([slot])) {
   visibility: hidden;
 }
-:host([hidden]) {
-  display: none;
-}
-
 
 @keyframes sherpa-container-spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARD STRUCTURE — header/content/footer
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.card-header {
+  display: none;
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+}
+.card-header[data-has-content] {
+  display: block;
+}
+.card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--sherpa-space-sm, 12px);
+  gap: var(--sherpa-space-sm, 12px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ELEVATION
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-elevation="none"]) {
+  box-shadow: none;
+}
+:host([data-elevation="sm"]) {
+  box-shadow: var(--sherpa-shadow-default-sm,
+    2px 2px 8px -4px var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
+}
+:host([data-elevation="md"]) {
+  box-shadow: var(--sherpa-shadow-default-md,
+    4px 4px 12px -2px var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
+    0 4px 4px 0 rgba(0, 0, 0, 0.25));
+}
+:host([data-elevation="lg"]) {
+  box-shadow: var(--sherpa-shadow-default-lg,
+    8px 8px 16px 2px var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INTERACTIVE STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-interactive="true"]) {
+  cursor: pointer;
+}
+:host([data-interactive="true"]:hover:not([disabled])) {
+  background: var(--sherpa-surface-container-hover, #fafafa);
+  border-color: var(--sherpa-border-control-hover, #173382);
+}
+:host([data-interactive="true"]:active:not([disabled])) {
+  transform: scale(0.99);
+}
+:host(:focus-visible) {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-focus-default, var(--sherpa-border-control-primary-default, #3c5edd));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELECTED STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([data-selected="true"]),
+:host([data-selected="true"][data-interactive="true"]:hover:not([disabled])),
+:host([data-selected="true"][data-interactive="true"]:active:not([disabled])) {
+  border-color: var(--_selected-border,  var(--sherpa-border-container-active, #8500cc));
+  background:   var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
+  color:        var(--_selected-text,    var(--sherpa-text-active-base, #8500cc));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DISABLED STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([disabled]) {
+  background: var(--sherpa-surface-container-inactive, #f2f2f2);
+  border-color: var(--sherpa-border-container-inactive, #c0c0cc);
+  color: var(--sherpa-text-inactive-default, #5c5c66);
+  cursor: not-allowed;
+  pointer-events: none;
+}

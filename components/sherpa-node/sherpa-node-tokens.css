@@ -122,4 +122,3 @@
 }
 
 /* Native [hidden] support */
-:host([hidden]) { display: none; }

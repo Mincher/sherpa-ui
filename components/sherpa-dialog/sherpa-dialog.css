@@ -127,7 +127,6 @@
         var(--sherpa-border-container-default, #d5d5d5);
       border-radius: var(--_rounding) var(--_rounding) 0 0;
       flex-shrink: 0;
-      box-sizing: border-box;
 }
 :host .header-labels {
   display: flex;
@@ -189,10 +188,6 @@
         &:hover { background-color: var(--sherpa-border-context-default-hover, #c0c0cc); }
       }
 }
-:host([hidden]) {
-  display: none;
-}
-
 
 /* Animation keyframes (top-level, outside :host) */
 @keyframes dialog-show {

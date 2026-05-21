@@ -94,7 +94,7 @@ export const ThemeManager = {
 
   /**
    * Apply a theme by setting <html data-theme="...">.
-   * All extended themes are bundled in sherpa-themes-extended.css (loaded by
+   * All extended themes are bundled in sherpa-themes.css (loaded by
    * index.css) — no dynamic stylesheet swap is needed. The [data-theme="..."]
    * selectors in that file activate only the matching theme at zero cost.
    * @param {string} theme — Theme slug, e.g. 'apex-2-purple', 'classic'

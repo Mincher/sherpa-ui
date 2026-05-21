@@ -18,7 +18,7 @@ export * from "./sherpa-view-header/sherpa-view-header.js";
 export * from "./sherpa-layout-grid/sherpa-layout-grid.js";
 export * from "./sherpa-layout-view/sherpa-layout-view.js";
 export * from "./sherpa-container/sherpa-container.js";
-export * from "./sherpa-container-header/sherpa-container-header.js";
+export * from "./sherpa-header/sherpa-header.js";
 
 // UI components
 export * from "./sherpa-button/sherpa-button.js";
@@ -46,9 +46,6 @@ export * from "./sherpa-chart-legend/sherpa-chart-legend.js";
 export * from "./sherpa-toolbar/sherpa-toolbar.js";
 export * from "./sherpa-filter-bar/sherpa-filter-bar.js";
 
-// Export components
-export * from "./sherpa-container-pdf-exporter/sherpa-container-pdf-exporter.js";
-
 // New components
 export * from "./sherpa-accordion/sherpa-accordion.js";
 export * from "./sherpa-breadcrumbs/sherpa-breadcrumbs.js";
@@ -64,13 +61,11 @@ export * from "./sherpa-progress-tracker/sherpa-progress-tracker.js";
 export * from "./sherpa-slider/sherpa-slider.js";
 export * from "./sherpa-tabs/sherpa-tabs.js";
 export * from "./sherpa-callout/sherpa-callout.js";
-export * from "./sherpa-card/sherpa-card.js";
 export * from "./sherpa-dialog/sherpa-dialog.js";
 export * from "./sherpa-empty-state/sherpa-empty-state.js";
 export * from "./sherpa-file-upload/sherpa-file-upload.js";
 export * from "./sherpa-key-value-list/sherpa-key-value-list.js";
 export * from "./sherpa-message/sherpa-message.js";
-export * from "./sherpa-ai-panel/sherpa-ai-panel.js";
 export * from "./sherpa-chat-message/sherpa-chat-message.js";
 export * from "./sherpa-prompt-composer/sherpa-prompt-composer.js";
 export * from "./sherpa-proposal-preview/sherpa-proposal-preview.js";

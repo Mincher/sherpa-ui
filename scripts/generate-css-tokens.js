@@ -2,10 +2,7 @@
 /**
  * generate-css-tokens.js — Per-axis CSS token generator
  *
- * Emits the entire token cascade into `css/styles/`. Filenames preserve the
- * legacy convention (`sherpa-theme-{slug}.css`, `tokens/sherpa-alias.css`) so
- * external consumers (ThemeManager defaults, hard-coded <link> hrefs in HTML)
- * keep working without changes.
+ * Emits the entire token cascade into `css/styles/`.
  *
  * Output tree:
  *
@@ -16,8 +13,7 @@
  *   │   ├── sherpa-primitives.css          ← hand-maintained (oklch values)
  *   │   ├── sherpa-alias.css               ← generated: alias + @property regs
  *   │   └── sherpa-platform.css            ← generated: platform constants
- *   ├── sherpa-theme-{default-slug}.css    ← generated: full token surface
- *   ├── sherpa-theme-{extended-slug}.css   ← generated: diff-only against default
+ *   ├── sherpa-themes.css                  ← generated: all themes (base + extended)
  *   ├── sherpa-density-compact.css         ← generated
  *   ├── sherpa-density-comfortable.css     ← generated
  *   ├── sherpa-status.css                  ← generated
@@ -158,12 +154,61 @@ function formatValIcon(val, type) {
   return formatVal(val, type);
 }
 
+// ─── color-mix() helpers (rgba with partial alpha → token reference) ────────
+
+/** Map "r,g,b" → CSS var name for every fully-opaque primitive colour. */
+const primRgbMap = (() => {
+  const map = new Map();
+  for (const v of primitives.vars) {
+    if (v.t !== 'COLOR' || !v.v?.Value) continue;
+    const m = v.v.Value.match(/^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/);
+    if (!m) continue;
+    const alpha = parseFloat(m[4]);
+    if (Math.round(alpha) !== 1) continue; // only opaque primitives
+    map.set(`${m[1]},${m[2]},${m[3]}`, `--sherpa-core-${sanitize(v.n)}`);
+  }
+  return map;
+})();
+
+/** Map opacity-scale value (0–100 integer) → CSS var for effects/opacity/* tokens. */
+const primOpacityMap = (() => {
+  const map = new Map();
+  for (const v of primitives.vars) {
+    if (v.t !== 'FLOAT' || !v.n.startsWith('effects/opacity/')) continue;
+    const val = v.v?.Value;
+    if (val == null) continue;
+    map.set(Math.round(val), `--sherpa-core-${sanitize(v.n)}`);
+  }
+  return map;
+})();
+
+/**
+ * Convert rgba(r,g,b,a) with a < 1 into a color-mix() expression that
+ * references the matching core colour primitive and opacity token.
+ * Returns null if no matching primitive is found (caller falls back to raw rgba).
+ */
+function tryColorMix(rgba) {
+  const m = rgba.match(/^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/);
+  if (!m) return null;
+  const alpha = parseFloat(m[4]);
+  if (alpha >= 1) return null;
+  const rgbKey = `${m[1]},${m[2]},${m[3]}`;
+  const colorVar = primRgbMap.get(rgbKey);
+  if (!colorVar) return null;
+  const pct = Math.round(alpha * 100);
+  const opacityVar = primOpacityMap.get(pct);
+  const pctExpr = opacityVar ? `calc(var(${opacityVar}) * 1%)` : `${pct}%`;
+  return `color-mix(in srgb, var(${colorVar}) ${pctExpr}, transparent)`;
+}
+
 /** Resolve a theme variable's raw value (may be @ref, rgba, hex, number, bool). */
 function formatThemeVal(rawVal, type, hint, { iconMode = false } = {}) {
   if (rawVal == null) return null;
   const ref = refToVar(rawVal, { iconMode });
   if (ref) return ref;
   if (typeof rawVal === 'string' && rawVal.startsWith('rgba(')) {
+    const colorMix = tryColorMix(rawVal);
+    if (colorMix) return colorMix;
     return rawVal.replace(/(\d+\.\d{2})\d+/g, '$1').replace(/\.0+\)/g, ')');
   }
   if (typeof rawVal === 'string')  return rawVal;
@@ -314,9 +359,7 @@ function emitPlatform() {
     'Tokens with no Figma source: font weights, z-index scale, focus rings,\n' +
     ' * backdrops, content widths. Drop any entry here as soon as Figma adds the\n' +
     ' * canonical equivalent.',
-  )}@property --sherpa-pdf-mode { syntax: "<integer>"; inherits: true; initial-value: 0; }
-
-:where(:root) {
+  )}\n:where(:root) {
   /* Font weights */
   --sherpa-font-weight-regular:  400;
   --sherpa-font-weight-medium:   500;
@@ -363,10 +406,6 @@ function emitPlatform() {
      gridlines, and the node-canvas grid. No Figma source: lighter than
      border-container-default by intent. */
   --sherpa-border-container-subtle: rgba(0, 0, 0, 0.08);
-
-  /* Product-bar icon-block background — defaults to the brand surface so the
-     bar's logomark sits on the brand colour by default. */
-  --sherpa-surface-app-product-bar-icon: var(--sherpa-color-brand-base, #c046ff);
 }
 
 /* ── Color-scheme contract ─────────────────────────────────────────── */
@@ -382,25 +421,76 @@ function emitPlatform() {
 // ─── Emit: themes/{slug}.css ─────────────────────────────────────────
 
 const SECTION_ORDER = [
-  ['surface/app',         'Surface — App Chrome'],
-  ['surface/container',   'Surface — Container'],
-  ['surface/control',     'Surface — Control (Interactive)'],
-  ['surface/status',      'Surface — Context (Status)'],
-  ['border/container',    'Border — Container'],
-  ['border/control',      'Border — Control (Interactive)'],
-  ['border/status',       'Border — Context (Status)'],
-  ['elevation',           'Elevation'],
-  ['data-viz/categorical','Data Visualization — Categorical'],
-  ['data-viz/sequential', 'Data Visualization — Sequential'],
-  ['data-viz/divergent',  'Data Visualization — Divergent'],
-  ['component',           'Component'],
+  // ── Surface ──────────────────────────────────────────────
+  ['surface/app',             'Surface — App Chrome'],
+  ['surface/product-bar',     'Surface — App Chrome'],
+  ['surface/container',       'Surface — Container'],
+  ['surface/control',         'Surface — Control (Interactive)'],
+  ['surface/status',          'Surface — Context (Status)'],
+  ['surface/tag',             'Surface — Component'],
+  ['surface/button',          'Surface — Component'],
+  // ── Border ───────────────────────────────────────────────
+  ['border/container',        'Border — Container'],
+  ['border/control',          'Border — Control (Interactive)'],
+  ['border/status',           'Border — Context (Status)'],
+  ['border/warning',          'Border — Context (Status)'],
+  ['border/info',             'Border — Context (Status)'],
+  ['border/error',            'Border — Context (Status)'],
+  ['border/success',          'Border — Context (Status)'],
+  ['border/urgent',           'Border — Context (Status)'],
+  ['border/focused',          'Border — Focus'],
+  ['border/tag',              'Border — Component'],
+  // ── Other ────────────────────────────────────────────────
+  ['elevation',               'Elevation'],
+  ['data-viz/categorical',    'Data Visualization — Categorical'],
+  ['data-viz/sequential',     'Data Visualization — Sequential'],
+  ['data-viz/divergent',      'Data Visualization — Divergent'],
+  ['component',               'Component'],
+  // ── Standalone text tokens (not derived from content/) ───
+  ['text/default',            'Text — Default'],
+  ['text/primary',            'Text — Primary'],
+  ['text/active',             'Text — Active'],
+  ['text/inactive',           'Text — Inactive'],
+  ['text/info',               'Text — Context (Status)'],
+  ['text/warning',            'Text — Context (Status)'],
+  ['text/error',              'Text — Context (Status)'],
+  ['text/success',            'Text — Context (Status)'],
+  ['text/urgent',             'Text — Context (Status)'],
+  // ── Standalone icon tokens (not derived from content/) ───
+  ['icon/default',            'Icon — Default'],
+  ['icon/primary',            'Icon — Primary'],
+  ['icon/active',             'Icon — Active'],
+  ['icon/inactive',           'Icon — Inactive'],
+  ['icon/status',             'Icon — Context (Status)'],
+  ['icon/info',               'Icon — Context (Status)'],
+  ['icon/warning',            'Icon — Context (Status)'],
+  ['icon/error',              'Icon — Context (Status)'],
+  ['icon/success',            'Icon — Context (Status)'],
+  ['icon/urgent',             'Icon — Context (Status)'],
+  // ── Deprecated ───────────────────────────────────────────
+  ['[DEPRECATED] data-viz',   'Data Visualization — Legacy'],
 ];
 
 function classifySection(figmaPath) {
   for (const [prefix, label] of SECTION_ORDER) {
-    if (figmaPath.startsWith(prefix + '/')) return label;
+    if (figmaPath.startsWith(prefix + '/') || figmaPath === prefix) return label;
   }
   return null;
+}
+
+/**
+ * Derive a human-readable section label for content/* Figma variables.
+ * Both the text prop and icon prop for the same variable share this section
+ * so that related text+icon pairs are emitted under one header.
+ */
+function contentGroupSection(figmaPath) {
+  const parts = figmaPath.replace(/^content\//, '').split('/');
+  if (parts[0] === 'status') {
+    const label = renameStatus(parts[1]);
+    return `Text & Icon — Context: ${label[0].toUpperCase()}${label.slice(1)}`;
+  }
+  const label = parts[0].replace(/-/g, ' ');
+  return `Text & Icon — ${label[0].toUpperCase()}${label.slice(1)}`;
 }
 
 /**
@@ -439,7 +529,7 @@ function buildThemeMaps(themeName) {
     const hcRaw    = v.v?.['High Contrast'];
 
     const isContent = v.n.startsWith('content/');
-    const sectionLabel = isContent ? 'Text' : (classifySection(v.n) || v.n.split('/').slice(0, 2).join(' / '));
+    const sectionLabel = isContent ? contentGroupSection(v.n) : (classifySection(v.n) || v.n.split('/').slice(0, 2).join(' / '));
 
     // Primary mapping (apexToCSS — covers content/* → text/* too)
     {
@@ -449,10 +539,10 @@ function buildThemeMaps(themeName) {
       record(propName, 'hc',    formatThemeVal(hcRaw,    v.t, v.n),                   null);
     }
 
-    // Icon variant (content/* only)
+    // Icon variant (content/* only) — same section as text so pairs stay together
     if (isContent) {
       const propName = contentToIcon(v.n);
-      record(propName, 'light', formatThemeVal(lightRaw, v.t, v.n, { iconMode: true }), 'Icon');
+      record(propName, 'light', formatThemeVal(lightRaw, v.t, v.n, { iconMode: true }), sectionLabel);
       record(propName, 'dark',  formatThemeVal(darkRaw,  v.t, v.n, { iconMode: true }), null);
       record(propName, 'hc',    formatThemeVal(hcRaw,    v.t, v.n, { iconMode: true }), null);
     }
@@ -526,33 +616,11 @@ function emitThemeFile(themeEntry, maps, refMaps) {
   }
 
   const lines = [];
-  const headerBody = isDefault
-    ? `Default theme. Loaded by index.css. Holds the full token surface;\n` +
-      ` * extended themes diff against this file.\n` +
-      ' *\n' +
-      ' * Three mode blocks compose orthogonally:\n' +
-      ' *   light  → :where(:root) — default values, also active under\n' +
-      ' *            data-mode="light" or `prefers-color-scheme: light`\n' +
-      ' *   dark   → fires under data-mode="dark" or @media (prefers-color-scheme: dark)\n' +
-      ' *   hc     → fires under data-mode="hc"  or @media (prefers-contrast: more)\n' +
-      ' * `data-mode="auto"` (the default) honours BOTH `prefers-color-scheme`\n' +
-      ' * and `prefers-contrast` — explicit modes override OS preference.\n' +
-      ' *\n' +
-      ' * Every selector is wrapped in :where() so theme tokens have zero\n' +
-      ' * specificity — component CSS always wins without `!important`.'
-    : `Diff-only override against the default theme (${baseThemeSlug}).\n` +
-      ` *\n` +
-      ` * REQUIRES the default theme to be loaded FIRST. Activate this theme by:\n` +
-      ` *   1. Loading this file (e.g. <link rel="stylesheet" href="themes/${slug}.css">)\n` +
-      ` *   2. Setting <html data-theme="${slug}">\n` +
-      ' *\n' +
-      ' * Each mode block re-emits not only props that differ in that mode, but\n' +
-      ' * also any light-diffed prop whose dark/hc value matches the base — this\n' +
-      ' * prevents source-order leak of light overrides into dark/hc cascades.';
-
-  lines.push(header(`${themeName} — Theme tokens`, headerBody));
-
-  lines.push('@layer theme {\n\n');
+  const sectionTitle = isDefault
+    ? `${themeName} — Default theme (no data-theme attribute required)`
+    : `${themeName} — Activate: <html data-theme="${slug}">`;
+  const divider = '─'.repeat(Math.max(1, 60 - sectionTitle.length));
+  lines.push(`/* ─── ${sectionTitle} ${divider} */\n\n`);
 
   // Build the per-mode selector lists.
   // - For the DEFAULT theme, include both bare `:root` AND `:root[data-theme="..."]`
@@ -578,15 +646,26 @@ function emitThemeFile(themeEntry, maps, refMaps) {
     lines.push(`/* ── Light${isDefault ? ' (default)' : ' overrides'} ─────────────────────────── */\n`);
     lines.push(`${modeSel('')} {\n`);
     if (isDefault) {
-      let lastSection = null;
+      // Group properties by section (preserving first-appearance order for sections)
+      // so all props sharing a section header are contiguous — no alternating headers.
+      const sectionOrder = [];
+      const sectionGroups = new Map();
       for (const propName of maps.orderByProp) {
         if (!lightOut.has(propName)) continue;
-        const section = maps.sectionByProp.get(propName);
-        if (section && section !== lastSection) {
-          lines.push(`\n  /* ── ${section} ${'─'.repeat(Math.max(1, 50 - section.length))} */\n`);
-          lastSection = section;
+        const section = maps.sectionByProp.get(propName) || '';
+        if (!sectionGroups.has(section)) {
+          sectionOrder.push(section);
+          sectionGroups.set(section, []);
         }
-        lines.push(`  ${propName}: ${lightOut.get(propName)};\n`);
+        sectionGroups.get(section).push(propName);
+      }
+      for (const section of sectionOrder) {
+        if (section) {
+          lines.push(`\n  /* ── ${section} ${'─'.repeat(Math.max(1, 50 - section.length))} */\n`);
+        }
+        for (const propName of sectionGroups.get(section)) {
+          lines.push(`  ${propName}: ${lightOut.get(propName)};\n`);
+        }
       }
     } else {
       for (const propName of maps.orderByProp) {
@@ -622,38 +701,34 @@ function emitThemeFile(themeEntry, maps, refMaps) {
     lines.push('  }\n}\n\n');
   }
 
-  lines.push('} /* @layer theme */\n');
-  if (isDefault) {
-    write(`sherpa-theme-${slug}.css`, lines.join(''));
-  } else {
-    return lines.join('');
-  }
+  return lines.join('');
 }
 
 function emitThemes() {
+  console.log(`  Building theme "${baseThemeName}" (default)`);
   const baseMaps = buildThemeMaps(baseThemeName);
-  console.log(`  Building theme "${baseThemeName}" → sherpa-theme-${baseThemeSlug}.css`);
-  emitThemeFile({ name: baseThemeName, slug: baseThemeSlug }, baseMaps, null);
+  const coreContent = emitThemeFile({ name: baseThemeName, slug: baseThemeSlug }, baseMaps, null);
 
   const extParts = [];
   for (const ext of (themesMeta?.extended || [])) {
-    console.log(`  Building extended theme "${ext.name}" → sherpa-themes-extended.css`);
+    console.log(`  Building extended theme "${ext.name}"`);
     const extMaps = buildThemeMaps(ext.name);
     const content = emitThemeFile({ name: ext.name, slug: ext.slug }, extMaps, baseMaps);
     if (content) extParts.push(content);
   }
-  if (extParts.length > 0) {
-    const fileHeader = header(
-      'Extended Theme Overrides — Apex 2.0 (Blue / Purple / Teal) + Classic',
-      'Diff-only overrides against the default theme (apex-2-core).\n' +
-      ' * All extended themes bundled in one file; [data-theme="..."] selectors\n' +
-      ' * ensure only the active theme\'s tokens apply.\n' +
-      ' *\n' +
-      ' * Activate: set <html data-theme="apex-2-blue|apex-2-purple|apex-2-teal|classic">.\n' +
-      ' * The default theme (apex-2-core) requires no data-theme attribute.',
-    );
-    write('sherpa-themes-extended.css', fileHeader + '\n' + extParts.join('\n'));
-  }
+
+  const fileHeader = header(
+    'Sherpa Themes — Base + Extended Theme Tokens',
+    'All themes bundled in one file; [data-theme="..."] selectors ensure\n' +
+    ' * only the active theme\'s tokens apply. Every selector is wrapped in\n' +
+    ' * :where() — zero specificity, components always win without `!important`.\n' +
+    ' *\n' +
+    ' * Default theme (apex-2-core): no data-theme attribute required.\n' +
+    ' * Extended themes: set <html data-theme="apex-2-blue|apex-2-purple|apex-2-teal|classic">.',
+  );
+  const allContent = [coreContent, ...extParts].join('\n');
+  write('sherpa-themes.css', fileHeader + '\n@layer theme {\n\n' + allContent + '\n} /* @layer theme */\n');
+  console.log(`  → sherpa-themes.css`);
 }
 
 // ─── Emit: sherpa-overrides.css (density + status) ───────────────────
@@ -662,13 +737,14 @@ function emitOverrides() {
   const lines = [];
   lines.push(header(
     'Theme Corrections, Density & Status Overrides',
-    'Three axes of non-base overrides, all in one file.\n' +
+    'Mixed origin: theme corrections are hand-coded in this script;\n' +
+    ' * density and status sections are generated from Figma Variables.\n' +
     ' *\n' +
     ' *   Theme corrections  [@layer theme]\n' +
     ' *            Hand-maintained fixes for Figma-generated aliases that resolve\n' +
     ' *            to values that are visually incorrect. These patches come AFTER\n' +
-    ' *            sherpa-theme-apex-2-core.css and sherpa-themes-extended.css in\n' +
-    ' *            the @layer theme order so they win over the generated values.\n' +
+    ' *            sherpa-themes.css in the @layer theme order so they win over\n' +
+    ' *            the generated values.\n' +
     ' *\n' +
     ' *   Density  [data-density="compact|comfortable"]\n' +
     ' *            Applies to any subtree. Tokens cascade — descendant components\n' +
@@ -689,24 +765,6 @@ function emitOverrides() {
   lines.push('\n/* ─── Theme corrections ─────────────────────────────────────────────── */\n\n');
   lines.push('@layer theme {\n\n');
   lines.push('  :where(:root) {\n');
-  lines.push('    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n');
-  lines.push('    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n');
-  lines.push('    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n');
-  lines.push('    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);\n');
-  lines.push('    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);\n');
-  lines.push('  }\n\n');
-  lines.push('  /* Dark — apex-2-core dark block uses translucent fills that read as\n');
-  lines.push('     near-invisible on dark surfaces; re-pin to the same -200 step. */\n');
-  lines.push('  @media (prefers-color-scheme: dark) {\n');
-  lines.push('    :where(:root:not([data-mode="light"]):not([data-mode="hc"])) {\n');
-  lines.push('      --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n');
-  lines.push('      --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n');
-  lines.push('      --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n');
-  lines.push('      --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);\n');
-  lines.push('      --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);\n');
-  lines.push('    }\n');
-  lines.push('  }\n\n');
-  lines.push('  :where(:root[data-mode="dark"]) {\n');
   lines.push('    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n');
   lines.push('    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n');
   lines.push('    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n');
@@ -783,38 +841,6 @@ function emitStatus() {
   console.warn('  ⚠ emitStatus() is deprecated — use emitOverrides() instead');
 }
 
-// ─── Emit: utilities/data-viz.css ────────────────────────────────────
-
-function emitDataViz() {
-  const baseTheme = data[baseThemeName];
-  const indices = new Set();
-  for (const v of baseTheme.vars) {
-    const m = v.n.match(/^data-viz\/categorical\/color[ -](\d+)$/);
-    if (m) indices.add(parseInt(m[1], 10));
-  }
-  const sorted = [...indices].sort((a, b) => a - b);
-  if (sorted.length === 0) return;
-
-  const lines = [];
-  lines.push(header(
-    'Data Visualization Color Classes',
-    `One class per categorical color. Each class sets a private custom property\n` +
-    ` * (--_data-viz-color) and applies it to background-color, color, and\n` +
-    ` * border-color so the same class works for bars, swatches, labels, regions.\n` +
-    ` *\n` +
-    ` * Layer assignment is handled by @import layer(utilities.dataviz) in index.css.`,
-  ));
-  for (const i of sorted) {
-    lines.push(`.color-${i} {\n`);
-    lines.push(`  --_data-viz-color: var(--sherpa-data-viz-categorical-color-${i});\n`);
-    lines.push(`  background-color: var(--_data-viz-color);\n`);
-    lines.push(`  color: var(--_data-viz-color);\n`);
-    lines.push(`  border-color: var(--_data-viz-color);\n`);
-    lines.push(`}\n`);
-  }
-  write('sherpa-data-viz-classes.css', lines.join(''));
-}
-
 // ─── Emit: reset.css (copy) and index.css (cascade contract) ─────────
 
 function emitReset() {
@@ -835,18 +861,15 @@ function emitIndex() {
  *   density     — [data-density] subtree overrides (Compact / Comfortable)
  *   status      — [data-status] semantic state mapping (--_status-* private vars)
  *   components  — light DOM component overrides
- *   utilities   — class-based helpers (.color-N data-viz, text/icon/motion classes)
+ *   utilities   — class-based helpers (text/icon/motion/layout classes)
  *     ↳ utilities.icons   — icon font + .sherpa-icon sizing
  *     ↳ utilities.motion  — animation keyframes + transition utilities
  *     ↳ utilities.text    — typography classes
- *     ↳ utilities.dataviz — data-viz color classes
- *     ↳ utilities.layout  — control-group, app-shell, scroll-under patterns
+ *     ↳ utilities.layout  — grouped, app-shell, scroll-under patterns
  *
  * Switching axes (single source of truth — JS sets ATTRIBUTES only):
- *   Theme    — base theme is always loaded (sherpa-theme-${baseThemeSlug}.css).
- *              All extended themes (blue/purple/teal/classic) are also bundled
- *              in sherpa-themes-extended.css — always loaded, zero cost when
- *              inactive because selectors are gated on [data-theme="<slug>"].
+ *   Theme    — all themes bundled in sherpa-themes.css. Default (apex-2-core)
+ *              always active; extended themes gated by [data-theme="<slug>"].
  *              To activate: set <html data-theme="<slug>"> (JS attribute only).
  *   Mode     — set <html data-mode="auto|light|dark|hc"> (default "auto")
  *              "auto" honours both prefers-color-scheme AND prefers-contrast.
@@ -858,19 +881,16 @@ function emitIndex() {
  */
 
 @layer reset, primitives, alias, platform, theme, density, status, components, utilities;
-@layer utilities.icons, utilities.motion, utilities.text, utilities.dataviz, utilities.layout;
+@layer utilities.icons, utilities.motion, utilities.text, utilities.layout;
 
 @import "reset.css"                   layer(reset);
 @import "tokens/sherpa-primitives.css" layer(primitives);
 @import "tokens/sherpa-alias.css"      layer(alias);
 @import "tokens/sherpa-platform.css"   layer(platform);
 
-/* Theme — default (no data-theme attr required) */
-@import "sherpa-theme-${baseThemeSlug}.css";
-
-/* Extended themes — all four variants in one file; [data-theme] selectors
+/* All themes — default + four extended variants; [data-theme] selectors
  * ensure only the active theme fires. Activate: set <html data-theme="..."> */
-@import "sherpa-themes-extended.css";
+@import "sherpa-themes.css";
 
 /* Theme corrections, Density & Status — all non-base attribute-driven overrides */
 @import "sherpa-overrides.css";
@@ -879,7 +899,6 @@ function emitIndex() {
 @import "sherpa-icon-classes.css"       layer(utilities.icons);
 @import "sherpa-motion-classes.css"     layer(utilities.motion);
 @import "sherpa-text-classes.css"       layer(utilities.text);
-@import "sherpa-data-viz-classes.css"   layer(utilities.dataviz);
 @import "sherpa-app-classes.css"        layer(utilities.layout);
 `;
   write('index.css', css);
@@ -898,7 +917,6 @@ emitAlias();
 emitPlatform();
 emitThemes();
 emitOverrides();
-emitDataViz();
 emitIndex();
 
 console.log(`\n✅ generation complete — output under css/styles/\n`);

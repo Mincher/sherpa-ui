@@ -27,7 +27,6 @@
   /* ── Hidden state ───────────────────────────────────────– */
 }
 :host .footer {
-  box-sizing: border-box;
 }
 :host .action-bar-footer {
   display: flex;
@@ -72,7 +71,18 @@
       align-items: center;
       gap: var(--_padding);
 }
-:host([hidden]) {
-  display: none;
+:host .card-select-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--_padding-sm);
+  border-top: var(--_border-width) solid
+    var(--sherpa-border-container-subtle, #f0f0f5);
+}
+:host([data-type="card-select"]) {
+  width: 100%;
+}
+:host .card-radio {
+  pointer-events: none;
 }
 

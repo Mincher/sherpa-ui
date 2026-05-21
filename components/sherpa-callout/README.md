@@ -8,11 +8,13 @@ Inline contextual callout with status variants and expandable/dismissible body.
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data-status` | enum | info \| warning \| critical \| success \| neutral \| tip | — | `info`, `warning`, `critical`, `success`, `neutral`, `tip` |
+| `data-status` | enum | info \| warning \| critical \| success | — | `info`, `warning`, `critical`, `success` |
 | `data-heading` | string | Heading text | — | — |
 | `data-expanded` | boolean | Body visible | — | — |
 | `data-dismissible` | boolean | Show toggle button | — | — |
 | `data-icon` | string | Override status icon (FA class) | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -85,10 +87,10 @@ element.addEventListener("callout-dismiss", (e) => {
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
-- `--_callout-`
-- `--_callout-bg`
-- `--_callout-heading`
-- `--_callout-icon`
+- `--_status-`
+- `--_status-border`
+- `--_status-icon`
+- `--_status-surface-subtle`
 
 ## Usage
 

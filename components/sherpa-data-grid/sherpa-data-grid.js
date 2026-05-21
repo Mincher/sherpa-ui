@@ -149,7 +149,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       "data-show-secondary-headers",
       "data-show-pagination",
       "data-preset-filters",
-      "data-src",
       "data-action-menu",
       ...CONTENT_ATTRIBUTES,
     ];
@@ -328,7 +327,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     // Declarative initial state from attributes (no JS required).
     this.#syncActionMenuFromAttr();
-    if (this.hasAttribute("data-src")) this.#loadFromSrc(this.getAttribute("data-src"));
+    if (this.hasAttribute("data-src-json")) this.setAttribute("data-loading", "");
   }
 
   onDisconnect() {
@@ -344,8 +343,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   onAttributeChanged(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
-    if (name === "data-src") {
-      if (newValue) this.#loadFromSrc(newValue);
+    if (name === "data-src-json") {
+      if (newValue) this.setAttribute("data-loading", "");
       return;
     }
     if (name === "data-action-menu") {
@@ -1506,16 +1505,12 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   }
 
   /** Fetch `{ columns, rows }` JSON from the given URL and load it. */
-  async #loadFromSrc(src) {
-    if (!src) return;
-    this.setAttribute("data-loading", "");
-    try {
-      const data = await fetch(src).then((r) => r.json());
-      await this.setData(data);
-    } catch (e) {
-      this.removeAttribute("data-loading");
-      console.warn("sherpa-data-grid: failed to load data-src:", e);
-    }
+  async onJsonData(data) {
+    await this.setData(data);
+  }
+
+  onJsonError(_url, _e) {
+    this.removeAttribute("data-loading");
   }
 
   #populateActionMenu() {

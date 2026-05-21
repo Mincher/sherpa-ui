@@ -60,6 +60,12 @@
   --sherpa-core-effects-spread-200: -4px;
   --sherpa-core-effects-spread-300: -8px;
   --sherpa-core-effects-spread-400: -16px;
+  --sherpa-core-effects-opacity-0:   0;
+  --sherpa-core-effects-opacity-100: 20;
+  --sherpa-core-effects-opacity-200: 40;
+  --sherpa-core-effects-opacity-300: 60;
+  --sherpa-core-effects-opacity-400: 80;
+  --sherpa-core-effects-opacity-500: 100;
 
   /* ═══════════════════════════════════════════════════════════════
      MOTION — duration

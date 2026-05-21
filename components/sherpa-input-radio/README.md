@@ -16,6 +16,8 @@ Atomic radio primitive. Single radio with label-on-the-right. Use multiple insta
 | `data-label` | string | Inline label text | — | — |
 | `data-description` | string | Helper line below the label | — | — |
 | `data-status` | enum | critical \| warning \| success \| info \| urgent | — | `critical`, `warning`, `success`, `info`, `urgent` |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -58,6 +60,7 @@ element.addEventListener("change", (e) => {
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
+- `--_status-`
 - `--_status-border`
 - `--_status-surface-strong`
 - `--_status-text`

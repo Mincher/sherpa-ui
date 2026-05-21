@@ -10,6 +10,8 @@ sherpa-node-header.js — 48-tall header for sherpa-node. Provides: • Built-in
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-icon` | string | FontAwesome class (e.g. "fa-solid fa-cube") | — | — |
 | `data-drill-down` | boolean | Show built-in drill-down button | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -53,7 +55,7 @@ element.addEventListener("sherpa-node-drilldown", (e) => {
 ### Basic
 
 ```html
-<sherpa-node-header data-icon="value">
+<sherpa-node-header data-icon="value" data-src-html="value" data-src-json="value">
   <span slot="icon"><!-- Custom leading icon (overrides data-icon) --></span>
   <span slot="title"><!-- Header title text --></span>
 </sherpa-node-header>

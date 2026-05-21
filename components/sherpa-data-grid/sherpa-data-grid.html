@@ -47,20 +47,14 @@
     <sherpa-button
       class="actions-btn"
       slot="leading"
-      data-type="button-menu"
       data-variant="secondary"
       data-label="Actions"
+      data-menu="true"
       data-menu-position="bottom-start"
     ></sherpa-button>
 
-    <!-- Filters: embedded filter bar with group/sort/presets/add/clear -->
+    <!-- Filters: embedded filter bar — group/sort/presets/add built in -->
     <sherpa-filter-bar data-embedded slot="filters">
-      <sherpa-button slot="group" data-type="button-menu" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none"
-        ></sherpa-button
-      >
-      <sherpa-button slot="sort" data-type="button-menu" data-split data-behavior="sort" data-label="Sort" data-icon-start="&#xf0dc;" data-menu-scope="none"
-        ></sherpa-button
-      >
       <sherpa-button
         slot="actions"
         data-variant="tertiary"

@@ -25,7 +25,6 @@
   --_padding-block: var(--sherpa-space-sm, 12px);
 }
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    <dl> — flex container, one dt/dd pair per row via CSS grid-like flex wrap
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -184,6 +183,3 @@ dd[data-type="monospace"] {
 }
 
 /* Native [hidden] support */
-:host([hidden]) {
-  display: none;
-}

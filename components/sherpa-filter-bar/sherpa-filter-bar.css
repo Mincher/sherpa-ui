@@ -48,14 +48,11 @@
       gap: var(--_filter-bar-gap);
       width: 100%;
       padding-block: var(--_filter-bar-py);
-      box-sizing: border-box;
 }
 :host([data-embedded]) .filter-surface {
   padding: 0; border: none;
 }
 :host slot[name="toggle"],
-:host slot[name="group"],
-:host slot[name="sort"],
 :host slot[name="presets"],
 :host slot[name="actions"] {
   display: flex;
@@ -67,14 +64,10 @@
   margin-inline-start: auto;
 }
 :host slot[name="toggle"]:not(:has(::slotted(*))),
-:host slot[name="group"]:not(:has(::slotted(*))),
-:host slot[name="sort"]:not(:has(::slotted(*))),
 :host slot[name="presets"]:not(:has(::slotted(*))) {
   display: none;
 }
 :host(:not([data-has-toggle]))  slot[name="toggle"],
-:host(:not([data-has-group]))   slot[name="group"],
-:host(:not([data-has-sort]))    slot[name="sort"],
 :host(:not([data-has-presets])) slot[name="presets"],
 :host(:not([data-has-actions])) slot[name="actions"] {
   display: none;
@@ -87,19 +80,17 @@
   height: 16px;
   background: var(--sherpa-border-container-default, #e0e0e5);
 }
-/* Divider before the Presets zone — visible when presets exist and any
-   Grouping/Sorting content precedes them. */
-:host([data-has-presets][data-has-sort]) .zone-divider[data-divider="before-presets"],
-:host([data-has-presets][data-has-group]) .zone-divider[data-divider="before-presets"] {
+/* Divider before the Presets zone — visible when presets exist. Group/sort
+   chips are always present so we only need to check for presets. */
+:host([data-has-presets]) .zone-divider[data-divider="before-presets"] {
   display: block;
 }
 /* Divider before the Custom zone — visible when the custom zone has any
-   content (user filter chips or the Add button) and any earlier zone exists. */
-:host([data-has-user-filters][data-has-sort])    .zone-divider[data-divider="before-custom"],
-:host([data-has-user-filters][data-has-group])   .zone-divider[data-divider="before-custom"],
+   content (user filter chips or the Add button). Group/sort chips are always
+   present so we only need to check for presets, user-filters, or add. */
+:host([data-has-user-filters]) .zone-divider[data-divider="before-custom"],
 :host([data-has-user-filters][data-has-presets]) .zone-divider[data-divider="before-custom"],
-:host([data-has-add][data-has-sort])    .zone-divider[data-divider="before-custom"],
-:host([data-has-add][data-has-group])   .zone-divider[data-divider="before-custom"],
+:host([data-has-add]) .zone-divider[data-divider="before-custom"],
 :host([data-has-add][data-has-presets]) .zone-divider[data-divider="before-custom"] {
   display: block;
 }
@@ -109,7 +100,84 @@
 :host .add-filter-button {
   flex-shrink: 0;
 }
-:host([hidden]) {
-  display: none;
+
+/* ─── Built-in group / sort chip groups ───────────────────────────────────── */
+/*
+ * These chips live in shadow DOM so they cannot rely on the global .grouped
+ * utility class from sherpa-app-classes.css (global CSS does not pierce shadow
+ * boundaries). The .chip-group class replicates the necessary styles here.
+ */
+:host .chip-group {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 0;
+  vertical-align: middle;
+  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  overflow: hidden;
+  flex-shrink: 0;
+  --_cg-border-width: 0;
+  --_cg-border-radius: 0;
+  --_cg-sep-inline: var(--sherpa-border-width-xs, 1px);
+  --_cg-sep-block: 0px;
+
+  &:focus-within {
+    border-color: var(--sherpa-border-control-active-default, #0060df);
+  }
+
+  & > [data-position="start"] {
+    --_grouped-rounding-start: var(--sherpa-border-rounding-base, 4px);
+    --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
+  }
+
+  & > [data-position="end"] {
+    --_grouped-rounding-start: var(--sherpa-border-rounding-none, 0);
+    --_grouped-rounding-end: var(--sherpa-border-rounding-base, 4px);
+  }
 }
 
+:host .chip-group:has(sherpa-button[data-active]) {
+  border-color: var(--sherpa-border-control-active-default, #8500cc);
+}
+
+/* ─── Slotted .grouped light-DOM filter chips ─────────────────────────────── */
+/*
+ * Dynamically created filter chips (ad-hoc and preset) are .grouped divs
+ * appended to the filter bar's light DOM.  When the filter bar is embedded
+ * inside another component (e.g. sherpa-data-grid), it lives inside that
+ * component's shadow root — meaning the global sherpa-app-classes.css
+ * .grouped rule no longer applies (global CSS does not pierce shadow DOM).
+ *
+ * ::slotted() in this shadow-root stylesheet reaches those distributed
+ * children regardless of which shadow DOM context the filter bar lives in.
+ *
+ * Note: ::slotted() cannot style descendants, but CSS custom properties set
+ * here DO inherit through shadow boundaries into each sherpa-button's :host,
+ * which is all sherpa-button needs for the group appearance.
+ */
+::slotted(.grouped) {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 0;
+  vertical-align: middle;
+  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  overflow: hidden;
+  flex-shrink: 0;
+  --_cg-border-width: 0;
+  --_cg-border-radius: 0;
+  --_cg-separator-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
+  --_cg-sep-inline: var(--sherpa-border-width-xs, 1px);
+  --_cg-sep-block: 0px;
+}
+
+::slotted(.grouped:focus-within) {
+  border-color: var(--sherpa-border-control-active-default, #0060df);
+}
+
+::slotted(.grouped:has(sherpa-button[data-active])) {
+  border-color: var(--sherpa-border-control-active-default, #8500cc);
+  --_cg-separator-color: var(--sherpa-border-control-active-default, #8500cc);
+}

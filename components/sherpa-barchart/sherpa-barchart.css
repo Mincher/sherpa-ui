@@ -30,7 +30,6 @@
   container-name: barchart;
 }
 
-
 :host([data-loading]) .chart-rows {
   filter: grayscale(0.6);
   color: var(--sherpa-text-inactive-default, #5c5c66);
@@ -182,7 +181,7 @@ sherpa-filter-bar {
   max-width: var(--_label-width, 80px);
   align-self: center;
   display: block;
-  padding-right: var(--sherpa-space-xs, 12px);
+  padding-inline-end: var(--sherpa-space-xs, 12px);
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-text-default-heading, #18191a);
@@ -200,7 +199,7 @@ sherpa-filter-bar {
   align-items: center;
   min-width: 0;
   padding: 2px 0;
-  border-left: var(--sherpa-border-width-base, 1px) solid
+  border-inline-start: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-control-secondary-default, #d5d5d5);
 }
 
@@ -213,7 +212,7 @@ sherpa-filter-bar {
   transition:
     width var(--sherpa-motion-duration-base, 0.25s) ease-out,
     height var(--sherpa-motion-duration-base, 0.25s) ease-out,
-    filter var(--sherpa-motion-duration-fast, 0.15s) ease;
+    filter var(--sherpa-motion-transition-fast, 0.15s ease-out) ease;
   animation: sherpa-grow-horizontal var(--sherpa-motion-duration-base, 0.25s)
     ease-out both;
   animation-delay: calc(var(--_ripple-delay-step) * var(--_i, 0));
@@ -241,7 +240,7 @@ sherpa-filter-bar {
 
 .chart-axis-pad {
   flex: 0 0 var(--_label-width, 80px);
-  padding-right: var(--sherpa-space-xs, 12px);
+  padding-inline-end: var(--sherpa-space-xs, 12px);
 }
 
 .chart-axis-values {
@@ -249,7 +248,7 @@ sherpa-filter-bar {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  border-left: var(--sherpa-border-width-base, 1px) solid transparent;
+  border-inline-start: var(--sherpa-border-width-base, 1px) solid transparent;
 }
 
 .chart-value {
@@ -273,7 +272,7 @@ sherpa-filter-bar {
   content: "";
   position: absolute;
   bottom: 100%;
-  left: 50%;
+  inset-inline-start: 50%;
   width: 1px;
   height: 9999px;
   background: color-mix(
@@ -285,11 +284,11 @@ sherpa-filter-bar {
 }
 
 .chart-value:first-child::before {
-  left: 0;
+  inset-inline-start: 0;
 }
 .chart-value:last-child::before {
-  left: auto;
-  right: 0;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -393,7 +392,7 @@ sherpa-filter-bar {
             max-width: 100%;
             min-width: 0;
             text-align: center;
-            padding-right: 0;
+            padding-inline-end: 0;
             padding-top: var(--sherpa-space-2xs, 8px);
             order: 1;
           }
@@ -401,7 +400,7 @@ sherpa-filter-bar {
             flex-direction: column-reverse;
             align-items: center;
             padding: 0 2px;
-            border-left: none;
+            border-inline-start: none;
             border-bottom: var(--sherpa-border-width-base, 1px) solid
               var(--sherpa-border-control-secondary-default, #d5d5d5);
           }
@@ -416,7 +415,7 @@ sherpa-filter-bar {
   .chart-axis {
             flex-direction: column-reverse;
             padding-top: 0;
-            padding-right: var(--sherpa-space-xs, 12px);
+            padding-inline-end: var(--sherpa-space-xs, 12px);
             order: -1;
             width: auto;
             height: 100%;
@@ -426,7 +425,7 @@ sherpa-filter-bar {
           }
   .chart-axis-values {
             flex-direction: column-reverse;
-            border-left: none;
+            border-inline-start: none;
             padding-bottom: calc(
               var(--sherpa-fonts-scale-sm, 12px) + var(--sherpa-space-2xs, 4px)
             );
@@ -443,20 +442,20 @@ sherpa-filter-bar {
           }
   .chart-value::before {
             bottom: auto;
-            left: auto;
-            right: 100%;
+            inset-inline-start: auto;
+            inset-inline-end: 100%;
             top: 50%;
             width: 9999px;
             height: 1px;
           }
   .chart-value:first-child::before {
-            left: auto;
-            right: 100%;
+            inset-inline-start: auto;
+            inset-inline-end: 100%;
             top: 50%;
           }
   .chart-value:last-child::before {
-            left: auto;
-            right: 100%;
+            inset-inline-start: auto;
+            inset-inline-end: 100%;
             top: 50%;
           }
   .chart-legend {
@@ -490,7 +489,7 @@ sherpa-filter-bar {
             display: none;
           }
   .chart-bar {
-            border-left: none;
+            border-inline-start: none;
           }
 }
 
@@ -509,7 +508,7 @@ sherpa-filter-bar {
     display: none;
   }
   .chart-bar {
-    border-left: none;
+    border-inline-start: none;
   }
 }
 
@@ -556,28 +555,4 @@ sherpa-filter-bar {
   vertical-align: middle;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   PDF Mode
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-:host([data-pdf-mode]) {
-  width: 100%;
-  height: auto !important;
-  min-height: 250px;
-  flex: 0 0 auto !important;
-  overflow: visible !important;
-  .chart-header {
-            display: none;
-          }
-  .chart-area {
-            min-height: 220px;
-          }
-  .chart-legend {
-            display: flex !important;
-          }
-}
-
 /* Native [hidden] support */
-:host([hidden]) {
-  display: none;
-}

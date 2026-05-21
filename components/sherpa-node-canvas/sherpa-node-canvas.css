@@ -20,7 +20,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--sherpa-surface-app-background-default, #eef0f3);
+  background: var(--sherpa-surface-container-app, #eef0f3);
   contain: strict;
   touch-action: none;
   /* Grid configuration (world units) */
@@ -111,8 +111,5 @@
   position: absolute;
       visibility: hidden;
       pointer-events: none;
-}
-:host([hidden]) {
-  display: none;
 }
 

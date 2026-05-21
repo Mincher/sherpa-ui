@@ -43,7 +43,6 @@ Complete guide to using and extending the Sherpa design token system.
   │   utilities.icons  sherpa-icon-classes.css                          │  hand
   │   utilities.motion sherpa-motion-classes.css                        │  hand
   │   utilities.text   sherpa-text-classes.css                          │  hand
-  │   utilities.dataviz sherpa-data-viz-classes.css (.color-1…N)        │  generated
   │   utilities.layout sherpa-app-classes.css                           │  hand
   └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -52,7 +51,7 @@ Layer order is established once in `index.css`:
 
 ```css
 @layer reset, primitives, alias, platform, theme, density, status, components, utilities;
-@layer utilities.icons, utilities.motion, utilities.text, utilities.dataviz, utilities.layout;
+@layer utilities.icons, utilities.motion, utilities.text, utilities.layout;
 ```
 
 Later layers override earlier ones unconditionally. Within the **theme**
@@ -293,10 +292,10 @@ Theme CSS files use the CSS `light-dark()` function for every colour that
 differs between light and dark modes:
 
 ```css
-/* Inside sherpa-theme-apex-2-core.css */
+/* Inside sherpa-themes.css */
 :root {
   color-scheme: light dark;
-  --sherpa-surface-app-background-default: light-dark(
+  --sherpa-surface-container-app: light-dark(
     var(--sherpa-color-neutral-0),
     var(--sherpa-core-color-basic-monochrome-950)
   );
@@ -335,7 +334,7 @@ Themes are split into a **default theme (full surface) + per-theme diffs**:
   so the diffs apply only when `<html data-theme="<slug>">` matches.
 
 Both the base theme and all extended themes belong to `@layer theme`. All themes
-are bundled into `index.css` via `sherpa-themes-extended.css` — no runtime
+are bundled into `index.css` via `sherpa-themes.css` — no runtime
 `<link>` swap is needed. To activate a theme, set `data-theme` on `<html>`:
 
 ```html
@@ -359,15 +358,15 @@ live in the theme files rather than the shared alias file:
 | Family                     | Defined in                                |
 | -------------------------- | ----------------------------------------- |
 | `--sherpa-color-primary-cyan-*` | `classic` theme only          |
-| `--sherpa-color-primary-blue-*` | `sherpa-theme-apex-2-core.css` |
+| `--sherpa-color-primary-blue-*` | `sherpa-themes.css` (`apex-2-core` section) |
 
 Do not consume these directly from component CSS unless the component is
 theme-specific. Prefer the abstract `--sherpa-color-brand-*` semantic alias.
 Configured via `THEME_SCOPED_FAMILIES` in
 [scripts/generate-css-tokens.js](../scripts/generate-css-tokens.js).
 
-Available themes (all bundled in `sherpa-themes-extended.css`):
-- `sherpa-theme-apex-2-core.css` — Apex 2.0 Core (default, no `data-theme` required)
+Available themes (all bundled in `sherpa-themes.css`):
+- Apex 2.0 Core — default, no `data-theme` attribute required
 - `data-theme="apex-2-purple"` — Apex 2.0 (Purple)
 - `data-theme="apex-2-teal"` — Apex 2.0 (Teal)
 - `data-theme="apex-2-blue"` — Apex 2.0 (Blue)

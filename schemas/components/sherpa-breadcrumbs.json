@@ -1,20 +1,20 @@
 {
   "tagName": "sherpa-breadcrumbs",
-  "description": "Navigation breadcrumb trail. The default template renders a <nav><ol> of crumbs (anchors + a current-page span).",
+  "description": "Navigation breadcrumb trail rendered as a flat flex row of crumb links and separator spans.",
   "category": "control",
   "tier": 4,
   "group": "navigation",
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data-src",
+      "name": "data-src-html",
       "type": "string",
-      "description": "URL of an alternative breadcrumbs template HTML"
+      "description": "URL of an HTML template file to replace the shadow DOM"
     },
     {
-      "name": "data-items",
-      "type": "json",
-      "description": "JSON array of {label: string, href?: string}"
+      "name": "data-src-json",
+      "type": "string",
+      "description": "URL of a JSON file: [{label: string, href?: string}]"
     }
   ],
   "slots": [],

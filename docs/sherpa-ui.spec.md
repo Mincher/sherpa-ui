@@ -350,7 +350,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | REQ-08 | Every semantic token reference in component CSS **SHALL** include a hardcoded fallback value (e.g. `var(--sherpa-space-sm, 12px)`). |
 | REQ-09 | Custom events dispatched by components **SHALL** set `bubbles: true`. Events intended for application-level handlers outside the host's shadow tree **SHALL** also set `composed: true`. |
 | REQ-10 | Form input components **SHALL** extend `SherpaInputBase` and use the shared label/control/help wrapper. |
-| REQ-11 | CRUD flows (add / edit / delete / export) **SHALL** be composed from existing components and orchestrated by `FlowManager`, `FormManager`, `refreshDataset`, and `initExportFlow`. No dedicated flow component **SHALL** be created. |
+| REQ-11 | CRUD flows (add / edit / delete) **SHALL** be composed from existing components and orchestrated by `FlowManager`, `FormManager`, and `refreshDataset`. No dedicated flow component **SHALL** be created. |
 | REQ-12 | Disabled state **SHALL** be expressed using inactive tokens applied to individual properties; opacity-based dimming for disabled state is forbidden. |
 | REQ-13 | Every component **SHALL** be discoverable through MCP at `sherpa://schema/{tag}`. |
 | REQ-14 | Every component's source files **SHALL** be readable through MCP at `sherpa://component/{tag}/{kind}` for `kind` in `html`, `css`, `js`, `readme`. |
@@ -749,7 +749,6 @@ State is held in JS memory (not in DOM attributes). Each transition emits a cust
 *   Public attributes: `data-<name>` kebab-case (`data-variant`, `data-icon-start`).
 *   Slot occupancy markers: `data-has-<slotName>` (set by `SherpaElement`).
 *   Status cascade: `data-status` on any ancestor.
-*   PDF / export modes: `data-pdf-mode` for components with print-specific layouts.
 
 #### C.2 Event naming
 

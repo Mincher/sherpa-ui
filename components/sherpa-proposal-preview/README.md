@@ -1,6 +1,6 @@
 # sherpa-proposal-preview
 
-> **Category:** content · **Base class:** SherpaElement
+> **Category:** ai · **Base class:** SherpaElement
 
 Agent proposal renderer.
 
@@ -9,6 +9,8 @@ Agent proposal renderer.
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-rationale` | string | Italic rationale shown above the ops. | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -55,7 +57,7 @@ sherpa-proposal-preview::part(proposal) {
 ### Basic
 
 ```html
-<sherpa-proposal-preview data-rationale="value">
+<sherpa-proposal-preview data-rationale="value" data-src-html="value" data-src-json="value">
   <span slot="ops"><!-- One <sherpa-proposal-op> per change. --></span>
   <span slot="raw"><!-- Raw proposal payload (typically a <pre>). --></span>
 </sherpa-proposal-preview>

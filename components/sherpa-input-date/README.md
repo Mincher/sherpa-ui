@@ -10,6 +10,23 @@ Date input using the native browser date picker. Inherits label, description, he
 | --------- | ---- | ----------- | ------- | ------ |
 | `min` | string | Minimum selectable date (YYYY-MM-DD) | — | — |
 | `max` | string | Maximum selectable date (YYYY-MM-DD) | — | — |
+| `data-label` | string |  | — | — |
+| `data-description` | string |  | — | — |
+| `data-helper` | string |  | — | — |
+| `data-layout` | string |  | — | — |
+| `disabled` | string |  | — | — |
+| `readonly` | string |  | — | — |
+| `required` | string |  | — | — |
+| `name` | string |  | — | — |
+| `value` | string |  | — | — |
+| `placeholder` | string |  | — | — |
+| `pattern` | string |  | — | — |
+| `minlength` | string |  | — | — |
+| `maxlength` | string |  | — | — |
+| `novalidate` | string |  | — | — |
+| `data-status` | string |  | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -64,7 +81,13 @@ element.addEventListener("change", (e) => {
 ### Basic
 
 ```html
-<sherpa-input-date min="value" max="value"></sherpa-input-date>
+<sherpa-input-date min="value" max="value" data-label="Example Label"></sherpa-input-date>
+```
+
+### Disabled
+
+```html
+<sherpa-input-date data-label="Disabled" disabled></sherpa-input-date>
 ```
 
 ## Import

@@ -24,9 +24,6 @@
        Radio keeps white face; status colours border + dot.
        [data-status] cascades --_status-* through shadow boundary. */
 }
-:host([hidden]) {
-  display: none;
-}
 :host([disabled]) {
   pointer-events: none;
 }
@@ -60,5 +57,4 @@
         color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
       }
 }
-
 

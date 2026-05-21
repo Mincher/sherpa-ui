@@ -365,8 +365,6 @@ function handleDemoAction(action) {
   if (action === "show") componentEl.show?.();
   else if (action === "hide") componentEl.hide?.();
   else if (action === "toggle") componentEl.toggle?.();
-  else if (action === "load-pdf")
-    loadContainerPdfDemo(componentEl, config.containerPdfDemo?.source);
 }
 
 /* ── State → preview ────────────────────────────────────── */
@@ -445,7 +443,6 @@ function applySlots(t) {
   if (c.defaultSlot === false && c.namedSlots === false) return;
   if (
     config.containerDemo ||
-    config.containerPdfDemo ||
     config.contentAreaDemo ||
     config.navDemo
   )
@@ -575,8 +572,6 @@ function runPostInit(t) {
     loadContentAreaDemo(t, viewId);
     return;
   }
-  if (config.containerPdfDemo)
-    loadContainerPdfDemo(t, config.containerPdfDemo.source);
   if (componentName === "sherpa-tooltip") setupTooltipDemo();
 }
 
@@ -648,25 +643,6 @@ async function loadContainerDemo(t, source) {
   }
 }
 
-async function loadContainerPdfDemo(t, source) {
-  try {
-    const c = document.createElement("sherpa-container");
-    c.classList.add("doc-hidden");
-    $("[data-preview-stage]").appendChild(c);
-    await loadContainerDemo(c, source);
-    for (let w = 0; w < 3000; w += 150) {
-      const el = c.querySelector(
-        "sherpa-data-grid, sherpa-barchart, sherpa-sparkline",
-      );
-      if (el?.getData?.()) break;
-      await new Promise((r) => setTimeout(r, 150));
-    }
-    await t.setData?.(c);
-  } catch (e) {
-    console.warn("Container PDF demo load failed", e);
-  }
-}
-
 async function loadTemplates() {
   if (templatesCache) return templatesCache;
   const entries = await Promise.all(
@@ -694,7 +670,7 @@ function setupTooltipDemo() {
 function setupNavDemo(t, navCfg) {
   const configs = navCfg.configs || [];
   const src = configs[0]?.src || "/components/sherpa-nav/config.json";
-  t.setAttribute("data-src", src);
+  t.setAttribute("data-src-html", src);
 
   if (configs.length > 1) {
     const area = $("[data-demo-actions]");
@@ -710,7 +686,7 @@ function setupNavDemo(t, navCfg) {
       .join("");
     sel.value = src;
     sel.addEventListener("change", (e) =>
-      t.setAttribute("data-src", e.target.value),
+      t.setAttribute("data-src-html", e.target.value),
     );
     row.appendChild(sel);
     area.appendChild(row);

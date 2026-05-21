@@ -21,7 +21,7 @@
 .input-field {
   appearance: none;
   -webkit-appearance: none;
-  padding-right: calc(var(--sherpa-space-sm, 12px) + 16px + var(--sherpa-space-xs, 8px));
+  padding-inline-end: calc(var(--sherpa-space-sm, 12px) + 16px + var(--sherpa-space-xs, 8px));
   cursor: pointer;
   width: 100%;
 }
@@ -35,7 +35,7 @@
 /* Custom chevron */
 .select-chevron {
   position: absolute;
-  right: var(--sherpa-space-sm, 12px);
+  inset-inline-end: var(--sherpa-space-sm, 12px);
   top: 50%;
   transform: translateY(-50%);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
@@ -167,8 +167,5 @@
         font-family: "Font Awesome 6 Free";
         font-weight: 900;
       }
-}
-:host([hidden]) {
-  display: none;
 }
 

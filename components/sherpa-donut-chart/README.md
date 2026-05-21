@@ -24,6 +24,8 @@ Available templates:
 | `data-segment-mode` | enum | Segment display mode | — | — |
 | `data-sort-field` | string | Sort field | — | — |
 | `data-sort-direction` | enum | asc \| desc | — | `asc`, `desc` |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Methods
 

@@ -1,13 +1,13 @@
 {
   "tagName": "sherpa-nav",
-  "description": "Collapsible navigation sidebar with search and edit modes. Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html, override via data-src). CSS Highlight API for search (::highlight(nav-search-match)).",
+  "description": "Collapsible navigation sidebar with search and edit modes. Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html, override via data-src-html). CSS Highlight API for search (::highlight(nav-search-match)).",
   "category": "shell",
   "tier": 1,
   "group": "navigation",
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data-src",
+      "name": "data-src-html",
       "type": "string",
       "description": "URL for the nav template HTML (default: sherpa-nav.html)"
     },
@@ -35,6 +35,12 @@
       "name": "data-promo-link-url",
       "type": "string",
       "description": "Footer promo CTA link URL"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [],

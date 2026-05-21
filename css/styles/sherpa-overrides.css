@@ -3,13 +3,14 @@
  * Auto-generated from Figma Variables — do not edit manually.
  * Regenerate: node scripts/generate-css-tokens.js
  *
- * Three axes of non-base overrides, all in one file.
+ * Mixed origin: theme corrections are hand-coded in this script;
+ * density and status sections are generated from Figma Variables.
  *
  *   Theme corrections  [@layer theme]
  *            Hand-maintained fixes for Figma-generated aliases that resolve
  *            to values that are visually incorrect. These patches come AFTER
- *            sherpa-theme-apex-2-core.css and sherpa-themes-extended.css in
- *            the @layer theme order so they win over the generated values.
+ *            sherpa-themes.css in the @layer theme order so they win over
+ *            the generated values.
  *
  *   Density  [data-density="compact|comfortable"]
  *            Applies to any subtree. Tokens cascade — descendant components
@@ -28,26 +29,6 @@
 @layer theme {
 
   :where(:root) {
-    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);
-    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);
-    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);
-    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);
-    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);
-  }
-
-  /* Dark — apex-2-core dark block uses translucent fills that read as
-     near-invisible on dark surfaces; re-pin to the same -200 step. */
-  @media (prefers-color-scheme: dark) {
-    :where(:root:not([data-mode="light"]):not([data-mode="hc"])) {
-      --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);
-      --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);
-      --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);
-      --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);
-      --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);
-    }
-  }
-
-  :where(:root[data-mode="dark"]) {
     --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);
     --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);
     --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);
@@ -192,3 +173,26 @@
   }
 
 } /* @layer status */
+
+
+/* ─── Selected ───────────────────────────────────────────────────── */
+
+@layer selected {
+
+  /* Set --_selected-* private vars on any element with data-selected="true".
+   * Custom properties inherit through shadow DOM — components consume them
+   * via var(--_selected-*, <semantic-fallback>) in their :host([data-selected])
+   * selectors. No per-component colour block needed to opt in to this style.
+   *
+   * Consumed vars:
+   *   --_selected-surface   Strong active background (brand-1000, near-black deep purple)
+   *   --_selected-border    Active border colour
+   *   --_selected-text      Light text suitable for the strong surface
+   */
+  :where([data-selected="true"], [data-active]) {
+    --_selected-surface: var(--sherpa-surface-container-active-default);
+    --_selected-border:  var(--sherpa-border-container-active);
+    --_selected-text:    var(--sherpa-text-active-base);
+  }
+
+} /* @layer selected */

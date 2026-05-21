@@ -4,37 +4,37 @@
 <template data-label="Ops dashboard" data-description="A typical 6-tile dashboard. data-col-span sizes each card on a 12-column grid." data-layout="block">
   <sherpa-layout-grid data-heading="Platform status" data-row-height="140">
     <sherpa-container data-col-span="3">
-      <sherpa-container-header slot="header" data-title="Devices online"></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Devices online"></sherpa-header>
       <div slot="body" style="padding: var(--sherpa-space-default);">
         <sherpa-metric data-label="Devices online" value="1,284" data-delta="+12" data-trend="up"></sherpa-metric>
       </div>
     </sherpa-container>
     <sherpa-container data-col-span="3">
-      <sherpa-container-header slot="header" data-title="Open alerts"></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Open alerts"></sherpa-header>
       <div slot="body" style="padding: var(--sherpa-space-default);">
         <sherpa-metric data-label="Open alerts" value="7" data-status="critical"></sherpa-metric>
       </div>
     </sherpa-container>
     <sherpa-container data-col-span="3">
-      <sherpa-container-header slot="header" data-title="Avg latency"></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Avg latency"></sherpa-header>
       <div slot="body" style="padding: var(--sherpa-space-default);">
         <sherpa-metric data-label="P95 latency" value="142ms" data-delta="−8ms" data-trend="down" data-status="success"></sherpa-metric>
       </div>
     </sherpa-container>
     <sherpa-container data-col-span="3">
-      <sherpa-container-header slot="header" data-title="Uptime"></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Uptime"></sherpa-header>
       <div slot="body" style="padding: var(--sherpa-space-default);">
         <sherpa-metric data-label="Uptime (30d)" value="99.94%" data-status="success"></sherpa-metric>
       </div>
     </sherpa-container>
     <sherpa-container data-col-span="8">
-      <sherpa-container-header slot="header" data-title="Traffic" data-description="Sessions over the last 7 days."></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Traffic" data-description="Sessions over the last 7 days."></sherpa-header>
       <div slot="body" style="padding: var(--sherpa-space-default); display: flex; align-items: center; justify-content: center; min-height: 200px; color: var(--sherpa-text-default-meta);">
         Chart placeholder
       </div>
     </sherpa-container>
     <sherpa-container data-col-span="4">
-      <sherpa-container-header slot="header" data-title="Recent activity"></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Recent activity"></sherpa-header>
       <sherpa-list slot="body">
         <sherpa-list-item data-label="Deploy succeeded" data-description="v2.4.1 — 2 mins ago" data-icon="fa-solid fa-rocket"></sherpa-list-item>
         <sherpa-list-item data-label="Alert resolved"   data-description="api-gateway — 8 mins ago" data-icon="fa-solid fa-check"></sherpa-list-item>
@@ -47,19 +47,19 @@
 <template data-label="Editable mode" data-description="data-editable lets users drag tiles by the header and resize them." data-layout="block">
   <sherpa-layout-grid data-heading="Editable dashboard" data-editable data-row-height="120">
     <sherpa-container data-col-span="4" data-editable>
-      <sherpa-container-header slot="header" data-title="Sessions" data-drag-handle></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Sessions" data-drag-handle></sherpa-header>
       <div slot="body" style="padding: var(--sherpa-space-default);">
         <sherpa-metric data-label="Sessions today" value="18,420"></sherpa-metric>
       </div>
     </sherpa-container>
     <sherpa-container data-col-span="4" data-editable>
-      <sherpa-container-header slot="header" data-title="Sign-ups" data-drag-handle></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Sign-ups" data-drag-handle></sherpa-header>
       <div slot="body" style="padding: var(--sherpa-space-default);">
         <sherpa-metric data-label="New sign-ups" value="248" data-delta="+18%" data-trend="up"></sherpa-metric>
       </div>
     </sherpa-container>
     <sherpa-container data-col-span="4" data-editable>
-      <sherpa-container-header slot="header" data-title="Revenue" data-drag-handle></sherpa-container-header>
+      <sherpa-header slot="header" data-title="Revenue" data-drag-handle></sherpa-header>
       <div slot="body" style="padding: var(--sherpa-space-default);">
         <sherpa-metric data-label="MRR" value="$84,210" data-delta="+$3.2k" data-trend="up" data-status="success"></sherpa-metric>
       </div>

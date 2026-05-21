@@ -9,43 +9,39 @@
  *   theme       — themed surface/text/border/icon (LIGHT default + nested dark/hc)
  *   density     — [data-density] subtree overrides (Compact / Comfortable)
  *   status      — [data-status] semantic state mapping (--_status-* private vars)
+ *   selected    — [data-selected="true"] active state mapping (--_selected-* private vars)
  *   components  — light DOM component overrides
- *   utilities   — class-based helpers (.color-N data-viz, text/icon/motion classes)
+ *   utilities   — class-based helpers (text/icon/motion/layout classes)
  *     ↳ utilities.icons   — icon font + .sherpa-icon sizing
  *     ↳ utilities.motion  — animation keyframes + transition utilities
  *     ↳ utilities.text    — typography classes
- *     ↳ utilities.dataviz — data-viz color classes
- *     ↳ utilities.layout  — control-group, app-shell, scroll-under patterns
+ *     ↳ utilities.layout  — grouped, app-shell, scroll-under patterns
  *
  * Switching axes (single source of truth — JS sets ATTRIBUTES only):
- *   Theme    — base theme is always loaded (sherpa-theme-apex-2-core.css).
- *              All extended themes (blue/purple/teal/classic) are also bundled
- *              in sherpa-themes-extended.css — always loaded, zero cost when
- *              inactive because selectors are gated on [data-theme="<slug>"].
+ *   Theme    — all themes bundled in sherpa-themes.css. Default (apex-2-core)
+ *              always active; extended themes gated by [data-theme="<slug>"].
  *              To activate: set <html data-theme="<slug>"> (JS attribute only).
  *   Mode     — set <html data-mode="auto|light|dark|hc"> (default "auto")
  *              "auto" honours both prefers-color-scheme AND prefers-contrast.
  *   Density  — set [data-density="compact|base|comfortable"] on any subtree
  *   Status   — set [data-status="critical|info|success|warning|urgent"] on any element
+ *   Selected — set [data-selected="true"] on any element
  *
  * No light-dark(): each theme file declares its light values + nested dark
  * and HC override blocks (gated by data-mode attr OR a prefers-* media query).
  */
 
-@layer reset, primitives, alias, platform, theme, density, status, components, utilities;
-@layer utilities.icons, utilities.motion, utilities.text, utilities.dataviz, utilities.layout;
+@layer reset, primitives, alias, platform, theme, density, status, selected, components, utilities;
+@layer utilities.icons, utilities.motion, utilities.text, utilities.layout;
 
 @import "reset.css"                   layer(reset);
 @import "tokens/sherpa-primitives.css" layer(primitives);
 @import "tokens/sherpa-alias.css"      layer(alias);
 @import "tokens/sherpa-platform.css"   layer(platform);
 
-/* Theme — default (no data-theme attr required) */
-@import "sherpa-theme-apex-2-core.css";
-
-/* Extended themes — all four variants in one file; [data-theme] selectors
+/* All themes — default + four extended variants; [data-theme] selectors
  * ensure only the active theme fires. Activate: set <html data-theme="..."> */
-@import "sherpa-themes-extended.css";
+@import "sherpa-themes.css";
 
 /* Theme corrections, Density & Status — all non-base attribute-driven overrides */
 @import "sherpa-overrides.css";
@@ -54,5 +50,4 @@
 @import "sherpa-icon-classes.css"       layer(utilities.icons);
 @import "sherpa-motion-classes.css"     layer(utilities.motion);
 @import "sherpa-text-classes.css"       layer(utilities.text);
-@import "sherpa-data-viz-classes.css"   layer(utilities.dataviz);
 @import "sherpa-app-classes.css"        layer(utilities.layout);

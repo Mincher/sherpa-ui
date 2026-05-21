@@ -15,7 +15,6 @@ i { font-style: normal; }
   color: var(--sherpa-text-default-body, #111111);
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
   overflow: hidden;
-  box-sizing: border-box;
 }
 :host .header {
   display: flex;
@@ -88,19 +87,21 @@ i { font-style: normal; }
       justify-content: space-between;
       gap: var(--sherpa-space-xs, 8px);
       width: 100%;
-      box-sizing: border-box;
       padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-base, 16px) var(--sherpa-space-xs, 8px) var(--sherpa-space-xl, 24px);
       cursor: pointer;
       font-family: inherit;
       color: var(--sherpa-text-default-body, #111111);
   
-      &:hover { background: var(--sherpa-surface-control-secondary-hover, #f5f5f5); }
+      &:hover { background: color-mix(in srgb, var(--sherpa-surface-control-active-default, #f8ebff) 55%, transparent); }
       &:focus-visible {
         outline: var(--sherpa-border-width-base, 2px) solid var(--sherpa-border-control-primary-default, #4c63e5);
         outline-offset: -2px;
       }
       &[aria-current="page"],
-      &[data-active="true"] { background: var(--sherpa-surface-app-product-nav-active, #f8ebff); }
+      &[data-active="true"] {
+        background: var(--sherpa-surface-control-active-default, #f8ebff);
+        color: var(--sherpa-border-control-active-default, #8500cc);
+      }
 }
 :host .item-label {
   flex: 1 1 auto;
@@ -112,6 +113,10 @@ i { font-style: normal; }
 :host .item-icon {
   flex: 0 0 auto;
       color: var(--sherpa-text-default-secondary, #464646);
+}
+:host .item[aria-current="page"] .item-icon,
+:host .item[data-active="true"] .item-icon {
+  color: var(--sherpa-border-control-active-default, #8500cc);
 }
 :host .header-item {
   display: flex;
@@ -125,8 +130,5 @@ i { font-style: normal; }
 }
 :host .header-item-description {
   color: var(--sherpa-text-default-secondary, #464646);
-}
-:host([hidden]) {
-  display: none;
 }
 

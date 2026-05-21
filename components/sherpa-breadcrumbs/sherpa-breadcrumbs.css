@@ -1,73 +1,42 @@
 /**
- * sherpa-breadcrumbs.css — Phase 2 Modernization (CSS Nesting)
- * Navigation breadcrumb trail with links and current page indicator.
+ * sherpa-breadcrumbs.css
+ * Shadow DOM styles for the SherpaBreadcrumbs web component.
  *
- * Authoring model:
- *   Template ships the entire crumb structure. Consumers override via data-src
- *   or accept the default. CSS keys off semantic markup — anchors are historic
- *   crumbs, [aria-current="page"] is the current page.
- *
- * Visual contract:
- *   - Historic crumbs (links): SemiBold 12px/16px in primary colour, underline on hover
- *   - Current crumb: Regular weight, default body colour, no link affordance
+ * Host attributes:
+ *   (none — breadcrumb structure is content-driven)
  */
 
 :host {
   display: block;
-  /* ──────────────────────────────────────────────────────────
-             BREADCRUMB LIST (flex row)
-             ────────────────────────────────────────────────────────── */
-  /* ── Individual crumb ──────────────────────────────– */
-  /* ── Crumb text (historic = linked; current = plain) ─– */
-  /* ── Separator (forward slash) ───────────────────────– */
-  /* ── Hidden state ───────────────────────────────────────– */
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
-:host .breadcrumb-list {
+
+:host([hidden]) { display: none; }
+
+/* ── Breadcrumb list ──────────────────────────────────────── */
+
+:host .breadcrumb-trail {
   display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      gap: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-xs, 8px);
 }
-:host .crumb {
-  display: inline-flex;
-      align-items: center;
-      gap: 0;
-}
+
+/* ── Crumb text ───────────────────────────────────────────── */
+
 :host .crumb-text {
+  font: var(--sherpa-text-label-sm, 600 12px/1.4 system-ui);
   color: var(--sherpa-text-primary-default, #3c5edd);
-      cursor: pointer;
-      text-decoration: none;
-      padding: var(--sherpa-space-2xs, 4px) 0;
-      font-size: var(--sherpa-font-sm-size, 12px);
-      line-height: var(--sherpa-fonts-scale-lg, 16px);
-      letter-spacing: 0.1px;
-      font-weight: var(--sherpa-font-weight-semibold, 600);
-  
-      &:hover { text-decoration: underline; }
-  
-      /* Current page (aria-current) — not a link */
-      &[aria-current="page"] {
-        color: var(--sherpa-text-default-body, #2e2e33);
-        cursor: default;
-        font-weight: 400;
-  
-        &:hover { text-decoration: none; }
-      }
+  text-decoration: none;
+  padding: var(--sherpa-space-2xs, 4px) 0;
+
+  &[aria-current="page"] {
+    color: var(--sherpa-text-default-body, #2e2e33);
+    font-weight: var(--sherpa-font-weight-regular, 400);
+  }
 }
-:host .separator {
-  display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: var(--sherpa-space-default, 16px);
-      height: var(--sherpa-space-default, 16px);
-      font-size: var(--sherpa-font-sm-size, 12px);
-      color: var(--sherpa-text-default-body, #2e2e33);
-      flex-shrink: 0;
-}
-:host([hidden]) {
-  display: none;
+
+:host a.crumb-text {
+  &:hover { text-decoration: underline; }
 }
 

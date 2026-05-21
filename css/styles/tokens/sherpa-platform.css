@@ -8,7 +8,6 @@
  * canonical equivalent.
  */
 
-@property --sherpa-pdf-mode { syntax: "<integer>"; inherits: true; initial-value: 0; }
 
 :where(:root) {
   /* Font weights */
@@ -28,6 +27,11 @@
   --sherpa-motion-duration-base: 0.25s;
   --sherpa-motion-duration-slow: 0.4s;
   --sherpa-motion-easing-default: ease-out;
+
+  /* Composite shorthand: <duration> <easing> — use as the time-function portion
+     of a transition property, e.g. `transition: background-color var(--sherpa-motion-transition-fast)`. */
+  --sherpa-motion-transition-fast: var(--sherpa-motion-duration-fast) var(--sherpa-motion-easing-default);
+  --sherpa-motion-transition-base: var(--sherpa-motion-duration-base) var(--sherpa-motion-easing-default);
 
   /* Z-index scale */
   --sherpa-z-panel:   100;
@@ -57,10 +61,6 @@
      gridlines, and the node-canvas grid. No Figma source: lighter than
      border-container-default by intent. */
   --sherpa-border-container-subtle: rgba(0, 0, 0, 0.08);
-
-  /* Product-bar icon-block background — defaults to the brand surface so the
-     bar's logomark sits on the brand colour by default. */
-  --sherpa-surface-app-product-bar-icon: var(--sherpa-color-brand-base, #c046ff);
 }
 
 /* ── Color-scheme contract ─────────────────────────────────────────── */

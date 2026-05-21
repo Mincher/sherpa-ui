@@ -7,7 +7,7 @@
     • Tabbed content sections
 
   Components: sherpa-view-header, sherpa-breadcrumbs, sherpa-toolbar,
-              sherpa-key-value-list, sherpa-tabs, sherpa-card
+              sherpa-key-value-list, sherpa-tabs, sherpa-container
 
   Customisation:
     • Set data-label on sherpa-view-header for the item title
@@ -20,7 +20,7 @@
 <template id="detail-view"
   data-pattern-category="layouts"
   data-pattern-status="stable"
-  data-pattern-components="sherpa-view-header, sherpa-breadcrumbs, sherpa-toolbar, sherpa-key-value-list, sherpa-tabs, sherpa-card">
+  data-pattern-components="sherpa-view-header, sherpa-breadcrumbs, sherpa-toolbar, sherpa-key-value-list, sherpa-tabs, sherpa-container">
 
   <div class="sherpa-detail-layout">
     <sherpa-breadcrumbs></sherpa-breadcrumbs>
@@ -33,9 +33,9 @@
 
     <div class="sherpa-detail-content">
       <aside class="sherpa-detail-sidebar">
-        <sherpa-card data-label="Properties">
-          <sherpa-key-value-list slot="content"></sherpa-key-value-list>
-        </sherpa-card>
+        <sherpa-container>
+          <sherpa-key-value-list></sherpa-key-value-list>
+        </sherpa-container>
       </aside>
 
       <main class="sherpa-detail-main">

@@ -10,6 +10,8 @@ Tabbed content switcher with accessible keyboard navigation. Each direct light-D
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-active-tab` | number | Zero-based index of the selected tab | — | — |
 | `data-load-mode` | enum | eager (default, all panels rendered) \| lazy (panels populated on first activation) | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -112,7 +114,7 @@ sherpa-tabs::part(tablist) {
 ### Basic
 
 ```html
-<sherpa-tabs>
+<sherpa-tabs data-src-html="value" data-src-json="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="detail"><!-- Trailing content shown to the right of the tab strip (badges, actions) --></span>

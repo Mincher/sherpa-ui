@@ -2,14 +2,14 @@
 
 > **Category:** control · **Base class:** SherpaElement
 
-Navigation breadcrumb trail. The default template renders a <nav><ol> of crumbs (anchors + a current-page span).
+Navigation breadcrumb trail rendered as a flat flex row of crumb links and separator spans.
 
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data-src` | string | URL of an alternative breadcrumbs template HTML | — | — |
-| `data-items` | json | JSON array of {label: string, href?: string} | — | — |
+| `data-src-html` | string | URL of an HTML template file to replace the shadow DOM | — | — |
+| `data-src-json` | string | URL of a JSON file: [{label: string, href?: string}] | — | — |
 
 ## Events
 
@@ -40,7 +40,7 @@ element.addEventListener("breadcrumb-click", (e) => {
 ### Basic
 
 ```html
-<sherpa-breadcrumbs data-src="value"></sherpa-breadcrumbs>
+<sherpa-breadcrumbs data-src-html="value" data-src-json="value"></sherpa-breadcrumbs>
 ```
 
 ## Import

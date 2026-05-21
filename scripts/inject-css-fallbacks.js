@@ -42,8 +42,7 @@ const DRY = process.argv.includes('--dry');
 const SOURCES = [
   'tokens/sherpa-primitives.css',
   'tokens/sherpa-alias.css',         // includes fonts + status (consolidated)
-  'sherpa-theme-base.css',
-  'sherpa-theme-apex-2-core.css',  // default theme — fills in per-theme tokens
+  'sherpa-themes.css',               // all themes — fills in per-theme tokens
   'sherpa-motion-classes.css',
   // Other per-theme files contain mode-specific overrides; fallback uses
   // the default theme so non-default themes still get a sensible value.

@@ -1,6 +1,6 @@
 # sherpa-chat-message
 
-> **Category:** content · **Base class:** SherpaElement
+> **Category:** ai · **Base class:** SherpaElement
 
 Chat bubble for AI / messaging surfaces.
 
@@ -10,6 +10,8 @@ Chat bubble for AI / messaging surfaces.
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-role` | enum | "user" \| "ai" (default "ai"). | — | — |
 | `data-avatar-icon` | string | Font Awesome class for the | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -53,7 +55,7 @@ sherpa-chat-message::part(message) {
 ### Basic
 
 ```html
-<sherpa-chat-message data-avatar-icon="value">
+<sherpa-chat-message data-avatar-icon="value" data-src-html="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="avatar"><!-- Custom avatar content. Suppresses the default icon. --></span>

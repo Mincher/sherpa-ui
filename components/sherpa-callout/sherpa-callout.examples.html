@@ -13,16 +13,14 @@
   <sherpa-callout data-status="success"  data-heading="Saved">Your changes were saved successfully.</sherpa-callout>
   <sherpa-callout data-status="warning"  data-heading="Approaching limit">You are using 92% of your monthly quota.</sherpa-callout>
   <sherpa-callout data-status="critical" data-heading="Action required">One device has been offline for more than 24 hours.</sherpa-callout>
-  <sherpa-callout data-status="neutral"  data-heading="FYI">Maintenance window scheduled for Sunday 02:00 UTC.</sherpa-callout>
-  <sherpa-callout data-status="tip"      data-heading="Tip">Press ⌘K from anywhere to open the command palette.</sherpa-callout>
 </template>
 
-<template data-label="Dismissible" data-description="data-dismissible renders a close button that hides the callout.">
-  <sherpa-callout data-status="info" data-heading="Welcome to Sherpa UI" data-dismissible>Take the product tour to see what's new.</sherpa-callout>
+<template data-label="Expandable" data-description="data-dismissible renders a toggle button. data-expanded controls the initial state.">
+  <sherpa-callout data-status="info" data-heading="Welcome to Sherpa UI" data-dismissible data-expanded>Take the product tour to see what's new.</sherpa-callout>
 </template>
 
-<template data-label="Expanded with body content" data-description="Default-slot content sits below the heading / label.">
-  <sherpa-callout data-status="warning" data-heading="Deploy paused" data-expanded>
+<template data-label="Expanded with body content" data-description="Default-slot content sits below the heading.">
+  <sherpa-callout data-status="warning" data-heading="Deploy paused" data-dismissible data-expanded>
     <p>Two devices reported a checksum mismatch. The following devices need attention before the deploy can resume:</p>
     <ul>
       <li>acme-device-01 — region EU</li>

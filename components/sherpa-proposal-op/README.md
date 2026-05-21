@@ -1,6 +1,6 @@
 # sherpa-proposal-op
 
-> **Category:** content · **Base class:** SherpaElement
+> **Category:** ai · **Base class:** SherpaElement
 
 Single change row inside <sherpa-proposal-preview>.
 
@@ -10,6 +10,8 @@ Single change row inside <sherpa-proposal-preview>.
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-op` | enum | add \| remove \| update \| add-edge \| remove-edge | — | `add`, `remove`, `update`, `add-edge`, `remove-edge` |
 | `data-label` | string | Body text describing the change. | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## CSS Parts
 
@@ -29,7 +31,7 @@ sherpa-proposal-op::part(tag) {
 ### Basic
 
 ```html
-<sherpa-proposal-op data-op="add" data-label="Example Label"></sherpa-proposal-op>
+<sherpa-proposal-op data-op="add" data-label="Example Label" data-src-html="value"></sherpa-proposal-op>
 ```
 
 ## Import

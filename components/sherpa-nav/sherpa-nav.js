@@ -3,9 +3,9 @@
  * @category shell
  * @description Collapsible navigation sidebar with search and edit modes.
  *   Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html,
- *   override via data-src). CSS Highlight API for search (::highlight(nav-search-match)).
+ *   override via data-src-html). CSS Highlight API for search (::highlight(nav-search-match)).
  *
- * @attr {string}  [data-src]            — URL for the nav template HTML (default: sherpa-nav.html)
+ * @attr {string}  [data-src-html]            — URL for the nav template HTML (default: sherpa-nav.html)
  * @attr {string}  [data-active-target]  — Selector or ID of the currently active nav item
  * @attr {string}  [data-promo-title]    — Footer promo heading text (shows the promo when set)
  * @attr {string}  [data-promo-message]  — Footer promo body message
@@ -86,7 +86,6 @@ export class SherpaNav extends SherpaElement {
   static get observedAttributes() {
     return [
       ...super.observedAttributes,
-      "data-src",
       "data-active-target",
       "data-promo-title",
       "data-promo-message",
@@ -104,11 +103,11 @@ export class SherpaNav extends SherpaElement {
   #defaultOrders = null; // Map<groupIndex, sortKey[]> captured at render
   // Last selection requested by the host. Persisted on the instance so we
   // can re-apply the active-state styling after the nav template is
-  // swapped via data-src or otherwise re-rendered — without this the
+  // swapped via data-src-html or otherwise re-rendered — without this the
   // current page would visually deselect every time the definition
   // changes (the new DOM has no [data-state="selected"] markers).
   #lastSelection = null; // { kind: 'item'|'link', itemId?, sectionId?, target? }
-  // Last pinned state observed on the host. Captured before a data-src
+  // Last pinned state observed on the host. Captured before a data-src-html
   // swap (and updated whenever the user toggles the pin button) so we
   // can restore it after the new template renders — otherwise the new
   // template's own data-pinned default would clobber the user's choice.
@@ -152,7 +151,7 @@ export class SherpaNav extends SherpaElement {
     if (target) this.setActiveLink(target);
 
     // Re-apply the host's last requested selection after a re-render
-    // (e.g. data-src swap). data-active-target takes precedence if set,
+    // (e.g. data-src-html swap). data-active-target takes precedence if set,
     // otherwise replay whichever setActive* call last fired.
     if (!target && this.#lastSelection) {
       const sel = this.#lastSelection;
@@ -165,15 +164,12 @@ export class SherpaNav extends SherpaElement {
   }
 
   async onConnect() {
-    const url = this.dataset.src || this.#defaultUrl;
+    const url = this.dataset.srcHtml || this.#defaultUrl;
     await this.renderFromUrl(url);
     this.#ready = true;
   }
 
   onAttributeChanged(name, _oldValue, newValue) {
-    if (name === "data-src" && newValue && this.#ready) {
-      this.renderFromUrl(newValue);
-    }
     if (name === "data-active-target" && this.#ready) {
       if (newValue) {
         this.setActiveLink(newValue);
@@ -766,7 +762,7 @@ export class SherpaNav extends SherpaElement {
 
   /**
    * Inject a fallback <template> into the shadow root when a custom
-   * data-src nav HTML omits the cloning templates that the component
+   * data-src-html nav HTML omits the cloning templates that the component
    * relies on for hydrating recents/favorites and section headers.
    */
   #injectFallbackTemplate(className, innerHTML) {
@@ -843,7 +839,7 @@ export class SherpaNav extends SherpaElement {
   /** localStorage key for the user-applied group order, scoped by template src. */
   get #orderStorageKey() {
     const scope = this.dataset.orderStorageKey
-      || (this.dataset.src ? `sherpa-nav-order::${this.dataset.src}` : 'sherpa-nav-order');
+      || (this.dataset.srcHtml ? `sherpa-nav-order::${this.dataset.srcHtml}` : 'sherpa-nav-order');
     return scope;
   }
 

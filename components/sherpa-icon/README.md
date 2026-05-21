@@ -19,6 +19,8 @@ Available templates:
 | `data-weight` | enum | solid (default) \| regular \| light \| thin \| duotone \| brands | — | `regular`, `light`, `thin`, `duotone`, `brands` |
 | `data-size` | enum | 3xs \| 2xs \| xs \| sm \| md \| lg \| xl \| 2xl \| 3xl \| 4xl \| 5xl \| 6xl | — | `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `5xl`, `6xl` |
 | `data-status` | enum | critical \| warning \| success \| info \| urgent \| brand | — | `critical`, `warning`, `success`, `info`, `urgent`, `brand` |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Methods
 

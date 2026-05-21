@@ -177,7 +177,7 @@
 }
 
 .doc-preview-surface {
-  background: var(--sherpa-surface-app-background-default, #f5f5f5);
+  background: var(--sherpa-surface-container-app, #f5f5f5);
   border: 1px solid var(--sherpa-border-control-default, #e0e0e0);
   border-radius: var(--sherpa-border-rounding-base, 6px);
   padding: 32px;

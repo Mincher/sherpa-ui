@@ -2,7 +2,7 @@
 
 > **Category:** control · **Base class:** SherpaElement
 
-Multi-template button web component. Four templates (selected via data-type → get templateId()): default — Standard button: icon(s) + label + badge + optional close icon — Icon-only square button button-menu — Button + menu trigger side by side (action menu) icon-menu — Icon-only menu trigger (overflow menus) The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: button-menu and icon-menu types are inherently menu triggers — no data-menu attribute needed. For default/icon types, add data-menu="true". button-menu has two modes: unified (default) or split (data-split). If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.
+Multi-template button web component. Two templates (selected via data-type → get templateId()): default — Standard button: icon(s) + label + badge icon — Icon-only square button For compound button patterns (split, dismissable chip), compose separate sherpa-button elements inside a .grouped wrapper. The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: Any button with data-menu="true" acts as a menu trigger. If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.
 
 ## Templates
 
@@ -10,29 +10,27 @@ Set via `data-type` attribute:
 
 - `default`
 - `icon`
-- `button-menu`
-- `icon-menu`
 
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data-type` | enum | default \| icon \| button-menu \| icon-menu | — | `default`, `icon`, `button-menu`, `icon-menu` |
+| `data-type` | enum | default \| icon | — | `default`, `icon` |
 | `data-label` | string | Button text label | — | — |
 | `data-variant` | enum | primary \| secondary \| tertiary \| tertiary-on-color | — | `primary`, `secondary`, `tertiary`, `tertiary-on-color` |
-| `data-size` | enum | 2x-small \| x-small \| small \| base (default) \| large | — | `2x-small`, `x-small`, `small`, `base` |
+| `data-size` | enum | 2x-small \| x-small \| small \| base \| large (default: base) | — | `2x-small`, `x-small`, `small`, `base`, `large` |
 | `data-active` | boolean | Active/pressed toggle state | — | — |
 | `data-status` | enum | critical \| warning \| success \| info \| urgent | — | `critical`, `warning`, `success`, `info`, `urgent` |
 | `data-icon-start` | string | Leading icon (Font Awesome unicode) | — | — |
 | `data-icon-end` | string | Trailing icon (Font Awesome unicode) | — | — |
 | `data-icon-weight` | enum | fa-solid \| fa-regular \| fa-light | — | `fa-solid`, `fa-regular`, `fa-light` |
-| `data-dismissable` | boolean | Shows close/remove button (chip mode) | — | — |
 | `data-count` | number | Badge count | — | — |
-| `data-split` | boolean | Split button-menu into action + trigger | — | — |
-| `data-menu` | boolean | Enable menu trigger on default/icon types | — | — |
+| `data-menu` | boolean | Enable menu trigger on any button type | — | — |
 | `data-menu-position` | enum | Menu placement (top \| bottom \| left \| right) | — | `top`, `bottom`, `left`, `right` |
 | `data-menu-template` | string | Menu template id to stamp from SherpaMenu | — | — |
 | `disabled` | boolean | Native disabled state | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -46,20 +44,6 @@ Main button area clicked
 
 ```js
 element.addEventListener("button-click", (e) => {
-  // handle event
-});
-```
-
-### `chip-remove`
-
-Close/dismiss button clicked
-
-**Propagation:** bubbles, composed
-
-**Detail:** none
-
-```js
-element.addEventListener("chip-remove", (e) => {
   // handle event
 });
 ```
@@ -165,14 +149,17 @@ Populate menu with items array
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
+- `--_ai-gradient`
 - `--_border-hover`
 - `--_button-padding`
 - `--_button-size`
 - `--_button-spacing`
 - `--_cg-border-radius`
 - `--_cg-border-width`
+- `--_cg-sep-block`
+- `--_cg-sep-inline`
+- `--_cg-separator-color`
 - `--_icon-color`
-- `--_icon-weight`
 - `--_status-border`
 - `--_status-surface`
 - `--_status-surface-down`
@@ -182,10 +169,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 - `--_status-surface-strong-hover`
 - `--_status-text`
 - `--_status-text-on-color`
-- `--_surface`
-- `--_surface-down`
-- `--_surface-hover`
-- ... and 1 more
+- ... and 4 more
 
 ## Usage
 
@@ -211,6 +195,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 <sherpa-button data-size="x-small" data-label="X-small"></sherpa-button>
 <sherpa-button data-size="small" data-label="Small"></sherpa-button>
 <sherpa-button data-size="base" data-label="Base"></sherpa-button>
+<sherpa-button data-size="large" data-label="Large"></sherpa-button>
 ```
 
 ### Disabled

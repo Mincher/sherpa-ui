@@ -35,7 +35,6 @@
   align-items: center;
   gap: var(--sherpa-space-sm, 8px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  box-sizing: border-box;
   min-height: 0;
   overflow: hidden;
   container: sherpa-gauge-chart / inline-size;
@@ -140,7 +139,7 @@
       left: 50%;
       width: 2px;
       height: 62%;
-      margin-left: -1px;
+      margin-inline-start: -1px;
       background: var(--sherpa-text-default-body, #3c3c43);
       border-radius: 1px;
       transform-origin: bottom center;
@@ -206,12 +205,6 @@
       font-size: var(--sherpa-fonts-scale-xs, 12px);
       color: var(--sherpa-text-default-secondary, #5c5c66);
 }
-:host([hidden]) {
-  display: none;
-}
-
-
-
 
 /* ================================================================
    Container queries — responsive sizing for smaller viewports

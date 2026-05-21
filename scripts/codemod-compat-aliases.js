@@ -95,8 +95,7 @@ const MAP = {
   // bar-brand has no clean Figma equivalent; rewrite to the brand primitive
   // (matches the legacy alias's effective value).
   'surface-app-product-bar-brand':    'color-brand-base',
-  'surface-app-product-nav-secondary':'surface-app-product-nav-base-icon',
-  'surface-app-product-bg-default':   'surface-app-background-default',
+  'surface-app-product-bg-default':   'surface-container-app',
 };
 
 // ─── File discovery ─────────────────────────────────────────────────

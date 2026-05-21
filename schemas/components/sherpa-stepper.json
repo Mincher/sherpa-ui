@@ -31,7 +31,7 @@
       ]
     },
     {
-      "name": "data-src",
+      "name": "data-src-json",
       "type": "string",
       "description": "URL to load steps JSON"
     },
@@ -43,6 +43,12 @@
         "default",
         "timeline"
       ]
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [],
@@ -140,9 +146,9 @@
       "description": "Getter/setter for data-show-step-numbers"
     },
     {
-      "name": "dataSrc",
+      "name": "dataSrcJson",
       "type": "string",
-      "description": "Getter/setter for data-src"
+      "description": "Getter/setter for data-src-json"
     },
     {
       "name": "steps",

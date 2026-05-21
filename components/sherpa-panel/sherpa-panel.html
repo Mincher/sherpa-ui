@@ -50,3 +50,52 @@
     </div>
   </div>
 </template>
+
+<!-- ── AI / chat variant ─────────────────────────────────────────────────
+     Selected when data-variant="ai".
+     Shares .panel-header, .header-title, .controls, .close-btn classes with
+     the default template so existing heading/close sync logic works.
+     ───────────────────────────────────────────────────────────────────── -->
+<template id="ai">
+  <div class="panel-body">
+    <header class="panel-header" part="header">
+      <div class="header-row">
+        <span class="header-title" part="title"></span>
+        <div class="controls">
+          <slot name="controls"></slot>
+          <button class="ai-btn" part="new-chat-btn" data-action="new-chat" type="button"
+                  aria-label="New chat" title="New chat">
+            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+          </button>
+          <button class="ai-btn" part="archive-btn" data-action="archive" type="button"
+                  aria-label="Archive chat" title="Archive chat" disabled>
+            <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+          </button>
+          <button class="close-btn" type="button" aria-label="Close">
+            <i class="close-icon fa-solid" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Thread — scrollable chat history (default slot) -->
+    <div class="content" part="thread" aria-live="polite">
+      <slot></slot>
+    </div>
+
+    <!-- Suggestions — shown when thread is empty, hidden once content arrives -->
+    <div class="ai-suggestions" part="suggestions">
+      <slot name="suggestions"></slot>
+    </div>
+
+    <!-- Composer — prompt input, pinned above footer -->
+    <div class="ai-composer" part="composer">
+      <slot name="composer"></slot>
+    </div>
+
+    <!-- Footer — disclaimer / branding text -->
+    <footer class="ai-footer" part="footer">
+      <slot name="footer"></slot>
+    </footer>
+  </div>
+</template>

@@ -2,26 +2,25 @@
  * sherpa-button.js
  * SherpaButton — Multi-template button web component.
  *
- * Four templates (selected via data-type → get templateId()):
- *   default       — Standard button: icon(s) + label + badge + optional close
+ * Two templates (selected via data-type → get templateId()):
+ *   default       — Standard button: icon(s) + label + badge
  *   icon          — Icon-only square button
- *   button-menu   — Button + menu trigger side by side (action menu)
- *   icon-menu     — Icon-only menu trigger (overflow menus)
+ *
+ * For compound button patterns (split, dismissable chip), compose separate
+ * sherpa-button elements inside a .grouped wrapper.
  *
  * The button is self-managing for its own visual state and broadcasts
  * events so parent components (filter-bar, container) can orchestrate.
  *
  * Menu behaviour:
- *   button-menu and icon-menu types are inherently menu triggers — no
- *   data-menu attribute needed. For default/icon types, add data-menu="true".
- *   button-menu has two modes: unified (default) or split (data-split).
+ *   Any button with data-menu="true" acts as a menu trigger.
  *   If data-menu-template is set, stamps the matching template from
  *   SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.
  *
  * @element sherpa-button
  * @category control
  *
- * @attr {enum}    data-type            — default | icon | button-menu | icon-menu
+ * @attr {enum}    data-type            — default | icon
  * @attr {string}  data-label           — Button text label
  * @attr {enum}    data-variant         — primary | secondary | tertiary | tertiary-on-color
  * @attr {enum}    data-size            — 2x-small | x-small | small | base | large (default: base)
@@ -30,18 +29,13 @@
  * @attr {string}  data-icon-start      — Leading icon (Font Awesome unicode)
  * @attr {string}  data-icon-end        — Trailing icon (Font Awesome unicode)
  * @attr {enum}    data-icon-weight     — fa-solid | fa-regular | fa-light
- * @attr {boolean} data-dismissable     — Shows close/remove button (chip mode)
  * @attr {number}  data-count           — Badge count
- * @attr {boolean} data-split           — Split button-menu into action + trigger
- * @attr {boolean} data-menu            — Enable menu trigger on default/icon types
+ * @attr {boolean} data-menu            — Enable menu trigger on any button type
  * @attr {enum}    data-menu-position   — Menu placement (top | bottom | left | right)
  * @attr {string}  data-menu-template   — Menu template id to stamp from SherpaMenu
  * @attr {boolean} disabled             — Native disabled state
  *
  * @fires button-click — Main button area clicked
- *   bubbles: true, composed: true
- *   detail: { }
- * @fires chip-remove — Close/dismiss button clicked
  *   bubbles: true, composed: true
  *   detail: { }
  * @fires menu-open — Menu is about to show
@@ -96,7 +90,6 @@ export class SherpaButton extends SherpaElement {
       "disabled",
       "data-icon-start",
       "data-icon-end",
-      "data-dismissable",
       "data-count",
       "data-menu",
       "data-menu-position",
@@ -107,7 +100,11 @@ export class SherpaButton extends SherpaElement {
   /* ── Template selection ───────────────────────────────────────── */
 
   get templateId() {
-    return this.dataset.type || "default";
+    const type = this.dataset.type;
+    // button-menu → default, icon-menu → icon for backward compat
+    if (type === "button-menu") return "default";
+    if (type === "icon-menu")   return "icon";
+    return type || "default";
   }
 
   /* ── Private refs ─────────────────────────────────────────────── */
@@ -117,8 +114,6 @@ export class SherpaButton extends SherpaElement {
   #iconStartEl = null;
   #iconEndEl = null;
   #badgeEl = null;
-  #closeEl = null;
-  #menuTriggerEl = null;
   #menuEl = null;
   #menuClosedAt = 0;
 
@@ -130,10 +125,8 @@ export class SherpaButton extends SherpaElement {
     this.#iconStartEl = this.$(".icon-start");
     this.#iconEndEl = this.$(".icon-end");
     this.#badgeEl = this.$(".badge");
-    this.#closeEl = this.$(".close");
-    this.#menuTriggerEl = this.$(".menu-trigger");
 
-    // Default variant for standard buttons (not button-menu / icon-menu)
+    // Default variant for standard buttons
     const type = this.dataset.type;
     if (!type && !this.dataset.variant) {
       this.dataset.variant = "primary";
@@ -153,14 +146,10 @@ export class SherpaButton extends SherpaElement {
 
   onConnect() {
     this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
-    this.#closeEl?.addEventListener("click", this.#onCloseClick);
-    this.#menuTriggerEl?.addEventListener("click", this.#onMenuTriggerClick);
   }
 
   onDisconnect() {
     this.#triggerEl?.removeEventListener("click", this.#onTriggerClick);
-    this.#closeEl?.removeEventListener("click", this.#onCloseClick);
-    this.#menuTriggerEl?.removeEventListener("click", this.#onMenuTriggerClick);
 
     if (this.#menuEl) {
       if (this.#menuEl.open) this.#menuEl.hide();
@@ -237,26 +226,7 @@ export class SherpaButton extends SherpaElement {
   #onTriggerClick = (e) => {
     if (this.disabled) return;
 
-    const type = this.dataset.type;
-
-    // icon-menu is always a menu trigger
-    if (type === "icon-menu") {
-      e.stopPropagation();
-      this.#toggleMenu();
-      return;
-    }
-
-    // button-menu: unified mode opens menu on trigger; split mode fires buttonclick
-    if (type === "button-menu") {
-      if (!this.hasAttribute("data-split")) {
-        e.stopPropagation();
-        this.#toggleMenu();
-        return;
-      }
-      // Split mode — left side dispatches buttonclick (fall through)
-    }
-
-    // Legacy menu support for default/icon types
+    // Any button with data-menu="true" acts as a menu trigger
     if (this.dataset.menu === "true") {
       e.stopPropagation();
       this.#toggleMenu();
@@ -272,13 +242,6 @@ export class SherpaButton extends SherpaElement {
     );
   };
 
-  /** Click handler for the .menu-trigger div (button-menu template). */
-  #onMenuTriggerClick = (e) => {
-    if (this.disabled) return;
-    e.stopPropagation();
-    this.#toggleMenu();
-  };
-
   /** Toggle the menu open/closed with debounce protection. */
   #toggleMenu() {
     if (this.#menuEl?.open || Date.now() - this.#menuClosedAt < 50) {
@@ -287,17 +250,6 @@ export class SherpaButton extends SherpaElement {
       this.#showMenu();
     }
   }
-
-  #onCloseClick = (e) => {
-    e.stopPropagation();
-    this.dispatchEvent(
-      new CustomEvent("chip-remove", {
-        bubbles: true,
-        composed: true,
-        detail: {},
-      }),
-    );
-  };
 
   /* ── Menu ─────────────────────────────────────────────────────── */
 

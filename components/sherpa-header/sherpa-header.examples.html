@@ -1,28 +1,28 @@
 <!--
-  sherpa-container-header — Live examples.
+  sherpa-header — Live examples.
 -->
 <template data-label="Title only" data-layout="block">
-  <sherpa-container-header data-title="Devices"></sherpa-container-header>
+  <sherpa-header data-title="Devices"></sherpa-header>
 </template>
 
 <template data-label="Title and description" data-layout="block">
-  <sherpa-container-header data-title="Devices" data-description="All devices reporting in the last 24 hours."></sherpa-container-header>
+  <sherpa-header data-title="Devices" data-description="All devices reporting in the last 24 hours."></sherpa-header>
 </template>
 
 <template data-label="With actions slot" data-layout="block">
-  <sherpa-container-header data-title="Devices" data-description="All devices in your account.">
+  <sherpa-header data-title="Devices" data-description="All devices in your account.">
     <sherpa-button slot="actions" data-variant="secondary" data-size="small" data-label="Filter" data-icon-start="fa-solid fa-filter"></sherpa-button>
     <sherpa-button slot="actions" data-variant="primary"   data-size="small" data-label="Add device" data-icon-start="fa-solid fa-plus"></sherpa-button>
-  </sherpa-container-header>
+  </sherpa-header>
 </template>
 
 <template data-label="With external link + menu" data-layout="block">
-  <sherpa-container-header data-title="API usage" data-description="Last 30 days" data-open-external data-menu-button>
+  <sherpa-header data-title="API usage" data-description="Last 30 days" data-open-external data-menu-button>
     <template data-menu>
       <sherpa-menu-item data-action="refresh" data-icon="fa-solid fa-arrows-rotate">Refresh</sherpa-menu-item>
       <sherpa-menu-item data-action="export"  data-icon="fa-solid fa-download">Export CSV</sherpa-menu-item>
       <sherpa-menu-item data-action="share"   data-icon="fa-solid fa-share-nodes">Share link</sherpa-menu-item>
       <sherpa-menu-item data-action="remove"  data-icon="fa-solid fa-trash" data-variant="critical">Remove from dashboard</sherpa-menu-item>
     </template>
-  </sherpa-container-header>
+  </sherpa-header>
 </template>

@@ -47,6 +47,7 @@
 ) {
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   color: var(--sherpa-text-default-body);
+  letter-spacing: 0.1px;
 }
 
 
@@ -109,7 +110,6 @@
   font-size: var(--sherpa-font-lg-size, 16px);
   font-weight: 400;
   line-height: var(--sherpa-font-lg-line-height, 24px);
-  letter-spacing: 0.1px;
 }
 
 .text-body,
@@ -117,21 +117,18 @@
   font-size: var(--sherpa-font-base-size, 14px);
   font-weight: 400;
   line-height: var(--sherpa-font-base-line-height, 20px);
-  letter-spacing: 0.1px;
 }
 
 .text-body-sm {
   font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 400;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
 }
 
 .text-body-xs {
   font-size: var(--sherpa-font-xs-size, 10px);
   font-weight: 400;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
 }
 
 
@@ -140,33 +137,32 @@
    SemiBold (600), default font
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.text-emphasis-lg {
+.text-emphasis-lg,
+.text-heading-lg {
   font-size: var(--sherpa-font-lg-size, 16px);
   font-weight: 600;
   line-height: var(--sherpa-font-lg-line-height, 24px);
-  letter-spacing: 0.1px;
 }
 
 .text-emphasis,
-.text-emphasis-base {
+.text-emphasis-base,
+.text-heading-md {
   font-size: var(--sherpa-font-base-size, 14px);
   font-weight: 600;
   line-height: var(--sherpa-font-base-line-height, 20px);
-  letter-spacing: 0.1px;
 }
 
-.text-emphasis-sm {
+.text-emphasis-sm,
+.text-heading-sm {
   font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
 }
 
 .text-emphasis-xs {
   font-size: var(--sherpa-font-xs-size, 10px);
   font-weight: 600;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
 }
 
 
@@ -175,45 +171,37 @@
    Regular (400), monospaced font
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.text-mono-xl {
+:is(.text-mono-xl, .text-mono-lg, .text-mono, .text-mono-base, .text-mono-sm, .text-mono-xs) {
   font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
-  font-size: var(--sherpa-font-h5-size, 20px);
   font-weight: 400;
+  letter-spacing: 0.1px;
+}
+
+.text-mono-xl {
+  font-size: var(--sherpa-font-h5-size, 20px);
   line-height: var(--sherpa-font-h5-line-height, 28px);
   letter-spacing: -0.02px;
 }
 
 .text-mono-lg {
-  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
   font-size: var(--sherpa-font-lg-size, 16px);
-  font-weight: 400;
   line-height: var(--sherpa-font-lg-line-height, 24px);
-  letter-spacing: 0.1px;
 }
 
 .text-mono,
 .text-mono-base {
-  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
   font-size: var(--sherpa-font-base-size, 14px);
-  font-weight: 400;
   line-height: var(--sherpa-font-base-line-height, 20px);
-  letter-spacing: 0.1px;
 }
 
 .text-mono-sm {
-  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
   font-size: var(--sherpa-font-sm-size, 12px);
-  font-weight: 400;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
 }
 
 .text-mono-xs {
-  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
   font-size: var(--sherpa-font-xs-size, 10px);
-  font-weight: 400;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
 }
 
 
@@ -233,30 +221,8 @@
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   HEADING UTILITIES  —  aliases for emphasis at body sizes
-   (Match body/emphasised styles with legacy class names)
+   COMPONENT TITLE
    ═══════════════════════════════════════════════════════════════════════════ */
-
-.text-heading-lg {
-  font-size: var(--sherpa-font-lg-size, 16px);
-  font-weight: 600;
-  line-height: var(--sherpa-font-lg-line-height, 24px);
-  letter-spacing: 0.1px;
-}
-
-.text-heading-md {
-  font-size: var(--sherpa-font-base-size, 14px);
-  font-weight: 600;
-  line-height: var(--sherpa-font-base-line-height, 20px);
-  letter-spacing: 0.1px;
-}
-
-.text-heading-sm {
-  font-size: var(--sherpa-font-sm-size, 12px);
-  font-weight: 600;
-  line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
-}
 
 .text-title-component {
   font-size: var(--sherpa-font-sm-size, 12px);
@@ -276,14 +242,12 @@
   font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
 }
 
 .text-label-subheader {
   font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
   text-transform: uppercase;
 }
 
@@ -313,7 +277,6 @@
   font-size: var(--sherpa-font-base-size, 14px);
   font-weight: 500;
   line-height: var(--sherpa-font-base-line-height, 20px);
-  letter-spacing: 0.1px;
 }
 
 
@@ -341,7 +304,6 @@
   font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  letter-spacing: 0.1px;
 }
 
 

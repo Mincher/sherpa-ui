@@ -39,7 +39,6 @@
   gap: var(--sherpa-space-2xs, 4px);
   width: 100%;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  box-sizing: border-box;
   --_handle-size: 24px;
   --_track-height: 4px;
   --_input-width: 48px;
@@ -78,7 +77,6 @@
       font-family: inherit;
       text-align: center;
       padding: 0 var(--sherpa-space-2xs, 4px);
-      box-sizing: border-box;
       font-variant-numeric: tabular-nums;
       -moz-appearance: textfield;
       appearance: textfield;
@@ -130,7 +128,7 @@
       cursor: grab;
       z-index: 2;
       outline: none;
-      transition: box-shadow 0.15s ease, border-color 0.15s ease;
+      transition: box-shadow var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   
       &::after {
         content: "";
@@ -143,7 +141,7 @@
         background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
         transform: translate(-50%, -50%);
         opacity: 0;
-        transition: opacity 0.15s ease;
+        transition: opacity var(--sherpa-motion-transition-fast, 0.15s ease-out);
       }
   
       &:hover {
@@ -202,13 +200,9 @@
   display: flex;
 }
 :host([data-show-inputs]) .increments {
-  padding-left: calc(var(--_input-width) + var(--sherpa-space-base, 16px)); padding-right: calc(var(--_input-width) + var(--sherpa-space-base, 16px));
+  padding-inline: calc(var(--_input-width) + var(--sherpa-space-base, 16px));
 }
 :host([data-show-inputs]:not([data-type="range"])) .increments {
-  padding-left: 0;
+  padding-inline-start: 0;
 }
-:host([hidden]) {
-  display: none;
-}
-
 

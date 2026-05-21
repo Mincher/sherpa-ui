@@ -38,7 +38,6 @@
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #18191a);
-  box-sizing: border-box;
   overflow: visible;
   /* ──────────────────────────────────────────────────────────
              OPEN STATE
@@ -88,7 +87,7 @@
    ────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
   :host([data-animation="slide"][data-open]) {
-    animation: sherpa-popover-slide-in 180ms ease-out both;
+    animation: sherpa-popover-slide-in var(--sherpa-motion-transition-fast, 0.15s ease-out) ease-out both;
   }
 
   :host([data-animation="slide"][data-open][data-position="top"]) {
@@ -206,10 +205,6 @@
   color: var(--sherpa-text-default-secondary, #5c5c66);
       font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
-:host([hidden]) {
-  display: none;
-}
-
 
 /* Animation keyframes (top-level, outside :host) */
 @keyframes sherpa-popover-slide-in {

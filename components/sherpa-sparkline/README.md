@@ -11,6 +11,8 @@ CSS-driven sparkline. JS sets raw data values as CSS custom properties; CSS hand
 | `data-values` | string | Comma-separated or JSON array (e.g. "10,25,15,30") | — | — |
 | `data-variant` | enum | bar (default: line) | — | — |
 | `data-unit` | string | Unit label for tooltip display | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Methods
 

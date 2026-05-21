@@ -238,9 +238,13 @@ export class SherpaNavSection extends SherpaElement {
     const activeId = this.getAttribute("data-active-id");
     for (const btn of this.#sectionsEl.querySelectorAll(".item")) {
       const isActive = btn.dataset.id && btn.dataset.id === activeId;
-      btn.toggleAttribute("data-active", !!isActive);
-      if (isActive) btn.setAttribute("aria-current", "page");
-      else btn.removeAttribute("aria-current");
+      if (isActive) {
+        btn.dataset.active = "true";
+        btn.setAttribute("aria-current", "page");
+      } else {
+        btn.removeAttribute("data-active");
+        btn.removeAttribute("aria-current");
+      }
     }
   }
 

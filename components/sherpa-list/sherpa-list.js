@@ -34,6 +34,12 @@ export class SherpaList extends SherpaElement {
   /** @type {MutationObserver|null} */
   #observer  = null;
 
+  #onItemClick = (e) => {
+    const clicked = e.target.closest('sherpa-list-item');
+    if (!clicked) return;
+    this.items.forEach(item => { if (item !== clicked) item.active = false; });
+  };
+
   onRender() {
     this.#headingEl = this.$('.list-heading');
     this.#emptyEl   = this.$('.list-empty');
@@ -44,11 +50,13 @@ export class SherpaList extends SherpaElement {
   onConnect() {
     this.#observer = new MutationObserver(() => this.#syncEmpty());
     this.#observer.observe(this, { childList: true });
+    this.addEventListener('list-item-click', this.#onItemClick);
   }
 
   onDisconnect() {
     this.#observer?.disconnect();
     this.#observer = null;
+    this.removeEventListener('list-item-click', this.#onItemClick);
   }
 
   onAttributeChanged(name) {

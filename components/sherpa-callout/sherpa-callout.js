@@ -4,15 +4,15 @@
  * @description Inline contextual callout with status variants and
  *   expandable/dismissible body.
  *
- * @attr {enum}    [data-status]      — info | warning | critical | success | neutral | tip
+ * @attr {enum}    [data-status]      — info | warning | critical | success
  * @attr {string}  [data-heading]     — Heading text
  * @attr {boolean} [data-expanded]    — Body visible
  * @attr {boolean} [data-dismissible] — Show toggle button
  * @attr {string}  [data-icon]        — Override status icon (FA class)
  *
- * @slot heading  — Override heading text
+ * @slot heading   — Override heading text
  * @slot (default) — Body content
- * @slot action   — Optional action link/button
+ * @slot action    — Optional action link/button
  *
  * @fires callout-toggle
  *   bubbles: true, composed: true
@@ -47,26 +47,18 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
     ];
   }
 
-  /** Extend the base icon map with 'tip'. */
-  static get statusIcons() {
-    return {
-      ...super.statusIcons,
-      tip: 'fa-solid fa-lightbulb',
-    };
-  }
-
   /* ── Element refs ─────────────────────────────────────────────── */
 
   #headingEl;
   #statusIconEl;
-  #toggleBtn;
+  #actionBtn;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
     this.#headingEl    = this.$('.heading-text');
     this.#statusIconEl = this.$('.status-icon');
-    this.#toggleBtn    = this.$('.toggle-btn');
+    this.#actionBtn    = this.$('.action-btn');
 
     // Defaults
     if (!this.dataset.status) this.dataset.status = 'info';
@@ -75,14 +67,16 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
     // Sync
     this.#syncHeading();
     this.#syncStatusIcon();
+    this.#syncToggleIcon();
 
     // Events
-    this.#toggleBtn?.addEventListener('click', () => this.toggle());
+    this.#actionBtn?.addEventListener('button-click', () => this.toggle());
   }
 
   onAttributeChanged(name) {
     switch (name) {
-      case 'data-heading': this.#syncHeading(); break;
+      case 'data-heading':  this.#syncHeading(); break;
+      case 'data-expanded': this.#syncToggleIcon(); break;
       case 'data-status':
       case 'data-icon':    this.#syncStatusIcon(); break;
     }
@@ -127,6 +121,12 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
     const override = this.dataset.icon;
     const iconClass = override || this.statusIcon || 'fa-solid fa-circle-info';
     this.#statusIconEl.className = `${iconClass} status-icon`;
+  }
+
+  #syncToggleIcon() {
+    if (!this.#actionBtn) return;
+    // chevron-up when expanded, chevron-down when collapsed
+    this.#actionBtn.dataset.iconStart = this.expanded ? '\uf077' : '\uf078';
   }
 }
 

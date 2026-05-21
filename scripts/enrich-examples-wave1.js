@@ -180,32 +180,6 @@ const FILES = {
 </template>
 `,
 
-'sherpa-card': `
-<template data-label="Basic">
-  <sherpa-card data-label="Standard card" data-description="A card pairs a label and description with optional slotted content."></sherpa-card>
-</template>
-
-<template data-label="Elevation" data-description="Elevation controls the drop-shadow depth.">
-  <sherpa-card data-label="None" data-description="No shadow."           data-elevation="none"></sherpa-card>
-  <sherpa-card data-label="Small" data-description="Subtle shadow."      data-elevation="sm"></sherpa-card>
-  <sherpa-card data-label="Medium" data-description="Standard shadow."   data-elevation="md"></sherpa-card>
-  <sherpa-card data-label="Large" data-description="Pronounced shadow."  data-elevation="lg"></sherpa-card>
-</template>
-
-<template data-label="Interactive" data-description="data-interactive turns the card into a focusable surface with hover / focus states.">
-  <sherpa-card data-label="Click me" data-description="Hover and tab to see the states." data-interactive></sherpa-card>
-</template>
-
-<template data-label="Selectable" data-description="data-selectable + data-selected drives the selected visual.">
-  <sherpa-card data-label="Standard plan" data-description="Single workspace, 5 GB storage." data-selectable></sherpa-card>
-  <sherpa-card data-label="Pro plan"      data-description="Unlimited workspaces, 1 TB storage." data-selectable data-selected></sherpa-card>
-</template>
-
-<template data-label="Disabled">
-  <sherpa-card data-label="Disabled card" data-description="Cannot be interacted with." data-interactive disabled></sherpa-card>
-</template>
-`,
-
 'sherpa-icon': `
 <template data-label="Sizes" data-description="Twelve preset sizes from 3xs to 6xl.">
   <sherpa-icon name="star" data-size="2xs"></sherpa-icon>

@@ -1,19 +1,20 @@
 <!--
   sherpa-button.html — Multi-template button component.
 
-  Four templates selected via data-type attribute:
+  Two templates selected via data-type attribute:
 
-    default       — Standard button: icon(s) + label + badge + optional close
+    default       — Standard button: icon(s) + label + badge
     icon          — Icon-only button (square aspect-ratio)
-    button-menu   — Button + menu trigger side by side (action menu)
-    icon-menu     — Icon-only menu trigger (overflow menus)
+
+  For compound button patterns (split, dismissable chip), compose separate
+  sherpa-button elements inside a .grouped wrapper.
 
   Template selection:
     get templateId() returns dataset.type || "default"
     Each template contains only the elements it needs.
 
   Host attributes (shared):
-    data-type         — "icon" | "button-menu" | "icon-menu" (default omitted)
+    data-type         — "icon" (default omitted)
     data-label        — Button label text
     data-icon-start   — FontAwesome unicode for leading icon
     data-icon-end     — FontAwesome unicode for trailing icon
@@ -23,13 +24,10 @@
     data-active       — Active/pressed state (boolean attr)
     data-status       — "success" | "critical" | "warning" | "info" | "urgent"
     data-count        — Badge count (shown when > 0)
-    data-dismissable  — Shows close/dismiss button (default + button-menu)
-    data-split        — Split mode (button-menu): left = buttonclick, right = menu
     disabled          — Disabled state (boolean attr)
 
   Events dispatched:
-    buttonclick   — Trigger button clicked (detail: { })
-    chipremove    — Close button clicked (detail: { })
+    button-click  — Trigger button clicked (detail: { })
     menu-open     — Menu is about to show (detail: { })
     menu-close    — Menu was dismissed (detail: { })
     menu-select   — Menu item selected (detail: { item, action, value, ... })
@@ -37,7 +35,7 @@
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Standard button: icon(s) + label + badge + optional close
+     DEFAULT — Standard button: icon(s) + label + badge
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <button class="trigger" type="button">
@@ -45,9 +43,6 @@
     <span class="label"></span>
     <span class="badge" aria-hidden="true"></span>
     <i class="icon-end" aria-hidden="true"></i>
-  </button>
-  <button class="close" type="button" aria-label="Close">
-    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
   </button>
 </template>
 
@@ -60,31 +55,3 @@
   </button>
 </template>
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     BUTTON-MENU — Button + menu trigger side by side (action menu)
-     Unified mode (default): clicking anywhere opens the menu.
-     Split mode (data-split): left = buttonclick, right chevron = menu.
-     ═══════════════════════════════════════════════════════════════════════ -->
-<template id="button-menu">
-  <button class="trigger" type="button">
-    <i class="icon-start" aria-hidden="true"></i>
-    <span class="label"></span>
-    <span class="badge" aria-hidden="true"></span>
-  </button>
-  <div class="menu-trigger" role="button" tabindex="0" aria-label="Open menu">
-    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-  </div>
-  <button class="close" type="button" aria-label="Close">
-    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-  </button>
-</template>
-
-<!-- ═══════════════════════════════════════════════════════════════════════
-     ICON-MENU — Icon-only menu trigger (overflow menus)
-     Always functions as a menu trigger. No native <select>.
-     ═══════════════════════════════════════════════════════════════════════ -->
-<template id="icon-menu">
-  <button class="trigger" type="button">
-    <i class="icon-start" aria-hidden="true"></i>
-  </button>
-</template>

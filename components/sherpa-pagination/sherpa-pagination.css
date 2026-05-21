@@ -10,7 +10,6 @@
  *   --_btn-size:        Nav button size  (28px)
  */
 
-
 :host {
   --_pagination-h: 40px;
   --_pagination-gap: var(--sherpa-space-xs, 8px);
@@ -83,7 +82,7 @@
       color: var(--sherpa-text-default-body, #111);
       font-size: var(--sherpa-fonts-scale-sm, 12px);
       cursor: pointer;
-      transition: background 120ms ease, border-color 120ms ease;
+      transition: background var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   
       &:hover:not(:disabled) {
         background: var(--sherpa-surface-container-hover, #f0f0f0);
@@ -126,11 +125,6 @@
 :host([data-density="compact"]) .page-size-select {
   padding: 1px 20px 1px 6px; min-width: 48px;
 }
-
-:host([hidden]) {
-  display: none;
-}
-
 
 @container sherpa-pagination (max-width: 400px) {
   :host .pagination-info { display: none; }

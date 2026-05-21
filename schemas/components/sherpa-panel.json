@@ -9,10 +9,11 @@
     {
       "name": "data-variant",
       "type": "enum",
-      "description": "inline | overlay",
+      "description": "inline | overlay | ai",
       "enumValues": [
         "inline",
-        "overlay"
+        "overlay",
+        "ai"
       ]
     },
     {
@@ -69,6 +70,28 @@
       "name": "data-empty",
       "type": "string",
       "description": "Empty-state message when search yields zero matches (default: `No results`)"
+    },
+    {
+      "name": "data-can-archive",
+      "type": "boolean",
+      "description": "(AI variant) Enables the archive button"
+    },
+    {
+      "name": "data-busy",
+      "type": "boolean",
+      "description": "(AI variant) Disables new-chat and archive buttons"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [
@@ -95,6 +118,18 @@
     {
       "name": "actions",
       "description": "Action bar pinned to the bottom of the panel"
+    },
+    {
+      "name": "suggestions",
+      "description": "(AI variant) Prompt suggestions shown when thread is empty"
+    },
+    {
+      "name": "composer",
+      "description": "(AI variant) Prompt-composer pinned above the footer"
+    },
+    {
+      "name": "footer",
+      "description": "(AI variant) Disclaimer / branding text"
     }
   ],
   "events": [
@@ -123,12 +158,38 @@
         "value": "string",
         "matchCount": "number"
       }
+    },
+    {
+      "name": "ai-panel-new-chat",
+      "description": "(AI variant) New-chat button clicked",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "ai-panel-archive",
+      "description": "(AI variant) Archive button clicked",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
     }
   ],
   "methods": [
     {
       "name": "clearSearch()",
       "description": "Clear the search field and reset visibility"
+    },
+    {
+      "name": "open()",
+      "description": "Set data-expanded (AI variant convenience)"
+    },
+    {
+      "name": "close()",
+      "description": "Remove data-expanded and fire panel-close"
+    },
+    {
+      "name": "toggle()",
+      "description": "Toggle data-expanded"
     }
   ]
 }

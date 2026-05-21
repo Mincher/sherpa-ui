@@ -15,6 +15,18 @@
       "name": "data-load-mode",
       "type": "enum",
       "description": "eager (default, all panels rendered) | lazy (panels populated on first activation)"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [

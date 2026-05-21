@@ -14,6 +14,7 @@
  *   • `onConnect()` — called once after first render completes
  *   • `onDisconnect()` — called on disconnectedCallback
  *   • `onAttributeChanged(name, oldValue, newValue)`
+ *   • `onJsonData(data)` — called after data-src-json is fetched and parsed
  *
  * Subclass configuration (static getters):
  *   • `static cssUrl`  — URL string for the component CSS file
@@ -115,7 +116,7 @@ export class SherpaElement extends HTMLElement {
   /* ── Observed attributes ──────────────────────────────────────── */
 
   static get observedAttributes() {
-    return [];
+    return ["data-src-html", "data-src-json"];
   }
 
   /* ── Template selection (override in subclass) ────────────────── */
@@ -163,6 +164,10 @@ export class SherpaElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
+    if (this.#rendered) {
+      if (name === "data-src-html" && newValue) this.renderFromUrl(newValue);
+      if (name === "data-src-json" && newValue) this.#fetchJson(newValue);
+    }
     this.onAttributeChanged(name, oldValue, newValue);
   }
 
@@ -179,6 +184,21 @@ export class SherpaElement extends HTMLElement {
 
   /** Called on attributeChangedCallback (only when value actually changed). */
   onAttributeChanged(_name, _oldValue, _newValue) {}
+
+  /**
+   * Called after `data-src-json` is fetched and parsed.
+   * Override in subclasses to process the loaded data.
+   * @param {*} _data — parsed JSON value
+   */
+  onJsonData(_data) {}
+
+  /**
+   * Called when a `data-src-json` fetch fails (network error, non-OK
+   * response, or malformed JSON). Override to handle the error state.
+   * @param {string} _url — the URL that failed
+   * @param {Error}  _error
+   */
+  onJsonError(_url, _error) {}
 
   /**
    * Called when a slot's distributed content changes.
@@ -264,6 +284,11 @@ export class SherpaElement extends HTMLElement {
     this.#wireSlots();
     this.#rendered = true;
     this.onConnect();
+
+    // Trigger initial data-src-json load if the attribute was set at
+    // authoring time (attributeChangedCallback fires before #rendered
+    // is set, so the guard above would have skipped it).
+    if (this.dataset.srcJson) await this.#fetchJson(this.dataset.srcJson);
   }
 
   /* ── Re-render with a different template ────────────────────── */
@@ -283,6 +308,30 @@ export class SherpaElement extends HTMLElement {
 
     await this.onRender();
     this.#wireSlots();
+  }
+
+  /* ── JSON data loading ───────────────────────────────────────── */
+
+  /**
+   * Fetch a JSON file and call `onJsonData(data)` with the parsed result.
+   * Used internally by `data-src-json` attribute handling.
+   * @param {string} url
+   */
+  async #fetchJson(url) {
+    if (!url) return;
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        const err = new Error(`${resp.status} ${resp.statusText}`);
+        this.onJsonError(url, err);
+        return;
+      }
+      const data = await resp.json();
+      this.onJsonData(data);
+    } catch (e) {
+      console.error(`SherpaElement.#fetchJson: failed to load ${url}`, e);
+      this.onJsonError(url, e instanceof Error ? e : new Error(String(e)));
+    }
   }
 
   /* ── Dynamic content loading ──────────────────────────────────── */

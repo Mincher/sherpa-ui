@@ -26,16 +26,23 @@
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgba(0,0,0,0.25));
   bottom: calc(anchor(top) + var(--sherpa-space-2xs, 0.375rem));
-  @supports not (position-anchor: --tooltip-anchor) {
-            transform: translateX(-50%);
-        
-            &:is([data-position="top"], :not([data-position])) {
-              transform: translateX(-50%) translateY(-100%);
-              margin-top: calc(-1 * var(--sherpa-space-2xs, 0.375rem));
-            }
-        
-            &[data-position="bottom"] { transform: translateX(-50%); margin-top: var(--sherpa-space-2xs, 0.375rem); }
-          }
+}
+
+/* ── Fallback positioning for browsers without CSS Anchor Positioning ── */
+@supports not (position-anchor: --tooltip-anchor) {
+  :host {
+    transform: translateX(-50%);
+  }
+
+  :host(:is([data-position="top"], :not([data-position]))) {
+    transform: translateX(-50%) translateY(-100%);
+    margin-top: calc(-1 * var(--sherpa-space-2xs, 0.375rem));
+  }
+
+  :host([data-position="bottom"]) {
+    transform: translateX(-50%);
+    margin-top: var(--sherpa-space-2xs, 0.375rem);
+  }
 }
 :host([data-visible="true"]) {
   display: block;
@@ -50,8 +57,5 @@
 }
 :host .tooltip-content {
   color: inherit;
-}
-:host([hidden]) {
-  display: none;
 }
 

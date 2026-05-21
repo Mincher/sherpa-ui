@@ -17,6 +17,23 @@ Available templates:
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-template` | enum | default \| tree (hierarchical picker) | — | `default`, `tree` |
 | `data-tree` | json | (tree) Node forest [{value,label,children?,disabled?}] | — | — |
+| `data-label` | string |  | — | — |
+| `data-description` | string |  | — | — |
+| `data-helper` | string |  | — | — |
+| `data-layout` | string |  | — | — |
+| `disabled` | string |  | — | — |
+| `readonly` | string |  | — | — |
+| `required` | string |  | — | — |
+| `name` | string |  | — | — |
+| `value` | string |  | — | — |
+| `placeholder` | string |  | — | — |
+| `pattern` | string |  | — | — |
+| `minlength` | string |  | — | — |
+| `maxlength` | string |  | — | — |
+| `novalidate` | string |  | — | — |
+| `data-status` | string |  | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -67,7 +84,13 @@ Set option list. Accepts either:
 ### Basic
 
 ```html
-<sherpa-input-select data-template="default"></sherpa-input-select>
+<sherpa-input-select data-template="default" data-label="Example Label" data-description="A brief description"></sherpa-input-select>
+```
+
+### Disabled
+
+```html
+<sherpa-input-select data-label="Disabled" disabled></sherpa-input-select>
 ```
 
 ## Import

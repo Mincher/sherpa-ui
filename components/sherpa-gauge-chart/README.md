@@ -15,6 +15,8 @@ Semicircle gauge using CSS conic-gradient.
 | `data-label` | string | Descriptive text below value | — | — |
 | `data-loading` | boolean | Show loading state | — | — |
 | `data-variant` | enum | solid \| series | — | `solid`, `series` |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Methods
 

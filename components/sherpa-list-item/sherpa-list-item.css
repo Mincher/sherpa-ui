@@ -31,7 +31,7 @@ i {
       padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px) var(--sherpa-space-xs, 8px) var(--sherpa-space-xs, 8px);
       background: var(--sherpa-surface-container-default, #ffffff);
       border-radius: var(--sherpa-border-rounding-sm, 4px);
-      transition: background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+      transition: background var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
 :host([data-interactive]) .list-item-container {
   cursor: pointer;
@@ -39,18 +39,21 @@ i {
 :host([data-interactive]) .list-item-container:hover {
   background: var(--sherpa-surface-container-hover, #fafafa);
 }
+:host([data-interactive][data-active]) .list-item-container:hover {
+  background: var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
+}
 :host([data-active]) .list-item-container {
-  background: var(--sherpa-surface-container-active-default, #f8ebff);
+  background: var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
 }
 :host([data-active]) .label {
-  color: var(--sherpa-text-active-base, var(--sherpa-text-default-heading, #18191a)); font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-text-default-heading, #18191a))); font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 :host([data-active]) .description {
-  color: var(--sherpa-text-active-base, var(--sherpa-text-default-body, #2e2e33));
+  color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-text-default-body, #2e2e33)));
 }
 :host([data-active]) .icon,
 :host([data-active]) .drag-handle {
-  color: var(--sherpa-text-active-base, var(--sherpa-icon-context-default-body, #2e2e33));
+  color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-icon-context-default-body, #2e2e33)));
 }
 :host([disabled]) .list-item-container {
   background: var(--sherpa-surface-container-inactive, #f2f2f2); pointer-events: none;
@@ -110,8 +113,5 @@ i {
 }
 :host([data-has-trailing]) .trailing {
   display: flex;
-}
-:host([hidden]) {
-  display: none;
 }
 

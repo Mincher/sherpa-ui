@@ -83,7 +83,4 @@
 :host([data-empty-visible]) .list-body {
   display: none;
 }
-:host([hidden]) {
-  display: none;
-}
 

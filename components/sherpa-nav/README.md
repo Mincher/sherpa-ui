@@ -2,14 +2,19 @@
 
 > **Category:** shell · **Base class:** SherpaElement
 
-Collapsible navigation sidebar with search and edit modes. Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html, override via data-src). CSS Highlight API for search (::highlight(nav-search-match)).
+Collapsible navigation sidebar with search and edit modes. Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html, override via data-src-html). CSS Highlight API for search (::highlight(nav-search-match)).
 
 ## Attributes
 
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
-| `data-src` | string | URL for the nav template HTML (default: sherpa-nav.html) | — | — |
+| `data-src-html` | string | URL for the nav template HTML (default: sherpa-nav.html) | — | — |
 | `data-active-target` | string | Selector or ID of the currently active nav item | — | — |
+| `data-promo-title` | string | Footer promo heading text (shows the promo when set) | — | — |
+| `data-promo-message` | string | Footer promo body message | — | — |
+| `data-promo-link-text` | string | Footer promo CTA link label | — | — |
+| `data-promo-link-url` | string | Footer promo CTA link URL | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -219,6 +224,19 @@ element.addEventListener("naveditreset", (e) => {
 });
 ```
 
+### `navpromodismiss`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("navpromodismiss", (e) => {
+  // handle event
+});
+```
+
 ## Methods
 
 | Method | Description |
@@ -230,6 +248,7 @@ element.addEventListener("naveditreset", (e) => {
 | `isFavorite(itemId)` | Returns boolean |
 | `setFavorite(itemId, label, favorite)` | Toggle favorite state |
 | `addToRecent(route, label, icon)` | Push item to recent list |
+| `setPromoConfig(config)` | Populate footer promo: { title, message, link: { text, url } }; pass null to clear |
 
 ### `setActiveLink(href)`
 
@@ -275,6 +294,14 @@ Push item to recent list
 - `label` (`any`) — 
 - `icon` (`any`) — 
 
+### `setPromoConfig(config)`
+
+Populate footer promo: { title, message, link: { text, url } }; pass null to clear
+
+**Parameters:**
+
+- `config` (`any`) — 
+
 ## Properties
 
 | Property | Type | Description | Access |
@@ -302,7 +329,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-nav data-src="value" data-active-target="value"></sherpa-nav>
+<sherpa-nav data-src-html="value" data-active-target="value" data-promo-title="value"></sherpa-nav>
 ```
 
 ## Import

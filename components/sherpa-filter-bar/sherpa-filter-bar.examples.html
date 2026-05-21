@@ -1,16 +1,12 @@
 <!-- sherpa-filter-bar — Live examples. See sherpa-filter-bar.html for attribute docs. -->
-<template data-label="Loaded from JSON — Devices" data-description="data-src points at a JSON descriptor. The bar populates its Add menu, Sort menu, and Group menu from fields[]." data-layout="block">
+<template data-label="Loaded from JSON — Devices" data-description="data-src-json points at a JSON descriptor. The bar populates its Add menu, Sort menu, and Group menu from fields[]." data-layout="block">
   <sherpa-filter-bar
-    data-src="/components/sherpa-filter-bar/sherpa-filter-bar.devices.json">
-    <sherpa-button slot="group" data-type="button-menu" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none"></sherpa-button>
-    <sherpa-button slot="sort"  data-type="button-menu" data-split data-behavior="sort"    data-label="Sort"  data-icon-start="&#xf0dc;" data-menu-scope="none"></sherpa-button>
+    data-src-json="/components/sherpa-filter-bar/sherpa-filter-bar.devices.json">
   </sherpa-filter-bar>
 </template>
 
 <template data-label="Loaded from JSON — Alerts with presets" data-description="The same JSON also declares presetFilters[]; the bar auto-creates one chip per preset, populated from each field's values. Sort and Group menus are populated from fields[]." data-layout="block">
   <sherpa-filter-bar
-    data-src="/components/sherpa-filter-bar/sherpa-filter-bar.alerts.json">
-    <sherpa-button slot="group" data-type="button-menu" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none"></sherpa-button>
-    <sherpa-button slot="sort"  data-type="button-menu" data-split data-behavior="sort"    data-label="Sort"  data-icon-start="&#xf0dc;" data-menu-scope="none"></sherpa-button>
+    data-src-json="/components/sherpa-filter-bar/sherpa-filter-bar.alerts.json">
   </sherpa-filter-bar>
 </template>

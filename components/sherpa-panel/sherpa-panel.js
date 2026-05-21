@@ -10,7 +10,7 @@
  * @element sherpa-panel
  * @category container
  *
- * @attr {enum}    data-variant       — inline | overlay
+ * @attr {enum}    data-variant       — inline | overlay | ai
  * @attr {enum}    data-position      — left | right | both
  * @attr {boolean} data-expanded      — Expanded (visible) state
  * @attr {string}  data-heading       — Heading text
@@ -21,6 +21,8 @@
  * @attr {boolean} data-search        — Renders a built-in search row and filters slotted items
  * @attr {string}  data-search-match  — CSS selector for searchable items (default: `sherpa-list-item`)
  * @attr {string}  data-empty         — Empty-state message when search yields zero matches (default: `No results`)
+ * @attr {boolean} data-can-archive   — (AI variant) Enables the archive button
+ * @attr {boolean} data-busy          — (AI variant) Disables new-chat and archive buttons
  *
  * @slot           — Default slot for panel body content
  * @slot controls  — Header control buttons (placed before the collapse button)
@@ -28,6 +30,9 @@
  * @slot search    — Overrides the built-in search field (sherpa-input-search)
  * @slot toolbar   — Toolbar row between the header and the content area
  * @slot actions   — Action bar pinned to the bottom of the panel
+ * @slot suggestions — (AI variant) Prompt suggestions shown when thread is empty
+ * @slot composer  — (AI variant) Prompt-composer pinned above the footer
+ * @slot footer    — (AI variant) Disclaimer / branding text
  *
  * @fires panel-toggle — Fired when expanded state changes
  *   bubbles: true, composed: true
@@ -38,8 +43,17 @@
  * @fires panel-search — Fired when the search filter changes
  *   bubbles: true, composed: true
  *   detail: { value: string, matchCount: number }
+ * @fires ai-panel-new-chat — (AI variant) New-chat button clicked
+ *   bubbles: true, composed: true
+ *   detail: { }
+ * @fires ai-panel-archive — (AI variant) Archive button clicked
+ *   bubbles: true, composed: true
+ *   detail: { }
  *
  * @method clearSearch() — Clear the search field and reset visibility
+ * @method open()        — Set data-expanded (AI variant convenience)
+ * @method close()       — Remove data-expanded and fire panel-close
+ * @method toggle()      — Toggle data-expanded
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
@@ -65,7 +79,15 @@ class SherpaPanel extends SherpaElement {
       "data-width",
       "data-empty",
       "data-search-match",
+      "data-can-archive",
+      "data-busy",
     ];
+  }
+
+  /* ── Template selection ───────────────────────────────────── */
+
+  get templateId() {
+    return this.dataset.variant === "ai" ? "ai" : null;
   }
 
   /** @type {HTMLSpanElement|null} */
@@ -80,6 +102,10 @@ class SherpaPanel extends SherpaElement {
   #searchEl = null;
   /** @type {HTMLElement|null} */
   #emptyEl = null;
+  /** @type {HTMLButtonElement|null} */
+  #newChatBtnEl = null;
+  /** @type {HTMLButtonElement|null} */
+  #archiveBtnEl = null;
   /** @type {MutationObserver|null} */
   #observer = null;
   #currentFilter = "";
@@ -93,6 +119,8 @@ class SherpaPanel extends SherpaElement {
     this.#triggerEl = this.$(".collapse-trigger");
     this.#searchEl = this.$(".panel-search");
     this.#emptyEl = this.$(".panel-empty");
+    this.#newChatBtnEl = this.$('[part="new-chat-btn"]');
+    this.#archiveBtnEl = this.$('[part="archive-btn"]');
 
     // Defaults
     if (!this.dataset.variant) this.dataset.variant = "inline";
@@ -103,11 +131,15 @@ class SherpaPanel extends SherpaElement {
     this.#triggerEl?.addEventListener("click", this.#onExpand);
     this.#searchEl?.addEventListener("input", this.#onSearchChange);
     this.#searchEl?.addEventListener("search", this.#onSearchChange);
+    this.#newChatBtnEl?.addEventListener("click", this.#onNewChat);
+    this.#archiveBtnEl?.addEventListener("click", this.#onArchive);
 
     this.#syncHeading();
     this.#syncRestoreLabel();
     this.#syncWidth();
     this.#syncEmptyMessage();
+    this.#syncArchive();
+    this.#syncBusy();
   }
 
   onConnect() {
@@ -121,6 +153,8 @@ class SherpaPanel extends SherpaElement {
   onDisconnect() {
     this.#closeBtnEl?.removeEventListener("click", this.#onClose);
     this.#triggerEl?.removeEventListener("click", this.#onExpand);
+    this.#newChatBtnEl?.removeEventListener("click", this.#onNewChat);
+    this.#archiveBtnEl?.removeEventListener("click", this.#onArchive);
     this.#observer?.disconnect();
     this.#observer = null;
     this.#clearHighlights();
@@ -147,10 +181,26 @@ class SherpaPanel extends SherpaElement {
       case "data-search-match":
         if (this.#currentFilter) this.#applyFilter(this.#currentFilter);
         break;
+      case "data-can-archive":
+        this.#syncArchive();
+        break;
+      case "data-busy":
+        this.#syncBusy();
+        break;
     }
   }
 
   /* ── public api ──────────────────────────────────────────── */
+
+  get expanded() { return this.hasAttribute("data-expanded"); }
+  set expanded(v) {
+    if (v) this.setAttribute("data-expanded", "");
+    else   this.removeAttribute("data-expanded");
+  }
+
+  open()   { this.expanded = true; }
+  close()  { this.#onClose(); }
+  toggle() { this.expanded = !this.expanded; }
 
   clearSearch() {
     if (this.#searchEl && typeof this.#searchEl.clear === "function") {
@@ -176,6 +226,21 @@ class SherpaPanel extends SherpaElement {
   #onSearchChange = (e) => {
     const value = (e.detail?.value ?? e.target?.value ?? "").toString();
     this.#applyFilter(value);
+  };
+
+  #onNewChat = () => {
+    if (this.hasAttribute("data-busy")) return;
+    this.dispatchEvent(
+      new CustomEvent("ai-panel-new-chat", { bubbles: true, composed: true })
+    );
+  };
+
+  #onArchive = () => {
+    if (this.hasAttribute("data-busy")) return;
+    if (!this.hasAttribute("data-can-archive")) return;
+    this.dispatchEvent(
+      new CustomEvent("ai-panel-archive", { bubbles: true, composed: true })
+    );
   };
 
   /* ── sync helpers ────────────────────────────────────────── */
@@ -216,6 +281,19 @@ class SherpaPanel extends SherpaElement {
     if (this.#emptyEl) {
       this.#emptyEl.textContent = this.dataset.empty || "No results";
     }
+  }
+
+  #syncArchive() {
+    if (!this.#archiveBtnEl) return;
+    this.#archiveBtnEl.disabled =
+      !this.hasAttribute("data-can-archive") || this.hasAttribute("data-busy");
+  }
+
+  #syncBusy() {
+    if (this.#newChatBtnEl) {
+      this.#newChatBtnEl.disabled = this.hasAttribute("data-busy");
+    }
+    this.#syncArchive();
   }
 
   /* ── search filter logic ─────────────────────────────────── */

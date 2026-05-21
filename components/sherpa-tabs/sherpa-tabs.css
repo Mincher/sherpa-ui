@@ -60,8 +60,8 @@
       font: inherit;
       color: var(--sherpa-text-default-body, #2e2e33);
       transition:
-        background var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease),
-        border-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease);
+        background var(--sherpa-motion-transition-fast, 0.15s ease-out),
+        border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   
       &:hover {
         background: var(--sherpa-surface-container-hover, #fafafa);
@@ -96,8 +96,5 @@
 }
 :host ::slotted([data-tab-active]) {
   display: block !important;
-}
-:host([hidden]) {
-  display: none;
 }
 

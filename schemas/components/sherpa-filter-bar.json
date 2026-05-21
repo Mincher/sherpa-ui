@@ -17,7 +17,7 @@
       "description": "Whether filters are active"
     },
     {
-      "name": "data-src",
+      "name": "data-src-json",
       "type": "string",
       "description": "URL of a JSON file describing the filter bar"
     },
@@ -30,6 +30,12 @@
       "name": "data-available-fields",
       "type": "json",
       "description": "Field definitions: [{ field, name, type }]"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [

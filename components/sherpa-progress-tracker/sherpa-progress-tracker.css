@@ -25,7 +25,6 @@
   display: flex;
   flex-direction: column;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  box-sizing: border-box;
 }
 :host .tracker-header {
   display: none; align-items: center; justify-content: space-between; padding-bottom: var(--sherpa-space-base, 16px);
@@ -111,7 +110,6 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-sizing: border-box;
       position: relative;
       z-index: 1;
 }
@@ -155,8 +153,5 @@
 }
 :host .milestone[data-has-timestamp] .milestone-timestamp {
   display: block;
-}
-:host([hidden]) {
-  display: none;
 }
 

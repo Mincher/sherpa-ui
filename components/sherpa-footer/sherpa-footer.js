@@ -4,12 +4,13 @@
  * @description Reusable footer with multiple template variants.
  *   Template selected via data-type attribute.
  *
- * @attr {enum}    [data-type]          — action-bar | slot (default: slot)
+ * @attr {enum}    [data-type]          — action-bar | slot | card-select (default: slot)
  * @attr {string}  [data-cancel-label]  — Cancel button text (action-bar)
  * @attr {string}  [data-apply-label]   — Apply button text (action-bar)
  * @attr {boolean} [data-show-cancel]   — Show cancel button (default: true)
  * @attr {boolean} [data-show-apply]    — Show apply button (default: true)
  * @attr {boolean} [data-apply-closes]  — Apply auto-closes parent (default: true)
+ * @attr {boolean} [data-selected]      — Drives radio checked state (card-select)
  *
  * @slot start     — Content aligned to the left (action-bar)
  * @slot (default) — Passthrough content (slot variant)
@@ -49,8 +50,12 @@ export class SherpaFooter extends SherpaElement {
       "data-show-cancel",
       "data-show-apply",
       "data-apply-closes",
+      "data-selected",
     ];
   }
+
+  /** @type {HTMLElement|null} */
+  #radioEl = null;
 
   /* ── Template selection ───────────────────────────────────────── */
 
@@ -63,6 +68,8 @@ export class SherpaFooter extends SherpaElement {
   onRender() {
     this.#syncLabels();
     this.#wireEvents();
+    this.#radioEl = this.$(".card-radio");
+    this.#syncRadio();
   }
 
   onAttributeChanged(name) {
@@ -70,6 +77,9 @@ export class SherpaFooter extends SherpaElement {
       case "data-cancel-label":
       case "data-apply-label":
         this.#syncLabels();
+        break;
+      case "data-selected":
+        this.#syncRadio();
         break;
       // data-show-cancel / data-show-apply visibility handled by CSS:
       //   :host([data-show-cancel="false"]) .cancel-button { display: none; }
@@ -122,6 +132,13 @@ export class SherpaFooter extends SherpaElement {
   }
 
   /* ── Private ──────────────────────────────────────────────────── */
+
+  #syncRadio() {
+    if (!this.#radioEl) return;
+    this.dataset.selected === "true"
+      ? this.#radioEl.setAttribute("checked", "")
+      : this.#radioEl.removeAttribute("checked");
+  }
 
   #syncLabels() {
     const cancelBtn = this.$(".cancel-button");

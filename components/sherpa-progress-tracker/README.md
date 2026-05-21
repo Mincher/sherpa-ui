@@ -10,6 +10,8 @@ Vertical timeline with status-coloured milestone nodes plus a header row (title 
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-heading` | string | Tracker heading text | — | — |
 | `data-percentage` | string | Completion text (e.g. "60% Complete") | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Methods
 
@@ -47,7 +49,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-progress-tracker data-heading="value" data-percentage="value"></sherpa-progress-tracker>
+<sherpa-progress-tracker data-heading="value" data-percentage="value" data-src-html="value"></sherpa-progress-tracker>
 ```
 
 ## Import

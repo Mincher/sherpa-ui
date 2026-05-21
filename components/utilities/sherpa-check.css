@@ -42,7 +42,7 @@
   border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
   background: var(--sherpa-surface-control-default, #ffffff);
   cursor: pointer;
-  transition: background-color 120ms ease, border-color 120ms ease;
+  transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   flex-shrink: 0;
   position: relative;
   vertical-align: middle;

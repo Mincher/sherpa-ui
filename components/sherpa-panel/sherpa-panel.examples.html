@@ -79,3 +79,54 @@
   </div>
 </template>
 
+<template data-label="AI variant" data-description="data-variant=&quot;ai&quot; renders the chat template: new-chat and archive header buttons, a scrollable message thread, a composer slot, and a footer slot. Position is fixed by default; this demo overrides it to absolute so it sits within the preview box." data-layout="block" data-setup="ai-trigger">
+  <div style="position: relative; height: 420px; background: var(--sherpa-surface-page-default, #f5f5f7); border-radius: 8px; overflow: hidden; padding: 16px;">
+    <sherpa-button
+      class="ai-trigger"
+      data-variant="primary"
+      data-size="small"
+      data-icon-start="fa-solid fa-robot"
+      data-label="Open AI panel"
+    ></sherpa-button>
+
+    <sherpa-panel
+      class="ai-panel"
+      data-variant="ai"
+      data-heading="Sherpa Assistant"
+      data-can-archive
+      data-expanded
+      style="position: absolute;"
+    >
+      <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
+        <p>Hi! Ask me about your devices, alerts, or deploys.</p>
+      </sherpa-chat-message>
+      <sherpa-chat-message data-author="You" data-author-variant="user" data-timestamp="now">
+        <p>Which sensors are offline?</p>
+      </sherpa-chat-message>
+      <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
+        <p>3 sensors are offline on Floor 2. Would you like details?</p>
+      </sherpa-chat-message>
+      <sherpa-prompt-composer slot="composer" data-placeholder="Ask anything…"></sherpa-prompt-composer>
+      <span slot="footer">AI can make mistakes. Verify important information.</span>
+    </sherpa-panel>
+  </div>
+</template>
+
+<template data-label="AI variant — busy" data-description="data-busy disables the new-chat and archive buttons and can be used while a response is being generated." data-layout="block">
+  <div style="position: relative; height: 340px; background: var(--sherpa-surface-page-default, #f5f5f7); border-radius: 8px; overflow: hidden;">
+    <sherpa-panel
+      data-variant="ai"
+      data-heading="Sherpa Assistant"
+      data-busy
+      data-expanded
+      style="position: absolute;"
+    >
+      <sherpa-chat-message data-author="You" data-author-variant="user" data-timestamp="now">
+        <p>Generate this week's status report.</p>
+      </sherpa-chat-message>
+      <sherpa-chat-message data-author="Assistant" data-timestamp="now" data-loading></sherpa-chat-message>
+      <sherpa-prompt-composer slot="composer" data-placeholder="Working…" data-disabled></sherpa-prompt-composer>
+      <span slot="footer">AI can make mistakes. Verify important information.</span>
+    </sherpa-panel>
+  </div>
+</template>

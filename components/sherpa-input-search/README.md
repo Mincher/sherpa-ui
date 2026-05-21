@@ -4,6 +4,28 @@
 
 Search input with magnifying glass icon and clear button. Inherits label, description, helper, layout, validation from SherpaInputBase.
 
+## Attributes
+
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data-label` | string |  | — | — |
+| `data-description` | string |  | — | — |
+| `data-helper` | string |  | — | — |
+| `data-layout` | string |  | — | — |
+| `disabled` | string |  | — | — |
+| `readonly` | string |  | — | — |
+| `required` | string |  | — | — |
+| `name` | string |  | — | — |
+| `value` | string |  | — | — |
+| `placeholder` | string |  | — | — |
+| `pattern` | string |  | — | — |
+| `minlength` | string |  | — | — |
+| `maxlength` | string |  | — | — |
+| `novalidate` | string |  | — | — |
+| `data-status` | string |  | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
+
 ## Events
 
 ### `input`
@@ -74,7 +96,13 @@ element.addEventListener("search", (e) => {
 ### Basic
 
 ```html
-<sherpa-input-search></sherpa-input-search>
+<sherpa-input-search data-label="Example Label" data-description="A brief description" data-helper="value"></sherpa-input-search>
+```
+
+### Disabled
+
+```html
+<sherpa-input-search data-label="Disabled" disabled></sherpa-input-search>
 ```
 
 ## Import

@@ -2,11 +2,9 @@
  * motion-styles.css — Animation and transition utilities.
  *
  * Consumers:
- *   sherpa-view-header:  .sherpa-motion-scroll-under
- *   sherpa-barchart:     @keyframes sherpa-grow-*
- *   sherpa-nav:          .sherpa-motion-expand-vertical, .sherpa-motion-expand-horizontal
- *   sherpa-nav-item:     @keyframes sherpa-ripple-in, @keyframes sherpa-fade-in
- *   sherpa-table:        .sherpa-motion-expand-vertical (grouped rows)
+ *   sherpa-barchart:  @keyframes sherpa-grow-*
+ *   sherpa-nav:       @keyframes sherpa-fade-in
+ *   sherpa-nav-item:  @keyframes sherpa-ripple-in
  *
  * Shadow DOM note:
  *   SherpaElement injects this file as a <link> into each shadow root,
@@ -15,58 +13,6 @@
  * Motion duration tokens (--sherpa-motion-duration-*, --sherpa-motion-easing-default)
  * are defined in tokens/sherpa-platform.css and inherited through shadow boundaries.
  */
-
-
-/* ── Expand (vertical) ─────────────────────────────────────────────────── */
-/*
- * Toggle [data-open] to expand/collapse.
- *
- *   <div class="sherpa-motion-expand-vertical">
- *     <div class="expand-header">...</div>
- *     <div class="expand-content">...</div>
- *   </div>
- */
-
-.sherpa-motion-expand-vertical {
-  & > .expand-content {
-    display: flex;
-    flex-direction: column;
-    max-height: 0;
-    overflow: clip;
-    transition: max-height var(--sherpa-motion-duration-slow) var(--sherpa-motion-easing-default);
-  }
-
-  &[data-open] > .expand-content {
-    max-height: var(--expand-max-height, 1000px);
-  }
-}
-
-
-/* ── Expand (horizontal) ───────────────────────────────────────────────── */
-
-.sherpa-motion-expand-horizontal {
-  & > .expand-content {
-    display: flex;
-    flex-direction: column;
-    max-width: 0;
-    overflow: clip;
-    transition: max-width var(--sherpa-motion-duration-base) var(--sherpa-motion-easing-default);
-  }
-
-  &[data-open] > .expand-content {
-    max-width: var(--expand-max-width, 1000px);
-  }
-}
-
-
-/* ── Scroll-under ──────────────────────────────────────────────────────── */
-
-.sherpa-motion-scroll-under {
-  transition:
-    background-color var(--sherpa-motion-duration-fast) ease,
-    border-color var(--sherpa-motion-duration-fast) ease,
-    box-shadow var(--sherpa-motion-duration-fast) ease;
-}
 
 
 /* ── Grow keyframes ────────────────────────────────────────────────────── */

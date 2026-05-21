@@ -538,9 +538,11 @@ export function ContentAttributesMixin(Base) {
       bar.dataset.syncing = "";
 
       // ── Segment chip ──
+      // Chips are now in the filter bar's shadow DOM — use the public
+      // accessor which falls back to a light DOM query for back-compat.
       const segChip = bar.querySelector(
         'sherpa-button[data-behavior="segment"]',
-      );
+      ) ?? bar.segmentChip;
       if (segChip) {
         // Effective group field: explicit segment override → chart category fallback
         let field = this.getAttribute("data-segment-field")
@@ -568,11 +570,15 @@ export function ContentAttributesMixin(Base) {
       }
 
       // ── Sort chip ──
+      // Chips are now in the filter bar's shadow DOM — use the public
+      // accessor which falls back to a light DOM query for back-compat.
       const sortChip = bar.querySelector(
         'sherpa-button[data-behavior="sort"]',
-      );
+      ) ?? bar.sortChip;
       if (sortChip) {
-        const sortType = sortChip.dataset.sortType;
+        // Prefer sort type declared on the chip itself; fall back to the
+        // filter bar host attribute (used when chip is in shadow DOM).
+        const sortType = sortChip.dataset.sortType ?? bar.dataset.sortType;
         const dir = this.getAttribute("data-sort-direction");
 
         if (sortType === "time" || sortType === "value") {

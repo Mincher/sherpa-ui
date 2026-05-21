@@ -3,33 +3,25 @@
 
   Authoring model:
     The template below is the entire rendered structure. Consumers who need
-    different crumbs override it by pointing data-src at their own HTML file
+    different crumbs override it by pointing data-src-json at their own HTML file
     that exports a <template id="default"> with the same shape.
 
   Markup contract:
-    • <nav aria-label="Breadcrumb"> wrapping an <ol class="breadcrumb-list">
-    • Historic crumbs:  <li class="crumb"><a class="crumb-text" href="…">Label</a><span class="separator" aria-hidden="true">/</span></li>
-    • Current crumb:    <li class="crumb"><span class="crumb-text" aria-current="page">Label</span></li>
+    • <div class="breadcrumb-trail" role="navigation" aria-label="Breadcrumb"> is the flex row container.
+    • Historic crumbs:  <a class="crumb-text" href="…">Label</a><span class="separator" aria-hidden="true">/</span>
+    • Current crumb:    <span class="crumb-text" aria-current="page">Label</span>
     • The current crumb has no separator; CSS keys off [aria-current="page"].
 
   Host attributes:
-    data-src — URL of an alternative breadcrumbs template
+    data-src-json — URL of a JSON file: [{label, href?}]
 -->
 
 <template id="default">
-<nav aria-label="Breadcrumb" class="breadcrumb-nav">
-  <ol class="breadcrumb-list">
-    <li class="crumb">
-      <a class="crumb-text" href="#">Home</a>
-      <span class="separator" aria-hidden="true">/</span>
-    </li>
-    <li class="crumb">
-      <a class="crumb-text" href="#">Section</a>
-      <span class="separator" aria-hidden="true">/</span>
-    </li>
-    <li class="crumb">
-      <span class="crumb-text" aria-current="page">Current page</span>
-    </li>
-  </ol>
-</nav>
+<div class="breadcrumb-trail" role="navigation" aria-label="Breadcrumb">
+  <a class="crumb-text" href="#">Home</a>
+  <span class="separator" aria-hidden="true">/</span>
+  <a class="crumb-text" href="#">Section</a>
+  <span class="separator" aria-hidden="true">/</span>
+  <span class="crumb-text" aria-current="page">Current page</span>
+</div>
 </template>

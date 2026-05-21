@@ -16,58 +16,58 @@ const FILES = {
 'sherpa-container': `
 <template data-label="Default (fit)" data-description="Wraps any block of content with the standard surface, border and padding." data-layout="block">
   <sherpa-container>
-    <sherpa-container-header data-title="Devices" data-description="Overview of recent activity"></sherpa-container-header>
+    <sherpa-header data-title="Devices" data-description="Overview of recent activity"></sherpa-header>
     <p style="padding: 16px;">Container body content.</p>
   </sherpa-container>
 </template>
 
 <template data-label="State — loading" data-layout="block">
   <sherpa-container data-state="loading">
-    <sherpa-container-header data-title="Loading…"></sherpa-container-header>
+    <sherpa-header data-title="Loading…"></sherpa-header>
     <div style="height: 120px;"></div>
   </sherpa-container>
 </template>
 
 <template data-label="State — empty" data-layout="block">
   <sherpa-container data-state="empty">
-    <sherpa-container-header data-title="Devices"></sherpa-container-header>
+    <sherpa-header data-title="Devices"></sherpa-header>
     <sherpa-empty-state data-label="No devices yet" data-description="Add your first device to get started."></sherpa-empty-state>
   </sherpa-container>
 </template>
 
 <template data-label="State — error" data-layout="block">
   <sherpa-container data-state="error">
-    <sherpa-container-header data-title="Devices"></sherpa-container-header>
+    <sherpa-header data-title="Devices"></sherpa-header>
     <sherpa-empty-state data-label="Something went wrong" data-description="We could not load the device list." data-illustration="error"></sherpa-empty-state>
   </sherpa-container>
 </template>
 
 <template data-label="Editable + menu" data-layout="block">
   <sherpa-container data-editable>
-    <sherpa-container-header data-title="Editable card" data-description="Drag, menu, and resize affordances appear" data-menu-button data-drag-handle></sherpa-container-header>
+    <sherpa-header data-title="Editable card" data-description="Drag, menu, and resize affordances appear" data-menu-button data-drag-handle></sherpa-header>
     <p style="padding: 16px;">Editable container body.</p>
   </sherpa-container>
 </template>
 `,
 
-'sherpa-container-header': `
+'sherpa-header': `
 <template data-label="Title only" data-layout="block">
-  <sherpa-container-header data-title="Devices"></sherpa-container-header>
+  <sherpa-header data-title="Devices"></sherpa-header>
 </template>
 
 <template data-label="Title and description" data-layout="block">
-  <sherpa-container-header data-title="Devices" data-description="All devices reporting in the last 24 hours."></sherpa-container-header>
+  <sherpa-header data-title="Devices" data-description="All devices reporting in the last 24 hours."></sherpa-header>
 </template>
 
 <template data-label="With actions slot" data-layout="block">
-  <sherpa-container-header data-title="Devices" data-description="All devices in your account.">
+  <sherpa-header data-title="Devices" data-description="All devices in your account.">
     <sherpa-button slot="actions" data-variant="secondary" data-size="small" data-label="Filter" data-icon-start="fa-solid fa-filter"></sherpa-button>
     <sherpa-button slot="actions" data-variant="primary"   data-size="small" data-label="Add device" data-icon-start="fa-solid fa-plus"></sherpa-button>
-  </sherpa-container-header>
+  </sherpa-header>
 </template>
 
 <template data-label="With external link + menu" data-layout="block">
-  <sherpa-container-header data-title="API usage" data-description="Last 30 days" data-open-external data-menu-button></sherpa-container-header>
+  <sherpa-header data-title="API usage" data-description="Last 30 days" data-open-external data-menu-button></sherpa-header>
 </template>
 `,
 
@@ -89,15 +89,15 @@ const FILES = {
 <template data-label="Basic grid" data-description="A responsive grid that arranges sherpa-container children." data-layout="block">
   <sherpa-layout-grid data-heading="Dashboard" data-row-height="120">
     <sherpa-container data-col-span="6">
-      <sherpa-container-header data-title="Devices online"></sherpa-container-header>
+      <sherpa-header data-title="Devices online"></sherpa-header>
       <sherpa-metric data-label="Devices online" data-value="1,284" data-delta="+12"></sherpa-metric>
     </sherpa-container>
     <sherpa-container data-col-span="6">
-      <sherpa-container-header data-title="Alerts"></sherpa-container-header>
+      <sherpa-header data-title="Alerts"></sherpa-header>
       <sherpa-metric data-label="Active alerts" data-value="7" data-status="critical"></sherpa-metric>
     </sherpa-container>
     <sherpa-container data-col-span="12">
-      <sherpa-container-header data-title="Traffic"></sherpa-container-header>
+      <sherpa-header data-title="Traffic"></sherpa-header>
       <p style="padding: 16px;">Chart goes here.</p>
     </sherpa-container>
   </sherpa-layout-grid>
@@ -106,13 +106,13 @@ const FILES = {
 <template data-label="Editable" data-description="data-editable enables drag-and-resize from each container's header." data-layout="block">
   <sherpa-layout-grid data-heading="Editable dashboard" data-editable data-row-height="120">
     <sherpa-container data-col-span="4" data-editable>
-      <sherpa-container-header data-title="Tile A" data-drag-handle></sherpa-container-header>
+      <sherpa-header data-title="Tile A" data-drag-handle></sherpa-header>
     </sherpa-container>
     <sherpa-container data-col-span="4" data-editable>
-      <sherpa-container-header data-title="Tile B" data-drag-handle></sherpa-container-header>
+      <sherpa-header data-title="Tile B" data-drag-handle></sherpa-header>
     </sherpa-container>
     <sherpa-container data-col-span="4" data-editable>
-      <sherpa-container-header data-title="Tile C" data-drag-handle></sherpa-container-header>
+      <sherpa-header data-title="Tile C" data-drag-handle></sherpa-header>
     </sherpa-container>
   </sherpa-layout-grid>
 </template>

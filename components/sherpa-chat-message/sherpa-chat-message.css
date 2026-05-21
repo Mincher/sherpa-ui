@@ -110,7 +110,4 @@
 :host([data-has-avatar]) .avatar-icon {
   display: none;
 }
-:host([hidden]) {
-  display: none;
-}
 

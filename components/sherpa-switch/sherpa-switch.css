@@ -58,7 +58,7 @@
       border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
       border-radius: var(--_switch-border-outer);
       background-color: var(--_switch-fill-default, var(--sherpa-surface-context-default-strong-default, #1b1b21));
-      transition: background-color 150ms ease;
+      transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
       cursor: inherit;
 }
 :host .switch-knob {
@@ -86,8 +86,5 @@
         flex-direction: row-reverse;
       }
       & .switch-label { color: var(--sherpa-text-default-heading, #1a1a1f); }
-}
-:host([hidden]) {
-  display: none;
 }
 

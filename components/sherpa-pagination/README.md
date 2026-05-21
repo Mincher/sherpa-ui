@@ -13,6 +13,8 @@ Standalone pagination bar with page navigation and page-size selector.
 | `data-total-rows` | number | Total row count (required) | — | — |
 | `data-allowed-sizes` | string | Comma-separated page-size options (default: "10,25,50,100") | — | — |
 | `data-density` | enum | Display density | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -100,7 +102,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-pagination data-allowed-sizes="value"></sherpa-pagination>
+<sherpa-pagination data-allowed-sizes="value" data-src-html="value"></sherpa-pagination>
 ```
 
 ## Import

@@ -64,7 +64,7 @@
       border: 1px solid var(--_node-accent);
       border-radius: var(--sherpa-node-radius, 8px);
       box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
-      transition: box-shadow 150ms ease, border-color 150ms ease;
+      transition: box-shadow var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
 :host([data-kind="source"]) .node {
   background: var(--sherpa-node-body-source, #f7fdff);
@@ -155,6 +155,3 @@
 ::slotted(template) { display: none !important; }
 
 /* Native [hidden] support */
-:host([hidden]) {
-  display: none;
-}

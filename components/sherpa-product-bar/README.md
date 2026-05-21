@@ -10,6 +10,8 @@
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-product-name` | string | Product display name | — | — |
 | `data-product-icon` | string | Font Awesome icon class (e.g. "fa-cube") | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -35,7 +37,7 @@ Slot usage:
 ### Basic
 
 ```html
-<sherpa-product-bar data-product-name="value" data-product-icon="value">
+<sherpa-product-bar data-product-name="value" data-product-icon="value" data-src-html="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="icon"><!-- Custom product icon content --></span>

@@ -15,7 +15,6 @@
   gap: var(--sherpa-space-2xs, 4px);
   width: 100%;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  box-sizing: border-box;
   /* ──────────────────────────────────────────────────────────
        LABEL (conditional, above bar)
        ────────────────────────────────────────────────────────── */
@@ -57,7 +56,7 @@
         var(--sherpa-surface-control-primary-default, #c046ff)
       );
       border-radius: var(--sherpa-border-rounding-full, 8px);
-      transition: width 0.3s ease;
+      transition: width var(--sherpa-motion-transition-base, 0.25s ease-out);
 }
 :host([data-variant="indeterminate"]) .fill {
   display: none;
@@ -86,10 +85,6 @@
 :host(:not([data-value]):not([data-status-text])) .status {
   display: none;
 }
-:host([hidden]) {
-  display: none;
-}
-
 
 /* ──────────────────────────────────────────────────────────────
    PROGRESS SLIDE ANIMATION (200% → -200% position)

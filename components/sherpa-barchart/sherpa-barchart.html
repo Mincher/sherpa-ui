@@ -43,7 +43,8 @@
     </dl>
     <sherpa-button
       class="menu-button"
-      data-type="icon-menu"
+      data-type="icon"
+      data-menu="true"
       data-variant="tertiary"
       data-size="small"
       data-icon-start="&#xf142;"
@@ -55,13 +56,7 @@
     ></sherpa-button>
   </header>
 
-  <sherpa-filter-bar data-embedded data-type="local">
-    <sherpa-button slot="group" data-type="button-menu" data-split data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none"
-      ></sherpa-button
-    >
-    <sherpa-button slot="sort" data-type="button-menu" data-split data-behavior="sort" data-sort-type="value" data-label="Sort" data-icon-start="&#xf0dc;" data-no-dropdown data-menu-scope="none"
-      ></sherpa-button
-    >
+  <sherpa-filter-bar data-embedded data-type="local" data-sort-type="value">
     <sherpa-button
       slot="actions"
       data-variant="tertiary"

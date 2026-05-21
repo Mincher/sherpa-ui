@@ -11,7 +11,7 @@
  *     "Ask N-zo" assistant entry point
  *
  * Tokens are sourced from the Sherpa design system; the bar uses
- *   --sherpa-surface-app-product-bar-bg  (theme-aware bar surface)
+ *   --sherpa-surface-container-default     (theme-aware bar surface)
  *   --sherpa-border-container-default    (1 px bottom rule)
  *   --sherpa-text-default-heading        (system name)
  *   --sherpa-text-default-body           (default body text)
@@ -29,11 +29,10 @@
   height: 48px;
   padding-inline: var(--sherpa-space-xs, 8px);
   gap: var(--sherpa-space-base, 16px);
-  background: var(--sherpa-surface-app-product-bar-bg, #ffffff);
+  background: var(--sherpa-surface-container-default, #ffffff);
   border-block-end: 1px solid var(--sherpa-border-container-default, #d5d5d5);
   color: var(--sherpa-text-default-body, #111111);
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
-  box-sizing: border-box;
 }
 :host .brand-stack {
   display: flex;
@@ -136,8 +135,5 @@
       height: 24px;
       background: var(--sherpa-border-container-default, #d5d5d5);
       margin-inline: var(--sherpa-space-2xs, 4px);
-}
-:host([hidden]) {
-  display: none;
 }
 

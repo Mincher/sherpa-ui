@@ -143,7 +143,7 @@
 :host .step-label-container {
   display: flex;
       flex-direction: column;
-      gap: var(--sherpa-space-3xs, 6px);
+      gap: var(--sherpa-space-3xs, 2px);
 }
 :host .step-label {
   font-size: var(--_label-font-size);
@@ -185,7 +185,7 @@
           height: 40px;
           min-width: 2px;
           margin: var(--sherpa-space-2xs, 4px) 0;
-          margin-left: calc(var(--sherpa-space-2xs, 4px) + 15px);
+          margin-inline-start: calc(var(--sherpa-space-2xs, 4px) + 15px);
 }
 :host([data-orientation="vertical"]) .step-item {
   width: 100%;
@@ -214,14 +214,10 @@
           height: 20px;
 }
 
-
 :host([data-labels="none"]) .step-label-container {
   display: none;
 }
 
-:host([hidden]) {
-  display: none;
-}
 :host([data-template="timeline"]) {
   /* ── Vertical connector between timeline steps ────── */
   /* ── Timestamp (shown only in timeline) ────────────– */
@@ -239,7 +235,7 @@
 :host([data-template="timeline"]) .timeline-connector {
   width: 2px;
           height: var(--sherpa-space-base, 16px);
-          margin-left: calc(var(--_indicator-size) / 2 + var(--sherpa-space-sm, 12px));
+          margin-inline-start: calc(var(--_indicator-size) / 2 + var(--sherpa-space-sm, 12px));
           background: var(--sherpa-border-container-default, #d5d5dc);
     
           &[data-completed] {
@@ -256,6 +252,4 @@
 :host([data-template="timeline"]) .timeline-item[data-visited]:not([data-active]):not([data-completed]) {
   --_label-color: var(--sherpa-text-default-body, #2e2e33);
 }
-
-
 

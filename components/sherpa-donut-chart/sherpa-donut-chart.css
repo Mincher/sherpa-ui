@@ -32,7 +32,6 @@
   align-items: stretch;
   gap: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  box-sizing: border-box;
   min-height: 0;
   overflow: clip;
   container: sherpa-donut-chart / size;
@@ -184,7 +183,7 @@
 }
 :host .legend-value {
   font-weight: var(--sherpa-font-weight-semibold, 600);
-      margin-left: var(--sherpa-space-3xs, 2px);
+      margin-inline-start: var(--sherpa-space-3xs, 2px);
 }
 :host .color-1 {
   background-color: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
@@ -204,12 +203,6 @@
 :host .color-6 {
   background-color: var(--sherpa-data-viz-categorical-color-6, #8197f1);
 }
-:host([hidden]) {
-  display: none;
-}
-
-
-
 
 /* ================================================================
    Container queries — landscape layout flip and smaller font

@@ -16,7 +16,7 @@
  * ── Architecture notes ────────────────────────────────────────
  * HTML — branding (icon + name) + divider + navigation slot + actions slot.
  * CSS  — dark surface, 48 px tall, horizontal flex.
- *        Uses --sherpa-surface-app-product-bar-* tokens.
+ *        Pins --sherpa-surface-container-tertiary-default to neutral-1000 on :host.
  * JS   — syncs product name text content.
  */
 
@@ -31,10 +31,10 @@ i {
   width: 100%;
   height: 48px;
   padding-inline-end: var(--sherpa-space-xs, 8px);
-  background: var(--sherpa-surface-app-product-bar-bg, #18191a);
+  --sherpa-surface-container-tertiary-default: var(--sherpa-color-neutral-1000);
+  background: var(--sherpa-surface-container-tertiary-default, #18191a);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   color: var(--sherpa-text-default-on-color-body, #fafafa);
-  box-sizing: border-box;
 }
 :host .branding {
   display: flex;
@@ -49,7 +49,7 @@ i {
       justify-content: center;
       width: 48px;
       height: 48px;
-      background: var(--sherpa-surface-app-product-bar-icon, var(--sherpa-surface-control-primary-default, #c046ff));
+      background: var(--sherpa-surface-control-primary-default, #c046ff);
       color: var(--sherpa-text-default-on-color-body, #ffffff);
       font-size: 20px;
       flex-shrink: 0;
@@ -93,9 +93,6 @@ i {
       margin-inline-start: auto;
 }
 :host(:not([data-has-actions])) .actions {
-  display: none;
-}
-:host([hidden]) {
   display: none;
 }
 

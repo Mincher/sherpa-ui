@@ -18,8 +18,9 @@ Available templates:
 | `data-current-step` | number | Active step (1-based) | `1` | — |
 | `data-linear` | enum | true \| false — steps must complete in order | — | `true`, `false` |
 | `data-show-step-numbers` | enum | true \| false (default: true) | — | `true`, `false` |
-| `data-src` | string | URL to load steps JSON | — | — |
+| `data-src-json` | string | URL to load steps JSON | — | — |
 | `data-template` | enum | default \| timeline (vertical timeline layout) | — | `default`, `timeline` |
+| `data-src-html` | string |  | — | — |
 
 ## Events
 
@@ -115,7 +116,7 @@ Mark/unmark a step as errored
 | `currentStep` | `number` | Getter/setter for data-current-step | read/write |
 | `linear` | `boolean` | Getter/setter for data-linear | read/write |
 | `showStepNumbers` | `boolean` | Getter/setter for data-show-step-numbers | read/write |
-| `dataSrc` | `string` | Getter/setter for data-src | read/write |
+| `dataSrcJson` | `string` | Getter/setter for data-src-json | read/write |
 | `steps` | `Array` | Current steps array (getter-only) | read/write |
 
 ## Internal CSS Custom Properties
@@ -142,7 +143,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-stepper data-linear="true" data-show-step-numbers="true" data-src="value"></sherpa-stepper>
+<sherpa-stepper data-linear="true" data-show-step-numbers="true" data-src-json="value"></sherpa-stepper>
 ```
 
 ## Import

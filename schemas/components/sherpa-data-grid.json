@@ -64,6 +64,18 @@
       "name": "data-show-pagination",
       "type": "boolean",
       "description": "Show pagination bar"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [

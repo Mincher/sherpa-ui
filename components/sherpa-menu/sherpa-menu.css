@@ -39,7 +39,6 @@
   box-shadow: var(--_shadow);
   min-width: 180px;
   max-width: 320px;
-  box-sizing: border-box;
   color: var(--_text);
   outline: none;
   /* ──────────────────────────────────────────────────────────
@@ -104,7 +103,6 @@
       flex-direction: column;
       gap: var(--_gap);
       padding: var(--_padding);
-      box-sizing: border-box;
       overflow: auto;
 }
 :host([data-layout="actions"]) {
@@ -183,10 +181,6 @@
 :host([popover][open]) {
   display: block;
 }
-:host([hidden]) {
-  display: none;
-}
-
 
 /* Animation keyframes (top-level, outside :host) */
 @keyframes sherpa-menu-spin {

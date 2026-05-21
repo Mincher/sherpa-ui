@@ -1,6 +1,6 @@
 # sherpa-prompt-composer
 
-> **Category:** input · **Base class:** SherpaElement
+> **Category:** ai · **Base class:** SherpaElement
 
 Auto-growing prompt textarea with circular send button. Designed for AI / chat surfaces.
 
@@ -11,6 +11,8 @@ Auto-growing prompt textarea with circular send button. Designed for AI / chat s
 | `data-placeholder` | string | Placeholder text. | — | — |
 | `data-disabled` | boolean | Disables input + send. | — | — |
 | `data-max-height` | number | Max textarea height in px (default 160). | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -76,7 +78,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-prompt-composer data-placeholder="value"></sherpa-prompt-composer>
+<sherpa-prompt-composer data-placeholder="value" data-src-html="value" data-src-json="value"></sherpa-prompt-composer>
 ```
 
 ## Import

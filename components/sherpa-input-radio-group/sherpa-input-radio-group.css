@@ -26,9 +26,6 @@
              Group surfaces validation tone; children inherit --_status-* through
              shadow boundary. See sherpa-input-checkbox-group.css for rationale. */
 }
-:host([hidden]) {
-  display: none;
-}
 :host([disabled]) {
   pointer-events: none;
 }
@@ -78,5 +75,4 @@
 :host([data-status]) .group-helper {
   color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
 }
-
 

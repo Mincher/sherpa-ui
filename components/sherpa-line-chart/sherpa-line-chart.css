@@ -64,7 +64,6 @@
   flex-direction: column;
   gap: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  box-sizing: border-box;
   min-height: 0;
   overflow: clip;
   container: sherpa-line-chart / size;
@@ -127,7 +126,7 @@
       justify-content: space-between;
       min-width: 36px;
       text-align: right;
-      padding-right: var(--sherpa-space-2xs, 4px);
+      padding-inline-end: var(--sherpa-space-2xs, 4px);
 }
 :host .y-label {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
@@ -256,16 +255,16 @@
       z-index: 1;
       cursor: default;
       translate: -50% -50%;
-      transition: transform 0.15s ease;
+      transition: transform var(--sherpa-motion-transition-fast, 0.15s ease-out);
   
       &[data-role="start"] {
         top: calc(100% - var(--_n-start) * var(--_progress-start) * 1%);
-        left: 0;
+        inset-inline-start: 0;
       }
   
       &[data-role="end"] {
         top: calc(100% - var(--_n-end) * var(--_progress-end) * 1%);
-        left: 100%;
+        inset-inline-start: 100%;
       }
   
       &:hover { transform: scale(1.5); }
@@ -307,16 +306,6 @@
 :host .legend-label {
   white-space: nowrap;
 }
-:host([hidden]) {
-  display: none;
-}
-
-
-
-
-
-
-
 
 /* ================================================================
    Container queries
@@ -334,7 +323,7 @@
     justify-content: space-between;
     min-width: unset;
     text-align: center;
-    padding-right: 0;
+    padding-inline-end: 0;
     padding-bottom: var(--sherpa-space-2xs, 4px);
   }
 }

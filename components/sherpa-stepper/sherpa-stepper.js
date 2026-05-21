@@ -7,7 +7,7 @@
  * @attr {number}  [data-current-step=1]      — Active step (1-based)
  * @attr {enum}    [data-linear]               — true | false — steps must complete in order
  * @attr {enum}    [data-show-step-numbers]     — true | false (default: true)
- * @attr {string}  [data-src]                  — URL to load steps JSON
+ * @attr {string}  [data-src-json]                  — URL to load steps JSON
  * @attr {enum}    [data-template]             — default | timeline (vertical timeline layout)
  *
  * @fires step-change
@@ -27,7 +27,7 @@
  * @prop {number}  currentStep     — Getter/setter for data-current-step
  * @prop {boolean} linear          — Getter/setter for data-linear
  * @prop {boolean} showStepNumbers — Getter/setter for data-show-step-numbers
- * @prop {string}  dataSrc         — Getter/setter for data-src
+ * @prop {string}  dataSrcJson     — Getter/setter for data-src-json
  * @prop {Array}   steps           — Current steps array (getter-only)
  */
 
@@ -47,7 +47,6 @@ export class SherpaStepper extends SherpaElement {
       "data-current-step",
       "data-linear",
       "data-show-step-numbers",
-      "data-src",
       "data-template",
     ];
   }
@@ -63,11 +62,23 @@ export class SherpaStepper extends SherpaElement {
   #ready = false;
   /** @type {Set<number>} */
   #visited = new Set();
+  /** URL last loaded synchronously in onRender() — used to skip the base
+   *  class's post-connect #fetchJson so the same URL isn't fetched twice. */
+  #srcLoaded = "";
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   async onRender() {
-    await this.#loadInitialData();
+    const src = this.dataset.srcJson;
+    if (src) {
+      try {
+        const data = await fetch(src).then((r) => r.json());
+        this.#steps = data.steps || [];
+        this.#srcLoaded = src; // Prevent base class post-connect trigger from double-loading
+      } catch (e) {
+        console.warn("sherpa-stepper: failed to load data-src-json:", e);
+      }
+    }
     this.#currentStep = parseInt(this.dataset.currentStep) || 1;
     this.#visited.add(this.#currentStep);
     this.#render();
@@ -82,8 +93,9 @@ export class SherpaStepper extends SherpaElement {
         this.#currentStep = n;
         this.#render();
       }
-    } else if (name === "data-src") {
-      this.#loadDataFromSrc(newValue);
+    } else if (name === "data-src-json") {
+      // Base class handles the fetch; onJsonData() will re-render.
+      // Don't call #render() here — steps haven't arrived yet.
     } else if (name === "data-template") {
       this.renderTemplate(this.templateId).then(() => this.#render());
     } else {
@@ -93,28 +105,20 @@ export class SherpaStepper extends SherpaElement {
 
   /* ── Data loading ─────────────────────────────────────────────── */
 
-  async #loadInitialData() {
-    if (this.#steps.length > 0) return;
-    const src = this.dataset.src;
-    if (src) {
-      try {
-        const data = await fetch(src).then((r) => r.json());
-        this.#steps = data.steps || [];
-      } catch (e) {
-        console.warn("sherpa-stepper: failed to load data-src:", e);
-      }
+  /**
+   * Called by the base class after `data-src-json` is fetched.
+   * Skips if `onRender()` already loaded this URL (initial bootstrap path)
+   * to prevent a double fetch.
+   * @param {{ steps: object[] }} data
+   */
+  onJsonData(data) {
+    const current = this.dataset.srcJson;
+    if (current && current === this.#srcLoaded) {
+      this.#srcLoaded = ""; // Reset so future attribute changes are processed
+      return;
     }
-  }
-
-  async #loadDataFromSrc(src) {
-    if (!src) return;
-    try {
-      const data = await fetch(src).then((r) => r.json());
-      this.#steps = data.steps || [];
-      this.#render();
-    } catch (e) {
-      console.warn("sherpa-stepper: failed to load data-src:", e);
-    }
+    this.#steps = data.steps || [];
+    if (this.#ready) this.#render();
   }
 
   /* ── DOM rendering ────────────────────────────────────────────── */
@@ -220,11 +224,11 @@ export class SherpaStepper extends SherpaElement {
     this.dataset.showStepNumbers = v ? "true" : "false";
   }
 
-  get dataSrc() {
-    return this.dataset.src || "";
+  get dataSrcJson() {
+    return this.dataset.srcJson || "";
   }
-  set dataSrc(v) {
-    this.dataset.src = v;
+  set dataSrcJson(v) {
+    this.dataset.srcJson = v;
   }
 
   get steps() {

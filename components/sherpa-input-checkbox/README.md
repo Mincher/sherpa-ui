@@ -17,6 +17,8 @@ Atomic checkbox primitive. Single checkbox with label-on-the-right. Designed for
 | `data-label` | string | Inline label text | — | — |
 | `data-description` | string | Helper line below the label | — | — |
 | `data-status` | enum | critical \| warning \| success \| info \| urgent | — | `critical`, `warning`, `success`, `info`, `urgent` |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 

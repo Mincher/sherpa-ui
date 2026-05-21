@@ -8,7 +8,7 @@
  * (data-has-badge, data-has-content on wrappers).
  *
  * Variants: data-variant="section" | "subsection" | "child" | (none)
- * State:    data-state="selected" | (absent)
+ * State:    data-state="active" | data-state="selected" | (absent)
  *
  * Chevron visibility + rotation managed externally by sherpa-nav.css
  * via ::part(chevron), details[open], and :has().
@@ -31,32 +31,35 @@ i {
   gap: var(--sherpa-space-sm, 16px);
   padding-inline: calc(var(--_indent, 0px) * var(--_depth, 0)) var(--sherpa-space-sm, 16px);
   height: var(--_item-h);
-  box-sizing: border-box;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
   background: transparent;
 }
 
 :host(:hover) {
-  background: var(--sherpa-surface-app-product-nav-hover, #fafafa);
+  background: color-mix(in srgb, var(--sherpa-surface-control-active-default, #f8ebff) 55%, transparent);
 }
 :host([data-search-hidden]) {
   display: none;
 }
-:host([data-state="selected"]) {
-  background: var(--sherpa-surface-app-product-nav-active, #f8ebff);
+:host(:is([data-state="active"], [data-state="selected"])) {
+  background: var(--sherpa-surface-control-active-down, #e2adff);
+  color: var(--sherpa-border-control-active-default, #8500cc);
 }
-:host([data-state="selected"]) .nav-item-indicator {
-  background: var(--sherpa-color-brand-base, #c046ff);
+:host(:is([data-state="active"], [data-state="selected"])) .nav-item-indicator {
+  background: var(--sherpa-border-control-active-default, #8500cc);
+}
+:host(:is([data-state="active"], [data-state="selected"])) .nav-item-icon {
+  color: var(--sherpa-border-control-active-default, #8500cc);
 }
 :host([data-variant="child"]) {
-  background: var(--sherpa-surface-app-product-nav-sub-bg, transparent);
+  background: var(--sherpa-surface-container-secondary-sub-default, transparent);
 }
 :host([data-variant="child"]:hover) {
-  background: var(--sherpa-surface-app-product-nav-hover, #fafafa);
+  background: color-mix(in srgb, var(--sherpa-surface-control-active-default, #f8ebff) 55%, transparent);
 }
-:host([data-variant="child"][data-state="selected"]) {
-  background: var(--sherpa-surface-app-product-nav-active, #f8ebff);
+:host([data-variant="child"]:is([data-state="active"], [data-state="selected"])) {
+  background: var(--sherpa-surface-control-active-down, #e2adff);
 }
 :host .nav-item-indicator {
   width: 4px; height: var(--sherpa-size-sm, 16px); align-self: center; background: transparent; border-radius: var(--sherpa-border-rounding-full, 9999px); flex-shrink: 0;
@@ -116,10 +119,10 @@ i {
   display: none !important;
 }
 :host([data-variant="subsection"]) {
-  background: var(--sherpa-surface-app-product-nav-sub-bg, transparent);
+  background: var(--sherpa-surface-container-secondary-sub-default, transparent);
 }
 :host .nav-item-dot {
-  display: none; position: absolute; bottom: -2px; right: -3px; width: 8px; height: 8px; border-radius: var(--sherpa-border-rounding-full, 999px); background: var(--_dot-color, var(--sherpa-border-context-success-default, #048142)); box-shadow: 0 0 0 2px var(--sherpa-surface-app-product-nav-bg, #ffffff); pointer-events: none;
+  display: none; position: absolute; bottom: -2px; right: -3px; width: 8px; height: 8px; border-radius: var(--sherpa-border-rounding-full, 999px); background: var(--_dot-color, var(--sherpa-border-context-success-default, #048142)); box-shadow: 0 0 0 2px var(--sherpa-surface-container-secondary-default, #ffffff); pointer-events: none;
 }
 :host([data-badge-status="critical"]) {
   --_dot-color: var(--sherpa-border-context-error-default, #bf2c09);
@@ -139,9 +142,6 @@ i {
 :host([data-badge-status="brand"]) {
   --_dot-color: light-dark(var(--sherpa-color-brand-400, #d485ff), var(--sherpa-color-brand-700, #8500cc));
 }
-:host([hidden]) {
-  display: none;
-}
 :host([data-type="promo"]) {
   display: flex;
   align-items: center;
@@ -153,7 +153,7 @@ i {
   cursor: pointer;
   text-decoration: none;
   border: 1px solid var(--sherpa-border-context-info-default, #c7d4ff);
-  transition: background-color 120ms ease, border-color 120ms ease;
+  transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
 :host([data-type="promo"]:hover) {
   background: var(--sherpa-surface-context-info-subtle-default, #dde6ff);
@@ -184,8 +184,8 @@ i {
 }
 
 @container nav-item (min-width: 100px) {
-  :host .nav-item-label { display: block; animation: sherpa-ripple-in var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease-out) calc(var(--_ripple-i, 0) * 30ms) both; }
-  :host([data-has-badge]) .nav-item-tag { display: inline-flex; align-items: center; animation: sherpa-ripple-in var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease-out) calc((var(--_ripple-i, 0) * 30ms) + 30ms) both; }
+  :host .nav-item-label { display: block; animation: sherpa-ripple-in var(--sherpa-motion-transition-fast, 0.15s ease-out) calc(var(--_ripple-i, 0) * 30ms) both; }
+  :host([data-has-badge]) .nav-item-tag { display: inline-flex; align-items: center; animation: sherpa-ripple-in var(--sherpa-motion-transition-fast, 0.15s ease-out) calc((var(--_ripple-i, 0) * 30ms) + 30ms) both; }
   :host .nav-item-chevron { display: inline-flex; visibility: hidden; width: var(--sherpa-size-xs, 12px); }
 }
 

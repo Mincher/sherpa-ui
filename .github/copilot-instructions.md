@@ -265,7 +265,7 @@ optional features (status, control groups) activate only when set:
 ### Control group pattern
 
 Components that can be grouped (buttons, inputs, filter chips) read two
-inherited custom properties set by a `.control-group` wrapper:
+inherited custom properties set by a `.grouped` wrapper:
 
 ```css
 /* Inside the component */
@@ -275,7 +275,7 @@ inherited custom properties set by a `.control-group` wrapper:
 }
 
 /* External wrapper */
-.control-group {
+.grouped {
   --_cg-border-width: 0;
   --_cg-border-radius: 0;
   display: inline-flex;
@@ -315,17 +315,17 @@ reset → primitives → alias → platform → theme → density → status →
 
 ### Theme Loading
 
-The base theme (`sherpa-theme-apex-2-core.css`) is **always** imported by
-`css/styles/index.css`. Extended themes (`apex-2-purple/teal/blue/classic`) emit
-**diffs only** against the base via `:where(:root[data-theme="<slug>"])`.
+All themes (base + extended) are bundled in `sherpa-themes.css`, always imported by
+`css/styles/index.css`. The base theme (`apex-2-core`) requires no attribute. Extended
+themes (`apex-2-purple/teal/blue/classic`) emit **diffs only** against the base via
+`:where(:root[data-theme="<slug>"])`.
 
 To activate an extended theme:
 
-1. Append its `<link>` to the page **after** `index.css` (load order matters — diffs override base).
-2. Set `<html data-theme="<slug>">`.
+1. Set `<html data-theme="<slug>">` — no additional `<link>` needed, all themes are in `index.css`.
 
 `ThemeManager` (`components/utilities/theme-manager.js`) handles this: it
-swaps a single `<link id="sherpa-theme">` and sets the attribute. JS should
+sets the attribute and persists to `localStorage`. JS should
 only ever **set attributes** — never inline styles.
 
 ### Mode (light / dark / hc)
@@ -503,44 +503,6 @@ await myButton.rendered;
 
 ---
 
-## 8 Light DOM Components
-
-Most components extend `SherpaElement` and use shadow DOM. The container trio
-(`sherpa-container`, `sherpa-container-header`, `sherpa-layout-grid`) and the
-data-viz trio (`sherpa-data-grid`, `sherpa-metric`, `sherpa-barchart`) are all
-shadow DOM.
-
-The **only** remaining light DOM component is:
-
-| Component                       | Base Class    | Reason                                              |
-| ------------------------------- | ------------- | --------------------------------------------------- |
-| `sherpa-container-pdf-exporter` | `HTMLElement` | Orchestrates print-mode child components for export |
-
-Browser print engines have inconsistent shadow-DOM support, and this exporter
-clones SVGs/canvases out of other components' shadow roots into print-flow
-markup. Keeping it in light DOM lets its CSS rules participate directly in the
-page's print stylesheet cascade.
-
-### PDF Mode Pattern
-
-Components rendered inside `sherpa-container-pdf-exporter` for print/export
-receive a `data-pdf-mode` attribute on the host. Each component's shadow CSS
-includes `:host([data-pdf-mode])` rules that override layout/colours/typography
-for PDF output:
-
-```css
-/* Inside sherpa-barchart shadow CSS */
-:host([data-pdf-mode]) .content-header { display: none; }
-:host([data-pdf-mode]) .chart-content  { min-height: 220px; }
-:host([data-pdf-mode]) .chart-legend   { display: flex !important; }
-```
-
-PDF colour variables (`--_pdf-bg-white`, `--_pdf-bg-header`, etc.) are defined
-on `sherpa-container-pdf-exporter`'s `:host` and cascade through shadow
-boundaries via custom property inheritance — **no `::part()` needed**.
-
----
-
 ## 9 Slot Guidelines
 
 - Slots are for **consumer content injection only** — not structural scaffolding.
@@ -580,7 +542,7 @@ annotations (e.g., `data-variant {enum} — primary | secondary`) and note which
 | Core tokens (`--sherpa-core-*`) in component CSS          | Semantic tokens (`--sherpa-*`) with hardcoded fallbacks    |
 | Bare custom attributes (`loading`, `pinned`)              | `data-` prefix (`data-loading`, `data-pinned`)             |
 | `@container style(--prop)` on self                        | `:host([attr])` attribute selectors                        |
-| Cross-shadow-boundary CSS selectors                       | `data-pdf-mode` attribute + `:host([data-pdf-mode])` rules |
+| Cross-shadow-boundary CSS selectors               | Avoid — query from the light DOM if needed         |
 | Global/singleton state managers                           | Custom events with `bubbles: true`                         |
 | `light-dark()` in component CSS                           | Theme files declare per-mode blocks; components are mode-agnostic |
 | Inline styles set from JS                                 | JS sets attributes; CSS owns presentation                  |
@@ -638,7 +600,6 @@ orchestrated by **flow utility modules** in `components/utilities/`.
 | `FlowManager`    | `sherpa-ui/components/utilities/flow-manager.js`  | Dialog lifecycle, flow events, toast feedback        |
 | `FormManager`    | `sherpa-ui/components/utilities/form-manager.js`  | Read/write/clear/validate named form fields          |
 | `refreshDataset` | `sherpa-ui/components/utilities/grid-refresh.js`  | Re-dispatch `datasetfiltered` after data mutations   |
-| `initExportFlow` | `sherpa-ui/components/utilities/export-flow.js`   | Wire view + container export dialogs                 |
 
 ### Lifecycle states
 
@@ -716,19 +677,6 @@ deleteBtn.addEventListener('button-click', () => {
 });
 ```
 
-### Export wiring
-
-```js
-import { initExportFlow } from 'sherpa-ui/components/utilities/export-flow.js';
-
-initExportFlow(contentArea, {
-  title: 'Device Management Export',
-  buildExportDialog,
-  buildExportDialogForContainer,
-  exportWithConfig,
-});
-```
-
 ### Backdrop
 
 Dialogs use the **native `::backdrop`** pseudo-element (via `<dialog>.showModal()`).
@@ -744,7 +692,6 @@ No custom overlay elements or shim divs.
 | `window.confirm()` for delete confirmation        | Use `sherpa-dialog` + `sherpa-callout`        |
 | Dispatch flow events without `composed: true`     | Always `{ bubbles: true, composed: true }`    |
 | Manual `readForm()`/`populateForm()` per view     | Use `FormManager` — generic by `name` attr    |
-| Inline export dialog boilerplate per view         | Use `initExportFlow()` one-liner              |
 
 ### Pattern files
 
@@ -795,5 +742,4 @@ Before submitting any component change:
 - [ ] No `opacity` for disabled — inactive tokens per property
 - [ ] No bare custom attributes — `data-` prefix for component-specific attrs
 - [ ] No `light-dark()` in component CSS — themes own mode handling
-- [ ] No cross-shadow-boundary selectors — use `data-pdf-mode` pattern instead
 - [ ] File header is a JSDoc block matching `docs/COMPONENT-API-STANDARD.md`

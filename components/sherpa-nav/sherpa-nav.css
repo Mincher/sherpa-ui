@@ -27,59 +27,20 @@
   --_label-weight: 500;
   --_indent: var(--sherpa-space-default, 20px);
 
-  /* ── Mode-invariant colour pin ─────────────────────────────────────
-     sherpa-nav is always rendered as a dark sidebar: dark surface with
-     white text/icons, regardless of `data-mode` (light / dark / hc).
-     We re-declare every mode-variable token consumed by the nav (and
-     its nested sherpa-nav-item) using fixed values. Direct declarations
-     on :host beat any inherited theme value, and they cascade into the
-     nav's shadow DOM AND into nested custom elements (sherpa-nav-item,
-     sherpa-tag) via custom-property inheritance — so the entire nav
-     subtree stays pinned.                                             */
-  color-scheme: dark only;
-
-  /* Surface — dark sidebar chrome */
-  --sherpa-surface-app-product-nav-bg:           var(--sherpa-color-neutral-1000);
-  --sherpa-surface-app-product-nav-sub-bg:       var(--sherpa-color-neutral-1000);
-  --sherpa-surface-app-product-nav-hover:        var(--sherpa-color-neutral-900);
-  --sherpa-surface-app-product-nav-active:       var(--sherpa-color-brand-900);
-  --sherpa-surface-container-default:            var(--sherpa-color-neutral-1000);
-  --sherpa-surface-context-info-subtle-default:  var(--sherpa-color-neutral-900);
-
-  /* Text — always white */
-  --sherpa-text-default-heading:                 var(--sherpa-color-neutral-0);
-  --sherpa-text-default-body:                    var(--sherpa-color-neutral-0);
-  --sherpa-text-default-secondary:               var(--sherpa-color-neutral-400);
-  --sherpa-text-context-info-default:            var(--sherpa-color-neutral-0);
-
-  /* Icons — always white */
-  --sherpa-icon-context-default-heading:         var(--sherpa-color-neutral-0);
-  --sherpa-icon-context-error-default:           var(--sherpa-color-critical-400);
-  --sherpa-icon-context-success-default:         var(--sherpa-color-success-400);
-  --sherpa-icon-inactive-on-color:               var(--sherpa-color-neutral-400);
-
-  /* Borders */
-  --sherpa-border-context-error-default:         var(--sherpa-color-critical-400);
-  --sherpa-border-context-info-default:          var(--sherpa-color-neutral-0);
-  --sherpa-border-context-urgent-default:        var(--sherpa-color-urgent-400);
-  --sherpa-border-context-warning-default:       var(--sherpa-color-warning-400);
-
   container: sherpa-nav / inline-size;
   interpolate-size: allow-keywords;
   display: block;
   height: 100%;
   overflow: hidden;
   width: var(--_w-collapsed);
-  background: var(--sherpa-surface-app-product-nav-bg, #ffffff);
+  background: var(--sherpa-surface-container-secondary-default, #ffffff);
   color: var(--sherpa-text-default-heading, #18191a);
   font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
-  transition: width var(--sherpa-motion-duration-base, 0.25s)
-            var(--sherpa-motion-easing-default, ease-out);
+  transition: width var(--sherpa-motion-transition-base, 0.25s ease-out);
   z-index: 200;
   user-select: none;
 }
-
 
 /* Width states — host carries mirrored data-pinned / data-mode */
 :host(:not([data-pinned="true"]):is(:hover, :focus-within)) {
@@ -175,8 +136,7 @@ summary {
     transition:
       height var(--sherpa-motion-duration-slow, 0.4s)
         var(--sherpa-motion-easing-default, ease-out),
-      opacity var(--sherpa-motion-duration-base, 0.25s)
-        var(--sherpa-motion-easing-default, ease-out),
+      opacity var(--sherpa-motion-transition-base, 0.25s ease-out),
       content-visibility var(--sherpa-motion-duration-slow, 0.4s) allow-discrete;
   }
 
@@ -241,7 +201,6 @@ summary {
   padding: var(--sherpa-space-xs, 12px) var(--sherpa-space-default, 20px);
   flex-shrink: 0;
   height: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-xs, 12px) * 2));
-  box-sizing: border-box;
 }
 
 .nav-divider-label {
@@ -283,10 +242,10 @@ summary {
 :is(.nav-section, .nav-subsection):not([data-quick-access="true"]):has(sherpa-nav-item[data-state="selected"])
   > summary
   > sherpa-nav-item {
-  background: var(--sherpa-surface-app-product-nav-active, #f8ebff);
+  background: var(--sherpa-surface-control-active-down, #e2adff);
 
   &::part(indicator) {
-    background: var(--sherpa-color-brand-base, #c046ff);
+    background: var(--sherpa-border-control-active-default, #8500cc);
   }
 }
 
@@ -376,7 +335,7 @@ summary {
 .nav-header {
   gap: var(--sherpa-space-xs, 12px);
   padding: 0px;
-  background: var(--sherpa-surface-app-product-nav-bg, #ffffff);
+  background: var(--sherpa-surface-container-secondary-default, #ffffff);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -408,7 +367,6 @@ summary {
 .nav-search {
   height: var(--_item-h);
   min-height: var(--_item-h);
-  box-sizing: border-box;
 
   & .nav-search-input {
     display: none;
@@ -427,7 +385,7 @@ summary {
 
 .nav-footer {
   gap: var(--sherpa-space-xs, 12px);
-  background: var(--sherpa-surface-app-product-nav-bg, #ffffff);
+  background: var(--sherpa-surface-container-secondary-default, #ffffff);
   position: sticky;
   bottom: 0;
   transition: box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
@@ -605,6 +563,3 @@ summary {
 }
 
 /* Native [hidden] support */
-:host([hidden]) {
-  display: none;
-}

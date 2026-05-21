@@ -9,14 +9,12 @@
     {
       "name": "data-status",
       "type": "enum",
-      "description": "info | warning | critical | success | neutral | tip",
+      "description": "info | warning | critical | success",
       "enumValues": [
         "info",
         "warning",
         "critical",
-        "success",
-        "neutral",
-        "tip"
+        "success"
       ]
     },
     {
@@ -38,6 +36,18 @@
       "name": "data-icon",
       "type": "string",
       "description": "Override status icon (FA class)"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [
@@ -51,10 +61,7 @@
     },
     {
       "name": "action",
-      "description": "Optional action link/button",
-      "accepts": [
-        "control"
-      ]
+      "description": "Optional action link/button"
     }
   ],
   "events": [

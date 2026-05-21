@@ -18,6 +18,7 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaAccordion extends SherpaElement {
 
@@ -25,21 +26,24 @@ export class SherpaAccordion extends SherpaElement {
   static get htmlUrl() { return new URL('./sherpa-accordion.html', import.meta.url).href; }
 
   static get observedAttributes() {
-    return [...super.observedAttributes, 'data-label', 'data-icon'];
+    return [...super.observedAttributes, 'data-label', 'data-icon', 'disabled'];
   }
 
   #labelEl = null;
   #iconEl = null;
+  #chevronBtnEl = null;
   #detailsEl = null;
 
   onRender() {
     this.#labelEl = this.$('.trigger-label');
     this.#iconEl = this.$('.trigger-icon');
+    this.#chevronBtnEl = this.$('.chevron-btn');
     this.#detailsEl = this.$('details');
 
     this.#syncLabel();
     this.#syncIcon();
     this.#syncOpen();
+    this.#syncDisabled();
   }
 
   onConnect() {
@@ -54,6 +58,7 @@ export class SherpaAccordion extends SherpaElement {
     switch (name) {
       case 'data-label': this.#syncLabel(); break;
       case 'data-icon':  this.#syncIcon(); break;
+      case 'disabled':   this.#syncDisabled(); break;
     }
   }
 
@@ -61,6 +66,11 @@ export class SherpaAccordion extends SherpaElement {
 
   #syncLabel() {
     if (this.#labelEl) this.#labelEl.textContent = this.dataset.label || '';
+  }
+
+  #syncDisabled() {
+    if (!this.#chevronBtnEl) return;
+    this.#chevronBtnEl.toggleAttribute('disabled', this.hasAttribute('disabled'));
   }
 
   #syncIcon() {

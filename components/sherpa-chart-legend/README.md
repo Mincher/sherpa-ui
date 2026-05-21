@@ -10,6 +10,8 @@ Standalone chart legend with optional interactive link items.
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-orientation` | enum | horizontal \| vertical (default: horizontal) | — | `horizontal`, `vertical` |
 | `data-loading` | boolean | Show loading state | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -58,7 +60,7 @@ Set legend items: [{ label, value?, color?, active?, link? }]
 ### Basic
 
 ```html
-<sherpa-chart-legend data-orientation="horizontal"></sherpa-chart-legend>
+<sherpa-chart-legend data-orientation="horizontal" data-src-html="value" data-src-json="value"></sherpa-chart-legend>
 ```
 
 ## Import

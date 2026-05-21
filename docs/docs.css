@@ -100,7 +100,7 @@
 }
 
 /* ── Card grid layout ──────────────────────────────────────────────────────
-   The docs use sherpa-card for category + component cards. The grid itself
+   The docs use sherpa-container for category + component cards. The grid itself
    is a legitimate layout primitive (no sherpa-layout-grid equivalent — that
    component targets resizable dashboard containers, not auto-fill grids). */
 
@@ -206,7 +206,7 @@
   align-items: flex-start;
   gap: var(--sherpa-space-xs, 8px);
   padding: var(--sherpa-space-default, 16px) var(--sherpa-space-lg, 24px);
-  background: var(--sherpa-surface-app-background-default, #f5f5f5);
+  background: var(--sherpa-surface-container-app, #f5f5f5);
   border: 1px solid var(--sherpa-border-container-subtle-default, rgba(0,0,0,0.08));
   border-radius: var(--sherpa-border-rounding-md, 8px) var(--sherpa-border-rounding-md, 8px) 0 0;
   border-bottom: none;

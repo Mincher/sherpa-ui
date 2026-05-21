@@ -119,7 +119,4 @@
 :host([data-status]) .sherpa-empty-state__illustration {
   color: var(--_status-icon);
 }
-:host([hidden]) {
-  display: none;
-}
 

@@ -42,7 +42,7 @@ const REPLACE = {
 
 <template data-label="Inside containers" data-layout="block">
   <sherpa-container data-col-span="4" style="max-width: 320px;">
-    <sherpa-container-header data-title="Devices online"></sherpa-container-header>
+    <sherpa-header data-title="Devices online"></sherpa-header>
     <sherpa-metric data-label="Devices online" data-value="1,284" data-trend="up" data-trend-value="+12 since yesterday"></sherpa-metric>
   </sherpa-container>
 </template>
@@ -121,35 +121,6 @@ const REPLACE = {
 
 <template data-label="Tall composer" data-description="data-max-height caps how tall the textarea can grow." data-layout="block">
   <sherpa-prompt-composer data-placeholder="Write a long prompt…" data-max-height="240"></sherpa-prompt-composer>
-</template>
-`,
-
-'sherpa-ai-panel': `
-<template data-label="Inline panel" data-layout="block">
-  <sherpa-ai-panel data-heading="Sherpa Assistant" style="height: 360px;">
-    <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
-      <p>Hi! Ask me about your devices, alerts, or deploys.</p>
-    </sherpa-chat-message>
-    <sherpa-prompt-composer slot="composer" data-placeholder="Ask anything…"></sherpa-prompt-composer>
-  </sherpa-ai-panel>
-</template>
-
-<template data-label="Busy state" data-description="data-busy shows a loader while a response is being generated." data-layout="block">
-  <sherpa-ai-panel data-heading="Sherpa Assistant" data-busy style="height: 320px;">
-    <sherpa-chat-message data-author="You" data-author-variant="user" data-timestamp="now">
-      <p>Generate this week's status report.</p>
-    </sherpa-chat-message>
-    <sherpa-prompt-composer slot="composer" data-placeholder="Working…" data-disabled></sherpa-prompt-composer>
-  </sherpa-ai-panel>
-</template>
-
-<template data-label="Expanded with archive" data-layout="block">
-  <sherpa-ai-panel data-heading="Sherpa Assistant" data-can-archive data-expanded style="height: 360px;">
-    <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
-      <p>Ready when you are.</p>
-    </sherpa-chat-message>
-    <sherpa-prompt-composer slot="composer" data-placeholder="Ask anything…"></sherpa-prompt-composer>
-  </sherpa-ai-panel>
 </template>
 `,
 
@@ -309,17 +280,6 @@ const REPLACE = {
       <sherpa-node-row><sherpa-node-socket data-direction="output" data-port-name="result"></sherpa-node-socket><span>result</span></sherpa-node-row>
     </sherpa-node>
   </sherpa-node-canvas>
-</template>
-`,
-
-'sherpa-container-pdf-exporter': `
-<template data-label="Print-ready wrapper" data-description="Wrap any container or layout in this element to enable PDF/print export." data-layout="block">
-  <sherpa-container-pdf-exporter data-title="Weekly device report">
-    <sherpa-container>
-      <sherpa-container-header data-title="Devices online" data-description="Snapshot exported for the print/PDF pipeline."></sherpa-container-header>
-      <sherpa-metric data-label="Online" data-value="1,284" data-status="success"></sherpa-metric>
-    </sherpa-container>
-  </sherpa-container-pdf-exporter>
 </template>
 `,
 

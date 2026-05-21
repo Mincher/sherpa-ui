@@ -492,7 +492,7 @@ async function loadSchema(tag) {
 }
 
 // ── Sidebar navigation ────────────────────────────────────────────────────────
-// Nav HTML lives in docs/nav.html (loaded via data-src in index.html).
+// Nav HTML lives in docs/nav.html (loaded via data-src-html in index.html).
 
 
 function initNav() {

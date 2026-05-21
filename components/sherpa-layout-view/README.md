@@ -13,6 +13,8 @@ Body-content view layout. An embedded <sherpa-view-header> sits at the top, opti
 | `data-fill` | enum | viewport \| parent | `viewport` | `viewport`, `parent` |
 | `data-pad` | boolean | Apply padding inside the content column | — | — |
 | `data-gap` | enum | sm \| base \| lg — gap between | — | `sm`, `base`, `lg` |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 

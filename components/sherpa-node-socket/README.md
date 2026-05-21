@@ -16,6 +16,8 @@ sherpa-node-socket.js — Connection-point primitive for sherpa-node. Pure prese
 | `data-status` | enum | "default" \| "true" \| "false" | — | — |
 | `data-connection-count` | number | Set by canvas; drives the count of stacked dots inside input sockets | — | — |
 | `data-flow-active` | boolean | Group input sockets only: subgraph has a source→output flow; renders larger filled dot | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Events
 

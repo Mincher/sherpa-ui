@@ -17,24 +17,10 @@ Available templates:
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-density` | enum | Display density variant | — | — |
 | `data-active` | boolean | Whether filters are active | — | — |
-| `data-src` | string | URL of a JSON file describing the filter bar. Fetched on connect / change; populates `data-available-fields` and `data-preset-filters`. | — | — |
+| `data-src-json` | string | URL of a JSON file describing the filter bar | — | — |
 | `data-preset-filters` | json | Preset filter configuration JSON | — | — |
 | `data-available-fields` | json | Field definitions: [{ field, name, type }] | — | — |
-
-### `data-src` JSON shape
-
-```json
-{
-  "fields": [
-    { "field": "status", "name": "Status", "type": "enum" },
-    { "field": "region", "name": "Region", "type": "enum" }
-  ],
-  "presetFilters": ["status", "region"]
-}
-```
-
-The same JSON file can describe a sibling data grid's columns — the filter bar
-will only consume `fields` and `presetFilters`.
+| `data-src-html` | string |  | — | — |
 
 ## Slots
 
@@ -163,16 +149,23 @@ Remove filter chip by field name
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
+- `--_cg-border-radius`
+- `--_cg-border-width`
+- `--_cg-sep-block`
+- `--_cg-sep-inline`
+- `--_cg-separator-color`
 - `--_filter-bar-gap`
 - `--_filter-bar-px`
 - `--_filter-bar-py`
+- `--_grouped-rounding-end`
+- `--_grouped-rounding-start`
 
 ## Usage
 
 ### Basic
 
 ```html
-<sherpa-filter-bar>
+<sherpa-filter-bar data-src-json="value" data-src-html="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="toggle"><!-- Filter on/off toggle --></span>

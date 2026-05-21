@@ -1,250 +1,141 @@
 # sherpa-code-block
 
-Syntax-highlighted, copyable code display component. Uses [Prism.js](https://prismjs.com/) (v1.29+) for syntax highlighting with support for 50+ languages. Automatically detects language from content, displays line numbers (optional), and provides copy-to-clipboard functionality.
+> **Category:** utility · **Base class:** SherpaElement
 
-## Features
-
-- **Syntax highlighting** for HTML, CSS, JavaScript, TypeScript, JSX, JSON, YAML, Python, Go, Rust, SQL, and more
-- **Auto-language detection** from content inspection
-- **Line numbers** with optional starting line
-- **Dark mode support** via `data-theme` attribute or automatic detection
-- **Copy button** with toast feedback
-- **Responsive** and mobile-friendly
-- **Accessible** with ARIA labels and screen reader support
-
-## Basic Usage
-
-### Simple Code Display
-```html
-<sherpa-code-block>
-  const greeting = "Hello, Sherpa!";
-  console.log(greeting);
-</sherpa-code-block>
-```
-
-### With Explicit Language
-```html
-<sherpa-code-block data-language="javascript">
-  const greeting = "Hello, Sherpa!";
-  console.log(greeting);
-</sherpa-code-block>
-```
-
-### With Line Numbers
-```html
-<sherpa-code-block data-language="json" data-line-numbers>
-  {
-    "name": "Sherpa UI",
-    "version": "2.0.0",
-    "license": "MIT"
-  }
-</sherpa-code-block>
-```
-
-### With Max Height (Scrollable)
-```html
-<sherpa-code-block 
-  data-language="python"
-  data-max-height="300px">
-  def fibonacci(n):
-      if n <= 1:
-          return n
-      return fibonacci(n - 1) + fibonacci(n - 2)
-</sherpa-code-block>
-```
-
-### Custom Copy Message
-```html
-<sherpa-code-block 
-  data-language="bash"
-  data-copy-button-label="Copy command"
-  data-copy-toast-message="Command copied!">
-  npm install @sherpa-ui/components
-</sherpa-code-block>
-```
+Syntax-highlighted, copyable code display with optional line numbers. Uses Prism.js (v1.29+) for syntax highlighting. Supports auto-language detection from content inspection. Emits code-copied event on clipboard success.
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `data-language` | enum | `"auto"` | Language: `auto`, `html`, `css`, `js`, `jsx`, `tsx`, `json`, `yaml`, `bash`, `python`, `java`, `go`, `rust`, `sql`, etc. |
-| `data-line-numbers` | flag | — | Show line numbers on the left |
-| `data-line-start` | number | `1` | Starting line number for snippets |
-| `data-max-height` | string | — | Max height before scrollable (e.g., `"300px"`) |
-| `data-copy-button-label` | string | `"Copy code"` | Copy button text/aria-label |
-| `data-copy-toast-message` | string | `"Copied to clipboard!"` | Success message shown in toast |
-| `data-theme` | enum | `"auto"` | `"light"`, `"dark"`, or `"auto"` (inherits from page) |
-| `data-supported-languages` | string | — | Read-only: comma-separated list of supported languages |
-| `data-highlight-error` | string | — | Read-only: error message if highlighting failed |
+| Attribute | Type | Description | Default | Values |
+| --------- | ---- | ----------- | ------- | ------ |
+| `data-language` | enum | auto \| html \| css \| js \| jsx \| tsx \| json \| yaml \| bash \| python \| java \| go \| rust \| sql | — | `auto`, `html`, `css`, `js`, `jsx`, `tsx`, `json`, `yaml`, `bash`, `python`, `java`, `go`, `rust`, `sql` |
+| `data-line-numbers` | boolean | Show line numbers (Prism plugin) | — | — |
+| `data-line-start` | number | Starting line number for snippet context | `1` | — |
+| `data-max-height` | string | Max height before scrollable (e.g., "300px") | — | — |
+| `data-copy-button-label` | string | Button text (default: "Copy code") | — | — |
+| `data-copy-toast-message` | string | Toast message (default: "Copied to clipboard!") | — | — |
+| `data-theme` | enum | light \| dark \| auto (inherits from page mode) | `auto` | `light`, `dark`, `auto` |
+| `data-supported-languages` | string | Read-only: comma-separated supported langs | — | — |
+| `data-highlight-error` | string | Read-only: error message if highlighting failed | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
+
+## Events
+
+### `code-copied`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("code-copied", (e) => {
+  // handle event
+});
+```
+
+### `code-highlight-error`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("code-highlight-error", (e) => {
+  // handle event
+});
+```
+
+### `code-language-detected`
+
+
+**Propagation:** bubbles, composed
+
+**Detail:** none
+
+```js
+element.addEventListener("code-language-detected", (e) => {
+  // handle event
+});
+```
+
+## Methods
+
+| Method | Description |
+| ------ | ----------- |
+| `highlightCode(code, language)` |  |
+| `reloadHighlighter()` |  |
+
+### `highlightCode(code, language)`
+
+
+**Parameters:**
+
+- `code` (`any`) — 
+- `language` (`any`) — 
+
+## Properties
+
+| Property | Type | Description | Access |
+| -------- | ---- | ----------- | ------ |
+| `supportedLanguages` | `string` | Read-only: comma-separated list of supported languages | read-only |
+| `highlightError` | `string|null` | Read-only: error message if highlighting failed | read-only |
+| `detectedLanguage` | `string|null` | Read-only: detected language after rendering | read-only |
 
 ## CSS Parts
 
-Use `::part()` for custom styling:
+Style internal elements from outside the shadow DOM:
 
-```css
-sherpa-code-block::part(header) { /* Header container */ }
-sherpa-code-block::part(language-label) { /* Language identifier */ }
-sherpa-code-block::part(copy-button) { /* Copy button */ }
-sherpa-code-block::part(pre) { /* Pre wrapper */ }
-sherpa-code-block::part(code) { /* Code element */ }
-```
+- `header`
+- `language-label`
+- `copy-button`
+- `pre`
+- `code`
 
-### Example: Custom Styling
 ```css
 sherpa-code-block::part(header) {
-  background: #f0f0f0;
-  padding: 8px 12px;
-  border-radius: 4px 4px 0 0;
-}
-
-sherpa-code-block::part(pre) {
-  max-height: 400px;
-  border-radius: 0 0 4px 4px;
+  /* custom styles */
 }
 ```
 
-## JavaScript API
+## Internal CSS Custom Properties
 
-### Properties
+These `--_` prefixed properties are used internally and can be
+influenced by setting `data-*` attributes or status on ancestors:
 
-```javascript
-// Supported languages (read-only)
-block.supportedLanguages;
-// → "html,css,js,javascript,jsx,tsx,json,yaml,bash,..."
+- `--_hljs-attr`
+- `--_hljs-bg`
+- `--_hljs-comment`
+- `--_hljs-keyword`
+- `--_hljs-number`
+- `--_hljs-string`
+- `--_hljs-tag`
+- `--_hljs-text`
 
-// Error message if highlighting failed (read-only)
-block.highlightError;
-// → null or error message string
+## Usage
 
-// Detected language after rendering (read-only)
-block.detectedLanguage;
-// → "javascript"
-```
+### Basic
 
-### Methods
-
-```javascript
-// Manually highlight code with specific language
-await block.highlightCode('const x = 1;', 'javascript');
-
-// Reload Prism.js from CDN if it failed
-await block.reloadHighlighter();
-```
-
-### Events
-
-#### `code-copied`
-Fired when code is successfully copied to clipboard:
-```javascript
-block.addEventListener('code-copied', (e) => {
-  console.log(`Copied ${e.detail.codeLength} chars of ${e.detail.language}`);
-  // detail: { language, codeLength, success, timestamp, highlightLoaded }
-});
-```
-
-#### `code-highlight-error`
-Fired if Prism.js fails to load or highlighting fails:
-```javascript
-block.addEventListener('code-highlight-error', (e) => {
-  console.error(`Highlighting failed: ${e.detail.error}`);
-  // detail: { language, error, fallbackToPlaintext }
-});
-```
-
-#### `code-language-detected`
-Fired when auto-detection completes:
-```javascript
-block.addEventListener('code-language-detected', (e) => {
-  if (e.detail.confidence < 0.7) {
-    console.warn(`Low confidence detection: ${e.detail.detected}`);
-  }
-  // detail: { detected, requested, confidence }
-});
-```
-
-## Examples
-
-### Auto-Detect Language
 ```html
-<sherpa-code-block>
-  function sayHello(name) {
-    return `Hello, ${name}!`;
-  }
-</sherpa-code-block>
+<sherpa-code-block data-language="auto" data-max-height="value" data-copy-button-label="value"></sherpa-code-block>
 ```
 
-### HTML with Line Numbers
-```html
-<sherpa-code-block data-language="html" data-line-numbers>
-  <div class="container">
-    <h1>Welcome</h1>
-    <p>This is a paragraph.</p>
-  </div>
-</sherpa-code-block>
+## Import
+
+```js
+// Individual import
+import "sherpa-ui/components/sherpa-code-block/sherpa-code-block.js";
+
+// Or import everything
+import "sherpa-ui";
 ```
 
-### JSON Configuration
-```html
-<sherpa-code-block 
-  data-language="json" 
-  data-max-height="250px"
-  data-line-numbers>
-  {
-    "apiVersion": "v1",
-    "kind": "Pod",
-    "metadata": {
-      "name": "example-pod"
-    }
-  }
-</sherpa-code-block>
-```
+## Files
 
-### Programmatic Usage
-```javascript
-const block = document.querySelector('sherpa-code-block');
-
-// Listen for events
-block.addEventListener('code-copied', (e) => {
-  console.log(`${e.detail.codeLength} chars copied in ${e.detail.language}`);
-});
-
-// Re-highlight with different language
-await block.highlightCode(codeString, 'python');
-
-// Check if highlighting loaded successfully
-if (block.highlightError) {
-  console.warn('Highlighting unavailable:', block.highlightError);
-}
-```
-
-## Accessibility
-
-- **Role:** `region` for screen reader announcement
-- **ARIA Labels:** Automatically labeled; override with `aria-label` if needed
-- **Keyboard:** Copy button is keyboard-accessible
-- **High Contrast:** Respects `prefers-contrast` via theme system
-- **Language Detection:** Announced to screen readers
-
-## Browser Support
-
-- Chrome 99+
-- Firefox 97+
-- Safari 15.4+
-- Edge 99+
-
-Prism.js is loaded from CDN (cdnjs.cloudflare.com). If CDN is unavailable, code displays unstyled but readable.
-
-## Installation
-
-```bash
-npm install @sherpa-ui/components
-```
-
-```javascript
-import { SherpaCodeBlock } from '@sherpa-ui/components';
-```
-
-## Related
-
-- [Prism.js Documentation](https://prismjs.com/)
-- [Sherpa UI Tokens](../../css/TOKENS-USAGE-GUIDE.md)
+| File | Purpose |
+| ---- | ------- |
+| [`sherpa-code-block.js`](sherpa-code-block.js) | Component class, lifecycle, events |
+| [`sherpa-code-block.css`](sherpa-code-block.css) | Styles, variants, states |
+| [`sherpa-code-block.html`](sherpa-code-block.html) | Shadow DOM template(s) |

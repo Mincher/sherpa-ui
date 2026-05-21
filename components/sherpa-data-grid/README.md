@@ -26,7 +26,8 @@ Available templates:
 | `data-show-actions` | boolean | Show row action column | — | — |
 | `data-show-secondary-headers` | boolean | Show secondary column headers | — | — |
 | `data-show-pagination` | boolean | Show pagination bar | — | — |
-| `data-preset-filters` | string | Comma-separated column fields to render as persistent filter chips in the embedded filter bar. Users can append ad-hoc filters via the Add button for any non-preset column. | — | e.g. `"status,region"` |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 

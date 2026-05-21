@@ -17,7 +17,6 @@
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #2e2e38);
-  box-sizing: border-box;
   /* ──────────────────────────────────────────────────────────
              PANEL VARIANT (background surface)
              ────────────────────────────────────────────────────────── */
@@ -57,7 +56,6 @@
       border-radius: 50%;
       border: var(--_spinner-weight) solid var(--sherpa-border-container-default, #d7d7dc);
       position: relative;
-      box-sizing: border-box;
   
       /* ── Worm arc (rotating via animation) ──────────────– */
       &::after {
@@ -82,10 +80,6 @@
   --_spinner-size: 48px;
       --_spinner-weight: 4px;
 }
-:host([hidden]) {
-  display: none;
-}
-
 
 /* ──────────────────────────────────────────────────────────────
    SPIN ANIMATION (360° rotation)

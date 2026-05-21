@@ -71,9 +71,8 @@
       min-height: var(--sherpa-node-socket-size, 16px);
       background: var(--_socket-fill);
       border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
-      box-sizing: border-box;
       border-radius: 999px;
-      transition: background 150ms ease, transform 150ms ease;
+      transition: background var(--sherpa-motion-transition-fast, 0.15s ease-out), transform var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
 :host .connectors {
   display: none;
@@ -85,7 +84,6 @@
       justify-content: center;
       width: 100%;
       padding: var(--sherpa-space-3xs, 2px) 0;
-      box-sizing: border-box;
       gap: var(--sherpa-space-3xs, 2px);
 }
 :host .connector-dot {
@@ -95,7 +93,6 @@
       border-radius: 999px;
       background: var(--_socket-stroke);
       border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
-      box-sizing: border-box;
 }
 :host([data-location="header"][data-direction="in"]) .socket-shape {
   border-radius: 999px;
@@ -144,8 +141,5 @@
 }
 :host .socket:active .socket-shape {
   transform: scale(0.95);
-}
-:host([hidden]) {
-  display: none;
 }
 

@@ -1,5 +1,39 @@
 /**
  * sherpa-base.css — Universal host rules shared by all SherpaElement components.
- * Adopted automatically via SherpaElement.sharedStyles.
+ * Adopted automatically via SherpaElement.sharedStyles — first sheet in every
+ * shadow root, so component CSS always wins on specificity.
+ *
+ * Rules here must be truly universal: safe to apply to every component with
+ * no per-component override needed (or easy to override).
  */
+
+/* ── Hidden host ───────────────────────────────────────────────────────── */
 :host([hidden]) { display: none !important; }
+
+/* ── Box model reset ───────────────────────────────────────────────────── */
+/*
+ * box-sizing does not inherit, so the reset must be applied explicitly.
+ * :host covers the custom element itself; * covers all shadow DOM internals.
+ */
+:host,
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────── */
+/*
+ * Honour the OS-level "reduce motion" preference across all components.
+ * Uses !important because transition/animation values are typically set
+ * on deeply nested rules; a blanket override is the only reliable approach.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

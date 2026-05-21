@@ -18,7 +18,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  box-sizing: border-box;
   /* ── Compact density variant ────────────────────────– */
   /* ──────────────────────────────────────────────────────────
              TOOLBAR ROW (main flex container)
@@ -44,7 +43,6 @@
       gap: var(--_toolbar-gap);
       padding-block: var(--_toolbar-py);
       padding-inline: 0px;
-      box-sizing: border-box;
 }
 :host .leading,
 :host .trailing {
@@ -74,8 +72,5 @@
       gap: var(--sherpa-space-xs, 4px);
   
       &:not(:has(*)) { display: none; }
-}
-:host([hidden]) {
-  display: none;
 }
 

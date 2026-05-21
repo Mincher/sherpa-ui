@@ -6,34 +6,41 @@
  * elements / page-level structure only.
  *
  * Sections:
- *   1. Control Group  — composes adjacent controls into a seamless row.
+ *   1. Grouped         — composes adjacent controls into a seamless row or column.
  *   2. Slot Rejection — hides rejected slot content in light DOM.
  *   3. Layout         — page/section grid + container utilities.
  * ───────────────────────────────────────────────────────────────────────
  */
 
-/* ─── 1. Control Group ─────────────────────────────────────────────── */
+/* ─── 1. Grouped ───────────────────────────────────────────────────── */
 
 /**
- * Control Group — wrapper-based pattern for composing adjacent controls
- * (inputs, buttons, custom elements) into a seamless row.
+ * Grouped — wrapper-based pattern for composing adjacent controls
+ * (inputs, buttons, custom elements) into a seamless row or column.
  *
- * The .control-group wrapper owns border, background, border-radius and
+ * The .grouped wrapper owns border, background, border-radius and
  * overflow:hidden.  It sets --_cg-border-width: 0 and --_cg-border-radius: 0
  * which inherit into child shadow DOMs, making them borderless and
  * radiusless automatically.
  *
  * Usage:
- *   <div class="control-group">
+ *   <div class="grouped">
  *     <input      … />
+ *     <sherpa-button … />
+ *   </div>
+ *
+ *   <!-- Vertical stack -->
+ *   <div class="grouped" data-direction="vertical">
+ *     <sherpa-button … />
  *     <sherpa-button … />
  *   </div>
  *
  * No position classes needed — just place elements in the wrapper.
  */
 
-.control-group {
+.grouped {
   display: inline-flex;
+  flex-direction: row;
   gap: 0;
   vertical-align: middle;
   border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
@@ -42,36 +49,53 @@
   overflow: hidden;
   --_cg-border-width: 0;
   --_cg-border-radius: 0;
+  --_cg-separator-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
+  /* Separator direction tokens — consumed by sherpa-button[data-separator] */
+  --_cg-sep-inline: var(--sherpa-border-width-xs, 1px);
+  --_cg-sep-block: 0px;
 
   &:focus-within {
     border-color: var(--sherpa-border-control-active-default, #0060df);
   }
 
+  /* ── Vertical variant ────────────────────────────────────────────── */
+
+  &[data-direction="vertical"] {
+    flex-direction: column;
+    align-items: stretch;
+    vertical-align: top;
+    --_cg-sep-inline: 0px;
+    --_cg-sep-block: var(--sherpa-border-width-xs, 1px);
+  }
+
   /* ── Per-child position tokens (inherit into shadow DOM) ────────── */
 
   & > * {
-    --_control-group-rounding-left: var(--sherpa-border-rounding-base, 4px);
-    --_control-group-rounding-right: var(--sherpa-border-rounding-base, 4px);
-    --_control-group-spacing-offset: -1px;
+    --_grouped-rounding-start: var(--sherpa-border-rounding-base, 4px);
+    --_grouped-rounding-end: var(--sherpa-border-rounding-base, 4px);
+    --_grouped-spacing-offset: -1px;
   }
 
   & > [data-position="start"] {
-    --_control-group-rounding-left: var(--sherpa-border-rounding-base, 4px);
-    --_control-group-rounding-right: var(--sherpa-border-rounding-none, 0);
-    --_control-group-spacing-offset: -1px;
+    --_grouped-rounding-start: var(--sherpa-border-rounding-base, 4px);
+    --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
   }
 
   & > [data-position="middle"] {
-    --_control-group-rounding-left: var(--sherpa-border-rounding-none, 0);
-    --_control-group-rounding-right: var(--sherpa-border-rounding-none, 0);
-    --_control-group-spacing-offset: -1px;
+    --_grouped-rounding-start: var(--sherpa-border-rounding-none, 0);
+    --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
   }
 
   & > [data-position="end"] {
-    --_control-group-rounding-left: var(--sherpa-border-rounding-none, 0);
-    --_control-group-rounding-right: var(--sherpa-border-rounding-base, 4px);
-    --_control-group-spacing-offset: -1px;
+    --_grouped-rounding-start: var(--sherpa-border-rounding-none, 0);
+    --_grouped-rounding-end: var(--sherpa-border-rounding-base, 4px);
   }
+}
+
+/* Active child lifts border to active colour */
+.grouped:has(sherpa-button[data-active]) {
+  border-color: var(--sherpa-border-control-active-default, #8500cc);
+  --_cg-separator-color: var(--sherpa-border-control-active-default, #8500cc);
 }
 
 /* ─── 2. Slot Rejection ────────────────────────────────────────────── */
@@ -202,12 +226,12 @@
   top: 0;
   z-index: 20;
   transition:
-    background-color var(--sherpa-motion-duration-fast, 150ms) ease,
-    box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
+    background-color var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease-out),
+    box-shadow var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease-out);
 
   /* JS fallback — consumer toggles [data-scrolled] on the element */
   &[data-scrolled] {
-    background-color: var(--sherpa-surface-app-background-default, #f5f5f5);
+    background-color: var(--sherpa-surface-container-app, #f5f5f5);
     box-shadow: var(--sherpa-shadow-default-sm);
   }
 
@@ -215,7 +239,7 @@
    * Fires when the nearest scroll-state container is NOT at the top. */
   @container scroll-state(scrollable: top) {
     & {
-      background-color: var(--sherpa-surface-app-background-default, #f5f5f5);
+      background-color: var(--sherpa-surface-container-app, #f5f5f5);
       box-shadow: var(--sherpa-shadow-default-sm);
     }
   }

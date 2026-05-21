@@ -32,6 +32,8 @@ Set via `data-type` attribute:
 | `data-keep-open` | boolean | Keep menu open after selection | — | — |
 | `data-has-submenu` | boolean | Whether the item opens a submenu | — | — |
 | `name` | string | Form-compatible name for radio/checkbox | — | — |
+| `data-src-html` | string |  | — | — |
+| `data-src-json` | string |  | — | — |
 
 ## Slots
 

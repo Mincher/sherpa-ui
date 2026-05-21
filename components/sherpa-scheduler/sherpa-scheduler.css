@@ -40,7 +40,4 @@
 :host(:not([data-frequency])) .row-weekly {
   display: flex;
 }
-:host([hidden]) {
-  display: none;
-}
 

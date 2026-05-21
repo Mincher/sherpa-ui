@@ -1,6 +1,6 @@
 {
   "tagName": "sherpa-container",
-  "description": "Pure wrapper container for dashboard composition. Owns sizing (variant, col/row span) and exposes a named container query scope (`sherpa-container`) so descendant viz components (charts, grids) can adapt their internal layout via container queries.",
+  "description": "Universal container for dashboard composition and standalone card layouts. Owns sizing variants, a named container query scope, state overlays (loading/empty/error), optional interactivity and selection state.",
   "category": "container",
   "tier": 2,
   "group": "core",
@@ -48,15 +48,94 @@
         "empty",
         "error"
       ]
+    },
+    {
+      "name": "data-interactive",
+      "type": "boolean",
+      "description": "Makes the container a clickable surface"
+    },
+    {
+      "name": "data-selectable",
+      "type": "boolean",
+      "description": "Makes the container a selectable radio option"
+    },
+    {
+      "name": "data-selected",
+      "type": "boolean",
+      "description": "Selected / active state"
+    },
+    {
+      "name": "data-elevation",
+      "type": "enum",
+      "description": "none | sm | md | lg",
+      "enumValues": [
+        "none",
+        "sm",
+        "md",
+        "lg"
+      ]
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Native disabled state"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [
     {
       "name": "",
-      "description": "Consumer composition: sherpa-container-header,"
+      "description": "Main content (dashboard children or card body)"
+    },
+    {
+      "name": "header",
+      "description": "Card-style header (use sherpa-header); edge-to-edge with separator"
+    },
+    {
+      "name": "footer",
+      "description": "Card-style footer (use sherpa-footer or sherpa-button)"
+    },
+    {
+      "name": "loading",
+      "description": "Shown when data-state=\"loading\""
+    },
+    {
+      "name": "empty",
+      "description": "Shown when data-state=\"empty\""
+    },
+    {
+      "name": "error",
+      "description": "Shown when data-state=\"error\""
     }
   ],
   "events": [
+    {
+      "name": "card-click",
+      "description": "Fired when an interactive container is clicked or keyboard-activated",
+      "bubbles": true,
+      "composed": true,
+      "detail": null
+    },
+    {
+      "name": "card-select",
+      "description": "Fired when a selectable container's selection changes",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "selected": "boolean"
+      }
+    },
     {
       "name": "container-increase-cols",
       "description": "Bubbled from injected resize menu items",
@@ -84,6 +163,33 @@
       "bubbles": true,
       "composed": false,
       "detail": null
+    }
+  ],
+  "properties": [
+    {
+      "name": "selected",
+      "type": "boolean",
+      "description": "Selected state (read/write)"
+    },
+    {
+      "name": "interactive",
+      "type": "boolean",
+      "description": "Clickable state (read/write)"
+    },
+    {
+      "name": "selectable",
+      "type": "boolean",
+      "description": "Selectable state (read/write)"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "description": "Disabled state (read/write)"
+    },
+    {
+      "name": "elevation",
+      "type": "string",
+      "description": "Shadow level (read/write)"
     }
   ]
 }

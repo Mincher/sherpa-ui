@@ -56,6 +56,18 @@
       "name": "data-subtype-label",
       "type": "string",
       "description": "Optional label override displayed on the"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [

@@ -7,20 +7,20 @@
 
   Slot order (default template, left → right):
     toggle    — Filter on/off toggle (slot="toggle")
-    group     — Group/segment chip (slot="group")
-    sort      — Sort chip (slot="sort")
+    [group]   — Built-in shadow DOM group chip (no slot needed)
+    [sort]    — Built-in shadow DOM sort chip (no slot needed)
     presets   — Preset filter chips (slot="presets")
     filters   — User-added dynamic filter chips (default slot) + Add button
     actions   — Clear / Apply / Save actions (slot="actions")
 
   Slot order (local template, left → right):
-    group     — Group/segment chip (slot="group")
-    sort      — Sort chip (slot="sort")
+    [group]   — Built-in shadow DOM group chip (no slot needed)
+    [sort]    — Built-in shadow DOM sort chip (no slot needed)
     presets   — Preset filter chips (slot="presets")
     actions   — Clear action (slot="actions")
 
   Host attributes:
-    data-src              — URL of a JSON file describing the filter bar.
+    data-src-json              — URL of a JSON file describing the filter bar.
                             Shape: { fields: [...], presetFilters?: [...] }
                             The same JSON can be reused to describe a parent
                             data grid's columns/records — keep them in one
@@ -28,14 +28,18 @@
                             on connect and on attribute change; populates
                             data-available-fields and data-preset-filters.
     data-available-fields — JSON array of field defs: [{ field, name, type }].
-                            Usually set via data-src; can be set directly.
+                            Usually set via data-src-json; can be set directly.
     data-preset-filters   — Comma-separated field names (or JSON array) that
                             should appear as preset chips. Usually set via
-                            data-src.
+                            data-src-json.
     data-density          — "compact" | "comfortable"
     data-active           — Present when any filter is active (auto-reflected)
     data-embedded         — No top border (for embedding inside other components)
     data-global           — Dispatches globalfilterchange on document (page-level bars)
+    data-sort-type        — "time" | "value" — sort cycling mode for the built-in sort chip.
+                            time: off → desc (Newest first) → asc (Oldest first).
+                            value: off → desc (Largest first) → asc (Smallest first).
+                            Default: field sort (asc → desc → off, requires a field).
     data-type             — "local" selects the local template (default: full layout)
 
   Custom templates:
@@ -51,8 +55,14 @@
 <template id="default">
   <div class="filter-surface">
     <slot name="toggle"></slot>
-    <slot name="group"></slot>
-    <slot name="sort"></slot>
+    <div class="chip-group group-chip">
+      <sherpa-button class="group-btn" data-position="start" data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none" data-variant="secondary" data-size="small"></sherpa-button>
+      <sherpa-button data-position="end" data-type="icon" data-icon-start="&#xf078;" data-separator data-menu="true" data-menu-scope="none" data-variant="secondary" data-size="small" aria-label="Choose group field"></sherpa-button>
+    </div>
+    <div class="chip-group sort-chip">
+      <sherpa-button class="sort-btn" data-position="start" data-behavior="sort" data-label="Sort" data-icon-start="&#xf0dc;" data-menu-scope="none" data-variant="secondary" data-size="small"></sherpa-button>
+      <sherpa-button data-position="end" data-type="icon" data-icon-start="&#xf078;" data-separator data-menu="true" data-menu-scope="none" data-variant="secondary" data-size="small" aria-label="Sort menu"></sherpa-button>
+    </div>
     <span class="zone-divider" data-divider="before-presets" aria-hidden="true"></span>
     <slot name="presets"></slot>
     <span class="zone-divider" data-divider="before-custom" aria-hidden="true"></span>
@@ -80,9 +90,15 @@
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="local">
   <div class="filter-surface">
-    <slot name="group"></slot>
-    <slot name="sort"></slot>
-    <span class="zone-divider" aria-hidden="true"></span>
+    <div class="chip-group group-chip">
+      <sherpa-button class="group-btn" data-position="start" data-behavior="segment" data-label="Group" data-icon-start="&#xf5fd;" data-menu-scope="none" data-variant="secondary" data-size="small"></sherpa-button>
+      <sherpa-button data-position="end" data-type="icon" data-icon-start="&#xf078;" data-separator data-menu="true" data-menu-scope="none" data-variant="secondary" data-size="small" aria-label="Choose group field"></sherpa-button>
+    </div>
+    <div class="chip-group sort-chip">
+      <sherpa-button class="sort-btn" data-position="start" data-behavior="sort" data-label="Sort" data-icon-start="&#xf0dc;" data-menu-scope="none" data-variant="secondary" data-size="small"></sherpa-button>
+      <sherpa-button data-position="end" data-type="icon" data-icon-start="&#xf078;" data-separator data-menu="true" data-menu-scope="none" data-variant="secondary" data-size="small" aria-label="Sort menu"></sherpa-button>
+    </div>
+    <span class="zone-divider" aria-hidden="true" data-divider="before-presets"></span>
     <slot name="presets"></slot>
     <slot name="actions"></slot>
   </div>

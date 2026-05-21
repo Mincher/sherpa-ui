@@ -85,7 +85,6 @@
   color: var(--_border-color, var(--sherpa-icon-context-default-secondary, #5c5c66));
 }
 
-
 /* ── Bar mode ────────────────────────────────────────────────────── */
 
 :host([data-variant="bar"]) {
@@ -188,7 +187,7 @@
   border-radius: 50%;
   background: currentColor;
   pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity var(--sherpa-motion-transition-fast, 0.15s ease-out), transform var(--sherpa-motion-transition-fast, 0.15s ease-out);
   opacity: var(--_point-scale);
   z-index: 1;
   translate: calc(-1 * var(--_point-offset)) calc(-1 * var(--_point-offset));
@@ -253,6 +252,3 @@
 }
 
 /* Native [hidden] support */
-:host([hidden]) {
-  display: none;
-}

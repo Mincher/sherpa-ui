@@ -9,10 +9,11 @@
     {
       "name": "data-type",
       "type": "enum",
-      "description": "action-bar | slot (default: slot)",
+      "description": "action-bar | slot | card-select (default: slot)",
       "enumValues": [
         "action-bar",
-        "slot"
+        "slot",
+        "card-select"
       ]
     },
     {
@@ -39,6 +40,23 @@
       "name": "data-apply-closes",
       "type": "boolean",
       "description": "Apply auto-closes parent (default: true)"
+    },
+    {
+      "name": "data-selected",
+      "type": "boolean",
+      "description": "Drives radio checked state (card-select)"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [

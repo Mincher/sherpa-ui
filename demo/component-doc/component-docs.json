@@ -78,49 +78,13 @@
       "controls": { "defaultSlot": true, "namedSlots": false },
       "defaultHtml": "<option value=\"\">None</option>\n<option value=\"name\">Name</option>\n<option value=\"date\">Date</option>\n<option value=\"status\">Status</option>"
     },
-    "sherpa-card": {
-      "component": "sherpa-card",
-      "label": "Card",
-      "description": "Card container with header, content, and footer areas. Supports selected, interactive, and elevated states.",
-      "path": "components/sherpa-card",
-      "nestedComponents": [
-        "sherpa-key-value-list",
-        "sherpa-tag",
-        "sherpa-button"
-      ],
-      "attributes": [
-        { "name": "data-label", "type": "string" },
-        { "name": "data-description", "type": "string" },
-        { "name": "data-selectable", "type": "boolean" },
-        { "name": "data-selected", "type": "boolean" },
-        { "name": "data-interactive", "type": "boolean" },
-        {
-          "name": "data-elevation",
-          "type": "enum",
-          "default": "none",
-          "options": ["none", "sm", "md", "lg"]
-        },
-        { "name": "disabled", "type": "boolean" }
-      ],
-      "slots": [
-        {
-          "name": "header",
-          "html": "<span slot=\"header\">Custom Header</span>"
-        },
-        {
-          "name": "footer",
-          "html": "<div slot=\"footer\"><sherpa-button data-variant=\"tertiary\" data-label=\"Details\"></sherpa-button></div>"
-        }
-      ],
-      "defaultHtml": "<p>Monitor key performance indicators across all active regions. Use the controls below to filter by date range or category.</p>\n<sherpa-key-value-list data-layout=\"horizontal\" data-density=\"compact\">\n  <dt>Status</dt><dd><sherpa-tag data-status=\"success\">Active</sherpa-tag></dd>\n  <dt>Region</dt><dd>North America</dd>\n  <dt>Updated</dt><dd>2 hours ago</dd>\n</sherpa-key-value-list>"
-    },
     "sherpa-container": {
       "component": "sherpa-container",
       "label": "Container",
-      "description": "Pure wrapper container. Composed with sherpa-container-header and viz components inside a sherpa-layout-grid.",
+      "description": "Pure wrapper container. Composed with sherpa-header and viz components inside a sherpa-layout-grid.",
       "path": "components/sherpa-container",
       "nestedComponents": [
-        "sherpa-container-header",
+        "sherpa-header",
         "sherpa-barchart",
         "sherpa-data-grid",
         "sherpa-metric"
@@ -149,29 +113,6 @@
       "slots": [],
       "controls": { "defaultSlot": false, "namedSlots": false },
       "containerDemo": { "source": "/data/queries/sales-demo.json" }
-    },
-    "sherpa-container-pdf-exporter": {
-      "component": "sherpa-container-pdf-exporter",
-      "label": "Container PDF Exporter",
-      "description": "PDF export adapter. Renders a sherpa-container's data in a print-optimized layout with title, metrics, and stacked chart/table sections.",
-      "path": "components/sherpa-container-pdf-exporter",
-      "nestedComponents": [
-        "sherpa-container",
-        "sherpa-barchart",
-        "sherpa-data-grid"
-      ],
-      "attributes": [
-        {
-          "name": "data-theme",
-          "type": "enum",
-          "default": "light",
-          "options": ["light"]
-        },
-        { "name": "data-pdf-mode", "type": "boolean" }
-      ],
-      "slots": [],
-      "controls": { "defaultSlot": false, "namedSlots": false },
-      "containerPdfDemo": { "source": "/data/queries/sales-demo.json" }
     },
     "sherpa-dialog": {
       "component": "sherpa-dialog",
@@ -569,7 +510,7 @@
       "path": "components/sherpa-nav",
       "nestedComponents": ["sherpa-nav-item"],
       "attributes": [
-        { "name": "data-src", "type": "string" },
+        { "name": "data-src-html", "type": "string" },
         { "name": "data-home-href", "type": "string", "default": "/home.html" },
         { "name": "data-pinned", "type": "boolean", "default": false },
         {
@@ -686,7 +627,7 @@
           "type": "boolean",
           "default": true
         },
-        { "name": "data-src", "type": "string" }
+        { "name": "data-src-json", "type": "string" }
       ],
       "slots": [],
       "controls": { "defaultSlot": false, "namedSlots": false },

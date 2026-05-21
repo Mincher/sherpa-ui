@@ -117,6 +117,7 @@ export class SherpaListItem extends SherpaElement {
 
   #handleClick = () => {
     if (this.dataset.interactive === undefined || this.hasAttribute('disabled')) return;
+    this.active = true;
     this.dispatchEvent(new CustomEvent('list-item-click', {
       bubbles: true,
       composed: true,

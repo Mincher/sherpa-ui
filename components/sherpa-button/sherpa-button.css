@@ -3,26 +3,24 @@
  * Multi-template button component styles.
  *
  * Templates (via data-type):
- *   default       — Standard button with icon(s), label, badge, optional close
+ *   default       — Standard button with icon(s), label, badge
  *   icon          — Icon-only square button
- *   button-menu   — Button + menu trigger side by side (action menu)
- *   icon-menu     — Icon-only menu trigger (overflow menus)
+ *
+ * For compound button patterns (split, dismissable chip), compose separate
+ * sherpa-button elements inside a .grouped wrapper.
  *
  * Architecture:
  *   :host is a wrapper providing border, border-radius, and overflow.
  *   .trigger <button> is the primary interactive element.
- *   .close is a dismiss button (shown via data-dismissable).
- *   .menu-trigger is a clickable div that opens a menu (button-menu template).
  *
  * Host attributes:
  *   data-type, data-label, data-icon-start, data-icon-end, data-icon-weight,
- *   data-variant, data-size, data-active, data-status, data-dismissable,
- *   data-count, data-split, disabled
+ *   data-variant, data-size, data-active, data-status, data-count, disabled
  *
  * data-variant {enum} — primary | secondary | tertiary | tertiary-on-color | ai
  * data-size    {enum} — 2x-small | x-small | small | base | large (default: base)
  * data-status  {enum} — critical | warning | success | info | urgent
- * data-type    {enum} — default | icon | button-menu | icon-menu
+ * data-type    {enum} — default | icon
  *
  * Status — global token inheritance:
  *   --_status-surface-strong, --_status-text-on-color, etc. from sherpa-status.css
@@ -33,7 +31,6 @@
    ========================================================================== */
 
 :host {
-  box-sizing: border-box;
   display: inline-flex;
   align-items: stretch;
   vertical-align: middle;
@@ -46,7 +43,6 @@
   --_surface:       var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #8500cc));
   --_text:          var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
   --_icon-color:    var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
-  --_icon-weight:   900;
   --_surface-hover: var(--_status-surface-strong-hover, var(--sherpa-surface-control-primary-hover, #50007a));
   --_surface-down:  var(--_status-surface-strong-down,  var(--sherpa-surface-control-primary-down, #300561));
   --_border-hover:  var(--_status-border, transparent);
@@ -54,10 +50,16 @@
   border: var(--sherpa-border-width-xs, 1px) solid var(--_status-border, transparent);
   border-width: var(--_cg-border-width, var(--sherpa-border-width-xs, 1px));
   border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
-  transition: border-color 0.15s;
+  transition: border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
 
-:host([hidden]) { display: none; }
+/* Separator — visible divider when inside a .grouped wrapper */
+:host([data-separator]) {
+  border-inline-start-width: var(--_cg-sep-inline, var(--sherpa-border-width-xs, 1px));
+  border-inline-start-color: var(--_cg-separator-color, var(--sherpa-border-control-secondary-default, #d5d5d5));
+  border-block-start-width: var(--_cg-sep-block, 0px);
+  border-block-start-color: var(--_cg-separator-color, var(--sherpa-border-control-secondary-default, #d5d5d5));
+}
 
 /* ==========================================================================
    Shadow DOM children
@@ -72,7 +74,7 @@
   gap: var(--_button-spacing);
   height: var(--_button-size);
   padding-block: var(--_button-padding);
-  padding-inline: var(--sherpa-space-xs, 8px);
+  padding-inline: var(--_button-padding);
   flex: 1 1 auto;
   background-color: var(--_surface);
   color: var(--_text);
@@ -85,22 +87,13 @@
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out), color var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
 
 .trigger:focus-visible { outline: none; }
 
 i { font-style: normal; }
 
-/* ── Icons ────────────────────────────────────────────────────────────────── */
-
-.icon-start,
-.icon-end {
-  color: var(--_icon-color);
-  display: none;
-  flex-shrink: 0;
-  line-height: 1;
-}
 
 /* ── Label ────────────────────────────────────────────────────────────────── */
 
@@ -113,59 +106,13 @@ i { font-style: normal; }
   display: none;
   align-items: center;
   justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding-inline: 4px;
+  min-width: var(--sherpa-space-default, 16px);
+  height: var(--sherpa-space-default, 16px);
+  padding-inline: var(--sherpa-space-2xs, 4px);
   border-radius: var(--sherpa-border-rounding-full, 999px);
   background: var(--sherpa-surface-control-secondary-default, #ffffff);
   color: var(--sherpa-text-default-body, #2e2e33);
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
-  font-weight: 700;
-  line-height: 1;
 }
-
-/* ── Close / dismiss button ──────────────────────────────────────────────── */
-
-.close {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--_button-size);
-  height: var(--_button-size);
-  padding: 0;
-  border: none;
-  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
-    var(--sherpa-border-control-secondary-default, #d5d5d5);
-  background: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.close:hover  { background-color: var(--sherpa-surface-control-secondary-hover, #fafafa); color: var(--sherpa-text-default-body, #2e2e33); }
-.close:active { background-color: var(--sherpa-surface-control-secondary-down, #f2f2f2); }
-.close:focus-visible { outline: none; }
-
-/* ── Menu trigger ────────────────────────────────────────────────────────── */
-
-.menu-trigger {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--_button-size);
-  height: var(--_button-size);
-  padding: 0;
-  background-color: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
-  color: var(--_icon-color);
-  font-size: var(--sherpa-fonts-scale-xs, 10px);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background-color 0.15s;
-}
-
-.menu-trigger:hover  { background-color: var(--sherpa-surface-control-secondary-hover, #fafafa); }
-.menu-trigger:active { background-color: var(--sherpa-surface-control-secondary-down, #f2f2f2); }
 
 /* ==========================================================================
    Host attribute selectors — ALL as standalone :host([...]) functional form.
@@ -174,6 +121,9 @@ i { font-style: normal; }
    ========================================================================== */
 
 /* ── Icon visibility ──────────────────────────────────────────────────────── */
+
+.icon-start,
+.icon-end   { display: none; }
 
 :host([data-icon-start]) .icon-start { display: inline-flex; }
 :host([data-icon-end])   .icon-end   { display: inline-flex; }
@@ -185,20 +135,16 @@ i { font-style: normal; }
 /* ── Icon-only layout ─────────────────────────────────────────────────────── */
 
 :host([data-type="icon"]) .trigger,
-:host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])) .trigger {
+:host(:not([data-label])) .trigger {
   aspect-ratio: 1;
-  padding-inline: var(--_button-padding);
 }
 
-:host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])) .label {
+:host(:not([data-label])) .label {
   display: none;
 }
 
-:host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])[data-size="small"]) .trigger {
-  padding-inline: var(--sherpa-space-2xs, 4px);
-}
-
-:host(:not([data-label]):not([data-type="button-menu"]):not([data-type="icon-menu"])[data-size="large"]) .trigger {
+/* Large icon-only uses 8px padding, not the 12px that --_button-padding resolves to at large size */
+:host(:not([data-label])[data-size="large"]) .trigger {
   padding-inline: var(--sherpa-space-xs, 8px);
 }
 
@@ -216,28 +162,24 @@ i { font-style: normal; }
   --_button-padding: var(--sherpa-space-2xs, 4px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
 }
-:host([data-size="small"]) .trigger { padding-inline: var(--sherpa-space-2xs, 4px); }
 
 :host([data-size="x-small"]) {
   --_button-size:    var(--sherpa-size-md, 20px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
 }
-:host([data-size="x-small"]) .trigger { padding-inline: var(--sherpa-space-3xs, 2px); }
 
 :host([data-size="2x-small"]) {
   --_button-size:    var(--sherpa-size-sm, 16px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
 }
-:host([data-size="2x-small"]) .trigger { padding-inline: var(--sherpa-space-3xs, 2px); }
 
 :host([data-size="large"]) {
   --_button-size:    var(--sherpa-size-4xl, 48px);
   --_button-padding: var(--sherpa-space-sm, 12px);
   --_button-spacing: var(--sherpa-space-xs, 8px);
 }
-:host([data-size="large"]) .trigger { padding-inline: var(--sherpa-space-sm, 12px); }
 
 /* ── Variants ─────────────────────────────────────────────────────────────── */
 
@@ -297,14 +239,15 @@ i { font-style: normal; }
   --_surface-hover: var(--sherpa-surface-container-hover, #f3f4f6);
   --_surface-down:  var(--sherpa-surface-container-hover, #e5e7eb);
   --_border-hover:  transparent;
+  --_ai-gradient:   var(--sherpa-ai-accent-gradient,
+    linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%));
 
   border-color: transparent;
   border-width: 1.5px;
   background:
     linear-gradient(var(--_surface), var(--_surface)) padding-box,
-    var(--sherpa-ai-accent-gradient,
-      linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%)) border-box;
-  transition: filter 120ms ease, border-color 0.15s;
+    var(--_ai-gradient) border-box;
+  transition: filter var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
 
 :host([data-variant="ai"]:hover) {
@@ -321,8 +264,7 @@ i { font-style: normal; }
   border-color: transparent;
   background:
     linear-gradient(var(--_surface), var(--_surface)) padding-box,
-    var(--sherpa-ai-accent-gradient,
-      linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%)) border-box;
+    var(--_ai-gradient) border-box;
 }
 
 :host([data-variant="ai"][disabled]) {
@@ -348,16 +290,6 @@ i { font-style: normal; }
   color: var(--sherpa-surface-control-active-default, #f8ebff);
 }
 
-:host([data-active]) .close {
-  border-inline-start-color: var(--sherpa-border-control-active-default, #8500cc);
-  background-color: var(--_surface);
-  color: var(--_text);
-}
-
-:host([data-active]) .close:hover  { background-color: var(--_surface-hover); }
-:host([data-active]) .close:active { background-color: var(--_surface-down); }
-:host([data-active]) .menu-trigger { background-color: var(--_surface); }
-
 /* ── Disabled state ───────────────────────────────────────────────────────── */
 
 :host([disabled]) {
@@ -375,64 +307,8 @@ i { font-style: normal; }
 :host(:not([disabled])) .trigger:active { background-color: var(--_surface-down); }
 :host(:not([disabled]):hover) { border-color: var(--_border-hover); }
 
-/* ── Dismiss (close) button visibility ───────────────────────────────────── */
-
-:host([data-dismissable]) .close { display: inline-flex; }
-
 /* ── Menu expanded ────────────────────────────────────────────────────────── */
 
 :host([aria-expanded="true"]:not([disabled])) .trigger {
   background-color: var(--_surface-hover);
-}
-
-:host([aria-expanded="true"]:not([data-active]):not([disabled])) .menu-trigger {
-  background-color: var(--_surface-hover);
-}
-
-:host([data-active]:not([disabled])) .menu-trigger:hover  { background-color: var(--_surface-hover); }
-:host([data-active]:not([disabled])) .menu-trigger:active { background-color: var(--_surface-down); }
-
-/* ── button-menu type ─────────────────────────────────────────────────────── */
-
-:host([data-type="button-menu"]) {
-  --_surface:       var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
-  --_text:          var(--sherpa-text-default-label, #18191a);
-  --_icon-color:    var(--sherpa-text-default-label, #18191a);
-  --_surface-hover: var(--sherpa-surface-control-secondary-hover, #fafafa);
-  --_surface-down:  var(--sherpa-surface-control-secondary-down, #f2f2f2);
-  border-color:     var(--sherpa-border-control-secondary-default, #d5d5d5);
-}
-
-:host([data-type="button-menu"]) .menu-trigger { display: inline-flex; }
-
-:host([data-type="button-menu"][data-active]) {
-  --_surface:       var(--sherpa-surface-control-active-default, #f8ebff);
-  --_text:          var(--sherpa-text-active-base, #8500cc);
-  --_icon-color:    var(--sherpa-icon-active-base, var(--sherpa-text-active-base, #8500cc));
-  --_surface-hover: var(--sherpa-surface-control-active-hover, #f2d6ff);
-  --_surface-down:  var(--sherpa-surface-control-active-down, #e2adff);
-  border-color:     var(--sherpa-border-control-active-default, #8500cc);
-}
-
-:host([data-type="button-menu"][data-split]) .menu-trigger {
-  border-inline-start: var(--sherpa-border-width-xs, 1px) solid
-    var(--sherpa-border-control-secondary-default, #d5d5d5);
-}
-
-:host([data-type="button-menu"][data-active][data-split]) .menu-trigger {
-  border-inline-start-color: var(--sherpa-border-control-active-default, #8500cc);
-}
-
-:host([data-type="button-menu"][disabled]) {
-  border-color: var(--sherpa-border-control-inactive, #8d8d99);
-}
-
-:host([data-filter-type="boolean"]) .menu-trigger { display: none; }
-:host([data-no-dropdown])           .menu-trigger { display: none; }
-
-/* ── icon-menu type ───────────────────────────────────────────────────────── */
-
-:host([data-type="icon-menu"]) .trigger {
-  aspect-ratio: 1;
-  padding-inline: var(--_button-padding);
 }

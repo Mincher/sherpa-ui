@@ -35,7 +35,7 @@ i { font-style: normal; }
 }
 
 .search-icon-wrapper .input-field {
-  padding-left: calc(
+  padding-inline-start: calc(
     var(--sherpa-space-xs, 8px) + 12px + var(--sherpa-space-xs, 8px)
   );
 }
@@ -48,14 +48,11 @@ i { font-style: normal; }
 
 :host {
   /* ── With value state ────────────────────────
-       Show clear button + control-group layout when input has value */
+       Show clear button + grouped layout when input has value */
   /* ── Hidden state ────────────────────────── */
 }
 :host([data-has-value]) {
   & .search-clear { display: inline-flex; }
       & .search-wrapper { display: flex; }
-}
-:host([hidden]) {
-  display: none;
 }
 

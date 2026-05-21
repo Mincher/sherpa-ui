@@ -15,6 +15,18 @@
       "name": "data-percentage",
       "type": "string",
       "description": "Completion text (e.g. \"60% Complete\")"
+    },
+    {
+      "name": "data-src-html",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
+    },
+    {
+      "name": "data-src-json",
+      "type": "string",
+      "description": "",
+      "inherited": "SherpaElement"
     }
   ],
   "slots": [],
