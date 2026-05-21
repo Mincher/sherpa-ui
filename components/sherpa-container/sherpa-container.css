@@ -5,7 +5,7 @@
  * Structure (shadow DOM):
  *   :host (flex column, container: sherpa-container / inline-size)
  *   ├── .card-header   (slot="header" — hidden when empty)
- *   ├── .card-content  (default slot — padding + gap)
+ *   ├── .card-content  (default slot — no padding; children handle spacing)
  *   ├── slot[footer]   (slot="footer")
  *   └── .state-overlay (loading | empty | error)
  *
@@ -91,10 +91,6 @@
   background-color: var(--sherpa-surface-container-default, #ffffff);
   box-shadow: var(--sherpa-shadow-default-sm, 0 1px 2px rgba(0,0,0,0.06));
 }
-:host([data-variant="worksheet"]) .card-content {
-  padding: var(--sherpa-space-xl, 32px);
-  gap: var(--sherpa-space-lg, 24px);
-}
 :host .state-overlay {
   display: none;
       position: absolute;
@@ -156,8 +152,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: var(--sherpa-space-sm, 12px);
-  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
