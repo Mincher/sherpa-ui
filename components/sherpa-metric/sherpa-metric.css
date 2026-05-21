@@ -71,12 +71,6 @@ i {
   
       &:empty { display: none; }
 }
-:host .menu-button {
-  display: none; flex-shrink: 0;
-}
-:host([data-menu-button="true"]) .menu-button {
-  display: inline-flex;
-}
 :host .metric-card {
   display: flex;
       flex-direction: row;
