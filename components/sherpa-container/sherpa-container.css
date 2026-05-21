@@ -152,7 +152,6 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
