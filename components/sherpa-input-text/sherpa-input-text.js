@@ -96,6 +96,9 @@ export class SherpaInputText extends SherpaInputBase {
   #onAutosize = () => this.#autosize();
 
   #autosize() {
+    // When field-sizing: content is supported the browser handles height
+    // natively — skip JS measurement to avoid fighting the UA layout.
+    if (CSS.supports('field-sizing', 'content')) return;
     const el = this.getInputElement();
     if (!el || el.tagName !== 'TEXTAREA') return;
     // Reset to shrink before measuring so the textarea can also get

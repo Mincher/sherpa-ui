@@ -64,6 +64,9 @@
       align-items: center;
       justify-content: center;
       cursor: crosshair;
+
+  &:hover  .socket-shape { scale: 1.08; }
+  &:active .socket-shape { scale: 0.95; }
 }
 :host .socket-shape {
   width: var(--sherpa-node-socket-size, 16px);
@@ -133,13 +136,8 @@
       height: 10px;
       border-radius: 999px;
       background: var(--_socket-stroke);
-      transform: translate(-50%, -50%);
+      translate: -50% -50%;
       pointer-events: none;
 }
-:host .socket:hover  .socket-shape {
-  transform: scale(1.08);
-}
-:host .socket:active .socket-shape {
-  transform: scale(0.95);
-}
+
 

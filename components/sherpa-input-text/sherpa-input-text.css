@@ -28,3 +28,11 @@
       line-height: var(--sherpa-font-base-line-height, 20px);
 }
 
+/* When field-sizing is supported, the browser manages height natively —
+   no JS height measurement needed. The fallback above handles older browsers. */
+@supports (field-sizing: content) {
+  :host([data-multiline]) .input-field {
+    field-sizing: content;
+  }
+}
+

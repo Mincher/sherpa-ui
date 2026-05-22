@@ -42,29 +42,33 @@ i {
 :host([data-interactive][data-active]) .list-item-container:hover {
   background: var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
 }
-:host([data-active]) .list-item-container {
-  background: var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
+:host([data-active]) {
+  .list-item-container {
+    background: var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
+  }
+  .label {
+    color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-text-default-heading, #18191a))); font-weight: var(--sherpa-font-weight-semibold, 600);
+  }
+  .description {
+    color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-text-default-body, #2e2e33)));
+  }
+  .icon,
+  .drag-handle {
+    color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-icon-context-default-body, #2e2e33)));
+  }
 }
-:host([data-active]) .label {
-  color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-text-default-heading, #18191a))); font-weight: var(--sherpa-font-weight-semibold, 600);
-}
-:host([data-active]) .description {
-  color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-text-default-body, #2e2e33)));
-}
-:host([data-active]) .icon,
-:host([data-active]) .drag-handle {
-  color: var(--_selected-text, var(--sherpa-text-active-base, var(--sherpa-icon-context-default-body, #2e2e33)));
-}
-:host([disabled]) .list-item-container {
-  background: var(--sherpa-surface-container-inactive, #f2f2f2); pointer-events: none;
-}
-:host([disabled]) .label,
-:host([disabled]) .description {
-  color: var(--sherpa-text-inactive-default, #a0a0a0);
-}
-:host([disabled]) .icon,
-:host([disabled]) .drag-handle {
-  color: var(--sherpa-icon-inactive-default, #a0a0a0);
+:host([disabled]) {
+  .list-item-container {
+    background: var(--sherpa-surface-container-inactive, #f2f2f2); pointer-events: none;
+  }
+  .label,
+  .description {
+    color: var(--sherpa-text-inactive-default, #a0a0a0);
+  }
+  .icon,
+  .drag-handle {
+    color: var(--sherpa-icon-inactive-default, #a0a0a0);
+  }
 }
 :host([data-interactive]:focus-visible) .list-item-container {
   outline: none; box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #0066cc);

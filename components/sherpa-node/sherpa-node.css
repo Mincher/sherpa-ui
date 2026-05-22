@@ -114,10 +114,10 @@
   justify-content: flex-end;
 }
 :host .node-footer .gutter-in  ::slotted(*) {
-  transform: translateX(-50%);
+  translate: -50% 0;
 }
 :host .node-footer .gutter-out ::slotted(*) {
-  transform: translateX(50%);
+  translate: 50% 0;
 }
 :host .footer-body {
   flex: 1 1 auto;

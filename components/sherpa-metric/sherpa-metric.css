@@ -43,7 +43,7 @@ i {
       flex: 1 1 0;
       min-width: 0;
       gap: var(--sherpa-space-3xs, 2px);
-      overflow: hidden;
+      overflow: clip;
       margin: 0;
 }
 :host .header-title {
@@ -54,7 +54,7 @@ i {
       letter-spacing: 1px;
       text-transform: uppercase;
       color: var(--sherpa-text-default-secondary, #5c5c66);
-      overflow: hidden;
+      overflow: clip;
       white-space: nowrap;
       text-overflow: ellipsis;
   
@@ -65,7 +65,7 @@ i {
       font-size: var(--sherpa-font-sm-size, 12px);
       line-height: var(--sherpa-font-sm-line-height, 16px);
       color: var(--sherpa-text-default-secondary, #6a6a75);
-      overflow: hidden;
+      overflow: clip;
       white-space: nowrap;
       text-overflow: ellipsis;
   
@@ -87,36 +87,37 @@ i {
       color: var(--_text-color, inherit);
       container-type: size;
       container-name: metric-card;
-}
-:host .metric-card[data-status="info"] {
-  --_background-color: var(--sherpa-surface-context-info-subtle-default, #f7fdff);
-      --_border-color: var(--sherpa-border-context-info-default, #06526f);
-      --_text-color: var(--sherpa-text-context-info-default, #06526f);
-      --_icon-color: var(--sherpa-icon-context-info-default, #06526f);
-}
-:host .metric-card[data-status="success"] {
-  --_background-color: var(--sherpa-surface-context-success-subtle-default, rgba(240, 255, 248, 0.8));
-      --_border-color: var(--sherpa-border-context-success-default, #048142);
-      --_text-color: var(--sherpa-text-context-success-default, #048142);
-      --_icon-color: var(--sherpa-icon-context-success-default, #048142);
-}
-:host .metric-card[data-status="warning"] {
-  --_background-color: var(--sherpa-surface-context-warning-subtle-default, #fffbf3);
-      --_border-color: var(--sherpa-border-context-warning-default, #a77205);
-      --_text-color: var(--sherpa-text-context-warning-default, #e39b04);
-      --_icon-color: var(--sherpa-icon-context-warning-default, #e39b04);
-}
-:host .metric-card[data-status="critical"] {
-  --_background-color: var(--sherpa-surface-context-error-subtle-default, #fff7f5);
-      --_border-color: var(--sherpa-border-context-error-default, #bf2c09);
-      --_text-color: var(--sherpa-text-context-error-default, #bf2c09);
-      --_icon-color: var(--sherpa-icon-context-error-default, #bf2c09);
-}
-:host .metric-card[data-status="urgent"] {
-  --_background-color: var(--sherpa-surface-context-urgent-subtle-default, rgba(253, 226, 193, 0.2));
-      --_border-color: var(--sherpa-border-context-urgent-default, #b95608);
-      --_text-color: var(--sherpa-text-context-urgent-default, #b95608);
-      --_icon-color: var(--sherpa-icon-context-urgent-default, #b95608);
+
+  &[data-status="info"] {
+    --_background-color: var(--sherpa-surface-context-info-subtle-default, #f7fdff);
+    --_border-color: var(--sherpa-border-context-info-default, #06526f);
+    --_text-color: var(--sherpa-text-context-info-default, #06526f);
+    --_icon-color: var(--sherpa-icon-context-info-default, #06526f);
+  }
+  &[data-status="success"] {
+    --_background-color: var(--sherpa-surface-context-success-subtle-default, rgba(240, 255, 248, 0.8));
+    --_border-color: var(--sherpa-border-context-success-default, #048142);
+    --_text-color: var(--sherpa-text-context-success-default, #048142);
+    --_icon-color: var(--sherpa-icon-context-success-default, #048142);
+  }
+  &[data-status="warning"] {
+    --_background-color: var(--sherpa-surface-context-warning-subtle-default, #fffbf3);
+    --_border-color: var(--sherpa-border-context-warning-default, #a77205);
+    --_text-color: var(--sherpa-text-context-warning-default, #e39b04);
+    --_icon-color: var(--sherpa-icon-context-warning-default, #e39b04);
+  }
+  &[data-status="critical"] {
+    --_background-color: var(--sherpa-surface-context-error-subtle-default, #fff7f5);
+    --_border-color: var(--sherpa-border-context-error-default, #bf2c09);
+    --_text-color: var(--sherpa-text-context-error-default, #bf2c09);
+    --_icon-color: var(--sherpa-icon-context-error-default, #bf2c09);
+  }
+  &[data-status="urgent"] {
+    --_background-color: var(--sherpa-surface-context-urgent-subtle-default, rgba(253, 226, 193, 0.2));
+    --_border-color: var(--sherpa-border-context-urgent-default, #b95608);
+    --_text-color: var(--sherpa-text-context-urgent-default, #b95608);
+    --_icon-color: var(--sherpa-icon-context-urgent-default, #b95608);
+  }
 }
 :host([data-trend="flat"]) .metric-delta {
   color: var(--sherpa-text-default-secondary, #6a6a75);

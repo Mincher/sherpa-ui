@@ -115,25 +115,13 @@
       border-top-color: var(--sherpa-border-control-primary-default, #4a90e2);
       animation: sherpa-container-spin 700ms linear infinite;
 }
-:host([data-state="loading"]) .state-overlay,
-:host([data-state="empty"])   .state-overlay,
-:host([data-state="error"])   .state-overlay {
-  display: flex;
+:host(:is([data-state="loading"], [data-state="empty"], [data-state="error"])) {
+  .state-overlay { display: flex; }
+  ::slotted(:not([slot])) { visibility: hidden; }
 }
-:host([data-state="loading"]) .state-loading {
-  display: contents;
-}
-:host([data-state="empty"])   .state-empty {
-  display: contents;
-}
-:host([data-state="error"])   .state-error {
-  display: contents;
-}
-:host([data-state="loading"]) ::slotted(:not([slot])),
-:host([data-state="empty"])   ::slotted(:not([slot])),
-:host([data-state="error"])   ::slotted(:not([slot])) {
-  visibility: hidden;
-}
+:host([data-state="loading"]) { .state-loading { display: contents; } }
+:host([data-state="empty"])   { .state-empty   { display: contents; } }
+:host([data-state="error"])   { .state-error   { display: contents; } }
 
 @keyframes sherpa-container-spin { to { transform: rotate(360deg); } }
 

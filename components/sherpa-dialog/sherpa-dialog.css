@@ -58,11 +58,8 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────── */
 }
-:host .dialog:not([open]) {
-  display: none;
-}
 :host .dialog {
-  display: flex;
+  display: none;
       flex-direction: column;
       max-height: 90vh;
       width: 600px;
@@ -75,13 +72,12 @@
       overflow: clip;
       color: var(--_text);
   
-      /* ── Open animation ────────────────────────────────– */
-      &[open] { animation: dialog-show var(--_duration) var(--_easing) forwards; }
+      /* ── Open / closed via @starting-style + transition (see below) ── */
+      &[open] { display: flex; }
   
-      /* ── Backdrop ──────────────────────────────────────– */
+      /* ── Backdrop ──────────────────────────────────────── */
       &::backdrop {
         background-color: var(--sherpa-effects-backdrop, oklch(0 0 0 / 0.5));
-        animation: backdrop-show var(--_duration) var(--_easing) forwards;
       }
 }
 :host([data-size="small"]) .dialog {
@@ -134,7 +130,7 @@
       flex: 1 1 0;
       min-width: 0;
       gap: var(--sherpa-space-3xs, 2px);
-      overflow: hidden;
+      overflow: clip;
       margin: 0;
 }
 :host .header-title {
@@ -143,7 +139,7 @@
       font-weight: 600;
       line-height: var(--sherpa-font-base-line-height, 20px);
       color: var(--sherpa-text-default-heading, #1a1a1f);
-      overflow: hidden;
+      overflow: clip;
       white-space: nowrap;
       text-overflow: ellipsis;
 }
@@ -152,7 +148,7 @@
       font-size: var(--sherpa-font-sm-size, 12px);
       line-height: var(--sherpa-font-sm-line-height, 16px);
       color: var(--sherpa-text-default-secondary, #6a6a75);
-      overflow: hidden;
+      overflow: clip;
       white-space: nowrap;
       text-overflow: ellipsis;
   
@@ -175,6 +171,7 @@
       min-height: 1px;
       padding: var(--sherpa-space-sm, 16px);
       overflow-y: auto;
+      overscroll-behavior-y: contain;
       scrollbar-width: thin;
       scrollbar-color: var(--_border-color) transparent;
   
@@ -189,19 +186,43 @@
       }
 }
 
-/* Animation keyframes (top-level, outside :host) */
-@keyframes dialog-show {
-  from {
-    transform: scale(0.95) translateY(-10px);
+/* ── Enter / exit transitions via @starting-style ──────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* Closed (exit) state — defines transition for both directions */
+  :host .dialog {
     opacity: 0;
+    scale: 0.95;
+    translate: 0 -10px;
+    transition:
+      opacity var(--_duration) var(--_easing),
+      scale var(--_duration) var(--_easing),
+      translate var(--_duration) var(--_easing),
+      display var(--_duration) allow-discrete,
+      overlay var(--_duration) allow-discrete;
   }
-  to {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
 
-@keyframes backdrop-show {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  /* Open (enter) state */
+  :host .dialog[open] {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+
+  /* Backdrop: fade in on open */
+  :host .dialog::backdrop {
+    transition: background-color var(--_duration) var(--_easing);
+  }
+
+  /* Starting values for the enter transition */
+  @starting-style {
+    :host .dialog[open] {
+      opacity: 0;
+      scale: 0.95;
+      translate: 0 -10px;
+    }
+
+    :host .dialog[open]::backdrop {
+      background-color: oklch(0 0 0 / 0);
+    }
+  }
 }

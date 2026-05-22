@@ -104,6 +104,7 @@
       gap: var(--_gap);
       padding: var(--_padding);
       overflow: auto;
+      overscroll-behavior: contain;
 }
 :host([data-layout="actions"]) {
   min-width: auto;

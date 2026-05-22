@@ -187,12 +187,12 @@
   border-radius: 50%;
   background: currentColor;
   pointer-events: none;
-  transition: opacity var(--sherpa-motion-transition-fast, 0.15s ease-out), transform var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: opacity var(--sherpa-motion-transition-fast, 0.15s ease-out), scale var(--sherpa-motion-transition-fast, 0.15s ease-out);
   opacity: var(--_point-scale);
   z-index: 1;
   translate: calc(-1 * var(--_point-offset)) calc(-1 * var(--_point-offset));
   transform-origin: center;
-  transform: scale(var(--_point-scale));
+  scale: var(--_point-scale);
 
   &[data-role="start"] {
     top: calc(100% - var(--_n-start) * var(--_progress-start) * 1%);

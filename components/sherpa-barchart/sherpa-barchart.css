@@ -56,7 +56,7 @@
   flex: 1 1 0;
   min-width: 0;
   gap: var(--sherpa-space-3xs, 2px);
-  overflow: hidden;
+  overflow: clip;
   margin: 0;
 }
 
@@ -68,7 +68,7 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--sherpa-text-default-secondary, #5c5c66);
-  overflow: hidden;
+  overflow: clip;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -82,7 +82,7 @@
   font-size: var(--sherpa-font-sm-size, 12px);
   line-height: var(--sherpa-font-sm-line-height, 16px);
   color: var(--sherpa-text-default-secondary, #6a6a75);
-  overflow: hidden;
+  overflow: clip;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -143,7 +143,7 @@ sherpa-filter-bar {
   min-height: 0;
   min-width: 0;
   position: relative;
-  overflow: hidden;
+  overflow: clip;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -157,7 +157,7 @@ sherpa-filter-bar {
   flex: 1 1 0;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
+  overflow: clip;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -187,7 +187,7 @@ sherpa-filter-bar {
   color: var(--sherpa-text-default-heading, #18191a);
   text-align: right;
   white-space: nowrap;
-  overflow: hidden;
+  overflow: clip;
   text-overflow: ellipsis;
 }
 

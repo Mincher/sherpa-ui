@@ -19,13 +19,14 @@
       flex-direction: column;
       gap: var(--sherpa-space-xs, 8px);
       min-width: 0;
+
+  .pane-search {
+    display: none;
+    width: 100%;
+  }
 }
-:host .pane-search {
-  display: none;
-      width: 100%;
-}
-:host([data-search]) .pane-search {
-  display: block;
+:host([data-search]) {
+  .pane-search { display: block; }
 }
 :host .pane-list {
   flex: 1;

@@ -53,10 +53,12 @@ i {
   font-size: var(--icon-size);
 }
 
-.icon-svg svg {
-  width: 1em;
-  height: 1em;
-  fill: currentColor;
-  display: block;
+.icon-svg {
+  svg {
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+    display: block;
+  }
 }
 

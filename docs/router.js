@@ -572,7 +572,13 @@ let pendingScrollAnchor = null;
 
 async function renderCurrentRoute() {
   const route = parseHash(window.location.hash);
-  await renderRoute(route);
+
+  if (document.startViewTransition) {
+    const t = document.startViewTransition(() => renderRoute(route));
+    await t.updateCallbackDone;
+  } else {
+    await renderRoute(route);
+  }
 
   const path = (window.location.hash || '#/').replace(/^#/, '') || '/';
   setActiveNavItem(path);

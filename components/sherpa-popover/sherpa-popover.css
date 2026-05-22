@@ -83,23 +83,32 @@
 }
 
 /* ──────────────────────────────────────────────────────────
-   SLIDE-IN ANIMATION
-   ────────────────────────────────────────────────────────── */
+   SLIDE-IN ANIMATION (via @starting-style + transition)
+   ──────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
+  /* Closed (exit) state — defines transition for enter + exit */
+  :host([data-animation="slide"]) {
+    opacity: 0;
+    scale: 0.97;
+    transition:
+      opacity var(--sherpa-motion-transition-fast, 0.15s) ease-out,
+      scale var(--sherpa-motion-transition-fast, 0.15s) ease-out,
+      display var(--sherpa-motion-transition-fast, 0.15s) allow-discrete,
+      overlay var(--sherpa-motion-transition-fast, 0.15s) allow-discrete;
+  }
+
+  /* Open (enter) state */
   :host([data-animation="slide"][data-open]) {
-    animation: sherpa-popover-slide-in var(--sherpa-motion-transition-fast, 0.15s ease-out) ease-out both;
+    opacity: 1;
+    scale: 1;
   }
 
-  :host([data-animation="slide"][data-open][data-position="top"]) {
-    animation-name: sherpa-popover-slide-in-top;
-  }
-
-  :host([data-animation="slide"][data-open][data-position="left"]) {
-    animation-name: sherpa-popover-slide-in-left;
-  }
-
-  :host([data-animation="slide"][data-open][data-position="right"]) {
-    animation-name: sherpa-popover-slide-in-right;
+  /* Starting values for the enter transition */
+  @starting-style {
+    :host([data-animation="slide"][data-open]) {
+      opacity: 0;
+      scale: 0.97;
+    }
   }
 }
 :host([data-open]) {
@@ -206,23 +215,3 @@
       font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 
-/* Animation keyframes (top-level, outside :host) */
-@keyframes sherpa-popover-slide-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes sherpa-popover-slide-in-top {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes sherpa-popover-slide-in-left {
-  from { opacity: 0; transform: translateX(6px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes sherpa-popover-slide-in-right {
-  from { opacity: 0; transform: translateX(-6px); }
-  to   { opacity: 1; transform: translateX(0); }
-}

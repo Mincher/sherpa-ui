@@ -36,7 +36,7 @@
   gap: var(--sherpa-space-sm, 8px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   min-height: 0;
-  overflow: hidden;
+  overflow: clip;
   container: sherpa-gauge-chart / inline-size;
 }
 :host([data-loading]) .gauge-wrap {
@@ -64,7 +64,7 @@
       max-width: 280px;
       aspect-ratio: 280 / 162;
       flex-shrink: 1;
-      overflow: hidden;
+      overflow: clip;
       transition: opacity 0.2s ease;
 }
 :host .gauge-bg {

@@ -101,7 +101,7 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      translate: -50% -50%;
 }
 :host .donut-hole {
   --_donut-size: min(100cqw, 100cqh);
@@ -112,7 +112,7 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      translate: -50% -50%;
 }
 :host([data-variant="pie"]) .donut-hole {
   display: none;
@@ -122,7 +122,7 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      translate: -50% -50%;
       text-align: center;
       flex-direction: column;
       align-items: center;

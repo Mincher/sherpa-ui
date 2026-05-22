@@ -57,6 +57,26 @@
 
 #docs-outlet {
   padding: var(--sherpa-space-default, 16px);
+  view-transition-name: docs-outlet;
+}
+
+/* ── View transition — route crossfade ─────────────────────────────────────── */
+
+@keyframes docs-fade-in  { from { opacity: 0; translate: 0 8px; } }
+@keyframes docs-fade-out { to   { opacity: 0; translate: 0 -8px; } }
+
+::view-transition-old(docs-outlet) {
+  animation: 120ms ease-in both docs-fade-out;
+}
+::view-transition-new(docs-outlet) {
+  animation: 200ms ease-out both docs-fade-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(docs-outlet),
+  ::view-transition-new(docs-outlet) {
+    animation: none;
+  }
 }
 
 /* ── Page wrapper ──────────────────────────────────────────────────────────── */

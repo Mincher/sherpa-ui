@@ -283,11 +283,11 @@ i { font-style: normal; }
   --_surface-hover: var(--sherpa-surface-control-active-hover, #f2d6ff);
   --_surface-down:  var(--sherpa-surface-control-active-down, #e2adff);
   border-color:     var(--sherpa-border-control-active-default, #8500cc);
-}
 
-:host([data-active]) .badge {
-  background: var(--sherpa-text-active-base, #8500cc);
-  color: var(--sherpa-surface-control-active-default, #f8ebff);
+  .badge {
+    background: var(--sherpa-text-active-base, #8500cc);
+    color: var(--sherpa-surface-control-active-default, #f8ebff);
+  }
 }
 
 /* ── Disabled state ───────────────────────────────────────────────────────── */
