@@ -339,6 +339,7 @@
   --flex-truncate-direction: column;
 }
 
+/* This targets all children of the parent container with flex-truncate applied and trims them if they don't fit at min width/height. */
 .flex-truncate > * {
   order: sibling-index();
   /* Branch by direction; positive threshold means this child overflows → hide.
