@@ -18,6 +18,8 @@
  *   list_token_groups       — List token namespaces grouped by file
  *   list_utilities          — List utility modules under components/utilities
  *   get_utility             — Read a utility module's source
+ *   list_css_utilities      — List CSS utility classes (e.g. flex-truncate)
+ *   get_css_utility         — Get full schema and examples for a CSS utility class
  *   get_architecture        — Layered architecture rules + base-class lifecycle
  *   validate_usage          — Schema-aware audit of component HTML
  *   list_patterns           — List view layout and UX patterns
@@ -35,6 +37,7 @@
  *   sherpa://component/{tag}/readme   — Component README
  *   sherpa://utility/{id}             — Utility module source
  *   sherpa://pattern/{id}             — View layout / UX pattern HTML
+ *   sherpa://css-utility/{className}  — CSS utility class JSON schema
  *
  * Prompts:
  *   build_ui              — Guided prompt for building a UI layout
@@ -50,6 +53,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const SCHEMAS_DIR = path.join(ROOT, "schemas", "components");
+const CSS_UTILITIES_SCHEMA_DIR = path.join(ROOT, "schemas", "css-utilities");
 const COMPONENTS_DIR = path.join(ROOT, "components");
 const PATTERNS_DIR = path.join(ROOT, "patterns");
 const DOCS_DIR = path.join(ROOT, "docs");
@@ -127,6 +131,21 @@ function readComponentHTML(tagName) {
   const htmlPath = path.join(COMPONENTS_DIR, tagName, `${tagName}.html`);
   if (!fs.existsSync(htmlPath)) return null;
   return fs.readFileSync(htmlPath, "utf8");
+}
+
+/** Load CSS utility class schemas from schemas/css-utilities/. */
+function loadCssUtilities() {
+  const indexPath = path.join(CSS_UTILITIES_SCHEMA_DIR, "index.json");
+  if (!fs.existsSync(indexPath)) return new Map();
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  const utilities = new Map();
+  for (const className of index) {
+    const filePath = path.join(CSS_UTILITIES_SCHEMA_DIR, `${className}.json`);
+    if (fs.existsSync(filePath)) {
+      utilities.set(className, JSON.parse(fs.readFileSync(filePath, "utf8")));
+    }
+  }
+  return utilities;
 }
 
 /** Load pattern index from patterns/index.json. */
@@ -221,6 +240,7 @@ const schemas = loadSchemas();
 const tokens = loadTokens();
 const patterns = loadPatterns();
 const utilities = loadUtilities();
+const cssUtilities = loadCssUtilities();
 
 /* ── Icon lookup ───────────────────────────────────────────────── */
 
@@ -1220,6 +1240,51 @@ server.registerTool(
 );
 
 server.registerTool(
+  "list_css_utilities",
+  {
+    title: "List CSS Utilities",
+    description: "List CSS utility classes available in sherpa-app-classes.css (e.g. flex-truncate). These are plain CSS classes applied directly to HTML elements — not web components.",
+    inputSchema: {},
+  },
+  async () => {
+    if (!cssUtilities.size) {
+      return { content: [{ type: "text", text: "No CSS utilities found." }] };
+    }
+    const entries = [...cssUtilities.values()];
+    let out = `Found ${entries.length} CSS utility class(es):\n\n`;
+    for (const u of entries) {
+      out += `- **${u.className}** — ${u.description}\n`;
+      if (u.browserSupport) out += `  Browser support: ${u.browserSupport}\n`;
+      out += `  Attributes: ${(u.attributes || []).map((a) => a.name).join(", ") || "none"}\n`;
+      out += `  CSS properties: ${(u.cssProperties || []).map((p) => p.name).join(", ") || "none"}\n`;
+    }
+    out += "\nUse get_css_utility to get the full schema and usage examples.";
+    return { content: [{ type: "text", text: out }] };
+  }
+);
+
+server.registerTool(
+  "get_css_utility",
+  {
+    title: "Get CSS Utility",
+    description: "Get the full schema, attributes, CSS custom properties, usage notes and examples for a CSS utility class (e.g. flex-truncate).",
+    inputSchema: {
+      className: z.string().describe("CSS utility class name (e.g. 'flex-truncate')"),
+    },
+  },
+  async ({ className }) => {
+    const util = cssUtilities.get(className);
+    if (!util) {
+      const available = [...cssUtilities.keys()].join(", ");
+      return {
+        content: [{ type: "text", text: `Unknown CSS utility "${className}". Available: ${available}` }],
+      };
+    }
+    return { content: [{ type: "text", text: JSON.stringify(util, null, 2) }] };
+  }
+);
+
+server.registerTool(
   "get_architecture",
   {
     title: "Get Architecture Overview",
@@ -1345,6 +1410,32 @@ server.registerResource(
         uri: uri.href,
         mimeType: "text/html",
         text: html || `<!-- Pattern file not found: ${entry.file} -->`,
+      }],
+    };
+  }
+);
+
+// CSS utility class schemas as resources
+server.registerResource(
+  "CSS Utility Schema",
+  new ResourceTemplate("sherpa://css-utility/{className}", {
+    list: async () => ({
+      resources: [...cssUtilities.keys()].map((className) => ({
+        uri: `sherpa://css-utility/${className}`,
+        name: className,
+        description: cssUtilities.get(className)?.description || "",
+        mimeType: "application/json",
+      })),
+    }),
+  }),
+  { description: "JSON schema for a Sherpa UI CSS utility class", mimeType: "application/json" },
+  async (uri, { className }) => {
+    const util = cssUtilities.get(className);
+    return {
+      contents: [{
+        uri: uri.href,
+        mimeType: "application/json",
+        text: util ? JSON.stringify(util, null, 2) : `{"error": "Unknown CSS utility: ${className}"}`,
       }],
     };
   }
@@ -1476,6 +1567,20 @@ server.registerPrompt(
       }
     }
 
+    // Include available CSS utility classes
+    let cssUtilSummary = "";
+    if (cssUtilities.size) {
+      cssUtilSummary = "\n## CSS Utility Classes\nThese are plain CSS classes (not web components) applied directly to HTML elements:\n";
+      for (const u of cssUtilities.values()) {
+        cssUtilSummary += `- **${u.className}** — ${u.description}\n`;
+        cssUtilSummary += `  Usage: \`${u.usage}\`\n`;
+        if (u.attributes?.length) {
+          cssUtilSummary += `  Attributes: ${u.attributes.map((a) => `${a.name} (${a.type || "string"}, default: ${a.default || "—"})`).join("; ")}\n`;
+        }
+        cssUtilSummary += `  Use get_css_utility('${u.className}') for full schema and examples.\n`;
+      }
+    }
+
     return {
       messages: [
         {
@@ -1490,6 +1595,7 @@ ${layoutContext}
 ## Component Reference
 ${componentContext}
 ${patternSummary}
+${cssUtilSummary}
 ## Rules
 1. Use data-* attributes for all custom attributes (not bare attributes)
 2. Use semantic design tokens (--sherpa-*) with hardcoded fallbacks
@@ -1501,6 +1607,7 @@ ${patternSummary}
 8. Flow state is tracked in app JS memory — never in DOM attributes
 9. Dialogs use native ::backdrop via showModal() — no custom shim elements
 10. Toast feedback: SherpaToast.success() on complete, SherpaToast.critical() on error
+11. For progressive truncation of flex children, use the .flex-truncate CSS utility class
 
 Generate the HTML with inline comments explaining the component usage.`,
           },

@@ -1,0 +1,82 @@
+<!--
+  flex-truncate — Progressively hide trailing flex children when the container
+  is too narrow (row) or too short (column) to fit them all.
+
+  Apply .flex-truncate to any container. All direct children are managed
+  automatically — no wrapper or per-child classes needed.
+
+  Attributes on the container:
+    data-min-child-width="180px"   Minimum inline size per child (row, default 180px)
+    data-min-child-height="100px"  Minimum block size per child (column, default 180px)
+    data-direction="column"        Omit for row (default)
+
+  CSS custom properties (set via inline style or a class rule):
+    --flex-truncate-gap            Gap between children (default 8px)
+    --flex-truncate-min-width      Overrides data-min-child-width
+    --flex-truncate-min-height     Overrides data-min-child-height
+
+  Browser support: Chrome 137+ (sibling-index, CSS if(style()), @property range queries)
+
+  Components: sherpa-metric (demo only — works with any direct children)
+-->
+
+<template id="flex-truncate-row"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-metric">
+
+  <!--
+    Row: children are hidden from the right as the container narrows.
+    The container's min-width equals one child's min-width so the last
+    item is always visible.
+  -->
+  <div class="flex-truncate">
+    <sherpa-metric data-label="Total Revenue" value="$1.24M" data-trend="up"   data-delta="+8.3%"></sherpa-metric>
+    <sherpa-metric data-label="Active Users"  value="4,821"  data-trend="up"   data-delta="+12%"></sherpa-metric>
+    <sherpa-metric data-label="Uptime"        value="99.9%"  data-trend="flat" data-status="success"></sherpa-metric>
+    <sherpa-metric data-label="Avg Response"  value="42ms"   data-trend="down" data-delta="−6ms"></sherpa-metric>
+    <sherpa-metric data-label="Error Rate"    value="0.02%"  data-trend="down" data-status="success"></sherpa-metric>
+  </div>
+
+</template>
+
+<template id="flex-truncate-row-custom"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-metric">
+
+  <!--
+    Row with a custom min-child-width and gap.
+    data-min-child-width sets both the truncation threshold and the
+    container's own min-width (via CSS attr() binding).
+  -->
+  <div class="flex-truncate" data-min-child-width="220px" style="--flex-truncate-gap: 12px;">
+    <sherpa-metric data-label="CPU Usage"  value="34%"    data-trend="down" data-delta="−4%"></sherpa-metric>
+    <sherpa-metric data-label="Memory"     value="6.2 GB" data-trend="up"   data-delta="+0.8 GB" data-status="warning"></sherpa-metric>
+    <sherpa-metric data-label="Disk I/O"   value="120 MB/s" data-trend="flat"></sherpa-metric>
+    <sherpa-metric data-label="Network"    value="1.4 Gbps" data-trend="up" data-delta="+200 Mbps"></sherpa-metric>
+  </div>
+
+</template>
+
+<template id="flex-truncate-column"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-metric">
+
+  <!--
+    Column: children are hidden from the bottom as the container shortens.
+    Requires an explicit height — without one cqb resolves to 0 and
+    nothing is hidden.
+    data-min-child-height sets the truncation threshold and the container's
+    own min-height so the last item is always visible.
+  -->
+  <div class="flex-truncate" data-direction="column" data-min-child-height="100px" style="height: 400px;">
+    <sherpa-metric data-label="Total Revenue" value="$1.24M" data-trend="up"   data-delta="+8.3%"></sherpa-metric>
+    <sherpa-metric data-label="Active Users"  value="4,821"  data-trend="up"   data-delta="+12%"></sherpa-metric>
+    <sherpa-metric data-label="Uptime"        value="99.9%"  data-trend="flat" data-status="success"></sherpa-metric>
+    <sherpa-metric data-label="Avg Response"  value="42ms"   data-trend="down" data-delta="−6ms"></sherpa-metric>
+    <sherpa-metric data-label="Error Rate"    value="0.02%"  data-trend="down" data-status="success"></sherpa-metric>
+  </div>
+
+</template>

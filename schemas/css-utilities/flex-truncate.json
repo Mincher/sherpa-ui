@@ -1,0 +1,75 @@
+{
+  "className": "flex-truncate",
+  "description": "Progressively hides trailing flex children when the container is too narrow (row) or too short (column) to show them at their minimum size. Apply to the container — all direct children are managed automatically.",
+  "category": "layout",
+  "file": "css/styles/sherpa-app-classes.css",
+  "browserSupport": "Chrome 137+ — requires sibling-index(), CSS if(style()) with registered @property range queries",
+  "usage": "<div class=\"flex-truncate\"><!-- direct children --></div>",
+  "attributes": [
+    {
+      "name": "data-direction",
+      "type": "enum",
+      "values": ["column"],
+      "description": "Omit for row (default). Set to 'column' for vertical truncation along the block axis. Requires an explicit height on the container — without one, cqb resolves to 0 and no children are hidden."
+    },
+    {
+      "name": "data-min-child-width",
+      "type": "length",
+      "default": "180px",
+      "description": "Minimum inline size each child must occupy (row direction). Children that would overflow at this size are hidden. Also sets the container's own min-width so the last child is never hidden."
+    },
+    {
+      "name": "data-min-child-height",
+      "type": "length",
+      "default": "180px",
+      "description": "Minimum block size each child must occupy (column direction). Also sets the container's own min-height so the last child is never hidden."
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--flex-truncate-gap",
+      "type": "<length>",
+      "default": "8px",
+      "inherits": true,
+      "description": "Gap between children. Must match the visual gap between items — used in the threshold formula."
+    },
+    {
+      "name": "--flex-truncate-min-width",
+      "type": "<length>",
+      "default": "180px",
+      "inherits": true,
+      "description": "CSS override for min child width — takes precedence over data-min-child-width. Set via inline style or a class rule."
+    },
+    {
+      "name": "--flex-truncate-min-height",
+      "type": "<length>",
+      "default": "180px",
+      "inherits": true,
+      "description": "CSS override for min child height — takes precedence over data-min-child-height. Tip: set this on a parent ancestor so the ancestor's min-height and the child threshold formula share the same value."
+    }
+  ],
+  "notes": [
+    "All direct children receive order: sibling-index() automatically — do not set order on direct children.",
+    "The container enforces its own min-width (row) / min-height (column) equal to one child minimum — the last child is never hidden.",
+    "Column mode: the container needs an explicit height. Without one, cqb = 0 and nothing is hidden.",
+    "Children's display property is owned by the class — do not set display on direct children.",
+    "To share the min-height value between a resizable parent and the flex-truncate threshold, set --flex-truncate-min-height on the parent; it inherits to the child."
+  ],
+  "examples": [
+    {
+      "label": "Row (default)",
+      "description": "5 metric cards that progressively hide as the container narrows.",
+      "html": "<div class=\"flex-truncate\">\n  <sherpa-metric data-label=\"Total Revenue\" value=\"$1.24M\" data-trend=\"up\" data-delta=\"+8.3%\"></sherpa-metric>\n  <sherpa-metric data-label=\"Active Users\" value=\"4,821\" data-trend=\"up\" data-delta=\"+12%\"></sherpa-metric>\n  <sherpa-metric data-label=\"Uptime\" value=\"99.9%\" data-trend=\"flat\" data-status=\"success\"></sherpa-metric>\n  <sherpa-metric data-label=\"Avg Response\" value=\"42ms\" data-trend=\"down\" data-delta=\"−6ms\"></sherpa-metric>\n  <sherpa-metric data-label=\"Error Rate\" value=\"0.02%\" data-trend=\"down\" data-status=\"success\"></sherpa-metric>\n</div>"
+    },
+    {
+      "label": "Row — custom min-width",
+      "description": "Wider children (220px) with a larger gap (12px).",
+      "html": "<div class=\"flex-truncate\" data-min-child-width=\"220px\" style=\"--flex-truncate-gap: 12px;\">\n  <sherpa-metric data-label=\"CPU Usage\" value=\"34%\" data-trend=\"down\"></sherpa-metric>\n  <sherpa-metric data-label=\"Memory\" value=\"6.2 GB\" data-trend=\"up\" data-status=\"warning\"></sherpa-metric>\n  <sherpa-metric data-label=\"Disk I/O\" value=\"120 MB/s\" data-trend=\"flat\"></sherpa-metric>\n</div>"
+    },
+    {
+      "label": "Column",
+      "description": "Children stack vertically and hide from the bottom as the container shortens.",
+      "html": "<div class=\"flex-truncate\" data-direction=\"column\" data-min-child-height=\"100px\" style=\"height: 400px;\">\n  <sherpa-metric data-label=\"Total Revenue\" value=\"$1.24M\" data-trend=\"up\"></sherpa-metric>\n  <sherpa-metric data-label=\"Active Users\" value=\"4,821\" data-trend=\"up\"></sherpa-metric>\n  <sherpa-metric data-label=\"Uptime\" value=\"99.9%\" data-trend=\"flat\" data-status=\"success\"></sherpa-metric>\n</div>"
+    }
+  ]
+}
