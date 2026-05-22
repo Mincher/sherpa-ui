@@ -58,6 +58,7 @@
         color: var(--sherpa-text-default-placeholder, #999999);
   
         & .legend-swatch {
+          /* !important overrides the inline background-color set by JS for series colours */
           background-color: var(--sherpa-surface-control-inactive, #cccccc) !important;
         }
       }

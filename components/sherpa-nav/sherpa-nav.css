@@ -165,7 +165,11 @@ summary {
   }
 }
 
-/* Collapse content when nav is collapsed */
+/* Collapse content when nav is collapsed (icon-only mode).
+ * !important is required because the nav defines a CSS transition on
+ * ::details-content (height: auto when [open]). The animated value from
+ * an in-progress transition can resist a same-specificity override;
+ * !important ensures the instant visual collapse wins regardless. */
 @container sherpa-nav (max-width: 319px) {
   :is(.nav-section, .nav-subsection)[open]::details-content {
     height: 0 !important;
@@ -290,6 +294,8 @@ summary {
     display: inline-flex;
   }
 
+  /* Same !important rationale as the container query above: fighting the
+   * CSS transition's in-progress animated value on ::details-content. */
   & :is(.nav-section, .nav-subsection):not([data-quick-access="true"])[open]::details-content {
     height: 0 !important;
     opacity: 0 !important;
@@ -534,7 +540,7 @@ summary {
   background: var(--sherpa-surface-app-product-nav-promo-bg, var(--sherpa-surface-container-strong-default));
 }
 .nav-promo[data-dismissed] {
-  display: none !important;
+  display: none;
 }
 .nav-promo .promo-indicator {
   width: 4px;

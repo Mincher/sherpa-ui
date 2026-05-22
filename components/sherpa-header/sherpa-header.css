@@ -72,13 +72,14 @@
   display: none;
       flex-shrink: 0;
 }
-:host([data-open-external="true"]) .open-external-button {
+/* :where() keeps specificity at (0,1,0) so container queries win by source order */
+:host(:where([data-open-external="true"])) .open-external-button {
   display: inline-flex;
 }
-:host([data-menu-button="true"]) .menu-button {
+:host(:where([data-menu-button="true"])) .menu-button {
   display: inline-flex;
 }
-:host([data-open-external="true"][data-menu-button="true"]) .action-divider {
+:host(:where([data-open-external="true"]):where([data-menu-button="true"])) .action-divider {
   display: block;
 }
 :host .action-divider {
@@ -118,8 +119,8 @@
 }
 
 @container sherpa-header (max-width: 150px) {
-  :host .open-external-button { display: none !important; }
-  :host .action-divider { display: none !important; }
+  :host .open-external-button { display: none; }
+  :host .action-divider { display: none; }
 }
 
 @container sherpa-header (max-width: 120px) {

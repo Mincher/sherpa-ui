@@ -8,6 +8,12 @@
  */
 
 /* ── Hidden host ───────────────────────────────────────────────────────── */
+/*
+ * !important is required here because external page CSS targeting the
+ * custom element (e.g. `my-element { display: block }`) sits ABOVE :host
+ * styles in the cascade. Without it, a page author style could accidentally
+ * show a component that carries the [hidden] attribute.
+ */
 :host([hidden]) { display: none !important; }
 
 /* ── Box model reset ───────────────────────────────────────────────────── */

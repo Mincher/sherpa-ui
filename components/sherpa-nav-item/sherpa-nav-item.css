@@ -115,6 +115,12 @@ i {
 :host .nav-item-delete:hover {
   color: var(--sherpa-icon-context-error-default, #bf2c09);
 }
+/*
+ * !important is required here to beat the ::part(delete) rule in sherpa-nav.css
+ * which applies display:inline-flex via ::part() from outside this shadow root.
+ * External ::part() styles participate in the light-DOM cascade and outrank
+ * internal shadow DOM rules — !important is the only way to override them.
+ */
 :host(:is([data-variant="section"], [data-variant="subsection"])) .nav-item-delete {
   display: none !important;
 }

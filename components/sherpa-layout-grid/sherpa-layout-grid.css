@@ -137,5 +137,7 @@
     --maxColCount: 3;
     grid-template-columns: repeat(3, 1fr);
   }
+  /* !important ensures the layout grid owns its children's column span:
+   * ::slotted() rules can be overridden by the slotted element's own light-DOM styles. */
   ::slotted(sherpa-container) { grid-column-end: span 3 !important; }
 }

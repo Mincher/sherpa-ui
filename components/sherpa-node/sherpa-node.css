@@ -152,6 +152,8 @@
 .node-subtype .subtype-select { display: block; width: 100%; }
 
 /* ── Hide the registered <template> nodes from layout. ─────────── */
+/* !important for belt-and-braces UA compatibility — <template> is non-rendering
+ * but ::slotted() context can cause some browsers to lay it out. */
 ::slotted(template) { display: none !important; }
 
 /* Native [hidden] support */

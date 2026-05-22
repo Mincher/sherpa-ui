@@ -800,7 +800,7 @@ tr[data-group-child] td.selection-cell {
   }
 
   .group-metadata {
-    display: none !important;
+    display: none;
   }
 }
 

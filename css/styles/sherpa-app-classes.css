@@ -107,7 +107,7 @@
  * were placed in the wrong or non-existent slot. This rule hides
  * those rejected nodes in the rendered page.
  */
-[data-slot-rejected="true"] { display: none !important; }
+[data-slot-rejected="true"] { display: none; }
 
 
 /* ─── 3. Layout ────────────────────────────────────────────────────── */

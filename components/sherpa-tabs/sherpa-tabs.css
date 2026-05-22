@@ -92,9 +92,9 @@
   flex: 1;
 }
 :host ::slotted(*) {
-  display: none !important;
+  display: none;
 }
 :host ::slotted([data-tab-active]) {
-  display: block !important;
+  display: block;
 }
 

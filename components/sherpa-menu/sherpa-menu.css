@@ -146,7 +146,7 @@
   display: inline-flex;
 }
 :host([data-loading]) ::slotted(*) {
-  display: none !important;
+  display: none;
 }
 
 :host ::slotted(ul) {
@@ -168,6 +168,11 @@
       background-color: var(--_border-color);
       margin: var(--_gap-sm) 0;
 }
+/*
+ * !important is required here because ::slotted(ul:last-child) has specificity
+ * (0,1,1) which beats ::slotted([hidden]) at (0,1,0). Without it, a hidden <ul>
+ * that happens to be the last child would still render.
+ */
 :host ::slotted([hidden]) {
   display: none !important;
 }

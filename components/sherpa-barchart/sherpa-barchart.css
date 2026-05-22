@@ -321,6 +321,7 @@ sherpa-filter-bar {
     color: var(--sherpa-text-inactive-default, #5c5c66);
 
     & .chart-legend-key {
+      /* !important overrides the inline background-color set by JS for series colours */
       background: var(--sherpa-surface-control-tertiary-inactive, #fcfcff0d) !important;
     }
 
