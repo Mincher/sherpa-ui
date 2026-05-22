@@ -134,6 +134,9 @@ export class SherpaPagination extends SherpaElement {
     if (!select) return;
 
     const sizes = this.allowedSizes;
+    if (!this.hasAttribute("data-page-size")) {
+      this.setAttribute("data-page-size", String(sizes[0]));
+    }
     const currentSize = this.pageSize;
     const optTpl = this.$("template.option-tpl");
 
