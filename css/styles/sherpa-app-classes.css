@@ -9,6 +9,7 @@
  *   1. Grouped         — composes adjacent controls into a seamless row or column.
  *   2. Slot Rejection — hides rejected slot content in light DOM.
  *   3. Layout         — page/section grid + container utilities.
+ *   4. Flex Truncate  — progressively hides trailing flex children when container narrows.
  * ───────────────────────────────────────────────────────────────────────
  */
 
@@ -243,4 +244,111 @@
       box-shadow: var(--sherpa-shadow-default-sm);
     }
   }
+}
+
+
+/* ─── 4. Flex Truncate ─────────────────────────────────────────────── */
+
+/**
+ * Flex Truncate — progressively hides trailing flex children when the
+ * container is too narrow (row) or too short (column) to fit them all.
+ *
+ * How it works:
+ *   Each child computes --_ft-threshold as its "overflow amount":
+ *     Row:    K × (min-width  + gap) − gap − 100cqw
+ *     Column: K × (min-height + gap) − gap − 100cqb
+ *   A positive threshold means the child overflows → display: none.
+ *
+ *   • sibling-index() resolves 1-based per-element — no hardcoded breakpoints.
+ *   • 100cqw / 100cqb resolve to the container's inline / block size per child.
+ *   • if(style(--flex-truncate-direction: column)) branches the formula;
+ *     the inherited custom property is set by the [data-direction] selector.
+ *   • if(style(--_ft-threshold > 0px)) is a range query on a registered
+ *     <length> property (Chrome 137+; Safari / Firefox support TBD).
+ *
+ * Usage — row (default):
+ *   <div class="flex-truncate">
+ *     <sherpa-metric …></sherpa-metric>
+ *     <sherpa-metric …></sherpa-metric>
+ *   </div>
+ *
+ * Usage — column (requires explicit height on the container):
+ *   <div class="flex-truncate" data-direction="column" style="height: 400px;">
+ *     <sherpa-metric …></sherpa-metric>
+ *     <sherpa-metric …></sherpa-metric>
+ *   </div>
+ *
+ * Overrides:
+ *   data-min-child-width="220px"                HTML attribute — row min-width
+ *   data-min-child-height="120px"               HTML attribute — column min-height
+ *   style="--flex-truncate-min-width: 220px"    inline CSS (overrides attr)
+ *   style="--flex-truncate-gap: 12px"           gap override
+ *   .my-bar { --flex-truncate-min-width: … }    class override
+ *
+ * Note: data-direction="column" switches container-type to size, which
+ * requires the element to have a defined height. Without one, cqb = 0
+ * and all children remain visible.
+ */
+
+@property --flex-truncate-gap {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 8px;
+}
+
+@property --flex-truncate-min-width {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 180px;
+}
+
+@property --flex-truncate-min-height {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 180px;
+}
+
+@property --_ft-threshold {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.flex-truncate {
+  container-type: inline-size;
+  container-name: flex-truncate;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--flex-truncate-gap);
+  /* Ensures the container never shrinks below one child — last item always visible */
+  min-width: var(--flex-truncate-min-width);
+  /* Direction token — inherited by children for the if() branch below */
+  --flex-truncate-direction: row;
+  /* Attribute bindings — inline style takes precedence if both are set */
+  --flex-truncate-min-width:  attr(data-min-child-width  type(<length>), 180px);
+  --flex-truncate-min-height: attr(data-min-child-height type(<length>), 180px);
+}
+
+/* Column variant — needs size containment so cqb resolves to block height */
+.flex-truncate[data-direction="column"] {
+  flex-direction: column;
+  container-type: size;
+  min-width: unset;
+  min-height: var(--flex-truncate-min-height);
+  --flex-truncate-direction: column;
+}
+
+.flex-truncate > * {
+  order: sibling-index();
+  /* Branch by direction; positive threshold means this child overflows → hide.
+     Row:    K × (min-width  + gap) − gap − container-inline-size
+     Column: K × (min-height + gap) − gap − container-block-size          */
+  --_ft-threshold: if(
+    style(--flex-truncate-direction: column):
+      calc(sibling-index() * (var(--flex-truncate-min-height) + var(--flex-truncate-gap)) - var(--flex-truncate-gap) - 100cqb);
+    else:
+      calc(sibling-index() * (var(--flex-truncate-min-width)  + var(--flex-truncate-gap)) - var(--flex-truncate-gap) - 100cqw)
+  );
+  display: if(style(--_ft-threshold > 0px): none; else: flex);
 }
