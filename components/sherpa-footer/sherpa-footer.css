@@ -25,9 +25,7 @@
              SLOT FOOTER (passthrough content)
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
-}
-:host .footer {
-}
+
 :host .action-bar-footer {
   display: flex;
       align-items: center;
@@ -85,4 +83,4 @@
 :host .card-radio {
   pointer-events: none;
 }
-
+}

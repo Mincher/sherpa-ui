@@ -63,6 +63,17 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   onRender() {
     // Mark as viz component for container CSS targeting
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
+
+    // Sync text content from attributes that were set before the shadow DOM
+    // was ready — onAttributeChanged fires early but $() returns null then.
+    const titleEl = this.$('.header-title');
+    if (titleEl) titleEl.textContent = this.dataset.label || '';
+
+    const valueEl = this.$('.metric-value');
+    if (valueEl) valueEl.textContent = this.getAttribute('value') || '';
+
+    const deltaEl = this.$('.metric-delta');
+    if (deltaEl) deltaEl.textContent = this.dataset.delta || '';
   }
 
   setVisible(visible) {

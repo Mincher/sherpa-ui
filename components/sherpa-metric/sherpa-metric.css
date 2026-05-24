@@ -31,7 +31,7 @@ i {
 :host .header-row {
   display: flex;
       align-items: center;
-      gap: var(--sherpa-space-xs, 4px);
+      gap: var(--sherpa-space-xs, 8px);
       flex-shrink: 0;
 }
 :host([data-show-header="false"]) .header-row {
@@ -77,15 +77,15 @@ i {
       flex-wrap: wrap;
       align-items: stretch;
       gap: var(--sherpa-space-sm, 12px);
-      padding: var(--sherpa-space-xs, 8px);
+      padding: var(--sherpa-space-sm, 12px);
       border-radius: var(--sherpa-border-rounding-base, 6px);
       flex: 1 1 0;
       min-width: 0;
-      min-height: var(--sherpa-size-4xl, 48px);
+      min-height: 80px;
       overflow: visible;
-      background-color: var(--_background-color, var(--sherpa-surface-context-default-subtle-default, #f2f4f8));
+      background-color: var(--_background-color, var(--sherpa-surface-container-secondary-default, #f2f4f8));
       color: var(--_text-color, inherit);
-      container-type: size;
+      container-type: inline-size;
       container-name: metric-card;
 
   &[data-status="info"] {
@@ -130,7 +130,7 @@ i {
       flex-direction: column;
       justify-content: flex-start;
       align-items: flex-start;
-      gap: var(--sherpa-space-2xs, 6px);
+      gap: var(--sherpa-space-2xs, 4px);
       flex: 0 1 auto;
       max-width: 50%;
       order: 1;
@@ -150,7 +150,7 @@ i {
 :host .metric-trend {
   display: flex;
       align-items: center;
-      gap: var(--sherpa-space-2xs, 6px);
+      gap: var(--sherpa-space-2xs, 4px);
       flex: 0 0 auto;
 }
 :host .metric-trend-icon {
@@ -187,6 +187,7 @@ i {
       align-items: stretch;
       align-self: stretch;
       justify-content: flex-start;
+      min-height: 32px;
 }
 :host .metric-sparkline > sherpa-sparkline {
   flex: 1 1 auto;
@@ -201,28 +202,7 @@ i {
   :host .metric-sparkline { display: none; }
 }
 
-@container metric-card (min-height: 200px) {
-  :host .metric-card {
-    flex-wrap: wrap;
-    align-content: flex-start;
-    row-gap: var(--sherpa-space-sm, 12px);
-  }
-
-  :host .metric-labels {
-    flex: 1 1 100%;
-    max-width: none;
-    width: 100%;
-  }
-
-  :host .metric-sparkline {
-    flex: 1 1 100%;
-    min-width: 0;
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@container metric-card (max-aspect-ratio: 1) {
+@container metric-card (max-width: 240px) {
   :host .metric-card { flex-direction: column; }
 
   :host .metric-sparkline {
@@ -235,8 +215,4 @@ i {
     max-width: none;
     width: 100%;
   }
-}
-
-@container metric-card (min-aspect-ratio: 1.001) {
-  :host .metric-card { flex-direction: row; }
 }
