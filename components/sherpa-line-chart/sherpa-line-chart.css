@@ -27,39 +27,11 @@
  */
 
 /* ================================================================
-   Registered properties for rise animation
-   ================================================================ */
-@property --_progress-start {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 1;
-}
-
-@property --_progress-end {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 1;
-}
-
-@keyframes rise-start {
-  from { --_progress-start: 0; }
-  to   { --_progress-start: 1; }
-}
-
-@keyframes rise-end {
-  from { --_progress-end: 0; }
-  to   { --_progress-end: 1; }
-}
-
-/* ================================================================
    :host — base layout
    ================================================================ */
 :host {
   --_min: 0;
   --_range: 1;
-  --_anim-duration: var(--sherpa-motion-duration-slow, 0.6s);
-  --_anim-easing: var(--sherpa-motion-easing-default, ease);
-  --_ripple-delay-step: 0.03s;
   --_stroke-width: 1.5px;
   display: flex;
   flex-direction: column;
@@ -185,7 +157,6 @@
       position: relative;
       flex: 1 1 0%;
       min-width: 0;
-      animation: rise-start var(--_anim-duration) var(--_anim-easing) calc(var(--_ripple-delay-step) * var(--_i)) both, rise-end var(--_anim-duration) var(--_anim-easing) calc(var(--_ripple-delay-step) * (var(--_i) + 1)) both;
   
       /* Stroke: parallelogram clipped to the segment's top edge, ±stroke-width
          in the Y direction. Adjacent segments share the boundary value so
@@ -196,10 +167,10 @@
         inset: 0;
         background: currentColor;
         clip-path: polygon(
-          0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% - var(--_stroke-width)),
-          100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% - var(--_stroke-width)),
-          100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% + var(--_stroke-width)),
-          0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% + var(--_stroke-width))
+          0%   calc(100% - var(--_n-start) * 1% - var(--_stroke-width)),
+          100% calc(100% - var(--_n-end)   * 1% - var(--_stroke-width)),
+          100% calc(100% - var(--_n-end)   * 1% + var(--_stroke-width)),
+          0%   calc(100% - var(--_n-start) * 1% + var(--_stroke-width))
         );
       }
   
@@ -209,7 +180,7 @@
         inset: 0;
         background: currentColor;
         opacity: 0.15;
-        clip-path: polygon(0% calc(100% - var(--_n-start) * var(--_progress-start) * 1%), 100% calc(100% - var(--_n-end) * var(--_progress-end) * 1%), 100% 100%, 0% 100%);
+        clip-path: polygon(0% calc(100% - var(--_n-start) * 1%), 100% calc(100% - var(--_n-end) * 1%), 100% 100%, 0% 100%);
         display: none;
       }
   
@@ -231,12 +202,12 @@
       transition: transform var(--sherpa-motion-transition-fast, 0.15s ease-out);
   
       &[data-role="start"] {
-        top: calc(100% - var(--_n-start) * var(--_progress-start) * 1%);
+        top: calc(100% - var(--_n-start) * 1%);
         inset-inline-start: 0;
       }
   
       &[data-role="end"] {
-        top: calc(100% - var(--_n-end) * var(--_progress-end) * 1%);
+        top: calc(100% - var(--_n-end) * 1%);
         inset-inline-start: 100%;
       }
   
