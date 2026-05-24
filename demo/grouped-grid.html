@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en" data-theme="apex-2-purple">
+  <head>
+    <title>Grouped grid — sherpa-layout-grid demo</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&family=Open+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link href="../css/styles/index.css" rel="stylesheet" />
+    <script type="module" src="../components/sherpa-layout-grid/sherpa-layout-grid.js"></script>
+    <script type="module" src="../components/sherpa-container/sherpa-container.js"></script>
+    <script type="module" src="../components/sherpa-header/sherpa-header.js"></script>
+    <script type="module" src="../components/sherpa-metric/sherpa-metric.js"></script>
+    <script type="module" src="../components/sherpa-list/sherpa-list.js"></script>
+    <script type="module" src="../components/sherpa-list-item/sherpa-list-item.js"></script>
+    <script type="module" src="../components/sherpa-button/sherpa-button.js"></script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        background: var(--sherpa-surface-page-default);
+        font-family: var(--sherpa-fonts-context-body, "Open Sans", sans-serif);
+      }
+
+      /*
+       * KPI wrapper — CSS subgrid.
+       * grid-template-columns/rows: subgrid inherits the outer layout-grid's
+       * track sizes directly, so tile widths and row heights are always
+       * determined by the parent's 1fr columns and fixed row-height — they
+       * never change when the gap is toggled.
+       *
+       * Only the inter-cell gap value changes between states:
+       *   ungrouped → 8px (from this rule)
+       *   grouped   → 0   (from .kpi-wrapper.grouped[data-grid] below)
+       */
+      .kpi-wrapper {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-template-rows: subgrid;
+        gap: var(--sherpa-space-xs, 8px);
+      }
+
+      /* Each KPI tile spans 4 of the parent's 12 columns → 3 per row. */
+      .kpi-wrapper > sherpa-container {
+        grid-column: span 4;
+      }
+
+      /*
+       * Grouped state: collapse gap, strip individual tile chrome.
+       * .grouped supplies border, border-radius, overflow:hidden and
+       * --_cg-border-width/radius: 0 via CSS custom property inheritance.
+       */
+      .kpi-wrapper.grouped[data-grid] {
+        gap: 0;
+      }
+
+      .kpi-wrapper.grouped[data-grid] > sherpa-container {
+        border: none;
+        border-radius: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <sherpa-layout-grid
+      data-heading="Network overview"
+      data-row-height="150px"
+      data-fill="viewport"
+    >
+      <!-- Toggle button forwarded to the view-header's toolbar -->
+      <sherpa-button
+        slot="header-actions"
+        id="group-toggle"
+        data-variant="secondary"
+        data-label="Group KPIs"
+        data-icon-start="fa-solid fa-border-all"
+      ></sherpa-button>
+
+      <!-- ── KPI tiles ─────────────────────────────────────────────
+           Spans full grid width. grid-row: span 2 gives it 2 outer rows
+           (300px total) — enough for two rows of 120px KPI containers.
+           --_cg-columns drives the column count when .grouped[data-grid]
+           is toggled on.
+      ────────────────────────────────────────────────────────────── -->
+      <div
+        id="kpi-group"
+        class="kpi-wrapper"
+        style="grid-column: 1 / -1; grid-row: span 2;"
+      >
+        <sherpa-container>
+          <sherpa-header slot="header" data-title="Devices online"></sherpa-header>
+          <div style="padding: var(--sherpa-space-default, 16px);">
+            <sherpa-metric
+              data-label="Devices online"
+              value="1,284"
+              data-delta="+12"
+              data-trend="up"
+            ></sherpa-metric>
+          </div>
+        </sherpa-container>
+
+        <sherpa-container>
+          <sherpa-header slot="header" data-title="Open alerts"></sherpa-header>
+          <div style="padding: var(--sherpa-space-default, 16px);">
+            <sherpa-metric
+              data-label="Open alerts"
+              value="7"
+              data-status="critical"
+            ></sherpa-metric>
+          </div>
+        </sherpa-container>
+
+        <sherpa-container>
+          <sherpa-header slot="header" data-title="P95 latency"></sherpa-header>
+          <div style="padding: var(--sherpa-space-default, 16px);">
+            <sherpa-metric
+              data-label="P95 latency"
+              value="142ms"
+              data-delta="−8ms"
+              data-trend="down"
+              data-status="success"
+            ></sherpa-metric>
+          </div>
+        </sherpa-container>
+
+        <sherpa-container>
+          <sherpa-header slot="header" data-title="Uptime"></sherpa-header>
+          <div style="padding: var(--sherpa-space-default, 16px);">
+            <sherpa-metric
+              data-label="30-day uptime"
+              value="99.94%"
+              data-status="success"
+            ></sherpa-metric>
+          </div>
+        </sherpa-container>
+
+        <sherpa-container>
+          <sherpa-header slot="header" data-title="Throughput"></sherpa-header>
+          <div style="padding: var(--sherpa-space-default, 16px);">
+            <sherpa-metric
+              data-label="Requests / sec"
+              value="4.2k"
+              data-delta="+380"
+              data-trend="up"
+            ></sherpa-metric>
+          </div>
+        </sherpa-container>
+
+        <sherpa-container>
+          <sherpa-header slot="header" data-title="Error rate"></sherpa-header>
+          <div style="padding: var(--sherpa-space-default, 16px);">
+            <sherpa-metric
+              data-label="5xx errors"
+              value="0.12%"
+              data-delta="−0.04%"
+              data-trend="down"
+              data-status="success"
+            ></sherpa-metric>
+          </div>
+        </sherpa-container>
+      </div>
+
+      <!-- ── Traffic chart ─────────────────────────────────────── -->
+      <sherpa-container data-variant="resizable" data-col-span="9" data-row-span="2">
+        <sherpa-header
+          slot="header"
+          data-title="Traffic"
+          data-description="Requests over the last 7 days"
+        ></sherpa-header>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--sherpa-text-default-meta, #767690);
+            font-size: 13px;
+          "
+        >
+          Chart placeholder
+        </div>
+      </sherpa-container>
+
+      <!-- ── Activity feed ─────────────────────────────────────── -->
+      <sherpa-container data-variant="resizable" data-col-span="3" data-row-span="2">
+        <sherpa-header slot="header" data-title="Recent activity"></sherpa-header>
+        <sherpa-list>
+          <sherpa-list-item
+            data-label="Deploy succeeded"
+            data-description="v2.4.1 — 2 min ago"
+            data-icon="fa-solid fa-rocket"
+          ></sherpa-list-item>
+          <sherpa-list-item
+            data-label="Alert resolved"
+            data-description="api-gateway — 8 min ago"
+            data-icon="fa-solid fa-circle-check"
+          ></sherpa-list-item>
+          <sherpa-list-item
+            data-label="New device joined"
+            data-description="orion-007 — 12 min ago"
+            data-icon="fa-solid fa-plus"
+          ></sherpa-list-item>
+          <sherpa-list-item
+            data-label="Config pushed"
+            data-description="edge-cluster-3 — 21 min ago"
+            data-icon="fa-solid fa-sliders"
+          ></sherpa-list-item>
+          <sherpa-list-item
+            data-label="Cert renewed"
+            data-description="cdn.example.com — 1 hr ago"
+            data-icon="fa-solid fa-certificate"
+          ></sherpa-list-item>
+        </sherpa-list>
+      </sherpa-container>
+    </sherpa-layout-grid>
+
+    <script type="module">
+      const kpiGroup  = document.getElementById('kpi-group');
+      const toggleBtn = document.getElementById('group-toggle');
+
+      toggleBtn.addEventListener('button-click', () => {
+        const grouped = kpiGroup.classList.toggle('grouped');
+        kpiGroup.toggleAttribute('data-grid', grouped);
+        toggleBtn.toggleAttribute('data-active', grouped);
+        toggleBtn.dataset.label = grouped ? 'Ungroup KPIs' : 'Group KPIs';
+      });
+    </script>
+  </body>
+</html>

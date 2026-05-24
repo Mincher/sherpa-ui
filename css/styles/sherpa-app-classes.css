@@ -25,6 +25,7 @@
  * radiusless automatically.
  *
  * Usage:
+ *   <!-- Horizontal row (default) -->
  *   <div class="grouped">
  *     <input      … />
  *     <sherpa-button … />
@@ -36,8 +37,20 @@
  *     <sherpa-button … />
  *   </div>
  *
- * Rounding is automatic — first and last visible children receive corner
- * rounding; hidden ([hidden]) children are correctly excluded via :has().
+ *   <!-- 2D grid — data-grid, column count via --_cg-columns (default 3) -->
+ *   <div class="grouped" data-grid style="--_cg-columns: 3">
+ *     <sherpa-button … />
+ *     …9 or more children…
+ *   </div>
+ *
+ * Corner rounding is always driven by the wrapper's border-radius +
+ * overflow:hidden — children are radiusless via --_cg-border-radius: 0.
+ * For grid, this naturally produces:
+ *   first child              → top-left rounded only
+ *   last child on row 1      → top-right rounded only
+ *   first child on last row  → bottom-left rounded only
+ *   last child               → bottom-right rounded only
+ *   all other cells          → no rounding
  */
 
 .grouped {
@@ -68,6 +81,23 @@
     vertical-align: top;
     --_cg-sep-inline: 0px;
     --_cg-sep-block: var(--sherpa-border-width-xs, 1px);
+  }
+
+  /* ── Grid variant ─────────────────────────────────────────────────── */
+  /*
+   * overflow:hidden + border-radius on the wrapper clips children to the
+   * wrapper's corner curve, giving the four corner cells their correct
+   * single-corner rounding automatically — no per-child selectors needed.
+   *
+   * Column count: set --_cg-columns on the wrapper (default 3).
+   * Example: style="--_cg-columns: 4"
+   */
+  &[data-grid] {
+    display: grid;
+    grid-template-columns: repeat(var(--_cg-columns, 3), 1fr);
+    /* Flex-direction separator tokens are not applicable to grid */
+    --_cg-sep-inline: 0px;
+    --_cg-sep-block: 0px;
   }
 
   /* ── Per-child position tokens (inherit into shadow DOM) ────────── */

@@ -83,7 +83,6 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   onRender() {
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
-    if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);
 
     this.#titleEl     = this.$('.chart-title');
     this.#yLabels     = this.$$('.y-label');

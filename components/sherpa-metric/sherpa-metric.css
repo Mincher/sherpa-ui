@@ -79,9 +79,9 @@ i {
       gap: var(--sherpa-space-sm, 12px);
       padding: var(--sherpa-space-sm, 12px);
       border-radius: var(--sherpa-border-rounding-base, 6px);
-      flex: 1 1 0;
+      flex: 0 0 auto;
       min-width: 0;
-      min-height: 80px;
+      height: var(--sherpa-size-6xl, 64px);
       overflow: visible;
       background-color: var(--_background-color, var(--sherpa-surface-container-secondary-default, #f2f4f8));
       color: var(--_text-color, inherit);
