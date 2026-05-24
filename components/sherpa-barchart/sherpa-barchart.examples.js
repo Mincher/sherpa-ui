@@ -48,11 +48,22 @@ const CAMPAIGNS = [
   { category: 'Newsletter relaunch', value: 318 },
 ];
 
-const setRows = (root, sel, rows) => root.querySelector(sel)?.setData?.({ rows });
+const CAT_VALUE_COLS = [
+  { field: 'category', name: 'Category', type: 'string' },
+  { field: 'value',    name: 'Value',    type: 'number' },
+];
+
+const CAT_REGION_VALUE_COLS = [
+  { field: 'category', name: 'Month',   type: 'string' },
+  { field: 'region',   name: 'Region',  type: 'string' },
+  { field: 'value',    name: 'Revenue', type: 'number' },
+];
+
+const setData = (root, columns, rows) => root.querySelector('sherpa-barchart')?.setData?.({ columns, rows });
 
 export default {
-  'vertical-traffic':  (root) => setRows(root, 'sherpa-barchart', TRAFFIC_BY_SOURCE),
-  'horizontal-devices': (root) => setRows(root, 'sherpa-barchart', DEVICES_BY_REGION),
-  'stacked-revenue':   (root) => setRows(root, 'sherpa-barchart', REVENUE_BY_REGION),
-  'sorted-campaigns':  (root) => setRows(root, 'sherpa-barchart', CAMPAIGNS),
+  'vertical-traffic':   (root) => setData(root, CAT_VALUE_COLS,        TRAFFIC_BY_SOURCE),
+  'horizontal-devices': (root) => setData(root, CAT_VALUE_COLS,        DEVICES_BY_REGION),
+  'stacked-revenue':    (root) => setData(root, CAT_REGION_VALUE_COLS, REVENUE_BY_REGION),
+  'sorted-campaigns':   (root) => setData(root, CAT_VALUE_COLS,        CAMPAIGNS),
 };

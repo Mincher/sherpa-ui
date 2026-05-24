@@ -21,11 +21,16 @@ const PLANS = [
   { category: 'Enterprise', value:   42 },
 ];
 
-const setRows = (root, rows) =>
-  root.querySelector('sherpa-donut-chart')?.setData?.({ rows });
+const CAT_VALUE_COLS = [
+  { field: 'category', name: 'Category', type: 'string' },
+  { field: 'value',    name: 'Value',    type: 'number' },
+];
+
+const setData = (root, rows) =>
+  root.querySelector('sherpa-donut-chart')?.setData?.({ columns: CAT_VALUE_COLS, rows });
 
 export default {
-  'traffic-sources':     (root) => setRows(root, TRAFFIC),
-  'alerts-by-severity':  (root) => setRows(root, ALERTS),
-  'plan-distribution':   (root) => setRows(root, PLANS),
+  'traffic-sources':    (root) => setData(root, TRAFFIC),
+  'alerts-by-severity': (root) => setData(root, ALERTS),
+  'plan-distribution':  (root) => setData(root, PLANS),
 };
