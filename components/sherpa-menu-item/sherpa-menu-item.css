@@ -24,9 +24,6 @@
 :host(:focus-visible) {
   background-color: var(--sherpa-surface-control-hover, #fafafa);
 }
-:host([checked]) {
-  background-color: var(--sherpa-surface-control-active-default, #f8ebff);
-}
 :host([disabled]) {
   color: var(--sherpa-text-inactive-default, #5c5c66);
       cursor: default;

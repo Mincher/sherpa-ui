@@ -66,6 +66,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   #data = null;
   #contentData = null;
+  #prevSeriesData = null;
   #titleEl;
   #yLabels;
   #chartArea;
@@ -399,38 +400,68 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       this.#xAxis.appendChild(span);
     }
 
-    // ── Series (segment-based, same approach as sparkline) ─────
-    this.#seriesLayer.replaceChildren();
+    // ── Series (smart diff — only replace changed/new shapes) ───
+    // Unchanged shapes are kept in place so their CSS animation does not
+    // re-fire. Shapes whose values changed, or brand-new shapes, are
+    // created fresh so the rise animation plays only for those segments.
+    const prevSeries = this.#prevSeriesData;
 
     series.forEach((s, si) => {
       const color = s.color || DEFAULT_COLORS[si % DEFAULT_COLORS.length];
-      const seriesEl = this.#seriesTpl.content.firstElementChild.cloneNode(true);
+      const prev = prevSeries?.[si];
+
+      // Reuse existing .series element or create a new one
+      let seriesEl = this.#seriesLayer.children[si];
+      if (!seriesEl) {
+        seriesEl = this.#seriesTpl.content.firstElementChild.cloneNode(true);
+        this.#seriesLayer.appendChild(seriesEl);
+      }
       seriesEl.style.color = color;
 
-      // Clone exactly one .shape per segment and set data values directly as
-      // inline custom properties — CSS normalises via calc() and renders the
-      // clip-path stroke and area fill from --_v-start / --_v-end.
       const segmentCount = Math.max(s.values.length - 1, 0);
-      for (let i = 0; i < segmentCount; i++) {
-        const shape = this.#shapeTpl.content.firstElementChild.cloneNode(true);
 
-        // Data values for CSS normalisation
-        shape.style.setProperty('--_v-start', s.values[i]);
-        shape.style.setProperty('--_v-end',   s.values[i + 1]);
-        // Segment index drives the animation ripple delay
+      for (let i = 0; i < segmentCount; i++) {
+        const vStart = s.values[i];
+        const vEnd   = s.values[i + 1];
+        const unchanged = prev && prev.values[i] === vStart && prev.values[i + 1] === vEnd;
+        const existing  = seriesEl.children[i];
+
+        if (unchanged && existing) {
+          // Segment is identical — keep element as-is, no animation
+          continue;
+        }
+
+        // Build replacement shape (new element triggers CSS rise animation)
+        const shape = this.#shapeTpl.content.firstElementChild.cloneNode(true);
+        shape.style.setProperty('--_v-start', vStart);
+        shape.style.setProperty('--_v-end',   vEnd);
         shape.style.setProperty('--_i', i);
 
-        // Tooltips on the hover-circle points
         const startPt = shape.querySelector('.point[data-role="start"]');
         const endPt   = shape.querySelector('.point[data-role="end"]');
         if (i === 0 && startPt) startPt.title = `${s.name}: ${this.#formatAxisValue(s.values[0])}`;
         if (endPt) endPt.title = `${s.name}: ${this.#formatAxisValue(s.values[i + 1])}`;
 
-        seriesEl.appendChild(shape);
+        if (existing) {
+          seriesEl.replaceChild(shape, existing);
+        } else {
+          seriesEl.appendChild(shape);
+        }
       }
 
-      this.#seriesLayer.appendChild(seriesEl);
+      // Remove any extra shapes left over from a shorter previous dataset
+      while (seriesEl.children.length > segmentCount) {
+        seriesEl.removeChild(seriesEl.lastChild);
+      }
     });
+
+    // Remove extra series elements left over from a dataset with more series
+    while (this.#seriesLayer.children.length > series.length) {
+      this.#seriesLayer.removeChild(this.#seriesLayer.lastChild);
+    }
+
+    // Snapshot current series values for the next diff
+    this.#prevSeriesData = series.map(s => ({ ...s, values: [...s.values] }));
 
     // ── Legend ───────────────────────────────────────────────────
     this.#legendEl.replaceChildren();
