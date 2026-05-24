@@ -30,7 +30,6 @@ import { formatFieldName, cleanTitleBase } from '../utilities/format-utils.js';
 const MAX_SEGMENTS = 8;
 const OTHER_COLOR = '#9e9ea8';
 const MAX_SHAPE_SLOTS = 12;
-const MAX_POINT_SLOTS = MAX_SHAPE_SLOTS + 1;
 
 const DEFAULT_COLORS = [
   '#7b1ce6', // purple
@@ -74,6 +73,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   #xAxis;
   #legendEl;
   #seriesTpl;
+  #shapeTpl;
   #legendItemTpl;
   #xLabelTpl;
   #filterMenuTpl = null;
@@ -94,6 +94,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     // Cloning prototypes live inside the shadow root
     const root = this.shadowRoot;
     this.#seriesTpl = root.querySelector('template.series-tpl');
+    this.#shapeTpl   = root.querySelector('template.shape-tpl');
     this.#legendItemTpl = root.querySelector('template.legend-item-tpl');
     this.#xLabelTpl = root.querySelector('template.x-label-tpl');
 
@@ -401,49 +402,32 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     // ── Series (segment-based, same approach as sparkline) ─────
     this.#seriesLayer.replaceChildren();
 
-    // Chart area pixel dimensions for slope compensation
-    const areaRect = this.#chartArea?.getBoundingClientRect();
-    const chartW = areaRect?.width || 1;
-    const chartH = areaRect?.height || 1;
-
     series.forEach((s, si) => {
       const color = s.color || DEFAULT_COLORS[si % DEFAULT_COLORS.length];
       const seriesEl = this.#seriesTpl.content.firstElementChild.cloneNode(true);
       seriesEl.style.color = color;
 
-      // Set raw data values as CSS custom properties —
-      // CSS normalises and computes clip-path polygons
-      for (let i = 0; i < MAX_POINT_SLOTS; i++) {
-        if (i < s.values.length) {
-          seriesEl.style.setProperty(`--_v${i}`, s.values[i]);
-        }
-      }
-
-      // Toggle shape visibility and set slope correction factors
-      const shapes = seriesEl.querySelectorAll('.shape');
+      // Clone exactly one .shape per segment and set data values directly as
+      // inline custom properties — CSS normalises via calc() and renders the
+      // clip-path stroke and area fill from --_v-start / --_v-end.
       const segmentCount = Math.max(s.values.length - 1, 0);
-      const yRange = yMax - yMin || 1;
-      shapes.forEach((shape, idx) => {
-        shape.toggleAttribute('hidden', idx >= segmentCount);
+      for (let i = 0; i < segmentCount; i++) {
+        const shape = this.#shapeTpl.content.firstElementChild.cloneNode(true);
 
-        if (idx < segmentCount) {
-          // Slope factor: hypot(dx,dy)/dx keeps perpendicular width constant
-          const nStart = (s.values[idx]     - yMin) / yRange * 100;
-          const nEnd   = (s.values[idx + 1] - yMin) / yRange * 100;
-          const dx = chartW / segmentCount;
-          const dy = Math.abs(nEnd - nStart) / 100 * chartH;
-          const factor = Math.hypot(dx, dy) / dx;
-          shape.style.setProperty('--_slope-factor', factor.toFixed(3));
+        // Data values for CSS normalisation
+        shape.style.setProperty('--_v-start', s.values[i]);
+        shape.style.setProperty('--_v-end',   s.values[i + 1]);
+        // Segment index drives the animation ripple delay
+        shape.style.setProperty('--_i', i);
 
-          // Set tooltips on visible points
-          if (idx === 0) {
-            const startPt = shape.querySelector('.point[data-role="start"]');
-            if (startPt) startPt.title = `${s.name}: ${this.#formatAxisValue(s.values[0])}`;
-          }
-          const endPt = shape.querySelector('.point[data-role="end"]');
-          if (endPt) endPt.title = `${s.name}: ${this.#formatAxisValue(s.values[idx + 1])}`;
-        }
-      });
+        // Tooltips on the hover-circle points
+        const startPt = shape.querySelector('.point[data-role="start"]');
+        const endPt   = shape.querySelector('.point[data-role="end"]');
+        if (i === 0 && startPt) startPt.title = `${s.name}: ${this.#formatAxisValue(s.values[0])}`;
+        if (endPt) endPt.title = `${s.name}: ${this.#formatAxisValue(s.values[i + 1])}`;
+
+        seriesEl.appendChild(shape);
+      }
 
       this.#seriesLayer.appendChild(seriesEl);
     });

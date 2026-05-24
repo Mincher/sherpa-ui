@@ -14,12 +14,13 @@
  * ── Architecture notes ────────────────────────────────────────
  * HTML — chart-body wraps y-axis (6 labels) + chart-panel (chart-area
  *        with grid-lines + series-layer, plus x-axis).
- *        series-tpl prototype cloned per series: contains 12 shapes
- *        with start/end point markers.
+ *        series-tpl prototype cloned per series (empty .series div).
+ *        shape-tpl prototype cloned once per segment by JS, with
+ *        --_v-start, --_v-end, and --_i set as inline custom properties.
  * CSS  — Grid background via linear-gradient. Each shape's ::after is
  *        the stroke line, ::before is the area fill (hidden unless area
- *        variant). Shape index selectors map --_v0..--_v12 to
- *        --_v-start/--_v-end. CSS normalises and computes clip-path.
+ *        variant). No [data-index] mapping — values are set directly by JS.
+ *        CSS normalises and computes clip-path.
  *        Rise animation via @property --_progress-start/end.
  * JS   — setData() sets raw values as CSS custom properties on each
  *        cloned series element. Zero polygon computation in JS.
@@ -59,7 +60,7 @@
   --_anim-duration: var(--sherpa-motion-duration-slow, 0.6s);
   --_anim-easing: var(--sherpa-motion-easing-default, ease);
   --_ripple-delay-step: 0.03s;
-  --_stroke-width: 0.5px;
+  --_stroke-width: 1.5px;
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-space-base, 16px);
@@ -177,21 +178,29 @@
       display: flex;
       gap: 0;
 }
+
 :host .shape {
   --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
       --_n-end: calc((var(--_v-end) - var(--_min)) / var(--_range) * 100);
-      --_offset: calc(var(--_stroke-width) * var(--_slope-factor, 1));
       position: relative;
       flex: 1 1 0%;
       min-width: 0;
       animation: rise-start var(--_anim-duration) var(--_anim-easing) calc(var(--_ripple-delay-step) * var(--_i)) both, rise-end var(--_anim-duration) var(--_anim-easing) calc(var(--_ripple-delay-step) * (var(--_i) + 1)) both;
   
+      /* Stroke: parallelogram clipped to the segment's top edge, ±stroke-width
+         in the Y direction. Adjacent segments share the boundary value so
+         clips join seamlessly. */
       &::after {
         content: '';
         position: absolute;
         inset: 0;
         background: currentColor;
-        clip-path: polygon(0% calc(100% - var(--_n-start) * var(--_progress-start) * 1% - var(--_offset)), 100% calc(100% - var(--_n-end) * var(--_progress-end) * 1% - var(--_offset)), 100% calc(100% - var(--_n-end) * var(--_progress-end) * 1% + var(--_offset)), 0% calc(100% - var(--_n-start) * var(--_progress-start) * 1% + var(--_offset)));
+        clip-path: polygon(
+          0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% - var(--_stroke-width)),
+          100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% - var(--_stroke-width)),
+          100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% + var(--_stroke-width)),
+          0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% + var(--_stroke-width))
+        );
       }
   
       &::before {
@@ -208,42 +217,6 @@
 }
 :host([data-variant="area"]) .shape::before {
   display: block;
-}
-:host .shape[data-index="0"] {
-  --_i: 0; --_v-start: var(--_v0); --_v-end: var(--_v1);
-}
-:host .shape[data-index="1"] {
-  --_i: 1; --_v-start: var(--_v1); --_v-end: var(--_v2);
-}
-:host .shape[data-index="2"] {
-  --_i: 2; --_v-start: var(--_v2); --_v-end: var(--_v3);
-}
-:host .shape[data-index="3"] {
-  --_i: 3; --_v-start: var(--_v3); --_v-end: var(--_v4);
-}
-:host .shape[data-index="4"] {
-  --_i: 4; --_v-start: var(--_v4); --_v-end: var(--_v5);
-}
-:host .shape[data-index="5"] {
-  --_i: 5; --_v-start: var(--_v5); --_v-end: var(--_v6);
-}
-:host .shape[data-index="6"] {
-  --_i: 6; --_v-start: var(--_v6); --_v-end: var(--_v7);
-}
-:host .shape[data-index="7"] {
-  --_i: 7; --_v-start: var(--_v7); --_v-end: var(--_v8);
-}
-:host .shape[data-index="8"] {
-  --_i: 8; --_v-start: var(--_v8); --_v-end: var(--_v9);
-}
-:host .shape[data-index="9"] {
-  --_i: 9; --_v-start: var(--_v9); --_v-end: var(--_v10);
-}
-:host .shape[data-index="10"] {
-  --_i: 10; --_v-start: var(--_v10); --_v-end: var(--_v11);
-}
-:host .shape[data-index="11"] {
-  --_i: 11; --_v-start: var(--_v11); --_v-end: var(--_v12);
 }
 :host .point {
   position: absolute;
@@ -269,7 +242,7 @@
   
       &:hover { transform: scale(1.5); }
 }
-:host .shape:not([data-index="0"]) > .point[data-role="start"] {
+:host .shape:not(:first-child) > .point[data-role="start"] {
   display: none;
 }
 :host .x-axis {

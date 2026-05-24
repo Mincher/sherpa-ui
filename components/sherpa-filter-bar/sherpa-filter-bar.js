@@ -513,7 +513,6 @@ export class SherpaFilterBar extends SherpaElement {
     chip.setAttribute("data-variant", "secondary");
     chip.setAttribute("data-menu-scope", "none");
     chip.setAttribute("data-size", "small");
-    chip.setAttribute("data-position", "start");
     chip.dataset.label = label;
     chip.dataset.defaultLabel = label;
 
@@ -536,7 +535,6 @@ export class SherpaFilterBar extends SherpaElement {
       menuBtn.setAttribute("data-size", "small");
       menuBtn.setAttribute("data-separator", "");
       menuBtn.setAttribute("data-variant", "secondary");
-      menuBtn.setAttribute("data-position", dismissable ? "middle" : "end");
       menuBtn.setAttribute("aria-label", "Filter options");
       group.appendChild(menuBtn);
     }
@@ -548,7 +546,6 @@ export class SherpaFilterBar extends SherpaElement {
       dismiss.setAttribute("data-action", "dismiss");
       dismiss.setAttribute("data-separator", "");
       dismiss.setAttribute("data-size", "small");
-      dismiss.setAttribute("data-position", "end");
       dismiss.setAttribute("data-variant", "secondary");
       dismiss.setAttribute("aria-label", "Remove filter");
       group.appendChild(dismiss);

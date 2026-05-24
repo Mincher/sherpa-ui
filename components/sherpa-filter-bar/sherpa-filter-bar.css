@@ -126,14 +126,20 @@
     border-color: var(--sherpa-border-control-active-default, #0060df);
   }
 
-  & > [data-position="start"] {
+  /* Visible children default to full rounding on both sides */
+  & > :not([hidden]) {
     --_grouped-rounding-start: var(--sherpa-border-rounding-base, 4px);
-    --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
+    --_grouped-rounding-end:   var(--sherpa-border-rounding-base, 4px);
   }
 
-  & > [data-position="end"] {
+  /* Not the visual start — a visible sibling precedes it */
+  & > :not([hidden]) ~ :not([hidden]) {
     --_grouped-rounding-start: var(--sherpa-border-rounding-none, 0);
-    --_grouped-rounding-end: var(--sherpa-border-rounding-base, 4px);
+  }
+
+  /* Not the visual end — a visible sibling follows it */
+  & > :not([hidden]):has(~ :not([hidden])) {
+    --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
   }
 }
 

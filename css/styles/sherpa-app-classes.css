@@ -36,7 +36,8 @@
  *     <sherpa-button … />
  *   </div>
  *
- * No position classes needed — just place elements in the wrapper.
+ * Rounding is automatic — first and last visible children receive corner
+ * rounding; hidden ([hidden]) children are correctly excluded via :has().
  */
 
 .grouped {
@@ -72,24 +73,23 @@
   /* ── Per-child position tokens (inherit into shadow DOM) ────────── */
 
   & > * {
-    --_grouped-rounding-start: var(--sherpa-border-rounding-base, 4px);
-    --_grouped-rounding-end: var(--sherpa-border-rounding-base, 4px);
     --_grouped-spacing-offset: -1px;
   }
 
-  & > [data-position="start"] {
+  /* Visible children default to full rounding on both sides */
+  & > :not([hidden]) {
     --_grouped-rounding-start: var(--sherpa-border-rounding-base, 4px);
-    --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
+    --_grouped-rounding-end:   var(--sherpa-border-rounding-base, 4px);
   }
 
-  & > [data-position="middle"] {
+  /* Not the visual start — a visible sibling precedes it */
+  & > :not([hidden]) ~ :not([hidden]) {
     --_grouped-rounding-start: var(--sherpa-border-rounding-none, 0);
-    --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
   }
 
-  & > [data-position="end"] {
-    --_grouped-rounding-start: var(--sherpa-border-rounding-none, 0);
-    --_grouped-rounding-end: var(--sherpa-border-rounding-base, 4px);
+  /* Not the visual end — a visible sibling follows it */
+  & > :not([hidden]):has(~ :not([hidden])) {
+    --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
   }
 }
 

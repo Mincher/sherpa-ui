@@ -68,59 +68,21 @@
     <div class="chart-legend"></div>
   </div>
   <sherpa-tooltip></sherpa-tooltip>
-  <!-- Cloning prototype — one per data series, 12 shape segments inside -->
+  <!-- Cloning prototype — one per data series; .shape elements injected by JS -->
   <template class="series-tpl">
-    <div class="series">
-      <div class="shape" data-index="0">
-        <span class="point" data-role="start" data-index="0"></span>
-        <span class="point" data-role="end" data-index="1"></span>
-      </div>
-      <div class="shape" data-index="1">
-        <span class="point" data-role="start" data-index="1"></span>
-        <span class="point" data-role="end" data-index="2"></span>
-      </div>
-      <div class="shape" data-index="2">
-        <span class="point" data-role="start" data-index="2"></span>
-        <span class="point" data-role="end" data-index="3"></span>
-      </div>
-      <div class="shape" data-index="3">
-        <span class="point" data-role="start" data-index="3"></span>
-        <span class="point" data-role="end" data-index="4"></span>
-      </div>
-      <div class="shape" data-index="4">
-        <span class="point" data-role="start" data-index="4"></span>
-        <span class="point" data-role="end" data-index="5"></span>
-      </div>
-      <div class="shape" data-index="5">
-        <span class="point" data-role="start" data-index="5"></span>
-        <span class="point" data-role="end" data-index="6"></span>
-      </div>
-      <div class="shape" data-index="6">
-        <span class="point" data-role="start" data-index="6"></span>
-        <span class="point" data-role="end" data-index="7"></span>
-      </div>
-      <div class="shape" data-index="7">
-        <span class="point" data-role="start" data-index="7"></span>
-        <span class="point" data-role="end" data-index="8"></span>
-      </div>
-      <div class="shape" data-index="8">
-        <span class="point" data-role="start" data-index="8"></span>
-        <span class="point" data-role="end" data-index="9"></span>
-      </div>
-      <div class="shape" data-index="9">
-        <span class="point" data-role="start" data-index="9"></span>
-        <span class="point" data-role="end" data-index="10"></span>
-      </div>
-      <div class="shape" data-index="10">
-        <span class="point" data-role="start" data-index="10"></span>
-        <span class="point" data-role="end" data-index="11"></span>
-      </div>
-      <div class="shape" data-index="11">
-        <span class="point" data-role="start" data-index="11"></span>
-        <span class="point" data-role="end" data-index="12"></span>
-      </div>
+    <div class="series"></div>
+  </template>
+
+  <!-- Single shape segment prototype — cloned once per data segment by JS.
+       JS sets --_v-start, --_v-end, and --_i directly as inline custom
+       properties; CSS computes clip-path normalisation from these. -->
+  <template class="shape-tpl">
+    <div class="shape">
+      <span class="point" data-role="start"></span>
+      <span class="point" data-role="end"></span>
     </div>
   </template>
+
   <template class="legend-item-tpl">
     <div class="legend-item">
       <span class="legend-key"></span>

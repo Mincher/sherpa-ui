@@ -286,7 +286,14 @@
   border-color: var(--_status-border);
 }
 
-/* ── Grouped (input + button joined) ────────────────────────────────────── */
+/* ── Grouped ────────────────────────────────────────────────────────────── */
+/*
+ * Two uses:
+ *   1. Horizontal (default) — native input + action buttons joined side-by-side
+ *      inside .input-control (e.g. number steppers, password toggle).
+ *   2. Vertical ([data-direction="vertical"]) — .input-body: control stacked
+ *      above validation message, forming a single bordered group.
+ */
 
 .grouped {
   display: flex;
@@ -295,6 +302,11 @@
   gap: 0;
   --_cg-border-width: 0;
   --_cg-border-radius: 0;
+}
+
+.grouped[data-direction="vertical"] {
+  flex-direction: column;
+  flex: unset;
 }
 
 /* ── Action buttons (inside control area) ───────────────────────── */
@@ -328,6 +340,8 @@
 .input-validation-message {
   display: none;
   margin: 0;
+  min-width: 0;
+  overflow-wrap: break-word;
   padding: var(--sherpa-space-xs, 8px);
   background: var(
     --_status-surface-strong,
