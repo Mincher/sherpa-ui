@@ -8,9 +8,10 @@
   Content may be provided via:
     slot="header"  — Card-style header (use sherpa-header). Renders edge-to-edge
                      with a bottom separator. Shown only when content is slotted.
-    (default slot) — Main content area (light-DOM children with no slot attr).
-    slot="footer"  — Card-style footer (use sherpa-footer or sherpa-button).
-                     Shown only when content is slotted.
+    (default slot) — Main content area. Receives 16px padding on all sides;
+                     top padding is suppressed when a header is present.
+    slot="footer"  — Card-style footer band (use sherpa-footer, sherpa-button,
+                     or a plain <div> with its own border-top + padding).
 
   State overlay slots (visible when data-state matches):
     slot="loading" — Replaces body while data-state="loading"

@@ -15,6 +15,7 @@
 
 /** Canonical time-unit identifiers (lowercase). */
 export const TimeUnit = Object.freeze({
+  MINUTE:  'minute',
   HOUR:    'hour',
   DAY:     'day',
   WEEK:    'week',
@@ -55,7 +56,9 @@ export const TIME_UNITS_ORDERED = Object.freeze([
  * stable identifier suitable for URL params / saved configs.
  */
 export const TIME_RANGE_PRESETS = Object.freeze([
-  { key: 'last-24h',     label: 'Last 24 Hours',  unit: TimeUnit.HOUR,    count: 24  },
+  { key: 'last-15m',     label: 'Last 15 Minutes', unit: TimeUnit.MINUTE,  count: 15  },
+  { key: 'last-1h',      label: 'Last 1 Hour',     unit: TimeUnit.HOUR,    count: 1   },
+  { key: 'last-24h',     label: 'Last 24 Hours',   unit: TimeUnit.HOUR,    count: 24  },
   { key: 'last-7d',      label: 'Last 7 Days',    unit: TimeUnit.DAY,     count: 7   },
   { key: 'last-30d',     label: 'Last 30 Days',   unit: TimeUnit.DAY,     count: 30  },
   { key: 'last-90d',     label: 'Last 90 Days',   unit: TimeUnit.DAY,     count: 90  },

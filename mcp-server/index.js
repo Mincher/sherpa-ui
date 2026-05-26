@@ -1243,7 +1243,7 @@ server.registerTool(
   "list_css_utilities",
   {
     title: "List CSS Utilities",
-    description: "List CSS utility classes available in sherpa-app-classes.css (e.g. flex-truncate). These are plain CSS classes applied directly to HTML elements — not web components.",
+    description: "List CSS utility classes available in sherpa-utility-classes.css (e.g. flex-truncate). These are plain CSS classes applied directly to HTML elements — not web components.",
     inputSchema: {},
   },
   async () => {

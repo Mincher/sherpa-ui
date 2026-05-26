@@ -514,8 +514,8 @@ function setActiveNavItem(path) {
   if (!nav) return;
 
   const normalised = path.startsWith('/') ? path : `/${path}`;
-  // Derive itemId: '/' → home item, '/components/:tag' → tag
-  const itemId = normalised === '/' ? '/' : normalised.replace(/^\/components\//, '');
+  // Derive itemId: '/' → home item, '/components/:tag' → tag, '/experimental/:id' → experimental/:id
+  const itemId = normalised === '/' ? '/' : normalised.replace(/^\/components\//, '').replace(/^\//, '');
   nav.setActiveItem?.(itemId);
 }
 
@@ -546,8 +546,9 @@ function parseHash(hash) {
   const path = (hash || '').replace(/^#/, '') || '/';
   const parts = path.split('/').filter(Boolean);
   if (!parts.length) return { type: 'home' };
-  if (parts[0] === 'category'   && parts[1]) return { type: 'category',   id:  parts[1] };
-  if (parts[0] === 'components' && parts[1]) return { type: 'component',  tag: parts[1] };
+  if (parts[0] === 'category'     && parts[1]) return { type: 'category',     id:  parts[1] };
+  if (parts[0] === 'components'   && parts[1]) return { type: 'component',    tag: parts[1] };
+  if (parts[0] === 'experimental' && parts[1]) return { type: 'experimental', id:  parts[1] };
   return { type: 'not-found', path };
 }
 
@@ -660,6 +661,52 @@ async function renderRoute(route) {
     outlet.innerHTML = schema
       ? buildComponentPage(route.tag, label, schema, examples, children)
       : buildNotFound(`<${route.tag}>`);
+    bindOutletLinks();
+    highlightOutlet();
+    runPendingSetups();
+    return;
+  }
+
+  if (route.type === 'experimental') {
+    const LABELS = { 'flex-truncate': 'Flex Truncate', 'component-grouping': 'Component Grouping' };
+    const label = LABELS[route.id] ?? route.id
+      .split('-').map(p => p[0].toUpperCase() + p.slice(1)).join(' ');
+    setViewHeading(label, [
+      { label: 'Home', href: '#/' },
+      { label: 'Experimental', href: null },
+    ]);
+    if (route.id === 'component-grouping') {
+      // mode 'class'   — toggle the real .grouped utility on the preview
+      //                  (used when the preview wrapper IS the grouping div)
+      // mode 'attr'    — toggle a [data-grouped] attribute on the preview
+      //                  (used when the preview is a state-switch wrapper that
+      //                  must NOT receive the .grouped utility's chrome)
+      const makeGroupToggle = (btnId, previewId, mode = 'class') => (container) => {
+        const btn     = container.querySelector(`#${btnId}`);
+        const preview = container.querySelector(`#${previewId}`);
+        if (!btn || !preview) return;
+        btn.addEventListener('button-click', () => {
+          let isGrouped;
+          if (mode === 'attr') {
+            const willGroup = !preview.hasAttribute('data-grouped');
+            preview.toggleAttribute('data-grouped', willGroup);
+            isGrouped = willGroup;
+          } else {
+            isGrouped = preview.classList.toggle('grouped');
+          }
+          btn.toggleAttribute('data-active', isGrouped);
+          btn.dataset.label = isGrouped ? 'Ungroup' : 'Group';
+        });
+      };
+      pendingSetups.set('row-group-toggle',   makeGroupToggle('row-group-toggle', 'row-group-preview', 'class'));
+      pendingSetups.set('col-group-toggle',   makeGroupToggle('col-group-toggle', 'col-group-preview', 'class'));
+      pendingSetups.set('kpi-grouped-toggle', makeGroupToggle('kpi-group-toggle', 'kpi-group-preview', 'attr'));
+    }
+    try {
+      await mountPartial(`experimental-${route.id}`);
+    } catch {
+      outlet.innerHTML = buildNotFound(`/experimental/${escapeHtml(route.id)}`);
+    }
     bindOutletLinks();
     highlightOutlet();
     runPendingSetups();

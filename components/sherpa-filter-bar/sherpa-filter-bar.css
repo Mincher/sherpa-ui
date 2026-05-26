@@ -104,7 +104,7 @@
 /* ─── Built-in group / sort chip groups ───────────────────────────────────── */
 /*
  * These chips live in shadow DOM so they cannot rely on the global .grouped
- * utility class from sherpa-app-classes.css (global CSS does not pierce shadow
+ * utility class from sherpa-utility-classes.css (global CSS does not pierce shadow
  * boundaries). The .chip-group class replicates the necessary styles here.
  */
 :host .chip-group {
@@ -147,12 +147,18 @@
   border-color: var(--sherpa-border-control-active-default, #8500cc);
 }
 
+/* ─── Host-attribute overrides ────────────────────────────────────────────── */
+:host([data-hide-group]) .group-chip { display: none; }
+:host([data-hide-sort])  .sort-chip  { display: none; }
+/* Suppress the before-presets divider when both group+sort chips are hidden */
+:host([data-hide-group][data-hide-sort]) .zone-divider[data-divider="before-presets"] { display: none !important; }
+
 /* ─── Slotted .grouped light-DOM filter chips ─────────────────────────────── */
 /*
  * Dynamically created filter chips (ad-hoc and preset) are .grouped divs
  * appended to the filter bar's light DOM.  When the filter bar is embedded
  * inside another component (e.g. sherpa-data-grid), it lives inside that
- * component's shadow root — meaning the global sherpa-app-classes.css
+ * component's shadow root — meaning the global sherpa-utility-classes.css
  * .grouped rule no longer applies (global CSS does not pierce shadow DOM).
  *
  * ::slotted() in this shadow-root stylesheet reaches those distributed

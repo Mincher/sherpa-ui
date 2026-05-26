@@ -1,5 +1,5 @@
 /**
- * sherpa-app-classes.css — Light-DOM utility classes for application shells.
+ * sherpa-utility-classes.css — Light-DOM utility classes for application shells.
  *
  * Loaded once via css/styles/index.css under @layer utilities.layout.
  * NOT adopted into component shadow roots — these classes apply to host
@@ -19,8 +19,8 @@
  * Grouped — wrapper-based pattern for composing adjacent controls
  * (inputs, buttons, custom elements) into a seamless row or column.
  *
- * The .grouped wrapper owns border, background, border-radius and
- * overflow:hidden.  It sets --_cg-border-width: 0 and --_cg-border-radius: 0
+ * The .grouped wrapper owns border, border-radius and overflow:hidden.
+ * It sets --_cg-border-width: 0 and --_cg-border-radius: 0
  * which inherit into child shadow DOMs, making them borderless and
  * radiusless automatically.
  *
@@ -37,8 +37,8 @@
  *     <sherpa-button … />
  *   </div>
  *
- *   <!-- 2D grid — data-grid, column count via --_cg-columns (default 3) -->
- *   <div class="grouped" data-grid style="--_cg-columns: 3">
+ *   <!-- 2D grid — data-layout-grid, column count via --_cg-columns (default 3) -->
+ *   <div class="grouped" data-layout-grid style="--_cg-columns: 3">
  *     <sherpa-button … />
  *     …9 or more children…
  *   </div>
@@ -60,7 +60,6 @@
   vertical-align: middle;
   border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: var(--sherpa-surface-control-default, #ffffff);
   overflow: hidden;
   --_cg-border-width: 0;
   --_cg-border-radius: 0;
@@ -89,11 +88,27 @@
    * wrapper's corner curve, giving the four corner cells their correct
    * single-corner rounding automatically — no per-child selectors needed.
    *
+   * Uses `display: grid-lanes` (CSS Grid Level 3) so children of varying
+   * heights pack into the column tracks masonry-style instead of forcing
+   * every row to the tallest cell. Children still place via
+   * `data-col-span` against the column tracks; rows are produced by the
+   * lanes algorithm.
+   *
    * Column count: set --_cg-columns on the wrapper (default 3).
-   * Example: style="--_cg-columns: 4"
+   * When slotted into a <sherpa-layout-grid>, the column tracks are
+   * inherited from the parent grid via `grid-template-columns: subgrid`
+   * (see the `sherpa-layout-grid > [data-layout-grid]` rule below) — no inline
+   * --_cg-columns required, and the count adapts responsively (12 / 6 / 3).
+   *
+   * Fallback: in engines that do not yet support `display: grid-lanes`
+   * the value is invalid and `display: grid` takes over, giving a regular
+   * (non-masonry) grid with the same column tracks.
    */
-  &[data-grid] {
+  &[data-layout-grid] {
     display: grid;
+    display: grid-lanes;
+    width: 100%;
+    gap: 0;
     grid-template-columns: repeat(var(--_cg-columns, 3), 1fr);
     /* Flex-direction separator tokens are not applicable to grid */
     --_cg-sep-inline: 0px;
@@ -128,6 +143,87 @@
   border-color: var(--sherpa-border-control-active-default, #8500cc);
   --_cg-separator-color: var(--sherpa-border-control-active-default, #8500cc);
 }
+
+/* ── Grid col-span ──────────────────────────────────────────────────── */
+/*
+ * Column-span for children of any [data-layout-grid] container.
+ * Applies in both .grouped[data-layout-grid] and ungrouped [data-layout-grid] states.
+ * Pair with a sherpa-layout-grid ancestor to get responsive column counts
+ * automatically (--maxColCount: 12 / 6 / 3).
+ */
+[data-layout-grid] > [data-col-span="2"]  { grid-column: span 2; }
+[data-layout-grid] > [data-col-span="3"]  { grid-column: span 3; }
+[data-layout-grid] > [data-col-span="4"]  { grid-column: span 4; }
+[data-layout-grid] > [data-col-span="6"]  { grid-column: span 6; }
+[data-layout-grid] > [data-col-span="8"]  { grid-column: span 8; }
+[data-layout-grid] > [data-col-span="9"]  { grid-column: span 9; }
+[data-layout-grid] > [data-col-span="12"] { grid-column: span 12; }
+
+/*
+ * Subgrid integration with sherpa-layout-grid.
+ *
+ * .grouped[data-layout-grid] spans the full row and adopts the parent grid's
+ * column tracks via subgrid. display: grid-lanes produces masonry-style
+ * row packing; the fallback is display: grid.
+ *
+ * column-gap and row-gap are explicitly 0. A CSS subgrid inherits the
+ * parent's gap by default; setting them individually here overrides that
+ * so tiles sit flush — no gutters inside the wrapper frame. The .grouped
+ * border and overflow: hidden form the outer boundary and clip corners.
+ */
+sherpa-layout-grid > .grouped[data-layout-grid] {
+  display: grid;
+  display: grid-lanes;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  grid-auto-rows: auto;
+  align-self: start;
+  height: max-content;
+  column-gap: 0;
+  row-gap: 0;
+  padding: 0;
+}
+
+/* Ungrouped [data-layout-grid] inside sherpa-layout-grid — no wrapper border;
+   inherits parent gap so gutters align with sibling tiles. */
+sherpa-layout-grid > [data-layout-grid]:not(.grouped) {
+  display: grid;
+  display: grid-lanes;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  grid-auto-rows: auto;
+  align-self: start;
+  height: max-content;
+  padding: 0;
+}
+
+/* Clamp col-span 1 and 2 to the 3-column floor */
+sherpa-layout-grid [data-layout-grid] > [data-col-span="1"],
+sherpa-layout-grid [data-layout-grid] > [data-col-span="2"] { grid-column: span 3; }
+
+/* Group header spans all columns — full-width title row */
+[data-layout-grid] > sherpa-header {
+  grid-column: 1 / -1;
+}
+
+/* Containers inside .grouped[data-layout-grid] fill their grid track completely.
+ * --_cg-border-width: 0 and --_cg-border-radius: 0 cascade from .grouped
+ * into each container's shadow DOM — the wrapper border and overflow: hidden
+ * form the outer frame and clip corner rounding. */
+.grouped[data-layout-grid] > sherpa-container {
+  min-width: 0;
+  width: 100%;
+  height: var(--row-height, 160px);
+  align-self: stretch;
+}
+
+/* Row-span rules for sub-containers in the grouped subgrid.
+ * No gap between rows (row-gap: 0), so height = N × --row-height exactly. */
+.grouped[data-layout-grid] > [data-row-span="2"] { grid-row: span 2; height: calc(var(--row-height, 160px) * 2); }
+.grouped[data-layout-grid] > [data-row-span="3"] { grid-row: span 3; height: calc(var(--row-height, 160px) * 3); }
+.grouped[data-layout-grid] > [data-row-span="4"] { grid-row: span 4; height: calc(var(--row-height, 160px) * 4); }
+.grouped[data-layout-grid] > [data-row-span="5"] { grid-row: span 5; height: calc(var(--row-height, 160px) * 5); }
+.grouped[data-layout-grid] > [data-row-span="6"] { grid-row: span 6; height: calc(var(--row-height, 160px) * 6); }
 
 /* ─── 2. Slot Rejection ────────────────────────────────────────────── */
 

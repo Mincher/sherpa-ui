@@ -43,7 +43,7 @@ Complete guide to using and extending the Sherpa design token system.
   │   utilities.icons  sherpa-icon-classes.css                          │  hand
   │   utilities.motion sherpa-motion-classes.css                        │  hand
   │   utilities.text   sherpa-text-classes.css                          │  hand
-  │   utilities.layout sherpa-app-classes.css                           │  hand
+  │   utilities.layout sherpa-utility-classes.css                       │  hand
   └──────────────────────────────────────────────────────────────────────┘
 ```
 

@@ -113,7 +113,7 @@ function walk(dir, out = []) {
 // generated theme files — those are regenerated from Figma each build).
 const targets = [
   ...walk(path.join(ROOT, 'components')),
-  path.join(ROOT, 'css', 'styles', 'sherpa-app-classes.css'),
+  path.join(ROOT, 'css', 'styles', 'sherpa-utility-classes.css'),
   path.join(ROOT, 'css', 'styles', 'sherpa-text-classes.css'),
   path.join(ROOT, 'css', 'styles', 'sherpa-motion-classes.css'),
   path.join(ROOT, 'css', 'styles', 'sherpa-data-viz-classes.css'),

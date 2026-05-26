@@ -1028,7 +1028,7 @@ export class SherpaFilterBar extends SherpaElement {
   #syncFilterChipLabel(chip, count) {
     const defaultLabel = chip.dataset.defaultLabel || chip.dataset.label || "";
     if (count === 1) {
-      const menuEl = chip.menuElement ?? chip.querySelector("sherpa-menu");
+      const menuEl = this.#getChipMenuButton(chip)?.menuElement ?? chip.menuElement ?? chip.querySelector("sherpa-menu");
       const checked = menuEl?.querySelector("sherpa-menu-item[checked]");
       // Prefer the stashed base text (without the "(N)" count suffix that
       // #refreshOptionCounts appends) so the chip label stays clean.
@@ -1129,6 +1129,7 @@ export class SherpaFilterBar extends SherpaElement {
     }
 
     switch (preset.unit) {
+      case "minute":  start.setTime(now.getTime() - preset.count * 60000);    break;
       case "hour":    start.setHours(now.getHours() - preset.count);     break;
       case "day":     start.setDate(now.getDate() - preset.count);       break;
       case "month":   start.setMonth(now.getMonth() - preset.count);     break;

@@ -82,7 +82,7 @@
 /* ── Page wrapper ──────────────────────────────────────────────────────────── */
 
 .docs-page {
-  max-width: 960px;
+  max-width: 1440px;
   margin-inline: auto;
   padding-block-end: var(--sherpa-space-2xl, 48px);
 }
@@ -287,4 +287,46 @@
 .docs-code-block pre code {
   font-family: var(--sherpa-font-family-mono, ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace);
   background: transparent !important;
+}
+
+
+/* ── Resizable example wrappers ─────────────────────────────────────────────── */
+/*
+ * Applied to a .flex-truncate container in documentation examples to provide
+ * a drag handle for testing the truncation behaviour.
+ *
+ * .ft-resize-row  — drag the right edge to narrow the row
+ * .ft-resize-col  — drag the bottom edge to shorten the column
+ *
+ * overflow:hidden is required by all browsers to activate the resize handle.
+ */
+
+.ft-resize-row {
+  resize: horizontal;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+.ft-resize-col {
+  resize: vertical;
+  overflow: hidden;
+  min-height: 80px;
+  max-height: 600px;
+}
+
+
+/* ── Ungrouped grid preview ──────────────────────────────────────────────────── */
+/*
+ * Provides a spaced grid layout for [data-grid] elements in their ungrouped
+ * (pre-.grouped) state. The :not(.grouped) guard ensures this rule drops away
+ * the moment .grouped is toggled on, so .grouped[data-grid]'s gap:0 wins
+ * uncontested in the grouped state.
+ */
+
+.docs-example-preview [data-grid]:not(.grouped) {
+  display: grid;
+  grid-template-columns: repeat(var(--_cg-columns, 3), 1fr);
+  gap: var(--sherpa-space-xs, 8px);
+  grid-auto-rows: var(--_cg-row-height, auto);
 }

@@ -9,7 +9,7 @@
  *
  * Scroll-under styling (sticky + background + shadow on scroll) is NOT
  * handled here. Consumers should apply the global .sherpa-scroll-under
- * utility class from sherpa-app-classes.css to the host element.
+ * utility class from sherpa-utility-classes.css to the host element.
  */
 
 i {

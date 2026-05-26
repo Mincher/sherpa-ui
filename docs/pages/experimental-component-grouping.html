@@ -1,0 +1,224 @@
+<!--
+  docs/pages/experimental-component-grouping.html — Experimental: Component Grouping
+  HTML fragment fetched by router.js for #/experimental/component-grouping.
+  Rendered inside #docs-outlet; uses docs-* CSS classes from docs.css.
+-->
+<style>
+  /* Toggle between the two pre-rendered KPI grid states (ungrouped / grouped).
+     router.js's makeGroupToggle flips `[data-grouped]` on #kpi-group-preview.
+     A data-attribute (not the `.grouped` class) is used here to avoid
+     applying the .grouped utility's border / radius / overflow styling to
+     the demo wrapper — only the inner <div class="grouped" data-layout-grid>
+     should carry the grouped chrome. */
+  #kpi-group-preview .kpi-state-grouped { display: none; }
+  #kpi-group-preview[data-grouped] .kpi-state-ungrouped { display: none; }
+  #kpi-group-preview[data-grouped] .kpi-state-grouped { display: block; }
+</style>
+<div class="docs-page">
+
+  <sherpa-section-header
+    data-label="Component Grouping"
+    data-heading-level="primary"
+    data-divider="true"
+  >
+    <sherpa-tag slot="badge" data-variant="secondary" data-status="warning">Experimental</sherpa-tag>
+    <p slot="description">
+      The <code class="docs-attr-name">.grouped</code> CSS utility merges
+      adjacent components into a single visual unit by collapsing their borders
+      and border-radii. Works with any Sherpa component. Supports three layouts:
+      row (default), column (stacked), and grid.
+    </p>
+  </sherpa-section-header>
+
+  <section class="docs-examples-section">
+
+    <sherpa-section-header
+      data-label="Examples"
+      data-heading-level="secondary"
+      data-divider="true"
+    ></sherpa-section-header>
+
+    <!-- Row ───────────────────────────────────────────────────────────────── -->
+    <div class="docs-example">
+      <sherpa-section-header data-label="Row" data-heading-level="tertiary">
+        <p slot="description">
+          Wrap components in <code class="docs-attr-name">.grouped</code> to
+          merge them horizontally. The wrapper becomes an <code>inline-flex</code>
+          container with shared borders and no gap.
+        </p>
+      </sherpa-section-header>
+      <div class="docs-example-preview" data-setup-key="row-group-toggle" style="flex-direction: column; align-items: center; gap: var(--sherpa-space-sm, 12px);">
+        <sherpa-button
+          id="row-group-toggle"
+          data-variant="secondary"
+          data-label="Group"
+          data-icon-start="fa-solid fa-layer-group"
+        ></sherpa-button>
+        <div id="row-group-preview">
+          <sherpa-button data-variant="secondary" data-label="First"></sherpa-button>
+          <sherpa-button data-variant="secondary" data-label="Second"></sherpa-button>
+          <sherpa-button data-variant="secondary" data-label="Third"></sherpa-button>
+        </div>
+      </div>
+      <div class="docs-code-block">
+        <div class="docs-code-header">
+          <span class="docs-code-lang">HTML</span>
+        </div>
+        <pre><code class="language-html">&lt;div class="grouped"&gt;
+  &lt;sherpa-button data-variant="secondary" data-label="First"&gt;&lt;/sherpa-button&gt;
+  &lt;sherpa-button data-variant="secondary" data-label="Second"&gt;&lt;/sherpa-button&gt;
+  &lt;sherpa-button data-variant="secondary" data-label="Third"&gt;&lt;/sherpa-button&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+    </div>
+
+    <!-- Column ────────────────────────────────────────────────────────────── -->
+    <div class="docs-example">
+      <sherpa-section-header data-label="Column" data-heading-level="tertiary">
+        <p slot="description">
+          Add <code class="docs-attr-name">data-direction="vertical"</code> to stack
+          components vertically into a single bordered unit.
+        </p>
+      </sherpa-section-header>
+      <div class="docs-example-preview" data-setup-key="col-group-toggle" style="flex-direction: column; align-items: center; gap: var(--sherpa-space-sm, 12px);">
+        <sherpa-button
+          id="col-group-toggle"
+          data-variant="secondary"
+          data-label="Group"
+          data-icon-start="fa-solid fa-layer-group"
+        ></sherpa-button>
+        <div id="col-group-preview" data-direction="vertical">
+          <sherpa-button data-variant="secondary" data-label="First"></sherpa-button>
+          <sherpa-button data-variant="secondary" data-label="Second"></sherpa-button>
+          <sherpa-button data-variant="secondary" data-label="Third"></sherpa-button>
+        </div>
+      </div>
+      <div class="docs-code-block">
+        <div class="docs-code-header">
+          <span class="docs-code-lang">HTML</span>
+        </div>
+        <pre><code class="language-html">&lt;div class="grouped" data-direction="vertical"&gt;
+  &lt;sherpa-button data-variant="secondary" data-label="First"&gt;&lt;/sherpa-button&gt;
+  &lt;sherpa-button data-variant="secondary" data-label="Second"&gt;&lt;/sherpa-button&gt;
+  &lt;sherpa-button data-variant="secondary" data-label="Third"&gt;&lt;/sherpa-button&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+    </div>
+
+    <!-- Grid ──────────────────────────────────────────────────────────────── -->
+    <div class="docs-example">
+      <sherpa-section-header data-label="Grid" data-heading-level="tertiary">
+        <p slot="description">
+          A grouped grid is a <code>&lt;div class="grouped" data-layout-grid&gt;</code>
+          wrapper holding two rows: a
+          <code>&lt;sherpa-header&gt;</code> in row 1 (spans all columns; carries
+          the group title and overflow menu), then headerless
+          <code>&lt;sherpa-container&gt;</code> tiles in the rows below. The
+          wrapper sits as a direct child of
+          <code>&lt;sherpa-layout-grid&gt;</code> and adopts its responsive
+          12&nbsp;/&nbsp;6&nbsp;/&nbsp;3 column tracks via
+          <code class="docs-attr-name">grid-template-columns: subgrid</code> —
+          so tiles' <code class="docs-attr-name">data-col-span</code> values
+          line up flush with peers in the outer grid and reflow automatically
+          at every breakpoint. The wrapper uses
+          <code class="docs-attr-name">display: grid-lanes</code> so
+          sub-containers of differing heights pack into the column tracks
+          masonry-style — no prescribed row count, no forced equal-height
+          cells. Sub-container headers are omitted; only the group header
+          controls the whole tile.
+        </p>
+      </sherpa-section-header>
+      <div class="docs-example-preview" data-setup-key="kpi-grouped-toggle" style="min-height: auto; padding: var(--sherpa-space-lg, 24px); flex-direction: column; align-items: stretch; gap: var(--sherpa-space-sm, 12px);">
+        <div style="display: flex; justify-content: center;">
+          <sherpa-button
+            id="kpi-group-toggle"
+            data-variant="secondary"
+            data-label="Group"
+            data-icon-start="fa-solid fa-layer-group"
+          ></sherpa-button>
+        </div>
+
+        <div id="kpi-group-preview" class="kpi-preview">
+          <!-- Ungrouped state — 6 standalone resizable containers, each with its own header + menu -->
+          <sherpa-layout-grid class="kpi-state kpi-state-ungrouped">
+            <sherpa-container data-variant="resizable" data-col-span="6">
+              <sherpa-header slot="header" data-title="Revenue" data-menu-button="true"></sherpa-header>
+              <sherpa-metric data-label="Revenue"  value="$1.24M" data-trend="up"   data-delta="+8.3%"></sherpa-metric>
+            </sherpa-container>
+            <sherpa-container data-variant="resizable" data-col-span="3">
+              <sherpa-header slot="header" data-title="Users" data-menu-button="true"></sherpa-header>
+              <sherpa-metric data-label="Users"    value="4,821"  data-trend="up"   data-delta="+12%"></sherpa-metric>
+            </sherpa-container>
+            <sherpa-container data-variant="resizable" data-col-span="3">
+              <sherpa-header slot="header" data-title="Uptime" data-menu-button="true"></sherpa-header>
+              <sherpa-metric data-label="Uptime"   value="99.9%"  data-trend="flat" data-status="success"></sherpa-metric>
+            </sherpa-container>
+            <sherpa-container data-variant="resizable" data-col-span="9">
+              <sherpa-header slot="header" data-title="Response" data-menu-button="true"></sherpa-header>
+              <sherpa-metric data-label="Response" value="42ms"   data-trend="down" data-delta="−6ms"></sherpa-metric>
+            </sherpa-container>
+            <sherpa-container data-variant="resizable" data-col-span="3">
+              <sherpa-header slot="header" data-title="Errors" data-menu-button="true"></sherpa-header>
+              <sherpa-metric data-label="Errors"   value="0.02%"  data-trend="down" data-status="success"></sherpa-metric>
+            </sherpa-container>
+            <sherpa-container data-variant="resizable" data-col-span="12">
+              <sherpa-header slot="header" data-title="Sessions" data-menu-button="true"></sherpa-header>
+              <sherpa-metric data-label="Sessions" value="12,045" data-trend="up"   data-delta="+5%"></sherpa-metric>
+            </sherpa-container>
+          </sherpa-layout-grid>
+
+          <!-- Grouped state — div wrapper with a group header row + headerless sub-containers -->
+          <sherpa-layout-grid class="kpi-state kpi-state-grouped">
+            <div class="grouped" data-layout-grid>
+              <sherpa-header data-title="KPIs" data-menu-button="true"></sherpa-header>
+              <sherpa-container data-col-span="6">
+                <sherpa-metric data-label="Revenue"  value="$1.24M" data-trend="up"   data-delta="+8.3%"></sherpa-metric>
+              </sherpa-container>
+              <sherpa-container data-col-span="3">
+                <sherpa-metric data-label="Users"    value="4,821"  data-trend="up"   data-delta="+12%"></sherpa-metric>
+              </sherpa-container>
+              <sherpa-container data-col-span="3">
+                <sherpa-metric data-label="Uptime"   value="99.9%"  data-trend="flat" data-status="success"></sherpa-metric>
+              </sherpa-container>
+              <sherpa-container data-col-span="9">
+                <sherpa-metric data-label="Response" value="42ms"   data-trend="down" data-delta="−6ms"></sherpa-metric>
+              </sherpa-container>
+              <sherpa-container data-col-span="3">
+                <sherpa-metric data-label="Errors"   value="0.02%"  data-trend="down" data-status="success"></sherpa-metric>
+              </sherpa-container>
+              <sherpa-container data-col-span="12">
+                <sherpa-metric data-label="Sessions" value="12,045" data-trend="up"   data-delta="+5%"></sherpa-metric>
+              </sherpa-container>
+            </div>
+          </sherpa-layout-grid>
+        </div>
+      </div>
+      <div class="docs-code-block">
+        <div class="docs-code-header">
+          <span class="docs-code-lang">HTML</span>
+        </div>
+        <pre><code class="language-html">&lt;sherpa-layout-grid&gt;
+  &lt;div class="grouped" data-layout-grid&gt;
+    &lt;!-- Row 1: group header (spans all subgrid columns automatically) --&gt;
+    &lt;sherpa-header data-title="KPIs" data-menu-button="true"&gt;&lt;/sherpa-header&gt;
+
+    &lt;!-- Remaining children: headerless sub-containers, sized via data-col-span --&gt;
+    &lt;sherpa-container data-col-span="6"&gt;
+      &lt;sherpa-metric data-label="Revenue" value="$1.24M" data-trend="up" data-delta="+8.3%"&gt;&lt;/sherpa-metric&gt;
+    &lt;/sherpa-container&gt;
+    &lt;!-- repeat with mixed data-col-span values from {3, 6, 9, 12} --&gt;
+  &lt;/div&gt;
+&lt;/sherpa-layout-grid&gt;
+
+&lt;!-- The wrapper adopts the layout grid's responsive 12 / 6 / 3 column
+     tracks via `grid-template-columns: subgrid`, and uses
+     `display: grid-lanes` so children of varying heights pack into the
+     column tracks masonry-style. The first child &lt;sherpa-header&gt; takes
+     a full-width row (rule: `[data-layout-grid] &gt; sherpa-header { grid-column: 1 / -1 }`);
+     remaining children fall onto subsequent rows. --&gt;</code></pre>
+      </div>
+    </div>
+
+  </section>
+
+</div>

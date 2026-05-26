@@ -2,8 +2,8 @@
   sherpa-container — Live examples.
   Each example composes a real header (sherpa-header), body content
   (real subcomponents), and a footer row appropriate to the container's purpose.
-  Footers use a plain <div> as the last child — sherpa-container has a single
-  default slot and any trailing element naturally becomes the footer band.
+  Footer bands use slot="footer"; they own their own border-top and padding.
+  Content in the default slot receives automatic 16px padding from .card-content.
 -->
 
 <template data-label="Default (fit) — detail card" data-description="Header + key/value body + footer action. Typical 'overview' card with no fixed height." data-layout="block">
@@ -14,13 +14,13 @@
     >
       <sherpa-tag slot="actions" data-status="success">Online</sherpa-tag>
     </sherpa-header>
-    <sherpa-key-value-list data-striped style="padding: 0 16px;">
+    <sherpa-key-value-list data-striped>
       <dt>Status</dt><dd>Online</dd>
       <dt>Region</dt><dd>EU (Frankfurt)</dd>
       <dt>Last seen</dt><dd>2 minutes ago</dd>
       <dt>IP address</dt><dd>192.0.2.42</dd>
     </sherpa-key-value-list>
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+    <div slot="footer" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
       <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-subtle);">Updated 2 min ago</span>
       <sherpa-button data-variant="tertiary" data-size="small" data-label="View device" data-icon-end="&#xf061;"></sherpa-button>
     </div>
@@ -41,10 +41,8 @@
         <sherpa-menu-item data-action="remove"    data-icon="fa-solid fa-trash" data-variant="critical">Remove tile</sherpa-menu-item>
       </template>
     </sherpa-header>
-    <div style="padding: 0 16px 16px;">
-      <sherpa-metric data-label="Devices online" value="1,284" data-trend="up" data-delta="+12% vs yesterday" data-status="success"></sherpa-metric>
-    </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+    <sherpa-metric data-label="Devices online" value="1,284" data-trend="up" data-delta="+12% vs yesterday" data-status="success"></sherpa-metric>
+    <div slot="footer" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
       <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-subtle);">12 added today</span>
       <sherpa-button data-variant="tertiary" data-size="small" data-label="Open dashboard" data-icon-end="&#xf08e;"></sherpa-button>
     </div>
@@ -67,7 +65,7 @@
       <sherpa-list-item data-label="SSL certificate expiring"  data-description="api.example.com — 5d" data-icon="fa-solid fa-lock"        data-interactive><sherpa-tag slot="trailing" data-status="critical">Critical</sherpa-tag></sherpa-list-item>
       <sherpa-list-item data-label="New device registered"     data-description="edge-07 — 3 hours ago" data-icon="fa-solid fa-circle-plus" data-interactive><sherpa-tag slot="trailing" data-status="info">Info</sherpa-tag></sherpa-list-item>
     </sherpa-list>
-    <sherpa-pagination data-total-rows="120" data-page="1" data-page-size="5" data-density="compact" style="border-top: 1px solid var(--sherpa-border-container-subtle-default);"></sherpa-pagination>
+    <sherpa-pagination slot="footer" data-total-rows="120" data-page="1" data-page-size="5" data-density="compact" style="border-top: 1px solid var(--sherpa-border-container-subtle-default);"></sherpa-pagination>
   </sherpa-container>
 </template>
 
@@ -89,10 +87,8 @@
         <sherpa-menu-item data-action="copy"     data-icon="fa-solid fa-copy">Copy data</sherpa-menu-item>
       </template>
     </sherpa-header>
-    <div style="padding: 0 16px 16px;">
-      <sherpa-barchart style="height: 220px;"></sherpa-barchart>
-    </div>
-    <sherpa-key-value-list data-layout="horizontal" style="padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+    <sherpa-barchart style="height: 220px;"></sherpa-barchart>
+    <sherpa-key-value-list slot="footer" data-layout="horizontal" style="padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
       <dt>Peak</dt><dd>1,842 rpm</dd>
       <dt>Avg</dt><dd>1,210 rpm</dd>
       <dt>Errors</dt><dd>0.4%</dd>
@@ -108,12 +104,12 @@
     >
       <sherpa-button slot="actions" data-variant="tertiary" data-size="small" data-icon-start="&#xf2f1;" data-label="Refresh"></sherpa-button>
     </sherpa-header>
-    <sherpa-key-value-list style="padding: 0 16px;">
+    <sherpa-key-value-list>
       <dt>Total</dt><dd>—</dd>
       <dt>Online</dt><dd>—</dd>
       <dt>Offline</dt><dd>—</dd>
     </sherpa-key-value-list>
-    <div style="display: flex; justify-content: flex-end; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+    <div slot="footer" style="display: flex; justify-content: flex-end; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
       <sherpa-button data-variant="tertiary" data-size="small" data-label="View all"></sherpa-button>
     </div>
   </sherpa-container>
@@ -169,10 +165,8 @@
         <sherpa-menu-item data-action="remove"      data-icon="fa-solid fa-trash" data-variant="critical">Remove tile</sherpa-menu-item>
       </template>
     </sherpa-header>
-    <div style="padding: 0 16px 16px;">
-      <sherpa-metric data-label="Active alerts" value="7" data-trend="up" data-delta="+3 in last hour" data-status="warning"></sherpa-metric>
-    </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
+    <sherpa-metric data-label="Active alerts" value="7" data-trend="up" data-delta="+3 in last hour" data-status="warning"></sherpa-metric>
+    <div slot="footer" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
       <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-subtle);">2 critical · 5 warnings</span>
       <sherpa-button data-variant="tertiary" data-size="small" data-label="Triage alerts" data-icon-end="&#xf061;"></sherpa-button>
     </div>

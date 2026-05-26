@@ -2,7 +2,7 @@
   "className": "flex-truncate",
   "description": "Progressively hides trailing flex children when the container is too narrow (row) or too short (column) to show them at their minimum size. Apply to the container — all direct children are managed automatically.",
   "category": "layout",
-  "file": "css/styles/sherpa-app-classes.css",
+  "file": "css/styles/sherpa-utility-classes.css",
   "browserSupport": "Chrome 137+ — requires sibling-index(), CSS if(style()) with registered @property range queries",
   "usage": "<div class=\"flex-truncate\"><!-- direct children --></div>",
   "attributes": [

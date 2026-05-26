@@ -899,7 +899,7 @@ function emitIndex() {
 @import "sherpa-icon-classes.css"       layer(utilities.icons);
 @import "sherpa-motion-classes.css"     layer(utilities.motion);
 @import "sherpa-text-classes.css"       layer(utilities.text);
-@import "sherpa-app-classes.css"        layer(utilities.layout);
+@import "sherpa-utility-classes.css"    layer(utilities.layout);
 `;
   write('index.css', css);
 }
