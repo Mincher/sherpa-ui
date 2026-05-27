@@ -44,6 +44,8 @@ export class SherpaPagination extends SherpaElement {
     ];
   }
 
+  #bound = false;
+
   /* ══════════════════════════════════════════════════════════════
      Computed Properties
      ══════════════════════════════════════════════════════════════ */
@@ -95,22 +97,14 @@ export class SherpaPagination extends SherpaElement {
      Lifecycle
      ══════════════════════════════════════════════════════════════ */
 
-  onConnect() {
-    this.addEventListener("click", (e) => this.#onHostClick(e));
+  onRender() {
+    if (!this.#bound) {
+      this.addEventListener("click", this.#onHostClick);
 
-    const select = this.$(".page-size-select");
-    select?.addEventListener("change", (e) => {
-      const newSize = parseInt(e.target.value, 10);
-      if (newSize > 0) {
-        // Recalculate page to keep first visible row in view
-        const firstRow = (this.page - 1) * this.pageSize;
-        const newPage = Math.floor(firstRow / newSize) + 1;
-        this.setAttribute("data-page-size", String(newSize));
-        this.setAttribute("data-page", String(newPage));
-        this.#update();
-        this.#emitChange();
-      }
-    });
+      const select = this.$(".page-size-select");
+      select?.addEventListener("change", this.#onPageSizeChange);
+      this.#bound = true;
+    }
 
     this.#populateSizeOptions();
     this.#update();
@@ -209,7 +203,7 @@ export class SherpaPagination extends SherpaElement {
      Click Handling
      ══════════════════════════════════════════════════════════════ */
 
-  #onHostClick(e) {
+  #onHostClick = (e) => {
     const btn = e
       .composedPath()
       .find(
@@ -233,7 +227,20 @@ export class SherpaPagination extends SherpaElement {
       this.#update();
       this.#emitChange();
     }
-  }
+  };
+
+  #onPageSizeChange = (e) => {
+    const newSize = parseInt(e.target.value, 10);
+    if (newSize <= 0) return;
+
+    // Recalculate page to keep first visible row in view
+    const firstRow = (this.page - 1) * this.pageSize;
+    const newPage = Math.floor(firstRow / newSize) + 1;
+    this.setAttribute("data-page-size", String(newSize));
+    this.setAttribute("data-page", String(newPage));
+    this.#update();
+    this.#emitChange();
+  };
 
   /* ══════════════════════════════════════════════════════════════
      Events

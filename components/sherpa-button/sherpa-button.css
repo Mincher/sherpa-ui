@@ -7,7 +7,7 @@
  *   icon          — Icon-only square button
  *
  * For compound button patterns (split, dismissable chip), compose separate
- * sherpa-button elements inside a .grouped wrapper.
+ * sherpa-button elements inside a .grouped-component wrapper.
  *
  * Architecture:
  *   :host is a wrapper providing border, border-radius, and overflow.
@@ -53,7 +53,9 @@
   transition: border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
 
-/* Separator — visible divider when inside a .grouped wrapper */
+:host([hidden]) { display: none; }
+
+/* Separator — visible divider when inside a .grouped-component wrapper */
 :host([data-separator]) {
   border-inline-start-width: var(--_cg-sep-inline, var(--sherpa-border-width-xs, 1px));
   border-inline-start-color: var(--_cg-separator-color, var(--sherpa-border-control-secondary-default, #d5d5d5));

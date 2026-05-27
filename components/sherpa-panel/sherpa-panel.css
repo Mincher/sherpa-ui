@@ -36,7 +36,7 @@
   display: flex;
   flex-direction: column;
   background: var(--sherpa-surface-container-default, #ffffff);
-  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   overflow: hidden;
   height: 100%;
   /* ──────────────────────────────────────────────────────────
@@ -66,6 +66,8 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host(:not([data-expanded])) {
   width: var(--sherpa-size-3xl, 40px);
   padding: var(--sherpa-space-xs, 8px) 0;

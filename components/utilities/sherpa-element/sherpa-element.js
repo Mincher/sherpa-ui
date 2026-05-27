@@ -337,35 +337,74 @@ export class SherpaElement extends HTMLElement {
   /* ── Dynamic content loading ──────────────────────────────────── */
 
   /**
+   * Build fetch candidates for template/data URLs so components keep working
+   * when served from either web root or a nested base path.
+   * @param {string} url
+   * @returns {string[]}
+   */
+  #buildFetchCandidates(url) {
+    const candidates = [url];
+
+    // Absolute root paths can fail when the app is mounted under a sub-path
+    // (e.g. /sherpa-ui). Add a relative fallback for those deployments.
+    if (url.startsWith("/")) {
+      candidates.push(`.${url}`);
+      candidates.push(url.replace(/^\/+/, ""));
+    }
+
+    // Relative paths can fail when a server expects root-based URLs.
+    const hasScheme = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(url);
+    if (!hasScheme && !url.startsWith("/")) {
+      candidates.push(`/${url.replace(/^\.\//, "")}`);
+    }
+
+    return [...new Set(candidates)].filter(Boolean);
+  }
+
+  /**
    * Re-render shadow DOM with HTML fetched from the given URL.
    * adoptedStyleSheets persist on the shadow root across renders.
    * @param {string} url — URL to fetch HTML from
    * @returns {Promise<boolean>} — true if successful
    */
   async renderFromUrl(url) {
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) return false;
-      const html = await resp.text();
+    const candidates = this.#buildFetchCandidates(url);
+    let lastError = null;
 
-      this.#shadow.innerHTML = html;
+    for (const candidate of candidates) {
+      try {
+        const resp = await fetch(candidate);
+        if (!resp.ok) {
+          lastError = new Error(`${resp.status} ${resp.statusText} (${candidate})`);
+          continue;
+        }
+        const html = await resp.text();
 
-      // Wait for any custom elements in the loaded HTML to be defined
-      // before calling onRender(), so subclass hooks can safely access
-      // custom-element APIs (properties, methods) on queried children.
-      const undef = this.#shadow.querySelectorAll(":not(:defined)");
-      if (undef.length) {
-        const tags = [...new Set([...undef].map((el) => el.localName))];
-        await Promise.all(tags.map((t) => customElements.whenDefined(t)));
+        this.#shadow.innerHTML = html;
+
+        // Wait for any custom elements in the loaded HTML to be defined
+        // before calling onRender(), so subclass hooks can safely access
+        // custom-element APIs (properties, methods) on queried children.
+        const undef = this.#shadow.querySelectorAll(":not(:defined)");
+        if (undef.length) {
+          const tags = [...new Set([...undef].map((el) => el.localName))];
+          await Promise.all(tags.map((t) => customElements.whenDefined(t)));
+        }
+
+        await this.onRender();
+        this.#wireSlots();
+        return true;
+      } catch (e) {
+        lastError = e;
       }
-
-      await this.onRender();
-      this.#wireSlots();
-      return true;
-    } catch (e) {
-      console.error(`SherpaElement.renderFromUrl: failed to load ${url}`, e);
-      return false;
     }
+
+    console.error(
+      `SherpaElement.renderFromUrl: failed to load ${url}`,
+      lastError,
+      { candidates },
+    );
+    return false;
   }
 
   /* ── Slot presence detection ──────────────────────────────────── */

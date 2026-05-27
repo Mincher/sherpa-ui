@@ -40,25 +40,25 @@ export class SherpaSparkline extends SherpaElement {
   static get observedAttributes() { return [...super.observedAttributes, 'data-values']; }
 
   #values = [];
-  #shapeElements = [];
-  #pointElements = [];
+  #shapeEls = [];
+  #pointEls = [];
   #shapeSlots = 0;
   #pointSlots = 0;
   #tipEl = null;
-  #tipText = null;
+  #tipTextEl = null;
 
   onRender() {
-    this.#shapeElements = Array.from(this.$$('.shape'));
-    this.#pointElements = Array.from(this.$$('.point'));
-    this.#shapeSlots = this.#shapeElements.length;
+    this.#shapeEls = Array.from(this.$$('.shape'));
+    this.#pointEls = Array.from(this.$$('.point'));
+    this.#shapeSlots = this.#shapeEls.length;
     this.#pointSlots = this.#shapeSlots + 1;
     this.#tipEl = this.$('.tip');
-    this.#tipText = this.$('.tip-text');
+    this.#tipTextEl = this.$('.tip-text');
 
     // Add tooltip handlers to points
-    this.#pointElements.forEach(point => {
-      point.addEventListener('pointerenter', this.#handlePointEnter);
-      point.addEventListener('pointerleave', this.#handlePointLeave);
+    this.#pointEls.forEach(point => {
+      point.addEventListener('pointerenter', this.#onPointEnter);
+      point.addEventListener('pointerleave', this.#onPointLeave);
     });
 
     // Re-apply values (handles initial load + any re-render)
@@ -66,9 +66,9 @@ export class SherpaSparkline extends SherpaElement {
   }
 
   onDisconnect() {
-    this.#pointElements.forEach(point => {
-      point.removeEventListener('pointerenter', this.#handlePointEnter);
-      point.removeEventListener('pointerleave', this.#handlePointLeave);
+    this.#pointEls.forEach(point => {
+      point.removeEventListener('pointerenter', this.#onPointEnter);
+      point.removeEventListener('pointerleave', this.#onPointLeave);
     });
   }
 
@@ -76,19 +76,19 @@ export class SherpaSparkline extends SherpaElement {
     if (name === 'data-values') this.#updateFromAttribute();
   }
 
-  #handlePointEnter = (e) => {
+  #onPointEnter = (e) => {
     const point = e.target;
     if (!this.#tipEl) return;
 
     const rawValue = point.dataset.value;
     if (rawValue === undefined) return;
     const unitLabel = this.dataset.unit || '';
-    this.#tipText.textContent = formatTooltipValue(rawValue, unitLabel);
+    this.#tipTextEl.textContent = formatTooltipValue(rawValue, unitLabel);
     point.style.anchorName = '--spark-anchor';
     this.#tipEl.showPopover();
   };
 
-  #handlePointLeave = (e) => {
+  #onPointLeave = (e) => {
     this.#tipEl?.hidePopover();
     e.target.style.removeProperty('anchor-name');
   };
@@ -132,8 +132,8 @@ export class SherpaSparkline extends SherpaElement {
     const actualSegments = Math.max(actualPoints - 1, 0);
 
     if (!actualPoints) {
-      this.#shapeElements.forEach(shape => shape.toggleAttribute('hidden', true));
-      this.#pointElements.forEach(point => point.toggleAttribute('hidden', true));
+      this.#shapeEls.forEach(shape => shape.toggleAttribute('hidden', true));
+      this.#pointEls.forEach(point => point.toggleAttribute('hidden', true));
       return;
     }
 
@@ -156,11 +156,11 @@ export class SherpaSparkline extends SherpaElement {
     }
 
     // Toggle shape/point visibility
-    this.#shapeElements.forEach((shape, index) => {
+    this.#shapeEls.forEach((shape, index) => {
       shape.toggleAttribute('hidden', index >= actualSegments);
     });
 
-    this.#pointElements.forEach(point => {
+    this.#pointEls.forEach(point => {
       const index = Number(point.dataset.index);
       const active = Number.isFinite(index) && index < actualPoints;
       point.toggleAttribute('hidden', !active);

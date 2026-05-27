@@ -53,11 +53,18 @@ export class SherpaNodeSocket extends SherpaElement {
   #btnEl = null;
   #connectorsEl = null;
   #connectorTpl = null;
+  #bound = false;
 
   onRender() {
     this.#btnEl = this.$(".socket");
     this.#connectorsEl = this.$(".connectors");
     this.#connectorTpl = this.shadowRoot?.querySelector(".connector-tpl");
+
+    if (!this.#bound) {
+      this.#btnEl?.addEventListener("pointerdown", this.#onPointerDown);
+      this.#bound = true;
+    }
+
     this.#syncCount();
   }
 
@@ -90,14 +97,6 @@ export class SherpaNodeSocket extends SherpaElement {
       dots.push(this.#connectorTpl.content.firstElementChild.cloneNode(true));
     }
     this.#connectorsEl.replaceChildren(...dots);
-  }
-
-  onConnect() {
-    this.#btnEl?.addEventListener("pointerdown", this.#onPointerDown);
-  }
-
-  onDisconnect() {
-    this.#btnEl?.removeEventListener("pointerdown", this.#onPointerDown);
   }
 
   /* ── Public API ────────────────────────────────────────────────── */

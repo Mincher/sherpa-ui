@@ -41,8 +41,8 @@ const REPLACE = {
 </template>
 
 <template data-label="Inside containers" data-layout="block">
-  <sherpa-container data-col-span="4" style="max-width: 320px;">
-    <sherpa-header data-title="Devices online"></sherpa-header>
+  <sherpa-container data-col-span="3" style="max-width: 320px;">
+    <sherpa-container-header data-title="Devices online"></sherpa-container-header>
     <sherpa-metric data-label="Devices online" data-value="1,284" data-trend="up" data-trend-value="+12 since yesterday"></sherpa-metric>
   </sherpa-container>
 </template>

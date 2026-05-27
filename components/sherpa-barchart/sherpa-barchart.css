@@ -29,6 +29,8 @@
   container-type: size;
   container-name: barchart;
 }
+:host([hidden]) { display: none; }
+
 
 :host([data-loading]) .chart-rows {
   filter: grayscale(0.6);
@@ -538,14 +540,14 @@ sherpa-filter-bar {
    Data-viz categorical colors (inlined — global classes can't cross shadow boundary)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.color-1  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
-.color-2  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-2, #c046ff);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
-.color-3  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-3, #2bd1c1);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
-.color-4  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-4, #16abe2);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
-.color-5  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-5, #4141ef);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
-.color-6  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-6, #8197f1);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
-.color-7  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-7, #ffaa01);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
-.color-8  { --_data-viz-color: var(--sherpa-data-viz-categorical-color-8, #f3689d);  background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+:is(.chart-segment, .chart-legend-key)[data-color-index="1"] { --_data-viz-color: var(--sherpa-data-viz-categorical-color-1, #7b1ce6); background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+:is(.chart-segment, .chart-legend-key)[data-color-index="2"] { --_data-viz-color: var(--sherpa-data-viz-categorical-color-2, #c046ff); background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+:is(.chart-segment, .chart-legend-key)[data-color-index="3"] { --_data-viz-color: var(--sherpa-data-viz-categorical-color-3, #2bd1c1); background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+:is(.chart-segment, .chart-legend-key)[data-color-index="4"] { --_data-viz-color: var(--sherpa-data-viz-categorical-color-4, #16abe2); background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+:is(.chart-segment, .chart-legend-key)[data-color-index="5"] { --_data-viz-color: var(--sherpa-data-viz-categorical-color-5, #4141ef); background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+:is(.chart-segment, .chart-legend-key)[data-color-index="6"] { --_data-viz-color: var(--sherpa-data-viz-categorical-color-6, #8197f1); background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+:is(.chart-segment, .chart-legend-key)[data-color-index="7"] { --_data-viz-color: var(--sherpa-data-viz-categorical-color-7, #ffaa01); background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
+:is(.chart-segment, .chart-legend-key)[data-color-index="8"] { --_data-viz-color: var(--sherpa-data-viz-categorical-color-8, #f3689d); background-color: var(--_data-viz-color); color: var(--_data-viz-color); border-color: var(--_data-viz-color); }
 
 /* ═════════════════════════════════════════════════════════════════════════
    Filter Chips

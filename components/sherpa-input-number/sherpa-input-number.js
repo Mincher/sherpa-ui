@@ -37,12 +37,12 @@ export class SherpaInputNumber extends SherpaInputBase {
     return [...super.observedAttributes, 'min', 'max', 'step'];
   }
 
-  #stepDownBtn = null;
-  #stepUpBtn = null;
+  #stepDownBtnEl = null;
+  #stepUpBtnEl = null;
 
   async onInputRender() {
-    this.#stepDownBtn = this.$('.step-down');
-    this.#stepUpBtn = this.$('.step-up');
+    this.#stepDownBtnEl = this.$('.step-down');
+    this.#stepUpBtnEl = this.$('.step-up');
     // Propagate min/max/step to the native input on initial render —
     // attributeChangedCallback fires before the input exists, so the
     // host's declared step would otherwise never reach the control
@@ -58,14 +58,14 @@ export class SherpaInputNumber extends SherpaInputBase {
   }
 
   onInputConnect() {
-    this.#stepDownBtn?.addEventListener('click', this.#onStepDown);
-    this.#stepUpBtn?.addEventListener('click', this.#onStepUp);
+    this.#stepDownBtnEl?.addEventListener('click', this.#onStepDown);
+    this.#stepUpBtnEl?.addEventListener('click', this.#onStepUp);
     this.getInputElement()?.addEventListener('keydown', this.#onKeyDown);
   }
 
   onInputDisconnect() {
-    this.#stepDownBtn?.removeEventListener('click', this.#onStepDown);
-    this.#stepUpBtn?.removeEventListener('click', this.#onStepUp);
+    this.#stepDownBtnEl?.removeEventListener('click', this.#onStepDown);
+    this.#stepUpBtnEl?.removeEventListener('click', this.#onStepUp);
     this.getInputElement()?.removeEventListener('keydown', this.#onKeyDown);
   }
 

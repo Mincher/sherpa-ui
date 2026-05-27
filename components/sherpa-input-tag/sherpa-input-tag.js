@@ -62,7 +62,7 @@ export class SherpaInputTag extends SherpaInputBase {
   onInputConnect() {
     const input = this.getInputElement();
     if (!input) return;
-    input.addEventListener('keydown', this.#onKeydown);
+    input.addEventListener('keydown', this.#onKeyDown);
     // Suppress default input/change re-dispatch for the typeahead since
     // it isn't the component's true value.
     input.addEventListener('input', (e) => e.stopImmediatePropagation(), true);
@@ -71,7 +71,7 @@ export class SherpaInputTag extends SherpaInputBase {
   onInputDisconnect() {
     const input = this.getInputElement();
     if (!input) return;
-    input.removeEventListener('keydown', this.#onKeydown);
+    input.removeEventListener('keydown', this.#onKeyDown);
   }
 
   onAttributeChanged(name, oldValue, newValue) {
@@ -154,7 +154,7 @@ export class SherpaInputTag extends SherpaInputBase {
     wrapper.insertBefore(frag, input);
   }
 
-  #onKeydown = (e) => {
+  #onKeyDown = (e) => {
     const input = this.getInputElement();
     if (!input) return;
     const sep = (this.dataset.separator ?? ',').slice(0, 1);

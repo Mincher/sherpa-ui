@@ -83,14 +83,17 @@ export class SherpaFilterBar extends SherpaElement {
   #observer = null;
   #columns = [];
   #rows = [];
-  #addButton = null;
+  #addButtonEl = null;
   #applied = true; // Toggle state — when false, getFilters() returns []
   #pendingEmit = false; // Microtask debounce for observer-driven filterchange
   #sortChangeHandler = null; // Bound handler for sortchange events
   #syncingSort = false; // Guard against re-entrant filterchange during sort sync
   #scopeEl = null; // Parent element used as event scope for sortchange
+  #bound = false;
 
-  onConnect() {
+  onRender() {
+    if (this.#bound) return;
+
     // Wire sortchange listener on parent scope (container or shadow host)
     this.#scopeEl = this.parentElement || this.getRootNode()?.host || null;
     if (this.#scopeEl && !this.#sortChangeHandler) {
@@ -152,9 +155,9 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     // Add filter button — sherpa-button with data-menu="true"
-    this.#addButton = this.$(".add-filter-button");
+    this.#addButtonEl = this.$(".add-filter-button");
     // Listen for menu-select on the add button to create new chips
-    this.#addButton?.addEventListener("menu-select", this.#onAddMenuSelect);
+    this.#addButtonEl?.addEventListener("menu-select", this.#onAddMenuSelect);
 
     // Listen for button clicks from behavior chips (mode cycling) and dismiss buttons
     this.addEventListener("button-click", (e) => {
@@ -164,7 +167,7 @@ export class SherpaFilterBar extends SherpaElement {
 
       // Dismiss button inside a filter chip group
       if (btn?.dataset?.action === "dismiss") {
-        const container = btn.closest(".grouped") ?? btn;
+        const container = btn.closest(".grouped-component") ?? btn;
         container.remove();
         this.#syncActiveState();
         this.#emitFilterChange();
@@ -196,13 +199,13 @@ export class SherpaFilterBar extends SherpaElement {
       const chip = e.composedPath()[0];
 
       // Skip the add-filter button's own menu-select — handled separately
-      if (chip === this.#addButton) return;
+      if (chip === this.#addButtonEl) return;
 
       // ── New API: data-filter-field chips ──
       // e.target may be the chevron button — resolve the filter-field label button
       const filterChip = chip?.hasAttribute?.("data-filter-field")
         ? chip
-        : chip?.closest?.(".grouped")?.querySelector("sherpa-button[data-filter-field]") ?? null;
+        : chip?.closest?.(".grouped-component")?.querySelector("sherpa-button[data-filter-field]") ?? null;
       if (filterChip) {
         const menuBtn = this.#getChipMenuButton(filterChip);
         // Activate chip when any value is checked
@@ -223,9 +226,9 @@ export class SherpaFilterBar extends SherpaElement {
 
       // ── Sort / segment chips ──
       // The event may come from the chevron (menu) button; the chip may be
-      // inside .chip-group (shadow DOM) or .grouped (light DOM). Resolve the
+      // inside .chip-group (shadow DOM) or .grouped-component (light DOM). Resolve the
       // label button which holds data-behavior, data-field, etc.
-      const labelBtn = (chip.closest?.(".grouped") ?? chip.closest?.(".chip-group"))
+      const labelBtn = (chip.closest?.(".grouped-component") ?? chip.closest?.(".chip-group"))
         ?.querySelector("sherpa-button[data-behavior]")
         ?? (chip?.hasAttribute?.("data-behavior") ? chip : null);
       if (!labelBtn) return;
@@ -280,6 +283,7 @@ export class SherpaFilterBar extends SherpaElement {
 
     // Populate from declarative fields attribute (if set before connect)
     this.#syncAvailableFields();
+    this.#bound = true;
   }
 
   onDisconnect() {
@@ -374,10 +378,10 @@ export class SherpaFilterBar extends SherpaElement {
     }
 
     // Create preset chips if declared but not yet created.
-    // Preset chips are wrapped in .grouped[slot="presets"] (Phase 5); check
+    // Preset chips are wrapped in .grouped-component[slot="presets"] (Phase 5); check
     // for any non-_timerange chip to know if they have been initialised.
     const presetFields = this.getAttribute("data-preset-filters");
-    if (presetFields && !this.querySelector('.grouped[slot="presets"] sherpa-button[data-filter-field]:not([data-filter-field="_timerange"])')) {
+    if (presetFields && !this.querySelector('.grouped-component[slot="presets"] sherpa-button[data-filter-field]:not([data-filter-field="_timerange"])')) {
       this.#initPresetChips(presetFields);
     }
 
@@ -388,7 +392,7 @@ export class SherpaFilterBar extends SherpaElement {
   #syncUserFiltersFlag() {
     const has = !!(
       this.querySelector(":scope > sherpa-button[data-filter-field]:not([slot])") ||
-      this.querySelector(":scope > .grouped:not([slot]) sherpa-button[data-filter-field]")
+      this.querySelector(":scope > .grouped-component:not([slot]) sherpa-button[data-filter-field]")
     );
     this.toggleAttribute("data-has-user-filters", has);
   }
@@ -403,7 +407,7 @@ export class SherpaFilterBar extends SherpaElement {
     // Shadow DOM behavior chips already have data-menu-scope="none" in the
     // template. Only seal light DOM filter-field chips and their menu buttons.
     const chips = this.querySelectorAll(
-      "sherpa-button[data-filter-field], .grouped sherpa-button[data-menu]",
+      "sherpa-button[data-filter-field], .grouped-component sherpa-button[data-menu]",
     );
     for (const chip of chips) {
       if (chip.getAttribute("data-menu-scope") !== "none") {
@@ -428,9 +432,9 @@ export class SherpaFilterBar extends SherpaElement {
       const size = btn.getAttribute("data-size");
       if (!size || size === "base") btn.setAttribute("data-size", "small");
     }
-    if (this.#addButton) {
-      const size = this.#addButton.getAttribute("data-size");
-      if (!size || size === "base") this.#addButton.setAttribute("data-size", "small");
+    if (this.#addButtonEl) {
+      const size = this.#addButtonEl.getAttribute("data-size");
+      if (!size || size === "base") this.#addButtonEl.setAttribute("data-size", "small");
     }
   }
 
@@ -447,7 +451,7 @@ export class SherpaFilterBar extends SherpaElement {
       if (chip.hasAttribute("data-filter-field")) {
         if (chip.hasAttribute("data-user-filter")) {
           // User-added dynamic filter chips — remove from DOM
-          (chip.closest(".grouped") ?? chip).remove();
+          (chip.closest(".grouped-component") ?? chip).remove();
         } else {
           // Declarative / preset chips — clear values but keep in DOM
           this.#getChipMenuButton(chip).clearSelection?.();
@@ -486,18 +490,18 @@ export class SherpaFilterBar extends SherpaElement {
 
   /**
    * Returns the element that holds the menu for a behavior chip.
-   * In a .grouped wrapper the icon button is the menu holder; for
+   * In a .grouped-component wrapper the icon button is the menu holder; for
    * standalone chips the chip itself is the menu holder.
    * @param {HTMLElement} chip — sherpa-button with data-behavior
    */
   #getChipMenuButton(chip) {
-    return (chip.closest(".grouped") ?? chip.closest(".chip-group"))
+    return (chip.closest(".grouped-component") ?? chip.closest(".chip-group"))
       ?.querySelector("sherpa-button[data-menu='true']")
       ?? chip;
   }
 
   /**
-   * Create a filter chip button (or .grouped wrapper for dismissable chips).
+   * Create a filter chip button (or .grouped-component wrapper for dismissable chips).
    * @param {object}  opts
    * @param {string}  opts.filterField   — data-filter-field value
    * @param {string}  opts.filterType    — data-filter-type value
@@ -521,7 +525,7 @@ export class SherpaFilterBar extends SherpaElement {
     const isBoolToggle = filterType === "boolean";
 
     const group = document.createElement("div");
-    group.className = "grouped";
+    group.className = "grouped-component";
     if (slot) group.setAttribute("slot", slot);
     group.appendChild(chip);
 
@@ -600,10 +604,10 @@ export class SherpaFilterBar extends SherpaElement {
   #initPresetChips(fields) {
     // Remove existing preset filter chips (preserve built-in _timerange chip)
     for (const chip of this.querySelectorAll(
-      'sherpa-button[data-filter-field][slot="presets"], .grouped[slot="presets"] sherpa-button[data-filter-field]',
+      'sherpa-button[data-filter-field][slot="presets"], .grouped-component[slot="presets"] sherpa-button[data-filter-field]',
     )) {
       if (chip.getAttribute("data-filter-field") === "_timerange") continue;
-      (chip.closest(".grouped") ?? chip).remove();
+      (chip.closest(".grouped-component") ?? chip).remove();
     }
 
     const fieldList = fields
@@ -633,14 +637,14 @@ export class SherpaFilterBar extends SherpaElement {
 
   /** Populate the "Add filter" button menu with available (unused) columns. */
   #populateAddMenu() {
-    if (!this.#addButton) return;
+    if (!this.#addButtonEl) return;
 
     const usedFields = this.#getUsedFilterFields();
     const available = this.#columns.filter((c) => !usedFields.has(c.field));
 
     // Always re-sync menu items (including clearing to empty) so the
     // previously-shown set never lingers and lets users re-add the last field.
-    this.#addButton.setMenuItems(
+    this.#addButtonEl.setMenuItems(
       available.map((col) => ({
         value: col.field,
         text: col.name || formatFieldName(col.field),
@@ -651,8 +655,8 @@ export class SherpaFilterBar extends SherpaElement {
     // when every column is already in use so the button stays visible but
     // unclickable.
     const noColumns = this.#columns.length === 0;
-    this.#addButton.toggleAttribute("hidden", noColumns);
-    this.#addButton.toggleAttribute("disabled", !noColumns && available.length === 0);
+    this.#addButtonEl.toggleAttribute("hidden", noColumns);
+    this.#addButtonEl.toggleAttribute("disabled", !noColumns && available.length === 0);
     // Reflect Add-button visibility on the host so CSS can light up the
     // Custom-zone divider even when no ad-hoc filter chips exist yet.
     this.toggleAttribute("data-has-add", !noColumns);
@@ -790,7 +794,7 @@ export class SherpaFilterBar extends SherpaElement {
   removeFilterChip(field) {
     for (const chip of this.#getFilterChips()) {
       if (chip.getAttribute("data-filter-field") === field) {
-        (chip.closest(".grouped") ?? chip).remove();
+        (chip.closest(".grouped-component") ?? chip).remove();
         this.#syncActiveState();
         this.#emitFilterChange();
         return true;
@@ -1060,7 +1064,7 @@ export class SherpaFilterBar extends SherpaElement {
         selected: c.field === currentField,
       })),
     ];
-    // In a .grouped wrapper the chevron button is the menu holder
+    // In a .grouped-component wrapper the chevron button is the menu holder
     const menuBtn = this.#getChipMenuButton(chip);
     menuBtn.setMenuItems?.(items, { selection: "radio", group: "columns" });
   }

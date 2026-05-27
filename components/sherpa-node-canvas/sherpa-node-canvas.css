@@ -23,6 +23,7 @@
   background: var(--sherpa-surface-container-app, #eef0f3);
   contain: strict;
   touch-action: none;
+
   /* Grid configuration (world units) */
   --sherpa-node-canvas-grid-step: 72px;
   --sherpa-node-canvas-grid-arm: 3px;
@@ -46,6 +47,9 @@
   /* ── Colour probe (token resolution helper) ──────────– */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+
+:host([hidden]) { display: none; }
+
 :host([data-grabbing]) {
   cursor: grabbing;
 }

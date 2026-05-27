@@ -23,8 +23,10 @@
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
-  color: var(--sherpa-text-default-body, #2e2e33);
+color: var(--sherpa-text-default-body, #2e2e33);
 }
+:host([hidden]) { display: none; }
+
 :host .rationale {
   margin: 0 0 6px;
       font-style: italic;

@@ -29,6 +29,8 @@
   initial-value: 1;
 }
 
+  :host([hidden]) { display: none; }
+
 @property --_progress-end {
   syntax: '<number>';
   inherits: true;

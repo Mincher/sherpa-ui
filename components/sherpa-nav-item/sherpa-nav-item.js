@@ -81,7 +81,7 @@ export class SherpaNavItem extends SherpaElement {
       inner.innerHTML = svg;
       const svgEl = inner.querySelector('svg');
       if (svgEl) {
-        svgEl.classList.add('sherpa-nav-item-svg');
+        svgEl.dataset.navItemSvg = 'true';
         svgEl.setAttribute('aria-hidden', 'true');
       }
       return;

@@ -106,6 +106,9 @@ export class SherpaMenu extends SherpaElement {
 
   onRender() {
     this.#syncLoadingText();
+    this.addEventListener("click", this.#onClick);
+    this.addEventListener("keydown", this.#onKeyDown);
+    this.addEventListener("toggle", this.#onToggle);
   }
 
   onAttributeChanged(name) {
@@ -115,18 +118,6 @@ export class SherpaMenu extends SherpaElement {
   #syncLoadingText() {
     const el = this.$('.menu-loader-text');
     if (el) el.textContent = this.dataset.loadingText || '';
-  }
-
-  onConnect() {
-    this.addEventListener("click", this.#onClick);
-    this.addEventListener("keydown", this.#onKeydown);
-    this.addEventListener("toggle", this.#onToggle);
-  }
-
-  onDisconnect() {
-    this.removeEventListener("click", this.#onClick);
-    this.removeEventListener("keydown", this.#onKeydown);
-    this.removeEventListener("toggle", this.#onToggle);
   }
 
   /* ── Event delegation ──────────────────────────────────────── */
@@ -163,7 +154,7 @@ export class SherpaMenu extends SherpaElement {
     }
   };
 
-  #onKeydown = (e) => {
+  #onKeyDown = (e) => {
     const items = this.#focusableItems();
     if (!items.length) return;
 

@@ -7,7 +7,7 @@
  * @category ai
  *
  * @attr {string}  data-placeholder — Placeholder text.
- * @attr {flag}    data-disabled    — Disables input + send.
+ * @attr {boolean} data-disabled    — Disables input + send.
  * @attr {number}  data-max-height  — Max textarea height in px (default 160).
  *
  * @fires prompt-submit — Fired on submit (Enter or send button) when
@@ -40,6 +40,7 @@ class SherpaPromptComposer extends SherpaElement {
   /** @type {HTMLFormElement|null} */    #formEl   = null;
   /** @type {HTMLTextAreaElement|null} */ #inputEl = null;
   /** @type {HTMLButtonElement|null} */   #sendEl  = null;
+  #bound = false;
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
@@ -48,19 +49,16 @@ class SherpaPromptComposer extends SherpaElement {
     this.#inputEl = this.$(".composer-input");
     this.#sendEl  = this.$(".composer-send");
 
-    this.#formEl?.addEventListener("submit", this.#onSubmit);
-    this.#inputEl?.addEventListener("input",   this.#onInput);
-    this.#inputEl?.addEventListener("keydown", this.#onKeydown);
+    if (!this.#bound) {
+      this.#formEl?.addEventListener("submit", this.#onSubmit);
+      this.#inputEl?.addEventListener("input",   this.#onInput);
+      this.#inputEl?.addEventListener("keydown", this.#onKeyDown);
+      this.#bound = true;
+    }
 
     this.#syncPlaceholder();
     this.#syncDisabled();
     this.#syncMaxHeight();
-  }
-
-  onDisconnect() {
-    this.#formEl?.removeEventListener("submit", this.#onSubmit);
-    this.#inputEl?.removeEventListener("input",   this.#onInput);
-    this.#inputEl?.removeEventListener("keydown", this.#onKeydown);
   }
 
   onAttributeChanged(name) {
@@ -87,7 +85,7 @@ class SherpaPromptComposer extends SherpaElement {
 
   #onInput = () => this.#autoresize();
 
-  #onKeydown = (e) => {
+  #onKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       this.#formEl?.requestSubmit();

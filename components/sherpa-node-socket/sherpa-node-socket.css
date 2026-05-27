@@ -23,6 +23,8 @@
  * height is content-driven — no calc() formulas, no custom properties.
  * 0 or 1 dot collapses to the 16×16 minimum; 2+ dots stack and grow
  * the shape vertically via flex.
+
+  :host([hidden]) { display: none; }
  */
 
 :host {

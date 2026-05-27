@@ -47,9 +47,9 @@ export class FlowManager {
   #contentArea;
   #addEditDialog;
   #deleteDialog;
-  #onSave;
-  #onDelete;
-  #onRefresh;
+  #saveCallback;
+  #deleteCallback;
+  #refreshCallback;
   #labels;
 
   // State
@@ -57,10 +57,10 @@ export class FlowManager {
   #deleteTargetIds = [];
 
   // Cached refs
-  #saveBtn = null;
-  #cancelBtn = null;
-  #confirmDeleteBtn = null;
-  #cancelDeleteBtn = null;
+  #saveBtnEl = null;
+  #cancelBtnEl = null;
+  #confirmDeleteBtnEl = null;
+  #cancelDeleteBtnEl = null;
 
   /**
    * @param {FlowManagerOptions} options
@@ -70,9 +70,9 @@ export class FlowManager {
     this.#contentArea = options.contentArea;
     this.#addEditDialog = options.dialogs?.addEdit ?? null;
     this.#deleteDialog = options.dialogs?.delete ?? null;
-    this.#onSave = options.onSave ?? null;
-    this.#onDelete = options.onDelete ?? null;
-    this.#onRefresh = options.onRefresh ?? null;
+    this.#saveCallback = options.onSave ?? null;
+    this.#deleteCallback = options.onDelete ?? null;
+    this.#refreshCallback = options.onRefresh ?? null;
 
     const cap = this.#capitalize(this.#entity);
     this.#labels = {
@@ -95,7 +95,7 @@ export class FlowManager {
     if (!this.#addEditDialog) return;
     this.#editingRecord = null;
     this.#addEditDialog.setAttribute('data-label', this.#labels.addTitle);
-    if (this.#saveBtn) this.#saveBtn.setAttribute('data-label', this.#labels.saveLabel);
+    if (this.#saveBtnEl) this.#saveBtnEl.setAttribute('data-label', this.#labels.saveLabel);
     this.#dispatch('flow-start', { flow: 'add', entity: this.#entity });
     this.#addEditDialog.show();
   }
@@ -108,7 +108,7 @@ export class FlowManager {
     if (!this.#addEditDialog) return;
     this.#editingRecord = record;
     this.#addEditDialog.setAttribute('data-label', this.#labels.editTitle);
-    if (this.#saveBtn) this.#saveBtn.setAttribute('data-label', this.#labels.updateLabel);
+    if (this.#saveBtnEl) this.#saveBtnEl.setAttribute('data-label', this.#labels.updateLabel);
     this.#dispatch('flow-start', { flow: 'edit', entity: this.#entity, data: record });
     this.#addEditDialog.show();
   }
@@ -156,27 +156,27 @@ export class FlowManager {
   #wireAddEditDialog() {
     if (!this.#addEditDialog) return;
 
-    this.#saveBtn = this.#addEditDialog.querySelector('[slot="footer"][data-variant="primary"]');
-    this.#cancelBtn = this.#addEditDialog.querySelector('[slot="footer"][data-variant="secondary"]');
+    this.#saveBtnEl = this.#addEditDialog.querySelector('[slot="footer"][data-variant="primary"]');
+    this.#cancelBtnEl = this.#addEditDialog.querySelector('[slot="footer"][data-variant="secondary"]');
 
-    this.#saveBtn?.addEventListener('button-click', () => this.#handleSave());
-    this.#cancelBtn?.addEventListener('button-click', () => this.#handleCancelAddEdit());
+    this.#saveBtnEl?.addEventListener('button-click', () => this.#onSave());
+    this.#cancelBtnEl?.addEventListener('button-click', () => this.#onCancelAddEdit());
   }
 
   #wireDeleteDialog() {
     if (!this.#deleteDialog) return;
 
-    this.#confirmDeleteBtn = this.#deleteDialog.querySelector('[slot="footer"][data-variant="primary"]');
-    this.#cancelDeleteBtn = this.#deleteDialog.querySelector('[slot="footer"][data-variant="secondary"]');
+    this.#confirmDeleteBtnEl = this.#deleteDialog.querySelector('[slot="footer"][data-variant="primary"]');
+    this.#cancelDeleteBtnEl = this.#deleteDialog.querySelector('[slot="footer"][data-variant="secondary"]');
 
-    this.#confirmDeleteBtn?.addEventListener('button-click', () => this.#handleConfirmDelete());
-    this.#cancelDeleteBtn?.addEventListener('button-click', () => this.#handleCancelDelete());
+    this.#confirmDeleteBtnEl?.addEventListener('button-click', () => this.#onConfirmDelete());
+    this.#cancelDeleteBtnEl?.addEventListener('button-click', () => this.#onCancelDelete());
   }
 
   /* ── Private — handlers ──────────────────────────────────────── */
 
-  async #handleSave() {
-    if (!this.#onSave) {
+  async #onSave() {
+    if (!this.#saveCallback) {
       this.#addEditDialog?.hide();
       return;
     }
@@ -185,7 +185,7 @@ export class FlowManager {
     this.#dispatch('flow-progress', { flow: flowType, entity: this.#entity });
 
     try {
-      const result = await this.#onSave(this.#editingRecord, flowType);
+      const result = await this.#saveCallback(this.#editingRecord, flowType);
       this.#dispatch('flow-complete', { flow: flowType, entity: this.#entity, data: result });
 
       const cap = this.#capitalize(this.#entity);
@@ -196,20 +196,20 @@ export class FlowManager {
 
       this.#addEditDialog?.hide();
       this.#editingRecord = null;
-      this.#onRefresh?.();
+      this.#refreshCallback?.();
     } catch (err) {
       this.#dispatch('flow-error', { flow: flowType, entity: this.#entity, error: err.message });
       SherpaToast.critical(err.message || `Failed to save ${this.#entity}.`);
     }
   }
 
-  #handleCancelAddEdit() {
+  #onCancelAddEdit() {
     this.#dispatch('flow-cancel', { flow: this.flowType, entity: this.#entity });
     this.#addEditDialog?.hide();
   }
 
-  async #handleConfirmDelete() {
-    if (!this.#onDelete) {
+  async #onConfirmDelete() {
+    if (!this.#deleteCallback) {
       this.#deleteDialog?.hide();
       return;
     }
@@ -217,7 +217,7 @@ export class FlowManager {
     this.#dispatch('flow-progress', { flow: 'delete', entity: this.#entity, data: { ids: this.#deleteTargetIds } });
 
     try {
-      const result = await this.#onDelete(this.#deleteTargetIds);
+      const result = await this.#deleteCallback(this.#deleteTargetIds);
       this.#deleteDialog?.hide();
       this.#dispatch('flow-complete', { flow: 'delete', entity: this.#entity, data: result });
 
@@ -225,14 +225,14 @@ export class FlowManager {
       SherpaToast.success(`${count} ${this.#entity}(s) deleted.`);
 
       this.#deleteTargetIds = [];
-      this.#onRefresh?.();
+      this.#refreshCallback?.();
     } catch (err) {
       this.#dispatch('flow-error', { flow: 'delete', entity: this.#entity, error: err.message });
       SherpaToast.critical(err.message || `Failed to delete ${this.#entity}.`);
     }
   }
 
-  #handleCancelDelete() {
+  #onCancelDelete() {
     this.#dispatch('flow-cancel', { flow: 'delete', entity: this.#entity });
     this.#deleteDialog?.hide();
   }

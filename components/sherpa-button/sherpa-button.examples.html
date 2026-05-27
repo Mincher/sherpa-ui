@@ -47,29 +47,25 @@
   <sherpa-button data-variant="primary" data-label="Success"  data-status="success"></sherpa-button>
 </template>
 
-<template data-label="Grouped (row)" data-description="Wrap buttons in .grouped to compose them into a seamless control. The wrapper owns the border and corner rounding; children are radiusless via --_cg-border-radius: 0.">
-  <div class="grouped">
+<template data-label="Grouped (row)" data-description="Wrap buttons in .grouped-component to compose them into a seamless control. The wrapper owns the border and corner rounding; children are radiusless via --_cg-border-radius: 0.">
+  <div class="grouped-component">
     <sherpa-button data-variant="secondary" data-label="Day"></sherpa-button>
     <sherpa-button data-variant="secondary" data-label="Week" data-active></sherpa-button>
     <sherpa-button data-variant="secondary" data-label="Month"></sherpa-button>
   </div>
-  <div class="grouped">
+  <div class="grouped-component">
     <sherpa-button data-variant="secondary" data-type="icon" data-icon-start="fa-solid fa-align-left"   aria-label="Align left"></sherpa-button>
     <sherpa-button data-variant="secondary" data-type="icon" data-icon-start="fa-solid fa-align-center" aria-label="Align centre"></sherpa-button>
     <sherpa-button data-variant="secondary" data-type="icon" data-icon-start="fa-solid fa-align-right"  aria-label="Align right"></sherpa-button>
   </div>
 </template>
 
-<template data-label="Grouped (grid)" data-description="Add data-layout-grid to turn .grouped into a CSS grid. Set --_cg-columns to control column count (default 3). The wrapper's overflow:hidden and border-radius clip the four corner cells automatically — no per-child rounding rules needed." data-layout="block">
-  <div class="grouped" data-layout-grid style="--_cg-columns: 3; width: fit-content;">
+<template data-label="Grouped (vertical)" data-description="Set data-direction=&quot;vertical&quot; on .grouped-component to stack buttons in a column." data-layout="block">
+  <div class="grouped-component" data-direction="vertical">
     <sherpa-button data-variant="secondary" data-label="Mon"></sherpa-button>
     <sherpa-button data-variant="secondary" data-label="Tue"></sherpa-button>
     <sherpa-button data-variant="secondary" data-label="Wed"></sherpa-button>
-    <sherpa-button data-variant="secondary" data-label="Thu"></sherpa-button>
+    <sherpa-button data-variant="secondary" data-label="Thu" data-active></sherpa-button>
     <sherpa-button data-variant="secondary" data-label="Fri"></sherpa-button>
-    <sherpa-button data-variant="secondary" data-label="Sat"></sherpa-button>
-    <sherpa-button data-variant="secondary" data-label="Sun"></sherpa-button>
-    <sherpa-button data-variant="secondary" data-label="All" data-active></sherpa-button>
-    <sherpa-button data-variant="secondary" data-label="None"></sherpa-button>
   </div>
 </template>

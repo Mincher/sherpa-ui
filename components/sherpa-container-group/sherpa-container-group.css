@@ -1,0 +1,84 @@
+/**
+ * sherpa-container-group.css — Shadow-scoped styles
+ *
+ * Subgrid tile cluster for sherpa-layout-grid. :host is both a grid item
+ * (in the parent layout-grid) and a grid container that inherits the
+ * parent's column tracks via `grid-template-columns: subgrid`.
+ *
+ * Structure (shadow DOM):
+ *   :host (grid, subgrid columns, fixed-row-height auto rows)
+ *   └── <slot>   — sherpa-container tiles
+ *
+ * Layout model:
+ *   • Both axes use subgrid → column AND row tracks are inherited from
+ *     the outer layout-grid. Tiles inside align exactly with sibling tiles
+ *     on both axes; no pixel row heights or gap values are needed here.
+ *   • The caller must set data-row-span (and data-col-span) so the group
+ *     claims the correct number of outer tracks before subgrid resolves.
+ *   • Group title comes from the FIRST child tile's own
+ *     <sherpa-container-header>. The group's JS labels each tile with a
+ *     managed `data-group-position` attribute (`first` | `follow`); the
+ *     follower tiles' header content is visually muted in
+ *     sherpa-container / sherpa-container-header CSS via the cascaded
+ *     --_cg-header-vis / --_cg-header-sep custom properties — the header
+ *     BAND remains the same height on every tile so content baselines
+ *     align across rows. No dedicated group-header row exists.
+
+  :host([hidden]) { display: none; }
+ *
+ * Cascading tokens set on :host (inherit through shadow DOM into slotted
+ * light-DOM children):
+ *
+ *   --_cg-border-width: 0    → child containers render borderless
+ *   --_cg-border-radius: 0   → child containers render without rounding
+ *
+ * Host attributes consumed:
+ *   data-col-span {enum} — 2 | 3 | 4 | 6 | 8 | 9 | 12 — resolved by
+ *     ::slotted(sherpa-container-group[data-col-span="N"]) rules in
+ *     sherpa-layout-grid.css. No selectors here.
+ *
+ * Slotted children consumed:
+ *   sherpa-container — sets its own grid-column / grid-row via
+ *                      data-col-span / data-row-span (see
+ *                      sherpa-container.css). No per-span
+ *                      rules live here.
+ */
+
+:host {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  overflow: hidden;
+  --_cg-border-width: 0;
+  --_cg-border-radius: 0;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* ─── Outer-grid row span ────────────────────────────────────────────
+   Set data-row-span to match the number of outer-grid rows the group's
+   children occupy. The outer sherpa-layout-grid uses this for placement;  
+   grid-template-rows: subgrid then maps those same tracks inside the group. */
+:host([data-row-span="2"]) { grid-row: span 2; }
+:host([data-row-span="3"]) { grid-row: span 3; }
+:host([data-row-span="4"]) { grid-row: span 4; }
+:host([data-row-span="5"]) { grid-row: span 5; }
+:host([data-row-span="6"]) { grid-row: span 6; }
+:host([data-row-span="7"]) { grid-row: span 7; }
+:host([data-row-span="8"]) { grid-row: span 8; }
+:host([data-row-span="9"]) { grid-row: span 9; }
+:host([data-row-span="10"]) { grid-row: span 10; }
+:host([data-row-span="11"]) { grid-row: span 11; }
+:host([data-row-span="12"]) { grid-row: span 12; }
+
+/* ─── Slotted layout ─────────────────────────────────────────────── */
+
+/* Child tiles set their own grid-column / grid-row via data-col-span /
+   data-row-span on sherpa-container itself (see sherpa-container.css).
+   Both axes are subgrid, so `span N` resolves to exactly the same tracks
+   the tile would occupy as a direct child of the outer layout-grid. */

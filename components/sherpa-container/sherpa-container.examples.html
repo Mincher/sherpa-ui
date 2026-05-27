@@ -1,6 +1,6 @@
 <!--
   sherpa-container — Live examples.
-  Each example composes a real header (sherpa-header), body content
+  Each example composes a real header (sherpa-container-header), body content
   (real subcomponents), and a footer row appropriate to the container's purpose.
   Footer bands use slot="footer"; they own their own border-top and padding.
   Content in the default slot receives automatic 16px padding from .card-content.
@@ -8,12 +8,12 @@
 
 <template data-label="Default (fit) — detail card" data-description="Header + key/value body + footer action. Typical 'overview' card with no fixed height." data-layout="block">
   <sherpa-container style="max-width: 480px;">
-    <sherpa-header
+    <sherpa-container-header
       data-title="Device details"
       data-description="api-edge-04 — eu-west-1"
     >
       <sherpa-tag slot="actions" data-status="success">Online</sherpa-tag>
-    </sherpa-header>
+    </sherpa-container-header>
     <sherpa-key-value-list data-striped>
       <dt>Status</dt><dd>Online</dd>
       <dt>Region</dt><dd>EU (Frankfurt)</dd>
@@ -28,8 +28,8 @@
 </template>
 
 <template data-label="Resizable — KPI card" data-description="Resizable variant with col/row span. Body is a single sherpa-metric; footer shows trend context." data-layout="block">
-  <sherpa-container data-variant="resizable" data-col-span="4" data-row-span="2" style="max-width: 360px;">
-    <sherpa-header
+  <sherpa-container data-variant="resizable" data-col-span="3" data-row-span="2" style="max-width: 360px;">
+    <sherpa-container-header
       data-title="Devices online"
       data-description="Last 24 hours"
       data-menu-button
@@ -40,7 +40,7 @@
         <sherpa-menu-item data-action="export"    data-icon="fa-solid fa-download">Export</sherpa-menu-item>
         <sherpa-menu-item data-action="remove"    data-icon="fa-solid fa-trash" data-variant="critical">Remove tile</sherpa-menu-item>
       </template>
-    </sherpa-header>
+    </sherpa-container-header>
     <sherpa-metric data-label="Devices online" value="1,284" data-trend="up" data-delta="+12% vs yesterday" data-status="success"></sherpa-metric>
     <div slot="footer" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
       <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-subtle);">12 added today</span>
@@ -51,13 +51,13 @@
 
 <template data-label="Fill — list card with pagination" data-description="Fill variant occupies the full height of its parent. Body is a divided sherpa-list; footer is sherpa-pagination." data-layout="block">
   <sherpa-container data-variant="fill" style="max-width: 560px; height: 420px;">
-    <sherpa-header
+    <sherpa-container-header
       data-title="Recent events"
       data-description="Across all environments"
     >
       <sherpa-tag slot="actions" data-variant="secondary">24 new</sherpa-tag>
       <sherpa-button slot="actions" data-variant="tertiary" data-size="small" data-icon-start="&#xf0b0;" data-label="Filter"></sherpa-button>
-    </sherpa-header>
+    </sherpa-container-header>
     <sherpa-list data-variant="divided" style="flex: 1; overflow: auto;">
       <sherpa-list-item data-label="Deployment succeeded"     data-description="v2.4.1 — 2 mins ago" data-icon="fa-solid fa-rocket"      data-interactive><sherpa-tag slot="trailing" data-status="success">Success</sherpa-tag></sherpa-list-item>
       <sherpa-list-item data-label="High CPU usage"            data-description="web-01 — 12 mins ago" data-icon="fa-solid fa-microchip"   data-interactive><sherpa-tag slot="trailing" data-status="warning">Warning</sherpa-tag></sherpa-list-item>
@@ -71,7 +71,7 @@
 
 <template data-label="Worksheet — chart card with summary footer" data-description="Worksheet variant for dashboard composition. Body is a chart; footer summarises the data shown." data-layout="block">
   <sherpa-container data-variant="worksheet" style="max-width: 520px;">
-    <sherpa-header
+    <sherpa-container-header
       data-title="Requests per minute"
       data-description="Last 60 minutes"
       data-menu-button
@@ -86,7 +86,7 @@
         <sherpa-menu-item data-action="download" data-icon="fa-solid fa-download">Download PNG</sherpa-menu-item>
         <sherpa-menu-item data-action="copy"     data-icon="fa-solid fa-copy">Copy data</sherpa-menu-item>
       </template>
-    </sherpa-header>
+    </sherpa-container-header>
     <sherpa-barchart style="height: 220px;"></sherpa-barchart>
     <sherpa-key-value-list slot="footer" data-layout="horizontal" style="padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
       <dt>Peak</dt><dd>1,842 rpm</dd>
@@ -98,12 +98,12 @@
 
 <template data-label="State — loading" data-description="Loading overlay sits over the live header + body composition." data-layout="block">
   <sherpa-container data-state="loading" style="max-width: 480px;">
-    <sherpa-header
+    <sherpa-container-header
       data-title="Devices"
       data-description="All devices in your account"
     >
       <sherpa-button slot="actions" data-variant="tertiary" data-size="small" data-icon-start="&#xf2f1;" data-label="Refresh"></sherpa-button>
-    </sherpa-header>
+    </sherpa-container-header>
     <sherpa-key-value-list>
       <dt>Total</dt><dd>—</dd>
       <dt>Online</dt><dd>—</dd>
@@ -117,12 +117,12 @@
 
 <template data-label="State — empty" data-description="Empty state replaces the body; header stays visible so the user can add data." data-layout="block">
   <sherpa-container data-state="empty" style="max-width: 480px; min-height: 280px;">
-    <sherpa-header
+    <sherpa-container-header
       data-title="Devices"
       data-description="Connect your first device to start monitoring"
     >
       <sherpa-button slot="actions" data-variant="primary" data-size="small" data-icon-start="&#x2b;" data-label="Add device"></sherpa-button>
-    </sherpa-header>
+    </sherpa-container-header>
     <sherpa-empty-state
       slot="empty"
       data-label="No devices yet"
@@ -135,10 +135,10 @@
 
 <template data-label="State — error" data-description="Error overlay with a retry action. Header still shows the section title." data-layout="block">
   <sherpa-container data-state="error" style="max-width: 480px; min-height: 280px;">
-    <sherpa-header
+    <sherpa-container-header
       data-title="Devices"
       data-description="All devices in your account"
-    ></sherpa-header>
+    ></sherpa-container-header>
     <sherpa-empty-state
       slot="error"
       data-label="Something went wrong"
@@ -152,7 +152,7 @@
 
 <template data-label="Editable + menu — dashboard tile" data-description="Editable resizable card with drag handle and overflow menu. Body is a metric; footer offers a quick action." data-layout="block">
   <sherpa-container data-variant="resizable" data-col-span="6" data-row-span="2" data-editable style="max-width: 420px;">
-    <sherpa-header
+    <sherpa-container-header
       data-title="Active alerts"
       data-description="Across all monitored services"
       data-menu-button
@@ -164,7 +164,7 @@
         <sherpa-menu-item data-action="rules"       data-icon="fa-solid fa-gear">Edit alert rules</sherpa-menu-item>
         <sherpa-menu-item data-action="remove"      data-icon="fa-solid fa-trash" data-variant="critical">Remove tile</sherpa-menu-item>
       </template>
-    </sherpa-header>
+    </sherpa-container-header>
     <sherpa-metric data-label="Active alerts" value="7" data-trend="up" data-delta="+3 in last hour" data-status="warning"></sherpa-metric>
     <div slot="footer" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--sherpa-border-container-subtle-default);">
       <span style="font: var(--sherpa-text-body-sm); color: var(--sherpa-text-default-subtle);">2 critical · 5 warnings</span>
@@ -179,55 +179,55 @@
 
 <template data-label="Basic card" data-description="Minimal card with a header and body. Header uses slot=&quot;header&quot; for the edge-to-edge separator pattern.">
   <sherpa-container style="max-width: 360px;">
-    <sherpa-header slot="header" data-title="Standard card" data-description="A container with a slotted header."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Standard card" data-description="A container with a slotted header."></sherpa-container-header>
     <p>Main content goes in the default slot.</p>
   </sherpa-container>
 </template>
 
 <template data-label="Elevation" data-description="data-elevation controls drop-shadow depth.">
   <sherpa-container data-elevation="none" style="max-width: 200px;">
-    <sherpa-header slot="header" data-title="None" data-description="Flat, no shadow."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="None" data-description="Flat, no shadow."></sherpa-container-header>
     <p>Use for flush surfaces.</p>
   </sherpa-container>
   <sherpa-container data-elevation="sm" style="max-width: 200px;">
-    <sherpa-header slot="header" data-title="Small" data-description="Subtle lift."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Small" data-description="Subtle lift."></sherpa-container-header>
     <p>Low-emphasis cards.</p>
   </sherpa-container>
   <sherpa-container data-elevation="md" style="max-width: 200px;">
-    <sherpa-header slot="header" data-title="Medium" data-description="Default depth."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Medium" data-description="Default depth."></sherpa-container-header>
     <p>Standard standalone cards.</p>
   </sherpa-container>
   <sherpa-container data-elevation="lg" style="max-width: 200px;">
-    <sherpa-header slot="header" data-title="Large" data-description="High emphasis."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Large" data-description="High emphasis."></sherpa-container-header>
     <p>Feature highlights, selected states.</p>
   </sherpa-container>
 </template>
 
 <template data-label="Interactive" data-description="data-interactive makes the container a focusable, clickable surface. Listen for the card-click event.">
   <sherpa-container data-interactive style="max-width: 360px;">
-    <sherpa-header slot="header" data-title="Clickable container" data-description="Hover, tab, or click to see states."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Clickable container" data-description="Hover, tab, or click to see states."></sherpa-container-header>
     <p>Attach a <code>card-click</code> listener to handle activation. Keyboard users can press Enter or Space to trigger the same event.</p>
   </sherpa-container>
 </template>
 
-<template data-label="Selectable" data-description="data-selectable makes the container act as a radio option. Slot sherpa-footer data-type=&quot;card-select&quot; to show the radio indicator. Click either card to toggle selection.">
+<template data-label="Selectable" data-description="data-selectable makes the container act as a radio option. Slot sherpa-container-footer data-type=&quot;card-select&quot; to show the radio indicator. Click either card to toggle selection.">
   <div style="display: flex; gap: 8px; width: 100%;">
     <sherpa-container data-selectable style="flex: 1;">
-      <sherpa-header slot="header" data-title="Standard" data-description="1 workspace · 5 GB storage"></sherpa-header>
+      <sherpa-container-header slot="header" data-title="Standard" data-description="1 workspace · 5 GB storage"></sherpa-container-header>
       <p>Ideal for individuals and small projects. Includes basic analytics and community support.</p>
-      <sherpa-footer slot="footer" data-type="card-select"></sherpa-footer>
+      <sherpa-container-footer slot="footer" data-type="card-select"></sherpa-container-footer>
     </sherpa-container>
     <sherpa-container data-selectable data-selected style="flex: 1;">
-      <sherpa-header slot="header" data-title="Pro" data-description="Unlimited workspaces · 1 TB storage"></sherpa-header>
+      <sherpa-container-header slot="header" data-title="Pro" data-description="Unlimited workspaces · 1 TB storage"></sherpa-container-header>
       <p>Everything in Standard plus advanced analytics, priority support, and team collaboration tools.</p>
-      <sherpa-footer slot="footer" data-type="card-select" data-selected="true"></sherpa-footer>
+      <sherpa-container-footer slot="footer" data-type="card-select" data-selected="true"></sherpa-container-footer>
     </sherpa-container>
   </div>
 </template>
 
 <template data-label="With footer actions" data-description="Named footer slot for action buttons. Use sherpa-button elements for standard action footers.">
   <sherpa-container style="max-width: 360px;">
-    <sherpa-header slot="header" data-title="Confirm action" data-description="Review before proceeding."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Confirm action" data-description="Review before proceeding."></sherpa-container-header>
     <p>Footer slots accept any content. Use <code>sherpa-button</code> for standard action footers.</p>
     <sherpa-button slot="footer" data-variant="secondary" data-size="small" data-label="Cancel"></sherpa-button>
     <sherpa-button slot="footer" data-variant="primary"   data-size="small" data-label="Confirm"></sherpa-button>
@@ -236,7 +236,7 @@
 
 <template data-label="Disabled" data-description="disabled suppresses all pointer events and applies inactive colour tokens throughout.">
   <sherpa-container data-interactive disabled style="max-width: 360px;">
-    <sherpa-header slot="header" data-title="Unavailable" data-description="This container cannot be interacted with."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Unavailable" data-description="This container cannot be interacted with."></sherpa-container-header>
     <p>All pointer events are suppressed. The container retains its layout but uses inactive colour tokens throughout.</p>
   </sherpa-container>
 </template>

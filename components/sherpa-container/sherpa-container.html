@@ -6,11 +6,11 @@
   viz components can adapt their layout via container queries.
 
   Content may be provided via:
-    slot="header"  — Card-style header (use sherpa-header). Renders edge-to-edge
+    slot="header"  — Card-style header (use sherpa-container-header). Renders edge-to-edge
                      with a bottom separator. Shown only when content is slotted.
     (default slot) — Main content area. Receives 16px padding on all sides;
                      top padding is suppressed when a header is present.
-    slot="footer"  — Card-style footer band (use sherpa-footer, sherpa-button,
+    slot="footer"  — Card-style footer band (use sherpa-container-footer, sherpa-button,
                      or a plain <div> with its own border-top + padding).
 
   State overlay slots (visible when data-state matches):
@@ -39,7 +39,9 @@
   <div class="card-content" part="content">
     <slot></slot>
   </div>
-  <slot name="footer"></slot>
+  <div class="card-footer" part="footer">
+    <slot name="footer"></slot>
+  </div>
   <div class="state-overlay" role="status" aria-live="polite">
     <slot name="loading" class="state-slot state-loading">
       <span class="state-default state-default-loading" aria-label="Loading"></span>
@@ -51,4 +53,5 @@
       <span class="state-default state-default-error">Failed to load.</span>
     </slot>
   </div>
+  <button class="resize-grip" part="resize-grip" type="button" tabindex="-1" aria-label="Resize"></button>
 </template>

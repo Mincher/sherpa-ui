@@ -16,6 +16,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+
   /* ──────────────────────────────────────────────────────────
              COMPOSER WRAPPER (gradient border + grid layout)
              ────────────────────────────────────────────────────────── */
@@ -27,6 +28,9 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+
+:host([hidden]) { display: none; }
+
 :host .composer {
   position: relative;
       display: grid;

@@ -23,7 +23,7 @@
   width: 100%;
   gap: var(--sherpa-space-xs, 8px);
   padding: var(--sherpa-space-sm, 12px);
-  border: var(--sherpa-border-width-xs, 1px) solid
+border: var(--sherpa-border-width-xs, 1px) solid
     var(--_status-border, var(--sherpa-border-context-info-default, #07526f));
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--_status-surface-subtle, var(--sherpa-surface-context-info-subtle-default, #d9f2fa));

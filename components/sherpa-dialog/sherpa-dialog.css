@@ -4,7 +4,7 @@
  * Shadow DOM styles for the SherpaDialog web component.
  *
  * Uses the native HTML <dialog> element with ::backdrop pseudo-element.
- * The sherpa-header and sherpa-footer slotted children handle their own
+ * The sherpa-container-header and sherpa-container-footer slotted children handle their own
  * rendering and events.
  *
  * Host attributes:
@@ -16,9 +16,9 @@
  *   data-dismissible  — true | false (show close button)
  *
  * Slots:
- *   header    — sherpa-header (type="dialog") for title / close button
+ *   header    — sherpa-container-header (type="dialog") for title / close button
  *   (default) — dialog body content
- *   footer    — sherpa-footer or custom footer content
+ *   footer    — sherpa-container-footer or custom footer content
  */
 
 :host {
@@ -36,7 +36,7 @@
   --_text: var(--sherpa-text-default-body, #2e2e33);
   --_duration: var(--sherpa-motion-duration-base, 200ms);
   --_easing: var(--sherpa-motion-easing-default, ease);
-  /* ──────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────
              DIALOG ELEMENT
              ────────────────────────────────────────────────────────── */
   /* ── Size variants ──────────────────────────────────────── */
@@ -58,6 +58,8 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────── */
 }
+:host([hidden]) { display: none; }
+
 :host .dialog {
   display: none;
       flex-direction: column;
@@ -163,7 +165,7 @@
 :host([data-dismissible="false"]) .close-button {
   display: none;
 }
-:host sherpa-footer {
+:host sherpa-container-footer {
   flex-shrink: 0;
 }
 :host .dialog-content {

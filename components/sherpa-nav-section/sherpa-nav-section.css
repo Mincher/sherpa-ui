@@ -16,6 +16,9 @@ i { font-style: normal; }
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
   overflow: hidden;
 }
+
+:host([hidden]) { display: none; }
+
 :host .header {
   display: flex;
       align-items: center;

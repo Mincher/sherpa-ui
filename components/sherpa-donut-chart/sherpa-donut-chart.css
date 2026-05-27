@@ -28,7 +28,7 @@
    ================================================================ */
 :host {
   display: flex;
-  flex-direction: column;
+flex-direction: column;
   align-items: stretch;
   gap: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
@@ -36,6 +36,8 @@
   overflow: clip;
   container: sherpa-donut-chart / size;
 }
+:host([hidden]) { display: none; }
+
 :host([data-loading]) .chart-area {
   opacity: 0.4;
       pointer-events: none;

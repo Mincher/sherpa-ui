@@ -26,6 +26,8 @@
   flex-direction: column;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 }
+:host([hidden]) { display: none; }
+
 :host .tracker-header {
   display: none; align-items: center; justify-content: space-between; padding-bottom: var(--sherpa-space-base, 16px);
 }

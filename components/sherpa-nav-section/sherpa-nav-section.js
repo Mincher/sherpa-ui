@@ -80,6 +80,7 @@ export class SherpaNavSection extends SherpaElement {
   /** @type {HTMLTemplateElement|null} */ #groupTpl = null;
   /** @type {HTMLTemplateElement|null} */ #headerItemTpl = null;
   /** @type {HTMLTemplateElement|null} */ #itemTpl = null;
+  #bound = false;
 
   /* ── lifecycle ───────────────────────── */
 
@@ -96,15 +97,12 @@ export class SherpaNavSection extends SherpaElement {
     this.#syncFromAttribute();
     this.#renderSections();
 
-    this.#backEl?.addEventListener("click", this.#onBack);
-    this.#sectionsEl?.addEventListener("click", this.#onClick);
-    this.#sectionsEl?.addEventListener("keydown", this.#onKeydown);
-  }
-
-  onDisconnect() {
-    this.#backEl?.removeEventListener("click", this.#onBack);
-    this.#sectionsEl?.removeEventListener("click", this.#onClick);
-    this.#sectionsEl?.removeEventListener("keydown", this.#onKeydown);
+    if (!this.#bound) {
+      this.#backEl?.addEventListener("click", this.#onBack);
+      this.#sectionsEl?.addEventListener("click", this.#onClick);
+      this.#sectionsEl?.addEventListener("keydown", this.#onKeyDown);
+      this.#bound = true;
+    }
   }
 
   onAttributeChanged(name) {
@@ -203,7 +201,7 @@ export class SherpaNavSection extends SherpaElement {
       const desc = node.querySelector(".header-item-description");
       if (item.description) {
         desc.textContent = item.description;
-        desc.hidden = false;
+        desc.removeAttribute('hidden');
       }
       return node;
     }
@@ -224,11 +222,8 @@ export class SherpaNavSection extends SherpaElement {
     btn.querySelector(".item-label").textContent = item.label || "";
     const iconEl = btn.querySelector(".item-icon");
     if (item.icon) {
-      // item.icon is a class string like "fa-regular fa-cog" — split + add
-      for (const cls of item.icon.split(/\s+/).filter(Boolean)) {
-        iconEl.classList.add(cls);
-      }
-      iconEl.hidden = false;
+      iconEl.className = `item-icon ${item.icon}`;
+      iconEl.removeAttribute('hidden');
     }
     return node;
   }
@@ -265,7 +260,7 @@ export class SherpaNavSection extends SherpaElement {
     this.#dispatchSelect(btn);
   };
 
-  #onKeydown = (e) => {
+  #onKeyDown = (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     const btn = e.target.closest?.(".item");
     if (!btn || btn.hasAttribute("disabled")) return;

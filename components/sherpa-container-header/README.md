@@ -1,4 +1,4 @@
-# sherpa-header
+# sherpa-container-header
 
 > **Category:** container · **Base class:** SherpaElement
 
@@ -21,6 +21,7 @@ Header row for sherpa-container. Renders title, description, and optional action
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
+- `--_cg-header-vis`
 - `--_selected-text`
 
 ## Usage
@@ -28,14 +29,14 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-header data-title="Example Title" data-description="A brief description" data-src-html="value"></sherpa-header>
+<sherpa-container-header data-title="Example Title" data-description="A brief description" data-src-html="value"></sherpa-container-header>
 ```
 
 ## Import
 
 ```js
 // Individual import
-import "sherpa-ui/components/sherpa-header/sherpa-header.js";
+import "sherpa-ui/components/sherpa-container-header/sherpa-container-header.js";
 
 // Or import everything
 import "sherpa-ui";
@@ -45,6 +46,6 @@ import "sherpa-ui";
 
 | File | Purpose |
 | ---- | ------- |
-| [`sherpa-header.js`](sherpa-header.js) | Component class, lifecycle, events |
-| [`sherpa-header.css`](sherpa-header.css) | Styles, variants, states |
-| [`sherpa-header.html`](sherpa-header.html) | Shadow DOM template(s) |
+| [`sherpa-container-header.js`](sherpa-container-header.js) | Component class, lifecycle, events |
+| [`sherpa-container-header.css`](sherpa-container-header.css) | Styles, variants, states |
+| [`sherpa-container-header.html`](sherpa-container-header.html) | Shadow DOM template(s) |

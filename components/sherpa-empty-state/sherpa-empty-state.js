@@ -83,18 +83,18 @@ export class SherpaEmptyState extends SherpaElement {
 
   #titleEl = null;
   #descriptionEl = null;
-  #illustrationDefault = null;
-  #smallPrintText = null;
+  #illustrationDefaultEl = null;
+  #smallPrintTextEl = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
     this.#titleEl = this.$(".sherpa-empty-state__title");
     this.#descriptionEl = this.$(".sherpa-empty-state__description");
-    this.#illustrationDefault = this.$(
+    this.#illustrationDefaultEl = this.$(
       ".sherpa-empty-state__illustration-default",
     );
-    this.#smallPrintText = this.$(".sherpa-empty-state__small-print-text");
+    this.#smallPrintTextEl = this.$(".sherpa-empty-state__small-print-text");
 
     this.#syncAll();
   }
@@ -169,15 +169,15 @@ export class SherpaEmptyState extends SherpaElement {
   }
 
   #updateIllustration() {
-    if (this.#illustrationDefault) {
-      this.#illustrationDefault.innerHTML =
+    if (this.#illustrationDefaultEl) {
+      this.#illustrationDefaultEl.innerHTML =
         ILLUSTRATIONS[this.illustration] || "";
     }
   }
 
   #updateSmallPrint() {
-    if (this.#smallPrintText)
-      this.#smallPrintText.textContent = this.smallPrint;
+    if (this.#smallPrintTextEl)
+      this.#smallPrintTextEl.textContent = this.smallPrint;
   }
 }
 

@@ -15,7 +15,7 @@
   gap: var(--sherpa-space-2xs, 4px);
   width: 100%;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  /* ──────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────
        LABEL (conditional, above bar)
        ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -32,6 +32,8 @@
        ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host .label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
       line-height: var(--sherpa-line-height-default, 1.4);

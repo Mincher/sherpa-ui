@@ -17,7 +17,7 @@
 :host {
   display: contents;
   container-type: normal;
-  /* Figma: tag collection tokens — color variant defaults (purple) */
+/* Figma: tag collection tokens — color variant defaults (purple) */
   --_tag-border-default: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
   --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
   --_tag-text-default: var(--sherpa-text-default-on-color-body, #fafafa);
@@ -26,6 +26,8 @@
   /* Figma: in-theme component token */
   --_tag-border-rounding: var(--sherpa-border-rounding-lg, 8px);
 }
+:host([hidden]) { display: none; }
+
 /* ── Colour variants — shared text tokens ──────────────────────────────── */
 /* 8 light-background colours use dark text */
 :host(:is(

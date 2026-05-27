@@ -85,7 +85,7 @@ i {
       font-weight: 600;
       cursor: pointer;
   
-      &[hidden] { display: none; }
+      &:not(:host([data-has-action])) { display: none; }
       &:hover { text-decoration: underline; }
 }
 :host .message-action-icon {

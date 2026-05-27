@@ -23,7 +23,7 @@
 :host {
   --_w-collapsed: calc(var(--sherpa-space-default, 20px) * 3);
   --_w-expanded: 320px;
-  --_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 16px) * 2));
+--_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 16px) * 2));
   --_label-weight: 500;
   --_indent: var(--sherpa-space-default, 20px);
 
@@ -41,6 +41,8 @@
   z-index: 200;
   user-select: none;
 }
+:host([hidden]) { display: none; }
+
 
 /* Width states — host carries mirrored data-pinned / data-mode */
 :host(:not([data-pinned="true"]):is(:hover, :focus-within)) {

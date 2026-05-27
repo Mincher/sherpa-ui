@@ -2,7 +2,7 @@
   sherpa-dialog.html — Templates for sherpa-dialog.
 
   Templates:
-    • default — Standard modal dialog with native header, content area, and sherpa-footer.
+    • default — Standard modal dialog with native header, content area, and sherpa-container-footer.
     • (custom) — Consumers can add additional <template id="..."> blocks here
                   to define alternative dialog layouts. Use the component's
                   `get templateId()` override to select a template by id.
@@ -44,9 +44,9 @@
       <slot></slot>
     </div>
 
-    <sherpa-footer data-type="slot" part="footer">
+    <sherpa-container-footer data-type="slot" part="footer">
       <slot name="footer" data-accepts="control"></slot>
-    </sherpa-footer>
+    </sherpa-container-footer>
   </dialog>
 </template>
 
@@ -83,11 +83,11 @@
       <slot></slot>
     </div>
 
-    <sherpa-footer data-type="slot" part="footer">
+    <sherpa-container-footer data-type="slot" part="footer">
       <sherpa-button class="wizard-back" data-variant="secondary" data-label="Back"></sherpa-button>
       <sherpa-button class="wizard-next" data-variant="primary" data-label="Next"></sherpa-button>
       <slot name="footer" data-accepts="control"></slot>
-    </sherpa-footer>
+    </sherpa-container-footer>
   </dialog>
 </template>
 

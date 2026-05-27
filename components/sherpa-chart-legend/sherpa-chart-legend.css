@@ -10,7 +10,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  /* ──────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────
              LOADING VARIANT (dimmed)
              ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -30,8 +30,11 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host([data-loading]) {
-  opacity: 0.4;
+  filter: grayscale(0.6);
+  color: var(--sherpa-text-inactive-default, #5c5c66);
   pointer-events: none;
 }
 :host .legend-list {

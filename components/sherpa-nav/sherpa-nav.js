@@ -94,7 +94,7 @@ export class SherpaNav extends SherpaElement {
     ];
   }
 
-  #searchField = null;
+  #searchFieldEl = null;
   #ready = false;
   #hostClickWired = false;
   #defaultUrl = new URL("./sherpa-nav.html", import.meta.url).href;
@@ -115,6 +115,7 @@ export class SherpaNav extends SherpaElement {
   // Programmatic footer-promo config set via setPromoConfig(); takes
   // precedence over data-promo-* host attributes when present.
   #promoConfig = null;
+  #initialized = false;
 
   /** @returns {HTMLElement|null} The .sherpa-nav-root wrapper inside the shadow root. */
   get #root() {
@@ -124,11 +125,23 @@ export class SherpaNav extends SherpaElement {
   // ═══════════════════════ SherpaElement Hooks ═══════════════════════
 
   async onRender() {
+    if (!this.#initialized) {
+      // Guard re-entrant onRender() calls triggered by renderFromUrl().
+      // Without this, the first render can recursively refetch the nav
+      // template and cause visible flicker.
+      this.#initialized = true;
+      const url = this.dataset.srcHtml || this.#defaultUrl;
+      const ok = await this.renderFromUrl(url);
+      this.#ready = ok;
+      if (!ok) this.#initialized = false;
+      return;
+    }
+
     if (!this.#hostClickWired) {
       this.addEventListener("click", (e) => this.#onHostClick(e));
       this.#hostClickWired = true;
     }
-    this.#searchField = this.$(".nav-search sherpa-input-search");
+    this.#searchFieldEl = this.$(".nav-search sherpa-input-search");
     this.#navItemTpl = this.$("template.nav-item-tpl") || this.#injectFallbackTemplate(
       "nav-item-tpl",
       '<sherpa-nav-item data-variant="child" tabindex="0" role="button"></sherpa-nav-item>',
@@ -161,12 +174,6 @@ export class SherpaNav extends SherpaElement {
         this.#applyActiveLink(sel.target);
       }
     }
-  }
-
-  async onConnect() {
-    const url = this.dataset.srcHtml || this.#defaultUrl;
-    await this.renderFromUrl(url);
-    this.#ready = true;
   }
 
   onAttributeChanged(name, _oldValue, newValue) {
@@ -222,14 +229,14 @@ export class SherpaNav extends SherpaElement {
 
   startSearch() {
     this.mode = SherpaNav.MODES.SEARCH;
-    this.#searchField?.focus();
+    this.#searchFieldEl?.focus();
   }
 
   endSearch() {
     this.mode = SherpaNav.MODES.DEFAULT;
-    if (this.#searchField) {
-      this.#searchField.value = "";
-      this.#searchField.clear();
+    if (this.#searchFieldEl) {
+      this.#searchFieldEl.value = "";
+      this.#searchFieldEl.clear();
     }
     this.#applySearchFilter("");
   }
@@ -584,7 +591,7 @@ export class SherpaNav extends SherpaElement {
         : SherpaNav.MODES.EDIT;
     });
 
-    const sf = this.#searchField;
+    const sf = this.#searchFieldEl;
     sf?.addEventListener("input", (e) => {
       const value = e.detail?.value ?? sf.value;
       this.#applySearchFilter(value);

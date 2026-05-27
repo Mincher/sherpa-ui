@@ -23,7 +23,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  width: 100%;
+width: 100%;
   min-height: 0;
   background: transparent;
   /* ── Fill modes ────────────────────────────────────────– */
@@ -42,6 +42,8 @@
        ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host([data-fill="parent"]) {
   max-height: none;
 }

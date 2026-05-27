@@ -319,12 +319,12 @@
 /* ── Ungrouped grid preview ──────────────────────────────────────────────────── */
 /*
  * Provides a spaced grid layout for [data-grid] elements in their ungrouped
- * (pre-.grouped) state. The :not(.grouped) guard ensures this rule drops away
- * the moment .grouped is toggled on, so .grouped[data-grid]'s gap:0 wins
- * uncontested in the grouped state.
+ * (pre-.grouped-component) state. The :not(.grouped-component) guard ensures
+ * this rule drops away the moment .grouped-component is toggled on, so
+ * .grouped-component[data-grid]'s gap:0 wins uncontested in the grouped state.
  */
 
-.docs-example-preview [data-grid]:not(.grouped) {
+.docs-example-preview [data-grid]:not(.grouped-component) {
   display: grid;
   grid-template-columns: repeat(var(--_cg-columns, 3), 1fr);
   gap: var(--sherpa-space-xs, 8px);

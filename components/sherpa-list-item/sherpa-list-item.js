@@ -43,6 +43,7 @@ export class SherpaListItem extends SherpaElement {
   #labelEl       = null;
   #descriptionEl = null;
   #iconEl        = null;
+  #bound = false;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
@@ -51,22 +52,19 @@ export class SherpaListItem extends SherpaElement {
     this.#descriptionEl = this.$('.description');
     this.#iconEl        = this.$('.icon');
 
+    if (!this.#bound) {
+      this.addEventListener('click', this.#onClick);
+      this.addEventListener('keydown', this.#onKeyDown);
+      this.#bound = true;
+    }
+
     this.#syncLabel();
     this.#syncDescription();
     this.#syncIcon();
-  }
 
-  onConnect() {
     if (this.dataset.interactive !== undefined) {
       this.#updateInteractive();
     }
-    this.addEventListener('click', this.#handleClick);
-    this.addEventListener('keydown', this.#handleKeydown);
-  }
-
-  onDisconnect() {
-    this.removeEventListener('click', this.#handleClick);
-    this.removeEventListener('keydown', this.#handleKeydown);
   }
 
   onAttributeChanged(name) {
@@ -115,7 +113,7 @@ export class SherpaListItem extends SherpaElement {
 
   /* ── Event handlers ───────────────────────────────────────────── */
 
-  #handleClick = () => {
+  #onClick = () => {
     if (this.dataset.interactive === undefined || this.hasAttribute('disabled')) return;
     this.active = true;
     this.dispatchEvent(new CustomEvent('list-item-click', {
@@ -125,11 +123,11 @@ export class SherpaListItem extends SherpaElement {
     }));
   };
 
-  #handleKeydown = (e) => {
+  #onKeyDown = (e) => {
     if (this.dataset.interactive === undefined || this.hasAttribute('disabled')) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      this.#handleClick();
+      this.#onClick();
     }
   };
 }

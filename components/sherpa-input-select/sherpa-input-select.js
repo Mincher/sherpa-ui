@@ -175,7 +175,7 @@ export class SherpaInputSelect extends SherpaInputBase {
       }
       placeholderOpt.textContent = ph;
       placeholderOpt.disabled = true;
-      placeholderOpt.hidden = true;
+      placeholderOpt.setAttribute('hidden', '');
       if (!this.#selectEl.value) {
         placeholderOpt.selected = true;
       }

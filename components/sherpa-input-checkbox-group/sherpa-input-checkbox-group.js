@@ -36,6 +36,8 @@ import '../sherpa-input-checkbox/sherpa-input-checkbox.js';
 
 export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
 
+  #bound = false;
+
   static get cssUrl()  { return new URL('./sherpa-input-checkbox-group.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-checkbox-group.html', import.meta.url).href; }
 
@@ -57,22 +59,18 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
   onRender() {
+    if (!this.#bound) {
+      this.shadow.addEventListener('change', this.#onChildChange);
+      this.addEventListener('change', this.#onSlottedChange);
+      this.#bound = true;
+    }
+
     this.#syncLegend();
     this.#syncDescription();
     this.#syncHelper();
     this.#stampOptions();
     this.#syncValue();
     this.#syncDisabled();
-  }
-
-  onConnect() {
-    this.shadow.addEventListener('change', this.#onChildChange);
-    this.addEventListener('change', this.#onSlottedChange);
-  }
-
-  onDisconnect() {
-    this.shadow.removeEventListener('change', this.#onChildChange);
-    this.removeEventListener('change', this.#onSlottedChange);
   }
 
   onAttributeChanged(name, oldValue, newValue) {

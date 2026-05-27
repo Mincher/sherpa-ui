@@ -44,8 +44,6 @@ Set chart data: { labels, series: [{ name, values }] } or config
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
-- `--_anim-duration`
-- `--_anim-easing`
 - `--_chart-legend-align`
 - `--_chart-legend-direction`
 - `--_chart-legend-justify`
@@ -57,14 +55,11 @@ influenced by setting `data-*` attributes or status on ancestors:
 - `--_min`
 - `--_n-end`
 - `--_n-start`
-- `--_offset`
-- `--_progress-end`
 - `--_progress-start`
 - `--_range`
-- `--_ripple-delay-step`
-- `--_slope-factor`
 - `--_stroke-width`
-- ... and 15 more
+- `--_v-end`
+- `--_v-start`
 
 ## Usage
 

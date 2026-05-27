@@ -19,7 +19,7 @@
 
 <template data-label="In a form" data-description="Compose with sherpa-input-text and sherpa-button for a realistic scheduling form." data-layout="block">
   <sherpa-container data-variant="fit" style="max-width: 480px;">
-    <sherpa-header slot="header" data-title="Schedule maintenance" data-description="Pick a date and assign an owner."></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Schedule maintenance" data-description="Pick a date and assign an owner."></sherpa-container-header>
     <div slot="body" style="display: grid; gap: var(--sherpa-space-default); padding: var(--sherpa-space-default);">
       <sherpa-input-date data-label="Maintenance date" value="2026-06-15" min="2026-05-18" required></sherpa-input-date>
       <sherpa-input-text data-label="Owner" value="sre-oncall@acme.io" required></sherpa-input-text>

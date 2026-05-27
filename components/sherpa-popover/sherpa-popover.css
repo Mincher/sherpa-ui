@@ -28,7 +28,7 @@
   z-index: var(--sherpa-z-popover, 10000);
   min-width: 200px;
   max-width: 400px;
-  background: var(--sherpa-surface-container-default, #ffffff);
+background: var(--sherpa-surface-container-default, #ffffff);
   border: var(--sherpa-border-width-base, 1px) solid
             var(--sherpa-border-container-default, #d7d7dc);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
@@ -44,6 +44,8 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ──────────────────────────────────────── */
 }
+:host([hidden]) { display: none; }
+
 
 /* ──────────────────────────────────────────────────────────
    ANCHOR POSITIONING (@supports fallback for older browsers)

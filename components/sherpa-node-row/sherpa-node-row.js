@@ -38,21 +38,19 @@ export class SherpaNodeRow extends SherpaElement {
 
   #inSocketSlot = null;
   #outSocketSlot = null;
+  #bound = false;
 
   onRender() {
     this.#inSocketSlot = this.$('slot[name="input-socket"]');
     this.#outSocketSlot = this.$('slot[name="output-socket"]');
-  }
 
-  onConnect() {
-    this.#inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
-    this.#outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
+    if (!this.#bound) {
+      this.#inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
+      this.#outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
+      this.#bound = true;
+    }
+
     this.#tagSockets();
-  }
-
-  onDisconnect() {
-    this.#inSocketSlot?.removeEventListener("slotchange", this.#tagSockets);
-    this.#outSocketSlot?.removeEventListener("slotchange", this.#tagSockets);
   }
 
   /** Tag slotted <sherpa-node-socket> with data-location="row". */

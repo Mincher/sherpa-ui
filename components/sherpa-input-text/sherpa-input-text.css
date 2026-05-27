@@ -11,12 +11,15 @@
 @import '../utilities/sherpa-input-base/sherpa-input-base.css';
 
 :host {
-  /* ── Multiline (textarea) auto-grow mode ─────────────────────────
+  /* Fallback for hidden attribute */
+/* ── Multiline (textarea) auto-grow mode ─────────────────────────
        Selected when the host has `data-multiline`. The component sizes
        the textarea to its content via JS (sets explicit height in px),
        so we drop the fixed single-line height and disable resize/scroll
        chrome. */
 }
+:host([hidden]) { display: none; }
+
 :host([data-multiline]) .input-field {
   height: auto;
       min-height: var(--sherpa-size-2xl, 32px);

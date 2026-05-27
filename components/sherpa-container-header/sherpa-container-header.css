@@ -1,5 +1,5 @@
 /**
- * sherpa-header.css — Shadow-scoped styles
+ * sherpa-container-header.css — Shadow-scoped styles
  * Header row for sherpa-container: drag-handle → labels → action buttons.
  *
  * Structure (shadow DOM):
@@ -18,8 +18,18 @@
  *   data-menu-button   {boolean} — show overflow menu button
  *   data-drag-handle   {boolean} — show drag handle
  *
+ * Cascaded custom properties consumed (set by an outer
+ * sherpa-container-group on follower tiles via sherpa-container.css):
+ *   --_cg-header-vis {visibility} — `hidden` mutes the entire header-row
+ *     while preserving its natural height; defaults to `visible`. Lets a
+ *     group reuse the first tile's header as its title while keeping every
+
+  :host([hidden]) { display: none; }
+ *     other tile's header band as a height spacer so content baselines
+ *     align across rows.
+ *
  * Container query:
- *   container-name: sherpa-header (inline-size)
+ *   container-name: sherpa-container-header (inline-size)
  */
 
 :host {
@@ -27,12 +37,13 @@
   flex-shrink: 0;
   padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
   container-type: inline-size;
-  container-name: sherpa-header;
+  container-name: sherpa-container-header;
 }
 :host .header-row {
   display: flex;
       align-items: center;
       gap: var(--sherpa-space-xs, 4px);
+      visibility: var(--_cg-header-vis, visible);
 }
 :host .header-labels {
   display: flex;
@@ -112,17 +123,17 @@
   display: inline-flex;
 }
 
-@container sherpa-header (max-width: 200px) {
+@container sherpa-container-header (max-width: 200px) {
   :host .header-row { gap: var(--sherpa-space-2xs, 2px); }
   :host .header-description { display: none; }
   :host .action-divider { display: none; }
 }
 
-@container sherpa-header (max-width: 150px) {
+@container sherpa-container-header (max-width: 150px) {
   :host .open-external-button { display: none; }
   :host .action-divider { display: none; }
 }
 
-@container sherpa-header (max-width: 120px) {
+@container sherpa-container-header (max-width: 120px) {
   :host .header-title { font-size: var(--sherpa-fonts-scale-sm, 12px); }
 }

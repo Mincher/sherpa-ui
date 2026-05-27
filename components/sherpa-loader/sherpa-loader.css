@@ -17,7 +17,7 @@
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #2e2e38);
-  /* ──────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────
              PANEL VARIANT (background surface)
              ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -32,6 +32,8 @@
   /* ── Size variants ──────────────────────────────────────– */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host([data-panel]) {
   background: var(--sherpa-surface-container-default, #ffffff);
   border-radius: var(--sherpa-border-rounding-base, 8px);

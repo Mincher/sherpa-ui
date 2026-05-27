@@ -7,7 +7,7 @@
  *   icon          — Icon-only square button
  *
  * For compound button patterns (split, dismissable chip), compose separate
- * sherpa-button elements inside a .grouped wrapper.
+ * sherpa-button elements inside a .grouped-component wrapper.
  *
  * The button is self-managing for its own visual state and broadcasts
  * events so parent components (filter-bar, container) can orchestrate.
@@ -142,20 +142,7 @@ export class SherpaButton extends SherpaElement {
     this.#syncLabel();
     this.#syncIcons();
     this.#syncBadge();
-  }
-
-  onConnect() {
     this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
-  }
-
-  onDisconnect() {
-    this.#triggerEl?.removeEventListener("click", this.#onTriggerClick);
-
-    if (this.#menuEl) {
-      if (this.#menuEl.open) this.#menuEl.hide();
-      this.#menuEl.remove();
-      this.#menuEl = null;
-    }
   }
 
   onAttributeChanged(name, _old, newValue) {

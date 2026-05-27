@@ -2,7 +2,7 @@
 
 > **Category:** control · **Base class:** SherpaElement
 
-Multi-template button web component. Two templates (selected via data-type → get templateId()): default — Standard button: icon(s) + label + badge icon — Icon-only square button For compound button patterns (split, dismissable chip), compose separate sherpa-button elements inside a .grouped wrapper. The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: Any button with data-menu="true" acts as a menu trigger. If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.
+Multi-template button web component. Two templates (selected via data-type → get templateId()): default — Standard button: icon(s) + label + badge icon — Icon-only square button For compound button patterns (split, dismissable chip), compose separate sherpa-button elements inside a .grouped-component wrapper. The button is self-managing for its own visual state and broadcasts events so parent components (filter-bar, container) can orchestrate. Menu behaviour: Any button with data-menu="true" acts as a menu trigger. If data-menu-template is set, stamps the matching template from SherpaMenu.getMenuTemplate(id) then dispatches menu-populate.
 
 ## Templates
 

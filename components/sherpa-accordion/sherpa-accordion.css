@@ -28,6 +28,8 @@ i {
   border-radius: var(--sherpa-border-container-rounding, 4px);
   overflow: clip;
 }
+:host([hidden]) { display: none; }
+
 
 /* ── Details / Summary ────────────────────────────────────── */
 

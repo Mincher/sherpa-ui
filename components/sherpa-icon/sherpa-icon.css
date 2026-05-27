@@ -22,10 +22,11 @@
   justify-content: center;
   line-height: 1;
   color: var(--_status-text-strong, currentColor);
-
-  /* Mirror data-size so the inner .sherpa-icon picks up the token. */
+/* Mirror data-size so the inner .sherpa-icon picks up the token. */
   --icon-size: var(--sherpa-size-md, 20px);
 }
+:host([hidden]) { display: none; }
+
 
 /* Size mapping mirrors css/styles/sherpa-icon-classes.css */
 :host([data-size="3xs"]) { --icon-size: var(--sherpa-size-3xs, 4px); }

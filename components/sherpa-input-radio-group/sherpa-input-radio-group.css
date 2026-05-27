@@ -15,7 +15,7 @@
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
   color: var(--sherpa-text-default-body, #333);
-  /* ── Hidden state ────────────────────────────────────────── */
+/* ── Hidden state ────────────────────────────────────────── */
   /* ── Disabled state ──────────────────────────────────────– */
   /* ── Group wrapper (fieldset) ──────────────────────────── */
   /* ── Group legend (label) ──────────────────────────────– */
@@ -26,6 +26,8 @@
              Group surfaces validation tone; children inherit --_status-* through
              shadow boundary. See sherpa-input-checkbox-group.css for rationale. */
 }
+:host([hidden]) { display: none; }
+
 :host([disabled]) {
   pointer-events: none;
 }

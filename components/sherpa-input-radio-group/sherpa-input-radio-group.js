@@ -36,6 +36,8 @@ let _gid = 0;
 
 export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
+  #bound = false;
+
   static get cssUrl()  { return new URL('./sherpa-input-radio-group.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-radio-group.html', import.meta.url).href; }
 
@@ -50,6 +52,11 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
   onRender() {
+    if (!this.#bound) {
+      this.addEventListener('change', this.#onChildChange);
+      this.#bound = true;
+    }
+
     if (!this.getAttribute('name')) {
       this.setAttribute('name', `sherpa-radio-group-${++_gid}`);
     }
@@ -59,14 +66,6 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
     this.#stampOptions();
     this.#syncValue();
     this.#syncDisabled();
-  }
-
-  onConnect() {
-    this.addEventListener('change', this.#onChildChange);
-  }
-
-  onDisconnect() {
-    this.removeEventListener('change', this.#onChildChange);
   }
 
   onAttributeChanged(name, oldValue, newValue) {

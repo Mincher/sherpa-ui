@@ -2,7 +2,7 @@
 
 > **Category:** overlay · **Base class:** SherpaElement
 
-Modal dialog built on the native HTML <dialog> element. Uses SherpaElement multi-template support. The default template includes a native <header> with a <dl> for title/subtitle and a close button, plus a sherpa-footer for footer content.
+Modal dialog built on the native HTML <dialog> element. Uses SherpaElement multi-template support. The default template includes a native <header> with a <dl> for title/subtitle and a close button, plus a sherpa-container-footer for footer content.
 
 ## Templates
 
@@ -34,7 +34,7 @@ Available templates:
 | ---- | ----------- |
 | `(default)` | Default slot for dialog body content |
 | `heading` | Custom heading content (replaces attribute-driven title) |
-| `footer` | Footer action content (inside sherpa-footer) |
+| `footer` | Footer action content (inside sherpa-container-footer) |
 
 Slot usage:
 
@@ -43,7 +43,7 @@ Slot usage:
   <!-- Default slot -->
   <p>Content goes here</p>
   <div slot="heading"><!-- Custom heading content (replaces attribute-driven title) --></div>
-  <div slot="footer"><!-- Footer action content (inside sherpa-footer) --></div>
+  <div slot="footer"><!-- Footer action content (inside sherpa-container-footer) --></div>
 </sherpa-dialog>
 ```
 
@@ -136,7 +136,7 @@ influenced by setting `data-*` attributes or status on ancestors:
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="heading"><!-- Custom heading content (replaces attribute-driven title) --></span>
-  <span slot="footer"><!-- Footer action content (inside sherpa-footer) --></span>
+  <span slot="footer"><!-- Footer action content (inside sherpa-container-footer) --></span>
 </sherpa-dialog>
 ```
 

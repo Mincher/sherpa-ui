@@ -28,6 +28,8 @@
 
 /* ================================================================
    :host — base layout
+
+    :host([hidden]) { display: none; }
    ================================================================ */
 :host {
   display: flex;
@@ -40,7 +42,8 @@
   container: sherpa-gauge-chart / inline-size;
 }
 :host([data-loading]) .gauge-wrap {
-  opacity: 0.4;
+  filter: grayscale(0.6);
+      color: var(--sherpa-text-inactive-default, #5c5c66);
       pointer-events: none;
 }
 :host .chart-header {
@@ -65,7 +68,7 @@
       aspect-ratio: 280 / 162;
       flex-shrink: 1;
       overflow: clip;
-      transition: opacity 0.2s ease;
+  transition: filter 0.2s ease;
 }
 :host .gauge-bg {
   position: absolute;

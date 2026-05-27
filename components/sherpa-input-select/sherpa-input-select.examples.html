@@ -38,7 +38,7 @@
 
 <template data-label="In a settings panel" data-description="Wrap several selects in a sherpa-container for a realistic settings card." data-layout="block">
   <sherpa-container data-variant="fit" style="max-width: 480px;">
-    <sherpa-header slot="header" data-title="Notification preferences"></sherpa-header>
+    <sherpa-container-header slot="header" data-title="Notification preferences"></sherpa-container-header>
     <div slot="body" style="display: grid; gap: var(--sherpa-space-default); padding: var(--sherpa-space-default);">
       <sherpa-input-select data-label="Digest frequency" value="daily">
         <sherpa-option value="realtime" label="Real time"></sherpa-option>

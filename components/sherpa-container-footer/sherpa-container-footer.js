@@ -1,5 +1,5 @@
 /**
- * @element sherpa-footer
+ * @element sherpa-container-footer
  * @category container
  * @description Reusable footer with multiple template variants.
  *   Template selected via data-type attribute.
@@ -32,18 +32,19 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
-export class SherpaFooter extends SherpaElement {
+export class SherpaContainerFooter extends SherpaElement {
   /* ── Config ───────────────────────────────────────────────────── */
 
   static get cssUrl() {
-    return new URL("./sherpa-footer.css", import.meta.url).href;
+    return new URL("./sherpa-container-footer.css", import.meta.url).href;
   }
   static get htmlUrl() {
-    return new URL("./sherpa-footer.html", import.meta.url).href;
+    return new URL("./sherpa-container-footer.html", import.meta.url).href;
   }
 
   static get observedAttributes() {
     return [
+      ...super.observedAttributes,
       "data-type",
       "data-cancel-label",
       "data-apply-label",
@@ -173,4 +174,4 @@ export class SherpaFooter extends SherpaElement {
   }
 }
 
-customElements.define("sherpa-footer", SherpaFooter);
+customElements.define("sherpa-container-footer", SherpaContainerFooter);

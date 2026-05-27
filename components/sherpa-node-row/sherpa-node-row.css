@@ -10,12 +10,14 @@
   /* ──────────────────────────────────────────────────────────
              ROW GRID (3 columns: in-gutter | control | out-gutter)
              ────────────────────────────────────────────────────────── */
-  /* ── Label + Helper (full-width, span all columns) ─– */
+/* ── Label + Helper (full-width, span all columns) ─– */
   /* ── Gutters (socket containers, vertically centered) ––– */
   /* Sockets centered on node edge via half-width translate */
   /* ── Control (flex row for inputs) ──────────────────– */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host .row {
   display: grid;
       grid-template-columns:

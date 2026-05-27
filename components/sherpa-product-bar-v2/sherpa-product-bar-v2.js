@@ -60,6 +60,8 @@ class SherpaProductBarV2 extends SherpaElement {
   /** @type {HTMLSpanElement|null} */ #nameEl = null;
   /** @type {HTMLSpanElement|null} */ #timeEl = null;
   /** @type {HTMLButtonElement|null} */ #triggerEl = null;
+  #bound = false;
+  #slotBound = false;
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
@@ -74,18 +76,16 @@ class SherpaProductBarV2 extends SherpaElement {
     this.#syncTime();
     this.#syncSlotState();
 
-    if (this.dataset.showSystemMenu !== "false") {
-      this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
-      this.addEventListener("menu-close", this.#onMenuClose);
-    } else {
-      this.#triggerEl?.removeAttribute("aria-haspopup");
-      this.#triggerEl?.removeAttribute("aria-expanded");
+    if (!this.#bound) {
+      if (this.dataset.showSystemMenu !== "false") {
+        this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
+        this.addEventListener("menu-close", this.#onMenuClose);
+      } else {
+        this.#triggerEl?.removeAttribute("aria-haspopup");
+        this.#triggerEl?.removeAttribute("aria-expanded");
+      }
+      this.#bound = true;
     }
-  }
-
-  onDisconnect() {
-    this.#triggerEl?.removeEventListener("click", this.#onTriggerClick);
-    this.removeEventListener("menu-close", this.#onMenuClose);
   }
 
   onAttributeChanged(name) {
@@ -172,12 +172,15 @@ class SherpaProductBarV2 extends SherpaElement {
     update("tabs", "data-has-tabs");
     update("actions", "data-has-actions");
 
-    tabsSlot?.addEventListener("slotchange", () =>
-      update("tabs", "data-has-tabs"),
-    );
-    actionsSlot?.addEventListener("slotchange", () =>
-      update("actions", "data-has-actions"),
-    );
+    if (!this.#slotBound) {
+      tabsSlot?.addEventListener("slotchange", () =>
+        update("tabs", "data-has-tabs"),
+      );
+      actionsSlot?.addEventListener("slotchange", () =>
+        update("actions", "data-has-actions"),
+      );
+      this.#slotBound = true;
+    }
   }
 }
 

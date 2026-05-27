@@ -205,7 +205,20 @@ function splitDescription(raw) {
 /** Syntax-highlight all <pre><code> blocks inside the outlet. */
 function highlightOutlet() {
   if (typeof window.hljs === 'undefined') return;
-  outlet?.querySelectorAll('pre code').forEach(el => window.hljs.highlightElement(el));
+  outlet?.querySelectorAll('pre code').forEach(el => {
+    const isHtmlSnippet =
+      el.classList.contains('language-html') ||
+      el.classList.contains('html') ||
+      /(^|\s)language-html(\s|$)/.test(el.className);
+
+    // If raw HTML nodes were parsed inside <code>, convert markup to text before highlighting.
+    if (isHtmlSnippet && !el.classList.contains('hljs') && el.childElementCount > 0) {
+      const rawMarkup = el.innerHTML;
+      el.textContent = rawMarkup;
+    }
+
+    window.hljs.highlightElement(el);
+  });
 }
 
 /** Pending setup() callbacks keyed by data-setup-key on preview divs. */
@@ -574,9 +587,27 @@ let pendingScrollAnchor = null;
 async function renderCurrentRoute() {
   const route = parseHash(window.location.hash);
 
-  if (document.startViewTransition) {
-    const t = document.startViewTransition(() => renderRoute(route));
-    await t.updateCallbackDone;
+  const canUseViewTransition =
+    typeof document.startViewTransition === 'function' &&
+    document.visibilityState === 'visible' &&
+    !document.hidden;
+
+  if (canUseViewTransition) {
+    try {
+      const t = document.startViewTransition(() => renderRoute(route));
+      await t.updateCallbackDone;
+    } catch (err) {
+      const hiddenTransitionError =
+        err instanceof DOMException &&
+        /document\s+being\s+hidden/i.test(String(err.message || ''));
+
+      if (hiddenTransitionError) {
+        // Hidden/background tabs can reject view transitions; fallback to a normal render.
+        await renderRoute(route);
+      } else {
+        throw err;
+      }
+    }
   } else {
     await renderRoute(route);
   }
@@ -676,11 +707,11 @@ async function renderRoute(route) {
       { label: 'Experimental', href: null },
     ]);
     if (route.id === 'component-grouping') {
-      // mode 'class'   — toggle the real .grouped utility on the preview
+      // mode 'class'   — toggle the real .grouped-component utility on the preview
       //                  (used when the preview wrapper IS the grouping div)
       // mode 'attr'    — toggle a [data-grouped] attribute on the preview
       //                  (used when the preview is a state-switch wrapper that
-      //                  must NOT receive the .grouped utility's chrome)
+      //                  must NOT receive the .grouped-component utility's chrome)
       const makeGroupToggle = (btnId, previewId, mode = 'class') => (container) => {
         const btn     = container.querySelector(`#${btnId}`);
         const preview = container.querySelector(`#${previewId}`);
@@ -692,7 +723,7 @@ async function renderRoute(route) {
             preview.toggleAttribute('data-grouped', willGroup);
             isGrouped = willGroup;
           } else {
-            isGrouped = preview.classList.toggle('grouped');
+            isGrouped = preview.classList.toggle('grouped-component');
           }
           btn.toggleAttribute('data-active', isGrouped);
           btn.dataset.label = isGrouped ? 'Ungroup' : 'Group';
@@ -700,7 +731,57 @@ async function renderRoute(route) {
       };
       pendingSetups.set('row-group-toggle',   makeGroupToggle('row-group-toggle', 'row-group-preview', 'class'));
       pendingSetups.set('col-group-toggle',   makeGroupToggle('col-group-toggle', 'col-group-preview', 'class'));
-      pendingSetups.set('kpi-grouped-toggle', makeGroupToggle('kpi-group-toggle', 'kpi-group-preview', 'attr'));
+
+      // KPI dashboard toggle — physically wraps/unwraps tiles in a
+      // <sherpa-container-group>. Using one DOM tree means user edits
+      // (resizes, span changes) persist across the Group/Ungroup toggle.
+      // The first tile's own header serves as the group title; while
+      // grouped, we temporarily swap its data-title to "KPIs" and restore
+      // the tile's original title on ungroup.
+      pendingSetups.set('kpi-grouped-toggle', (container) => {
+        const btn  = container.querySelector('#kpi-group-toggle');
+        const grid = container.querySelector('#kpi-grid');
+        if (!btn || !grid) return;
+        btn.addEventListener('button-click', () => {
+          const group = grid.querySelector(':scope > sherpa-container-group');
+          if (group) {
+            // Ungroup — restore the first tile's original title, move
+            // tiles back out, drop the group wrapper.
+            const tiles = [...group.querySelectorAll(':scope > sherpa-container')];
+            const firstTile = tiles[0];
+            if (firstTile) {
+              const header = firstTile.querySelector(':scope > sherpa-container-header[slot="header"]');
+              if (header && header.dataset.originalTitle !== undefined) {
+                header.dataset.title = header.dataset.originalTitle;
+                delete header.dataset.originalTitle;
+              }
+            }
+            for (const tile of tiles) grid.appendChild(tile);
+            group.remove();
+            btn.removeAttribute('data-active');
+            btn.dataset.label = 'Group';
+          } else {
+            // Group — wrap tiles in a fresh sherpa-container-group and
+            // promote the first tile's header to the group title.
+            const wrapper = document.createElement('sherpa-container-group');
+            wrapper.setAttribute('data-col-span', '12');
+            wrapper.setAttribute('data-row-span', '4');
+            const tiles = [...grid.querySelectorAll(':scope > sherpa-container')];
+            const firstTile = tiles[0];
+            if (firstTile) {
+              const header = firstTile.querySelector(':scope > sherpa-container-header[slot="header"]');
+              if (header) {
+                header.dataset.originalTitle = header.dataset.title ?? '';
+                header.dataset.title = 'KPIs';
+              }
+            }
+            for (const tile of tiles) wrapper.appendChild(tile);
+            grid.appendChild(wrapper);
+            btn.setAttribute('data-active', 'true');
+            btn.dataset.label = 'Ungroup';
+          }
+        });
+      });
     }
     try {
       await mountPartial(`experimental-${route.id}`);

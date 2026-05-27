@@ -692,7 +692,7 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 #### Other primitives & containers
 
-`sherpa-button`, `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-progress-bar`, `sherpa-stepper`, `sherpa-tag`, `sherpa-toolbar`, `sherpa-view-header`, `sherpa-footer`, `sherpa-filter-bar`, `sherpa-container-pdf`, `sherpa-data-viz-container`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-file-upload`, `sherpa-accordion`.
+`sherpa-button`, `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-progress-bar`, `sherpa-stepper`, `sherpa-tag`, `sherpa-toolbar`, `sherpa-view-header`, `sherpa-container-footer`, `sherpa-filter-bar`, `sherpa-container-pdf`, `sherpa-data-viz-container`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-file-upload`, `sherpa-accordion`.
 
 > Authoritative per-component documentation lives in `components/<tag>/README.md`.
 

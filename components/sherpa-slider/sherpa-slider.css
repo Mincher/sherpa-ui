@@ -33,6 +33,8 @@
  * (none — fully self-contained)
  */
 
+  :host([hidden]) { display: none; }
+
 :host {
   display: flex;
   flex-direction: column;

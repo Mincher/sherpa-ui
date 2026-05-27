@@ -50,18 +50,21 @@ export class SherpaTabs extends SherpaElement {
   #tabTpl    = null;
   #tabs      = [];   // shadow DOM button elements
   #panels    = [];   // light DOM panel children
+  #initialized = false;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
     this.#stripEl = this.$('.tab-strip');
     this.#tabTpl  = this.$('.tab-tpl');
-  }
 
-  onConnect() {
-    if (!this.hasAttribute('data-active-tab')) {
-      this.dataset.activeTab = '0';
+    if (!this.#initialized) {
+      if (!this.hasAttribute('data-active-tab')) {
+        this.dataset.activeTab = '0';
+      }
+      this.#initialized = true;
     }
+
     this.#buildTabs();
   }
 
@@ -124,8 +127,8 @@ export class SherpaTabs extends SherpaElement {
         btn.setAttribute('aria-disabled', 'true');
       }
 
-      btn.addEventListener('click', this.#handleTabClick);
-      btn.addEventListener('keydown', this.#handleTabKeydown);
+      btn.addEventListener('click', this.#onTabClick);
+      btn.addEventListener('keydown', this.#onTabKeyDown);
 
       this.#stripEl.appendChild(btn);
       this.#tabs.push(btn);
@@ -164,13 +167,13 @@ export class SherpaTabs extends SherpaElement {
 
   /* ── Event handlers ───────────────────────────────────────────── */
 
-  #handleTabClick = (e) => {
+  #onTabClick = (e) => {
     const btn = e.currentTarget;
     const index = parseInt(btn.dataset.index, 10);
     this.selectTab(index);
   };
 
-  #handleTabKeydown = (e) => {
+  #onTabKeyDown = (e) => {
     const current = parseInt(e.currentTarget.dataset.index, 10);
     let next = current;
 

@@ -23,7 +23,7 @@ i { font-style: normal; }
   position: relative;
   /* ──────────────────────────────────────────────────────────
              HEADER FLEX ROW (gutter-in | body | gutter-out)
-             ────────────────────────────────────────────────────────── */
+────────────────────────────────────────────────────────── */
   /* ── Gutter zones (flex-aligned for natural socket flow) ───– */
   /* ── Sockets positioned half-width outside the gutter ────– */
   /* ──────────────────────────────────────────────────────────
@@ -42,6 +42,8 @@ i { font-style: normal; }
   /* ── Drill-down button (conditional) ──────────────────– */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host .header {
   display: flex;
       align-items: stretch;

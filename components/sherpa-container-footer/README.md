@@ -1,4 +1,4 @@
-# sherpa-footer
+# sherpa-container-footer
 
 > **Category:** container · **Base class:** SherpaElement
 
@@ -36,11 +36,11 @@ Set via `data-type` attribute:
 Slot usage:
 
 ```html
-<sherpa-footer>
+<sherpa-container-footer>
   <!-- Default slot -->
   <p>Content goes here</p>
   <div slot="start"><!-- Content aligned to the left (action-bar) --></div>
-</sherpa-footer>
+</sherpa-container-footer>
 ```
 
 ## Events
@@ -95,7 +95,7 @@ Style internal elements from outside the shadow DOM:
 - `footer`
 
 ```css
-sherpa-footer::part(footer) {
+sherpa-container-footer::part(footer) {
   /* custom styles */
 }
 ```
@@ -115,18 +115,18 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-footer data-type="action-bar" data-cancel-label="value" data-apply-label="value">
+<sherpa-container-footer data-type="action-bar" data-cancel-label="value" data-apply-label="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="start"><!-- Content aligned to the left (action-bar) --></span>
-</sherpa-footer>
+</sherpa-container-footer>
 ```
 
 ## Import
 
 ```js
 // Individual import
-import "sherpa-ui/components/sherpa-footer/sherpa-footer.js";
+import "sherpa-ui/components/sherpa-container-footer/sherpa-container-footer.js";
 
 // Or import everything
 import "sherpa-ui";
@@ -136,6 +136,6 @@ import "sherpa-ui";
 
 | File | Purpose |
 | ---- | ------- |
-| [`sherpa-footer.js`](sherpa-footer.js) | Component class, lifecycle, events |
-| [`sherpa-footer.css`](sherpa-footer.css) | Styles, variants, states |
-| [`sherpa-footer.html`](sherpa-footer.html) | Shadow DOM template(s) |
+| [`sherpa-container-footer.js`](sherpa-container-footer.js) | Component class, lifecycle, events |
+| [`sherpa-container-footer.css`](sherpa-container-footer.css) | Styles, variants, states |
+| [`sherpa-container-footer.html`](sherpa-container-footer.html) | Shadow DOM template(s) |

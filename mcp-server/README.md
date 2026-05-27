@@ -582,7 +582,7 @@ attribute names, no wrong token values, no invalid HTML.
 | `data-display` | 6     | sherpa-data-grid, sherpa-key-value-list               |
 | `data-viz`     | 7     | sherpa-barchart, sherpa-donut-chart, sherpa-metric    |
 | `feedback`     | 5     | sherpa-dialog, sherpa-toast, sherpa-callout            |
-| `page-level`   | 6     | sherpa-view-header, sherpa-footer, sherpa-toolbar      |
+| `page-level`   | 6     | sherpa-view-header, sherpa-container-footer, sherpa-toolbar      |
 
 ---
 

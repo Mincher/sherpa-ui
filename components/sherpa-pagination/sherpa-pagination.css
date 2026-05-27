@@ -28,8 +28,10 @@
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-text-default-body, #111);
-  container: sherpa-pagination / inline-size;
+container: sherpa-pagination / inline-size;
 }
+:host([hidden]) { display: none; }
+
 :host .pagination-results {
   display: flex;
       align-items: center;

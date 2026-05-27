@@ -19,6 +19,8 @@ i {
 :host {
   display: block;
 }
+:host([hidden]) { display: none; }
+
 
 .header-surface {
   display: flex;

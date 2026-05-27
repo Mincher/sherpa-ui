@@ -34,6 +34,8 @@ import { StatusMixin } from '../utilities/status-mixin.js';
 
 export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
 
+  #bound = false;
+
   static get cssUrl()  { return new URL('./sherpa-input-checkbox.css', import.meta.url).href; }
   static get htmlUrl() { return new URL('./sherpa-input-checkbox.html', import.meta.url).href; }
 
@@ -48,19 +50,15 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
   onRender() {
+    if (!this.#bound) {
+      const input = this.#input;
+      if (input) input.addEventListener('change', this.#onChange);
+      this.#bound = true;
+    }
+
     this.#syncLabel();
     this.#syncDescription();
     this.#syncNative();
-  }
-
-  onConnect() {
-    const input = this.#input;
-    if (input) input.addEventListener('change', this.#onChange);
-  }
-
-  onDisconnect() {
-    const input = this.#input;
-    if (input) input.removeEventListener('change', this.#onChange);
   }
 
   onAttributeChanged(name, oldValue, newValue) {

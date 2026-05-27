@@ -27,7 +27,7 @@ import {
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { formatCompact, formatFieldName, cleanTitleBase } from '../utilities/index.js';
 import { getSegmentField, isSegmentEnabled, getActiveSort } from '../utilities/chart-utils.js';
-import { injectFilterMenu, removeFilterMenu } from '../utilities/filter-menu-utils.js';
+import { injectFilterMenu } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-filter-bar/sherpa-filter-bar.js';
 
@@ -80,6 +80,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   #legendEl;
   #legendItemTpl;
   #filterMenuTpl = null;
+  #bound = false;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
@@ -94,25 +95,16 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     this.#legendEl         = this.$('.chart-legend');
     this.#legendItemTpl    = this.shadowRoot.querySelector('template.legend-item-tpl');
 
+    if (!this.#bound) {
+      this.#filterMenuTpl = injectFilterMenu(this);
+      this.addEventListener('toggle-filters', this.#onToggleFilters);
+      this.addEventListener('toggle-legend', this.#onToggleLegend);
+      this.addEventListener('menu-populate', this.#onMenuPopulate);
+      this.#bound = true;
+    }
+
     this.#syncTitle();
     this.#syncCentreLabel();
-  }
-
-  onConnect() {
-    super.onConnect();
-    this.#filterMenuTpl = injectFilterMenu(this);
-    this.addEventListener('toggle-filters', this.#onToggleFilters);
-    this.addEventListener('toggle-legend', this.#onToggleLegend);
-    this.addEventListener('menu-populate', this.#onMenuPopulate);
-  }
-
-  onDisconnect() {
-    super.onDisconnect();
-    this.removeEventListener('toggle-filters', this.#onToggleFilters);
-    this.removeEventListener('toggle-legend', this.#onToggleLegend);
-    this.removeEventListener('menu-populate', this.#onMenuPopulate);
-    removeFilterMenu(this.#filterMenuTpl);
-    this.#filterMenuTpl = null;
   }
 
   onAttributeChanged(name, oldValue, newValue) {

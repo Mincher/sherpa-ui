@@ -23,6 +23,8 @@
  * retint nodes without touching component CSS.
  *
  * The active border colour is exposed locally as `--_node-accent` so
+
+  :host([hidden]) { display: none; }
  * the body, border and selected outline all share one source of truth.
  */
 

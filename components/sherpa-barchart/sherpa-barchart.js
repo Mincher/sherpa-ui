@@ -45,7 +45,7 @@ import {
   isSegmentEnabled,
   getActiveSort,
 } from "../utilities/chart-utils.js";
-import { injectFilterMenu, removeFilterMenu } from "../utilities/filter-menu-utils.js";
+import { injectFilterMenu } from "../utilities/filter-menu-utils.js";
 
 const CONFIG = {
   maxGridLines: 6,
@@ -84,12 +84,9 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   #axisValueTpl = null;
   #legendItemTpl = null;
   #filterMenuTpl = null;
+  #bound = false;
 
-
-
-  onConnect() {
-    super.onConnect();
-
+  onRender() {
     // Mark as viz component for container CSS targeting
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
     if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);
@@ -98,16 +95,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     if (!this.#menuId) {
       this.#menuId = generateUniqueId("barchart");
     }
-    this.#resizeObserver = new ResizeObserver((entries) =>
-      this.#onResize(entries[0]),
-    );
-    this.#resizeObserver.observe(this);
-
-    // Inject filter-menu template into light DOM for the header menu
-    this.#filterMenuTpl = injectFilterMenu(this);
-    this.addEventListener("toggle-filters", this.#onToggleFilters);
-    this.addEventListener("toggle-legend", this.#onToggleLegend);
-    this.addEventListener("menu-populate", this.#onMenuPopulate);
 
     // Tooltip element (nested sherpa-tooltip component)
     this.#tipEl = this.$("sherpa-tooltip");
@@ -118,26 +105,41 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     this.#axisValueTpl = this.$("template.axis-value-tpl");
     this.#legendItemTpl = this.$("template.legend-item-tpl");
 
-    // Tooltip delegation for chart segments
-    this.shadowRoot.addEventListener(
-      "pointerenter",
-      (e) => {
-        const seg = e.target.closest?.(".chart-segment[data-tooltip]");
-        if (!seg || !this.#tipEl) return;
-        this.#tipEl.showFor(seg, seg.dataset.tooltip);
-      },
-      true,
-    );
+    if (!this.#bound) {
+      this.#resizeObserver = new ResizeObserver((entries) =>
+        this.#onResize(entries[0]),
+      );
+      this.#resizeObserver.observe(this);
 
-    this.shadowRoot.addEventListener(
-      "pointerleave",
-      (e) => {
-        if (e.target.matches?.(".chart-segment")) {
-          this.#tipEl?.hide();
-        }
-      },
-      true,
-    );
+      // Inject filter-menu template into light DOM for the header menu
+      this.#filterMenuTpl = injectFilterMenu(this);
+      this.addEventListener("toggle-filters", this.#onToggleFilters);
+      this.addEventListener("toggle-legend", this.#onToggleLegend);
+      this.addEventListener("menu-populate", this.#onMenuPopulate);
+
+      // Tooltip delegation for chart segments
+      this.shadowRoot.addEventListener(
+        "pointerenter",
+        (e) => {
+          const seg = e.target.closest?.(".chart-segment[data-tooltip]");
+          if (!seg || !this.#tipEl) return;
+          this.#tipEl.showFor(seg, seg.dataset.tooltip);
+        },
+        true,
+      );
+
+      this.shadowRoot.addEventListener(
+        "pointerleave",
+        (e) => {
+          if (e.target.matches?.(".chart-segment")) {
+            this.#tipEl?.hide();
+          }
+        },
+        true,
+      );
+
+      this.#bound = true;
+    }
   }
 
   onAttributeChanged(name, oldValue, newValue) {
@@ -175,16 +177,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       default:
         break;
     }
-  }
-
-  onDisconnect() {
-    super.onDisconnect();
-    this.#resizeObserver?.disconnect();
-    this.removeEventListener("toggle-filters", this.#onToggleFilters);
-    this.removeEventListener("toggle-legend", this.#onToggleLegend);
-    this.removeEventListener("menu-populate", this.#onMenuPopulate);
-    removeFilterMenu(this.#filterMenuTpl);
-    this.#filterMenuTpl = null;
   }
 
   #contentData = null; // Standardised data from DataQueryHandler
@@ -925,7 +917,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   #buildSegment(name, value, percent, colorIdx) {
     const node = this.#segmentTpl.content.firstElementChild.cloneNode(true);
-    node.classList.add(`color-${(colorIdx % CONFIG.numColors) + 1}`);
+    node.dataset.colorIndex = String((colorIdx % CONFIG.numColors) + 1);
     node.style.setProperty("--_segment-size", `${percent}%`);
     node.dataset.tooltip = `${name}: ${formatCompact(value)}`;
     return node;
@@ -936,7 +928,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       const node = this.#legendItemTpl.content.firstElementChild.cloneNode(true);
       const hasData = s.values.some((v) => v > 0);
       if (!hasData) node.dataset.disabled = "";
-      node.querySelector(".chart-legend-key").classList.add(`color-${(i % CONFIG.numColors) + 1}`);
+      node.querySelector(".chart-legend-key").dataset.colorIndex = String((i % CONFIG.numColors) + 1);
       node.querySelector(".chart-legend-label").textContent = s.name;
       return node;
     });

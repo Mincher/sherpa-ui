@@ -3,7 +3,7 @@
  * Shadow DOM styles for the sherpa-card web component.
  *
  * The card is a simple container. Headers and footers are provided by
- * slotted sherpa components (e.g. sherpa-header).
+ * slotted sherpa components (e.g. sherpa-container-header).
  *
  * Host attributes:
  *   data-selected    {boolean} — selected / active state
@@ -13,7 +13,7 @@
  *   disabled         {boolean} — disabled state
  *
  * Slots:
- *   header   — card header (use sherpa-header)
+ *   header   — card header (use sherpa-container-header)
  *   (default)— main card content
  *   footer   — card footer content
  */
@@ -28,7 +28,7 @@
   container-type: normal;
   background: var(--sherpa-surface-container-default, #ffffff);
   border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default, #d5d5d5));
-  border-radius: var(--sherpa-border-rounding-base, 4px);
+border-radius: var(--sherpa-border-rounding-base, 4px);
   overflow: clip;
   transition:
             box-shadow var(--sherpa-motion-transition-fast, 0.15s ease-out),
@@ -36,6 +36,8 @@
             border-color var(--sherpa-motion-transition-fast, 0.15s ease-out),
             transform var(--sherpa-motion-transition-fast, 0.15s ease-out);
 }
+:host([hidden]) { display: none; }
+
 :host([data-elevation="none"]) {
   box-shadow: none;
 }

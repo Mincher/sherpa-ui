@@ -20,7 +20,7 @@
  * @attr {enum}   [data-fill=viewport] — viewport | parent
  *                                       viewport: clamp to 100dvh
  *                                       parent:   fill flex parent
- * @attr {flag}   [data-pad]          — Apply padding inside the content column
+ * @attr {boolean} [data-pad]         — Apply padding inside the content column
  * @attr {enum}   [data-gap]          — sm | base | lg — gap between
  *                                      stacked content children
  *

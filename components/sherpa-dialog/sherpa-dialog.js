@@ -4,7 +4,7 @@
  *
  * Uses SherpaElement multi-template support. The default template includes
  * a native <header> with a <dl> for title/subtitle and a close button,
- * plus a sherpa-footer for footer content.
+ * plus a sherpa-container-footer for footer content.
  *
  * @element sherpa-dialog
  * @category overlay
@@ -22,7 +22,7 @@
  *
  * @slot          — Default slot for dialog body content
  * @slot heading  — Custom heading content (replaces attribute-driven title)
- * @slot footer   — Footer action content (inside sherpa-footer)
+ * @slot footer   — Footer action content (inside sherpa-container-footer)
  *
  * @fires open — Fired when dialog is opened
  *   bubbles: true, composed: true
@@ -47,7 +47,7 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
-import '../sherpa-footer/sherpa-footer.js';
+import '../sherpa-container-footer/sherpa-container-footer.js';
 
 export class SherpaDialog extends StatusMixin(SherpaElement) {
 

@@ -73,7 +73,7 @@ const GROUP_MAP = {
   "sherpa-view-header":         "page-level",
   "sherpa-section-header":      "page-level",
   "sherpa-toolbar":             "page-level",
-  "sherpa-footer":              "page-level",
+  "sherpa-container-footer":              "page-level",
   "sherpa-filter-bar":          "page-level",
   "sherpa-container-pdf":       "page-level",
 };

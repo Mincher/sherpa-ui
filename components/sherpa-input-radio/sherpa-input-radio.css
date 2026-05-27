@@ -16,7 +16,7 @@
   display: inline-flex;
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
-  /* ── Hidden state ────────────────────────────── */
+/* ── Hidden state ────────────────────────────── */
   /* ── Disabled state ──────────────────────────– */
   /* ── Child elements ──────────────────────────– */
   /* Hide text wrapper when no label/description (compact selector mode) */
@@ -24,6 +24,8 @@
        Radio keeps white face; status colours border + dot.
        [data-status] cascades --_status-* through shadow boundary. */
 }
+:host([hidden]) { display: none; }
+
 :host([disabled]) {
   pointer-events: none;
 }

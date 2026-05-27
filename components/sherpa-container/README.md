@@ -11,13 +11,15 @@ Universal container for dashboard composition and standalone card layouts. Owns 
 | `data-variant` | enum | fit \| resizable \| fill \| worksheet | `fit` | `fit`, `resizable`, `fill`, `worksheet` |
 | `data-col-span` | number | Column span: 3 \| 6 \| 9 \| 12 (resizable) | — | — |
 | `data-row-span` | number | Row span: 1–6 (resizable) | — | — |
-| `data-editable` | boolean | Edit mode (enables resize grip) | — | — |
+| `data-editable` | boolean | Edit mode (e.g. allows menu-driven resize) | — | — |
+| `data-resize-mode` | enum | Experimental: "drag" enables a pointer-driven snap-resize grip (default mode uses the header overflow menu only) | — | — |
 | `data-menu-open` | boolean | Reflected while a descendant menu is open | — | — |
 | `data-state` | enum | ready \| loading \| empty \| error | — | `ready`, `loading`, `empty`, `error` |
 | `data-interactive` | boolean | Makes the container a clickable surface | — | — |
 | `data-selectable` | boolean | Makes the container a selectable radio option | — | — |
 | `data-selected` | boolean | Selected / active state | — | — |
 | `data-elevation` | enum | none \| sm \| md \| lg | — | `none`, `sm`, `md`, `lg` |
+| `data-group-position` | enum | Managed by an enclosing <sherpa-container-group>: "first" \| "follow". The first tile in a group renders its header normally (and serves as the group title); follower tiles have header content visually muted while the header band preserves height for cross-tile content alignment. Consumers should not set this manually. | — | — |
 | `disabled` | boolean | Native disabled state | — | — |
 | `data-src-html` | string |  | — | — |
 | `data-src-json` | string |  | — | — |
@@ -27,8 +29,8 @@ Universal container for dashboard composition and standalone card layouts. Owns 
 | Slot | Description |
 | ---- | ----------- |
 | `(default)` | Main content (dashboard children or card body) |
-| `header` | Card-style header (use sherpa-header); edge-to-edge with separator |
-| `footer` | Card-style footer (use sherpa-footer or sherpa-button) |
+| `header` | Card-style header (use sherpa-container-header); edge-to-edge with separator |
+| `footer` | Card-style footer (use sherpa-container-footer or sherpa-button) |
 | `loading` | Shown when data-state="loading" |
 | `empty` | Shown when data-state="empty" |
 | `error` | Shown when data-state="error" |
@@ -39,8 +41,8 @@ Slot usage:
 <sherpa-container>
   <!-- Default slot -->
   <p>Content goes here</p>
-  <div slot="header"><!-- Card-style header (use sherpa-header); edge-to-edge with separator --></div>
-  <div slot="footer"><!-- Card-style footer (use sherpa-footer or sherpa-button) --></div>
+  <div slot="header"><!-- Card-style header (use sherpa-container-header); edge-to-edge with separator --></div>
+  <div slot="footer"><!-- Card-style footer (use sherpa-container-footer or sherpa-button) --></div>
   <div slot="loading"><!-- Shown when data-state="loading" --></div>
   <div slot="empty"><!-- Shown when data-state="empty" --></div>
   <div slot="error"><!-- Shown when data-state="error" --></div>
@@ -155,6 +157,8 @@ Style internal elements from outside the shadow DOM:
 
 - `header`
 - `content`
+- `footer`
+- `resize-grip`
 
 ```css
 sherpa-container::part(header) {
@@ -167,6 +171,10 @@ sherpa-container::part(header) {
 These `--_` prefixed properties are used internally and can be
 influenced by setting `data-*` attributes or status on ancestors:
 
+- `--_cg-border-radius`
+- `--_cg-border-width`
+- `--_cg-header-sep`
+- `--_cg-header-vis`
 - `--_editable-display`
 - `--_selected-border`
 - `--_selected-surface`
@@ -178,11 +186,11 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-container data-variant="fit" data-state="ready" data-elevation="none">
+<sherpa-container data-variant="fit" data-state="ready">
   <!-- Default slot content -->
   <p>Your content here</p>
-  <span slot="header"><!-- Card-style header (use sherpa-header); edge-to-edge with separator --></span>
-  <span slot="footer"><!-- Card-style footer (use sherpa-footer or sherpa-button) --></span>
+  <span slot="header"><!-- Card-style header (use sherpa-container-header); edge-to-edge with separator --></span>
+  <span slot="footer"><!-- Card-style footer (use sherpa-container-footer or sherpa-button) --></span>
 </sherpa-container>
 ```
 

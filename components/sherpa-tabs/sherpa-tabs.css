@@ -16,7 +16,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  /* ──────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────
              TAB STRIP
              ────────────────────────────────────────────────────────── */
   /* ── Detail slot (trailing content beside tabs) ──────────– */
@@ -28,6 +28,8 @@
   /* Show only the active panel */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host .tab-strip {
   display: flex;
       overflow-x: auto;

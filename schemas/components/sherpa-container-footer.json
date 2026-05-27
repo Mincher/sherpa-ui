@@ -1,5 +1,5 @@
 {
-  "tagName": "sherpa-footer",
+  "tagName": "sherpa-container-footer",
   "description": "Reusable footer with multiple template variants. Template selected via data-type attribute.",
   "category": "container",
   "tier": 2,

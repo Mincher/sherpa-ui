@@ -78,7 +78,7 @@ import {
   formatFieldName,
 } from "../utilities/index.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
-import { injectFilterMenu, removeFilterMenu } from "../utilities/filter-menu-utils.js";
+import { injectFilterMenu } from "../utilities/filter-menu-utils.js";
 
 const NUMERIC_TYPES = new Set([
   "number",
@@ -187,6 +187,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #columnConfig = {}; // Per-field config from consumer { field: { type?, statusMap? } }
   #filterMenuTpl = null; // Injected light-DOM <template data-menu> for filter toggle
   #actionMenuSections = []; // Consumer-defined secondary actions for the Actions menu
+  #bound = false;
 
   /* ══════════════════════════════════════════════════════════════
      Lifecycle
@@ -208,42 +209,40 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.#headerCellTpl = this.$("template.header-cell-tpl");
     this.#searchCellTpl = this.$("template.search-cell-tpl");
     this.#metadataSpanTpl = this.$("template.metadata-span-tpl");
-  }
 
-  onConnect() {
-    super.onConnect();
+    if (!this.#bound) {
 
-    // Pagination events — delegated to sherpa-pagination component
-    this.addEventListener("click", (e) => this.#onHostClick(e));
+      // Pagination events — delegated to sherpa-pagination component
+      this.addEventListener("click", (e) => this.#onHostClick(e));
 
-    const pagination = this.$(".grid-pagination");
-    pagination?.addEventListener("page-change", (e) => {
-      const { page, pageSize } = e.detail;
-      this.dataset.page = String(page);
-      this.dataset.pageSize = String(pageSize);
-      this.#render();
-    });
-
-    // Global search input (sherpa-input-search in toolbar center)
-    const globalSearch = this.$(".global-search");
-    if (globalSearch) {
-      globalSearch.addEventListener("input", (e) => {
-        clearTimeout(this.#searchDebounce);
-        this.#searchDebounce = setTimeout(() => {
-          const el = globalSearch.getInputElement?.();
-          const val = el?.value ?? e.detail?.value ?? "";
-          this.#globalSearchTerm = val.trim().toLowerCase();
-          this.dataset.page = "1";
-          this.#render();
-        }, 200);
-      });
-      // Also handle clear via the search event (Enter/clear button)
-      globalSearch.addEventListener("search", (e) => {
-        this.#globalSearchTerm = (e.detail?.value || "").trim().toLowerCase();
-        this.dataset.page = "1";
+      const pagination = this.$(".grid-pagination");
+      pagination?.addEventListener("page-change", (e) => {
+        const { page, pageSize } = e.detail;
+        this.dataset.page = String(page);
+        this.dataset.pageSize = String(pageSize);
         this.#render();
       });
-    }
+
+    // Global search input (sherpa-input-search in toolbar center)
+      const globalSearch = this.$(".global-search");
+      if (globalSearch) {
+        globalSearch.addEventListener("input", (e) => {
+          clearTimeout(this.#searchDebounce);
+          this.#searchDebounce = setTimeout(() => {
+            const el = globalSearch.getInputElement?.();
+            const val = el?.value ?? e.detail?.value ?? "";
+            this.#globalSearchTerm = val.trim().toLowerCase();
+            this.dataset.page = "1";
+            this.#render();
+          }, 200);
+        });
+        // Also handle clear via the search event (Enter/clear button)
+        globalSearch.addEventListener("search", (e) => {
+          this.#globalSearchTerm = (e.detail?.value || "").trim().toLowerCase();
+          this.dataset.page = "1";
+          this.#render();
+        });
+      }
 
     // Filter bar events — value filters from dynamic filter chips.
     // Sort/segment chips drive data-sort-* / data-segment-* attributes
@@ -255,78 +254,84 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // upstream records (data set directly via setData()), that pipeline
     // is a no-op, so we always re-render here in a microtask to pick up
     // whatever attrs the mixin just wrote.
-    this.addEventListener("filter-change", (e) => {
-      const filters = e.detail?.filters || [];
+      this.addEventListener("filter-change", (e) => {
+        const filters = e.detail?.filters || [];
 
       // Value filters (text/number/date/boolean chips)
-      this.#valueFilters = filters.filter(
-        (f) => Array.isArray(f.values) && f.values.length > 0,
-      );
+        this.#valueFilters = filters.filter(
+          (f) => Array.isArray(f.values) && f.values.length > 0,
+        );
 
-      this.dataset.page = "1";
-      queueMicrotask(() => this.#render());
-    });
+        this.dataset.page = "1";
+        queueMicrotask(() => this.#render());
+      });
 
-    this.addEventListener("filter-clear", () => {
-      this.#valueFilters = [];
-      this.dataset.page = "1";
-      this.#render();
-    });
+      this.addEventListener("filter-clear", () => {
+        this.#valueFilters = [];
+        this.dataset.page = "1";
+        this.#render();
+      });
 
     // Overflow menu
-    const overflowBtn = this.$(".overflow-menu-btn");
-    if (overflowBtn) {
-      overflowBtn.addEventListener("menu-open", () =>
-        this.#populateOverflowMenu(),
-      );
-      overflowBtn.addEventListener("menu-select", (e) =>
-        this.#onOverflowMenuSelect(e),
-      );
-    }
+      const overflowBtn = this.$(".overflow-menu-btn");
+      if (overflowBtn) {
+        overflowBtn.addEventListener("menu-open", () =>
+          this.#populateOverflowMenu(),
+        );
+        overflowBtn.addEventListener("menu-select", (e) =>
+          this.#onOverflowMenuSelect(e),
+        );
+      }
 
     // Column-select menu
-    const colSelectBtn = this.$(".column-select-btn");
-    if (colSelectBtn) {
-      colSelectBtn.addEventListener("menu-open", () =>
-        this.#populateColumnSelectMenu(),
-      );
-      colSelectBtn.addEventListener("menu-select", (e) =>
-        this.#onColumnSelectMenuSelect(e),
-      );
-    }
+      const colSelectBtn = this.$(".column-select-btn");
+      if (colSelectBtn) {
+        colSelectBtn.addEventListener("menu-open", () =>
+          this.#populateColumnSelectMenu(),
+        );
+        colSelectBtn.addEventListener("menu-select", (e) =>
+          this.#onColumnSelectMenuSelect(e),
+        );
+      }
 
     // Actions menu button (shown when rows are selected)
-    const actionsBtn = this.$(".actions-btn");
-    if (actionsBtn) {
-      actionsBtn.addEventListener("menu-open", () =>
-        this.#populateActionMenu(),
-      );
-      actionsBtn.addEventListener("menu-select", (e) =>
-        this.#onActionMenuSelect(e),
-      );
-    }
+      const actionsBtn = this.$(".actions-btn");
+      if (actionsBtn) {
+        actionsBtn.addEventListener("menu-open", () =>
+          this.#populateActionMenu(),
+        );
+        actionsBtn.addEventListener("menu-select", (e) =>
+          this.#onActionMenuSelect(e),
+        );
+      }
 
     // Export button
-    const exportBtn = this.$(".export-btn");
-    if (exportBtn) {
-      exportBtn.addEventListener("click", () => {
-        this.dispatchEvent(
-          new CustomEvent("grid-export", { bubbles: true, composed: true }),
-        );
-      });
-    }
+      const exportBtn = this.$(".export-btn");
+      if (exportBtn) {
+        exportBtn.addEventListener("click", () => {
+          this.dispatchEvent(
+            new CustomEvent("grid-export", { bubbles: true, composed: true }),
+          );
+        });
+      }
 
     // Set defaults
-    if (!this.dataset.page) this.dataset.page = "1";
-    if (!this.dataset.pageSize) this.dataset.pageSize = "25";
+      if (!this.dataset.page) this.dataset.page = "1";
+      if (!this.dataset.pageSize) this.dataset.pageSize = "25";
 
     // Inject filter-menu template into light DOM for the overflow menu
-    this.#filterMenuTpl = injectFilterMenu(this);
-    this.addEventListener("toggle-filters", this.#onToggleFilters);
-    this.addEventListener("menu-populate", this.#onMenuPopulate);
+      this.#filterMenuTpl = injectFilterMenu(this);
+      this.addEventListener("toggle-filters", this.#onToggleFilters);
+      this.addEventListener("menu-populate", this.#onMenuPopulate);
 
     // Declarative initial state from attributes (no JS required).
-    this.#syncActionMenuFromAttr();
+      this.#syncActionMenuFromAttr();
+      this.#bound = true;
+    }
+  }
+
+  onConnect() {
+    super.onConnect();
     if (this.hasAttribute("data-src-json")) this.setAttribute("data-loading", "");
   }
 
@@ -334,10 +339,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     super.onDisconnect();
     CSS.highlights?.delete("data-grid-search");
     CSS.highlights?.delete("data-grid-col-search");
-    this.removeEventListener("toggle-filters", this.#onToggleFilters);
-    this.removeEventListener("menu-populate", this.#onMenuPopulate);
-    removeFilterMenu(this.#filterMenuTpl);
-    this.#filterMenuTpl = null;
   }
 
   onAttributeChanged(name, oldValue, newValue) {
@@ -847,10 +848,12 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       value === "Yes";
     const node = this.#boolCellTpl.content.firstElementChild.cloneNode(true);
     if (isTrue) {
-      node.classList.add("fa-check", "bool-true");
+      node.dataset.bool = "true";
+      node.textContent = "\uf00c";
       node.setAttribute("aria-label", "Yes");
     } else {
-      node.classList.add("fa-xmark", "bool-false");
+      node.dataset.bool = "false";
+      node.textContent = "\uf00d";
       node.setAttribute("aria-label", "No");
     }
     return node;
@@ -1749,7 +1752,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
   #showEmptyState(message = "No data available") {
     const emptyEl = this.$(".empty-state");
-    if (emptyEl) emptyEl.setAttribute("heading", message);
+    if (emptyEl) emptyEl.heading = message;
     this.dataset.empty = "";
   }
 

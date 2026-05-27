@@ -109,6 +109,7 @@ class SherpaPanel extends SherpaElement {
   /** @type {MutationObserver|null} */
   #observer = null;
   #currentFilter = "";
+  #bound = false;
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
@@ -126,13 +127,22 @@ class SherpaPanel extends SherpaElement {
     if (!this.dataset.variant) this.dataset.variant = "inline";
     if (!this.dataset.position) this.dataset.position = "right";
 
-    // Listeners
-    this.#closeBtnEl?.addEventListener("click", this.#onClose);
-    this.#triggerEl?.addEventListener("click", this.#onExpand);
-    this.#searchEl?.addEventListener("input", this.#onSearchChange);
-    this.#searchEl?.addEventListener("search", this.#onSearchChange);
-    this.#newChatBtnEl?.addEventListener("click", this.#onNewChat);
-    this.#archiveBtnEl?.addEventListener("click", this.#onArchive);
+    if (!this.#bound) {
+      // Listeners
+      this.#closeBtnEl?.addEventListener("click", this.#onClose);
+      this.#triggerEl?.addEventListener("click", this.#onExpand);
+      this.#searchEl?.addEventListener("input", this.#onSearchChange);
+      this.#searchEl?.addEventListener("search", this.#onSearchChange);
+      this.#newChatBtnEl?.addEventListener("click", this.#onNewChat);
+      this.#archiveBtnEl?.addEventListener("click", this.#onArchive);
+
+      // Re-run filter when consumer mutates light-DOM (e.g. async data load).
+      this.#observer = new MutationObserver(() => {
+        if (this.#currentFilter) this.#applyFilter(this.#currentFilter);
+      });
+      this.#observer.observe(this, { childList: true, subtree: true });
+      this.#bound = true;
+    }
 
     this.#syncHeading();
     this.#syncRestoreLabel();
@@ -142,21 +152,7 @@ class SherpaPanel extends SherpaElement {
     this.#syncBusy();
   }
 
-  onConnect() {
-    // Re-run filter when consumer mutates light-DOM (e.g. async data load).
-    this.#observer = new MutationObserver(() => {
-      if (this.#currentFilter) this.#applyFilter(this.#currentFilter);
-    });
-    this.#observer.observe(this, { childList: true, subtree: true });
-  }
-
   onDisconnect() {
-    this.#closeBtnEl?.removeEventListener("click", this.#onClose);
-    this.#triggerEl?.removeEventListener("click", this.#onExpand);
-    this.#newChatBtnEl?.removeEventListener("click", this.#onNewChat);
-    this.#archiveBtnEl?.removeEventListener("click", this.#onArchive);
-    this.#observer?.disconnect();
-    this.#observer = null;
     this.#clearHighlights();
   }
 

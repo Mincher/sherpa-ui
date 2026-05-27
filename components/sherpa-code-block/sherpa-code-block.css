@@ -23,7 +23,7 @@
   font-size: var(--sherpa-font-body-sm, 13px);
   line-height: 1.5;
   padding: var(--sherpa-space-sm, 12px);
-  gap: var(--sherpa-space-xs, 8px);
+gap: var(--sherpa-space-xs, 8px);
   background: var(--sherpa-surface-container-default, #ffffff);
   border: 1px solid var(--sherpa-border-container-default, #d5d5d5);
   border-radius: var(--sherpa-border-rounding-base, 4px);
@@ -78,12 +78,14 @@
               font-size: 11px;
             }
         
-            & pre.line-numbers { padding-inline-start: 2.8em; }
+            & pre[data-line-numbers] { padding-inline-start: 2.8em; }
           }
   /* ──────────────────────────────────────────────────────────
              HIDDEN STATE
              ────────────────────────────────────────────────────────── */
 }
+:host([hidden]) { display: none; }
+
 :host([data-theme="dark"]) {
   --_hljs-bg: #1e1e1e;
   --_hljs-text: #e0e0e0;
@@ -212,7 +214,7 @@
       white-space: pre-wrap;
       word-wrap: break-word;
 }
-:host pre.line-numbers {
+:host pre[data-line-numbers] {
   position: relative;
       padding-inline-start: 3.8em;
       counter-reset: linenumber;

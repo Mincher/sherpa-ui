@@ -23,8 +23,10 @@ i {
   overflow: clip;
   container-type: inline-size;
   container-name: metric;
-  color: inherit;
+color: inherit;
 }
+:host([hidden]) { display: none; }
+
 :host([data-visible="false"]) {
   display: none;
 }

@@ -11,8 +11,8 @@
  *
  * Host attributes:
  *   data-variant     {enum}    — "fit" | "resizable" | "fill" | "worksheet"
- *   data-col-span    {number}  — "3" | "6" | "9" | "12" (resizable only)
- *   data-row-span    {number}  — "1"–"6" (resizable only)
+ *   data-col-span    {number}  — "2"–"12" (any grid parent honours it)
+ *   data-row-span    {number}  — "2"–"6"  (any grid parent honours it)
  *   data-editable    {boolean} — enables resize grip
  *   data-menu-open   {boolean} — set while overflow menu is open
  *   data-interactive {boolean} — clickable surface
@@ -44,7 +44,7 @@
   overflow: clip;
   position: relative;
   container: sherpa-container / inline-size;
-  transition:
+transition:
     box-shadow var(--sherpa-motion-transition-fast, 0.15s ease-out),
     background-color var(--sherpa-motion-transition-fast, 0.15s ease-out),
     border-color var(--sherpa-motion-transition-fast, 0.15s ease-out),
@@ -79,10 +79,27 @@
       overflow: clip;
       border-radius: var(--sherpa-border-rounding-base, 6px);
 }
-:host([data-variant="resizable"][data-editable]) {
-  overflow: auto;
-      resize: both;
-      --_editable-display: block;
+:host([data-variant="resizable"][data-editable][data-resize-mode="drag"]) {
+  /* Experimental: enable the pointer-driven snap-resize grip. Opt-in via
+     data-resize-mode="drag". The default resize affordance remains the
+     Width/Height items in the container-header overflow menu (provided by
+     ResizeBehavior). JS in sherpa-container.js translates drag deltas into
+     integer data-col-span / data-row-span updates — inline pixel
+     width/height are never set, so grid placement stays authoritative. */
+  --_editable-display: block;
+}
+
+/* Group follower tiles — set by sherpa-container-group's JS. Cascades into
+   the slotted <sherpa-container-header> (light-DOM child) and is consumed
+   in sherpa-container-header.css to visibility-hide the header row, while
+   `--_cg-header-sep` clears this tile's .card-header bottom separator so
+   the empty band reads as part of the parent surface. The header BAND
+   still reserves its natural height on every tile, so all tile content
+   baselines align across the group. The first tile (data-group-position=
+   "first") shows its header normally and serves as the group title. */
+:host([data-group-position="follow"]) {
+  --_cg-header-vis: hidden;
+  --_cg-header-sep: transparent;
 }
 :host([data-variant="worksheet"]) {
   width: 100%;
@@ -131,10 +148,17 @@
 
 .card-header {
   display: none;
-  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-subtle, #f0f0f5);
+  /* --_cg-header-sep cascades from a sherpa-container-group wrapper onto
+     follower tiles (data-group-position="follow") and clears the separator
+     so empty follower headers don't draw a line. Standalone tiles keep the
+     subtle border. */
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--_cg-header-sep, var(--sherpa-border-container-subtle, #f0f0f5));
 }
 .card-header[data-has-content] {
   display: block;
+}
+.card-footer {
+  display: contents;
 }
 .card-content {
   display: flex;
@@ -211,4 +235,72 @@
   color: var(--sherpa-text-inactive-default, #5c5c66);
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GRID SIZING — applies whenever the container is a grid item
+   ───────────────────────────────────────────────────────────────────────────
+   The container is self-describing: it declares its own column and row
+   span via `data-col-span` / `data-row-span` so any grid parent
+   (sherpa-layout-grid, sherpa-container-group subgrid, or a consumer
+   custom grid) honours those values without per-parent ::slotted rules.
+   These properties are inert when the container is not a grid item.
+   Grids that want a different default for the resizable variant can
+   still override via `::slotted(...)` rules (e.g. layout-grid sets
+   span 3 as the resizable default when no data-col-span is set).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Valid container col-spans: 3, 6, 9, 12. Snap-to-span resize keeps
+   widths on these stops; intermediate values (2/4/5/7/8/10/11) are not
+   supported on containers. */
+:host([data-col-span="3"])  { grid-column: span 3; }
+:host([data-col-span="6"])  { grid-column: span 6; }
+:host([data-col-span="9"])  { grid-column: span 9; }
+:host([data-col-span="12"]) { grid-column: span 12; }
+
+:host([data-row-span="2"])  { grid-row: span 2; }
+:host([data-row-span="3"])  { grid-row: span 3; }
+:host([data-row-span="4"])  { grid-row: span 4; }
+:host([data-row-span="5"])  { grid-row: span 5; }
+:host([data-row-span="6"])  { grid-row: span 6; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESIZE GRIP (experimental snap-to-span drag)
+   ───────────────────────────────────────────────────────────────────────────
+   Opt-in alternate resize affordance. Visible only when all three are set:
+     data-variant="resizable" + data-editable + data-resize-mode="drag"
+   The default resize mode (menu) leaves the grip hidden and uses the
+   Width/Height items in the container-header overflow menu instead.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.resize-grip {
+  display: var(--_editable-display, none);
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background:
+    linear-gradient(135deg,
+      transparent 0 55%,
+      var(--sherpa-border-control-secondary-default, #d5d5d5) 55% 65%,
+      transparent 65% 75%,
+      var(--sherpa-border-control-secondary-default, #d5d5d5) 75% 85%,
+      transparent 85% 100%);
+  cursor: nwse-resize;
+  touch-action: none;
+  z-index: 6;
+}
+.resize-grip:hover,
+.resize-grip:focus-visible {
+  background:
+    linear-gradient(135deg,
+      transparent 0 55%,
+      var(--sherpa-border-control-primary-default, #8500cc) 55% 65%,
+      transparent 65% 75%,
+      var(--sherpa-border-control-primary-default, #8500cc) 75% 85%,
+      transparent 85% 100%);
+  outline: none;
 }

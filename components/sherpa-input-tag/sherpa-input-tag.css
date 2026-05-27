@@ -11,6 +11,8 @@
  */
 
 @import '../utilities/sherpa-input-base/sherpa-input-base.css';
+  :host([hidden]) { display: none; }
+
 
 /* ── Override input-control to allow wrapping chips ─────────────── */
 .input-control {

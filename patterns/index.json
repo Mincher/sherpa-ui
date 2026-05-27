@@ -110,7 +110,7 @@
     "components": [
       "sherpa-layout-grid",
       "sherpa-container",
-      "sherpa-header",
+      "sherpa-container-header",
       "sherpa-metric",
       "sherpa-barchart",
       "sherpa-donut-chart",

@@ -265,7 +265,7 @@ optional features (status, control groups) activate only when set:
 ### Control group pattern
 
 Components that can be grouped (buttons, inputs, filter chips) read two
-inherited custom properties set by a `.grouped` wrapper:
+inherited custom properties set by a `.grouped-component` wrapper:
 
 ```css
 /* Inside the component */
@@ -275,7 +275,7 @@ inherited custom properties set by a `.grouped` wrapper:
 }
 
 /* External wrapper */
-.grouped {
+.grouped-component {
   --_cg-border-width: 0;
   --_cg-border-radius: 0;
   display: inline-flex;

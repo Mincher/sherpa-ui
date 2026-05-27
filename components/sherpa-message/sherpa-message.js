@@ -108,11 +108,8 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     const label = this.dataset.actionLabel || '';
     const href = this.dataset.actionHref || '';
     const iconClass = this.dataset.actionIcon || DEFAULT_ACTION_ICON;
-    if (!label) {
-      link.hidden = true;
-      return;
-    }
-    link.hidden = false;
+     this.toggleAttribute('data-has-action', !!label);
+     if (!label) return;
     if (href) link.setAttribute('href', href); else link.removeAttribute('href');
     if (labelEl) labelEl.textContent = label;
     if (iconEl) {

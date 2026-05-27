@@ -17,7 +17,7 @@
   --_heading-color: var(--sherpa-text-default-heading, #1a1a1f);
   --_heading-line-height: var(--sherpa-font-lg-line-height, 24px);
   --_content-gap: var(--sherpa-space-default, 16px);
-  /* ──────────────────────────────────────────────────────────
+/* ──────────────────────────────────────────────────────────
              HEADING LEVEL VARIANTS
              ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -37,6 +37,8 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host([data-heading-level="secondary"]) {
   --_heading-font-size: var(--sherpa-font-base-size, 14px);
   --_heading-text-transform: none;

@@ -33,6 +33,7 @@ export class SherpaAccordion extends SherpaElement {
   #iconEl = null;
   #chevronBtnEl = null;
   #detailsEl = null;
+  #bound = false;
 
   onRender() {
     this.#labelEl = this.$('.trigger-label');
@@ -40,18 +41,15 @@ export class SherpaAccordion extends SherpaElement {
     this.#chevronBtnEl = this.$('.chevron-btn');
     this.#detailsEl = this.$('details');
 
+    if (!this.#bound) {
+      this.#detailsEl?.addEventListener('toggle', this.#onToggle);
+      this.#bound = true;
+    }
+
     this.#syncLabel();
     this.#syncIcon();
     this.#syncOpen();
     this.#syncDisabled();
-  }
-
-  onConnect() {
-    this.#detailsEl?.addEventListener('toggle', this.#onToggle);
-  }
-
-  onDisconnect() {
-    this.#detailsEl?.removeEventListener('toggle', this.#onToggle);
   }
 
   onAttributeChanged(name) {

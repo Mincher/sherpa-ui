@@ -31,7 +31,12 @@
     {
       "name": "data-editable",
       "type": "boolean",
-      "description": "Edit mode (enables resize grip)"
+      "description": "Edit mode (e.g. allows menu-driven resize)"
+    },
+    {
+      "name": "data-resize-mode",
+      "type": "enum",
+      "description": "Experimental: \"drag\" enables a pointer-driven snap-resize grip (default mode uses the header overflow menu only)"
     },
     {
       "name": "data-menu-open",
@@ -76,6 +81,11 @@
       ]
     },
     {
+      "name": "data-group-position",
+      "type": "enum",
+      "description": "Managed by an enclosing <sherpa-container-group>: \"first\" | \"follow\". The first tile in a group renders its header normally (and serves as the group title); follower tiles have header content visually muted while the header band preserves height for cross-tile content alignment. Consumers should not set this manually."
+    },
+    {
       "name": "disabled",
       "type": "boolean",
       "description": "Native disabled state"
@@ -100,11 +110,11 @@
     },
     {
       "name": "header",
-      "description": "Card-style header (use sherpa-header); edge-to-edge with separator"
+      "description": "Card-style header (use sherpa-container-header); edge-to-edge with separator"
     },
     {
       "name": "footer",
-      "description": "Card-style footer (use sherpa-footer or sherpa-button)"
+      "description": "Card-style footer (use sherpa-container-footer or sherpa-button)"
     },
     {
       "name": "loading",

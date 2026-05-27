@@ -21,6 +21,8 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 export class SherpaSwitch extends SherpaElement {
 
+  #bound = false;
+
   /* ── Config ───────────────────────────────────────────────────── */
 
   static get cssUrl()  { return new URL('./sherpa-switch.css', import.meta.url).href; }
@@ -33,18 +35,15 @@ export class SherpaSwitch extends SherpaElement {
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
   onRender() {
+    if (!this.#bound) {
+      this.addEventListener('click', this.#onClick);
+      this.#bound = true;
+    }
+
     if (!this.dataset.state) {
       this.dataset.state = 'off';
     }
     this.#updateDisplay();
-  }
-
-  onConnect() {
-    this.addEventListener('click', this.#handleClick);
-  }
-
-  onDisconnect() {
-    this.removeEventListener('click', this.#handleClick);
   }
 
   onAttributeChanged(name) {
@@ -66,7 +65,7 @@ export class SherpaSwitch extends SherpaElement {
 
   /* ── Private ──────────────────────────────────────────────────── */
 
-  #handleClick = () => {
+  #onClick = () => {
     if (this.disabled) return;
     this.state = this.state === 'on' ? 'off' : 'on';
     this.dispatchEvent(new CustomEvent('change', {

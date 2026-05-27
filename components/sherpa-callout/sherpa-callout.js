@@ -51,14 +51,14 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
 
   #headingEl;
   #statusIconEl;
-  #actionBtn;
+  #actionBtnEl;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   onRender() {
     this.#headingEl    = this.$('.heading-text');
     this.#statusIconEl = this.$('.status-icon');
-    this.#actionBtn    = this.$('.action-btn');
+    this.#actionBtnEl  = this.$('.action-btn');
 
     // Defaults
     if (!this.dataset.status) this.dataset.status = 'info';
@@ -70,7 +70,7 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
     this.#syncToggleIcon();
 
     // Events
-    this.#actionBtn?.addEventListener('button-click', () => this.toggle());
+    this.#actionBtnEl?.addEventListener('button-click', () => this.toggle());
   }
 
   onAttributeChanged(name) {
@@ -124,9 +124,9 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
   }
 
   #syncToggleIcon() {
-    if (!this.#actionBtn) return;
+    if (!this.#actionBtnEl) return;
     // chevron-up when expanded, chevron-down when collapsed
-    this.#actionBtn.dataset.iconStart = this.expanded ? '\uf077' : '\uf078';
+    this.#actionBtnEl.dataset.iconStart = this.expanded ? '\uf077' : '\uf078';
   }
 }
 

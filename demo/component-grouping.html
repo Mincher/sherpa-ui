@@ -20,6 +20,7 @@
     <link href="../css/styles/index.css" rel="stylesheet" />
     <link href="component-doc/component-doc.css" rel="stylesheet" />
     <script type="module" src="../components/sherpa-container/sherpa-container.js"></script>
+    <script type="module" src="../components/sherpa-container-group/sherpa-container-group.js"></script>
     <script type="module" src="../components/sherpa-metric/sherpa-metric.js"></script>
     <script type="module" src="../components/sherpa-button/sherpa-button.js"></script>
     <style>
@@ -42,7 +43,7 @@
         border-bottom: 1px solid var(--sherpa-border-container-default);
       }
 
-      /* KPI grid wrapper — plain CSS grid for the standalone page */
+      /* KPI grid wrapper — plain CSS grid for the ungrouped state */
       .kpi-wrapper {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -56,18 +57,13 @@
       }
 
       /*
-       * Grouped state: collapse gap, strip individual tile chrome.
-       * .grouped sets --_cg-border-width/radius: 0 via custom property
-       * inheritance so child components inherit the values.
+       * Grouped state: the demo replaces .kpi-wrapper with
+       * <sherpa-container-group>, which owns its own grid + chrome.
+       * The first tile's header serves as the group title; follower
+       * tiles inherit data-group-position="follow" which mutes their
+       * header content while preserving header-band height for
+       * consistent baseline alignment across rows.
        */
-      .kpi-wrapper.grouped[data-layout-grid] {
-        gap: 0;
-      }
-
-      .kpi-wrapper.grouped[data-layout-grid] > sherpa-container {
-        border: none;
-        border-radius: 0;
-      }
     </style>
   </head>
   <body>
@@ -79,10 +75,12 @@
           <span class="doc-kicker">Experimental</span>
           <h1>Grouped</h1>
           <p>
-            The <code class="doc-inline-code">.grouped</code> CSS utility merges adjacent
-            Sherpa components into a single visual unit by collapsing their individual
-            borders and border-radii. Works with any component. Supports three
-            arrangements: row (default), column, and grid.
+            The <code class="doc-inline-code">.grouped-component</code> CSS utility
+            and the <code class="doc-inline-code">&lt;sherpa-container-group&gt;</code>
+            web component both merge adjacent elements into a single visual unit
+            by collapsing their individual borders and border-radii. Use the
+            utility class for small control groupings (buttons, inputs); use the
+            web component for grouping dashboard tiles in a layout grid.
           </p>
         </div>
       </div>
@@ -90,19 +88,19 @@
       <!-- ── Row ───────────────────────────────────────────────── -->
       <h2 class="doc-example-heading">Row</h2>
       <p class="doc-section-desc">
-        Wrap components in <code class="doc-inline-code">.grouped</code> to merge them
+        Wrap components in <code class="doc-inline-code">.grouped-component</code> to merge them
         horizontally. The container becomes an <code class="doc-inline-code">inline-flex</code>
         row with shared borders and no gap.
       </p>
       <div class="doc-panel">
         <div class="doc-preview-surface">
-          <div class="grouped">
+          <div class="grouped-component">
             <sherpa-button data-variant="secondary" data-label="First"></sherpa-button>
             <sherpa-button data-variant="secondary" data-label="Second"></sherpa-button>
             <sherpa-button data-variant="secondary" data-label="Third"></sherpa-button>
           </div>
         </div>
-        <pre class="doc-code">&lt;div class="grouped"&gt;
+        <pre class="doc-code">&lt;div class="grouped-component"&gt;
   &lt;sherpa-button data-variant="secondary" data-label="First"&gt;&lt;/sherpa-button&gt;
   &lt;sherpa-button data-variant="secondary" data-label="Second"&gt;&lt;/sherpa-button&gt;
   &lt;sherpa-button data-variant="secondary" data-label="Third"&gt;&lt;/sherpa-button&gt;
@@ -112,30 +110,33 @@
       <!-- ── Column ────────────────────────────────────────────── -->
       <h2 class="doc-example-heading">Column</h2>
       <p class="doc-section-desc">
-        Add <code class="doc-inline-code">style="flex-direction: column"</code> to stack
+        Add <code class="doc-inline-code">data-direction="vertical"</code> to stack
         components vertically into a single bordered unit.
       </p>
       <div class="doc-panel">
         <div class="doc-preview-surface">
-          <div class="grouped" style="flex-direction: column;">
+          <div class="grouped-component" data-direction="vertical">
             <sherpa-button data-variant="secondary" data-label="First"></sherpa-button>
             <sherpa-button data-variant="secondary" data-label="Second"></sherpa-button>
             <sherpa-button data-variant="secondary" data-label="Third"></sherpa-button>
           </div>
         </div>
-        <pre class="doc-code">&lt;div class="grouped" style="flex-direction: column;"&gt;
+        <pre class="doc-code">&lt;div class="grouped-component" data-direction="vertical"&gt;
   &lt;sherpa-button data-variant="secondary" data-label="First"&gt;&lt;/sherpa-button&gt;
   &lt;sherpa-button data-variant="secondary" data-label="Second"&gt;&lt;/sherpa-button&gt;
   &lt;sherpa-button data-variant="secondary" data-label="Third"&gt;&lt;/sherpa-button&gt;
 &lt;/div&gt;</pre>
       </div>
 
-      <!-- ── Grid ──────────────────────────────────────────────── -->
-      <h2 class="doc-example-heading">Grid</h2>
+      <!-- ── Tile group ───────────────────────────────────────────── -->
+      <h2 class="doc-example-heading">Dashboard tile group</h2>
       <p class="doc-section-desc">
-        Add <code class="doc-inline-code">data-layout-grid</code> to switch to a CSS grid layout.
-        Use <code class="doc-inline-code">--_cg-columns</code> to control the column count
-        (defaults to 3). Toggle the button below to compare grouped and ungrouped states.
+        Wrap a set of <code class="doc-inline-code">&lt;sherpa-container&gt;</code> tiles in
+        a <code class="doc-inline-code">&lt;sherpa-container-group&gt;</code> web component
+        to merge them into a single bordered unit. The group adopts the parent
+        layout grid's column tracks via subgrid; per-tile
+        <code class="doc-inline-code">data-col-span</code> still works. Toggle the
+        button below to compare grouped and ungrouped states.
       </p>
       <div class="doc-panel">
         <div class="doc-preview-actions">
@@ -148,7 +149,7 @@
         </div>
         <div class="doc-preview-surface"
              style="padding: var(--sherpa-space-default, 16px); align-items: stretch; min-height: auto;">
-          <div id="kpi-group" class="kpi-wrapper">
+          <div id="kpi-mount" class="kpi-wrapper">
             <sherpa-container>
               <sherpa-metric
                 data-label="Devices online"
@@ -199,28 +200,44 @@
             </sherpa-container>
           </div>
         </div>
-        <pre class="doc-code">&lt;!-- ungrouped --&gt;
+        <pre class="doc-code">&lt;!-- ungrouped — plain grid of independent tiles --&gt;
 &lt;div class="kpi-wrapper"&gt;
   &lt;sherpa-container&gt;&lt;sherpa-metric data-label="..." value="..."&gt;&lt;/sherpa-metric&gt;&lt;/sherpa-container&gt;
   ...
 &lt;/div&gt;
 
-&lt;!-- grouped (add .grouped + data-layout-grid; JS toggles these) --&gt;
-&lt;div class="kpi-wrapper grouped" data-layout-grid style="--_cg-columns: 3;"&gt;
+&lt;!-- grouped — wrap the tiles in a sherpa-container-group web component --&gt;
+&lt;sherpa-container-group&gt;
   &lt;sherpa-container&gt;&lt;sherpa-metric data-label="..." value="..."&gt;&lt;/sherpa-metric&gt;&lt;/sherpa-container&gt;
   ...
-&lt;/div&gt;</pre>
+&lt;/sherpa-container-group&gt;</pre>
       </div>
 
     </div>
 
     <script type="module">
-      const kpiGroup  = document.getElementById('kpi-group');
+      const mount     = document.getElementById('kpi-mount');
       const toggleBtn = document.getElementById('group-toggle');
+      // Snapshot the original ungrouped layout so we can restore it on toggle.
+      const ungroupedHTML = mount.outerHTML;
+      let grouped = false;
 
       toggleBtn.addEventListener('button-click', () => {
-        const grouped = kpiGroup.classList.toggle('grouped');
-        kpiGroup.toggleAttribute('data-layout-grid', grouped);
+        grouped = !grouped;
+        const current = document.getElementById('kpi-mount');
+        if (grouped) {
+          // Move tiles inside a <sherpa-container-group> wrapper.
+          const group = document.createElement('sherpa-container-group');
+          group.id = 'kpi-mount';
+          while (current.firstChild) group.appendChild(current.firstChild);
+          current.replaceWith(group);
+        } else {
+          // Restore the original ungrouped wrapper.
+          const restored = new DOMParser()
+            .parseFromString(ungroupedHTML, 'text/html')
+            .body.firstElementChild;
+          current.replaceWith(restored);
+        }
         toggleBtn.toggleAttribute('data-active', grouped);
         toggleBtn.dataset.label = grouped ? 'Ungroup KPIs' : 'Group KPIs';
       });

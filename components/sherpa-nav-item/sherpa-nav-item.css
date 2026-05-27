@@ -24,6 +24,8 @@ i {
   font-style: normal;
 }
 
+  :host([hidden]) { display: none; }
+
 :host {
   container: nav-item / inline-size;
   display: flex;
@@ -79,10 +81,10 @@ i {
 :host .nav-item-icon-inner {
   display: inline-flex; align-items: center; justify-content: center;
 }
-:host .nav-item-icon .sherpa-nav-item-svg {
+:host .nav-item-icon svg[data-nav-item-svg] {
   width: var(--icon-size); height: var(--icon-size); color: inherit; fill: currentColor;
 }
-:host .nav-item-icon .sherpa-nav-item-svg path {
+:host .nav-item-icon svg[data-nav-item-svg] path {
   fill: currentColor;
 }
 :host .nav-item-drag .sherpa-icon,

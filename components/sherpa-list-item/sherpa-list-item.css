@@ -24,6 +24,8 @@ i {
 :host {
   display: block;
 }
+:host([hidden]) { display: none; }
+
 :host .list-item-container {
   display: flex;
       align-items: flex-start;

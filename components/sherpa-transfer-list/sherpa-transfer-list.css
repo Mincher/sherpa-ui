@@ -14,6 +14,8 @@
   color: var(--sherpa-text-default-body, #2e2e33);
   min-height: 240px;
 }
+:host([hidden]) { display: none; }
+
 :host .pane {
   display: flex;
       flex-direction: column;

@@ -18,7 +18,7 @@
 :host {
   display: block;
   container-type: normal;
-  /* ── Animation private vars ────────────────────────── */
+/* ── Animation private vars ────────────────────────── */
   --_duration: var(--sherpa-motion-duration-base, 200ms);
   --_easing: var(--sherpa-motion-easing-default, ease-in-out);
   --_transform-x: 100%;
@@ -47,6 +47,8 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host .toast {
   position: relative;
       display: flex;

@@ -8,7 +8,7 @@
 @import '../utilities/sherpa-input-base/sherpa-input-base.css';
 
 :host {
-  /* ── Number field styling ────────────────────────────── */
+/* ── Number field styling ────────────────────────────── */
   & .input-field {
     text-align: right;
     font-variant-numeric: tabular-nums;
@@ -22,3 +22,5 @@
     flex-shrink: 0;
   }
 }
+:host([hidden]) { display: none; }
+

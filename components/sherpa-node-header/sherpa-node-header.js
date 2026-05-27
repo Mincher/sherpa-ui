@@ -46,32 +46,29 @@ export class SherpaNodeHeader extends SherpaElement {
     ];
   }
 
-  #iconBuiltIn = null;
-  #iconWrap = null;
-  #drillBtn = null;
+  #iconBuiltInEl = null;
+  #iconWrapEl = null;
+  #drillBtnEl = null;
   #inSocketSlot = null;
   #outSocketSlot = null;
+  #bound = false;
 
   onRender() {
-    this.#iconBuiltIn = this.$(".icon-built-in");
-    this.#iconWrap = this.$(".icon");
-    this.#drillBtn = this.$(".drill-down");
+    this.#iconBuiltInEl = this.$(".icon-built-in");
+    this.#iconWrapEl = this.$(".icon");
+    this.#drillBtnEl = this.$(".drill-down");
     this.#inSocketSlot = this.$('slot[name="input-socket"]');
     this.#outSocketSlot = this.$('slot[name="output-socket"]');
+
+    if (!this.#bound) {
+      this.#drillBtnEl?.addEventListener("click", this.#onDrillClick);
+      this.#inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
+      this.#outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
+      this.#bound = true;
+    }
+
     this.#syncIcon();
-  }
-
-  onConnect() {
-    this.#drillBtn?.addEventListener("click", this.#onDrillClick);
-    this.#inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
-    this.#outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
     this.#tagSockets();
-  }
-
-  onDisconnect() {
-    this.#drillBtn?.removeEventListener("click", this.#onDrillClick);
-    this.#inSocketSlot?.removeEventListener("slotchange", this.#tagSockets);
-    this.#outSocketSlot?.removeEventListener("slotchange", this.#tagSockets);
   }
 
   onAttributeChanged(name) {
@@ -81,14 +78,14 @@ export class SherpaNodeHeader extends SherpaElement {
   /* ── Internals ─────────────────────────────────────────────────── */
 
   #syncIcon() {
-    if (!this.#iconBuiltIn || !this.#iconWrap) return;
+    if (!this.#iconBuiltInEl || !this.#iconWrapEl) return;
     const cls = this.dataset.icon;
     if (cls) {
-      this.#iconBuiltIn.className = `icon-built-in ${cls}`;
-      this.#iconWrap.toggleAttribute("data-has-built-in", true);
+      this.#iconBuiltInEl.className = `icon-built-in ${cls}`;
+      this.#iconWrapEl.toggleAttribute("data-has-built-in", true);
     } else {
-      this.#iconBuiltIn.className = "icon-built-in";
-      this.#iconWrap.toggleAttribute("data-has-built-in", false);
+      this.#iconBuiltInEl.className = "icon-built-in";
+      this.#iconWrapEl.toggleAttribute("data-has-built-in", false);
     }
   }
 

@@ -28,6 +28,8 @@ i {
    Host
    ═══════════════════════════════════════════════════════════════ */
 
+  :host([hidden]) { display: none; }
+
 :host {
   --_cell-px: var(--sherpa-space-xs, 8px);
   --_cell-h: var(--sherpa-size-2xl, 32px);
@@ -581,8 +583,8 @@ td[data-numeric] {
 td .bool-icon {
   font-size: var(--sherpa-fonts-scale-sm, 12px);
 
-  &.bool-true { color: var(--sherpa-icon-context-success-default, #048142); }
-  &.bool-false { color: var(--sherpa-icon-context-default-secondary, #5c5c66); }
+  &[data-bool="true"] { color: var(--sherpa-icon-context-success-default, #048142); }
+  &[data-bool="false"] { color: var(--sherpa-icon-context-default-secondary, #5c5c66); }
 }
 
 /* Link cells */

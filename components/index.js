@@ -18,11 +18,12 @@ export * from "./sherpa-view-header/sherpa-view-header.js";
 export * from "./sherpa-layout-grid/sherpa-layout-grid.js";
 export * from "./sherpa-layout-view/sherpa-layout-view.js";
 export * from "./sherpa-container/sherpa-container.js";
-export * from "./sherpa-header/sherpa-header.js";
+export * from "./sherpa-container-group/sherpa-container-group.js";
+export * from "./sherpa-container-header/sherpa-container-header.js";
 
 // UI components
 export * from "./sherpa-button/sherpa-button.js";
-export * from "./sherpa-footer/sherpa-footer.js";
+export * from "./sherpa-container-footer/sherpa-container-footer.js";
 export * from "./sherpa-menu/sherpa-menu.js";
 export * from "./sherpa-menu-item/sherpa-menu-item.js";
 

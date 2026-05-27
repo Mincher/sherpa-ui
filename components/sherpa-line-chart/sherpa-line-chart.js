@@ -68,10 +68,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   #contentData = null;
   #prevSeriesData = null;
   #titleEl;
-  #yLabels;
-  #chartArea;
-  #seriesLayer;
-  #xAxis;
+  #yLabelEls;
+  #chartAreaEl;
+  #seriesLayerEl;
+  #xAxisEl;
   #legendEl;
   #seriesTpl;
   #shapeTpl;
@@ -85,10 +85,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
 
     this.#titleEl     = this.$('.chart-title');
-    this.#yLabels     = this.$$('.y-label');
-    this.#chartArea   = this.$('.chart-area');
-    this.#seriesLayer = this.$('.series-layer');
-    this.#xAxis       = this.$('.x-axis');
+    this.#yLabelEls   = this.$$('.y-label');
+    this.#chartAreaEl = this.$('.chart-area');
+    this.#seriesLayerEl = this.$('.series-layer');
+    this.#xAxisEl     = this.$('.x-axis');
     this.#legendEl    = this.$('.chart-legend');
 
     // Cloning prototypes live inside the shadow root
@@ -354,7 +354,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   /* ── Private: render ──────────────────────────────────────────── */
 
   #render() {
-    if (!this.#seriesLayer || !this.#data) return;
+    if (!this.#seriesLayerEl || !this.#data) return;
 
     const { labels = [] } = this.#data;
     let { series = [] } = this.#data;
@@ -384,7 +384,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.style.setProperty('--_range', yMax - yMin || 1);
 
     // ── Y-axis labels (top → bottom = max → min) ────────────────
-    const yLabels = Array.from(this.#yLabels);
+    const yLabels = Array.from(this.#yLabelEls);
     const tickCount = yLabels.length;
     for (let i = 0; i < tickCount; i++) {
       const val = yMax - (yMax - yMin) * (i / (tickCount - 1));
@@ -392,11 +392,11 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     }
 
     // ── X-axis labels ───────────────────────────────────────────
-    this.#xAxis.replaceChildren();
+    this.#xAxisEl.replaceChildren();
     for (const label of labels) {
       const span = this.#xLabelTpl.content.firstElementChild.cloneNode(true);
       span.textContent = label;
-      this.#xAxis.appendChild(span);
+      this.#xAxisEl.appendChild(span);
     }
 
     // ── Series (smart diff — only replace changed/new shapes) ───
@@ -410,10 +410,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       const prev = prevSeries?.[si];
 
       // Reuse existing .series element or create a new one
-      let seriesEl = this.#seriesLayer.children[si];
+      let seriesEl = this.#seriesLayerEl.children[si];
       if (!seriesEl) {
         seriesEl = this.#seriesTpl.content.firstElementChild.cloneNode(true);
-        this.#seriesLayer.appendChild(seriesEl);
+        this.#seriesLayerEl.appendChild(seriesEl);
       }
       seriesEl.style.color = color;
 
@@ -455,8 +455,8 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     });
 
     // Remove extra series elements left over from a dataset with more series
-    while (this.#seriesLayer.children.length > series.length) {
-      this.#seriesLayer.removeChild(this.#seriesLayer.lastChild);
+    while (this.#seriesLayerEl.children.length > series.length) {
+      this.#seriesLayerEl.removeChild(this.#seriesLayerEl.lastChild);
     }
 
     // Snapshot current series values for the next diff

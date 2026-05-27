@@ -38,14 +38,17 @@
   gap: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   min-height: 0;
-  overflow: clip;
+overflow: clip;
   container: sherpa-line-chart / size;
 }
+:host([hidden]) { display: none; }
+
 :host .chart-area {
-  transition: opacity 0.2s ease;
+  transition: filter 0.2s ease;
 }
 :host([data-loading]) .chart-area {
-  opacity: 0.4;
+  filter: grayscale(0.6);
+      color: var(--sherpa-text-inactive-default, #5c5c66);
       pointer-events: none;
 }
 :host .chart-header {

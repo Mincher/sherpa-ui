@@ -2,6 +2,8 @@
  * @component sherpa-file-upload
  *
  * File upload drop zone with drag-and-drop, file list, and progress tracking.
+
+  :host([hidden]) { display: none; }
  *
  * ── Data attributes ───────────────────────────────────────────
  * @attr {string}  [data-label]        Label text above the drop zone

@@ -12,7 +12,7 @@
   outline: none;
   user-select: none;
   transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
-  /* Private aliases */
+/* Private aliases */
   --_gap: var(--sherpa-space-xs, 12px);
   --_padding-y: var(--sherpa-space-2xs, 8px);
   --_padding-x: var(--sherpa-space-sm, 16px);
@@ -20,6 +20,8 @@
   --_text-secondary: var(--sherpa-text-default-secondary, #5c5c66);
   --_font-sm: var(--sherpa-fonts-scale-sm, 12px);
 }
+:host([hidden]) { display: none; }
+
 :host(:hover),
 :host(:focus-visible) {
   background-color: var(--sherpa-surface-control-hover, #fafafa);

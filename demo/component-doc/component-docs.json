@@ -5,7 +5,7 @@
       "label": "Bar Chart",
       "description": "Adaptive bar chart with automatic orientation. Supports stacked bars, category limiting, and responsive legend.",
       "path": "components/sherpa-barchart",
-      "nestedComponents": ["sherpa-header"],
+      "nestedComponents": ["sherpa-container-header"],
       "attributes": [
         { "name": "data-loading", "type": "boolean" },
         { "name": "data-stacked", "type": "boolean" },
@@ -81,10 +81,10 @@
     "sherpa-container": {
       "component": "sherpa-container",
       "label": "Container",
-      "description": "Pure wrapper container. Composed with sherpa-header and viz components inside a sherpa-layout-grid.",
+      "description": "Pure wrapper container. Composed with sherpa-container-header and viz components inside a sherpa-layout-grid.",
       "path": "components/sherpa-container",
       "nestedComponents": [
-        "sherpa-header",
+        "sherpa-container-header",
         "sherpa-barchart",
         "sherpa-data-grid",
         "sherpa-metric"
@@ -117,11 +117,11 @@
     "sherpa-dialog": {
       "component": "sherpa-dialog",
       "label": "Dialog",
-      "description": "Modal dialog built on native HTML <dialog>. Includes an internal sherpa-header and sherpa-footer.",
+      "description": "Modal dialog built on native HTML <dialog>. Includes an internal sherpa-container-header and sherpa-container-footer.",
       "path": "components/sherpa-dialog",
       "nestedComponents": [
-        "sherpa-header",
-        "sherpa-footer",
+        "sherpa-container-header",
+        "sherpa-container-footer",
         "sherpa-button",
         "sherpa-message"
       ],
@@ -186,11 +186,11 @@
       ],
       "defaultContent": ""
     },
-    "sherpa-footer": {
-      "component": "sherpa-footer",
+    "sherpa-container-footer": {
+      "component": "sherpa-container-footer",
       "label": "Footer",
       "description": "Footer with action-bar (cancel/apply buttons) and slot (passthrough content) variants.",
-      "path": "components/sherpa-footer",
+      "path": "components/sherpa-container-footer",
       "nestedComponents": ["sherpa-button"],
       "attributes": [
         {

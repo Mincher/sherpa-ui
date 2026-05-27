@@ -27,11 +27,11 @@
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="toolbar-row" part="toolbar" role="toolbar">
-    <div class="leading"><slot name="leading" data-accepts="control,input,display,content"></slot></div>
-    <div class="center"><slot name="center" data-accepts="control,input,display,content"></slot></div>
-    <div class="trailing"><slot name="trailing" data-accepts="control,input,display,content"></slot></div>
+    <div class="leading"><slot name="leading" data-accepts="control,input,display,content,html"></slot></div>
+    <div class="center"><slot name="center" data-accepts="control,input,display,content,html"></slot></div>
+    <div class="trailing"><slot name="trailing" data-accepts="control,input,display,content,html"></slot></div>
   </div>
-  <div class="filters-row" part="filters"><slot name="filters" data-accepts="control,input"></slot></div>
+  <div class="filters-row" part="filters"><slot name="filters" data-accepts="control,input,data,html"></slot></div>
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════

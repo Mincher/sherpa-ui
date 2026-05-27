@@ -84,7 +84,7 @@ export class SherpaCodeBlock extends SherpaElement {
 
   #codeEl = null;
   #preEl = null;
-  #copyBtn = null;
+  #copyBtnEl = null;
   #languageLabelEl = null;
   #prismLoaded = false;
   #detectedLanguage = null;
@@ -117,7 +117,7 @@ export class SherpaCodeBlock extends SherpaElement {
   onRender() {
     this.#codeEl = this.$('code');
     this.#preEl = this.$('pre');
-    this.#copyBtn = this.$('sherpa-button[class="copy-btn"]');
+    this.#copyBtnEl = this.$('sherpa-button[class="copy-btn"]');
     this.#languageLabelEl = this.$('.code-language');
 
     // Set ARIA attributes
@@ -129,8 +129,8 @@ export class SherpaCodeBlock extends SherpaElement {
     }
 
     // Wire copy button
-    if (this.#copyBtn) {
-      this.#copyBtn.addEventListener('click', () => this.#onCopyClick());
+    if (this.#copyBtnEl) {
+      this.#copyBtnEl.addEventListener('click', () => this.#onCopyClick());
     }
 
     // Cache for data access
@@ -381,7 +381,7 @@ export class SherpaCodeBlock extends SherpaElement {
   #applyLineNumbers() {
     if (!this.#preEl) return;
 
-    this.#preEl.classList.add('line-numbers');
+    this.#preEl.dataset.lineNumbers = 'true';
 
     // Set line-start if provided
     const lineStart = this.dataset.lineStart || '1';
@@ -415,8 +415,7 @@ export class SherpaCodeBlock extends SherpaElement {
       const isDark =
         theme === 'dark' || (theme === 'auto' && this.#getPageMode() === 'dark');
 
-      this.#preEl.classList.toggle('hljs-dark', isDark);
-      this.#preEl.classList.toggle('hljs-light', !isDark);
+      this.dataset.resolvedTheme = isDark ? 'dark' : 'light';
     }
   }
 

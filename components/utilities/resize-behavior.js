@@ -61,37 +61,13 @@ export const ResizeBehavior = (Base) =>
 
     /* ── Lifecycle ──────────────────────────────────────────────── */
 
-    onConnect() {
-      super.onConnect();
+    onRender() {
+      super.onRender();
       this.#injectResizeMenu();
       this.addEventListener("container-increase-cols", this.#onIncreaseCols);
       this.addEventListener("container-decrease-cols", this.#onDecreaseCols);
       this.addEventListener("container-increase-rows", this.#onIncreaseRows);
       this.addEventListener("container-decrease-rows", this.#onDecreaseRows);
-    }
-
-    onDisconnect() {
-      super.onDisconnect();
-      this.removeEventListener(
-        "container-increase-cols",
-        this.#onIncreaseCols,
-      );
-      this.removeEventListener(
-        "container-decrease-cols",
-        this.#onDecreaseCols,
-      );
-      this.removeEventListener(
-        "container-increase-rows",
-        this.#onIncreaseRows,
-      );
-      this.removeEventListener(
-        "container-decrease-rows",
-        this.#onDecreaseRows,
-      );
-      if (this.#resizeMenuTpl) {
-        this.#resizeMenuTpl.remove();
-        this.#resizeMenuTpl = null;
-      }
     }
 
     /* ── Menu template injection ────────────────────────────────── */

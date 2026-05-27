@@ -23,6 +23,8 @@
 
 @property --maxColCount {
   syntax: "<integer>";
+
+    :host([hidden]) { display: none; }
   inherits: true;
   initial-value: 12;
 }
@@ -90,7 +92,7 @@
       --row-height: var(--sherpa-space-default, 16px);
       --row-height: calc(var(--sherpa-space-default, 16px) * 10);
       grid-template-columns: repeat(var(--maxColCount), 1fr);
-      grid-auto-rows: auto;
+      grid-auto-rows: var(--row-height);
       padding: var(--sherpa-space-sm, 12px);
       gap: var(--sherpa-space-xs, 8px);
       align-content: start;
@@ -113,24 +115,36 @@
       outline-offset: -2px;
 }
 
-::slotted(sherpa-container) { height: var(--row-height); }
-::slotted(sherpa-container[data-variant="resizable"]) { grid-column: span 3; height: var(--row-height); }
-::slotted(sherpa-container[data-variant="resizable"][data-col-span="6"]) { grid-column: span 6; }
-::slotted(sherpa-container[data-variant="resizable"][data-col-span="9"]) { grid-column: span 9; }
-::slotted(sherpa-container[data-variant="resizable"][data-col-span="12"]) { grid-column: span 12; }
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="2"]) { grid-row: span 2; height: calc(var(--row-height) * 2 + var(--sherpa-space-xs, 8px)); }
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="3"]) { grid-row: span 3; height: calc(var(--row-height) * 3 + var(--sherpa-space-xs, 8px) * 2); }
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="4"]) { grid-row: span 4; height: calc(var(--row-height) * 4 + var(--sherpa-space-xs, 8px) * 3); }
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="5"]) { grid-row: span 5; height: calc(var(--row-height) * 5 + var(--sherpa-space-xs, 8px) * 4); }
-::slotted(sherpa-container[data-variant="resizable"][data-row-span="6"]) { grid-row: span 6; height: calc(var(--row-height) * 6 + var(--sherpa-space-xs, 8px) * 5); }
+/* Resizable default: span 3 columns when the consumer didn't pick one.
+ * Child <sherpa-container> sets its own grid-column / grid-row from
+ * data-col-span / data-row-span (see sherpa-container.css). Rows are
+ * definite tracks via grid-auto-rows: var(--row-height), so a span N
+ * tile is exactly N row tracks tall (plus N-1 row-gaps). */
+::slotted(sherpa-container[data-variant="resizable"]):not([data-col-span]) {
+  grid-column: span 3;
+}
+
+/* Grouped wrappers: a <sherpa-container-group> wrapper acts as a subgrid tile.
+ * Its column span is set via data-col-span on the wrapper itself; default span
+ * = full row when no value is provided. The wrapper auto-sizes height
+ * (grid-auto-rows + height: max-content; see sherpa-container-group.css). */
+::slotted(sherpa-container-group) { grid-column: 1 / -1; }
+::slotted(sherpa-container-group[data-col-span="3"])  { grid-column: span 3; }
+::slotted(sherpa-container-group[data-col-span="6"])  { grid-column: span 6; }
+::slotted(sherpa-container-group[data-col-span="9"])  { grid-column: span 9; }
+::slotted(sherpa-container-group[data-col-span="12"]) { grid-column: span 12; }
 
 @container sherpa-layout-grid (max-width: 1199px) {
   :host .grid-surface {
     --maxColCount: 6;
     grid-template-columns: repeat(6, 1fr);
   }
-  ::slotted(sherpa-container[data-variant="resizable"][data-col-span="9"]),
-  ::slotted(sherpa-container[data-variant="resizable"][data-col-span="12"]) { grid-column: span 6; }
+  /* Cap container col-span at viewport width. !important defeats the
+   * child's own :host([data-col-span]) rule (inner-tree, lower cascade). */
+  ::slotted(sherpa-container[data-col-span="9"]),
+  ::slotted(sherpa-container[data-col-span="12"]) { grid-column: span 6 !important; }
+  ::slotted(sherpa-container-group[data-col-span="9"]),
+  ::slotted(sherpa-container-group[data-col-span="12"]) { grid-column: span 6; }
 }
 
 @container sherpa-layout-grid (max-width: 639px) {
@@ -141,4 +155,5 @@
   /* !important ensures the layout grid owns its children's column span:
    * ::slotted() rules can be overridden by the slotted element's own light-DOM styles. */
   ::slotted(sherpa-container) { grid-column-end: span 3 !important; }
+  ::slotted(sherpa-container-group) { grid-column: 1 / -1 !important; }
 }

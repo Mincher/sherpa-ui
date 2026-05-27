@@ -25,7 +25,7 @@
   --_label-font-size: var(--sherpa-fonts-scale-base, 14px);
   --_sublabel-font-size: var(--sherpa-fonts-scale-sm, 12px);
   --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 15px);
-  /* ── Container ──────────────────────────────────────────– */
+/* ── Container ──────────────────────────────────────────– */
   /* ── Step item (indicator + label) ────────────────────── */
   /* ── Step indicator (circle with number or icon) ────── */
   /* ── Indicator icon (hidden by default) ─────────────– */
@@ -43,6 +43,8 @@
              TIMELINE TEMPLATE (vertical, visited tracking, timestamps)
              ───────────────────────────────────────────────────────── */
 }
+:host([hidden]) { display: none; }
+
 :host .stepper-container {
   width: 100%;
 }

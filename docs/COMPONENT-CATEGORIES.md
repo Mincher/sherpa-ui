@@ -16,7 +16,7 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 | ----------- | :--: | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `shell`     | 1 | Top-level page scaffolding.                                       | `sherpa-view-header`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-nav`, `sherpa-layout-grid`, `sherpa-layout-view` |
 | `nav`       | 1 | Navigation chrome children, only inside the `shell` nav rail.     | `sherpa-nav-item`, `sherpa-nav-section` |
-| `container` | 2 | Surfaces that hold other components.                              | `sherpa-container`, `sherpa-header`, `sherpa-accordion`, `sherpa-panel`, `sherpa-footer` |
+| `container` | 2 | Surfaces that hold other components.                              | `sherpa-container`, `sherpa-container-header`, `sherpa-accordion`, `sherpa-panel`, `sherpa-container-footer` |
 | `overlay`   | 2 | Floating UI surfaces.                                             | `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-menu`, `sherpa-menu-item` |
 | `content`   | 3 | Structural sub-elements (headings, toolbars, tabs, lists).        | `sherpa-section-header`, `sherpa-toolbar`, `sherpa-list`, `sherpa-list-item`, `sherpa-key-value-list`, `sherpa-tabs`, `sherpa-stepper`, `sherpa-progress-tracker` |
 | `control`   | 4 | Actionable / clickable controls.                                  | `sherpa-button`, `sherpa-switch`, `sherpa-tag`, `sherpa-slider`, `sherpa-pagination`, `sherpa-breadcrumbs` |

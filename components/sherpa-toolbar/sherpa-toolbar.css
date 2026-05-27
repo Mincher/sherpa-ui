@@ -18,7 +18,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  /* ── Compact density variant ────────────────────────– */
+/* ── Compact density variant ────────────────────────– */
   /* ──────────────────────────────────────────────────────────
              TOOLBAR ROW (main flex container)
              ────────────────────────────────────────────────────────── */
@@ -33,6 +33,8 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
+:host([hidden]) { display: none; }
+
 :host([data-density="compact"]) {
   --_toolbar-py: var(--sherpa-space-2xs, 4px);
 }

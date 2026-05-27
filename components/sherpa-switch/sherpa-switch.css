@@ -13,7 +13,7 @@
   display: inline-flex;
   cursor: pointer;
   user-select: none;
-  /* Figma: switch collection tokens — default style */
+/* Figma: switch collection tokens — default style */
   --_switch-border-outer: var(--sherpa-border-rounding-base, 4px);
   --_switch-border-control: var(--sherpa-border-rounding-sm, 2px);
   --_switch-fill-default: var(--sherpa-color-neutral-700, #5c5c66);
@@ -29,6 +29,8 @@
   /* ── OFF state (explicit) ───────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────────────── */
 }
+:host([hidden]) { display: none; }
+
 :host([data-style="compact"]) {
   --_switch-border-outer: var(--sherpa-border-rounding-full, 999px);
       --_switch-border-control: var(--sherpa-border-rounding-full, 999px);

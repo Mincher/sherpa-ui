@@ -29,23 +29,23 @@ export class SherpaInputSearch extends SherpaInputBase {
     return new URL("./sherpa-input-search.html", import.meta.url).href;
   }
 
-  #clearBtn = null;
+  #clearBtnEl = null;
   #inputEl = null;
 
   async onInputRender() {
-    this.#clearBtn = this.$(".search-clear");
+    this.#clearBtnEl = this.$(".search-clear");
     this.#inputEl = this.getInputElement();
     this.#updateClearVisibility();
   }
 
   onInputConnect() {
-    this.#clearBtn?.addEventListener("click", this.#onClear);
+    this.#clearBtnEl?.addEventListener("click", this.#onClear);
     this.#inputEl?.addEventListener("keydown", this.#onKeyDown);
     this.#inputEl?.addEventListener("input", this.#onValueChange);
   }
 
   onInputDisconnect() {
-    this.#clearBtn?.removeEventListener("click", this.#onClear);
+    this.#clearBtnEl?.removeEventListener("click", this.#onClear);
     this.#inputEl?.removeEventListener("keydown", this.#onKeyDown);
     this.#inputEl?.removeEventListener("input", this.#onValueChange);
   }

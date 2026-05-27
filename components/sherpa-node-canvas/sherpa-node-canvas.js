@@ -113,13 +113,13 @@ export class SherpaNodeCanvas extends SherpaElement {
   #rootEl = null;
   #surfaceEl = null;
   #bodyEl = null;
-  #gridCanvas = null;
-  #edgesCanvas = null;
+  #gridCanvasEl = null;
+  #edgesCanvasEl = null;
   #gridCtx = null;
   #edgesCtx = null;
   #ro = null;
   #slotEl = null;
-  #colorProbe = null;
+  #colorProbeEl = null;
   #viewHeaderEl = null;
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
@@ -132,11 +132,11 @@ export class SherpaNodeCanvas extends SherpaElement {
     // come from the stack alone, not the row that includes the panel.
     this.#bodyEl     = this.$(".canvas-stack") ?? this.$(".canvas-body");
     this.#surfaceEl  = this.$(".surface");
-    this.#gridCanvas = this.$(".layer.grid");
-    this.#edgesCanvas = this.$(".layer.edges");
+    this.#gridCanvasEl = this.$(".layer.grid");
+    this.#edgesCanvasEl = this.$(".layer.edges");
     this.#slotEl     = this.$('slot:not([name])');
-    this.#gridCtx    = this.#gridCanvas.getContext("2d");
-    this.#edgesCtx   = this.#edgesCanvas.getContext("2d");
+    this.#gridCtx    = this.#gridCanvasEl.getContext("2d");
+    this.#edgesCtx   = this.#edgesCanvasEl.getContext("2d");
     this.#viewHeaderEl = this.$("sherpa-view-header.canvas-header");
     this.#applyTransform();
     this.#syncHeader();
@@ -1127,7 +1127,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #resizeCanvases() {
     const dpr = window.devicePixelRatio || 1;
     const r = this.#bodyRect();
-    for (const cv of [this.#gridCanvas, this.#edgesCanvas]) {
+    for (const cv of [this.#gridCanvasEl, this.#edgesCanvasEl]) {
       if (!cv) continue;
       cv.width  = Math.max(1, Math.floor(r.width  * dpr));
       cv.height = Math.max(1, Math.floor(r.height * dpr));
@@ -1186,12 +1186,12 @@ export class SherpaNodeCanvas extends SherpaElement {
    * canvas strokeStyle. The probe forces the cascade to resolve.
    */
   #resolveColor(varName, fallback) {
-    let probe = this.#colorProbe;
+    let probe = this.#colorProbeEl;
     if (!probe) {
       probe = document.createElement("span");
       probe.className = "color-probe";
       this.shadowRoot.appendChild(probe);
-      this.#colorProbe = probe;
+      this.#colorProbeEl = probe;
     }
     probe.style.color = `var(${varName}, ${fallback})`;
     const c = getComputedStyle(probe).color;
