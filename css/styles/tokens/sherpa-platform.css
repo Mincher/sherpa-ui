@@ -8,19 +8,18 @@
  * canonical equivalent.
  */
 
-
 :where(:root) {
   /* Font weights */
-  --sherpa-font-weight-regular:  400;
-  --sherpa-font-weight-medium:   500;
+  --sherpa-font-weight-regular: 400;
+  --sherpa-font-weight-medium: 500;
   --sherpa-font-weight-semibold: 600;
-  --sherpa-font-weight-bold:     700;
+  --sherpa-font-weight-bold: 700;
 
   /* Default body line-height */
   --sherpa-line-height-default: 1.5;
 
   /* Motion — durations and easing (platform constants; no Figma source).
-     Hand-tuned values map to the equivalent --sherpa-core-motion-* primitives
+     Hand-tuned values map to the equivalent --core-motion-* primitives
      but stay independently authored so transitions can be tuned without
      re-extracting Figma. */
   --sherpa-motion-duration-fast: 0.15s;
@@ -28,15 +27,20 @@
   --sherpa-motion-duration-slow: 0.4s;
   --sherpa-motion-easing-default: ease-out;
 
-  /* Composite shorthand: <duration> <easing> — use as the time-function portion
-     of a transition property, e.g. `transition: background-color var(--sherpa-motion-transition-fast)`. */
-  --sherpa-motion-transition-fast: var(--sherpa-motion-duration-fast) var(--sherpa-motion-easing-default);
-  --sherpa-motion-transition-base: var(--sherpa-motion-duration-base) var(--sherpa-motion-easing-default);
+  /* Composite transition timings — duration + easing pair, ready to drop into
+     `transition` shorthand. Consumed by components as e.g.
+     `transition: width var(--sherpa-motion-transition-base);` */
+  --sherpa-motion-transition-fast: var(--sherpa-motion-duration-fast)
+    var(--sherpa-motion-easing-default);
+  --sherpa-motion-transition-base: var(--sherpa-motion-duration-base)
+    var(--sherpa-motion-easing-default);
+  --sherpa-motion-transition-slow: var(--sherpa-motion-duration-slow)
+    var(--sherpa-motion-easing-default);
 
   /* Z-index scale */
-  --sherpa-z-panel:   100;
+  --sherpa-z-panel: 100;
   --sherpa-z-popover: 1000;
-  --sherpa-z-toast:   1100;
+  --sherpa-z-toast: 1100;
 
   /* Modal backdrop tint (sherpa-dialog ::backdrop, view-header scroll-under) */
   --sherpa-effects-backdrop: rgba(0, 0, 0, 0.4);
@@ -66,6 +70,12 @@
 /* ── Color-scheme contract ─────────────────────────────────────────── */
 /* JS sets data-mode on :root; the cascade does the rest.              */
 
-:where(:root[data-mode="light"]) { color-scheme: light; }
-:where(:root[data-mode="dark"])  { color-scheme: dark; }
-:where(:root[data-mode="hc"])    { color-scheme: light dark; }
+:where(:root[data-mode="light"]) {
+  color-scheme: light;
+}
+:where(:root[data-mode="dark"]) {
+  color-scheme: dark;
+}
+:where(:root[data-mode="hc"]) {
+  color-scheme: light dark;
+}

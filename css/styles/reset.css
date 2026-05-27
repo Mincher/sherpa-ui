@@ -19,11 +19,29 @@
   margin: 0;
 }
 
-/* ==================== Smooth Scrolling ==================== */
+/* ==================== Motion Preferences ==================== */
 
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
+  }
+}
+
+/*
+ * Light-DOM mirror of the blanket in sherpa-base.css.
+ * Selectors do not cross the shadow boundary, so utility classes such
+ * as .sherpa-scroll-under (which uses `transition:`) and any page-level
+ * transitions outside a component shadow root would otherwise ignore the
+ * user's reduced-motion preference. !important matches the shadow-DOM
+ * rule for parity.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
 
@@ -39,9 +57,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family:
-    var(--sherpa-fonts-context-default, "Open Sans"), Arial, Helvetica,
-    sans-serif;
+  font-family: var(--sherpa-fonts-context-default, "Open Sans"), Arial, Helvetica, sans-serif;
   font-size: var(--sherpa-fonts-scale-base, 14px);
   color: var(--sherpa-text-default-body, #111);
   -webkit-font-smoothing: antialiased;

@@ -37,29 +37,29 @@
   /* ── Edge / connector colours ─────────────────────────────────── */
   /* Brand purple is the default carrier colour. Status (true/false)
      overrides win over hover/selected in the canvas renderer. */
-  --sherpa-node-edge-color:          var(--sherpa-color-brand-base,                        #c046ff);
-  --sherpa-node-edge-color-hover:    var(--sherpa-color-brand-700,                         #8500cc);
-  --sherpa-node-edge-color-selected: var(--sherpa-color-brand-800,                         #50007a);
-  --sherpa-node-edge-color-control:  var(--sherpa-color-brand-base,                        #c046ff);
-  --sherpa-node-edge-color-true:     var(--sherpa-surface-context-success-strong-default,  #1f9d55);
-  --sherpa-node-edge-color-false:    var(--sherpa-surface-context-error-strong-default,    #cc1f1a);
-  --sherpa-node-edge-color-ghost:    var(--sherpa-color-brand-base,                        #c046ff);
+  --sherpa-node-edge-color: var(--sherpa-color-brand-base, #c046ff);
+  --sherpa-node-edge-color-hover: var(--sherpa-color-brand-700, #8500cc);
+  --sherpa-node-edge-color-selected: var(--sherpa-color-brand-800, #50007a);
+  --sherpa-node-edge-color-control: var(--sherpa-color-brand-base, #c046ff);
+  --sherpa-node-edge-color-true: var(--sherpa-surface-context-success-strong-default, #1f9d55);
+  --sherpa-node-edge-color-false: var(--sherpa-surface-context-error-strong-default, #cc1f1a);
+  --sherpa-node-edge-color-ghost: var(--sherpa-color-brand-base, #c046ff);
 
   /* ── Edge stroke widths (no sherpa-ui equivalent) ─────────────── */
-  --sherpa-node-edge-width:          1.5px;
-  --sherpa-node-edge-width-hover:    2.25px;
+  --sherpa-node-edge-width: 1.5px;
+  --sherpa-node-edge-width-hover: 2.25px;
   --sherpa-node-edge-width-selected: 2.5px;
 
   /* ── Socket dot geometry (intrinsic, not tied to layout scale) ── */
-  --sherpa-node-socket-size:     16px;
+  --sherpa-node-socket-size: 16px;
   --sherpa-node-socket-stroke-w: 2px;
-  --sherpa-node-socket-gutter:   var(--sherpa-space-sm, 8px);
+  --sherpa-node-socket-gutter: var(--sherpa-space-sm, 8px);
 
   /* ── Socket palette (semantic, themeable) ─────────────────────── */
-  --sherpa-node-socket-stroke:        var(--sherpa-color-brand-base,                       #c046ff);
-  --sherpa-node-socket-stroke-true:   var(--sherpa-surface-context-success-strong-default, #1f9d55);
-  --sherpa-node-socket-stroke-false:  var(--sherpa-surface-context-error-strong-default,   #cc1f1a);
-  --sherpa-node-socket-fill:          var(--sherpa-surface-container-default,              #ffffff);
+  --sherpa-node-socket-stroke: var(--sherpa-color-brand-base, #c046ff);
+  --sherpa-node-socket-stroke-true: var(--sherpa-surface-context-success-strong-default, #1f9d55);
+  --sherpa-node-socket-stroke-false: var(--sherpa-surface-context-error-strong-default, #cc1f1a);
+  --sherpa-node-socket-fill: var(--sherpa-surface-container-default, #ffffff);
 
   /* ── Node body radius ─────────────────────────────────────────── */
   --sherpa-node-radius: var(--sherpa-border-rounding-lg, 8px);
@@ -76,48 +76,48 @@
      context-strong family (opaque across all themes and modes). */
 
   /* Default neutral card. */
-  --sherpa-node-body-default:        var(--sherpa-surface-container-default,                #ffffff);
-  --sherpa-node-border-default:      var(--sherpa-border-container-default,                 #d1d5db);
+  --sherpa-node-body-default: var(--sherpa-surface-container-default, #ffffff);
+  --sherpa-node-border-default: var(--sherpa-border-container-default, #d1d5db);
 
   /* Source — info blue. */
-  --sherpa-node-body-source:         light-dark(
-                                       var(--sherpa-color-info-100, #d9f2fa),
-                                       var(--sherpa-color-info-900, #0a4a6b)
-                                     );
-  --sherpa-node-border-source:       var(--sherpa-surface-context-info-strong-default,      #0d77ad);
+  --sherpa-node-body-source: light-dark(
+    var(--sherpa-color-info-100, #d9f2fa),
+    var(--sherpa-color-info-900, #0a4a6b)
+  );
+  --sherpa-node-border-source: var(--sherpa-surface-context-info-strong-default, #0d77ad);
 
   /* Output — success green. */
-  --sherpa-node-body-output:         light-dark(
-                                       var(--sherpa-color-success-100, #e6f7ee),
-                                       var(--sherpa-color-success-900, #0f4d2a)
-                                     );
-  --sherpa-node-border-output:       var(--sherpa-surface-context-success-strong-default,   #1f9d55);
+  --sherpa-node-body-output: light-dark(
+    var(--sherpa-color-success-100, #e6f7ee),
+    var(--sherpa-color-success-900, #0f4d2a)
+  );
+  --sherpa-node-border-output: var(--sherpa-surface-context-success-strong-default, #1f9d55);
 
   /* Output with no incoming connection — critical red. */
-  --sherpa-node-body-output-error:   light-dark(
-                                       var(--sherpa-color-critical-100, #fde7e7),
-                                       var(--sherpa-color-critical-900, #5a0e0c)
-                                     );
-  --sherpa-node-border-output-error: var(--sherpa-surface-context-error-strong-default,     #cc1f1a);
+  --sherpa-node-body-output-error: light-dark(
+    var(--sherpa-color-critical-100, #fde7e7),
+    var(--sherpa-color-critical-900, #5a0e0c)
+  );
+  --sherpa-node-border-output-error: var(--sherpa-surface-context-error-strong-default, #cc1f1a);
 
   /* Group — info blue skin (same intent as source). */
-  --sherpa-node-body-group:          light-dark(
-                                       var(--sherpa-color-info-100, #d9f2fa),
-                                       var(--sherpa-color-info-900, #0a4a6b)
-                                     );
-  --sherpa-node-border-group:        var(--sherpa-surface-context-info-strong-default,      #0d77ad);
+  --sherpa-node-body-group: light-dark(
+    var(--sherpa-color-info-100, #d9f2fa),
+    var(--sherpa-color-info-900, #0a4a6b)
+  );
+  --sherpa-node-border-group: var(--sherpa-surface-context-info-strong-default, #0d77ad);
 
   /* Chat (Ask N-zo) — brand purple. No surface-context-brand family
      exists yet; swap to it upstream when available. */
-  --sherpa-node-body-chat:           light-dark(
-                                       var(--sherpa-color-brand-100, #f8ebff),
-                                       var(--sherpa-color-brand-900, #3a0066)
-                                     );
-  --sherpa-node-border-chat:         var(--sherpa-color-brand-base,                         #c046ff);
+  --sherpa-node-body-chat: light-dark(
+    var(--sherpa-color-brand-100, #f8ebff),
+    var(--sherpa-color-brand-900, #3a0066)
+  );
+  --sherpa-node-border-chat: var(--sherpa-color-brand-base, #c046ff);
 
   /* ── Canvas grid ──────────────────────────────────────────────── */
-  --sherpa-node-canvas-grid-step:  24px;
-  --sherpa-node-canvas-grid-arm:    3px;
+  --sherpa-node-canvas-grid-step: 24px;
+  --sherpa-node-canvas-grid-arm: 3px;
   --sherpa-node-canvas-grid-color: var(--sherpa-border-container-subtle, rgba(0, 0, 0, 0.08));
 }
 

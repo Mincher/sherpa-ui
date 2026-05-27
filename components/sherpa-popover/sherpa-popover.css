@@ -28,13 +28,12 @@
   z-index: var(--sherpa-z-popover, 10000);
   min-width: 200px;
   max-width: 400px;
-background: var(--sherpa-surface-container-default, #ffffff);
-  border: var(--sherpa-border-width-base, 1px) solid
-            var(--sherpa-border-container-default, #d7d7dc);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d7d7dc);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   box-shadow:
-            0 1px 4px rgba(0, 0, 0, 0.08),
-            0 4px 12px rgba(0, 0, 0, 0.12);
+    0 1px 4px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.12);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   color: var(--sherpa-text-default-body, #18191a);
@@ -44,14 +43,13 @@ background: var(--sherpa-surface-container-default, #ffffff);
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ──────────────────────────────────────── */
 }
-:host([hidden]) { display: none; }
-
-
 /* ──────────────────────────────────────────────────────────
    ANCHOR POSITIONING (@supports fallback for older browsers)
    ────────────────────────────────────────────────────────── */
 @supports (anchor-name: --test) {
-  :host([data-open]) { position-anchor: var(--_popover-anchor); }
+  :host([data-open]) {
+    position-anchor: var(--_popover-anchor);
+  }
 
   /* Bottom (default) */
   :host([data-open]),
@@ -59,7 +57,10 @@ background: var(--sherpa-surface-container-default, #ffffff);
     top: anchor(bottom, 0);
     left: anchor(center);
     translate: -50% var(--sherpa-space-xs, 8px);
-    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
   }
 
   /* Top */
@@ -93,10 +94,10 @@ background: var(--sherpa-surface-container-default, #ffffff);
     opacity: 0;
     scale: 0.97;
     transition:
-      opacity var(--sherpa-motion-transition-fast, 0.15s) ease-out,
-      scale var(--sherpa-motion-transition-fast, 0.15s) ease-out,
-      display var(--sherpa-motion-transition-fast, 0.15s) allow-discrete,
-      overlay var(--sherpa-motion-transition-fast, 0.15s) allow-discrete;
+      --transition-fast(opacity),
+      --transition-fast(scale),
+      --transition-fast(display) allow-discrete,
+      --transition-fast(overlay) allow-discrete;
   }
 
   /* Open (enter) state */
@@ -118,57 +119,59 @@ background: var(--sherpa-surface-container-default, #ffffff);
 }
 :host .popover-header {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 8px);
-      padding: var(--sherpa-space-sm, 12px);
-      background: var(--sherpa-surface-container-default, #ffffff);
-      border-bottom: var(--sherpa-border-width-base, 1px) solid
-        var(--sherpa-border-container-default, #d7d7dc);
-      border-radius: var(--sherpa-border-rounding-sm, 4px) var(--sherpa-border-rounding-sm, 4px) 0 0;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-sm, 12px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border-bottom: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d7d7dc);
+  border-radius: var(--sherpa-border-rounding-sm, 4px) var(--sherpa-border-rounding-sm, 4px) 0 0;
 }
 :host(:not([data-heading]):not([data-has-icon]):not([data-has-header-end])) .popover-header {
   display: none;
 }
 :host .header-title {
   flex: 1;
-      font-weight: var(--sherpa-font-weight-semibold, 600);
-      line-height: var(--sherpa-line-height-default, 1.4);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 :host(:not([data-heading])) .header-title {
   display: none;
 }
 :host .close-btn {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      border: none;
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      background: transparent;
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      cursor: pointer;
-      font-size: 12px;
-      padding: 0;
-      flex-shrink: 0;
-  
-      &:hover {
-        background: var(--sherpa-surface-container-hover, #f0f0f5);
-        color: var(--sherpa-text-default-body, #18191a);
-      }
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: transparent;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--sherpa-surface-container-hover, #f0f0f5);
+    color: var(--sherpa-text-default-body, #18191a);
+  }
 }
 :host .body {
   padding: var(--sherpa-space-2xs, 4px) 0;
-      max-height: 400px;
-      overflow: auto;
+  max-height: 400px;
+  overflow: auto;
 }
 :host .body-paged {
   padding: var(--sherpa-space-sm, 12px);
-  
-      & ::slotted(section[data-page]) { display: none; }
+
+  & ::slotted(section[data-page]) {
+    display: none;
+  }
 }
 :host([data-page="0"]) .body-paged ::slotted(section[data-page="0"]),
 :host([data-page="1"]) .body-paged ::slotted(section[data-page="1"]),
@@ -180,21 +183,21 @@ background: var(--sherpa-surface-container-default, #ffffff);
 }
 :host .page-back {
   display: none;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      padding: 0;
-      border: none;
-      background: transparent;
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      cursor: pointer;
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-  
-      &:hover {
-        background: var(--sherpa-surface-container-hover, #f0f0f5);
-        color: var(--sherpa-text-default-body, #18191a);
-      }
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  cursor: pointer;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+
+  &:hover {
+    background: var(--sherpa-surface-container-hover, #f0f0f5);
+    color: var(--sherpa-text-default-body, #18191a);
+  }
 }
 :host([data-template="paged"]) .page-back {
   display: inline-flex;
@@ -205,15 +208,14 @@ background: var(--sherpa-surface-container-default, #ffffff);
 }
 :host .popover-footer {
   display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--sherpa-space-sm, 12px);
-      padding: var(--sherpa-space-sm, 12px);
-      border-top: var(--sherpa-border-width-base, 1px) solid
-        var(--sherpa-border-container-default, #d7d7dc);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px);
+  border-top: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d7d7dc);
 }
 :host .page-indicator {
   color: var(--sherpa-text-default-secondary, #5c5c66);
-      font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
-

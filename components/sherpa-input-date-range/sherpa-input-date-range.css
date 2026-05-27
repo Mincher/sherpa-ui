@@ -21,9 +21,7 @@
  * @attr {boolean} [required]          Required state
  */
 
-@import '../utilities/sherpa-input-base/sherpa-input-base.css';
-
-  :host([hidden]) { display: none; }
+@import "../utilities/sherpa-input-base/sherpa-input-base.css";
 
 /* ═══════════════════════════════════════════════════════════════
    GROUPED — horizontal pair of date inputs

@@ -32,45 +32,93 @@
  * display/metrics, search highlights, and legacy aliases.
  */
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    SHARED BASE — common properties for default-font text classes
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* Font family + color — applies to every default-font class. */
 :is(
-  .text-h1, .text-h2, .text-h3, .text-h4, .text-h5,
-  .text-body-lg, .text-body, .text-body-base, .text-body-sm, .text-body-xs,
-  .text-emphasis-lg, .text-emphasis, .text-emphasis-base, .text-emphasis-sm, .text-emphasis-xs,
-  .text-heading-lg, .text-heading-md, .text-heading-sm,
-  .text-label, .text-label-subheader, .text-label-group,
-  .text-nav-item, .text-metric-delta, .text-title-component
+  .text-h1,
+  .text-h2,
+  .text-h3,
+  .text-h4,
+  .text-h5,
+  .text-body-lg,
+  .text-body,
+  .text-body-base,
+  .text-body-sm,
+  .text-body-xs,
+  .text-emphasis-lg,
+  .text-emphasis,
+  .text-emphasis-base,
+  .text-emphasis-sm,
+  .text-emphasis-xs,
+  .text-heading-lg,
+  .text-heading-md,
+  .text-heading-sm,
+  .text-label,
+  .text-label-subheader,
+  .text-label-group,
+  .text-nav-item,
+  .text-metric-delta,
+  .text-title-component
 ) {
-  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   color: var(--sherpa-text-default-body);
-  letter-spacing: 0.1px;
 }
 
+/* Default tracking — only the body/label/UI families. Headings, title-component
+   and label-group set their own letter-spacing below. */
+:is(
+  .text-body-lg,
+  .text-body,
+  .text-body-base,
+  .text-body-sm,
+  .text-body-xs,
+  .text-emphasis-lg,
+  .text-emphasis,
+  .text-emphasis-base,
+  .text-emphasis-sm,
+  .text-emphasis-xs,
+  .text-heading-lg,
+  .text-heading-md,
+  .text-heading-sm,
+  .text-label,
+  .text-label-subheader,
+  .text-nav-item,
+  .text-metric-delta
+) {
+  letter-spacing: 0.1px;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FONT FAMILY UTILITIES
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.font-default { font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif); }
-.font-brand   { font-family: var(--sherpa-fonts-context-brand, 'Manrope', sans-serif); }
-.font-mono    { font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace); }
-
+.font-default {
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+}
+.font-brand {
+  font-family: var(--sherpa-fonts-context-brand, "Manrope", sans-serif);
+}
+.font-mono {
+  font-family: var(--sherpa-fonts-context-monospaced, "Source Code Pro", monospace);
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    HEADINGS  —  Figma: headings/h1–h5
    h1–h3 = Bold (700), h4–h5 = SemiBold (600)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.text-h1, .text-h2, .text-h3 {
+.text-h1,
+.text-h2,
+.text-h3 {
   font-weight: 700;
   letter-spacing: -0.02px;
 }
 
-.text-h4, .text-h5 {
+.text-h4,
+.text-h5 {
   font-weight: 600;
   letter-spacing: -0.02px;
 }
@@ -100,71 +148,51 @@
   line-height: var(--sherpa-font-h5-line-height, 28px);
 }
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
-   BODY DEFAULT  —  Figma: body/default/lg, base, sm, xs
-   Regular (400), default font
+   BODY  —  Figma: body/default/{lg,base,sm,xs} + body/emphasised/{lg,base,sm,xs}
+   Default (regular, 400) and emphasis (semibold, 600) share size/line-height
+   per scale; weight is applied separately. .text-heading-* are legacy aliases
+   of emphasis at the matching scale.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.text-body-lg {
+/* Size + line-height per scale */
+:is(.text-body-lg, .text-emphasis-lg, .text-heading-lg) {
   font-size: var(--sherpa-font-lg-size, 16px);
-  font-weight: 400;
   line-height: var(--sherpa-font-lg-line-height, 24px);
 }
 
-.text-body,
-.text-body-base {
+:is(.text-body, .text-body-base, .text-emphasis, .text-emphasis-base, .text-heading-md) {
   font-size: var(--sherpa-font-base-size, 14px);
-  font-weight: 400;
   line-height: var(--sherpa-font-base-line-height, 20px);
 }
 
-.text-body-sm {
+:is(.text-body-sm, .text-emphasis-sm, .text-heading-sm) {
   font-size: var(--sherpa-font-sm-size, 12px);
-  font-weight: 400;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
 }
 
-.text-body-xs {
+:is(.text-body-xs, .text-emphasis-xs) {
   font-size: var(--sherpa-font-xs-size, 10px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+}
+
+/* Weights */
+:is(.text-body-lg, .text-body, .text-body-base, .text-body-sm, .text-body-xs) {
   font-weight: 400;
-  line-height: var(--sherpa-fonts-scale-lg, 16px);
 }
 
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   BODY EMPHASISED  —  Figma: body/emphasised/lg, base, sm, xs
-   SemiBold (600), default font
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.text-emphasis-lg,
-.text-heading-lg {
-  font-size: var(--sherpa-font-lg-size, 16px);
+:is(
+  .text-emphasis-lg,
+  .text-emphasis,
+  .text-emphasis-base,
+  .text-emphasis-sm,
+  .text-emphasis-xs,
+  .text-heading-lg,
+  .text-heading-md,
+  .text-heading-sm
+) {
   font-weight: 600;
-  line-height: var(--sherpa-font-lg-line-height, 24px);
 }
-
-.text-emphasis,
-.text-emphasis-base,
-.text-heading-md {
-  font-size: var(--sherpa-font-base-size, 14px);
-  font-weight: 600;
-  line-height: var(--sherpa-font-base-line-height, 20px);
-}
-
-.text-emphasis-sm,
-.text-heading-sm {
-  font-size: var(--sherpa-font-sm-size, 12px);
-  font-weight: 600;
-  line-height: var(--sherpa-fonts-scale-lg, 16px);
-}
-
-.text-emphasis-xs {
-  font-size: var(--sherpa-font-xs-size, 10px);
-  font-weight: 600;
-  line-height: var(--sherpa-fonts-scale-lg, 16px);
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    BODY MONOSPACED  —  Figma: body/monospaced/xl, lg, base, sm, xs
@@ -172,7 +200,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :is(.text-mono-xl, .text-mono-lg, .text-mono, .text-mono-base, .text-mono-sm, .text-mono-xs) {
-  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro', monospace);
+  font-family: var(--sherpa-fonts-context-monospaced, "Source Code Pro", monospace);
   font-weight: 400;
   letter-spacing: 0.1px;
 }
@@ -204,21 +232,19 @@
   line-height: var(--sherpa-fonts-scale-lg, 16px);
 }
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    PRODUCT BAR  —  Figma: product bar/product-bar
    Brand font (Manrope), SemiBold (600), uppercase
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .text-product-bar {
-  font-family: var(--sherpa-fonts-context-brand, 'Manrope', sans-serif);
+  font-family: var(--sherpa-fonts-context-brand, "Manrope", sans-serif);
   font-size: var(--sherpa-font-h5-size, 20px);
   font-weight: 600;
   line-height: var(--sherpa-font-lg-line-height, 32px);
   letter-spacing: 0.1px;
   text-transform: uppercase;
 }
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    COMPONENT TITLE
@@ -232,7 +258,6 @@
   text-transform: uppercase;
   color: var(--sherpa-text-default-secondary);
 }
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    LABELS & UI TEXT
@@ -260,7 +285,6 @@
   color: var(--sherpa-text-default-secondary);
 }
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    SEARCH / FILTER HIGHLIGHTS
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -279,13 +303,12 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
 }
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    DISPLAY / METRICS
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .text-display-3xl {
-  font-family: var(--sherpa-fonts-context-brand, 'Manrope', sans-serif);
+  font-family: var(--sherpa-fonts-context-brand, "Manrope", sans-serif);
   font-size: var(--sherpa-fonts-scale-3xl, 28px);
   font-weight: 400;
   line-height: 1em;
@@ -293,7 +316,7 @@
 }
 
 .text-display-2xl {
-  font-family: var(--sherpa-fonts-context-brand, 'Manrope', sans-serif);
+  font-family: var(--sherpa-fonts-context-brand, "Manrope", sans-serif);
   font-size: var(--sherpa-fonts-scale-2xl, 24px);
   font-weight: 400;
   line-height: 1em;
@@ -306,27 +329,42 @@
   line-height: var(--sherpa-fonts-scale-lg, 16px);
 }
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    FONT WEIGHT UTILITIES
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.font-light    { font-weight: 300; }
-.font-normal   { font-weight: 400; }
-.font-medium   { font-weight: 500; }
-.font-semibold { font-weight: 600; }
-.font-bold     { font-weight: 700; }
-
+.font-light {
+  font-weight: 300;
+}
+.font-normal {
+  font-weight: 400;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.font-bold {
+  font-weight: 700;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TEXT TRANSFORM UTILITIES
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.uppercase   { text-transform: uppercase; }
-.lowercase   { text-transform: lowercase; }
-.capitalize  { text-transform: capitalize; }
-.normal-case { text-transform: none; }
-
+.uppercase {
+  text-transform: uppercase;
+}
+.lowercase {
+  text-transform: lowercase;
+}
+.capitalize {
+  text-transform: capitalize;
+}
+.normal-case {
+  text-transform: none;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TEXT TRUNCATION UTILITIES
@@ -338,8 +376,9 @@
   text-overflow: ellipsis;
 }
 
-.text-wrap   { white-space: normal; }
-.text-nowrap { white-space: nowrap; }
-
-
-
+.text-wrap {
+  white-space: normal;
+}
+.text-nowrap {
+  white-space: nowrap;
+}

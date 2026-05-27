@@ -11,8 +11,6 @@
   font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 
-:host([hidden]) { display: none; }
-
 /* ── Breadcrumb list ──────────────────────────────────────── */
 
 :host .breadcrumb-trail {
@@ -25,7 +23,9 @@
 /* ── Crumb text ───────────────────────────────────────────── */
 
 :host .crumb-text {
-  font: var(--sherpa-text-label-sm, 600 12px/1.4 system-ui);
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  font-weight: 600;
   color: var(--sherpa-text-primary-default, #3c5edd);
   text-decoration: none;
   padding: var(--sherpa-space-2xs, 4px) 0;
@@ -37,6 +37,7 @@
 }
 
 :host a.crumb-text {
-  &:hover { text-decoration: underline; }
+  &:hover {
+    text-decoration: underline;
+  }
 }
-

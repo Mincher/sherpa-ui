@@ -4,8 +4,20 @@
   content slot and actions slot. Uses a fixed-height wrapper so the panel
   expands vertically inside the preview frame.
 -->
-<template data-label="Anatomy — heading, metadata, content, actions" data-description="All four slots populated, plus the built-in close button in the header." data-layout="block">
-  <div style="height: 360px; display: flex; justify-content: flex-end; background: var(--sherpa-surface-page-default, #f5f5f7); border-radius: 8px;">
+<template
+  data-label="Anatomy — heading, metadata, content, actions"
+  data-description="All four slots populated, plus the built-in close button in the header."
+  data-layout="block"
+>
+  <div
+    style="
+      height: 360px;
+      display: flex;
+      justify-content: flex-end;
+      background: var(--sherpa-surface-app-background-default, #f5f5f7);
+      border-radius: 8px;
+    "
+  >
     <sherpa-panel
       data-variant="inline"
       data-position="right"
@@ -13,25 +25,66 @@
       data-expanded
       data-width="320"
     >
-      <sherpa-button slot="controls" data-type="icon" data-variant="tertiary" data-size="small" data-icon-start="fa-solid fa-pen" aria-label="Edit"></sherpa-button>
+      <sherpa-button
+        slot="controls"
+        data-type="icon"
+        data-variant="tertiary"
+        data-size="small"
+        data-icon-start="fa-solid fa-pen"
+        aria-label="Edit"
+      ></sherpa-button>
 
       <div slot="metadata">Updated 2 min ago · Sensor #4821</div>
 
       <sherpa-key-value-list>
-        <div><dt>Status</dt><dd>Online</dd></div>
-        <div><dt>Location</dt><dd>Floor 3 · North wing</dd></div>
-        <div><dt>Firmware</dt><dd>v2.4.1</dd></div>
-        <div><dt>Last seen</dt><dd>14:32</dd></div>
+        <div>
+          <dt>Status</dt>
+          <dd>Online</dd>
+        </div>
+        <div>
+          <dt>Location</dt>
+          <dd>Floor 3 · North wing</dd>
+        </div>
+        <div>
+          <dt>Firmware</dt>
+          <dd>v2.4.1</dd>
+        </div>
+        <div>
+          <dt>Last seen</dt>
+          <dd>14:32</dd>
+        </div>
       </sherpa-key-value-list>
 
-      <sherpa-button slot="actions" data-variant="secondary" data-size="small" data-label="Cancel"></sherpa-button>
-      <sherpa-button slot="actions" data-variant="primary" data-size="small" data-label="Save"></sherpa-button>
+      <sherpa-button
+        slot="actions"
+        data-variant="secondary"
+        data-size="small"
+        data-label="Cancel"
+      ></sherpa-button>
+      <sherpa-button
+        slot="actions"
+        data-variant="primary"
+        data-size="small"
+        data-label="Save"
+      ></sherpa-button>
     </sherpa-panel>
   </div>
 </template>
 
-<template data-label="Heading only" data-description="A minimal panel with just a heading and body content — close button still present." data-layout="block">
-  <div style="height: 240px; display: flex; justify-content: flex-end; background: var(--sherpa-surface-page-default, #f5f5f7); border-radius: 8px;">
+<template
+  data-label="Heading only"
+  data-description="A minimal panel with just a heading and body content — close button still present."
+  data-layout="block"
+>
+  <div
+    style="
+      height: 240px;
+      display: flex;
+      justify-content: flex-end;
+      background: var(--sherpa-surface-app-background-default, #f5f5f7);
+      border-radius: 8px;
+    "
+  >
     <sherpa-panel
       data-variant="inline"
       data-position="right"
@@ -39,13 +92,25 @@
       data-expanded
       data-width="280"
     >
-      <p style="margin: 0;">Filter controls go here.</p>
+      <p style="margin: 0">Filter controls go here.</p>
     </sherpa-panel>
   </div>
 </template>
 
-<template data-label="Collapsed (left-anchored)" data-description="When data-expanded is removed the panel collapses to a 40px rail with an expand trigger." data-layout="block">
-  <div style="height: 200px; display: flex; justify-content: flex-start; background: var(--sherpa-surface-page-default, #f5f5f7); border-radius: 8px;">
+<template
+  data-label="Collapsed (left-anchored)"
+  data-description="When data-expanded is removed the panel collapses to a 40px rail with an expand trigger."
+  data-layout="block"
+>
+  <div
+    style="
+      height: 200px;
+      display: flex;
+      justify-content: flex-start;
+      background: var(--sherpa-surface-app-background-default, #f5f5f7);
+      border-radius: 8px;
+    "
+  >
     <sherpa-panel
       data-variant="inline"
       data-position="left"
@@ -55,8 +120,22 @@
   </div>
 </template>
 
-<template data-label="Overlay variant" data-description="Position: fixed; floats above content. Use the trigger to re-open after closing. Shown here pinned inside a preview box for layout demonstration only." data-layout="block" data-setup="overlay-trigger">
-  <div style="position: relative; height: 280px; background: var(--sherpa-surface-page-default, #f5f5f7); border-radius: 8px; overflow: hidden; padding: 16px;">
+<template
+  data-label="Overlay variant"
+  data-description="Position: fixed; floats above content. Use the trigger to re-open after closing. Shown here pinned inside a preview box for layout demonstration only."
+  data-layout="block"
+  data-setup="overlay-trigger"
+>
+  <div
+    style="
+      position: relative;
+      height: 280px;
+      background: var(--sherpa-surface-app-background-default, #f5f5f7);
+      border-radius: 8px;
+      overflow: hidden;
+      padding: 16px;
+    "
+  >
     <sherpa-button
       class="overlay-trigger"
       data-variant="primary"
@@ -71,16 +150,38 @@
       data-heading="Details"
       data-expanded
       data-width="320"
-      style="position: absolute;"
+      style="position: absolute"
     >
-      <p style="margin: 0;">Overlay panels float above content without reflowing the layout. Click the × in the header to dismiss, then the trigger to re-open.</p>
-      <sherpa-button slot="actions" data-variant="primary" data-size="small" data-label="Done"></sherpa-button>
+      <p style="margin: 0">
+        Overlay panels float above content without reflowing the layout. Click the × in the header
+        to dismiss, then the trigger to re-open.
+      </p>
+      <sherpa-button
+        slot="actions"
+        data-variant="primary"
+        data-size="small"
+        data-label="Done"
+      ></sherpa-button>
     </sherpa-panel>
   </div>
 </template>
 
-<template data-label="AI variant" data-description="data-variant=&quot;ai&quot; renders the chat template: new-chat and archive header buttons, a scrollable message thread, a composer slot, and a footer slot. Position is fixed by default; this demo overrides it to absolute so it sits within the preview box." data-layout="block" data-setup="ai-trigger">
-  <div style="position: relative; height: 420px; background: var(--sherpa-surface-page-default, #f5f5f7); border-radius: 8px; overflow: hidden; padding: 16px;">
+<template
+  data-label="AI variant"
+  data-description='data-variant="ai" renders the chat template: new-chat and archive header buttons, a scrollable message thread, a composer slot, and a footer slot. Position is fixed by default; this demo overrides it to absolute so it sits within the preview box.'
+  data-layout="block"
+  data-setup="ai-trigger"
+>
+  <div
+    style="
+      position: relative;
+      height: 420px;
+      background: var(--sherpa-surface-app-background-default, #f5f5f7);
+      border-radius: 8px;
+      overflow: hidden;
+      padding: 16px;
+    "
+  >
     <sherpa-button
       class="ai-trigger"
       data-variant="primary"
@@ -95,7 +196,7 @@
       data-heading="Sherpa Assistant"
       data-can-archive
       data-expanded
-      style="position: absolute;"
+      style="position: absolute"
     >
       <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
         <p>Hi! Ask me about your devices, alerts, or deploys.</p>
@@ -106,26 +207,49 @@
       <sherpa-chat-message data-author="Assistant" data-timestamp="just now">
         <p>3 sensors are offline on Floor 2. Would you like details?</p>
       </sherpa-chat-message>
-      <sherpa-prompt-composer slot="composer" data-placeholder="Ask anything…"></sherpa-prompt-composer>
+      <sherpa-prompt-composer
+        slot="composer"
+        data-placeholder="Ask anything…"
+      ></sherpa-prompt-composer>
       <span slot="footer">AI can make mistakes. Verify important information.</span>
     </sherpa-panel>
   </div>
 </template>
 
-<template data-label="AI variant — busy" data-description="data-busy disables the new-chat and archive buttons and can be used while a response is being generated." data-layout="block">
-  <div style="position: relative; height: 340px; background: var(--sherpa-surface-page-default, #f5f5f7); border-radius: 8px; overflow: hidden;">
+<template
+  data-label="AI variant — busy"
+  data-description="data-busy disables the new-chat and archive buttons and can be used while a response is being generated."
+  data-layout="block"
+>
+  <div
+    style="
+      position: relative;
+      height: 340px;
+      background: var(--sherpa-surface-app-background-default, #f5f5f7);
+      border-radius: 8px;
+      overflow: hidden;
+    "
+  >
     <sherpa-panel
       data-variant="ai"
       data-heading="Sherpa Assistant"
       data-busy
       data-expanded
-      style="position: absolute;"
+      style="position: absolute"
     >
       <sherpa-chat-message data-author="You" data-author-variant="user" data-timestamp="now">
         <p>Generate this week's status report.</p>
       </sherpa-chat-message>
-      <sherpa-chat-message data-author="Assistant" data-timestamp="now" data-loading></sherpa-chat-message>
-      <sherpa-prompt-composer slot="composer" data-placeholder="Working…" data-disabled></sherpa-prompt-composer>
+      <sherpa-chat-message
+        data-author="Assistant"
+        data-timestamp="now"
+        data-loading
+      ></sherpa-chat-message>
+      <sherpa-prompt-composer
+        slot="composer"
+        data-placeholder="Working…"
+        data-disabled
+      ></sherpa-prompt-composer>
       <span slot="footer">AI can make mistakes. Verify important information.</span>
     </sherpa-panel>
   </div>

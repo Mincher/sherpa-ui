@@ -108,7 +108,7 @@ Agents working through MCP can also call `get_architecture` for a condensed view
 | GLO-15 | `data-*` attribute pattern | Public component API uses `data-` prefixed HTML attributes (e.g. `data-variant`, `data-size`); CSS reads them via `:host([data-*])`. |
 | GLO-16 | Cloning prototype | A `<template class="*-tpl">` declared inside a component's HTML file and cloned at runtime to instantiate repeating structure (rows, segments, items). |
 | GLO-17 | Semantic token | A `--sherpa-*` CSS custom property that names _intent_ (e.g. `--sherpa-surface-default`). Components consume only these. |
-| GLO-18 | Core token | A `--sherpa-core-*` CSS custom property that names a raw value (e.g. `--sherpa-core-blue-500`). Components **MUST NOT** consume them directly. |
+| GLO-18 | Core token | A `--core-*` CSS custom property that names a raw value (e.g. `--core-blue-500`). Components **MUST NOT** consume them directly. |
 | GLO-19 | Constructable stylesheet | A `CSSStyleSheet` instance shared across multiple shadow roots via `adoptedStyleSheets`. Sherpa caches one per `cssUrl`. |
 | GLO-20 | Flow | A composed CRUD interaction (add / edit / delete / export) coordinated by `FlowManager`, not a component. |
 | GLO-21 | Pattern | A static HTML snippet under `patterns/<category>/` showing how to compose components for a recognisable layout or interaction. |
@@ -262,7 +262,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | Field | Value |
 | --- | --- |
 | Status | accepted |
-| **Decision** | Component CSS **SHALL** consume only semantic tokens (`--sherpa-*`). Core tokens (`--sherpa-core-*`) are reserved for the alias layer. |
+| **Decision** | Component CSS **SHALL** consume only semantic tokens (`--sherpa-*`). Core tokens (`--core-*`) are reserved for the alias layer. |
 | Rationale | Theming and rebranding happen at the alias layer; components stay theme-agnostic. |
 | Consequences | \+ theme-portable · − requires alias layer for every visual concept |
 | Linked requirements | REQ-07, REQ-08 |
@@ -346,7 +346,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | REQ-04 | Repeating structure **SHALL** be authored as `<template class="*-tpl">` cloning prototypes in HTML; component JS **MUST NOT** build structural DOM via `document.createElement` or `innerHTML = '<markup>'`. |
 | REQ-05 | Visibility of internal shadow elements **SHALL** be controlled by `:host([data-*])` CSS selectors; component JS **MUST NOT** toggle `.hidden`, `.style.display`, or `classList` for visual state on shadow internals. |
 | REQ-06 | Public component attributes **SHALL** use the `data-` prefix. Native semantics (`hidden`, `disabled`, `role`, `aria-*`, `id`, `slot`, `tabindex`) are exempt. |
-| REQ-07 | Component CSS **SHALL** consume only semantic tokens (`--sherpa-*`); core tokens (`--sherpa-core-*`) **MUST NOT** appear in any `components/**/*.css` file. |
+| REQ-07 | Component CSS **SHALL** consume only semantic tokens (`--sherpa-*`); core tokens (`--core-*`) **MUST NOT** appear in any `components/**/*.css` file. |
 | REQ-08 | Every semantic token reference in component CSS **SHALL** include a hardcoded fallback value (e.g. `var(--sherpa-space-sm, 12px)`). |
 | REQ-09 | Custom events dispatched by components **SHALL** set `bubbles: true`. Events intended for application-level handlers outside the host's shadow tree **SHALL** also set `composed: true`. |
 | REQ-10 | Form input components **SHALL** extend `SherpaInputBase` and use the shared label/control/help wrapper. |
@@ -387,7 +387,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | REQ-103 | Components **SHALL** be loadable via a single `<script type="module" src="components/index.js">` in any HTML host. |
 | REQ-104 | The full build pipeline **SHALL** run via `npm run build`. |
 | REQ-105 | Generated artifacts (schemas, READMEs, `patterns/index.json`) **SHALL** be reproducible from source; manual edits to generated files are forbidden. |
-| REQ-106 | The Figma token export pipeline (`npm run tokens:extract` → `npm run tokens:generate`) is the source of truth for `--sherpa-core-*` values. |
+| REQ-106 | The Figma token export pipeline (`npm run tokens:extract` → `npm run tokens:generate`) is the source of truth for `--core-*` values. |
 
 ---
 
@@ -450,7 +450,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | AC-04 | Any component JS file | grepping for `innerHTML\s*=\s*[`'"\]\<`or`document.createElement(['"](?!template)\` | no matches for structural DOM creation are found | REQ-04 |
 | AC-05 | Any component JS file | grepping for `\.hidden\s*=`, `\.style\.display`, or \`classList.(add | remove | toggle)`on`this.$(...)\` results |
 | AC-06 | Any component HTML template | inspecting host attributes used in selectors | every public attribute uses the `data-` prefix or is a recognised native attribute | REQ-06 |
-| AC-07 | Any component CSS file | grepping for `--sherpa-core-` | no matches are found | REQ-07 |
+| AC-07 | Any component CSS file | grepping for `--core-` | no matches are found | REQ-07 |
 | AC-08 | Any `var(--sherpa-...)` reference in component CSS | inspecting the call | a fallback argument is present | REQ-08 |
 | AC-09 | Any `dispatchEvent(new CustomEvent(...))` call in component JS | inspecting the options object | `bubbles: true` is set | REQ-09 |
 | AC-10 | Any `sherpa-input-*` JS file | parsing its class declaration | the class extends `SherpaInputBase` | REQ-10 |
@@ -468,7 +468,7 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 | AC-23 | A page with `[data-status="warning"]` on a wrapper | inspecting descendant components that consume `--_status-*` | they render with warning visuals without per-component status CSS | REQ-23 |
 | AC-24 | Any component CSS file | grepping for `@media` | no matches for viewport-based media queries are found (only `@container` may appear) | REQ-24 |
 | AC-25 | A clean checkout | running `node mcp-server/index.js` | the process boots without thrown errors | SC-06, NFR-08 |
-| AC-26 | The Sherpa core token layer | inspecting `css/styles/tokens/sherpa-primitives.css` provenance | values match the latest Figma token export | REQ-106 |
+| AC-26 | The Sherpa core token layer | inspecting `css/styles/tokens/primitives.css` provenance | values match the latest Figma token export | REQ-106 |
 | AC-27 | A consumer page | importing `components/index.js` via `<script type="module">` only | every component registers as a custom element without a bundler step | REQ-101, REQ-103 |
 | AC-28 | The repository | inspecting [`package.json`](../package.json) `dependencies` | the field is empty or absent | REQ-102 |
 
@@ -506,7 +506,7 @@ The implementation **SHALL NOT** include:
 *   Consumers run evergreen Chromium, Firefox, or Safari.
 *   Consumers bring their own bundler if they want one; native ESM is the default delivery.
 *   Font Awesome is loaded by the host page; the library declares classes and unicode constants but does not ship glyphs.
-*   Figma token exports are the canonical source for `--sherpa-core-*`; CSS edits in the primitives layer are not the source of truth.
+*   Figma token exports are the canonical source for `--core-*`; CSS edits in the primitives layer are not the source of truth.
 
 ### 13.3 Open questions
 
@@ -526,7 +526,7 @@ The implementation **SHALL NOT** include:
 | AC-04 | source-tree audit | regex grep for `innerHTML\s*=\s*[`'"\]\<`and structural`createElement\` |
 | AC-05 | source-tree audit | regex grep for forbidden visibility toggles |
 | AC-06 | source-tree audit | parse host attributes from each `.html` |
-| AC-07 | source-tree audit | grep `--sherpa-core-` under `components/**/*.css` |
+| AC-07 | source-tree audit | grep `--core-` under `components/**/*.css` |
 | AC-08 | source-tree audit | regex check `var(--sherpa-...)` includes a comma |
 | AC-09 | source-tree audit | grep `new CustomEvent` and inspect options |
 | AC-10 | source-tree audit | grep `extends SherpaInputBase` under `components/sherpa-input-*` |
@@ -702,7 +702,7 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 | Namespace prefix | Purpose | Source files |
 | --- | --- | --- |
-| `--sherpa-core-*` | Raw value primitives (colour scales, spacing scale). Components **MUST NOT** consume directly. | `css/styles/tokens/sherpa-primitives.css` |
+| `--core-*` | Raw value primitives (colour scales, spacing scale). Components **MUST NOT** consume directly. | `css/styles/tokens/primitives.css` |
 | `--sherpa-color-*` | Semantic colour aliases. | `css/styles/tokens/sherpa-alias.css`, theme files |
 | `--sherpa-surface-*` | Background / surface colours. | `sherpa-components.css`, theme files |
 | `--sherpa-text-*` | Typography colours and sizes. | `sherpa-components.css`, theme files |
@@ -711,8 +711,8 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 | `--sherpa-elevation-*` | Shadow / elevation. | `sherpa-components.css`, theme files |
 | `--sherpa-space-*` | Spacing scale. | `sherpa-components.css` |
 | `--sherpa-fonts-*` | Font scales. | `sherpa-fonts.css` |
-| `--sherpa-typeface-*` | Font families and weights. | `tokens/sherpa-primitives.css` |
-| `--sherpa-motion-*` | Duration and easing. | `tokens/sherpa-primitives.css` |
+| `--sherpa-typeface-*` | Font families and weights. | `tokens/primitives.css` |
+| `--sherpa-motion-*` | Duration and easing. | `tokens/primitives.css` |
 | `--sherpa-data-viz-*` | Categorical data-viz colours. | `sherpa-data-viz-classes.css` |
 
 #### B.2 Schema shape (per component)
@@ -770,7 +770,7 @@ State is held in JS memory (not in DOM attributes). Each transition emits a cust
 
 For new contributors and AI agents extending the library:
 
-1.  **Tokens** — Figma export → `figma-tokens/` → `css/styles/tokens/sherpa-primitives.css` → alias / theme layers.
+1.  **Tokens** — Figma export → `figma-tokens/` → `css/styles/tokens/primitives.css` → alias / theme layers.
 2.  **Base classes** — `components/utilities/sherpa-element/`, then `components/utilities/sherpa-input-base/`.
 3.  **Cross-cutting utilities** — `flow-manager`, `form-manager`, `theme-manager`, `status-mixin`, `stylesheet-cache`, formatters.
 4.  **Primitives** — `sherpa-button`, `sherpa-input-*`, `sherpa-dialog`, `sherpa-tooltip`, `sherpa-popover`, `sherpa-tag`, `sherpa-loader`.

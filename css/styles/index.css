@@ -9,7 +9,6 @@
  *   theme       — themed surface/text/border/icon (LIGHT default + nested dark/hc)
  *   density     — [data-density] subtree overrides (Compact / Comfortable)
  *   status      — [data-status] semantic state mapping (--_status-* private vars)
- *   selected    — [data-selected="true"] active state mapping (--_selected-* private vars)
  *   components  — light DOM component overrides
  *   utilities   — class-based helpers (text/icon/motion/layout classes)
  *     ↳ utilities.icons   — icon font + .sherpa-icon sizing
@@ -25,17 +24,16 @@
  *              "auto" honours both prefers-color-scheme AND prefers-contrast.
  *   Density  — set [data-density="compact|base|comfortable"] on any subtree
  *   Status   — set [data-status="critical|info|success|warning|urgent"] on any element
- *   Selected — set [data-selected="true"] on any element
  *
  * No light-dark(): each theme file declares its light values + nested dark
  * and HC override blocks (gated by data-mode attr OR a prefers-* media query).
  */
 
-@layer reset, primitives, alias, platform, theme, density, status, selected, components, utilities;
+@layer reset, primitives, alias, platform, theme, density, status, components, utilities;
 @layer utilities.icons, utilities.motion, utilities.text, utilities.layout;
 
 @import "reset.css"                   layer(reset);
-@import "tokens/sherpa-primitives.css" layer(primitives);
+@import "tokens/primitives.css" layer(primitives);
 @import "tokens/sherpa-alias.css"      layer(alias);
 @import "tokens/sherpa-platform.css"   layer(platform);
 

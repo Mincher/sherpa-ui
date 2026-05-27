@@ -15,7 +15,7 @@
   color: var(--sherpa-text-default-body, #2e2e33);
   --_list-gap: var(--sherpa-space-2xs, 4px);
   --_list-padding: 0;
-/* ──────────────────────────────────────────────────────────
+  /* ──────────────────────────────────────────────────────────
        HEADER (heading + actions)
        ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -29,14 +29,12 @@
        ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
-:host([hidden]) { display: none; }
-
 :host .list-header {
   display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--sherpa-space-sm, 12px);
-      padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px);
 }
 :host([data-heading]) .list-header,
 :host([data-has-actions]) .list-header {
@@ -44,21 +42,21 @@
 }
 :host .list-heading {
   font-weight: var(--sherpa-font-weight-semibold, 600);
-      color: var(--sherpa-text-default-heading, #18191a);
+  color: var(--sherpa-text-default-heading, #18191a);
 }
 :host .list-body {
   list-style: none;
-      margin: 0;
-      padding: var(--_list-padding);
-      display: flex;
-      flex-direction: column;
-      gap: var(--_list-gap);
+  margin: 0;
+  padding: var(--_list-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--_list-gap);
 }
 :host([data-variant="bordered"]) .list-body {
   border: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-      border-radius: var(--sherpa-border-rounding-base, 4px);
-      --_list-gap: 0;
-      overflow: hidden;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  --_list-gap: 0;
+  overflow: hidden;
 }
 :host([data-variant="divided"]) .list-body {
   --_list-gap: 0;
@@ -74,10 +72,10 @@
 }
 :host .list-empty {
   display: none;
-      padding: var(--sherpa-space-base, 16px);
-      text-align: center;
-      color: var(--sherpa-text-default-secondary, #6a6a75);
-      font-size: var(--sherpa-fonts-scale-sm, 14px);
+  padding: var(--sherpa-space-base, 16px);
+  text-align: center;
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
 }
 :host([data-empty-visible]) .list-empty {
   display: block;
@@ -85,4 +83,3 @@
 :host([data-empty-visible]) .list-body {
   display: none;
 }
-

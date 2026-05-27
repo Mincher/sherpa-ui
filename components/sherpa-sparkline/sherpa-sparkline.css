@@ -24,15 +24,13 @@
    Each shape has two: --_progress-start (left) and --_progress-end (right).
    inherits: true so ::before, ::after, and .point children see the values. */
 @property --_progress-start {
-  syntax: '<number>';
+  syntax: "<number>";
   inherits: true;
   initial-value: 1;
 }
 
-  :host([hidden]) { display: none; }
-
 @property --_progress-end {
-  syntax: '<number>';
+  syntax: "<number>";
   inherits: true;
   initial-value: 1;
 }
@@ -42,13 +40,21 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes rise-start {
-  from { --_progress-start: 0; }
-  to   { --_progress-start: 1; }
+  from {
+    --_progress-start: 0;
+  }
+  to {
+    --_progress-start: 1;
+  }
 }
 
 @keyframes rise-end {
-  from { --_progress-end: 0; }
-  to   { --_progress-end: 1; }
+  from {
+    --_progress-end: 0;
+  }
+  to {
+    --_progress-end: 1;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -106,7 +112,7 @@
 .shape {
   /* CSS normalisation — converts raw values to 0–100 range */
   --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
-  --_n-end:   calc((var(--_v-end)   - var(--_min)) / var(--_range) * 100);
+  --_n-end: calc((var(--_v-end) - var(--_min)) / var(--_range) * 100);
 
   position: relative;
   flex: 1 1 0%;
@@ -116,36 +122,40 @@
      Shape N's end delay = shape (N+1)'s start delay, so boundary points
      stay in sync and the wave ripples left-to-right. */
   animation:
-    rise-start var(--_anim-duration) var(--_anim-easing)
-              calc(var(--_ripple-delay-step) * var(--_i)) both,
-    rise-end   var(--_anim-duration) var(--_anim-easing)
-              calc(var(--_ripple-delay-step) * (var(--_i) + 1)) both;
+    rise-start var(--_anim-duration) var(--_anim-easing) calc(var(--_ripple-delay-step) * var(--_i))
+      both,
+    rise-end var(--_anim-duration) var(--_anim-easing)
+      calc(var(--_ripple-delay-step) * (var(--_i) + 1)) both;
 
   /* Gradient fill — pseudo-element so child .point elements aren't clipped */
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, color-mix(in srgb, currentColor 50%, transparent) 0%, transparent 100%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, currentColor 50%, transparent) 0%,
+      transparent 100%
+    );
     clip-path: polygon(
-      0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1%),
-      100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1%),
+      0% calc(100% - var(--_n-start) * var(--_progress-start) * 1%),
+      100% calc(100% - var(--_n-end) * var(--_progress-end) * 1%),
       100% 100%,
-      0%   100%
+      0% 100%
     );
   }
 
   /* Stroke line on top edge */
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     background: currentColor;
     clip-path: polygon(
-      0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% - var(--_stroke-width)),
-      100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% - var(--_stroke-width)),
-      100% calc(100% - var(--_n-end)   * var(--_progress-end)   * 1% + var(--_stroke-width)),
-      0%   calc(100% - var(--_n-start) * var(--_progress-start) * 1% + var(--_stroke-width))
+      0% calc(100% - var(--_n-start) * var(--_progress-start) * 1% - var(--_stroke-width)),
+      100% calc(100% - var(--_n-end) * var(--_progress-end) * 1% - var(--_stroke-width)),
+      100% calc(100% - var(--_n-end) * var(--_progress-end) * 1% + var(--_stroke-width)),
+      0% calc(100% - var(--_n-start) * var(--_progress-start) * 1% + var(--_stroke-width))
     );
   }
 
@@ -153,18 +163,66 @@
      Shape N's start = --_vN, end = --_v(N+1).
      Adjacent shapes share the boundary value (end of N = start of N+1).
      --_i provides animation delay stagger index. */
-  &[data-index="0"]  { --_i: 0;  --_v-start: var(--_v0);  --_v-end: var(--_v1); }
-  &[data-index="1"]  { --_i: 1;  --_v-start: var(--_v1);  --_v-end: var(--_v2); }
-  &[data-index="2"]  { --_i: 2;  --_v-start: var(--_v2);  --_v-end: var(--_v3); }
-  &[data-index="3"]  { --_i: 3;  --_v-start: var(--_v3);  --_v-end: var(--_v4); }
-  &[data-index="4"]  { --_i: 4;  --_v-start: var(--_v4);  --_v-end: var(--_v5); }
-  &[data-index="5"]  { --_i: 5;  --_v-start: var(--_v5);  --_v-end: var(--_v6); }
-  &[data-index="6"]  { --_i: 6;  --_v-start: var(--_v6);  --_v-end: var(--_v7); }
-  &[data-index="7"]  { --_i: 7;  --_v-start: var(--_v7);  --_v-end: var(--_v8); }
-  &[data-index="8"]  { --_i: 8;  --_v-start: var(--_v8);  --_v-end: var(--_v9); }
-  &[data-index="9"]  { --_i: 9;  --_v-start: var(--_v9);  --_v-end: var(--_v10); }
-  &[data-index="10"] { --_i: 10; --_v-start: var(--_v10); --_v-end: var(--_v11); }
-  &[data-index="11"] { --_i: 11; --_v-start: var(--_v11); --_v-end: var(--_v12); }
+  &[data-index="0"] {
+    --_i: 0;
+    --_v-start: var(--_v0);
+    --_v-end: var(--_v1);
+  }
+  &[data-index="1"] {
+    --_i: 1;
+    --_v-start: var(--_v1);
+    --_v-end: var(--_v2);
+  }
+  &[data-index="2"] {
+    --_i: 2;
+    --_v-start: var(--_v2);
+    --_v-end: var(--_v3);
+  }
+  &[data-index="3"] {
+    --_i: 3;
+    --_v-start: var(--_v3);
+    --_v-end: var(--_v4);
+  }
+  &[data-index="4"] {
+    --_i: 4;
+    --_v-start: var(--_v4);
+    --_v-end: var(--_v5);
+  }
+  &[data-index="5"] {
+    --_i: 5;
+    --_v-start: var(--_v5);
+    --_v-end: var(--_v6);
+  }
+  &[data-index="6"] {
+    --_i: 6;
+    --_v-start: var(--_v6);
+    --_v-end: var(--_v7);
+  }
+  &[data-index="7"] {
+    --_i: 7;
+    --_v-start: var(--_v7);
+    --_v-end: var(--_v8);
+  }
+  &[data-index="8"] {
+    --_i: 8;
+    --_v-start: var(--_v8);
+    --_v-end: var(--_v9);
+  }
+  &[data-index="9"] {
+    --_i: 9;
+    --_v-start: var(--_v9);
+    --_v-end: var(--_v10);
+  }
+  &[data-index="10"] {
+    --_i: 10;
+    --_v-start: var(--_v10);
+    --_v-end: var(--_v11);
+  }
+  &[data-index="11"] {
+    --_i: 11;
+    --_v-start: var(--_v11);
+    --_v-end: var(--_v12);
+  }
 }
 
 /* Bar mode: both top corners use same value → flat-topped rectangle */
@@ -189,7 +247,7 @@
   border-radius: 50%;
   background: currentColor;
   pointer-events: none;
-  transition: opacity var(--sherpa-motion-transition-fast, 0.15s ease-out), scale var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: --transition-fast(opacity), --transition-fast(scale);
   opacity: var(--_point-scale);
   z-index: 1;
   translate: calc(-1 * var(--_point-offset)) calc(-1 * var(--_point-offset));
@@ -230,7 +288,7 @@
   border-radius: var(--sherpa-border-rounding-lg, 0.5rem);
   background: var(--sherpa-surface-container-elevated-default, rgba(26, 28, 33, 0.92));
   color: var(--sherpa-text-default-on-color-heading, #fff);
-  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-font-sm-size, 12px);
   line-height: var(--sherpa-fonts-scale-lg, 16px);
   white-space: nowrap;
@@ -239,12 +297,14 @@
   box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgba(15, 23, 42, 0.25));
 
   /* Popover UA overrides */
-  &::backdrop { display: none; }
+  &::backdrop {
+    display: none;
+  }
 }
 
 /* Arrow */
 .tip::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 50%;
   top: 100%;

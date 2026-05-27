@@ -1,4 +1,3 @@
-
 /**
  * sherpa-menu.css — Phase 2 Modernization (CSS Nesting)
  * Shadow DOM + light DOM menu component.
@@ -18,12 +17,13 @@
  */
 
 :host {
-  --_shadow: var(--sherpa-shadow-default-md, var(--sherpa-elevation-offset-x-default, 4px)
-            var(--sherpa-elevation-offset-y-default, 4px)
-            var(--sherpa-elevation-blur-default, 12px)
-            var(--sherpa-elevation-spread-default, -2px)
-            var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
-            0 4px 4px 0 rgba(0, 0, 0, 0.25));
+  --_shadow: var(
+    --sherpa-shadow-default-md,
+    var(--sherpa-elevation-offset-x-default, 4px) var(--sherpa-elevation-offset-y-default, 4px)
+      var(--sherpa-elevation-blur-default, 12px) var(--sherpa-elevation-spread-default, -2px)
+      var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
+    0 4px 4px 0 rgba(0, 0, 0, 0.25)
+  );
   --_surface: var(--sherpa-surface-container-default, #ffffff);
   --_border-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
   --_border-width: var(--sherpa-border-width-base, 1px);
@@ -64,8 +64,6 @@
   /* ── Hidden state ───────────────────────────────────────– */
 }
 
-:host([hidden]) { display: none; }
-
 /* ──────────────────────────────────────────────────────────
    POPOVER MODE (fixed positioning with anchor)
    ────────────────────────────────────────────────────────── */
@@ -75,7 +73,10 @@
     position-anchor: var(--sherpa-menu-anchor);
     top: anchor(bottom);
     left: anchor(left);
-    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
   }
 
   /* Bottom-end: menu drops below, right-aligned */
@@ -103,20 +104,20 @@
 }
 :host .menu-surface {
   display: flex;
-      flex-direction: column;
-      gap: var(--_gap);
-      padding: var(--_padding);
-      overflow: auto;
-      overscroll-behavior: contain;
+  flex-direction: column;
+  gap: var(--_gap);
+  padding: var(--_padding);
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 :host([data-layout="actions"]) {
   min-width: auto;
 }
 :host([data-layout="actions"]) .menu-surface {
   flex-direction: row;
-          align-items: center;
-          gap: var(--_gap-sm);
-          padding: var(--_gap-sm);
+  align-items: center;
+  gap: var(--_gap-sm);
+  padding: var(--_gap-sm);
 }
 :host([data-layout="actions"]) ::slotted(ul) {
   flex-direction: row;
@@ -127,20 +128,20 @@
 
 :host .menu-loader {
   display: none;
-      align-items: center;
-      gap: var(--_gap-sm);
-      padding: var(--_gap-sm) var(--_padding);
-      color: var(--_text);
-      min-height: var(--sherpa-size-3xl, 36px);
+  align-items: center;
+  gap: var(--_gap-sm);
+  padding: var(--_gap-sm) var(--_padding);
+  color: var(--_text);
+  min-height: var(--sherpa-size-3xl, 36px);
 }
 :host .menu-loader-spinner {
   display: inline-block;
-      width: var(--sherpa-size-md, 16px);
-      height: var(--sherpa-size-md, 16px);
-      border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
-      border-top-color: var(--sherpa-border-control-active-default, #0060df);
-      border-radius: 50%;
-      animation: sherpa-menu-spin 700ms linear infinite;
+  width: var(--sherpa-size-md, 16px);
+  height: var(--sherpa-size-md, 16px);
+  border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-top-color: var(--sherpa-border-control-active-default, #0060df);
+  border-radius: 50%;
+  animation: sherpa-menu-spin 700ms linear infinite;
 }
 :host .menu-loader-text:empty {
   display: none;
@@ -155,22 +156,22 @@
 
 :host ::slotted(ul) {
   display: flex;
-      flex-direction: column;
-      gap: var(--_gap-sm);
-      list-style: none;
-      margin: 0;
-      padding: 0 0 var(--_gap-sm) 0;
-      border-bottom: var(--_border-width) solid var(--_border-color);
+  flex-direction: column;
+  gap: var(--_gap-sm);
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--_gap-sm) 0;
+  border-bottom: var(--_border-width) solid var(--_border-color);
 }
 :host ::slotted(ul:last-child) {
   padding-bottom: 0;
-      border-bottom: none;
+  border-bottom: none;
 }
 :host ::slotted(hr) {
   height: 1px;
-      border: none;
-      background-color: var(--_border-color);
-      margin: var(--_gap-sm) 0;
+  border: none;
+  background-color: var(--_border-color);
+  margin: var(--_gap-sm) 0;
 }
 /*
  * !important is required here because ::slotted(ul:last-child) has specificity
@@ -193,5 +194,7 @@
 
 /* Animation keyframes (top-level, outside :host) */
 @keyframes sherpa-menu-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -172,6 +172,8 @@
   min-width: 0;
   height: 100%;
   overflow: hidden;
+  position: relative;
+  z-index: 0;
 }
 
 .sherpa-main-content-slot {
@@ -180,6 +182,8 @@
   overflow: auto;
   container-type: scroll-state;
   container-name: main-scroller;
+  position: relative;
+  z-index: 0;
 
   & > sherpa-layout-grid {
     width: 100%;

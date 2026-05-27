@@ -15,7 +15,7 @@
   gap: var(--sherpa-space-2xs, 4px);
   width: 100%;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-/* ──────────────────────────────────────────────────────────
+  /* ──────────────────────────────────────────────────────────
        LABEL (conditional, above bar)
        ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -32,54 +32,46 @@
        ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
-:host([hidden]) { display: none; }
-
 :host .label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-      line-height: var(--sherpa-line-height-default, 1.4);
-      color: var(--sherpa-text-default-body, #18191a);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-body, #18191a);
 }
 :host(:not([data-label])) .label {
   display: none;
 }
 :host .track {
   position: relative;
-      width: 100%;
-      height: 4px;
-      background: var(--sherpa-surface-container-default, #fafafa);
-      border-radius: var(--sherpa-border-rounding-full, 8px);
-      overflow: hidden;
+  width: 100%;
+  height: 4px;
+  background: var(--sherpa-surface-container-default, #fafafa);
+  border-radius: var(--sherpa-border-rounding-full, 8px);
+  overflow: hidden;
 }
 :host .fill {
   height: 100%;
-      width: var(--_progress, 0%);
-      background: var(
-        --_status-surface-strong,
-        var(--sherpa-surface-control-primary-default, #c046ff)
-      );
-      border-radius: var(--sherpa-border-rounding-full, 8px);
-      transition: width var(--sherpa-motion-transition-base, 0.25s ease-out);
+  width: var(--_progress, 0%);
+  background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #c046ff));
+  border-radius: var(--sherpa-border-rounding-full, 8px);
+  transition: --transition-base(width);
 }
 :host([data-variant="indeterminate"]) .fill {
   display: none;
 }
 :host([data-variant="indeterminate"]) .track {
   background: linear-gradient(
-        90deg,
-        var(--sherpa-surface-container-default, #fafafa) 0%,
-        var(
-          --_status-surface-strong,
-          var(--sherpa-surface-control-primary-default, #c046ff)
-        ) 50%,
-        var(--sherpa-surface-container-default, #fafafa) 100%
-      );
-      background-size: 200% 100%;
-      animation: sherpa-progress-slide 1.5s ease-in-out infinite;
+    90deg,
+    var(--sherpa-surface-container-default, #fafafa) 0%,
+    var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #c046ff)) 50%,
+    var(--sherpa-surface-container-default, #fafafa) 100%
+  );
+  background-size: 200% 100%;
+  animation: sherpa-progress-slide 1.5s ease-in-out infinite;
 }
 :host .status {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-      line-height: var(--sherpa-line-height-default, 1.4);
-      color: var(--sherpa-text-default-secondary, #5c5c66);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
 }
 :host([data-variant="indeterminate"]) .status {
   display: none;
@@ -92,6 +84,10 @@
    PROGRESS SLIDE ANIMATION (200% → -200% position)
    ────────────────────────────────────────────────────────────── */
 @keyframes sherpa-progress-slide {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

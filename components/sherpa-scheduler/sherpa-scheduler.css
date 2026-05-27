@@ -13,18 +13,19 @@
   gap: var(--sherpa-space-sm, 12px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   color: var(--sherpa-text-default-body, #2e2e33);
-/* Conditional rows shown per frequency */
+  /* Conditional rows shown per frequency */
   /* Default to weekly when no frequency set */
 }
-:host([hidden]) { display: none; }
-
 :host .row {
   display: none;
-      flex-wrap: wrap;
-      gap: var(--sherpa-space-sm, 12px);
-      align-items: flex-end;
-  
-      & > * { flex: 1 1 160px; min-width: 0; }
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-sm, 12px);
+  align-items: flex-end;
+
+  & > * {
+    flex: 1 1 160px;
+    min-width: 0;
+  }
 }
 :host .row-frequency {
   display: flex;
@@ -42,4 +43,3 @@
 :host(:not([data-frequency])) .row-weekly {
   display: flex;
 }
-

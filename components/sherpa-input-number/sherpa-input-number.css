@@ -1,26 +1,22 @@
 /**
- * sherpa-input-number.css — Phase 2 Modernization (CSS Nesting)
+ * sherpa-input-number.css
  * Numerical input with stepper buttons (+ / -).
  *
  * Base styles imported from sherpa-input-base.css.
  */
 
-@import '../utilities/sherpa-input-base/sherpa-input-base.css';
+@import "../utilities/sherpa-input-base/sherpa-input-base.css";
 
-:host {
-/* ── Number field styling ────────────────────────────── */
-  & .input-field {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ── Stepper buttons ─────────────────────────────────── */
-  & .step-down,
-  & .step-up {
-    height: var(--sherpa-size-2xl, 32px);
-    width: var(--sherpa-size-2xl, 32px);
-    flex-shrink: 0;
-  }
+/* -- Number field styling ----------------------------------------- */
+:host .input-field {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
-:host([hidden]) { display: none; }
 
+/* -- Stepper buttons ---------------------------------------------- */
+:host .step-down,
+:host .step-up {
+  height: var(--sherpa-size-2xl, 32px);
+  width: var(--sherpa-size-2xl, 32px);
+  flex-shrink: 0;
+}

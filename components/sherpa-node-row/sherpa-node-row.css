@@ -10,45 +10,49 @@
   /* ──────────────────────────────────────────────────────────
              ROW GRID (3 columns: in-gutter | control | out-gutter)
              ────────────────────────────────────────────────────────── */
-/* ── Label + Helper (full-width, span all columns) ─– */
+  /* ── Label + Helper (full-width, span all columns) ─– */
   /* ── Gutters (socket containers, vertically centered) ––– */
   /* Sockets centered on node edge via half-width translate */
   /* ── Control (flex row for inputs) ──────────────────– */
   /* ── Hidden state ───────────────────────────────────────– */
 }
-:host([hidden]) { display: none; }
-
 :host .row {
   display: grid;
-      grid-template-columns:
-        var(--sherpa-node-socket-gutter, 16px) 1fr var(--sherpa-node-socket-gutter, 16px);
-      row-gap: var(--sherpa-space-3xs, 4px);
-      padding: var(--sherpa-space-xs, 12px) 0;
+  grid-template-columns: var(--sherpa-node-socket-gutter, 16px) 1fr var(
+      --sherpa-node-socket-gutter,
+      16px
+    );
+  row-gap: var(--sherpa-space-3xs, 4px);
+  padding: var(--sherpa-space-xs, 12px) 0;
 }
 :host .row-label,
 :host .row-helper {
   grid-column: 1 / -1;
-      padding: 0 var(--sherpa-space-sm, 16px);
+  padding: 0 var(--sherpa-space-sm, 16px);
 }
 :host .row-label {
   font-size: var(--sherpa-font-sm-size, 12px);
-      font-weight: 600;
-      color: var(--sherpa-text-default-label, #18191a);
-      line-height: 1.4;
-  
-      &:not([data-has-content]) { display: none; }
+  font-weight: 600;
+  color: var(--sherpa-text-default-label, #18191a);
+  line-height: 1.4;
+
+  &:not([data-has-content]) {
+    display: none;
+  }
 }
 :host .row-helper {
   font-size: var(--sherpa-font-xs-size, 10px);
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      line-height: 1.4;
-  
-      &:not([data-has-content]) { display: none; }
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  line-height: 1.4;
+
+  &:not([data-has-content]) {
+    display: none;
+  }
 }
 :host .gutter {
   display: flex;
-      align-items: center;
-      overflow: visible;
+  align-items: center;
+  overflow: visible;
 }
 :host .gutter-in {
   justify-content: flex-start;
@@ -64,25 +68,24 @@
 }
 :host .row-control {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 12px);
-      min-height: var(--sherpa-size-md, 20px);
-      padding: 0 var(--sherpa-space-2xs, 8px);
-      color: var(--sherpa-text-default-body, #2e2e33);
-      min-width: 0;
-  
-      /* Input elements fill available width */
-      & ::slotted(sherpa-input-text),
-      & ::slotted(sherpa-input-number),
-      & ::slotted(sherpa-input-select),
-      & ::slotted(sherpa-input-time),
-      & ::slotted(sherpa-input-date),
-      & ::slotted(sherpa-input-search),
-      & ::slotted(sherpa-input-password),
-      & ::slotted(sherpa-input-tag) {
-        flex: 1 1 auto;
-        min-width: 0;
-        width: 100%;
-      }
-}
+  align-items: center;
+  gap: var(--sherpa-space-xs, 12px);
+  min-height: var(--sherpa-size-md, 20px);
+  padding: 0 var(--sherpa-space-2xs, 8px);
+  color: var(--sherpa-text-default-body, #2e2e33);
+  min-width: 0;
 
+  /* Input elements fill available width */
+  & ::slotted(sherpa-input-text),
+  & ::slotted(sherpa-input-number),
+  & ::slotted(sherpa-input-select),
+  & ::slotted(sherpa-input-time),
+  & ::slotted(sherpa-input-date),
+  & ::slotted(sherpa-input-search),
+  & ::slotted(sherpa-input-password),
+  & ::slotted(sherpa-input-tag) {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+}

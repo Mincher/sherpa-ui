@@ -24,8 +24,7 @@
  *     while preserving its natural height; defaults to `visible`. Lets a
  *     group reuse the first tile's header as its title while keeping every
 
-  :host([hidden]) { display: none; }
- *     other tile's header band as a height spacer so content baselines
+*     other tile's header band as a height spacer so content baselines
  *     align across rows.
  *
  * Container query:
@@ -41,47 +40,52 @@
 }
 :host .header-row {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 4px);
-      visibility: var(--_cg-header-vis, visible);
+  align-items: center;
+  gap: var(--sherpa-space-xs, 4px);
+  visibility: var(--_cg-header-vis, visible);
 }
 :host .header-labels {
   display: flex;
-      flex-direction: column;
-      flex: 1 1 0;
-      min-width: 0;
-      gap: var(--sherpa-space-3xs, 2px);
-      overflow: hidden;
-      margin: 0;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: var(--sherpa-space-3xs, 2px);
+  overflow: hidden;
+  margin: 0;
 }
 :host .header-title {
   margin: 0;
-      font-size: var(--sherpa-font-sm-size, 12px);
-      font-weight: 600;
-      line-height: var(--sherpa-font-base-line-height, 20px);
-      letter-spacing: 0.1px;
-      text-transform: uppercase;
-      color: var(--_selected-text, var(--sherpa-text-default-label, var(--sherpa-text-default-heading, #1a1a1f)));
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
+  text-transform: uppercase;
+  color: var(
+    --_selected-text,
+    var(--sherpa-text-default-label, var(--sherpa-text-default-heading, #1a1a1f))
+  );
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 :host .header-description {
   margin: 0;
-      font-size: var(--sherpa-font-sm-size, 12px);
-      line-height: var(--sherpa-font-sm-line-height, 16px);
-      color: var(--_selected-text, var(--sherpa-text-default-secondary, #6a6a75));
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-  
-      &:empty { display: none; }
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-font-sm-line-height, 16px);
+  color: var(--_selected-text, var(--sherpa-text-default-secondary, #6a6a75));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  &:empty {
+    display: none;
+  }
 }
 :host .open-external-button,
 :host .menu-button,
 :host .action-divider {
   display: none;
-      flex-shrink: 0;
+  flex-shrink: 0;
 }
 /* :where() keeps specificity at (0,1,0) so container queries win by source order */
 :host(:where([data-open-external="true"])) .open-external-button {
@@ -95,45 +99,57 @@
 }
 :host .action-divider {
   width: 1px;
-      height: var(--sherpa-size-sm, 16px);
-      background-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
+  height: var(--sherpa-size-sm, 16px);
+  background-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
 }
 :host .drag-handle {
   display: none;
-      align-items: center;
-      justify-content: center;
-      --icon-size: var(--sherpa-size-md, 20px);
-      color: var(--sherpa-text-default-secondary, #6a6a75);
-      cursor: grab;
-      flex-shrink: 0;
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      transition: color var(--sherpa-motion-transition-fast, 0.15s ease-out), background-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
-  
-      &:hover {
-        color: var(--sherpa-text-default-body, #2e2e33);
-        background-color: var(--sherpa-surface-container-hover, #fafafa);
-      }
-  
-      &:active {
-        cursor: grabbing;
-        color: var(--sherpa-border-control-primary-default, #8500cc);
-      }
+  align-items: center;
+  justify-content: center;
+  --icon-size: var(--sherpa-size-md, 20px);
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  cursor: grab;
+  flex-shrink: 0;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  transition: --transition-fast(color), --transition-fast(background-color);
+
+  &:hover {
+    color: var(--sherpa-text-default-body, #2e2e33);
+    background-color: var(--sherpa-surface-container-hover, #fafafa);
+  }
+
+  &:active {
+    cursor: grabbing;
+    color: var(--sherpa-border-control-primary-default, #8500cc);
+  }
 }
 :host([data-drag-handle="true"]) .drag-handle {
   display: inline-flex;
 }
 
 @container sherpa-container-header (max-width: 200px) {
-  :host .header-row { gap: var(--sherpa-space-2xs, 2px); }
-  :host .header-description { display: none; }
-  :host .action-divider { display: none; }
+  :host .header-row {
+    gap: var(--sherpa-space-2xs, 2px);
+  }
+  :host .header-description {
+    display: none;
+  }
+  :host .action-divider {
+    display: none;
+  }
 }
 
 @container sherpa-container-header (max-width: 150px) {
-  :host .open-external-button { display: none; }
-  :host .action-divider { display: none; }
+  :host .open-external-button {
+    display: none;
+  }
+  :host .action-divider {
+    display: none;
+  }
 }
 
 @container sherpa-container-header (max-width: 120px) {
-  :host .header-title { font-size: var(--sherpa-fonts-scale-sm, 12px); }
+  :host .header-title {
+    font-size: var(--sherpa-fonts-scale-sm, 12px);
+  }
 }

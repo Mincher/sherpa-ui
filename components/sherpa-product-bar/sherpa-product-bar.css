@@ -20,12 +20,6 @@
  * JS   — syncs product name text content.
  */
 
-i {
-  font-style: normal;
-}
-
-  :host([hidden]) { display: none; }
-
 :host {
   display: flex;
   align-items: center;
@@ -40,61 +34,60 @@ i {
 }
 :host .branding {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-base, 16px);
-      flex-shrink: 0;
-      height: 100%;
+  align-items: center;
+  gap: var(--sherpa-space-base, 16px);
+  flex-shrink: 0;
+  height: 100%;
 }
 :host .product-icon {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 48px;
-      height: 48px;
-      background: var(--sherpa-surface-control-primary-default, #c046ff);
-      color: var(--sherpa-text-default-on-color-body, #ffffff);
-      font-size: 20px;
-      flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--sherpa-surface-control-primary-default, #c046ff);
+  color: var(--sherpa-text-default-on-color-body, #ffffff);
+  font-size: 20px;
+  flex-shrink: 0;
 }
 :host(:not([data-has-icon])) .product-icon {
   display: none;
 }
 :host .product-name {
   font-size: var(--sherpa-fonts-scale-lg, 20px);
-      font-weight: var(--sherpa-font-weight-semibold, 600);
-      line-height: 1;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      white-space: nowrap;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 :host(:not([data-product-name])) .product-name {
   display: none;
 }
 :host .divider {
   width: 1px;
-      height: 36px;
-      background: var(--sherpa-border-container-default, rgba(255, 255, 255, 0.2));
-      flex-shrink: 0;
+  height: 36px;
+  background: var(--sherpa-border-container-default, rgba(255, 255, 255, 0.2));
+  flex-shrink: 0;
 }
 :host(:not([data-has-default])) .divider {
   display: none;
 }
 :host .navigation {
   display: flex;
-      align-items: center;
-      flex: 1;
-      height: 100%;
-      overflow: hidden;
-      min-width: 0;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
 }
 :host .actions {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 8px);
-      flex-shrink: 0;
-      margin-inline-start: auto;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
+  margin-inline-start: auto;
 }
 :host(:not([data-has-actions])) .actions {
   display: none;
 }
-

@@ -9,11 +9,6 @@
  */
 
 @import "../utilities/sherpa-input-base/sherpa-input-base.css";
-  :host([hidden]) { display: none; }
-
-
-i { font-style: normal; }
-
 .search-wrapper {
   display: flex;
   flex: 1;
@@ -37,9 +32,7 @@ i { font-style: normal; }
 }
 
 .search-icon-wrapper .input-field {
-  padding-inline-start: calc(
-    var(--sherpa-space-xs, 8px) + 12px + var(--sherpa-space-xs, 8px)
-  );
+  padding-inline-start: calc(var(--sherpa-space-xs, 8px) + 12px + var(--sherpa-space-xs, 8px));
 }
 
 .search-clear {
@@ -54,7 +47,10 @@ i { font-style: normal; }
   /* ── Hidden state ────────────────────────── */
 }
 :host([data-has-value]) {
-  & .search-clear { display: inline-flex; }
-      & .search-wrapper { display: flex; }
+  & .search-clear {
+    display: inline-flex;
+  }
+  & .search-wrapper {
+    display: flex;
+  }
 }
-

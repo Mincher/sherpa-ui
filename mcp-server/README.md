@@ -661,5 +661,5 @@ dependencies.
 - Tokens are scanned from `css/styles/`. Make sure your token CSS files
   are there
 - Try broader search terms: `surface`, `text`, `space`, `border`
-- Core tokens (`--sherpa-core-*`) are included in search results but
+- Core tokens (`--core-*`) are included in search results but
   components should use semantic tokens (`--sherpa-*`)

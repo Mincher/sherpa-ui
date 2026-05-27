@@ -23,7 +23,7 @@
  */
 
 :host {
-display: flex;
+  display: flex;
   align-items: stretch;
   width: 100%;
   height: 48px;
@@ -34,44 +34,42 @@ display: flex;
   color: var(--sherpa-text-default-body, #111111);
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
 }
-:host([hidden]) { display: none; }
-
 :host .brand-stack {
   display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-      flex-shrink: 0;
-      padding-inline: var(--sherpa-space-xs, 8px);
-      min-width: 120px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-inline: var(--sherpa-space-xs, 8px);
+  min-width: 120px;
 }
 :host([data-show-system="false"]) .brand-stack {
   display: none;
 }
 :host .system-trigger {
   all: unset;
-      display: inline-flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 8px);
-      cursor: pointer;
-      font-family: inherit;
-      font-size: var(--sherpa-font-base-size, 14px);
-      font-weight: 600;
-      line-height: var(--sherpa-font-base-line-height, 20px);
-      letter-spacing: 0.1px;
-      color: var(--sherpa-text-default-heading, #111111);
-      text-transform: uppercase;
-      white-space: nowrap;
-      border-radius: var(--sherpa-border-rounding-base, 4px);
-  
-      &:focus-visible {
-        outline: 2px solid var(--sherpa-border-control-primary-default, #4c63e5);
-        outline-offset: 2px;
-      }
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sherpa-font-base-size, 14px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 0.1px;
+  color: var(--sherpa-text-default-heading, #111111);
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+
+  &:focus-visible {
+    outline: --focus-ring();
+    outline-offset: 2px;
+  }
 }
 :host .system-caret {
   font-size: 10px;
-      color: var(--sherpa-text-default-secondary, #464646);
+  color: var(--sherpa-text-default-secondary, #464646);
 }
 :host([data-show-system-menu="false"]) .system-caret {
   display: none;
@@ -81,61 +79,62 @@ display: flex;
 }
 :host .system-time {
   display: inline-flex;
-      align-items: baseline;
-      gap: 4px;
-      font-size: var(--sherpa-font-xs-size, 11px);
-      line-height: var(--sherpa-font-xs-line-height, 16px);
-      color: var(--sherpa-text-default-secondary, #464646);
-      white-space: nowrap;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--sherpa-font-xs-size, 11px);
+  line-height: var(--sherpa-font-xs-line-height, 16px);
+  color: var(--sherpa-text-default-secondary, #464646);
+  white-space: nowrap;
 }
 :host([data-show-time="false"]) .system-time {
   display: none;
 }
 :host .divider {
   align-self: center;
-      width: 1px;
-      height: 36px;
-      background: var(--sherpa-border-container-default, #d5d5d5);
-      flex-shrink: 0;
+  width: 1px;
+  height: 36px;
+  background: var(--sherpa-border-container-default, #d5d5d5);
+  flex-shrink: 0;
 }
 :host .tabs {
   display: flex;
-      align-items: center;
-      flex-shrink: 0;
-      height: 100%;
+  align-items: center;
+  flex-shrink: 0;
+  height: 100%;
 }
 :host(:not([data-has-tabs])) .tabs {
   display: none;
 }
 :host .search {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1 1 auto;
-      min-width: 0;
-      padding-inline: var(--sherpa-space-xs, 8px);
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: var(--sherpa-space-xs, 8px);
 }
 :host .search ::slotted(*) {
-  width: 100%; max-width: 1000px;
+  width: 100%;
+  max-width: 1000px;
 }
 :host .default-search {
-  width: 100%; max-width: 1000px;
+  width: 100%;
+  max-width: 1000px;
 }
 :host .actions {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-2xs, 4px);
-      flex-shrink: 0;
-      padding-inline-start: var(--sherpa-space-xs, 8px);
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex-shrink: 0;
+  padding-inline-start: var(--sherpa-space-xs, 8px);
 }
 :host(:not([data-has-actions])) .actions {
   display: none;
 }
 :host .actions ::slotted(.actions-divider) {
   display: inline-block;
-      width: 1px;
-      height: 24px;
-      background: var(--sherpa-border-container-default, #d5d5d5);
-      margin-inline: var(--sherpa-space-2xs, 4px);
+  width: 1px;
+  height: 24px;
+  background: var(--sherpa-border-container-default, #d5d5d5);
+  margin-inline: var(--sherpa-space-2xs, 4px);
 }
-

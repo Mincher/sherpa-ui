@@ -42,7 +42,7 @@
   border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
   background: var(--sherpa-surface-control-default, #ffffff);
   cursor: pointer;
-  transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: --transition-fast(background-color), --transition-fast(border-color);
   flex-shrink: 0;
   position: relative;
   vertical-align: middle;
@@ -103,7 +103,7 @@
 /* ── Focus ──────────────────────────────────────────────────────── */
 
 .sherpa-check:focus-visible {
-  outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+  outline: --focus-ring(var(--sherpa-border-control-active-default));
   outline-offset: 2px;
 }
 
@@ -213,7 +213,9 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
 }
 
-.sherpa-check-text:empty { display: none; }
+.sherpa-check-text:empty {
+  display: none;
+}
 
 .sherpa-check-description {
   color: var(--sherpa-text-default-secondary, #6a6a7a);
@@ -221,4 +223,6 @@
   line-height: var(--sherpa-font-sm-line-height, 16px);
 }
 
-.sherpa-check-description:empty { display: none; }
+.sherpa-check-description:empty {
+  display: none;
+}

@@ -1,0 +1,128 @@
+/**
+ * NOTE: This file is HAND-MAINTAINED. Do not add or modify @function definitions via scripts/generate-css-tokens.js or any generator.
+ * All custom CSS functions must be edited here directly.
+ * sherpa-functions.css — CSS @function library
+ *
+ * Reusable custom functions that collapse repetitive value patterns across
+ * the design system. Functions are tree-scoped, so this file is imported in
+ * TWO places:
+ *
+ *   1. css/styles/index.css   — light DOM (themes.css, overrides.css, utilities)
+ *   2. SherpaElement.sharedStyles — every shadow root (component CSS)
+ *
+ * Both adoption sites are required. Functions defined only in one tree are
+ * invalid in the other.
+ *
+ * Browser support: Chromium 139+ only. Safari / Firefox are not yet shipping
+ * `@function` (as of mid-2026). Calls invalidate gracefully on unsupporting
+ * engines; consumers see the property's initial value.
+ *
+ * ── Reference ────────────────────────────────────────────────────────────
+ *
+ * --alpha(--c, --pct)
+ *   Mix a colour with `transparent` to produce an alpha-blended variant.
+ *   Replaces the `color-mix(in srgb, X calc(Y * 1%), transparent)` boilerplate
+ *   used throughout sherpa-themes.css for subtle surfaces and elevation tints.
+ *
+ *   @param --c <color>   — base colour
+ *   @param --pct <number> — opacity expressed as a 0–100 number (NOT a percentage)
+ *   @returns <color>
+ *
+ *   Example:
+ *     background: --alpha(var(--sherpa-color-success-100), 20);
+ *
+ * --shadow-sm(--tint)  /  --shadow-md(--tint)  /  --shadow-lg(--tint)  /  --shadow-sunken(--tint)
+ *   Compose a `box-shadow` value from the matching semantic elevation tokens
+ *   (--sherpa-elevation-{offset-x,offset-y,blur,spread}-{size}) plus a caller-
+ *   supplied tint colour. Replaces the hand-assembled multi-line shadow
+ *   shorthands in primitives.css and enables trivial per-status variants
+ *   (e.g. --shadow-md(var(--sherpa-elevation-tint-error))).
+ *
+ *   `--shadow-md` returns the primary layer only — callers append the
+ *   2-layer contact shadow at the use site.
+ *   `--shadow-sunken` returns an `inset` shadow.
+ *
+ *   @param --tint <color> — shadow colour (theme/status elevation tint)
+ *
+ *   Example:
+ *     box-shadow: --shadow-sm(var(--sherpa-elevation-tint-default));
+ *
+ * --focus-ring(--color)
+ *   Standard 2px solid focus outline. Centralises the colour choice and
+ *   eliminates per-component hand-rolled fallback hex codes.
+ *
+ *   @param --color <color> — outline colour (default: primary control border)
+ *   @returns <line-width> <line-style> <color>
+ *
+ *   Example:
+ *     :host(:focus-visible) {
+ *       outline: --focus-ring();
+ *       outline-offset: 2px;
+ *     }
+ *
+ * --transition-fast(--prop)  /  --transition-base(--prop)  /  --transition-slow(--prop)
+ *   Compose a single-property transition entry from the matching motion
+ *   duration + default easing. Replaces the
+ *   `<prop> var(--sherpa-motion-transition-fast, 0.15s ease-out)` boilerplate.
+ *   One function per speed because `@function` cannot switch on argument value.
+ *
+ *   @param --prop <custom-ident> — animatable CSS property name
+ *
+ *   Example:
+ *     transition:
+ *       --transition-fast(background-color),
+ *       --transition-fast(border-color);
+ */
+
+@layer functions {
+  @function --alpha(--c <color>, --pct <number>) returns <color> {
+    result: color-mix(in srgb, var(--c) calc(var(--pct) * 1%), transparent);
+  }
+
+  /* ── Composite box-shadow shorthands ────────────────────────────────── */
+
+  @function --shadow-sm(--tint <color>) {
+    result: var(--sherpa-elevation-offset-x-small, 2px) var(--sherpa-elevation-offset-y-small, 2px)
+      var(--sherpa-elevation-blur-small, 8px) var(--sherpa-elevation-spread-small, -4px) var(--tint);
+  }
+
+  @function --shadow-md(--tint <color>) {
+    result: var(--sherpa-elevation-offset-x-default, 4px)
+      var(--sherpa-elevation-offset-y-default, 4px) var(--sherpa-elevation-blur-default, 12px)
+      var(--sherpa-elevation-spread-default, -2px) var(--tint);
+  }
+
+  @function --shadow-lg(--tint <color>) {
+    result: var(--sherpa-elevation-offset-x-large, 8px) var(--sherpa-elevation-offset-y-large, 8px)
+      var(--sherpa-elevation-blur-large, 16px) var(--sherpa-elevation-spread-large, 2px) var(--tint);
+  }
+
+  @function --shadow-sunken(--tint <color>) {
+    result: inset var(--sherpa-elevation-offset-x-sunken, -4px)
+      var(--sherpa-elevation-offset-y-sunken, 4px) var(--sherpa-elevation-blur-sunken, 4px)
+      var(--sherpa-elevation-spread-sunken, 4px) var(--tint);
+  }
+
+  /* ── Focus ring ────────────────────────────────────────────────────── */
+
+  @function --focus-ring(--color <color>: var(--sherpa-border-control-primary-default, #3c5edd)) {
+    result: 2px solid var(--color);
+  }
+
+  /* ── Single-property transitions ───────────────────────────────────── */
+
+  @function --transition-fast(--prop) {
+    result: var(--prop) var(--sherpa-motion-duration-fast, 0.15s)
+      var(--sherpa-motion-easing-default, ease-out);
+  }
+
+  @function --transition-base(--prop) {
+    result: var(--prop) var(--sherpa-motion-duration-base, 0.25s)
+      var(--sherpa-motion-easing-default, ease-out);
+  }
+
+  @function --transition-slow(--prop) {
+    result: var(--prop) var(--sherpa-motion-duration-slow, 0.4s)
+      var(--sherpa-motion-easing-default, ease-out);
+  }
+}

@@ -33,8 +33,6 @@
  * (none — fully self-contained)
  */
 
-  :host([hidden]) { display: none; }
-
 :host {
   display: flex;
   flex-direction: column;
@@ -47,15 +45,17 @@
 }
 :host .label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-      line-height: var(--sherpa-line-height-default, 1.4);
-      color: var(--sherpa-text-default-body, #18191a);
-      font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-body, #18191a);
+  font-weight: var(--sherpa-font-weight-medium, 500);
 }
 :host(:not([data-label])) .label {
   display: none;
 }
 :host .slider-row {
-  display: flex; align-items: center; gap: var(--sherpa-space-base, 16px);
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-base, 16px);
 }
 :host .input-low-wrap,
 :host .input-high-wrap {
@@ -70,101 +70,123 @@
 :host .input-low,
 :host .input-high {
   width: var(--_input-width);
-      height: var(--sherpa-size-2xl, 32px);
-      border: 1px solid var(--sherpa-border-control-default, #c6c6cc);
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      background: var(--sherpa-surface-control-default, #ffffff);
-      color: var(--sherpa-text-default-body, #18191a);
-      font-size: var(--sherpa-fonts-scale-sm, 14px);
-      font-family: inherit;
-      text-align: center;
-      padding: 0 var(--sherpa-space-2xs, 4px);
-      font-variant-numeric: tabular-nums;
-      -moz-appearance: textfield;
-      appearance: textfield;
-  
-      &::-webkit-inner-spin-button,
-      &::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-  
-      &:focus {
-        outline: 2px solid var(--sherpa-border-control-primary-default, #3c5edd);
-        outline-offset: -1px;
-        border-color: transparent;
-      }
+  height: var(--sherpa-size-2xl, 32px);
+  border: 1px solid var(--sherpa-border-control-default, #c6c6cc);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  color: var(--sherpa-text-default-body, #18191a);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-family: inherit;
+  text-align: center;
+  padding: 0 var(--sherpa-space-2xs, 4px);
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    outline: --focus-ring();
+    outline-offset: -1px;
+    border-color: transparent;
+  }
 }
 :host([disabled]) .input-low,
 :host([disabled]) .input-high {
   background: var(--sherpa-surface-control-inactive, #f0f0f2);
-      color: var(--sherpa-text-inactive-default, #9d9da6);
-      border-color: var(--sherpa-border-control-inactive, #e0e0e5);
-      pointer-events: none;
+  color: var(--sherpa-text-inactive-default, #9d9da6);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e5);
+  pointer-events: none;
 }
 :host .track-area {
-  position: relative; flex: 1; height: var(--_handle-size); display: flex; align-items: center; touch-action: none; cursor: pointer;
+  position: relative;
+  flex: 1;
+  height: var(--_handle-size);
+  display: flex;
+  align-items: center;
+  touch-action: none;
+  cursor: pointer;
 }
 :host .track {
-  position: absolute; left: 0; right: 0; height: var(--_track-height); background: var(--sherpa-surface-container-default, #e0e0e5); border-radius: var(--sherpa-border-rounding-full, 999px); overflow: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--_track-height);
+  background: var(--sherpa-surface-container-default, #e0e0e5);
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  overflow: hidden;
 }
 :host .fill {
   position: absolute;
-      left: var(--_low-pct, 0%);
-      width: calc(var(--_high-pct, 0%) - var(--_low-pct, 0%));
-      height: 100%;
-      background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
-      border-radius: var(--sherpa-border-rounding-full, 999px);
-      transition: left 0.05s ease, width 0.05s ease;
+  left: var(--_low-pct, 0%);
+  width: calc(var(--_high-pct, 0%) - var(--_low-pct, 0%));
+  height: 100%;
+  background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  transition:
+    left 0.05s ease,
+    width 0.05s ease;
 }
 :host .handle {
   position: absolute;
-      top: 50%;
-      width: var(--_handle-size);
-      height: var(--_handle-size);
-      border-radius: 50%;
-      background: var(--sherpa-surface-control-default, #ffffff);
-      border: 2px solid var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-      transform: translate(-50%, -50%);
-      cursor: grab;
-      z-index: 2;
-      outline: none;
-      transition: box-shadow var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
-  
-      &::after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
-        transform: translate(-50%, -50%);
-        opacity: 0;
-        transition: opacity var(--sherpa-motion-transition-fast, 0.15s ease-out);
-      }
-  
-      &:hover {
-        box-shadow: 0 0 0 6px rgba(60, 94, 221, 0.12), 0 1px 3px rgba(0, 0, 0, 0.15);
-      }
-  
-      &:active,
-      &[data-dragging] {
-        cursor: grabbing;
-        box-shadow: 0 0 0 8px rgba(60, 94, 221, 0.18), 0 1px 3px rgba(0, 0, 0, 0.15);
-      }
-  
-      &:active::after,
-      &[data-dragging]::after {
-        opacity: 1;
-      }
-  
-      &:focus-visible {
-        outline: 2px solid var(--sherpa-border-control-primary-default, #3c5edd);
-        outline-offset: 2px;
-      }
+  top: 50%;
+  width: var(--_handle-size);
+  height: var(--_handle-size);
+  border-radius: 50%;
+  background: var(--sherpa-surface-control-default, #ffffff);
+  border: 2px solid
+    var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  z-index: 2;
+  outline: none;
+  transition: --transition-fast(box-shadow), --transition-fast(border-color);
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(
+      --_status-surface-strong,
+      var(--sherpa-surface-control-primary-default, #3c5edd)
+    );
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: --transition-fast(opacity);
+  }
+
+  &:hover {
+    box-shadow:
+      0 0 0 6px rgba(60, 94, 221, 0.12),
+      0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active,
+  &[data-dragging] {
+    cursor: grabbing;
+    box-shadow:
+      0 0 0 8px rgba(60, 94, 221, 0.18),
+      0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active::after,
+  &[data-dragging]::after {
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: --focus-ring();
+    outline-offset: 2px;
+  }
 }
 :host .handle-low {
   left: var(--_low-pct, 0%);
@@ -176,10 +198,12 @@
   display: none;
 }
 :host(:not([data-type="range"])) .fill {
-  left: 0%; width: var(--_high-pct, 0%);
+  left: 0%;
+  width: var(--_high-pct, 0%);
 }
 :host([disabled]) .track-area {
-  pointer-events: none; cursor: default;
+  pointer-events: none;
+  cursor: default;
 }
 :host([disabled]) .track {
   background: var(--sherpa-surface-control-inactive, #e8e8ed);
@@ -189,14 +213,21 @@
 }
 :host([disabled]) .handle {
   background: var(--sherpa-surface-control-inactive, #f0f0f2);
-      border-color: var(--sherpa-border-control-inactive, #c6c6cc);
-      box-shadow: none;
-      cursor: default;
-  
-      &::after { display: none; }
+  border-color: var(--sherpa-border-control-inactive, #c6c6cc);
+  box-shadow: none;
+  cursor: default;
+
+  &::after {
+    display: none;
+  }
 }
 :host .increments {
-  display: none; justify-content: space-between; font-size: var(--sherpa-fonts-scale-xs, 12px); line-height: var(--sherpa-line-height-default, 1.4); color: var(--sherpa-text-default-secondary, #5c5c66); padding: 0;
+  display: none;
+  justify-content: space-between;
+  font-size: var(--sherpa-fonts-scale-xs, 12px);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  padding: 0;
 }
 :host([data-show-labels]) .increments {
   display: flex;
@@ -207,4 +238,3 @@
 :host([data-show-inputs]:not([data-type="range"])) .increments {
   padding-inline-start: 0;
 }
-

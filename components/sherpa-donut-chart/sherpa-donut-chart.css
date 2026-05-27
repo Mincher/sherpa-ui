@@ -28,7 +28,7 @@
    ================================================================ */
 :host {
   display: flex;
-flex-direction: column;
+  flex-direction: column;
   align-items: stretch;
   gap: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
@@ -36,156 +36,157 @@ flex-direction: column;
   overflow: clip;
   container: sherpa-donut-chart / size;
 }
-:host([hidden]) { display: none; }
-
 :host([data-loading]) .chart-area {
   opacity: 0.4;
-      pointer-events: none;
+  pointer-events: none;
 }
 :host .chart-header {
   display: none;
-      align-items: center;
-      width: 100%;
+  align-items: center;
+  width: 100%;
 }
 :host([data-title]) .chart-header {
   display: flex;
 }
 :host .chart-title {
   flex: 1 1 0;
-      min-width: 0;
-      font-size: var(--sherpa-font-sm-size, 12px);
-      font-weight: 600;
-      line-height: var(--sherpa-font-base-line-height, 20px);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+  min-width: 0;
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 :host .menu-button {
-  display: none; flex-shrink: 0;
+  display: none;
+  flex-shrink: 0;
 }
 :host([data-title]) .menu-button {
   display: inline-flex;
 }
 :host sherpa-filter-bar {
-  display: none; flex-shrink: 0; align-self: stretch;
+  display: none;
+  flex-shrink: 0;
+  align-self: stretch;
 }
 :host([data-filters]) sherpa-filter-bar {
   display: flex;
 }
 :host .chart-layout {
   display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--sherpa-space-base, 16px);
-      flex: 1 1 0;
-      min-height: 0;
-      min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sherpa-space-base, 16px);
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
 }
 :host .chart-area {
   position: relative;
-      flex: 1 1 0;
-      align-self: stretch;
-      min-height: 0;
-      min-width: 0;
-      container-type: size;
-      transition: opacity 0.2s ease;
+  flex: 1 1 0;
+  align-self: stretch;
+  min-height: 0;
+  min-width: 0;
+  container-type: size;
+  transition: opacity 0.2s ease;
 }
 :host .donut-ring {
   --_donut-size: min(100cqw, 100cqh);
-      width: var(--_donut-size);
-      height: var(--_donut-size);
-      border-radius: 50%;
-      background: var(--_conic, conic-gradient(#e0e0e0 0% 100%));
-      transition: background 0.3s ease;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      translate: -50% -50%;
+  width: var(--_donut-size);
+  height: var(--_donut-size);
+  border-radius: 50%;
+  background: var(--_conic, conic-gradient(#e0e0e0 0% 100%));
+  transition: background 0.3s ease;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
 }
 :host .donut-hole {
   --_donut-size: min(100cqw, 100cqh);
-      width: calc(var(--_donut-size) * 0.7);
-      height: calc(var(--_donut-size) * 0.7);
-      border-radius: 50%;
-      background: var(--sherpa-surface-container-default, #ffffff);
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      translate: -50% -50%;
+  width: calc(var(--_donut-size) * 0.7);
+  height: calc(var(--_donut-size) * 0.7);
+  border-radius: 50%;
+  background: var(--sherpa-surface-container-default, #ffffff);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
 }
 :host([data-variant="pie"]) .donut-hole {
   display: none;
 }
 :host .centre-label {
   display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      translate: -50% -50%;
-      text-align: center;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      pointer-events: none;
-      z-index: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 1;
 }
 :host([data-inner-label]) .centre-label {
   display: flex;
 }
 :host .centre-value {
   font-size: 16px;
-      font-weight: var(--sherpa-font-weight-bold, 700);
-      color: var(--sherpa-text-default-heading, #18191a);
-      line-height: 1.2;
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  color: var(--sherpa-text-default-heading, #18191a);
+  line-height: 1.2;
 }
 :host .centre-sublabel {
   display: none;
-      font-size: 11px;
-      font-weight: var(--sherpa-font-weight-medium, 500);
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+  font-size: 11px;
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 :host([data-inner-sublabel]) .centre-sublabel {
   display: block;
 }
 :host .chart-legend {
   display: flex;
-      flex-direction: var(--_chart-legend-direction, row);
-      flex-wrap: var(--_chart-legend-wrap, wrap);
-      gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-base, 16px);
-      justify-content: var(--_chart-legend-justify, center);
-      align-self: var(--_chart-legend-align, auto);
-      width: var(--_chart-legend-width, auto);
-      margin-top: var(--_chart-legend-margin-top, auto);
-      flex-shrink: 0;
+  flex-direction: var(--_chart-legend-direction, row);
+  flex-wrap: var(--_chart-legend-wrap, wrap);
+  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-base, 16px);
+  justify-content: var(--_chart-legend-justify, center);
+  align-self: var(--_chart-legend-align, auto);
+  width: var(--_chart-legend-width, auto);
+  margin-top: var(--_chart-legend-margin-top, auto);
+  flex-shrink: 0;
 }
 :host([data-hide-legend]) .chart-legend {
   display: none;
 }
 :host .legend-item {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-2xs, 4px);
-      font-size: var(--sherpa-fonts-scale-xs, 12px);
-      color: var(--sherpa-text-default-body, #18191a);
-      cursor: default;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  font-size: var(--sherpa-fonts-scale-xs, 12px);
+  color: var(--sherpa-text-default-body, #18191a);
+  cursor: default;
 }
 :host .legend-key {
   width: 12px;
-      height: 12px;
-      border-radius: var(--sherpa-border-rounding-sm, 2px);
-      flex-shrink: 0;
+  height: 12px;
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  flex-shrink: 0;
 }
 :host .legend-label {
   white-space: nowrap;
 }
 :host .legend-value {
   font-weight: var(--sherpa-font-weight-semibold, 600);
-      margin-inline-start: var(--sherpa-space-3xs, 2px);
+  margin-inline-start: var(--sherpa-space-3xs, 2px);
 }
 :host .color-1 {
   background-color: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
@@ -210,10 +211,16 @@ flex-direction: column;
    Container queries — landscape layout flip and smaller font
    ================================================================ */
 @container sherpa-container (aspect-ratio > 1) {
-  :host .chart-layout { flex-direction: row; }
+  :host .chart-layout {
+    flex-direction: row;
+  }
 }
 
 @container sherpa-donut-chart (max-width: 200px) {
-  :host .centre-value { font-size: 14px; }
-  :host .centre-sublabel { font-size: 10px; }
+  :host .centre-value {
+    font-size: 14px;
+  }
+  :host .centre-sublabel {
+    font-size: 10px;
+  }
 }

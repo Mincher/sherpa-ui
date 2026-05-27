@@ -24,8 +24,7 @@
  *
  * The active border colour is exposed locally as `--_node-accent` so
 
-  :host([hidden]) { display: none; }
- * the body, border and selected outline all share one source of truth.
+* the body, border and selected outline all share one source of truth.
  */
 
 :host {
@@ -60,13 +59,13 @@
 }
 :host .node {
   position: relative;
-      display: flex;
-      flex-direction: column;
-      background: var(--sherpa-node-body-default, #ffffff);
-      border: 1px solid var(--_node-accent);
-      border-radius: var(--sherpa-node-radius, 8px);
-      box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
-      transition: box-shadow var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  display: flex;
+  flex-direction: column;
+  background: var(--sherpa-node-body-default, #ffffff);
+  border: 1px solid var(--_node-accent);
+  border-radius: var(--sherpa-node-radius, 8px);
+  box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.08);
+  transition: --transition-fast(box-shadow), --transition-fast(border-color);
 }
 :host([data-kind="source"]) .node {
   background: var(--sherpa-node-body-source, #f7fdff);
@@ -74,40 +73,42 @@
 :host([data-kind="output"]) .node {
   background: var(--sherpa-node-body-output, #f0fff8);
 }
-:host([data-kind="chat"])   .node {
+:host([data-kind="chat"]) .node {
   background: var(--sherpa-node-body-chat, #f8ebff);
 }
-:host([data-kind="group"])  .node {
+:host([data-kind="group"]) .node {
   background: var(--sherpa-node-body-group, #f7fdff);
 }
-:host([data-kind="output"]:not(:has(sherpa-node-socket[data-direction="in"][data-connected]))) .node {
+:host([data-kind="output"]:not(:has(sherpa-node-socket[data-direction="in"][data-connected])))
+  .node {
   background: var(--sherpa-node-body-output-error, #fff7f5);
 }
 :host([data-selected]) {
   z-index: 10;
-  
-      & .node {
-        outline: 2px solid var(--_node-accent);
-        outline-offset: 1px;
-      }
+
+  & .node {
+    outline: --focus-ring(var(--_node-accent));
+    outline-offset: 1px;
+  }
 }
 :host .node-header {
   display: block;
 }
 :host .node-rows {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 :host .node-footer {
   display: flex;
-      align-items: stretch;
-      min-height: 0;
-      padding: var(--sherpa-space-xs, 8px) 0;
+  align-items: stretch;
+  min-height: 0;
+  padding: var(--sherpa-space-xs, 8px) 0;
 }
 :host .node-footer .gutter {
   flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
-      display: flex;
-      align-items: center;
-      overflow: visible;
+  display: flex;
+  align-items: center;
+  overflow: visible;
 }
 :host .node-footer .gutter-in {
   justify-content: flex-start;
@@ -115,7 +116,7 @@
 :host .node-footer .gutter-out {
   justify-content: flex-end;
 }
-:host .node-footer .gutter-in  ::slotted(*) {
+:host .node-footer .gutter-in ::slotted(*) {
   translate: -50% 0;
 }
 :host .node-footer .gutter-out ::slotted(*) {
@@ -123,17 +124,18 @@
 }
 :host .footer-body {
   flex: 1 1 auto;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      padding: 0 var(--sherpa-space-sm, 12px);
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sherpa-space-sm, 12px);
 }
 
 /* Hide footer entirely when no slot in this region has any content.
    `data-has-{slot}` is auto-mirrored on the host by SherpaElement.
    `:has()` cannot be used here because the slotted children live in
    light DOM, not as descendants of `.node-footer` in shadow DOM. */
-:host(:not([data-has-footer]):not([data-has-footer-input]):not([data-has-footer-output])) .node-footer {
+:host(:not([data-has-footer]):not([data-has-footer-input]):not([data-has-footer-output]))
+  .node-footer {
   display: none;
 }
 
@@ -149,13 +151,22 @@
 /* Subtype picker is opt-in: hosts must set data-show-subtype to expose
    it on-canvas. Most nodes communicate their kind via the title and
    never need a visible picker. */
-:host([data-show-subtype]) .node-subtype { display: block; }
-:host([data-single-subtype]) .node-subtype { display: none; }
-.node-subtype .subtype-select { display: block; width: 100%; }
+:host([data-show-subtype]) .node-subtype {
+  display: block;
+}
+:host([data-single-subtype]) .node-subtype {
+  display: none;
+}
+.node-subtype .subtype-select {
+  display: block;
+  width: 100%;
+}
 
 /* ── Hide the registered <template> nodes from layout. ─────────── */
 /* !important for belt-and-braces UA compatibility — <template> is non-rendering
  * but ::slotted() context can cause some browsers to lay it out. */
-::slotted(template) { display: none !important; }
+::slotted(template) {
+  display: none !important;
+}
 
 /* Native [hidden] support */

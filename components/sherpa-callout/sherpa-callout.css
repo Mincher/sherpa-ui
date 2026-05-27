@@ -23,14 +23,15 @@
   width: 100%;
   gap: var(--sherpa-space-xs, 8px);
   padding: var(--sherpa-space-sm, 12px);
-border: var(--sherpa-border-width-xs, 1px) solid
+  border: var(--sherpa-border-width-xs, 1px) solid
     var(--_status-border, var(--sherpa-border-context-info-default, #07526f));
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: var(--_status-surface-subtle, var(--sherpa-surface-context-info-subtle-default, #d9f2fa));
+  background: var(
+    --_status-surface-subtle,
+    var(--sherpa-surface-context-info-subtle-default, #d9f2fa)
+  );
   color: var(--sherpa-text-default-on-color-subtle-body, #18191a);
 }
-
-:host([hidden]) { display: none; }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
 
@@ -70,7 +71,9 @@ border: var(--sherpa-border-width-xs, 1px) solid
 /* Override the color set by the .text-body utility class — the host already
    sets a mode-stable on-color-subtle token, so we inherit that here. */
 .body,
-.heading-text { color: inherit; }
+.heading-text {
+  color: inherit;
+}
 
 :host([data-dismissible][data-heading]:not([data-expanded])) .body {
   display: none;

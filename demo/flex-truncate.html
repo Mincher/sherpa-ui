@@ -24,8 +24,8 @@
       html,
       body {
         margin: 0;
-        background: var(--sherpa-surface-page-default);
-        font-family: var(--sherpa-fonts-context-body, "Open Sans", sans-serif);
+        background: var(--sherpa-surface-app-background-default);
+        font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
         font-size: 14px;
         color: var(--sherpa-text-default-body);
       }
@@ -49,18 +49,16 @@
   </head>
   <body>
     <div class="doc-page">
-
       <!-- ── Hero ────────────────────────────────────────── -->
       <div class="doc-hero">
         <div class="doc-hero__content">
           <span class="doc-kicker">Experimental</span>
           <h1>Flex Truncate</h1>
           <p>
-            A CSS utility class that progressively hides flex children as a container
-            shrinks. Apply <code class="doc-inline-code">.flex-truncate</code> to any flex
-            container. Children are clip-masked when they would fall below their configured
-            minimum size. Works in row (default) and column directions. Drag the resize
-            handles to see it in action.
+            A CSS utility class that progressively hides flex children as a container shrinks. Apply
+            <code class="doc-inline-code">.flex-truncate</code> to any flex container. Children are
+            clip-masked when they would fall below their configured minimum size. Works in row
+            (default) and column directions. Drag the resize handles to see it in action.
           </p>
         </div>
       </div>
@@ -68,53 +66,110 @@
       <!-- ── Row ────────────────────────────────────────── -->
       <h2 class="doc-example-heading">Row — resize width</h2>
       <p class="doc-section-desc">
-        Default mode. Children are hidden when the container is too narrow to fit them at
-        their minimum width (default 180 px; override with
-        <code class="doc-inline-code">data-min-child-width</code>). Drag the right
-        edge of the preview to test.
+        Default mode. Children are hidden when the container is too narrow to fit them at their
+        minimum width (default 180 px; override with
+        <code class="doc-inline-code">data-min-child-width</code>). Drag the right edge of the
+        preview to test.
       </p>
       <div class="doc-panel">
         <div class="doc-preview-surface flush">
-          <div class="flex-truncate"
-               style="width: min(960px, 100%); resize: horizontal; overflow: auto;">
-            <sherpa-metric data-label="Total Revenue" value="$1.24M" data-trend="up"   data-delta="+8.3%"></sherpa-metric>
-            <sherpa-metric data-label="Active Users"  value="4,821"  data-trend="up"   data-delta="+12%"></sherpa-metric>
-            <sherpa-metric data-label="Uptime"        value="99.9%"  data-trend="flat" data-status="success"></sherpa-metric>
-            <sherpa-metric data-label="Avg Response"  value="42ms"   data-trend="down" data-delta="−6ms"></sherpa-metric>
-            <sherpa-metric data-label="Error Rate"    value="0.02%"  data-trend="down" data-status="success"></sherpa-metric>
+          <div
+            class="flex-truncate"
+            style="width: min(960px, 100%); resize: horizontal; overflow: auto"
+          >
+            <sherpa-metric
+              data-label="Total Revenue"
+              value="$1.24M"
+              data-trend="up"
+              data-delta="+8.3%"
+            ></sherpa-metric>
+            <sherpa-metric
+              data-label="Active Users"
+              value="4,821"
+              data-trend="up"
+              data-delta="+12%"
+            ></sherpa-metric>
+            <sherpa-metric
+              data-label="Uptime"
+              value="99.9%"
+              data-trend="flat"
+              data-status="success"
+            ></sherpa-metric>
+            <sherpa-metric
+              data-label="Avg Response"
+              value="42ms"
+              data-trend="down"
+              data-delta="−6ms"
+            ></sherpa-metric>
+            <sherpa-metric
+              data-label="Error Rate"
+              value="0.02%"
+              data-trend="down"
+              data-status="success"
+            ></sherpa-metric>
           </div>
         </div>
-        <pre class="doc-code">&lt;div class="flex-truncate"&gt;
+        <pre class="doc-code">
+&lt;div class="flex-truncate"&gt;
   &lt;sherpa-metric data-label="Total Revenue" value="$1.24M" data-trend="up"   data-delta="+8.3%"&gt;&lt;/sherpa-metric&gt;
   &lt;sherpa-metric data-label="Active Users"  value="4,821"  data-trend="up"   data-delta="+12%"&gt;&lt;/sherpa-metric&gt;
   &lt;sherpa-metric data-label="Uptime"        value="99.9%"  data-trend="flat" data-status="success"&gt;&lt;/sherpa-metric&gt;
   &lt;sherpa-metric data-label="Avg Response"  value="42ms"   data-trend="down" data-delta="&minus;6ms"&gt;&lt;/sherpa-metric&gt;
   &lt;sherpa-metric data-label="Error Rate"    value="0.02%"  data-trend="down" data-status="success"&gt;&lt;/sherpa-metric&gt;
-&lt;/div&gt;</pre>
+&lt;/div&gt;</pre
+        >
       </div>
 
       <!-- ── Column ─────────────────────────────────────── -->
       <h2 class="doc-example-heading">Column — resize height</h2>
       <p class="doc-section-desc">
         Set <code class="doc-inline-code">data-direction="column"</code> to stack children
-        vertically. Give the container a fixed height; children that can’t fit their
-        minimum height (<code class="doc-inline-code">data-min-child-height</code>) are
-        hidden. Drag the bottom edge of the preview to test.
+        vertically. Give the container a fixed height; children that can’t fit their minimum height
+        (<code class="doc-inline-code">data-min-child-height</code>) are hidden. Drag the bottom
+        edge of the preview to test.
       </p>
       <div class="doc-panel">
         <div class="doc-preview-surface flush">
-          <div class="flex-truncate"
-               data-direction="column"
-               data-min-child-height="100px"
-               style="width: 280px; height: 540px; resize: vertical; overflow: auto;">
-            <sherpa-metric data-label="Total Revenue" value="$1.24M" data-trend="up"   data-delta="+8.3%"></sherpa-metric>
-            <sherpa-metric data-label="Active Users"  value="4,821"  data-trend="up"   data-delta="+12%"></sherpa-metric>
-            <sherpa-metric data-label="Uptime"        value="99.9%"  data-trend="flat" data-status="success"></sherpa-metric>
-            <sherpa-metric data-label="Avg Response"  value="42ms"   data-trend="down" data-delta="−6ms"></sherpa-metric>
-            <sherpa-metric data-label="Error Rate"    value="0.02%"  data-trend="down" data-status="success"></sherpa-metric>
+          <div
+            class="flex-truncate"
+            data-direction="column"
+            data-min-child-height="100px"
+            style="width: 280px; height: 540px; resize: vertical; overflow: auto"
+          >
+            <sherpa-metric
+              data-label="Total Revenue"
+              value="$1.24M"
+              data-trend="up"
+              data-delta="+8.3%"
+            ></sherpa-metric>
+            <sherpa-metric
+              data-label="Active Users"
+              value="4,821"
+              data-trend="up"
+              data-delta="+12%"
+            ></sherpa-metric>
+            <sherpa-metric
+              data-label="Uptime"
+              value="99.9%"
+              data-trend="flat"
+              data-status="success"
+            ></sherpa-metric>
+            <sherpa-metric
+              data-label="Avg Response"
+              value="42ms"
+              data-trend="down"
+              data-delta="−6ms"
+            ></sherpa-metric>
+            <sherpa-metric
+              data-label="Error Rate"
+              value="0.02%"
+              data-trend="down"
+              data-status="success"
+            ></sherpa-metric>
           </div>
         </div>
-        <pre class="doc-code">&lt;div class="flex-truncate"
+        <pre class="doc-code">
+&lt;div class="flex-truncate"
      data-direction="column"
      data-min-child-height="100px"
      style="height: 540px;"&gt;
@@ -123,9 +178,9 @@
   &lt;sherpa-metric data-label="Uptime"        value="99.9%"  data-trend="flat" data-status="success"&gt;&lt;/sherpa-metric&gt;
   &lt;sherpa-metric data-label="Avg Response"  value="42ms"   data-trend="down" data-delta="&minus;6ms"&gt;&lt;/sherpa-metric&gt;
   &lt;sherpa-metric data-label="Error Rate"    value="0.02%"  data-trend="down" data-status="success"&gt;&lt;/sherpa-metric&gt;
-&lt;/div&gt;</pre>
+&lt;/div&gt;</pre
+        >
       </div>
-
     </div>
   </body>
 </html>

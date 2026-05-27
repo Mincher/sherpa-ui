@@ -40,7 +40,7 @@ const DRY = process.argv.includes('--dry');
 // ─── Build token map ────────────────────────────────────────────────
 
 const SOURCES = [
-  'tokens/sherpa-primitives.css',
+  'tokens/primitives.css',
   'tokens/sherpa-alias.css',         // includes fonts + status (consolidated)
   'sherpa-themes.css',               // all themes — fills in per-theme tokens
   'sherpa-motion-classes.css',

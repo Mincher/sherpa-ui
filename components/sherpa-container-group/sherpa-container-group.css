@@ -24,8 +24,7 @@
  *     BAND remains the same height on every tile so content baselines
  *     align across rows. No dedicated group-header row exists.
 
-  :host([hidden]) { display: none; }
- *
+*
  * Cascading tokens set on :host (inherit through shadow DOM into slotted
  * light-DOM children):
  *
@@ -56,25 +55,43 @@
   --_cg-border-radius: 0;
 }
 
-:host([hidden]) {
-  display: none;
-}
-
 /* ─── Outer-grid row span ────────────────────────────────────────────
    Set data-row-span to match the number of outer-grid rows the group's
    children occupy. The outer sherpa-layout-grid uses this for placement;  
    grid-template-rows: subgrid then maps those same tracks inside the group. */
-:host([data-row-span="2"]) { grid-row: span 2; }
-:host([data-row-span="3"]) { grid-row: span 3; }
-:host([data-row-span="4"]) { grid-row: span 4; }
-:host([data-row-span="5"]) { grid-row: span 5; }
-:host([data-row-span="6"]) { grid-row: span 6; }
-:host([data-row-span="7"]) { grid-row: span 7; }
-:host([data-row-span="8"]) { grid-row: span 8; }
-:host([data-row-span="9"]) { grid-row: span 9; }
-:host([data-row-span="10"]) { grid-row: span 10; }
-:host([data-row-span="11"]) { grid-row: span 11; }
-:host([data-row-span="12"]) { grid-row: span 12; }
+:host([data-row-span="2"]) {
+  grid-row: span 2;
+}
+:host([data-row-span="3"]) {
+  grid-row: span 3;
+}
+:host([data-row-span="4"]) {
+  grid-row: span 4;
+}
+:host([data-row-span="5"]) {
+  grid-row: span 5;
+}
+:host([data-row-span="6"]) {
+  grid-row: span 6;
+}
+:host([data-row-span="7"]) {
+  grid-row: span 7;
+}
+:host([data-row-span="8"]) {
+  grid-row: span 8;
+}
+:host([data-row-span="9"]) {
+  grid-row: span 9;
+}
+:host([data-row-span="10"]) {
+  grid-row: span 10;
+}
+:host([data-row-span="11"]) {
+  grid-row: span 11;
+}
+:host([data-row-span="12"]) {
+  grid-row: span 12;
+}
 
 /* ─── Slotted layout ─────────────────────────────────────────────── */
 

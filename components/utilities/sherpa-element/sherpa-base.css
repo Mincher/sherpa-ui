@@ -14,7 +14,9 @@
  * styles in the cascade. Without it, a page author style could accidentally
  * show a component that carries the [hidden] attribute.
  */
-:host([hidden]) { display: none !important; }
+:host([hidden]) {
+  display: none !important;
+}
 
 /* ── Box model reset ───────────────────────────────────────────────────── */
 /*
@@ -26,6 +28,28 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* ── Icon element reset ────────────────────────────────────────────────── */
+/*
+ * Components use <i> as an icon carrier (Font Awesome convention). The
+ * default UA italic styling is always wrong in that context. Centralised
+ * here so per-component CSS does not need to re-declare it.
+ */
+i,
+i::before,
+i::after {
+  font-style: normal;
+}
+
+/* ── Tap highlight ─────────────────────────────────────────────────────── */
+/*
+ * Sherpa components provide their own :hover / :active feedback. The
+ * mobile Safari grey tap highlight conflicts with that and is never
+ * desired.
+ */
+:host {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Reduced motion ────────────────────────────────────────────────────── */

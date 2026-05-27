@@ -39,22 +39,20 @@
   flex-direction: column;
   --_editable-display: none;
   background: var(--sherpa-surface-container-default, #ffffff);
-  border: var(--_cg-border-width, var(--sherpa-border-width-base, 1px)) solid var(--_status-border, var(--sherpa-border-control-secondary-default, #d5d5d5));
+  border: var(--_cg-border-width, var(--sherpa-border-width-base, 1px)) solid
+    var(--_status-border, var(--sherpa-border-control-secondary-default, #d5d5d5));
   border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 6px));
   overflow: clip;
   position: relative;
   container: sherpa-container / inline-size;
-transition:
-    box-shadow var(--sherpa-motion-transition-fast, 0.15s ease-out),
-    background-color var(--sherpa-motion-transition-fast, 0.15s ease-out),
-    border-color var(--sherpa-motion-transition-fast, 0.15s ease-out),
-    transform var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition:
+    --transition-fast(box-shadow), --transition-fast(background-color),
+    --transition-fast(border-color), --transition-fast(transform);
 }
-:host([hidden]) { display: none; }
 :host([data-menu-open="true"]) {
   border-color: var(--sherpa-border-control-primary-default, #8500cc);
-      overflow: visible;
-      z-index: 10;
+  overflow: visible;
+  z-index: 10;
 }
 :host([data-variant="fit"]) {
   /* "fit" fills its parent's inline size, capped by any inline max-width
@@ -65,19 +63,19 @@ transition:
      fit-content collapses to padding-only. Filling + max-width matches
      every real usage in the examples and produces card-shaped output. */
   width: 100%;
-      height: auto;
+  height: auto;
 }
 :host([data-variant="fill"]),
 :host([data-variant="resizable"]) {
   width: 100%;
-      height: 100%;
+  height: 100%;
 }
 :host ::slotted([data-viz]) {
   flex: 1 1 0;
-      min-height: 0;
-      width: 100%;
-      overflow: clip;
-      border-radius: var(--sherpa-border-rounding-base, 6px);
+  min-height: 0;
+  width: 100%;
+  overflow: clip;
+  border-radius: var(--sherpa-border-rounding-base, 6px);
 }
 :host([data-variant="resizable"][data-editable][data-resize-mode="drag"]) {
   /* Experimental: enable the pointer-driven snap-resize grip. Opt-in via
@@ -106,17 +104,17 @@ transition:
   max-width: var(--sherpa-content-width-md, 960px);
   margin-inline: auto;
   background-color: var(--sherpa-surface-container-default, #ffffff);
-  box-shadow: var(--sherpa-shadow-default-sm, 0 1px 2px rgba(0,0,0,0.06));
+  box-shadow: var(--sherpa-shadow-default-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
 }
 :host .state-overlay {
   display: none;
-      position: absolute;
-      inset: 0;
-      align-items: center;
-      justify-content: center;
-      padding: var(--sherpa-space-base, 16px);
-      background: var(--sherpa-surface-container-default, #ffffff);
-      z-index: 5;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sherpa-space-base, 16px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  z-index: 5;
 }
 :host .state-slot {
   display: none;
@@ -126,21 +124,41 @@ transition:
 }
 :host .state-default-loading {
   width: var(--sherpa-size-xl, 28px);
-      height: var(--sherpa-size-xl, 28px);
-      border-radius: 50%;
-      border: 3px solid var(--sherpa-border-control-secondary-default, #d7d7dc);
-      border-top-color: var(--sherpa-border-control-primary-default, #4a90e2);
-      animation: sherpa-container-spin 700ms linear infinite;
+  height: var(--sherpa-size-xl, 28px);
+  border-radius: 50%;
+  border: 3px solid var(--sherpa-border-control-secondary-default, #d7d7dc);
+  border-top-color: var(--sherpa-border-control-primary-default, #4a90e2);
+  animation: sherpa-container-spin 700ms linear infinite;
 }
 :host(:is([data-state="loading"], [data-state="empty"], [data-state="error"])) {
-  .state-overlay { display: flex; }
-  ::slotted(:not([slot])) { visibility: hidden; }
+  .state-overlay {
+    display: flex;
+  }
+  ::slotted(:not([slot])) {
+    visibility: hidden;
+  }
 }
-:host([data-state="loading"]) { .state-loading { display: contents; } }
-:host([data-state="empty"])   { .state-empty   { display: contents; } }
-:host([data-state="error"])   { .state-error   { display: contents; } }
+:host([data-state="loading"]) {
+  .state-loading {
+    display: contents;
+  }
+}
+:host([data-state="empty"]) {
+  .state-empty {
+    display: contents;
+  }
+}
+:host([data-state="error"]) {
+  .state-error {
+    display: contents;
+  }
+}
 
-@keyframes sherpa-container-spin { to { transform: rotate(360deg); } }
+@keyframes sherpa-container-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CARD STRUCTURE — header/content/footer
@@ -152,7 +170,8 @@ transition:
      follower tiles (data-group-position="follow") and clears the separator
      so empty follower headers don't draw a line. Standalone tiles keep the
      subtle border. */
-  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--_cg-header-sep, var(--sherpa-border-container-subtle, #f0f0f5));
+  border-bottom: var(--sherpa-border-width-base, 1px) solid
+    var(--_cg-header-sep, var(--sherpa-border-container-subtle, #f0f0f5));
 }
 .card-header[data-has-content] {
   display: block;
@@ -181,17 +200,23 @@ transition:
   box-shadow: none;
 }
 :host([data-elevation="sm"]) {
-  box-shadow: var(--sherpa-shadow-default-sm,
-    2px 2px 8px -4px var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
+  box-shadow: var(
+    --sherpa-shadow-default-sm,
+    2px 2px 8px -4px var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2))
+  );
 }
 :host([data-elevation="md"]) {
-  box-shadow: var(--sherpa-shadow-default-md,
+  box-shadow: var(
+    --sherpa-shadow-default-md,
     4px 4px 12px -2px var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
-    0 4px 4px 0 rgba(0, 0, 0, 0.25));
+    0 4px 4px 0 rgba(0, 0, 0, 0.25)
+  );
 }
 :host([data-elevation="lg"]) {
-  box-shadow: var(--sherpa-shadow-default-lg,
-    8px 8px 16px 2px var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
+  box-shadow: var(
+    --sherpa-shadow-default-lg,
+    8px 8px 16px 2px var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2))
+  );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -210,7 +235,11 @@ transition:
 }
 :host(:focus-visible) {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-focus-default, var(--sherpa-border-control-primary-default, #3c5edd));
+  box-shadow: 0 0 0 2px
+    var(
+      --sherpa-border-control-primary-default,
+      var(--sherpa-border-control-primary-default, #3c5edd)
+    );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -220,9 +249,9 @@ transition:
 :host([data-selected="true"]),
 :host([data-selected="true"][data-interactive="true"]:hover:not([disabled])),
 :host([data-selected="true"][data-interactive="true"]:active:not([disabled])) {
-  border-color: var(--_selected-border,  var(--sherpa-border-container-active, #8500cc));
-  background:   var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
-  color:        var(--_selected-text,    var(--sherpa-text-active-base, #8500cc));
+  border-color: var(--_selected-border, var(--sherpa-border-container-active, #8500cc));
+  background: var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
+  color: var(--_selected-text, var(--sherpa-text-active-base, #8500cc));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -253,16 +282,34 @@ transition:
 /* Valid container col-spans: 3, 6, 9, 12. Snap-to-span resize keeps
    widths on these stops; intermediate values (2/4/5/7/8/10/11) are not
    supported on containers. */
-:host([data-col-span="3"])  { grid-column: span 3; }
-:host([data-col-span="6"])  { grid-column: span 6; }
-:host([data-col-span="9"])  { grid-column: span 9; }
-:host([data-col-span="12"]) { grid-column: span 12; }
+:host([data-col-span="3"]) {
+  grid-column: span 3;
+}
+:host([data-col-span="6"]) {
+  grid-column: span 6;
+}
+:host([data-col-span="9"]) {
+  grid-column: span 9;
+}
+:host([data-col-span="12"]) {
+  grid-column: span 12;
+}
 
-:host([data-row-span="2"])  { grid-row: span 2; }
-:host([data-row-span="3"])  { grid-row: span 3; }
-:host([data-row-span="4"])  { grid-row: span 4; }
-:host([data-row-span="5"])  { grid-row: span 5; }
-:host([data-row-span="6"])  { grid-row: span 6; }
+:host([data-row-span="2"]) {
+  grid-row: span 2;
+}
+:host([data-row-span="3"]) {
+  grid-row: span 3;
+}
+:host([data-row-span="4"]) {
+  grid-row: span 4;
+}
+:host([data-row-span="5"]) {
+  grid-row: span 5;
+}
+:host([data-row-span="6"]) {
+  grid-row: span 6;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RESIZE GRIP (experimental snap-to-span drag)
@@ -282,25 +329,27 @@ transition:
   height: 16px;
   padding: 0;
   border: 0;
-  background:
-    linear-gradient(135deg,
-      transparent 0 55%,
-      var(--sherpa-border-control-secondary-default, #d5d5d5) 55% 65%,
-      transparent 65% 75%,
-      var(--sherpa-border-control-secondary-default, #d5d5d5) 75% 85%,
-      transparent 85% 100%);
+  background: linear-gradient(
+    135deg,
+    transparent 0 55%,
+    var(--sherpa-border-control-secondary-default, #d5d5d5) 55% 65%,
+    transparent 65% 75%,
+    var(--sherpa-border-control-secondary-default, #d5d5d5) 75% 85%,
+    transparent 85% 100%
+  );
   cursor: nwse-resize;
   touch-action: none;
   z-index: 6;
 }
 .resize-grip:hover,
 .resize-grip:focus-visible {
-  background:
-    linear-gradient(135deg,
-      transparent 0 55%,
-      var(--sherpa-border-control-primary-default, #8500cc) 55% 65%,
-      transparent 65% 75%,
-      var(--sherpa-border-control-primary-default, #8500cc) 75% 85%,
-      transparent 85% 100%);
+  background: linear-gradient(
+    135deg,
+    transparent 0 55%,
+    var(--sherpa-border-control-primary-default, #8500cc) 55% 65%,
+    transparent 65% 75%,
+    var(--sherpa-border-control-primary-default, #8500cc) 75% 85%,
+    transparent 85% 100%
+  );
   outline: none;
 }

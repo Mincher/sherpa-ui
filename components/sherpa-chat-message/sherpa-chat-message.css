@@ -15,7 +15,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-/* ──────────────────────────────────────────────────────────
+  /* ──────────────────────────────────────────────────────────
              MESSAGE GRID LAYOUT
              ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -35,31 +35,31 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
-:host([hidden]) { display: none; }
-
 :host .message {
   display: grid;
-      gap: var(--sherpa-space-xs, 8px);
-      max-width: 100%;
+  gap: var(--sherpa-space-xs, 8px);
+  max-width: 100%;
 }
 :host .avatar {
   width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      color: #fff;
-      background: var(--sherpa-ai-accent-gradient,
-        radial-gradient(circle at 30% 30%, #b794f4 0%, #7c3aed 50%, #06b6d4 100%));
-      flex-shrink: 0;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #fff;
+  background: var(
+    --sherpa-ai-accent-gradient,
+    radial-gradient(circle at 30% 30%, #b794f4 0%, #7c3aed 50%, #06b6d4 100%)
+  );
+  flex-shrink: 0;
 }
 :host .avatar-icon {
   font-family: "Font Awesome 6 Free";
-      font-weight: 900;
-      font-style: normal;
-      line-height: 1;
+  font-weight: 900;
+  font-style: normal;
+  line-height: 1;
 }
 :host .bubble {
   font-size: var(--sherpa-fonts-scale-sm, 13px);
@@ -84,27 +84,27 @@
 }
 :host(:not([data-role="user"])) .message {
   grid-template-columns: 28px 1fr;
-      align-items: start;
+  align-items: start;
 }
 :host(:not([data-role="user"])) .bubble {
   background: var(--sherpa-surface-container-hover, #f3f4f6);
-      border: 1px solid var(--sherpa-border-container-default, #e5e7eb);
-      border-radius: 2px 12px 12px 12px;
-      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border: 1px solid var(--sherpa-border-container-default, #e5e7eb);
+  border-radius: 2px 12px 12px 12px;
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
 }
 :host([data-role="user"]) .message {
   grid-template-columns: 1fr;
-      justify-items: end;
+  justify-items: end;
 }
 :host([data-role="user"]) .avatar {
   display: none;
 }
 :host([data-role="user"]) .bubble {
   max-width: 85%;
-      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-      border-radius: 12px 12px 2px 12px;
-      background: var(--sherpa-surface-context-info-subtle-default, #2563eb);
-      color: var(--sherpa-text-context-info-default, #fff);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border-radius: 12px 12px 2px 12px;
+  background: var(--sherpa-surface-context-info-subtle-default, #2563eb);
+  color: var(--sherpa-text-context-info-default, #fff);
 }
 :host(:not([data-avatar-icon]):not([data-role="user"])) .avatar-icon {
   display: none;
@@ -112,4 +112,3 @@
 :host([data-has-avatar]) .avatar-icon {
   display: none;
 }
-

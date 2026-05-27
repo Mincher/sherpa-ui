@@ -36,31 +36,41 @@
   vertical-align: middle;
   overflow: hidden;
 
-  --_button-size:    var(--sherpa-size-2xl, 32px);
+  --_button-size: var(--sherpa-size-2xl, 32px);
   --_button-padding: var(--sherpa-space-xs, 8px);
   --_button-spacing: var(--sherpa-space-xs, 8px);
 
-  --_surface:       var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #8500cc));
-  --_text:          var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
-  --_icon-color:    var(--_status-text-on-color,   var(--sherpa-text-default-on-color-body, #fafafa));
-  --_surface-hover: var(--_status-surface-strong-hover, var(--sherpa-surface-control-primary-hover, #50007a));
-  --_surface-down:  var(--_status-surface-strong-down,  var(--sherpa-surface-control-primary-down, #300561));
-  --_border-hover:  var(--_status-border, transparent);
+  --_surface: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #8500cc));
+  --_text: var(--_status-text-on-color, var(--sherpa-text-default-on-color-body, #fafafa));
+  --_icon-color: var(--_status-text-on-color, var(--sherpa-text-default-on-color-body, #fafafa));
+  --_surface-hover: var(
+    --_status-surface-strong-hover,
+    var(--sherpa-surface-control-primary-hover, #50007a)
+  );
+  --_surface-down: var(
+    --_status-surface-strong-down,
+    var(--sherpa-surface-control-primary-down, #300561)
+  );
+  --_border-hover: var(--_status-border, transparent);
 
   border: var(--sherpa-border-width-xs, 1px) solid var(--_status-border, transparent);
   border-width: var(--_cg-border-width, var(--sherpa-border-width-xs, 1px));
   border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
-  transition: border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: --transition-fast(border-color);
 }
-
-:host([hidden]) { display: none; }
 
 /* Separator — visible divider when inside a .grouped-component wrapper */
 :host([data-separator]) {
   border-inline-start-width: var(--_cg-sep-inline, var(--sherpa-border-width-xs, 1px));
-  border-inline-start-color: var(--_cg-separator-color, var(--sherpa-border-control-secondary-default, #d5d5d5));
+  border-inline-start-color: var(
+    --_cg-separator-color,
+    var(--sherpa-border-control-secondary-default, #d5d5d5)
+  );
   border-block-start-width: var(--_cg-sep-block, 0px);
-  border-block-start-color: var(--_cg-separator-color, var(--sherpa-border-control-secondary-default, #d5d5d5));
+  border-block-start-color: var(
+    --_cg-separator-color,
+    var(--sherpa-border-control-secondary-default, #d5d5d5)
+  );
 }
 
 /* ==========================================================================
@@ -89,18 +99,21 @@
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  transition: background-color var(--sherpa-motion-transition-fast, 0.15s ease-out), color var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: --transition-fast(background-color), --transition-fast(color);
 }
 
-.trigger:focus-visible { outline: none; }
-
-i { font-style: normal; }
-
+.trigger:focus-visible {
+  outline: none;
+}
 
 /* ── Label ────────────────────────────────────────────────────────────────── */
 
-.label       { display: inline; }
-.label:empty { display: none; }
+.label {
+  display: inline;
+}
+.label:empty {
+  display: none;
+}
 
 /* ── Badge ────────────────────────────────────────────────────────────────── */
 
@@ -125,14 +138,22 @@ i { font-style: normal; }
 /* ── Icon visibility ──────────────────────────────────────────────────────── */
 
 .icon-start,
-.icon-end   { display: none; }
+.icon-end {
+  display: none;
+}
 
-:host([data-icon-start]) .icon-start { display: inline-flex; }
-:host([data-icon-end])   .icon-end   { display: inline-flex; }
+:host([data-icon-start]) .icon-start {
+  display: inline-flex;
+}
+:host([data-icon-end]) .icon-end {
+  display: inline-flex;
+}
 
 /* ── Badge visibility ─────────────────────────────────────────────────────── */
 
-:host([data-count]) .badge { display: inline-flex; }
+:host([data-count]) .badge {
+  display: inline-flex;
+}
 
 /* ── Icon-only layout ─────────────────────────────────────────────────────── */
 
@@ -153,32 +174,32 @@ i { font-style: normal; }
 /* ── Focus ────────────────────────────────────────────────────────────────── */
 
 :host(:focus-within) {
-  outline: 2px solid var(--sherpa-border-control-active-default, #8500cc);
+  outline: --focus-ring(var(--sherpa-border-control-active-default));
   outline-offset: 2px;
 }
 
 /* ── Sizes ────────────────────────────────────────────────────────────────── */
 
 :host([data-size="small"]) {
-  --_button-size:    var(--sherpa-size-lg, 24px);
+  --_button-size: var(--sherpa-size-lg, 24px);
   --_button-padding: var(--sherpa-space-2xs, 4px);
   --_button-spacing: var(--sherpa-space-2xs, 4px);
 }
 
 :host([data-size="x-small"]) {
-  --_button-size:    var(--sherpa-size-md, 20px);
+  --_button-size: var(--sherpa-size-md, 20px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
 }
 
 :host([data-size="2x-small"]) {
-  --_button-size:    var(--sherpa-size-sm, 16px);
+  --_button-size: var(--sherpa-size-sm, 16px);
   --_button-padding: var(--sherpa-space-3xs, 2px);
   --_button-spacing: var(--sherpa-space-3xs, 2px);
 }
 
 :host([data-size="large"]) {
-  --_button-size:    var(--sherpa-size-4xl, 48px);
+  --_button-size: var(--sherpa-size-4xl, 48px);
   --_button-padding: var(--sherpa-space-sm, 12px);
   --_button-spacing: var(--sherpa-space-xs, 8px);
 }
@@ -186,46 +207,55 @@ i { font-style: normal; }
 /* ── Variants ─────────────────────────────────────────────────────────────── */
 
 :host([data-variant="secondary"]) {
-  --_surface:       var(--_status-surface, transparent);
-  --_text:          var(--_status-text,     var(--sherpa-text-default-label, #18191a));
-  --_icon-color:    var(--_status-text,     var(--sherpa-icon-context-default-body, #333));
-  --_surface-hover: var(--_status-surface-hover, var(--sherpa-surface-control-secondary-hover, #fafafa));
-  --_surface-down:  var(--_status-surface-down,  var(--sherpa-surface-control-secondary-down, #f2f2f2));
-  --_border-hover:  var(--_status-border,         var(--sherpa-border-control-secondary-hover, #c0c0cc));
-  border-color:     var(--_status-border,   var(--sherpa-border-control-secondary-default, #d5d5d5));
+  --_surface: var(--_status-surface, transparent);
+  --_text: var(--_status-text, var(--sherpa-text-default-label, #18191a));
+  --_icon-color: var(--_status-text, var(--sherpa-icon-context-default-body, #333));
+  --_surface-hover: var(
+    --_status-surface-hover,
+    var(--sherpa-surface-control-secondary-hover, #fafafa)
+  );
+  --_surface-down: var(
+    --_status-surface-down,
+    var(--sherpa-surface-control-secondary-down, #f2f2f2)
+  );
+  --_border-hover: var(--_status-border, var(--sherpa-border-control-secondary-hover, #c0c0cc));
+  border-color: var(--_status-border, var(--sherpa-border-control-secondary-default, #d5d5d5));
 }
 
 /* Warning on secondary: use on-color text for legibility */
 :host([data-variant="secondary"][data-status="warning"]) {
-  --_text:       var(--_status-text-on-color);
+  --_text: var(--_status-text-on-color);
   --_icon-color: var(--_status-text-on-color);
 }
 
 :host([data-variant="tertiary"]) {
-  --_surface:       var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
-  --_text:          var(--_status-text, var(--sherpa-text-default-label, #18191a));
-  --_icon-color:    var(--_status-text, var(--sherpa-text-default-label, #18191a));
+  --_surface: var(--sherpa-surface-control-tertiary-default, #f9f9ff00);
+  --_text: var(--_status-text, var(--sherpa-text-default-label, #18191a));
+  --_icon-color: var(--_status-text, var(--sherpa-text-default-label, #18191a));
   --_surface-hover: var(--sherpa-surface-control-tertiary-hover, #c0c0cd33);
-  --_surface-down:  var(--sherpa-surface-control-tertiary-down, #b2b2bf40);
-  --_border-hover:  transparent;
-  border-color:     transparent;
+  --_surface-down: var(--sherpa-surface-control-tertiary-down, #b2b2bf40);
+  --_border-hover: transparent;
+  border-color: transparent;
 }
 
 :host([data-variant="tertiary-on-color"]) {
-  --_surface:       var(--sherpa-surface-control-tertiary-on-color-default, transparent);
-  --_text:          var(--sherpa-text-default-on-color-label, #fafafa);
-  --_icon-color:    var(--sherpa-icon-context-default-on-color-label, #fafafa);
-  --_surface-hover: var(--sherpa-surface-control-tertiary-on-color-hover, rgba(255, 255, 255, 0.12));
-  --_surface-down:  var(--sherpa-surface-control-tertiary-on-color-down, rgba(255, 255, 255, 0.2));
-  --_border-hover:  transparent;
-  border-color:     transparent;
+  --_surface: var(--sherpa-surface-control-tertiary-on-color-default, transparent);
+  --_text: var(--sherpa-text-default-on-color-label, #fafafa);
+  --_icon-color: var(--sherpa-icon-context-default-on-color-label, #fafafa);
+  --_surface-hover: var(
+    --sherpa-surface-control-tertiary-on-color-hover,
+    rgba(255, 255, 255, 0.12)
+  );
+  --_surface-down: var(--sherpa-surface-control-tertiary-on-color-down, rgba(255, 255, 255, 0.2));
+  --_border-hover: transparent;
+  border-color: transparent;
 }
 
 :host([data-variant="tertiary-on-color"][disabled]) {
-  --_surface:    var(--sherpa-surface-control-tertiary-on-color-inactive, rgba(255, 255, 255, 0.2));
-  --_text:       var(--sherpa-text-default-on-color-placeholder, #999);
+  --_surface: var(--sherpa-surface-control-tertiary-on-color-inactive, rgba(255, 255, 255, 0.2));
+  --_text: var(--sherpa-text-default-on-color-placeholder, #999);
   --_icon-color: var(--sherpa-text-default-on-color-placeholder, #999);
-  border-color:  transparent;
+  border-color: transparent;
 }
 
 /* ── AI variant ───────────────────────────────────────────────────────────── */
@@ -235,21 +265,23 @@ i { font-style: normal; }
  * .trigger paints a solid surface so the gradient only shows in the border.
  */
 :host([data-variant="ai"]) {
-  --_surface:       var(--sherpa-surface-container-default, #fff);
-  --_text:          var(--sherpa-text-default-body, #2e2e33);
-  --_icon-color:    var(--sherpa-text-default-body, #2e2e33);
+  --_surface: var(--sherpa-surface-container-default, #fff);
+  --_text: var(--sherpa-text-default-body, #2e2e33);
+  --_icon-color: var(--sherpa-text-default-body, #2e2e33);
   --_surface-hover: var(--sherpa-surface-container-hover, #f3f4f6);
-  --_surface-down:  var(--sherpa-surface-container-hover, #e5e7eb);
-  --_border-hover:  transparent;
-  --_ai-gradient:   var(--sherpa-ai-accent-gradient,
-    linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%));
+  --_surface-down: var(--sherpa-surface-container-hover, #e5e7eb);
+  --_border-hover: transparent;
+  --_ai-gradient: var(
+    --sherpa-ai-accent-gradient,
+    linear-gradient(135deg, #b794f4 0%, #ec4899 50%, #06b6d4 100%)
+  );
 
   border-color: transparent;
-  border-width: 1.5px;
+  border-width: var(--sherpa-border-width-sm, 2px);
   background:
     linear-gradient(var(--_surface), var(--_surface)) padding-box,
     var(--_ai-gradient) border-box;
-  transition: filter var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: --transition-fast(filter), --transition-fast(border-color);
 }
 
 :host([data-variant="ai"]:hover) {
@@ -257,11 +289,11 @@ i { font-style: normal; }
 }
 
 :host([data-variant="ai"][data-active]) {
-  --_surface:       var(--sherpa-surface-control-active-default, #1f2937);
-  --_text:          var(--sherpa-text-default-on-color-body, #fafafa);
-  --_icon-color:    var(--sherpa-text-default-on-color-body, #fafafa);
+  --_surface: var(--sherpa-surface-control-active-default, #1f2937);
+  --_text: var(--sherpa-text-default-on-color-body, #fafafa);
+  --_icon-color: var(--sherpa-text-default-on-color-body, #fafafa);
   --_surface-hover: var(--sherpa-surface-control-active-hover, #111827);
-  --_surface-down:  var(--sherpa-surface-control-active-down, #0b1220);
+  --_surface-down: var(--sherpa-surface-control-active-down, #0b1220);
 
   border-color: transparent;
   background:
@@ -270,8 +302,8 @@ i { font-style: normal; }
 }
 
 :host([data-variant="ai"][disabled]) {
-  --_surface:    var(--sherpa-surface-control-inactive-default, #f2f2f5);
-  --_text:       var(--sherpa-text-inactive-default, #b0b0b8);
+  --_surface: var(--sherpa-surface-control-inactive, #f2f2f5);
+  --_text: var(--sherpa-text-inactive-default, #b0b0b8);
   --_icon-color: var(--sherpa-text-inactive-default, #b0b0b8);
   filter: grayscale(0.6);
 }
@@ -279,12 +311,12 @@ i { font-style: normal; }
 /* ── Active state ─────────────────────────────────────────────────────────── */
 
 :host([data-active]) {
-  --_surface:       var(--sherpa-surface-control-active-default, #f8ebff);
-  --_text:          var(--sherpa-text-active-base, #8500cc);
-  --_icon-color:    var(--sherpa-icon-active-base, #8500cc);
+  --_surface: var(--sherpa-surface-control-active-default, #f8ebff);
+  --_text: var(--sherpa-text-active-base, #8500cc);
+  --_icon-color: var(--sherpa-icon-active-base, #8500cc);
   --_surface-hover: var(--sherpa-surface-control-active-hover, #f2d6ff);
-  --_surface-down:  var(--sherpa-surface-control-active-down, #e2adff);
-  border-color:     var(--sherpa-border-control-active-default, #8500cc);
+  --_surface-down: var(--sherpa-surface-control-active-down, #e2adff);
+  border-color: var(--sherpa-border-control-active-default, #8500cc);
 
   .badge {
     background: var(--sherpa-text-active-base, #8500cc);
@@ -295,19 +327,25 @@ i { font-style: normal; }
 /* ── Disabled state ───────────────────────────────────────────────────────── */
 
 :host([disabled]) {
-  --_surface:    var(--sherpa-surface-control-inactive, #f2f2f2);
-  --_text:       var(--sherpa-text-inactive-default, #5c5c66);
+  --_surface: var(--sherpa-surface-control-inactive, #f2f2f2);
+  --_text: var(--sherpa-text-inactive-default, #5c5c66);
   --_icon-color: var(--sherpa-text-inactive-default, #5c5c66);
-  border-color:  var(--_status-border, transparent);
+  border-color: var(--_status-border, transparent);
   pointer-events: none;
   cursor: not-allowed;
 }
 
 /* ── Hover / active states — trigger ─────────────────────────────────────── */
 
-:host(:not([disabled])) .trigger:hover  { background-color: var(--_surface-hover); }
-:host(:not([disabled])) .trigger:active { background-color: var(--_surface-down); }
-:host(:not([disabled]):hover) { border-color: var(--_border-hover); }
+:host(:not([disabled])) .trigger:hover {
+  background-color: var(--_surface-hover);
+}
+:host(:not([disabled])) .trigger:active {
+  background-color: var(--_surface-down);
+}
+:host(:not([disabled]):hover) {
+  border-color: var(--_border-hover);
+}
 
 /* ── Menu expanded ────────────────────────────────────────────────────────── */
 

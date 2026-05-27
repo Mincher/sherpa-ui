@@ -30,6 +30,10 @@
     "tokens:codemod": "node scripts/codemod-compat-aliases.js",
     "css:fallbacks": "node scripts/inject-css-fallbacks.js",
     "css:fallbacks:check": "node scripts/inject-css-fallbacks.js --dry",
+    "lint:css": "node scripts/lint-component-css.mjs",
+    "lint:css:strict": "node scripts/lint-component-css.mjs --strict",
+    "format": "prettier --write 'components/**/*.css'",
+    "format:check": "prettier --check 'components/**/*.css'",
     "build": "npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs"
   },
   "bin": {

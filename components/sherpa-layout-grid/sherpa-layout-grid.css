@@ -24,7 +24,6 @@
 @property --maxColCount {
   syntax: "<integer>";
 
-    :host([hidden]) { display: none; }
   inherits: true;
   initial-value: 12;
 }
@@ -47,32 +46,37 @@
 }
 :host([data-fill="viewport"]) {
   min-height: 0;
-      max-height: 100dvh;
-      overflow: hidden;
-  
-      & .grid-body { min-height: 0; }
-      & .grid-surface { overflow: auto; min-height: 0; }
+  max-height: 100dvh;
+  overflow: hidden;
+
+  & .grid-body {
+    min-height: 0;
+  }
+  & .grid-surface {
+    overflow: auto;
+    min-height: 0;
+  }
 }
 :host .grid-header {
   flex: 0 0 auto;
-      display: none;
+  display: none;
 }
 :host([data-heading]) .grid-header {
   display: block;
 }
 :host .grid-body {
   display: flex;
-      flex-direction: row;
-      align-items: stretch;
-      flex: 1 1 auto;
-      min-height: 0;
-      width: 100%;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 :host .side-panel-start,
 :host .side-panel-end {
   display: flex;
-      flex: 0 0 auto;
-      align-self: stretch;
+  flex: 0 0 auto;
+  align-self: stretch;
 }
 :host(:not([data-has-side-panel-start])) .side-panel-start {
   display: none;
@@ -82,37 +86,37 @@
 }
 :host .grid-surface {
   display: grid;
-      flex: 1 1 auto;
-      min-width: 0;
-      min-height: 0;
-      width: 100%;
-      container-type: inline-size;
-      container-name: sherpa-layout-grid;
-      --maxColCount: 12;
-      --row-height: var(--sherpa-space-default, 16px);
-      --row-height: calc(var(--sherpa-space-default, 16px) * 10);
-      grid-template-columns: repeat(var(--maxColCount), 1fr);
-      grid-auto-rows: var(--row-height);
-      padding: var(--sherpa-space-sm, 12px);
-      gap: var(--sherpa-space-xs, 8px);
-      align-content: start;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  container-type: inline-size;
+  container-name: sherpa-layout-grid;
+  --maxColCount: 12;
+  --row-height: var(--sherpa-space-default, 16px);
+  --row-height: calc(var(--sherpa-space-default, 16px) * 10);
+  grid-template-columns: repeat(var(--maxColCount), 1fr);
+  grid-auto-rows: var(--row-height);
+  padding: var(--sherpa-space-sm, 12px);
+  gap: var(--sherpa-space-xs, 8px);
+  align-content: start;
 }
 :host([data-content="static"]) .grid-surface {
   display: flex;
-      flex-direction: column;
-      grid-template-columns: none;
-      grid-auto-rows: auto;
+  flex-direction: column;
+  grid-template-columns: none;
+  grid-auto-rows: auto;
 }
 :host([data-editable]) ::slotted(sherpa-container) {
   cursor: grab;
 }
 :host([data-editable]) ::slotted(sherpa-container[data-dragging]) {
   opacity: 0.5;
-      cursor: grabbing;
+  cursor: grabbing;
 }
 :host([data-editable]) ::slotted(sherpa-container[data-drop-target]) {
   outline: 2px dashed var(--sherpa-border-control-active-default, #3c5edd);
-      outline-offset: -2px;
+  outline-offset: -2px;
 }
 
 /* Resizable default: span 3 columns when the consumer didn't pick one.
@@ -128,11 +132,21 @@
  * Its column span is set via data-col-span on the wrapper itself; default span
  * = full row when no value is provided. The wrapper auto-sizes height
  * (grid-auto-rows + height: max-content; see sherpa-container-group.css). */
-::slotted(sherpa-container-group) { grid-column: 1 / -1; }
-::slotted(sherpa-container-group[data-col-span="3"])  { grid-column: span 3; }
-::slotted(sherpa-container-group[data-col-span="6"])  { grid-column: span 6; }
-::slotted(sherpa-container-group[data-col-span="9"])  { grid-column: span 9; }
-::slotted(sherpa-container-group[data-col-span="12"]) { grid-column: span 12; }
+::slotted(sherpa-container-group) {
+  grid-column: 1 / -1;
+}
+::slotted(sherpa-container-group[data-col-span="3"]) {
+  grid-column: span 3;
+}
+::slotted(sherpa-container-group[data-col-span="6"]) {
+  grid-column: span 6;
+}
+::slotted(sherpa-container-group[data-col-span="9"]) {
+  grid-column: span 9;
+}
+::slotted(sherpa-container-group[data-col-span="12"]) {
+  grid-column: span 12;
+}
 
 @container sherpa-layout-grid (max-width: 1199px) {
   :host .grid-surface {
@@ -142,9 +156,13 @@
   /* Cap container col-span at viewport width. !important defeats the
    * child's own :host([data-col-span]) rule (inner-tree, lower cascade). */
   ::slotted(sherpa-container[data-col-span="9"]),
-  ::slotted(sherpa-container[data-col-span="12"]) { grid-column: span 6 !important; }
+  ::slotted(sherpa-container[data-col-span="12"]) {
+    grid-column: span 6 !important;
+  }
   ::slotted(sherpa-container-group[data-col-span="9"]),
-  ::slotted(sherpa-container-group[data-col-span="12"]) { grid-column: span 6; }
+  ::slotted(sherpa-container-group[data-col-span="12"]) {
+    grid-column: span 6;
+  }
 }
 
 @container sherpa-layout-grid (max-width: 639px) {
@@ -154,6 +172,10 @@
   }
   /* !important ensures the layout grid owns its children's column span:
    * ::slotted() rules can be overridden by the slotted element's own light-DOM styles. */
-  ::slotted(sherpa-container) { grid-column-end: span 3 !important; }
-  ::slotted(sherpa-container-group) { grid-column: 1 / -1 !important; }
+  ::slotted(sherpa-container) {
+    grid-column-end: span 3 !important;
+  }
+  ::slotted(sherpa-container-group) {
+    grid-column: 1 / -1 !important;
+  }
 }

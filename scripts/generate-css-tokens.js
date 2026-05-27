@@ -1,3 +1,5 @@
+// WARNING: Do not generate or modify css/styles/tokens/sherpa-functions.css in this script.
+// All @function definitions are hand-maintained and must be edited directly in that file.
 #!/usr/bin/env node
 /**
  * generate-css-tokens.js — Per-axis CSS token generator
@@ -10,7 +12,7 @@
  *   ├── index.css                          ← @layer cascade + @import order
  *   ├── reset.css                          ← hand-maintained
  *   ├── tokens/
- *   │   ├── sherpa-primitives.css          ← hand-maintained (oklch values)
+ *   │   ├── primitives.css          ← hand-maintained (oklch values)
  *   │   ├── sherpa-alias.css               ← generated: alias + @property regs
  *   │   └── sherpa-platform.css            ← generated: platform constants
  *   ├── sherpa-themes.css                  ← generated: all themes (base + extended)
@@ -38,21 +40,21 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
-const ROOT       = path.resolve(__dirname, '..');
-const SRC_CSS    = path.join(ROOT, 'css', 'styles');
-const OUT_CSS    = path.join(ROOT, 'css', 'styles');
-const DATA_FILE  = path.join(ROOT, 'figma-tokens', 'figma-variables.json');
+const __dirname = path.dirname(__filename);
+const ROOT = path.resolve(__dirname, '..');
+const SRC_CSS = path.join(ROOT, 'css', 'styles');
+const OUT_CSS = path.join(ROOT, 'css', 'styles');
+const DATA_FILE = path.join(ROOT, 'figma-tokens', 'figma-variables.json');
 
 // ─── Data loading ────────────────────────────────────────────────────
 
-const data       = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
 const primitives = data.Primitives;
 const themesMeta = data.themes;
 
 const SNAPSHOT_FILE = path.join(ROOT, 'figma-tokens', 'alias-snapshot.json');
 const snapshotAlias = fs.existsSync(SNAPSHOT_FILE)
-  ? (JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8')).Alias || { vars: [] })
+  ? JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8')).Alias || { vars: [] }
   : { vars: [] };
 const liveAlias = data.Alias || { vars: [] };
 const aliasMap = new Map();
@@ -65,20 +67,134 @@ const aliases = { ...liveAlias, vars: [...aliasMap.values()] };
 
 const baseThemeName = themesMeta?.base?.name || 'Apex 2.0';
 const baseThemeSlug = themesMeta?.base?.slug || 'apex-2-core';
-const status        = data.Status;
-const density       = data['Density (Alias)'] || data.Density;
+const status = data.Status;
+const density = data['Density (Alias)'] || data.Density;
 
-if (!data[baseThemeName]) { console.error(`Base theme "${baseThemeName}" missing`); process.exit(1); }
-if (!status)              { console.error('Status collection missing');              process.exit(1); }
-if (!density)             { console.error('Density collection missing');             process.exit(1); }
+if (!data[baseThemeName]) {
+  console.error(`Base theme "${baseThemeName}" missing`);
+  process.exit(1);
+}
+if (!status) {
+  console.error('Status collection missing');
+  process.exit(1);
+}
+if (!density) {
+  console.error('Density collection missing');
+  process.exit(1);
+}
 
-const primitiveNames = new Set(primitives.vars.map(v => v.n));
-const aliasNames     = new Set(aliases.vars.map(v => v.n));
+const primitiveNames = new Set(primitives.vars.map((v) => v.n));
+const aliasNames = new Set(aliases.vars.map((v) => v.n));
+
+/**
+ * Reverse map: primitive name → canonical semantic alias name.
+ *
+ * Built from the alias snapshot — any alias whose value is `@<primitive>` makes
+ * that primitive substitutable. When multiple aliases point at the same
+ * primitive (e.g. `color/info/200` AND `color/primary/cyan/200` both alias
+ * `color/basic/blue-green/100`), the alias whose first segment ranks highest in
+ * `ALIAS_NAMESPACE_PRIORITY` wins.
+ *
+ * Used by `refToVar` so generated `sherpa-themes.css` / `sherpa-overrides.css`
+ * consume `var(--sherpa-color-*)` aliases instead of `var(--core-*)` primitives
+ * wherever an alias exists — keeps the core tier off-limits to non-alias files.
+ */
+const ALIAS_NAMESPACE_PRIORITY = [
+  'color/neutral/',
+  'color/brand/',
+  'color/critical/',
+  'color/warning/',
+  'color/success/',
+  'color/info/',
+  'color/urgent/',
+  'color/primary/new/',
+  'color/primary/blue/',
+  'color/primary/cyan/',
+  'color/primary/classic/',
+  'color/tones/',
+];
+function aliasRank(name) {
+  for (let i = 0; i < ALIAS_NAMESPACE_PRIORITY.length; i++) {
+    if (name.startsWith(ALIAS_NAMESPACE_PRIORITY[i])) return i;
+  }
+  return ALIAS_NAMESPACE_PRIORITY.length;
+}
+const primToAlias = (() => {
+  const map = new Map();
+  for (const v of aliases.vars) {
+    const val = v.v?.Value;
+    if (typeof val !== 'string' || !val.startsWith('@')) continue;
+    const prim = val.slice(1);
+    if (!primitiveNames.has(prim)) continue;
+    const existing = map.get(prim);
+    if (!existing || aliasRank(v.n) < aliasRank(existing)) map.set(prim, v.n);
+  }
+  return map;
+})();
+
+/**
+ * Hand-coded alias gap fills.
+ *
+ * Figma's Alias collection covers semantic colours but doesn't expose semantic
+ * names for `effects/opacity/*` (used in `color-mix()` alpha), `effects/offset/*`
+ * (used in shadow chains), the full `color/basic|extended/*` ramps (only
+ * curated steps reach the `color/neutral|info|success|…` semantic aliases),
+ * or the `transparent` overlay ramp. These entries:
+ *   1. extend `primToAlias` so `refToVar` substitutes them in generated themes;
+ *   2. drive an extra block emitted into `sherpa-alias.css` (see emitAlias).
+ *
+ * Palette gap-fills: every `color/{basic|extended}/<family>/<step>` primitive
+ * gets a `color/palette/<family>/<step>` alias. Pre-existing curated aliases
+ * (e.g. `color/neutral/200` → `monochrome/50`) still win because we only set
+ * when the primitive is not already mapped.
+ *
+ * Overlay (alpha) ramp gets its own `color/overlay/<step>` namespace since
+ * `transparent/*` carries alpha and doesn't belong with the opaque palette.
+ */
+const EFFECTS_OPACITY_STEPS = [0, 100, 200, 300, 400, 500];
+const EFFECTS_OFFSET_STEPS = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+
+const EXTRA_ALIASES = [
+  // Effects — opacity scale (used in color-mix alpha)
+  ...EFFECTS_OPACITY_STEPS.map((n) => ({
+    name: `opacity/${n}`,
+    primitive: `effects/opacity/${n}`,
+  })),
+  // Effects — shadow offset scale
+  ...EFFECTS_OFFSET_STEPS.map((n) => ({
+    name: `shadow/offset/${n}`,
+    primitive: `effects/offset/${n}`,
+  })),
+];
+
+// Auto-sweep every basic|extended colour primitive and coin a palette/<family>
+// alias. The `transparent` family routes to `color/overlay/*` instead because
+// its values carry alpha.
+for (const v of primitives.vars) {
+  if (v.t !== 'COLOR') continue;
+  const m = v.n.match(/^color\/(basic|extended)\/([a-z0-9-]+)\/(\d+|base)$/);
+  if (!m) continue;
+  const [, , family, step] = m;
+  const aliasName =
+    family === 'transparent' ? `color/overlay/${step}` : `color/palette/${family}/${step}`;
+  EXTRA_ALIASES.push({ name: aliasName, primitive: v.n });
+}
+
+for (const { name, primitive } of EXTRA_ALIASES) {
+  if (!primitiveNames.has(primitive)) continue;
+  if (!primToAlias.has(primitive)) primToAlias.set(primitive, name);
+  aliasNames.add(name);
+}
 
 // ─── Utilities ───────────────────────────────────────────────────────
 
 function sanitize(name) {
-  return name.replace(/ -> /g, '-').replace(/\//g, '-').replace(/ /g, '-').replace(/[\[\]]/g, '').toLowerCase();
+  return name
+    .replace(/ -> /g, '-')
+    .replace(/\//g, '-')
+    .replace(/ /g, '-')
+    .replace(/[\[\]]/g, '')
+    .toLowerCase();
 }
 
 /** Figma "critical" → CSS "error" everywhere it appears in a token name. */
@@ -89,38 +205,57 @@ function renameStatus(name) {
 /** Theme variable Figma path → CSS custom property name. */
 function apexToCSS(figmaName) {
   let n = renameStatus(figmaName);
-  if      (n.startsWith('surface/status/'))   n = n.replace('surface/status/',   'surface/context/');
-  else if (n.startsWith('border/status/'))    n = n.replace('border/status/',    'border/context/');
-  if      (n.startsWith('content/status/'))   n = n.replace('content/status/',   'text/context/');
-  else if (n.startsWith('content/default/'))  n = n.replace('content/default/',  'text/default/');
-  else if (n.startsWith('content/primary/'))  n = n.replace('content/primary/',  'text/primary/');
+  if (n.startsWith('surface/status/')) n = n.replace('surface/status/', 'surface/context/');
+  else if (n.startsWith('border/status/')) n = n.replace('border/status/', 'border/context/');
+  if (n.startsWith('content/status/')) n = n.replace('content/status/', 'text/context/');
+  else if (n.startsWith('content/default/')) n = n.replace('content/default/', 'text/default/');
+  else if (n.startsWith('content/primary/')) n = n.replace('content/primary/', 'text/primary/');
   else if (n.startsWith('content/inactive/')) n = n.replace('content/inactive/', 'text/inactive/');
-  else if (n.startsWith('content/active/'))   n = n.replace('content/active/',   'text/active/');
+  else if (n.startsWith('content/active/')) n = n.replace('content/active/', 'text/active/');
   return `--sherpa-${sanitize(n)}`;
 }
 
 /** Same as apexToCSS but for the icon namespace. */
 function contentToIcon(figmaName) {
   let n = renameStatus(figmaName);
-  if      (n.startsWith('content/default/'))  n = n.replace('content/default/',  'icon/context/default/');
-  else if (n.startsWith('content/primary/'))  n = n.replace('content/primary/',  'icon/primary/');
-  else if (n.startsWith('content/status/'))   n = n.replace('content/status/',   'icon/context/');
+  if (n.startsWith('content/default/')) n = n.replace('content/default/', 'icon/context/default/');
+  else if (n.startsWith('content/primary/')) n = n.replace('content/primary/', 'icon/primary/');
+  else if (n.startsWith('content/status/')) n = n.replace('content/status/', 'icon/context/');
   else if (n.startsWith('content/inactive/')) n = n.replace('content/inactive/', 'icon/inactive/');
-  else if (n.startsWith('content/active/'))   n = n.replace('content/active/',   'icon/active/');
+  else if (n.startsWith('content/active/')) n = n.replace('content/active/', 'icon/active/');
   return `--sherpa-${sanitize(n)}`;
 }
 
-/** "@target/path" → var(--sherpa-...) — picks Primitive vs Alias vs Theme namespace. */
-function refToVar(ref, { iconMode = false } = {}) {
+/** "@target/path" → var(--sherpa-...) — picks Primitive vs Alias vs Theme namespace.
+ *  `preferAlias` (default true) substitutes a semantic alias when one exists for
+ *  a primitive ref; set false when generating sherpa-alias.css itself to avoid
+ *  self-referential aliases like `--sherpa-color-neutral-200: var(--sherpa-color-neutral-200)`. */
+function refToVar(ref, { iconMode = false, preferAlias = true } = {}) {
   if (typeof ref !== 'string' || !ref.startsWith('@')) return null;
   const name = ref.slice(1);
-  if (primitiveNames.has(name)) return `var(--sherpa-core-${sanitize(name)})`;
-  if (aliasNames.has(name))     return `var(--sherpa-${sanitize(name)})`;
+  if (primitiveNames.has(name)) {
+    const aliasName = preferAlias ? primToAlias.get(name) : null;
+    return aliasName ? `var(--sherpa-${sanitize(aliasName)})` : `var(--core-${sanitize(name)})`;
+  }
+  if (aliasNames.has(name)) return `var(--sherpa-${sanitize(name)})`;
   // Theme-collection target → use apexToCSS / contentToIcon namespace map.
   if (name.startsWith('content/') && iconMode) return `var(${contentToIcon(name)})`;
   // Pattern-based primitive sniffing (matches legacy generator behaviour).
-  const primPatterns = ['color/basic/', 'color/extended/', 'border/radius/', 'border/stroke/', 'border/dash/', 'scale/', 'effects/', 'motion/', 'typeface/'];
-  if (primPatterns.some(p => name.startsWith(p))) return `var(--sherpa-core-${sanitize(name)})`;
+  const primPatterns = [
+    'color/basic/',
+    'color/extended/',
+    'border/radius/',
+    'border/stroke/',
+    'border/dash/',
+    'scale/',
+    'effects/',
+    'motion/',
+    'typeface/',
+  ];
+  if (primPatterns.some((p) => name.startsWith(p))) {
+    const aliasName = preferAlias ? primToAlias.get(name) : null;
+    return aliasName ? `var(--sherpa-${sanitize(aliasName)})` : `var(--core-${sanitize(name)})`;
+  }
   // Fallback — assume it's a sibling theme/alias var.
   return `var(${apexToCSS(name)})`;
 }
@@ -133,13 +268,13 @@ function formatNumber(val, hint = '') {
   return `${r}px`;
 }
 
-function formatVal(val, type, hint = '') {
-  const ref = refToVar(val);
+function formatVal(val, type, hint = '', opts = {}) {
+  const ref = refToVar(val, opts);
   if (ref) return ref;
   if (typeof val === 'string' && val.startsWith('rgba(')) {
     return val.replace(/(\d+\.\d{2})\d+/g, '$1').replace(/\.0+\)/g, ')');
   }
-  if (typeof val === 'string')  return val;
+  if (typeof val === 'string') return val;
   if (typeof val === 'boolean') return String(val);
   if (typeof val === 'number') {
     if (type === 'FLOAT') return formatNumber(val, hint);
@@ -156,7 +291,9 @@ function formatValIcon(val, type) {
 
 // ─── color-mix() helpers (rgba with partial alpha → token reference) ────────
 
-/** Map "r,g,b" → CSS var name for every fully-opaque primitive colour. */
+/** Map "r,g,b" → CSS var name for every fully-opaque primitive colour.
+ *  Prefers the matching semantic alias (--sherpa-color-*) when one exists,
+ *  falling back to the raw --core-* primitive otherwise. */
 const primRgbMap = (() => {
   const map = new Map();
   for (const v of primitives.vars) {
@@ -165,26 +302,32 @@ const primRgbMap = (() => {
     if (!m) continue;
     const alpha = parseFloat(m[4]);
     if (Math.round(alpha) !== 1) continue; // only opaque primitives
-    map.set(`${m[1]},${m[2]},${m[3]}`, `--sherpa-core-${sanitize(v.n)}`);
+    const aliasName = primToAlias.get(v.n);
+    const varName = aliasName ? `--sherpa-${sanitize(aliasName)}` : `--core-${sanitize(v.n)}`;
+    map.set(`${m[1]},${m[2]},${m[3]}`, varName);
   }
   return map;
 })();
 
-/** Map opacity-scale value (0–100 integer) → CSS var for effects/opacity/* tokens. */
+/** Map opacity-scale value (0–100 integer) → CSS var for effects/opacity/* tokens.
+ *  Prefers the matching semantic alias (--sherpa-opacity-*) when one exists. */
 const primOpacityMap = (() => {
   const map = new Map();
   for (const v of primitives.vars) {
     if (v.t !== 'FLOAT' || !v.n.startsWith('effects/opacity/')) continue;
     const val = v.v?.Value;
     if (val == null) continue;
-    map.set(Math.round(val), `--sherpa-core-${sanitize(v.n)}`);
+    const aliasName = primToAlias.get(v.n);
+    const varName = aliasName ? `--sherpa-${sanitize(aliasName)}` : `--core-${sanitize(v.n)}`;
+    map.set(Math.round(val), varName);
   }
   return map;
 })();
 
 /**
- * Convert rgba(r,g,b,a) with a < 1 into a color-mix() expression that
- * references the matching core colour primitive and opacity token.
+ * Convert rgba(r,g,b,a) with a < 1 into an `--alpha(--c, --pct)` call that
+ * references the matching core colour primitive and opacity token. The
+ * `--alpha()` function is defined in css/styles/tokens/sherpa-functions.css.
  * Returns null if no matching primitive is found (caller falls back to raw rgba).
  */
 function tryColorMix(rgba) {
@@ -197,8 +340,8 @@ function tryColorMix(rgba) {
   if (!colorVar) return null;
   const pct = Math.round(alpha * 100);
   const opacityVar = primOpacityMap.get(pct);
-  const pctExpr = opacityVar ? `calc(var(${opacityVar}) * 1%)` : `${pct}%`;
-  return `color-mix(in srgb, var(${colorVar}) ${pctExpr}, transparent)`;
+  const pctArg = opacityVar ? `var(${opacityVar})` : `${pct}`;
+  return `--alpha(var(${colorVar}), ${pctArg})`;
 }
 
 /** Resolve a theme variable's raw value (may be @ref, rgba, hex, number, bool). */
@@ -211,7 +354,7 @@ function formatThemeVal(rawVal, type, hint, { iconMode = false } = {}) {
     if (colorMix) return colorMix;
     return rawVal.replace(/(\d+\.\d{2})\d+/g, '$1').replace(/\.0+\)/g, ')');
   }
-  if (typeof rawVal === 'string')  return rawVal;
+  if (typeof rawVal === 'string') return rawVal;
   if (typeof rawVal === 'boolean') return String(rawVal);
   if (typeof rawVal === 'number') {
     if (type === 'FLOAT') return formatNumber(rawVal, hint);
@@ -249,7 +392,7 @@ function header(title, description) {
 function emitPrimitives() {
   // Hand-maintained file lives in the canonical location and is not regenerated.
   // No-op kept for symmetry with the other emitters.
-  console.log(`  ✓ tokens/sherpa-primitives.css (hand-maintained, not overwritten)`);
+  console.log(`  ✓ tokens/primitives.css (hand-maintained, not overwritten)`);
 }
 
 // ─── Emit: tokens/alias.css ──────────────────────────────────────────
@@ -257,15 +400,17 @@ function emitPrimitives() {
 function emitAlias() {
   const lines = [];
 
-  lines.push(header(
-    'Alias Tokens — Semantic',
-    'Mode-less semantic tokens (Figma "Alias" collection).\n' +
-    ' * Theme files reference these; switching theme rebinds — switching mode\n' +
-    ' * never touches this layer.\n' +
-    ' *\n' +
-    ' * `@property` registrations at the top of the file enable smooth\n' +
-    ' * interpolation when theme/mode tokens that resolve here animate.',
-  ));
+  lines.push(
+    header(
+      'Alias Tokens — Semantic',
+      'Mode-less semantic tokens (Figma "Alias" collection).\n' +
+        ' * Theme files reference these; switching theme rebinds — switching mode\n' +
+        ' * never touches this layer.\n' +
+        ' *\n' +
+        ' * `@property` registrations at the top of the file enable smooth\n' +
+        ' * interpolation when theme/mode tokens that resolve here animate.',
+    ),
+  );
 
   // ── @property registrations for interpolatable tokens ──
   // Only register tokens whose downstream theme value is a <color> or
@@ -274,10 +419,12 @@ function emitAlias() {
   lines.push('/* These let the UA interpolate token swaps (theme/mode change)    */\n\n');
 
   const colorAliasNames = aliases.vars
-    .filter(v => v.t === 'COLOR' && v.v?.Value != null && !v.n.startsWith('properties/'))
-    .map(v => `--sherpa-${sanitize(v.n)}`);
+    .filter((v) => v.t === 'COLOR' && v.v?.Value != null && !v.n.startsWith('properties/'))
+    .map((v) => `--sherpa-${sanitize(v.n)}`);
   for (const propName of colorAliasNames) {
-    lines.push(`@property ${propName} { syntax: "<color>"; inherits: true; initial-value: transparent; }\n`);
+    lines.push(
+      `@property ${propName} { syntax: "<color>"; inherits: true; initial-value: transparent; }\n`,
+    );
   }
   lines.push('\n');
 
@@ -294,22 +441,42 @@ function emitAlias() {
   }
 
   const catOrder = ['border', 'color', 'effects', 'fonts', 'size', 'space'];
-  for (const cat of catOrder.filter(c => categories[c])) {
+  for (const cat of catOrder.filter((c) => categories[c])) {
     const vars = categories[cat].sort((a, b) => a.n.localeCompare(b.n));
     const title = cat[0].toUpperCase() + cat.slice(1);
     lines.push(`  /* ── ${title} ${'─'.repeat(Math.max(1, 56 - title.length))} */\n`);
     for (const v of vars) {
-      lines.push(`  --sherpa-${sanitize(v.n)}: ${formatVal(v.v.Value, v.t, v.n)};\n`);
+      lines.push(
+        `  --sherpa-${sanitize(v.n)}: ${formatVal(v.v.Value, v.t, v.n, { preferAlias: false })};\n`,
+      );
     }
     if (cat === 'fonts') {
-      lines.push(`  --sherpa-fonts-context-default: var(--sherpa-core-typeface-open-sans-style-name);\n`);
+      lines.push(`  --sherpa-fonts-context-default: var(--core-typeface-open-sans-style-name);\n`);
     }
     lines.push('\n');
   }
 
   // Base density default — overridden by [data-density] in density/*.css
   lines.push('  /* Base density default — overridden by [data-density] axis */\n');
-  lines.push('  --sherpa-space-default: var(--sherpa-core-scale-200);\n');
+  lines.push('  --sherpa-space-default: var(--core-scale-200);\n');
+
+  // ── Hand-coded gap-fill aliases (see EXTRA_ALIASES) ──
+  // Figma doesn't expose semantic names for these effects primitives; we coin
+  // them here so generated theme files can reference them via the alias layer
+  // instead of reaching into --core-* directly.
+  const extraByGroup = EXTRA_ALIASES.reduce((acc, e) => {
+    const group = e.name.split('/').slice(0, -1).join('/') || e.name;
+    (acc[group] ||= []).push(e);
+    return acc;
+  }, {});
+  for (const group of Object.keys(extraByGroup)) {
+    const title = group.replace(/\//g, ' ');
+    lines.push(`\n  /* ── ${title} ${'─'.repeat(Math.max(1, 56 - title.length))} */\n`);
+    for (const { name, primitive } of extraByGroup[group]) {
+      if (!primitiveNames.has(primitive)) continue;
+      lines.push(`  --sherpa-${sanitize(name)}: var(--core-${sanitize(primitive)});\n`);
+    }
+  }
   lines.push('}\n\n');
 
   // ── Font composite tokens ──
@@ -324,7 +491,7 @@ function emitFontsBlock() {
   const lines = [];
   const baseTheme = data[baseThemeName];
   const fontVars = baseTheme.vars
-    .filter(v => v.n.startsWith('font/'))
+    .filter((v) => v.n.startsWith('font/'))
     .sort((a, b) => a.n.localeCompare(b.n));
   if (fontVars.length === 0) return '';
 
@@ -337,7 +504,7 @@ function emitFontsBlock() {
     (groups.get(sizeName) || groups.set(sizeName, []).get(sizeName)).push(v);
   }
   const sizeOrder = ['h1', 'h2', 'h3', 'h4', 'h5', 'lg', 'base', 'sm', 'xs'];
-  for (const size of sizeOrder.filter(s => groups.has(s))) {
+  for (const size of sizeOrder.filter((s) => groups.has(s))) {
     const vars = groups.get(size).sort((a, b) => a.n.localeCompare(b.n));
     lines.push(`  /* ── ${size} ── */\n`);
     for (const v of vars) {
@@ -357,8 +524,8 @@ function emitPlatform() {
   const css = `${header(
     'Platform Tokens — system constants',
     'Tokens with no Figma source: font weights, z-index scale, focus rings,\n' +
-    ' * backdrops, content widths. Drop any entry here as soon as Figma adds the\n' +
-    ' * canonical equivalent.',
+      ' * backdrops, content widths. Drop any entry here as soon as Figma adds the\n' +
+      ' * canonical equivalent.',
   )}\n:where(:root) {
   /* Font weights */
   --sherpa-font-weight-regular:  400;
@@ -370,7 +537,7 @@ function emitPlatform() {
   --sherpa-line-height-default: 1.5;
 
   /* Motion — durations and easing (platform constants; no Figma source).
-     Hand-tuned values map to the equivalent --sherpa-core-motion-* primitives
+     Hand-tuned values map to the equivalent --core-motion-* primitives
      but stay independently authored so transitions can be tuned without
      re-extracting Figma. */
   --sherpa-motion-duration-fast: 0.15s;
@@ -422,53 +589,53 @@ function emitPlatform() {
 
 const SECTION_ORDER = [
   // ── Surface ──────────────────────────────────────────────
-  ['surface/app',             'Surface — App Chrome'],
-  ['surface/product-bar',     'Surface — App Chrome'],
-  ['surface/container',       'Surface — Container'],
-  ['surface/control',         'Surface — Control (Interactive)'],
-  ['surface/status',          'Surface — Context (Status)'],
-  ['surface/tag',             'Surface — Component'],
-  ['surface/button',          'Surface — Component'],
+  ['surface/app', 'Surface — App Chrome'],
+  ['surface/product-bar', 'Surface — App Chrome'],
+  ['surface/container', 'Surface — Container'],
+  ['surface/control', 'Surface — Control (Interactive)'],
+  ['surface/status', 'Surface — Context (Status)'],
+  ['surface/tag', 'Surface — Component'],
+  ['surface/button', 'Surface — Component'],
   // ── Border ───────────────────────────────────────────────
-  ['border/container',        'Border — Container'],
-  ['border/control',          'Border — Control (Interactive)'],
-  ['border/status',           'Border — Context (Status)'],
-  ['border/warning',          'Border — Context (Status)'],
-  ['border/info',             'Border — Context (Status)'],
-  ['border/error',            'Border — Context (Status)'],
-  ['border/success',          'Border — Context (Status)'],
-  ['border/urgent',           'Border — Context (Status)'],
-  ['border/focused',          'Border — Focus'],
-  ['border/tag',              'Border — Component'],
+  ['border/container', 'Border — Container'],
+  ['border/control', 'Border — Control (Interactive)'],
+  ['border/status', 'Border — Context (Status)'],
+  ['border/warning', 'Border — Context (Status)'],
+  ['border/info', 'Border — Context (Status)'],
+  ['border/error', 'Border — Context (Status)'],
+  ['border/success', 'Border — Context (Status)'],
+  ['border/urgent', 'Border — Context (Status)'],
+  ['border/focused', 'Border — Focus'],
+  ['border/tag', 'Border — Component'],
   // ── Other ────────────────────────────────────────────────
-  ['elevation',               'Elevation'],
-  ['data-viz/categorical',    'Data Visualization — Categorical'],
-  ['data-viz/sequential',     'Data Visualization — Sequential'],
-  ['data-viz/divergent',      'Data Visualization — Divergent'],
-  ['component',               'Component'],
+  ['elevation', 'Elevation'],
+  ['data-viz/categorical', 'Data Visualization — Categorical'],
+  ['data-viz/sequential', 'Data Visualization — Sequential'],
+  ['data-viz/divergent', 'Data Visualization — Divergent'],
+  ['component', 'Component'],
   // ── Standalone text tokens (not derived from content/) ───
-  ['text/default',            'Text — Default'],
-  ['text/primary',            'Text — Primary'],
-  ['text/active',             'Text — Active'],
-  ['text/inactive',           'Text — Inactive'],
-  ['text/info',               'Text — Context (Status)'],
-  ['text/warning',            'Text — Context (Status)'],
-  ['text/error',              'Text — Context (Status)'],
-  ['text/success',            'Text — Context (Status)'],
-  ['text/urgent',             'Text — Context (Status)'],
+  ['text/default', 'Text — Default'],
+  ['text/primary', 'Text — Primary'],
+  ['text/active', 'Text — Active'],
+  ['text/inactive', 'Text — Inactive'],
+  ['text/info', 'Text — Context (Status)'],
+  ['text/warning', 'Text — Context (Status)'],
+  ['text/error', 'Text — Context (Status)'],
+  ['text/success', 'Text — Context (Status)'],
+  ['text/urgent', 'Text — Context (Status)'],
   // ── Standalone icon tokens (not derived from content/) ───
-  ['icon/default',            'Icon — Default'],
-  ['icon/primary',            'Icon — Primary'],
-  ['icon/active',             'Icon — Active'],
-  ['icon/inactive',           'Icon — Inactive'],
-  ['icon/status',             'Icon — Context (Status)'],
-  ['icon/info',               'Icon — Context (Status)'],
-  ['icon/warning',            'Icon — Context (Status)'],
-  ['icon/error',              'Icon — Context (Status)'],
-  ['icon/success',            'Icon — Context (Status)'],
-  ['icon/urgent',             'Icon — Context (Status)'],
+  ['icon/default', 'Icon — Default'],
+  ['icon/primary', 'Icon — Primary'],
+  ['icon/active', 'Icon — Active'],
+  ['icon/inactive', 'Icon — Inactive'],
+  ['icon/status', 'Icon — Context (Status)'],
+  ['icon/info', 'Icon — Context (Status)'],
+  ['icon/warning', 'Icon — Context (Status)'],
+  ['icon/error', 'Icon — Context (Status)'],
+  ['icon/success', 'Icon — Context (Status)'],
+  ['icon/urgent', 'Icon — Context (Status)'],
   // ── Deprecated ───────────────────────────────────────────
-  ['[DEPRECATED] data-viz',   'Data Visualization — Legacy'],
+  ['[DEPRECATED] data-viz', 'Data Visualization — Legacy'],
 ];
 
 function classifySection(figmaPath) {
@@ -501,13 +668,16 @@ function contentGroupSection(figmaPath) {
  */
 function buildThemeMaps(themeName) {
   const collection = data[themeName];
-  if (!collection) { console.error(`Theme "${themeName}" missing`); process.exit(1); }
+  if (!collection) {
+    console.error(`Theme "${themeName}" missing`);
+    process.exit(1);
+  }
 
   const light = new Map();
-  const dark  = new Map();
-  const hc    = new Map();
+  const dark = new Map();
+  const hc = new Map();
   const sectionByProp = new Map();
-  const orderByProp   = []; // preserves first-seen order for stable output
+  const orderByProp = []; // preserves first-seen order for stable output
 
   function record(propName, mode, val, section) {
     if (val == null) return;
@@ -517,7 +687,7 @@ function buildThemeMaps(themeName) {
       if (section) sectionByProp.set(propName, section);
     }
     if (mode === 'dark') dark.set(propName, val);
-    if (mode === 'hc')   hc.set(propName, val);
+    if (mode === 'hc') hc.set(propName, val);
   }
 
   for (const v of collection.vars) {
@@ -525,26 +695,33 @@ function buildThemeMaps(themeName) {
     if (v.n.startsWith('properties/')) continue;
     if (v.n.startsWith('font/')) continue; // fonts live in alias layer
     const lightRaw = v.v?.Light;
-    const darkRaw  = v.v?.Dark;
-    const hcRaw    = v.v?.['High Contrast'];
+    const darkRaw = v.v?.Dark;
+    const hcRaw = v.v?.['High Contrast'];
 
     const isContent = v.n.startsWith('content/');
-    const sectionLabel = isContent ? contentGroupSection(v.n) : (classifySection(v.n) || v.n.split('/').slice(0, 2).join(' / '));
+    const sectionLabel = isContent
+      ? contentGroupSection(v.n)
+      : classifySection(v.n) || v.n.split('/').slice(0, 2).join(' / ');
 
     // Primary mapping (apexToCSS — covers content/* → text/* too)
     {
       const propName = apexToCSS(v.n);
-      record(propName, 'light', formatThemeVal(lightRaw, v.t, v.n),                   sectionLabel);
-      record(propName, 'dark',  formatThemeVal(darkRaw,  v.t, v.n),                   null);
-      record(propName, 'hc',    formatThemeVal(hcRaw,    v.t, v.n),                   null);
+      record(propName, 'light', formatThemeVal(lightRaw, v.t, v.n), sectionLabel);
+      record(propName, 'dark', formatThemeVal(darkRaw, v.t, v.n), null);
+      record(propName, 'hc', formatThemeVal(hcRaw, v.t, v.n), null);
     }
 
     // Icon variant (content/* only) — same section as text so pairs stay together
     if (isContent) {
       const propName = contentToIcon(v.n);
-      record(propName, 'light', formatThemeVal(lightRaw, v.t, v.n, { iconMode: true }), sectionLabel);
-      record(propName, 'dark',  formatThemeVal(darkRaw,  v.t, v.n, { iconMode: true }), null);
-      record(propName, 'hc',    formatThemeVal(hcRaw,    v.t, v.n, { iconMode: true }), null);
+      record(
+        propName,
+        'light',
+        formatThemeVal(lightRaw, v.t, v.n, { iconMode: true }),
+        sectionLabel,
+      );
+      record(propName, 'dark', formatThemeVal(darkRaw, v.t, v.n, { iconMode: true }), null);
+      record(propName, 'hc', formatThemeVal(hcRaw, v.t, v.n, { iconMode: true }), null);
     }
   }
 
@@ -553,7 +730,7 @@ function buildThemeMaps(themeName) {
 
 function emitThemeFile(themeEntry, maps, refMaps) {
   const { name: themeName, slug } = themeEntry;
-  const isDefault = (refMaps == null);
+  const isDefault = refMaps == null;
 
   // ── Build per-mode override maps ──
   // Default theme: emit ALL light values; dark/hc emit only diffs from own light.
@@ -583,8 +760,10 @@ function emitThemeFile(themeEntry, maps, refMaps) {
     }
 
     const allKeys = new Set([
-      ...maps.light.keys(), ...maps.dark.keys(),
-      ...refMaps.light.keys(), ...refMaps.dark.keys(),
+      ...maps.light.keys(),
+      ...maps.dark.keys(),
+      ...refMaps.light.keys(),
+      ...refMaps.dark.keys(),
     ]);
 
     darkOut = new Map();
@@ -627,7 +806,7 @@ function emitThemeFile(themeEntry, maps, refMaps) {
   //   so a document with no data-theme attribute still gets the default tokens.
   // - For non-default themes, only the `:root[data-theme="..."]` form applies.
   function modeSel(modeAttr, notAttrs = []) {
-    const notSuffix = notAttrs.map(a => `:not([data-mode="${a}"])`).join('');
+    const notSuffix = notAttrs.map((a) => `:not([data-mode="${a}"])`).join('');
     const attrSuffix = modeAttr ? `[data-mode="${modeAttr}"]` : '';
     const themeAttr = `[data-theme="${slug}"]`;
     if (isDefault) {
@@ -643,7 +822,9 @@ function emitThemeFile(themeEntry, maps, refMaps) {
   // Default theme: full token emission, sectioned by Figma category.
   // Extended theme: only the diff from base.
   if (lightOut.size > 0) {
-    lines.push(`/* ── Light${isDefault ? ' (default)' : ' overrides'} ─────────────────────────── */\n`);
+    lines.push(
+      `/* ── Light${isDefault ? ' (default)' : ' overrides'} ─────────────────────────── */\n`,
+    );
     lines.push(`${modeSel('')} {\n`);
     if (isDefault) {
       // Group properties by section (preserving first-appearance order for sections)
@@ -710,7 +891,7 @@ function emitThemes() {
   const coreContent = emitThemeFile({ name: baseThemeName, slug: baseThemeSlug }, baseMaps, null);
 
   const extParts = [];
-  for (const ext of (themesMeta?.extended || [])) {
+  for (const ext of themesMeta?.extended || []) {
     console.log(`  Building extended theme "${ext.name}"`);
     const extMaps = buildThemeMaps(ext.name);
     const content = emitThemeFile({ name: ext.name, slug: ext.slug }, extMaps, baseMaps);
@@ -720,14 +901,17 @@ function emitThemes() {
   const fileHeader = header(
     'Sherpa Themes — Base + Extended Theme Tokens',
     'All themes bundled in one file; [data-theme="..."] selectors ensure\n' +
-    ' * only the active theme\'s tokens apply. Every selector is wrapped in\n' +
-    ' * :where() — zero specificity, components always win without `!important`.\n' +
-    ' *\n' +
-    ' * Default theme (apex-2-core): no data-theme attribute required.\n' +
-    ' * Extended themes: set <html data-theme="apex-2-blue|apex-2-purple|apex-2-teal|classic">.',
+      " * only the active theme's tokens apply. Every selector is wrapped in\n" +
+      ' * :where() — zero specificity, components always win without `!important`.\n' +
+      ' *\n' +
+      ' * Default theme (apex-2-core): no data-theme attribute required.\n' +
+      ' * Extended themes: set <html data-theme="apex-2-blue|apex-2-purple|apex-2-teal|classic">.',
   );
   const allContent = [coreContent, ...extParts].join('\n');
-  write('sherpa-themes.css', fileHeader + '\n@layer theme {\n\n' + allContent + '\n} /* @layer theme */\n');
+  write(
+    'sherpa-themes.css',
+    fileHeader + '\n@layer theme {\n\n' + allContent + '\n} /* @layer theme */\n',
+  );
   console.log(`  → sherpa-themes.css`);
 }
 
@@ -735,27 +919,29 @@ function emitThemes() {
 
 function emitOverrides() {
   const lines = [];
-  lines.push(header(
-    'Theme Corrections, Density & Status Overrides',
-    'Mixed origin: theme corrections are hand-coded in this script;\n' +
-    ' * density and status sections are generated from Figma Variables.\n' +
-    ' *\n' +
-    ' *   Theme corrections  [@layer theme]\n' +
-    ' *            Hand-maintained fixes for Figma-generated aliases that resolve\n' +
-    ' *            to values that are visually incorrect. These patches come AFTER\n' +
-    ' *            sherpa-themes.css in the @layer theme order so they win over\n' +
-    ' *            the generated values.\n' +
-    ' *\n' +
-    ' *   Density  [data-density="compact|comfortable"]\n' +
-    ' *            Applies to any subtree. Tokens cascade — descendant components\n' +
-    ' *            automatically rescale. The base density requires no attribute.\n' +
-    ' *\n' +
-    ' *   Status   [data-status="critical|info|success|warning|urgent"]\n' +
-    ' *            Set on any element or the document root. Descendant components\n' +
-    ' *            consume the resulting --_status-* private vars via var() fallbacks.\n' +
-    ' *            Custom properties inherit through shadow DOM — no per-component\n' +
-    ' *            status block needed.',
-  ));
+  lines.push(
+    header(
+      'Theme Corrections, Density & Status Overrides',
+      'Mixed origin: theme corrections are hand-coded in this script;\n' +
+        ' * density and status sections are generated from Figma Variables.\n' +
+        ' *\n' +
+        ' *   Theme corrections  [@layer theme]\n' +
+        ' *            Hand-maintained fixes for Figma-generated aliases that resolve\n' +
+        ' *            to values that are visually incorrect. These patches come AFTER\n' +
+        ' *            sherpa-themes.css in the @layer theme order so they win over\n' +
+        ' *            the generated values.\n' +
+        ' *\n' +
+        ' *   Density  [data-density="compact|comfortable"]\n' +
+        ' *            Applies to any subtree. Tokens cascade — descendant components\n' +
+        ' *            automatically rescale. The base density requires no attribute.\n' +
+        ' *\n' +
+        ' *   Status   [data-status="critical|info|success|warning|urgent"]\n' +
+        ' *            Set on any element or the document root. Descendant components\n' +
+        ' *            consume the resulting --_status-* private vars via var() fallbacks.\n' +
+        ' *            Custom properties inherit through shadow DOM — no per-component\n' +
+        ' *            status block needed.',
+    ),
+  );
 
   // ── Theme corrections ──
   // The Figma-generated alias for surface/context/<x>/subtle/default resolves
@@ -765,11 +951,21 @@ function emitOverrides() {
   lines.push('\n/* ─── Theme corrections ─────────────────────────────────────────────── */\n\n');
   lines.push('@layer theme {\n\n');
   lines.push('  :where(:root) {\n');
-  lines.push('    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n');
-  lines.push('    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n');
-  lines.push('    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n');
-  lines.push('    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);\n');
-  lines.push('    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);\n');
+  lines.push(
+    '    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n',
+  );
+  lines.push(
+    '    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n',
+  );
+  lines.push(
+    '    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n',
+  );
+  lines.push(
+    '    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);\n',
+  );
+  lines.push(
+    '    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);\n',
+  );
   lines.push('  }\n\n');
   lines.push('} /* @layer theme */\n\n');
 
@@ -780,7 +976,7 @@ function emitOverrides() {
     const slug = mode.toLowerCase();
     lines.push(`  :where([data-density="${slug}"]) {\n`);
     const spaceVars = density.vars
-      .filter(v => v.n.startsWith('space/'))
+      .filter((v) => v.n.startsWith('space/'))
       .sort((a, b) => a.n.localeCompare(b.n));
     for (const v of spaceVars) {
       const val = formatVal(v.v[mode], v.t);
@@ -814,25 +1010,24 @@ function emitOverrides() {
   write('sherpa-overrides.css', lines.join(''));
 }
 
-
 // ─── Emit: status/status.css ─────────────────────────────────────────
 
 const STATUS_PROP_MAP = {
-  'border/default':         '--_status-border',
-  'surface/default':        '--_status-surface',
-  'surface/hover':          '--_status-surface-hover',
-  'surface/down':           '--_status-surface-down',
-  'surface/color/default':  '--_status-surface-strong',
-  'surface/color/hover':    '--_status-surface-strong-hover',
-  'surface/color/down':     '--_status-surface-strong-down',
+  'border/default': '--_status-border',
+  'surface/default': '--_status-surface',
+  'surface/hover': '--_status-surface-hover',
+  'surface/down': '--_status-surface-down',
+  'surface/color/default': '--_status-surface-strong',
+  'surface/color/hover': '--_status-surface-strong-hover',
+  'surface/color/down': '--_status-surface-strong-down',
   'surface/subtle/default': '--_status-surface-subtle',
-  'surface/subtle/hover':   '--_status-surface-subtle-hover',
-  'surface/subtle/down':    '--_status-surface-subtle-down',
-  'text/default':           '--_status-text',
-  'text/on-color':          '--_status-text-on-color',
-  'icon/default':           '--_status-icon',
-  'icon/on-color':          '--_status-icon-on-color',
-  'shadow/status':          '--_status-shadow',
+  'surface/subtle/hover': '--_status-surface-subtle-hover',
+  'surface/subtle/down': '--_status-surface-subtle-down',
+  'text/default': '--_status-text',
+  'text/on-color': '--_status-text-on-color',
+  'icon/default': '--_status-icon',
+  'icon/on-color': '--_status-icon-on-color',
+  'shadow/status': '--_status-shadow',
 };
 
 function emitStatus() {
@@ -884,7 +1079,7 @@ function emitIndex() {
 @layer utilities.icons, utilities.motion, utilities.text, utilities.layout;
 
 @import "reset.css"                   layer(reset);
-@import "tokens/sherpa-primitives.css" layer(primitives);
+@import "tokens/primitives.css" layer(primitives);
 @import "tokens/sherpa-alias.css"      layer(alias);
 @import "tokens/sherpa-platform.css"   layer(platform);
 

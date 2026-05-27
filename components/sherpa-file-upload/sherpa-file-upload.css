@@ -3,8 +3,7 @@
  *
  * File upload drop zone with drag-and-drop, file list, and progress tracking.
 
-  :host([hidden]) { display: none; }
- *
+*
  * ── Data attributes ───────────────────────────────────────────
  * @attr {string}  [data-label]        Label text above the drop zone
  * @attr {string}  [data-accept]       Accepted file types (e.g., ".jpg,.png,image/*")
@@ -41,47 +40,47 @@
 }
 :host .label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-      line-height: var(--sherpa-line-height-default, 1.4);
-      color: var(--sherpa-text-default-body, #18191a);
-      font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-body, #18191a);
+  font-weight: var(--sherpa-font-weight-medium, 500);
 }
 :host(:not([data-label])) .label {
   display: none;
 }
 :host .drop-zone {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--sherpa-space-sm, 8px);
-      min-height: 80px;
-      padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
-      background: var(--sherpa-surface-control-default, #ffffff);
-      border: 2px dashed var(--sherpa-border-control-default, #c6c6cc);
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      cursor: pointer;
-      transition: background var(--sherpa-motion-transition-fast, 0.15s ease-out), border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
-      outline: none;
-  
-      &:hover {
-        background: var(--sherpa-surface-container-hover, #f5f5f7);
-        border-color: var(--sherpa-border-control-hover, #9d9da6);
-      }
-  
-      &:focus-visible {
-        outline: 2px solid var(--sherpa-border-control-primary-default, #3c5edd);
-        outline-offset: 2px;
-      }
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-space-sm, 8px);
+  min-height: 80px;
+  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  border: 2px dashed var(--sherpa-border-control-default, #c6c6cc);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  cursor: pointer;
+  transition: --transition-fast(background), --transition-fast(border-color);
+  outline: none;
+
+  &:hover {
+    background: var(--sherpa-surface-container-hover, #f5f5f7);
+    border-color: var(--sherpa-border-control-hover, #9d9da6);
+  }
+
+  &:focus-visible {
+    outline: --focus-ring();
+    outline-offset: 2px;
+  }
 }
 :host([data-drag-over]) .drop-zone {
   background: var(--sherpa-surface-context-default-subtle-default, #f8ebff);
-      border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #c046ff));
-      border-style: solid;
+  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #c046ff));
+  border-style: solid;
 }
 :host([disabled]) .drop-zone {
   background: var(--sherpa-surface-control-inactive, #f0f0f2);
-      border-color: var(--sherpa-border-control-inactive, #e0e0e5);
-      cursor: default;
-      pointer-events: none;
+  border-color: var(--sherpa-border-control-inactive, #e0e0e5);
+  cursor: default;
+  pointer-events: none;
 }
 :host([disabled]) .drop-icon,
 :host([disabled]) .drop-text {
@@ -89,22 +88,24 @@
 }
 :host .drop-icon {
   font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
-      font-weight: 900;
-      font-style: normal;
-      font-size: 20px;
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      flex-shrink: 0;
+  font-weight: 900;
+  font-style: normal;
+  font-size: 20px;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  flex-shrink: 0;
 }
 :host .drop-text {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-      color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-text-default-body, #18191a);
 }
 :host .browse-link {
   color: var(--_status-text, var(--sherpa-text-primary-default, #0079aa));
-      text-decoration: underline;
-      cursor: pointer;
-  
-      &:hover { text-decoration: none; }
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 :host .file-constraints {
   display: none;
@@ -114,79 +115,79 @@
 }
 :host .constraints-text {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-      line-height: var(--sherpa-line-height-default, 1.4);
-      color: var(--sherpa-text-default-secondary, #5c5c66);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
 }
 :host .file-list {
   display: flex;
-      flex-direction: column;
-      gap: var(--sherpa-space-xs, 6px);
+  flex-direction: column;
+  gap: var(--sherpa-space-xs, 6px);
 }
 :host(:not([data-has-files])) .file-list {
   display: none;
 }
 :host .file-item {
   display: flex;
-      align-items: flex-start;
-      gap: var(--sherpa-space-sm, 12px);
-      padding: var(--sherpa-space-xs, 6px) 0;
+  align-items: flex-start;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 6px) 0;
 }
 :host .file-icon {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      background: var(--sherpa-surface-container-secondary-default, #f5f5f7);
-      flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: var(--sherpa-surface-container-secondary-default, #f5f5f7);
+  flex-shrink: 0;
 }
 :host .file-type-icon {
   font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
-      font-weight: 900;
-      font-style: normal;
-      font-size: 16px;
-      color: var(--sherpa-text-default-secondary, #5c5c66);
+  font-weight: 900;
+  font-style: normal;
+  font-size: 16px;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
 }
 :host .file-info {
   flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: var(--sherpa-space-2xs, 4px);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
 }
 :host .file-name-row {
   display: flex;
-      align-items: baseline;
-      gap: var(--sherpa-space-sm, 8px);
+  align-items: baseline;
+  gap: var(--sherpa-space-sm, 8px);
 }
 :host .file-name {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-      color: var(--sherpa-text-default-body, #18191a);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-      min-width: 0;
+  color: var(--sherpa-text-default-body, #18191a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 :host .file-size {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      white-space: nowrap;
-      flex-shrink: 0;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 :host .file-status-row {
   display: flex;
-      flex-direction: column;
-      gap: var(--sherpa-space-2xs, 4px);
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
 }
 :host .file-progress-track {
   width: 100%;
-      height: 4px;
-      background: var(--sherpa-surface-container-default, #e0e0e5);
-      border-radius: var(--sherpa-border-rounding-full, 999px);
-      overflow: hidden;
-      display: none;
+  height: 4px;
+  background: var(--sherpa-surface-container-default, #e0e0e5);
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  overflow: hidden;
+  display: none;
 }
 :host .file-item[data-state="uploading"] .file-progress-track {
   display: block;
@@ -198,14 +199,14 @@
 }
 :host .file-progress-fill {
   height: 100%;
-      width: var(--_file-progress, 0%);
-      background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
-      border-radius: var(--sherpa-border-rounding-full, 999px);
-      transition: width 0.2s ease;
+  width: var(--_file-progress, 0%);
+  background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  transition: width 0.2s ease;
 }
 :host .file-status-text {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-      color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
 }
 :host .file-item[data-state="ready"] .file-status-text {
   color: var(--sherpa-text-default-secondary, #5c5c66);
@@ -221,29 +222,31 @@
 }
 :host .file-actions {
   display: flex;
-      gap: 0;
-      flex-shrink: 0;
-      align-items: flex-start;
+  gap: 0;
+  flex-shrink: 0;
+  align-items: flex-start;
 }
 :host .file-remove-btn,
 :host .file-retry-btn {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border: none;
-      background: var(--sherpa-surface-container-secondary-default, #fafaff);
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      cursor: pointer;
-      color: var(--sherpa-text-default-body, #2e2e33);
-      font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
-      font-weight: 900;
-      font-size: 14px;
-      padding: 0;
-      transition: background 0.12s ease;
-  
-      &:hover { background: var(--sherpa-surface-container-hover, #f0f0f2); }
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--sherpa-surface-container-secondary-default, #fafaff);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  cursor: pointer;
+  color: var(--sherpa-text-default-body, #2e2e33);
+  font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  padding: 0;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: var(--sherpa-surface-container-hover, #f0f0f2);
+  }
 }
 :host .file-retry-btn {
   display: none;
@@ -253,8 +256,8 @@
 }
 :host .action-bar {
   display: none;
-      gap: var(--sherpa-space-base, 16px);
-      padding-top: var(--sherpa-space-sm, 8px);
+  gap: var(--sherpa-space-base, 16px);
+  padding-top: var(--sherpa-space-sm, 8px);
 }
 :host([data-has-files]) .action-bar {
   display: flex;
@@ -262,45 +265,47 @@
 :host .upload-btn,
 :host .remove-all-btn {
   display: inline-flex;
-      align-items: center;
-      gap: var(--sherpa-space-sm, 8px);
-      padding: var(--sherpa-space-sm, 8px);
-      border: none;
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      font-size: var(--sherpa-fonts-scale-xs, 13px);
-      font-family: inherit;
-      cursor: pointer;
-      font-weight: var(--sherpa-font-weight-medium, 500);
-      transition: background 0.12s ease;
-  
-      & i {
-        font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
-        font-weight: 900;
-        font-style: normal;
-        font-size: 14px;
-      }
+  align-items: center;
+  gap: var(--sherpa-space-sm, 8px);
+  padding: var(--sherpa-space-sm, 8px);
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  font-size: var(--sherpa-fonts-scale-xs, 13px);
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  transition: background 0.12s ease;
+
+  & i {
+    font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+  }
 }
 :host .upload-btn {
   background: var(--sherpa-surface-control-default, #ffffff);
-      color: var(--sherpa-text-primary-default, #0079aa);
-  
-      &:hover { background: var(--sherpa-surface-container-hover, #f0f0f2); }
+  color: var(--sherpa-text-primary-default, #0079aa);
+
+  &:hover {
+    background: var(--sherpa-surface-container-hover, #f0f0f2);
+  }
 }
 :host .remove-all-btn {
   background: var(--sherpa-surface-context-error-subtle-default, #f8c4b9);
-      color: var(--sherpa-text-context-error-default, #dd2c00);
-  
-      &:hover { background: var(--sherpa-surface-context-error-subtle-default, #f0a898); }
+  color: var(--sherpa-text-context-error-default, #dd2c00);
+
+  &:hover {
+    background: var(--sherpa-surface-context-error-subtle-default, #f0a898);
+  }
 }
 :host .file-input {
   position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-      padding: 0;
-      margin: -1px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
 }
-

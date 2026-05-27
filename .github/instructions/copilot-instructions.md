@@ -285,6 +285,60 @@ inherited custom properties set by a `.grouped-component` wrapper:
 }
 ```
 
+### CSS custom functions
+
+A small library of `@function`s lives in
+[css/styles/tokens/sherpa-functions.css](css/styles/tokens/sherpa-functions.css)
+and loads in the `functions` cascade layer. Functions are **tree-scoped**, so
+the file is imported in both `index.css` (light DOM) AND
+`SherpaElement.sharedStyles` (every shadow root) — component CSS calls them
+directly with no extra wiring.
+
+> **Chromium 139+ only.** Safari/Firefox don't yet ship `@function`. We accept
+> complete breakage on those engines; no `@supports` fallback is emitted.
+
+| Function | Signature | Replaces |
+| --- | --- | --- |
+| `--alpha(--c, --pct)` | `<color>, <number 0–100>` → `<color>` | `color-mix(in srgb, X calc(Y * 1%), transparent)` |
+| `--shadow-sm(--tint)` / `-md` / `-lg` / `-sunken` | `<color>` → box-shadow value | Hand-assembled multi-line `box-shadow` shorthand |
+| `--focus-ring(--color)` | `<color>` → `2px solid <color>` (defaults to primary control border) | Hand-rolled `outline: 2px solid var(--sherpa-border-control-*-default, #hex)` |
+| `--transition-fast(--prop)` / `-base` / `-slow` | `<custom-ident>` → `<prop> <duration> <easing>` | `<prop> var(--sherpa-motion-transition-fast, 0.15s ease-out)` boilerplate |
+
+```css
+/* ✅ Alpha-blended surface */
+background: --alpha(var(--sherpa-color-success-100), 20);
+
+/* ✅ Composite shadow with arbitrary tint */
+box-shadow: --shadow-md(var(--sherpa-elevation-tint-error));
+
+/* ✅ Standard focus ring (primary control colour) */
+:host(:focus-visible) {
+  outline: --focus-ring();
+  outline-offset: 2px;
+}
+
+/* ✅ Focus ring with custom colour */
+:host([data-status="critical"]:focus-visible) {
+  outline: --focus-ring(var(--sherpa-border-context-error-default));
+}
+
+/* ✅ Multi-property transition */
+transition:
+  --transition-fast(background-color),
+  --transition-fast(border-color);
+```
+
+> `--pct` is an unitless number 0–100 (NOT a percentage). The function applies
+> `* 1%` internally so callers can pass `var(--sherpa-opacity-400)` directly.
+
+> One function per motion speed (`-fast`, `-base`, `-slow`) because
+> `@function` cannot switch on its argument value. The composite tokens
+> `--sherpa-motion-transition-fast/base/slow` remain available for callers
+> that want the raw `duration easing` pair (e.g. `transition-duration` only).
+
+> `@function` only produces **values** — at-rule conditions like
+> `@container (min-width: 320px)` cannot be parameterised. Don't try.
+
 ---
 
 ## 5 Token Architecture
@@ -294,7 +348,7 @@ hardcoded fallbacks.**
 
 | Tier              | Prefix            | Source                                           | Example                                           |
 | ----------------- | ----------------- | ------------------------------------------------ | ------------------------------------------------- |
-| Core primitives   | `--sherpa-core-*` | `tokens/sherpa-primitives.css`                   | `--sherpa-core-colors-slate-600`                  |
+| Core primitives   | `--core-*` | `tokens/primitives.css`                   | `--core-colors-slate-600`                  |
 | Semantic aliases  | `--sherpa-*`      | `tokens/sherpa-alias.css`, `sherpa-theme-*.css`  | `--sherpa-text-default-body`, `--sherpa-space-sm` |
 | Component private | `--_*`            | Component CSS                                    | `--_status-surface`, `--_cg-border-radius`        |
 
@@ -539,13 +593,17 @@ annotations (e.g., `data-variant {enum} — primary | secondary`) and note which
 | `element.classList.add/remove/toggle` for visual state    | `data-*` attributes + CSS `:host([data-*])`                |
 | `opacity: 0.5` for disabled                               | Inactive tokens per property                               |
 | `:host:not(...)` (chained form)                           | `:host(:not(...))` (functional form)                       |
-| Core tokens (`--sherpa-core-*`) in component CSS          | Semantic tokens (`--sherpa-*`) with hardcoded fallbacks    |
+| Core tokens (`--core-*`) in component CSS          | Semantic tokens (`--sherpa-*`) with hardcoded fallbacks    |
 | Bare custom attributes (`loading`, `pinned`)              | `data-` prefix (`data-loading`, `data-pinned`)             |
 | `@container style(--prop)` on self                        | `:host([attr])` attribute selectors                        |
 | Cross-shadow-boundary CSS selectors               | Avoid — query from the light DOM if needed         |
 | Global/singleton state managers                           | Custom events with `bubbles: true`                         |
 | `light-dark()` in component CSS                           | Theme files declare per-mode blocks; components are mode-agnostic |
 | Inline styles set from JS                                 | JS sets attributes; CSS owns presentation                  |
+| `color-mix(in srgb, X calc(Y * 1%), transparent)` inline  | `--alpha(X, Y)` from `sherpa-functions.css`                |
+| Hand-rolled `box-shadow` shorthand for default shadows    | `--shadow-sm/md/lg/sunken(--tint)` functions               |
+| Hand-rolled `outline: 2px solid var(--sherpa-border-control-*)` for focus | `--focus-ring()` / `--focus-ring(--color)` function |
+| `<prop> var(--sherpa-motion-transition-fast, 0.15s ease-out)` boilerplate | `--transition-fast/base/slow(<prop>)` function |
 
 ---
 

@@ -1,4 +1,3 @@
-
 /**
  * sherpa-dialog.css — Phase 2 Modernization (CSS Nesting)
  * Shadow DOM styles for the SherpaDialog web component.
@@ -28,15 +27,16 @@
   --_border-color: var(--sherpa-border-container-default, #d5d5d5);
   --_border-width: var(--sherpa-border-width-base, 1px);
   --_rounding: var(--sherpa-border-rounding-lg, 8px);
-  --_shadow: var(--sherpa-shadow-default-lg, var(--sherpa-elevation-offset-x-large, 8px)
-            var(--sherpa-elevation-offset-y-large, 8px)
-            var(--sherpa-elevation-blur-large, 16px)
-            var(--sherpa-elevation-spread-large, 2px)
-            var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)));
+  --_shadow: var(
+    --sherpa-shadow-default-lg,
+    var(--sherpa-elevation-offset-x-large, 8px) var(--sherpa-elevation-offset-y-large, 8px)
+      var(--sherpa-elevation-blur-large, 16px) var(--sherpa-elevation-spread-large, 2px)
+      var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2))
+  );
   --_text: var(--sherpa-text-default-body, #2e2e33);
   --_duration: var(--sherpa-motion-duration-base, 200ms);
   --_easing: var(--sherpa-motion-easing-default, ease);
-/* ──────────────────────────────────────────────────────────
+  /* ──────────────────────────────────────────────────────────
              DIALOG ELEMENT
              ────────────────────────────────────────────────────────── */
   /* ── Size variants ──────────────────────────────────────── */
@@ -58,29 +58,29 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────── */
 }
-:host([hidden]) { display: none; }
-
 :host .dialog {
   display: none;
-      flex-direction: column;
-      max-height: 90vh;
-      width: 600px;
-      max-width: 90vw;
-      padding: 0;
-      background-color: var(--_surface);
-      border: var(--_border-width) solid var(--_border-color);
-      border-radius: var(--_rounding);
-      box-shadow: var(--_shadow);
-      overflow: clip;
-      color: var(--_text);
-  
-      /* ── Open / closed via @starting-style + transition (see below) ── */
-      &[open] { display: flex; }
-  
-      /* ── Backdrop ──────────────────────────────────────── */
-      &::backdrop {
-        background-color: var(--sherpa-effects-backdrop, oklch(0 0 0 / 0.5));
-      }
+  flex-direction: column;
+  max-height: 90vh;
+  width: 600px;
+  max-width: 90vw;
+  padding: 0;
+  background-color: var(--_surface);
+  border: var(--_border-width) solid var(--_border-color);
+  border-radius: var(--_rounding);
+  box-shadow: var(--_shadow);
+  overflow: clip;
+  color: var(--_text);
+
+  /* ── Open / closed via @starting-style + transition (see below) ── */
+  &[open] {
+    display: flex;
+  }
+
+  /* ── Backdrop ──────────────────────────────────────── */
+  &::backdrop {
+    background-color: var(--sherpa-effects-backdrop, oklch(0 0 0 / 0.5));
+  }
 }
 :host([data-size="small"]) .dialog {
   width: 400px;
@@ -90,10 +90,13 @@
 }
 :host([data-size="full"]) .dialog {
   width: 90vw;
-      height: 90vh;
+  height: 90vh;
 }
 :host([data-status]) .header-row {
-  border-bottom-color: var(--_status-border-strong, var(--sherpa-border-container-default, #d5d5d5));
+  border-bottom-color: var(
+    --_status-border-strong,
+    var(--sherpa-border-container-default, #d5d5d5)
+  );
 }
 :host([data-status]) .dialog {
   border-color: var(--_status-border, var(--sherpa-border-container-default, #d5d5d5));
@@ -111,56 +114,59 @@
 }
 :host .wizard-step-indicator {
   margin-inline-start: auto;
-      margin-inline-end: var(--sherpa-space-sm, 12px);
-      color: var(--sherpa-text-default-secondary, #6a6a7a);
-      font-size: var(--sherpa-fonts-scale-sm, 12px);
+  margin-inline-end: var(--sherpa-space-sm, 12px);
+  color: var(--sherpa-text-default-secondary, #6a6a7a);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 :host .header-row {
   display: flex;
-      align-items: flex-start;
-      gap: var(--sherpa-space-xs, 4px);
-      padding: var(--sherpa-space-xs, 4px) var(--sherpa-space-sm, 8px);
-      background-color: var(--sherpa-surface-container-default, #ffffff);
-      border-bottom: var(--sherpa-border-width-base, 1px) solid
-        var(--sherpa-border-container-default, #d5d5d5);
-      border-radius: var(--_rounding) var(--_rounding) 0 0;
-      flex-shrink: 0;
+  align-items: flex-start;
+  gap: var(--sherpa-space-xs, 4px);
+  padding: var(--sherpa-space-xs, 4px) var(--sherpa-space-sm, 8px);
+  background-color: var(--sherpa-surface-container-default, #ffffff);
+  border-bottom: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d5d5d5);
+  border-radius: var(--_rounding) var(--_rounding) 0 0;
+  flex-shrink: 0;
 }
 :host .header-labels {
   display: flex;
-      flex-direction: column;
-      flex: 1 1 0;
-      min-width: 0;
-      gap: var(--sherpa-space-3xs, 2px);
-      overflow: clip;
-      margin: 0;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: var(--sherpa-space-3xs, 2px);
+  overflow: clip;
+  margin: 0;
 }
 :host .header-title {
   margin: 0;
-      font-size: var(--sherpa-fonts-scale-base, 14px);
-      font-weight: 600;
-      line-height: var(--sherpa-font-base-line-height, 20px);
-      color: var(--sherpa-text-default-heading, #1a1a1f);
-      overflow: clip;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  color: var(--sherpa-text-default-heading, #1a1a1f);
+  overflow: clip;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 :host .header-description {
   margin: 0;
-      font-size: var(--sherpa-font-sm-size, 12px);
-      line-height: var(--sherpa-font-sm-line-height, 16px);
-      color: var(--sherpa-text-default-secondary, #6a6a75);
-      overflow: clip;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-  
-      &:empty { display: none; }
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-font-sm-line-height, 16px);
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  overflow: clip;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  &:empty {
+    display: none;
+  }
 }
 :host([data-has-heading]) .header-labels {
   display: none;
 }
 :host .close-button {
-  display: inline-flex; flex-shrink: 0;
+  display: inline-flex;
+  flex-shrink: 0;
 }
 :host([data-dismissible="false"]) .close-button {
   display: none;
@@ -170,22 +176,28 @@
 }
 :host .dialog-content {
   flex: 1;
-      min-height: 1px;
-      padding: var(--sherpa-space-sm, 16px);
-      overflow-y: auto;
-      overscroll-behavior-y: contain;
-      scrollbar-width: thin;
-      scrollbar-color: var(--_border-color) transparent;
-  
-      /* Webkit scrollbar styling */
-      &::-webkit-scrollbar { width: 8px; }
-      &::-webkit-scrollbar-track { background: transparent; }
-      &::-webkit-scrollbar-thumb {
-        background-color: var(--_border-color);
-        border-radius: var(--_rounding);
-  
-        &:hover { background-color: var(--sherpa-border-context-default-hover, #c0c0cc); }
-      }
+  min-height: 1px;
+  padding: var(--sherpa-space-sm, 16px);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--_border-color) transparent;
+
+  /* Webkit scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--_border-color);
+    border-radius: var(--_rounding);
+
+    &:hover {
+      background-color: var(--sherpa-border-context-default-hover, #c0c0cc);
+    }
+  }
 }
 
 /* ── Enter / exit transitions via @starting-style ──────────────────── */

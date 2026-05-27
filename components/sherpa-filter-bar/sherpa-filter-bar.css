@@ -20,7 +20,7 @@
   --_filter-bar-px: var(--sherpa-space-xs, 8px);
   --_filter-bar-gap: var(--sherpa-space-2xs, 4px);
   display: block;
-/* ──────────────────────────────────────────────────────────
+  /* ──────────────────────────────────────────────────────────
        DENSITY VARIANT
        ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -38,29 +38,28 @@
        ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
-:host([hidden]) { display: none; }
-
 :host([data-density="compact"]) {
   --_filter-bar-py: var(--sherpa-space-3xs, 2px);
 }
 :host .filter-surface {
   display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: var(--_filter-bar-gap);
-      width: 100%;
-      padding-block: var(--_filter-bar-py);
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--_filter-bar-gap);
+  width: 100%;
+  padding-block: var(--_filter-bar-py);
 }
 :host([data-embedded]) .filter-surface {
-  padding: 0; border: none;
+  padding: 0;
+  border: none;
 }
 :host slot[name="toggle"],
 :host slot[name="presets"],
 :host slot[name="actions"] {
   display: flex;
-      align-items: center;
-      gap: var(--_filter-bar-gap);
-      flex-shrink: 0;
+  align-items: center;
+  gap: var(--_filter-bar-gap);
+  flex-shrink: 0;
 }
 :host slot[name="actions"] {
   margin-inline-start: auto;
@@ -69,7 +68,7 @@
 :host slot[name="presets"]:not(:has(::slotted(*))) {
   display: none;
 }
-:host(:not([data-has-toggle]))  slot[name="toggle"],
+:host(:not([data-has-toggle])) slot[name="toggle"],
 :host(:not([data-has-presets])) slot[name="presets"],
 :host(:not([data-has-actions])) slot[name="actions"] {
   display: none;
@@ -114,7 +113,8 @@
   flex-direction: row;
   gap: 0;
   vertical-align: middle;
-  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default, #9a9aad);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-control-default, #ffffff);
   overflow: hidden;
@@ -131,7 +131,7 @@
   /* Visible children default to full rounding on both sides */
   & > :not([hidden]) {
     --_grouped-rounding-start: var(--sherpa-border-rounding-base, 4px);
-    --_grouped-rounding-end:   var(--sherpa-border-rounding-base, 4px);
+    --_grouped-rounding-end: var(--sherpa-border-rounding-base, 4px);
   }
 
   /* Not the visual start — a visible sibling precedes it */
@@ -150,10 +150,16 @@
 }
 
 /* ─── Host-attribute overrides ────────────────────────────────────────────── */
-:host([data-hide-group]) .group-chip { display: none; }
-:host([data-hide-sort])  .sort-chip  { display: none; }
+:host([data-hide-group]) .group-chip {
+  display: none;
+}
+:host([data-hide-sort]) .sort-chip {
+  display: none;
+}
 /* Suppress the before-presets divider when both group+sort chips are hidden */
-:host([data-hide-group][data-hide-sort]) .zone-divider[data-divider="before-presets"] { display: none !important; }
+:host([data-hide-group][data-hide-sort]) .zone-divider[data-divider="before-presets"] {
+  display: none !important;
+}
 
 /* ─── Slotted .grouped-component light-DOM filter chips ──────────────────── */
 /*
@@ -175,7 +181,8 @@
   flex-direction: row;
   gap: 0;
   vertical-align: middle;
-  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border: var(--sherpa-border-width-xs, 1px) solid
+    var(--sherpa-border-control-secondary-default, #9a9aad);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-control-default, #ffffff);
   overflow: hidden;

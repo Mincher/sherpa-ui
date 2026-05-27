@@ -1,0 +1,132 @@
+/**
+ * sherpa-anchor.css — Opt-in anchor-positioning utilities for floating UI
+ * components (menu, popover, tooltip, non-modal dialog, etc).
+ *
+ * Adopted by SherpaElement when the subclass declares `static useAnchor = true`.
+ * Loaded once, shared across every instance of every opted-in component.
+ *
+ * ─ Contract ──────────────────────────────────────────────────────────────
+ * The host (the floating element) must declare its own `position-anchor`,
+ * because the anchor name is unique per use-site and cannot be centralised:
+ *
+ *     :host([data-open]) {
+ *       position-anchor: var(--_sherpa-anchor);   // set by JS / inline style
+ *     }
+ *
+ * This sheet provides:
+ *   • Attribute-driven placement (`data-placement`)
+ *   • Token-driven gap from the anchor (`data-offset`)
+ *   • Opt-in flip fallbacks (`data-flip`)
+ *
+ * Components should NOT redeclare top/left/right/bottom or position-try-*
+ * rules — set the attributes and let this sheet do the work.
+ *
+ * ─ Attributes on the host ────────────────────────────────────────────────
+ *   data-placement {enum} —
+ *       bottom | bottom-start | bottom-end           (default: bottom-start)
+ *       top    | top-start    | top-end
+ *       inline-start | inline-end
+ *       inline-start-top | inline-end-top
+ *   data-offset    {enum} — none | 2xs | xs | sm | default   (default: 2xs)
+ *   data-flip      {boolean} — when present, enables flip fallbacks
+ *
+ * ─ Notes ─────────────────────────────────────────────────────────────────
+ * • Uses logical properties (inline-start / inline-end) throughout so
+ *   RTL works automatically.
+ * • All rules guarded by `@supports (anchor-name: --x)`. Components are
+ *   responsible for their own pre-anchor fallback (typically a fixed
+ *   position pinned to the viewport, plus a JS-measured rectangle).
+ */
+
+/* ── Anchor-positioned host base ─────────────────────────────────────── */
+@supports (anchor-name: --x) {
+  :host([data-placement]) {
+    /* Default gap from the anchor — small but visible. */
+    --_anchor-offset: var(--sherpa-space-2xs, 4px);
+    position: absolute;
+    /* Reset to centre-of-anchor; specific placement rules below override. */
+    margin: 0;
+  }
+
+  /* ── Offset (token-driven gap) ─────────────────────────────────────── */
+  :host([data-offset="none"]) {
+    --_anchor-offset: 0;
+  }
+  :host([data-offset="2xs"]) {
+    --_anchor-offset: var(--sherpa-space-2xs, 4px);
+  }
+  :host([data-offset="xs"]) {
+    --_anchor-offset: var(--sherpa-space-xs, 8px);
+  }
+  :host([data-offset="sm"]) {
+    --_anchor-offset: var(--sherpa-space-sm, 12px);
+  }
+  :host([data-offset="default"]) {
+    --_anchor-offset: var(--sherpa-space-default, 16px);
+  }
+
+  /* ── Placement: bottom ─────────────────────────────────────────────── */
+  :host([data-placement="bottom"]),
+  :host([data-placement="bottom-start"]),
+  :host([data-placement="bottom-end"]) {
+    top: calc(anchor(bottom) + var(--_anchor-offset));
+  }
+  :host([data-placement="bottom"]) {
+    justify-self: anchor-center;
+  }
+  :host([data-placement="bottom-start"]) {
+    inset-inline-start: anchor(inline-start);
+  }
+  :host([data-placement="bottom-end"]) {
+    inset-inline-end: anchor(inline-end);
+  }
+
+  /* ── Placement: top ────────────────────────────────────────────────── */
+  :host([data-placement="top"]),
+  :host([data-placement="top-start"]),
+  :host([data-placement="top-end"]) {
+    bottom: calc(anchor(top) + var(--_anchor-offset));
+  }
+  :host([data-placement="top"]) {
+    justify-self: anchor-center;
+  }
+  :host([data-placement="top-start"]) {
+    inset-inline-start: anchor(inline-start);
+  }
+  :host([data-placement="top-end"]) {
+    inset-inline-end: anchor(inline-end);
+  }
+
+  /* ── Placement: inline-start / inline-end ──────────────────────────── */
+  :host([data-placement="inline-start"]),
+  :host([data-placement="inline-start-top"]) {
+    inset-inline-end: calc(anchor(inline-start) + var(--_anchor-offset));
+  }
+  :host([data-placement="inline-end"]),
+  :host([data-placement="inline-end-top"]) {
+    inset-inline-start: calc(anchor(inline-end) + var(--_anchor-offset));
+  }
+  :host([data-placement="inline-start"]),
+  :host([data-placement="inline-end"]) {
+    align-self: anchor-center;
+  }
+  :host([data-placement="inline-start-top"]),
+  :host([data-placement="inline-end-top"]) {
+    top: anchor(top);
+  }
+
+  /* ── Flip fallbacks (opt-in) ───────────────────────────────────────── */
+  :host([data-flip][data-placement^="bottom"]),
+  :host([data-flip][data-placement^="top"]) {
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
+  }
+  :host([data-flip][data-placement^="inline-"]) {
+    position-try-fallbacks:
+      flip-inline,
+      flip-block,
+      flip-inline flip-block;
+  }
+}

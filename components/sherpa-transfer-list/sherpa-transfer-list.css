@@ -14,13 +14,11 @@
   color: var(--sherpa-text-default-body, #2e2e33);
   min-height: 240px;
 }
-:host([hidden]) { display: none; }
-
 :host .pane {
   display: flex;
-      flex-direction: column;
-      gap: var(--sherpa-space-xs, 8px);
-      min-width: 0;
+  flex-direction: column;
+  gap: var(--sherpa-space-xs, 8px);
+  min-width: 0;
 
   .pane-search {
     display: none;
@@ -28,17 +26,18 @@
   }
 }
 :host([data-search]) {
-  .pane-search { display: block; }
+  .pane-search {
+    display: block;
+  }
 }
 :host .pane-list {
   flex: 1;
-      overflow: auto;
-      min-height: 0;
+  overflow: auto;
+  min-height: 0;
 }
 :host .control-column {
   display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: var(--sherpa-space-xs, 8px);
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sherpa-space-xs, 8px);
 }
-

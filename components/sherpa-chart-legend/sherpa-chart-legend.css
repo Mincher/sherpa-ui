@@ -10,7 +10,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-/* ──────────────────────────────────────────────────────────
+  /* ──────────────────────────────────────────────────────────
              LOADING VARIANT (dimmed)
              ────────────────────────────────────────────────────────── */
   /* ──────────────────────────────────────────────────────────
@@ -30,8 +30,6 @@
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
-:host([hidden]) { display: none; }
-
 :host([data-loading]) {
   filter: grayscale(0.6);
   color: var(--sherpa-text-inactive-default, #5c5c66);
@@ -39,54 +37,56 @@
 }
 :host .legend-list {
   display: flex;
-      flex-wrap: wrap;
-      gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-lg, 24px);
-      align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-lg, 24px);
+  align-items: center;
 }
 :host([data-orientation="vertical"]) .legend-list {
   flex-direction: column;
-      align-items: flex-start;
+  align-items: flex-start;
 }
 :host .legend-item {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 8px);
-      font-size: var(--sherpa-fonts-scale-sm, 14px);
-      color: var(--sherpa-text-default-body, #18191a);
-      cursor: default;
-      transition: color var(--sherpa-motion-transition-fast, 0.15s ease-out);
-  
-      /* ── Inactive state ─────────────────────────────────────– */
-      &[data-inactive] {
-        color: var(--sherpa-text-default-placeholder, #999999);
-  
-        & .legend-swatch {
-          /* !important overrides the inline background-color set by JS for series colours */
-          background-color: var(--sherpa-surface-control-inactive, #cccccc) !important;
-        }
-      }
-  
-      /* ── Linkable state ────────────────────────────────────– */
-      &[data-link] {
-        cursor: pointer;
-  
-        &:hover .legend-label { text-decoration: underline; }
-      }
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  color: var(--sherpa-text-default-body, #18191a);
+  cursor: default;
+  transition: --transition-fast(color);
+
+  /* ── Inactive state ─────────────────────────────────────– */
+  &[data-inactive] {
+    color: var(--sherpa-text-default-placeholder, #999999);
+
+    & .legend-swatch {
+      /* !important overrides the inline background-color set by JS for series colours */
+      background-color: var(--sherpa-surface-control-inactive, #cccccc) !important;
+    }
+  }
+
+  /* ── Linkable state ────────────────────────────────────– */
+  &[data-link] {
+    cursor: pointer;
+
+    &:hover .legend-label {
+      text-decoration: underline;
+    }
+  }
 }
 :host .legend-key {
   width: 20px;
-      height: 20px;
-      border-radius: var(--sherpa-border-rounding-sm, 4px);
-      flex-shrink: 0;
+  height: 20px;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  flex-shrink: 0;
 }
 :host .legend-label {
   white-space: nowrap;
-      color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-text-default-body, #18191a);
 }
 :host .legend-value {
   display: none;
-      font-weight: var(--sherpa-font-weight-semibold, 600);
-      color: var(--sherpa-text-default-heading, #18191a);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-text-default-heading, #18191a);
 }
 :host .legend-item[data-has-value] .legend-value {
   display: inline;
@@ -109,4 +109,3 @@
 :host .color-6 {
   background-color: var(--sherpa-data-viz-categorical-color-6, #8197f1);
 }
-

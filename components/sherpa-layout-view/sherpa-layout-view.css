@@ -23,7 +23,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-width: 100%;
+  width: 100%;
   min-height: 0;
   background: transparent;
   /* ── Fill modes ────────────────────────────────────────– */
@@ -42,31 +42,29 @@ width: 100%;
        ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
-:host([hidden]) { display: none; }
-
 :host([data-fill="parent"]) {
   max-height: none;
 }
 :host .view-header {
   flex: 0 0 auto;
-      display: none;
+  display: none;
 }
 :host([data-heading]) .view-header {
   display: block;
 }
 :host .view-body {
   display: flex;
-      flex-direction: row;
-      align-items: stretch;
-      flex: 1 1 auto;
-      min-height: 0;
-      width: 100%;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 :host .side-panel-start,
 :host .side-panel-end {
   display: flex;
-      flex: 0 0 auto;
-      align-self: stretch;
+  flex: 0 0 auto;
+  align-self: stretch;
 }
 :host(:not([data-has-side-panel-start])) .side-panel-start {
   display: none;
@@ -76,12 +74,12 @@ width: 100%;
 }
 :host .view-content {
   display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-width: 0;
-      min-height: 0;
-      width: 100%;
-      overflow: auto;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
 }
 :host([data-pad]) .view-content {
   padding: var(--sherpa-space-base, 16px);
@@ -95,4 +93,3 @@ width: 100%;
 :host([data-gap="lg"]) .view-content {
   gap: var(--sherpa-space-lg, 24px);
 }
-

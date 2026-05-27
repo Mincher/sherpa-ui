@@ -1,4 +1,3 @@
-
 /**
  * sherpa-metric.css — KPI / metric card
  * Shadow DOM component.
@@ -10,10 +9,6 @@
  *     to children (.metric-delta, sherpa-sparkline, etc.)
  */
 
-i {
-  font-style: normal;
-}
-
 :host {
   flex: 1 1 0;
   min-width: 180px;
@@ -23,72 +18,77 @@ i {
   overflow: clip;
   container-type: inline-size;
   container-name: metric;
-color: inherit;
+  color: inherit;
 }
-:host([hidden]) { display: none; }
-
 :host([data-visible="false"]) {
   display: none;
 }
 :host .header-row {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 8px);
-      flex-shrink: 0;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
 }
 :host([data-show-header="false"]) .header-row {
   display: none;
 }
 :host .header-labels {
   display: flex;
-      flex-direction: column;
-      flex: 1 1 0;
-      min-width: 0;
-      gap: var(--sherpa-space-3xs, 2px);
-      overflow: clip;
-      margin: 0;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: var(--sherpa-space-3xs, 2px);
+  overflow: clip;
+  margin: 0;
 }
 :host .header-title {
   margin: 0;
-      font-size: var(--sherpa-font-sm-size, 12px);
-      font-weight: 600;
-      line-height: var(--sherpa-font-base-line-height, 20px);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      overflow: clip;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-  
-      &:empty { display: none; }
+  font-size: var(--sherpa-font-sm-size, 12px);
+  font-weight: 600;
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  overflow: clip;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  &:empty {
+    display: none;
+  }
 }
 :host .header-description {
   margin: 0;
-      font-size: var(--sherpa-font-sm-size, 12px);
-      line-height: var(--sherpa-font-sm-line-height, 16px);
-      color: var(--sherpa-text-default-secondary, #6a6a75);
-      overflow: clip;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-  
-      &:empty { display: none; }
+  font-size: var(--sherpa-font-sm-size, 12px);
+  line-height: var(--sherpa-font-sm-line-height, 16px);
+  color: var(--sherpa-text-default-secondary, #6a6a75);
+  overflow: clip;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  &:empty {
+    display: none;
+  }
 }
 :host .metric-card {
   display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      align-items: stretch;
-      gap: var(--sherpa-space-sm, 12px);
-      padding: var(--sherpa-space-sm, 12px);
-      border-radius: var(--sherpa-border-rounding-base, 6px);
-      flex: 0 0 auto;
-      min-width: 0;
-      height: var(--sherpa-size-6xl, 64px);
-      overflow: visible;
-      background-color: var(--_background-color, var(--sherpa-surface-container-secondary-default, #f2f4f8));
-      color: var(--_text-color, inherit);
-      container-type: inline-size;
-      container-name: metric-card;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  flex: 0 0 auto;
+  min-width: 0;
+  height: var(--sherpa-size-6xl, 64px);
+  overflow: visible;
+  background-color: var(
+    --_background-color,
+    var(--sherpa-surface-container-secondary-default, #f2f4f8)
+  );
+  color: var(--_text-color, inherit);
+  container-type: inline-size;
+  container-name: metric-card;
 
   &[data-status="info"] {
     --_background-color: var(--sherpa-surface-context-info-subtle-default, #f7fdff);
@@ -97,7 +97,10 @@ color: inherit;
     --_icon-color: var(--sherpa-icon-context-info-default, #06526f);
   }
   &[data-status="success"] {
-    --_background-color: var(--sherpa-surface-context-success-subtle-default, rgba(240, 255, 248, 0.8));
+    --_background-color: var(
+      --sherpa-surface-context-success-subtle-default,
+      rgba(240, 255, 248, 0.8)
+    );
     --_border-color: var(--sherpa-border-context-success-default, #048142);
     --_text-color: var(--sherpa-text-context-success-default, #048142);
     --_icon-color: var(--sherpa-icon-context-success-default, #048142);
@@ -115,7 +118,10 @@ color: inherit;
     --_icon-color: var(--sherpa-icon-context-error-default, #bf2c09);
   }
   &[data-status="urgent"] {
-    --_background-color: var(--sherpa-surface-context-urgent-subtle-default, rgba(253, 226, 193, 0.2));
+    --_background-color: var(
+      --sherpa-surface-context-urgent-subtle-default,
+      rgba(253, 226, 193, 0.2)
+    );
     --_border-color: var(--sherpa-border-context-urgent-default, #b95608);
     --_text-color: var(--sherpa-text-context-urgent-default, #b95608);
     --_icon-color: var(--sherpa-icon-context-urgent-default, #b95608);
@@ -129,38 +135,38 @@ color: inherit;
 }
 :host .metric-labels {
   display: inline-flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: flex-start;
-      gap: var(--sherpa-space-2xs, 4px);
-      flex: 0 1 auto;
-      max-width: 50%;
-      order: 1;
-      align-self: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex: 0 1 auto;
+  max-width: 50%;
+  order: 1;
+  align-self: flex-start;
 }
 :host .metric-value {
-  font-family: var(--sherpa-fonts-context-brand, 'Open Sans', sans-serif);
-      font-size: var(--sherpa-fonts-scale-2xl, 24px);
-      font-weight: 400;
-      line-height: 1em;
-      letter-spacing: 1px;
-      color: var(--sherpa-text-default-heading, #18191a);
-      margin: 0;
-      max-width: 100%;
-      min-width: 0;
+  font-family: var(--sherpa-fonts-context-brand, "Open Sans", sans-serif);
+  font-size: var(--sherpa-fonts-scale-2xl, 24px);
+  font-weight: 400;
+  line-height: 1em;
+  letter-spacing: 1px;
+  color: var(--sherpa-text-default-heading, #18191a);
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
 }
 :host .metric-trend {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-2xs, 4px);
-      flex: 0 0 auto;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex: 0 0 auto;
 }
 :host .metric-trend-icon {
   display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      --icon-size: var(--sherpa-fonts-scale-sm, 0.875rem);
-      aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  --icon-size: var(--sherpa-fonts-scale-sm, 0.875rem);
+  aspect-ratio: 1;
 }
 :host .metric-trend-up,
 :host .metric-trend-down {
@@ -183,17 +189,17 @@ color: inherit;
 }
 :host .metric-sparkline {
   flex: 1 1 0%;
-      min-width: 0;
-      order: 2;
-      display: flex;
-      align-items: stretch;
-      align-self: stretch;
-      justify-content: flex-start;
-      min-height: 32px;
+  min-width: 0;
+  order: 2;
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  justify-content: flex-start;
+  min-height: 32px;
 }
 :host .metric-sparkline > sherpa-sparkline {
   flex: 1 1 auto;
-      width: 100%;
+  width: 100%;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -201,11 +207,15 @@ color: inherit;
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @container metric (max-width: 360px) {
-  :host .metric-sparkline { display: none; }
+  :host .metric-sparkline {
+    display: none;
+  }
 }
 
 @container metric-card (max-width: 240px) {
-  :host .metric-card { flex-direction: column; }
+  :host .metric-card {
+    flex-direction: column;
+  }
 
   :host .metric-sparkline {
     min-width: 0;

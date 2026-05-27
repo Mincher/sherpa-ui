@@ -36,7 +36,7 @@
   display: flex;
   flex-direction: column;
   background: var(--sherpa-surface-container-default, #ffffff);
-font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   overflow: hidden;
   height: 100%;
   /* ──────────────────────────────────────────────────────────
@@ -66,8 +66,6 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
              ────────────────────────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────– */
 }
-:host([hidden]) { display: none; }
-
 :host(:not([data-expanded])) {
   width: var(--sherpa-size-3xl, 40px);
   padding: var(--sherpa-space-xs, 8px) 0;
@@ -111,22 +109,28 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1;
 }
-:host .collapse-label:empty { display: none; }
+:host .collapse-label:empty {
+  display: none;
+}
 
 /* ── Chevron direction (inline variant) ──────────────────────
    Collapsed trigger → chevron points INWARD (toward content) to suggest expand.
    Position=right (default) anchored to right side → trigger sits to expand leftward → chevron-left.
    Position=left  anchored to left side  → trigger sits to expand rightward → chevron-right. */
-:host .collapse-icon::before { content: "\f053"; } /* default chevron-left */
-:host([data-position="left"]) .collapse-icon::before { content: "\f054"; } /* chevron-right */
+:host .collapse-icon::before {
+  content: "\f053";
+} /* default chevron-left */
+:host([data-position="left"]) .collapse-icon::before {
+  content: "\f054";
+} /* chevron-right */
 :host([data-expanded]) {
   width: var(--_panel-width, 480px);
 }
 :host([data-expanded]) .panel-body {
   display: flex;
-          flex-direction: column;
-          height: 100%;
-          overflow: hidden;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 :host([data-variant="overlay"]) {
@@ -166,26 +170,26 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 }
 :host .panel-header {
   display: flex;
-      flex-direction: column;
-      gap: 0;
-      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-      flex-shrink: 0;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  flex-shrink: 0;
 }
 :host .header-row {
   display: flex;
-      align-items: center;
-      gap: 0;
-      min-height: var(--sherpa-size-2xl, 32px);
+  align-items: center;
+  gap: 0;
+  min-height: var(--sherpa-size-2xl, 32px);
 }
 :host .header-title {
   flex: 1;
-      font-size: var(--sherpa-fonts-scale-base, 16px);
-      font-weight: var(--sherpa-font-weight-semibold, 600);
-      line-height: var(--sherpa-line-height-default, 1.5);
-      color: var(--sherpa-text-default-heading, #18191a);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+  font-size: var(--sherpa-fonts-scale-base, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: var(--sherpa-line-height-default, 1.5);
+  color: var(--sherpa-text-default-heading, #18191a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 :host([data-variant="overlay"]) .header-title {
   color: var(--sherpa-text-primary-default, #3c5edd);
@@ -195,9 +199,9 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 }
 :host .controls {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 8px);
-      flex-shrink: 0;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
 }
 :host .close-btn {
   display: flex;
@@ -220,16 +224,22 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 
 /* Header close/minimise button icon — chevron for inline, xmark for overlay.
    Inline chevron points OUTWARD (toward the anchored edge) to suggest collapse. */
-:host .close-icon::before { content: "\f054"; } /* default chevron-right (right-anchored) */
-:host([data-position="left"]) .close-icon::before { content: "\f053"; } /* chevron-left */
-:host([data-variant="overlay"]) .close-icon::before { content: "\f00d"; } /* xmark */
+:host .close-icon::before {
+  content: "\f054";
+} /* default chevron-right (right-anchored) */
+:host([data-position="left"]) .close-icon::before {
+  content: "\f053";
+} /* chevron-left */
+:host([data-variant="overlay"]) .close-icon::before {
+  content: "\f00d";
+} /* xmark */
 :host .metadata {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-sm, 12px);
-      font-size: var(--sherpa-fonts-scale-sm, 14px);
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      min-height: 20px;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  min-height: 20px;
 }
 :host(:not([data-has-metadata])) .metadata {
   display: none;
@@ -241,15 +251,17 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 :host([data-search]) .panel-search-row {
   display: block;
 }
-:host .panel-search { width: 100%; }
+:host .panel-search {
+  width: 100%;
+}
 :host .action-bar {
   display: flex;
-      align-items: center;
-      gap: var(--sherpa-space-xs, 8px);
-      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
-      background: var(--sherpa-surface-container-default, #fdfdfd);
-      border-top: 1px solid var(--sherpa-border-container-default, #d5d5dc);
-      flex-shrink: 0;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  background: var(--sherpa-surface-container-default, #fdfdfd);
+  border-top: 1px solid var(--sherpa-border-container-default, #d5d5dc);
+  flex-shrink: 0;
 }
 :host(:not([data-has-actions])) .action-bar {
   display: none;
@@ -263,7 +275,9 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   background: var(--sherpa-surface-container-secondary-default, #fafafd);
   flex-shrink: 0;
 }
-:host([data-has-toolbar]) .toolbar { display: flex; }
+:host([data-has-toolbar]) .toolbar {
+  display: flex;
+}
 
 :host .content {
   flex: 1;
@@ -280,10 +294,10 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 }
 :host .panel-empty {
   display: none;
-      padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
-      text-align: center;
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      font-size: var(--sherpa-fonts-scale-sm, 14px);
+  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
+  text-align: center;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
 }
 :host([data-empty-visible]) .panel-empty {
   display: block;
@@ -327,7 +341,9 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 }
 
 /* AI variant: xmark close icon */
-:host([data-variant="ai"]) .close-icon::before { content: "\f00d"; }
+:host([data-variant="ai"]) .close-icon::before {
+  content: "\f00d";
+}
 
 /* AI panels hide entirely when not expanded — no collapsed strip */
 :host([data-variant="ai"]:not([data-expanded])) {
@@ -347,16 +363,14 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   color: var(--sherpa-text-default-secondary, #5c5c66);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-  transition:
-    background-color var(--sherpa-motion-transition-fast, 0.15s ease-out),
-    color var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: --transition-fast(background-color), --transition-fast(color);
 }
 .ai-btn:hover {
   background: var(--sherpa-surface-container-hover, #f0f0f5);
   color: var(--sherpa-text-default-body, #2e2e33);
 }
 .ai-btn:focus-visible {
-  outline: 2px solid var(--sherpa-border-focus-default, #3c5edd);
+  outline: --focus-ring();
   outline-offset: 1px;
 }
 .ai-btn:disabled {
@@ -369,15 +383,21 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 .ai-suggestions {
   padding: 0 var(--sherpa-space-default, 16px) var(--sherpa-space-sm, 12px);
 }
-:host([data-has-label]) .ai-suggestions { display: none; }
-:host(:not([data-has-suggestions])) .ai-suggestions { display: none; }
+:host([data-has-label]) .ai-suggestions {
+  display: none;
+}
+:host(:not([data-has-suggestions])) .ai-suggestions {
+  display: none;
+}
 
 /* Composer — prompt input pinned above footer */
 .ai-composer {
   padding: 0 var(--sherpa-space-default, 16px) var(--sherpa-space-sm, 12px);
   flex-shrink: 0;
 }
-:host(:not([data-has-composer])) .ai-composer { display: none; }
+:host(:not([data-has-composer])) .ai-composer {
+  display: none;
+}
 
 /* Footer / disclaimer */
 .ai-footer {
@@ -389,4 +409,6 @@ font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   border-top: 1px solid var(--sherpa-border-container-default, #d5d5dc);
   flex-shrink: 0;
 }
-:host(:not([data-has-footer])) .ai-footer { display: none; }
+:host(:not([data-has-footer])) .ai-footer {
+  display: none;
+}

@@ -46,27 +46,11 @@ export class SherpaInputText extends SherpaInputBase {
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
   }
 
-  async onInputRender() {
-    if (this.hasAttribute('data-multiline')) {
-      // Initial sizing once the textarea exists in the shadow tree.
-      this.#autosize();
-    }
-  }
-
-  onInputConnect() {
-    if (this.hasAttribute('data-multiline')) {
-      const el = this.getInputElement();
-      el?.addEventListener('input', this.#onAutosize);
-      // Re-measure after layout so the initial value gets sized
-      // correctly even when the host was hidden at render time.
-      requestAnimationFrame(() => this.#autosize());
-    }
-  }
-
-  onInputDisconnect() {
-    const el = this.getInputElement();
-    el?.removeEventListener('input', this.#onAutosize);
-  }
+  /*
+   * No JS auto-grow: the CSS uses `field-sizing: content` (Baseline 2024+)
+   * so the textarea expands natively as the user types. Per the project
+   * evergreen-only policy, no fallback measurement is needed.
+   */
 
   onAttributeChanged(name, oldValue, newValue) {
     super.onAttributeChanged(name, oldValue, newValue);
@@ -87,24 +71,6 @@ export class SherpaInputText extends SherpaInputBase {
         });
       }
     }
-    if (name === 'value' && this.hasAttribute('data-multiline')) {
-      // Driven values come in via attribute; resize when they land.
-      requestAnimationFrame(() => this.#autosize());
-    }
-  }
-
-  #onAutosize = () => this.#autosize();
-
-  #autosize() {
-    // When field-sizing: content is supported the browser handles height
-    // natively — skip JS measurement to avoid fighting the UA layout.
-    if (CSS.supports('field-sizing', 'content')) return;
-    const el = this.getInputElement();
-    if (!el || el.tagName !== 'TEXTAREA') return;
-    // Reset to shrink before measuring so the textarea can also get
-    // smaller when content is removed.
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
   }
 }
 

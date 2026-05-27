@@ -47,7 +47,7 @@ this document _and_ the generator together — they must stay in sync.
 | `sherpa-theme-base.css`               | `emitBaseAndDiffs()`     | `@layer theme` | `@import` in `index.css` (always loaded)              |
 | `sherpa-theme-{slug}.css` (per theme) | `emitBaseAndDiffs()`     | `@layer theme` | Runtime `<link id="sherpa-theme">` in HTML `<head>`   |
 
-`tokens/sherpa-primitives.css` is **hand-maintained**, not generated.
+`tokens/primitives.css` is **hand-maintained**, not generated.
 
 ### Theme base + diffs
 
@@ -115,7 +115,7 @@ Trigger this by passing `{ iconMode: true }` when calling `refToVar()`.
 
 A Figma value beginning with `@` is a reference. Resolution order:
 
-1. **Primitive collection** (`@color/basic/...`, etc.) → `var(--sherpa-core-{sanitized})`.
+1. **Primitive collection** (`@color/basic/...`, etc.) → `var(--core-{sanitized})`.
 2. **Alias collection**                              → `var(--sherpa-{sanitized})`.
 3. **Active theme collection** (Apex 2.0)            → `var({apexToCSS()})` or `var({contentToIcon()})` for icon-mode.
 4. **Pattern inference fallback** — if the name begins with `color/basic/`, `color/extended/`, `border/{radius,stroke,dash}/`, `scale/`, `effects/`, `motion/`, `typeface/` → treat as primitive.
@@ -236,7 +236,7 @@ If the token is **shared across all themes** → add to `Alias` collection in `f
 
 If the token is **theme-specific** → add to each theme's DTCG files with the right per-theme value. The generator decides automatically whether it lands in base or per-theme based on whether the values match.
 
-If the token is a **new primitive** → add to `Primitives` in `figma-variables.json` AND to `tokens/sherpa-primitives.css` (hand-maintained file).
+If the token is a **new primitive** → add to `Primitives` in `figma-variables.json` AND to `tokens/primitives.css` (hand-maintained file).
 
 ### 7.3 Rename a token
 

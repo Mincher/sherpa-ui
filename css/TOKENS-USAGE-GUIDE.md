@@ -19,7 +19,7 @@ Complete guide to using and extending the Sherpa design token system.
   │ @layer reset                                                         │
   │   reset.css                          box-sizing, fonts                │  hand
   │ @layer primitives                                                    │
-  │   tokens/sherpa-primitives.css       --sherpa-core-* raw values       │  hand
+  │   tokens/primitives.css       --core-* raw values       │  hand
   │ @layer alias                                                         │
   │   tokens/sherpa-alias.css            --sherpa-* semantic + font       │  generated
   │                                      composites + @property regs      │
@@ -297,7 +297,7 @@ differs between light and dark modes:
   color-scheme: light dark;
   --sherpa-surface-container-app: light-dark(
     var(--sherpa-color-neutral-0),
-    var(--sherpa-core-color-basic-monochrome-950)
+    var(--core-color-basic-monochrome-950)
   );
 }
 ```
@@ -485,7 +485,7 @@ Reference tokens in:
 
 1. **Always use tokens** — Never hardcode colors, spacing, or sizes.
 2. **Favor semantic tokens** — Use `--sherpa-surface-container-default` over
-   `--sherpa-color-brand-base`. Never reference `--sherpa-core-*` primitives
+   `--sherpa-color-brand-base`. Never reference `--core-*` primitives
    from component CSS.
 3. **Always provide a hardcoded fallback** —
    `var(--sherpa-space-sm, 12px)` not `var(--sherpa-space-sm)`. This guarantees
@@ -506,7 +506,7 @@ Reference tokens in:
 Is the value the same across all themes?
 ├── YES → Is it a raw design value (color hex, px scale)?
 │         ├── YES → Add to figma-tokens primitives.
-│         │        Output: tokens/sherpa-primitives.css (--sherpa-core-*).
+│         │        Output: tokens/primitives.css (--core-*).
 │         └── NO  → Is it a font composite or status mapping?
 │                   └── YES or NO → figma-tokens alias → tokens/sherpa-alias.css
 │                                  (font composites and [data-status]

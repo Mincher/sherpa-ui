@@ -130,7 +130,7 @@
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-control-default, #ffffff);
   overflow: hidden;
-  transition: border-color var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: --transition-fast(border-color);
 }
 
 .input-body:focus-within {
@@ -226,7 +226,7 @@
 .input-field::-webkit-calendar-picker-indicator {
   cursor: pointer;
   filter: grayscale(0.4);
-  transition: filter var(--sherpa-motion-transition-fast, 0.15s ease-out);
+  transition: --transition-fast(filter);
 }
 
 .input-field::-webkit-calendar-picker-indicator:hover {
@@ -347,10 +347,7 @@
     --_status-surface-strong,
     var(--sherpa-surface-context-default-strong-default, #c0c0cc)
   );
-  color: var(
-    --_validation-text,
-    var(--sherpa-text-default-on-color-body, #fff)
-  );
+  color: var(--_validation-text, var(--sherpa-text-default-on-color-body, #fff));
   font-size: var(--sherpa-fonts-scale-base, 14px);
   line-height: var(--sherpa-font-base-line-height, 20px);
 }

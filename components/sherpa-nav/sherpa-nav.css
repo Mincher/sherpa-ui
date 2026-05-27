@@ -23,7 +23,7 @@
 :host {
   --_w-collapsed: calc(var(--sherpa-space-default, 20px) * 3);
   --_w-expanded: 320px;
---_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 16px) * 2));
+  --_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 16px) * 2));
   --_label-weight: 500;
   --_indent: var(--sherpa-space-default, 20px);
 
@@ -35,15 +35,12 @@
   width: var(--_w-collapsed);
   background: var(--sherpa-surface-container-secondary-default, #ffffff);
   color: var(--sherpa-text-default-heading, #18191a);
-  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
-  transition: width var(--sherpa-motion-transition-base, 0.25s ease-out);
-  z-index: 200;
+  transition: --transition-base(width);
+  z-index: 1000;
   user-select: none;
 }
-:host([hidden]) { display: none; }
-
-
 /* Width states — host carries mirrored data-pinned / data-mode */
 :host(:not([data-pinned="true"]):is(:hover, :focus-within)) {
   width: var(--_w-expanded);
@@ -137,9 +134,8 @@ summary {
     height: 0;
     opacity: 0;
     transition:
-      height var(--sherpa-motion-duration-slow, 0.4s)
-        var(--sherpa-motion-easing-default, ease-out),
-      opacity var(--sherpa-motion-transition-base, 0.25s ease-out),
+      height var(--sherpa-motion-duration-slow, 0.4s) var(--sherpa-motion-easing-default, ease-out),
+      --transition-base(opacity),
       content-visibility var(--sherpa-motion-duration-slow, 0.4s) allow-discrete;
   }
 
@@ -246,7 +242,9 @@ summary {
    live in the canonical nav. The canonical parent already shows the
    ancestor-active styling, so we exempt quick-access sections here to
    avoid two parents lighting up at once. */
-:is(.nav-section, .nav-subsection):not([data-quick-access="true"]):has(sherpa-nav-item[data-state="selected"])
+:is(.nav-section, .nav-subsection):not([data-quick-access="true"]):has(
+    sherpa-nav-item[data-state="selected"]
+  )
   > summary
   > sherpa-nav-item {
   background: var(--sherpa-surface-control-active-down, #e2adff);
@@ -282,10 +280,7 @@ summary {
   &
     .nav-section:not([data-quick-access="true"])
     > summary
-    > sherpa-nav-item:is(
-      [data-variant="section"],
-      [data-variant="subsection"]
-    )::part(drag) {
+    > sherpa-nav-item:is([data-variant="section"], [data-variant="subsection"])::part(drag) {
     display: inline-flex;
   }
 
@@ -306,14 +301,8 @@ summary {
   &
     .nav-section:not([data-quick-access="true"])
     > summary
-    > sherpa-nav-item:is(
-      [data-variant="section"],
-      [data-variant="subsection"]
-    )::part(chevron),
-  &
-    .nav-subsection
-    > summary
-    > sherpa-nav-item::part(chevron) {
+    > sherpa-nav-item:is([data-variant="section"], [data-variant="subsection"])::part(chevron),
+  & .nav-subsection > summary > sherpa-nav-item::part(chevron) {
     transform: rotate(0deg);
   }
 
@@ -347,7 +336,7 @@ summary {
   background: var(--sherpa-surface-container-secondary-default, #ffffff);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 1000;
   transition: box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;
 }
 
@@ -540,7 +529,10 @@ summary {
   padding: var(--sherpa-space-xs, 12px) var(--sherpa-space-default, 20px);
   margin: var(--sherpa-space-xs, 12px);
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: var(--sherpa-surface-app-product-nav-promo-bg, var(--sherpa-surface-container-strong-default));
+  background: var(
+    --sherpa-surface-app-product-nav-promo-bg,
+    var(--sherpa-surface-container-active-default)
+  );
 }
 .nav-promo[data-dismissed] {
   display: none;

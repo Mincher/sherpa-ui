@@ -2,117 +2,162 @@
  * sherpa-tag.css
  * Shadow DOM styles for the SherpaTag web component.
  *
- * Status tokens:
- *   When used in light DOM, global [data-status] rules in
- *   sherpa-status-tokens.css set --_status-* properties on the host.
- *   When nested inside another component's shadow DOM, the :host
- *   rules below provide the same mapping so the tag is self-contained.
- *
  * Attributes:
- *   data-variant:    primary (default) | secondary
- *   data-status:     critical | info | success | warning | urgent
- *   data-collapsed:  "true" renders as small circular indicator
+ *   data-variant     {enum} primary (default) | secondary
+ *   data-color       {enum} purple (default) | magenta | cyan | light-blue |
+ *                           blue | violet | orange | pink | rose | green | grey
+ *   data-status      {enum} critical | info | success | warning | urgent | brand
+ *                           — consumes inherited --_status-* tokens set by the
+ *                           global sherpa-overrides.css rules.
+ *   data-collapsed   {boolean} renders as small circular indicator
+ *
+ * The component is intentionally self-contained: the global [data-status]
+ * rules in css/styles/sherpa-overrides.css set --_status-* on the host,
+ * which inherits into the shadow tree. No per-status redeclarations live
+ * in this file (brand is the lone exception until it lands globally).
  */
 
+/* ── Host base ─────────────────────────────────────────────────────────── */
 :host {
   display: contents;
   container-type: normal;
-/* Figma: tag collection tokens — color variant defaults (purple) */
-  --_tag-border-default: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
-  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
-  --_tag-text-default: var(--sherpa-text-default-on-color-body, #fafafa);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
-  --_tag-fill-transparent-bg: rgba(123,28,230,0.4);
-  /* Figma: in-theme component token */
+
+  /* Default colour swatch — purple */
+  --_tag-border: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
+  --_tag-fill-transparent: rgba(123, 28, 230, 0.4);
+  --_tag-text: var(--sherpa-text-default-on-color-body, #fafafa);
+  --_tag-text-transparent: var(--sherpa-text-default-label, #18191a);
+
   --_tag-border-rounding: var(--sherpa-border-rounding-lg, 8px);
 }
-:host([hidden]) { display: none; }
 
-/* ── Colour variants — shared text tokens ──────────────────────────────── */
-/* 8 light-background colours use dark text */
-:host(:is(
-  [data-color="magenta"], [data-color="cyan"],   [data-color="light-blue"],
-  [data-color="violet"],  [data-color="orange"], [data-color="pink"],
-  [data-color="green"],   [data-color="grey"]
-)) {
-  --_tag-text-default:       var(--sherpa-text-default-on-color-subtle-label, #18191a);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
+/* ── Colour swatches — variants set tokens only ────────────────────────── */
+/* Light-background swatches → dark text */
+:host(
+  :is(
+    [data-color="magenta"],
+    [data-color="cyan"],
+    [data-color="light-blue"],
+    [data-color="violet"],
+    [data-color="orange"],
+    [data-color="pink"],
+    [data-color="green"],
+    [data-color="grey"]
+  )
+) {
+  --_tag-text: var(--sherpa-text-default-on-color-subtle-label, #18191a);
+  --_tag-text-transparent: var(--sherpa-text-default-label, #18191a);
 }
-/* 2 dark-background colours use white text */
+/* Dark-background swatches → white text */
 :host(:is([data-color="blue"], [data-color="rose"])) {
-  --_tag-text-default:       var(--sherpa-text-default-on-color-label, #ffffff);
-  --_tag-text-on-transparent: var(--sherpa-text-default-label, #18191a);
+  --_tag-text: var(--sherpa-text-default-on-color-label, #ffffff);
+  --_tag-text-transparent: var(--sherpa-text-default-label, #18191a);
 }
 
-/* ── Per-colour fill / border overrides ────────────────────────────────── */
-:host([data-color="magenta"])   { --_tag-border-default: var(--sherpa-data-viz-categorical-color-2, #c046ff);  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-2, #c046ff);  --_tag-fill-transparent-bg: rgba(192,70,255,0.4); }
-:host([data-color="cyan"])      { --_tag-border-default: var(--sherpa-data-viz-categorical-color-3, #2bd1c1);  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-3, #2bd1c1);  --_tag-fill-transparent-bg: rgba(43,209,193,0.4); }
-:host([data-color="light-blue"]){ --_tag-border-default: var(--sherpa-data-viz-categorical-color-4, #16abe2);  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-4, #16abe2);  --_tag-fill-transparent-bg: rgba(22,171,226,0.4); }
-:host([data-color="blue"])      { --_tag-border-default: var(--sherpa-data-viz-categorical-color-5, #4141ef);  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-5, #4141ef);  --_tag-fill-transparent-bg: rgba(65,65,239,0.4); }
-:host([data-color="violet"])    { --_tag-border-default: var(--sherpa-data-viz-categorical-color-6, #8197f1);  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-6, #8197f1);  --_tag-fill-transparent-bg: rgba(120,146,250,0.4); }
-:host([data-color="orange"])    { --_tag-border-default: var(--sherpa-data-viz-categorical-color-7, #ffaa01);  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-7, #ffaa01);  --_tag-fill-transparent-bg: rgba(255,170,0,0.4); }
-:host([data-color="pink"])      { --_tag-border-default: var(--sherpa-data-viz-categorical-color-8, #f3689d);  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-8, #f3689d);  --_tag-fill-transparent-bg: rgba(243,105,157,0.4); }
-:host([data-color="rose"])      { --_tag-border-default: var(--sherpa-data-viz-categorical-color-9, #d1115a);  --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-9, #d1115a);  --_tag-fill-transparent-bg: rgba(209,16,90,0.4); }
-:host([data-color="green"])     { --_tag-border-default: var(--sherpa-data-viz-categorical-color-10, #20c173); --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-10, #20c173); --_tag-fill-transparent-bg: rgba(32,193,115,0.4); }
-:host([data-color="grey"])      { --_tag-border-default: var(--sherpa-data-viz-categorical-color-11, #b2b2bf); --_tag-fill-solid-bg: var(--sherpa-data-viz-categorical-color-11, #b2b2bf); --_tag-fill-transparent-bg: rgba(178,178,191,0.4); }
-:host([data-status="critical"]) {
-  --_status-surface: var(--sherpa-surface-context-error-subtle-default, #fff7f5);
-      --_status-border:  var(--sherpa-border-context-error-default, #bf2c09);
-      --_status-text:    var(--sherpa-text-context-error-default, #bf2c09);
+:host([data-color="magenta"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-2, #c046ff);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-2, #c046ff);
+  --_tag-fill-transparent: rgba(192, 70, 255, 0.4);
 }
-:host([data-status="info"]) {
-  --_status-surface: var(--sherpa-surface-context-info-subtle-default, #f7fdff);
-      --_status-border:  var(--sherpa-border-context-info-default, #06526f);
-      --_status-text:    var(--sherpa-text-context-info-default, #06526f);
+:host([data-color="cyan"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-3, #2bd1c1);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-3, #2bd1c1);
+  --_tag-fill-transparent: rgba(43, 209, 193, 0.4);
 }
-:host([data-status="success"]) {
-  --_status-surface: var(--sherpa-surface-context-success-subtle-default, rgba(240, 255, 248, 0.8));
-      --_status-border:  var(--sherpa-border-context-success-default, #048142);
-      --_status-text:    var(--sherpa-text-context-success-default, #048142);
+:host([data-color="light-blue"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-4, #16abe2);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-4, #16abe2);
+  --_tag-fill-transparent: rgba(22, 171, 226, 0.4);
 }
-:host([data-status="warning"]) {
-  --_status-surface: var(--sherpa-surface-context-warning-subtle-default, #fffbf3);
-      --_status-border:  var(--sherpa-border-context-warning-default, #a77205);
-      --_status-text:    var(--sherpa-text-context-warning-default, #e39b04);
+:host([data-color="blue"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-5, #4141ef);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-5, #4141ef);
+  --_tag-fill-transparent: rgba(65, 65, 239, 0.4);
 }
-:host([data-status="urgent"]) {
-  --_status-surface: var(--sherpa-surface-context-urgent-subtle-default, rgba(253, 226, 193, 0.2));
-      --_status-border:  var(--sherpa-border-context-urgent-default, #b95608);
-      --_status-text:    var(--sherpa-text-context-urgent-default, #b95608);
+:host([data-color="violet"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-6, #8197f1);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-6, #8197f1);
+  --_tag-fill-transparent: rgba(120, 146, 250, 0.4);
 }
+:host([data-color="orange"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-7, #ffaa01);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-7, #ffaa01);
+  --_tag-fill-transparent: rgba(255, 170, 0, 0.4);
+}
+:host([data-color="pink"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-8, #f3689d);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-8, #f3689d);
+  --_tag-fill-transparent: rgba(243, 105, 157, 0.4);
+}
+:host([data-color="rose"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-9, #d1115a);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-9, #d1115a);
+  --_tag-fill-transparent: rgba(209, 16, 90, 0.4);
+}
+:host([data-color="green"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-10, #20c173);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-10, #20c173);
+  --_tag-fill-transparent: rgba(32, 193, 115, 0.4);
+}
+:host([data-color="grey"]) {
+  --_tag-border: var(--sherpa-data-viz-categorical-color-11, #b2b2bf);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-11, #b2b2bf);
+  --_tag-fill-transparent: rgba(178, 178, 191, 0.4);
+}
+
+/* ── Status: brand only (others come from global sherpa-overrides.css) ─── */
 :host([data-status="brand"]) {
-  --_status-surface: light-dark(var(--sherpa-color-brand-100, #f8ebff), var(--sherpa-color-brand-900, #300561));
-      --_status-border:  light-dark(var(--sherpa-color-brand-400, #d485ff), var(--sherpa-color-brand-700, #8500cc));
-      --_status-text:    light-dark(var(--sherpa-color-brand-700, #8500cc), var(--sherpa-color-brand-200, #f2d6ff));
+  --_status-surface-subtle: light-dark(
+    var(--sherpa-color-brand-100, #f8ebff),
+    var(--sherpa-color-brand-900, #300561)
+  );
+  --_status-border: light-dark(
+    var(--sherpa-color-brand-400, #d485ff),
+    var(--sherpa-color-brand-700, #8500cc)
+  );
+  --_status-text: light-dark(
+    var(--sherpa-color-brand-700, #8500cc),
+    var(--sherpa-color-brand-200, #f2d6ff)
+  );
 }
+
+/* ── Wrapper ───────────────────────────────────────────────────────────── */
 :host .tag-wrapper {
   display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--sherpa-space-2xs, 8px);
-      background: var(--_status-surface, var(--sherpa-surface-context-default-subtle-default, #f5f5f5));
-      color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
-      border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, var(--sherpa-border-container-default, #d4d4d4));
-      border-radius: var(--_tag-border-rounding, var(--sherpa-border-rounding-full, 999px));
-      font-family: inherit;
-      font-size: var(--sherpa-fonts-scale-xs, 10px);
-      font-weight: 600;
-      line-height: 1;
-      white-space: nowrap;
-}
-:host([data-variant="secondary"]) .tag-wrapper {
-  background: var(--_status-surface, var(--sherpa-surface-container-default, #e5e5e5));
-      color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
-      border-color: var(--_status-border, var(--sherpa-border-container-default, #bfbfbf));
-}
-:host([data-collapsed="true"]) .tag-wrapper {
-  width: var(--sherpa-size-3xs, 6px);
-      height: var(--sherpa-size-3xs, 6px);
-      min-width: var(--sherpa-size-3xs, 6px);
-      min-height: var(--sherpa-size-3xs, 6px);
-      padding: 0;
-      border-radius: 50%;
-      font-size: 0;
-      overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sherpa-space-2xs, 8px);
+
+  background: var(
+    --_status-surface-subtle,
+    var(--sherpa-surface-context-default-subtle-default, #f5f5f5)
+  );
+  color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
+  border: var(--sherpa-border-width-base, 1px) solid
+    var(--_status-border, var(--sherpa-border-container-default, #d4d4d4));
+  border-radius: var(--_tag-border-rounding, var(--sherpa-border-rounding-full, 999px));
+
+  font-family: inherit;
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }
 
+/* ── Variant: secondary (slightly stronger neutral fallback) ──────────── */
+:host([data-variant="secondary"]) .tag-wrapper {
+  background: var(--_status-surface-subtle, var(--sherpa-surface-container-default, #e5e5e5));
+}
+
+/* ── Collapsed indicator ───────────────────────────────────────────────── */
+:host([data-collapsed="true"]) .tag-wrapper {
+  width: var(--sherpa-size-3xs, 8px);
+  height: var(--sherpa-size-3xs, 8px);
+  min-width: var(--sherpa-size-3xs, 8px);
+  min-height: var(--sherpa-size-3xs, 8px);
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0;
+  overflow: hidden;
+}

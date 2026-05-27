@@ -39,8 +39,8 @@
  *   triggering CSS rules meant for consumer-provided content.
  */
 
-import { getSheet } from "../stylesheet-cache.js";
-import { getCategory, getTier } from "../component-categories.js";
+import { getSheet } from '../stylesheet-cache.js';
+import { getCategory, getTier } from '../component-categories.js';
 
 // ── Class-level caches ─────────────────────────────────────────────
 const _htmlCache = new Map();
@@ -49,38 +49,31 @@ const _classSheets = new Map();
 const _warnedRejections = new Set();
 
 // ── Shared stylesheet URLs ─────────────────────────────────────────
-const BASE_URL = new URL("./sherpa-base.css", import.meta.url).href;
-const FA_URL =
-  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";
-const TEXT_URL = new URL(
-  "../../../css/styles/sherpa-text-classes.css",
-  import.meta.url,
-).href;
-const ICON_URL = new URL(
-  "../../../css/styles/sherpa-icon-classes.css",
-  import.meta.url,
-).href;
-const MOTION_URL = new URL(
-  "../../../css/styles/sherpa-motion-classes.css",
-  import.meta.url,
-).href;
+const BASE_URL = new URL('./sherpa-base.css', import.meta.url).href;
+const ANCHOR_URL = new URL('./sherpa-anchor.css', import.meta.url).href;
+const FA_URL = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
+const TEXT_URL = new URL('../../../css/styles/sherpa-text-classes.css', import.meta.url).href;
+const ICON_URL = new URL('../../../css/styles/sherpa-icon-classes.css', import.meta.url).href;
+const MOTION_URL = new URL('../../../css/styles/sherpa-motion-classes.css', import.meta.url).href;
+const FUNCTIONS_URL = new URL('../../../css/styles/tokens/sherpa-functions.css', import.meta.url)
+  .href;
 
-export { BASE_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL };
+export { BASE_URL, ANCHOR_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL, FUNCTIONS_URL };
 
 /**
  * Parse an HTML string for `<template id="...">` blocks.
  * Returns a Map<id, innerHTML> if found, or null for flat HTML.
  */
 export function parseTemplates(html) {
-  if (!html || !html.includes("<template")) return null;
+  if (!html || !html.includes('<template')) return null;
 
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const templates = doc.querySelectorAll("template[id]");
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const templates = doc.querySelectorAll('template[id]');
   if (templates.length === 0) return null;
 
   const map = new Map();
   for (const t of templates) {
-    const wrapper = document.createElement("div");
+    const wrapper = document.createElement('div');
     wrapper.appendChild(t.content.cloneNode(true));
     map.set(t.id, wrapper.innerHTML);
   }
@@ -99,8 +92,17 @@ export class SherpaElement extends HTMLElement {
 
   /** Shared stylesheets adopted by every shadow root. Override to customise. */
   static get sharedStyles() {
-    return [BASE_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL];
+    return [BASE_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL, FUNCTIONS_URL];
   }
+
+  /**
+   * Opt-in flag for floating UI components (menu, popover, tooltip,
+   * non-modal dialog). When `true`, `sherpa-anchor.css` is adopted in
+   * addition to `sharedStyles`, providing attribute-driven placement
+   * (`data-placement`), offset (`data-offset`) and flip fallbacks
+   * (`data-flip`). See sherpa-anchor.css for the contract.
+   */
+  static useAnchor = false;
 
   /**
    * When `true`, slot allowlists declared via `<slot data-accepts="...">`
@@ -116,7 +118,7 @@ export class SherpaElement extends HTMLElement {
   /* ── Observed attributes ──────────────────────────────────────── */
 
   static get observedAttributes() {
-    return ["data-src-html", "data-src-json"];
+    return ['data-src-html', 'data-src-json'];
   }
 
   /* ── Template selection (override in subclass) ────────────────── */
@@ -133,7 +135,7 @@ export class SherpaElement extends HTMLElement {
 
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open' });
   }
 
   /* ── Shadow root query helpers ────────────────────────────────── */
@@ -165,8 +167,8 @@ export class SherpaElement extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     if (this.#rendered) {
-      if (name === "data-src-html" && newValue) this.renderFromUrl(newValue);
-      if (name === "data-src-json" && newValue) this.#fetchJson(newValue);
+      if (name === 'data-src-html' && newValue) this.renderFromUrl(newValue);
+      if (name === 'data-src-json' && newValue) this.#fetchJson(newValue);
     }
     this.onAttributeChanged(name, oldValue, newValue);
   }
@@ -209,9 +211,9 @@ export class SherpaElement extends HTMLElement {
     const hasContent = this.#slotHasContent(slotEl);
     const wrapper = slotEl.parentElement;
     if (wrapper && wrapper !== this.#shadow) {
-      wrapper.toggleAttribute("data-has-content", hasContent);
+      wrapper.toggleAttribute('data-has-content', hasContent);
     }
-    const name = slotEl.name || "label";
+    const name = slotEl.name || 'label';
     this.toggleAttribute(`data-has-${name}`, hasContent);
   }
 
@@ -221,12 +223,13 @@ export class SherpaElement extends HTMLElement {
     const Ctor = this.constructor;
     if (!_classSheets.has(Ctor)) {
       const urls = [...Ctor.sharedStyles];
+      if (Ctor.useAnchor) urls.push(ANCHOR_URL);
       if (Ctor.cssUrl) urls.push(Ctor.cssUrl);
       _classSheets.set(
         Ctor,
         urls.length
-          ? Promise.all(urls.map((u) => getSheet(u).catch(() => null))).then(
-              (r) => r.filter(Boolean),
+          ? Promise.all(urls.map((u) => getSheet(u).catch(() => null))).then((r) =>
+              r.filter(Boolean),
             )
           : Promise.resolve([]),
       );
@@ -238,10 +241,7 @@ export class SherpaElement extends HTMLElement {
 
   #resolveHtml(tplMap, rawHtml, id) {
     return (
-      (tplMap && id && tplMap.get(id)) ||
-      (tplMap && tplMap.values().next().value) ||
-      rawHtml ||
-      ""
+      (tplMap && id && tplMap.get(id)) || (tplMap && tplMap.values().next().value) || rawHtml || ''
     );
   }
 
@@ -262,7 +262,7 @@ export class SherpaElement extends HTMLElement {
           return r.text();
         });
       } catch {
-        rawHtml = "";
+        rawHtml = '';
       }
       _htmlCache.set(Ctor, rawHtml);
     }
@@ -347,15 +347,15 @@ export class SherpaElement extends HTMLElement {
 
     // Absolute root paths can fail when the app is mounted under a sub-path
     // (e.g. /sherpa-ui). Add a relative fallback for those deployments.
-    if (url.startsWith("/")) {
+    if (url.startsWith('/')) {
       candidates.push(`.${url}`);
-      candidates.push(url.replace(/^\/+/, ""));
+      candidates.push(url.replace(/^\/+/, ''));
     }
 
     // Relative paths can fail when a server expects root-based URLs.
     const hasScheme = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(url);
-    if (!hasScheme && !url.startsWith("/")) {
-      candidates.push(`/${url.replace(/^\.\//, "")}`);
+    if (!hasScheme && !url.startsWith('/')) {
+      candidates.push(`/${url.replace(/^\.\//, '')}`);
     }
 
     return [...new Set(candidates)].filter(Boolean);
@@ -385,7 +385,7 @@ export class SherpaElement extends HTMLElement {
         // Wait for any custom elements in the loaded HTML to be defined
         // before calling onRender(), so subclass hooks can safely access
         // custom-element APIs (properties, methods) on queried children.
-        const undef = this.#shadow.querySelectorAll(":not(:defined)");
+        const undef = this.#shadow.querySelectorAll(':not(:defined)');
         if (undef.length) {
           const tags = [...new Set([...undef].map((el) => el.localName))];
           await Promise.all(tags.map((t) => customElements.whenDefined(t)));
@@ -399,19 +399,15 @@ export class SherpaElement extends HTMLElement {
       }
     }
 
-    console.error(
-      `SherpaElement.renderFromUrl: failed to load ${url}`,
-      lastError,
-      { candidates },
-    );
+    console.error(`SherpaElement.renderFromUrl: failed to load ${url}`, lastError, { candidates });
     return false;
   }
 
   /* ── Slot presence detection ──────────────────────────────────── */
 
   #wireSlots() {
-    for (const slot of this.#shadow.querySelectorAll("slot")) {
-      slot.addEventListener("slotchange", () => {
+    for (const slot of this.#shadow.querySelectorAll('slot')) {
+      slot.addEventListener('slotchange', () => {
         this.#validateSlot(slot);
         this.onSlotChange(slot);
       });
@@ -433,76 +429,70 @@ export class SherpaElement extends HTMLElement {
    * children.
    */
   #validateSlot(slotEl) {
-    const acceptsAttr = slotEl.getAttribute("data-accepts");
+    const acceptsAttr = slotEl.getAttribute('data-accepts');
     const hostTag = this.localName;
     const hostTier = getTier(hostTag);
-    const slotName = slotEl.name || "(default)";
+    const slotName = slotEl.name || '(default)';
 
     // Unconstrained slot with no tier info: nothing to validate.
     if (!acceptsAttr && hostTier == null) {
       for (const node of slotEl.assignedElements()) {
-        node.removeAttribute("data-slot-rejected");
+        node.removeAttribute('data-slot-rejected');
       }
       return;
     }
 
     const accepts = acceptsAttr
-      ? acceptsAttr.split(",").map((s) => s.trim()).filter(Boolean)
+      ? acceptsAttr
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
       : null;
-    const allowHtml = accepts ? accepts.includes("html") : true;
+    const allowHtml = accepts ? accepts.includes('html') : true;
 
     for (const node of slotEl.assignedElements()) {
       const tag = node.localName;
-      const isSherpa = tag.startsWith("sherpa-");
+      const isSherpa = tag.startsWith('sherpa-');
       const category = isSherpa ? getCategory(tag) : null;
       const childTier = isSherpa ? getTier(tag) : null;
 
       // 1. Tier rule — applies whether or not data-accepts is set.
       let rejected = false;
-      let reason = "";
-      if (
-        isSherpa &&
-        hostTier != null &&
-        childTier != null &&
-        childTier < hostTier
-      ) {
+      let reason = '';
+      if (isSherpa && hostTier != null && childTier != null && childTier < hostTier) {
         rejected = true;
         reason =
-          `tier ${childTier} (${category}) cannot be slotted into ` +
-          `tier ${hostTier} host`;
+          `tier ${childTier} (${category}) cannot be slotted into ` + `tier ${hostTier} host`;
       }
 
       // 2. Allowlist rule — only when data-accepts present.
       if (!rejected && accepts) {
         const allowed =
-          (isSherpa && category && accepts.includes(category)) ||
-          (!isSherpa && allowHtml);
+          (isSherpa && category && accepts.includes(category)) || (!isSherpa && allowHtml);
         if (!allowed) {
           rejected = true;
           reason =
-            `not in data-accepts. Allowed: ${accepts.join(", ")}. ` +
+            `not in data-accepts. Allowed: ${accepts.join(', ')}. ` +
             (isSherpa
-              ? `Got category: ${category || "unknown"}.`
+              ? `Got category: ${category || 'unknown'}.`
               : `Non-sherpa elements need data-accepts="...,html".`);
         }
       }
 
       if (!rejected) {
-        node.removeAttribute("data-slot-rejected");
+        node.removeAttribute('data-slot-rejected');
         continue;
       }
 
       const warnKey = `${hostTag}|${slotName}|${tag}`;
       if (!_warnedRejections.has(warnKey)) {
         _warnedRejections.add(warnKey);
-        console.warn(
-          `[sherpa] <${tag}> not allowed in <${hostTag}> slot="${slotName}": ${reason}`
-        );
+        console.warn(`[sherpa] <${tag}> not allowed in <${hostTag}> slot="${slotName}": ${reason}`);
       }
       if (SherpaElement.strictSlots) {
-        node.setAttribute("data-slot-rejected", "true");
+        node.setAttribute('data-slot-rejected', 'true');
       } else {
-        node.removeAttribute("data-slot-rejected");
+        node.removeAttribute('data-slot-rejected');
       }
     }
   }
@@ -518,14 +508,12 @@ export class SherpaElement extends HTMLElement {
     if (assigned.length > 0) {
       return assigned.some(
         (n) =>
-          (n.nodeType === Node.ELEMENT_NODE && n.localName !== "template") ||
+          (n.nodeType === Node.ELEMENT_NODE && n.localName !== 'template') ||
           (n.nodeType === Node.TEXT_NODE && n.textContent.trim()),
       );
     }
     const flattened = slotEl.assignedNodes({ flatten: true });
-    return flattened.some(
-      (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim(),
-    );
+    return flattened.some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
   }
 
   /* ── Utility: wait for render ─────────────────────────────────── */

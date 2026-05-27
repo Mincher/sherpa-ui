@@ -44,35 +44,35 @@
 @layer density {
 
   :where([data-density="compact"]) {
-    --sherpa-space-2xl:      var(--sherpa-core-scale-350);
-    --sherpa-space-2xs:      var(--sherpa-core-scale-25);
-    --sherpa-space-3xl:      var(--sherpa-core-scale-450);
-    --sherpa-space-3xs:      var(--sherpa-core-scale-25);
-    --sherpa-space-4xl:      var(--sherpa-core-scale-500);
-    --sherpa-space-5xl:      var(--sherpa-core-scale-600);
-    --sherpa-space-6xl:      var(--sherpa-core-scale-700);
-    --sherpa-space-default:  var(--sherpa-core-scale-150);
-    --sherpa-space-lg:       var(--sherpa-core-scale-200);
-    --sherpa-space-none:     var(--sherpa-core-scale-0);
-    --sherpa-space-sm:       var(--sherpa-core-scale-100);
-    --sherpa-space-xl:       var(--sherpa-core-scale-250);
-    --sherpa-space-xs:       var(--sherpa-core-scale-50);
+    --sherpa-space-2xl:      var(--sherpa-size-xl);
+    --sherpa-space-2xs:      var(--sherpa-space-3xs);
+    --sherpa-space-3xl:      var(--core-scale-450);
+    --sherpa-space-3xs:      var(--sherpa-space-3xs);
+    --sherpa-space-4xl:      var(--sherpa-size-3xl);
+    --sherpa-space-5xl:      var(--sherpa-size-4xl);
+    --sherpa-space-6xl:      var(--sherpa-size-5xl);
+    --sherpa-space-default:  var(--sherpa-size-xs);
+    --sherpa-space-lg:       var(--sherpa-size-sm);
+    --sherpa-space-none:     var(--sherpa-size-none);
+    --sherpa-space-sm:       var(--sherpa-size-2xs);
+    --sherpa-space-xl:       var(--sherpa-size-md);
+    --sherpa-space-xs:       var(--sherpa-size-3xs);
   }
 
   :where([data-density="comfortable"]) {
-    --sherpa-space-2xl:      var(--sherpa-core-scale-450);
-    --sherpa-space-2xs:      var(--sherpa-core-scale-100);
-    --sherpa-space-3xl:      var(--sherpa-core-scale-600);
-    --sherpa-space-3xs:      var(--sherpa-core-scale-50);
-    --sherpa-space-4xl:      var(--sherpa-core-scale-700);
-    --sherpa-space-5xl:      var(--sherpa-core-scale-800);
-    --sherpa-space-6xl:      var(--sherpa-core-scale-800);
-    --sherpa-space-default:  var(--sherpa-core-scale-250);
-    --sherpa-space-lg:       var(--sherpa-core-scale-300);
-    --sherpa-space-none:     var(--sherpa-core-scale-0);
-    --sherpa-space-sm:       var(--sherpa-core-scale-200);
-    --sherpa-space-xl:       var(--sherpa-core-scale-350);
-    --sherpa-space-xs:       var(--sherpa-core-scale-150);
+    --sherpa-space-2xl:      var(--core-scale-450);
+    --sherpa-space-2xs:      var(--sherpa-size-2xs);
+    --sherpa-space-3xl:      var(--sherpa-size-4xl);
+    --sherpa-space-3xs:      var(--sherpa-size-3xs);
+    --sherpa-space-4xl:      var(--sherpa-size-5xl);
+    --sherpa-space-5xl:      var(--sherpa-size-6xl);
+    --sherpa-space-6xl:      var(--sherpa-size-6xl);
+    --sherpa-space-default:  var(--sherpa-size-md);
+    --sherpa-space-lg:       var(--sherpa-size-lg);
+    --sherpa-space-none:     var(--sherpa-size-none);
+    --sherpa-space-sm:       var(--sherpa-size-sm);
+    --sherpa-space-xl:       var(--sherpa-size-xl);
+    --sherpa-space-xs:       var(--sherpa-size-xs);
   }
 
 } /* @layer density */
@@ -173,26 +173,3 @@
   }
 
 } /* @layer status */
-
-
-/* ─── Selected ───────────────────────────────────────────────────── */
-
-@layer selected {
-
-  /* Set --_selected-* private vars on any element with data-selected="true".
-   * Custom properties inherit through shadow DOM — components consume them
-   * via var(--_selected-*, <semantic-fallback>) in their :host([data-selected])
-   * selectors. No per-component colour block needed to opt in to this style.
-   *
-   * Consumed vars:
-   *   --_selected-surface   Strong active background (brand-1000, near-black deep purple)
-   *   --_selected-border    Active border colour
-   *   --_selected-text      Light text suitable for the strong surface
-   */
-  :where([data-selected="true"], [data-active]) {
-    --_selected-surface: var(--sherpa-surface-container-active-default);
-    --_selected-border:  var(--sherpa-border-container-active);
-    --_selected-text:    var(--sherpa-text-active-base);
-  }
-
-} /* @layer selected */

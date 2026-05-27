@@ -1,4 +1,3 @@
-
 /**
  * sherpa-tooltip.css – Shadow DOM tooltip with CSS anchor positioning
  */
@@ -11,7 +10,7 @@
   white-space: nowrap;
   opacity: 0;
   transition: opacity 150ms ease-in-out;
-/* Anchor positioning */
+  /* Anchor positioning */
   position-anchor: --tooltip-anchor;
   left: anchor(center);
   translate: -50% 0;
@@ -19,17 +18,14 @@
   /* Visual */
   background-color: var(--sherpa-surface-container-elevated-default, rgba(26, 28, 33, 0.92));
   color: var(--sherpa-text-default-on-color-heading, #fff);
-  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-font-sm-size, 12px);
   line-height: var(--sherpa-fonts-scale-lg, 16px);
   padding: var(--sherpa-space-3xs, 0.25rem) var(--sherpa-space-xs, 0.5rem);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
-  box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgba(0,0,0,0.25));
+  box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgba(0, 0, 0, 0.25));
   bottom: calc(anchor(top) + var(--sherpa-space-2xs, 0.375rem));
 }
-:host([hidden]) { display: none; }
-
-
 /* ── Fallback positioning for browsers without CSS Anchor Positioning ── */
 @supports not (position-anchor: --tooltip-anchor) {
   :host {
@@ -60,4 +56,3 @@
 :host .tooltip-content {
   color: inherit;
 }
-

@@ -19,89 +19,99 @@
   height: 100%;
   container-type: normal;
 }
-:host([hidden]) { display: none; }
-
 :host .sherpa-empty-state {
   display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--sherpa-space-lg, 24px);
-      height: 100%;
-      max-height: 100%;
-      padding: var(--sherpa-space-xl, 28px);
-      overflow: auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-space-lg, 24px);
+  height: 100%;
+  max-height: 100%;
+  padding: var(--sherpa-space-xl, 28px);
+  overflow: auto;
 }
 :host .sherpa-empty-state__illustration {
   display: none;
-      align-items: center;
-      justify-content: center;
-      color: var(--sherpa-icon-context-default-placeholder, #8d8d99);
-  
-      & svg { width: 200px; height: 200px; }
+  align-items: center;
+  justify-content: center;
+  color: var(--sherpa-icon-context-default-placeholder, #8d8d99);
+
+  & svg {
+    width: 200px;
+    height: 200px;
+  }
 }
 :host(:is([data-has-illustration], [data-illustration])) .sherpa-empty-state__illustration {
   display: flex;
 }
 :host .sherpa-empty-state__illustration-default {
   display: none;
-      align-items: center;
-      justify-content: center;
+  align-items: center;
+  justify-content: center;
 }
 :host([data-illustration]:not([data-has-illustration])) .sherpa-empty-state__illustration-default {
   display: flex;
 }
 :host .sherpa-empty-state__heading {
   display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: var(--sherpa-space-sm, 16px);
-      max-width: 400px;
-      width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--sherpa-space-sm, 16px);
+  max-width: 400px;
+  width: 100%;
 }
-:host(:is([data-has-heading], [data-has-description], [data-has-label], [data-label], [data-description])) .sherpa-empty-state__heading {
+:host(
+    :is(
+      [data-has-heading],
+      [data-has-description],
+      [data-has-label],
+      [data-label],
+      [data-description]
+    )
+  )
+  .sherpa-empty-state__heading {
   display: flex;
 }
 :host .sherpa-empty-state__title {
   display: none;
-      margin: 0;
-      color: var(--sherpa-text-default-heading, #18191a);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 100%;
+  margin: 0;
+  color: var(--sherpa-text-default-heading, #18191a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 :host([data-label]:not([data-has-heading])) .sherpa-empty-state__title {
   display: block;
 }
 :host .sherpa-empty-state__description {
   display: none;
-      margin: 0;
-      text-align: center;
+  margin: 0;
+  text-align: center;
 }
 :host([data-description]:not([data-has-description])) .sherpa-empty-state__description {
   display: block;
 }
 :host .sherpa-empty-state__buttons {
   display: none;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: var(--sherpa-space-xs, 12px);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sherpa-space-xs, 12px);
 }
 :host([data-has-actions]) .sherpa-empty-state__buttons {
   display: flex;
 }
 :host .sherpa-empty-state__small-print {
   display: none;
-      margin: 0;
-      color: var(--sherpa-text-default-secondary, #5c5c66);
-      text-align: center;
-      -webkit-line-clamp: 1;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      max-width: 400px;
+  margin: 0;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+  text-align: center;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 400px;
 }
 :host(:is([data-has-footer], [data-small-print])) .sherpa-empty-state__small-print {
   display: -webkit-box;
@@ -114,11 +124,14 @@
 }
 :host ::slotted(*) {
   text-align: center;
-      max-width: 400px;
-  
-      &[slot="illustration"] { display: flex; align-items: center; justify-content: center; }
+  max-width: 400px;
+
+  &[slot="illustration"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 :host([data-status]) .sherpa-empty-state__illustration {
   color: var(--_status-icon);
 }
-
