@@ -26,12 +26,12 @@
   font-size: var(--sherpa-font-sm-size, 12px);
   line-height: var(--sherpa-fonts-scale-lg, 16px);
   font-weight: 600;
-  color: var(--sherpa-text-primary-default, #3c5edd);
+  color: var(--sherpa-content-primary-default, #3c5edd);
   text-decoration: none;
   padding: var(--sherpa-space-2xs, 4px) 0;
 
   &[aria-current="page"] {
-    color: var(--sherpa-text-default-body, #2e2e33);
+    color: var(--sherpa-content-default-body, #2e2e33);
     font-weight: var(--sherpa-font-weight-regular, 400);
   }
 }

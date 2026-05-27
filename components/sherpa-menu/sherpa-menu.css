@@ -29,7 +29,7 @@
   --_border-width: var(--sherpa-border-width-base, 1px);
   --_rounding: var(--sherpa-border-rounding-base, 4px);
 
-  --_text: var(--sherpa-text-default-body, #2e2e33);
+  --_text: var(--sherpa-content-default-body, #2e2e33);
   --_gap: var(--sherpa-space-xs, 12px);
   --_gap-sm: var(--sherpa-space-2xs, 8px);
   --_padding: var(--sherpa-space-sm, 16px);

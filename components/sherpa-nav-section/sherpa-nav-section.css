@@ -10,7 +10,7 @@
   min-height: 0;
   background: var(--sherpa-surface-container-default, #ffffff);
   border-inline-end: 1px solid var(--sherpa-border-container-default, #d5d5d5);
-  color: var(--sherpa-text-default-body, #111111);
+  color: var(--sherpa-content-default-body, #111111);
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
   overflow: hidden;
 }
@@ -33,7 +33,7 @@
   height: 28px;
   border-radius: var(--sherpa-border-rounding-base, 4px);
   cursor: pointer;
-  color: var(--sherpa-text-default-body, #111111);
+  color: var(--sherpa-content-default-body, #111111);
   flex: 0 0 auto;
 
   &:hover {
@@ -52,7 +52,7 @@
 :host .heading {
   margin: 0;
   flex: 1 1 auto;
-  color: var(--sherpa-text-default-heading, #111111);
+  color: var(--sherpa-content-default-heading, #111111);
 }
 :host .header-end {
   display: inline-flex;
@@ -79,7 +79,7 @@
   margin: 0;
   padding: var(--sherpa-space-base, 16px) var(--sherpa-space-base, 16px)
     var(--sherpa-space-2xs, 4px);
-  color: var(--sherpa-text-default-secondary, #464646);
+  color: var(--sherpa-content-default-secondary, #464646);
 }
 :host .group-list {
   list-style: none;
@@ -97,7 +97,7 @@
     var(--sherpa-space-xl, 24px);
   cursor: pointer;
   font-family: inherit;
-  color: var(--sherpa-text-default-body, #111111);
+  color: var(--sherpa-content-default-body, #111111);
 
   &:hover {
     background: color-mix(
@@ -126,7 +126,7 @@
 }
 :host .item-icon {
   flex: 0 0 auto;
-  color: var(--sherpa-text-default-secondary, #464646);
+  color: var(--sherpa-content-default-secondary, #464646);
 }
 :host .item[aria-current="page"] .item-icon,
 :host .item[data-active="true"] .item-icon {
@@ -138,11 +138,11 @@
   gap: 2px;
   padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-base, 16px) var(--sherpa-space-2xs, 4px)
     var(--sherpa-space-xl, 24px);
-  color: var(--sherpa-text-default-body, #111111);
+  color: var(--sherpa-content-default-body, #111111);
 }
 :host .header-item-name {
-  color: var(--sherpa-text-default-heading, #111111);
+  color: var(--sherpa-content-default-heading, #111111);
 }
 :host .header-item-description {
-  color: var(--sherpa-text-default-secondary, #464646);
+  color: var(--sherpa-content-default-secondary, #464646);
 }

@@ -36,7 +36,7 @@
     0 4px 12px rgba(0, 0, 0, 0.12);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
   overflow: visible;
   /* ──────────────────────────────────────────────────────────
              OPEN STATE
@@ -150,7 +150,7 @@
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: transparent;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   cursor: pointer;
   font-size: 12px;
   padding: 0;
@@ -158,7 +158,7 @@
 
   &:hover {
     background: var(--sherpa-surface-container-hover, #f0f0f5);
-    color: var(--sherpa-text-default-body, #18191a);
+    color: var(--sherpa-content-default-body, #18191a);
   }
 }
 :host .body {
@@ -190,13 +190,13 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   cursor: pointer;
   border-radius: var(--sherpa-border-rounding-sm, 4px);
 
   &:hover {
     background: var(--sherpa-surface-container-hover, #f0f0f5);
-    color: var(--sherpa-text-default-body, #18191a);
+    color: var(--sherpa-content-default-body, #18191a);
   }
 }
 :host([data-template="paged"]) .page-back {
@@ -216,6 +216,6 @@
     var(--sherpa-border-container-default, #d7d7dc);
 }
 :host .page-indicator {
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
 }

@@ -12,7 +12,7 @@
   flex-direction: column;
   gap: var(--sherpa-space-sm, 12px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   /* Conditional rows shown per frequency */
   /* Default to weekly when no frequency set */
 }

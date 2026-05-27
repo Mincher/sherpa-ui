@@ -49,7 +49,7 @@
     background-color: var(--sherpa-surface-container-inactive, #f2f2f2);
   }
   & .switch-label {
-    color: var(--sherpa-text-inactive-default, #5c5c66);
+    color: var(--sherpa-content-inactive-default, #5c5c66);
   }
 }
 :host .switch-track {
@@ -76,7 +76,7 @@
   flex-shrink: 0;
 }
 :host .switch-label {
-  color: var(--sherpa-text-default-heading, #1a1a1f);
+  color: var(--sherpa-content-default-heading, #1a1a1f);
   min-width: 24px;
   text-align: center;
 }
@@ -89,7 +89,7 @@
     flex-direction: row;
   }
   & .switch-label {
-    color: var(--sherpa-text-default-on-color-heading, #ffffff);
+    color: var(--sherpa-content-default-on-color-heading, #ffffff);
   }
 }
 :host([data-state="off"]) {
@@ -101,6 +101,6 @@
     flex-direction: row-reverse;
   }
   & .switch-label {
-    color: var(--sherpa-text-default-heading, #1a1a1f);
+    color: var(--sherpa-content-default-heading, #1a1a1f);
   }
 }

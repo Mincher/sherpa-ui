@@ -1,6 +1,6 @@
+#!/usr/bin/env node
 // WARNING: Do not generate or modify css/styles/tokens/sherpa-functions.css in this script.
 // All @function definitions are hand-maintained and must be edited directly in that file.
-#!/usr/bin/env node
 /**
  * generate-css-tokens.js — Per-axis CSS token generator
  *
@@ -226,6 +226,14 @@ function contentToIcon(figmaName) {
   return `--sherpa-${sanitize(n)}`;
 }
 
+/** Canonical content/* Figma path → --sherpa-content-* CSS custom property.
+ *  Used at theme level; text/* and icon/* aliases live at component :host scope. */
+function contentToCSSName(figmaName) {
+  let n = renameStatus(figmaName);
+  if (n.startsWith('content/status/')) n = n.replace('content/status/', 'content/context/');
+  return `--sherpa-${sanitize(n)}`;
+}
+
 /** "@target/path" → var(--sherpa-...) — picks Primitive vs Alias vs Theme namespace.
  *  `preferAlias` (default true) substitutes a semantic alias when one exists for
  *  a primitive ref; set false when generating sherpa-alias.css itself to avoid
@@ -238,8 +246,8 @@ function refToVar(ref, { iconMode = false, preferAlias = true } = {}) {
     return aliasName ? `var(--sherpa-${sanitize(aliasName)})` : `var(--core-${sanitize(name)})`;
   }
   if (aliasNames.has(name)) return `var(--sherpa-${sanitize(name)})`;
-  // Theme-collection target → use apexToCSS / contentToIcon namespace map.
-  if (name.startsWith('content/') && iconMode) return `var(${contentToIcon(name)})`;
+  // Theme-collection target → use contentToCSSName for content/* (single canonical var).
+  if (name.startsWith('content/')) return `var(${contentToCSSName(name)})`;
   // Pattern-based primitive sniffing (matches legacy generator behaviour).
   const primPatterns = [
     'color/basic/',
@@ -613,27 +621,12 @@ const SECTION_ORDER = [
   ['data-viz/sequential', 'Data Visualization — Sequential'],
   ['data-viz/divergent', 'Data Visualization — Divergent'],
   ['component', 'Component'],
-  // ── Standalone text tokens (not derived from content/) ───
-  ['text/default', 'Text — Default'],
-  ['text/primary', 'Text — Primary'],
-  ['text/active', 'Text — Active'],
-  ['text/inactive', 'Text — Inactive'],
-  ['text/info', 'Text — Context (Status)'],
-  ['text/warning', 'Text — Context (Status)'],
-  ['text/error', 'Text — Context (Status)'],
-  ['text/success', 'Text — Context (Status)'],
-  ['text/urgent', 'Text — Context (Status)'],
-  // ── Standalone icon tokens (not derived from content/) ───
-  ['icon/default', 'Icon — Default'],
-  ['icon/primary', 'Icon — Primary'],
-  ['icon/active', 'Icon — Active'],
-  ['icon/inactive', 'Icon — Inactive'],
-  ['icon/status', 'Icon — Context (Status)'],
-  ['icon/info', 'Icon — Context (Status)'],
-  ['icon/warning', 'Icon — Context (Status)'],
-  ['icon/error', 'Icon — Context (Status)'],
-  ['icon/success', 'Icon — Context (Status)'],
-  ['icon/urgent', 'Icon — Context (Status)'],
+  // ── Content-derived text tokens (emitted via apexToCSS mapping) ───
+  ['content/default', 'Text / Icon — Default'],
+  ['content/primary', 'Text / Icon — Primary'],
+  ['content/active', 'Text / Icon — Active'],
+  ['content/inactive', 'Text / Icon — Inactive'],
+  ['content/status', 'Text / Icon — Context (Status)'],
   // ── Deprecated ───────────────────────────────────────────
   ['[DEPRECATED] data-viz', 'Data Visualization — Legacy'],
 ];
@@ -703,25 +696,19 @@ function buildThemeMaps(themeName) {
       ? contentGroupSection(v.n)
       : classifySection(v.n) || v.n.split('/').slice(0, 2).join(' / ');
 
-    // Primary mapping (apexToCSS — covers content/* → text/* too)
-    {
+    if (isContent) {
+      // Canonical content/* var — one property per Figma token at theme level.
+      // Text and icon aliases live at component :host scope.
+      const propName = contentToCSSName(v.n);
+      record(propName, 'light', formatThemeVal(lightRaw, v.t, v.n), sectionLabel);
+      record(propName, 'dark', formatThemeVal(darkRaw, v.t, v.n), null);
+      record(propName, 'hc', formatThemeVal(hcRaw, v.t, v.n), null);
+    } else {
+      // Non-content vars use apexToCSS naming (surface, border, elevation, etc.)
       const propName = apexToCSS(v.n);
       record(propName, 'light', formatThemeVal(lightRaw, v.t, v.n), sectionLabel);
       record(propName, 'dark', formatThemeVal(darkRaw, v.t, v.n), null);
       record(propName, 'hc', formatThemeVal(hcRaw, v.t, v.n), null);
-    }
-
-    // Icon variant (content/* only) — same section as text so pairs stay together
-    if (isContent) {
-      const propName = contentToIcon(v.n);
-      record(
-        propName,
-        'light',
-        formatThemeVal(lightRaw, v.t, v.n, { iconMode: true }),
-        sectionLabel,
-      );
-      record(propName, 'dark', formatThemeVal(darkRaw, v.t, v.n, { iconMode: true }), null);
-      record(propName, 'hc', formatThemeVal(hcRaw, v.t, v.n, { iconMode: true }), null);
     }
   }
 

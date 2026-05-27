@@ -55,8 +55,8 @@
 :host .step-item {
   --_indicator-border-color: var(--sherpa-border-container-default, #d5d5dc);
   --_indicator-bg: var(--sherpa-surface-container-default, #ffffff);
-  --_indicator-color: var(--sherpa-text-default-secondary, #6a6a75);
-  --_label-color: var(--sherpa-text-default-secondary, #6a6a75);
+  --_indicator-color: var(--sherpa-content-default-secondary, #6a6a75);
+  --_label-color: var(--sherpa-content-default-secondary, #6a6a75);
   --_label-weight: 500;
 
   display: flex;
@@ -79,28 +79,28 @@
 
   &[disabled] {
     cursor: not-allowed;
-    color: var(--sherpa-text-inactive-default, #5c5c66);
+    color: var(--sherpa-content-inactive-default, #5c5c66);
     --_indicator-border-color: var(--sherpa-border-control-inactive, #8d8d99);
     --_indicator-bg: var(--sherpa-surface-control-inactive, #f2f2f2);
-    --_indicator-color: var(--sherpa-text-inactive-default, #5c5c66);
-    --_label-color: var(--sherpa-text-inactive-default, #5c5c66);
+    --_indicator-color: var(--sherpa-content-inactive-default, #5c5c66);
+    --_label-color: var(--sherpa-content-inactive-default, #5c5c66);
   }
 
   /* ── Active step ───────────────────────────────────── */
   &[data-active] {
-    --_indicator-border-color: var(--sherpa-icon-context-info-default, #006db6);
-    --_indicator-bg: var(--sherpa-icon-context-info-default, #006db6);
+    --_indicator-border-color: var(--sherpa-content-context-info-default, #006db6);
+    --_indicator-bg: var(--sherpa-content-context-info-default, #006db6);
     --_indicator-color: var(--sherpa-color-neutral-0, #ffffff);
-    --_label-color: var(--sherpa-text-default-body, #1b1b21);
+    --_label-color: var(--sherpa-content-default-body, #1b1b21);
     --_label-weight: 600;
   }
 
   /* ── Completed step ────────────────────────────────– */
   &[data-completed] {
-    --_indicator-border-color: var(--sherpa-icon-context-success-default, #0f7b6c);
-    --_indicator-bg: var(--sherpa-icon-context-success-default, #0f7b6c);
+    --_indicator-border-color: var(--sherpa-content-context-success-default, #0f7b6c);
+    --_indicator-bg: var(--sherpa-content-context-success-default, #0f7b6c);
     --_indicator-color: var(--sherpa-color-neutral-0, #ffffff);
-    --_label-color: var(--sherpa-text-default-body, #1b1b21);
+    --_label-color: var(--sherpa-content-default-body, #1b1b21);
 
     & .indicator-completed {
       display: inline;
@@ -112,10 +112,10 @@
 
   /* ── Error step ────────────────────────────────────– */
   &[data-error] {
-    --_indicator-border-color: var(--sherpa-icon-context-error-default, #d13438);
-    --_indicator-bg: var(--sherpa-icon-context-error-default, #d13438);
+    --_indicator-border-color: var(--sherpa-content-context-error-default, #d13438);
+    --_indicator-bg: var(--sherpa-content-context-error-default, #d13438);
     --_indicator-color: var(--sherpa-color-neutral-0, #ffffff);
-    --_label-color: var(--sherpa-icon-context-error-default, #d13438);
+    --_label-color: var(--sherpa-content-context-error-default, #d13438);
 
     & .indicator-error {
       display: inline;
@@ -162,7 +162,7 @@
 :host .step-sublabel {
   font-size: var(--_sublabel-font-size);
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  color: var(--sherpa-text-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #6a6a75);
 
   &:empty {
     display: none;
@@ -181,7 +181,7 @@
   transition: background-color var(--_duration) var(--_easing);
 
   &[data-completed] {
-    --_connector-color: var(--sherpa-icon-context-success-default, #0f7b6c);
+    --_connector-color: var(--sherpa-content-context-success-default, #0f7b6c);
   }
 }
 
@@ -253,7 +253,7 @@
 }
 :host([data-template="timeline"]) .step-timestamp {
   display: none;
-  color: var(--sherpa-text-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #6a6a75);
   font-size: var(--_sublabel-font-size);
 
   &:not(:empty) {
@@ -263,5 +263,5 @@
 }
 :host([data-template="timeline"])
   .timeline-item[data-visited]:not([data-active]):not([data-completed]) {
-  --_label-color: var(--sherpa-text-default-body, #2e2e33);
+  --_label-color: var(--sherpa-content-default-body, #2e2e33);
 }

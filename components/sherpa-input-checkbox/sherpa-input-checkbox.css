@@ -56,6 +56,6 @@
   }
 
   & .check-description {
-    color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+    color: var(--_status-text, var(--sherpa-content-default-secondary, #6a6a7a));
   }
 }

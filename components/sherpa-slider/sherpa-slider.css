@@ -46,7 +46,7 @@
 :host .label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   line-height: var(--sherpa-line-height-default, 1.4);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
   font-weight: var(--sherpa-font-weight-medium, 500);
 }
 :host(:not([data-label])) .label {
@@ -74,7 +74,7 @@
   border: 1px solid var(--sherpa-border-control-default, #c6c6cc);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: var(--sherpa-surface-control-default, #ffffff);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   font-family: inherit;
   text-align: center;
@@ -98,7 +98,7 @@
 :host([disabled]) .input-low,
 :host([disabled]) .input-high {
   background: var(--sherpa-surface-control-inactive, #f0f0f2);
-  color: var(--sherpa-text-inactive-default, #9d9da6);
+  color: var(--sherpa-content-inactive-default, #9d9da6);
   border-color: var(--sherpa-border-control-inactive, #e0e0e5);
   pointer-events: none;
 }
@@ -226,7 +226,7 @@
   justify-content: space-between;
   font-size: var(--sherpa-fonts-scale-xs, 12px);
   line-height: var(--sherpa-line-height-default, 1.4);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   padding: 0;
 }
 :host([data-show-labels]) .increments {

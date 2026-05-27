@@ -39,7 +39,7 @@
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--_text-font-size);
   line-height: var(--sherpa-font-base-line-height, 20px);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   transition: --transition-fast(opacity);
 }
 :host([data-density="compact"]) {
@@ -79,13 +79,13 @@
   gap: var(--sherpa-space-2xs, 4px);
 }
 :host .message-label {
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 :host .message-action {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-space-3xs, 2px);
-  color: var(--sherpa-text-primary-default, #8500cc);
+  color: var(--sherpa-content-primary-default, #8500cc);
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;

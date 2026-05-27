@@ -30,7 +30,7 @@
     --_status-surface-subtle,
     var(--sherpa-surface-context-info-subtle-default, #d9f2fa)
   );
-  color: var(--sherpa-text-default-on-color-subtle-body, #18191a);
+  color: var(--sherpa-content-default-on-color-subtle-body, #18191a);
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -44,7 +44,7 @@
 .status-icon {
   font-size: 16px;
   width: 16px;
-  color: var(--_status-icon, var(--sherpa-icon-context-info-on-color-subtle, #07526f));
+  color: var(--_status-icon, var(--sherpa-content-context-info-on-color-subtle, #07526f));
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;

@@ -28,7 +28,7 @@
   flex-shrink: 0;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
   container: sherpa-pagination / inline-size;
 }
 :host .pagination-results {
@@ -38,7 +38,7 @@
 }
 :host .pagination-label {
   white-space: nowrap;
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
 }
 :host .page-size-select {
   appearance: none;
@@ -46,7 +46,7 @@
   border: var(--sherpa-border-width-sm, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: var(--sherpa-surface-container-default, #fff);
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
   font-family: inherit;
   font-size: inherit;
   padding: 2px 24px 2px 8px;
@@ -65,7 +65,7 @@
 }
 :host .pagination-info {
   white-space: nowrap;
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
 }
 :host .pagination-pager {
   display: flex;
@@ -82,7 +82,7 @@
   border: var(--sherpa-border-width-sm, 1px) solid transparent;
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: none;
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   cursor: pointer;
   transition: --transition-fast(background), --transition-fast(border-color);
@@ -102,7 +102,7 @@
   }
 
   &:disabled {
-    color: var(--sherpa-text-inactive-default, #aaa);
+    color: var(--sherpa-content-inactive-default, #aaa);
     cursor: default;
   }
 }
@@ -117,10 +117,10 @@
   font-weight: 600;
 }
 :host .page-separator {
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
 }
 :host .page-total {
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
 }
 :host([data-density="compact"]) {
   --_pagination-h: 32px;

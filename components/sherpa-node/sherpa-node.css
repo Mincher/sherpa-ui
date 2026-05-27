@@ -36,7 +36,7 @@
   min-width: var(--sherpa-node-w, 0);
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
   font-size: var(--sherpa-font-base-size, 14px);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   user-select: none;
   contain: layout style;
   transform: translate3d(var(--sherpa-node-x, 0px), var(--sherpa-node-y, 0px), 0);

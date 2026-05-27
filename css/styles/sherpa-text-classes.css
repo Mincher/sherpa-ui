@@ -64,7 +64,7 @@
   .text-title-component
 ) {
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
-  color: var(--sherpa-text-default-body);
+  color: var(--sherpa-content-default-body);
 }
 
 /* Default tracking — only the body/label/UI families. Headings, title-component
@@ -256,7 +256,7 @@
   line-height: var(--sherpa-fonts-scale-lg, 16px);
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--sherpa-text-default-secondary);
+  color: var(--sherpa-content-default-secondary);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -282,7 +282,7 @@
   line-height: var(--sherpa-fonts-scale-lg, 16px);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--sherpa-text-default-secondary);
+  color: var(--sherpa-content-default-secondary);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

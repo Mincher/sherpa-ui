@@ -37,7 +37,7 @@
     var(--sherpa-space-xs, 8px);
   border-radius: var(--sherpa-border-rounding-full, 999px);
   background: var(--sherpa-surface-context-info-subtle-default, #e6f0ff);
-  color: var(--sherpa-text-context-info-default, #0060df);
+  color: var(--sherpa-content-context-info-default, #0060df);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   line-height: var(--sherpa-font-sm-line-height, 16px);
   max-width: 100%;
@@ -92,7 +92,7 @@
 
 :host([disabled]) .tag-chip {
   background: var(--sherpa-surface-control-inactive, #dddde6);
-  color: var(--sherpa-text-inactive-default, #7e7e8f);
+  color: var(--sherpa-content-inactive-default, #7e7e8f);
 }
 :host([disabled]) .tag-chip-remove {
   display: none;
@@ -100,7 +100,7 @@
 
 :host([readonly]) .tag-chip {
   background: var(--sherpa-surface-control-inactive, #dddde6);
-  color: var(--sherpa-text-inactive-default, #7e7e8f);
+  color: var(--sherpa-content-inactive-default, #7e7e8f);
 }
 :host([readonly]) .tag-chip-remove {
   display: none;

@@ -86,7 +86,7 @@
 /* ── Label ────────────────────────────────────────────────── */
 
 :host .trigger-label {
-  color: var(--sherpa-text-default-label, #18191a);
+  color: var(--sherpa-content-default-label, #18191a);
 }
 :host(:not([data-label])) .trigger-label {
   display: none;
@@ -96,7 +96,7 @@
 
 :host .trigger-icon {
   display: none;
-  color: var(--sherpa-icon-context-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   font-size: var(--sherpa-fonts-scale-base, 14px);
 }
 
@@ -159,11 +159,11 @@
   }
 
   .trigger-label {
-    color: var(--sherpa-text-inactive-default, #a0a0a0);
+    color: var(--sherpa-content-inactive-default, #a0a0a0);
   }
 
   .trigger-icon {
-    color: var(--sherpa-icon-inactive-default, #a0a0a0);
+    color: var(--sherpa-content-inactive-default, #a0a0a0);
   }
 }
 

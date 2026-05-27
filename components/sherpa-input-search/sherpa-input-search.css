@@ -26,7 +26,7 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
-  color: var(--sherpa-text-default-secondary, #6a6a7a);
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
   pointer-events: none;
   z-index: 1;
 }

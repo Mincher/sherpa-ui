@@ -33,7 +33,7 @@
 :host .row-label {
   font-size: var(--sherpa-font-sm-size, 12px);
   font-weight: 600;
-  color: var(--sherpa-text-default-label, #18191a);
+  color: var(--sherpa-content-default-label, #18191a);
   line-height: 1.4;
 
   &:not([data-has-content]) {
@@ -42,7 +42,7 @@
 }
 :host .row-helper {
   font-size: var(--sherpa-font-xs-size, 10px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   line-height: 1.4;
 
   &:not([data-has-content]) {
@@ -72,7 +72,7 @@
   gap: var(--sherpa-space-xs, 12px);
   min-height: var(--sherpa-size-md, 20px);
   padding: 0 var(--sherpa-space-2xs, 8px);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   min-width: 0;
 
   /* Input elements fill available width */

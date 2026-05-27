@@ -80,7 +80,7 @@
 :host .nav-item-icon {
   display: none;
   font-size: var(--icon-size);
-  color: var(--sherpa-icon-context-default-heading, #18191a);
+  color: var(--sherpa-content-default-heading, #18191a);
   position: relative;
 }
 :host([data-icon]) .nav-item-icon,
@@ -140,7 +140,7 @@
   flex-shrink: 0;
 }
 :host .nav-item-drag {
-  color: var(--sherpa-icon-inactive-on-color, #8d8d99);
+  color: var(--sherpa-content-inactive-on-color, #8d8d99);
   display: none;
   cursor: grab;
 }
@@ -148,7 +148,7 @@
   cursor: grabbing;
 }
 :host .nav-item-delete {
-  color: var(--sherpa-icon-inactive-on-color, #8d8d99);
+  color: var(--sherpa-content-inactive-on-color, #8d8d99);
   display: none;
   width: 24px;
   height: 24px;
@@ -157,7 +157,7 @@
   cursor: pointer;
 }
 :host .nav-item-delete:hover {
-  color: var(--sherpa-icon-context-error-default, #bf2c09);
+  color: var(--sherpa-content-context-error-default, #bf2c09);
 }
 /*
  * !important is required here to beat the ::part(delete) rule in sherpa-nav.css
@@ -211,7 +211,7 @@
   padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-base, 16px);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-context-info-subtle-default, #eef3ff);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   cursor: pointer;
   text-decoration: none;
   border: 1px solid var(--sherpa-border-context-info-default, #c7d4ff);
@@ -225,7 +225,7 @@
     height: 32px;
     border-radius: var(--sherpa-border-rounding-base, 4px);
     background: var(--sherpa-surface-container-default, #ffffff);
-    color: var(--sherpa-text-context-info-default, #1d4ed8);
+    color: var(--sherpa-content-context-info-default, #1d4ed8);
     flex-shrink: 0;
   }
   .nav-promo-body {
@@ -236,11 +236,11 @@
     min-width: 0;
   }
   .nav-promo-heading {
-    color: var(--sherpa-text-default-heading, #18191a);
+    color: var(--sherpa-content-default-heading, #18191a);
     font-weight: var(--sherpa-font-weight-semibold, 600);
   }
   .nav-promo-description {
-    color: var(--sherpa-text-default-secondary, #5c5c66);
+    color: var(--sherpa-content-default-secondary, #5c5c66);
     &:empty {
       display: none;
     }
@@ -248,7 +248,7 @@
   .nav-promo-chevron {
     display: inline-flex;
     align-items: center;
-    color: var(--sherpa-text-context-info-default, #1d4ed8);
+    color: var(--sherpa-content-context-info-default, #1d4ed8);
     flex-shrink: 0;
   }
 }

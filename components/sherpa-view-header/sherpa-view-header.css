@@ -34,7 +34,7 @@
 }
 
 .heading-label {
-  color: var(--sherpa-text-default-heading, #18191a);
+  color: var(--sherpa-content-default-heading, #18191a);
   white-space: nowrap;
 }
 
@@ -85,7 +85,7 @@
 }
 
 #favorite-btn[data-favorite="true"] {
-  --_icon-color: var(--sherpa-text-context-warning-default, #d4a017);
+  --_icon-color: var(--sherpa-content-context-warning-default, #d4a017);
 }
 
 /* ---- back button (drill-down exit) ---- */
@@ -121,7 +121,7 @@
 
 .toolbar-toggle-label,
 .toolbar-dropdown-label {
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 
 /* ---- dropdowns ---- */
@@ -140,7 +140,7 @@
     var(--sherpa-border-control-secondary-default, #d5d5d5);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background-color: var(--sherpa-surface-container-default, #ffffff);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   cursor: pointer;
 
   &:hover {
@@ -221,7 +221,7 @@
   border: none;
   padding: var(--sherpa-space-xs, 12px);
   cursor: pointer;
-  color: var(--sherpa-icon-context-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   --icon-size: var(--sherpa-size-sm, 16px);
   line-height: 1;
   border-radius: var(--sherpa-border-rounding-base, 4px);

@@ -41,7 +41,7 @@
 :host .label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   line-height: var(--sherpa-line-height-default, 1.4);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
   font-weight: var(--sherpa-font-weight-medium, 500);
 }
 :host(:not([data-label])) .label {
@@ -84,22 +84,22 @@
 }
 :host([disabled]) .drop-icon,
 :host([disabled]) .drop-text {
-  color: var(--sherpa-text-inactive-default, #9d9da6);
+  color: var(--sherpa-content-inactive-default, #9d9da6);
 }
 :host .drop-icon {
   font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
   font-weight: 900;
   font-style: normal;
   font-size: 20px;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   flex-shrink: 0;
 }
 :host .drop-text {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
 }
 :host .browse-link {
-  color: var(--_status-text, var(--sherpa-text-primary-default, #0079aa));
+  color: var(--_status-text, var(--sherpa-content-primary-default, #0079aa));
   text-decoration: underline;
   cursor: pointer;
 
@@ -116,7 +116,7 @@
 :host .constraints-text {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
   line-height: var(--sherpa-line-height-default, 1.4);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host .file-list {
   display: flex;
@@ -147,7 +147,7 @@
   font-weight: 900;
   font-style: normal;
   font-size: 16px;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host .file-info {
   flex: 1;
@@ -163,7 +163,7 @@
 }
 :host .file-name {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -172,7 +172,7 @@
 }
 :host .file-size {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -206,16 +206,16 @@
 }
 :host .file-status-text {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host .file-item[data-state="ready"] .file-status-text {
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host .file-item[data-state="uploaded"] .file-status-text {
-  color: var(--sherpa-text-context-success-default, #1a7a2e);
+  color: var(--sherpa-content-context-success-default, #1a7a2e);
 }
 :host .file-item[data-state="failed"] .file-status-text {
-  color: var(--sherpa-text-context-error-default, #dd2c00);
+  color: var(--sherpa-content-context-error-default, #dd2c00);
 }
 :host .file-item[data-state="failed"] .file-icon {
   background: var(--sherpa-surface-context-error-subtle-default, #fef0ec);
@@ -237,7 +237,7 @@
   background: var(--sherpa-surface-container-secondary-default, #fafaff);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   cursor: pointer;
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
   font-weight: 900;
   font-size: 14px;
@@ -284,7 +284,7 @@
 }
 :host .upload-btn {
   background: var(--sherpa-surface-control-default, #ffffff);
-  color: var(--sherpa-text-primary-default, #0079aa);
+  color: var(--sherpa-content-primary-default, #0079aa);
 
   &:hover {
     background: var(--sherpa-surface-container-hover, #f0f0f2);
@@ -292,7 +292,7 @@
 }
 :host .remove-all-btn {
   background: var(--sherpa-surface-context-error-subtle-default, #f8c4b9);
-  color: var(--sherpa-text-context-error-default, #dd2c00);
+  color: var(--sherpa-content-context-error-default, #dd2c00);
 
   &:hover {
     background: var(--sherpa-surface-context-error-subtle-default, #f0a898);

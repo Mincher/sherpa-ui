@@ -16,7 +16,7 @@
   padding: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-  color: var(--sherpa-text-default-body, #2e2e38);
+  color: var(--sherpa-content-default-body, #2e2e38);
   /* ──────────────────────────────────────────────────────────
              PANEL VARIANT (background surface)
              ────────────────────────────────────────────────────────── */

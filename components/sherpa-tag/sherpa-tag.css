@@ -26,8 +26,8 @@
   --_tag-border: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
   --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-1, #7b1ce6);
   --_tag-fill-transparent: rgba(123, 28, 230, 0.4);
-  --_tag-text: var(--sherpa-text-default-on-color-body, #fafafa);
-  --_tag-text-transparent: var(--sherpa-text-default-label, #18191a);
+  --_tag-text: var(--sherpa-content-default-on-color-body, #fafafa);
+  --_tag-text-transparent: var(--sherpa-content-default-label, #18191a);
 
   --_tag-border-rounding: var(--sherpa-border-rounding-lg, 8px);
 }
@@ -46,13 +46,13 @@
     [data-color="grey"]
   )
 ) {
-  --_tag-text: var(--sherpa-text-default-on-color-subtle-label, #18191a);
-  --_tag-text-transparent: var(--sherpa-text-default-label, #18191a);
+  --_tag-text: var(--sherpa-content-default-on-color-subtle-label, #18191a);
+  --_tag-text-transparent: var(--sherpa-content-default-label, #18191a);
 }
 /* Dark-background swatches → white text */
 :host(:is([data-color="blue"], [data-color="rose"])) {
-  --_tag-text: var(--sherpa-text-default-on-color-label, #ffffff);
-  --_tag-text-transparent: var(--sherpa-text-default-label, #18191a);
+  --_tag-text: var(--sherpa-content-default-on-color-label, #ffffff);
+  --_tag-text-transparent: var(--sherpa-content-default-label, #18191a);
 }
 
 :host([data-color="magenta"]) {
@@ -133,7 +133,7 @@
     --_status-surface-subtle,
     var(--sherpa-surface-context-default-subtle-default, #f5f5f5)
   );
-  color: var(--_status-text, var(--sherpa-text-default-body, #1a1a1a));
+  color: var(--_status-text, var(--sherpa-content-default-body, #1a1a1a));
   border: var(--sherpa-border-width-base, 1px) solid
     var(--_status-border, var(--sherpa-border-container-default, #d4d4d4));
   border-radius: var(--_tag-border-rounding, var(--sherpa-border-rounding-full, 999px));

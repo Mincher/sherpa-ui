@@ -11,7 +11,7 @@
   gap: var(--sherpa-space-base, 16px);
   align-items: stretch;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   min-height: 240px;
 }
 :host .pane {

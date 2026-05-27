@@ -11,7 +11,7 @@
  * CSS properties consumed:
  *   --sherpa-fonts-context-monospaced — Monospace font family
  *   --sherpa-surface-container-default — Code background
- *   --sherpa-text-default-body — Default code text color
+ *   --sherpa-content-default-body — Default code text color
  *   --sherpa-border-container-default — Code border color
  *   --sherpa-space-sm, --sherpa-space-xs — Padding/gaps
  */
@@ -29,7 +29,7 @@
   border-radius: var(--sherpa-border-rounding-base, 4px);
   /* ── Syntax token colors (light mode defaults) ─────────– */
   --_hljs-bg: var(--sherpa-surface-container-default, #ffffff);
-  --_hljs-text: var(--sherpa-text-default-body, #1a1a1f);
+  --_hljs-text: var(--sherpa-content-default-body, #1a1a1f);
   --_hljs-keyword: #c678dd;
   --_hljs-string: #98c379;
   --_hljs-number: #d19a66;
@@ -109,7 +109,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--sherpa-text-default-secondary, #888);
+  color: var(--sherpa-content-default-secondary, #888);
 }
 :host .copy-btn {
   flex-shrink: 0;
@@ -254,7 +254,7 @@
       display: block;
       counter-increment: linenumber;
       padding-inline-end: 0.8em;
-      color: var(--sherpa-text-default-secondary, #999);
+      color: var(--sherpa-content-default-secondary, #999);
       font-size: 0.9em;
     }
   }

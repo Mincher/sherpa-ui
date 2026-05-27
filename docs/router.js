@@ -856,18 +856,17 @@ async function renderHomePage() {
   for (const cat of CATEGORIES) {
     const count = visibleComponents().filter(c => c.category === cat.id).length;
     const node  = tpl.content.firstElementChild.cloneNode(true);
-    node.dataset.label       = cat.label;
-    node.dataset.description = cat.description ?? '';
     node.dataset.route       = `/category/${cat.id}`;
     node.setAttribute('aria-label', `${cat.label} — ${count} components`);
+
+    const header = node.querySelector('sherpa-container-header');
+    if (header) header.dataset.title = cat.label;
 
     const icon = node.querySelector('sherpa-icon');
     if (icon) icon.setAttribute('name', faToIconName(cat.icon));
 
-    const count$ = document.createElement('span');
-    count$.slot = 'footer';
-    count$.textContent = `${count} component${count !== 1 ? 's' : ''}`;
-    node.appendChild(count$);
+    const count$ = node.querySelector('.docs-category-count');
+    if (count$) count$.textContent = `${count} component${count !== 1 ? 's' : ''}`;
 
     frag.appendChild(node);
   }

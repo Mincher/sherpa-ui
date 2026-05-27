@@ -46,21 +46,21 @@
   .label {
     color: var(
       --_selected-text,
-      var(--sherpa-text-active-base, var(--sherpa-text-default-heading, #18191a))
+      var(--sherpa-content-active-base, var(--sherpa-content-default-heading, #18191a))
     );
     font-weight: var(--sherpa-font-weight-semibold, 600);
   }
   .description {
     color: var(
       --_selected-text,
-      var(--sherpa-text-active-base, var(--sherpa-text-default-body, #2e2e33))
+      var(--sherpa-content-active-base, var(--sherpa-content-default-body, #2e2e33))
     );
   }
   .icon,
   .drag-handle {
     color: var(
       --_selected-text,
-      var(--sherpa-text-active-base, var(--sherpa-icon-context-default-body, #2e2e33))
+      var(--sherpa-content-active-base, var(--sherpa-content-default-body, #2e2e33))
     );
   }
 }
@@ -71,11 +71,11 @@
   }
   .label,
   .description {
-    color: var(--sherpa-text-inactive-default, #a0a0a0);
+    color: var(--sherpa-content-inactive-default, #a0a0a0);
   }
   .icon,
   .drag-handle {
-    color: var(--sherpa-icon-inactive-default, #a0a0a0);
+    color: var(--sherpa-content-inactive-default, #a0a0a0);
   }
 }
 :host([data-interactive]:focus-visible) .list-item-container {
@@ -91,7 +91,7 @@
 }
 :host .drag-handle {
   display: none;
-  color: var(--sherpa-icon-context-default-placeholder, #a9a9a9);
+  color: var(--sherpa-content-default-placeholder, #a9a9a9);
   cursor: grab;
 }
 :host([data-draggable]) .drag-handle {
@@ -99,7 +99,7 @@
 }
 :host .leading-icon {
   display: none;
-  color: var(--sherpa-icon-context-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 :host([data-icon]) .leading-icon {
   display: inline-flex;
@@ -123,13 +123,13 @@
   gap: var(--sherpa-space-2xs, 4px);
 }
 :host .label {
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 :host(:not([data-label])) .label {
   display: none;
 }
 :host .description {
-  color: var(--sherpa-text-default-secondary, #6e6e73);
+  color: var(--sherpa-content-default-secondary, #6e6e73);
 }
 :host(:not([data-description])) .description {
   display: none;

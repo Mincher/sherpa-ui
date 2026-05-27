@@ -34,7 +34,7 @@
   overflow: clip;
   width: var(--_w-collapsed);
   background: var(--sherpa-surface-container-secondary-default, #ffffff);
-  color: var(--sherpa-text-default-heading, #18191a);
+  color: var(--sherpa-content-default-heading, #18191a);
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   transition: --transition-base(width);
@@ -97,7 +97,7 @@ summary {
   overscroll-behavior: contain;
   gap: var(--sherpa-space-xs, 12px);
   scrollbar-width: thin;
-  scrollbar-color: var(--sherpa-text-default-secondary, #6a6a75) transparent;
+  scrollbar-color: var(--sherpa-content-default-secondary, #6a6a75) transparent;
   container-type: scroll-state;
   container-name: nav-scroller;
 }
@@ -210,7 +210,7 @@ summary {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: var(--sherpa-text-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #6a6a75);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -541,7 +541,7 @@ summary {
   width: 4px;
   flex-shrink: 0;
   align-self: stretch;
-  background: var(--sherpa-icon-context-success-default, #048142);
+  background: var(--sherpa-content-context-success-default, #048142);
   border-radius: var(--sherpa-border-rounding-full, 9999px);
 }
 .nav-promo .promo-content {
@@ -554,7 +554,7 @@ summary {
   font-weight: 600;
 }
 .nav-promo .promo-link {
-  color: var(--sherpa-text-primary-on-color, #d4d9ff);
+  color: var(--sherpa-content-primary-on-color, #d4d9ff);
   font-weight: 600;
   cursor: pointer;
 }

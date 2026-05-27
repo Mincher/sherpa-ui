@@ -16,7 +16,7 @@
   --_padding-y: var(--sherpa-space-2xs, 8px);
   --_padding-x: var(--sherpa-space-sm, 16px);
   --_rounding: var(--sherpa-border-rounding-sm, 2px);
-  --_text-secondary: var(--sherpa-text-default-secondary, #5c5c66);
+  --_text-secondary: var(--sherpa-content-default-secondary, #5c5c66);
   --_font-sm: var(--sherpa-fonts-scale-sm, 12px);
 }
 :host(:hover),
@@ -24,7 +24,7 @@
   background-color: var(--sherpa-surface-control-hover, #fafafa);
 }
 :host([disabled]) {
-  color: var(--sherpa-text-inactive-default, #5c5c66);
+  color: var(--sherpa-content-inactive-default, #5c5c66);
   cursor: default;
   pointer-events: none;
 }
@@ -90,13 +90,13 @@
   display: inline-flex;
 }
 :host([data-variant="danger"]) {
-  color: var(--sherpa-text-context-error-default, #c41337);
+  color: var(--sherpa-content-context-error-default, #c41337);
 }
 :host([data-variant="danger"]:hover),
 :host([data-variant="danger"]:focus-visible) {
   background-color: var(--sherpa-surface-context-error-subtle-default, #fbeaee);
-  color: var(--sherpa-text-context-error-default, #c41337);
+  color: var(--sherpa-content-context-error-default, #c41337);
 }
 :host([data-variant="danger"][disabled]) {
-  color: var(--sherpa-text-inactive-default, #5c5c66);
+  color: var(--sherpa-content-inactive-default, #5c5c66);
 }

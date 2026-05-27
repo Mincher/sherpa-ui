@@ -120,7 +120,7 @@
   display: none;
 }
 :host .state-default {
-  color: var(--sherpa-text-default-secondary, #6a6a7a);
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
 }
 :host .state-default-loading {
   width: var(--sherpa-size-xl, 28px);
@@ -251,7 +251,7 @@
 :host([data-selected="true"][data-interactive="true"]:active:not([disabled])) {
   border-color: var(--_selected-border, var(--sherpa-border-container-active, #8500cc));
   background: var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
-  color: var(--_selected-text, var(--sherpa-text-active-base, #8500cc));
+  color: var(--_selected-text, var(--sherpa-content-active-base, #8500cc));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -261,7 +261,7 @@
 :host([disabled]) {
   background: var(--sherpa-surface-container-inactive, #f2f2f2);
   border-color: var(--sherpa-border-container-inactive, #c0c0cc);
-  color: var(--sherpa-text-inactive-default, #5c5c66);
+  color: var(--sherpa-content-inactive-default, #5c5c66);
   cursor: not-allowed;
   pointer-events: none;
 }

@@ -23,12 +23,12 @@
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 :host .rationale {
   margin: 0 0 6px;
   font-style: italic;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host(:not([data-rationale])) .rationale,
 :host([data-rationale=""]) .rationale {
@@ -50,7 +50,7 @@
 }
 :host .raw-summary {
   cursor: pointer;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   user-select: none;
 }
 :host(:not([data-has-raw])) .raw {

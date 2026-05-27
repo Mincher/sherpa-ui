@@ -50,7 +50,7 @@
   font-weight: 400;
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 0.1px;
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
   container-type: inline-size;
   container-name: data-grid;
 }
@@ -173,7 +173,7 @@
     font-size: var(--sherpa-font-base-size, 14px);
     line-height: var(--sherpa-font-base-line-height, 20px);
     letter-spacing: 0.1px;
-    color: var(--sherpa-text-default-label, #464646);
+    color: var(--sherpa-content-default-label, #464646);
     font-family: inherit;
   }
 }
@@ -194,7 +194,7 @@
 }
 
 .primary-headers th.header-cell[data-sorted] {
-  color: var(--sherpa-text-primary-default, #8500cc);
+  color: var(--sherpa-content-primary-default, #8500cc);
 }
 
 /* Flexbox inside the th for label + sort icon */
@@ -221,7 +221,7 @@
   height: var(--sherpa-size-2xl, 32px);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-icon-context-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   transition: --transition-fast(background-color);
 }
 
@@ -230,7 +230,7 @@
 }
 
 .header-cell[data-sorted] .sort-icon {
-  color: var(--sherpa-icon-primary-default, #8500cc);
+  color: var(--sherpa-content-primary-default, #8500cc);
 }
 
 /* Numeric columns — right-aligned */
@@ -258,7 +258,7 @@ th.header-cell[data-numeric] .header-content {
     padding-inline: var(--_cell-px);
     font-size: var(--sherpa-font-xs-size, 10px);
     line-height: var(--sherpa-font-xs-line-height, 16px);
-    color: var(--sherpa-text-default-secondary, #555);
+    color: var(--sherpa-content-default-secondary, #555);
     font-weight: 400;
     text-align: start;
     vertical-align: middle;
@@ -553,12 +553,12 @@ tr.grid-row {
 
   &[data-selected] {
     background: var(--sherpa-surface-container-down, #adadad);
-    color: var(--sherpa-text-default-body, #111);
+    color: var(--sherpa-content-default-body, #111);
   }
 
   &[data-selected]:hover {
     background: var(--sherpa-surface-container-down, #adadad);
-    color: var(--sherpa-text-default-body, #111);
+    color: var(--sherpa-content-default-body, #111);
   }
 
   & td {
@@ -570,7 +570,7 @@ tr.grid-row {
     white-space: nowrap;
     border-bottom: var(--_border);
     border-inline-end: var(--_border-right);
-    color: var(--sherpa-text-default-body, #111);
+    color: var(--sherpa-content-default-body, #111);
     background-color: inherit;
     font-family: inherit;
     font-size: inherit;
@@ -599,16 +599,16 @@ td .bool-icon {
   font-size: var(--sherpa-fonts-scale-sm, 12px);
 
   &[data-bool="true"] {
-    color: var(--sherpa-icon-context-success-default, #048142);
+    color: var(--sherpa-content-context-success-default, #048142);
   }
   &[data-bool="false"] {
-    color: var(--sherpa-icon-context-default-secondary, #5c5c66);
+    color: var(--sherpa-content-default-secondary, #5c5c66);
   }
 }
 
 /* Link cells */
 td a {
-  color: var(--sherpa-text-primary-default, #8500cc);
+  color: var(--sherpa-content-primary-default, #8500cc);
   text-decoration: none;
 
   &:hover {
@@ -631,22 +631,22 @@ tr.group-parent-row {
 
   &[data-selected] {
     background: var(--sherpa-surface-container-down, #adadad);
-    color: var(--sherpa-text-default-body, #111);
+    color: var(--sherpa-content-default-body, #111);
   }
 
   &[data-selected]:hover {
     background: var(--sherpa-surface-container-down, #adadad);
-    color: var(--sherpa-text-default-body, #111);
+    color: var(--sherpa-content-default-body, #111);
   }
 
   &[data-indeterminate] {
     background: var(--sherpa-surface-container-down, #adadad);
-    color: var(--sherpa-text-default-body, #111);
+    color: var(--sherpa-content-default-body, #111);
   }
 
   &[data-indeterminate]:hover {
     background: var(--sherpa-surface-container-down, #adadad);
-    color: var(--sherpa-text-default-body, #111);
+    color: var(--sherpa-content-default-body, #111);
   }
 
   & td.group-summary-cell {
@@ -688,7 +688,7 @@ tr.group-parent-row {
 
 .toggle-icon {
   font-size: 8px;
-  color: var(--sherpa-icon-context-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   transition: --transition-base(rotate);
 }
 
@@ -711,7 +711,7 @@ tr.group-parent-row[data-expanded] .toggle-icon {
   font-weight: 600;
   font-size: var(--sherpa-font-base-size, 14px);
   line-height: var(--sherpa-font-base-line-height, 20px);
-  color: var(--sherpa-text-default-label, #464646);
+  color: var(--sherpa-content-default-label, #464646);
   white-space: nowrap;
 }
 
@@ -730,7 +730,7 @@ tr.group-parent-row[data-expanded] .toggle-icon {
   font-size: var(--sherpa-font-xs-size, 10px);
   font-weight: 400;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  color: var(--sherpa-text-default-secondary, #464646);
+  color: var(--sherpa-content-default-secondary, #464646);
 
   &:not(:empty) {
     display: flex;

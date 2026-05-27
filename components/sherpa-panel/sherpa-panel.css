@@ -93,14 +93,14 @@
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: transparent;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   cursor: pointer;
   font-size: 14px;
   padding: var(--sherpa-space-xs, 8px) 0;
 }
 :host .collapse-trigger:hover {
   background: var(--sherpa-surface-container-hover, #f0f0f5);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 :host .collapse-label {
   writing-mode: vertical-rl;
@@ -186,13 +186,13 @@
   font-size: var(--sherpa-fonts-scale-base, 16px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-line-height-default, 1.5);
-  color: var(--sherpa-text-default-heading, #18191a);
+  color: var(--sherpa-content-default-heading, #18191a);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 :host([data-variant="overlay"]) .header-title {
-  color: var(--sherpa-text-primary-default, #3c5edd);
+  color: var(--sherpa-content-primary-default, #3c5edd);
 }
 :host(:not([data-heading])) .header-title {
   display: none;
@@ -212,14 +212,14 @@
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: transparent;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   cursor: pointer;
   font-size: 14px;
   padding: 0;
 }
 :host .close-btn:hover {
   background: var(--sherpa-surface-container-hover, #f0f0f5);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 
 /* Header close/minimise button icon — chevron for inline, xmark for overlay.
@@ -238,7 +238,7 @@
   align-items: center;
   gap: var(--sherpa-space-sm, 12px);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   min-height: 20px;
 }
 :host(:not([data-has-metadata])) .metadata {
@@ -296,7 +296,7 @@
   display: none;
   padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
   text-align: center;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
 }
 :host([data-empty-visible]) .panel-empty {
@@ -310,7 +310,7 @@
 /* ── Search highlight (CSS Highlight API) ─────────────── */
 ::highlight(panel-search-match) {
   background-color: var(--sherpa-surface-context-warning-subtle-default, #fff3cd);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 
 /* ── AI variant ────────────────────────────────────────── */
@@ -361,20 +361,20 @@
   width: var(--sherpa-size-2xl, 32px);
   height: var(--sherpa-size-2xl, 32px);
   border-radius: var(--sherpa-border-rounding-sm, 4px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   transition: --transition-fast(background-color), --transition-fast(color);
 }
 .ai-btn:hover {
   background: var(--sherpa-surface-container-hover, #f0f0f5);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 .ai-btn:focus-visible {
   outline: --focus-ring();
   outline-offset: 1px;
 }
 .ai-btn:disabled {
-  color: var(--sherpa-text-inactive-default, #b0b0b8);
+  color: var(--sherpa-content-inactive-default, #b0b0b8);
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -404,7 +404,7 @@
   padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-default, 16px);
   text-align: center;
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-  color: var(--sherpa-text-default-placeholder, #94a3b8);
+  color: var(--sherpa-content-default-placeholder, #94a3b8);
   line-height: 1.4;
   border-top: 1px solid var(--sherpa-border-container-default, #d5d5dc);
   flex-shrink: 0;

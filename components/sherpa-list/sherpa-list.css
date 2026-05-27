@@ -12,7 +12,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   --_list-gap: var(--sherpa-space-2xs, 4px);
   --_list-padding: 0;
   /* ──────────────────────────────────────────────────────────
@@ -42,7 +42,7 @@
 }
 :host .list-heading {
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-text-default-heading, #18191a);
+  color: var(--sherpa-content-default-heading, #18191a);
 }
 :host .list-body {
   list-style: none;
@@ -74,7 +74,7 @@
   display: none;
   padding: var(--sherpa-space-base, 16px);
   text-align: center;
-  color: var(--sherpa-text-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #6a6a75);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
 }
 :host([data-empty-visible]) .list-empty {

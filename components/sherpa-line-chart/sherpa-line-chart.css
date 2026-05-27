@@ -46,7 +46,7 @@
 }
 :host([data-loading]) .chart-area {
   filter: grayscale(0.6);
-  color: var(--sherpa-text-inactive-default, #5c5c66);
+  color: var(--sherpa-content-inactive-default, #5c5c66);
   pointer-events: none;
 }
 :host .chart-header {
@@ -64,7 +64,7 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -106,7 +106,7 @@
 }
 :host .y-label {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   line-height: 1;
   white-space: nowrap;
 }
@@ -245,7 +245,7 @@
 }
 :host .x-label {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   text-align: center;
   white-space: nowrap;
 }
@@ -267,7 +267,7 @@
   align-items: center;
   gap: var(--sherpa-space-2xs, 4px);
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
   cursor: default;
 }
 :host .legend-key {

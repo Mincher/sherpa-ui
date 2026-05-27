@@ -93,10 +93,10 @@
     --_status-surface-subtle:              var(--sherpa-surface-context-error-subtle-default);
     --_status-surface-subtle-hover:        var(--sherpa-surface-context-error-subtle-hover);
     --_status-surface-subtle-down:         var(--sherpa-surface-context-error-subtle-down);
-    --_status-text:                        var(--sherpa-text-context-error-on-color-subtle);
-    --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
-    --_status-icon:                        var(--sherpa-icon-context-error-on-color-subtle);
-    --_status-icon-on-color:               var(--sherpa-icon-context-default-on-color-body);
+    --_status-text:                        var(--sherpa-content-context-error-on-color-subtle);
+    --_status-text-on-color:               var(--sherpa-content-default-on-color-body);
+    --_status-icon:                        var(--sherpa-content-context-error-on-color-subtle);
+    --_status-icon-on-color:               var(--sherpa-content-default-on-color-body);
     --_status-shadow:                      var(--sherpa-elevation-tint-error);
   }
 
@@ -111,10 +111,10 @@
     --_status-surface-subtle:              var(--sherpa-surface-context-info-subtle-default);
     --_status-surface-subtle-hover:        var(--sherpa-surface-context-info-subtle-hover);
     --_status-surface-subtle-down:         var(--sherpa-surface-context-info-subtle-down);
-    --_status-text:                        var(--sherpa-text-context-info-on-color-subtle);
-    --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
-    --_status-icon:                        var(--sherpa-icon-context-info-on-color-subtle);
-    --_status-icon-on-color:               var(--sherpa-icon-context-default-on-color-body);
+    --_status-text:                        var(--sherpa-content-context-info-on-color-subtle);
+    --_status-text-on-color:               var(--sherpa-content-default-on-color-body);
+    --_status-icon:                        var(--sherpa-content-context-info-on-color-subtle);
+    --_status-icon-on-color:               var(--sherpa-content-default-on-color-body);
     --_status-shadow:                      var(--sherpa-elevation-tint-info);
   }
 
@@ -129,10 +129,10 @@
     --_status-surface-subtle:              var(--sherpa-surface-context-success-subtle-default);
     --_status-surface-subtle-hover:        var(--sherpa-surface-context-success-subtle-hover);
     --_status-surface-subtle-down:         var(--sherpa-surface-context-success-subtle-down);
-    --_status-text:                        var(--sherpa-text-context-success-on-color-subtle);
-    --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
-    --_status-icon:                        var(--sherpa-icon-context-success-on-color-subtle);
-    --_status-icon-on-color:               var(--sherpa-icon-context-default-on-color-body);
+    --_status-text:                        var(--sherpa-content-context-success-on-color-subtle);
+    --_status-text-on-color:               var(--sherpa-content-default-on-color-body);
+    --_status-icon:                        var(--sherpa-content-context-success-on-color-subtle);
+    --_status-icon-on-color:               var(--sherpa-content-default-on-color-body);
     --_status-shadow:                      var(--sherpa-elevation-tint-success);
   }
 
@@ -147,10 +147,10 @@
     --_status-surface-subtle:              var(--sherpa-surface-context-warning-subtle-default);
     --_status-surface-subtle-hover:        var(--sherpa-surface-context-warning-subtle-hover);
     --_status-surface-subtle-down:         var(--sherpa-surface-context-warning-subtle-down);
-    --_status-text:                        var(--sherpa-text-context-warning-on-color-subtle);
-    --_status-text-on-color:               var(--sherpa-text-default-on-color-subtle-body);
-    --_status-icon:                        var(--sherpa-icon-context-default-on-color-subtle-body);
-    --_status-icon-on-color:               var(--sherpa-icon-context-warning-on-color);
+    --_status-text:                        var(--sherpa-content-context-warning-on-color-subtle);
+    --_status-text-on-color:               var(--sherpa-content-default-on-color-subtle-body);
+    --_status-icon:                        var(--sherpa-content-default-on-color-subtle-body);
+    --_status-icon-on-color:               var(--sherpa-content-context-warning-on-color);
     --_status-shadow:                      var(--sherpa-elevation-tint-warning);
   }
 
@@ -165,10 +165,10 @@
     --_status-surface-subtle:              var(--sherpa-surface-context-urgent-subtle-default);
     --_status-surface-subtle-hover:        var(--sherpa-surface-context-urgent-subtle-hover);
     --_status-surface-subtle-down:         var(--sherpa-surface-context-urgent-subtle-down);
-    --_status-text:                        var(--sherpa-text-context-urgent-on-color-subtle);
-    --_status-text-on-color:               var(--sherpa-text-default-on-color-body);
-    --_status-icon:                        var(--sherpa-icon-context-urgent-on-color-subtle);
-    --_status-icon-on-color:               var(--sherpa-icon-context-default-on-color-body);
+    --_status-text:                        var(--sherpa-content-context-urgent-on-color-subtle);
+    --_status-text-on-color:               var(--sherpa-content-default-on-color-body);
+    --_status-icon:                        var(--sherpa-content-context-urgent-on-color-subtle);
+    --_status-icon-on-color:               var(--sherpa-content-default-on-color-body);
     --_status-shadow:                      var(--sherpa-elevation-tint-urgent);
   }
 

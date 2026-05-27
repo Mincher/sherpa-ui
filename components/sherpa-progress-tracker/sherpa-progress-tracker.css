@@ -38,13 +38,13 @@
 :host .heading-text {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-text-default-heading, #18191a);
+  color: var(--sherpa-content-default-heading, #18191a);
 }
 :host .percentage-text {
   display: none;
   font-size: var(--sherpa-fonts-scale-xs, 13px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host([data-percentage]) .percentage-text {
   display: inline;
@@ -63,7 +63,7 @@
   --_node-bg: var(--sherpa-surface-container-default, #ffffff);
   --_node-border: var(--sherpa-border-container-default, #d5d5dc);
   --_node-icon: none;
-  --_node-icon-color: var(--sherpa-text-default-secondary, #6a6a75);
+  --_node-icon-color: var(--sherpa-content-default-secondary, #6a6a75);
   --_connector-color: var(--sherpa-border-container-default, #d5d5dc);
 
   &:first-child .connector-in {
@@ -120,7 +120,7 @@
     --_node-bg: var(--sherpa-surface-container-default, #ffffff);
     --_node-border: var(--sherpa-border-container-default, #d5d5dc);
     --_node-icon: none;
-    --_node-icon-color: var(--sherpa-text-default-secondary, #6a6a75);
+    --_node-icon-color: var(--sherpa-content-default-secondary, #6a6a75);
     .node-icon::before {
       content: "";
     }
@@ -165,7 +165,7 @@
 :host .milestone-timestamp {
   display: none;
   font-size: var(--sherpa-fonts-scale-xs, 12px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   white-space: nowrap;
   padding: var(--sherpa-space-2xs, 4px) 0;
   flex-shrink: 0;
@@ -182,13 +182,13 @@
 :host .milestone-label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
   line-height: var(--sherpa-line-height-default, 1.4);
 }
 :host .milestone-description {
   display: none;
   font-size: var(--sherpa-fonts-scale-xs, 13px);
   font-weight: var(--sherpa-font-weight-regular, 400);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
   line-height: var(--sherpa-line-height-default, 1.4);
 }

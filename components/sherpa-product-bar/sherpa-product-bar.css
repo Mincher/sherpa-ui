@@ -30,7 +30,7 @@
   --sherpa-surface-container-tertiary-default: var(--sherpa-color-neutral-1000);
   background: var(--sherpa-surface-container-tertiary-default, #18191a);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  color: var(--sherpa-text-default-on-color-body, #fafafa);
+  color: var(--sherpa-content-default-on-color-body, #fafafa);
 }
 :host .branding {
   display: flex;
@@ -46,7 +46,7 @@
   width: 48px;
   height: 48px;
   background: var(--sherpa-surface-control-primary-default, #c046ff);
-  color: var(--sherpa-text-default-on-color-body, #ffffff);
+  color: var(--sherpa-content-default-on-color-body, #ffffff);
   font-size: 20px;
   flex-shrink: 0;
 }

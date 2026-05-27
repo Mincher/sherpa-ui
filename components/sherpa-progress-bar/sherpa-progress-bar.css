@@ -35,7 +35,7 @@
 :host .label {
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   line-height: var(--sherpa-line-height-default, 1.4);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
 }
 :host(:not([data-label])) .label {
   display: none;
@@ -71,7 +71,7 @@
 :host .status {
   font-size: var(--sherpa-fonts-scale-xs, 12px);
   line-height: var(--sherpa-line-height-default, 1.4);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host([data-variant="indeterminate"]) .status {
   display: none;

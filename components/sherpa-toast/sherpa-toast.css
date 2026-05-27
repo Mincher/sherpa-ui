@@ -74,7 +74,7 @@
   transition:
     translate var(--_duration) var(--_easing),
     opacity var(--_duration) var(--_easing);
-  color: var(--_status-icon, var(--sherpa-icon-context-info-on-color-subtle, #0b6dd6));
+  color: var(--_status-icon, var(--sherpa-content-context-info-on-color-subtle, #0b6dd6));
 
   /* ── State transitions ──────────────────────────────– */
   &[data-state="visible"] {
@@ -121,7 +121,7 @@
   min-width: 0;
 }
 :host .toast-heading {
-  color: var(--_status-text, var(--sherpa-text-default-body, #0f172a));
+  color: var(--_status-text, var(--sherpa-content-default-body, #0f172a));
   margin-bottom: var(--sherpa-space-3xs, 4px);
 
   &:empty {
@@ -129,7 +129,7 @@
   }
 }
 :host .toast-value {
-  color: var(--_status-text, var(--sherpa-text-default-body, #0f172a));
+  color: var(--_status-text, var(--sherpa-content-default-body, #0f172a));
 
   &:empty {
     display: none;
@@ -163,7 +163,7 @@
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 2px);
   background: transparent;
-  color: var(--_status-text, var(--sherpa-text-default-body, #0f172a));
+  color: var(--_status-text, var(--sherpa-content-default-body, #0f172a));
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   cursor: pointer;
   display: inline-flex;

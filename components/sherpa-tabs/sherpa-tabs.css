@@ -60,7 +60,7 @@
   cursor: pointer;
   white-space: nowrap;
   font: inherit;
-  color: var(--sherpa-text-default-body, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   transition: --transition-fast(background), --transition-fast(border-color);
 
   &:hover {
@@ -75,14 +75,14 @@
   /* ── Active state ───────────────────────────────────– */
   &[aria-selected="true"] {
     border-bottom-color: var(--sherpa-border-control-active-default, #3c5edd);
-    color: var(--sherpa-text-active-base, #3c5edd);
+    color: var(--sherpa-content-active-base, #3c5edd);
     font-weight: var(--sherpa-font-weight-semibold, 600);
   }
 
   /* ── Inactive/disabled state ────────────────────────– */
   &[data-inactive] {
     background: var(--sherpa-surface-container-inactive, #f2f2f2);
-    color: var(--sherpa-text-inactive-default, #a0a0a0);
+    color: var(--sherpa-content-inactive-default, #a0a0a0);
     cursor: not-allowed;
     pointer-events: none;
     border-bottom-color: var(--sherpa-border-container-inactive, #c0c0cc);

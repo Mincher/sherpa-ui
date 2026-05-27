@@ -14,7 +14,7 @@
   display: block;
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
-  color: var(--sherpa-text-default-body, #333);
+  color: var(--sherpa-content-default-body, #333);
   /* ── Hidden state ────────────────────────────────────────── */
   /* ── Disabled state ──────────────────────────────────────– */
   /* ── Group wrapper (fieldset) ──────────────────────────── */
@@ -42,7 +42,7 @@
   display: block;
   margin: 0;
   padding: 0;
-  color: var(--sherpa-text-default-label, #1a1a1f);
+  color: var(--sherpa-content-default-label, #1a1a1f);
 
   &:has(.group-label:empty) {
     display: none;
@@ -50,7 +50,7 @@
 }
 :host .group-required {
   display: none;
-  color: var(--sherpa-text-context-error-default, #c41337);
+  color: var(--sherpa-content-context-error-default, #c41337);
   margin-inline-start: 2px;
 }
 :host([required]) .group-required {
@@ -59,7 +59,7 @@
 :host .group-description,
 :host .group-helper {
   margin: 0;
-  color: var(--sherpa-text-default-secondary, #6a6a7a);
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
 
   &:empty {
     display: none;
@@ -77,5 +77,5 @@
   gap: var(--sherpa-space-sm, 12px);
 }
 :host([data-status]) .group-helper {
-  color: var(--_status-text, var(--sherpa-text-default-secondary, #6a6a7a));
+  color: var(--_status-text, var(--sherpa-content-default-secondary, #6a6a7a));
 }

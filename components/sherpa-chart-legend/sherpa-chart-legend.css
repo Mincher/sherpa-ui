@@ -32,7 +32,7 @@
 }
 :host([data-loading]) {
   filter: grayscale(0.6);
-  color: var(--sherpa-text-inactive-default, #5c5c66);
+  color: var(--sherpa-content-inactive-default, #5c5c66);
   pointer-events: none;
 }
 :host .legend-list {
@@ -50,13 +50,13 @@
   align-items: center;
   gap: var(--sherpa-space-xs, 8px);
   font-size: var(--sherpa-fonts-scale-sm, 14px);
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
   cursor: default;
   transition: --transition-fast(color);
 
   /* ── Inactive state ─────────────────────────────────────– */
   &[data-inactive] {
-    color: var(--sherpa-text-default-placeholder, #999999);
+    color: var(--sherpa-content-default-placeholder, #999999);
 
     & .legend-swatch {
       /* !important overrides the inline background-color set by JS for series colours */
@@ -81,12 +81,12 @@
 }
 :host .legend-label {
   white-space: nowrap;
-  color: var(--sherpa-text-default-body, #18191a);
+  color: var(--sherpa-content-default-body, #18191a);
 }
 :host .legend-value {
   display: none;
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-text-default-heading, #18191a);
+  color: var(--sherpa-content-default-heading, #18191a);
 }
 :host .legend-item[data-has-value] .legend-value {
   display: inline;
