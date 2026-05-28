@@ -20,3 +20,6 @@ figma-tokens/Classic/
 
 # Build cache (hash-based incremental build system)
 .build-cache/
+
+# Accessibility test reports (generated)
+test/a11y/report.json

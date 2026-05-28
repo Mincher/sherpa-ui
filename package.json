@@ -44,15 +44,19 @@
     "build:serial": "npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
     "build:measure": "node scripts/measure-build-time.js",
     "cache:clear": "node scripts/build-cache.js clear",
-    "cache:status": "node scripts/build-cache.js status"
+    "cache:status": "node scripts/build-cache.js status",
+    "test:a11y": "node scripts/test-a11y.js",
+    "test:a11y:verbose": "node scripts/test-a11y.js --verbose"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"
   },
   "devDependencies": {
+    "axe-core": "^4.11.4",
     "eslint": "^8.55.0",
     "glob": "^13.0.6",
     "npm-run-all": "^4.1.5",
+    "pa11y": "^9.1.1",
     "prettier": "^3.1.0"
   },
   "keywords": [
