@@ -137,3 +137,15 @@ ol[role="list"] {
   list-style: none;
   padding-inline-start: 0;
 }
+
+/* ==================== Composition Validation ==================== */
+
+/*
+ * Hide elements that violate composition rules when strict mode is enabled.
+ * The composition-validator.js flags invalid children with [data-slot-rejected]
+ * when SherpaElement.strictSlots is true or CompositionValidator.enable({ strict: true })
+ * is called. Elements are kept in the DOM (non-destructive) but visually hidden.
+ */
+sherpa-* > [data-slot-rejected] {
+  display: none !important;
+}

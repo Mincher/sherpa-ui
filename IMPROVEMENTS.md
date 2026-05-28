@@ -215,26 +215,29 @@ reset → primitives → alias → platform → theme → overrides → componen
 
 ---
 
-### Component Composition Validator
+### ✅ Component Composition Validator
 
-*   Design composition validation rules
-    *   Tier hierarchy enforcement (shell > container > control)
-    *   Invalid nesting detection (button cannot contain container)
-    *   Required slot checking
-    *   Slot content type validation (`data-accepts`)
-*   Implement `components/utilities/composition-validator.js`
-    *   Dev-mode-only warnings (check `NODE_ENV` or custom flag)
-    *   Console warnings with fix suggestions
-    *   Optional strict mode (throw errors)
-*   Integrate with `SherpaElement` base class
-    *   Validate on `connectedCallback`
-    *   Validate on slot content changes (MutationObserver)
-*   Write tests for validator
-*   Document validator in copilot instructions
+*   ✅ Design composition validation rules
+    *   ✅ Tier hierarchy enforcement (shell > container > control)
+    *   ✅ Invalid nesting detection (button cannot contain container)
+    *   ✅ Required slot checking
+    *   ✅ Slot content type validation (`data-accepts`)
+*   ✅ Implement `components/utilities/composition-validator.js`
+    *   ✅ Dev-mode-only warnings (check `NODE_ENV` or `localhost` detection)
+    *   ✅ Console warnings with fix suggestions
+    *   ✅ Optional strict mode (flags elements with `data-slot-rejected`)
+*   ✅ Integration with `SherpaElement` base class
+    *   ✅ Validation already exists in `#validateSlot` method
+    *   ✅ Validate on `connectedCallback` via `#wireSlots`
+    *   ✅ Validate on slot content changes (`slotchange` listener)
+*   ✅ Write tests for validator
+*   ✅ Create demo page showing validator in action
+*   ⏳ Document validator in copilot instructions (next step)
 
-**Effort:** 3-5 days  
-**Impact:** MEDIUM — Prevents composition errors  
-**Dependencies:** None
+**Effort:** 3-5 days → **COMPLETE** (2026-05-28)  
+**Impact:** MEDIUM — Prevents composition errors with helpful error messages  
+**Dependencies:** None  
+**Result:** Standalone validator utility with enhanced error messages, strict mode support, and comprehensive test coverage
 
 ---
 

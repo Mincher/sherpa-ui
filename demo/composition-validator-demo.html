@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Composition Validator Demo — Sherpa UI</title>
+
+    <!-- Sherpa Styles -->
+    <link rel="stylesheet" href="../css/styles/index.css" />
+
+    <style>
+      body {
+        padding: var(--sherpa-space-2xl);
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .demo-section {
+        margin-block: var(--sherpa-space-3xl);
+      }
+
+      .demo-section h2 {
+        margin-bottom: var(--sherpa-space-lg);
+        color: var(--sherpa-content-default-heading);
+      }
+
+      .demo-section p {
+        margin-bottom: var(--sherpa-space-default);
+        color: var(--sherpa-content-default-body);
+      }
+
+      .example {
+        padding: var(--sherpa-space-lg);
+        border: 1px solid var(--sherpa-border-container-default);
+        border-radius: var(--sherpa-border-radius-md);
+        margin-bottom: var(--sherpa-space-lg);
+      }
+
+      .example-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: var(--sherpa-space-sm);
+        color: var(--sherpa-content-default-heading);
+      }
+
+      .valid {
+        border-left: 4px solid var(--sherpa-border-context-success-default);
+      }
+
+      .invalid {
+        border-left: 4px solid var(--sherpa-border-context-error-default);
+      }
+
+      .code-block {
+        background: var(--sherpa-surface-container-subtle);
+        padding: var(--sherpa-space-default);
+        border-radius: var(--sherpa-border-radius-sm);
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        margin-top: var(--sherpa-space-sm);
+        overflow-x: auto;
+      }
+
+      .controls {
+        display: flex;
+        gap: var(--sherpa-space-default);
+        margin-bottom: var(--sherpa-space-2xl);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Composition Validator Demo</h1>
+    <p>
+      This demo shows the Sherpa UI composition validator in action. The validator enforces
+      tier hierarchy rules and data-accepts constraints to prevent invalid component nesting.
+    </p>
+
+    <div class="controls">
+      <sherpa-button id="enable-validator" data-variant="primary">
+        Enable Validator
+      </sherpa-button>
+      <sherpa-button id="enable-strict" data-variant="secondary">
+        Enable Strict Mode
+      </sherpa-button>
+      <sherpa-button id="disable-validator" data-variant="tertiary">
+        Disable Validator
+      </sherpa-button>
+    </div>
+
+    <div class="demo-section">
+      <h2>Tier Hierarchy Violations</h2>
+      <p>
+        Components are organized into 5 tiers (1=shell/nav, 2=container/overlay, 3=content,
+        4=control/input/display, 5=utility). A tier-N component can only host children whose tier
+        is N or deeper (tier number ≥ N).
+      </p>
+
+      <div class="example invalid">
+        <span class="example-label">❌ Invalid: Button (tier 4) containing Container (tier 2)</span>
+        <sherpa-button id="invalid-tier-example">
+          <sherpa-container>This should be rejected</sherpa-container>
+        </sherpa-button>
+        <div class="code-block">
+          &lt;sherpa-button&gt;<br />
+          &nbsp;&nbsp;&lt;sherpa-container&gt;...&lt;/sherpa-container&gt;<br />
+          &lt;/sherpa-button&gt;
+        </div>
+        <p style="margin-top: var(--sherpa-space-sm); font-size: 13px; color: var(--sherpa-content-default-subtle);">
+          Check console for validation warning.
+        </p>
+      </div>
+
+      <div class="example valid">
+        <span class="example-label">✅ Valid: Container (tier 2) containing Button (tier 4)</span>
+        <sherpa-container>
+          <sherpa-button>This is allowed</sherpa-button>
+        </sherpa-container>
+        <div class="code-block">
+          &lt;sherpa-container&gt;<br />
+          &nbsp;&nbsp;&lt;sherpa-button&gt;...&lt;/sherpa-button&gt;<br />
+          &lt;/sherpa-container&gt;
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Role Constraints (data-accepts)</h2>
+      <p>
+        Slots can restrict what roles they accept via the <code>data-accepts</code> attribute.
+        This provides fine-grained control over composition.
+      </p>
+
+      <div class="example invalid">
+        <span class="example-label">❌ Invalid: Metric (display role) in control-only slot</span>
+        <sherpa-toolbar id="invalid-role-example">
+          <!-- Toolbar actions slot accepts="control" only -->
+          <sherpa-metric slot="actions" data-label="Count" data-value="42">
+            Should be rejected
+          </sherpa-metric>
+        </sherpa-toolbar>
+        <div class="code-block">
+          &lt;sherpa-toolbar&gt;<br />
+          &nbsp;&nbsp;&lt;sherpa-metric slot="actions"&gt;...&lt;/sherpa-metric&gt;<br />
+          &lt;/sherpa-toolbar&gt;<br />
+          <br />
+          &lt;!-- Toolbar template: --&gt;<br />
+          &lt;slot name="actions" data-accepts="control"&gt;&lt;/slot&gt;
+        </div>
+        <p style="margin-top: var(--sherpa-space-sm); font-size: 13px; color: var(--sherpa-content-default-subtle);">
+          Check console for validation warning.
+        </p>
+      </div>
+
+      <div class="example valid">
+        <span class="example-label">✅ Valid: Button (control role) in control-accepting slot</span>
+        <sherpa-toolbar>
+          <sherpa-button slot="actions" data-variant="secondary">
+            Add
+          </sherpa-button>
+        </sherpa-toolbar>
+        <div class="code-block">
+          &lt;sherpa-toolbar&gt;<br />
+          &nbsp;&nbsp;&lt;sherpa-button slot="actions"&gt;...&lt;/sherpa-button&gt;<br />
+          &lt;/sherpa-toolbar&gt;
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Non-Sherpa Elements</h2>
+      <p>
+        By default, slots with <code>data-accepts</code> reject non-Sherpa elements.
+        Add <code>html</code> to the accepts list to allow free-form HTML.
+      </p>
+
+      <div class="example invalid">
+        <span class="example-label">❌ Invalid: Non-Sherpa element without html in accepts</span>
+        <sherpa-container id="invalid-html-example">
+          <div slot="header">Plain HTML div - should be rejected</div>
+        </sherpa-container>
+        <div class="code-block">
+          &lt;sherpa-container&gt;<br />
+          &nbsp;&nbsp;&lt;div slot="header"&gt;...&lt;/div&gt;<br />
+          &lt;/sherpa-container&gt;<br />
+          <br />
+          &lt;!-- Container template: --&gt;<br />
+          &lt;slot name="header" data-accepts="content"&gt;&lt;/slot&gt;
+        </div>
+        <p style="margin-top: var(--sherpa-space-sm); font-size: 13px; color: var(--sherpa-content-default-subtle);">
+          Check console for validation warning.
+        </p>
+      </div>
+
+      <div class="example valid">
+        <span class="example-label">✅ Valid: Sherpa component in the slot</span>
+        <sherpa-container>
+          <sherpa-section-header slot="header" data-label="Dashboard">
+            Sherpa component - allowed
+          </sherpa-section-header>
+        </sherpa-container>
+        <div class="code-block">
+          &lt;sherpa-container&gt;<br />
+          &nbsp;&nbsp;&lt;sherpa-section-header slot="header"&gt;...&lt;/sherpa-section-header&gt;<br />
+          &lt;/sherpa-container&gt;
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Strict Mode</h2>
+      <p>
+        When strict mode is enabled, rejected elements are flagged with
+        <code>data-slot-rejected="true"</code> and hidden via CSS. Without strict mode, violations
+        are only logged to the console (warn-only mode).
+      </p>
+
+      <div class="example">
+        <p><strong>Current mode:</strong> <span id="mode-status">Disabled</span></p>
+        <p style="font-size: 13px; color: var(--sherpa-content-default-subtle);">
+          Enable strict mode using the button above to see rejected elements hidden.
+        </p>
+      </div>
+    </div>
+
+    <!-- Component Scripts -->
+    <script type="module">
+      import { CompositionValidator } from '../components/utilities/composition-validator.js';
+      import '../components/index.js';
+
+      const modeStatus = document.getElementById('mode-status');
+      const updateStatus = () => {
+        if (!CompositionValidator.enabled) {
+          modeStatus.textContent = 'Disabled';
+          modeStatus.style.color = 'var(--sherpa-content-default-subtle)';
+        } else if (CompositionValidator.strictMode) {
+          modeStatus.textContent = 'Enabled (Strict)';
+          modeStatus.style.color = 'var(--sherpa-border-context-error-default)';
+        } else {
+          modeStatus.textContent = 'Enabled (Warn Only)';
+          modeStatus.style.color = 'var(--sherpa-border-context-warning-default)';
+        }
+      };
+
+      document.getElementById('enable-validator').addEventListener('click', () => {
+        CompositionValidator.enable({ strict: false, devModeOnly: false });
+        updateStatus();
+        console.info('[demo] Composition validator enabled (warn-only mode)');
+
+        // Trigger validation on all components
+        document.querySelectorAll('sherpa-button, sherpa-container, sherpa-toolbar').forEach(el => {
+          if (el.shadowRoot) {
+            CompositionValidator.validate(el);
+          }
+        });
+      });
+
+      document.getElementById('enable-strict').addEventListener('click', () => {
+        CompositionValidator.enable({ strict: true, devModeOnly: false });
+        updateStatus();
+        console.info('[demo] Composition validator enabled (strict mode)');
+
+        // Trigger validation on all components
+        document.querySelectorAll('sherpa-button, sherpa-container, sherpa-toolbar').forEach(el => {
+          if (el.shadowRoot) {
+            CompositionValidator.validate(el);
+          }
+        });
+      });
+
+      document.getElementById('disable-validator').addEventListener('click', () => {
+        CompositionValidator.disable();
+        updateStatus();
+        console.info('[demo] Composition validator disabled');
+      });
+
+      // Wait for components to render then trigger initial validation
+      customElements.whenDefined('sherpa-button').then(() => {
+        setTimeout(() => {
+          // Auto-enable in warn-only mode for demo
+          CompositionValidator.enable({ strict: false, devModeOnly: false });
+          updateStatus();
+
+          document.querySelectorAll('sherpa-button, sherpa-container, sherpa-toolbar').forEach(el => {
+            if (el.shadowRoot) {
+              CompositionValidator.validate(el);
+            }
+          });
+
+          console.info('[demo] Composition validator auto-enabled. Check console for warnings.');
+        }, 500);
+      });
+
+      updateStatus();
+    </script>
+  </body>
+</html>
