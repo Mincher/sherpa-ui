@@ -17,6 +17,17 @@
  * @attr {string}  [data-description] — Promo description text (data-type="promo" only)
  *
  * @slot (default) — Label text content
+ *
+ * @csspart indicator — Active indicator bar (left edge visual)
+ * @csspart drag — Drag handle icon (visible when data-editable is set on parent)
+ * @csspart icon — Icon container
+ * @csspart dot — Collapsed section dot indicator
+ * @csspart label — Text label container
+ * @csspart tag — Badge element (sherpa-tag instance)
+ * @csspart chevron — Expand/collapse chevron (section/subsection variants)
+ * @csspart delete — Delete button (visible when data-editable is set on parent)
+ * @csspart heading — Promo heading text (data-type="promo" only)
+ * @csspart description — Promo description text (data-type="promo" only)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
