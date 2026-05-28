@@ -22,26 +22,37 @@
   ],
   "scripts": {
     "component-docs": "node scripts/generate-component-docs.js",
+    "component-docs:cached": "node scripts/cached-component-docs.js",
     "schemas": "node scripts/extract-component-schemas.js",
+    "schemas:cached": "node scripts/cached-schemas.js",
     "patterns": "node scripts/extract-pattern-index.js",
+    "patterns:cached": "node scripts/cached-patterns.js",
     "mcp": "node mcp-server/index.js",
     "tokens:extract": "node scripts/extract-figma-vars.js",
     "tokens:generate": "node scripts/generate-css-tokens.js",
+    "tokens:generate:cached": "node scripts/cached-tokens-generate.js",
     "tokens:codemod": "node scripts/codemod-compat-aliases.js",
     "css:fallbacks": "node scripts/inject-css-fallbacks.js",
     "css:fallbacks:check": "node scripts/inject-css-fallbacks.js --dry",
     "lint:css": "node scripts/lint-component-css.mjs",
     "lint:css:strict": "node scripts/lint-component-css.mjs --strict",
+    "validate:jsdoc": "node scripts/validate-jsdoc.js",
     "format": "prettier --write 'components/**/*.css'",
     "format:check": "prettier --check 'components/**/*.css'",
-    "build": "npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
-    "build:measure": "node scripts/measure-build-time.js"
+    "build": "run-p tokens:generate schemas patterns component-docs",
+    "build:cached": "run-p tokens:generate:cached schemas:cached patterns:cached component-docs:cached",
+    "build:serial": "npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
+    "build:measure": "node scripts/measure-build-time.js",
+    "cache:clear": "node scripts/build-cache.js clear",
+    "cache:status": "node scripts/build-cache.js status"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"
   },
   "devDependencies": {
     "eslint": "^8.55.0",
+    "glob": "^13.0.6",
+    "npm-run-all": "^4.1.5",
     "prettier": "^3.1.0"
   },
   "keywords": [

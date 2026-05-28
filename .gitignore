@@ -17,3 +17,6 @@ figma-tokens/Classic/
 
 # Build metrics history
 .build-metrics.json
+
+# Build cache (hash-based incremental build system)
+.build-cache/
