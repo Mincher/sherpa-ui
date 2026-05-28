@@ -7,8 +7,7 @@
  *   alias       — semantic mode-less tokens; @property registrations
  *   platform    — system constants (focus ring, z-index, color-scheme contract)
  *   theme       — themed surface/text/border/icon (LIGHT default + nested dark/hc)
- *   density     — [data-density] subtree overrides (Compact / Comfortable)
- *   status      — [data-status] semantic state mapping (--_status-* private vars)
+ *   overrides   — attribute-driven token modifications (density, status)
  *   components  — light DOM component overrides
  *   utilities   — class-based helpers (text/icon/motion/layout classes)
  *     ↳ utilities.icons   — icon font + .sherpa-icon sizing
@@ -29,7 +28,7 @@
  * and HC override blocks (gated by data-mode attr OR a prefers-* media query).
  */
 
-@layer reset, primitives, alias, platform, theme, density, status, components, utilities;
+@layer reset, primitives, alias, platform, theme, overrides, components, utilities;
 @layer utilities.icons, utilities.motion, utilities.text, utilities.layout;
 
 @import "reset.css"                   layer(reset);
@@ -41,7 +40,7 @@
  * ensure only the active theme fires. Activate: set <html data-theme="..."> */
 @import "sherpa-themes.css";
 
-/* Theme corrections, Density & Status — all non-base attribute-driven overrides */
+/* Theme corrections & Overrides — all attribute-driven token modifications */
 @import "sherpa-overrides.css";
 
 /* Utilities — class-based helpers (sub-layered for cascade control) */

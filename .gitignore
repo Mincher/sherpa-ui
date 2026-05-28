@@ -14,3 +14,6 @@ figma-tokens/Classic/
 
 # Stale commit message draft
 .git-commit-msg.tmp
+
+# Build metrics history
+.build-metrics.json

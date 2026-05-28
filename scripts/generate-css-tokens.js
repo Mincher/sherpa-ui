@@ -908,7 +908,7 @@ function emitOverrides() {
   const lines = [];
   lines.push(
     header(
-      'Theme Corrections, Density & Status Overrides',
+      'Theme Corrections & Attribute-Driven Overrides',
       'Mixed origin: theme corrections are hand-coded in this script;\n' +
         ' * density and status sections are generated from Figma Variables.\n' +
         ' *\n' +
@@ -918,15 +918,20 @@ function emitOverrides() {
         ' *            sherpa-themes.css in the @layer theme order so they win over\n' +
         ' *            the generated values.\n' +
         ' *\n' +
-        ' *   Density  [data-density="compact|comfortable"]\n' +
-        ' *            Applies to any subtree. Tokens cascade — descendant components\n' +
-        ' *            automatically rescale. The base density requires no attribute.\n' +
+        ' *   Overrides  [@layer overrides]\n' +
+        ' *            Unified layer containing all attribute-driven token modifications:\n' +
         ' *\n' +
-        ' *   Status   [data-status="critical|info|success|warning|urgent"]\n' +
-        ' *            Set on any element or the document root. Descendant components\n' +
-        ' *            consume the resulting --_status-* private vars via var() fallbacks.\n' +
-        ' *            Custom properties inherit through shadow DOM — no per-component\n' +
-        ' *            status block needed.',
+        ' *            Density  [data-density="compact|comfortable"]\n' +
+        ' *                     Applies to any subtree. Tokens cascade — descendant\n' +
+        ' *                     components automatically rescale. Base density needs\n' +
+        ' *                     no attribute.\n' +
+        ' *\n' +
+        ' *            Status   [data-status="critical|info|success|warning|urgent"]\n' +
+        ' *                     Set on any element or the document root. Descendant\n' +
+        ' *                     components consume the resulting --_status-* private\n' +
+        ' *                     vars via var() fallbacks. Custom properties inherit\n' +
+        ' *                     through shadow DOM — no per-component status block\n' +
+        ' *                     needed.',
     ),
   );
 
@@ -956,9 +961,12 @@ function emitOverrides() {
   lines.push('  }\n\n');
   lines.push('} /* @layer theme */\n\n');
 
-  // ── Density ──
-  lines.push('\n/* ─── Density ────────────────────────────────────────────────────── */\n\n');
-  lines.push('@layer density {\n\n');
+  // ── Overrides (Density + Status) ──
+  lines.push('\n/* ─── Overrides (Density + Status) ────────────────────────────── */\n\n');
+  lines.push('@layer overrides {\n\n');
+
+  // Density section
+  lines.push('  /* Density ─────────────────────────────────────────────────── */\n\n');
   for (const mode of ['Compact', 'Comfortable']) {
     const slug = mode.toLowerCase();
     lines.push(`  :where([data-density="${slug}"]) {\n`);
@@ -973,11 +981,9 @@ function emitOverrides() {
     }
     lines.push('  }\n\n');
   }
-  lines.push('} /* @layer density */\n');
 
-  // ── Status ──
-  lines.push('\n\n/* ─── Status ─────────────────────────────────────────────────────── */\n\n');
-  lines.push('@layer status {\n\n');
+  // Status section
+  lines.push('  /* Status ──────────────────────────────────────────────────── */\n\n');
   for (const mode of ['critical', 'info', 'success', 'warning', 'urgent']) {
     lines.push(`  :where([data-status="${mode}"]) {\n`);
     for (const v of status.vars) {
@@ -992,7 +998,8 @@ function emitOverrides() {
     }
     lines.push('  }\n\n');
   }
-  lines.push('} /* @layer status */\n');
+
+  lines.push('} /* @layer overrides */\n');
 
   write('sherpa-overrides.css', lines.join(''));
 }
@@ -1040,8 +1047,7 @@ function emitIndex() {
  *   alias       — semantic mode-less tokens; @property registrations
  *   platform    — system constants (focus ring, z-index, color-scheme contract)
  *   theme       — themed surface/text/border/icon (LIGHT default + nested dark/hc)
- *   density     — [data-density] subtree overrides (Compact / Comfortable)
- *   status      — [data-status] semantic state mapping (--_status-* private vars)
+ *   overrides   — attribute-driven token modifications (density, status)
  *   components  — light DOM component overrides
  *   utilities   — class-based helpers (text/icon/motion/layout classes)
  *     ↳ utilities.icons   — icon font + .sherpa-icon sizing
@@ -1062,7 +1068,7 @@ function emitIndex() {
  * and HC override blocks (gated by data-mode attr OR a prefers-* media query).
  */
 
-@layer reset, primitives, alias, platform, theme, density, status, components, utilities;
+@layer reset, primitives, alias, platform, theme, overrides, components, utilities;
 @layer utilities.icons, utilities.motion, utilities.text, utilities.layout;
 
 @import "reset.css"                   layer(reset);
@@ -1074,7 +1080,7 @@ function emitIndex() {
  * ensure only the active theme fires. Activate: set <html data-theme="..."> */
 @import "sherpa-themes.css";
 
-/* Theme corrections, Density & Status — all non-base attribute-driven overrides */
+/* Theme corrections & Overrides — all attribute-driven token modifications */
 @import "sherpa-overrides.css";
 
 /* Utilities — class-based helpers (sub-layered for cascade control) */

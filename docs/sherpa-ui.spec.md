@@ -3,13 +3,14 @@
 specKind: sdd  
 scope: system  
 status: draft  
-lastUpdated: 2026-05-01  
+lastUpdated: 2026-05-28  
 owners:
 
 *   "Design System Team"  
     relatedSpecs:
 *   "docs/COMPONENT-API-STANDARD.md"
-*   ".github/copilot-instructions.md"  
+*   ".github/copilot-instructions.md"
+*   "docs/adr/README.md" (Architectural Decision Records)  
     intendedAgents:
 *   planning
 *   implementation

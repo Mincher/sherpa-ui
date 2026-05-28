@@ -34,7 +34,8 @@
     "lint:css:strict": "node scripts/lint-component-css.mjs --strict",
     "format": "prettier --write 'components/**/*.css'",
     "format:check": "prettier --check 'components/**/*.css'",
-    "build": "npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs"
+    "build": "npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
+    "build:measure": "node scripts/measure-build-time.js"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"

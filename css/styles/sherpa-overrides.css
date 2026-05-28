@@ -1,5 +1,5 @@
 /**
- * Theme Corrections, Density & Status Overrides
+ * Theme Corrections & Attribute-Driven Overrides
  * Auto-generated from Figma Variables — do not edit manually.
  * Regenerate: node scripts/generate-css-tokens.js
  *
@@ -12,15 +12,20 @@
  *            sherpa-themes.css in the @layer theme order so they win over
  *            the generated values.
  *
- *   Density  [data-density="compact|comfortable"]
- *            Applies to any subtree. Tokens cascade — descendant components
- *            automatically rescale. The base density requires no attribute.
+ *   Overrides  [@layer overrides]
+ *            Unified layer containing all attribute-driven token modifications:
  *
- *   Status   [data-status="critical|info|success|warning|urgent"]
- *            Set on any element or the document root. Descendant components
- *            consume the resulting --_status-* private vars via var() fallbacks.
- *            Custom properties inherit through shadow DOM — no per-component
- *            status block needed.
+ *            Density  [data-density="compact|comfortable"]
+ *                     Applies to any subtree. Tokens cascade — descendant
+ *                     components automatically rescale. Base density needs
+ *                     no attribute.
+ *
+ *            Status   [data-status="critical|info|success|warning|urgent"]
+ *                     Set on any element or the document root. Descendant
+ *                     components consume the resulting --_status-* private
+ *                     vars via var() fallbacks. Custom properties inherit
+ *                     through shadow DOM — no per-component status block
+ *                     needed.
  */
 
 
@@ -39,9 +44,11 @@
 } /* @layer theme */
 
 
-/* ─── Density ────────────────────────────────────────────────────── */
+/* ─── Overrides (Density + Status) ────────────────────────────── */
 
-@layer density {
+@layer overrides {
+
+  /* Density ─────────────────────────────────────────────────── */
 
   :where([data-density="compact"]) {
     --sherpa-space-2xl:      var(--sherpa-size-xl);
@@ -75,12 +82,7 @@
     --sherpa-space-xs:       var(--sherpa-size-xs);
   }
 
-} /* @layer density */
-
-
-/* ─── Status ─────────────────────────────────────────────────────── */
-
-@layer status {
+  /* Status ──────────────────────────────────────────────────── */
 
   :where([data-status="critical"]) {
     --_status-border:                      var(--sherpa-border-context-error-default);
@@ -172,4 +174,4 @@
     --_status-shadow:                      var(--sherpa-elevation-tint-urgent);
   }
 
-} /* @layer status */
+} /* @layer overrides */

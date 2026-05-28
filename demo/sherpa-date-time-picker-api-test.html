@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="apex-2-purple">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sherpa Date-Time Picker - API Test</title>
+  <link rel="stylesheet" href="../css/styles/index.css">
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .code {
+      background: #f4f4f6;
+      padding: 12px;
+      border-radius: 4px;
+      border-left: 3px solid #2855ef;
+      margin: 10px 0;
+      font-family: monospace;
+      font-size: 12px;
+      overflow-x: auto;
+    }
+    .result {
+      background: #e8f5e9;
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .error {
+      background: #ffebee;
+      color: #c62828;
+    }
+    button {
+      background: #2855ef;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin: 5px 5px 5px 0;
+    }
+    button:hover {
+      background: #1e3fc4;
+    }
+  </style>
+</head>
+<body>
+  <h1>sherpa-date-time-picker — API Validation Test</h1>
+
+  <div class="section">
+    <h2>1. Component Initialization</h2>
+    <sherpa-date-time-picker
+      id="test-picker"
+      name="test_datetime"
+      data-label="Test Date-Time Picker"
+      data-description="Testing API methods and events"
+      value="2026-05-27T14:30"
+    ></sherpa-date-time-picker>
+  </div>
+
+  <div class="section">
+    <h2>2. Method: getValue()</h2>
+    <div class="code">picker.getValue()</div>
+    <button onclick="testGetValue()">Run Test</button>
+    <div id="getvalue-result" class="result"></div>
+  </div>
+
+  <div class="section">
+    <h2>3. Method: setValue()</h2>
+    <div class="code">picker.setValue('2026-06-15T09:45')</div>
+    <button onclick="testSetValue()">Run Test (Set to June 15, 9:45 AM)</button>
+    <div id="setvalue-result" class="result"></div>
+  </div>
+
+  <div class="section">
+    <h2>4. Event: datetime-change</h2>
+    <p>Try clicking a different date or changing the time in the picker above:</p>
+    <div id="change-events" class="result" style="background: #f9f9f9; border: 1px solid #ddd; max-height: 150px; overflow-y: auto;">
+      <div style="color: #999;">datetime-change events will appear here...</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>5. Event: datetime-submit</h2>
+    <p>Click the Apply button in the picker above:</p>
+    <div id="submit-events" class="result" style="background: #f9f9f9; border: 1px solid #ddd; max-height: 100px; overflow-y: auto;">
+      <div style="color: #999;">datetime-submit events will appear here...</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>6. Attribute: data-label</h2>
+    <div class="code">picker.dataset.label = "Updated Label"</div>
+    <button onclick="testUpdateLabel()">Update Label</button>
+    <div id="label-result" class="result"></div>
+  </div>
+
+  <div class="section">
+    <h2>7. Native Form Integration</h2>
+    <form id="test-form">
+      <sherpa-date-time-picker
+        name="scheduled_time"
+        data-label="Schedule Time"
+        value="2026-05-27T14:30"
+      ></sherpa-date-time-picker>
+      <button type="submit" style="margin-top: 10px;">Submit Form</button>
+    </form>
+    <div id="form-result" class="result"></div>
+  </div>
+
+  <script type="module">
+    import('../components/index.js').then(() => {
+      console.log('✓ Components loaded, starting API tests...');
+      setupEventListeners();
+    });
+
+    const picker = document.getElementById('test-picker');
+    const changeEventsDiv = document.getElementById('change-events');
+    const submitEventsDiv = document.getElementById('submit-events');
+    let changeCount = 0;
+    let submitCount = 0;
+
+    function setupEventListeners() {
+      // Listen to datetime-change events
+      picker.addEventListener('datetime-change', (e) => {
+        changeCount++;
+        const msg = `<div>${changeCount}. ${e.detail.displayValue}</div>`;
+        if (changeEventsDiv.textContent.includes('will appear')) {
+          changeEventsDiv.innerHTML = msg;
+        } else {
+          changeEventsDiv.innerHTML += msg;
+        }
+        console.log('datetime-change:', e.detail);
+      });
+
+      // Listen to datetime-submit events
+      picker.addEventListener('datetime-submit', (e) => {
+        submitCount++;
+        const msg = `<div style="color: #28a745;">${submitCount}. Submitted: ${e.detail.displayValue}</div>`;
+        if (submitEventsDiv.textContent.includes('will appear')) {
+          submitEventsDiv.innerHTML = msg;
+        } else {
+          submitEventsDiv.innerHTML += msg;
+        }
+        console.log('datetime-submit:', e.detail);
+      });
+
+      // Form submission
+      document.getElementById('test-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const value = formData.get('scheduled_time');
+        document.getElementById('form-result').innerHTML = 
+          `<div style="color: #28a745;"><strong>Form submitted!</strong><br>scheduled_time = "${value}"</div>`;
+        console.log('Form submitted:', Object.fromEntries(formData));
+      });
+    }
+
+    window.testGetValue = function() {
+      const value = picker.getValue();
+      document.getElementById('getvalue-result').innerHTML = 
+        `<div>Value: <strong>"${value}"</strong></div>`;
+      console.log('getValue():', value);
+    };
+
+    window.testSetValue = function() {
+      const newValue = '2026-06-15T09:45';
+      picker.setValue(newValue);
+      document.getElementById('setvalue-result').innerHTML = 
+        `<div style="color: #28a745;">✓ Set value to: <strong>"${newValue}"</strong><br>Calendar should show June 15 selected, time should show 09:45</div>`;
+      console.log('setValue():', newValue);
+    };
+
+    window.testUpdateLabel = function() {
+      const newLabel = 'Updated Label: ' + new Date().toLocaleTimeString();
+      picker.dataset.label = newLabel;
+      document.getElementById('label-result').innerHTML = 
+        `<div style="color: #28a745;">✓ Label updated to: <strong>"${newLabel}"</strong></div>`;
+      console.log('Updated dataset.label:', newLabel);
+    };
+  </script>
+</body>
+</html>

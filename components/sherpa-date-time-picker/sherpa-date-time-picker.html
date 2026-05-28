@@ -1,0 +1,101 @@
+<!--
+  sherpa-date-time-picker.html
+  Combined date and time selection popup panel.
+
+  Composes nested Sherpa components:
+    sherpa-container        — outer card surface (border, radius, elevation)
+    sherpa-container-footer — footer band hosting the action buttons
+    sherpa-button           — footer actions (Today / Close / Apply)
+    sherpa-input-number     — hour and minute spinners
+    sherpa-icon             — chevron glyphs in the calendar nav + AM/PM spinner
+
+  Templates:
+    default — sherpa-container wrapping: calendar (left) + time spinners
+              (right), with sherpa-container-footer in the footer slot.
+
+  Host attributes:
+    value     — ISO datetime (YYYY-MM-DDTHH:mm)
+    min, max  — ISO datetime bounds
+    disabled  — Disables interaction
+
+  Slots:
+    None — fully self-contained picker
+-->
+
+<template id="default">
+  <sherpa-container class="panel-card" data-variant="fit" data-elevation="md">
+
+    <!-- Main body: calendar on left, time spinners on right -->
+    <div class="panel">
+
+    <!-- ── Calendar ─────────────────────────────────────────── -->
+    <div class="cal-section">
+      <!-- Header: prev | mode-toggle | next, composed via .grouped-component
+           so the three sherpa-buttons read as a single segmented control. -->
+      <div class="cal-header grouped-component" role="group" aria-label="Calendar navigation">
+        <sherpa-button class="cal-prev"
+                       data-variant="secondary"
+                       data-type="icon" data-icon-start="fa-solid fa-chevron-left"
+                       aria-label="Previous"></sherpa-button>
+        <sherpa-button class="cal-mode"
+                       data-variant="secondary"
+                       data-label="—"
+                       aria-label="Change calendar view"></sherpa-button>
+        <sherpa-button class="cal-next"
+                       data-variant="secondary"
+                       data-type="icon" data-icon-start="fa-solid fa-chevron-right"
+                       aria-label="Next"></sherpa-button>
+      </div>
+
+      <!-- Day view: weekday header + 7×6 day grid -->
+      <div class="cal-weekdays" aria-hidden="true">
+        <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span>
+        <span>THU</span><span>FRI</span><span>SAT</span>
+      </div>
+
+      <div class="cal-days" role="grid"></div>
+
+      <!-- Month view: 4×3 month grid (hidden by default) -->
+      <div class="cal-months" role="grid" hidden></div>
+
+      <!-- Year view: 4×3 year grid (hidden by default) -->
+      <div class="cal-years" role="grid" hidden></div>
+    </div>
+
+    <!-- ── Time spinners ───────────────────────────────────── -->
+    <div class="time-panel">
+      <div class="time-spinners" role="group" aria-label="Time">
+
+        <!-- Hour (24h) -->
+        <sherpa-input-number class="time-input hour-input"
+                             min="0" max="23" value="0"
+                             aria-label="Hour"></sherpa-input-number>
+
+        <span class="time-sep" aria-hidden="true">:</span>
+
+        <!-- Minute -->
+        <sherpa-input-number class="time-input minute-input"
+                             min="0" max="59" value="0"
+                             aria-label="Minute"></sherpa-input-number>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Footer (slotted into sherpa-container's footer slot) ────────── -->
+    <sherpa-container-footer slot="footer" class="panel-footer" data-type="slot">
+      <sherpa-button class="btn-today" data-variant="secondary" data-size="base" data-label="Today"></sherpa-button>
+      <sherpa-button class="btn-close" data-variant="secondary" data-size="base" data-label="Close"></sherpa-button>
+      <sherpa-button class="btn-apply" data-variant="primary"   data-size="base" data-label="Apply"></sherpa-button>
+    </sherpa-container-footer>
+
+  </sherpa-container>
+
+  <!-- Native hidden input for form value -->
+  <input type="hidden" class="hidden-input" />
+
+  <!-- Day button prototype — cloned by JS, never rendered directly -->
+  <template class="cal-day-tpl">
+    <button type="button" class="cal-day" role="gridcell"></button>
+  </template>
+</template>
