@@ -23,3 +23,6 @@ figma-tokens/Classic/
 
 # Accessibility test reports (generated)
 test/a11y/report.json
+
+# Component audit reports (generated)
+COMPONENT-AUDIT-REPORT.json
