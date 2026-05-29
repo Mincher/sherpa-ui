@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-input-text
  * @category input
@@ -36,14 +35,18 @@ import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-bas
 
 export class SherpaInputText extends SherpaInputBase {
 
-  static get cssUrl()  { return new URL('./sherpa-input-text.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-text.html', import.meta.url).href; }
+  static override get cssUrl(): string {
+    return new URL('./sherpa-input-text.css', import.meta.url).href;
+  }
+  static override get htmlUrl(): string {
+    return new URL('./sherpa-input-text.html', import.meta.url).href;
+  }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-multiline'];
   }
 
-  get templateId() {
+  override get templateId(): string {
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
   }
 
@@ -53,7 +56,7 @@ export class SherpaInputText extends SherpaInputBase {
    * evergreen-only policy, no fallback measurement is needed.
    */
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'data-multiline') {
       // Only swap templates after the initial render. The first

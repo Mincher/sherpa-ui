@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-input-search
  * @category input
@@ -20,32 +19,33 @@
  */
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
+import type { ChangeEventDetail } from "../utilities/types.js";
 import "../sherpa-button/sherpa-button.js";
 
 export class SherpaInputSearch extends SherpaInputBase {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-input-search.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-input-search.html", import.meta.url).href;
   }
 
-  #clearBtnEl = null;
-  #inputEl = null;
+  #clearBtnEl: HTMLElement | null = null;
+  #inputEl: HTMLInputElement | null = null;
 
-  async onInputRender() {
-    this.#clearBtnEl = this.$(".search-clear");
-    this.#inputEl = this.getInputElement();
+  override async onInputRender(): Promise<void> {
+    this.#clearBtnEl = this.$<HTMLElement>(".search-clear");
+    this.#inputEl = this.getInputElement() as HTMLInputElement;
     this.#updateClearVisibility();
   }
 
-  onInputConnect() {
+  override onInputConnect(): void {
     this.#clearBtnEl?.addEventListener("click", this.#onClear);
     this.#inputEl?.addEventListener("keydown", this.#onKeyDown);
     this.#inputEl?.addEventListener("input", this.#onValueChange);
   }
 
-  onInputDisconnect() {
+  override onInputDisconnect(): void {
     this.#clearBtnEl?.removeEventListener("click", this.#onClear);
     this.#inputEl?.removeEventListener("keydown", this.#onKeyDown);
     this.#inputEl?.removeEventListener("input", this.#onValueChange);
@@ -53,7 +53,7 @@ export class SherpaInputSearch extends SherpaInputBase {
 
   /* ── Public API ─────────────────────────────────────────────── */
 
-  clear() {
+  clear(): void {
     const el = this.getInputElement();
     if (el) {
       el.value = "";
@@ -64,14 +64,14 @@ export class SherpaInputSearch extends SherpaInputBase {
 
   /* ── Internal ───────────────────────────────────────────────── */
 
-  #updateClearVisibility() {
+  #updateClearVisibility(): void {
     const hasValue = !!this.#inputEl?.value;
     this.toggleAttribute("data-has-value", hasValue);
   }
 
-  #fireSearch(value) {
+  #fireSearch(value: string): void {
     this.dispatchEvent(
-      new CustomEvent("search", {
+      new CustomEvent<ChangeEventDetail<string>>("search", {
         bubbles: true,
         composed: true,
         detail: { value },
@@ -79,18 +79,18 @@ export class SherpaInputSearch extends SherpaInputBase {
     );
   }
 
-  #onClear = () => {
+  #onClear = (): void => {
     this.clear();
     this.#inputEl?.focus();
   };
 
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: KeyboardEvent): void => {
     if (e.key === "Enter") {
       this.#fireSearch(this.#inputEl?.value || "");
     }
   };
 
-  #onValueChange = () => {
+  #onValueChange = (): void => {
     this.#updateClearVisibility();
   };
 }
