@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-callout
  * @category feedback
@@ -35,10 +34,10 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-callout.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-callout.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-callout.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-callout.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-heading',
@@ -56,7 +55,7 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#headingEl    = this.$('.heading-text');
     this.#statusIconEl = this.$('.status-icon');
     this.#actionBtnEl  = this.$('.action-btn');

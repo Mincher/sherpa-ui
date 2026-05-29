@@ -1,5 +1,4 @@
 // @ts-nocheck
-// @ts-nocheck
 /**
  * @element sherpa-metric
  * @category display
@@ -42,10 +41,10 @@ export function setTrendStatusMap(map) {
 }
 
 export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
-  static get cssUrl()  { return new URL("./sherpa-metric.css", import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-metric.html", import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL("./sherpa-metric.css", import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-metric.html", import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-metric-id",
@@ -62,7 +61,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   #sparklineUnit = "";
   #suppressSparkline = false;
 
-  onRender() {
+  override onRender(): void {
     // Mark as viz component for container CSS targeting
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-toast
  * @category feedback
@@ -37,10 +36,10 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-toast.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-toast.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-toast.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-toast.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-label', 'data-value', 'data-duration', 'data-timer-dismiss', 'data-show-close', 'data-position'];
   }
 
@@ -63,7 +62,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#syncStatusIcon();
     this.#syncHeading();
     this.#syncValue();
@@ -75,14 +74,14 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     });
   }
 
-  onConnect() {
+  override onConnect(): void {
     // Auto-show if created with a value
     if (this.dataset.value) {
       this.show();
     }
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     if (this.#timeoutId) clearTimeout(this.#timeoutId);
   }
 
