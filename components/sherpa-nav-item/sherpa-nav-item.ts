@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-nav-item
  * @category nav
@@ -36,16 +35,16 @@ import '../sherpa-tag/sherpa-tag.js';
 
 export class SherpaNavItem extends SherpaElement {
 
-  static get cssUrl()  { return new URL('./sherpa-nav-item.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-nav-item.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-nav-item.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-nav-item.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-icon', 'data-icon-svg', 'data-svg-icon', 'data-badge', 'data-badge-status', 'data-type', 'data-description'];
   }
 
-  get templateId() { return this.dataset.type === 'promo' ? 'promo' : 'item'; }
+  override get templateId(): string { return this.dataset.type === 'promo' ? 'promo' : 'item'; }
 
-  onRender() {
+  override onRender(): void {
     this.#syncIcon();
     this.#syncBadge();
     this.#syncDescription();

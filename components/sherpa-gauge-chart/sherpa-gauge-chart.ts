@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-gauge-chart
  * @category media
@@ -28,10 +27,10 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-gauge-chart.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-gauge-chart.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-gauge-chart.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-gauge-chart.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-title',
@@ -57,7 +56,7 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#titleEl    = this.$('.chart-title');
     this.#fillEl     = this.$('.gauge-fill');
     this.#needleEl   = this.$('.needle');

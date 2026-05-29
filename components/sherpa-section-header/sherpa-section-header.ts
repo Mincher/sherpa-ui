@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-section-header
  * @category content
@@ -24,16 +23,16 @@ export class SherpaSectionHeader extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-section-header.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-section-header.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-section-header.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-section-header.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return ['data-label', 'data-heading-level', 'data-divider'];
   }
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#syncHeading();
   }
 

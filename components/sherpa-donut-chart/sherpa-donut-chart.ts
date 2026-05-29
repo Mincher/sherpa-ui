@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-donut-chart
  * @category media
@@ -52,10 +51,10 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-donut-chart.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-donut-chart.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-donut-chart.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-donut-chart.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-title',
@@ -85,7 +84,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
     if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-line-chart
  * @category media
@@ -47,10 +46,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-line-chart.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-line-chart.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-line-chart.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-line-chart.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-title',
@@ -82,7 +81,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
 
     this.#titleEl     = this.$('.chart-title');
@@ -103,7 +102,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     if (this.#data) this.#render();
   }
 
-  onConnect() {
+  override onConnect(): void {
     super.onConnect();
     this.#filterMenuTpl = injectFilterMenu(this);
     this.addEventListener('toggle-filters', this.#onToggleFilters);
@@ -111,7 +110,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.addEventListener('menu-populate', this.#onMenuPopulate);
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     super.onDisconnect();
     this.removeEventListener('toggle-filters', this.#onToggleFilters);
     this.removeEventListener('toggle-legend', this.#onToggleLegend);

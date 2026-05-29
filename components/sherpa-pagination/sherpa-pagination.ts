@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-pagination
  * @category control
@@ -27,14 +26,14 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 export class SherpaPagination extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-pagination.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-pagination.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-page",
@@ -98,7 +97,7 @@ export class SherpaPagination extends SherpaElement {
      Lifecycle
      ══════════════════════════════════════════════════════════════ */
 
-  onRender() {
+  override onRender(): void {
     if (!this.#bound) {
       this.addEventListener("click", this.#onHostClick);
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-list
  * @category content
@@ -21,10 +20,10 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 export class SherpaList extends SherpaElement {
-  static get cssUrl()  { return new URL('./sherpa-list.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-list.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-list.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-list.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-heading', 'data-empty'];
   }
 
@@ -42,7 +41,7 @@ export class SherpaList extends SherpaElement {
     this.items.forEach(item => { if (item !== clicked) item.active = false; });
   };
 
-  onRender() {
+  override onRender(): void {
     this.#headingEl = this.$('.list-heading');
     this.#emptyEl   = this.$('.list-empty');
 

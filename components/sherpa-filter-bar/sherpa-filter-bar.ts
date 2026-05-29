@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-filter-bar
  * @category data
@@ -47,20 +46,20 @@ import { TIME_RANGE_PRESETS } from "../utilities/timeframes.js";
 import { applyLocalFilters } from "../utilities/aggregate.js";
 
 export class SherpaFilterBar extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-filter-bar.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-filter-bar.html", import.meta.url).href;
   }
 
   /* ── Template selection ───────────────────────────────────────── */
 
-  get templateId() {
+  override get templateId(): string {
     return this.dataset.type || "default";
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-density",
@@ -92,7 +91,7 @@ export class SherpaFilterBar extends SherpaElement {
   #scopeEl = null; // Parent element used as event scope for sortchange
   #bound = false;
 
-  onRender() {
+  override onRender(): void {
     if (this.#bound) return;
 
     // Wire sortchange listener on parent scope (container or shadow host)
@@ -287,7 +286,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.#bound = true;
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     this.#observer?.disconnect();
     this.#observer = null;
 

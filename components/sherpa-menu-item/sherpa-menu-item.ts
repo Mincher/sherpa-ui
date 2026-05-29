@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-menu-item
  * @category overlay
@@ -32,14 +31,14 @@ const ROLES = { radio: 'menuitemradio', checkbox: 'menuitemcheckbox', toggle: 'm
 
 export class SherpaMenuItem extends SherpaElement {
 
-  static get cssUrl()  { return new URL('./sherpa-menu-item.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-menu-item.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-menu-item.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-menu-item.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-type', 'data-selection', 'checked', 'disabled', 'data-description', 'name', 'data-icon', 'data-icon-weight'];
   }
 
-  get templateId() {
+  override get templateId(): string {
     if (this.dataset.type === 'heading') return 'heading';
     const sel = this.dataset.selection;
     if (sel === 'checkbox') return 'checkbox';
@@ -53,7 +52,7 @@ export class SherpaMenuItem extends SherpaElement {
     return this.$('.input');
   }
 
-  onRender() {
+  override onRender(): void {
     if (this.dataset.type !== 'heading' && !this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '-1');
     }
