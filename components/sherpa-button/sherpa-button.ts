@@ -157,22 +157,23 @@ export class SherpaButton extends SherpaElement {
 
   /* ── Private refs ─────────────────────────────────────────────── */
 
-  #triggerEl: HTMLElement | null = null;
-  #labelEl: HTMLElement | null = null;
-  #iconStartEl: HTMLElement | null = null;
-  #iconEndEl: HTMLElement | null = null;
-  #badgeEl: HTMLElement | null = null;
+  // Cached shadow DOM elements
+  els = this.cacheElements({
+    trigger: '.trigger',
+    label: '.label',
+    iconStart: '.icon-start',
+    iconEnd: '.icon-end',
+    badge: '.badge',
+  });
+
+  // Menu state (not cached - initialized later via setMenuItems)
   #menuEl: SherpaMenu | null = null;
   #menuClosedAt: number = 0;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#triggerEl = this.$<HTMLElement>(".trigger");
-    this.#labelEl = this.$<HTMLElement>(".label");
-    this.#iconStartEl = this.$<HTMLElement>(".icon-start");
-    this.#iconEndEl = this.$<HTMLElement>(".icon-end");
-    this.#badgeEl = this.$<HTMLElement>(".badge");
+    // Element cache auto-populated on first access
 
     // Default variant for standard buttons
     const type = this.dataset.type;
@@ -190,7 +191,7 @@ export class SherpaButton extends SherpaElement {
     this.#syncLabel();
     this.#syncIcons();
     this.#syncBadge();
-    this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
+    this.els.trigger?.addEventListener("click", this.#onTriggerClick);
   }
 
   override onAttributeChanged(name: string, _old: string | null, newValue: string | null): void {
@@ -217,8 +218,8 @@ export class SherpaButton extends SherpaElement {
   /* ── Label sync ───────────────────────────────────────────────── */
 
   #syncLabel() {
-    if (!this.#labelEl) return;
-    this.#labelEl.textContent = this.dataset.label ?? "";
+    if (!this.els.label) return;
+    this.els.label.textContent = this.dataset.label ?? "";
   }
 
   /* ── Icons sync ───────────────────────────────────────────────── */
@@ -229,8 +230,8 @@ export class SherpaButton extends SherpaElement {
   // value is rendered as textContent and the global font-family fallback
   // (set inline below) lets FA's @font-face show the glyph.
   #syncIcons(): void {
-    if (this.#iconStartEl) this.#applyIconValue(this.#iconStartEl, 'icon-start', this.dataset.iconStart);
-    if (this.#iconEndEl) this.#applyIconValue(this.#iconEndEl, 'icon-end', this.dataset.iconEnd);
+    if (this.els.iconStart) this.#applyIconValue(this.els.iconStart, 'icon-start', this.dataset.iconStart);
+    if (this.els.iconEnd) this.#applyIconValue(this.els.iconEnd, 'icon-end', this.dataset.iconEnd);
   }
 
   #applyIconValue(el: HTMLElement, baseClass: string, value: string | undefined): void {
@@ -252,8 +253,8 @@ export class SherpaButton extends SherpaElement {
   /* ── Badge sync ───────────────────────────────────────────────── */
 
   #syncBadge(): void {
-    if (!this.#badgeEl) return;
-    this.#badgeEl.textContent = this.dataset.count ?? "";
+    if (!this.els.badge) return;
+    this.els.badge.textContent = this.dataset.count ?? "";
   }
 
   /* ── Event handlers ───────────────────────────────────────────── */

@@ -42,6 +42,12 @@
 import { getSheet } from '../stylesheet-cache.js';
 import { getCategory, getTier } from '../component-categories.js';
 import { initializeProperties, getObservedAttributes } from '../decorators.js';
+import {
+  defineCachedElements,
+  clearElementCache,
+  type ElementCacheMap,
+  type CachedElements,
+} from '../element-cache.js';
 
 // ── Class-level caches ─────────────────────────────────────────────
 const _htmlCache = new Map<typeof SherpaElement, string>();
@@ -146,6 +152,34 @@ export class SherpaElement extends HTMLElement {
   }
   $$<E extends Element = Element>(sel: string): NodeListOf<E> {
     return this.#shadow.querySelectorAll<E>(sel);
+  }
+
+  /**
+   * Create a typed, lazy element cache for this component.
+   *
+   * Returns a frozen object with getters that query elements on first access
+   * and cache the result. Elements are queried from the shadow root using
+   * the component's $() and $$() methods.
+   *
+   * @example
+   * ```typescript
+   * class SherpaButton extends SherpaElement {
+   *   els = this.cacheElements({
+   *     label: '.label',
+   *     trigger: { selector: '.trigger', type: HTMLButtonElement },
+   *     icons: { selector: '.icon', all: true }
+   *   });
+   *
+   *   onRender() {
+   *     this.els.label.textContent = 'Click';     // Type: Element | null
+   *     this.els.trigger.disabled = false;        // Type: HTMLButtonElement | null
+   *     this.els.icons.forEach(icon => {...});    // Type: NodeListOf<Element>
+   *   }
+   * }
+   * ```
+   */
+  protected cacheElements<M extends ElementCacheMap>(map: M): CachedElements<M> {
+    return defineCachedElements(this, map);
   }
 
   get shadow(): ShadowRoot {
@@ -320,6 +354,9 @@ export class SherpaElement extends HTMLElement {
    * @param id — template id; falls back to first template.
    */
   async renderTemplate(id?: string): Promise<void> {
+    // Clear element cache when re-rendering with different template
+    clearElementCache(this);
+
     const Ctor = this.constructor as typeof SherpaElement;
     const tplMap = _templateMapCache.get(Ctor);
     const html = this.#resolveHtml(tplMap || null, _htmlCache.get(Ctor) || '', id || null);
@@ -400,6 +437,8 @@ export class SherpaElement extends HTMLElement {
         }
         const html = await resp.text();
 
+        // Clear element cache before re-rendering
+        clearElementCache(this);
         this.#shadow.innerHTML = html;
 
         // Wait for any custom elements in the loaded HTML to be defined

@@ -53,24 +53,18 @@ class SherpaSlider extends SherpaElement {
 
   /* ── cached refs ─────────────────────────────────────────── */
 
-  /** @type {HTMLSpanElement|null} */
-  #labelEl = null;
-  /** @type {HTMLDivElement|null} */
-  #trackAreaEl = null;
-  /** @type {HTMLDivElement|null} */
-  #fillEl = null;
-  /** @type {HTMLDivElement|null} */
-  #lowHandleEl = null;
-  /** @type {HTMLDivElement|null} */
-  #highHandleEl = null;
-  /** @type {HTMLInputElement|null} */
-  #inputLowEl = null;
-  /** @type {HTMLInputElement|null} */
-  #inputHighEl = null;
-  /** @type {HTMLSpanElement|null} */
-  #incrementMinEl = null;
-  /** @type {HTMLSpanElement|null} */
-  #incrementMaxEl = null;
+  // Cached shadow DOM elements (typed for better autocomplete)
+  els = this.cacheElements({
+    label: { selector: '.label', type: HTMLSpanElement },
+    trackArea: { selector: '.track-area', type: HTMLDivElement },
+    fill: { selector: '.fill', type: HTMLDivElement },
+    lowHandle: { selector: '.handle-low', type: HTMLDivElement },
+    highHandle: { selector: '.handle-high', type: HTMLDivElement },
+    inputLow: { selector: '.input-low', type: HTMLInputElement },
+    inputHigh: { selector: '.input-high', type: HTMLInputElement },
+    incrementMin: { selector: '.increment-min', type: HTMLSpanElement },
+    incrementMax: { selector: '.increment-max', type: HTMLSpanElement },
+  });
 
   /** @type {'low'|'high'|null} which handle is being dragged */
   #activeHandle = null;
@@ -78,15 +72,7 @@ class SherpaSlider extends SherpaElement {
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#labelEl = this.$(".label");
-    this.#trackAreaEl = this.$(".track-area");
-    this.#fillEl = this.$(".fill");
-    this.#lowHandleEl = this.$(".handle-low");
-    this.#highHandleEl = this.$(".handle-high");
-    this.#inputLowEl = this.$(".input-low");
-    this.#inputHighEl = this.$(".input-high");
-    this.#incrementMinEl = this.$(".increment-min");
-    this.#incrementMaxEl = this.$(".increment-max");
+    // Element cache auto-populated on first access
 
     // Defaults
     if (!this.dataset.type) this.dataset.type = "single";
@@ -109,23 +95,23 @@ class SherpaSlider extends SherpaElement {
     this.#syncInputAttrs();
 
     // Wire pointer events on track area
-    this.#trackAreaEl.addEventListener("pointerdown", (e) =>
+    this.els.trackArea.addEventListener("pointerdown", (e) =>
       this.#onPointerDown(e)
     );
 
     // Wire keyboard events on handles
-    this.#lowHandleEl.addEventListener("keydown", (e) =>
+    this.els.lowHandle.addEventListener("keydown", (e) =>
       this.#onKeyDown(e, "low")
     );
-    this.#highHandleEl.addEventListener("keydown", (e) =>
+    this.els.highHandle.addEventListener("keydown", (e) =>
       this.#onKeyDown(e, "high")
     );
 
     // Wire input change events
-    this.#inputLowEl.addEventListener("change", (e) =>
+    this.els.inputLow.addEventListener("change", (e) =>
       this.#onInputChange(e, "low")
     );
-    this.#inputHighEl.addEventListener("change", (e) =>
+    this.els.inputHigh.addEventListener("change", (e) =>
       this.#onInputChange(e, "high")
     );
 
@@ -212,8 +198,8 @@ class SherpaSlider extends SherpaElement {
   }
 
   #syncLabel() {
-    if (this.#labelEl) {
-      this.#labelEl.textContent = this.dataset.label || "";
+    if (this.els.label) {
+      this.els.label.textContent = this.dataset.label || "";
     }
   }
 
@@ -229,83 +215,83 @@ class SherpaSlider extends SherpaElement {
   }
 
   #syncInputAttrs() {
-    if (this.#inputLowEl) {
-      this.#inputLowEl.min = String(this.#min);
-      this.#inputLowEl.max = String(this.#max);
-      this.#inputLowEl.step = String(this.#step);
+    if (this.els.inputLow) {
+      this.els.inputLow.min = String(this.#min);
+      this.els.inputLow.max = String(this.#max);
+      this.els.inputLow.step = String(this.#step);
     }
-    if (this.#inputHighEl) {
-      this.#inputHighEl.min = String(this.#min);
-      this.#inputHighEl.max = String(this.#max);
-      this.#inputHighEl.step = String(this.#step);
+    if (this.els.inputHigh) {
+      this.els.inputHigh.min = String(this.#min);
+      this.els.inputHigh.max = String(this.#max);
+      this.els.inputHigh.step = String(this.#step);
     }
   }
 
   #syncInputValues() {
-    if (this.#inputLowEl) {
-      this.#inputLowEl.value = String(this.#valueLow);
+    if (this.els.inputLow) {
+      this.els.inputLow.value = String(this.#valueLow);
     }
-    if (this.#inputHighEl) {
-      this.#inputHighEl.value = String(this.#valueHigh);
+    if (this.els.inputHigh) {
+      this.els.inputHigh.value = String(this.#valueHigh);
     }
   }
 
   #syncLabels() {
-    if (this.#incrementMinEl) {
-      this.#incrementMinEl.textContent = String(this.#min);
+    if (this.els.incrementMin) {
+      this.els.incrementMin.textContent = String(this.#min);
     }
-    if (this.#incrementMaxEl) {
-      this.#incrementMaxEl.textContent = String(this.#max);
+    if (this.els.incrementMax) {
+      this.els.incrementMax.textContent = String(this.#max);
     }
   }
 
   #syncAria() {
     if (this.#isRange) {
       // Low handle
-      if (this.#lowHandleEl) {
-        this.#lowHandleEl.setAttribute("aria-valuemin", String(this.#min));
-        this.#lowHandleEl.setAttribute(
+      if (this.els.lowHandle) {
+        this.els.lowHandle.setAttribute("aria-valuemin", String(this.#min));
+        this.els.lowHandle.setAttribute(
           "aria-valuemax",
           String(this.#valueHigh)
         );
-        this.#lowHandleEl.setAttribute("aria-valuenow", String(this.#valueLow));
-        this.#lowHandleEl.setAttribute("aria-label", "Range low value");
+        this.els.lowHandle.setAttribute("aria-valuenow", String(this.#valueLow));
+        this.els.lowHandle.setAttribute("aria-label", "Range low value");
       }
       // High handle
-      if (this.#highHandleEl) {
-        this.#highHandleEl.setAttribute(
+      if (this.els.highHandle) {
+        this.els.highHandle.setAttribute(
           "aria-valuemin",
           String(this.#valueLow)
         );
-        this.#highHandleEl.setAttribute("aria-valuemax", String(this.#max));
-        this.#highHandleEl.setAttribute(
+        this.els.highHandle.setAttribute("aria-valuemax", String(this.#max));
+        this.els.highHandle.setAttribute(
           "aria-valuenow",
           String(this.#valueHigh)
         );
-        this.#highHandleEl.setAttribute("aria-label", "Range high value");
+        this.els.highHandle.setAttribute("aria-label", "Range high value");
       }
     } else {
       // Single handle — use high handle
-      if (this.#highHandleEl) {
-        this.#highHandleEl.setAttribute("aria-valuemin", String(this.#min));
-        this.#highHandleEl.setAttribute("aria-valuemax", String(this.#max));
-        this.#highHandleEl.setAttribute(
+      if (this.els.highHandle) {
+        this.els.highHandle.setAttribute("aria-valuemin", String(this.#min));
+        this.els.highHandle.setAttribute("aria-valuemax", String(this.#max));
+        this.els.highHandle.setAttribute(
           "aria-valuenow",
           String(this.#valueHigh)
         );
-        this.#highHandleEl.setAttribute("aria-label", "Slider value");
+        this.els.highHandle.setAttribute("aria-label", "Slider value");
       }
     }
   }
 
   #syncDisabled() {
     const dis = this.hasAttribute("disabled");
-    if (this.#lowHandleEl)
-      this.#lowHandleEl.tabIndex = dis ? -1 : 0;
-    if (this.#highHandleEl)
-      this.#highHandleEl.tabIndex = dis ? -1 : 0;
-    if (this.#inputLowEl) this.#inputLowEl.disabled = dis;
-    if (this.#inputHighEl) this.#inputHighEl.disabled = dis;
+    if (this.els.lowHandle)
+      this.els.lowHandle.tabIndex = dis ? -1 : 0;
+    if (this.els.highHandle)
+      this.els.highHandle.tabIndex = dis ? -1 : 0;
+    if (this.els.inputLow) this.els.inputLow.disabled = dis;
+    if (this.els.inputHigh) this.els.inputHigh.disabled = dis;
   }
 
   /* ── value helpers ───────────────────────────────────────── */
@@ -325,7 +311,7 @@ class SherpaSlider extends SherpaElement {
   }
 
   #getPctFromPointer(e) {
-    const rect = this.#trackAreaEl.getBoundingClientRect();
+    const rect = this.els.trackArea.getBoundingClientRect();
     const x = e.clientX - rect.left;
     return Math.min(1, Math.max(0, x / rect.width));
   }
@@ -354,7 +340,7 @@ class SherpaSlider extends SherpaElement {
     this.#emitInput();
 
     const activeEl =
-      this.#activeHandle === "low" ? this.#lowHandleEl : this.#highHandleEl;
+      this.#activeHandle === "low" ? this.els.lowHandle : this.els.highHandle;
     activeEl.setAttribute("data-dragging", "");
     activeEl.setPointerCapture(e.pointerId);
 

@@ -90,22 +90,19 @@ class SherpaPanel extends SherpaElement {
     return this.dataset.variant === "ai" ? "ai" : null;
   }
 
-  /** @type {HTMLSpanElement|null} */
-  #headingEl = null;
-  /** @type {HTMLSpanElement|null} */
-  #restoreLblEl = null;
-  /** @type {HTMLButtonElement|null} */
-  #closeBtnEl = null;
-  /** @type {HTMLButtonElement|null} */
-  #triggerEl = null;
-  /** @type {HTMLElement|null} */
-  #searchEl = null;
-  /** @type {HTMLElement|null} */
-  #emptyEl = null;
-  /** @type {HTMLButtonElement|null} */
-  #newChatBtnEl = null;
-  /** @type {HTMLButtonElement|null} */
-  #archiveBtnEl = null;
+  // Cached shadow DOM elements (typed for better autocomplete)
+  els = this.cacheElements({
+    heading: { selector: '.header-title', type: HTMLSpanElement },
+    restoreLabel: { selector: '.collapse-label', type: HTMLSpanElement },
+    closeBtn: { selector: '.close-btn', type: HTMLButtonElement },
+    trigger: { selector: '.collapse-trigger', type: HTMLButtonElement },
+    search: '.panel-search',
+    empty: '.panel-empty',
+    newChatBtn: '[part="new-chat-btn"]',
+    archiveBtn: '[part="archive-btn"]',
+  });
+
+  // Panel state (not cached elements)
   /** @type {MutationObserver|null} */
   #observer = null;
   #currentFilter = "";
@@ -114,14 +111,7 @@ class SherpaPanel extends SherpaElement {
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#headingEl = this.$(".header-title");
-    this.#restoreLblEl = this.$(".collapse-label");
-    this.#closeBtnEl = this.$(".close-btn");
-    this.#triggerEl = this.$(".collapse-trigger");
-    this.#searchEl = this.$(".panel-search");
-    this.#emptyEl = this.$(".panel-empty");
-    this.#newChatBtnEl = this.$('[part="new-chat-btn"]');
-    this.#archiveBtnEl = this.$('[part="archive-btn"]');
+    // Element cache auto-populated on first access
 
     // Defaults
     if (!this.dataset.variant) this.dataset.variant = "inline";
@@ -129,12 +119,12 @@ class SherpaPanel extends SherpaElement {
 
     if (!this.#bound) {
       // Listeners
-      this.#closeBtnEl?.addEventListener("click", this.#onClose);
-      this.#triggerEl?.addEventListener("click", this.#onExpand);
-      this.#searchEl?.addEventListener("input", this.#onSearchChange);
-      this.#searchEl?.addEventListener("search", this.#onSearchChange);
-      this.#newChatBtnEl?.addEventListener("click", this.#onNewChat);
-      this.#archiveBtnEl?.addEventListener("click", this.#onArchive);
+      this.els.closeBtn?.addEventListener("click", this.#onClose);
+      this.els.trigger?.addEventListener("click", this.#onExpand);
+      this.els.search?.addEventListener("input", this.#onSearchChange);
+      this.els.search?.addEventListener("search", this.#onSearchChange);
+      this.els.newChatBtn?.addEventListener("click", this.#onNewChat);
+      this.els.archiveBtn?.addEventListener("click", this.#onArchive);
 
       // Re-run filter when consumer mutates light-DOM (e.g. async data load).
       this.#observer = new MutationObserver(() => {
@@ -199,8 +189,8 @@ class SherpaPanel extends SherpaElement {
   toggle() { this.expanded = !this.expanded; }
 
   clearSearch() {
-    if (this.#searchEl && typeof this.#searchEl.clear === "function") {
-      this.#searchEl.clear();
+    if (this.els.search && typeof this.els.search.clear === "function") {
+      this.els.search.clear();
     } else {
       this.#applyFilter("");
     }
@@ -242,14 +232,14 @@ class SherpaPanel extends SherpaElement {
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncHeading() {
-    if (this.#headingEl) {
-      this.#headingEl.textContent = this.dataset.heading || "";
+    if (this.els.heading) {
+      this.els.heading.textContent = this.dataset.heading || "";
     }
   }
 
   #syncRestoreLabel() {
-    if (this.#restoreLblEl) {
-      this.#restoreLblEl.textContent =
+    if (this.els.restoreLabel) {
+      this.els.restoreLabel.textContent =
         this.dataset.restoreLabel || this.dataset.heading || "";
     }
   }
@@ -274,20 +264,20 @@ class SherpaPanel extends SherpaElement {
   }
 
   #syncEmptyMessage() {
-    if (this.#emptyEl) {
-      this.#emptyEl.textContent = this.dataset.empty || "No results";
+    if (this.els.empty) {
+      this.els.empty.textContent = this.dataset.empty || "No results";
     }
   }
 
   #syncArchive() {
-    if (!this.#archiveBtnEl) return;
-    this.#archiveBtnEl.disabled =
+    if (!this.els.archiveBtn) return;
+    this.els.archiveBtn.disabled =
       !this.hasAttribute("data-can-archive") || this.hasAttribute("data-busy");
   }
 
   #syncBusy() {
-    if (this.#newChatBtnEl) {
-      this.#newChatBtnEl.disabled = this.hasAttribute("data-busy");
+    if (this.els.newChatBtn) {
+      this.els.newChatBtn.disabled = this.hasAttribute("data-busy");
     }
     this.#syncArchive();
   }
