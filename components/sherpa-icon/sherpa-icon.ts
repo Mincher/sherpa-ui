@@ -1,7 +1,5 @@
-// @ts-nocheck
-// @ts-nocheck
 /**
- * sherpa-icon.js
+ * sherpa-icon.ts
  * SherpaIcon — Atomic icon primitive.
  *
  * Renders either a Font Awesome glyph (default template) or a registered
@@ -38,20 +36,43 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
+import type { ComponentSize, Status } from '../utilities/types.js';
+
+/* ── Type Definitions ─────────────────────────────────────────────── */
+
+/** Font Awesome icon weights */
+type IconWeight = 'solid' | 'regular' | 'light' | 'thin' | 'duotone' | 'brands';
+
+/** Icon size scale */
+type IconSize = '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl';
+
+interface SherpaIconDataset extends DOMStringMap {
+  weight?: IconWeight;
+  size?: IconSize | ComponentSize;
+  status?: Status;
+}
 
 /* ── Registry ─────────────────────────────────────────────────────── */
 
-const _registry = new Map();
+const _registry = new Map<string, string>();
 
 /* ── Component ────────────────────────────────────────────────────── */
 
 export class SherpaIcon extends StatusMixin(SherpaElement) {
 
-  static get cssUrl()  { return new URL('./sherpa-icon.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-icon.html', import.meta.url).href; }
+  static override get cssUrl(): string {
+    return new URL('./sherpa-icon.css', import.meta.url).href;
+  }
+  static override get htmlUrl(): string {
+    return new URL('./sherpa-icon.html', import.meta.url).href;
+  }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'name', 'data-weight'];
+  }
+
+  override get dataset(): SherpaIconDataset {
+    return super.dataset as SherpaIconDataset;
   }
 
   /* ── Registry API ──────────────────────────────────────────────── */
@@ -60,33 +81,34 @@ export class SherpaIcon extends StatusMixin(SherpaElement) {
    * Register an inline SVG under a name. The SVG string should contain
    * a single root `<svg>` element. Calling this with an existing name
    * replaces the entry.
-   * @param {string} name
-   * @param {string} svgString
    */
-  static register(name, svgString) {
+  static register(name: string, svgString: string): void {
     if (typeof name !== 'string' || !name) return;
     _registry.set(name, String(svgString || ''));
   }
 
-  /** @param {string} name */
-  static has(name) { return _registry.has(name); }
+  static has(name: string): boolean {
+    return _registry.has(name);
+  }
 
-  /** @param {string} name */
-  static unregister(name) { _registry.delete(name); }
+  static unregister(name: string): void {
+    _registry.delete(name);
+  }
 
   /* ── Template selection ────────────────────────────────────────── */
 
-  get templateId() {
-    return _registry.has(this.getAttribute('name')) ? 'svg' : 'default';
+  override get templateId(): string {
+    const name = this.getAttribute('name');
+    return name && _registry.has(name) ? 'svg' : 'default';
   }
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#syncIcon();
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'name') {
       // Switching between glyph and registered SVG requires a template swap.
@@ -104,25 +126,34 @@ export class SherpaIcon extends StatusMixin(SherpaElement) {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get name()    { return this.getAttribute('name') || ''; }
-  set name(v)   { v ? this.setAttribute('name', v) : this.removeAttribute('name'); }
+  get name(): string {
+    return this.getAttribute('name') || '';
+  }
+  set name(v: string) {
+    v ? this.setAttribute('name', v) : this.removeAttribute('name');
+  }
 
-  get weight()  { return this.dataset.weight || 'solid'; }
-  set weight(v) { v ? (this.dataset.weight = v) : delete this.dataset.weight; }
+  get weight(): IconWeight {
+    return (this.dataset.weight as IconWeight) || 'solid';
+  }
+  set weight(v: IconWeight) {
+    v ? (this.dataset.weight = v) : delete this.dataset.weight;
+  }
 
   /* ── Private ───────────────────────────────────────────────────── */
 
-  #syncIcon() {
+  #syncIcon(): void {
     const name = this.name;
     if (!name) return;
 
     if (_registry.has(name)) {
-      const host = this.$('.icon-svg');
-      if (host) host.innerHTML = _registry.get(name);
+      const host = this.$<HTMLElement>('.icon-svg');
+      const svg = _registry.get(name);
+      if (host && svg) host.innerHTML = svg;
       return;
     }
 
-    const glyph = this.$('.icon-glyph');
+    const glyph = this.$<HTMLElement>('.icon-glyph');
     if (!glyph) return;
 
     const weight = this.weight;

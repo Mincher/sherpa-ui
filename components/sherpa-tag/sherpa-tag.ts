@@ -1,7 +1,5 @@
-// @ts-nocheck
-// @ts-nocheck
 /**
- * sherpa-tag.js
+ * sherpa-tag.ts
  * SherpaTag — Compact label component with variant and status support.
  *
  * @element sherpa-tag
@@ -15,11 +13,30 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import type { ColorVariant, Status } from '../utilities/types.js';
+
+/* ── Type Definitions ─────────────────────────────────────────────── */
+
+interface SherpaTagDataset extends DOMStringMap {
+  variant?: ColorVariant;
+  status?: Status;
+  collapsed?: string;
+}
+
+/* ── Component ─────────────────────────────────────────────────────── */
 
 export class SherpaTag extends SherpaElement {
 
-  static get cssUrl()  { return new URL('./sherpa-tag.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-tag.html', import.meta.url).href; }
+  static override get cssUrl(): string {
+    return new URL('./sherpa-tag.css', import.meta.url).href;
+  }
+  static override get htmlUrl(): string {
+    return new URL('./sherpa-tag.html', import.meta.url).href;
+  }
+
+  override get dataset(): SherpaTagDataset {
+    return super.dataset as SherpaTagDataset;
+  }
 }
 
 customElements.define('sherpa-tag', SherpaTag);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ResizeBehavior — Mixin for grid-resizable containers.
  *
@@ -30,19 +29,26 @@ const COL_STOPS = [3, 6, 9, 12];
 const MIN_ROW_SPAN = 1;
 const MAX_ROW_SPAN = 6;
 
+/* ── Type Definitions ─────────────────────────────────────────────── */
+
+/** ResizeBehavior interface for type safety */
+export interface ResizeBehaviorInterface {
+  _resizeMenuTpl: HTMLTemplateElement | null;
+}
+
 /* ── Menu template (loaded from resize-behavior.html) ──────────── */
 
 const RESIZE_HTML_URL = new URL("./resize-behavior.html", import.meta.url).href;
 
-/** @type {HTMLTemplateElement|null} Parsed resize-menu template. */
-let resizeMenuSourceTpl = null;
+/** Parsed resize-menu template */
+let resizeMenuSourceTpl: HTMLTemplateElement | null = null;
 
-/** Promise that resolves once the HTML template is fetched and parsed. */
-const resizeMenuReady = fetch(RESIZE_HTML_URL)
+/** Promise that resolves once the HTML template is fetched and parsed */
+const resizeMenuReady: Promise<void> = fetch(RESIZE_HTML_URL)
   .then((r) => r.text())
   .then((html) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
-    const tpl = doc.getElementById("resize-menu");
+    const tpl = doc.getElementById("resize-menu") as HTMLTemplateElement;
     if (tpl) resizeMenuSourceTpl = tpl;
   })
   .catch(() => {
@@ -51,24 +57,31 @@ const resizeMenuReady = fetch(RESIZE_HTML_URL)
 
 /* ── Mixin ─────────────────────────────────────────────────────── */
 
+import type { Constructor } from './types.js';
+
 /**
- * @param {typeof import('./sherpa-element/sherpa-element.js').SherpaElement} Base
- * @returns {typeof Base}
+ * ResizeBehavior mixin - adds grid resize functionality to containers
  */
-export const ResizeBehavior = (Base) =>
-  class extends Base {
-    /** @type {HTMLTemplateElement|null} */
-    _resizeMenuTpl = null;
+export function ResizeBehavior<T extends Constructor<HTMLElement>>(
+  Base: T
+): T & Constructor<ResizeBehaviorInterface> {
+  class ResizeBehaviorClass extends Base implements ResizeBehaviorInterface {
+    /** Injected resize menu template */
+    _resizeMenuTpl: HTMLTemplateElement | null = null;
 
     /* ── Lifecycle ──────────────────────────────────────────────── */
 
-    onRender() {
-      super.onRender();
+    onRender(): void {
+      // Call parent onRender if it exists
+      const parent = Object.getPrototypeOf(this.constructor.prototype);
+      if (parent && typeof parent.onRender === 'function') {
+        parent.onRender.call(this);
+      }
       this._injectResizeMenu();
-      this.addEventListener("container-increase-cols", this._onIncreaseCols);
-      this.addEventListener("container-decrease-cols", this._onDecreaseCols);
-      this.addEventListener("container-increase-rows", this._onIncreaseRows);
-      this.addEventListener("container-decrease-rows", this._onDecreaseRows);
+      this.addEventListener("container-increase-cols", this._onIncreaseCols as EventListener);
+      this.addEventListener("container-decrease-cols", this._onDecreaseCols as EventListener);
+      this.addEventListener("container-increase-rows", this._onIncreaseRows as EventListener);
+      this.addEventListener("container-decrease-rows", this._onDecreaseRows as EventListener);
     }
 
     /* ── Menu template injection ────────────────────────────────── */
@@ -78,7 +91,7 @@ export const ResizeBehavior = (Base) =>
      * the host's light DOM. The button's composed-tree template
      * collection picks this up when the overflow menu opens.
      */
-    async _injectResizeMenu() {
+    async _injectResizeMenu(): Promise<void> {
       // Avoid duplicates if reconnected
       if (this.querySelector(":scope > template[data-menu-resize]")) return;
 
@@ -96,33 +109,42 @@ export const ResizeBehavior = (Base) =>
 
     /* ── Resize handlers ────────────────────────────────────────── */
 
-    _onIncreaseCols = () => {
-      const current = parseInt(this.dataset.colSpan, 10) || COL_STOPS[0];
+    _onIncreaseCols = (): void => {
+      const current = parseInt((this as any).dataset['colSpan'], 10) || COL_STOPS[0]!;
       const idx = COL_STOPS.indexOf(current);
-      if (idx < COL_STOPS.length - 1) {
-        this.dataset.colSpan = String(COL_STOPS[idx + 1]);
+      if (idx !== -1 && idx < COL_STOPS.length - 1) {
+        const nextValue = COL_STOPS[idx + 1];
+        if (nextValue !== undefined) {
+          (this as any).dataset['colSpan'] = String(nextValue);
+        }
       }
     };
 
-    _onDecreaseCols = () => {
-      const current = parseInt(this.dataset.colSpan, 10) || COL_STOPS[0];
+    _onDecreaseCols = (): void => {
+      const current = parseInt((this as any).dataset['colSpan'], 10) || COL_STOPS[0]!;
       const idx = COL_STOPS.indexOf(current);
-      if (idx > 0) {
-        this.dataset.colSpan = String(COL_STOPS[idx - 1]);
+      if (idx !== -1 && idx > 0) {
+        const prevValue = COL_STOPS[idx - 1];
+        if (prevValue !== undefined) {
+          (this as any).dataset['colSpan'] = String(prevValue);
+        }
       }
     };
 
-    _onIncreaseRows = () => {
-      const current = parseInt(this.dataset.rowSpan, 10) || MIN_ROW_SPAN;
+    _onIncreaseRows = (): void => {
+      const current = parseInt((this as any).dataset['rowSpan'], 10) || MIN_ROW_SPAN;
       if (current < MAX_ROW_SPAN) {
-        this.dataset.rowSpan = String(current + 1);
+        (this as any).dataset['rowSpan'] = String(current + 1);
       }
     };
 
-    _onDecreaseRows = () => {
-      const current = parseInt(this.dataset.rowSpan, 10) || MIN_ROW_SPAN;
+    _onDecreaseRows = (): void => {
+      const current = parseInt((this as any).dataset['rowSpan'], 10) || MIN_ROW_SPAN;
       if (current > MIN_ROW_SPAN) {
-        this.dataset.rowSpan = String(current - 1);
+        (this as any).dataset['rowSpan'] = String(current - 1);
       }
     };
-  };
+  }
+
+  return ResizeBehaviorClass as T & Constructor<ResizeBehaviorInterface>;
+}

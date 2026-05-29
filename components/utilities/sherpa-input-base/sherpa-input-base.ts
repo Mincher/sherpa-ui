@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SherpaInputBase — Abstract base class for all form input components.
  *
@@ -47,6 +46,25 @@
 
 import { SherpaElement } from "../sherpa-element/sherpa-element.js";
 import { StatusMixin } from "../status-mixin.js";
+import type { Orientation, ChangeEventDetail } from "../types.js";
+
+/* ── Type Definitions ─────────────────────────────────────────────── */
+
+/** Input-specific dataset interface */
+interface SherpaInputDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: Orientation;
+}
+
+/** Native input element types */
+type NativeInputElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+/** Input change event detail */
+interface InputChangeEventDetail extends ChangeEventDetail<string> {
+  value: string;
+}
 
 /* ── Wrapper template (loaded once from sherpa-input-base.html) ──── */
 
@@ -109,13 +127,19 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
     ];
   }
 
+  /* ── Typed dataset ────────────────────────────────────────────── */
+
+  override get dataset(): SherpaInputDataset {
+    return super.dataset as SherpaInputDataset;
+  }
+
   /* ── Internal refs ──────────────────────────────────────────── */
 
   #labelEl: HTMLElement | null = null;
   #descriptionEl: HTMLElement | null = null;
   #helperEl: HTMLElement | null = null;
   #statusIndicatorIconEl: HTMLElement | null = null;
-  #inputEl: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null = null;
+  #inputEl: NativeInputElement | null = null;
   #validationEl: HTMLElement | null = null;
 
   /* ── Lifecycle hooks ────────────────────────────────────────── */
@@ -210,50 +234,50 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
   onInputDisconnect(): void {}
 
   /** Return the primary native <input> or <select> element. */
-  getInputElement(): HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null {
-    return this.$<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('.input-field');
+  getInputElement(): NativeInputElement | null {
+    return this.$<NativeInputElement>('.input-field');
   }
 
   /* ── Public API ─────────────────────────────────────────────── */
 
   get label(): string {
-    return this.dataset['label'] || "";
+    return this.dataset.label || "";
   }
   set label(v: string) {
     if (v) {
-      this.dataset['label'] = v;
+      this.dataset.label = v;
     } else {
-      delete this.dataset['label'];
+      delete this.dataset.label;
     }
   }
 
   get description(): string {
-    return this.dataset['description'] || "";
+    return this.dataset.description || "";
   }
   set description(v: string) {
     if (v) {
-      this.dataset['description'] = v;
+      this.dataset.description = v;
     } else {
-      delete this.dataset['description'];
+      delete this.dataset.description;
     }
   }
 
   get helper(): string {
-    return this.dataset['helper'] || "";
+    return this.dataset.helper || "";
   }
   set helper(v: string) {
     if (v) {
-      this.dataset['helper'] = v;
+      this.dataset.helper = v;
     } else {
-      delete this.dataset['helper'];
+      delete this.dataset.helper;
     }
   }
 
-  get layout(): string {
-    return this.dataset['layout'] || "vertical";
+  get layout(): Orientation {
+    return (this.dataset.layout as Orientation) || "vertical";
   }
-  set layout(v: string) {
-    this.dataset['layout'] = v;
+  set layout(v: Orientation) {
+    this.dataset.layout = v;
   }
 
   get value(): string {
@@ -303,22 +327,22 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
   /* ── Constraint Validation API (delegates to native input) ──── */
 
   /** Returns the native ValidityState of the inner control. */
-  get validity() {
+  get validity(): ValidityState | undefined {
     return this.getInputElement()?.validity;
   }
 
   /** The native validation message string. */
-  get validationMessage() {
+  get validationMessage(): string {
     return this.getInputElement()?.validationMessage || "";
   }
 
   /** Returns true if the native control satisfies its constraints. */
-  checkValidity() {
+  checkValidity(): boolean {
     return this.getInputElement()?.checkValidity() ?? true;
   }
 
   /** Like checkValidity but also updates the validation message UI. */
-  reportValidity() {
+  reportValidity(): boolean {
     const el = this.getInputElement();
     if (!el) return true;
     // Run custom hook first (subclasses use setCustomValidity here)
@@ -333,13 +357,13 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
    * Call el.setCustomValidity(msg) to mark invalid, or '' to clear.
    * This is invoked on every blur before the native validity check.
    */
-  validate(_el) {
+  validate(_el: NativeInputElement): void {
     // Default: no custom validation — native constraints are used.
   }
 
   /* ── Wrapper construction ───────────────────────────────────── */
 
-  async #buildWrapper() {
+  async #buildWrapper(): Promise<void> {
     // Collect existing control content from the subclass template
     // (everything that isn't <link> or <style>)
     const controlContent = document.createDocumentFragment();
@@ -352,10 +376,12 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
     // Clone the wrapper template (loaded once, cached for all instances)
     // and inject subclass content into .input-control before the indicator.
     const tpl = await loadWrapperTemplate();
-    const wrapper = tpl.content.cloneNode(true);
+    const wrapper = tpl.content.cloneNode(true) as DocumentFragment;
     const control = wrapper.querySelector(".input-control");
-    const indicator = control.querySelector(".status-indicator");
-    control.insertBefore(controlContent, indicator);
+    const indicator = control?.querySelector(".status-indicator");
+    if (control && indicator) {
+      control.insertBefore(controlContent, indicator);
+    }
 
     this.shadow.appendChild(wrapper);
   }
@@ -364,7 +390,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
 
   #syncLabel(): void {
     if (!this.#labelEl) return;
-    this.#labelEl.textContent = this.dataset['label'] || "";
+    this.#labelEl.textContent = this.dataset.label || "";
     // Required asterisk visibility is handled by CSS:
     //   .input-required { display: none; }
     //   :host([required]) .input-required { display: inline; }
@@ -372,22 +398,22 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
 
   #syncDescription(): void {
     if (!this.#descriptionEl) return;
-    this.#descriptionEl.textContent = this.dataset['description'] || "";
+    this.#descriptionEl.textContent = this.dataset.description || "";
   }
 
   #syncHelper(): void {
     if (!this.#helperEl) return;
-    this.#helperEl.textContent = this.dataset['helper'] || "";
+    this.#helperEl.textContent = this.dataset.helper || "";
   }
 
   /**
    * Update the status indicator icon in the input-control area.
    * The icon class is determined by the host's status attribute.
    */
-  #syncStatusIndicator() {
+  #syncStatusIndicator(): void {
     if (!this.#statusIndicatorIconEl) return;
     const status = this.status;
-    const iconCls = status ? this.constructor.statusIcons?.[status] || "" : "";
+    const iconCls = status ? (this.constructor as any).statusIcons?.[status] || "" : "";
     if (iconCls) {
       this.#statusIndicatorIconEl.className = `status-indicator-icon ${iconCls}`;
     } else {
@@ -395,7 +421,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
     }
   }
 
-  #syncNativeAttrs() {
+  #syncNativeAttrs(): void {
     const el = this.getInputElement();
     if (!el) return;
 
@@ -418,7 +444,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
     }
   }
 
-  #syncValue() {
+  #syncValue(): void {
     const el = this.getInputElement();
     if (!el) return;
     const v = this.getAttribute("value") ?? "";
@@ -427,22 +453,24 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
 
   /* ── Event forwarding ───────────────────────────────────────── */
 
-  #onInput = (e) => {
+  #onInput = (e: Event): void => {
+    const target = e.target as NativeInputElement;
     this.dispatchEvent(
-      new CustomEvent("input", {
+      new CustomEvent<InputChangeEventDetail>("input", {
         bubbles: true,
         composed: true,
-        detail: { value: e.target.value },
+        detail: { value: target.value },
       }),
     );
   };
 
   #onChange = (e: Event): void => {
+    const target = e.target as NativeInputElement;
     this.dispatchEvent(
-      new CustomEvent("change", {
+      new CustomEvent<InputChangeEventDetail>("change", {
         bubbles: true,
         composed: true,
-        detail: { value: e.target.value },
+        detail: { value: target.value },
       }),
     );
   };
@@ -455,7 +483,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
    * The border colour change is handled entirely by CSS :user-invalid.
    * Also updates the status indicator icon for native validation errors.
    */
-  #onBlur = () => {
+  #onBlur = (): void => {
     if (this.hasAttribute("novalidate")) return;
     const el = this.getInputElement();
     if (!el) return;
@@ -490,7 +518,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
    * Copy the browser's validationMessage into our shadow DOM element.
    * CSS shows/hides the element based on :user-invalid.
    */
-  #updateValidationMessage(el) {
+  #updateValidationMessage(el: NativeInputElement): void {
     if (this.#validationEl) {
       this.#validationEl.textContent = el.validationMessage || "";
     }
