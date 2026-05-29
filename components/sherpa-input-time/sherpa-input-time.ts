@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-input-time
  * @category input
@@ -29,10 +28,10 @@ import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-bas
 
 export class SherpaInputTime extends SherpaInputBase {
 
-  static get cssUrl()  { return new URL('./sherpa-input-time.css',  import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-time.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-input-time.css',  import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-time.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'min', 'max', 'step'];
   }
 
@@ -59,7 +58,7 @@ export class SherpaInputTime extends SherpaInputBase {
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
-  onInputRender() {
+  override onInputRender(): void {
     this.#triggerEl   = this.$('.picker-trigger');
     this.#popupEl     = this.$('.picker-popup');
     this.#hourValEl   = this.$('.hour-val');
@@ -98,18 +97,18 @@ export class SherpaInputTime extends SherpaInputBase {
     });
   }
 
-  onInputConnect() {
+  override onInputConnect(): void {
     document.addEventListener('click',   this.#onDocClick);
     document.addEventListener('keydown', this.#onDocKey);
   }
 
-  onInputDisconnect() {
+  override onInputDisconnect(): void {
     document.removeEventListener('click',   this.#onDocClick);
     document.removeEventListener('keydown', this.#onDocKey);
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name, oldValue, newValue): void {
+    super.override onAttributeChanged(name, oldValue, newValue): void;
 
     if (['min', 'max', 'step'].includes(name)) {
       const el = this.getInputElement();

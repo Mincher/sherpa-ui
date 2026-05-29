@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-input-number
  * @category input
@@ -31,17 +30,17 @@ import '../sherpa-button/sherpa-button.js';
 
 export class SherpaInputNumber extends SherpaInputBase {
 
-  static get cssUrl()  { return new URL('./sherpa-input-number.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-number.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-input-number.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-number.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'min', 'max', 'step'];
   }
 
   #stepDownBtnEl = null;
   #stepUpBtnEl = null;
 
-  async onInputRender() {
+  override async override onInputRender(): void: Promise<void> {
     this.#stepDownBtnEl = this.$('.step-down');
     this.#stepUpBtnEl = this.$('.step-up');
     // Propagate min/max/step to the native input on initial render —
@@ -58,20 +57,20 @@ export class SherpaInputNumber extends SherpaInputBase {
     }
   }
 
-  onInputConnect() {
+  override onInputConnect(): void {
     this.#stepDownBtnEl?.addEventListener('click', this.#onStepDown);
     this.#stepUpBtnEl?.addEventListener('click', this.#onStepUp);
     this.getInputElement()?.addEventListener('keydown', this.#onKeyDown);
   }
 
-  onInputDisconnect() {
+  override onInputDisconnect(): void {
     this.#stepDownBtnEl?.removeEventListener('click', this.#onStepDown);
     this.#stepUpBtnEl?.removeEventListener('click', this.#onStepUp);
     this.getInputElement()?.removeEventListener('keydown', this.#onKeyDown);
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name, oldValue, newValue): void {
+    super.override onAttributeChanged(name, oldValue, newValue): void;
     if (['min', 'max', 'step'].includes(name)) {
       const el = this.getInputElement();
       if (el) {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-input-date
  * @category input
@@ -45,10 +44,10 @@ function isValidIso(iso) {
 
 export class SherpaInputDate extends SherpaInputBase {
 
-  static get cssUrl()  { return new URL('./sherpa-input-date.css',  import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-date.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-input-date.css',  import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-date.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'min', 'max'];
   }
 
@@ -73,7 +72,7 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
-  onInputRender() {
+  override onInputRender(): void {
     this.#triggerEl   = this.$('.picker-trigger');
     this.#popupEl     = this.$('.picker-popup');
     this.#monthYearEl = this.$('.cal-month-year');
@@ -135,18 +134,18 @@ export class SherpaInputDate extends SherpaInputBase {
     });
   }
 
-  onInputConnect() {
+  override onInputConnect(): void {
     document.addEventListener('click',   this.#onDocClick);
     document.addEventListener('keydown', this.#onDocKey);
   }
 
-  onInputDisconnect() {
+  override onInputDisconnect(): void {
     document.removeEventListener('click',   this.#onDocClick);
     document.removeEventListener('keydown', this.#onDocKey);
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name, oldValue, newValue): void {
+    super.override onAttributeChanged(name, oldValue, newValue): void;
 
     if (name === 'min' || name === 'max') {
       this.#applyCustomValidity();

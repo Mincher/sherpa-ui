@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-input-tag.js
  * SherpaInputTag — Multi-tag input. Replaces DevExtreme DxTagBox for
@@ -42,10 +41,10 @@ import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-bas
 
 export class SherpaInputTag extends SherpaInputBase {
 
-  static get cssUrl()  { return new URL('./sherpa-input-tag.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-tag.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-input-tag.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-tag.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-value', 'data-separator', 'data-allow-duplicates', 'data-max-tags',
@@ -56,11 +55,11 @@ export class SherpaInputTag extends SherpaInputBase {
 
   getInputElement() { return this.$('.tag-typeahead'); }
 
-  async onInputRender() {
+  override async override onInputRender(): void: Promise<void> {
     this.#renderChips();
   }
 
-  onInputConnect() {
+  override onInputConnect(): void {
     const input = this.getInputElement();
     if (!input) return;
     input.addEventListener('keydown', this.#onKeyDown);
@@ -69,14 +68,14 @@ export class SherpaInputTag extends SherpaInputBase {
     input.addEventListener('input', (e) => e.stopImmediatePropagation(), true);
   }
 
-  onInputDisconnect() {
+  override onInputDisconnect(): void {
     const input = this.getInputElement();
     if (!input) return;
     input.removeEventListener('keydown', this.#onKeyDown);
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name, oldValue, newValue): void {
+    super.override onAttributeChanged(name, oldValue, newValue): void;
     if (name === 'data-value') this.#renderChips();
   }
 

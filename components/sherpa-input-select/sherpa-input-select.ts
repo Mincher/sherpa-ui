@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-input-select
  * @category input
@@ -24,10 +23,10 @@
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
 
 export class SherpaInputSelect extends SherpaInputBase {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-input-select.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-input-select.html", import.meta.url).href;
   }
 
@@ -36,7 +35,7 @@ export class SherpaInputSelect extends SherpaInputBase {
   #outsideHandler = null;
   #pathByValue = new Map();
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-template', 'data-tree'];
   }
 
@@ -48,7 +47,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     return this.$(".input-field");
   }
 
-  async onInputRender() {
+  override async override onInputRender(): void: Promise<void> {
     this.#selectEl = this.getInputElement();
     if (this.templateId === 'tree') {
       this.#renderTree();
@@ -77,22 +76,22 @@ export class SherpaInputSelect extends SherpaInputBase {
     }
   }
 
-  onInputDisconnect() {
+  override onInputDisconnect(): void {
     if (this.#outsideHandler) {
       document.removeEventListener('pointerdown', this.#outsideHandler, true);
       this.#outsideHandler = null;
     }
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name, oldValue, newValue): void {
+    super.override onAttributeChanged(name, oldValue, newValue): void;
     if (name === "placeholder") {
       this.#ensurePlaceholder();
       const display = this.$('.tree-display');
       if (display) display.dataset.placeholder = this.getAttribute('placeholder') || '';
     }
     if (name === 'data-template') {
-      this.renderTemplate(this.templateId).then(() => this.onInputRender());
+      this.renderTemplate(this.templateId).then(() => this.override onInputRender(): void);
     }
     if (name === 'data-tree' && this.templateId === 'tree') {
       this.#renderTree();
@@ -115,7 +114,7 @@ export class SherpaInputSelect extends SherpaInputBase {
   setOptions(options) {
     if (!this.#selectEl) {
       // Component hasn't finished rendering yet — queue the call so
-      // onInputRender() can flush it once the inner <select> exists.
+      // override onInputRender(): void can flush it once the inner <select> exists.
       this.#pendingOptions = options ? [...options] : [];
       return;
     }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-input-date-range
  * @category input
@@ -35,15 +34,15 @@ import {
 } from "../utilities/calendar-helper.js";
 
 export class SherpaInputDateRange extends SherpaInputBase {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("sherpa-input-date-range.css", import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("sherpa-input-date-range.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-value-start",
@@ -74,7 +73,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
-  onInputRender() {
+  override onInputRender(): void {
     this.#startEl = this.$(".input-start");
     this.#endEl   = this.$(".input-end");
     this.#dayTpl  = this.$(".cal-day-tpl");
@@ -163,18 +162,18 @@ export class SherpaInputDateRange extends SherpaInputBase {
     });
   }
 
-  onInputConnect() {
+  override onInputConnect(): void {
     document.addEventListener("click",   this.#onDocClick);
     document.addEventListener("keydown", this.#onDocKey);
   }
 
-  onInputDisconnect() {
+  override onInputDisconnect(): void {
     document.removeEventListener("click",   this.#onDocClick);
     document.removeEventListener("keydown", this.#onDocKey);
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name, oldValue, newValue): void {
+    super.override onAttributeChanged(name, oldValue, newValue): void;
     switch (name) {
       case "data-value-start":
       case "data-value-end":

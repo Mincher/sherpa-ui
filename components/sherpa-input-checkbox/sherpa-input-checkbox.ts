@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-input-checkbox.js
  * SherpaInputCheckbox — Atomic checkbox primitive.
@@ -37,10 +36,10 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
 
   #bound = false;
 
-  static get cssUrl()  { return new URL('./sherpa-input-checkbox.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-checkbox.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-input-checkbox.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-checkbox.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'name', 'value', 'checked', 'indeterminate', 'disabled', 'required',
@@ -62,8 +61,8 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
     this.#syncNative();
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name, oldValue, newValue): void {
+    super.override onAttributeChanged(name, oldValue, newValue): void;
     switch (name) {
       case 'data-label':       this.#syncLabel(); break;
       case 'data-description': this.#syncDescription(); break;

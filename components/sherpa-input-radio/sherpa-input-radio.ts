@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-input-radio.js
  * SherpaInputRadio — Atomic radio primitive.
@@ -36,10 +35,10 @@ export class SherpaInputRadio extends StatusMixin(SherpaElement) {
 
   #bound = false;
 
-  static get cssUrl()  { return new URL('./sherpa-input-radio.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-radio.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-input-radio.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-radio.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'name', 'value', 'checked', 'disabled', 'required',
@@ -61,8 +60,8 @@ export class SherpaInputRadio extends StatusMixin(SherpaElement) {
     this.#syncNative();
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name, oldValue, newValue): void {
+    super.override onAttributeChanged(name, oldValue, newValue): void;
     switch (name) {
       case 'data-label':       this.#syncLabel(); break;
       case 'data-description': this.#syncDescription(); break;
