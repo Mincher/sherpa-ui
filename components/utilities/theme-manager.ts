@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ThemeManager — Standalone utility for managing theme, mode, density, status.
  *

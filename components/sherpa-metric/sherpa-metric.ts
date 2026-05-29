@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-metric
  * @category display

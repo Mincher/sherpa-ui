@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-date-time-picker.js
  * SherpaDateTimePicker — Combined date + time picker popup panel.
@@ -39,15 +38,15 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   /* ── Static ─────────────────────────────────────────────── */
 
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL('./sherpa-date-time-picker.css', import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL('./sherpa-date-time-picker.html', import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'value', 'min', 'max', 'data-mode'];
   }
 
@@ -75,7 +74,7 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   /* ── Lifecycle ──────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#calDaysEl     = this.$('.cal-days');
     this.#calMonthsEl   = this.$('.cal-months');
     this.#calYearsEl    = this.$('.cal-years');

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-layout-grid
  * @category shell
@@ -31,15 +30,15 @@ import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-view-header/sherpa-view-header.js";
 
 export class SherpaLayoutGrid extends SherpaElement {
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-layout-grid.html", import.meta.url).href;
   }
 
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-layout-grid.css", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-row-height",
@@ -53,7 +52,7 @@ export class SherpaLayoutGrid extends SherpaElement {
   #dragSource = null;
   #headerEl = null;
 
-  onRender() {
+  override onRender(): void {
     this.#headerEl = this.$("sherpa-view-header.grid-header");
     this.#syncRowHeight();
     this.#syncEditable();
@@ -68,7 +67,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     if (name === "data-heading" || name === "data-export-title") this.#syncHeader();
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     this.removeEventListener('dragstart', this.#onDragStart);
     this.removeEventListener('dragover', this.#onDragOver);
     this.removeEventListener('dragleave', this.#onDragLeave);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-empty-state
  * @category feedback
@@ -63,14 +62,14 @@ const ILLUSTRATIONS = {
 /* ── Component ─────────────────────────────────────────────────── */
 
 export class SherpaEmptyState extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-empty-state.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-empty-state.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-label",
@@ -89,7 +88,7 @@ export class SherpaEmptyState extends SherpaElement {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#titleEl = this.$(".sherpa-empty-state__title");
     this.#descriptionEl = this.$(".sherpa-empty-state__description");
     this.#illustrationDefaultEl = this.$(
@@ -100,7 +99,7 @@ export class SherpaEmptyState extends SherpaElement {
     this.#syncAll();
   }
 
-  onConnect() {
+  override onConnect(): void {
     // Slot listeners are auto-wired by SherpaElement.
     // Visibility is handled entirely by CSS using data-has-* and data-* selectors.
   }

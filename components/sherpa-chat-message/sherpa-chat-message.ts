@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-chat-message.js
  * SherpaChatMessage — Chat bubble for AI / messaging surfaces.
@@ -19,10 +18,10 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 class SherpaChatMessage extends SherpaElement {
-  static get cssUrl()  { return new URL("./sherpa-chat-message.css", import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-chat-message.html", import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL("./sherpa-chat-message.css", import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-chat-message.html", import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-role",
@@ -32,7 +31,7 @@ class SherpaChatMessage extends SherpaElement {
 
   /** @type {HTMLElement|null} */ #iconEl = null;
 
-  onRender() {
+  override onRender(): void {
     this.#iconEl = this.$(".avatar-icon");
     if (!this.dataset.role) this.dataset.role = "ai";
     this.#syncIcon();

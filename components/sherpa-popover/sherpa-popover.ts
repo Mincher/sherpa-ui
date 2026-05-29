@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-popover.js
  * SherpaPopover — General-purpose floating content container with header.
@@ -35,15 +34,15 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 class SherpaPopover extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("sherpa-popover.css", import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("sherpa-popover.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-heading",
@@ -55,7 +54,7 @@ class SherpaPopover extends SherpaElement {
     ];
   }
 
-  get templateId() {
+  override get templateId(): string {
     return this.dataset.template === 'paged' ? 'paged' : 'default';
   }
 
@@ -69,7 +68,7 @@ class SherpaPopover extends SherpaElement {
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#headingEl = this.$(".header-title");
     this.#closeBtnEl = this.$(".close-btn");
 
@@ -87,7 +86,7 @@ class SherpaPopover extends SherpaElement {
     this.#syncPageIndicator();
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     this.#teardownOutsideClick();
   }
 

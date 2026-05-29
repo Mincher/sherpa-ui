@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-breadcrumbs
  * @category control
@@ -28,10 +27,10 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 export class SherpaBreadcrumbs extends SherpaElement {
 
-  static get cssUrl()  { return new URL('./sherpa-breadcrumbs.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-breadcrumbs.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-breadcrumbs.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-breadcrumbs.html', import.meta.url).href; }
 
-  onRender() {
+  override onRender(): void {
     this.shadowRoot.addEventListener('click', this.#onClick);
   }
 

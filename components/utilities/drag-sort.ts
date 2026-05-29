@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * drag-sort.js — Lightweight drag-and-drop reordering for sibling elements.
  *

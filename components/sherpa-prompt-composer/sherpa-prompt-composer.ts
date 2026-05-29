@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-prompt-composer.js
  * SherpaPromptComposer — Auto-growing prompt textarea with circular
@@ -26,10 +25,10 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 class SherpaPromptComposer extends SherpaElement {
-  static get cssUrl()  { return new URL("./sherpa-prompt-composer.css", import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-prompt-composer.html", import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL("./sherpa-prompt-composer.css", import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-prompt-composer.html", import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-placeholder",
@@ -45,7 +44,7 @@ class SherpaPromptComposer extends SherpaElement {
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#formEl  = this.$(".composer");
     this.#inputEl = this.$(".composer-input");
     this.#sendEl  = this.$(".composer-send");

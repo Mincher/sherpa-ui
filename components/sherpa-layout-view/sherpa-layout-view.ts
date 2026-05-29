@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-layout-view
  * @category shell
@@ -40,10 +39,10 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-view-header/sherpa-view-header.js';
 
 export class SherpaLayoutView extends SherpaElement {
-  static get cssUrl()  { return new URL('./sherpa-layout-view.css',  import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-layout-view.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-layout-view.css',  import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-layout-view.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-heading',
@@ -54,7 +53,7 @@ export class SherpaLayoutView extends SherpaElement {
 
   /** @type {HTMLElement|null} */ #headerEl = null;
 
-  onRender() {
+  override onRender(): void {
     this.#headerEl = this.$('sherpa-view-header.view-header');
     this.#syncHeader();
   }

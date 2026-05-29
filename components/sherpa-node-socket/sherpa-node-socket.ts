@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-node-socket.js — Connection-point primitive for sherpa-node.
  *
@@ -25,8 +24,8 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 export class SherpaNodeSocket extends SherpaElement {
-  static get cssUrl() { return new URL("./sherpa-node-socket.css", import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-node-socket.html", import.meta.url).href; }
+  static override get cssUrl(): string { return new URL("./sherpa-node-socket.css", import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-node-socket.html", import.meta.url).href; }
 
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
@@ -37,7 +36,7 @@ export class SherpaNodeSocket extends SherpaElement {
     ];
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-direction",
@@ -56,7 +55,7 @@ export class SherpaNodeSocket extends SherpaElement {
   #connectorTpl = null;
   #bound = false;
 
-  onRender() {
+  override onRender(): void {
     this.#btnEl = this.$(".socket");
     this.#connectorsEl = this.$(".connectors");
     this.#connectorTpl = this.shadowRoot?.querySelector(".connector-tpl");

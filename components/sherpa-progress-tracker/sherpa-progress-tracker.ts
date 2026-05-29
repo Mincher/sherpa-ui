@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-progress-tracker
  * @category content
@@ -24,10 +23,10 @@ export class SherpaProgressTracker extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-progress-tracker.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-progress-tracker.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-progress-tracker.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-progress-tracker.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-heading',
@@ -44,7 +43,7 @@ export class SherpaProgressTracker extends SherpaElement {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#headingEl    = this.$('.heading-text');
     this.#percentageEl = this.$('.percentage-text');
     this.#listEl       = this.$('.milestone-list');

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * aggregate.js — Local aggregation utilities for viz components.
  *

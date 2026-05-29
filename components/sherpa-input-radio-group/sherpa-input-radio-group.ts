@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-input-radio-group.js
  * SherpaInputRadioGroup — Group of radios with shared label, description,
@@ -39,10 +38,10 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   #bound = false;
 
-  static get cssUrl()  { return new URL('./sherpa-input-radio-group.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-radio-group.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-input-radio-group.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-radio-group.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'name', 'data-label', 'data-description', 'data-helper',
@@ -52,7 +51,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     if (!this.#bound) {
       this.addEventListener('change', this.#onChildChange);
       this.#bound = true;

@@ -1,5 +1,4 @@
 // @ts-nocheck
-// @ts-nocheck
 /**
  * @element sherpa-sparkline
  * @category media
@@ -36,10 +35,10 @@ const formatTooltipValue = (value, unitLabel = '') => {
 };
 
 export class SherpaSparkline extends SherpaElement {
-  static get cssUrl() { return new URL('./sherpa-sparkline.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-sparkline.html', import.meta.url).href; }
+  static override get cssUrl(): string { return new URL('./sherpa-sparkline.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-sparkline.html', import.meta.url).href; }
 
-  static get observedAttributes() { return [...super.observedAttributes, 'data-values']; }
+  static override get observedAttributes(): string[] { return [...super.observedAttributes, 'data-values']; }
 
   #values = [];
   #shapeEls = [];
@@ -49,7 +48,7 @@ export class SherpaSparkline extends SherpaElement {
   #tipEl = null;
   #tipTextEl = null;
 
-  onRender() {
+  override onRender(): void {
     this.#shapeEls = Array.from(this.$$('.shape'));
     this.#pointEls = Array.from(this.$$('.point'));
     this.#shapeSlots = this.#shapeEls.length;
@@ -67,7 +66,7 @@ export class SherpaSparkline extends SherpaElement {
     this.#updateFromAttribute();
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     this.#pointEls.forEach(point => {
       point.removeEventListener('pointerenter', this.#onPointEnter);
       point.removeEventListener('pointerleave', this.#onPointLeave);

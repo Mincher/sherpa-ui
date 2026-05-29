@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * filter-menu-utils.js
  * Shared helpers for the filter-menu pattern used by viz components.

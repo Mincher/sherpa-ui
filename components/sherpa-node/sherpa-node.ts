@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-node.js — Host element for a node-graph node.
  *
@@ -75,8 +74,8 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 export class SherpaNode extends SherpaElement {
-  static get cssUrl() { return new URL("./sherpa-node.css", import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-node.html", import.meta.url).href; }
+  static override get cssUrl(): string { return new URL("./sherpa-node.css", import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-node.html", import.meta.url).href; }
 
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
@@ -87,7 +86,7 @@ export class SherpaNode extends SherpaElement {
     ];
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-kind",
@@ -106,7 +105,7 @@ export class SherpaNode extends SherpaElement {
   #subtypeSelectEl = null;
   #bound = false;
 
-  onRender() {
+  override onRender(): void {
     this.#nodeEl = this.$(".node");
     this.#subtypeSelectEl = this.$(".subtype-select");
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * view-templates.js — Utility for stamping view layout templates.
  *

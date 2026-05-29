@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-code-block
  * @category utility
@@ -45,11 +44,11 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 export class SherpaCodeBlock extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL('./sherpa-code-block.css', import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL('./sherpa-code-block.html', import.meta.url).href;
   }
 
@@ -91,7 +90,7 @@ export class SherpaCodeBlock extends SherpaElement {
   #detectedLanguage = null;
   #highlightError = null;
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-language',
@@ -115,7 +114,7 @@ export class SherpaCodeBlock extends SherpaElement {
     return this.#detectedLanguage;
   }
 
-  onRender() {
+  override onRender(): void {
     this.#codeEl = this.$('code');
     this.#preEl = this.$('pre');
     this.#copyBtnEl = this.$('sherpa-button[class="copy-btn"]');

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-transfer-list
  * @category data
@@ -26,10 +25,10 @@ import '../sherpa-input-search/sherpa-input-search.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaTransferList extends SherpaElement {
-  static get cssUrl()  { return new URL('./sherpa-transfer-list.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-transfer-list.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-transfer-list.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-transfer-list.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-source-heading', 'data-target-heading'];
   }
 
@@ -42,7 +41,7 @@ export class SherpaTransferList extends SherpaElement {
 
   /* ── lifecycle ─────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#syncHeadings();
 
     this.$('.source-pane .pane-search')?.addEventListener('input', this.#onSourceSearch);

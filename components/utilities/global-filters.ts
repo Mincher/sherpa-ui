@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * global-filters.js — Shared global filter state provider.
  *

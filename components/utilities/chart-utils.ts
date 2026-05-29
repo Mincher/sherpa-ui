@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * chart-utils.js — Shared helpers for chart components.
  *

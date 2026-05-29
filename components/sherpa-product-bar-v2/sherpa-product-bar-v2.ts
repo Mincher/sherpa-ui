@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-product-bar-v2
  * @category shell
@@ -42,15 +41,15 @@ import "../sherpa-menu/sherpa-menu.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 class SherpaProductBarV2 extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("sherpa-product-bar-v2.css", import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("sherpa-product-bar-v2.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-product-name",
@@ -66,7 +65,7 @@ class SherpaProductBarV2 extends SherpaElement {
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#nameEl = this.$(".system-name");
     this.#timeEl = this.$(".system-time-value");
     this.#triggerEl = this.$(".system-trigger");

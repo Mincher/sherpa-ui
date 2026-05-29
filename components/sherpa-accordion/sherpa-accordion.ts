@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-accordion.js
  * SherpaAccordion — Collapsible content panel using native <details>/<summary>.
@@ -23,10 +22,10 @@ import '../sherpa-button/sherpa-button.js';
 
 export class SherpaAccordion extends SherpaElement {
 
-  static get cssUrl()  { return new URL('./sherpa-accordion.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-accordion.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-accordion.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-accordion.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-label', 'data-icon', 'disabled'];
   }
 
@@ -36,7 +35,7 @@ export class SherpaAccordion extends SherpaElement {
   #detailsEl = null;
   #bound = false;
 
-  onRender() {
+  override onRender(): void {
     this.#labelEl = this.$('.trigger-label');
     this.#iconEl = this.$('.trigger-icon');
     this.#chevronBtnEl = this.$('.chevron-btn');

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Format Utilities
  * Number/value formatting, string helpers, and ID generation

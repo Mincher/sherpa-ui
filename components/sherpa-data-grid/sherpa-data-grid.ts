@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-data-grid
  * @category data
@@ -128,14 +127,14 @@ function columnWidth(type) {
 }
 
 class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-data-grid.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-data-grid.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-loading",
@@ -194,7 +193,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
      Lifecycle
      ══════════════════════════════════════════════════════════════ */
 
-  onRender() {
+  override onRender(): void {
     // Mark as viz component for container CSS targeting
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
     if (!this.hasAttribute('data-show-toolbar')) this.toggleAttribute('data-show-toolbar', true);
@@ -331,12 +330,12 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
-  onConnect() {
+  override onConnect(): void {
     super.onConnect();
     if (this.hasAttribute("data-src-json")) this.setAttribute("data-loading", "");
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     super.onDisconnect();
     CSS.highlights?.delete("data-grid-search");
     CSS.highlights?.delete("data-grid-col-search");

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-key-value-list
  * @category content
@@ -20,18 +19,18 @@ import '../sherpa-tag/sherpa-tag.js';
 
 export class SherpaKeyValueList extends SherpaElement {
 
-  static get cssUrl()  { return new URL('./sherpa-key-value-list.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-key-value-list.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-key-value-list.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-key-value-list.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, "data-type", "data-key-width"];
   }
 
-  get templateId() {
+  override get templateId(): string {
     return this.dataset.type || 'default';
   }
 
-  onRender() {
+  override onRender(): void {
     const keyWidth = this.dataset.keyWidth;
     if (keyWidth && keyWidth !== 'auto') {
       this.style.setProperty('--_key-width', keyWidth);

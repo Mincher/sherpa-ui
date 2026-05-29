@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-stepper
  * @category content
@@ -35,14 +34,14 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 export class SherpaStepper extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-stepper.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-stepper.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-current-step",
@@ -52,7 +51,7 @@ export class SherpaStepper extends SherpaElement {
     ];
   }
 
-  get templateId() {
+  override get templateId(): string {
     return this.dataset.template === 'timeline' ? 'timeline' : 'default';
   }
 

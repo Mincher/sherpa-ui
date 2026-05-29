@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-tooltip.js
  * SherpaTooltip — Singleton tooltip with CSS anchor positioning fallback.
@@ -47,10 +46,10 @@ class SherpaTooltip extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-tooltip.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-tooltip.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-tooltip.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-tooltip.html', import.meta.url).href; }
 
-  static get observedAttributes() { return [...super.observedAttributes, 'data-visible', 'data-position']; }
+  static override get observedAttributes(): string[] { return [...super.observedAttributes, 'data-visible', 'data-position']; }
 
   /* ── Private state ────────────────────────────────────────────── */
 
@@ -59,7 +58,7 @@ class SherpaTooltip extends SherpaElement {
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.dataset.position = this.#position;
   }
 

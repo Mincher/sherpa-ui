@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-node-templates.js
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-node-canvas.js — Pan/zoom canvas hosting sherpa-node children.
  *
@@ -63,8 +62,8 @@ const WHEEL_K = 0.0025;
 const BEZIER_SAMPLES = 32;   // polyline segments per edge for hit-test
 
 export class SherpaNodeCanvas extends SherpaElement {
-  static get cssUrl() { return new URL("./sherpa-node-canvas.css", import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-node-canvas.html", import.meta.url).href; }
+  static override get cssUrl(): string { return new URL("./sherpa-node-canvas.css", import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-node-canvas.html", import.meta.url).href; }
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
   static get sharedStyles() {
@@ -74,7 +73,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     ];
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-grid",
@@ -125,7 +124,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#rootEl     = this.$(".root");
     // .canvas-body is now a flex row hosting the canvas stack and a
     // trailing side-panel slot; the canvas's own size — used for
@@ -143,7 +142,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#syncHeader();
   }
 
-  onConnect() {
+  override onConnect(): void {
     if (!this.hasAttribute("data-grid")) this.setAttribute("data-grid", "crosshair");
 
     this.addEventListener("wheel", this.#onWheel, { passive: false });
@@ -170,7 +169,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#resizeCanvases();
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     this.removeEventListener("wheel", this.#onWheel);
     this.removeEventListener("pointerdown", this.#onPointerDown);
     window.removeEventListener("pointermove", this.#onPointerMove);

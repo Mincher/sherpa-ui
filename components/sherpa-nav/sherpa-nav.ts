@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-nav
  * @category shell
@@ -77,14 +76,14 @@ import { setupDragSort } from "../utilities/drag-sort.js";
 export class SherpaNav extends SherpaElement {
   static MODES = { DEFAULT: "default", SEARCH: "search", EDIT: "edit" };
 
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-nav.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return null;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-active-target",

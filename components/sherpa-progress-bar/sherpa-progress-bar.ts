@@ -1,5 +1,4 @@
 // @ts-nocheck
-// @ts-nocheck
 /**
  * @element sherpa-progress-bar
  * @category display
@@ -15,15 +14,15 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 class SherpaProgressBar extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("sherpa-progress-bar.css", import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("sherpa-progress-bar.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-label",
@@ -42,7 +41,7 @@ class SherpaProgressBar extends SherpaElement {
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#labelEl = this.$(".label");
     this.#fillEl = this.$(".fill");
     this.#statusEl = this.$(".status");

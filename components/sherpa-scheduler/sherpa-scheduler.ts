@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-scheduler
  * @category data
@@ -34,10 +33,10 @@ import '../sherpa-input-number/sherpa-input-number.js';
 import '../sherpa-input-checkbox-group/sherpa-input-checkbox-group.js';
 
 export class SherpaScheduler extends SherpaElement {
-  static get cssUrl()  { return new URL('./sherpa-scheduler.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-scheduler.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-scheduler.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-scheduler.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-frequency'];
   }
 
@@ -46,7 +45,7 @@ export class SherpaScheduler extends SherpaElement {
 
   /* ── lifecycle ─────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     if (!this.dataset.frequency) this.dataset.frequency = 'weekly';
 
     const freq = this.$('.freq-select');

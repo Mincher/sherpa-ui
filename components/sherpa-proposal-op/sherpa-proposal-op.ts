@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-proposal-op.js
  * SherpaProposalOp — Single change row inside <sherpa-proposal-preview>.
@@ -21,17 +20,17 @@ const TAGS = {
 };
 
 class SherpaProposalOp extends SherpaElement {
-  static get cssUrl()  { return new URL("./sherpa-proposal-op.css",  import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-proposal-op.html", import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL("./sherpa-proposal-op.css",  import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-proposal-op.html", import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, "data-op", "data-label"];
   }
 
   /** @type {HTMLElement|null} */ #tagEl   = null;
   /** @type {HTMLElement|null} */ #labelEl = null;
 
-  onRender() {
+  override onRender(): void {
     this.#tagEl   = this.$(".tag");
     this.#labelEl = this.$(".label");
     this.#sync();

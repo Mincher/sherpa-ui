@@ -1,5 +1,4 @@
 // @ts-nocheck
-// @ts-nocheck
 /**
  * sherpa-loader.js
  * SherpaLoader — Animated loading indicator with spinner and optional label.
@@ -19,15 +18,15 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 class SherpaLoader extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("sherpa-loader.css", import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("sherpa-loader.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, "data-label"];
   }
 
@@ -36,7 +35,7 @@ class SherpaLoader extends SherpaElement {
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#labelEl = this.$(".label");
 
     // Defaults

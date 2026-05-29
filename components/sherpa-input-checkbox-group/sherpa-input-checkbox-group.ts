@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-input-checkbox-group.js
  * SherpaInputCheckboxGroup — Group of checkboxes with shared label,
@@ -39,10 +38,10 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
 
   #bound = false;
 
-  static get cssUrl()  { return new URL('./sherpa-input-checkbox-group.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-checkbox-group.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-input-checkbox-group.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-checkbox-group.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'name', 'data-label', 'data-description', 'data-helper',
@@ -53,13 +52,13 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
 
   /* ── Template selection ────────────────────────────────────────── */
 
-  get templateId() {
+  override get templateId(): string {
     return this.dataset.template === 'weekdays' ? 'weekdays' : 'default';
   }
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     if (!this.#bound) {
       this.shadow.addEventListener('change', this.#onChildChange);
       this.addEventListener('change', this.#onSlottedChange);

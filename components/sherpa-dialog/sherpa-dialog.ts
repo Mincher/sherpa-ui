@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-dialog.js
  * SherpaDialog — Modal dialog built on the native HTML <dialog> element.
@@ -54,10 +53,10 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
   /* ── Config ─────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-dialog.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-dialog.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-dialog.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-dialog.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-label', 'data-subtitle', 'data-size', 'data-open', 'data-dismissible', 'data-template', 'data-page', 'data-pages'];
   }
 
@@ -68,13 +67,13 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
   /* ── Template selection ───────────────────────────────────────── */
 
-  get templateId() {
+  override get templateId(): string {
     return this.dataset.template || this.dataset.type || 'default';
   }
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     const dialog = this.$('.dialog');
 
     this.#titleEl = this.$('.header-title');
@@ -116,7 +115,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     }
   }
 
-  onConnect() {
+  override onConnect(): void {
     if (this.dataset.open === 'true') {
       this.#openDialog();
     }

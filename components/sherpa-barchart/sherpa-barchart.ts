@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-barchart
  * @category media
@@ -60,7 +59,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   static cssUrl = new URL("./sherpa-barchart.css", import.meta.url).href;
   static htmlUrl = new URL("./sherpa-barchart.html", import.meta.url).href;
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-loading",
@@ -87,7 +86,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   #filterMenuTpl = null;
   #bound = false;
 
-  onRender() {
+  override onRender(): void {
     // Mark as viz component for container CSS targeting
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
     if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);

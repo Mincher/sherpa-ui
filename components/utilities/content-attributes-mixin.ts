@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ContentAttributesMixin — Shared content configuration + dataset cascade.
  *

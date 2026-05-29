@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-calendar
  * @category utility
@@ -44,14 +43,14 @@ import {
 } from '../utilities/calendar-helper.js';
 
 export class SherpaCalendar extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL('./sherpa-calendar.css', import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL('./sherpa-calendar.html', import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-value',
@@ -73,7 +72,7 @@ export class SherpaCalendar extends SherpaElement {
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 
-  onRender() {
+  override onRender(): void {
     this.#daysGridEl = this.$('.cal-days');
     this.#dayTpl = this.$('.cal-day-tpl');
 

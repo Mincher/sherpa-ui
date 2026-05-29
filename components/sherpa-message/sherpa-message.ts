@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-message
  * @category feedback
@@ -35,10 +34,10 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-message.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-message.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-message.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-message.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       'data-label',
@@ -51,7 +50,7 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#syncStatusIcon();
     this.#syncLabel();
     this.#syncAction();

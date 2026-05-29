@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * calendar-helper.js
  * Shared calendar-rendering utilities for sherpa-input-date,

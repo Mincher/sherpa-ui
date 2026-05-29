@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-file-upload
  * @category input
@@ -36,15 +35,15 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 class SherpaFileUpload extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("sherpa-file-upload.css", import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("sherpa-file-upload.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-label",
@@ -84,7 +83,7 @@ class SherpaFileUpload extends SherpaElement {
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#labelEl = this.$(".label");
     this.#dropZoneEl = this.$(".drop-zone");
     this.#fileInputEl = this.$(".file-input");

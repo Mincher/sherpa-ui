@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-view-header
  * @category shell
@@ -74,10 +73,10 @@ if (!document.adoptedStyleSheets.includes(viewHeaderGroupSheet)) {
 }
 
 export class SherpaViewHeader extends SherpaElement {
-  static get cssUrl()  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-view-header.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-view-header.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-back-button', 'data-export-title', 'data-breadcrumbs'];
   }
 
@@ -163,7 +162,7 @@ export class SherpaViewHeader extends SherpaElement {
   }
   #resizeHandler = null;
 
-  onDisconnect() {
+  override onDisconnect(): void {
     if (this.#optionSlotObserver) {
       this.#optionSlotObserver.disconnect();
       this.#optionSlotObserver = null;
@@ -172,7 +171,7 @@ export class SherpaViewHeader extends SherpaElement {
 
   // ============ Private Methods ============
 
-  onRender() {
+  override onRender(): void {
     this.#pickerRowTpl = this.$('template.picker-row-tpl');
     this.#setupSelectors();
     this.#setupExport();

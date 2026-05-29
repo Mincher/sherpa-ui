@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * FormManager — Read, write, clear, and validate form fields within a container.
  *

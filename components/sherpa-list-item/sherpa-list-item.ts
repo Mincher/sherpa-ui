@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-list-item
  * @category content
@@ -32,10 +31,10 @@ export class SherpaListItem extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-list-item.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-list-item.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-list-item.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-list-item.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-label', 'data-description', 'data-icon', 'data-active', 'data-interactive', 'disabled'];
   }
 
@@ -48,7 +47,7 @@ export class SherpaListItem extends SherpaElement {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#labelEl       = this.$('.label');
     this.#descriptionEl = this.$('.description');
     this.#iconEl        = this.$('.icon');

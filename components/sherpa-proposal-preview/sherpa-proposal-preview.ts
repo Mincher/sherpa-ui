@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-proposal-preview.js
  * SherpaProposalPreview — Agent proposal renderer.
@@ -18,16 +17,16 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 class SherpaProposalPreview extends SherpaElement {
-  static get cssUrl()  { return new URL("./sherpa-proposal-preview.css",  import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-proposal-preview.html", import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL("./sherpa-proposal-preview.css",  import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-proposal-preview.html", import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, "data-rationale"];
   }
 
   /** @type {HTMLElement|null} */ #rationaleEl = null;
 
-  onRender() {
+  override onRender(): void {
     this.#rationaleEl = this.$(".rationale");
     this.#syncRationale();
   }

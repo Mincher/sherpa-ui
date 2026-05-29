@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * refreshDataset — Re-dispatches the datasetfiltered event to refresh all
  * viz children within a content area.

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-node-row.js — Generic field row for sherpa-node bodies.
  *
@@ -21,8 +20,8 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 export class SherpaNodeRow extends SherpaElement {
-  static get cssUrl() { return new URL("./sherpa-node-row.css", import.meta.url).href; }
-  static get htmlUrl() { return new URL("./sherpa-node-row.html", import.meta.url).href; }
+  static override get cssUrl(): string { return new URL("./sherpa-node-row.css", import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL("./sherpa-node-row.html", import.meta.url).href; }
 
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
@@ -33,7 +32,7 @@ export class SherpaNodeRow extends SherpaElement {
     ];
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, "data-multi"];
   }
 
@@ -41,7 +40,7 @@ export class SherpaNodeRow extends SherpaElement {
   #outSocketSlot = null;
   #bound = false;
 
-  onRender() {
+  override onRender(): void {
     this.#inSocketSlot = this.$('slot[name="input-socket"]');
     this.#outSocketSlot = this.$('slot[name="output-socket"]');
 
