@@ -35,6 +35,7 @@ import {
   SherpaElement,
   parseTemplates,
 } from "../utilities/sherpa-element/sherpa-element.js";
+import type { EventHandler, MenuSelectEventDetail } from "../utilities/types.js";
 
 const supportsAnchor = CSS.supports?.("anchor-name", "--test") ?? false;
 
@@ -122,8 +123,8 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Event delegation ──────────────────────────────────────── */
 
-  #onClick = (e) => {
-    const item = e.target.closest?.("sherpa-menu-item");
+  #onClick: EventHandler<MouseEvent> = (e) => {
+    const item = (e.target as Element).closest?.("sherpa-menu-item");
     if (!item || item.hasAttribute("disabled")) return;
 
     const selection = item.dataset.selection;
@@ -154,7 +155,7 @@ export class SherpaMenu extends SherpaElement {
     }
   };
 
-  #onKeyDown = (e) => {
+  #onKeyDown: EventHandler<KeyboardEvent> = (e) => {
     const items = this.#focusableItems();
     if (!items.length) return;
 
@@ -317,7 +318,7 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Popover light-dismiss ─────────────────────────────────── */
 
-  #onToggle = (e) => {
+  #onToggle: EventHandler<ToggleEvent> = (e) => {
     // popover="auto" light-dismiss: browser closed us externally
     if (e.newState === "closed" && this.open && !this.#hiding) {
       this.hide();
