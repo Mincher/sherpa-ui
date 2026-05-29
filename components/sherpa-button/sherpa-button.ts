@@ -1,6 +1,5 @@
-// @ts-nocheck
 /**
- * sherpa-button.js
+ * sherpa-button.ts
  * SherpaButton — Multi-template button web component.
  *
  * Two templates (selected via data-type → get templateId()):
@@ -70,18 +69,60 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { SherpaMenu } from "../sherpa-menu/sherpa-menu.js";
+import type {
+  ComponentSize,
+  ColorVariant,
+  Status,
+  MenuItem,
+  MenuSection,
+  MenuItems,
+  MenuOptions,
+  PopoverPosition
+} from "../utilities/types.js";
 
-/* ── Component ─────────────────────────────────────────────────── */
+/* ── Type Definitions ─────────────────────────────────────────────── */
+
+/** Button types (template variants) */
+type ButtonType = 'default' | 'icon' | 'button-menu' | 'icon-menu';
+
+/** Font Awesome icon weights */
+type IconWeight = 'fa-solid' | 'fa-regular' | 'fa-light';
+
+/** Button-specific event details */
+interface ButtonClickEventDetail {
+  timestamp: number;
+}
+
+/* ── Dataset Interface ───────────────────────────────────────────── */
+
+interface SherpaButtonDataset extends DOMStringMap {
+  type?: ButtonType;
+  label?: string;
+  variant?: ColorVariant;
+  size?: ComponentSize;
+  active?: string;
+  status?: Status;
+  iconStart?: string;
+  iconEnd?: string;
+  iconWeight?: IconWeight;
+  count?: string;
+  menu?: 'true' | 'false';
+  menuPosition?: PopoverPosition;
+  menuTemplate?: string;
+  menuScope?: 'shadow' | 'none';
+}
+
+/* ── Component ─────────────────────────────────────────────── */
 
 export class SherpaButton extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-button.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-button.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-label",
@@ -98,34 +139,40 @@ export class SherpaButton extends SherpaElement {
     ];
   }
 
+  /* ── Typed dataset ────────────────────────────────────────────── */
+
+  override get dataset(): SherpaButtonDataset {
+    return super.dataset as SherpaButtonDataset;
+  }
+
   /* ── Template selection ───────────────────────────────────────── */
 
-  get templateId() {
+  override get templateId(): string {
     const type = this.dataset.type;
     // button-menu → default, icon-menu → icon for backward compat
     if (type === "button-menu") return "default";
-    if (type === "icon-menu")   return "icon";
+    if (type === "icon-menu") return "icon";
     return type || "default";
   }
 
   /* ── Private refs ─────────────────────────────────────────────── */
 
-  #triggerEl = null;
-  #labelEl = null;
-  #iconStartEl = null;
-  #iconEndEl = null;
-  #badgeEl = null;
-  #menuEl = null;
-  #menuClosedAt = 0;
+  #triggerEl: HTMLElement | null = null;
+  #labelEl: HTMLElement | null = null;
+  #iconStartEl: HTMLElement | null = null;
+  #iconEndEl: HTMLElement | null = null;
+  #badgeEl: HTMLElement | null = null;
+  #menuEl: SherpaMenu | null = null;
+  #menuClosedAt: number = 0;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
-    this.#triggerEl = this.$(".trigger");
-    this.#labelEl = this.$(".label");
-    this.#iconStartEl = this.$(".icon-start");
-    this.#iconEndEl = this.$(".icon-end");
-    this.#badgeEl = this.$(".badge");
+  override onRender(): void {
+    this.#triggerEl = this.$<HTMLElement>(".trigger");
+    this.#labelEl = this.$<HTMLElement>(".label");
+    this.#iconStartEl = this.$<HTMLElement>(".icon-start");
+    this.#iconEndEl = this.$<HTMLElement>(".icon-end");
+    this.#badgeEl = this.$<HTMLElement>(".badge");
 
     // Default variant for standard buttons
     const type = this.dataset.type;
@@ -146,7 +193,7 @@ export class SherpaButton extends SherpaElement {
     this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
   }
 
-  onAttributeChanged(name, _old, newValue) {
+  override onAttributeChanged(name: string, _old: string | null, newValue: string | null): void {
     switch (name) {
       case "disabled":
         this.setAttribute("aria-disabled", newValue !== null ? "true" : "false");
@@ -181,12 +228,12 @@ export class SherpaButton extends SherpaElement {
   // FA unicode codepoint (e.g. "\uf005" via &#xf005;) — in that case the
   // value is rendered as textContent and the global font-family fallback
   // (set inline below) lets FA's @font-face show the glyph.
-  #syncIcons() {
+  #syncIcons(): void {
     if (this.#iconStartEl) this.#applyIconValue(this.#iconStartEl, 'icon-start', this.dataset.iconStart);
-    if (this.#iconEndEl)   this.#applyIconValue(this.#iconEndEl,   'icon-end',   this.dataset.iconEnd);
+    if (this.#iconEndEl) this.#applyIconValue(this.#iconEndEl, 'icon-end', this.dataset.iconEnd);
   }
 
-  #applyIconValue(el, baseClass, value) {
+  #applyIconValue(el: HTMLElement, baseClass: string, value: string | undefined): void {
     const v = value || '';
     // FA class strings contain "fa-" tokens. Single-char or short non-class
     // values are treated as unicode glyphs.
@@ -204,14 +251,14 @@ export class SherpaButton extends SherpaElement {
 
   /* ── Badge sync ───────────────────────────────────────────────── */
 
-  #syncBadge() {
+  #syncBadge(): void {
     if (!this.#badgeEl) return;
     this.#badgeEl.textContent = this.dataset.count ?? "";
   }
 
   /* ── Event handlers ───────────────────────────────────────────── */
 
-  #onTriggerClick = (e) => {
+  #onTriggerClick = (e: MouseEvent): void => {
     if (this.disabled) return;
 
     // Any button with data-menu="true" acts as a menu trigger
@@ -222,16 +269,16 @@ export class SherpaButton extends SherpaElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("button-click", {
+      new CustomEvent<ButtonClickEventDetail>("button-click", {
         bubbles: true,
         composed: true,
-        detail: {},
+        detail: { timestamp: Date.now() },
       }),
     );
   };
 
   /** Toggle the menu open/closed with debounce protection. */
-  #toggleMenu() {
+  #toggleMenu(): void {
     if (this.#menuEl?.open || Date.now() - this.#menuClosedAt < 50) {
       this.#menuEl?.hide();
     } else {
@@ -242,7 +289,7 @@ export class SherpaButton extends SherpaElement {
   /* ── Menu ─────────────────────────────────────────────────────── */
 
   /** The button's own <sherpa-menu> element (created lazily). */
-  get menuElement() {
+  get menuElement(): SherpaMenu {
     return this.#ensureMenu();
   }
 
@@ -251,20 +298,20 @@ export class SherpaButton extends SherpaElement {
    * Inserted as a sibling so CSS anchor positioning resolves
    * in the same tree scope.
    */
-  #ensureMenu() {
+  #ensureMenu(): SherpaMenu {
     if (this.#menuEl) return this.#menuEl;
 
-    const menu = document.createElement("sherpa-menu");
+    const menu = document.createElement("sherpa-menu") as unknown as SherpaMenu;
     menu.setAttribute("popover", "auto");
     this.after(menu);
 
-    menu.addEventListener("menu-select", (e) => {
+    menu.addEventListener("menu-select", (e: Event) => {
       e.stopPropagation();
       this.dispatchEvent(
         new CustomEvent("menu-select", {
           bubbles: true,
           composed: true,
-          detail: e.detail,
+          detail: (e as CustomEvent).detail,
         }),
       );
     });
@@ -288,7 +335,7 @@ export class SherpaButton extends SherpaElement {
    * SherpaMenu's template registry, then fires `menu-populate` for
    * dynamic content injection. Also fires `menu-open`.
    */
-  async #showMenu() {
+  async #showMenu(): Promise<void> {
     this.setAttribute("aria-expanded", "true");
     const menu = this.#ensureMenu();
 
@@ -326,10 +373,10 @@ export class SherpaButton extends SherpaElement {
     // checkbox/radio inputs) before showing the menu.
     const menuItems = menu.querySelectorAll("sherpa-menu-item");
     if (menuItems.length) {
-      await Promise.all([...menuItems].map((item) => item.rendered));
+      await Promise.all([...menuItems].map((item: any) => item.rendered));
     }
 
-    menu.show(this);
+    (menu as any).show(this);
   }
 
   /**
@@ -342,16 +389,16 @@ export class SherpaButton extends SherpaElement {
    * host component are not included. This prevents viz children from
    * inheriting their container's menu items.
    */
-  #collectAncestorMenuTemplates(menu) {
+  #collectAncestorMenuTemplates(menu: SherpaMenu): void {
     // Remove items stamped from a previous open to prevent accumulation
-    menu.querySelectorAll("[data-from-ancestor-tpl]").forEach((el) => el.remove());
+    menu.querySelectorAll("[data-from-ancestor-tpl]").forEach((el: Element) => el.remove());
 
     // "none" — skip ancestor template collection entirely;
     // this button-menu uses only setMenuItems() content.
     if (this.dataset.menuScope === "none") return;
 
     const scopeToShadow = this.dataset.menuScope === "shadow";
-    let node = this.getRootNode()?.host ?? this.parentElement;
+    let node: any = (this.getRootNode() as ShadowRoot)?.host ?? this.parentElement;
     while (node) {
       const templates = node.querySelectorAll?.(
         ":scope > template[data-menu]",
@@ -374,24 +421,24 @@ export class SherpaButton extends SherpaElement {
 
   /* ── Public API ──────────────────────────────────────────────── */
 
-  get disabled() {
+  get disabled(): boolean {
     return this.hasAttribute("disabled");
   }
-  set disabled(v) {
+  set disabled(v: boolean) {
     v ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
   }
 
-  get active() {
+  get active(): boolean {
     return this.hasAttribute("data-active");
   }
-  set active(val) {
+  set active(val: boolean) {
     this.toggleAttribute("data-active", !!val);
   }
 
-  get label() {
+  get label(): string {
     return this.dataset.label ?? "";
   }
-  set label(val) {
+  set label(val: string) {
     this.dataset.label = val;
   }
 
@@ -411,11 +458,8 @@ export class SherpaButton extends SherpaElement {
    * Options:
    *   append  — if true, keep existing menu content (default: false)
    *   marker  — tag new elements for scoped cleanup on re-call; implies append
-   *
-   * @param {Array} items — flat item array OR sections array (detected by first element having `heading`)
-   * @param {{ selection?: "checkbox"|"radio"|"toggle", group?: string, append?: boolean, marker?: string }} [opts]
    */
-  setMenuItems(items, opts = {}) {
+  setMenuItems(items: MenuItems, opts: Partial<MenuOptions> = {}): void {
     const menu = this.#ensureMenu();
     const { marker } = opts;
 
@@ -432,10 +476,10 @@ export class SherpaButton extends SherpaElement {
     const before = new Set(menu.children);
 
     // Detect sections format: first element has a `heading` property
-    if (items[0]?.heading !== undefined) {
-      this.#buildSections(menu, items);
+    if ('heading' in (items[0] || {})) {
+      this.#buildSections(menu, items as MenuSection[]);
     } else {
-      this.#buildFlatList(menu, items, opts);
+      this.#buildFlatList(menu, items as MenuItem[], opts);
     }
 
     // Tag newly added top-level elements with the marker for scoped cleanup
@@ -447,9 +491,9 @@ export class SherpaButton extends SherpaElement {
   }
 
   /** Build a flat list of menu items inside a single <ul>. */
-  #buildFlatList(menu, items, opts = {}) {
+  #buildFlatList(menu: SherpaMenu, items: MenuItem[], opts: Partial<MenuOptions> = {}): void {
     const ul = document.createElement("ul");
-    if (opts.group) ul.dataset.group = opts.group;
+    if (opts.group) ul.dataset['group'] = opts.group;
 
     for (const item of items) {
       ul.appendChild(this.#buildMenuItem(item, opts));
@@ -459,7 +503,7 @@ export class SherpaButton extends SherpaElement {
   }
 
   /** Build grouped sections, each with an optional heading and <ul>. */
-  #buildSections(menu, sections) {
+  #buildSections(menu: SherpaMenu, sections: MenuSection[]): void {
     for (const section of sections) {
       // Heading
       if (section.heading) {
@@ -473,7 +517,7 @@ export class SherpaButton extends SherpaElement {
       // Items
       if (section.items?.length) {
         const ul = document.createElement("ul");
-        if (section.group) ul.dataset.group = section.group;
+        if (section.group) ul.dataset['group'] = section.group;
         if (section.style) ul.setAttribute("style", section.style);
 
         const sectionOpts = {
@@ -491,16 +535,16 @@ export class SherpaButton extends SherpaElement {
   }
 
   /** Create a single <li><sherpa-menu-item>…</sherpa-menu-item></li>. */
-  #buildMenuItem(item, opts = {}) {
+  #buildMenuItem(item: MenuItem, opts: Partial<MenuOptions> = {}): HTMLLIElement {
     const li = document.createElement("li");
     const menuItem = document.createElement("sherpa-menu-item");
     menuItem.setAttribute("value", item.value ?? "");
     menuItem.textContent = item.text ?? item.value ?? "";
 
     const selection = item.selection || opts.selection;
-    if (selection) menuItem.dataset.selection = selection;
+    if (selection) menuItem.dataset['selection'] = selection;
     if (selection === "radio" && (item.group || opts.group)) {
-      menuItem.dataset.group = item.group || opts.group;
+      menuItem.dataset['group'] = item.group || opts.group || '';
     }
     if (item.selected || item.checked) menuItem.setAttribute("checked", "");
     if (item.disabled) menuItem.setAttribute("disabled", "");
@@ -521,9 +565,8 @@ export class SherpaButton extends SherpaElement {
 
   /**
    * Get values of all checked/selected menu items.
-   * @returns {string[]}
    */
-  getSelectedValues() {
+  getSelectedValues(): string[] {
     if (!this.#menuEl) return [];
     const checked = this.#menuEl.querySelectorAll("sherpa-menu-item[checked]");
     return Array.from(checked, (item) => item.getAttribute("value") ?? "").filter(Boolean);
@@ -532,7 +575,7 @@ export class SherpaButton extends SherpaElement {
   /**
    * Clear all checked/selected menu items.
    */
-  clearSelection() {
+  clearSelection(): void {
     if (!this.#menuEl) return;
     for (const item of this.#menuEl.querySelectorAll("sherpa-menu-item[checked]")) {
       item.removeAttribute("checked");

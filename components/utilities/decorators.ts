@@ -9,9 +9,9 @@
  */
 
 /**
- * Property configuration options
+ * Property configuration options (now generic for better type safety)
  */
-export interface PropertyOptions {
+export interface PropertyOptions<T = unknown> {
   /** Attribute name (defaults to kebab-case of property name) */
   attribute?: string | false;
 
@@ -21,61 +21,67 @@ export interface PropertyOptions {
   /** Reflect property changes back to attribute */
   reflect?: boolean;
 
-  /** Default value */
-  default?: unknown;
+  /** Default value (typed to property type) */
+  default?: T;
 
-  /** Custom converter */
-  converter?: PropertyConverter;
+  /** Custom converter (typed to property type) */
+  converter?: PropertyConverter<T>;
 }
 
 export type PropertyType = StringConstructor | NumberConstructor | BooleanConstructor | ObjectConstructor | ArrayConstructor;
 
-export interface PropertyConverter {
-  fromAttribute?(value: string | null): unknown;
-  toAttribute?(value: unknown): string | null;
+export interface PropertyConverter<T = unknown> {
+  fromAttribute?(value: string | null): T | null;
+  toAttribute?(value: T | null): string | null;
 }
 
 /**
- * Default converters for each type
+ * Default converters for each type (typed Record for indexing)
  */
 const defaultConverters: Record<string, PropertyConverter> = {
   String: {
-    fromAttribute: (v) => v,
-    toAttribute: (v) => v == null ? null : String(v)
+    fromAttribute: (v: string | null): string | null => v,
+    toAttribute: (v: string | null): string | null => v == null ? null : String(v)
   },
   Number: {
-    fromAttribute: (v) => v === null ? null : Number(v),
-    toAttribute: (v) => v == null ? null : String(v)
+    fromAttribute: (v: string | null): number | null => v === null ? null : Number(v),
+    toAttribute: (v: number | null): string | null => v == null ? null : String(v)
   },
   Boolean: {
-    fromAttribute: (v) => v !== null,
-    toAttribute: (v) => v ? '' : null
+    fromAttribute: (v: string | null): boolean => v !== null,
+    toAttribute: (v: boolean | null): string | null => v ? '' : null
   },
   Object: {
-    fromAttribute: (v) => v ? JSON.parse(v) : null,
-    toAttribute: (v) => v ? JSON.stringify(v) : null
+    fromAttribute: (v: string | null): unknown => v ? JSON.parse(v) : null,
+    toAttribute: (v: unknown): string | null => v ? JSON.stringify(v) : null
   },
   Array: {
-    fromAttribute: (v) => v ? JSON.parse(v) : [],
-    toAttribute: (v) => Array.isArray(v) ? JSON.stringify(v) : null
+    fromAttribute: (v: string | null): unknown[] => v ? JSON.parse(v) : [],
+    toAttribute: (v: unknown): string | null => Array.isArray(v) ? JSON.stringify(v) : null
   }
 };
 
 /**
  * @property decorator - Creates reactive properties with automatic attribute reflection
  *
+ * Now generic for better type safety and inference.
+ *
  * @example
  * ```typescript
  * class SherpaButton extends SherpaElement {
- *   @property({ type: String, attribute: 'data-variant' })
+ *   @property<string>({ type: String, attribute: 'data-variant' })
  *   variant: string = 'primary';
  *
- *   @property({ type: Boolean, reflect: true })
+ *   @property<boolean>({ type: Boolean, reflect: true })
  *   disabled: boolean = false;
+ *
+ *   // With union types for compile-time validation
+ *   @property<'sm' | 'base' | 'lg'>({ type: String })
+ *   size: 'sm' | 'base' | 'lg' = 'base';
  * }
  * ```
  */
-export function property(options: PropertyOptions = {}) {
+export function property<T = unknown>(options: PropertyOptions<T> = {}) {
   return (target: any, propertyKey: string) => {
     const {
       attribute = propertyKey.replace(/([A-Z])/g, '-$1').toLowerCase(),
@@ -101,13 +107,13 @@ export function property(options: PropertyOptions = {}) {
       privateKey
     });
 
-    // Define getter/setter
+    // Define getter/setter (typed with generic T)
     Object.defineProperty(target, propertyKey, {
-      get() {
+      get(): T | undefined {
         return this[privateKey];
       },
-      set(value: unknown) {
-        const oldValue = this[privateKey];
+      set(value: T) {
+        const oldValue: T | undefined = this[privateKey];
         this[privateKey] = value;
 
         // Reflect to attribute if configured
