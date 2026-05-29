@@ -1,0 +1,128 @@
+// @ts-nocheck
+/**
+ * ResizeBehavior — Mixin for grid-resizable containers.
+ *
+ * Provides column/row span adjustment via menu events dispatched by
+ * the `data-event` mechanism on `sherpa-menu-item` elements.
+ *
+ * On connect, the mixin injects a `<template data-menu>` into the
+ * host's light DOM containing Width and Height menu groups.
+ * The button's composed-tree template collection picks them up
+ * automatically when the overflow menu opens.
+ *
+ * Consumed events (auto-dispatched from menu items via data-event):
+ *   container-increase-cols — Step up to the next column stop
+ *   container-decrease-cols — Step down to the previous column stop
+ *   container-increase-rows — Increment row span (max 6)
+ *   container-decrease-rows — Decrement row span (min 1)
+ *
+ * Column stops: 3, 6, 9, 12
+ * Row span range: 1–6
+ *
+ * Usage:
+ *   import { ResizeBehavior } from '../utilities/resize-behavior.js';
+ *   class MyContainer extends ResizeBehavior(SherpaElement) { ... }
+ */
+
+/* ── Constants ─────────────────────────────────────────────────── */
+
+const COL_STOPS = [3, 6, 9, 12];
+const MIN_ROW_SPAN = 1;
+const MAX_ROW_SPAN = 6;
+
+/* ── Menu template (loaded from resize-behavior.html) ──────────── */
+
+const RESIZE_HTML_URL = new URL("./resize-behavior.html", import.meta.url).href;
+
+/** @type {HTMLTemplateElement|null} Parsed resize-menu template. */
+let resizeMenuSourceTpl = null;
+
+/** Promise that resolves once the HTML template is fetched and parsed. */
+const resizeMenuReady = fetch(RESIZE_HTML_URL)
+  .then((r) => r.text())
+  .then((html) => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const tpl = doc.getElementById("resize-menu");
+    if (tpl) resizeMenuSourceTpl = tpl;
+  })
+  .catch(() => {
+    /* Silently degrade — resize menu items will simply not appear */
+  });
+
+/* ── Mixin ─────────────────────────────────────────────────────── */
+
+/**
+ * @param {typeof import('./sherpa-element/sherpa-element.js').SherpaElement} Base
+ * @returns {typeof Base}
+ */
+export const ResizeBehavior = (Base) =>
+  class extends Base {
+    /** @type {HTMLTemplateElement|null} */
+    _resizeMenuTpl = null;
+
+    /* ── Lifecycle ──────────────────────────────────────────────── */
+
+    onRender() {
+      super.onRender();
+      this._injectResizeMenu();
+      this.addEventListener("container-increase-cols", this._onIncreaseCols);
+      this.addEventListener("container-decrease-cols", this._onDecreaseCols);
+      this.addEventListener("container-increase-rows", this._onIncreaseRows);
+      this.addEventListener("container-decrease-rows", this._onDecreaseRows);
+    }
+
+    /* ── Menu template injection ────────────────────────────────── */
+
+    /**
+     * Insert a `<template data-menu>` containing resize items into
+     * the host's light DOM. The button's composed-tree template
+     * collection picks this up when the overflow menu opens.
+     */
+    async _injectResizeMenu() {
+      // Avoid duplicates if reconnected
+      if (this.querySelector(":scope > template[data-menu-resize]")) return;
+
+      // Wait for the HTML template to load
+      await resizeMenuReady;
+      if (!resizeMenuSourceTpl) return;
+
+      const tpl = document.createElement("template");
+      tpl.setAttribute("data-menu", "");
+      tpl.setAttribute("data-menu-resize", "");
+      tpl.content.appendChild(resizeMenuSourceTpl.content.cloneNode(true));
+      this.prepend(tpl);
+      this._resizeMenuTpl = tpl;
+    }
+
+    /* ── Resize handlers ────────────────────────────────────────── */
+
+    _onIncreaseCols = () => {
+      const current = parseInt(this.dataset.colSpan, 10) || COL_STOPS[0];
+      const idx = COL_STOPS.indexOf(current);
+      if (idx < COL_STOPS.length - 1) {
+        this.dataset.colSpan = String(COL_STOPS[idx + 1]);
+      }
+    };
+
+    _onDecreaseCols = () => {
+      const current = parseInt(this.dataset.colSpan, 10) || COL_STOPS[0];
+      const idx = COL_STOPS.indexOf(current);
+      if (idx > 0) {
+        this.dataset.colSpan = String(COL_STOPS[idx - 1]);
+      }
+    };
+
+    _onIncreaseRows = () => {
+      const current = parseInt(this.dataset.rowSpan, 10) || MIN_ROW_SPAN;
+      if (current < MAX_ROW_SPAN) {
+        this.dataset.rowSpan = String(current + 1);
+      }
+    };
+
+    _onDecreaseRows = () => {
+      const current = parseInt(this.dataset.rowSpan, 10) || MIN_ROW_SPAN;
+      if (current > MIN_ROW_SPAN) {
+        this.dataset.rowSpan = String(current - 1);
+      }
+    };
+  };

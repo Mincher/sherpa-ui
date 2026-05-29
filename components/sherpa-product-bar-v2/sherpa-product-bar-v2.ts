@@ -1,0 +1,189 @@
+// @ts-nocheck
+/**
+ * @element sherpa-product-bar-v2
+ * @category shell
+ * @description Light-themed product bar (Apr 2026 redesign). System name
+ *   trigger + time, optional tabs, central search, right-aligned actions.
+ *
+ * @attr {string}  [data-product-name]       — System / product display name
+ * @attr {string}  [data-time]               — Time string ("09:00")
+ * @attr {string}  [data-show-system]        — "false" hides the brand stack
+ * @attr {string}  [data-show-time]          — "false" hides the time line
+ * @attr {string}  [data-show-system-menu]   — "false" hides the dropdown caret
+ *                                             and disables the trigger menu
+ *
+ * @slot tabs        — Optional product sub-nav (sets data-has-tabs when populated)
+ * @slot search      — Search control; falls back to a default sherpa-input-search
+ * @slot actions     — Right-aligned icon buttons + Ask N-zo entry point
+ * @slot system-menu — Organisation / scope picker shown when the system-name
+ *                     trigger is activated. Pass a single <sherpa-menu> with
+ *                     a flat list of <sherpa-menu-item> children — do NOT
+ *                     wrap items in <ul data-group="…"> groups. The org
+ *                     picker is a single, non-grouped list.
+ *
+ *   @example
+ *     <sherpa-product-bar-v2 data-product-name="Acme Corp">
+ *       <sherpa-menu slot="system-menu">
+ *         <sherpa-menu-item value="acme">Acme Corp</sherpa-menu-item>
+ *         <sherpa-menu-item value="globex">Globex</sherpa-menu-item>
+ *         <sherpa-menu-item value="initech">Initech</sherpa-menu-item>
+ *       </sherpa-menu>
+ *     </sherpa-product-bar-v2>
+ *
+ * @fires system-trigger-click
+ *   bubbles: true, composed: true
+ *   detail: { name: string }
+ *   Fired when the system-name trigger is activated. Hosts can open a
+ *   scope picker (System / Customer / Site) in response.
+ */
+
+import "../sherpa-input-search/sherpa-input-search.js";
+import "../sherpa-menu/sherpa-menu.js";
+import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+
+class SherpaProductBarV2 extends SherpaElement {
+  static get cssUrl() {
+    return new URL("sherpa-product-bar-v2.css", import.meta.url).href;
+  }
+
+  static get htmlUrl() {
+    return new URL("sherpa-product-bar-v2.html", import.meta.url).href;
+  }
+
+  static get observedAttributes() {
+    return [
+      ...super.observedAttributes,
+      "data-product-name",
+      "data-time",
+    ];
+  }
+
+  /** @type {HTMLSpanElement|null} */ #nameEl = null;
+  /** @type {HTMLSpanElement|null} */ #timeEl = null;
+  /** @type {HTMLButtonElement|null} */ #triggerEl = null;
+  #bound = false;
+  #slotBound = false;
+
+  /* ── lifecycle ───────────────────────────────────────────── */
+
+  onRender() {
+    this.#nameEl = this.$(".system-name");
+    this.#timeEl = this.$(".system-time-value");
+    this.#triggerEl = this.$(".system-trigger");
+
+    if (!this.hasAttribute("role")) this.setAttribute("role", "banner");
+
+    this.#syncName();
+    this.#syncTime();
+    this.#syncSlotState();
+
+    if (!this.#bound) {
+      if (this.dataset.showSystemMenu !== "false") {
+        this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
+        this.addEventListener("menu-close", this.#onMenuClose);
+      } else {
+        this.#triggerEl?.removeAttribute("aria-haspopup");
+        this.#triggerEl?.removeAttribute("aria-expanded");
+      }
+      this.#bound = true;
+    }
+  }
+
+  onAttributeChanged(name) {
+    switch (name) {
+      case "data-product-name":
+        this.#syncName();
+        break;
+      case "data-time":
+        this.#syncTime();
+        break;
+    }
+  }
+
+  /* ── sync helpers ────────────────────────────────────────── */
+
+  #syncName() {
+    if (this.#nameEl) {
+      this.#nameEl.textContent = this.dataset.productName || "";
+    }
+  }
+
+  #syncTime() {
+    if (this.#timeEl) {
+      this.#timeEl.textContent = this.dataset.time || "--:--";
+    }
+  }
+
+  #onTriggerClick = () => {
+    const expanded = this.#triggerEl?.getAttribute("aria-expanded") === "true";
+    const next = !expanded;
+    this.#triggerEl?.setAttribute("aria-expanded", next ? "true" : "false");
+
+    const menu = this.#getSystemMenu();
+    if (menu) {
+      if (next) {
+        menu.show?.(this.#triggerEl);
+      } else {
+        menu.hide?.();
+      }
+    }
+
+    this.dispatchEvent(
+      new CustomEvent("system-trigger-click", {
+        bubbles: true,
+        composed: true,
+        detail: { name: this.dataset.productName || "" },
+      }),
+    );
+  };
+
+  /** Resolve the slotted <sherpa-menu> in the system-menu slot, if any. */
+  #getSystemMenu() {
+    const slot = this.shadowRoot?.querySelector('slot[name="system-menu"]');
+    const nodes = slot?.assignedElements?.({ flatten: true }) || [];
+    return nodes.find((n) => n.tagName?.toLowerCase() === "sherpa-menu") || null;
+  }
+
+  #onMenuClose = () => {
+    this.#triggerEl?.setAttribute("aria-expanded", "false");
+  };
+
+  /**
+   * Reflect whether the tabs / actions slots have any assigned nodes onto
+   * host attributes (`data-has-tabs` / `data-has-actions`) so the
+   * component CSS can collapse the corresponding regions.
+   */
+  #syncSlotState() {
+    const root = this.shadowRoot;
+    if (!root) return;
+
+    const update = (slotName, attr) => {
+      const slot = root.querySelector(`slot[name="${slotName}"]`);
+      if (!slot) return;
+      const has = slot.assignedNodes({ flatten: true }).some((n) => {
+        if (n.nodeType === Node.ELEMENT_NODE) return true;
+        return n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0;
+      });
+      this.toggleAttribute(attr, has);
+    };
+
+    const tabsSlot = root.querySelector('slot[name="tabs"]');
+    const actionsSlot = root.querySelector('slot[name="actions"]');
+
+    update("tabs", "data-has-tabs");
+    update("actions", "data-has-actions");
+
+    if (!this.#slotBound) {
+      tabsSlot?.addEventListener("slotchange", () =>
+        update("tabs", "data-has-tabs"),
+      );
+      actionsSlot?.addEventListener("slotchange", () =>
+        update("actions", "data-has-actions"),
+      );
+      this.#slotBound = true;
+    }
+  }
+}
+
+customElements.define("sherpa-product-bar-v2", SherpaProductBarV2);
+export { SherpaProductBarV2 };

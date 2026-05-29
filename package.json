@@ -1,18 +1,26 @@
 {
   "name": "sherpa-ui",
-  "version": "1.1.0",
-  "description": "Sherpa UI — A standards-based Web Component library and design token system",
+  "version": "2.0.0-typescript",
+  "description": "Sherpa UI — A standards-based Web Component library and design token system (TypeScript)",
   "type": "module",
-  "main": "components/index.js",
+  "main": "./dist/components/index.js",
+  "types": "./dist/components/index.d.ts",
   "exports": {
-    ".": "./components/index.js",
+    ".": {
+      "types": "./dist/components/index.d.ts",
+      "default": "./dist/components/index.js"
+    },
     "./css": "./css/styles/index.css",
     "./css/reset": "./css/styles/reset.css",
-    "./components/*": "./components/*",
+    "./components/*": {
+      "types": "./dist/components/*.d.ts",
+      "default": "./dist/components/*"
+    },
     "./css/*": "./css/styles/*",
     "./templates/*": "./html/templates/*"
   },
   "files": [
+    "dist/",
     "components/",
     "css/",
     "html/templates/",
