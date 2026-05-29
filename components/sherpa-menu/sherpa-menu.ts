@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-menu
  * @category overlay
@@ -67,10 +66,10 @@ _ensureTemplates();
    ══════════════════════════════════════════════════════════════════ */
 
 export class SherpaMenu extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-menu.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return MENU_HTML_URL;
   }
 
@@ -97,7 +96,7 @@ export class SherpaMenu extends SherpaElement {
   source = null;
   #hiding = false;
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-loading-text'];
   }
 
@@ -105,7 +104,7 @@ export class SherpaMenu extends SherpaElement {
     return this.hasAttribute("open");
   }
 
-  onRender() {
+  override onRender(): void {
     this.#syncLoadingText();
     this.addEventListener("click", this.#onClick);
     this.addEventListener("keydown", this.#onKeyDown);

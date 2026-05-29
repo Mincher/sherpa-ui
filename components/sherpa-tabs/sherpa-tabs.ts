@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-tabs.js
  * SherpaTabs — Tabbed content switcher with accessible keyboard navigation.
@@ -38,10 +37,10 @@ export class SherpaTabs extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl()  { return new URL('./sherpa-tabs.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-tabs.html', import.meta.url).href; }
+  static override get cssUrl(): string  { return new URL('./sherpa-tabs.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-tabs.html', import.meta.url).href; }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-active-tab', 'data-load-mode'];
   }
 
@@ -55,7 +54,7 @@ export class SherpaTabs extends SherpaElement {
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#stripEl = this.$('.tab-strip');
     this.#tabTpl  = this.$('.tab-tpl');
 
