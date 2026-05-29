@@ -23,7 +23,7 @@
     {
       "name": "data-row-span",
       "type": "number",
-      "description": "Automatically computed and written"
+      "description": "Number of outer-grid rows this group"
     },
     {
       "name": "data-src-html",

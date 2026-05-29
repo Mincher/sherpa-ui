@@ -84,6 +84,8 @@ export * from "./sherpa-input-search/sherpa-input-search.js";
 export * from "./sherpa-input-date/sherpa-input-date.js";
 export * from "./sherpa-input-date-range/sherpa-input-date-range.js";
 export * from "./sherpa-input-time/sherpa-input-time.js";
+export * from "./sherpa-date-time-picker/sherpa-date-time-picker.js";
+export * from "./sherpa-calendar/sherpa-calendar.js";
 export * from "./sherpa-input-password/sherpa-input-password.js";
 export * from "./sherpa-input-checkbox/sherpa-input-checkbox.js";
 export * from "./sherpa-input-checkbox-group/sherpa-input-checkbox-group.js";

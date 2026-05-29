@@ -49,14 +49,14 @@ influenced by setting `data-*` attributes or status on ancestors:
 
 - `--_status-`
 - `--_status-border`
-- `--_status-surface`
+- `--_status-surface-subtle`
 - `--_status-text`
-- `--_tag-border-default`
+- `--_tag-border`
 - `--_tag-border-rounding`
-- `--_tag-fill-solid-bg`
-- `--_tag-fill-transparent-bg`
-- `--_tag-text-default`
-- `--_tag-text-on-transparent`
+- `--_tag-fill-solid`
+- `--_tag-fill-transparent`
+- `--_tag-text`
+- `--_tag-text-transparent`
 
 ## Usage
 

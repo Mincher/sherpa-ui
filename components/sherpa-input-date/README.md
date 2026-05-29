@@ -2,7 +2,7 @@
 
 > **Category:** input · **Base class:** SherpaInputBase
 
-Date input using the native browser date picker. Inherits label, description, helper, layout, validation from SherpaInputBase.
+Typeable date input with an accessible calendar picker popup. The visible <input type="text"> owns the form value (YYYY-MM-DD) and inherits all label/description/helper/validation chrome from SherpaInputBase. A trailing calendar-icon button opens a custom popup for visual date selection. Typed values are validated against optional min / max via setCustomValidity().
 
 ## Attributes
 
@@ -75,6 +75,18 @@ element.addEventListener("change", (e) => {
 | `min` | `string` | Getter/setter for min attribute | read/write |
 | `max` | `string` | Getter/setter for max attribute | read/write |
 | `valueAsDate` | `Date|null` | Current value as Date object (getter-only) | read/write |
+
+## CSS Parts
+
+Style internal elements from outside the shadow DOM:
+
+- `trigger`
+
+```css
+sherpa-input-date::part(trigger) {
+  /* custom styles */
+}
+```
 
 ## Usage
 

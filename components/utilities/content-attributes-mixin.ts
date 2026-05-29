@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ContentAttributesMixin — Shared content configuration + dataset cascade.
  *
@@ -33,14 +34,20 @@ import {
 
 /* ── Pluggable providers ────────────────────────────────────────── */
 
-let _dateFieldProvider = null;
+type DateFieldProvider = (() => string | null) | null;
 
-export function setDateFieldProvider(fn) {
+let _dateFieldProvider: DateFieldProvider = null;
+
+export function setDateFieldProvider(fn: DateFieldProvider): void {
   _dateFieldProvider = fn;
 }
-export function getDateFieldProvider() {
+export function getDateFieldProvider(): DateFieldProvider {
   return _dateFieldProvider;
 }
+
+type AttrType = 'string' | 'string?' | 'json' | 'json?' | 'int?' | 'bool';
+type AttrDefault = string | number | boolean | null | any[];
+type Constructor<T = {}> = new (...args: any[]) => T;
 
 /* ── Attribute schema ───────────────────────────────────────────── *
  * Each entry: [attr, type, default]
@@ -84,7 +91,7 @@ export const CONTENT_ATTRIBUTES = Object.values(ATTR_SCHEMA).map(
 
 /* ── Getter/setter/config generators ────────────────────────────── */
 
-function parseJsonSafe(raw, fallback) {
+function parseJsonSafe(raw: string | null, fallback: any): any {
   if (!raw) return fallback;
   try {
     return JSON.parse(raw);
@@ -93,70 +100,69 @@ function parseJsonSafe(raw, fallback) {
   }
 }
 
-function makeGetter(attr, type, defaultVal) {
+function makeGetter(attr: string, type: AttrType, defaultVal: AttrDefault): (this: HTMLElement) => any {
   switch (type) {
     case "string":
-      return function () {
+      return function (this: HTMLElement) {
         return this.getAttribute(attr) || defaultVal;
       };
     case "string?":
-      return function () {
+      return function (this: HTMLElement) {
         return this.getAttribute(attr) || null;
       };
     case "json":
-      return function () {
+      return function (this: HTMLElement) {
         return parseJsonSafe(this.getAttribute(attr), defaultVal);
       };
     case "json?":
-      return function () {
+      return function (this: HTMLElement) {
         return parseJsonSafe(this.getAttribute(attr), null);
       };
     case "int?":
-      return function () {
+      return function (this: HTMLElement) {
         const v = this.getAttribute(attr);
         return v ? parseInt(v, 10) : null;
       };
     case "bool":
-      return function () {
+      return function (this: HTMLElement) {
         return this.getAttribute(attr) !== "false";
       };
   }
 }
 
-function makeSetter(attr, type) {
-  const pascal = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+function makeSetter(attr: string, type: AttrType): (this: HTMLElement, v: any) => any {
   switch (type) {
     case "string":
-      return function (v) {
+      return function (this: HTMLElement, v: any) {
         this.setAttribute(attr, v);
         return this;
       };
     case "string?":
-      return function (v) {
+      return function (this: HTMLElement, v: any) {
         v ? this.setAttribute(attr, v) : this.removeAttribute(attr);
         return this;
       };
     case "json":
-      return function (v) {
+      return function (this: HTMLElement, v: any) {
         this.setAttribute(attr, JSON.stringify(v || []));
         return this;
       };
     case "json?":
-      return function (v) {
+      return function (this: HTMLElement, v: any) {
         Array.isArray(v)
           ? this.setAttribute(attr, JSON.stringify(v))
           : this.removeAttribute(attr);
         return this;
       };
     case "int?":
-      return function (v) {
+      return function (this: HTMLElement, v: any) {
         v !== null && v !== undefined
           ? this.setAttribute(attr, String(v))
           : this.removeAttribute(attr);
         return this;
       };
     case "bool":
-      return function (v) {
+      return function (this: HTMLElement, v: any) {
         if (v === undefined || v === null) {
           this.removeAttribute(attr);
         } else {
@@ -169,7 +175,7 @@ function makeSetter(attr, type) {
 
 /* ── Measure normalisation ──────────────────────────────────────── */
 
-function normalizeMeasures(config) {
+function normalizeMeasures(config: any): any[] {
   if (Array.isArray(config.measures) && config.measures.length) return config.measures;
   if (config.valueField) return [{ field: config.valueField, agg: config.agg || 'sum' }];
   return [];
@@ -181,8 +187,8 @@ function normalizeMeasures(config) {
  * Usage:
  *   class SherpaMetric extends ContentAttributesMixin(SherpaElement) { ... }
  */
-export function ContentAttributesMixin(Base) {
-  const cls = class extends Base {
+export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(Base: T): any {
+  const cls: any = class extends Base {
     /* ── Legacy accessors ───────────────────────────────────── */
 
     get factTable() {

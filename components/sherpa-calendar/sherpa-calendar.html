@@ -1,0 +1,46 @@
+<template id="default">
+  <div class="cal-container">
+    <!-- Header -->
+    <div class="cal-header" part="header">
+      <slot name="header">
+        <button class="cal-prev" part="prev-button" type="button" aria-label="Previous month">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button class="cal-month-label" part="month-label" type="button">
+          <!-- Month Year -->
+        </button>
+        <button class="cal-next" part="next-button" type="button" aria-label="Next month">
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </slot>
+    </div>
+
+    <!-- Weekday headers -->
+    <div class="cal-weekdays" part="weekdays">
+      <span class="cal-weekday">Su</span>
+      <span class="cal-weekday">Mo</span>
+      <span class="cal-weekday">Tu</span>
+      <span class="cal-weekday">We</span>
+      <span class="cal-weekday">Th</span>
+      <span class="cal-weekday">Fr</span>
+      <span class="cal-weekday">Sa</span>
+    </div>
+
+    <!-- Days grid (populated by JS) -->
+    <div class="cal-days" part="days-grid" role="grid">
+      <!-- Populated by renderCalendarGrid() -->
+    </div>
+
+    <!-- Day button template (prototype for cloning) -->
+    <template class="cal-day-tpl">
+      <button class="cal-day" type="button" role="gridcell">
+        <!-- Day number -->
+      </button>
+    </template>
+
+    <!-- Footer -->
+    <div class="cal-footer" part="footer" data-has-content>
+      <slot name="footer"></slot>
+    </div>
+  </div>
+</template>

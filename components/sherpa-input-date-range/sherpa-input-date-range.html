@@ -2,11 +2,13 @@
   sherpa-input-date-range.html — Date range input with start and end fields.
 
   Templates:
-    • default — Two native date inputs with separator
+    • default — Two date picker triggers with calendar popups and separator
 
   Host attributes:
-    min  — Minimum date value
-    max  — Maximum date value
+    min  — Minimum date value (YYYY-MM-DD)
+    max  — Maximum date value (YYYY-MM-DD)
+    data-open-start — Present when start calendar popup is open
+    data-open-end   — Present when end calendar popup is open
 
   Inherited from SherpaInputBase:
     data-label, data-description, data-helper, data-layout,
@@ -14,8 +16,81 @@
 -->
 <template id="default">
 <div class="grouped">
-  <input type="date" class="input-field input-start" aria-label="Start date" />
+
+  <!-- ── Start date ──────────────────────────────────────────── -->
+  <div class="date-slot slot-start">
+    <!-- Native input — hidden visually; owns form value + constraints -->
+    <input type="date" class="input-field input-start" aria-hidden="true" tabindex="-1" />
+    <!-- Styled trigger -->
+    <button type="button" class="picker-trigger trigger-start" aria-haspopup="dialog" aria-expanded="false" aria-label="Start date">
+      <span class="trigger-text start-text"></span>
+      <span class="trigger-placeholder" aria-hidden="true">Start date</span>
+      <i class="fa-regular fa-calendar trigger-icon" aria-hidden="true"></i>
+    </button>
+    <!-- Calendar popup -->
+    <div class="picker-popup popup-start" role="dialog" aria-modal="true" aria-label="Choose start date">
+      <div class="cal-header">
+        <button type="button" class="cal-nav prev-start" aria-label="Previous month">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <span class="cal-month-year month-year-start" aria-live="polite"></span>
+        <button type="button" class="cal-nav next-start" aria-label="Next month">
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="cal-weekdays" aria-hidden="true">
+        <span class="cal-weekday">Su</span>
+        <span class="cal-weekday">Mo</span>
+        <span class="cal-weekday">Tu</span>
+        <span class="cal-weekday">We</span>
+        <span class="cal-weekday">Th</span>
+        <span class="cal-weekday">Fr</span>
+        <span class="cal-weekday">Sa</span>
+      </div>
+      <div class="cal-days days-start" role="grid"></div>
+    </div>
+  </div>
+
   <span class="range-separator" aria-hidden="true">–</span>
-  <input type="date" class="input-field input-end" aria-label="End date" />
+
+  <!-- ── End date ────────────────────────────────────────────── -->
+  <div class="date-slot slot-end">
+    <!-- Native input — hidden visually; owns form value + constraints -->
+    <input type="date" class="input-field input-end" aria-hidden="true" tabindex="-1" />
+    <!-- Styled trigger -->
+    <button type="button" class="picker-trigger trigger-end" aria-haspopup="dialog" aria-expanded="false" aria-label="End date">
+      <span class="trigger-text end-text"></span>
+      <span class="trigger-placeholder" aria-hidden="true">End date</span>
+      <i class="fa-regular fa-calendar trigger-icon" aria-hidden="true"></i>
+    </button>
+    <!-- Calendar popup -->
+    <div class="picker-popup popup-end" role="dialog" aria-modal="true" aria-label="Choose end date">
+      <div class="cal-header">
+        <button type="button" class="cal-nav prev-end" aria-label="Previous month">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <span class="cal-month-year month-year-end" aria-live="polite"></span>
+        <button type="button" class="cal-nav next-end" aria-label="Next month">
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="cal-weekdays" aria-hidden="true">
+        <span class="cal-weekday">Su</span>
+        <span class="cal-weekday">Mo</span>
+        <span class="cal-weekday">Tu</span>
+        <span class="cal-weekday">We</span>
+        <span class="cal-weekday">Th</span>
+        <span class="cal-weekday">Fr</span>
+        <span class="cal-weekday">Sa</span>
+      </div>
+      <div class="cal-days days-end" role="grid"></div>
+    </div>
+  </div>
+
 </div>
+
+<!-- Day button prototype — cloned by JS, never rendered directly -->
+<template class="cal-day-tpl">
+  <button type="button" class="cal-day" role="gridcell"></button>
+</template>
 </template>

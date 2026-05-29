@@ -1,8 +1,8 @@
 /**
- * sherpa-input-date-range.css — Phase 2 Modernization (CSS Nesting)
+ * sherpa-input-date-range.css
  * @component sherpa-input-date-range
  *
- * Date range picker with start and end date fields.
+ * Date range picker with calendar popup for each date field.
  * Extends SherpaInputBase for label, description, helper, layout, validation.
  *
  * ── Data attributes ───────────────────────────────────────────
@@ -10,6 +10,8 @@
  * @attr {string}  [data-value-end]    End date (YYYY-MM-DD)
  * @attr {string}  [min]               Minimum selectable date
  * @attr {string}  [max]               Maximum selectable date
+ * @attr          [data-open-start]    Present when start popup is open
+ * @attr          [data-open-end]      Present when end popup is open
  *
  * ── Inherited from SherpaInputBase ────────────────────────────
  * @attr {string}  [data-label]        Label text
@@ -24,7 +26,16 @@
 @import "../utilities/sherpa-input-base/sherpa-input-base.css";
 
 /* ═══════════════════════════════════════════════════════════════
-   GROUPED — horizontal pair of date inputs
+   1. OVERRIDE: allow popups to overflow .input-body
+   ═══════════════════════════════════════════════════════════════ */
+
+.input-body {
+  overflow: visible;
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2. GROUPED LAYOUT
    ═══════════════════════════════════════════════════════════════ */
 
 .grouped {
@@ -34,14 +45,16 @@
   width: 100%;
 }
 
-.input-start,
-.input-end {
+/* ── Date slot ─ each side of the range ─────────────────────── */
+
+.date-slot {
   flex: 1;
   min-width: 0;
+  position: relative;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   RANGE SEPARATOR
+   3. RANGE SEPARATOR
    ═══════════════════════════════════════════════════════════════ */
 
 .range-separator {
@@ -53,4 +66,251 @@
   font-size: var(--sherpa-fonts-scale-sm, 14px);
   flex-shrink: 0;
   user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   4. NATIVE INPUTS — visually hidden; own form value + constraints
+   ═══════════════════════════════════════════════════════════════ */
+
+.input-field {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. TRIGGER BUTTONS
+   ═══════════════════════════════════════════════════════════════ */
+
+.picker-trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--sherpa-size-2xl, 32px);
+  padding-inline: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-space-xs, 8px);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--sherpa-content-default-body, #333);
+  font-family: inherit;
+  font-size: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.trigger-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: start;
+  display: none;
+}
+
+.trigger-placeholder {
+  flex: 1;
+  color: var(--sherpa-content-default-placeholder, #7e7e8f);
+}
+
+.trigger-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
+}
+
+/* Per-slot value display toggle */
+.date-slot[data-has-value] .trigger-text        { display: block; }
+.date-slot[data-has-value] .trigger-placeholder { display: none; }
+
+/* Disabled state */
+:host([disabled]) .picker-trigger {
+  color: var(--sherpa-content-inactive-default, #7e7e8f);
+  cursor: not-allowed;
+}
+
+:host([readonly]) .picker-trigger {
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. CALENDAR POPUPS
+   ═══════════════════════════════════════════════════════════════ */
+
+.picker-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + var(--sherpa-space-2xs, 4px));
+  left: 0;
+  z-index: 200;
+  min-width: 280px;
+  background: var(--sherpa-surface-container-default, #f4f4f6);
+  border: 1px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgb(0 0 0 / 12%));
+  padding: var(--sherpa-space-default, 16px);
+  box-sizing: border-box;
+}
+
+:host([data-open-start]) .popup-start { display: block; }
+:host([data-open-end])   .popup-end   { display: block; }
+
+/* ═══════════════════════════════════════════════════════════════
+   7. CALENDAR HEADER
+   ═══════════════════════════════════════════════════════════════ */
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sherpa-space-xs, 8px);
+}
+
+.cal-month-year {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  color: var(--sherpa-content-default-body, #333);
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  cursor: pointer;
+  color: var(--sherpa-content-default-body, #333);
+  font-size: 12px;
+
+  &:hover {
+    background: var(--sherpa-surface-control-hover, #e8e9ec);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+    outline-offset: 1px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. WEEKDAY LABELS AND DAY GRID
+   ═══════════════════════════════════════════════════════════════ */
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--sherpa-space-2xs, 4px);
+  padding-block: var(--sherpa-space-xs, 8px);
+}
+
+.cal-weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
+}
+
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  cursor: pointer;
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-family: inherit;
+  color: var(--sherpa-content-default-body, #333);
+
+  &:hover:not(:disabled) {
+    background: var(--sherpa-surface-control-hover, #e8e9ec);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+    outline-offset: 1px;
+  }
+
+  &[data-selected="true"] {
+    background: var(--sherpa-surface-control-primary-default, #2855ef);
+    color: var(--sherpa-content-on-color-body, #fff);
+    border-color: transparent;
+  }
+
+  &[data-in-range="true"] {
+    background: color-mix(
+      in oklab,
+      var(--sherpa-surface-control-primary-default, #2855ef) 12%,
+      transparent
+    );
+  }
+
+  &[data-today="true"]:not([data-selected="true"]) {
+    border-color: var(--sherpa-border-control-active-default, #0060df);
+  }
+
+  &[data-other-month="true"],
+  &:disabled {
+    color: var(--sherpa-content-inactive-default, #7e7e8f);
+    cursor: default;
+  }
+
+  &:disabled:not([data-other-month]) {
+    opacity: 0.5;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   9. FORCED COLORS (high-contrast / Windows HC mode)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (forced-colors: active) {
+  .picker-popup {
+    border: 2px solid ButtonText;
+  }
+
+  .cal-day[data-selected="true"] {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+
+  .cal-day[data-in-range="true"] {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+    opacity: 0.5;
+  }
+
+  .cal-day[data-today="true"]:not([data-selected="true"]) {
+    border-color: Highlight;
+  }
 }

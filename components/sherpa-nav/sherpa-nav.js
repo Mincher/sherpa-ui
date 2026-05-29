@@ -95,6 +95,7 @@ export class SherpaNav extends SherpaElement {
   }
 
   #searchFieldEl = null;
+  #endingSearch = false; // Guard flag to prevent infinite recursion
   #ready = false;
   #hostClickWired = false;
   #defaultUrl = new URL("./sherpa-nav.html", import.meta.url).href;
@@ -233,12 +234,20 @@ export class SherpaNav extends SherpaElement {
   }
 
   endSearch() {
-    this.mode = SherpaNav.MODES.DEFAULT;
-    if (this.#searchFieldEl) {
-      this.#searchFieldEl.value = "";
-      this.#searchFieldEl.clear();
+    // Guard against infinite recursion (clear() fires search event which calls endSearch again)
+    if (this.#endingSearch) return;
+    this.#endingSearch = true;
+
+    try {
+      this.mode = SherpaNav.MODES.DEFAULT;
+      if (this.#searchFieldEl) {
+        this.#searchFieldEl.value = "";
+        this.#searchFieldEl.clear();
+      }
+      this.#applySearchFilter("");
+    } finally {
+      this.#endingSearch = false;
     }
-    this.#applySearchFilter("");
   }
 
   setActiveLink(target) {

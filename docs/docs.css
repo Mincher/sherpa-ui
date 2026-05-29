@@ -67,6 +67,113 @@
 
 /* View transitions removed — route crossfade animations disabled globally. */
 
+/* ── Interactive playground ────────────────────────────────────────────────── */
+
+.docs-playground {
+  margin-top: var(--sherpa-space-default, 16px);
+  padding: var(--sherpa-space-default, 16px);
+  background: var(--sherpa-surface-container-secondary-default, #f9f9f9);
+  border: 1px solid var(--sherpa-border-container-default, #e0e0e0);
+  border-radius: var(--sherpa-border-rounding-base, 8px);
+}
+
+.docs-playground-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--sherpa-space-default, 16px);
+  margin-bottom: var(--sherpa-space-default, 16px);
+}
+
+@media (max-width: 960px) {
+  .docs-playground-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.docs-playground-controls h4 {
+  margin: 0 0 var(--sherpa-space-sm, 12px);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sherpa-content-default-heading, #222);
+}
+
+.docs-playground-attrs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 12px);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--sherpa-space-xs, 8px);
+}
+
+.docs-playground-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* For boolean controls with sherpa-switch, use horizontal layout */
+.docs-playground-control:has(sherpa-switch) {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.docs-playground-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sherpa-content-default-secondary, #666);
+  font-family: var(--sherpa-fonts-context-monospaced, 'Source Code Pro'), monospace;
+}
+
+.docs-playground-input {
+  padding: 6px 8px;
+  font-size: 0.875rem;
+  background: var(--sherpa-surface-container-default, #fff);
+  color: var(--sherpa-content-default-body, #1a1a1a);
+  border: 1px solid var(--sherpa-border-control-default, #d0d0d0);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  font-family: inherit;
+}
+
+.docs-playground-input:focus {
+  outline: 2px solid var(--sherpa-border-focus-default, #0066cc);
+  outline-offset: 2px;
+}
+
+.docs-playground-preview {
+  padding: var(--sherpa-space-lg, 24px);
+  background: var(--sherpa-surface-app-background-default, #fafafa);
+  border: 1px solid var(--sherpa-border-control-default, #d0d0d0);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.docs-playground-stage {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.docs-playground-code {
+  margin-top: var(--sherpa-space-default, 16px);
+  padding-top: var(--sherpa-space-default, 16px);
+  border-top: 1px solid var(--sherpa-border-container-default, #e0e0e0);
+}
+
+.docs-playground-code .docs-code-header {
+  margin-bottom: var(--sherpa-space-xs, 8px);
+}
+
+.docs-playground-output {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 /* ── Page wrapper ──────────────────────────────────────────────────────────── */
 
 .docs-page {

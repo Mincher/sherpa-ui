@@ -38,21 +38,21 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--sherpa-text-context-info-default, #0066cc);
+  color: var(--sherpa-content-context-info-default, #0066cc);
   margin-bottom: 4px;
 }
 
 .doc-hero h1 {
   font-size: 2rem;
   font-weight: 600;
-  color: var(--sherpa-text-default-heading, #222);
+  color: var(--sherpa-content-default-heading, #222);
   margin: 0 0 8px;
   font-family: var(--sherpa-fonts-context-brand, "Manrope"), sans-serif;
 }
 
 .doc-hero p {
   font-size: 1rem;
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
   margin: 0 0 12px;
   line-height: 1.5;
 }
@@ -74,7 +74,7 @@
   background: var(--sherpa-surface-control-default, #f0f0f0);
   padding: 2px 6px;
   border-radius: 4px;
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
 }
 
 .doc-meta {
@@ -88,7 +88,7 @@
   font-family: var(--sherpa-fonts-context-monospaced, "Source Code Pro"), monospace;
   font-size: 0.75rem;
   background: var(--sherpa-surface-control-default, #f0f0f0);
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
   padding: 4px 10px;
   border-radius: 999px;
 }
@@ -106,7 +106,7 @@
   align-items: center;
   gap: 8px;
   font-size: 0.8125rem;
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
 }
 
 .doc-mode select {
@@ -115,7 +115,7 @@
   border: 1px solid var(--sherpa-border-control-default, #ccc);
   border-radius: var(--sherpa-border-rounding-base, 6px);
   background: var(--sherpa-surface-container-default, #fff);
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
 }
 
 /* ── Grid ────────────────────────────────────────────────── */
@@ -173,13 +173,13 @@
 .doc-panel__header h2 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--sherpa-text-default-heading, #222);
+  color: var(--sherpa-content-default-heading, #222);
   margin: 0;
 }
 
 .doc-section-desc {
   font-size: 0.8125rem;
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
   margin: -8px 0 0;
   line-height: 1.4;
 }
@@ -235,7 +235,7 @@
 .doc-control h3 {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--sherpa-text-default-heading, #222);
+  color: var(--sherpa-content-default-heading, #222);
   margin: 0;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--sherpa-border-control-default, #e0e0e0);
@@ -263,7 +263,7 @@
 .doc-slot-label {
   font-family: var(--sherpa-fonts-context-monospaced, "Source Code Pro"), monospace;
   font-size: 0.8125rem;
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
   word-break: break-all;
 }
 
@@ -274,7 +274,7 @@
   border: 1px solid var(--sherpa-border-control-default, #ccc);
   border-radius: var(--sherpa-border-rounding-base, 6px);
   background: var(--sherpa-surface-container-default, #fff);
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
   width: 100%;
   box-sizing: border-box;
 }
@@ -284,7 +284,7 @@
   align-items: center;
   gap: 6px;
   font-size: 0.75rem;
-  color: var(--sherpa-text-default-secondary, #555);
+  color: var(--sherpa-content-default-secondary, #555);
   cursor: pointer;
 }
 
@@ -295,7 +295,7 @@ textarea[data-default-content] {
   border: 1px solid var(--sherpa-border-control-default, #ccc);
   border-radius: var(--sherpa-border-rounding-base, 6px);
   background: var(--sherpa-surface-container-default, #fff);
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
   resize: vertical;
   width: 100%;
   box-sizing: border-box;
@@ -308,13 +308,95 @@ textarea[data-default-content] {
   font-size: 0.8125rem;
   line-height: 1.5;
   background: var(--sherpa-surface-control-default, #f0f0f0);
-  color: var(--sherpa-text-default-body, #111);
+  color: var(--sherpa-content-default-body, #111);
   padding: 16px;
   border-radius: var(--sherpa-border-rounding-base, 6px);
   overflow-x: auto;
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* ── Live code editor ────────────────────────────────────── */
+
+textarea[data-code-editor] {
+  font-family: var(--sherpa-fonts-context-monospaced, "Source Code Pro"), monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  background: var(--sherpa-surface-control-default, #f0f0f0);
+  color: var(--sherpa-content-default-body, #111);
+  padding: 16px;
+  border: 1px solid var(--sherpa-border-control-default, #ccc);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  resize: vertical;
+  min-height: 200px;
+  width: 100%;
+  box-sizing: border-box;
+  tab-size: 2;
+}
+
+textarea[data-code-editor]:focus {
+  outline: 2px solid var(--sherpa-border-focus-default, #0066cc);
+  outline-offset: 2px;
+}
+
+/* ── Interactive demo grid ───────────────────────────────── */
+
+.doc-demo-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.doc-demo-controls,
+.docs-demo-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.doc-demo-preview {
+  padding: 2rem;
+  background: var(--sherpa-surface-app-background-default, #f5f5f5);
+  border: 1px solid var(--sherpa-border-control-default, #e0e0e0);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+}
+
+/* Ensure proper text color inheritance in demo sections */
+.docs-interactive-section {
+  color: var(--sherpa-content-default-body, #111);
+}
+
+.docs-interactive-section sherpa-container {
+  color: var(--sherpa-content-default-body, #111);
+}
+
+.docs-interactive-section h3 {
+  color: var(--sherpa-content-default-heading, #222);
+}
+
+.docs-interactive-section label,
+.docs-interactive-section .doc-toggle span {
+  color: var(--sherpa-content-default-body, #111);
+}
+
+.docs-interactive-section textarea,
+.docs-interactive-section input,
+.docs-interactive-section select {
+  background: var(--sherpa-surface-container-default, #fff);
+  color: var(--sherpa-content-default-body, #111);
+  border-color: var(--sherpa-border-control-default, #ccc);
+}
+
+@media (max-width: 960px) {
+  .doc-demo-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Utility: hidden helper for container-pdf demo ───────── */

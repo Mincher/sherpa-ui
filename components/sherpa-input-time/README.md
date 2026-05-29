@@ -2,7 +2,14 @@
 
 > **Category:** input · **Base class:** SherpaInputBase
 
-Time input using the native browser time picker. Inherits label, description, helper, layout, validation from SherpaInputBase.
+Time input with hour / minute spinner popup. Inherits label, description, helper, layout, validation from SherpaInputBase. The native <input type="time"> remains in the DOM (hidden) so that form value, constraint validation (min / max / required / step), and focus management all delegate to the browser.
+
+## Templates
+
+Available templates:
+
+- `default`
+- `default`
 
 ## Attributes
 
@@ -10,7 +17,7 @@ Time input using the native browser time picker. Inherits label, description, he
 | --------- | ---- | ----------- | ------- | ------ |
 | `min` | string | Minimum selectable time (HH:MM) | — | — |
 | `max` | string | Maximum selectable time (HH:MM) | — | — |
-| `step` | number | Step increment in seconds | — | — |
+| `step` | number | Step increment in seconds (default 60) | — | — |
 | `data-label` | string |  | — | — |
 | `data-description` | string |  | — | — |
 | `data-helper` | string |  | — | — |
@@ -76,6 +83,18 @@ element.addEventListener("change", (e) => {
 | `min` | `string` | Getter/setter for min attribute | read/write |
 | `max` | `string` | Getter/setter for max attribute | read/write |
 | `step` | `string` | Getter/setter for step attribute | read/write |
+
+## CSS Parts
+
+Style internal elements from outside the shadow DOM:
+
+- `trigger`
+
+```css
+sherpa-input-time::part(trigger) {
+  /* custom styles */
+}
+```
 
 ## Usage
 

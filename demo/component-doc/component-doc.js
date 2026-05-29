@@ -13,6 +13,32 @@ const METADATA_PATH = "/demo/component-doc/component-docs.json";
 
 let metadataIndexPromise = null;
 
+/**
+ * Convert router schema format to component-doc config format.
+ * Router schemas come from /schemas/components/*.json
+ * Component-doc configs come from component-docs.json
+ */
+function convertSchemaToConfig(schema) {
+  if (!schema) return {};
+
+  return {
+    component: schema.tagName || schema.name,
+    label: schema.label || schema.name,
+    description: schema.description || '',
+    attributes: schema.attributes || [],
+    slots: (schema.slots || []).map(slot => ({
+      name: slot.name === '(default)' ? '' : slot.name,
+      html: '',
+      description: slot.description || ''
+    })),
+    controls: {
+      attributes: (schema.attributes || []).length > 0,
+      defaultSlot: (schema.slots || []).some(s => s.name === '(default)' || s.name === ''),
+      namedSlots: (schema.slots || []).some(s => s.name && s.name !== '(default)')
+    }
+  };
+}
+
 async function loadMetadataIndex() {
   if (!metadataIndexPromise) {
     metadataIndexPromise = fetch(METADATA_PATH)
@@ -71,14 +97,7 @@ async function resolveMetadata(root) {
 
 /* ── Bootstrap ──────────────────────────────────────────── */
 
-const root =
-  document.querySelector("[data-doc-root][data-component]") ||
-  document.querySelector("[data-doc-root]") ||
-  document.querySelector("body[data-component]");
-
-const $ = (sel) => root?.querySelector(sel) || document.querySelector(sel);
-
-let config, componentName, state;
+let root, $, config, componentName, state;
 let componentEl,
   wrapperInit = false,
   lastAttrs = new Set(),
@@ -98,10 +117,34 @@ function initAttrState(a) {
   };
 }
 
-(async () => {
+/**
+ * Initialize component documentation interactive features.
+ * Called by the router after injecting a component page.
+ * @param {HTMLElement} rootElement - The root element with [data-doc-root]
+ * @param {Object} schemaData - Optional schema data (from router) to avoid re-fetching
+ */
+export async function initComponentDoc(rootElement, schemaData = null) {
+  // Reset state
+  root = rootElement ||
+    document.querySelector("[data-doc-root][data-component]") ||
+    document.querySelector("[data-doc-root]") ||
+    document.querySelector("body[data-component]");
+
   if (!root) return;
-  config = (await resolveMetadata(root)) || {};
-  componentName = config.component || root.dataset?.component || "";
+
+  $ = (sel) => root?.querySelector(sel) || document.querySelector(sel);
+  wrapperInit = false;
+  demoInit = false;
+  lastAttrs = new Set();
+
+  // Use provided schema or fetch from metadata
+  if (schemaData) {
+    config = convertSchemaToConfig(schemaData);
+    componentName = root.dataset?.component || "";
+  } else {
+    config = (await resolveMetadata(root)) || {};
+    componentName = config.component || root.dataset?.component || "";
+  }
   const label = componentName
     ? config.label || formatLabel(componentName)
     : "Component";
@@ -113,10 +156,16 @@ function initAttrState(a) {
       config.defaultHtml || config.defaultContentIsHtml,
     ),
     slots: (config.slots || []).map((s) => ({
-      name: s.name,
+      name: s.name || '',
       html: s.html || "",
     })),
   };
+
+  // If no interactive content, don't initialize controls
+  if (!state.attrs.length && !state.slots.length) {
+    console.log('[docs] No attributes or slots for', componentName, '- skipping interactive demo initialization');
+    return;
+  }
 
   // Bind header data
   const title = $("[data-doc-title]");
@@ -193,12 +242,27 @@ function initAttrState(a) {
   }
   $("[data-reset]")?.addEventListener("click", resetState);
 
+  // Load state from URL if present
+  const loadedFromURL = loadStateFromURL();
+
   // Render dynamic controls
   renderAttrList();
   renderSlotList();
   renderDemoActions();
+
+  // Initialize interactive features
+  initCodeEditor();
+  initCopyCode();
+
   applyState();
-})();
+}
+
+// Auto-initialize if there's already a doc root on the page (for standalone pages)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => initComponentDoc());
+} else {
+  initComponentDoc();
+}
 
 /* ── Theme ─────────────────────────────────────────────── */
 
@@ -295,11 +359,14 @@ function makeControl(def, value) {
     s.value = value ? "true" : "false";
     return s;
   }
-  if (def.type === "enum" && def.options) {
+  // Handle both 'options' (component-docs.json) and 'enumValues' (schema/*.json)
+  const enumOptions = def.enumValues || def.options;
+  if (def.type === "enum" && enumOptions) {
     const s = document.createElement("select");
-    s.innerHTML = def.options
-      .map((o) => `<option value="${o}">${o || "(none)"}</option>`)
-      .join("");
+    s.innerHTML = `<option value="">(none)</option>` +
+      enumOptions
+        .map((o) => `<option value="${o}">${o}</option>`)
+        .join("");
     s.value = value ?? "";
     return s;
   }
@@ -491,6 +558,146 @@ function injectSlot(target, html, isHtml, slotName) {
 function renderCode() {
   const block = $("[data-code-block]");
   if (block) block.textContent = buildMarkup();
+
+  // Update live code editor if present
+  const editor = $("[data-code-editor]");
+  if (editor && !editor.dataset.userEditing) {
+    editor.value = buildMarkup();
+  }
+
+  // Update URL state
+  updateURLState();
+}
+
+/* ── Live code editor ───────────────────────────────────── */
+
+function initCodeEditor() {
+  const editor = $("[data-code-editor]");
+  if (!editor) return;
+
+  editor.value = buildMarkup();
+
+  let inputTimeout;
+  editor.addEventListener("input", () => {
+    editor.dataset.userEditing = "true";
+    clearTimeout(inputTimeout);
+    inputTimeout = setTimeout(() => {
+      updatePreviewFromCode(editor.value);
+      delete editor.dataset.userEditing;
+    }, 300);
+  });
+}
+
+function updatePreviewFromCode(html) {
+  try {
+    const stage = $("[data-preview-stage]");
+    if (!stage) return;
+
+    // Parse HTML and update preview
+    stage.innerHTML = html;
+    componentEl = stage.querySelector(componentName);
+
+    if (!componentEl) return;
+
+    // Sync state from rendered component
+    syncStateFromComponent(componentEl);
+
+  } catch (err) {
+    console.warn("Failed to update preview from code:", err);
+  }
+}
+
+function syncStateFromComponent(el) {
+  // Update state.attrs from component attributes
+  state.attrs = state.attrs.map(attr => {
+    if (attr.type === "boolean") {
+      return { ...attr, value: el.hasAttribute(attr.name) };
+    }
+    return { ...attr, value: el.getAttribute(attr.name) || "" };
+  });
+
+  // Re-render controls to match
+  renderAttrList();
+}
+
+/* ── Copy code ──────────────────────────────────────────── */
+
+function initCopyCode() {
+  const btn = $("[data-copy-code]");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    try {
+      const code = buildMarkup();
+      await navigator.clipboard.writeText(code);
+      showNotification("Code copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy code:", err);
+    }
+  });
+}
+
+function showNotification(message) {
+  // Try to use sherpa-toast if available
+  const toast = document.createElement("sherpa-toast");
+  toast.dataset.message = message;
+  toast.dataset.status = "success";
+  toast.dataset.duration = "2000";
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.remove(), 3000);
+}
+
+/* ── URL state management ───────────────────────────────── */
+
+function updateURLState() {
+  if (!config.shareableState) return;
+
+  const url = new URL(window.location.href);
+
+  // Encode component state
+  const stateData = {
+    attrs: state.attrs.filter(a => a.value).map(a => ({n: a.name, v: a.value})),
+    content: state.defaultContent,
+    isHtml: state.defaultContentIsHtml,
+  };
+
+  try {
+    url.searchParams.set("state", btoa(JSON.stringify(stateData)));
+    window.history.replaceState({}, "", url);
+  } catch (err) {
+    // Silently fail if state is too large
+  }
+}
+
+function loadStateFromURL() {
+  const url = new URL(window.location.href);
+  const stateParam = url.searchParams.get("state");
+
+  if (!stateParam) return false;
+
+  try {
+    const stateData = JSON.parse(atob(stateParam));
+
+    // Restore attributes
+    if (stateData.attrs) {
+      stateData.attrs.forEach(({n, v}) => {
+        const attr = state.attrs.find(a => a.name === n);
+        if (attr) attr.value = v;
+      });
+    }
+
+    // Restore content
+    if (stateData.content !== undefined) {
+      state.defaultContent = stateData.content;
+      state.defaultContentIsHtml = stateData.isHtml || false;
+    }
+
+    return true;
+  } catch (err) {
+    console.warn("Failed to load state from URL:", err);
+    return false;
+  }
 }
 
 function buildMarkup() {

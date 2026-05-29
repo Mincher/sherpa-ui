@@ -31,11 +31,10 @@ Complete guide to using and extending the Sherpa design token system.
   │                                      (light + nested dark + hc)       │  default = always loaded via @import
   │   sherpa-theme-{extended-slug}.css   diff-only against default       │  generated
   │                                      (load via <link> + data-theme)   │
-  │ @layer density                                                       │
-  │   sherpa-density-compact.css         [data-density] subtree overrides │  generated
-  │   sherpa-density-comfortable.css                                     │  generated
-  │ @layer status                                                        │
-  │   sherpa-status.css                  [data-status] → --_status-* map  │  generated
+  │ @layer overrides                                                     │
+  │   sherpa-overrides.css               theme corrections, density &    │  generated
+  │                                      status attribute mappings        │  + hand
+  │                                      [data-density], [data-status]    │
   │ @layer components                                                    │
   │   components/index.css               light-DOM component overrides    │  hand
   │   components/**/*.css                Shadow DOM (adopted)             │  hand
@@ -50,7 +49,7 @@ Complete guide to using and extending the Sherpa design token system.
 Layer order is established once in `index.css`:
 
 ```css
-@layer reset, primitives, alias, platform, theme, density, status, components, utilities;
+@layer reset, primitives, alias, platform, theme, overrides, components, utilities;
 @layer utilities.icons, utilities.motion, utilities.text, utilities.layout;
 ```
 

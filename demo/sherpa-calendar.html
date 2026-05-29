@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sherpa-calendar — Sherpa UI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/styles/index.css">
+  <script type="module" src="../components/sherpa-calendar/sherpa-calendar.js"></script>
+  <script type="module" src="../components/sherpa-button/sherpa-button.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .demo-section {
+      margin-block-end: 3rem;
+      padding: 1.5rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    .demo-section h2 {
+      margin-block-start: 0;
+      margin-block-end: 1rem;
+      font-size: 1.25rem;
+    }
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    .demo-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .demo-label {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #333;
+    }
+    .output {
+      padding: 0.75rem;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      min-height: 3rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>sherpa-calendar</h1>
+  <p>Standalone calendar component for date selection. Supports single date and date range modes.</p>
+
+  <!-- Single Date Selection -->
+  <div class="demo-section">
+    <h2>Single Date Selection</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">Default (Today)</div>
+        <sherpa-calendar id="cal-default"></sherpa-calendar>
+        <div class="output" id="output-default">No selection</div>
+      </div>
+
+      <div class="demo-item">
+        <div class="demo-label">Pre-selected Date</div>
+        <sherpa-calendar id="cal-preselect" data-value="2026-05-15"></sherpa-calendar>
+        <div class="output" id="output-preselect">2026-05-15</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Date Range Selection -->
+  <div class="demo-section">
+    <h2>Date Range Selection</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">Range Mode</div>
+        <sherpa-calendar
+          id="cal-range"
+          data-mode="range">
+        </sherpa-calendar>
+        <div class="output" id="output-range">Click start date, then end date</div>
+      </div>
+
+      <div class="demo-item">
+        <div class="demo-label">Pre-selected Range</div>
+        <sherpa-calendar
+          id="cal-range-preset"
+          data-mode="range"
+          data-value="2026-05-10"
+          data-value-end="2026-05-20">
+        </sherpa-calendar>
+        <div class="output" id="output-range-preset">2026-05-10 → 2026-05-20</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Constraints -->
+  <div class="demo-section">
+    <h2>Min/Max Constraints</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">This Month Only</div>
+        <sherpa-calendar
+          id="cal-constrained"
+          data-min="2026-05-01"
+          data-max="2026-05-31"
+          data-value="2026-05-15">
+        </sherpa-calendar>
+        <div class="output" id="output-constrained">2026-05-15 (limited to May 2026)</div>
+      </div>
+
+      <div class="demo-item">
+        <div class="demo-label">Future Dates Only</div>
+        <sherpa-calendar
+          id="cal-future"
+          data-min="2026-05-28">
+        </sherpa-calendar>
+        <div class="output" id="output-future">Past dates disabled</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- With Custom Footer -->
+  <div class="demo-section">
+    <h2>Custom Footer Slot</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <div class="demo-label">With Action Buttons</div>
+        <sherpa-calendar id="cal-footer" data-value="2026-05-28">
+          <div slot="footer" style="display: flex; gap: 8px; justify-content: flex-end;">
+            <sherpa-button data-size="sm" data-label="Today" id="btn-today">
+              Today
+            </sherpa-button>
+            <sherpa-button data-size="sm" data-variant="secondary" data-label="Clear" id="btn-clear">
+              Clear
+            </sherpa-button>
+          </div>
+        </sherpa-calendar>
+        <div class="output" id="output-footer">2026-05-28</div>
+      </div>
+
+      <div class="demo-item">
+        <div class="demo-label">Programmatic API Demo</div>
+        <sherpa-calendar id="cal-api"></sherpa-calendar>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <sherpa-button data-size="sm" data-label="Set Christmas" id="btn-xmas">
+            Set Christmas
+          </sherpa-button>
+          <sherpa-button data-size="sm" data-label="Set New Year" id="btn-newyear">
+            Set New Year
+          </sherpa-button>
+          <sherpa-button data-size="sm" data-label="Go to December" id="btn-december">
+            Go to December
+          </sherpa-button>
+        </div>
+        <div class="output" id="output-api">No selection</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Default calendar
+    const calDefault = document.querySelector('#cal-default');
+    calDefault.addEventListener('dateselect', (e) => {
+      document.querySelector('#output-default').textContent =
+        `Selected: ${e.detail.value} (${e.detail.valueAsDate.toLocaleDateString()})`;
+    });
+
+    // Pre-selected calendar
+    document.querySelector('#cal-preselect').addEventListener('dateselect', (e) => {
+      document.querySelector('#output-preselect').textContent = e.detail.value;
+    });
+
+    // Range calendar
+    const calRange = document.querySelector('#cal-range');
+    calRange.addEventListener('dateselect', (e) => {
+      document.querySelector('#output-range').textContent = `Start: ${e.detail.value} (click end date)`;
+    });
+    calRange.addEventListener('rangeselect', (e) => {
+      document.querySelector('#output-range').textContent =
+        `Range: ${e.detail.start} → ${e.detail.end}`;
+    });
+
+    // Pre-selected range
+    document.querySelector('#cal-range-preset').addEventListener('rangeselect', (e) => {
+      document.querySelector('#output-range-preset').textContent =
+        `${e.detail.start} → ${e.detail.end}`;
+    });
+
+    // Constrained calendar
+    document.querySelector('#cal-constrained').addEventListener('dateselect', (e) => {
+      document.querySelector('#output-constrained').textContent = e.detail.value;
+    });
+
+    // Future dates only
+    document.querySelector('#cal-future').addEventListener('dateselect', (e) => {
+      document.querySelector('#output-future').textContent = e.detail.value;
+    });
+
+    // Footer buttons
+    const calFooter = document.querySelector('#cal-footer');
+    document.querySelector('#btn-today').addEventListener('click', () => {
+      calFooter.goToToday();
+      calFooter.dataset.value = new Date().toISOString().split('T')[0];
+    });
+    document.querySelector('#btn-clear').addEventListener('click', () => {
+      calFooter.dataset.value = '';
+      document.querySelector('#output-footer').textContent = 'No selection';
+    });
+    calFooter.addEventListener('dateselect', (e) => {
+      document.querySelector('#output-footer').textContent = e.detail.value;
+    });
+
+    // Programmatic API
+    const calApi = document.querySelector('#cal-api');
+    document.querySelector('#btn-xmas').addEventListener('click', () => {
+      calApi.valueAsDate = new Date(2026, 11, 25);
+      document.querySelector('#output-api').textContent = '2026-12-25 (Christmas)';
+    });
+    document.querySelector('#btn-newyear').addEventListener('click', () => {
+      calApi.valueAsDate = new Date(2027, 0, 1);
+      document.querySelector('#output-api').textContent = '2027-01-01 (New Year)';
+    });
+    document.querySelector('#btn-december').addEventListener('click', () => {
+      calApi.goToMonth(new Date(2026, 11, 1));
+      document.querySelector('#output-api').textContent = 'Navigated to December 2026';
+    });
+    calApi.addEventListener('dateselect', (e) => {
+      document.querySelector('#output-api').textContent = e.detail.value;
+    });
+  </script>
+</body>
+</html>

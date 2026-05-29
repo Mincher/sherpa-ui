@@ -21,6 +21,9 @@
     "mcp-server/"
   ],
   "scripts": {
+    "build:ts": "tsc -p tsconfig.build.json",
+    "build:ts:watch": "tsc -p tsconfig.build.json --watch",
+    "type-check": "tsc --noEmit",
     "component-docs": "node scripts/generate-component-docs.js",
     "component-docs:cached": "node scripts/cached-component-docs.js",
     "schemas": "node scripts/extract-component-schemas.js",
@@ -39,27 +42,44 @@
     "validate:jsdoc": "node scripts/validate-jsdoc.js",
     "format": "prettier --write 'components/**/*.css'",
     "format:check": "prettier --check 'components/**/*.css'",
-    "build": "run-p tokens:generate schemas patterns component-docs",
-    "build:cached": "run-p tokens:generate:cached schemas:cached patterns:cached component-docs:cached",
-    "build:serial": "npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
+    "build": "npm run build:ts && run-p tokens:generate schemas patterns component-docs",
+    "build:cached": "npm run build:ts && run-p tokens:generate:cached schemas:cached patterns:cached component-docs:cached",
+    "build:serial": "npm run build:ts && npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
     "build:measure": "node scripts/measure-build-time.js",
     "cache:clear": "node scripts/build-cache.js clear",
     "cache:status": "node scripts/build-cache.js status",
     "test:a11y": "node scripts/test-a11y.js",
     "test:a11y:verbose": "node scripts/test-a11y.js --verbose",
     "audit": "node scripts/audit-components.js",
-    "audit:verbose": "node scripts/audit-components.js --verbose"
+    "audit:verbose": "node scripts/audit-components.js --verbose",
+    "test": "npm run build:ts && web-test-runner",
+    "test:watch": "npm run build:ts && web-test-runner --watch",
+    "test:coverage": "npm run build:ts && web-test-runner --coverage",
+    "test:visual": "playwright test",
+    "test:visual:update": "UPDATE_SNAPSHOTS=true playwright test",
+    "test:visual:ui": "playwright test --ui",
+    "test:visual:report": "playwright show-report test/visual/report",
+    "benchmark": "node scripts/run-performance-benchmarks.js",
+    "benchmark:baseline": "node scripts/run-performance-benchmarks.js --baseline",
+    "benchmark:compare": "node scripts/run-performance-benchmarks.js"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"
   },
   "devDependencies": {
+    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@open-wc/testing-helpers": "^3.0.1",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.1",
+    "@web/test-runner": "^0.20.2",
+    "@web/test-runner-playwright": "^0.11.1",
     "axe-core": "^4.11.4",
     "eslint": "^8.55.0",
     "glob": "^13.0.6",
     "npm-run-all": "^4.1.5",
     "pa11y": "^9.1.1",
-    "prettier": "^3.1.0"
+    "prettier": "^3.1.0",
+    "typescript": "^6.0.3"
   },
   "keywords": [
     "web-components",

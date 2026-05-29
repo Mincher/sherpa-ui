@@ -1,65 +1,50 @@
-# ADR-XXXX: [Short Title]
+# ADR-NNNN: [Short Title]
 
 **Status:** Proposed  
 **Date:** YYYY-MM-DD  
-**Deciders:** [Names]  
-**Tags:** [tag1, tag2, tag3]
+**Authors:** [Your Name]  
+**Related:** [Links to related ADRs, issues, or specs]
 
 ## Context
 
-[Describe the context and problem statement. What forces are at play? What concerns exist? What is the current situation?]
+What is the issue we're seeing that is motivating this decision or change? What constraints exist? What are we trying to solve?
 
 ## Decision
 
-[Describe the decision that was made. What is the change? What will be done?]
+What is the change that we're proposing and/or doing?
 
 ## Consequences
 
+What becomes easier or more difficult to do because of this change?
+
 ### Positive
 
-- [What becomes easier?]
-- [What problems does this solve?]
-- [What capabilities does this enable?]
+- Benefit 1
+- Benefit 2
 
 ### Negative
 
-- [What becomes harder?]
-- [What new problems might this create?]
-- [What limitations does this introduce?]
+- Tradeoff 1
+- Tradeoff 2
 
 ### Neutral
 
-- [What stays the same?]
-- [What trade-offs are acceptable?]
-- [What requires careful consideration?]
+- Consideration 1
 
 ## Alternatives Considered
 
-### Alternative 1: [Name]
-- **Description:** [Brief description]
-- **Pros:** [Why it was attractive]
-- **Cons:** [Why it was rejected]
+What other approaches did we consider and why were they rejected?
 
-### Alternative 2: [Name]
-- **Description:** [Brief description]
-- **Pros:** [Why it was attractive]
-- **Cons:** [Why it was rejected]
+### Alternative 1: [Name]
+- **Description:** ...
+- **Pros:** ...
+- **Cons:** ...
+- **Rejected because:** ...
 
 ## Implementation Notes
 
-[Optional: Notes about how this decision should be implemented, if relevant]
+Any specific guidance for implementing this decision (optional).
 
 ## References
 
-- [Link to related documentation]
-- [Link to discussions or RFCs]
-- [Link to related ADRs]
-- [Link to code examples]
-
----
-
-## Changelog
-
-| Date | Change | Author |
-|------|--------|--------|
-| YYYY-MM-DD | Initial draft | [Name] |
+- [Links to relevant documentation, discussions, or resources]

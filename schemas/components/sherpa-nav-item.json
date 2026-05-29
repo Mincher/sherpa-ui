@@ -83,5 +83,47 @@
       "description": "Label text content"
     }
   ],
-  "events": []
+  "events": [],
+  "cssParts": [
+    {
+      "name": "indicator",
+      "description": "Active indicator bar (left edge visual)"
+    },
+    {
+      "name": "drag",
+      "description": "Drag handle icon (visible when data-editable is set on parent)"
+    },
+    {
+      "name": "icon",
+      "description": "Icon container"
+    },
+    {
+      "name": "dot",
+      "description": "Collapsed section dot indicator"
+    },
+    {
+      "name": "label",
+      "description": "Text label container"
+    },
+    {
+      "name": "tag",
+      "description": "Badge element (sherpa-tag instance)"
+    },
+    {
+      "name": "chevron",
+      "description": "Expand/collapse chevron (section/subsection variants)"
+    },
+    {
+      "name": "delete",
+      "description": "Delete button (visible when data-editable is set on parent)"
+    },
+    {
+      "name": "heading",
+      "description": "Promo heading text (data-type=\"promo\" only)"
+    },
+    {
+      "name": "description",
+      "description": "Promo description text (data-type=\"promo\" only)"
+    }
+  ]
 }

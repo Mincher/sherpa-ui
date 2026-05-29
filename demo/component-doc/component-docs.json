@@ -336,6 +336,38 @@
       "defaultContent": "<option value=\\\"\\\">Select a country...</option>\n<option value=\\\"us\\\">United States</option>\n<option value=\\\"uk\\\">United Kingdom</option>\n<option value=\\\"ca\\\">Canada</option>\n<option value=\\\"au\\\">Australia</option>\n<option value=\\\"de\\\">Germany</option>",
       "defaultContentIsHtml": true
     },
+    "sherpa-date-time-picker": {
+      "component": "sherpa-date-time-picker",
+      "label": "Date Time Picker",
+      "description": "Combined date and time selection component with an integrated calendar picker and time spinners.",
+      "path": "components/sherpa-date-time-picker",
+      "attributes": [
+        { "name": "data-label", "type": "string", "default": "Date & Time" },
+        { "name": "data-description", "type": "string" },
+        { "name": "data-helper", "type": "string" },
+        { "name": "value", "type": "string" },
+        { "name": "min", "type": "string" },
+        { "name": "max", "type": "string" },
+        { "name": "data-24hour", "type": "boolean", "default": "true" },
+        { "name": "data-compact", "type": "boolean" },
+        {
+          "name": "data-size",
+          "type": "enum",
+          "default": "md",
+          "options": ["sm", "md", "lg"]
+        },
+        {
+          "name": "data-status",
+          "type": "enum",
+          "options": ["critical", "warning"]
+        },
+        { "name": "disabled", "type": "boolean" },
+        { "name": "readonly", "type": "boolean" },
+        { "name": "required", "type": "boolean" }
+      ],
+      "slots": [],
+      "controls": { "defaultSlot": false, "namedSlots": false }
+    },
     "sherpa-input-date": {
       "component": "sherpa-input-date",
       "label": "Input Date",

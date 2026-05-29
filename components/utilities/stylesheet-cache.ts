@@ -1,5 +1,5 @@
 /**
- * stylesheet-cache.js — Constructable-stylesheet cache for SherpaElement.
+ * stylesheet-cache.ts — Constructable-stylesheet cache for SherpaElement.
  *
  * Fetches CSS text once per URL, resolves @import statements by inlining
  * the imported CSS, and returns a shared CSSStyleSheet object that can
@@ -9,8 +9,7 @@
  * reference, eliminating duplicate parse work across component instances.
  */
 
-/** @type {Map<string, Promise<CSSStyleSheet>>} */
-const _cache = new Map();
+const _cache = new Map<string, Promise<CSSStyleSheet>>();
 
 /**
  * Per-page-load cache-busting token. Appended as a query string to every
@@ -21,8 +20,8 @@ const _cache = new Map();
  */
 const _bust = `v=${Date.now()}`;
 
-function _withBust(url) {
-  return url + (url.includes("?") ? "&" : "?") + _bust;
+function _withBust(url: string): string {
+  return url + (url.includes('?') ? '&' : '?') + _bust;
 }
 
 const IMPORT_RE =
@@ -39,7 +38,7 @@ const URL_RE = /url\(\s*(['"]?)(?!data:|https?:|\/\/|#)([^'")]+)\1\s*\)/g;
  * which would break @font-face src paths for stylesheets fetched from a
  * CDN (e.g. Font Awesome's webfonts/ folder).
  */
-function absolutiseUrls(css, base) {
+function absolutiseUrls(css: string, base: string): string {
   return css.replace(URL_RE, (match, quote, href) => {
     try {
       const abs = new URL(href, base).href;
@@ -52,20 +51,21 @@ function absolutiseUrls(css, base) {
 
 /**
  * Recursively inline @import rules in CSS text.
- * @param {string} css  — raw CSS text
- * @param {string} base — absolute URL of the CSS file (for relative resolution)
+ * @param css  — raw CSS text
+ * @param base — absolute URL of the CSS file (for relative resolution)
  */
-async function resolveImports(css, base) {
+async function resolveImports(css: string, base: string): Promise<string> {
   const matches = [...css.matchAll(IMPORT_RE)];
   if (!matches.length) return css;
 
   let resolved = css;
   for (const m of matches) {
     const href = m[1] || m[2];
+    if (!href) continue;
     const url = new URL(href, base).href;
     try {
       const resp = await fetch(_withBust(url));
-      if (!resp.ok) throw new Error(resp.status);
+      if (!resp.ok) throw new Error(resp.status.toString());
       const imported = await resp.text();
       const inlined = await resolveImports(imported, url);
       // Absolutise url() refs in the imported CSS against ITS source URL
@@ -84,11 +84,12 @@ async function resolveImports(css, base) {
  * Return a shared CSSStyleSheet for the given URL.  The sheet is fetched
  * and parsed once; every subsequent caller receives the same object.
  *
- * @param {string} url — absolute URL of the CSS file
- * @returns {Promise<CSSStyleSheet>}
+ * @param url — absolute URL of the CSS file
+ * @returns Promise resolving to CSSStyleSheet
  */
-export function getSheet(url) {
-  if (_cache.has(url)) return _cache.get(url);
+export function getSheet(url: string): Promise<CSSStyleSheet> {
+  const cached = _cache.get(url);
+  if (cached) return cached;
 
   const promise = (async () => {
     const resp = await fetch(_withBust(url));

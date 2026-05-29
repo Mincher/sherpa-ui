@@ -78,16 +78,6 @@
     ]
   },
   {
-    "id": "flex-truncate",
-    "name": "Progressive truncation of flex children",
-    "category": "layouts",
-    "file": "patterns/layouts/flex-truncate.html",
-    "description": "Hides trailing flex children when the container is too narrow (row) or too short (column) to show them at their minimum size. Class is applied to the container — no wrapper needed.",
-    "status": "stable",
-    "cssUtilities": ["flex-truncate"],
-    "components": ["sherpa-metric"]
-  },
-  {
     "id": "app-shell",
     "name": "Standard application shell layout",
     "category": "layouts",
@@ -131,6 +121,16 @@
       "sherpa-key-value-list",
       "sherpa-tabs",
       "sherpa-container"
+    ]
+  },
+  {
+    "id": "flex-truncate-row",
+    "name": "Progressively hide trailing flex children when the container",
+    "category": "layouts",
+    "file": "patterns/layouts/flex-truncate.html",
+    "status": "stable",
+    "components": [
+      "sherpa-metric"
     ]
   },
   {

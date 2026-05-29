@@ -1,0 +1,63 @@
+<!--
+  sherpa-example.html
+  Shadow DOM template for the SherpaExample web component.
+
+  Rules:
+  - Single <template id="default"> wraps the entire shadow DOM structure.
+  - Template Completeness Rule: every element the component will ever show
+    lives here from the start. CSS hides optional elements; JS never creates
+    new DOM nodes for presentational structure.
+  - Optional slots: use named slots for consumer content injection only.
+  - Data-driven repeats: use <template class="...-tpl"> (note: class, not id).
+-->
+
+<template id="default">
+  <div class="wrapper">
+
+    <!--
+      Optional icon — hidden by default.
+      Shown in CSS via: :host([data-icon-start]) .icon-start { display: inline-flex; }
+      JS sets the glyph via: this.$('.icon-start').textContent = this.dataset.iconStart ?? '';
+    -->
+    <i class="icon-start" aria-hidden="true"></i>
+
+    <!-- Required label — JS populates via: this.$('.label').textContent = ... -->
+    <span class="label"></span>
+
+    <!--
+      Optional description — hidden by default.
+      Shown in CSS via: :host([data-description]) .description { display: block; }
+    -->
+    <span class="description"></span>
+
+    <!-- Default slot: consumer content injection -->
+    <slot></slot>
+
+    <!-- Named slot: trailing action buttons or secondary content -->
+    <slot name="actions"></slot>
+
+  </div>
+</template>
+
+
+<!--
+  Cloning prototype — for data-driven repeating items.
+
+  Use class (NOT id) so the multi-template parser treats it as a cloning prototype.
+
+  JS usage:
+    const tpl  = this.$('template.item-tpl');
+    const frag = tpl.content.cloneNode(true);
+    frag.querySelector('.item-label').textContent = item.label;
+    this.$('.list').appendChild(frag);
+
+  Uncomment and adapt when the component renders a list of repeated items.
+-->
+<!--
+<template class="item-tpl">
+  <div class="item" role="listitem">
+    <span class="item-label"></span>
+    <slot name="item-actions"></slot>
+  </div>
+</template>
+-->

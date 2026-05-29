@@ -515,6 +515,15 @@ function initNav() {
   // Listen for navigation clicks
   nav.addEventListener('navitemclick', e => {
     const route = e.detail?.route;
+    const target = e.target;
+
+    // Check if this is an external link (opens in same window)
+    if (target && target.hasAttribute('data-external-link')) {
+      const externalUrl = target.getAttribute('data-external-link');
+      window.location.href = externalUrl;
+      return;
+    }
+
     if (route) navigate(route);
   });
 
@@ -695,6 +704,11 @@ async function renderRoute(route) {
     bindOutletLinks();
     highlightOutlet();
     runPendingSetups();
+
+    // Add interactive playground to examples
+    if (schema) {
+      await makeExamplesInteractive(route.tag, schema);
+    }
     return;
   }
 
@@ -1062,6 +1076,199 @@ function buildChildSection(child) {
       ${buildExamplesSection(child.tag, child.examples)}
       ${buildApiAccordion(child.schema, `${child.label} API`)}
     </section>`;
+}
+
+/** Add interactive playground to examples with attribute controls. */
+async function makeExamplesInteractive(tag, schema) {
+  if (!outlet || !schema) return;
+
+  const examples = outlet.querySelectorAll('.docs-example');
+
+  examples.forEach((example, index) => {
+    const preview = example.querySelector('.docs-example-preview');
+    const codeBlock = example.querySelector('.docs-code-block');
+
+    if (!preview || !codeBlock) return;
+
+    // Create "Try It" button
+    const tryBtn = document.createElement('sherpa-button');
+    tryBtn.className = 'docs-try-btn';
+    tryBtn.setAttribute('data-variant', 'secondary');
+    tryBtn.setAttribute('data-size', 'small');
+    tryBtn.dataset.iconStart = ''; // fa-sliders
+    tryBtn.setAttribute('data-label', 'Customize');
+
+    const codeHeader = codeBlock.querySelector('.docs-code-header');
+    if (codeHeader) {
+      codeHeader.appendChild(tryBtn);
+    }
+
+    // Create playground panel (hidden by default)
+    const playground = document.createElement('div');
+    playground.className = 'docs-playground';
+    playground.style.display = 'none';
+
+    playground.innerHTML = `
+      <div class="docs-playground-grid">
+        <div class="docs-playground-controls">
+          <h4>Attributes</h4>
+          <div class="docs-playground-attrs"></div>
+        </div>
+        <div class="docs-playground-preview">
+          <div class="docs-playground-stage"></div>
+        </div>
+      </div>
+      <div class="docs-playground-code">
+        <div class="docs-code-header">
+          <span class="docs-code-lang">Generated HTML</span>
+        </div>
+        <pre><code class="docs-playground-output language-html"></code></pre>
+      </div>
+    `;
+
+    codeBlock.after(playground);
+
+    let isOpen = false;
+
+    tryBtn.addEventListener('button-click', () => {
+      isOpen = !isOpen;
+
+      if (isOpen) {
+        playground.style.display = 'block';
+        tryBtn.setAttribute('data-active', '');
+
+        // Initialize playground with example data
+        if (!playground.dataset.initialized) {
+          initializePlayground(playground, preview, tag, schema);
+          playground.dataset.initialized = 'true';
+        }
+      } else {
+        playground.style.display = 'none';
+        tryBtn.removeAttribute('data-active');
+      }
+    });
+  });
+}
+
+/** Initialize playground controls from schema and example. */
+function initializePlayground(playground, originalPreview, tag, schema) {
+  const attrsContainer = playground.querySelector('.docs-playground-attrs');
+  const stage = playground.querySelector('.docs-playground-stage');
+  const output = playground.querySelector('.docs-playground-output');
+
+  // Clone the original example into the playground
+  const clonedComponent = originalPreview.querySelector(tag)?.cloneNode(true);
+  if (!clonedComponent) return;
+
+  stage.appendChild(clonedComponent);
+
+  // Track current state
+  const state = {};
+
+  // Prioritize important attributes (status, variant, size) at the top
+  const priorityAttrs = ['data-status', 'data-variant', 'data-size', 'data-label', 'data-type'];
+  const sortedAttributes = [...(schema.attributes || [])].sort((a, b) => {
+    const aIndex = priorityAttrs.indexOf(a.name);
+    const bIndex = priorityAttrs.indexOf(b.name);
+    const aPriority = aIndex === -1 ? 999 : aIndex;
+    const bPriority = bIndex === -1 ? 999 : bIndex;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+    return a.name.localeCompare(b.name);
+  });
+
+  // Generate controls for each attribute
+  sortedAttributes.forEach(attr => {
+    const currentValue = clonedComponent.getAttribute(attr.name) || '';
+    state[attr.name] = currentValue;
+
+    const control = createAttributeControl(attr, currentValue, (name, value) => {
+      state[name] = value;
+
+      // Update component attribute
+      if (attr.type === 'boolean') {
+        // Boolean attributes: present (no value) = true, absent = false
+        if (value) {
+          clonedComponent.setAttribute(name, '');
+        } else {
+          clonedComponent.removeAttribute(name);
+        }
+      } else {
+        // String/enum attributes: set value or remove if empty
+        if (value) {
+          clonedComponent.setAttribute(name, value);
+        } else {
+          clonedComponent.removeAttribute(name);
+        }
+      }
+
+      // Update code output
+      updateCodeOutput(output, clonedComponent);
+    });
+
+    attrsContainer.appendChild(control);
+  });
+
+  // Initial code output
+  updateCodeOutput(output, clonedComponent);
+}
+
+/** Create a control for a single attribute. */
+function createAttributeControl(attr, initialValue, onChange) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'docs-playground-control';
+
+  const label = document.createElement('label');
+  label.textContent = attr.name;
+  label.className = 'docs-playground-label';
+
+  let input;
+
+  if (attr.type === 'boolean') {
+    // Use sherpa-switch for boolean attributes
+    input = document.createElement('sherpa-switch');
+    input.dataset.size = 'sm';
+    const isChecked = initialValue !== null && initialValue !== '';
+    if (isChecked) input.setAttribute('checked', '');
+
+    input.addEventListener('change', (e) => {
+      const checked = e.detail?.checked ?? e.target.checked ?? false;
+      onChange(attr.name, checked);
+    });
+  } else if (attr.enumValues?.length) {
+    // Use select dropdown for enum attributes
+    input = document.createElement('select');
+    input.className = 'docs-playground-input';
+    input.innerHTML = `<option value="">(none)</option>` +
+      attr.enumValues.map(v => `<option value="${escapeHtml(v)}" ${v === initialValue ? 'selected' : ''}>${escapeHtml(v)}</option>`).join('');
+
+    input.addEventListener('change', () => {
+      onChange(attr.name, input.value);
+    });
+  } else {
+    // Text/number input for other attributes
+    input = document.createElement('input');
+    input.className = 'docs-playground-input';
+    input.type = attr.type === 'number' ? 'number' : 'text';
+    input.value = initialValue || '';
+    input.placeholder = attr.description || '';
+
+    input.addEventListener('input', () => {
+      onChange(attr.name, input.value);
+    });
+  }
+
+  wrapper.appendChild(label);
+  wrapper.appendChild(input);
+
+  return wrapper;
+}
+
+/** Update the code output display. */
+function updateCodeOutput(output, component) {
+  output.textContent = component.outerHTML;
+  if (window.hljs) {
+    window.hljs.highlightElement(output);
+  }
 }
 
 function buildComponentPage(tag, label, schema, examples, children = []) {

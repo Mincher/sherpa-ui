@@ -15,5 +15,46 @@
     pattern, minlength, maxlength, novalidate
 -->
 <template id="default">
-<input type="time" class="input-field" />
+<template id="default">
+  <!-- Native time input — hidden visually; owns form value + constraint validation -->
+  <input type="time" class="input-field" aria-hidden="true" tabindex="-1" />
+
+  <!-- Styled trigger (opens / closes the time picker popup) -->
+  <button type="button" class="picker-trigger" part="trigger" aria-haspopup="dialog" aria-expanded="false">
+    <span class="trigger-text"></span>
+    <span class="trigger-placeholder" aria-hidden="true">HH : MM</span>
+    <i class="fa-regular fa-clock trigger-icon" aria-hidden="true"></i>
+  </button>
+
+  <!-- Time picker popup — shown via :host([data-open]) -->
+  <div class="picker-popup" role="dialog" aria-modal="true" aria-label="Time picker">
+    <div class="time-spinners">
+
+      <!-- Hour spinner -->
+      <div class="spinner spinner-hour">
+        <button type="button" class="spin-up hour-up" aria-label="Increase hour">
+          <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+        </button>
+        <span class="spin-val hour-val" aria-live="polite" aria-label="Hour">--</span>
+        <button type="button" class="spin-down hour-down" aria-label="Decrease hour">
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <span class="time-colon" aria-hidden="true">:</span>
+
+      <!-- Minute spinner -->
+      <div class="spinner spinner-minute">
+        <button type="button" class="spin-up minute-up" aria-label="Increase minute">
+          <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+        </button>
+        <span class="spin-val minute-val" aria-live="polite" aria-label="Minute">--</span>
+        <button type="button" class="spin-down minute-down" aria-label="Decrease minute">
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</template>
 </template>

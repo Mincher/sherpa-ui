@@ -213,89 +213,29 @@ Goals: add or refactor a component without breaking downstream consumers. Pains:
 
 ## 8\. Architectural decisions (ADRs)
 
-### ADR-01 — Web Components + Shadow DOM, no framework
+Architectural decisions are documented in individual ADR files in [`docs/adr/`](adr/README.md).
 
-| Field | Value |
-| --- | --- |
-| Status | accepted |
-| Context | The library must be usable from any product surface regardless of framework choice. |
-| Options considered | A: React component library · B: Web Components · C: Multi-framework wrappers |
-| **Decision** | Build on the standard Custom Elements + Shadow DOM + HTML Templates platform; ship as ES modules. |
-| Rationale | Zero framework lock-in; encapsulated styles; loadable via plain `<script type="module">`. |
-| Consequences | \+ portable + small + future-proof · − requires polyfill-free evergreen browsers · − limited DX tooling vs framework-specific kits |
-| Linked requirements | REQ-01, REQ-02, REQ-101, REQ-103 |
+### Core Architecture
 
-### ADR-02 — Three-file split per component
+- [ADR-001: Web Components + Shadow DOM, No Framework](adr/0001-web-components-shadow-dom.md) — Platform choice and framework independence (REQ-01, REQ-02, REQ-101, REQ-103)
+- [ADR-002: Three-File Split Per Component](adr/0002-three-file-component-split.md) — Separation of HTML, CSS, and JS (REQ-01, REQ-21)
+- [ADR-008: Constructable Stylesheets Cached Per `cssUrl`](adr/0008-constructable-stylesheets.md) — Memory-efficient CSS delivery (NFR-01)
 
-| Field | Value |
-| --- | --- |
-| Status | accepted |
-| Context | Mixing structure, presentation, and behaviour in one file invites layer leakage. |
-| **Decision** | Each component lives in `components/<tag>/<tag>.{html,css,js}`. |
-| Rationale | Forces single responsibility per file; makes layer-violation reviews trivial. |
-| Consequences | \+ clear ownership · − three files to keep in sync per component |
-| Linked requirements | REQ-01, REQ-21 |
+### Progressive Enhancement
 
-### ADR-03 — CSS owns visibility via `:host([data-*])`
+- [ADR-003: CSS Owns Visibility via `:host([data-*])`](adr/0003-css-owns-visibility.md) — Declarative visibility control (REQ-04, REQ-05)
+- [ADR-004: `data-*` Attribute Prefix Mandatory](adr/0004-data-attribute-prefix.md) — Future-proof attribute naming (REQ-06)
+- [ADR-006: Cloning Template Prototypes](adr/0006-cloning-template-prototypes.md) — Template-first DOM construction (REQ-04)
 
-| Field | Value |
-| --- | --- |
-| Status | accepted |
-| Context | Toggling `.hidden` or `.style.display` from JS scattered visibility logic across layers. |
-| **Decision** | Visibility of internal shadow elements **SHALL** be driven by `:host([data-*])` selectors; JS only sets/removes attributes on the host. |
-| Rationale | One place to read the visual contract; no JS-driven flicker. |
-| Consequences | \+ declarative · − requires every conditional element to exist in the template up front |
-| Linked requirements | REQ-04, REQ-05 |
+### Design Tokens & Theming
 
-### ADR-04 — `data-*` attribute prefix mandatory
+- [ADR-005: Semantic Tokens Only in Component CSS](adr/0005-semantic-tokens-only.md) — Theme portability (REQ-07, REQ-08)
 
-| Field | Value |
-| --- | --- |
-| Status | accepted |
-| Context | Bare custom attributes (`variant`, `size`) collide with future native HTML attributes and are invisible to standard CSS attribute selectors. |
-| **Decision** | All public component attributes **SHALL** use the `data-` prefix, except native semantics (`hidden`, `disabled`, `role`, `aria-*`, `id`, `slot`). |
-| Rationale | Future-proof; consistent attribute selectors; readable from JS via `dataset`. |
-| Consequences | \+ safe + consistent · − slightly more verbose markup |
-| Linked requirements | REQ-06 |
+### Event Architecture
 
-### ADR-05 — Semantic tokens only in component CSS
+- [ADR-007: Custom Events Bubble; Cross Shadow Only When Needed](adr/0007-custom-events-bubble.md) — Event propagation policy (REQ-09)
 
-| Field | Value |
-| --- | --- |
-| Status | accepted |
-| **Decision** | Component CSS **SHALL** consume only semantic tokens (`--sherpa-*`). Core tokens (`--core-*`) are reserved for the alias layer. |
-| Rationale | Theming and rebranding happen at the alias layer; components stay theme-agnostic. |
-| Consequences | \+ theme-portable · − requires alias layer for every visual concept |
-| Linked requirements | REQ-07, REQ-08 |
-
-### ADR-06 — Cloning template prototypes over `createElement` / `innerHTML`
-
-| Field | Value |
-| --- | --- |
-| Status | accepted |
-| Context | Building structural DOM in JS hides the rendered shape from reviewers and AI agents. |
-| **Decision** | Repeating structure **SHALL** be authored as `<template class="*-tpl">` in the component HTML and cloned per use. |
-| Rationale | Template is the single source of truth for shape. |
-| Consequences | \+ reviewable · − an extra clone step in JS |
-| Linked requirements | REQ-04 |
-
-### ADR-07 — Custom events bubble; cross shadow only when needed
-
-| Field | Value |
-| --- | --- |
-| Status | accepted |
-| **Decision** | All custom events **SHALL** set `bubbles: true`. Events that must reach application code outside the host's shadow tree **SHALL** also set `composed: true`. |
-| Rationale | Predictable event propagation; flow events reach app handlers reliably. |
-| Linked requirements | REQ-09 |
-
-### ADR-08 — Constructable stylesheets cached per `cssUrl`
-
-| Field | Value |
-| --- | --- |
-| Status | accepted |
-| **Decision** | `SherpaElement` fetches each component's CSS once, builds a `CSSStyleSheet`, and shares it via `adoptedStyleSheets` across all instances. |
-| Rationale | Avoids per-instance style parsing; single network fetch per component. |
-| Linked requirements | NFR-01 |
+**See [docs/adr/README.md](adr/README.md) for complete ADR index, templates, and process.**
 
 ### ADR-09 — MCP server is the AI-facing contract
 

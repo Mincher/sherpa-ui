@@ -2,7 +2,7 @@
 
 > **Category:** input · **Base class:** SherpaInputBase
 
-Date range picker composing two native date inputs (start / end). Inherits label, description, helper, layout, validation from SherpaInputBase. Start ≤ end constraint soft-enforced via min/max on native inputs.
+Date range picker with calendar popups for start and end dates. Inherits label, description, helper, layout, validation from SherpaInputBase. Start ≤ end constraint soft-enforced via min/max on native inputs. Range highlight shown on days between selected start and end.
 
 ## Attributes
 

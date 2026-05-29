@@ -4,6 +4,9 @@ node_modules/
 .vscode/
 *.code-search
 
+# TypeScript compiled output
+dist/
+
 # Figma extract output (large; regenerate with `npm run tokens:extract`).
 # alias-snapshot.json IS tracked — it is the canonical Alias source until
 # the design team rebuilds the Figma Alias collection.

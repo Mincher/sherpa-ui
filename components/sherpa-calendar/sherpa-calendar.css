@@ -1,0 +1,147 @@
+/* ── Sherpa Calendar ──────────────────────────────────────────────── */
+
+/* ── Base Layout ────────────────────────────────────────────────── */
+
+.cal-container {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--sherpa-spacing-sm, 8px);
+  min-width: 280px;
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+
+.cal-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sherpa-spacing-xs, 4px);
+}
+
+.cal-prev,
+.cal-next,
+.cal-month-label {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sherpa-spacing-xs, 4px) var(--sherpa-spacing-sm, 8px);
+  border-radius: var(--sherpa-border-radius-sm, 4px);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.cal-prev:hover,
+.cal-next:hover,
+.cal-month-label:hover {
+  background-color: var(--sherpa-color-surface-hover, rgba(0, 0, 0, 0.04));
+}
+
+.cal-prev:focus-visible,
+.cal-next:focus-visible,
+.cal-month-label:focus-visible {
+  outline: 2px solid var(--sherpa-color-focus, #0078d4);
+  outline-offset: 2px;
+}
+
+.cal-month-label {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-size: var(--sherpa-font-size-body, 16px);
+}
+
+/* ── Weekday Headers ────────────────────────────────────────────── */
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  padding-block-end: var(--sherpa-spacing-xs, 4px);
+  border-block-end: 1px solid var(--sherpa-color-border, #e0e0e0);
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-color-text-muted, #757575);
+  padding: var(--sherpa-spacing-xs, 4px);
+}
+
+/* ── Days Grid ──────────────────────────────────────────────────── */
+
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-day {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-block-size: 32px;
+  border-radius: var(--sherpa-border-radius-sm, 4px);
+  cursor: pointer;
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.cal-day:hover {
+  background-color: var(--sherpa-color-surface-hover, rgba(0, 0, 0, 0.04));
+}
+
+.cal-day:focus-visible {
+  outline: 2px solid var(--sherpa-color-focus, #0078d4);
+  outline-offset: -2px;
+}
+
+/* ── Day States ─────────────────────────────────────────────────── */
+
+.cal-day[data-selected] {
+  background-color: var(--sherpa-color-primary, #0078d4);
+  color: var(--sherpa-color-text-on-primary, #ffffff);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+.cal-day[data-selected]:hover {
+  background-color: var(--sherpa-color-primary-hover, #106ebe);
+}
+
+.cal-day[data-today] {
+  outline: 1px solid var(--sherpa-color-primary, #0078d4);
+  outline-offset: -1px;
+}
+
+.cal-day[data-in-range] {
+  background-color: var(--sherpa-color-primary-bg, rgba(0, 120, 212, 0.1));
+}
+
+.cal-day[data-other-month] {
+  color: var(--sherpa-color-text-muted, #757575);
+}
+
+.cal-day:disabled {
+  color: var(--sherpa-color-text-disabled, #c0c0c0);
+  cursor: not-allowed;
+}
+
+.cal-day:disabled:hover {
+  background-color: transparent;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+
+.cal-footer {
+  display: none;
+  padding-block-start: var(--sherpa-spacing-sm, 8px);
+  border-block-start: 1px solid var(--sherpa-color-border, #e0e0e0);
+}
+
+.cal-footer[data-has-content] {
+  display: block;
+}

@@ -6,4 +6,239 @@
  * No component-specific CSS needed; base template handles structure.
  */
 
+/* sherpa-input-date.css
+   Date input with calendar picker popup.
+   Extends SherpaInputBase styles.
+*/
+
 @import "../utilities/sherpa-input-base/sherpa-input-base.css";
+
+/* ═══════════════════════════════════════════════════════════════
+   1. HOST
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Host styles are inherited from SherpaInputBase */
+
+/* ═══════════════════════════════════════════════════════════════
+   2. OVERRIDE: allow popup to overflow .input-body
+   ═══════════════════════════════════════════════════════════════ */
+
+.input-body {
+  overflow: visible;
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. TYPEABLE INPUT — visible, owns form value + validation
+   ═══════════════════════════════════════════════════════════════ */
+
+/* .input-field styling is inherited from sherpa-input-base.css. */
+
+/* ═══════════════════════════════════════════════════════════════
+   4. CALENDAR ICON TRIGGER (opens / closes popup)
+   ═══════════════════════════════════════════════════════════════ */
+
+.picker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--sherpa-size-2xl, 32px);
+  height: var(--sherpa-size-2xl, 32px);
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--sherpa-surface-control-hover, #e8e9ec);
+    color: var(--sherpa-content-default-body, #333);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+    outline-offset: -2px;
+  }
+}
+
+.trigger-icon {
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+}
+
+/* Disabled / readonly states */
+:host([disabled]) .picker-trigger {
+  color: var(--sherpa-content-inactive-default, #7e7e8f);
+  cursor: not-allowed;
+}
+
+:host([readonly]) .picker-trigger {
+  cursor: default;
+}
+
+:host([readonly]) .picker-trigger:hover {
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. CALENDAR POPUP
+   ═══════════════════════════════════════════════════════════════ */
+
+.picker-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + var(--sherpa-space-2xs, 4px));
+  left: 0;
+  z-index: 200;
+  min-width: 280px;
+  background: var(--sherpa-surface-container-default, #f4f4f6);
+  border: 1px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgb(0 0 0 / 12%));
+  padding: var(--sherpa-space-default, 16px);
+  box-sizing: border-box;
+}
+
+:host([data-open]) .picker-popup {
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. CALENDAR HEADER (month navigation)
+   ═══════════════════════════════════════════════════════════════ */
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sherpa-space-xs, 8px);
+}
+
+.cal-month-year {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  color: var(--sherpa-content-default-body, #333);
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  cursor: pointer;
+  color: var(--sherpa-content-default-body, #333);
+  font-size: 12px;
+
+  &:hover {
+    background: var(--sherpa-surface-control-hover, #e8e9ec);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+    outline-offset: 1px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   7. WEEKDAY LABELS
+   ═══════════════════════════════════════════════════════════════ */
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--sherpa-space-2xs, 4px);
+  padding-block: var(--sherpa-space-xs, 8px);
+}
+
+.cal-weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: 600;
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. DAY GRID
+   ═══════════════════════════════════════════════════════════════ */
+
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  cursor: pointer;
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-family: inherit;
+  color: var(--sherpa-content-default-body, #333);
+
+  &:hover:not(:disabled) {
+    background: var(--sherpa-surface-control-hover, #e8e9ec);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+    outline-offset: 1px;
+  }
+
+  &[data-selected="true"] {
+    background: var(--sherpa-surface-control-primary-default, #2855ef);
+    color: var(--sherpa-content-on-color-body, #fff);
+    border-color: transparent;
+  }
+
+  &[data-today="true"]:not([data-selected="true"]) {
+    border-color: var(--sherpa-border-control-active-default, #0060df);
+  }
+
+  &[data-other-month="true"],
+  &:disabled {
+    color: var(--sherpa-content-inactive-default, #7e7e8f);
+    cursor: default;
+  }
+
+  &:disabled:not([data-other-month]) {
+    opacity: 0.5;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   9. FORCED COLORS (high-contrast / Windows HC mode)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (forced-colors: active) {
+  .picker-popup {
+    border: 2px solid ButtonText;
+  }
+
+  .cal-day[data-selected="true"] {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+
+  .cal-day[data-today="true"]:not([data-selected="true"]) {
+    border-color: Highlight;
+  }
+}

@@ -41,7 +41,8 @@
         "control",
         "input",
         "display",
-        "content"
+        "content",
+        "html"
       ]
     },
     {
@@ -51,7 +52,8 @@
         "control",
         "input",
         "display",
-        "content"
+        "content",
+        "html"
       ]
     },
     {
@@ -61,7 +63,8 @@
         "control",
         "input",
         "display",
-        "content"
+        "content",
+        "html"
       ]
     },
     {
@@ -69,7 +72,9 @@
       "description": "Below the toolbar row (filter bar, chips)",
       "accepts": [
         "control",
-        "input"
+        "input",
+        "data",
+        "html"
       ]
     }
   ],

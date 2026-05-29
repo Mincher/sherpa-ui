@@ -6,4 +6,220 @@
  * No component-specific CSS needed; base template handles structure.
  */
 
+/* sherpa-input-time.css
+   Time input with hour / minute spinner popup.
+   Extends SherpaInputBase styles.
+*/
+
 @import "../utilities/sherpa-input-base/sherpa-input-base.css";
+
+/* ═══════════════════════════════════════════════════════════════
+   1. HOST
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Host styles are inherited from SherpaInputBase */
+
+/* ═══════════════════════════════════════════════════════════════
+   2. OVERRIDE: allow popup to overflow .input-body
+   ═══════════════════════════════════════════════════════════════ */
+
+.input-body {
+  overflow: visible;
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. NATIVE INPUT — visually hidden; owns form value + constraints
+   ═══════════════════════════════════════════════════════════════ */
+
+.input-field {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   4. TRIGGER BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+
+.picker-trigger {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: var(--sherpa-size-2xl, 32px);
+  padding-inline: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-space-xs, 8px);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--sherpa-content-default-body, #333);
+  font-family: inherit;
+  font-size: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.trigger-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: start;
+  display: none;
+}
+
+.trigger-placeholder {
+  flex: 1;
+  color: var(--sherpa-content-default-placeholder, #7e7e8f);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+.trigger-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
+}
+
+/* When a time has been selected: show value text, hide placeholder */
+:host([data-has-value]) .trigger-text        { display: block; }
+:host([data-has-value]) .trigger-placeholder { display: none; }
+
+/* Disabled / readonly states */
+:host([disabled]) .picker-trigger {
+  color: var(--sherpa-content-inactive-default, #7e7e8f);
+  cursor: not-allowed;
+}
+
+:host([readonly]) .picker-trigger {
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. TIME PICKER POPUP
+   ═══════════════════════════════════════════════════════════════ */
+
+.picker-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + var(--sherpa-space-2xs, 4px));
+  left: 0;
+  z-index: 200;
+  background: var(--sherpa-surface-container-default, #f4f4f6);
+  border: 1px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgb(0 0 0 / 12%));
+  padding: var(--sherpa-space-default, 16px);
+  box-sizing: border-box;
+}
+
+:host([data-open]) .picker-popup {
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. SPINNERS LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+
+.time-spinners {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-space-xs, 8px);
+}
+
+.spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   7. SPINNER BUTTONS AND VALUE DISPLAY
+   ═══════════════════════════════════════════════════════════════ */
+
+.spin-up,
+.spin-down {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  cursor: pointer;
+  color: var(--sherpa-content-default-body, #333);
+  font-size: 10px;
+
+  &:hover {
+    background: var(--sherpa-surface-control-hover, #e8e9ec);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+    outline-offset: 1px;
+  }
+}
+
+.spin-val {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: var(--sherpa-size-2xl, 32px);
+  background: var(--sherpa-surface-container-default, #f4f4f6);
+  border: 1px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--sherpa-content-default-body, #333);
+}
+
+.time-colon {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--sherpa-content-default-body, #333);
+  /* Align vertically with the spin-val row */
+  margin-top: 28px;
+  line-height: var(--sherpa-size-2xl, 32px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. DISABLED SPINNER STATE
+   ═══════════════════════════════════════════════════════════════ */
+
+:host([disabled]) .spin-up,
+:host([disabled]) .spin-down {
+  color: var(--sherpa-content-inactive-default, #7e7e8f);
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   9. FORCED COLORS (high-contrast / Windows HC mode)
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (forced-colors: active) {
+  .picker-popup {
+    border: 2px solid ButtonText;
+  }
+
+  .spin-val {
+    border-color: ButtonText;
+  }
+}

@@ -9,7 +9,7 @@ Subgrid tile cluster for sherpa-layout-grid. Wraps a set of <sherpa-container> t
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-col-span` | enum | 2 \| 3 \| 4 \| 6 \| 8 \| 9 \| 12 — span across | — | `2`, `3`, `4`, `6`, `8`, `9`, `12` |
-| `data-row-span` | number | Automatically computed and written | — | — |
+| `data-row-span` | number | Number of outer-grid rows this group | — | — |
 | `data-src-html` | string |  | — | — |
 | `data-src-json` | string |  | — | — |
 

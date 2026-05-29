@@ -1,0 +1,23 @@
+<!--
+  sherpa-calendar — Live examples.
+  Each <template> renders one example block in the docs site (docs/router.js).
+-->
+
+<template data-label="Basic Calendar" data-layout="block">
+  <sherpa-calendar></sherpa-calendar>
+</template>
+
+<template data-label="With Selected Date" data-layout="block">
+  <sherpa-calendar data-value="2024-05-15"></sherpa-calendar>
+</template>
+
+<template data-label="With Date Range Constraints" data-description="Calendar with min/max date boundaries" data-layout="block">
+  <sherpa-calendar
+    data-min="2024-05-01"
+    data-max="2024-05-31">
+  </sherpa-calendar>
+</template>
+
+<template data-label="Showing Specific Month" data-layout="block">
+  <sherpa-calendar data-month="2024-12"></sherpa-calendar>
+</template>

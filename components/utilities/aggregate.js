@@ -39,6 +39,7 @@ export function agg(values, fn) {
     case 'avg': case 'mean': return nums.reduce((a, b) => a + b, 0) / nums.length;
     case 'min':              return Math.min(...nums);
     case 'max':              return Math.max(...nums);
+    case 'last':             return nums[nums.length - 1];
     default:                 throw new Error(`Unknown aggregation: ${fn}`);
   }
 }

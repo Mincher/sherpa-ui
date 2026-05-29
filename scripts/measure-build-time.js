@@ -1,46 +1,32 @@
 #!/usr/bin/env node
-
 /**
  * measure-build-time.js
- * Measures execution time of each build step and total build time.
+ *
+ * Measures and tracks build performance metrics for the Sherpa UI build pipeline.
  *
  * Usage:
  *   node scripts/measure-build-time.js
  *   npm run build:measure
  *
  * Outputs:
- *   - Console summary of build times
- *   - .build-metrics.json file with detailed timing data
+ *   - Console report with timing for each build step
+ *   - JSON metrics file (.build-metrics.json) for trend analysis
  */
 
 import { execSync } from 'child_process';
-import { writeFileSync, existsSync, readFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 const metricsFile = join(rootDir, '.build-metrics.json');
 
-// ANSI color codes
-const colors = {
-  reset: '\x1b[0m',
-  bold: '\x1b[1m',
-  green: '\x1b[32m',
-  blue: '\x1b[34m',
-  yellow: '\x1b[33m',
-  cyan: '\x1b[36m',
-};
-
 /**
- * Measure execution time of a shell command
- * @param {string} name - Display name for the step
- * @param {string} command - Shell command to execute
- * @returns {Object} - { name, duration, success, error }
+ * Execute a command and measure its duration
  */
-function measureStep(name, command) {
-  console.log(`${colors.blue}▶${colors.reset} ${name}...`);
+function measureCommand(name, command) {
   const startTime = performance.now();
 
   try {
@@ -50,163 +36,147 @@ function measureStep(name, command) {
       env: { ...process.env, FORCE_COLOR: '1' }
     });
     const duration = performance.now() - startTime;
-    console.log(`${colors.green}✓${colors.reset} ${name} completed in ${colors.cyan}${(duration / 1000).toFixed(2)}s${colors.reset}\n`);
-    return { name, duration, success: true };
+    return { success: true, duration };
   } catch (error) {
     const duration = performance.now() - startTime;
-    console.error(`${colors.yellow}✗${colors.reset} ${name} failed after ${colors.cyan}${(duration / 1000).toFixed(2)}s${colors.reset}\n`);
-    return { name, duration, success: false, error: error.message };
+    return { success: false, duration, error: error.message };
   }
 }
 
 /**
- * Load historical metrics if they exist
+ * Format milliseconds to human-readable time
  */
-function loadHistoricalMetrics() {
+function formatTime(ms) {
+  if (ms < 1000) return `${ms.toFixed(0)}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+}
+
+/**
+ * Load historical metrics
+ */
+function loadMetrics() {
   if (!existsSync(metricsFile)) {
-    return [];
+    return { builds: [] };
   }
   try {
-    const data = readFileSync(metricsFile, 'utf-8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.warn(`Warning: Could not parse ${metricsFile}:`, err.message);
-    return [];
+    return JSON.parse(readFileSync(metricsFile, 'utf8'));
+  } catch {
+    return { builds: [] };
   }
 }
 
 /**
- * Save metrics to file
+ * Save metrics
  */
-function saveMetrics(buildMetrics) {
-  const history = loadHistoricalMetrics();
-
-  // Keep last 50 builds
-  history.push(buildMetrics);
-  const trimmedHistory = history.slice(-50);
-
-  writeFileSync(metricsFile, JSON.stringify(trimmedHistory, null, 2));
-  console.log(`\n${colors.green}✓${colors.reset} Metrics saved to ${colors.cyan}.build-metrics.json${colors.reset}`);
+function saveMetrics(metrics) {
+  writeFileSync(metricsFile, JSON.stringify(metrics, null, 2));
 }
 
 /**
  * Calculate statistics from historical data
  */
-function calculateStats(history, stepName) {
-  if (history.length === 0) return null;
-
-  const durations = history
-    .filter(build => {
-      const step = build.steps.find(s => s.name === stepName);
-      return step && step.success;
-    })
-    .map(build => build.steps.find(s => s.name === stepName).duration);
+function calculateStats(builds, stepName) {
+  const durations = builds
+    .filter(b => b.steps[stepName] && b.steps[stepName].success)
+    .map(b => b.steps[stepName].duration)
+    .slice(-10); // Last 10 successful builds
 
   if (durations.length === 0) return null;
 
   const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
-  const min = Math.min(...durations);
-  const max = Math.max(...durations);
+  const sorted = [...durations].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
 
-  return { avg, min, max, count: durations.length };
+  return { avg, median, min: sorted[0], max: sorted[sorted.length - 1] };
 }
 
-/**
- * Main build measurement function
- */
-async function main() {
-  console.log(`${colors.bold}Sherpa UI Build Time Measurement${colors.reset}`);
-  console.log(`${'='.repeat(50)}\n`);
+// Build steps to measure
+const buildSteps = [
+  { name: 'tokens:generate', command: 'npm run tokens:generate' },
+  { name: 'schemas', command: 'npm run schemas' },
+  { name: 'patterns', command: 'npm run patterns' },
+  { name: 'component-docs', command: 'npm run component-docs' },
+];
 
-  const buildSteps = [
-    { name: 'Token Generation', command: 'npm run tokens:generate' },
-    { name: 'Schema Extraction', command: 'npm run schemas' },
-    { name: 'Pattern Extraction', command: 'npm run patterns' },
-    { name: 'Component Docs', command: 'npm run component-docs' },
-  ];
+console.log('🔨 Sherpa UI Build Performance Measurement\n');
+console.log('='.repeat(60));
 
-  const overallStart = performance.now();
-  const results = [];
+const buildStart = performance.now();
+const results = {};
 
-  for (const step of buildSteps) {
-    const result = measureStep(step.name, step.command);
-    results.push(result);
+// Run each build step and measure
+for (const step of buildSteps) {
+  console.log(`\n📦 Running: ${step.name}`);
+  console.log('-'.repeat(60));
 
-    // Stop if a step fails
-    if (!result.success) {
-      console.error(`\n${colors.yellow}⚠${colors.reset} Build stopped due to failure in: ${result.name}`);
-      break;
-    }
-  }
+  const result = measureCommand(step.name, step.command);
+  results[step.name] = result;
 
-  const overallDuration = performance.now() - overallStart;
-  const allSucceeded = results.every(r => r.success);
-
-  // Build metrics object
-  const buildMetrics = {
-    timestamp: new Date().toISOString(),
-    totalDuration: overallDuration,
-    success: allSucceeded,
-    steps: results,
-  };
-
-  // Save metrics
-  saveMetrics(buildMetrics);
-
-  // Load historical data
-  const history = loadHistoricalMetrics();
-
-  // Print summary
-  console.log(`\n${colors.bold}Build Summary${colors.reset}`);
-  console.log(`${'='.repeat(50)}`);
-  console.log(`${colors.bold}Total Time:${colors.reset} ${colors.cyan}${(overallDuration / 1000).toFixed(2)}s${colors.reset}`);
-  console.log(`${colors.bold}Status:${colors.reset} ${allSucceeded ? `${colors.green}SUCCESS${colors.reset}` : `${colors.yellow}FAILED${colors.reset}`}`);
-  console.log(`${colors.bold}Steps:${colors.reset} ${results.filter(r => r.success).length}/${results.length} completed\n`);
-
-  // Print step breakdown
-  console.log(`${colors.bold}Step Breakdown:${colors.reset}`);
-  console.log(`${'─'.repeat(50)}`);
-
-  for (const step of results) {
-    const stats = calculateStats(history, step.name);
-    const duration = (step.duration / 1000).toFixed(2);
-    const status = step.success ? `${colors.green}✓${colors.reset}` : `${colors.yellow}✗${colors.reset}`;
-
-    console.log(`${status} ${step.name.padEnd(20)} ${colors.cyan}${duration}s${colors.reset}`);
-
-    if (stats && stats.count > 1) {
-      const avgDiff = ((step.duration - stats.avg) / stats.avg * 100).toFixed(1);
-      const diffColor = Math.abs(avgDiff) < 5 ? colors.reset : (avgDiff > 0 ? colors.yellow : colors.green);
-      console.log(`  └─ Avg: ${(stats.avg / 1000).toFixed(2)}s | Min: ${(stats.min / 1000).toFixed(2)}s | Max: ${(stats.max / 1000).toFixed(2)}s | ${diffColor}${avgDiff > 0 ? '+' : ''}${avgDiff}%${colors.reset}`);
-    }
-  }
-
-  console.log(`${'─'.repeat(50)}`);
-
-  // Historical comparison
-  if (history.length > 1) {
-    const prevBuild = history[history.length - 2];
-    const timeDiff = overallDuration - prevBuild.totalDuration;
-    const percentDiff = (timeDiff / prevBuild.totalDuration * 100).toFixed(1);
-    const diffColor = Math.abs(percentDiff) < 5 ? colors.reset : (percentDiff > 0 ? colors.yellow : colors.green);
-
-    console.log(`\n${colors.bold}Compared to previous build:${colors.reset}`);
-    console.log(`${diffColor}${timeDiff > 0 ? '+' : ''}${(timeDiff / 1000).toFixed(2)}s (${percentDiff > 0 ? '+' : ''}${percentDiff}%)${colors.reset}`);
-  }
-
-  if (history.length >= 5) {
-    const recentBuilds = history.slice(-5);
-    const avgTotal = recentBuilds.reduce((sum, b) => sum + b.totalDuration, 0) / recentBuilds.length;
-    console.log(`${colors.bold}5-build average:${colors.reset} ${colors.cyan}${(avgTotal / 1000).toFixed(2)}s${colors.reset}`);
-  }
-
-  console.log(`\n${colors.bold}Metrics saved:${colors.reset} ${history.length} builds tracked`);
-
-  // Exit with appropriate code
-  process.exit(allSucceeded ? 0 : 1);
+  const statusIcon = result.success ? '✅' : '❌';
+  console.log(`${statusIcon} ${step.name}: ${formatTime(result.duration)}`);
 }
 
-main().catch(err => {
-  console.error('Fatal error:', err);
-  process.exit(1);
+const totalDuration = performance.now() - buildStart;
+
+// Display summary
+console.log('\n' + '='.repeat(60));
+console.log('📊 Build Summary\n');
+
+let allSucceeded = true;
+for (const [name, result] of Object.entries(results)) {
+  const icon = result.success ? '✅' : '❌';
+  console.log(`${icon} ${name.padEnd(20)} ${formatTime(result.duration).padStart(8)}`);
+  if (!result.success) allSucceeded = false;
+}
+
+console.log('-'.repeat(60));
+console.log(`⏱️  Total Build Time:     ${formatTime(totalDuration)}`);
+console.log(`🎯 Status:               ${allSucceeded ? '✅ SUCCESS' : '❌ FAILED'}`);
+
+// Load historical metrics
+const metrics = loadMetrics();
+
+// Add current build to history
+metrics.builds.push({
+  timestamp: new Date().toISOString(),
+  totalDuration,
+  success: allSucceeded,
+  steps: results
 });
+
+// Keep only last 50 builds
+if (metrics.builds.length > 50) {
+  metrics.builds = metrics.builds.slice(-50);
+}
+
+// Save metrics
+saveMetrics(metrics);
+
+// Show trends if we have historical data
+if (metrics.builds.length > 1) {
+  console.log('\n📈 Performance Trends (last 10 successful builds)\n');
+
+  const allSteps = [...buildSteps.map(s => s.name), 'total'];
+
+  for (const stepName of allSteps) {
+    const stats = stepName === 'total'
+      ? calculateStats(metrics.builds.map(b => ({ steps: { total: { duration: b.totalDuration, success: b.success } } })), 'total')
+      : calculateStats(metrics.builds, stepName);
+
+    if (stats) {
+      const current = stepName === 'total' ? totalDuration : results[stepName].duration;
+      const diff = current - stats.avg;
+      const diffPercent = ((diff / stats.avg) * 100).toFixed(1);
+      const trend = diff > 0 ? '📈' : '📉';
+      const sign = diff > 0 ? '+' : '';
+
+      console.log(`${stepName.padEnd(20)} avg: ${formatTime(stats.avg)} ${trend} ${sign}${formatTime(diff)} (${sign}${diffPercent}%)`);
+    }
+  }
+}
+
+console.log('\n✨ Metrics saved to .build-metrics.json');
+console.log('='.repeat(60) + '\n');
+
+// Exit with appropriate code
+process.exit(allSucceeded ? 0 : 1);

@@ -41,12 +41,13 @@
 
 import { getSheet } from '../stylesheet-cache.js';
 import { getCategory, getTier } from '../component-categories.js';
+import { initializeProperties, getObservedAttributes } from '../decorators.js';
 
 // ── Class-level caches ─────────────────────────────────────────────
-const _htmlCache = new Map();
-const _templateMapCache = new Map();
-const _classSheets = new Map();
-const _warnedRejections = new Set();
+const _htmlCache = new Map<typeof SherpaElement, string>();
+const _templateMapCache = new Map<typeof SherpaElement, Map<string, string> | null>();
+const _classSheets = new Map<typeof SherpaElement, Promise<CSSStyleSheet[]>>();
+const _warnedRejections = new Set<string>();
 
 // ── Shared stylesheet URLs ─────────────────────────────────────────
 const BASE_URL = new URL('./sherpa-base.css', import.meta.url).href;
@@ -64,17 +65,17 @@ export { BASE_URL, ANCHOR_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL, FUNCTIONS
  * Parse an HTML string for `<template id="...">` blocks.
  * Returns a Map<id, innerHTML> if found, or null for flat HTML.
  */
-export function parseTemplates(html) {
+export function parseTemplates(html: string): Map<string, string> | null {
   if (!html || !html.includes('<template')) return null;
 
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const templates = doc.querySelectorAll('template[id]');
   if (templates.length === 0) return null;
 
-  const map = new Map();
+  const map = new Map<string, string>();
   for (const t of templates) {
     const wrapper = document.createElement('div');
-    wrapper.appendChild(t.content.cloneNode(true));
+    wrapper.appendChild((t as HTMLTemplateElement).content.cloneNode(true));
     map.set(t.id, wrapper.innerHTML);
   }
   return map;
@@ -83,15 +84,15 @@ export function parseTemplates(html) {
 export class SherpaElement extends HTMLElement {
   /* ── Static config (override in subclass) ─────────────────────── */
 
-  static get cssUrl() {
+  static get cssUrl(): string | null {
     return null;
   }
-  static get htmlUrl() {
+  static get htmlUrl(): string | null {
     return null;
   }
 
   /** Shared stylesheets adopted by every shadow root. Override to customise. */
-  static get sharedStyles() {
+  static get sharedStyles(): string[] {
     return [BASE_URL, FA_URL, TEXT_URL, ICON_URL, MOTION_URL, FUNCTIONS_URL];
   }
 
@@ -117,21 +118,21 @@ export class SherpaElement extends HTMLElement {
 
   /* ── Observed attributes ──────────────────────────────────────── */
 
-  static get observedAttributes() {
-    return ['data-src-html', 'data-src-json'];
+  static get observedAttributes(): string[] {
+    return [...getObservedAttributes(this), 'data-src-html', 'data-src-json'];
   }
 
   /* ── Template selection (override in subclass) ────────────────── */
 
-  get templateId() {
+  get templateId(): string | null {
     return null;
   }
 
   /* ── Instance ─────────────────────────────────────────────────── */
 
-  #shadow = null;
+  #shadow!: ShadowRoot;
   #rendered = false;
-  #renderPromise = null;
+  #renderPromise: Promise<void> | null = null;
 
   constructor() {
     super();
@@ -140,32 +141,48 @@ export class SherpaElement extends HTMLElement {
 
   /* ── Shadow root query helpers ────────────────────────────────── */
 
-  $(sel) {
-    return this.#shadow.querySelector(sel);
+  $<E extends Element = Element>(sel: string): E | null {
+    return this.#shadow.querySelector<E>(sel);
   }
-  $$(sel) {
-    return this.#shadow.querySelectorAll(sel);
+  $$<E extends Element = Element>(sel: string): NodeListOf<E> {
+    return this.#shadow.querySelectorAll<E>(sel);
   }
 
-  get shadow() {
+  get shadow(): ShadowRoot {
     return this.#shadow;
   }
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  async connectedCallback() {
+  async connectedCallback(): Promise<void> {
     if (!this.#rendered) {
+      // Initialize reactive properties from attributes
+      initializeProperties(this);
+
       this.#renderPromise = this.#bootstrap();
       await this.#renderPromise;
     }
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     this.onDisconnect();
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) return;
+
+    // Handle decorator-based property sync
+    const metadata = (this.constructor as any)._propertyMetadata;
+    if (metadata) {
+      for (const [propKey, meta] of metadata.entries()) {
+        if (meta.attribute === name) {
+          const propValue = meta.converter.fromAttribute(newValue);
+          (this as any)[propKey] = propValue;
+          return; // Property setter handles updates
+        }
+      }
+    }
+
     if (this.#rendered) {
       if (name === 'data-src-html' && newValue) this.renderFromUrl(newValue);
       if (name === 'data-src-json' && newValue) this.#fetchJson(newValue);
@@ -176,41 +193,41 @@ export class SherpaElement extends HTMLElement {
   /* ── Hooks (override in subclass) ─────────────────────────────── */
 
   /** Called after shadow DOM is populated, before slot wiring. */
-  onRender() {}
+  onRender(): void | Promise<void> {}
 
   /** Called once after first complete render + slot wiring. */
-  onConnect() {}
+  onConnect(): void {}
 
   /** Called on disconnectedCallback. */
-  onDisconnect() {}
+  onDisconnect(): void {}
 
   /** Called on attributeChangedCallback (only when value actually changed). */
-  onAttributeChanged(_name, _oldValue, _newValue) {}
+  onAttributeChanged(_name: string, _oldValue: string | null, _newValue: string | null): void {}
 
   /**
    * Called after `data-src-json` is fetched and parsed.
    * Override in subclasses to process the loaded data.
-   * @param {*} _data — parsed JSON value
+   * @param _data — parsed JSON value
    */
-  onJsonData(_data) {}
+  onJsonData(_data: unknown): void {}
 
   /**
    * Called when a `data-src-json` fetch fails (network error, non-OK
    * response, or malformed JSON). Override to handle the error state.
-   * @param {string} _url — the URL that failed
-   * @param {Error}  _error
+   * @param _url — the URL that failed
+   * @param _error
    */
-  onJsonError(_url, _error) {}
+  onJsonError(_url: string, _error: Error): void {}
 
   /**
    * Called when a slot's distributed content changes.
    * Default: toggles `data-has-content` on the slot wrapper
    * and sets `data-has-{name}` on the host.
    */
-  onSlotChange(slotEl) {
+  onSlotChange(slotEl: HTMLSlotElement): void {
     const hasContent = this.#slotHasContent(slotEl);
     const wrapper = slotEl.parentElement;
-    if (wrapper && wrapper !== this.#shadow) {
+    if (wrapper && (wrapper as Node) !== this.#shadow) {
       wrapper.toggleAttribute('data-has-content', hasContent);
     }
     const name = slotEl.name || 'label';
@@ -219,8 +236,8 @@ export class SherpaElement extends HTMLElement {
 
   /* ── Constructable stylesheet adoption ─────────────────────────── */
 
-  async #adoptStyles() {
-    const Ctor = this.constructor;
+  async #adoptStyles(): Promise<void> {
+    const Ctor = this.constructor as typeof SherpaElement;
     if (!_classSheets.has(Ctor)) {
       const urls = [...Ctor.sharedStyles];
       if (Ctor.useAnchor) urls.push(ANCHOR_URL);
@@ -229,17 +246,17 @@ export class SherpaElement extends HTMLElement {
         Ctor,
         urls.length
           ? Promise.all(urls.map((u) => getSheet(u).catch(() => null))).then((r) =>
-              r.filter(Boolean),
+              r.filter(Boolean) as CSSStyleSheet[],
             )
           : Promise.resolve([]),
       );
     }
-    this.#shadow.adoptedStyleSheets = await _classSheets.get(Ctor);
+    this.#shadow.adoptedStyleSheets = await _classSheets.get(Ctor)!;
   }
 
   /* ── Template resolution ──────────────────────────────────────── */
 
-  #resolveHtml(tplMap, rawHtml, id) {
+  #resolveHtml(tplMap: Map<string, string> | null, rawHtml: string, id: string | null): string {
     return (
       (tplMap && id && tplMap.get(id)) || (tplMap && tplMap.values().next().value) || rawHtml || ''
     );
@@ -247,22 +264,24 @@ export class SherpaElement extends HTMLElement {
 
   /* ── Resource loading ─────────────────────────────────────────── */
 
-  async #bootstrap() {
-    const Ctor = this.constructor;
+  async #bootstrap(): Promise<void> {
+    const Ctor = this.constructor as typeof SherpaElement;
 
     // Start stylesheet adoption (parallel with HTML fetch)
     const stylesReady = this.#adoptStyles();
 
     // Fetch HTML template (once per class)
-    let rawHtml = _htmlCache.get(Ctor);
-    if (rawHtml === undefined && Ctor.htmlUrl) {
-      try {
-        rawHtml = await fetch(Ctor.htmlUrl).then((r) => {
-          if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
-          return r.text();
-        });
-      } catch {
-        rawHtml = '';
+    let rawHtml: string = _htmlCache.get(Ctor) ?? '';
+    if (!_htmlCache.has(Ctor)) {
+      if (Ctor.htmlUrl) {
+        try {
+          rawHtml = await fetch(Ctor.htmlUrl).then((r) => {
+            if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+            return r.text();
+          });
+        } catch {
+          rawHtml = '';
+        }
       }
       _htmlCache.set(Ctor, rawHtml);
     }
@@ -273,11 +292,11 @@ export class SherpaElement extends HTMLElement {
     // Parse multi-template blocks (once per class)
     let tplMap = _templateMapCache.get(Ctor);
     if (tplMap === undefined) {
-      tplMap = parseTemplates(rawHtml);
+      tplMap = parseTemplates(rawHtml || '');
       _templateMapCache.set(Ctor, tplMap);
     }
 
-    const html = this.#resolveHtml(tplMap, rawHtml, this.templateId);
+    const html = this.#resolveHtml(tplMap, rawHtml || '', this.templateId);
     this.#shadow.innerHTML = html;
 
     await this.onRender();
@@ -288,7 +307,8 @@ export class SherpaElement extends HTMLElement {
     // Trigger initial data-src-json load if the attribute was set at
     // authoring time (attributeChangedCallback fires before #rendered
     // is set, so the guard above would have skipped it).
-    if (this.dataset.srcJson) await this.#fetchJson(this.dataset.srcJson);
+    const srcJson = this.dataset['srcJson'];
+    if (srcJson) await this.#fetchJson(srcJson);
   }
 
   /* ── Re-render with a different template ────────────────────── */
@@ -297,12 +317,12 @@ export class SherpaElement extends HTMLElement {
    * Re-render the shadow DOM with a different template from the same
    * HTML file. No-fetch operation — uses class-level cache.
    * Calls `onRender()` and re-wires slot listeners.
-   * @param {string} [id] — template id; falls back to first template.
+   * @param id — template id; falls back to first template.
    */
-  async renderTemplate(id) {
-    const Ctor = this.constructor;
+  async renderTemplate(id?: string): Promise<void> {
+    const Ctor = this.constructor as typeof SherpaElement;
     const tplMap = _templateMapCache.get(Ctor);
-    const html = this.#resolveHtml(tplMap, _htmlCache.get(Ctor), id);
+    const html = this.#resolveHtml(tplMap || null, _htmlCache.get(Ctor) || '', id || null);
 
     this.#shadow.innerHTML = html;
 
@@ -315,9 +335,9 @@ export class SherpaElement extends HTMLElement {
   /**
    * Fetch a JSON file and call `onJsonData(data)` with the parsed result.
    * Used internally by `data-src-json` attribute handling.
-   * @param {string} url
+   * @param url
    */
-  async #fetchJson(url) {
+  async #fetchJson(url: string): Promise<void> {
     if (!url) return;
     try {
       const resp = await fetch(url);
@@ -339,10 +359,10 @@ export class SherpaElement extends HTMLElement {
   /**
    * Build fetch candidates for template/data URLs so components keep working
    * when served from either web root or a nested base path.
-   * @param {string} url
-   * @returns {string[]}
+   * @param url
+   * @returns
    */
-  #buildFetchCandidates(url) {
+  #buildFetchCandidates(url: string): string[] {
     const candidates = [url];
 
     // Absolute root paths can fail when the app is mounted under a sub-path
@@ -364,12 +384,12 @@ export class SherpaElement extends HTMLElement {
   /**
    * Re-render shadow DOM with HTML fetched from the given URL.
    * adoptedStyleSheets persist on the shadow root across renders.
-   * @param {string} url — URL to fetch HTML from
-   * @returns {Promise<boolean>} — true if successful
+   * @param url — URL to fetch HTML from
+   * @returns — true if successful
    */
-  async renderFromUrl(url) {
+  async renderFromUrl(url: string): Promise<boolean> {
     const candidates = this.#buildFetchCandidates(url);
-    let lastError = null;
+    let lastError: Error | null = null;
 
     for (const candidate of candidates) {
       try {
@@ -395,7 +415,7 @@ export class SherpaElement extends HTMLElement {
         this.#wireSlots();
         return true;
       } catch (e) {
-        lastError = e;
+        lastError = e instanceof Error ? e : new Error(String(e));
       }
     }
 
@@ -405,7 +425,7 @@ export class SherpaElement extends HTMLElement {
 
   /* ── Slot presence detection ──────────────────────────────────── */
 
-  #wireSlots() {
+  #wireSlots(): void {
     for (const slot of this.#shadow.querySelectorAll('slot')) {
       slot.addEventListener('slotchange', () => {
         this.#validateSlot(slot);
@@ -428,7 +448,7 @@ export class SherpaElement extends HTMLElement {
    * true. The flag pairs with a global CSS rule that hides rejected
    * children.
    */
-  #validateSlot(slotEl) {
+  #validateSlot(slotEl: HTMLSlotElement): void {
     const acceptsAttr = slotEl.getAttribute('data-accepts');
     const hostTag = this.localName;
     const hostTier = getTier(hostTag);
@@ -503,22 +523,24 @@ export class SherpaElement extends HTMLElement {
    * are metadata fragments such as menu templates injected by mixins).
    * Text-only fallback counts. Element fallback (structural) does NOT count.
    */
-  #slotHasContent(slotEl) {
+  #slotHasContent(slotEl: HTMLSlotElement): boolean {
     const assigned = slotEl.assignedNodes();
     if (assigned.length > 0) {
       return assigned.some(
         (n) =>
-          (n.nodeType === Node.ELEMENT_NODE && n.localName !== 'template') ||
-          (n.nodeType === Node.TEXT_NODE && n.textContent.trim()),
+          (n.nodeType === Node.ELEMENT_NODE && (n as Element).localName !== 'template') ||
+          (n.nodeType === Node.TEXT_NODE && n.textContent && n.textContent.trim()),
       );
     }
     const flattened = slotEl.assignedNodes({ flatten: true });
-    return flattened.some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+    return flattened.some(
+      (n) => n.nodeType === Node.TEXT_NODE && n.textContent && n.textContent.trim(),
+    );
   }
 
   /* ── Utility: wait for render ─────────────────────────────────── */
 
-  get rendered() {
+  get rendered(): Promise<void> {
     return this.#renderPromise || Promise.resolve();
   }
 }
