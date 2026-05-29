@@ -74,6 +74,19 @@ export type ComponentRole =
 /* ── Event Detail Types ──────────────────────────────────────────── */
 
 /**
+ * Type-safe event handler for DOM events.
+ * Use this to type event handler methods and callbacks.
+ *
+ * @example
+ * ```typescript
+ * #onClick: EventHandler<MouseEvent> = (e) => { ... };
+ * #onKeyDown: EventHandler<KeyboardEvent> = (e) => { ... };
+ * #onInput: EventHandler<InputEvent> = (e) => { ... };
+ * ```
+ */
+export type EventHandler<E extends Event = Event> = (event: E) => void;
+
+/**
  * Standard change event detail
  */
 export interface ChangeEventDetail<T = unknown> {
@@ -112,6 +125,96 @@ export interface MenuCloseEventDetail {
 export interface MenuSelectEventDetail extends SelectEventDetail {
   action?: string;
   keepOpen?: boolean;
+}
+
+/* ── Data Grid Event Details ─────────────────────────────────────── */
+
+/**
+ * Sort change event detail (for data grids, tables)
+ */
+export interface SortChangeEventDetail {
+  field: string;
+  direction: 'asc' | 'desc' | 'off';
+}
+
+/**
+ * Selection change event detail (for multi-select grids, lists)
+ */
+export interface SelectionChangeEventDetail {
+  selected: string[];
+  count: number;
+}
+
+/**
+ * Page change event detail (for paginated components)
+ */
+export interface PageChangeEventDetail {
+  page: number;
+  pageSize: number;
+}
+
+/**
+ * Group toggle event detail (for expandable groups in grids)
+ */
+export interface GroupToggleEventDetail {
+  groupValue: string;
+  field: string;
+  expanded: boolean;
+}
+
+/**
+ * Row action event detail (for grid row interactions)
+ */
+export interface RowActionEventDetail {
+  rowId: string;
+  rowData: Record<string, unknown>;
+}
+
+/**
+ * Grid action event detail (for grid-level actions like export)
+ */
+export interface GridActionEventDetail {
+  action: string;
+  data?: Record<string, unknown>;
+  selectedRows: Array<Record<string, unknown>>;
+}
+
+/* ── Filter Event Details ────────────────────────────────────────── */
+
+/**
+ * Filter change event detail
+ */
+export interface FilterChangeEventDetail {
+  filters: FilterDescriptor[];
+}
+
+/**
+ * Filter descriptor for filter-bar and data components
+ */
+export interface FilterDescriptor {
+  field: string;
+  values?: string[];
+  operator?: 'eq' | 'ne' | 'gt' | 'lt' | 'gte' | 'lte' | 'contains' | 'startsWith' | 'endsWith';
+  label?: string;
+  type?: 'value' | 'sort' | 'segment' | 'date';
+}
+
+/* ── Toggle & Interaction Event Details ──────────────────────────── */
+
+/**
+ * Toggle event detail (for collapsible panels, accordions, etc.)
+ */
+export interface ToggleEventDetail {
+  open: boolean;
+  reason?: 'user' | 'programmatic';
+}
+
+/**
+ * Search event detail
+ */
+export interface SearchEventDetail {
+  query: string;
+  results?: number;
 }
 
 /* ── Configuration Object Types ──────────────────────────────────── */

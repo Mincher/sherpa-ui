@@ -235,7 +235,7 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Show / hide ───────────────────────────────────────────── */
 
-  show(anchor) {
+  show(anchor: HTMLElement): void {
     if (!anchor) return;
     this.source = anchor;
 

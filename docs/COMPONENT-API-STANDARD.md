@@ -519,6 +519,171 @@ Update CSS file JSDoc header to note Phase 2 status:
 
 ---
 
+## 4.5 TypeScript Requirements
+
+All Sherpa UI components are written in TypeScript with strict mode enabled. Follow these standards for consistent type safety across the codebase.
+
+See **[TYPESCRIPT-STANDARDS.md](./TYPESCRIPT-STANDARDS.md)** for comprehensive guidelines.
+
+### Event Handlers
+
+**Requirement:** Use the `EventHandler<E>` type alias for all event handler methods.
+
+```typescript
+import type { EventHandler } from '../utilities/types.js';
+
+class SherpaButton extends SherpaElement {
+  #onClick: EventHandler<MouseEvent> = (e) => {
+    // TypeScript knows e.clientX, e.target, etc.
+  };
+  
+  #onKeyDown: EventHandler<KeyboardEvent> = (e) => {
+    if (e.key === 'Enter') { ... }
+  };
+}
+```
+
+### Custom Event Detail Interfaces
+
+**Requirement:** All custom events must have typed detail interfaces.
+
+```typescript
+// In utilities/types.ts (shared) or component file (local)
+export interface SortChangeEventDetail {
+  field: string;
+  direction: 'asc' | 'desc' | 'off';
+}
+
+// In component
+dispatchEvent(new CustomEvent<SortChangeEventDetail>('sort-change', {
+  bubbles: true,
+  composed: true,
+  detail: { field: 'name', direction: 'asc' }
+}));
+```
+
+**Shared event details** (add to `utilities/types.ts`):
+- Generic patterns used by multiple components
+- Part of the public API contract
+
+**Local event details** (define in component file):
+- Used by only one component
+- Highly specialized structure
+
+### Dataset Interfaces
+
+**Requirement:** Components with ≥3 dataset properties must define a dataset interface.
+
+```typescript
+interface SherpaDataGridDataset extends DOMStringMap {
+  sortField?: string;
+  sortDirection?: 'asc' | 'desc' | 'off';
+  pageSize?: string;  // Always string, even for numbers
+}
+
+export class SherpaDataGrid extends SherpaElement {
+  override get dataset(): SherpaDataGridDataset {
+    return super.dataset as SherpaDataGridDataset;
+  }
+}
+```
+
+**Benefits:**
+- Autocomplete for `this.dataset.` properties
+- Typos caught at compile time
+- Self-documenting data attributes
+
+### Element Caching
+
+**Requirement:** Use `this.cacheElements()` instead of manual field declarations.
+
+```typescript
+// ✅ Correct
+class SherpaButton extends SherpaElement {
+  els = this.cacheElements({
+    trigger: '.trigger',
+    label: { selector: '.label', type: HTMLSpanElement },
+    icons: { selector: '.icon', all: true }
+  });
+
+  override onRender(): void {
+    this.els.trigger?.addEventListener('click', this.#onClick);
+  }
+}
+
+// ❌ Incorrect - Manual fields
+#triggerEl: HTMLElement | null = null;
+#labelEl: HTMLElement | null = null;
+
+override onRender(): void {
+  this.#triggerEl = this.$('.trigger');
+  this.#labelEl = this.$('.label');
+}
+```
+
+### Type Imports
+
+**Requirement:** Use `import type` for type-only imports.
+
+```typescript
+// ✅ Correct
+import type {
+  ComponentSize,
+  ColorVariant,
+  EventHandler
+} from '../utilities/types.js';
+
+import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+
+// ❌ Incorrect - Mixed imports
+import {
+  SherpaElement,
+  ComponentSize  // Type, not marked as such
+} from '../utilities/types.js';
+```
+
+### Avoiding `any`
+
+**Requirement:** No `any` types without justification.
+
+**Acceptable uses:**
+1. TypeScript decorator targets (required)
+2. Third-party library type gaps (document with comment)
+3. Complex mixin return types (document as design choice)
+
+```typescript
+// ✅ Acceptable - Decorator target
+export function property<T>(options: PropertyOptions<T>) {
+  return (target: any, propertyKey: string) => {
+    // target must be any for decorators
+  };
+}
+
+// ✅ Acceptable - With explanation
+// Type cast required due to third-party library limitation
+const value = (externalLib as any).undocumentedProperty;
+
+// ❌ Unacceptable - Lazy typing
+function process(data: any): any {
+  return data.value;
+}
+```
+
+### TypeScript Checklist
+
+When creating or updating components:
+
+- [ ] Event handlers use `EventHandler<E>` type alias
+- [ ] Custom events have detail interfaces (shared or local)
+- [ ] Dataset interface defined if ≥3 properties
+- [ ] Element caching uses `cacheElements()`
+- [ ] Type-only imports use `import type`
+- [ ] No `any` types without justification
+- [ ] Public methods have return type annotations
+- [ ] Override methods use `override` keyword
+
+---
+
 ## 5 Checklist
 
 Before committing any component, verify:

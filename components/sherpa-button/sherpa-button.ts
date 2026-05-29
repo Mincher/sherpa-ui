@@ -374,10 +374,13 @@ export class SherpaButton extends SherpaElement {
     // checkbox/radio inputs) before showing the menu.
     const menuItems = menu.querySelectorAll("sherpa-menu-item");
     if (menuItems.length) {
-      await Promise.all([...menuItems].map((item: any) => item.rendered));
+      interface HasRendered { readonly rendered: Promise<void>; }
+      await Promise.all([...menuItems].map((item) =>
+        (item as Element & HasRendered).rendered
+      ));
     }
 
-    (menu as any).show(this);
+    menu.show(this);
   }
 
   /**
@@ -399,9 +402,10 @@ export class SherpaButton extends SherpaElement {
     if (this.dataset.menuScope === "none") return;
 
     const scopeToShadow = this.dataset.menuScope === "shadow";
-    let node: any = (this.getRootNode() as ShadowRoot)?.host ?? this.parentElement;
+    let node: Node | null = (this.getRootNode() as ShadowRoot)?.host ?? this.parentElement;
     while (node) {
-      const templates = node.querySelectorAll?.(
+      const element = node as Element;
+      const templates = element.querySelectorAll?.(
         ":scope > template[data-menu]",
       );
       if (templates) {
