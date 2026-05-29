@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-container-footer
  * @category container
@@ -36,14 +35,14 @@ import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 export class SherpaContainerFooter extends SherpaElement {
   /* ── Config ───────────────────────────────────────────────────── */
 
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-container-footer.css", import.meta.url).href;
   }
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-container-footer.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-type",
@@ -61,13 +60,13 @@ export class SherpaContainerFooter extends SherpaElement {
 
   /* ── Template selection ───────────────────────────────────────── */
 
-  get templateId() {
+  override get templateId(): string {
     return this.dataset.type || "slot";
   }
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#syncLabels();
     this.#wireEvents();
     this.#radioEl = this.$(".card-radio");

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-container-group.js
  * SherpaContainerGroup — Subgrid tile cluster for sherpa-layout-grid.
@@ -64,18 +63,18 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
 export class SherpaContainerGroup extends SherpaElement {
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-container-group.html", import.meta.url).href;
   }
 
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-container-group.css", import.meta.url).href;
   }
 
   #defaultSlot = null;
   #stamped = new Set();
 
-  onRender() {
+  override onRender(): void {
     this.#defaultSlot = this.shadowRoot.querySelector("slot");
     this.#defaultSlot?.addEventListener("slotchange", () => this.#syncGroupPositions());
     this.#syncGroupPositions();
@@ -151,7 +150,7 @@ export class SherpaContainerGroup extends SherpaElement {
     if (required > 0) this.dataset.rowSpan = String(required);
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     for (const child of this.#stamped) {
       delete child.dataset.groupPosition;
     }

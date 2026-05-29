@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-container.js
  * SherpaContainer — Universal container for dashboard composition and standalone
@@ -51,21 +50,21 @@ import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { ResizeBehavior } from "../utilities/resize-behavior.js";
 
 export class SherpaContainer extends ResizeBehavior(SherpaElement) {
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("./sherpa-container.html", import.meta.url).href;
   }
 
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("./sherpa-container.css", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-selected', 'data-selectable', 'data-interactive', 'disabled', 'data-elevation'];
   }
 
   /* ── Lifecycle ─────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     super.onRender();
     if (!this.dataset.variant) this.dataset.variant = "fit";
     this.#initResizeGrip();

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-panel.js
  * SherpaPanel — Inline column or overlay drawer with header, optional toolbar,
@@ -63,15 +62,15 @@ import "../sherpa-input-search/sherpa-input-search.js";
 const HIGHLIGHT_NAME = "panel-search-match";
 
 class SherpaPanel extends SherpaElement {
-  static get cssUrl() {
+  static override get cssUrl(): string {
     return new URL("sherpa-panel.css", import.meta.url).href;
   }
 
-  static get htmlUrl() {
+  static override get htmlUrl(): string {
     return new URL("sherpa-panel.html", import.meta.url).href;
   }
 
-  static get observedAttributes() {
+  static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
       "data-heading",
@@ -87,7 +86,7 @@ class SherpaPanel extends SherpaElement {
 
   /* ── Template selection ───────────────────────────────────── */
 
-  get templateId() {
+  override get templateId(): string {
     return this.dataset.variant === "ai" ? "ai" : null;
   }
 
@@ -114,7 +113,7 @@ class SherpaPanel extends SherpaElement {
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
-  onRender() {
+  override onRender(): void {
     this.#headingEl = this.$(".header-title");
     this.#restoreLblEl = this.$(".collapse-label");
     this.#closeBtnEl = this.$(".close-btn");
@@ -153,7 +152,7 @@ class SherpaPanel extends SherpaElement {
     this.#syncBusy();
   }
 
-  onDisconnect() {
+  override onDisconnect(): void {
     this.#clearHighlights();
   }
 
