@@ -173,7 +173,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
   }
 
   override onAttributeChanged(name, oldValue, newValue): void {
-    super.override onAttributeChanged(name, oldValue, newValue): void;
+    super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
       case "data-value-start":
       case "data-value-end":

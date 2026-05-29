@@ -1,3 +1,4 @@
+/**
  * @element sherpa-input-password
  * @category input
  * @extends SherpaInputBase
@@ -19,8 +20,8 @@ import '../sherpa-button/sherpa-button.js';
 
 export class SherpaInputPassword extends SherpaInputBase {
 
-  static get cssUrl()  { return new URL('./sherpa-input-password.css', import.meta.url).href; }
-  static get htmlUrl() { return new URL('./sherpa-input-password.html', import.meta.url).href; }
+  static override get cssUrl(): string { return new URL('./sherpa-input-password.css', import.meta.url).href; }
+  static override get htmlUrl(): string { return new URL('./sherpa-input-password.html', import.meta.url).href; }
 
   #toggleBtnEl = null;
   #visible = false;

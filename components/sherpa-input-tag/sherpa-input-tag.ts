@@ -55,7 +55,7 @@ export class SherpaInputTag extends SherpaInputBase {
 
   getInputElement() { return this.$('.tag-typeahead'); }
 
-  override async override onInputRender(): void: Promise<void> {
+  override async onInputRender(): Promise<void> {
     this.#renderChips();
   }
 
@@ -75,7 +75,7 @@ export class SherpaInputTag extends SherpaInputBase {
   }
 
   override onAttributeChanged(name, oldValue, newValue): void {
-    super.override onAttributeChanged(name, oldValue, newValue): void;
+    super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'data-value') this.#renderChips();
   }
 

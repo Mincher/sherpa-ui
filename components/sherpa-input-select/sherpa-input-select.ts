@@ -47,7 +47,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     return this.$(".input-field");
   }
 
-  override async override onInputRender(): void: Promise<void> {
+  override async onInputRender(): Promise<void> {
     this.#selectEl = this.getInputElement();
     if (this.templateId === 'tree') {
       this.#renderTree();
@@ -84,14 +84,14 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   override onAttributeChanged(name, oldValue, newValue): void {
-    super.override onAttributeChanged(name, oldValue, newValue): void;
+    super.onAttributeChanged(name, oldValue, newValue);
     if (name === "placeholder") {
       this.#ensurePlaceholder();
       const display = this.$('.tree-display');
       if (display) display.dataset.placeholder = this.getAttribute('placeholder') || '';
     }
     if (name === 'data-template') {
-      this.renderTemplate(this.templateId).then(() => this.override onInputRender(): void);
+      this.renderTemplate(this.templateId).then(() => this.onInputRender());
     }
     if (name === 'data-tree' && this.templateId === 'tree') {
       this.#renderTree();

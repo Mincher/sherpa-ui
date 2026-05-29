@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @element sherpa-progress-bar
  * @category display

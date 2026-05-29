@@ -145,7 +145,7 @@ export class SherpaInputDate extends SherpaInputBase {
   }
 
   override onAttributeChanged(name, oldValue, newValue): void {
-    super.override onAttributeChanged(name, oldValue, newValue): void;
+    super.onAttributeChanged(name, oldValue, newValue);
 
     if (name === 'min' || name === 'max') {
       this.#applyCustomValidity();

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * sherpa-loader.js
  * SherpaLoader — Animated loading indicator with spinner and optional label.

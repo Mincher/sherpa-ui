@@ -108,7 +108,7 @@ export class SherpaInputTime extends SherpaInputBase {
   }
 
   override onAttributeChanged(name, oldValue, newValue): void {
-    super.override onAttributeChanged(name, oldValue, newValue): void;
+    super.onAttributeChanged(name, oldValue, newValue);
 
     if (['min', 'max', 'step'].includes(name)) {
       const el = this.getInputElement();

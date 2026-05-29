@@ -40,7 +40,7 @@ export class SherpaInputNumber extends SherpaInputBase {
   #stepDownBtnEl = null;
   #stepUpBtnEl = null;
 
-  override async override onInputRender(): void: Promise<void> {
+  override async onInputRender(): Promise<void> {
     this.#stepDownBtnEl = this.$('.step-down');
     this.#stepUpBtnEl = this.$('.step-up');
     // Propagate min/max/step to the native input on initial render —
@@ -70,7 +70,7 @@ export class SherpaInputNumber extends SherpaInputBase {
   }
 
   override onAttributeChanged(name, oldValue, newValue): void {
-    super.override onAttributeChanged(name, oldValue, newValue): void;
+    super.onAttributeChanged(name, oldValue, newValue);
     if (['min', 'max', 'step'].includes(name)) {
       const el = this.getInputElement();
       if (el) {
