@@ -141,6 +141,46 @@ interface SherpaDataGridDataset extends DOMStringMap {
   filters?: string;
 }
 
+/* ── Domain types ──────────────────────────────────────────────── */
+
+/** A grid column descriptor. */
+interface GridColumn {
+  field: string;
+  name: string;
+  type: string;
+  _statusMap?: Record<string, string>;
+}
+
+/** A grid row — an open record of field → value. */
+type GridRow = Record<string, unknown>;
+
+/** A value filter from a filter-bar chip: a field restricted to a value set. */
+interface ValueFilter {
+  field: string;
+  values: string[];
+}
+
+/** A group of rows sharing a group-field value. */
+interface RowGroup {
+  label: string;
+  rows: GridRow[];
+  count: number;
+}
+
+/** Per-field consumer configuration. */
+interface ColumnConfigEntry {
+  type?: string;
+  statusMap?: Record<string, string>;
+}
+
+/** The full dataset payload delivered to setData(). */
+interface GridData {
+  rows?: GridRow[];
+  columns?: GridColumn[];
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
   override get dataset(): SherpaDataGridDataset {
@@ -179,36 +219,34 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
      State
      ══════════════════════════════════════════════════════════════ */
 
-  #data = null; // Full dataset from DataService
-  #allRows = []; // All rows (pre-pagination)
-  #columns = []; // Column definitions
-  #selectedRows = new Set(); // Set of stable _rowId values
-  #lastClickedRowId = null; // For shift-click range selection
-  #columnFilters = {}; // { field: searchTerm }
-  #valueFilters = []; // [{ field, values: string[] }] from filter-bar chips
-  #searchDebounce = null; // Timer id for column search debounce
+  #data: GridData | null = null; // Full dataset from DataService
+  #allRows: GridRow[] = []; // All rows (pre-pagination)
+  #columns: GridColumn[] = []; // Column definitions
+  #selectedRows = new Set<string>(); // Set of stable _rowId values
+  #lastClickedRowId: string | null = null; // For shift-click range selection
+  #columnFilters: Record<string, string> = {}; // { field: searchTerm }
+  #valueFilters: ValueFilter[] = []; // from filter-bar chips
+  #searchDebounce: ReturnType<typeof setTimeout> | null = null; // column search debounce
   #globalSearchTerm = ""; // Global search term across all columns
   #headersInitialized = false; // Whether #initHeaders has been called
-  #searchExpandedGroups = new Set(); // Group values auto-expanded by search
-  #externalFilters = []; // External filters from FilterCoordinator (layered scoping)
-  #hiddenColumns = new Set(); // Column fields hidden via column-select menu
-  #originalOrderBy = null; // Original orderBy from config (for presentation switching)
-  #originalSegmentBy = null; // Original segmentBy from config (for presentation switching)
-  #rowTpl = null; // Cached <template class="row-tpl">
-  #groupRowTpl = null; // Cached <template class="group-row-tpl">
-  #cellTpl = null; // Cached <template class="cell-tpl">
-  #boolCellTpl = null; // Cached <template class="bool-cell-tpl">
-  #linkCellTpl = null; // Cached <template class="link-cell-tpl">
-  #statusCellTpl = null; // Cached <template class="status-cell-tpl">
-  #headerCellTpl = null; // Cached <template class="header-cell-tpl">
-  #searchCellTpl = null; // Cached <template class="search-cell-tpl">
-  #metadataSpanTpl = null; // Cached <template class="metadata-span-tpl">
-  #expandedGroups = new Set(); // Group values currently expanded
-  #seededGroups = new Set(); // Group values whose default mode has been applied
-  #columnConfig = {}; // Per-field config from consumer { field: { type?, statusMap? } }
-  // @ts-expect-error - TODO: Fix type
-  #filterMenuTpl = null; // Injected light-DOM <template data-menu> for filter toggle
-  #actionMenuSections = []; // Consumer-defined secondary actions for the Actions menu
+  #searchExpandedGroups = new Set<string>(); // Group values auto-expanded by search
+  #externalFilters: ValueFilter[] = []; // External filters from FilterCoordinator
+  #hiddenColumns = new Set<string>(); // Column fields hidden via column-select menu
+  #originalOrderBy: { field?: string; direction?: string } | null = null; // Original orderBy from config
+  #originalSegmentBy: string | null = null; // Original segmentBy from config
+  #rowTpl: HTMLTemplateElement | null = null;
+  #groupRowTpl: HTMLTemplateElement | null = null;
+  #cellTpl: HTMLTemplateElement | null = null;
+  #boolCellTpl: HTMLTemplateElement | null = null;
+  #linkCellTpl: HTMLTemplateElement | null = null;
+  #statusCellTpl: HTMLTemplateElement | null = null;
+  #headerCellTpl: HTMLTemplateElement | null = null;
+  #searchCellTpl: HTMLTemplateElement | null = null;
+  #metadataSpanTpl: HTMLTemplateElement | null = null;
+  #expandedGroups = new Set<string>(); // Group values currently expanded
+  #seededGroups = new Set<string>(); // Group values whose default mode has been applied
+  #columnConfig: Record<string, ColumnConfigEntry> = {}; // Per-field consumer config
+  #actionMenuSections: unknown[] = []; // Consumer-defined secondary actions
   #bound = false;
 
   /* ══════════════════════════════════════════════════════════════
@@ -222,24 +260,15 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);
 
     // Cache cloning templates
-    // @ts-expect-error - TODO: Fix type
-    this.#rowTpl = this.$("template.row-tpl");
-    // @ts-expect-error - TODO: Fix type
-    this.#groupRowTpl = this.$("template.group-row-tpl");
-    // @ts-expect-error - TODO: Fix type
-    this.#cellTpl = this.$("template.cell-tpl");
-    // @ts-expect-error - TODO: Fix type
-    this.#boolCellTpl = this.$("template.bool-cell-tpl");
-    // @ts-expect-error - TODO: Fix type
-    this.#linkCellTpl = this.$("template.link-cell-tpl");
-    // @ts-expect-error - TODO: Fix type
-    this.#statusCellTpl = this.$("template.status-cell-tpl");
-    // @ts-expect-error - TODO: Fix type
-    this.#headerCellTpl = this.$("template.header-cell-tpl");
-    // @ts-expect-error - TODO: Fix type
-    this.#searchCellTpl = this.$("template.search-cell-tpl");
-    // @ts-expect-error - TODO: Fix type
-    this.#metadataSpanTpl = this.$("template.metadata-span-tpl");
+    this.#rowTpl = this.$<HTMLTemplateElement>("template.row-tpl");
+    this.#groupRowTpl = this.$<HTMLTemplateElement>("template.group-row-tpl");
+    this.#cellTpl = this.$<HTMLTemplateElement>("template.cell-tpl");
+    this.#boolCellTpl = this.$<HTMLTemplateElement>("template.bool-cell-tpl");
+    this.#linkCellTpl = this.$<HTMLTemplateElement>("template.link-cell-tpl");
+    this.#statusCellTpl = this.$<HTMLTemplateElement>("template.status-cell-tpl");
+    this.#headerCellTpl = this.$<HTMLTemplateElement>("template.header-cell-tpl");
+    this.#searchCellTpl = this.$<HTMLTemplateElement>("template.search-cell-tpl");
+    this.#metadataSpanTpl = this.$<HTMLTemplateElement>("template.metadata-span-tpl");
 
     if (!this.#bound) {
 
@@ -262,7 +291,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         globalSearch.addEventListener("input", (e: CustomEvent) => {
           // @ts-expect-error - TODO: Fix type
           clearTimeout(this.#searchDebounce);
-          // @ts-expect-error - TODO: Fix type
           this.#searchDebounce = setTimeout(() => {
             // @ts-expect-error - TODO: Fix type
             const el = globalSearch.getInputElement?.();
@@ -361,8 +389,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       if (!this.dataset["pageSize"]) this.dataset["pageSize"] = "25";
 
     // Inject filter-menu template into light DOM for the overflow menu
-      // @ts-expect-error - TODO: Fix type
-      this.#filterMenuTpl = injectFilterMenu(this);
+      injectFilterMenu(this);
       this.addEventListener("toggle-filters", this.#onToggleFilters);
       this.addEventListener("menu-populate", this.#onMenuPopulate);
 
@@ -472,7 +499,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         ? config.orderBy[0]
         : { field: config.orderBy, direction: config.orderDirection || "asc" };
       if (order?.field) {
-        // @ts-expect-error - TODO: Fix type
         this.#originalOrderBy = {
           field: order.field,
           direction: order.direction || "asc",
@@ -504,16 +530,13 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     this.removeAttribute("data-loading");
 
-    // @ts-expect-error - TODO: Fix type
     if (!this.#data || !this.#data.rows?.length) {
       this.#showEmptyState();
       return;
     }
 
     // Store the raw column + row data
-    // @ts-expect-error - TODO: Fix type
     this.#columns = this.#data.columns || [];
-    // @ts-expect-error - TODO: Fix type
     this.#allRows = this.#data.rows || [];
 
     // Reset headers so they rebuild with new columns
@@ -557,20 +580,15 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   /** Infer boolean column types from column config and data. */
   #inferColumnTypes() {
     for (const col of this.#columns) {
-      // @ts-expect-error - TODO: Fix type
       const cfg = this.#columnConfig[col.field];
       // Consumer-provided type override takes precedence
       if (cfg?.type) {
-        // @ts-expect-error - TODO: Fix type
         col.type = cfg.type;
-      // @ts-expect-error - TODO: Fix type
       } else if (BOOLEAN_FIELDS.has(col.field) && col.type === "string") {
-        // @ts-expect-error - TODO: Fix type
         col.type = "boolean";
       }
       // Merge consumer-provided statusMap into the column
       if (cfg?.statusMap) {
-        // @ts-expect-error - TODO: Fix type
         col._statusMap = cfg.statusMap;
       }
     }
@@ -678,13 +696,13 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     for (const col of columns) {
       const isNum = NUMERIC_TYPES.has(col.type);
       const w = columnWidth(col.type);
-      // @ts-expect-error - TODO: Fix type
-      const th = this.#headerCellTpl.content.firstElementChild.cloneNode(true);
+      const th = this.#headerCellTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset["field"] = col.field;
       if (isNum) th.toggleAttribute("data-numeric", true);
       th.style.width = `${w}px`;
       th.style.minWidth = `${w}px`;
-      th.querySelector(".header-cell-label").textContent = col.name || col.field;
+      const label = th.querySelector(".header-cell-label");
+      if (label) label.textContent = col.name || col.field;
       primaryRow.appendChild(th);
     }
 
@@ -728,14 +746,15 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
       for (const col of columns) {
         const w = columnWidth(col.type);
-        // @ts-expect-error - TODO: Fix type
-        const th = this.#searchCellTpl.content.firstElementChild.cloneNode(true);
+        const th = this.#searchCellTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
         th.dataset["field"] = col.field;
         th.style.width = `${w}px`;
         th.style.minWidth = `${w}px`;
-        const searchEl = th.querySelector(".col-search");
-        searchEl.setAttribute("aria-label", `Search ${col.name || col.field}`);
-        searchEl.dataset["field"] = col.field;
+        const searchEl = th.querySelector<HTMLElement>(".col-search");
+        if (searchEl) {
+          searchEl.setAttribute("aria-label", `Search ${col.name || col.field}`);
+          searchEl.dataset["field"] = col.field;
+        }
         secondaryRow.appendChild(th);
       }
 
@@ -749,7 +768,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         searchEl.addEventListener("input", (e: CustomEvent) => {
           // @ts-expect-error - TODO: Fix type
           clearTimeout(this.#searchDebounce);
-          // @ts-expect-error - TODO: Fix type
           this.#searchDebounce = setTimeout(() => {
             const field = searchEl.getAttribute("data-field");
             // @ts-expect-error - TODO: Fix type
@@ -834,27 +852,27 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     body.replaceChildren(frag);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #createRowElement(row, columns, index) {
-    // @ts-expect-error - TODO: Fix type
-    const tr = this.#rowTpl.content.cloneNode(true).querySelector(".grid-row");
-    const rowId = row._rowId ?? String(index);
+  #createRowElement(row: GridRow, columns: GridColumn[], index: number | string): HTMLElement {
+    const frag = this.#rowTpl!.content.cloneNode(true) as DocumentFragment;
+    const tr = frag.querySelector<HTMLElement>(".grid-row")!;
+    const rowId = String(row["_rowId"] ?? index);
     tr.dataset["rowId"] = rowId;
 
     // Selection checkbox
-    const check = tr.querySelector(".row-check");
-    check.checked = this.#selectedRows.has(rowId);
-    if (this.#selectedRows.has(rowId)) tr.dataset["selected"] = "";
-    // @ts-expect-error - TODO: Fix type
-    check.addEventListener("change", (ev) => {
-      const isChecked = ev.target.checked;
-      this.#onRowSelect(rowId, isChecked, ev);
-      isChecked
-        ? tr.setAttribute("data-selected", "")
-        : tr.removeAttribute("data-selected");
-      this.#updateGroupCheckStates();
-      this.#updateSelectAllState();
-    });
+    const check = tr.querySelector<HTMLInputElement>(".row-check");
+    if (check) {
+      check.checked = this.#selectedRows.has(rowId);
+      if (this.#selectedRows.has(rowId)) tr.dataset["selected"] = "";
+      check.addEventListener("change", (ev: Event) => {
+        const isChecked = (ev.target as HTMLInputElement).checked;
+        this.#onRowSelect(rowId, isChecked, ev);
+        isChecked
+          ? tr.setAttribute("data-selected", "")
+          : tr.removeAttribute("data-selected");
+        this.#updateGroupCheckStates();
+        this.#updateSelectAllState();
+      });
+    }
 
     // Data cells — insert before the action cell
     const actionCell = tr.querySelector(".action-cell");
@@ -869,30 +887,32 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
      Cell Type Renderers
      ══════════════════════════════════════════════════════════════ */
 
-  // @ts-expect-error - TODO: Fix type
-  #createCell(value, column) {
+  #cloneCell(tpl: HTMLTemplateElement | null): HTMLElement {
+    return (tpl!.content.cloneNode(true) as DocumentFragment).querySelector<HTMLElement>("td")!;
+  }
+
+  #createCell(value: unknown, column: GridColumn): HTMLElement {
     const type = column.type?.toLowerCase() || "string";
-    let cell;
+    let cell: HTMLElement;
 
     switch (type) {
       case "boolean":
-        // @ts-expect-error - TODO: Fix type
-        cell = this.#cellTpl.content.cloneNode(true).querySelector("td");
+        cell = this.#cloneCell(this.#cellTpl);
         cell.append(this.#renderBooleanCell(value));
         break;
 
       case "status":
-        // @ts-expect-error - TODO: Fix type
-        cell = this.#statusCellTpl.content.cloneNode(true).querySelector("td");
+        cell = this.#cloneCell(this.#statusCellTpl);
         this.#configureStatusCell(cell.querySelector("sherpa-tag"), value, column);
         break;
 
       case "link": {
-        // @ts-expect-error - TODO: Fix type
-        cell = this.#linkCellTpl.content.cloneNode(true).querySelector("td");
-        const a = cell.querySelector("a");
-        a.dataset["field"] = column.field;
-        a.textContent = value != null ? String(value) : "";
+        cell = this.#cloneCell(this.#linkCellTpl);
+        const a = cell.querySelector<HTMLElement>("a");
+        if (a) {
+          a.dataset["field"] = column.field;
+          a.textContent = value != null ? String(value) : "";
+        }
         break;
       }
 
@@ -902,14 +922,12 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       case "numeric":
       case "currency":
       case "percent":
-        // @ts-expect-error - TODO: Fix type
-        cell = this.#cellTpl.content.cloneNode(true).querySelector("td");
+        cell = this.#cloneCell(this.#cellTpl);
         cell.textContent = formatValue(value, type);
         break;
 
       default:
-        // @ts-expect-error - TODO: Fix type
-        cell = this.#cellTpl.content.cloneNode(true).querySelector("td");
+        cell = this.#cloneCell(this.#cellTpl);
         cell.textContent = value != null ? String(value) : "";
         break;
     }
@@ -920,8 +938,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     return cell;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #renderBooleanCell(value) {
+  #renderBooleanCell(value: unknown): HTMLElement {
     const isTrue =
       value === true ||
       value === "true" ||
@@ -930,8 +947,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       value === "1" ||
       value === "yes" ||
       value === "Yes";
-    // @ts-expect-error - TODO: Fix type
-    const node = this.#boolCellTpl.content.firstElementChild.cloneNode(true);
+    const node = this.#boolCellTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
     if (isTrue) {
       node.dataset["bool"] = "true";
       node.textContent = "\uf00c";
@@ -944,8 +960,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     return node;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #configureStatusCell(tag, value, column) {
+  #configureStatusCell(tag: HTMLElement | null, value: unknown, column: GridColumn) {
+    if (!tag) return;
     const str = String(value ?? "").toLowerCase();
     const map = column?._statusMap || {};
     const status = map[str];
@@ -1067,53 +1083,46 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }));
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #createGroupElement(group, columns, defaultMode, totalCols) {
+  #createGroupElement(group: RowGroup, columns: GridColumn[], _defaultMode: string, totalCols: number) {
     const isExpanded = this.#expandedGroups.has(group.label);
 
     // ── Parent row — clone from template ────────────────────────
-    // @ts-expect-error - TODO: Fix type
-    const tplContent = this.#groupRowTpl.content.cloneNode(true);
-    const parentRow = tplContent.querySelector(".group-parent-row");
+    const tplContent = this.#groupRowTpl!.content.cloneNode(true) as DocumentFragment;
+    const parentRow = tplContent.querySelector<HTMLElement>(".group-parent-row")!;
     parentRow.dataset["groupValue"] = group.label;
     if (isExpanded) parentRow.setAttribute("data-expanded", "");
 
     // Set colspan
-    const summaryCell = parentRow.querySelector(".group-summary-cell");
-    summaryCell.setAttribute("colspan", String(totalCols));
+    parentRow.querySelector(".group-summary-cell")?.setAttribute("colspan", String(totalCols));
 
     // Selection checkbox
-    const groupCheck = parentRow.querySelector(".group-check");
-    groupCheck.setAttribute("aria-label", `Select group ${group.label}`);
-    const selWrap = parentRow.querySelector(".selection-cell");
-    // @ts-expect-error - TODO: Fix type
-    selWrap.addEventListener("click", (e) => e.stopPropagation());
+    const groupCheck = parentRow.querySelector<HTMLInputElement>(".group-check");
+    groupCheck?.setAttribute("aria-label", `Select group ${group.label}`);
+    parentRow.querySelector(".selection-cell")
+      ?.addEventListener("click", (e: Event) => e.stopPropagation());
 
     // Group label + count
     const labelEl = parentRow.querySelector(".group-label");
-    labelEl.textContent = group.label || "(empty)";
+    if (labelEl) labelEl.textContent = group.label || "(empty)";
 
     const countEl = parentRow.querySelector(".group-count");
-    countEl.textContent = `(${group.count})`;
+    if (countEl) countEl.textContent = `(${group.count})`;
 
     // Aggregate metadata for numeric columns
     const metadataEl = parentRow.querySelector(".group-metadata");
-    // @ts-expect-error - TODO: Fix type
     const numCols = columns.filter((c) => NUMERIC_TYPES.has(c.type));
     for (const col of numCols.slice(0, 3)) {
       const values = group.rows
-        // @ts-expect-error - TODO: Fix type
         .map((r) => Number(r[col.field]))
-        // @ts-expect-error - TODO: Fix type
         .filter((v) => !isNaN(v));
       if (!values.length) continue;
-      const sum = values.reduce((a: any, b: any) => a + b, 0);
-      // @ts-expect-error - TODO: Fix type
-      const span = this.#metadataSpanTpl.content
-        .cloneNode(true)
-        .querySelector("span");
-      span.textContent = `${col.name || col.field}: ${formatValue(sum, col.type)}`;
-      metadataEl.appendChild(span);
+      const sum = values.reduce((a, b) => a + b, 0);
+      const span = (this.#metadataSpanTpl!.content.cloneNode(true) as DocumentFragment)
+        .querySelector<HTMLElement>("span");
+      if (span) {
+        span.textContent = `${col.name || col.field}: ${formatValue(sum, col.type)}`;
+        metadataEl?.appendChild(span);
+      }
     }
 
     // ── Toggle expand/collapse → update state + re-render ───────
@@ -1138,15 +1147,14 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     });
 
     // ── Group checkbox — selects/deselects all children ─────────
-    groupCheck.addEventListener("change", (e: CustomEvent) => {
-      // @ts-expect-error - TODO: Fix type
-      const isChecked = e.target.checked;
+    groupCheck?.addEventListener("change", (e: Event) => {
+      const isChecked = (e.target as HTMLInputElement).checked;
       for (const row of group.rows) {
-        const rowId = row._rowId;
+        const rowId = row["_rowId"];
         if (rowId != null) {
           isChecked
-            ? this.#selectedRows.add(rowId)
-            : this.#selectedRows.delete(rowId);
+            ? this.#selectedRows.add(String(rowId))
+            : this.#selectedRows.delete(String(rowId));
         }
       }
       this.#updateSelectAllState();
@@ -1209,9 +1217,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
   // @ts-expect-error - TODO: Fix type
   #sortRows(rows, field, direction) {
-    // @ts-expect-error - TODO: Fix type
     const col = this.#columns.find((c) => c.field === field);
-    // @ts-expect-error - TODO: Fix type
     const colType = col?.type || "string";
     const dir = direction === "desc" ? -1 : 1;
 
@@ -1232,14 +1238,12 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
    * exists in the rows, even when it is not a visible column.
    */
   #getDefaultChronologicalSort() {
-    // @ts-expect-error - TODO: Fix type
-    const dataset = this.#data?.metadata?.dataset;
+    const dataset = this.#data?.metadata?.["dataset"] as string | undefined;
     const dateFieldFn = getDateFieldProvider();
     let dateField = dataset && dateFieldFn ? dateFieldFn(dataset) : null;
 
     const firstRow = this.#allRows[0];
-    // @ts-expect-error - TODO: Fix type
-    if (!firstRow || !(dateField in firstRow)) return null;
+    if (!firstRow || dateField == null || !(dateField in firstRow)) return null;
 
     return { field: dateField, dir: "desc" };
   }
@@ -1256,7 +1260,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // @ts-expect-error - TODO: Fix type
     return rows.filter((row) =>
       this.#columns.some((col) => {
-        // @ts-expect-error - TODO: Fix type
         const val = row[col.field];
         if (val == null) return false;
         return String(val).toLowerCase().includes(term);
@@ -1320,7 +1323,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
             if (colIdx >= 0 && colIdx < visibleCols.length) {
               // @ts-expect-error - TODO: Fix type
               const field = visibleCols[colIdx].field;
-              // @ts-expect-error - TODO: Fix type
               const colTerm = this.#columnFilters[field];
               if (colTerm) {
                 let idx = 0;
@@ -1358,7 +1360,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       filters.every(([field, term]) => {
         const val = row[field];
         if (val == null) return false;
-        // @ts-expect-error - TODO: Fix type
         return String(val).toLowerCase().includes(term);
       }),
     );
@@ -1374,7 +1375,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       this.#valueFilters.every(({ field, values }) => {
         const val = row[field];
         if (val == null) return false;
-        // @ts-expect-error - TODO: Fix type
         return values.includes(String(val));
       }),
     );
@@ -1390,7 +1390,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       this.#externalFilters.every(({ field, values }) => {
         const val = row[field];
         if (val == null) return false;
-        // @ts-expect-error - TODO: Fix type
         return values.includes(String(val));
       }),
     );
@@ -1843,7 +1842,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   /** Columns not hidden by the column-select menu. */
   get #visibleColumns() {
     if (!this.#hiddenColumns.size) return this.#columns;
-    // @ts-expect-error - TODO: Fix type
     return this.#columns.filter((c) => !this.#hiddenColumns.has(c.field));
   }
 
@@ -1864,12 +1862,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     for (const col of this.#columns) {
       items.push({
-        // @ts-expect-error - TODO: Fix type
         value: col.field,
-        // @ts-expect-error - TODO: Fix type
         text: col.name || col.field,
         selection: "checkbox",
-        // @ts-expect-error - TODO: Fix type
         checked: !this.#hiddenColumns.has(col.field),
         keepOpen: true,
         // @ts-expect-error - TODO: Fix type
@@ -1933,17 +1928,18 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     if (!this.#data) return null;
 
     const config = getTransferableConfig(this.#data, "table");
-    // @ts-expect-error - TODO: Fix type
-    const meta = this.#data?.metadata || {};
+    const meta = (this.#data?.metadata || {}) as {
+      primaryField?: string;
+      categoryField?: string;
+      valueField?: string;
+      field?: string;
+      orderBy?: unknown[];
+    };
     const segmentField = this.getAttribute("data-segment-field") || null;
     const segmentMode = this.getAttribute("data-segment-mode");
     const effectiveSegmentField =
       segmentMode !== "off" && segmentField ? segmentField : null;
-    // @ts-expect-error - TODO: Fix type
-    const columns = Array.isArray(this.#data?.columns)
-      // @ts-expect-error - TODO: Fix type
-      ? this.#data.columns
-      : [];
+    const columns = this.#data?.columns ?? [];
 
     // @ts-expect-error - TODO: Fix type
     config.segmentField = effectiveSegmentField;
@@ -1961,7 +1957,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
 
     if (!Array.isArray(config.measures) || config.measures.length === 0) {
-      // @ts-expect-error - TODO: Fix type
       const numericCol = columns.find((col) =>
         NUMERIC_TYPES.has((col.type || "").toLowerCase()),
       );
@@ -2014,9 +2009,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
           ? { field: sortField, direction: sortDir }
           : null,
       filters: this.#valueFilters.map((f) => ({
-        // @ts-expect-error - TODO: Fix type
         field: f.field,
-        // @ts-expect-error - TODO: Fix type
         values: [...f.values],
       })),
       columnFilters: { ...this.#columnFilters },
@@ -2031,7 +2024,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
    */
   // @ts-expect-error - TODO: Fix type
   setExternalFilters(externalFilters) {
-    // @ts-expect-error - TODO: Fix type
     this.#externalFilters = Array.isArray(externalFilters)
       ? externalFilters
       : [];
