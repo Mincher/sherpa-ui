@@ -98,8 +98,8 @@ export class SherpaInputTag extends SherpaInputBase {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get value() { return this.#readValue(); }
-  set value(arr) {
+  override get value() { return this.#readValue(); }
+  override set value(arr) {
     const list = Array.isArray(arr) ? arr.map(String) : [];
     this.dataset.value = JSON.stringify(list);
     this.#emit('set');

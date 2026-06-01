@@ -61,7 +61,7 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender() {
     if (!this.#bound) {
       const input = this.#input;
       if (input) input.addEventListener('change', this.#onChange);
@@ -106,7 +106,7 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
   get required()  { return this.hasAttribute('required'); }
   set required(v) { v ? this.setAttribute('required', '') : this.removeAttribute('required'); }
 
-  focus(opts) { this.#input?.focus(opts); }
+  override focus(opts) { this.#input?.focus(opts); }
 
   /* ── Private ───────────────────────────────────────────────────── */
 

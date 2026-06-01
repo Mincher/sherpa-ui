@@ -60,7 +60,7 @@ export class SherpaInputRadio extends StatusMixin(SherpaElement) {
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
-  onRender() {
+  override onRender() {
     if (!this.#bound) {
       const input = this.#input;
       if (input) input.addEventListener('change', this.#onChange);
@@ -96,7 +96,7 @@ export class SherpaInputRadio extends StatusMixin(SherpaElement) {
   get disabled()  { return this.hasAttribute('disabled'); }
   set disabled(v) { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
 
-  focus(opts) { this.#input?.focus(opts); }
+  override focus(opts) { this.#input?.focus(opts); }
 
   /* ── Private ───────────────────────────────────────────────────── */
 
