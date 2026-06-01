@@ -241,7 +241,7 @@ export class SherpaMenu extends SherpaElement {
     this.source = anchor;
 
     // Read preferred placement from the anchor (e.g. data-menu-position)
-    const position = anchor.dataset?.menuPosition || "bottom-start";
+    const position = anchor.dataset?.["menuPosition"] || "bottom-start";
     this.dataset["position"] = position;
 
     // Position via CSS anchor or JS fallback.

@@ -222,7 +222,7 @@ export class SherpaPagination extends SherpaElement {
     const btn = e
       .composedPath()
       .find(
-        (n) => n instanceof HTMLElement && n.dataset?.action,
+        (n) => n instanceof HTMLElement && n.dataset?.["action"],
       ) as HTMLElement | undefined;
     if (!btn || btn.disabled) return;
 
