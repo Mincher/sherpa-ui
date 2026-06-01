@@ -88,11 +88,11 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
     if (!this.hasAttribute('data-filters')) this.toggleAttribute('data-filters', true);
 
-    this.#titleEl          = this.$('.chart-title');
-    this.#ringEl           = this.$('.donut-ring');
-    this.#centreValueEl    = this.$('.centre-value');
-    this.#centreSublabelEl = this.$('.centre-sublabel');
-    this.#legendEl         = this.$('.chart-legend');
+    this.els.title          = this.$('.chart-title');
+    this.els.ring           = this.$('.donut-ring');
+    this.els.centreValue    = this.$('.centre-value');
+    this.els.centreSublabel = this.$('.centre-sublabel');
+    this.els.legend         = this.$('.chart-legend');
     this.#legendItemTpl    = this.shadowRoot.querySelector('template.legend-item-tpl');
 
     if (!this.#bound) {
@@ -270,24 +270,24 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   /* ── Private: sync ────────────────────────────────────────────── */
 
   #syncTitle() {
-    if (this.#titleEl) {
+    if (this.els.title) {
       const entity = cleanTitleBase(this.dataset.title || '');
       const segMode = this.getAttribute('data-segment-mode');
       const groupField = this.getAttribute('data-segment-field')
         || this.getAttribute('data-category');
       const hasActiveGroup = segMode !== 'off' && !!groupField;
-      this.#titleEl.textContent = hasActiveGroup
+      this.els.title.textContent = hasActiveGroup
         ? `${entity} by ${formatFieldName(groupField)}`
         : `All ${entity}`;
     }
   }
 
   #syncCentreLabel() {
-    if (this.#centreValueEl) {
-      this.#centreValueEl.textContent = this.dataset.innerLabel || '';
+    if (this.els.centreValue) {
+      this.els.centreValue.textContent = this.dataset.innerLabel || '';
     }
-    if (this.#centreSublabelEl) {
-      this.#centreSublabelEl.textContent = this.dataset.innerSublabel || '';
+    if (this.els.centreSublabel) {
+      this.els.centreSublabel.textContent = this.dataset.innerSublabel || '';
     }
   }
 
@@ -306,12 +306,12 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   /* ── Private: render ──────────────────────────────────────────── */
 
   #render() {
-    if (!this.#ringEl || !this.#legendEl) return;
+    if (!this.els.ring || !this.els.legend) return;
 
     const total = this.#data.reduce((sum, d) => sum + (d.value || 0), 0);
     if (!total) {
-      this.#ringEl.style.setProperty('--_conic', 'conic-gradient(#e0e0e0 0% 100%)');
-      this.#legendEl.replaceChildren();
+      this.els.ring.style.setProperty('--_conic', 'conic-gradient(#e0e0e0 0% 100%)');
+      this.els.legend.replaceChildren();
       return;
     }
 
@@ -329,13 +329,13 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       stops.push(`${color} ${start}% ${cumulative}%`);
     });
 
-    this.#ringEl.style.setProperty(
+    this.els.ring.style.setProperty(
       '--_conic',
       `conic-gradient(${stops.join(', ')})`
     );
 
     // Build legend
-    this.#legendEl.replaceChildren();
+    this.els.legend.replaceChildren();
 
     displayData.forEach((d, i) => {
       const color = d.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
@@ -343,7 +343,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       item.querySelector('.legend-key').style.backgroundColor = color;
       item.querySelector('.legend-label').textContent = d.label || '';
       item.querySelector('.legend-value').textContent = d.value != null ? d.value.toLocaleString() : '';
-      this.#legendEl.appendChild(item);
+      this.els.legend.appendChild(item);
     });
   }
 
