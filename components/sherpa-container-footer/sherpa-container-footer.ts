@@ -55,8 +55,9 @@ export class SherpaContainerFooter extends SherpaElement {
     ];
   }
 
-  /** @type {HTMLElement|null} */
-  #radioEl = null;
+  els = this.cacheElements({
+    radio: '.card-radio'
+  });
 
   /* ── Template selection ───────────────────────────────────────── */
 
@@ -69,7 +70,6 @@ export class SherpaContainerFooter extends SherpaElement {
   override onRender(): void {
     this.#syncLabels();
     this.#wireEvents();
-    this.#radioEl = this.$(".card-radio");
     this.#syncRadio();
   }
 
@@ -135,10 +135,10 @@ export class SherpaContainerFooter extends SherpaElement {
   /* ── Private ──────────────────────────────────────────────────── */
 
   #syncRadio() {
-    if (!this.#radioEl) return;
+    if (!this.els.radio) return;
     this.dataset.selected === "true"
-      ? this.#radioEl.setAttribute("checked", "")
-      : this.#radioEl.removeAttribute("checked");
+      ? this.els.radio.setAttribute("checked", "")
+      : this.els.radio.removeAttribute("checked");
   }
 
   #syncLabels() {

@@ -41,16 +41,14 @@ export class SherpaContainerHeader extends SherpaElement {
     ];
   }
 
-  /** @type {HTMLElement|null} */
-  #titleEl = null;
-  /** @type {HTMLElement|null} */
-  #descriptionEl = null;
+  els = this.cacheElements({
+    title: '.header-title',
+    description: '.header-description'
+  });
 
   /* ── Lifecycle ─────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#titleEl = this.$(".header-title");
-    this.#descriptionEl = this.$(".header-description");
     this.#syncTitle();
     this.#syncDescription();
   }
@@ -63,12 +61,12 @@ export class SherpaContainerHeader extends SherpaElement {
   /* ── Private sync ──────────────────────────────────────────── */
 
   #syncTitle() {
-    if (this.#titleEl) this.#titleEl.textContent = this.dataset.title || "";
+    if (this.els.title) this.els.title.textContent = this.dataset.title || "";
   }
 
   #syncDescription() {
-    if (this.#descriptionEl)
-      this.#descriptionEl.textContent = this.dataset.description || "";
+    if (this.els.description)
+      this.els.description.textContent = this.dataset.description || "";
   }
 }
 
