@@ -88,6 +88,67 @@ export const CONTENT_ATTRIBUTES = Object.values(ATTR_SCHEMA).map(
   ([attr]) => attr,
 );
 
+/* ── ContentAttributesMixin Interface ───────────────────────────── */
+
+export interface ContentAttributesMixinInterface {
+  // Property getters/setters from ATTR_SCHEMA
+  name: string;
+  datasetName: string;
+  category: string | null;
+  series: string | null;
+  valueField: string;
+  agg: string;
+  measures: any[];
+  orderBy: any[];
+  segmentField: string | null;
+  dateGroupBy: string | null;
+  showStatus: boolean;
+  unit: string;
+  sortField: string | null;
+  sortDirection: string;
+  limit: number | null;
+  filters: any[];
+  visible: boolean;
+  showHeader: boolean;
+  showHeaderControls: boolean;
+  showViewMenu: boolean;
+  presentationType: string | null;
+  fields: any[] | null;
+
+  // Methods
+  getConfig(): any;
+  setConfig(config: any): this;
+  getDataset(): string;
+  setFactTable(): this;
+  setDimensions(dims: any[]): this;
+  reAggregate(): void;
+  _suppressAttrReaction?: boolean;
+
+  // Setters
+  setName(v: any): this;
+  setDatasetName(v: any): this;
+  setCategory(v: any): this;
+  setSeries(v: any): this;
+  setValueField(v: any): this;
+  setAgg(v: any): this;
+  setMeasures(v: any): this;
+  setOrderBy(v: any): this;
+  setSegmentField(v: any): this;
+  setDateGroupBy(v: any): this;
+  setShowStatus(v: any): this;
+  setUnit(v: any): this;
+  setSortField(v: any): this;
+  setSortDirection(v: any): this;
+  setLimit(v: any): this;
+  setFilters(v: any): this;
+  setVisible(v: any): this;
+  setShowHeader(v: any): this;
+  setShowHeaderControls(v: any): this;
+  setShowViewMenu(v: any): this;
+  setPresentationType(v: any): this;
+  setFields(v: any): this;
+}
+
 /* ── Getter/setter/config generators ────────────────────────────── */
 
 function parseJsonSafe(raw: string | null, fallback: any): any {
@@ -186,7 +247,9 @@ function normalizeMeasures(config: any): any[] {
  * Usage:
  *   class SherpaMetric extends ContentAttributesMixin(SherpaElement) { ... }
  */
-export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(Base: T): any {
+export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
+  Base: T
+): Constructor<ContentAttributesMixinInterface> & T {
   const cls: any = class extends Base {
     /* ── Legacy accessors ───────────────────────────────────── */
 
