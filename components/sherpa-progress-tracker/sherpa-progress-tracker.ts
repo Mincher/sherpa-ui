@@ -37,17 +37,16 @@ export class SherpaProgressTracker extends SherpaElement {
   /* ── State ────────────────────────────────────────────────────── */
 
   #milestones = [];
-  #headingEl;
-  #percentageEl;
-  #listEl;
+
+  els = this.cacheElements({
+    heading: '.heading-text',
+    percentage: '.percentage-text',
+    list: '.milestone-list'
+  });
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#headingEl    = this.$('.heading-text');
-    this.#percentageEl = this.$('.percentage-text');
-    this.#listEl       = this.$('.milestone-list');
-
     this.#syncHeading();
     this.#syncPercentage();
   }
@@ -78,26 +77,26 @@ export class SherpaProgressTracker extends SherpaElement {
   /* ── Private: sync ────────────────────────────────────────────── */
 
   #syncHeading() {
-    if (this.#headingEl) {
-      this.#headingEl.textContent = this.dataset.heading || '';
+    if (this.els.heading) {
+      this.els.heading.textContent = this.dataset.heading || '';
     }
   }
 
   #syncPercentage() {
-    if (this.#percentageEl) {
-      this.#percentageEl.textContent = this.dataset.percentage || '';
+    if (this.els.percentage) {
+      this.els.percentage.textContent = this.dataset.percentage || '';
     }
   }
 
   /* ── Private: milestone rendering ─────────────────────────────── */
 
   #renderMilestones() {
-    if (!this.#listEl) return;
+    if (!this.els.list) return;
 
     const tpl = this.$('template.milestone-tpl');
     if (!tpl) return;
 
-    this.#listEl.replaceChildren();
+    this.els.list.replaceChildren();
 
     this.#milestones.forEach((m) => {
       const frag = tpl.content.cloneNode(true);
@@ -124,7 +123,7 @@ export class SherpaProgressTracker extends SherpaElement {
         if (tsEl) tsEl.textContent = m.timestamp;
       }
 
-      this.#listEl.appendChild(frag);
+      this.els.list.appendChild(frag);
     });
   }
 }

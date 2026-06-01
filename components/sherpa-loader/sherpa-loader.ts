@@ -29,14 +29,13 @@ class SherpaLoader extends SherpaElement {
     return [...super.observedAttributes, "data-label"];
   }
 
-  /** @type {HTMLSpanElement|null} */
-  #labelEl = null;
+  els = this.cacheElements({
+    label: { selector: '.label', type: HTMLSpanElement }
+  });
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#labelEl = this.$(".label");
-
     // Defaults
     if (!this.dataset.orientation) this.dataset.orientation = "horizontal";
     if (!this.dataset.size) this.dataset.size = "default";
@@ -56,8 +55,8 @@ class SherpaLoader extends SherpaElement {
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncLabel() {
-    if (this.#labelEl) {
-      this.#labelEl.textContent = this.dataset.label || "";
+    if (this.els.label) {
+      this.els.label.textContent = this.dataset.label || "";
     }
   }
 }

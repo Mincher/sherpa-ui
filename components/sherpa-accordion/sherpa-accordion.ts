@@ -29,20 +29,18 @@ export class SherpaAccordion extends SherpaElement {
     return [...super.observedAttributes, 'data-label', 'data-icon', 'disabled'];
   }
 
-  #labelEl = null;
-  #iconEl = null;
-  #chevronBtnEl = null;
-  #detailsEl = null;
+  els = this.cacheElements({
+    label: '.trigger-label',
+    icon: '.trigger-icon',
+    chevronBtn: '.chevron-btn',
+    details: 'details'
+  });
+
   #bound = false;
 
   override onRender(): void {
-    this.#labelEl = this.$('.trigger-label');
-    this.#iconEl = this.$('.trigger-icon');
-    this.#chevronBtnEl = this.$('.chevron-btn');
-    this.#detailsEl = this.$('details');
-
     if (!this.#bound) {
-      this.#detailsEl?.addEventListener('toggle', this.#onToggle);
+      this.els.details?.addEventListener('toggle', this.#onToggle);
       this.#bound = true;
     }
 
@@ -63,41 +61,41 @@ export class SherpaAccordion extends SherpaElement {
   /* ── Sync ─────────────────────────────────────────────────────── */
 
   #syncLabel() {
-    if (this.#labelEl) this.#labelEl.textContent = this.dataset.label || '';
+    if (this.els.label) this.els.label.textContent = this.dataset.label || '';
   }
 
   #syncDisabled() {
-    if (!this.#chevronBtnEl) return;
-    this.#chevronBtnEl.toggleAttribute('disabled', this.hasAttribute('disabled'));
+    if (!this.els.chevronBtn) return;
+    this.els.chevronBtn.toggleAttribute('disabled', this.hasAttribute('disabled'));
   }
 
   #syncIcon() {
-    if (!this.#iconEl) return;
+    if (!this.els.icon) return;
     // data-icon accepts either a Font Awesome class string
     // (e.g. "fa-solid fa-star") or a single FA unicode codepoint.
     const v = this.dataset.icon || '';
     if (/\bfa-/.test(v)) {
-      this.#iconEl.className = `trigger-icon ${v}`.trim();
-      this.#iconEl.textContent = '';
-      this.#iconEl.style.fontFamily = '';
+      this.els.icon.className = `trigger-icon ${v}`.trim();
+      this.els.icon.textContent = '';
+      this.els.icon.style.fontFamily = '';
     } else {
-      this.#iconEl.className = 'trigger-icon';
-      this.#iconEl.textContent = v;
-      this.#iconEl.style.fontFamily = v ? '"Font Awesome 6 Free"' : '';
-      this.#iconEl.style.fontWeight = v ? '900' : '';
+      this.els.icon.className = 'trigger-icon';
+      this.els.icon.textContent = v;
+      this.els.icon.style.fontFamily = v ? '"Font Awesome 6 Free"' : '';
+      this.els.icon.style.fontWeight = v ? '900' : '';
     }
   }
 
   /** Mirror the host `open` attribute to the inner <details>. */
   #syncOpen() {
-    if (this.#detailsEl) this.#detailsEl.open = this.hasAttribute('open');
+    if (this.els.details) this.els.details.open = this.hasAttribute('open');
   }
 
   /* ── Events ───────────────────────────────────────────────────── */
 
   /** Keep the host `open` attribute in sync with the native toggle. */
   #onToggle = () => {
-    this.toggleAttribute('open', this.#detailsEl.open);
+    this.toggleAttribute('open', this.els.details.open);
   };
 }
 
