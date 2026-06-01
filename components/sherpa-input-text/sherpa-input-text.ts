@@ -70,7 +70,7 @@ export class SherpaInputText extends SherpaInputBase {
    * evergreen-only policy, no fallback measurement is needed.
    */
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === 'data-multiline') {
       // Only swap templates after the initial render. The first

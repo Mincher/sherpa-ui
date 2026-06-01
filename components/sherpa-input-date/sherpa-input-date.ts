@@ -160,7 +160,7 @@ export class SherpaInputDate extends SherpaInputBase {
     document.removeEventListener('keydown', this.#onDocKey);
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
 
     if (name === 'min' || name === 'max') {

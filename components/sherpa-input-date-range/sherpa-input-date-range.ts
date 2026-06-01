@@ -187,7 +187,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     document.removeEventListener("keydown", this.#onDocKey);
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     switch (name) {
       case "data-value-start":

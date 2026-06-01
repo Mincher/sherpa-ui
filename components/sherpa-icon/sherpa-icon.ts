@@ -108,7 +108,7 @@ export class SherpaIcon extends StatusMixin(SherpaElement) {
     this.#syncIcon();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === 'name') {
       // Switching between glyph and registered SVG requires a template swap.

@@ -91,7 +91,7 @@ export class SherpaInputTag extends SherpaInputBase {
     input.removeEventListener('keydown', this.#onKeyDown);
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === 'data-value') this.#renderChips();
   }

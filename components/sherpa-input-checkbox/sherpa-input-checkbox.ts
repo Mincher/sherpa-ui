@@ -73,7 +73,7 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
     this.#syncNative();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     switch (name) {
       case 'data-label':       this.#syncLabel(); break;

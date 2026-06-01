@@ -100,7 +100,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     }
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === "placeholder") {
       this.#ensurePlaceholder();
