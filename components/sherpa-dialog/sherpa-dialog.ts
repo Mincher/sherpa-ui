@@ -60,10 +60,10 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     return [...super.observedAttributes, 'data-label', 'data-subtitle', 'data-size', 'data-open', 'data-dismissible', 'data-template', 'data-page', 'data-pages'];
   }
 
-  /** @type {HTMLElement|null} */
-  #titleEl = null;
-  /** @type {HTMLElement|null} */
-  #descriptionEl = null;
+  els = this.cacheElements({
+    title: '.header-title',
+    description: '.header-description'
+  });
 
   /* ── Template selection ───────────────────────────────────────── */
 
@@ -75,9 +75,6 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
   override onRender(): void {
     const dialog = this.$('.dialog');
-
-    this.els.title = this.$('.header-title');
-    this.els.description = this.$('.header-description');
 
     this.#syncHeading();
     this.#syncSubtitle();

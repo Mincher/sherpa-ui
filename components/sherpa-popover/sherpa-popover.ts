@@ -58,10 +58,11 @@ class SherpaPopover extends SherpaElement {
     return this.dataset.template === 'paged' ? 'paged' : 'default';
   }
 
-  /** @type {HTMLSpanElement|null} */
-  #headingEl = null;
-  /** @type {HTMLButtonElement|null} */
-  #closeBtnEl = null;
+  els = this.cacheElements({
+    heading: '.header-title',
+    closeBtn: { selector: '.close-btn', type: HTMLButtonElement }
+  });
+
   /** @type {AbortController|null} */
   #outsideController = null;
   #bound = false;
@@ -69,8 +70,6 @@ class SherpaPopover extends SherpaElement {
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.els.heading = this.$(".header-title");
-    this.els.closeBtn = this.$(".close-btn");
 
     // Defaults
     if (!this.dataset.position) this.dataset.position = "bottom";

@@ -44,16 +44,17 @@ export class SherpaSparkline extends SherpaElement {
   #pointEls = [];
   #shapeSlots = 0;
   #pointSlots = 0;
-  #tipEl = null;
-  #tipTextEl = null;
+
+  els = this.cacheElements({
+    tip: '.tip',
+    tipText: '.tip-text'
+  });
 
   override onRender(): void {
     this.#shapeEls = Array.from(this.$$('.shape'));
     this.#pointEls = Array.from(this.$$('.point'));
     this.#shapeSlots = this.#shapeEls.length;
     this.#pointSlots = this.#shapeSlots + 1;
-    this.els.tip = this.$('.tip');
-    this.els.tipText = this.$('.tip-text');
 
     // Add tooltip handlers to points
     this.#pointEls.forEach(point => {
