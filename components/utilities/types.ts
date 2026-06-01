@@ -374,3 +374,88 @@ export interface IFormField extends IDisableable, ILabeled {
   checkValidity(): boolean;
   reportValidity(): boolean;
 }
+
+/* ── Non-null helpers ─────────────────────────────────────────────── */
+
+/**
+ * Assert that a value is non-null/undefined. Returns the value typed
+ * without the `null | undefined` part. Throws if the value is nullish.
+ *
+ * Useful when accessing required cached elements or values that the type
+ * system cannot narrow (e.g. `noUncheckedIndexedAccess` array reads).
+ *
+ *   const ctx = nn(canvas.getContext('2d'), 'canvas context required');
+ */
+export function nn<T>(value: T | null | undefined, message = 'expected non-null value'): T {
+  if (value == null) throw new Error(message);
+  return value;
+}
+
+/**
+ * Type guard: narrows `value` to `NonNullable<T>` without throwing.
+ *
+ *   const items = list.filter(isNonNullable);
+ */
+export function isNonNullable<T>(value: T | null | undefined): value is NonNullable<T> {
+  return value != null;
+}
+
+/* ── Sherpa custom event map ───────────────────────────────────────── */
+
+/**
+ * Map of Sherpa custom event names → CustomEvent detail types.
+ *
+ * Augmenting `HTMLElement.addEventListener` with this map lets call sites
+ * write `el.addEventListener('filter-change', e => e.detail.filters)`
+ * and get correctly typed `e.detail` without casts.
+ *
+ * Add entries as more event detail interfaces are defined. Events not in
+ * this map still work via the standard string overload (untyped detail).
+ */
+export interface SherpaEventMap {
+  'filter-change': CustomEvent<FilterChangeEventDetail>;
+  'filter-clear': CustomEvent<void>;
+  'menu-open': CustomEvent<MenuOpenEventDetail>;
+  'menu-close': CustomEvent<MenuCloseEventDetail>;
+  'menu-select': CustomEvent<MenuSelectEventDetail>;
+  'menu-populate': CustomEvent<{ trigger: Element }>;
+  'page-change': CustomEvent<PageChangeEventDetail>;
+  'sort-change': CustomEvent<SortChangeEventDetail>;
+  'selection-change': CustomEvent<SelectionChangeEventDetail>;
+  'search': CustomEvent<SearchEventDetail>;
+  'group-toggle': CustomEvent<GroupToggleEventDetail>;
+  'row-action': CustomEvent<RowActionEventDetail>;
+  'grid-action': CustomEvent<GridActionEventDetail>;
+  'toggle-filters': CustomEvent<ToggleEventDetail>;
+  'toggle-legend': CustomEvent<ToggleEventDetail>;
+  'view-header-back': CustomEvent<void>;
+  'global-filter-change': CustomEvent<FilterChangeEventDetail>;
+}
+
+declare global {
+  interface HTMLElement {
+    addEventListener<K extends keyof SherpaEventMap>(
+      type: K,
+      listener: (this: HTMLElement, ev: SherpaEventMap[K]) => void,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    removeEventListener<K extends keyof SherpaEventMap>(
+      type: K,
+      listener: (this: HTMLElement, ev: SherpaEventMap[K]) => void,
+      options?: boolean | EventListenerOptions,
+    ): void;
+  }
+
+  interface ShadowRoot {
+    addEventListener<K extends keyof SherpaEventMap>(
+      type: K,
+      listener: (this: ShadowRoot, ev: SherpaEventMap[K]) => void,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    removeEventListener<K extends keyof SherpaEventMap>(
+      type: K,
+      listener: (this: ShadowRoot, ev: SherpaEventMap[K]) => void,
+      options?: boolean | EventListenerOptions,
+    ): void;
+  }
+}

@@ -26,8 +26,7 @@ import {
   CONTENT_ATTRIBUTES,
 } from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-// @ts-expect-error - TODO: Fix type
-import { formatCompact, formatFieldName, cleanTitleBase } from '../utilities/index.js';
+import { formatCompact, formatFieldName, cleanTitleBase } from '../utilities/format-utils.js';
 import { getSegmentField, isSegmentEnabled, getActiveSort } from '../utilities/chart-utils.js';
 import { injectFilterMenu } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
@@ -115,7 +114,6 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       this.#filterMenuTpl = injectFilterMenu(this);
       this.addEventListener('toggle-filters', this.#onToggleFilters);
       this.addEventListener('toggle-legend', this.#onToggleLegend);
-      // @ts-expect-error - TODO: Fix type
       this.addEventListener('menu-populate', this.#onMenuPopulate);
       this.#bound = true;
     }

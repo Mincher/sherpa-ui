@@ -40,8 +40,7 @@ import {
   formatCompact,
   generateUniqueId,
   cleanTitleBase,
-// @ts-expect-error - TODO: Fix type
-} from "../utilities/index.js";
+} from "../utilities/format-utils.js";
 import {
   getSegmentField,
   isSegmentEnabled,
@@ -79,7 +78,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   #data = null;
   #resizeObserver = null;
-  #menuId = null;
+  #menuId: string | null = null;
   #originalOrderBy = null;
   #originalSegmentBy = null;
   #chartRowTpl = null;
@@ -128,7 +127,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       this.#filterMenuTpl = injectFilterMenu(this);
       this.addEventListener("toggle-filters", this.#onToggleFilters);
       this.addEventListener("toggle-legend", this.#onToggleLegend);
-      // @ts-expect-error - TODO: Fix type
       this.addEventListener("menu-populate", this.#onMenuPopulate);
 
       // Tooltip delegation for chart segments

@@ -8,41 +8,32 @@
 const _escapeDiv = document.createElement('div');
 
 /**
- * Escape HTML entities to prevent XSS
- * @param {string} str - String to escape
- * @returns {string} Escaped string
+ * Escape HTML entities to prevent XSS.
  */
-// @ts-expect-error - TODO: Fix type
-export function escapeHtml(str) {
+export function escapeHtml(str: unknown): string {
   if (str == null) return '';
   _escapeDiv.textContent = String(str);
   return _escapeDiv.innerHTML;
 }
 
 /**
- * Convert field name to display label
- * Handles camelCase, snake_case → Title Case
- * @param {string} field - Field name (e.g., "firstName", "last_name")
- * @returns {string} Formatted label (e.g., "First Name", "Last Name")
+ * Convert field name to display label.
+ * Handles camelCase, snake_case → Title Case.
+ * Example: "firstName" → "First Name", "last_name" → "Last Name".
  */
-// @ts-expect-error - TODO: Fix type
-export function formatFieldName(field) {
+export function formatFieldName(field: string | null | undefined): string {
   if (!field) return '';
   return field
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/[-_]/g, ' ')
-    // @ts-expect-error - TODO: Fix type
-    .replace(/\b\w/g, c => c.toUpperCase());
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /**
- * Extract the core entity name from a title by stripping
- * a leading "All " prefix and/or a trailing " by <Field>" suffix.
- * @param {string} title
- * @returns {string}
+ * Extract the core entity name from a title by stripping a leading "All "
+ * prefix and/or a trailing " by <Field>" suffix.
  */
-// @ts-expect-error - TODO: Fix type
-export function cleanTitleBase(title) {
+export function cleanTitleBase(title: string | null | undefined): string {
   if (!title) return '';
   return title
     .replace(/^All\s+/i, '')
@@ -51,14 +42,12 @@ export function cleanTitleBase(title) {
 
 // ── ID Generation ──────────────────────────────────────────────────────────────
 
-const counters = new Map();
+const counters = new Map<string, number>();
 
 /**
- * Generate a unique ID with a given prefix
- * @param {string} prefix - ID prefix (e.g., "menu", "table", "chart")
- * @returns {string} Unique ID (e.g., "menu-1", "table-2")
+ * Generate a unique ID with a given prefix (e.g., "menu-1", "table-2").
  */
-export function generateUniqueId(prefix = 'id') {
+export function generateUniqueId(prefix: string = 'id'): string {
   const current = counters.get(prefix) || 0;
   const next = current + 1;
   counters.set(prefix, next);
@@ -67,41 +56,45 @@ export function generateUniqueId(prefix = 'id') {
 
 // ── Currency Configuration ─────────────────────────────────────────────────────
 
-const _currencyConfig = { locale: 'en-US', currency: 'USD' };
+export interface CurrencyConfig {
+  locale?: string;
+  currency?: string;
+}
+
+const _currencyConfig: { locale: string; currency: string } = {
+  locale: 'en-US',
+  currency: 'USD',
+};
 
 /**
  * Override the default currency/locale used by formatValue() and chart components.
- * @param {{ locale?: string, currency?: string }} config
  */
-// @ts-expect-error - TODO: Fix type
-export function setCurrencyConfig(config) {
+export function setCurrencyConfig(config: CurrencyConfig): void {
   if (config.locale)   _currencyConfig.locale   = config.locale;
   if (config.currency) _currencyConfig.currency = config.currency;
 }
 
 /** Return the current currency code (e.g. 'USD'). */
-export function getCurrencyCode() {
+export function getCurrencyCode(): string {
   return _currencyConfig.currency;
 }
 
 /** Return the currency symbol for the current config (e.g. '$'). */
-export function getCurrencySymbol() {
+export function getCurrencySymbol(): string {
   return new Intl.NumberFormat(_currencyConfig.locale, {
     style: 'currency', currency: _currencyConfig.currency,
     maximumFractionDigits: 0,
-  }).formatToParts(0).find((p: any) => p.type === 'currency')?.value || _currencyConfig.currency;
+  }).formatToParts(0).find((p) => p.type === 'currency')?.value || _currencyConfig.currency;
 }
 
 // ── Number / Value Formatting ──────────────────────────────────────────────────
 
 /**
  * Format a number with K/M suffixes for compact display
- * @param {number} value - Number to format
- * @returns {string} Formatted string (e.g., "1.2M", "450K", "123")
+ * (e.g., "1.2M", "450K", "123").
  */
-// @ts-expect-error - TODO: Fix type
-export function formatCompact(value) {
-  if (value == null || isNaN(value)) return '';
+export function formatCompact(value: unknown): string {
+  if (value == null || isNaN(Number(value))) return '';
   const v = Number(value);
   if (v >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
   if (v >= 1e3) return (v / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
@@ -110,18 +103,15 @@ export function formatCompact(value) {
 
 /**
  * Format a value based on its type
- * @param {*} value - Value to format
- * @param {string} type - Column type (currency, percent, date, datetime, number, etc.)
- * @returns {string} Formatted value
+ * (currency, percent, date, datetime, number, etc.).
  */
-// @ts-expect-error - TODO: Fix type
-export function formatValue(value, type) {
+export function formatValue(value: unknown, type: string | null | undefined): string {
   if (value == null) return '';
-  
+
   switch (type) {
     case 'datetime':
     case 'date': {
-      const d = new Date(value);
+      const d = new Date(value as string | number | Date);
       if (isNaN(d.getTime())) return escapeHtml(String(value));
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -132,30 +122,33 @@ export function formatValue(value, type) {
       return `${days[d.getDay()]} ${dd} ${months[d.getMonth()]} ${d.getFullYear()}, ${hh}:${mm}:${ss}`;
     }
     case 'currency':
-      return new Intl.NumberFormat(_currencyConfig.locale, { 
-        style: 'currency', 
-        currency: _currencyConfig.currency, 
-        maximumFractionDigits: 0 
-      }).format(value);
+      return new Intl.NumberFormat(_currencyConfig.locale, {
+        style: 'currency',
+        currency: _currencyConfig.currency,
+        maximumFractionDigits: 0,
+      }).format(Number(value));
     case 'percent':
       return `${value}%`;
     case 'number':
     case 'numeric':
-      return new Intl.NumberFormat(_currencyConfig.locale).format(value);
+      return new Intl.NumberFormat(_currencyConfig.locale).format(Number(value));
     default:
       return escapeHtml(String(value));
   }
 }
 
+export interface ContentTitleDetails {
+  dataset?: string;
+  name?: string;
+  groupField?: string;
+  segmentField?: string;
+}
+
 /**
  * Generate a concise content title: "$categoryName by $groupName".
  * Group portion is omitted when there is no secondary dimension.
- *
- * @param {object|string} details - Metadata object (or plain dataset name)
- * @returns {string} Formatted title
  */
-// @ts-expect-error - TODO: Fix type
-export function generateContentTitle(details) {
+export function generateContentTitle(details: ContentTitleDetails | string | null | undefined): string {
   if (!details || typeof details !== 'object') {
     return details ? formatFieldName(String(details)) : '';
   }

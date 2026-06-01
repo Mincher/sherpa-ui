@@ -510,14 +510,13 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
         ? { [this.category]: this.dateGroupBy }
         : undefined;
 
-      let rows;
+      let rows: Record<string, unknown>[];
       if (groupByFields.length) {
         rows = groupAndAggregate(records, groupByFields, measures, dateGroupMap);
       } else {
-        const row = {};
+        const row: Record<string, unknown> = {};
         for (const m of measures) {
-          // @ts-expect-error - TODO: Fix type
-          row[m.field] = agg(records.map((r) => r[m.field]), m.agg);
+          row[m.field] = agg(records.map((r: Record<string, unknown>) => r[m.field]), m.agg);
         }
         rows = [row];
       }

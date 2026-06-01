@@ -231,7 +231,6 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     // Listen for menu-select from data-filter-field chips and sort/segment chips
-    // @ts-expect-error - TODO: Fix type
     this.addEventListener("menu-select", (e: CustomEvent) => {
       // Use composedPath()[0] so shadow DOM behavior chips are resolved correctly.
       const chip = e.composedPath()[0];

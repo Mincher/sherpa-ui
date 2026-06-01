@@ -320,7 +320,6 @@ export class SherpaButton extends SherpaElement {
       );
     });
 
-    // @ts-expect-error - TODO: Fix type
     menu.addEventListener("menu-close", (e: CustomEvent) => {
       e.stopPropagation();
       this.removeAttribute("aria-expanded");

@@ -131,7 +131,6 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.#filterMenuTpl = injectFilterMenu(this);
     this.addEventListener('toggle-filters', this.#onToggleFilters);
     this.addEventListener('toggle-legend', this.#onToggleLegend);
-    // @ts-expect-error - TODO: Fix type
     this.addEventListener('menu-populate', this.#onMenuPopulate);
   }
 
@@ -139,7 +138,6 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     super.onDisconnect();
     this.removeEventListener('toggle-filters', this.#onToggleFilters);
     this.removeEventListener('toggle-legend', this.#onToggleLegend);
-    // @ts-expect-error - TODO: Fix type
     this.removeEventListener('menu-populate', this.#onMenuPopulate);
     removeFilterMenu(this.#filterMenuTpl);
     this.#filterMenuTpl = null;

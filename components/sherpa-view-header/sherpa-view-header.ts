@@ -485,7 +485,6 @@ export class SherpaViewHeader extends SherpaElement {
       else menu.show?.(trigger);
     });
 
-    // @ts-expect-error - TODO: Fix type
     menu.addEventListener('menu-select', (e: CustomEvent) => {
       const value = e.detail?.value;
       // @ts-expect-error - TODO: Fix type

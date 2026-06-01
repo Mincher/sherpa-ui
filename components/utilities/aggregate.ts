@@ -1,5 +1,5 @@
 /**
- * aggregate.js — Local aggregation utilities for viz components.
+ * aggregate.ts — Local aggregation utilities for viz components.
  *
  * Pure functions extracted from DataService for client-side aggregation.
  * Components receive raw filtered records via the `datasetfiltered` event
@@ -18,30 +18,87 @@
 import { formatFieldName } from './format-utils.js';
 import { autoDetectDateField } from './timeframes.js';
 
+/* ── Types ─────────────────────────────────────────────────────────── */
+
+export type AggFn =
+  | 'count'
+  | 'count_distinct'
+  | 'sum'
+  | 'avg'
+  | 'mean'
+  | 'min'
+  | 'max'
+  | 'last';
+
+export type DateGrain = 'year' | 'month' | 'day';
+
+export type DataRecord = Record<string, unknown>;
+
+export interface Measure {
+  field: string;
+  agg: AggFn;
+}
+
+export interface OrderBySpec {
+  field: string;
+  direction?: 'asc' | 'desc' | string;
+}
+
+export interface FilterSpec {
+  field: string | null;
+  operator?: string;
+  value?: unknown;
+  values?: unknown[];
+  range?: { start: Date | string | number; end: Date | string | number };
+  /** Optional filter classification used by filter-bar (sort/segment/value) */
+  type?: string | null;
+  /** Mode flag used by some filter producers */
+  mode?: string | null;
+  /** Cached lowercased values for `in` operator */
+  _normalizedIn?: string[];
+}
+
+export interface FieldMeta {
+  name: string;
+  type?: string;
+  label?: string;
+}
+
+export interface Column {
+  field: string;
+  name: string;
+  type: string;
+}
+
+export interface MetricSummary {
+  total: number;
+  delta: number;
+  deltaPercent: number;
+  values: number[];
+  count: number;
+}
+
 // ═══════════════════════════════════════════════════════════
 //  Aggregation
 // ═══════════════════════════════════════════════════════════
 
 /**
  * Aggregate an array of values using the specified function.
- * @param {Array} values
- * @param {'count'|'count_distinct'|'sum'|'avg'|'mean'|'min'|'max'} fn
- * @returns {number}
  */
-// @ts-expect-error - TODO: Fix type
-export function agg(values, fn) {
+export function agg(values: unknown[], fn: AggFn | string): number {
   if (fn === 'count') return values.length;
   if (fn === 'count_distinct') return new Set(values).size;
 
-  // @ts-expect-error - TODO: Fix type
-  const nums = values.filter((v) => v !== null && v !== undefined).map(Number);
+  const nums = values
+    .filter((v): v is number | string => v !== null && v !== undefined)
+    .map(Number);
   if (!nums.length) return 0;
   switch (fn) {
-    case 'sum':              return nums.reduce((a: any, b: any) => a + b, 0);
-    case 'avg': case 'mean': return nums.reduce((a: any, b: any) => a + b, 0) / nums.length;
+    case 'sum':              return nums.reduce((a, b) => a + b, 0);
+    case 'avg': case 'mean': return nums.reduce((a, b) => a + b, 0) / nums.length;
     case 'min':              return Math.min(...nums);
     case 'max':              return Math.max(...nums);
-    case 'last':             return nums[nums.length - 1];
+    case 'last':             return nums[nums.length - 1] ?? 0;
     default:                 throw new Error(`Unknown aggregation: ${fn}`);
   }
 }
@@ -50,19 +107,14 @@ export function agg(values, fn) {
 //  Date Truncation
 // ═══════════════════════════════════════════════════════════
 
+const GRAIN_LEN: Record<DateGrain, number> = { year: 4, month: 7, day: 10 };
+
 /**
  * Truncate a date-like string to a given granularity.
- * @param {string} val
- * @param {'month'|'year'|'day'} grain
- * @returns {string}
  */
-const GRAIN_LEN = { year: 4, month: 7, day: 10 };
-
-// @ts-expect-error - TODO: Fix type
-export function truncateDate(val, grain) {
+export function truncateDate(val: unknown, grain: DateGrain | string): string {
   const s = String(val ?? '');
-  // @ts-expect-error - TODO: Fix type
-  const len = GRAIN_LEN[grain];
+  const len = (GRAIN_LEN as Record<string, number>)[grain];
   return len ? (s.substring(0, len) || s) : s;
 }
 
@@ -72,35 +124,31 @@ export function truncateDate(val, grain) {
 
 /**
  * Group records by one or more fields and compute aggregate measures.
- * @param {Array<Object>} records     — flat records
- * @param {string[]}      groupByFields — fields to group by
- * @param {Array<{field:string, agg:string}>} measures — measures to compute
- * @param {Object}        [dateGroupMap] — field → grain for date truncation
- * @returns {Array<Object>} aggregated rows
  */
-// @ts-expect-error - TODO: Fix type
-export function groupAndAggregate(records, groupByFields, measures, dateGroupMap) {
-  const groups = new Map();
+export function groupAndAggregate(
+  records: DataRecord[],
+  groupByFields: string[],
+  measures: Measure[],
+  dateGroupMap?: Record<string, DateGrain | string>
+): DataRecord[] {
+  const groups = new Map<string, DataRecord[]>();
   for (const rec of records) {
-    // @ts-expect-error - TODO: Fix type
     const key = groupByFields.map((f) => {
       const v = rec[f] ?? '';
-      return dateGroupMap?.[f] ? truncateDate(v, dateGroupMap[f]) : v;
+      return dateGroupMap?.[f] ? truncateDate(v, dateGroupMap[f]!) : v;
     }).join('\x00');
     if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(rec);
+    groups.get(key)!.push(rec);
   }
 
-  const rows = [];
+  const rows: DataRecord[] = [];
   for (const [, groupRecs] of groups) {
-    const row = {};
+    const row: DataRecord = {};
     for (const f of groupByFields) {
-      const raw = groupRecs[0][f];
-      // @ts-expect-error - TODO: Fix type
-      row[f] = dateGroupMap?.[f] ? truncateDate(raw, dateGroupMap[f]) : raw;
+      const raw = groupRecs[0]![f];
+      row[f] = dateGroupMap?.[f] ? truncateDate(raw, dateGroupMap[f]!) : raw;
     }
     for (const m of measures) {
-      // @ts-expect-error - TODO: Fix type
       row[m.field] = agg(groupRecs.map((r) => r[m.field]), m.agg);
     }
     rows.push(row);
@@ -114,23 +162,22 @@ export function groupAndAggregate(records, groupByFields, measures, dateGroupMap
 
 /**
  * Apply an AND-chain of filters to records.
- * @param {Array<Object>} records
- * @param {Array<{field:string, operator:string, value:*, values?:Array}>} filters
- * @returns {Array<Object>}
  */
-// @ts-expect-error - TODO: Fix type
-export function applyLocalFilters(records, filters) {
+export function applyLocalFilters(
+  records: DataRecord[],
+  filters: FilterSpec[]
+): DataRecord[] {
   if (!Array.isArray(filters) || !filters.length) return records;
-  // @ts-expect-error - TODO: Fix type
   return records.filter((rec) =>
     filters.every((f) => {
+      if (f.field == null) return true;
       // Resolve _timerange sentinel against the record's date field.
       if (f.field === '_timerange') {
         if (!f.range) return true;
         const df = autoDetectDateField(rec);
         if (!df) return true;
-        const d = new Date(rec[df]);
-        return d >= f.range.start && d <= f.range.end;
+        const d = new Date(rec[df] as string | number);
+        return d >= new Date(f.range.start) && d <= new Date(f.range.end);
       }
       const val = rec[f.field];
       const op = f.operator || '=';
@@ -144,15 +191,15 @@ export function applyLocalFilters(records, filters) {
         case '>=': case 'gte': return String(val) >= String(f.value);
         case '<=': case 'lte': return String(val) <= String(f.value);
         case 'in': {
-          // @ts-expect-error - TODO: Fix type
-          const list = f._normalizedIn || (f.values || String(f.value).split(',')).map((v) => String(v).toLowerCase());
+          const list = f._normalizedIn || (f.values || String(f.value).split(','))
+            .map((v) => String(v).toLowerCase());
           f._normalizedIn = list;
           return list.includes(String(val).toLowerCase());
         }
         case 'between': {
           if (f.range?.start && f.range?.end) {
-            const d = new Date(val);
-            return d >= f.range.start && d <= f.range.end;
+            const d = new Date(val as string | number);
+            return d >= new Date(f.range.start) && d <= new Date(f.range.end);
           }
           return true;
         }
@@ -168,14 +215,10 @@ export function applyLocalFilters(records, filters) {
 
 /**
  * Sort rows by one or more order-by specs.
- * @param {Array<Object>} rows
- * @param {Array<{field:string, direction?:string}>} orderBy
- * @returns {Array<Object>} sorted copy
  */
-// @ts-expect-error - TODO: Fix type
-export function applySort(rows, orderBy) {
+export function applySort(rows: DataRecord[], orderBy: OrderBySpec[]): DataRecord[] {
   if (!Array.isArray(orderBy) || !orderBy.length) return rows;
-  return [...rows].sort((a: any, b: any) => {
+  return [...rows].sort((a, b) => {
     for (const o of orderBy) {
       const field = o.field;
       const dir = (o.direction || 'asc').toLowerCase() === 'desc' ? -1 : 1;
@@ -200,46 +243,44 @@ export function applySort(rows, orderBy) {
  * When `measures` contains a value-field entry (e.g. `{ field: 'amount', agg: 'sum' }`),
  * the total and sparkline values are computed by aggregating that field per time bucket.
  * When no value-field measure is provided, records are counted (legacy behaviour).
- *
- * @param {Array<Object>} records
- * @param {Array<{field:string, agg:string}>} measures — value-field + aggregation
- * @param {string}        dateField — date column for time bucketing
- * @param {Array}         filters   — used to derive time range bounds
- * @returns {{ total, delta, deltaPercent, values, count }}
  */
-// @ts-expect-error - TODO: Fix type
-export function computeMetricSummary(records, measures, dateField, filters) {
+export function computeMetricSummary(
+  records: DataRecord[],
+  measures: Measure[] | null | undefined,
+  dateField: string | null | undefined,
+  filters: FilterSpec[] | null | undefined
+): MetricSummary {
   if (!records.length) return { total: 0, delta: 0, deltaPercent: 0, values: [], count: 0 };
 
   // Resolve value-field measure (skip synthetic '_count' entries)
   const measure = Array.isArray(measures)
-    ? measures.find((m: any) => m.field && m.field !== '_count')
+    ? measures.find((m) => m.field && m.field !== '_count')
     : null;
-  const aggFn   = measure?.agg || 'count';
+  const aggFn = measure?.agg || 'count';
   const valField = measure?.field;
 
   // Preliminary total (used when no date field prevents bucketing)
   let total = valField
-    ? agg(records.map((r: any) => r[valField]), aggFn)
+    ? agg(records.map((r) => r[valField]), aggFn)
     : records.length;
 
   const field = dateField;
   if (!field) {
-    // No date field available — cannot produce time-series bucketing
     return { total, delta: 0, deltaPercent: 0, values: [total], count: 1 };
   }
 
   // Determine time range from filters (preferred) or data
-  let rangeStart = null;
-  let rangeEnd = null;
+  let rangeStart: string | number | null = null;
+  let rangeEnd: string | number | null = null;
   if (Array.isArray(filters)) {
     for (const f of filters) {
-      if (f.field === field && (f.operator === '>=' || f.operator === 'gte')) rangeStart = f.value;
-      if (f.field === field && (f.operator === '<=' || f.operator === 'lte')) rangeEnd = f.value;
+      if (f.field === field && (f.operator === '>=' || f.operator === 'gte')) rangeStart = f.value as string | number;
+      if (f.field === field && (f.operator === '<=' || f.operator === 'lte')) rangeEnd = f.value as string | number;
     }
   }
   if (!rangeStart || !rangeEnd) {
-    let dMin = null, dMax = null;
+    let dMin: string | null = null;
+    let dMax: string | null = null;
     for (const r of records) {
       const v = r[field];
       if (v == null) continue;
@@ -259,14 +300,13 @@ export function computeMetricSummary(records, measures, dateField, filters) {
   const endMs   = new Date(rangeEnd).getTime();
   const diffDays = (endMs - startMs) / (1000 * 60 * 60 * 24);
 
-  let segmentCount;
+  let segmentCount: number;
   if (diffDays <= 1)        segmentCount = 12;
   else if (diffDays <= 7)   segmentCount = 7;
   else if (diffDays <= 30)  segmentCount = 4;
   else if (diffDays <= 90)  segmentCount = 3;
   else                      segmentCount = 12;
 
-  // Divide range into equal-width buckets
   const rangeMs = endMs - startMs;
   if (rangeMs <= 0) {
     return { total, delta: 0, deltaPercent: 0, values: [total], count: 1 };
@@ -276,30 +316,29 @@ export function computeMetricSummary(records, measures, dateField, filters) {
 
   // Collect per-bucket values (array of arrays) when using a value field,
   // otherwise simple counts.
-  let bucketValues;
+  let bucketValues: number[];
   if (valField) {
-    bucketValues = Array.from({ length: segmentCount }, () => []);
+    const bucketArrays: unknown[][] = Array.from({ length: segmentCount }, () => []);
     for (const r of records) {
       const v = r[field];
       if (v == null) continue;
-      const t = new Date(v).getTime();
+      const t = new Date(v as string | number).getTime();
       let idx = Math.floor((t - startMs) / bucketWidth);
       if (idx >= segmentCount) idx = segmentCount - 1;
       if (idx < 0) idx = 0;
-      // @ts-expect-error - TODO: Fix type
-      bucketValues[idx].push(r[valField]);
+      bucketArrays[idx]!.push(r[valField]);
     }
-    bucketValues = bucketValues.map((vals: any) => agg(vals, aggFn));
+    bucketValues = bucketArrays.map((vals) => agg(vals, aggFn));
   } else {
     bucketValues = new Array(segmentCount).fill(0);
     for (const r of records) {
       const v = r[field];
       if (v == null) continue;
-      const t = new Date(v).getTime();
+      const t = new Date(v as string | number).getTime();
       let idx = Math.floor((t - startMs) / bucketWidth);
       if (idx >= segmentCount) idx = segmentCount - 1;
       if (idx < 0) idx = 0;
-      bucketValues[idx]++;
+      bucketValues[idx]!++;
     }
   }
 
@@ -320,17 +359,15 @@ export function computeMetricSummary(records, measures, dateField, filters) {
 
 /**
  * Build column descriptor objects from field metadata.
- * @param {Array<{name:string, type?:string, label?:string}>} fieldsMeta — dataset field definitions
- * @param {string[]} fieldNames — which fields to include (in order)
- * @returns {Array<{field:string, name:string, type:string}>}
  */
-// @ts-expect-error - TODO: Fix type
-export function buildColumns(fieldsMeta, fieldNames) {
-  const metaMap = new Map();
+export function buildColumns(
+  fieldsMeta: FieldMeta[] | null | undefined,
+  fieldNames: string[]
+): Column[] {
+  const metaMap = new Map<string, FieldMeta>();
   if (Array.isArray(fieldsMeta)) {
     for (const f of fieldsMeta) metaMap.set(f.name, f);
   }
-  // @ts-expect-error - TODO: Fix type
   return fieldNames.map((name) => {
     const fm = metaMap.get(name) || { name, type: 'string' };
     return {

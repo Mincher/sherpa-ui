@@ -73,14 +73,7 @@ import "../sherpa-empty-state/sherpa-empty-state.js";
 import "../sherpa-pagination/sherpa-pagination.js";
 import "../sherpa-toolbar/sherpa-toolbar.js";
 import "../sherpa-filter-bar/sherpa-filter-bar.js";
-import {
-  // @ts-expect-error - TODO: Fix type
-  escapeHtml,
-  formatValue,
-  // @ts-expect-error - TODO: Fix type
-  formatFieldName,
-// @ts-expect-error - TODO: Fix type
-} from "../utilities/index.js";
+import { formatValue } from "../utilities/format-utils.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
 import { injectFilterMenu } from "../utilities/filter-menu-utils.js";
 
@@ -298,7 +291,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // upstream records (data set directly via setData()), that pipeline
     // is a no-op, so we always re-render here in a microtask to pick up
     // whatever attrs the mixin just wrote.
-      // @ts-expect-error - TODO: Fix type
       this.addEventListener("filter-change", (e: CustomEvent) => {
         const filters = e.detail?.filters || [];
 
@@ -372,7 +364,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       // @ts-expect-error - TODO: Fix type
       this.#filterMenuTpl = injectFilterMenu(this);
       this.addEventListener("toggle-filters", this.#onToggleFilters);
-      // @ts-expect-error - TODO: Fix type
       this.addEventListener("menu-populate", this.#onMenuPopulate);
 
     // Declarative initial state from attributes (no JS required).

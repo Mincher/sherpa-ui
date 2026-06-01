@@ -31,6 +31,12 @@ jobs:
       - name: Validate JSDoc
         run: npm run validate:jsdoc
 
+      - name: TypeScript type-check
+        run: npm run type-check
+
+      - name: TypeScript suppression budget
+        run: npm run ts:suppressions
+
   build:
     name: Build Validation
     runs-on: ubuntu-latest
