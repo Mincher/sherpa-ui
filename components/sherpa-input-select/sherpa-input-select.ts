@@ -22,6 +22,28 @@
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
 
+/** A flat option or an <optgroup> with nested options. */
+interface OptionDef {
+  value?: string;
+  label?: string;
+  disabled?: boolean;
+  options?: OptionDef[];
+}
+
+/** A node in the hierarchical tree-select variant. */
+interface TreeNode {
+  value: string;
+  label?: string;
+  disabled?: boolean;
+  children?: TreeNode[];
+}
+
+/** Cached label + ancestry path for a tree value. */
+interface TreePathEntry {
+  label: string;
+  path: string[];
+}
+
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
 interface SherpaInputSelectDataset extends DOMStringMap {
@@ -46,12 +68,12 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   els = this.cacheElements({
-    select: '.input-field'
+    select: { selector: '.input-field', type: HTMLSelectElement }
   });
 
-  #pendingOptions = null;
-  #outsideHandler = null;
-  #pathByValue = new Map();
+  #pendingOptions: OptionDef[] | null = null;
+  #outsideHandler: ((e: Event) => void) | null = null;
+  #pathByValue = new Map<string, TreePathEntry>();
 
   static override get observedAttributes(): string[] {
     return [...super.observedAttributes, 'data-template', 'data-tree'];
@@ -61,9 +83,8 @@ export class SherpaInputSelect extends SherpaInputBase {
     return this.dataset["template"] === 'tree' ? 'tree' : 'default';
   }
 
-  // @ts-expect-error - TODO: Fix type
   override getInputElement() {
-    return this.$(".input-field");
+    return this.$<HTMLSelectElement>(".input-field");
   }
 
   override async onInputRender(): Promise<void> {
@@ -89,9 +110,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     // at that point the matching <option> wasn't there yet and the
     // assignment silently dropped to "" / first option.
     const hostValue = this.getAttribute("value");
-    // @ts-expect-error - TODO: Fix type
     if (hostValue && this.els.select && this.els.select.value !== hostValue) {
-      // @ts-expect-error - TODO: Fix type
       this.els.select.value = hostValue;
     }
   }
@@ -107,8 +126,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === "placeholder") {
       this.#ensurePlaceholder();
-      const display = this.$('.tree-display');
-      // @ts-expect-error - TODO: Fix type
+      const display = this.$<HTMLElement>('.tree-display');
       if (display) display.dataset["placeholder"] = this.getAttribute('placeholder') || '';
     }
     if (name === 'data-template') {
@@ -132,19 +150,18 @@ export class SherpaInputSelect extends SherpaInputBase {
    * rendered as a native <optgroup>.
    * @param {Array<{value: string, label: string, disabled?: boolean} | {label: string, options: Array}>} options
    */
-  // @ts-expect-error - TODO: Fix type
-  setOptions(options) {
-    if (!this.els.select) {
+  setOptions(options: OptionDef[]) {
+    const select = this.els.select;
+    if (!select) {
       // Component hasn't finished rendering yet — queue the call so
-      // override onInputRender(): void can flush it once the inner <select> exists.
-      // @ts-expect-error - TODO: Fix type
+      // onInputRender() can flush it once the inner <select> exists.
       this.#pendingOptions = options ? [...options] : [];
       return;
     }
     // Keep placeholder, remove the rest
-    const placeholder = this.els.select.querySelector('option[value=""]');
-    this.els.select.replaceChildren();
-    if (placeholder) this.els.select.appendChild(placeholder);
+    const placeholder = select.querySelector('option[value=""]');
+    select.replaceChildren();
+    if (placeholder) select.appendChild(placeholder);
 
     for (const entry of options || []) {
       if (entry && Array.isArray(entry.options)) {
@@ -153,25 +170,22 @@ export class SherpaInputSelect extends SherpaInputBase {
         for (const opt of entry.options) {
           group.appendChild(this.#buildOption(opt));
         }
-        this.els.select.appendChild(group);
+        select.appendChild(group);
       } else {
-        this.els.select.appendChild(this.#buildOption(entry));
+        select.appendChild(this.#buildOption(entry));
       }
     }
     // Re-apply pending value from host attribute (if any) now that the
     // matching <option> exists in the DOM.
     const hostValue = this.getAttribute("value");
-    // @ts-expect-error - TODO: Fix type
-    if (hostValue && this.els.select.value !== hostValue) {
-      // @ts-expect-error - TODO: Fix type
-      this.els.select.value = hostValue;
+    if (hostValue && select.value !== hostValue) {
+      select.value = hostValue;
     }
   }
 
   /* ── Internal ───────────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #buildOption(opt) {
+  #buildOption(opt: OptionDef): HTMLOptionElement {
     const el = document.createElement('option');
     el.value = opt?.value ?? '';
     el.textContent = opt?.label || opt?.value || '';
@@ -189,24 +203,21 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   #ensurePlaceholder() {
-    if (!this.els.select) return;
+    const select = this.els.select;
+    if (!select) return;
     const ph = this.getAttribute("placeholder");
-    let placeholderOpt = this.els.select.querySelector('option[value=""]');
+    let placeholderOpt = select.querySelector<HTMLOptionElement>('option[value=""]');
 
     if (ph) {
       if (!placeholderOpt) {
         placeholderOpt = document.createElement("option");
-        // @ts-expect-error - TODO: Fix type
         placeholderOpt.value = "";
-        this.els.select.prepend(placeholderOpt);
+        select.prepend(placeholderOpt);
       }
       placeholderOpt.textContent = ph;
-      // @ts-expect-error - TODO: Fix type
       placeholderOpt.disabled = true;
       placeholderOpt.setAttribute('hidden', '');
-      // @ts-expect-error - TODO: Fix type
-      if (!this.els.select.value) {
-        // @ts-expect-error - TODO: Fix type
+      if (!select.value) {
         placeholderOpt.selected = true;
       }
     }
@@ -214,23 +225,21 @@ export class SherpaInputSelect extends SherpaInputBase {
 
   /* ── Tree template ─────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  setTree(nodes) {
+  setTree(nodes: TreeNode[]) {
     this.dataset["tree"] = JSON.stringify(Array.isArray(nodes) ? nodes : []);
   }
 
   #renderTree() {
     const panel = this.$('.tree-panel');
     if (!panel) return;
-    let nodes = [];
+    let nodes: TreeNode[] = [];
     try { nodes = JSON.parse(this.dataset["tree"] || '[]'); } catch {}
     this.#pathByValue.clear();
     panel.replaceChildren();
     panel.appendChild(this.#buildTree(nodes, []));
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #buildTree(nodes, parentPath) {
+  #buildTree(nodes: TreeNode[], parentPath: string[]): HTMLElement {
     const list = document.createElement('div');
     list.className = 'tree-list';
     list.setAttribute('role', 'group');
@@ -249,14 +258,14 @@ export class SherpaInputSelect extends SherpaInputBase {
       if (node.disabled) row.setAttribute('aria-disabled', 'true');
       row.dataset["value"] = String(node.value);
       row.innerHTML = `<span class="tree-toggle" aria-hidden="true"></span><span class="tree-label"></span>`;
-      // @ts-expect-error - TODO: Fix type
-      row.querySelector('.tree-label').textContent = node.label || String(node.value);
+      const labelEl = row.querySelector('.tree-label');
+      if (labelEl) labelEl.textContent = node.label || String(node.value);
       wrapper.appendChild(row);
 
       if (hasChildren) {
         const childWrap = document.createElement('div');
         childWrap.className = 'tree-children';
-        childWrap.appendChild(this.#buildTree(node.children, path));
+        childWrap.appendChild(this.#buildTree(node.children ?? [], path));
         wrapper.appendChild(childWrap);
       }
       list.appendChild(wrapper);
@@ -277,42 +286,39 @@ export class SherpaInputSelect extends SherpaInputBase {
     });
 
     panel.addEventListener('click', (e) => {
-      // @ts-expect-error - TODO: Fix type
-      const toggle = e.target.closest('.tree-toggle');
+      const target = e.target as HTMLElement | null;
+      const toggle = target?.closest<HTMLElement>('.tree-toggle');
       if (toggle) {
-        const node = toggle.closest('.tree-node');
-        if (node?.dataset["hasChildren"] !== undefined) {
+        const node = toggle.closest<HTMLElement>('.tree-node');
+        if (node?.dataset["hasChildren"] !== undefined && node) {
           node.dataset["expanded"] = node.dataset["expanded"] === 'true' ? 'false' : 'true';
         }
         e.stopPropagation();
         return;
       }
-      // @ts-expect-error - TODO: Fix type
-      const row = e.target.closest('.tree-row');
+      const row = target?.closest<HTMLElement>('.tree-row');
       if (!row || row.getAttribute('aria-disabled') === 'true') return;
-      const node = row.closest('.tree-node');
-      if (node?.dataset["hasChildren"] !== undefined) {
+      const node = row.closest<HTMLElement>('.tree-node');
+      if (node?.dataset["hasChildren"] !== undefined && node) {
         node.dataset["expanded"] = node.dataset["expanded"] === 'true' ? 'false' : 'true';
         return;
       }
-      this.#selectTreeValue(row.dataset["value"]);
+      this.#selectTreeValue(row.dataset["value"] ?? '');
     });
   }
 
   #bindOutside() {
     if (this.#outsideHandler) return;
-    // @ts-expect-error - TODO: Fix type
-    this.#outsideHandler = (e: Event) => {
-      // @ts-expect-error - TODO: Fix type
-      if (!this.contains(e.target) && !e.composedPath().includes(this)) {
+    const handler = (e: Event) => {
+      if (!this.contains(e.target as Node) && !e.composedPath().includes(this)) {
         this.removeAttribute('data-expanded');
         const button = this.$('.tree-button');
         if (button) button.setAttribute('aria-expanded', 'false');
-        // @ts-expect-error - TODO: Fix type
-        document.removeEventListener('pointerdown', this.#outsideHandler, true);
+        document.removeEventListener('pointerdown', handler, true);
         this.#outsideHandler = null;
       }
     };
+    this.#outsideHandler = handler;
     setTimeout(() => {
       if (this.#outsideHandler) {
         document.addEventListener('pointerdown', this.#outsideHandler, true);
@@ -320,11 +326,9 @@ export class SherpaInputSelect extends SherpaInputBase {
     }, 0);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #selectTreeValue(v) {
+  #selectTreeValue(v: string) {
     const meta = this.#pathByValue.get(String(v));
-    const hidden = this.$('.tree-value');
-    // @ts-expect-error - TODO: Fix type
+    const hidden = this.$<HTMLInputElement>('.tree-value');
     if (hidden) hidden.value = v;
     this.setAttribute('value', v);
     this.removeAttribute('data-expanded');
@@ -338,17 +342,15 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   #syncTreeDisplay() {
-    const display = this.$('.tree-display');
+    const display = this.$<HTMLElement>('.tree-display');
     if (!display) return;
-    // @ts-expect-error - TODO: Fix type
     display.dataset["placeholder"] = this.getAttribute('placeholder') || '';
     const v = this.getAttribute('value') || '';
     if (!v) { display.textContent = ''; return; }
     const meta = this.#pathByValue.get(v);
     display.textContent = meta?.label || v;
     // Mark selected row
-    for (const row of this.$$('.tree-row')) {
-      // @ts-expect-error - TODO: Fix type
+    for (const row of this.$$<HTMLElement>('.tree-row')) {
       row.setAttribute('aria-selected', row.dataset["value"] === v ? 'true' : 'false');
     }
   }
