@@ -66,8 +66,8 @@ class SherpaSlider extends SherpaElement {
     incrementMax: { selector: '.increment-max', type: HTMLSpanElement },
   });
 
-  /** @type {'low'|'high'|null} which handle is being dragged */
-  #activeHandle = null;
+  /** which handle is being dragged */
+  #activeHandle: 'low' | 'high' | null = null;
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
@@ -95,28 +95,23 @@ class SherpaSlider extends SherpaElement {
     this.#syncInputAttrs();
 
     // Wire pointer events on track area
-    // @ts-expect-error - TODO: Fix type
-    this.els.trackArea.addEventListener("pointerdown", (e: CustomEvent) =>
+    this.els.trackArea?.addEventListener("pointerdown", (e) =>
       this.#onPointerDown(e)
     );
 
     // Wire keyboard events on handles
-    // @ts-expect-error - TODO: Fix type
-    this.els.lowHandle.addEventListener("keydown", (e: CustomEvent) =>
+    this.els.lowHandle?.addEventListener("keydown", (e) =>
       this.#onKeyDown(e, "low")
     );
-    // @ts-expect-error - TODO: Fix type
-    this.els.highHandle.addEventListener("keydown", (e: CustomEvent) =>
+    this.els.highHandle?.addEventListener("keydown", (e) =>
       this.#onKeyDown(e, "high")
     );
 
     // Wire input change events
-    // @ts-expect-error - TODO: Fix type
-    this.els.inputLow.addEventListener("change", (e: CustomEvent) =>
+    this.els.inputLow?.addEventListener("change", (e) =>
       this.#onInputChange(e, "low")
     );
-    // @ts-expect-error - TODO: Fix type
-    this.els.inputHigh.addEventListener("change", (e: CustomEvent) =>
+    this.els.inputHigh?.addEventListener("change", (e) =>
       this.#onInputChange(e, "high")
     );
 
@@ -124,8 +119,7 @@ class SherpaSlider extends SherpaElement {
     this.#syncAll();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, _old, _new) {
+  override onAttributeChanged(name: string, _old: string | null, _new: string | null): void {
     switch (name) {
       case "data-label":
         this.#syncLabel();
@@ -164,36 +158,30 @@ class SherpaSlider extends SherpaElement {
   }
 
   get #min() {
-    // @ts-expect-error - TODO: Fix type
-    return parseFloat(this.dataset["min"]) || 0;
+    return parseFloat(this.dataset["min"] || "") || 0;
   }
 
   get #max() {
-    // @ts-expect-error - TODO: Fix type
-    const v = parseFloat(this.dataset["max"]);
+    const v = parseFloat(this.dataset["max"] || "");
     return Number.isFinite(v) ? v : 100;
   }
 
   get #step() {
-    // @ts-expect-error - TODO: Fix type
-    const v = parseFloat(this.dataset["step"]);
+    const v = parseFloat(this.dataset["step"] || "");
     return v > 0 ? v : 1;
   }
 
   get #valueLow() {
-    // @ts-expect-error - TODO: Fix type
-    const v = parseFloat(this.dataset["valueLow"]);
+    const v = parseFloat(this.dataset["valueLow"] || "");
     return Number.isFinite(v) ? this.#clamp(v) : this.#min;
   }
 
   get #valueHigh() {
     if (this.#isRange) {
-      // @ts-expect-error - TODO: Fix type
-      const v = parseFloat(this.dataset["valueHigh"]);
+        const v = parseFloat(this.dataset["valueHigh"] || "");
       return Number.isFinite(v) ? this.#clamp(v) : this.#max;
     }
-    // @ts-expect-error - TODO: Fix type
-    const v = parseFloat(this.dataset["value"]);
+    const v = parseFloat(this.dataset["value"] || "");
     return Number.isFinite(v) ? this.#clamp(v) : this.#min;
   }
 
@@ -308,36 +296,30 @@ class SherpaSlider extends SherpaElement {
 
   /* ── value helpers ───────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #clamp(v) {
+  #clamp(v: number) {
     return Math.min(this.#max, Math.max(this.#min, v));
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #snap(v) {
+  #snap(v: number) {
     const step = this.#step;
     const min = this.#min;
     return Math.round((v - min) / step) * step + min;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #pctToValue(pct) {
+  #pctToValue(pct: number) {
     return this.#snap(this.#min + pct * (this.#max - this.#min));
   }
 
-  #getPctFromPointer(e: Event) {
-    // @ts-expect-error - TODO: Fix type
-    const rect = this.els.trackArea.getBoundingClientRect();
-    // @ts-expect-error - TODO: Fix type
+  #getPctFromPointer(e: PointerEvent) {
+    const rect = (this.els.trackArea ?? this).getBoundingClientRect();
     const x = e.clientX - rect.left;
     return Math.min(1, Math.max(0, x / rect.width));
   }
 
   /* ── pointer events ──────────────────────────────────────── */
 
-  #onPointerDown(e: Event) {
+  #onPointerDown(e: PointerEvent) {
     if (this.hasAttribute("disabled")) return;
-    // @ts-expect-error - TODO: Fix type
     if (e.button !== 0) return;
 
     e.preventDefault();
@@ -349,56 +331,43 @@ class SherpaSlider extends SherpaElement {
       const distLow = Math.abs(value - this.#valueLow);
       const distHigh = Math.abs(value - this.#valueHigh);
       // Choose closest handle; if equal, prefer high
-      // @ts-expect-error - TODO: Fix type
       this.#activeHandle = distLow < distHigh ? "low" : "high";
     } else {
-      // @ts-expect-error - TODO: Fix type
       this.#activeHandle = "high";
     }
+    const handle = this.#activeHandle;
 
-    this.#setHandleValue(this.#activeHandle, value);
+    this.#setHandleValue(handle, value);
     this.#emitInput();
 
     const activeEl =
-      this.#activeHandle === "low" ? this.els.lowHandle : this.els.highHandle;
-    // @ts-expect-error - TODO: Fix type
+      handle === "low" ? this.els.lowHandle : this.els.highHandle;
+    if (!activeEl) return;
     activeEl.setAttribute("data-dragging", "");
-    // @ts-expect-error - TODO: Fix type
     activeEl.setPointerCapture(e.pointerId);
 
-    // @ts-expect-error - TODO: Fix type
-    const onMove = (ev) => {
+    const onMove = (ev: PointerEvent) => {
       const p = this.#getPctFromPointer(ev);
-      this.#setHandleValue(this.#activeHandle, this.#pctToValue(p));
+      this.#setHandleValue(handle, this.#pctToValue(p));
       this.#emitInput();
     };
 
-    // @ts-expect-error - TODO: Fix type
-    const onUp = (ev) => {
-      // @ts-expect-error - TODO: Fix type
+    const onUp = (ev: PointerEvent) => {
       activeEl.removeAttribute("data-dragging");
-      // @ts-expect-error - TODO: Fix type
       activeEl.releasePointerCapture(ev.pointerId);
-      // @ts-expect-error - TODO: Fix type
       activeEl.removeEventListener("pointermove", onMove);
-      // @ts-expect-error - TODO: Fix type
       activeEl.removeEventListener("pointerup", onUp);
-      // @ts-expect-error - TODO: Fix type
       activeEl.removeEventListener("pointercancel", onUp);
       this.#emitChange();
       this.#activeHandle = null;
     };
 
-    // @ts-expect-error - TODO: Fix type
     activeEl.addEventListener("pointermove", onMove);
-    // @ts-expect-error - TODO: Fix type
     activeEl.addEventListener("pointerup", onUp);
-    // @ts-expect-error - TODO: Fix type
     activeEl.addEventListener("pointercancel", onUp);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #setHandleValue(handle, value) {
+  #setHandleValue(handle: 'low' | 'high', value: number) {
     const clamped = this.#clamp(value);
     if (handle === "low") {
       // Collision avoidance: low can't exceed high
@@ -417,8 +386,7 @@ class SherpaSlider extends SherpaElement {
 
   /* ── keyboard events ─────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #onKeyDown(e, handle) {
+  #onKeyDown(e: KeyboardEvent, handle: 'low' | 'high') {
     if (this.hasAttribute("disabled")) return;
 
     const step = this.#step;
@@ -453,9 +421,8 @@ class SherpaSlider extends SherpaElement {
 
   /* ── input field events ──────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #onInputChange(e, handle) {
-    const raw = parseFloat(e.target.value);
+  #onInputChange(e: Event, handle: 'low' | 'high') {
+    const raw = parseFloat((e.target as HTMLInputElement).value);
     if (!Number.isFinite(raw)) return;
     this.#setHandleValue(handle, this.#snap(raw));
     this.#emitChange();
