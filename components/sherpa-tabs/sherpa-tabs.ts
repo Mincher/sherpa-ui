@@ -32,8 +32,20 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import type { EventHandler } from '../utilities/types.js';
+
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaTabsDataset extends DOMStringMap {
+  activeTab?: string;
+  loadMode?: 'eager' | 'lazy';
+}
 
 export class SherpaTabs extends SherpaElement {
+
+  override get dataset(): SherpaTabsDataset {
+    return super.dataset as SherpaTabsDataset;
+  }
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -167,14 +179,14 @@ export class SherpaTabs extends SherpaElement {
 
   /* ── Event handlers ───────────────────────────────────────────── */
 
-  #onTabClick = (e) => {
-    const btn = e.currentTarget;
+  #onTabClick: EventHandler<MouseEvent> = (e) => {
+    const btn = e.currentTarget as HTMLElement;
     const index = parseInt(btn.dataset.index, 10);
     this.selectTab(index);
   };
 
-  #onTabKeyDown = (e) => {
-    const current = parseInt(e.currentTarget.dataset.index, 10);
+  #onTabKeyDown: EventHandler<KeyboardEvent> = (e) => {
+    const current = parseInt((e.currentTarget as HTMLElement).dataset.index || '0', 10);
     let next = current;
 
     switch (e.key) {

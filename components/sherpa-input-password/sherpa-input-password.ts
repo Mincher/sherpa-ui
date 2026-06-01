@@ -18,7 +18,20 @@
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-button/sherpa-button.js';
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputPasswordDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: 'horizontal' | 'vertical';
+}
+
 export class SherpaInputPassword extends SherpaInputBase {
+
+  override get dataset(): SherpaInputPasswordDataset {
+    return super.dataset as SherpaInputPasswordDataset;
+  }
 
   static override get cssUrl(): string { return new URL('./sherpa-input-password.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-password.html', import.meta.url).href; }

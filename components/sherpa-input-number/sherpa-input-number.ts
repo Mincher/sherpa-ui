@@ -28,7 +28,20 @@
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-button/sherpa-button.js';
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputNumberDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: 'horizontal' | 'vertical';
+}
+
 export class SherpaInputNumber extends SherpaInputBase {
+
+  override get dataset(): SherpaInputNumberDataset {
+    return super.dataset as SherpaInputNumberDataset;
+  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-number.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-number.html', import.meta.url).href; }

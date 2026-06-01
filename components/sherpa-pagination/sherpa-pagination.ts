@@ -24,8 +24,23 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import type { EventHandler } from "../utilities/types.js";
+
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaPaginationDataset extends DOMStringMap {
+  page?: string;
+  pageSize?: string;
+  totalRows?: string;
+  allowedSizes?: string;
+  density?: string;
+}
 
 export class SherpaPagination extends SherpaElement {
+
+  override get dataset(): SherpaPaginationDataset {
+    return super.dataset as SherpaPaginationDataset;
+  }
   static override get cssUrl(): string {
     return new URL("./sherpa-pagination.css", import.meta.url).href;
   }
@@ -203,12 +218,12 @@ export class SherpaPagination extends SherpaElement {
      Click Handling
      ══════════════════════════════════════════════════════════════ */
 
-  #onHostClick = (e) => {
+  #onHostClick: EventHandler<MouseEvent> = (e) => {
     const btn = e
       .composedPath()
       .find(
         (n) => n instanceof HTMLElement && n.dataset?.action,
-      );
+      ) as HTMLElement | undefined;
     if (!btn || btn.disabled) return;
 
     const page = this.page;
@@ -229,8 +244,8 @@ export class SherpaPagination extends SherpaElement {
     }
   };
 
-  #onPageSizeChange = (e) => {
-    const newSize = parseInt(e.target.value, 10);
+  #onPageSizeChange: EventHandler<Event> = (e) => {
+    const newSize = parseInt((e.target as HTMLSelectElement).value, 10);
     if (newSize <= 0) return;
 
     // Recalculate page to keep first visible row in view

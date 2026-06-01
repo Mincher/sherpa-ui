@@ -22,7 +22,22 @@
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputSelectDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: 'horizontal' | 'vertical';
+  template?: 'default' | 'tree';
+  tree?: string;
+}
+
 export class SherpaInputSelect extends SherpaInputBase {
+
+  override get dataset(): SherpaInputSelectDataset {
+    return super.dataset as SherpaInputSelectDataset;
+  }
   static override get cssUrl(): string {
     return new URL("./sherpa-input-select.css", import.meta.url).href;
   }

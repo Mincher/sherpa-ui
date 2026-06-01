@@ -32,7 +32,19 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputCheckboxDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  status?: string;
+}
+
 export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
+
+  override get dataset(): SherpaInputCheckboxDataset {
+    return super.dataset as SherpaInputCheckboxDataset;
+  }
 
   #bound = false;
 
