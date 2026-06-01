@@ -156,7 +156,7 @@ export class SherpaGaugeChart extends SherpaElement {
   #renderSeries() {
     if (!this.#fillEl) return;
 
-    const total = this.#segments.reduce((s, seg) => s + (seg.value || 0), 0);
+    const total = this.#segments.reduce((s: any, seg: any) => s + (seg.value || 0), 0);
     if (!total) {
       this.#fillEl.style.setProperty('--_fill-gradient',
         'conic-gradient(from 0.5turn, transparent 0% 50%, transparent 50% 100%)');

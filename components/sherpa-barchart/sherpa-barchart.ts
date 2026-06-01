@@ -429,7 +429,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const indices = categories.map((_, index) => index);
 
     if (field === measureField || normalizedField === measureField) {
-      indices.sort((a, b) => {
+      indices.sort((a: any, b: any) => {
         const diff =
           this.#getCategoryTotal(series, a) - this.#getCategoryTotal(series, b);
         return (diff !== 0 ? diff : a - b) * dir;
@@ -439,7 +439,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       normalizedField === categoryField ||
       String(field).includes("dim_")
     ) {
-      indices.sort((a, b) => {
+      indices.sort((a: any, b: any) => {
         const diff = String(categories[a]).localeCompare(String(categories[b]));
         return (diff !== 0 ? diff : a - b) * dir;
       });
@@ -505,7 +505,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       return null;
     }
 
-    const orderedSegments = [...segmentKeys].sort((a, b) => a.localeCompare(b));
+    const orderedSegments = [...segmentKeys].sort((a: any, b: any) => a.localeCompare(b));
 
     const series = orderedSegments.map((segLabel) => ({
       name: segLabel,
@@ -691,14 +691,14 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     if (categories.length <= CONFIG.maxCategories) return data;
 
     const totals = categories.map((_, i) =>
-      series.reduce((sum, s) => sum + (s.values[i] || 0), 0)
+      series.reduce((sum: any, s: any) => sum + (s.values[i] || 0), 0)
     );
     const indices = totals
       .map((t, i) => ({ t, i }))
-      .sort((a, b) => b.t - a.t)
+      .sort((a: any, b: any) => b.t - a.t)
       .slice(0, CONFIG.maxCategories)
       .map((e) => e.i)
-      .sort((a, b) => a - b);
+      .sort((a: any, b: any) => a - b);
 
     return {
       ...data,
@@ -712,15 +712,15 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   #capSeries(series) {
     if (series.length <= CONFIG.maxSegments) return series;
-    const withTotals = series.map(s => ({
+    const withTotals = series.map((s: any) => ({
       ...s,
-      _total: s.values.reduce((a, b) => a + b, 0),
+      _total: s.values.reduce((a: any, b: any) => a + b, 0),
     }));
-    withTotals.sort((a, b) => b._total - a._total);
+    withTotals.sort((a: any, b: any) => b._total - a._total);
     const kept = withTotals.slice(0, CONFIG.maxSegments - 1);
     const rest = withTotals.slice(CONFIG.maxSegments - 1);
     const otherValues = kept[0].values.map((_, i) =>
-      rest.reduce((s, r) => s + (r.values[i] || 0), 0)
+      rest.reduce((s: any, r: any) => s + (r.values[i] || 0), 0)
     );
     kept.push({ name: 'Other', field: '__other__', values: otherValues });
     return kept.map(({ _total, ...s }) => s);
@@ -770,7 +770,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const dir = activeSort.dir || "asc";
 
     // Sort by total bar value across all series
-    indices.sort((a, b) => {
+    indices.sort((a: any, b: any) => {
       const totalA = this.#getCategoryTotal(series, a);
       const totalB = this.#getCategoryTotal(series, b);
       const diff = totalA - totalB;
@@ -788,7 +788,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #getCategoryTotal(series, index) {
-    return series.reduce((sum, s) => {
+    return series.reduce((sum: any, s: any) => {
       if (!Array.isArray(s.values)) return sum;
       const value = Number(s.values[index]);
       return Number.isFinite(value) ? sum + value : sum;
@@ -800,7 +800,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       const len = series[0]?.values.length || 0;
       let max = 0;
       for (let i = 0; i < len; i++) {
-        const sum = series.reduce((acc, s) => acc + (s.values[i] || 0), 0);
+        const sum = series.reduce((acc: any, s: any) => acc + (s.values[i] || 0), 0);
         if (sum > max) max = sum;
       }
       return max || 1;

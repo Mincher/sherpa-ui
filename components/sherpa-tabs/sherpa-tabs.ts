@@ -119,10 +119,10 @@ export class SherpaTabs extends SherpaElement {
     // Collect panel children (those with data-tab-label)
     const slot = this.$('slot:not([name])');
     const assigned = slot ? slot.assignedElements() : [];
-    this.#panels = assigned.filter(el => el.hasAttribute('data-tab-label'));
+    this.#panels = assigned.filter((el: any) => el.hasAttribute('data-tab-label'));
 
     // Remove existing tab buttons (keep the template)
-    this.#tabs.forEach(btn => btn.remove());
+    this.#tabs.forEach((btn: any) => btn.remove());
     this.#tabs = [];
 
     // Clone prototype for each panel

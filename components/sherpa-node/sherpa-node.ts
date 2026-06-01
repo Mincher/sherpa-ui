@@ -245,7 +245,7 @@ export class SherpaNode extends SherpaElement {
         case "ratio":     return b === 0 ? "" : String(a / b);
         case "floor":     return inArr.length ? String(Math.min(...inArr)) : "";
         case "ceiling":   return inArr.length ? String(Math.max(...inArr)) : "";
-        case "average":   return inArr.length ? String(inArr.reduce((s, n) => s + n, 0) / inArr.length) : "";
+        case "average":   return inArr.length ? String(inArr.reduce((s: any, n: any) => s + n, 0) / inArr.length) : "";
         case "round": {
           const v = num(inArr[0]);
           const p = num(ctrls.places);
@@ -437,7 +437,7 @@ export class SherpaNode extends SherpaElement {
     // Count selectable options (flat + grouped) to decide whether the
     // subtype select has anything to choose between.
     const totalChoices = isGrouped
-      ? normalised.reduce((n, o) => n + (Array.isArray(o.options) ? o.options.length : 1), 0)
+      ? normalised.reduce((n: any, o: any) => n + (Array.isArray(o.options) ? o.options.length : 1), 0)
       : normalised.length;
     // Hide the subtype select entirely when there's nothing to choose
     // between — single-subtype nodes have no business showing a

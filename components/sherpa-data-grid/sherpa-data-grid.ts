@@ -659,7 +659,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     primaryRow.appendChild(actTh);
 
     // Set table min-width so columns fill when few, scroll when many
-    const totalW = columns.reduce((s, c) => s + columnWidth(c.type), 0) + 48 + 48;
+    const totalW = columns.reduce((s: any, c: any) => s + columnWidth(c.type), 0) + 48 + 48;
     const table = primaryRow.closest("table");
     if (table) table.style.minWidth = `${totalW}px`;
 
@@ -1035,7 +1035,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         .map((r) => Number(r[col.field]))
         .filter((v) => !isNaN(v));
       if (!values.length) continue;
-      const sum = values.reduce((a, b) => a + b, 0);
+      const sum = values.reduce((a: any, b: any) => a + b, 0);
       const span = this.#metadataSpanTpl.content
         .cloneNode(true)
         .querySelector("span");
@@ -1136,7 +1136,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const colType = col?.type || "string";
     const dir = direction === "desc" ? -1 : 1;
 
-    return [...rows].sort((a, b) => {
+    return [...rows].sort((a: any, b: any) => {
       const aVal = a[field];
       const bVal = b[field];
       if (aVal == null && bVal == null) return 0;

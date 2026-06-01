@@ -45,7 +45,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
     if (!trail) return;
 
     const crumbs = items
-      .filter(item => item && typeof item === 'object')
+      .filter((item: any) => item && typeof item === 'object')
       .map((item, i, arr) => {
         const label = String(item.label ?? '').trim();
         if (!label) return null;

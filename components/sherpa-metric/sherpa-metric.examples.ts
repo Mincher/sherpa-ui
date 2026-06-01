@@ -37,7 +37,7 @@ export default {
     if (!res.ok) return;
     const { columns, rows } = await res.json();
 
-    src._fields   = columns.map(c => ({ name: c.field, label: c.label, type: c.type }));
+    src._fields   = columns.map((c: any) => ({ name: c.field, label: c.label, type: c.type }));
     src._filtered = rows;
 
     src.dispatchEvent(new CustomEvent('dataset-filtered', {

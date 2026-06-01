@@ -195,14 +195,14 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     if (!activeSort || !data) return data;
 
     const labels = [...data.labels];
-    const series = data.series.map(s => ({ ...s, values: [...s.values] }));
+    const series = data.series.map((s: any) => ({ ...s, values: [...s.values] }));
     if (!labels.length || !series.length) return data;
 
     const indices = labels.map((_, i) => i);
     const dir = activeSort.dir || 'asc';
 
     // Sort by time — parse labels as dates
-    indices.sort((a, b) => {
+    indices.sort((a: any, b: any) => {
       const tA = new Date(labels[a]).getTime() || 0;
       const tB = new Date(labels[b]).getTime() || 0;
       const diff = tA - tB;
@@ -210,10 +210,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     });
 
     return {
-      labels: indices.map(i => labels[i]),
-      series: series.map(s => ({
+      labels: indices.map((i: any) => labels[i]),
+      series: series.map((s: any) => ({
         ...s,
-        values: indices.map(i => s.values[i]),
+        values: indices.map((i: any) => s.values[i]),
       })),
     };
   }
@@ -243,20 +243,20 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     // Determine effective grouping field: explicit segment, or implicit series column
     const effectiveSegmentField = segmentField
       || (columns.length > 2
-        ? columns.find(c => c.field !== labelField && c.field !== valueField)?.field
+        ? columns.find((c: any) => c.field !== labelField && c.field !== valueField)?.field
         : null);
 
     if (effectiveSegmentField && effectiveSegmentField !== labelField && effectiveSegmentField !== valueField) {
       // Multi-series: one line per unique segment/group value
-      const seriesNames = [...new Set(rows.map(r => String(r[effectiveSegmentField] ?? '')))].sort();
-      const labels = [...new Set(rows.map(r => String(r[labelField] ?? '')))];
+      const seriesNames = [...new Set(rows.map((r: any) => String(r[effectiveSegmentField] ?? '')))].sort();
+      const labels = [...new Set(rows.map((r: any) => String(r[labelField] ?? '')))];
 
-      const series = seriesNames.map(name => {
-        const values = labels.map(label => {
-          const matching = rows.filter(r =>
+      const series = seriesNames.map((name: any) => {
+        const values = labels.map((label: any) => {
+          const matching = rows.filter((r: any) =>
             String(r[effectiveSegmentField]) === name && String(r[labelField]) === label
           );
-          return matching.reduce((sum, r) => sum + (Number(r[valueField]) || 0), 0);
+          return matching.reduce((sum: any, r: any) => sum + (Number(r[valueField]) || 0), 0);
         });
         return { name, values };
       });
@@ -271,10 +271,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
         if (!agg.has(l)) { labelOrder.push(l); agg.set(l, 0); }
         agg.set(l, agg.get(l) + (Number(row[valueField]) || 0));
       }
-      const valueName = columns.find(c => c.field === valueField)?.name || valueField || 'Value';
+      const valueName = columns.find((c: any) => c.field === valueField)?.name || valueField || 'Value';
       this.#data = {
         labels: labelOrder,
-        series: [{ name: valueName, values: labelOrder.map(l => agg.get(l)) }],
+        series: [{ name: valueName, values: labelOrder.map((l: any) => agg.get(l)) }],
       };
     }
 
@@ -285,7 +285,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     if (this.#data && this.#data.labels.length > 12) {
       this.#data = {
         labels: this.#data.labels.slice(-12),
-        series: this.#data.series.map(s => ({
+        series: this.#data.series.map((s: any) => ({
           ...s,
           values: s.values.slice(-12),
         })),
@@ -297,11 +297,11 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   #resolveLabelField(columns, segmentField) {
     const meta = this.#contentData?.metadata || {};
-    if (meta.primaryField && columns.some(c => c.field === meta.primaryField)) {
+    if (meta.primaryField && columns.some((c: any) => c.field === meta.primaryField)) {
       return meta.primaryField;
     }
     // Prefer a datetime or string column that isn't the segment field
-    const fallback = columns.find(c => {
+    const fallback = columns.find((c: any) => {
       const type = (c.type || '').toLowerCase();
       return (type === 'datetime' || type === 'string') && c.field !== segmentField;
     });
@@ -309,13 +309,13 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #resolveValueField(columns, labelField, segmentField) {
-    const numericCols = columns.filter(c => {
+    const numericCols = columns.filter((c: any) => {
       const type = (c.type || '').toLowerCase();
       return ['number', 'numeric', 'currency', 'percent'].includes(type);
     });
-    const preferred = numericCols.find(c => c.field !== labelField && c.field !== segmentField);
+    const preferred = numericCols.find((c: any) => c.field !== labelField && c.field !== segmentField);
     if (preferred) return preferred.field;
-    const fallback = numericCols.find(c => c.field !== segmentField) || numericCols[0];
+    const fallback = numericCols.find((c: any) => c.field !== segmentField) || numericCols[0];
     return fallback?.field || columns[columns.length - 1]?.field || null;
   }
 
@@ -338,15 +338,15 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   #capSeries(series) {
     if (series.length <= MAX_SEGMENTS) return series;
-    const withTotals = series.map(s => ({
+    const withTotals = series.map((s: any) => ({
       ...s,
-      _total: s.values.reduce((a, b) => a + b, 0),
+      _total: s.values.reduce((a: any, b: any) => a + b, 0),
     }));
-    withTotals.sort((a, b) => b._total - a._total);
+    withTotals.sort((a: any, b: any) => b._total - a._total);
     const kept = withTotals.slice(0, MAX_SEGMENTS - 1);
     const rest = withTotals.slice(MAX_SEGMENTS - 1);
     const otherValues = kept[0].values.map((_, i) =>
-      rest.reduce((s, r) => s + (r.values[i] || 0), 0)
+      rest.reduce((s: any, r: any) => s + (r.values[i] || 0), 0)
     );
     kept.push({ name: 'Other', values: otherValues, color: OTHER_COLOR });
     return kept.map(({ _total, ...s }) => s);
@@ -461,7 +461,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     }
 
     // Snapshot current series values for the next diff
-    this.#prevSeriesData = series.map(s => ({ ...s, values: [...s.values] }));
+    this.#prevSeriesData = series.map((s: any) => ({ ...s, values: [...s.values] }));
 
     // ── Legend ───────────────────────────────────────────────────
     this.els.legend.replaceChildren();

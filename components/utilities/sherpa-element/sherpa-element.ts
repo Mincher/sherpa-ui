@@ -173,7 +173,7 @@ export class SherpaElement extends HTMLElement {
    *   onRender() {
    *     this.els.label.textContent = 'Click';     // Type: Element | null
    *     this.els.trigger.disabled = false;        // Type: HTMLButtonElement | null
-   *     this.els.icons.forEach(icon => {...});    // Type: NodeListOf<Element>
+   *     this.els.icons.forEach((icon: any) => {...});    // Type: NodeListOf<Element>
    *   }
    * }
    * ```

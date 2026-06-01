@@ -260,7 +260,7 @@ export class SherpaFilterBar extends SherpaElement {
         const prefix = behavior === "sort" ? "Sort" : "Group";
         if (field) {
           labelBtn.dataset["field"] = field;
-          const col = this.#columns.find(c => c.field === field);
+          const col = this.#columns.find((c: any) => c.field === field);
           const valueLabel = col?.name || formatFieldName(field);
           labelBtn.dataset["label"] = `${prefix}: ${valueLabel}`;
           // Reset to default mode for a newly-picked field
@@ -836,7 +836,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.#syncingSort = true;
     if (field && direction !== "off") {
       sortChip.dataset["field"] = field;
-      const col = this.#columns.find(c => c.field === field);
+      const col = this.#columns.find((c: any) => c.field === field);
       const valueLabel = col?.name || formatFieldName(field);
       sortChip.dataset["label"] = `Sort: ${valueLabel}`;
       sortChip.dataset["mode"] = direction;
@@ -1075,12 +1075,12 @@ export class SherpaFilterBar extends SherpaElement {
     // Segment (group) chips only show string-type columns
     const isSegment = chip.getAttribute("data-behavior") === "segment";
     const cols = isSegment
-      ? this.#columns.filter(c => this.#inferFilterType(c.type) === "text")
+      ? this.#columns.filter((c: any) => this.#inferFilterType(c.type) === "text")
       : this.#columns;
     const currentField = chip.getAttribute("data-field");
     const items = [
       { value: "", text: "None", selected: !currentField },
-      ...cols.map(c => ({
+      ...cols.map((c: any) => ({
         value: c.field,
         text: c.name || formatFieldName(c.field),
         selected: c.field === currentField,
@@ -1141,7 +1141,7 @@ export class SherpaFilterBar extends SherpaElement {
    */
   #computeTimeRange(rangeKey) {
     if (!rangeKey) return null;
-    const preset = TIME_RANGE_PRESETS.find(p => p.key === rangeKey);
+    const preset = TIME_RANGE_PRESETS.find((p: any) => p.key === rangeKey);
     if (!preset) return null;
     if (preset.key === "all") return { start: new Date(0), end: new Date() };
 
@@ -1265,7 +1265,7 @@ export class SherpaFilterBar extends SherpaElement {
    * @param {HTMLElement} chip — sherpa-button with datetime-range type
    */
   #populateTimeframeMenu(chip) {
-    const items = TIME_RANGE_PRESETS.map(p => ({
+    const items = TIME_RANGE_PRESETS.map((p: any) => ({
       value: p.key,
       text: p.label,
     }));

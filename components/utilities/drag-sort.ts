@@ -38,14 +38,14 @@ export function setupDragSort(container, {
     );
     if (!isHandle) return;
     // Find the draggable item (direct child of container)
-    const item = e.composedPath().find(n => n instanceof HTMLElement && n.parentElement === container);
+    const item = e.composedPath().find((n: any) => n instanceof HTMLElement && n.parentElement === container);
     if (!item) return;
     item.draggable = true;
     const reset = () => { item.draggable = false; document.removeEventListener('mouseup', reset, true); };
     document.addEventListener('mouseup', reset, true);
   });
 
-  container.querySelectorAll(itemSelector).forEach(item => {
+  container.querySelectorAll(itemSelector).forEach((item: any) => {
     item.draggable = false;
 
     item.addEventListener('dragstart', (e) => {
@@ -68,7 +68,7 @@ export function setupDragSort(container, {
     const dragging = container.querySelector('[data-dragging]');
     if (!dragging) return;
     const siblings = [...container.querySelectorAll(`${itemSelector}:not([data-dragging])`)];
-    const next = siblings.find(s =>
+    const next = siblings.find((s: any) =>
       e.clientY - s.getBoundingClientRect().top - s.getBoundingClientRect().height / 2 < 0
     );
     container.insertBefore(dragging, next);

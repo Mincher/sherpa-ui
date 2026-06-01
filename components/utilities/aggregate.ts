@@ -35,8 +35,8 @@ export function agg(values, fn) {
   const nums = values.filter((v) => v !== null && v !== undefined).map(Number);
   if (!nums.length) return 0;
   switch (fn) {
-    case 'sum':              return nums.reduce((a, b) => a + b, 0);
-    case 'avg': case 'mean': return nums.reduce((a, b) => a + b, 0) / nums.length;
+    case 'sum':              return nums.reduce((a: any, b: any) => a + b, 0);
+    case 'avg': case 'mean': return nums.reduce((a: any, b: any) => a + b, 0) / nums.length;
     case 'min':              return Math.min(...nums);
     case 'max':              return Math.max(...nums);
     case 'last':             return nums[nums.length - 1];
@@ -163,7 +163,7 @@ export function applyLocalFilters(records, filters) {
  */
 export function applySort(rows, orderBy) {
   if (!Array.isArray(orderBy) || !orderBy.length) return rows;
-  return [...rows].sort((a, b) => {
+  return [...rows].sort((a: any, b: any) => {
     for (const o of orderBy) {
       const field = o.field;
       const dir = (o.direction || 'asc').toLowerCase() === 'desc' ? -1 : 1;
@@ -200,14 +200,14 @@ export function computeMetricSummary(records, measures, dateField, filters) {
 
   // Resolve value-field measure (skip synthetic '_count' entries)
   const measure = Array.isArray(measures)
-    ? measures.find(m => m.field && m.field !== '_count')
+    ? measures.find((m: any) => m.field && m.field !== '_count')
     : null;
   const aggFn   = measure?.agg || 'count';
   const valField = measure?.field;
 
   // Preliminary total (used when no date field prevents bucketing)
   let total = valField
-    ? agg(records.map(r => r[valField]), aggFn)
+    ? agg(records.map((r: any) => r[valField]), aggFn)
     : records.length;
 
   const field = dateField;
@@ -275,7 +275,7 @@ export function computeMetricSummary(records, measures, dateField, filters) {
       if (idx < 0) idx = 0;
       bucketValues[idx].push(r[valField]);
     }
-    bucketValues = bucketValues.map(vals => agg(vals, aggFn));
+    bucketValues = bucketValues.map((vals: any) => agg(vals, aggFn));
   } else {
     bucketValues = new Array(segmentCount).fill(0);
     for (const r of records) {

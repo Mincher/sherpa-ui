@@ -39,7 +39,7 @@ export class SherpaList extends SherpaElement {
   #onItemClick = (e: Event) => {
     const clicked = e.target.closest('sherpa-list-item');
     if (!clicked) return;
-    this.items.forEach(item => { if (item !== clicked) item.active = false; });
+    this.items.forEach((item: any) => { if (item !== clicked) item.active = false; });
   };
 
   override onRender(): void {

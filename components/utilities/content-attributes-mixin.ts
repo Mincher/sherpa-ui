@@ -398,7 +398,7 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       // Resolve _timerange sentinel entries to the actual date field
       // so computeMetricSummary can derive sparkline range bounds.
       const resolvedFilters = dateField
-        ? presetFilters.map(f => {
+        ? presetFilters.map((f: any) => {
             if (f.field !== '_timerange' || !f.range) return f;
             return [
               { field: dateField, operator: '>=', value: f.range.start instanceof Date ? f.range.start.toISOString() : String(f.range.start) },

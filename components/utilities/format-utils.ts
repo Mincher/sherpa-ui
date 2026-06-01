@@ -84,7 +84,7 @@ export function getCurrencySymbol() {
   return new Intl.NumberFormat(_currencyConfig.locale, {
     style: 'currency', currency: _currencyConfig.currency,
     maximumFractionDigits: 0,
-  }).formatToParts(0).find(p => p.type === 'currency')?.value || _currencyConfig.currency;
+  }).formatToParts(0).find((p: any) => p.type === 'currency')?.value || _currencyConfig.currency;
 }
 
 // ── Number / Value Formatting ──────────────────────────────────────────────────

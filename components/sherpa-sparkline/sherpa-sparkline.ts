@@ -57,7 +57,7 @@ export class SherpaSparkline extends SherpaElement {
     this.#pointSlots = this.#shapeSlots + 1;
 
     // Add tooltip handlers to points
-    this.#pointEls.forEach(point => {
+    this.#pointEls.forEach((point: any) => {
       point.addEventListener('pointerenter', this.#onPointEnter);
       point.addEventListener('pointerleave', this.#onPointLeave);
     });
@@ -67,7 +67,7 @@ export class SherpaSparkline extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    this.#pointEls.forEach(point => {
+    this.#pointEls.forEach((point: any) => {
       point.removeEventListener('pointerenter', this.#onPointEnter);
       point.removeEventListener('pointerleave', this.#onPointLeave);
     });
@@ -114,7 +114,7 @@ export class SherpaSparkline extends SherpaElement {
       parsed = JSON.parse(attr);
     } catch {
       // Try comma-separated format
-      parsed = attr.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+      parsed = attr.split(',').map((v: any) => parseFloat(v.trim())).filter((v: any) => !isNaN(v));
     }
     if (Array.isArray(parsed) && parsed.length > 0) {
       this.#values = parsed;
@@ -133,13 +133,13 @@ export class SherpaSparkline extends SherpaElement {
     const actualSegments = Math.max(actualPoints - 1, 0);
 
     if (!actualPoints) {
-      this.#shapeEls.forEach(shape => shape.toggleAttribute('hidden', true));
-      this.#pointEls.forEach(point => point.toggleAttribute('hidden', true));
+      this.#shapeEls.forEach((shape: any) => shape.toggleAttribute('hidden', true));
+      this.#pointEls.forEach((point: any) => point.toggleAttribute('hidden', true));
       return;
     }
 
     // Compute range for CSS calc() normalisation
-    const numPoints = points.map(v => Number(v));
+    const numPoints = points.map((v: any) => Number(v));
     const min = Math.min(...numPoints);
     const max = Math.max(...numPoints);
     const range = max - min || 1;
@@ -161,7 +161,7 @@ export class SherpaSparkline extends SherpaElement {
       shape.toggleAttribute('hidden', index >= actualSegments);
     });
 
-    this.#pointEls.forEach(point => {
+    this.#pointEls.forEach((point: any) => {
       const index = Number(point.dataset["index"]);
       const active = Number.isFinite(index) && index < actualPoints;
       point.toggleAttribute('hidden', !active);

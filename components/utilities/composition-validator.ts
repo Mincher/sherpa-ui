@@ -128,7 +128,7 @@ function getErrorMessage(type, context) {
 
   if (type === 'required-slot') {
     const { requiredSlots } = context;
-    const missing = requiredSlots.filter(name => !context[`has_${name}`]);
+    const missing = requiredSlots.filter((name: any) => !context[`has_${name}`]);
 
     return [
       `[sherpa] Invalid composition: <${hostTag}> is missing required slot content.`,
@@ -137,7 +137,7 @@ function getErrorMessage(type, context) {
       `  `,
       `  Fix: `,
       `    • Add content to the required slot(s)`,
-      ...missing.map(name => `    • <${hostTag}><span slot="${name}">...</span></${hostTag}>`),
+      ...missing.map((name: any) => `    • <${hostTag}><span slot="${name}">...</span></${hostTag}>`),
       ``,
     ].join('\n');
   }
@@ -167,7 +167,7 @@ export function validateSlot(slotEl, hostEl) {
   }
 
   const acceptedRoles = acceptsAttr
-    ? acceptsAttr.split(',').map(s => s.trim()).filter(Boolean)
+    ? acceptsAttr.split(',').map((s: any) => s.trim()).filter(Boolean)
     : null;
   const allowHtml = acceptedRoles ? acceptedRoles.includes('html') : true;
 
@@ -240,7 +240,7 @@ export function validateRequiredSlots(shadowRoot, hostEl, requiredSlots) {
     }
 
     const assigned = slotEl.assignedNodes();
-    const hasContent = assigned.some(node =>
+    const hasContent = assigned.some((node: any) =>
       (node.nodeType === Node.ELEMENT_NODE && node.localName !== 'template') ||
       (node.nodeType === Node.TEXT_NODE && node.textContent.trim())
     );
@@ -248,7 +248,7 @@ export function validateRequiredSlots(shadowRoot, hostEl, requiredSlots) {
     slotStatus[`has_${slotName}`] = hasContent;
   }
 
-  const missingSlots = requiredSlots.filter(name => !slotStatus[`has_${name}`]);
+  const missingSlots = requiredSlots.filter((name: any) => !slotStatus[`has_${name}`]);
 
   if (missingSlots.length > 0) {
     return {

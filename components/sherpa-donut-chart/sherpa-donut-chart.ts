@@ -196,7 +196,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     const dir = activeSort.dir || 'asc';
 
     // Sort slices by numerical value
-    sorted.sort((a, b) => {
+    sorted.sort((a: any, b: any) => {
       const diff = (Number(a.value) || 0) - (Number(b.value) || 0);
       return dir === 'desc' ? -diff : diff;
     });
@@ -227,7 +227,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     // When grouping is explicitly off, collapse to a single total segment
     const segMode = this.getAttribute('data-segment-mode');
     if (segMode === 'off') {
-      const total = rows.reduce((s, r) => s + (Number(r[valueField]) || 0), 0);
+      const total = rows.reduce((s: any, r: any) => s + (Number(r[valueField]) || 0), 0);
       this.#data = [{ label: 'Total', value: total }];
       this.dataset["innerLabel"] = formatCompact(total);
       return;
@@ -253,7 +253,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       }
       this.#data = [...agg.entries()].map(([label, value]) => ({ label, value }));
     } else {
-      this.#data = rows.map(row => ({
+      this.#data = rows.map((row: any) => ({
         label: String(row[labelField] ?? ''),
         value: Number(row[valueField]) || 0,
       }));
@@ -263,7 +263,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     this.#data = this.#applyLocalSort(this.#data);
 
     // Auto-set centre label to total + sublabel to chart name
-    const total = this.#data.reduce((s, d) => s + d.value, 0);
+    const total = this.#data.reduce((s: any, d: any) => s + d.value, 0);
     this.dataset["innerLabel"] = formatCompact(total);
   }
 
@@ -295,10 +295,10 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   #capSegments(data) {
     if (data.length <= MAX_SEGMENTS) return data;
-    const sorted = [...data].sort((a, b) => b.value - a.value);
+    const sorted = [...data].sort((a: any, b: any) => b.value - a.value);
     const kept = sorted.slice(0, MAX_SEGMENTS - 1);
     const rest = sorted.slice(MAX_SEGMENTS - 1);
-    const otherValue = rest.reduce((s, d) => s + (d.value || 0), 0);
+    const otherValue = rest.reduce((s: any, d: any) => s + (d.value || 0), 0);
     kept.push({ label: 'Other', value: otherValue, color: OTHER_COLOR });
     return kept;
   }
@@ -308,7 +308,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   #render() {
     if (!this.els.ring || !this.els.legend) return;
 
-    const total = this.#data.reduce((sum, d) => sum + (d.value || 0), 0);
+    const total = this.#data.reduce((sum: any, d: any) => sum + (d.value || 0), 0);
     if (!total) {
       this.els.ring.style.setProperty('--_conic', 'conic-gradient(#e0e0e0 0% 100%)');
       this.els.legend.replaceChildren();
