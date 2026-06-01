@@ -37,22 +37,21 @@ class SherpaPromptComposer extends SherpaElement {
     ];
   }
 
-  /** @type {HTMLFormElement|null} */    #formEl   = null;
-  /** @type {HTMLTextAreaElement|null} */ #inputEl = null;
-  /** @type {HTMLButtonElement|null} */   #sendEl  = null;
+  els = this.cacheElements({
+    form: { selector: '.composer', type: HTMLFormElement },
+    input: { selector: '.composer-input', type: HTMLTextAreaElement },
+    send: { selector: '.composer-send', type: HTMLButtonElement }
+  });
+
   #bound = false;
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#formEl  = this.$(".composer");
-    this.#inputEl = this.$(".composer-input");
-    this.#sendEl  = this.$(".composer-send");
-
     if (!this.#bound) {
-      this.#formEl?.addEventListener("submit", this.#onSubmit);
-      this.#inputEl?.addEventListener("input",   this.#onInput);
-      this.#inputEl?.addEventListener("keydown", this.#onKeyDown);
+      this.els.form?.addEventListener("submit", this.#onSubmit);
+      this.els.input?.addEventListener("input",   this.#onInput);
+      this.els.input?.addEventListener("keydown", this.#onKeyDown);
       this.#bound = true;
     }
 
@@ -74,7 +73,7 @@ class SherpaPromptComposer extends SherpaElement {
   #onSubmit = (e) => {
     e.preventDefault();
     if (this.#isDisabled()) return;
-    const value = (this.#inputEl?.value ?? "").trim();
+    const value = (this.els.input?.value ?? "").trim();
     if (!value) return;
     this.dispatchEvent(new CustomEvent("prompt-submit", {
       bubbles: true,
@@ -88,19 +87,19 @@ class SherpaPromptComposer extends SherpaElement {
   #onKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      this.#formEl?.requestSubmit();
+      this.els.form?.requestSubmit();
     }
   };
 
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncPlaceholder() {
-    if (this.#inputEl) this.#inputEl.placeholder = this.dataset.placeholder ?? "";
+    if (this.els.input) this.els.input.placeholder = this.dataset.placeholder ?? "";
   }
   #syncDisabled() {
     const off = this.#isDisabled();
-    if (this.#inputEl) this.#inputEl.disabled = off;
-    if (this.#sendEl)  this.#sendEl.disabled  = off;
+    if (this.els.input) this.els.input.disabled = off;
+    if (this.els.send)  this.els.send.disabled  = off;
   }
   #syncMaxHeight() {
     const px = Number(this.dataset.maxHeight);
@@ -111,18 +110,18 @@ class SherpaPromptComposer extends SherpaElement {
   #isDisabled() { return this.hasAttribute("data-disabled"); }
 
   #autoresize() {
-    if (!this.#inputEl) return;
-    this.#inputEl.style.height = "auto";
-    this.#inputEl.style.height =
-      Math.min(this.#inputEl.scrollHeight, parseInt(getComputedStyle(this).getPropertyValue("--_max-height")) || 160) + "px";
+    if (!this.els.input) return;
+    this.els.input.style.height = "auto";
+    this.els.input.style.height =
+      Math.min(this.els.input.scrollHeight, parseInt(getComputedStyle(this).getPropertyValue("--_max-height")) || 160) + "px";
   }
 
   /* ── public API ──────────────────────────────────────────── */
 
-  get value()        { return this.#inputEl?.value ?? ""; }
-  set value(v)       { if (this.#inputEl) { this.#inputEl.value = v ?? ""; this.#autoresize(); } }
+  get value()        { return this.els.input?.value ?? ""; }
+  set value(v)       { if (this.els.input) { this.els.input.value = v ?? ""; this.#autoresize(); } }
 
-  focus()            { this.#inputEl?.focus(); }
+  focus()            { this.els.input?.focus(); }
   clear()            { this.value = ""; }
   setBusy(busy)      {
     if (busy) this.setAttribute("data-disabled", "");

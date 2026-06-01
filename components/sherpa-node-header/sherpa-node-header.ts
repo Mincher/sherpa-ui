@@ -46,24 +46,21 @@ export class SherpaNodeHeader extends SherpaElement {
     ];
   }
 
-  #iconBuiltInEl = null;
-  #iconWrapEl = null;
-  #drillBtnEl = null;
-  #inSocketSlot = null;
-  #outSocketSlot = null;
+  els = this.cacheElements({
+    iconBuiltIn: '.icon-built-in',
+    iconWrap: '.icon',
+    drillBtn: '.drill-down',
+    inSocketSlot: 'slot[name="input-socket"]',
+    outSocketSlot: 'slot[name="output-socket"]'
+  });
+
   #bound = false;
 
   override onRender(): void {
-    this.#iconBuiltInEl = this.$(".icon-built-in");
-    this.#iconWrapEl = this.$(".icon");
-    this.#drillBtnEl = this.$(".drill-down");
-    this.#inSocketSlot = this.$('slot[name="input-socket"]');
-    this.#outSocketSlot = this.$('slot[name="output-socket"]');
-
     if (!this.#bound) {
-      this.#drillBtnEl?.addEventListener("click", this.#onDrillClick);
-      this.#inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
-      this.#outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
+      this.els.drillBtn?.addEventListener("click", this.#onDrillClick);
+      this.els.inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
+      this.els.outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
       this.#bound = true;
     }
 
@@ -78,14 +75,14 @@ export class SherpaNodeHeader extends SherpaElement {
   /* ── Internals ─────────────────────────────────────────────────── */
 
   #syncIcon() {
-    if (!this.#iconBuiltInEl || !this.#iconWrapEl) return;
+    if (!this.els.iconBuiltIn || !this.els.iconWrap) return;
     const cls = this.dataset.icon;
     if (cls) {
-      this.#iconBuiltInEl.className = `icon-built-in ${cls}`;
-      this.#iconWrapEl.toggleAttribute("data-has-built-in", true);
+      this.els.iconBuiltIn.className = `icon-built-in ${cls}`;
+      this.els.iconWrap.toggleAttribute("data-has-built-in", true);
     } else {
-      this.#iconBuiltInEl.className = "icon-built-in";
-      this.#iconWrapEl.toggleAttribute("data-has-built-in", false);
+      this.els.iconBuiltIn.className = "icon-built-in";
+      this.els.iconWrap.toggleAttribute("data-has-built-in", false);
     }
   }
 
@@ -100,7 +97,7 @@ export class SherpaNodeHeader extends SherpaElement {
   };
 
   #tagSockets = () => {
-    for (const slot of [this.#inSocketSlot, this.#outSocketSlot]) {
+    for (const slot of [this.els.inSocketSlot, this.els.outSocketSlot]) {
       if (!slot) continue;
       const assigned = slot.assignedElements({ flatten: true });
       for (const el of assigned) {
