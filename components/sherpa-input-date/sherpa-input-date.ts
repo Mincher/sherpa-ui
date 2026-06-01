@@ -66,11 +66,14 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Private state ──────────────────────────────────────────── */
 
-  /** @type {HTMLButtonElement|null} */     #triggerEl    = null;
-  /** @type {HTMLElement|null} */           #popupEl      = null;
-  /** @type {HTMLElement|null} */           #monthYearEl  = null;
-  /** @type {HTMLElement|null} */           #daysGridEl   = null;
-  /** @type {HTMLTemplateElement|null} */   #dayTpl       = null;
+  els = this.cacheElements({
+    trigger: { selector: '.picker-trigger', type: HTMLButtonElement },
+    popup: '.picker-popup',
+    monthYear: '.cal-month-year',
+    daysGrid: '.cal-days',
+    dayTpl: { selector: '.day-tpl', type: HTMLTemplateElement }
+  });
+
   /** Month / year currently displayed in the calendar. */
   #viewDate = new Date();
 
@@ -86,11 +89,11 @@ export class SherpaInputDate extends SherpaInputBase {
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
   override onInputRender(): void {
-    this.#triggerEl   = this.$('.picker-trigger');
-    this.#popupEl     = this.$('.picker-popup');
-    this.#monthYearEl = this.$('.cal-month-year');
-    this.#daysGridEl  = this.$('.cal-days');
-    this.#dayTpl      = this.$('.cal-day-tpl');
+    this.els.trigger   = this.$('.picker-trigger');
+    this.els.popup     = this.$('.picker-popup');
+    this.els.monthYear = this.$('.cal-month-year');
+    this.els.daysGrid  = this.$('.cal-days');
+    this.els.dayTpl      = this.$('.cal-day-tpl');
 
     // Initialise view month from current value (or today)
     const inputEl = this.getInputElement();
@@ -140,7 +143,7 @@ export class SherpaInputDate extends SherpaInputBase {
     });
 
     // Calendar-icon button toggles the popup
-    this.#triggerEl.addEventListener('click', (e) => {
+    this.els.trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.hasAttribute('disabled') || this.hasAttribute('readonly')) return;
       this.hasAttribute('data-open') ? this.#close() : this.#open();
@@ -162,7 +165,7 @@ export class SherpaInputDate extends SherpaInputBase {
 
     if (name === 'min' || name === 'max') {
       this.#applyCustomValidity();
-      if (this.#daysGridEl) this.#renderCalendar();
+      if (this.els.daysGrid) this.#renderCalendar();
     }
 
     // Sync calendar view whenever the value attribute is changed externally
@@ -171,7 +174,7 @@ export class SherpaInputDate extends SherpaInputBase {
       this.#applyCustomValidity();
       const d = isoToDate(newValue);
       if (d) this.#viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
-      if (this.#daysGridEl) this.#renderCalendar();
+      if (this.els.daysGrid) this.#renderCalendar();
     }
   }
 
@@ -186,28 +189,28 @@ export class SherpaInputDate extends SherpaInputBase {
     }
     this.#renderCalendar();
     this.setAttribute('data-open', '');
-    this.#triggerEl?.setAttribute('aria-expanded', 'true');
+    this.els.trigger?.setAttribute('aria-expanded', 'true');
   }
 
   #close() {
     this.removeAttribute('data-open');
-    this.#triggerEl?.setAttribute('aria-expanded', 'false');
+    this.els.trigger?.setAttribute('aria-expanded', 'false');
   }
 
   /* ── Calendar rendering ─────────────────────────────────────── */
 
   #renderCalendar() {
-    if (!this.#monthYearEl || !this.#daysGridEl || !this.#dayTpl) return;
+    if (!this.els.monthYear || !this.els.daysGrid || !this.els.dayTpl) return;
 
-    this.#monthYearEl.textContent =
+    this.els.monthYear.textContent =
       `${MONTH_NAMES[this.#viewDate.getMonth()]} ${this.#viewDate.getFullYear()}`;
 
     const current = this.getInputElement()?.value || '';
     const selected = isValidIso(current) ? current : null;
 
     renderCalendarGrid(
-      this.#daysGridEl,
-      this.#dayTpl,
+      this.els.daysGrid,
+      this.els.dayTpl,
       this.#viewDate,
       selected,
       null,
