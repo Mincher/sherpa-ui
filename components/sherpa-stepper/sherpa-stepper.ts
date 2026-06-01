@@ -33,6 +33,16 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
+/** A single step descriptor. */
+interface StepData {
+  label?: string;
+  sublabel?: string;
+  timestamp?: string;
+  completed?: boolean;
+  error?: boolean;
+  disabled?: boolean;
+}
+
 export class SherpaStepper extends SherpaElement {
   static override get cssUrl(): string {
     return new URL("./sherpa-stepper.css", import.meta.url).href;
@@ -57,43 +67,37 @@ export class SherpaStepper extends SherpaElement {
 
   /* ── State ───────────────────────────────────────────── */
 
-  #steps = [];
+  #steps: StepData[] = [];
   #currentStep = 1;
   #ready = false;
-  /** @type {Set<number>} */
-  #visited = new Set();
+  #visited = new Set<number>();
   /** URL last loaded synchronously in onRender() — used to skip the base
    *  class's post-connect #fetchJson so the same URL isn't fetched twice. */
   #srcLoaded = "";
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  async onRender() {
+  override async onRender(): Promise<void> {
     const src = this.dataset["srcJson"];
     if (src) {
       try {
         const data = await fetch(src).then((r) => r.json());
         this.#steps = data.steps || [];
         this.#srcLoaded = src; // Prevent base class post-connect trigger from double-loading
-      // @ts-expect-error - TODO: Fix type
-      } catch (e: Event) {
+      } catch (e) {
         console.warn("sherpa-stepper: failed to load data-src-json:", e);
       }
     }
-    // @ts-expect-error - TODO: Fix type
-    this.#currentStep = parseInt(this.dataset["currentStep"]) || 1;
+    this.#currentStep = parseInt(this.dataset["currentStep"] || "") || 1;
     this.#visited.add(this.#currentStep);
     this.#render();
     this.#ready = true;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, _old, newValue: string | null) {
+  override onAttributeChanged(name: string, _old: string | null, newValue: string | null): void {
     if (!this.#ready) return;
     if (name === "data-current-step") {
-      // @ts-expect-error - TODO: Fix type
-      const n = parseInt(newValue) || 1;
+      const n = parseInt(newValue || "") || 1;
       if (n !== this.#currentStep) {
         this.#currentStep = n;
         this.#render();
@@ -134,23 +138,21 @@ export class SherpaStepper extends SherpaElement {
     header.replaceChildren();
 
     const showNumbers = this.dataset["showStepNumbers"] !== "false";
-    const itemTpl = this.$("template.step-item-tpl");
-    const connTpl = this.$("template.step-connector-tpl");
+    const itemTpl = this.$<HTMLTemplateElement>("template.step-item-tpl");
+    const connTpl = this.$<HTMLTemplateElement>("template.step-connector-tpl");
+    if (!itemTpl) return;
 
     this.#steps.forEach((step, i) => {
       const num = i + 1;
       const isActive = num === this.#currentStep;
-      // @ts-expect-error - TODO: Fix type
       const isCompleted = step.completed || num < this.#currentStep;
-      // @ts-expect-error - TODO: Fix type
       const hasError = step.error;
-      // @ts-expect-error - TODO: Fix type
       const isDisabled = step.disabled;
       const isVisited = this.#visited.has(num);
 
-      // @ts-expect-error - TODO: Fix type
-      const frag = itemTpl.content.cloneNode(true);
-      const item = frag.querySelector(".step-item");
+      const frag = itemTpl.content.cloneNode(true) as DocumentFragment;
+      const item = frag.querySelector<HTMLElement>(".step-item");
+      if (!item) return;
       if (isActive) item.dataset["active"] = "";
       if (isCompleted) item.dataset["completed"] = "";
       if (hasError) item.dataset["error"] = "";
@@ -158,24 +160,22 @@ export class SherpaStepper extends SherpaElement {
       if (isDisabled) item.setAttribute("disabled", "");
       item.setAttribute("aria-selected", isActive ? "true" : "false");
       item.setAttribute("aria-disabled", isDisabled ? "true" : "false");
-      item.dataset["step"] = num;
+      item.dataset["step"] = String(num);
 
       // Step number — visible when neither completed nor error (CSS handles hiding)
       const numberEl = frag.querySelector(".step-number");
-      if (showNumbers) numberEl.textContent = num;
+      if (showNumbers && numberEl) numberEl.textContent = String(num);
 
       const label = frag.querySelector(".step-label");
-      // @ts-expect-error - TODO: Fix type
-      label.textContent = step.label || `Step ${num}`;
+      if (label) label.textContent = step.label || `Step ${num}`;
 
       // Sublabel — CSS hides via :empty when blank
-      // @ts-expect-error - TODO: Fix type
-      frag.querySelector(".step-sublabel").textContent = step.sublabel || "";
+      const sublabelEl = frag.querySelector(".step-sublabel");
+      if (sublabelEl) sublabelEl.textContent = step.sublabel || "";
 
       // Optional timestamp (timeline template). The element is present in
       // both templates but hidden by default in the default template via CSS.
       const tsEl = frag.querySelector(".step-timestamp");
-      // @ts-expect-error - TODO: Fix type
       if (tsEl) tsEl.textContent = step.timestamp || "";
 
       if (!isDisabled) {
@@ -184,24 +184,21 @@ export class SherpaStepper extends SherpaElement {
 
       header.appendChild(frag);
 
-      if (i < this.#steps.length - 1) {
-        // @ts-expect-error - TODO: Fix type
-        const connFrag = connTpl.content.cloneNode(true);
-        const conn = connFrag.querySelector(".step-connector");
-        if (num < this.#currentStep) conn.dataset["completed"] = "";
+      if (i < this.#steps.length - 1 && connTpl) {
+        const connFrag = connTpl.content.cloneNode(true) as DocumentFragment;
+        const conn = connFrag.querySelector<HTMLElement>(".step-connector");
+        if (conn && num < this.#currentStep) conn.dataset["completed"] = "";
         header.appendChild(connFrag);
       }
     });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #onStepClick(num) {
+  #onStepClick(num: number) {
     const step = this.#steps[num - 1];
     this.dispatchEvent(
       new CustomEvent("step-click", {
         bubbles: true,
         composed: true,
-        // @ts-expect-error - TODO: Fix type
         detail: { step: num, label: step?.label },
       }),
     );
@@ -210,7 +207,6 @@ export class SherpaStepper extends SherpaElement {
       const canNav =
         num <= this.#currentStep ||
         (num === this.#currentStep + 1 &&
-          // @ts-expect-error - TODO: Fix type
           this.#steps[this.#currentStep - 1]?.completed);
       if (!canNav) return;
     }
@@ -222,9 +218,8 @@ export class SherpaStepper extends SherpaElement {
   get currentStep() {
     return this.#currentStep;
   }
-  set currentStep(v) {
-    // @ts-expect-error - TODO: Fix type
-    this.dataset["currentStep"] = v;
+  set currentStep(v: number) {
+    this.dataset["currentStep"] = String(v);
   }
 
   get linear() {
@@ -254,9 +249,7 @@ export class SherpaStepper extends SherpaElement {
 
   /* ── Public methods ───────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  setSteps(steps) {
-    // @ts-expect-error - TODO: Fix type
+  setSteps(steps: StepData[]) {
     this.#steps = steps.map((s) => ({
       label: s.label,
       sublabel: s.sublabel || "",
@@ -276,13 +269,12 @@ export class SherpaStepper extends SherpaElement {
     if (this.#currentStep > 1) this.goToStep(this.#currentStep - 1);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  goToStep(num) {
+  goToStep(num: number) {
     if (num < 1 || num > this.#steps.length) return;
     const prev = this.#currentStep;
     this.#currentStep = num;
     this.#visited.add(num);
-    this.dataset["currentStep"] = num;
+    this.dataset["currentStep"] = String(num);
     this.#render();
     this.dispatchEvent(
       new CustomEvent("step-change", {
@@ -291,30 +283,25 @@ export class SherpaStepper extends SherpaElement {
         detail: {
           currentStep: num,
           previousStep: prev,
-          // @ts-expect-error - TODO: Fix type
           label: this.#steps[num - 1]?.label,
         },
       }),
     );
   }
 
-  // @ts-expect-error - TODO: Fix type
-  completeStep(num) {
-    if (num < 1 || num > this.#steps.length) return;
-    // @ts-expect-error - TODO: Fix type
-    this.#steps[num - 1].completed = true;
-    // @ts-expect-error - TODO: Fix type
-    this.#steps[num - 1].error = false;
+  completeStep(num: number) {
+    const step = this.#steps[num - 1];
+    if (!step) return;
+    step.completed = true;
+    step.error = false;
     if (this.#ready) this.#render();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setStepError(num, hasError = true) {
-    if (num < 1 || num > this.#steps.length) return;
-    // @ts-expect-error - TODO: Fix type
-    this.#steps[num - 1].error = hasError;
-    // @ts-expect-error - TODO: Fix type
-    if (hasError) this.#steps[num - 1].completed = false;
+  setStepError(num: number, hasError = true) {
+    const step = this.#steps[num - 1];
+    if (!step) return;
+    step.error = hasError;
+    if (hasError) step.completed = false;
     if (this.#ready) this.#render();
   }
 }
