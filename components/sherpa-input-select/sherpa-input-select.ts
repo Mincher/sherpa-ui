@@ -45,7 +45,10 @@ export class SherpaInputSelect extends SherpaInputBase {
     return new URL("./sherpa-input-select.html", import.meta.url).href;
   }
 
-  #selectEl = null;
+  els = this.cacheElements({
+    select: '.input-field'
+  });
+
   #pendingOptions = null;
   #outsideHandler = null;
   #pathByValue = new Map();
@@ -63,7 +66,6 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   override async onInputRender(): Promise<void> {
-    this.#selectEl = this.getInputElement();
     if (this.templateId === 'tree') {
       this.#renderTree();
       this.#wireTree();
@@ -86,8 +88,8 @@ export class SherpaInputSelect extends SherpaInputBase {
     // at that point the matching <option> wasn't there yet and the
     // assignment silently dropped to "" / first option.
     const hostValue = this.getAttribute("value");
-    if (hostValue && this.#selectEl && this.#selectEl.value !== hostValue) {
-      this.#selectEl.value = hostValue;
+    if (hostValue && this.els.select && this.els.select.value !== hostValue) {
+      this.els.select.value = hostValue;
     }
   }
 
@@ -127,16 +129,16 @@ export class SherpaInputSelect extends SherpaInputBase {
    * @param {Array<{value: string, label: string, disabled?: boolean} | {label: string, options: Array}>} options
    */
   setOptions(options) {
-    if (!this.#selectEl) {
+    if (!this.els.select) {
       // Component hasn't finished rendering yet — queue the call so
       // override onInputRender(): void can flush it once the inner <select> exists.
       this.#pendingOptions = options ? [...options] : [];
       return;
     }
     // Keep placeholder, remove the rest
-    const placeholder = this.#selectEl.querySelector('option[value=""]');
-    this.#selectEl.replaceChildren();
-    if (placeholder) this.#selectEl.appendChild(placeholder);
+    const placeholder = this.els.select.querySelector('option[value=""]');
+    this.els.select.replaceChildren();
+    if (placeholder) this.els.select.appendChild(placeholder);
 
     for (const entry of options || []) {
       if (entry && Array.isArray(entry.options)) {
@@ -145,16 +147,16 @@ export class SherpaInputSelect extends SherpaInputBase {
         for (const opt of entry.options) {
           group.appendChild(this.#buildOption(opt));
         }
-        this.#selectEl.appendChild(group);
+        this.els.select.appendChild(group);
       } else {
-        this.#selectEl.appendChild(this.#buildOption(entry));
+        this.els.select.appendChild(this.#buildOption(entry));
       }
     }
     // Re-apply pending value from host attribute (if any) now that the
     // matching <option> exists in the DOM.
     const hostValue = this.getAttribute("value");
-    if (hostValue && this.#selectEl.value !== hostValue) {
-      this.#selectEl.value = hostValue;
+    if (hostValue && this.els.select.value !== hostValue) {
+      this.els.select.value = hostValue;
     }
   }
 
@@ -169,29 +171,29 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   #adoptOptions() {
-    if (!this.#selectEl) return;
+    if (!this.els.select) return;
     // Move <option> and <optgroup> children from the host light DOM into the shadow <select>
     const nodes = this.querySelectorAll(':scope > option, :scope > optgroup');
     for (const node of nodes) {
-      this.#selectEl.appendChild(node.cloneNode(true));
+      this.els.select.appendChild(node.cloneNode(true));
     }
   }
 
   #ensurePlaceholder() {
-    if (!this.#selectEl) return;
+    if (!this.els.select) return;
     const ph = this.getAttribute("placeholder");
-    let placeholderOpt = this.#selectEl.querySelector('option[value=""]');
+    let placeholderOpt = this.els.select.querySelector('option[value=""]');
 
     if (ph) {
       if (!placeholderOpt) {
         placeholderOpt = document.createElement("option");
         placeholderOpt.value = "";
-        this.#selectEl.prepend(placeholderOpt);
+        this.els.select.prepend(placeholderOpt);
       }
       placeholderOpt.textContent = ph;
       placeholderOpt.disabled = true;
       placeholderOpt.setAttribute('hidden', '');
-      if (!this.#selectEl.value) {
+      if (!this.els.select.value) {
         placeholderOpt.selected = true;
       }
     }

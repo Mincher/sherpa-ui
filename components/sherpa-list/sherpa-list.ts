@@ -27,10 +27,11 @@ export class SherpaList extends SherpaElement {
     return [...super.observedAttributes, 'data-heading', 'data-empty'];
   }
 
-  /** @type {HTMLSpanElement|null} */
-  #headingEl = null;
-  /** @type {HTMLDivElement|null} */
-  #emptyEl   = null;
+  els = this.cacheElements({
+    heading: '.list-heading',
+    empty: '.list-empty'
+  });
+
   /** @type {MutationObserver|null} */
   #observer  = null;
   #bound = false;
@@ -42,8 +43,6 @@ export class SherpaList extends SherpaElement {
   };
 
   override onRender(): void {
-    this.#headingEl = this.$('.list-heading');
-    this.#emptyEl   = this.$('.list-empty');
 
     if (!this.#bound) {
       this.#observer = new MutationObserver(() => this.#syncEmpty());
@@ -66,12 +65,12 @@ export class SherpaList extends SherpaElement {
   }
 
   #syncHeading() {
-    if (this.#headingEl) this.#headingEl.textContent = this.dataset.heading || '';
+    if (this.els.heading) this.els.heading.textContent = this.dataset.heading || '';
   }
 
   #syncEmpty() {
     const message = this.dataset.empty || '';
-    if (this.#emptyEl) this.#emptyEl.textContent = message;
+    if (this.els.empty) this.els.empty.textContent = message;
     const hasItems = this.items.length > 0;
     this.toggleAttribute('data-empty-visible', !hasItems && !!message);
   }

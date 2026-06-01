@@ -94,7 +94,10 @@ export class SherpaNav extends SherpaElement {
     ];
   }
 
-  #searchFieldEl = null;
+  els = this.cacheElements({
+    searchField: '.search-field'
+  });
+
   #endingSearch = false; // Guard flag to prevent infinite recursion
   #ready = false;
   #hostClickWired = false;
@@ -142,7 +145,7 @@ export class SherpaNav extends SherpaElement {
       this.addEventListener("click", (e) => this.#onHostClick(e));
       this.#hostClickWired = true;
     }
-    this.#searchFieldEl = this.$(".nav-search sherpa-input-search");
+    this.els.searchField = this.$(".nav-search sherpa-input-search");
     this.#navItemTpl = this.$("template.nav-item-tpl") || this.#injectFallbackTemplate(
       "nav-item-tpl",
       '<sherpa-nav-item data-variant="child" tabindex="0" role="button"></sherpa-nav-item>',
@@ -230,7 +233,7 @@ export class SherpaNav extends SherpaElement {
 
   startSearch() {
     this.mode = SherpaNav.MODES.SEARCH;
-    this.#searchFieldEl?.focus();
+    this.els.searchField?.focus();
   }
 
   endSearch() {
@@ -240,9 +243,9 @@ export class SherpaNav extends SherpaElement {
 
     try {
       this.mode = SherpaNav.MODES.DEFAULT;
-      if (this.#searchFieldEl) {
-        this.#searchFieldEl.value = "";
-        this.#searchFieldEl.clear();
+      if (this.els.searchField) {
+        this.els.searchField.value = "";
+        this.els.searchField.clear();
       }
       this.#applySearchFilter("");
     } finally {
@@ -600,7 +603,7 @@ export class SherpaNav extends SherpaElement {
         : SherpaNav.MODES.EDIT;
     });
 
-    const sf = this.#searchFieldEl;
+    const sf = this.els.searchField;
     sf?.addEventListener("input", (e) => {
       const value = e.detail?.value ?? sf.value;
       this.#applySearchFilter(value);

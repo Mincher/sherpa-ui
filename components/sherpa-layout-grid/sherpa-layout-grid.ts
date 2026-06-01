@@ -48,12 +48,14 @@ export class SherpaLayoutGrid extends SherpaElement {
     ];
   }
 
+  els = this.cacheElements({
+    header: 'sherpa-view-header.grid-header'
+  });
+
   /** @type {HTMLElement|null} */
   #dragSource = null;
-  #headerEl = null;
 
   override onRender(): void {
-    this.#headerEl = this.$("sherpa-view-header.grid-header");
     this.#syncRowHeight();
     this.#syncEditable();
     this.#syncHeader();
@@ -85,7 +87,7 @@ export class SherpaLayoutGrid extends SherpaElement {
   }
 
   #syncHeader() {
-    const header = this.#headerEl;
+    const header = this.els.header;
     if (!header) return;
     const heading = this.getAttribute("data-heading");
     if (heading != null) header.setAttribute("data-label", heading);
