@@ -604,20 +604,20 @@ export class SherpaNav extends SherpaElement {
     });
 
     const sf = this.els.searchField;
-    sf?.addEventListener("input", (e) => {
+    sf?.addEventListener("input", (e: CustomEvent) => {
       const value = e.detail?.value ?? sf.value;
       this.#applySearchFilter(value);
       this.mode = value.trim()
         ? SherpaNav.MODES.SEARCH
         : SherpaNav.MODES.DEFAULT;
     });
-    sf?.addEventListener("keydown", (e) => {
+    sf?.addEventListener("keydown", (e: CustomEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
         this.endSearch();
       }
     });
-    sf?.addEventListener("search", (e) => {
+    sf?.addEventListener("search", (e: CustomEvent) => {
       if (!e.detail?.value) this.endSearch();
     });
 

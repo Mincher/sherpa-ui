@@ -95,23 +95,23 @@ class SherpaSlider extends SherpaElement {
     this.#syncInputAttrs();
 
     // Wire pointer events on track area
-    this.els.trackArea.addEventListener("pointerdown", (e) =>
+    this.els.trackArea.addEventListener("pointerdown", (e: CustomEvent) =>
       this.#onPointerDown(e)
     );
 
     // Wire keyboard events on handles
-    this.els.lowHandle.addEventListener("keydown", (e) =>
+    this.els.lowHandle.addEventListener("keydown", (e: CustomEvent) =>
       this.#onKeyDown(e, "low")
     );
-    this.els.highHandle.addEventListener("keydown", (e) =>
+    this.els.highHandle.addEventListener("keydown", (e: CustomEvent) =>
       this.#onKeyDown(e, "high")
     );
 
     // Wire input change events
-    this.els.inputLow.addEventListener("change", (e) =>
+    this.els.inputLow.addEventListener("change", (e: CustomEvent) =>
       this.#onInputChange(e, "low")
     );
-    this.els.inputHigh.addEventListener("change", (e) =>
+    this.els.inputHigh.addEventListener("change", (e: CustomEvent) =>
       this.#onInputChange(e, "high")
     );
 

@@ -241,7 +241,7 @@ export class SherpaViewHeader extends SherpaElement {
   #setupEditMode() {
     const toggle = this.$('#edit-mode-toggle');
     if (!toggle) return;
-    toggle.addEventListener('change', e => {
+    toggle.addEventListener('change', (e: CustomEvent) => {
       const next = e.detail.checked;
       this.dataset["editMode"] = next ? 'true' : 'false';
     });
@@ -445,7 +445,7 @@ export class SherpaViewHeader extends SherpaElement {
       else menu.show?.(trigger);
     });
 
-    menu.addEventListener('menu-select', (e) => {
+    menu.addEventListener('menu-select', (e: CustomEvent) => {
       const value = e.detail?.value;
       menu.hide?.();
       if (!value) return;

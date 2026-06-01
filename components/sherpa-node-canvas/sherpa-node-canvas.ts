@@ -727,7 +727,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Edge drag / re-attach ─────────────────────────────────────── */
 
-  #onSocketPointerDown = (e: Event) => {
+  #onSocketPointerDown = (e: CustomEvent) => {
     const { direction, portName, originalEvent } = e.detail;
     const socket = e.composedPath().find((n) => n?.localName === "sherpa-node-socket");
     const node = socket?.closest("sherpa-node");
@@ -770,7 +770,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#scheduleDraw();
   };
 
-  #onNodePointerDown = (e: Event) => {
+  #onNodePointerDown = (e: CustomEvent) => {
     const { nodeId, originalEvent } = e.detail;
     if (!nodeId || this.#spaceDown) return;
     const node = this.#nodeById(nodeId);
@@ -1439,7 +1439,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     return { parentId: top.parentId, label: top.label };
   }
 
-  #onNodeDrillDown = (e: Event) => {
+  #onNodeDrillDown = (e: CustomEvent) => {
     const nodeId = e.detail?.nodeId;
     if (!nodeId) return;
     const label = e.detail?.label ?? this.#labelForNode(nodeId);
@@ -1565,7 +1565,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    * API so per-frame snapshots are cached the same way as a back-button
    * click — re-entering the parent later restores the work.
    */
-  #onBreadcrumbClick = (e: Event) => {
+  #onBreadcrumbClick = (e: CustomEvent) => {
     e.preventDefault?.();
     const trail = this.els.viewHeader?.querySelector(
       ':scope > sherpa-breadcrumbs[data-canvas-breadcrumbs]'

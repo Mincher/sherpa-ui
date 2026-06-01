@@ -1021,7 +1021,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     this.toggleAttribute("data-hide-legend");
   };
 
-  #onMenuPopulate = (e: Event) => {
+  #onMenuPopulate = (e: CustomEvent) => {
     const menu = e.detail?.menu;
     if (!menu) return;
     const filterItem = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');

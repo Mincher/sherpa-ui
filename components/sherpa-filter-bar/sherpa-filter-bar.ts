@@ -163,7 +163,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.#sealChipMenus();
 
     // Clear button delegation — look for click on actions-slotted button
-    this.addEventListener("click", (e) => {
+    this.addEventListener("click", (e: CustomEvent) => {
       const path = e.composedPath();
       const clearBtn = path.find(
         (n) =>
@@ -182,7 +182,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.els.addButton?.addEventListener("menu-select", this.#onAddMenuSelect);
 
     // Listen for button clicks from behavior chips (mode cycling) and dismiss buttons
-    this.addEventListener("button-click", (e) => {
+    this.addEventListener("button-click", (e: CustomEvent) => {
       // Use composedPath()[0] so shadow DOM chips are resolved correctly
       // (e.target is retargeted to the host when the event crosses shadow boundaries).
       const btn = e.composedPath()[0];
@@ -216,7 +216,7 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     // Listen for menu-select from data-filter-field chips and sort/segment chips
-    this.addEventListener("menu-select", (e) => {
+    this.addEventListener("menu-select", (e: CustomEvent) => {
       // Use composedPath()[0] so shadow DOM behavior chips are resolved correctly.
       const chip = e.composedPath()[0];
 
@@ -280,7 +280,7 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     // Toggle switch — applies / unapplies all filters
-    this.addEventListener("change", (e) => {
+    this.addEventListener("change", (e: CustomEvent) => {
       const sw = e.target;
       if (sw?.tagName === "SHERPA-SWITCH" && sw.slot === "toggle") {
         this.#applied = sw.dataset["state"] === "on";
@@ -685,7 +685,7 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Handle selection from the "Add filter" menu. */
-  #onAddMenuSelect: EventHandler<CustomEvent> = (e: Event) => {
+  #onAddMenuSelect: EventHandler<CustomEvent> = (e: CustomEvent) => {
     const field = e.detail?.value;
     if (!field) return;
 
@@ -828,7 +828,7 @@ export class SherpaFilterBar extends SherpaElement {
   /**
    * Handle sortchange from a viz child — sync the sort chip to match.
    */
-  #onSortChange(e: Event) {
+  #onSortChange(e: CustomEvent) {
     const sortChip = this.$('sherpa-button[data-behavior="sort"]');
     if (!sortChip) return;
 

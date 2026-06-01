@@ -317,7 +317,7 @@ export class SherpaButton extends SherpaElement {
       );
     });
 
-    menu.addEventListener("menu-close", (e) => {
+    menu.addEventListener("menu-close", (e: CustomEvent) => {
       e.stopPropagation();
       this.removeAttribute("aria-expanded");
       this.#menuClosedAt = Date.now();

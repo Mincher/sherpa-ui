@@ -83,7 +83,7 @@ class SherpaFileUpload extends SherpaElement {
     this.els.dropZone.addEventListener("click", () => {
       if (!this.hasAttribute("disabled")) this.els.fileInput.click();
     });
-    this.els.dropZone.addEventListener("keydown", (e) => {
+    this.els.dropZone.addEventListener("keydown", (e: CustomEvent) => {
       if ((e.key === "Enter" || e.key === " ") && !this.hasAttribute("disabled")) {
         e.preventDefault();
         this.els.fileInput.click();

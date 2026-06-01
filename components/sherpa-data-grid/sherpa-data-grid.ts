@@ -239,7 +239,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       this.addEventListener("click", (e) => this.#onHostClick(e));
 
       const pagination = this.$(".grid-pagination");
-      pagination?.addEventListener("page-change", (e) => {
+      pagination?.addEventListener("page-change", (e: CustomEvent) => {
         const { page, pageSize } = e.detail;
         this.dataset["page"] = String(page);
         this.dataset["pageSize"] = String(pageSize);
@@ -249,7 +249,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // Global search input (sherpa-input-search in toolbar center)
       const globalSearch = this.$(".global-search");
       if (globalSearch) {
-        globalSearch.addEventListener("input", (e) => {
+        globalSearch.addEventListener("input", (e: CustomEvent) => {
           clearTimeout(this.#searchDebounce);
           this.#searchDebounce = setTimeout(() => {
             const el = globalSearch.getInputElement?.();
@@ -260,7 +260,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
           }, 200);
         });
         // Also handle clear via the search event (Enter/clear button)
-        globalSearch.addEventListener("search", (e) => {
+        globalSearch.addEventListener("search", (e: CustomEvent) => {
           this.#globalSearchTerm = (e.detail?.value || "").trim().toLowerCase();
           this.dataset["page"] = "1";
           this.#render();
@@ -277,7 +277,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // upstream records (data set directly via setData()), that pipeline
     // is a no-op, so we always re-render here in a microtask to pick up
     // whatever attrs the mixin just wrote.
-      this.addEventListener("filter-change", (e) => {
+      this.addEventListener("filter-change", (e: CustomEvent) => {
         const filters = e.detail?.filters || [];
 
       // Value filters (text/number/date/boolean chips)
@@ -301,7 +301,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         overflowBtn.addEventListener("menu-open", () =>
           this.#populateOverflowMenu(),
         );
-        overflowBtn.addEventListener("menu-select", (e) =>
+        overflowBtn.addEventListener("menu-select", (e: CustomEvent) =>
           this.#onOverflowMenuSelect(e),
         );
       }
@@ -312,7 +312,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         colSelectBtn.addEventListener("menu-open", () =>
           this.#populateColumnSelectMenu(),
         );
-        colSelectBtn.addEventListener("menu-select", (e) =>
+        colSelectBtn.addEventListener("menu-select", (e: CustomEvent) =>
           this.#onColumnSelectMenuSelect(e),
         );
       }
@@ -323,7 +323,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         actionsBtn.addEventListener("menu-open", () =>
           this.#populateActionMenu(),
         );
-        actionsBtn.addEventListener("menu-select", (e) =>
+        actionsBtn.addEventListener("menu-select", (e: CustomEvent) =>
           this.#onActionMenuSelect(e),
         );
       }
@@ -674,7 +674,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // Wire select-all
     const selectAll = primaryRow.querySelector(".select-all");
     if (selectAll) {
-      selectAll.addEventListener("change", (e) => {
+      selectAll.addEventListener("change", (e: CustomEvent) => {
         this.#onSelectAll(e.target.checked);
       });
     }
@@ -705,7 +705,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
       // Wire sherpa-input-search inputs with debounce
       for (const searchEl of secondaryRow.querySelectorAll(".col-search")) {
-        searchEl.addEventListener("input", (e) => {
+        searchEl.addEventListener("input", (e: CustomEvent) => {
           clearTimeout(this.#searchDebounce);
           this.#searchDebounce = setTimeout(() => {
             const field = searchEl.getAttribute("data-field");
@@ -723,7 +723,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         });
 
         // On clear button / Enter key (search event)
-        searchEl.addEventListener("search", (e) => {
+        searchEl.addEventListener("search", (e: CustomEvent) => {
           const field = searchEl.getAttribute("data-field");
           const val = (e.detail?.value || "").trim();
           if (val) {
@@ -1065,7 +1065,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     });
 
     // ── Group checkbox — selects/deselects all children ─────────
-    groupCheck.addEventListener("change", (e) => {
+    groupCheck.addEventListener("change", (e: CustomEvent) => {
       const isChecked = e.target.checked;
       for (const row of group.rows) {
         const rowId = row._rowId;
@@ -1656,7 +1656,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     btn.setMenuItems(sections);
   }
 
-  #onOverflowMenuSelect(e: Event) {
+  #onOverflowMenuSelect(e: CustomEvent) {
     const data = e?.detail?.data || {};
     const action = data.action;
 
@@ -1740,7 +1740,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     btn.setMenuItems([{ heading: "Columns", items }]);
   }
 
-  #onColumnSelectMenuSelect(e: Event) {
+  #onColumnSelectMenuSelect(e: CustomEvent) {
     const data = e?.detail?.data || {};
 
     // Handle "Select all"
@@ -1891,7 +1891,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.toggleAttribute("data-filters");
   };
 
-  #onMenuPopulate: EventHandler<CustomEvent> = (e: Event) => {
+  #onMenuPopulate: EventHandler<CustomEvent> = (e: CustomEvent) => {
     const menu = e.detail?.menu;
     if (!menu) return;
     const item = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');

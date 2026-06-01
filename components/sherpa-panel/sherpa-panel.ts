@@ -209,7 +209,7 @@ class SherpaPanel extends SherpaElement {
     this.dataset["expanded"] = "";
   };
 
-  #onSearchChange = (e: Event) => {
+  #onSearchChange = (e: CustomEvent) => {
     const value = (e.detail?.value ?? e.target?.value ?? "").toString();
     this.#applyFilter(value);
   };

@@ -112,7 +112,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#syncEndTrigger();
 
     // ── Trigger buttons ──────────────────────────────────────
-    this.$(".trigger-start").addEventListener("click", (e) => {
+    this.$(".trigger-start").addEventListener("click", (e: CustomEvent) => {
       e.stopPropagation();
       if (this.hasAttribute("disabled") || this.hasAttribute("readonly")) return;
       if (this.hasAttribute("data-open-start")) {
@@ -123,7 +123,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
       }
     });
 
-    this.$(".trigger-end").addEventListener("click", (e) => {
+    this.$(".trigger-end").addEventListener("click", (e: CustomEvent) => {
       e.stopPropagation();
       if (this.hasAttribute("disabled") || this.hasAttribute("readonly")) return;
       if (this.hasAttribute("data-open-end")) {
@@ -135,7 +135,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     });
 
     // ── Start calendar navigation ────────────────────────────
-    this.$(".prev-start").addEventListener("click", (e) => {
+    this.$(".prev-start").addEventListener("click", (e: CustomEvent) => {
       e.stopPropagation();
       this.#startViewDate = new Date(
         this.#startViewDate.getFullYear(),
@@ -145,7 +145,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
       this.#renderStartCalendar();
     });
 
-    this.$(".next-start").addEventListener("click", (e) => {
+    this.$(".next-start").addEventListener("click", (e: CustomEvent) => {
       e.stopPropagation();
       this.#startViewDate = new Date(
         this.#startViewDate.getFullYear(),
@@ -156,7 +156,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     });
 
     // ── End calendar navigation ──────────────────────────────
-    this.$(".prev-end").addEventListener("click", (e) => {
+    this.$(".prev-end").addEventListener("click", (e: CustomEvent) => {
       e.stopPropagation();
       this.#endViewDate = new Date(
         this.#endViewDate.getFullYear(),
@@ -166,7 +166,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
       this.#renderEndCalendar();
     });
 
-    this.$(".next-end").addEventListener("click", (e) => {
+    this.$(".next-end").addEventListener("click", (e: CustomEvent) => {
       e.stopPropagation();
       this.#endViewDate = new Date(
         this.#endViewDate.getFullYear(),
