@@ -43,6 +43,15 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
+declare global {
+  interface Window {
+    /** PrismJS — loaded dynamically; typed loosely as it ships no types here. */
+    Prism?: any;
+    /** Global SherpaToast factory, when the toast component is registered. */
+    SherpaToast?: { success?: (message: string) => void };
+  }
+}
+
 export class SherpaCodeBlock extends SherpaElement {
   static override get cssUrl(): string {
     return new URL('./sherpa-code-block.css', import.meta.url).href;
@@ -84,14 +93,14 @@ export class SherpaCodeBlock extends SherpaElement {
 
   els = this.cacheElements({
     code: 'code',
-    pre: 'pre',
+    pre: { selector: 'pre', type: HTMLElement },
     copyBtn: '.copy-btn',
     languageLabel: '.language-label'
   });
 
   #prismLoaded = false;
-  #detectedLanguage = null;
-  #highlightError = null;
+  #detectedLanguage: string | null = null;
+  #highlightError: string | null = null;
 
   static override get observedAttributes(): string[] {
     return [
@@ -145,10 +154,8 @@ export class SherpaCodeBlock extends SherpaElement {
 
     if (name === 'data-max-height' && this.els.pre) {
       if (newValue) {
-        // @ts-expect-error - TODO: Fix type
         this.els.pre.style.maxHeight = newValue;
       } else {
-        // @ts-expect-error - TODO: Fix type
         this.els.pre.style.maxHeight = '';
       }
     }
@@ -164,8 +171,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Manually highlight code with specific language.
    */
-  // @ts-expect-error - TODO: Fix type
-  async highlightCode(code, language) {
+  async highlightCode(code: string, language: string) {
     if (!code) return;
 
     if (this.els.code) {
@@ -231,7 +237,6 @@ export class SherpaCodeBlock extends SherpaElement {
 
     // Apply max-height if set
     if (this.dataset["maxHeight"] && this.els.pre) {
-      // @ts-expect-error - TODO: Fix type
       this.els.pre.style.maxHeight = this.dataset["maxHeight"];
     }
 
@@ -242,8 +247,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Auto-detect language from content.
    */
-  // @ts-expect-error - TODO: Fix type
-  #detectLanguage(code, requested) {
+  #detectLanguage(code: string, requested: string): string {
     // If explicitly requested and not 'auto', use it
     if (requested && requested !== 'auto') {
       return requested;
@@ -274,8 +278,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Confidence score for language detection (0-1).
    */
-  // @ts-expect-error - TODO: Fix type
-  #getConfidence(code, language) {
+  #getConfidence(_code: string, language: string | null): number {
     if (language === 'text') return 0.2; // Low confidence for plaintext fallback
     if (this.dataset["language"] && this.dataset["language"] !== 'auto') return 1.0; // Explicit match
     return 0.8; // Auto-detected with reasonable confidence
@@ -285,14 +288,12 @@ export class SherpaCodeBlock extends SherpaElement {
    * Ensure Prism.js is loaded from CDN.
    */
   async #ensurePrismLoaded() {
-    // @ts-expect-error - TODO: Fix type
     if (this.#prismLoaded && window.Prism) {
       return;
     }
 
     try {
       // Check if Prism already loaded globally
-      // @ts-expect-error - TODO: Fix type
       if (window.Prism) {
         this.#prismLoaded = true;
         return;
@@ -312,9 +313,7 @@ export class SherpaCodeBlock extends SherpaElement {
       this.#highlightError = null;
       this.dataset["highlightError"] = '';
     } catch (err) {
-      // @ts-expect-error - TODO: Fix type
-      this.#highlightError = `Failed to load syntax highlighter: ${err.message}`;
-      // @ts-expect-error - TODO: Fix type
+      this.#highlightError = `Failed to load syntax highlighter: ${(err as Error).message}`;
       this.dataset["highlightError"] = this.#highlightError;
 
       this.#emit('code-highlight-error', {
@@ -331,12 +330,10 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Load script from CDN with timeout.
    */
-  // @ts-expect-error - TODO: Fix type
-  #loadScript(src, timeout = 10000) {
+  #loadScript(src: string, timeout = 10000): Promise<void> {
     return new Promise((resolve, reject) => {
       // Avoid duplicate loads
       if (document.querySelector(`script[src="${src}"]`)) {
-        // @ts-expect-error - TODO: Fix type
         resolve();
         return;
       }
@@ -351,7 +348,6 @@ export class SherpaCodeBlock extends SherpaElement {
 
       script.onload = () => {
         clearTimeout(timer);
-        // @ts-expect-error - TODO: Fix type
         resolve();
       };
 
@@ -368,7 +364,6 @@ export class SherpaCodeBlock extends SherpaElement {
    * Highlight code element using Prism.
    */
   async #highlightElement() {
-    // @ts-expect-error - TODO: Fix type
     if (!window.Prism || !this.els.code) return;
 
     // Set language class
@@ -376,17 +371,12 @@ export class SherpaCodeBlock extends SherpaElement {
     this.els.code.className = `hljs ${langClass}`;
 
     // Run Prism highlight
-    // @ts-expect-error - TODO: Fix type
     if (window.Prism.highlightElement) {
-      // @ts-expect-error - TODO: Fix type
       window.Prism.highlightElement(this.els.code);
-    // @ts-expect-error - TODO: Fix type
     } else if (window.Prism.highlight) {
-      // @ts-expect-error - TODO: Fix type
       const highlighted = window.Prism.highlight(
         this.els.code.textContent,
-        // @ts-expect-error - TODO: Fix type
-        window.Prism.languages[this.#detectedLanguage] || window.Prism.languages.text,
+        window.Prism.languages[this.#detectedLanguage ?? "text"] || window.Prism.languages.text,
         this.#detectedLanguage
       );
       this.els.code.innerHTML = highlighted;
@@ -399,7 +389,6 @@ export class SherpaCodeBlock extends SherpaElement {
   #applyLineNumbers() {
     if (!this.els.pre) return;
 
-    // @ts-expect-error - TODO: Fix type
     this.els.pre.dataset["lineNumbers"] = 'true';
 
     // Set line-start if provided
@@ -409,9 +398,7 @@ export class SherpaCodeBlock extends SherpaElement {
     }
 
     // Trigger line-numbers plugin
-    // @ts-expect-error - TODO: Fix type
     if (window.Prism && window.Prism.plugins && window.Prism.plugins.lineNumbers) {
-      // @ts-expect-error - TODO: Fix type
       window.Prism.plugins.lineNumbers.highlightLines(this.els.pre);
     }
   }
@@ -494,10 +481,8 @@ export class SherpaCodeBlock extends SherpaElement {
     const message = this.dataset["copyToastMessage"] || 'Copied to clipboard!';
 
     // Try to use SherpaToast if available
-    // @ts-expect-error - TODO: Fix type
     if (window.SherpaToast) {
-      // @ts-expect-error - TODO: Fix type
-      window.SherpaToast.success(message);
+      window.SherpaToast.success?.(message);
     } else {
       // Fallback: simple alert (can be improved)
       console.log(message);
@@ -507,8 +492,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Emit custom event.
    */
-  // @ts-expect-error - TODO: Fix type
-  #emit(name, detail) {
+  #emit(name: string, detail: unknown) {
     this.dispatchEvent(
       new CustomEvent(name, {
         bubbles: true,
