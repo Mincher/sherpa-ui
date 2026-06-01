@@ -69,14 +69,14 @@ class SherpaPopover extends SherpaElement {
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#headingEl = this.$(".header-title");
-    this.#closeBtnEl = this.$(".close-btn");
+    this.els.heading = this.$(".header-title");
+    this.els.closeBtn = this.$(".close-btn");
 
     // Defaults
     if (!this.dataset.position) this.dataset.position = "bottom";
 
     if (!this.#bound) {
-      this.#closeBtnEl?.addEventListener("click", this.#onClose);
+      this.els.closeBtn?.addEventListener("click", this.#onClose);
       this.#wirePageButtons();
       this.#bound = true;
     }
@@ -104,9 +104,9 @@ class SherpaPopover extends SherpaElement {
       case "data-template":
         this.renderTemplate(this.templateId).then(() => {
           this.#bound = false;
-          this.#headingEl  = this.$(".header-title");
-          this.#closeBtnEl = this.$(".close-btn");
-          this.#closeBtnEl?.addEventListener("click", this.#onClose);
+          this.els.heading  = this.$(".header-title");
+          this.els.closeBtn = this.$(".close-btn");
+          this.els.closeBtn?.addEventListener("click", this.#onClose);
           this.#wirePageButtons();
           this.#bound = true;
           this.#syncHeading();
@@ -180,8 +180,8 @@ class SherpaPopover extends SherpaElement {
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncHeading() {
-    if (this.#headingEl) {
-      this.#headingEl.textContent = this.dataset.heading || "";
+    if (this.els.heading) {
+      this.els.heading.textContent = this.dataset.heading || "";
     }
   }
 

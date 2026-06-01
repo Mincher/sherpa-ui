@@ -52,8 +52,8 @@ export class SherpaSparkline extends SherpaElement {
     this.#pointEls = Array.from(this.$$('.point'));
     this.#shapeSlots = this.#shapeEls.length;
     this.#pointSlots = this.#shapeSlots + 1;
-    this.#tipEl = this.$('.tip');
-    this.#tipTextEl = this.$('.tip-text');
+    this.els.tip = this.$('.tip');
+    this.els.tipText = this.$('.tip-text');
 
     // Add tooltip handlers to points
     this.#pointEls.forEach(point => {
@@ -78,18 +78,18 @@ export class SherpaSparkline extends SherpaElement {
 
   #onPointEnter = (e) => {
     const point = e.target;
-    if (!this.#tipEl) return;
+    if (!this.els.tip) return;
 
     const rawValue = point.dataset.value;
     if (rawValue === undefined) return;
     const unitLabel = this.dataset.unit || '';
-    this.#tipTextEl.textContent = formatTooltipValue(rawValue, unitLabel);
+    this.els.tipText.textContent = formatTooltipValue(rawValue, unitLabel);
     point.style.anchorName = '--spark-anchor';
-    this.#tipEl.showPopover();
+    this.els.tip.showPopover();
   };
 
   #onPointLeave = (e) => {
-    this.#tipEl?.hidePopover();
+    this.els.tip?.hidePopover();
     e.target.style.removeProperty('anchor-name');
   };
 
