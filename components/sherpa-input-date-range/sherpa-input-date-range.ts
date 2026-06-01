@@ -209,7 +209,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /* ── Overrides ──────────────────────────────────────────────── */
 
   /** The primary input for base-class focus handling. */
-  getInputElement() {
+  override getInputElement() {
     return this.#startEl || this.$(".input-start");
   }
 

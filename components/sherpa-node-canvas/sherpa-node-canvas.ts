@@ -66,7 +66,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   static override get htmlUrl(): string { return new URL("./sherpa-node-canvas.html", import.meta.url).href; }
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
-  static get sharedStyles() {
+  static override get sharedStyles() {
     return [
       ...super.sharedStyles,
       new URL("../sherpa-node/sherpa-node-tokens.css", import.meta.url).href,

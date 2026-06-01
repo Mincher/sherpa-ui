@@ -70,7 +70,7 @@ export class SherpaInputTag extends SherpaInputBase {
 
   /* ── Subclass hooks ────────────────────────────────────────────── */
 
-  getInputElement() { return this.$('.tag-typeahead'); }
+  override getInputElement() { return this.$('.tag-typeahead'); }
 
   override async onInputRender(): Promise<void> {
     this.#renderChips();

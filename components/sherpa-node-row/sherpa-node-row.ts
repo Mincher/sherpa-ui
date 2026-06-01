@@ -25,7 +25,7 @@ export class SherpaNodeRow extends SherpaElement {
 
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
-  static get sharedStyles() {
+  static override get sharedStyles() {
     return [
       ...super.sharedStyles,
       new URL("../sherpa-node/sherpa-node-tokens.css", import.meta.url).href,

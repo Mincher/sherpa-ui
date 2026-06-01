@@ -49,7 +49,7 @@ export class SherpaInputPassword extends SherpaInputBase {
     this.els.toggleBtn?.addEventListener('click', this.#onToggle);
   }
 
-  onInputDisconnect() {
+  override onInputDisconnect() {
     this.els.toggleBtn?.removeEventListener('click', this.#onToggle);
   }
 

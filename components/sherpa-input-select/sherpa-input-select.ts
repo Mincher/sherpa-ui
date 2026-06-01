@@ -61,7 +61,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     return this.dataset.template === 'tree' ? 'tree' : 'default';
   }
 
-  getInputElement() {
+  override getInputElement() {
     return this.$(".input-field");
   }
 
