@@ -87,7 +87,7 @@ export class SherpaInputNumber extends SherpaInputBase {
     if (['min', 'max', 'step'].includes(name)) {
       const el = this.getInputElement();
       if (el) {
-        newValue !== null ? el.setAttribute(name, newValue: string | null) : el.removeAttribute(name);
+        newValue !== null ? el.setAttribute(name, newValue) : el.removeAttribute(name);
       }
     }
   }

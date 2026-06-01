@@ -125,7 +125,7 @@ export class SherpaInputTime extends SherpaInputBase {
       const el = this.getInputElement();
       if (el) {
         newValue !== null
-          ? el.setAttribute(name, newValue: string | null)
+          ? el.setAttribute(name, newValue)
           : el.removeAttribute(name);
       }
     }

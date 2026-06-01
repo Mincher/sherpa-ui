@@ -379,7 +379,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       const bar = this.$("sherpa-filter-bar");
       if (bar) {
         if (newValue == null) bar.removeAttribute("data-preset-filters");
-        else bar.setAttribute("data-preset-filters", newValue: string | null);
+        else bar.setAttribute("data-preset-filters", newValue);
       }
       return;
     }
