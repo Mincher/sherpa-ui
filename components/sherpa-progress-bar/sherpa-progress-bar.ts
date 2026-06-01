@@ -31,20 +31,15 @@ class SherpaProgressBar extends SherpaElement {
     ];
   }
 
-  /** @type {HTMLSpanElement|null} */
-  #labelEl = null;
-  /** @type {HTMLDivElement|null} */
-  #fillEl = null;
-  /** @type {HTMLSpanElement|null} */
-  #statusEl = null;
+  els = this.cacheElements({
+    label: { selector: '.label', type: HTMLSpanElement },
+    fill: { selector: '.fill', type: HTMLDivElement },
+    status: { selector: '.status', type: HTMLSpanElement }
+  });
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#labelEl = this.$(".label");
-    this.#fillEl = this.$(".fill");
-    this.#statusEl = this.$(".status");
-
     // Defaults
     if (!this.dataset.variant) this.dataset.variant = "determinate";
 
@@ -73,8 +68,8 @@ class SherpaProgressBar extends SherpaElement {
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncLabel() {
-    if (this.#labelEl) {
-      this.#labelEl.textContent = this.dataset.label || "";
+    if (this.els.label) {
+      this.els.label.textContent = this.dataset.label || "";
     }
   }
 
@@ -84,8 +79,8 @@ class SherpaProgressBar extends SherpaElement {
     const value = Number.isFinite(raw) ? Math.min(100, Math.max(0, raw)) : 0;
 
     // Fill width
-    if (this.#fillEl) {
-      this.#fillEl.style.setProperty("--_progress", `${value}%`);
+    if (this.els.fill) {
+      this.els.fill.style.setProperty("--_progress", `${value}%`);
     }
 
     // ARIA
@@ -96,11 +91,11 @@ class SherpaProgressBar extends SherpaElement {
     }
 
     // Status text
-    if (this.#statusEl) {
+    if (this.els.status) {
       if (isIndeterminate) {
-        this.#statusEl.textContent = "";
+        this.els.status.textContent = "";
       } else {
-        this.#statusEl.textContent =
+        this.els.status.textContent =
           this.dataset.statusText || `Loading: ${Math.round(value)}%`;
       }
     }

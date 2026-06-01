@@ -40,18 +40,17 @@ export class SherpaListItem extends SherpaElement {
 
   /* ── Cached refs ──────────────────────────────────────────────── */
 
-  #labelEl       = null;
-  #descriptionEl = null;
-  #iconEl        = null;
+  els = this.cacheElements({
+    label: '.label',
+    description: '.description',
+    icon: '.icon'
+  });
+
   #bound = false;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#labelEl       = this.$('.label');
-    this.#descriptionEl = this.$('.description');
-    this.#iconEl        = this.$('.icon');
-
     if (!this.#bound) {
       this.addEventListener('click', this.#onClick);
       this.addEventListener('keydown', this.#onKeyDown);
@@ -90,17 +89,17 @@ export class SherpaListItem extends SherpaElement {
   /* ── Sync methods ─────────────────────────────────────────────── */
 
   #syncLabel() {
-    if (this.#labelEl) this.#labelEl.textContent = this.dataset.label || '';
+    if (this.els.label) this.els.label.textContent = this.dataset.label || '';
   }
 
   #syncDescription() {
-    if (this.#descriptionEl) this.#descriptionEl.textContent = this.dataset.description || '';
+    if (this.els.description) this.els.description.textContent = this.dataset.description || '';
   }
 
   #syncIcon() {
-    if (!this.#iconEl) return;
+    if (!this.els.icon) return;
     const icon = (this.dataset.icon || '').trim();
-    this.#iconEl.className = icon ? `icon ${icon}` : 'icon';
+    this.els.icon.className = icon ? `icon ${icon}` : 'icon';
   }
 
   #updateInteractive() {
