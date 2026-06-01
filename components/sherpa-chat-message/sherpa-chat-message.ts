@@ -38,7 +38,7 @@ class SherpaChatMessage extends SherpaElement {
     this.#syncIcon();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === "data-avatar-icon") this.#syncIcon();
   }
 

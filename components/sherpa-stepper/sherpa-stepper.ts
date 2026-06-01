@@ -85,7 +85,7 @@ export class SherpaStepper extends SherpaElement {
     this.#ready = true;
   }
 
-  onAttributeChanged(name, _old, newValue) {
+  override onAttributeChanged(name, _old, newValue) {
     if (!this.#ready) return;
     if (name === "data-current-step") {
       const n = parseInt(newValue) || 1;

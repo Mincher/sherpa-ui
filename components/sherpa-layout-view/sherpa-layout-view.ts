@@ -58,7 +58,7 @@ export class SherpaLayoutView extends SherpaElement {
     this.#syncHeader();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === 'data-heading' || name === 'data-export-title' || name === 'data-breadcrumbs') {
       this.#syncHeader();
     }

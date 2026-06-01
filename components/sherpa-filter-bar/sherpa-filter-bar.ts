@@ -322,7 +322,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.els.scope = null;
   }
 
-  onAttributeChanged(name, _old, newValue) {
+  override onAttributeChanged(name, _old, newValue) {
     if (name === "data-preset-filters" && newValue) {
       this.#initPresetChips(newValue);
     }

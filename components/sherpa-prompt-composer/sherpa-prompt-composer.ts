@@ -60,7 +60,7 @@ class SherpaPromptComposer extends SherpaElement {
     this.#syncMaxHeight();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case "data-placeholder": this.#syncPlaceholder(); break;
       case "data-disabled":    this.#syncDisabled();    break;

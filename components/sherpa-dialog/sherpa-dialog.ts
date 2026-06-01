@@ -118,7 +118,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     }
   }
 
-  onAttributeChanged(name, _oldValue, newValue) {
+  override onAttributeChanged(name, _oldValue, newValue) {
     switch (name) {
       case 'data-open':
         newValue !== null ? this.#openDialog() : this.#closeDialog();

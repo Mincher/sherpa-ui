@@ -54,7 +54,7 @@ export class SherpaTransferList extends SherpaElement {
     this.#renderPanes();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === 'data-source-heading' || name === 'data-target-heading') this.#syncHeadings();
   }
 

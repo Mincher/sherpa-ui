@@ -119,7 +119,7 @@ class SherpaSlider extends SherpaElement {
     this.#syncAll();
   }
 
-  onAttributeChanged(name, _old, _new) {
+  override onAttributeChanged(name, _old, _new) {
     switch (name) {
       case "data-label":
         this.#syncLabel();

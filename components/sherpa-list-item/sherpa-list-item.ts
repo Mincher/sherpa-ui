@@ -66,7 +66,7 @@ export class SherpaListItem extends SherpaElement {
     }
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case 'data-label':       this.#syncLabel(); break;
       case 'data-description': this.#syncDescription(); break;

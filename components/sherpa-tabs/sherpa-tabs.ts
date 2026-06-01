@@ -80,7 +80,7 @@ export class SherpaTabs extends SherpaElement {
     this.#buildTabs();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === 'data-active-tab') {
       this.#syncActiveTab();
     }

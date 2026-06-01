@@ -136,11 +136,11 @@ export class SherpaCodeBlock extends SherpaElement {
     this.setAttribute('data-supported-languages', this.supportedLanguages);
   }
 
-  async onConnect() {
+  override async onConnect() {
     await this.#loadAndHighlightCode();
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name, oldValue, newValue) {
     super.onAttributeChanged(name, oldValue, newValue);
 
     if (name === 'data-max-height' && this.els.pre) {

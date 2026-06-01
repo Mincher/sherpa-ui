@@ -125,7 +125,7 @@ export class SherpaPagination extends SherpaElement {
     this.#update();
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     if (name === "data-allowed-sizes") {
       this.#populateSizeOptions();

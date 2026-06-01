@@ -180,7 +180,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#ro?.disconnect();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === "data-grid") this.#scheduleDraw();
     if (name === "data-heading" || name === "data-export-title") this.#syncHeader();
   }

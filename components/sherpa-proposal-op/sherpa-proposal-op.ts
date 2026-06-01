@@ -36,7 +36,7 @@ class SherpaProposalOp extends SherpaElement {
     this.#sync();
   }
 
-  onAttributeChanged() { this.#sync(); }
+  override onAttributeChanged() { this.#sync(); }
 
   #sync() {
     if (!this.#tagEl || !this.#labelEl) return;

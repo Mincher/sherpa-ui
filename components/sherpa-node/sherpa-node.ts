@@ -128,7 +128,7 @@ export class SherpaNode extends SherpaElement {
     this.#applyTemplate();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === "data-x" || name === "data-y") this.#syncPosition();
     else if (name === "data-w") this.#syncWidth();
     else if (name === "data-subtypes") this.#syncSubtypeOptions();

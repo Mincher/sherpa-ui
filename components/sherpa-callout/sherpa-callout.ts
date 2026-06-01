@@ -71,7 +71,7 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
     this.els.actionBtn?.addEventListener('button-click', () => this.toggle());
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case 'data-heading':  this.#syncHeading(); break;
       case 'data-expanded': this.#syncToggleIcon(); break;

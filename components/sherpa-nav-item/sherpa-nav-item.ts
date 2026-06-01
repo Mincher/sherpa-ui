@@ -50,7 +50,7 @@ export class SherpaNavItem extends SherpaElement {
     this.#syncDescription();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === 'data-type') {
       this.renderTemplate(this.templateId).then(() => {
         this.#syncIcon();

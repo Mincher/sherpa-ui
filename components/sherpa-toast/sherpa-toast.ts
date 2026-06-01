@@ -89,7 +89,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     this.#syncStatusIcon();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case 'data-label':
         this.#syncHeading();

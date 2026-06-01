@@ -31,7 +31,7 @@ class SherpaProposalPreview extends SherpaElement {
     this.#syncRationale();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === "data-rationale") this.#syncRationale();
   }
 

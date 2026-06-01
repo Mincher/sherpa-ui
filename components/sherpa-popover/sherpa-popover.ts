@@ -89,7 +89,7 @@ class SherpaPopover extends SherpaElement {
     this.#teardownOutsideClick();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case "data-heading":
         this.#syncHeading();

@@ -146,7 +146,7 @@ class SherpaPanel extends SherpaElement {
     this.#clearHighlights();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case "data-heading":
         this.#syncHeading();

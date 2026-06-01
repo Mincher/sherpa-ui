@@ -180,7 +180,7 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
-  onAttributeChanged(name, _oldValue, newValue) {
+  override onAttributeChanged(name, _oldValue, newValue) {
     if (name === "data-active-target" && this.#ready) {
       if (newValue) {
         this.setActiveLink(newValue);

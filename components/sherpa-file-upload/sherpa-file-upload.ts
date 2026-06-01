@@ -120,7 +120,7 @@ class SherpaFileUpload extends SherpaElement {
     this.#syncFileInput();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case "data-label":
         this.#syncLabel();

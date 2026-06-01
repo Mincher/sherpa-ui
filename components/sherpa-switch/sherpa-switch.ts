@@ -46,7 +46,7 @@ export class SherpaSwitch extends SherpaElement {
     this.#updateDisplay();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === 'data-state') {
       this.#updateDisplay();
     }

@@ -73,7 +73,7 @@ export class SherpaSparkline extends SherpaElement {
     });
   }
 
-  onAttributeChanged(name, _oldValue, _newValue) {
+  override onAttributeChanged(name, _oldValue, _newValue) {
     if (name === 'data-values') this.#updateFromAttribute();
   }
 

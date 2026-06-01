@@ -59,7 +59,7 @@ export class SherpaMenuItem extends SherpaElement {
     this.#sync();
   }
 
-  onAttributeChanged(name, old) {
+  override onAttributeChanged(name, old) {
     if (name === 'data-type') {
       this.renderTemplate(this.templateId);
       return;

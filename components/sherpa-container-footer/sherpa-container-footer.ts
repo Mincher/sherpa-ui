@@ -73,7 +73,7 @@ export class SherpaContainerFooter extends SherpaElement {
     this.#syncRadio();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case "data-cancel-label":
       case "data-apply-label":

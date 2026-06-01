@@ -83,7 +83,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     return this.dataset.visible !== "false";
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name, oldValue, newValue) {
     if (oldValue === newValue) return;
 
     switch (name) {

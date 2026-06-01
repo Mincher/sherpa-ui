@@ -120,7 +120,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.#filterMenuTpl = null;
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'data-title') this.#syncTitle();

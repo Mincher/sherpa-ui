@@ -53,7 +53,7 @@ export class SherpaContainerHeader extends SherpaElement {
     this.#syncDescription();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === "data-title") this.#syncTitle();
     if (name === "data-description") this.#syncDescription();
   }

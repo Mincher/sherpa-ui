@@ -88,7 +88,7 @@ class SherpaProductBarV2 extends SherpaElement {
     }
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case "data-product-name":
         this.#syncName();

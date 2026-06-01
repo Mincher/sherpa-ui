@@ -51,7 +51,7 @@ export class SherpaProgressTracker extends SherpaElement {
     this.#syncPercentage();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case 'data-heading':    this.#syncHeading(); break;
       case 'data-percentage': this.#syncPercentage(); break;

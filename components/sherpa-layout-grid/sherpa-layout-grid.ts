@@ -61,7 +61,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     this.#syncHeader();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === "data-row-height") {
       this.#syncRowHeight();
     }

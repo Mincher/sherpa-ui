@@ -50,7 +50,7 @@ class SherpaProductBar extends SherpaElement {
     this.#syncSlotState();
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     switch (name) {
       case "data-product-name":
         this.#syncName();

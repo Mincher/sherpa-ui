@@ -91,7 +91,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     this.addEventListener('click',   this.#onClick);
   }
 
-  onAttributeChanged(name) {
+  override onAttributeChanged(name) {
     if (name === 'data-interactive' || name === 'data-selectable') {
       this.#updateInteractive();
       this.#syncAria();

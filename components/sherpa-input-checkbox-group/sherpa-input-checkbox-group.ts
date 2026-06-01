@@ -90,7 +90,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
     this.#syncDisabled();
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name, oldValue, newValue) {
     super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
       case 'data-label':       this.#syncLegend(); break;

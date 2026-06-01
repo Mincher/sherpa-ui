@@ -364,7 +364,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     CSS.highlights?.delete("data-grid-col-search");
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === "data-src-json") {

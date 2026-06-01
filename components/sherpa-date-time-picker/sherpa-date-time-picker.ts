@@ -110,7 +110,7 @@ export class SherpaDateTimePicker extends SherpaElement {
     this.#wireEvents();
   }
 
-  onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name, oldValue, newValue) {
     super.onAttributeChanged(name, oldValue, newValue);
     if (oldValue === newValue) return;
 
