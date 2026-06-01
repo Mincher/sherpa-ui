@@ -31,7 +31,19 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputRadioDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  status?: string;
+}
+
 export class SherpaInputRadio extends StatusMixin(SherpaElement) {
+
+  override get dataset(): SherpaInputRadioDataset {
+    return super.dataset as SherpaInputRadioDataset;
+  }
 
   #bound = false;
 

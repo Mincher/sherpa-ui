@@ -31,6 +31,15 @@ import {
   renderCalendarGrid,
 } from '../utilities/calendar-helper.js';
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputDateDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: 'horizontal' | 'vertical';
+}
+
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Returns true when `iso` is a real calendar date in YYYY-MM-DD form. */
@@ -43,6 +52,10 @@ function isValidIso(iso) {
 }
 
 export class SherpaInputDate extends SherpaInputBase {
+
+  override get dataset(): SherpaInputDateDataset {
+    return super.dataset as SherpaInputDateDataset;
+  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-date.css',  import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-date.html', import.meta.url).href; }

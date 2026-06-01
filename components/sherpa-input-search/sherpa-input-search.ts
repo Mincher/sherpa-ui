@@ -22,7 +22,20 @@ import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-bas
 import type { ChangeEventDetail } from "../utilities/types.js";
 import "../sherpa-button/sherpa-button.js";
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputSearchDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: 'horizontal' | 'vertical';
+}
+
 export class SherpaInputSearch extends SherpaInputBase {
+
+  override get dataset(): SherpaInputSearchDataset {
+    return super.dataset as SherpaInputSearchDataset;
+  }
   static override get cssUrl(): string {
     return new URL("./sherpa-input-search.css", import.meta.url).href;
   }

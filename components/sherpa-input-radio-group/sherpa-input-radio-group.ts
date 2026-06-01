@@ -32,9 +32,25 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
 import '../sherpa-input-radio/sherpa-input-radio.js';
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputRadioGroupDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  orientation?: 'horizontal' | 'vertical';
+  options?: string;
+  value?: string;
+  status?: string;
+}
+
 let _gid = 0;
 
 export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
+
+  override get dataset(): SherpaInputRadioGroupDataset {
+    return super.dataset as SherpaInputRadioGroupDataset;
+  }
 
   #bound = false;
 

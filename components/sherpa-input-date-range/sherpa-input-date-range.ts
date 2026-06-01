@@ -33,7 +33,22 @@ import {
   renderCalendarGrid,
 } from "../utilities/calendar-helper.js";
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputDateRangeDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: 'horizontal' | 'vertical';
+  valueStart?: string;
+  valueEnd?: string;
+}
+
 export class SherpaInputDateRange extends SherpaInputBase {
+
+  override get dataset(): SherpaInputDateRangeDataset {
+    return super.dataset as SherpaInputDateRangeDataset;
+  }
   static override get cssUrl(): string {
     return new URL("sherpa-input-date-range.css", import.meta.url).href;
   }

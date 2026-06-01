@@ -26,7 +26,20 @@
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputTimeDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: 'horizontal' | 'vertical';
+}
+
 export class SherpaInputTime extends SherpaInputBase {
+
+  override get dataset(): SherpaInputTimeDataset {
+    return super.dataset as SherpaInputTimeDataset;
+  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-time.css',  import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-time.html', import.meta.url).href; }

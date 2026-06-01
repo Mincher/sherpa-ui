@@ -39,7 +39,24 @@
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaInputTagDataset extends DOMStringMap {
+  label?: string;
+  description?: string;
+  helper?: string;
+  layout?: 'horizontal' | 'vertical';
+  value?: string;
+  separator?: string;
+  allowDuplicates?: string;
+  maxTags?: string;
+}
+
 export class SherpaInputTag extends SherpaInputBase {
+
+  override get dataset(): SherpaInputTagDataset {
+    return super.dataset as SherpaInputTagDataset;
+  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-tag.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-tag.html', import.meta.url).href; }
