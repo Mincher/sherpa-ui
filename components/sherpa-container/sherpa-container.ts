@@ -49,6 +49,19 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { ResizeBehavior } from "../utilities/resize-behavior.js";
 
+/** Active resize-grip drag gesture state. */
+interface ResizeState {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startW: number;
+  startH: number;
+  colUnit: number;
+  rowUnit: number;
+  lastCol: number;
+  lastRow: number;
+}
+
 export class SherpaContainer extends ResizeBehavior(SherpaElement) {
   static override get htmlUrl(): string {
     return new URL("./sherpa-container.html", import.meta.url).href;
@@ -148,8 +161,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
   }
 
   #syncFooterSelected() {
-    const footer = this.querySelector('sherpa-container-footer[data-type="card-select"]');
-    // @ts-expect-error - TODO: Fix type
+    const footer = this.querySelector<HTMLElement>('sherpa-container-footer[data-type="card-select"]');
     if (footer) footer.dataset["selected"] = this.selected ? 'true' : 'false';
   }
 
@@ -186,10 +198,10 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
   static #COL_STOPS = [3, 6, 9, 12];
   static #MIN_ROW = 1;
   static #MAX_ROW = 6;
-  #resizeState = null;
+  #resizeState: ResizeState | null = null;
 
   #initResizeGrip() {
-    const grip = this.$('.resize-grip');
+    const grip = this.$<HTMLElement>('.resize-grip');
     if (!grip) return;
     grip.addEventListener('pointerdown', this.#onGripPointerDown);
     grip.addEventListener('pointermove', this.#onGripPointerMove);
@@ -197,29 +209,22 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     grip.addEventListener('pointercancel', this.#onGripPointerEnd);
   }
 
-  #onGripPointerDown = (e: Event) => {
+  #onGripPointerDown = (e: PointerEvent) => {
     if (this.disabled) return;
-    // @ts-expect-error - TODO: Fix type
     if (e.button !== 0) return;
-    const grip = e.currentTarget;
+    const grip = e.currentTarget as HTMLElement;
     e.preventDefault();
     e.stopPropagation();
-    // @ts-expect-error - TODO: Fix type
     grip.setPointerCapture(e.pointerId);
     const rect = this.getBoundingClientRect();
     const startCol = this.#currentColSpan();
     const startRow = this.#currentRowSpan();
-    // @ts-expect-error - TODO: Fix type
     this.#resizeState = {
-      // @ts-expect-error - TODO: Fix type
       pointerId: e.pointerId,
-      // @ts-expect-error - TODO: Fix type
       startX: e.clientX,
-      // @ts-expect-error - TODO: Fix type
       startY: e.clientY,
       startW: rect.width,
       startH: rect.height,
-      // @ts-expect-error - TODO: Fix type
       colUnit: rect.width  / Math.max(1, startCol),
       rowUnit: rect.height / Math.max(1, startRow),
       lastCol: startCol,
@@ -227,67 +232,52 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     };
   };
 
-  #onGripPointerMove = (e: Event) => {
+  #onGripPointerMove = (e: PointerEvent) => {
     const s = this.#resizeState;
-    // @ts-expect-error - TODO: Fix type
     if (!s || e.pointerId !== s.pointerId) return;
-    // @ts-expect-error - TODO: Fix type
     const dx = e.clientX - s.startX;
-    // @ts-expect-error - TODO: Fix type
     const dy = e.clientY - s.startY;
-    // @ts-expect-error - TODO: Fix type
     const targetCol = (s.startW + dx) / s.colUnit;
-    // @ts-expect-error - TODO: Fix type
     const targetRow = (s.startH + dy) / s.rowUnit;
     const nextCol = SherpaContainer.#nearestColStop(targetCol);
     const nextRow = Math.max(
       SherpaContainer.#MIN_ROW,
       Math.min(SherpaContainer.#MAX_ROW, Math.round(targetRow)),
     );
-    // @ts-expect-error - TODO: Fix type
     if (nextCol !== s.lastCol) {
       this.dataset["colSpan"] = String(nextCol);
-      // @ts-expect-error - TODO: Fix type
       s.lastCol = nextCol;
     }
-    // @ts-expect-error - TODO: Fix type
     if (nextRow !== s.lastRow) {
       this.dataset["rowSpan"] = String(nextRow);
-      // @ts-expect-error - TODO: Fix type
       s.lastRow = nextRow;
     }
   };
 
-  #onGripPointerEnd = (e: Event) => {
+  #onGripPointerEnd = (e: PointerEvent) => {
     const s = this.#resizeState;
-    // @ts-expect-error - TODO: Fix type
     if (!s || e.pointerId !== s.pointerId) return;
-    const grip = e.currentTarget;
-    // @ts-expect-error - TODO: Fix type
+    const grip = e.currentTarget as HTMLElement;
     if (grip.hasPointerCapture(e.pointerId)) grip.releasePointerCapture(e.pointerId);
     this.#resizeState = null;
   };
 
   #currentColSpan() {
-    // @ts-expect-error - TODO: Fix type
-    const v = parseInt(this.dataset["colSpan"], 10);
-    return Number.isFinite(v) ? v : SherpaContainer.#COL_STOPS[0];
+    const v = parseInt(this.dataset["colSpan"] || "", 10);
+    return Number.isFinite(v) ? v : SherpaContainer.#COL_STOPS[0]!;
   }
   #currentRowSpan() {
-    // @ts-expect-error - TODO: Fix type
-    const v = parseInt(this.dataset["rowSpan"], 10);
+    const v = parseInt(this.dataset["rowSpan"] || "", 10);
     return Number.isFinite(v) ? v : 1;
   }
-  // @ts-expect-error - TODO: Fix type
-  static #nearestColStop(value) {
+  static #nearestColStop(value: number): number {
     const stops = SherpaContainer.#COL_STOPS;
-    let best = stops[0];
-    // @ts-expect-error - TODO: Fix type
-    let bestDist = Math.abs(value - stops[0]);
+    let best = stops[0]!;
+    let bestDist = Math.abs(value - best);
     for (let i = 1; i < stops.length; i++) {
-      // @ts-expect-error - TODO: Fix type
-      const d = Math.abs(value - stops[i]);
-      if (d < bestDist) { best = stops[i]; bestDist = d; }
+      const stop = stops[i]!;
+      const d = Math.abs(value - stop);
+      if (d < bestDist) { best = stop; bestDist = d; }
     }
     return best;
   }
