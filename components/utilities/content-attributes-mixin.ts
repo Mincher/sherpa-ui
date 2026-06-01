@@ -29,11 +29,48 @@ import {
   applySort,
   buildColumns,
   computeMetricSummary,
+  type FilterSpec,
 } from "./aggregate.js";
+import type { SherpaElement } from "./sherpa-element/sherpa-element.js";
+
+/* ── Host-surface helper types ──────────────────────────────────── *
+ * The mixin queries an embedded <sherpa-filter-bar> and view-menu
+ * button. These minimal structural types capture just the members the
+ * mixin touches, avoiding a hard dependency on those component classes.
+ */
+
+interface FilterChipLike extends HTMLElement {}
+
+interface FilterBarLike extends HTMLElement {
+  segmentChip?: FilterChipLike | null;
+  sortChip?: FilterChipLike | null;
+}
+
+interface ViewMenuButtonLike extends HTMLElement {
+  rendered?: Promise<void>;
+  setMenuItems?(items: unknown[], options?: unknown): void;
+}
+
+/** A dataset field descriptor as delivered on the `dataset-filtered` event. */
+interface DatasetField {
+  name: string;
+  label?: string;
+  type?: string;
+}
+
+/** A view-switcher menu option (table / metric / chart). */
+interface ViewOption {
+  type: string;
+  label: string;
+  icon: string;
+  active: boolean;
+  disabled?: boolean;
+  disabledTitle?: string;
+}
 
 /* ── Pluggable providers ────────────────────────────────────────── */
 
-type DateFieldProvider = (() => string | null) | null;
+type DateFieldProvider = ((datasetName?: string) => string | null) | null;
 
 let _dateFieldProvider: DateFieldProvider = null;
 
@@ -247,31 +284,81 @@ function normalizeMeasures(config: any): any[] {
  * Usage:
  *   class SherpaMetric extends ContentAttributesMixin(SherpaElement) { ... }
  */
-export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
+export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
   Base: T
 ): Constructor<ContentAttributesMixinInterface> & T {
-  const cls: any = class extends Base {
+  class CAMClass extends Base {
+    /* ── Members installed dynamically by the ATTR_SCHEMA loop below;
+     *    declared here so the type system knows they exist. ───────── */
+    declare name: string;
+    declare datasetName: string;
+    declare category: string | null;
+    declare series: string | null;
+    declare valueField: string;
+    declare agg: string;
+    declare measures: any[];
+    declare orderBy: any[];
+    declare segmentField: string | null;
+    declare dateGroupBy: string | null;
+    declare showStatus: boolean;
+    declare unit: string;
+    declare sortField: string | null;
+    declare sortDirection: string;
+    declare limit: number | null;
+    declare filters: FilterSpec[];
+    declare visible: boolean;
+    declare showHeader: boolean;
+    declare showHeaderControls: boolean;
+    declare showViewMenu: boolean;
+    declare presentationType: string | null;
+    declare fields: any[] | null;
+
+    declare setName: (v: any) => this;
+    declare setDatasetName: (v: any) => this;
+    declare setCategory: (v: any) => this;
+    declare setSeries: (v: any) => this;
+    declare setValueField: (v: any) => this;
+    declare setAgg: (v: any) => this;
+    declare setMeasures: (v: any) => this;
+    declare setOrderBy: (v: any) => this;
+    declare setSegmentField: (v: any) => this;
+    declare setDateGroupBy: (v: any) => this;
+    declare setShowStatus: (v: any) => this;
+    declare setUnit: (v: any) => this;
+    declare setSortField: (v: any) => this;
+    declare setSortDirection: (v: any) => this;
+    declare setLimit: (v: any) => this;
+    declare setFilters: (v: any) => this;
+    declare setVisible: (v: any) => this;
+    declare setShowHeader: (v: any) => this;
+    declare setShowHeaderControls: (v: any) => this;
+    declare setShowViewMenu: (v: any) => this;
+    declare setPresentationType: (v: any) => this;
+    declare setFields: (v: any) => this;
+
+    /* ── Host-component contract (implemented by the concrete element) ── */
+    declare setData: (data: any) => void;
+    declare getData?: () => any;
+
+    /** Guard flag honoured by chart subclasses' onAttributeChanged. */
+    _suppressAttrReaction = false;
+
     /* ── Legacy accessors ───────────────────────────────────── */
 
-    get factTable() {
+    get factTable(): null {
       return null;
     }
-    get dimensions() {
-      // @ts-expect-error - TODO: Fix type
-      return [this.category, this.series].filter(Boolean);
+    get dimensions(): string[] {
+      return [this.category, this.series].filter((v): v is string => Boolean(v));
     }
-    getDataset() {
-      // @ts-expect-error - TODO: Fix type
+    getDataset(): string {
       return this.datasetName;
     }
-    setFactTable() {
+    setFactTable(): this {
       return this;
     }
-    // @ts-expect-error - TODO: Fix type
-    setDimensions(dims) {
-      // @ts-expect-error - TODO: Fix type
+    setDimensions(dims: any[]): this {
       if (Array.isArray(dims) && dims.length > 0) this.setCategory(dims[0]);
-      // @ts-expect-error - TODO: Fix type
       if (Array.isArray(dims) && dims.length > 1) this.setSeries(dims[1]);
       return this;
     }
@@ -279,36 +366,30 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
 
     /* ── Config serialisation ───────────────────────────────── */
 
-    getConfig() {
-      const config = {};
+    getConfig(): Record<string, any> {
+      const self = this as Record<string, any>;
+      const config: Record<string, any> = {};
       for (const [prop] of Object.entries(ATTR_SCHEMA)) {
-        // @ts-expect-error - TODO: Fix type
-        config[prop] = this[prop];
+        config[prop] = self[prop];
       }
       // Aliases for backward compat
-      // @ts-expect-error - TODO: Fix type
-      config.dataset = config.datasetName;
-      // @ts-expect-error - TODO: Fix type
-      config.value = config.valueField;
-      // @ts-expect-error - TODO: Fix type
-      config.timerange = this.getAttribute("data-timerange");
+      config["dataset"] = config["datasetName"];
+      config["value"] = config["valueField"];
+      config["timerange"] = this.getAttribute("data-timerange");
       return config;
     }
 
-    // @ts-expect-error - TODO: Fix type
-    setConfig(config) {
-      // @ts-expect-error - TODO: Fix type
-      for (const [prop, [attr, type]] of Object.entries(ATTR_SCHEMA)) {
+    setConfig(config: Record<string, any>): this {
+      const self = this as Record<string, any>;
+      for (const [prop] of Object.entries(ATTR_SCHEMA)) {
         const val =
           config[prop] ??
-          (prop === "datasetName" ? config.dataset : undefined) ??
-          (prop === "valueField" ? config.value : undefined);
+          (prop === "datasetName" ? config["dataset"] : undefined) ??
+          (prop === "valueField" ? config["value"] : undefined);
         if (val !== undefined) {
           const setter = `set${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
-          // @ts-expect-error - TODO: Fix type
-          if (typeof this[setter] === "function") {
-            // @ts-expect-error - TODO: Fix type
-            this[setter](val);
+          if (typeof self[setter] === "function") {
+            self[setter](val);
           }
         }
       }
@@ -317,30 +398,25 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
 
     /* ── Dataset Cascade ────────────────────────────────────── */
 
-    #records = null;
-    #fields = [];
-    #datasetAncestor = null;
-    #datasetFilteredHandler = null;
+    #records: Record<string, unknown>[] | null = null;
+    #fields: DatasetField[] = [];
+    #datasetAncestor: HTMLElement | null = null;
+    #datasetFilteredHandler: ((e: Event) => void) | null = null;
 
     /**
      * Aggregate raw records using host attribute config and call setData().
      * This is the single path from records → rendered component.
      */
     #aggregate() {
-      // @ts-expect-error - TODO: Fix type
       if (!this.#records || typeof this.setData !== "function") return;
 
-      // @ts-expect-error - TODO: Fix type
       const isMetric = this.presentationType === "kpi-metric" ||
         this.tagName.toLowerCase() === "sherpa-metric";
-      // @ts-expect-error - TODO: Fix type
       const isGrid = this.presentationType === "data-grid" ||
         this.tagName.toLowerCase() === "sherpa-data-grid" ||
-        // @ts-expect-error - TODO: Fix type
         Array.isArray(this.fields);
 
       // Apply component-level preset filters (e.g. metrics with data-filters)
-      // @ts-expect-error - TODO: Fix type
       const presetFilters = this.filters;
       const records = presetFilters.length
         ? applyLocalFilters(this.#records, presetFilters)
@@ -352,23 +428,16 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
     }
 
     /** Data Grid: pass raw records (grid does its own filter/sort/group) */
-    // @ts-expect-error - TODO: Fix type
-    #aggregateGrid(records, presetFilters) {
-      // @ts-expect-error - TODO: Fix type
+    #aggregateGrid(records: Record<string, unknown>[], presetFilters: FilterSpec[]) {
       const fieldNames = Array.isArray(this.fields) && this.fields.length
-        // @ts-expect-error - TODO: Fix type
         ? this.fields
-        // @ts-expect-error - TODO: Fix type
         : this.#fields.map((f) => f.name);
       const columns = buildColumns(this.#fields, fieldNames);
 
       let rows = [...records];
-      // @ts-expect-error - TODO: Fix type
       if (this.orderBy?.length) rows = applySort(rows, this.orderBy);
-      // @ts-expect-error - TODO: Fix type
       if (this.limit && rows.length > this.limit) rows = rows.slice(0, this.limit);
 
-      // @ts-expect-error - TODO: Fix type
       const displayName = this.name || formatFieldName(this.datasetName || '');
       // When the user has toggled segmentation off via the filter bar,
       // data-segment-mode is "off" but data-segment-field is preserved so
@@ -378,56 +447,43 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       const segmentMode = this.getAttribute("data-segment-mode");
       const segmentField = segmentMode === "off"
         ? null
-        // @ts-expect-error - TODO: Fix type
         : this.segmentField || null;
-      // @ts-expect-error - TODO: Fix type
       this.setData({
         _fromCascade: true,
         name: displayName,
         columns,
-        // @ts-expect-error - TODO: Fix type
         allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
         rows,
         segmentBy: segmentField,
         summary: null,
-        // @ts-expect-error - TODO: Fix type
         config: { unit: null, showStatus: false, presentationType: this.presentationType || 'data-grid' },
         metadata: {
-          // @ts-expect-error - TODO: Fix type
           dataset: this.datasetName,
-          // @ts-expect-error - TODO: Fix type
           category: this.category || null,
           segmentBy: segmentField,
           measures: [],
           dimensions: [],
           recordCount: records.length,
           timeRange: null,
-          // @ts-expect-error - TODO: Fix type
           orderBy: this.orderBy || [],
-          // @ts-expect-error - TODO: Fix type
           limit: this.limit || null,
           filters: presetFilters,
-          // @ts-expect-error - TODO: Fix type
           fields: Array.isArray(this.fields) ? this.fields : undefined,
         },
       });
     }
 
     /** Metric: count records, compute sparkline */
-    // @ts-expect-error - TODO: Fix type
-    #aggregateMetric(records, presetFilters) {
+    #aggregateMetric(records: Record<string, unknown>[], presetFilters: FilterSpec[]) {
       let dateField = _dateFieldProvider
-        // @ts-expect-error - TODO: Fix type
         ? _dateFieldProvider(this.datasetName)
         : null;
 
       // Auto-detect date field from metadata when no provider is registered.
       if (!dateField && this.#fields.length) {
         const dateFm = this.#fields.find(
-          // @ts-expect-error - TODO: Fix type
           (f) => f.type === 'date' || f.type === 'datetime',
         );
-        // @ts-expect-error - TODO: Fix type
         if (dateFm) dateField = dateFm.name;
       }
 
@@ -446,32 +502,23 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
         : presetFilters;
 
       const summary = computeMetricSummary(records, measures, dateField, resolvedFilters);
-      // @ts-expect-error - TODO: Fix type
       const displayName = this.name || formatFieldName(this.datasetName || '');
-      // @ts-expect-error - TODO: Fix type
-      let unit = this.unit || null;
+      let unit: string | null = this.unit || null;
       if (!unit && measures.length) {
-        // @ts-expect-error - TODO: Fix type
         const fm = this.#fields.find((f) => f.name === measures[0].field);
-        // @ts-expect-error - TODO: Fix type
         if (fm?.type === 'currency') unit = getCurrencyCode();
-        // @ts-expect-error - TODO: Fix type
         else if (fm?.type === 'percent') unit = '%';
       }
 
-      // @ts-expect-error - TODO: Fix type
       this.setData({
         _fromCascade: true,
         name: displayName,
         columns: [],
-        // @ts-expect-error - TODO: Fix type
         allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
         rows: [],
         summary,
-        // @ts-expect-error - TODO: Fix type
         config: { unit, showStatus: this.showStatus, presentationType: 'kpi-metric' },
         metadata: {
-          // @ts-expect-error - TODO: Fix type
           dataset: this.datasetName,
           measures,
           dimensions: [],
@@ -485,28 +532,22 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
     }
 
     /** Charts: group, aggregate, sort */
-    // @ts-expect-error - TODO: Fix type
-    #aggregateChart(records, presetFilters) {
+    #aggregateChart(records: Record<string, unknown>[], presetFilters: FilterSpec[]) {
       const measures = normalizeMeasures(this);
       if (!measures.length) {
         measures.push({ field: '_count', agg: 'count' });
       }
 
-      const groupByFields = [];
-      // @ts-expect-error - TODO: Fix type
+      const groupByFields: string[] = [];
       if (this.category) groupByFields.push(this.category);
-      // @ts-expect-error - TODO: Fix type
       if (this.series) groupByFields.push(this.series);
 
-      // @ts-expect-error - TODO: Fix type
       const segmentField = this.segmentField;
       if (segmentField && !groupByFields.includes(segmentField)) {
         groupByFields.push(segmentField);
       }
 
-      // @ts-expect-error - TODO: Fix type
       const dateGroupMap = this.dateGroupBy && this.category
-        // @ts-expect-error - TODO: Fix type
         ? { [this.category]: this.dateGroupBy }
         : undefined;
 
@@ -521,23 +562,19 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
         rows = [row];
       }
 
-      // @ts-expect-error - TODO: Fix type
       if (this.orderBy?.length) rows = applySort(rows, this.orderBy);
 
       // Apply limit to unique categories, not raw cross-product rows.
       // When a segment field expands each category into N rows (one per
       // segment value), a flat slice would lose entire categories.
-      // @ts-expect-error - TODO: Fix type
       if (this.limit && rows.length > this.limit) {
-        // @ts-expect-error - TODO: Fix type
         const primaryField = this.category || groupByFields[0];
         if (segmentField && primaryField && primaryField !== segmentField) {
-          const seen = new Set();
-          const kept = [];
+          const seen = new Set<unknown>();
+          const kept: Record<string, unknown>[] = [];
           for (const row of rows) {
             const cat = row[primaryField];
             if (!seen.has(cat)) {
-              // @ts-expect-error - TODO: Fix type
               if (seen.size >= this.limit) break;
               seen.add(cat);
             }
@@ -545,65 +582,48 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
           }
           rows = kept;
         } else {
-          // @ts-expect-error - TODO: Fix type
           rows = rows.slice(0, this.limit);
         }
       }
 
       const visibleFields = [...groupByFields, ...measures.map((m) => m.field)];
       const columns = buildColumns(this.#fields, visibleFields);
-      // @ts-expect-error - TODO: Fix type
       const displayName = this.name || formatFieldName(this.datasetName || '');
 
-      // @ts-expect-error - TODO: Fix type
-      let unit = this.unit || null;
+      let unit: string | null = this.unit || null;
       if (!unit && measures.length) {
-        // @ts-expect-error - TODO: Fix type
         const fm = this.#fields.find((f) => f.name === measures[0].field);
-        // @ts-expect-error - TODO: Fix type
         if (fm?.type === 'currency') unit = getCurrencyCode();
-        // @ts-expect-error - TODO: Fix type
         else if (fm?.type === 'percent') unit = '%';
       }
 
-      // @ts-expect-error - TODO: Fix type
       this.setData({
         _fromCascade: true,
         name: displayName,
         columns,
-        // @ts-expect-error - TODO: Fix type
         allColumns: buildColumns(this.#fields, this.#fields.map((f) => f.name)),
         rows,
         summary: null,
         config: {
           unit,
-          // @ts-expect-error - TODO: Fix type
           showStatus: this.showStatus,
-          // @ts-expect-error - TODO: Fix type
           presentationType: this.presentationType,
         },
         metadata: {
-          // @ts-expect-error - TODO: Fix type
           dataset: this.datasetName,
-          // @ts-expect-error - TODO: Fix type
           category: this.category || null,
-          // @ts-expect-error - TODO: Fix type
           series: this.series || null,
           value: measures[0]?.field || null,
           agg: measures[0]?.agg || 'sum',
           measures,
           dimensions: groupByFields,
           valueField: measures[0]?.field || null,
-          // @ts-expect-error - TODO: Fix type
           categoryField: this.category || null,
-          // @ts-expect-error - TODO: Fix type
           primaryField: this.category || null,
           factTable: null,
           timeRange: null,
-          // @ts-expect-error - TODO: Fix type
           orderBy: this.orderBy || [],
           segmentBy: segmentField || null,
-          // @ts-expect-error - TODO: Fix type
           limit: this.limit || null,
           filters: presetFilters,
           recordCount: records.length,
@@ -614,21 +634,17 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
     /**
      * Handle incoming datasetfiltered event from ancestor.
      */
-    // @ts-expect-error - TODO: Fix type
-    #onDatasetFiltered(e) {
+    #onDatasetFiltered(e: { detail?: { records?: unknown; fields?: unknown } }) {
       const { records, fields } = e.detail || {};
       if (!Array.isArray(records)) return;
 
-      // @ts-expect-error - TODO: Fix type
       this.#records = records;
-      // @ts-expect-error - TODO: Fix type
       this.#fields = Array.isArray(fields) ? fields : [];
 
       // Set the syncing guard BEFORE field sync so the filter bar's
       // MutationObserver doesn't fire containerfilterchange while
       // chips are being populated — that would strip segment attrs.
-      const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
-      // @ts-expect-error - TODO: Fix type
+      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-filter-bar");
       if (bar) bar.dataset["syncing"] = "";
 
       // Sync chip state BEFORE populating menus so that
@@ -650,15 +666,12 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
      * Sync the embedded filter bar's available-fields from dataset fields.
      */
     #syncFilterBarFields() {
-      const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
+      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-filter-bar");
       if (!bar || !this.#fields.length) return;
 
       const fields = this.#fields.map((f) => ({
-        // @ts-expect-error - TODO: Fix type
         field: f.name,
-        // @ts-expect-error - TODO: Fix type
         name: f.label || formatFieldName(f.name),
-        // @ts-expect-error - TODO: Fix type
         type: f.type || "string",
       }));
       bar.setAttribute("data-available-fields", JSON.stringify(fields));
@@ -669,11 +682,11 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
      * the host's current data-segment-field / data-sort-field attributes.
      */
     _syncFilterBarState() {
-      const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
+      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-filter-bar");
       if (!bar) return;
 
       // Build a field→displayName map from column metadata
-      const fieldNames = new Map();
+      const fieldNames = new Map<string, string>();
       try {
         const raw = bar.getAttribute("data-available-fields");
         if (raw) {
@@ -682,18 +695,15 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
           }
         }
       } catch { /* ignore malformed JSON */ }
-      // @ts-expect-error - TODO: Fix type
-      const displayName = (f) => fieldNames.get(f) || formatFieldName(f);
+      const displayName = (f: string) => fieldNames.get(f) || formatFieldName(f);
 
-      // @ts-expect-error - TODO: Fix type
       bar.dataset["syncing"] = "";
 
       // ── Segment chip ──
       // Chips are now in the filter bar's shadow DOM — use the public
       // accessor which falls back to a light DOM query for back-compat.
-      const segChip = bar.querySelector(
+      const segChip = bar.querySelector<FilterChipLike>(
         'sherpa-button[data-behavior="segment"]',
-      // @ts-expect-error - TODO: Fix type
       ) ?? bar.segmentChip;
       if (segChip) {
         // Effective group field: explicit segment override → chart category fallback
@@ -724,14 +734,12 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       // ── Sort chip ──
       // Chips are now in the filter bar's shadow DOM — use the public
       // accessor which falls back to a light DOM query for back-compat.
-      const sortChip = bar.querySelector(
+      const sortChip = bar.querySelector<FilterChipLike>(
         'sherpa-button[data-behavior="sort"]',
-      // @ts-expect-error - TODO: Fix type
       ) ?? bar.sortChip;
       if (sortChip) {
         // Prefer sort type declared on the chip itself; fall back to the
         // filter bar host attribute (used when chip is in shadow DOM).
-        // @ts-expect-error - TODO: Fix type
         const sortType = sortChip.dataset["sortType"] ?? bar.dataset["sortType"];
         const dir = this.getAttribute("data-sort-direction");
 
@@ -741,8 +749,8 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
             : { desc: "Largest first", asc: "Smallest first" };
           if (dir && dir !== "off") {
             sortChip.dataset["mode"] = dir;
-            // @ts-expect-error - TODO: Fix type
-            sortChip.dataset["label"] = labels[dir] || labels.desc;
+            sortChip.dataset["label"] =
+              (labels as Record<string, string>)[dir] || labels.desc;
             sortChip.dataset["iconStart"] =
               dir === "desc" ? "\uf063" : "\uf062";
             sortChip.toggleAttribute("data-active", true);
@@ -779,19 +787,17 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
         }
       }
 
-      // @ts-expect-error - TODO: Fix type
       setTimeout(() => { delete bar.dataset["syncing"]; }, 0);
     }
 
     /* ── View-switching ─────────────────────────────────────── */
 
-    #pendingMenuData = null;
-    _menuButton = null;
+    #pendingMenuData: { showViewMenu: boolean; viewOptions: ViewOption[] } | null = null;
+    _menuButton: ViewMenuButtonLike | null = null;
     _menuBound = false;
     _menuCurrentType = "";
 
-    // @ts-expect-error - TODO: Fix type
-    getViewOptions({ activeType, canShowChart = true }) {
+    getViewOptions({ activeType, canShowChart = true }: { activeType?: string; canShowChart?: boolean }): ViewOption[] {
       return [
         {
           type: "table",
@@ -818,8 +824,7 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       ];
     }
 
-    configureHeader({ title = "", viewOptions = [] } = {}) {
-      // @ts-expect-error - TODO: Fix type
+    configureHeader({ title = "", viewOptions = [] }: { title?: string; viewOptions?: ViewOption[] } = {}) {
       const titleEl = this.$(".header-title");
 
       const showHeader =
@@ -839,20 +844,19 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       if (shouldShowMenu) this.dataset["menuButton"] = "true";
 
       if (shouldShowMenu) {
-        // @ts-expect-error - TODO: Fix type
         this.#pendingMenuData = { showViewMenu, viewOptions };
       } else {
         this.#pendingMenuData = null;
       }
     }
 
-    // @ts-expect-error - TODO: Fix type
-    async wireContentMenu(root, activeType) {
+    async wireContentMenu(root: ViewMenuButtonLike & { $?: (sel: string) => Element | null }, activeType?: string) {
       if (!this.#pendingMenuData) return;
 
-      const menuButton =
+      const menuButton = (
         root.$?.(".menu-button") ||
-        root.querySelector?.(".menu-button");
+        root.querySelector?.(".menu-button")
+      ) as ViewMenuButtonLike | null;
       if (!menuButton?.isConnected) return;
 
       await menuButton.rendered;
@@ -874,11 +878,9 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       }
     }
 
-    // @ts-expect-error - TODO: Fix type
-    #bindContentMenu(menuButton, activeType) {
-      // @ts-expect-error - TODO: Fix type
-      menuButton.addEventListener("menu-select", (event) => {
-        const detail = event.detail ?? {};
+    #bindContentMenu(menuButton: ViewMenuButtonLike, activeType?: string) {
+      menuButton.addEventListener("menu-select", (event: Event) => {
+        const detail = (event as CustomEvent).detail ?? {};
         if (detail.disabled) return;
 
         const type = detail.value;
@@ -887,11 +889,8 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
           type !== (this._menuCurrentType || activeType)
         ) {
           this._menuCurrentType = type;
-          // @ts-expect-error - TODO: Fix type
-          if (Array.isArray(this.#pendingMenuData?.viewOptions)) {
-            // @ts-expect-error - TODO: Fix type
+          if (this.#pendingMenuData && Array.isArray(this.#pendingMenuData.viewOptions)) {
             this.#pendingMenuData.viewOptions =
-              // @ts-expect-error - TODO: Fix type
               this.#pendingMenuData.viewOptions.map((opt) => ({
                 ...opt,
                 active: opt.type === type,
@@ -903,7 +902,6 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
               bubbles: true,
               detail: {
                 type,
-                // @ts-expect-error - TODO: Fix type
                 data: this.getData?.() || null,
               },
             }),
@@ -912,14 +910,11 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       });
     }
 
-    // @ts-expect-error - TODO: Fix type
-    #populateViewMenu(activeType) {
+    #populateViewMenu(activeType: string) {
       const config = this.#pendingMenuData;
-      // @ts-expect-error - TODO: Fix type
       if (!config?.showViewMenu || !config.viewOptions?.length) return;
       if (!this._menuButton) return;
 
-      // @ts-expect-error - TODO: Fix type
       const viewItems = config.viewOptions.map((option) => ({
         value: option?.type ?? "",
         text: option?.label || "",
@@ -929,8 +924,7 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
         description: option?.disabledTitle,
       }));
 
-      // @ts-expect-error - TODO: Fix type
-      this._menuButton.setMenuItems(
+      this._menuButton.setMenuItems?.(
         [{ heading: "View", items: viewItems, group: "view" }],
         { marker: "view" },
       );
@@ -938,17 +932,14 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
 
     /* ── Container filter handling ───────────────────────────── */
 
-    #containerFilterHandler = null;
-    #scopeEl = null;
+    #containerFilterHandler: ((e: Event) => void) | null = null;
+    #scopeEl: HTMLElement | null = null;
 
     #wireFilterListeners() {
-      // @ts-expect-error - TODO: Fix type
       this.#scopeEl = this;
 
-      // @ts-expect-error - TODO: Fix type
-      this.#containerFilterHandler = (e) =>
-        this.#onContainerFilter(e);
-      // @ts-expect-error - TODO: Fix type
+      this.#containerFilterHandler = (e: Event) =>
+        this.#onContainerFilter(e as CustomEvent);
       this.#scopeEl.addEventListener(
         "container-filter-change",
         this.#containerFilterHandler,
@@ -957,7 +948,6 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
 
     #unwireFilterListeners() {
       if (this.#scopeEl && this.#containerFilterHandler) {
-        // @ts-expect-error - TODO: Fix type
         this.#scopeEl.removeEventListener(
           "container-filter-change",
           this.#containerFilterHandler,
@@ -976,11 +966,10 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
      * redundant heavy processing.  The single #aggregate() call at the
      * end is the authoritative render path.
      */
-    // @ts-expect-error - TODO: Fix type
-    #onContainerFilter(e) {
-      const filters = e.detail?.filters || [];
-      let sortFilter = null;
-      let segmentFilter = null;
+    #onContainerFilter(e: CustomEvent) {
+      const filters: FilterSpec[] = e.detail?.filters || [];
+      let sortFilter: FilterSpec | null = null;
+      let segmentFilter: FilterSpec | null = null;
 
       for (const f of filters) {
         if (f.type === "sort") { sortFilter = f; continue; }
@@ -990,7 +979,6 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       // Suppress chart onAttributeChanged reactions while we batch-set
       // multiple attributes. Charts check this flag and skip heavy
       // work; the mixin handles the single authoritative re-aggregate.
-      // @ts-expect-error - TODO: Fix type
       this._suppressAttrReaction = true;
 
       // Sort attrs
@@ -1033,7 +1021,6 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
         this.setAttribute("data-segment-mode", "off");
       }
 
-      // @ts-expect-error - TODO: Fix type
       this._suppressAttrReaction = false;
 
       // Single authoritative re-aggregate + render.
@@ -1043,15 +1030,12 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
 
     /* ── Lifecycle ──────────────────────────────────────────── */
 
-    // @ts-expect-error - TODO: Fix type
-    onAttributeChanged(name, oldValue, newValue) {
-      // @ts-expect-error - TODO: Fix type
-      super.onAttributeChanged?.(name, oldValue, newValue);
+    override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+      super.onAttributeChanged(name, oldValue, newValue);
 
       // Sync the embedded filter bar whenever segment or sort
       // attributes change from outside the mixin's own batch flow.
       if (
-        // @ts-expect-error - TODO: Fix type
         !this._suppressAttrReaction &&
         (name === "data-segment-field" ||
           name === "data-segment-mode" ||
@@ -1062,16 +1046,14 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       }
     }
 
-    onConnect() {
-      // @ts-expect-error - TODO: Fix type
-      super.onConnect?.();
+    override onConnect(): void {
+      super.onConnect();
       this.#wireFilterListeners();
       this.#wireDatasetListener();
     }
 
-    onDisconnect() {
-      // @ts-expect-error - TODO: Fix type
-      super.onDisconnect?.();
+    override onDisconnect(): void {
+      super.onDisconnect();
       this.#unwireFilterListeners();
       this.#unwireDatasetListener();
     }
@@ -1083,42 +1065,38 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
      */
     #wireDatasetListener() {
       // Walk up from host to find nearest [data-dataset] content area
-      let el = this.closest("[data-dataset]");
+      let el: Element | null = this.closest("[data-dataset]");
       if (!el) {
         // Also check outside shadow roots
-        let root = this.getRootNode();
+        let root: Node | null = this.getRootNode();
         while (root && root !== document) {
-          // @ts-expect-error - TODO: Fix type
-          const host = root.host;
+          const host: Element | null = root instanceof ShadowRoot ? root.host : null;
           if (host) {
             el = host.closest("[data-dataset]");
             if (el) break;
           }
-          root = host?.getRootNode();
+          root = host ? host.getRootNode() : null;
         }
       }
       if (!el) return;
 
-      // @ts-expect-error - TODO: Fix type
-      this.#datasetAncestor = el;
-      // @ts-expect-error - TODO: Fix type
-      this.#datasetFilteredHandler = (e) => this.#onDatasetFiltered(e);
-      // @ts-expect-error - TODO: Fix type
+      // The content-area element caches filtered records/fields on itself.
+      const cacheEl = el as Element & { _filtered?: Record<string, unknown>[]; _fields?: DatasetField[] };
+
+      this.#datasetAncestor = el as HTMLElement;
+      this.#datasetFilteredHandler = (e: Event) => this.#onDatasetFiltered(e as CustomEvent);
       el.addEventListener("dataset-filtered", this.#datasetFilteredHandler);
 
       // If dataset is already loaded, use cached data immediately
-      // @ts-expect-error - TODO: Fix type
-      if (el._filtered) {
+      if (cacheEl._filtered) {
         this.#onDatasetFiltered({
-          // @ts-expect-error - TODO: Fix type
-          detail: { records: el._filtered, fields: el._fields || [] },
+          detail: { records: cacheEl._filtered, fields: cacheEl._fields || [] },
         });
       }
     }
 
     #unwireDatasetListener() {
       if (this.#datasetAncestor && this.#datasetFilteredHandler) {
-        // @ts-expect-error - TODO: Fix type
         this.#datasetAncestor.removeEventListener(
           "dataset-filtered",
           this.#datasetFilteredHandler,
@@ -1139,20 +1117,20 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
 
   /* ── Auto-generate getters and setters from ATTR_SCHEMA ─────── */
 
-  for (const [prop, [attr, type, defaultVal]] of Object.entries(
-    ATTR_SCHEMA,
-  )) {
-    Object.defineProperty(cls.prototype, prop, {
-      // @ts-expect-error - TODO: Fix type
+  const proto = CAMClass.prototype as unknown as Record<string, unknown>;
+  for (const [prop, [attr, type, defaultVal]] of Object.entries(ATTR_SCHEMA) as [
+    string,
+    [string, AttrType, AttrDefault],
+  ][]) {
+    Object.defineProperty(CAMClass.prototype, prop, {
       get: makeGetter(attr, type, defaultVal),
       enumerable: true,
       configurable: true,
     });
 
     const setterName = `set${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
-    // @ts-expect-error - TODO: Fix type
-    cls.prototype[setterName] = makeSetter(attr, type);
+    proto[setterName] = makeSetter(attr, type);
   }
 
-  return cls;
+  return CAMClass as unknown as Constructor<ContentAttributesMixinInterface> & T;
 }

@@ -1235,7 +1235,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // @ts-expect-error - TODO: Fix type
     const dataset = this.#data?.metadata?.dataset;
     const dateFieldFn = getDateFieldProvider();
-    // @ts-expect-error - TODO: Fix type
     let dateField = dataset && dateFieldFn ? dateFieldFn(dataset) : null;
 
     const firstRow = this.#allRows[0];
