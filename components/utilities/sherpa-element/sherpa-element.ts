@@ -14,7 +14,7 @@
  *   • `onConnect()` — called once after first render completes
  *   • `onDisconnect()` — called on disconnectedCallback
  *   • `onAttributeChanged(name, oldValue, newValue)`
- *   • `onJsonData(data)` — called after data-src-json is fetched and parsed
+ *   • `onJsonData(data: any)` — called after data-src-json is fetched and parsed
  *
  * Subclass configuration (static getters):
  *   • `static cssUrl`  — URL string for the component CSS file
@@ -370,7 +370,7 @@ export class SherpaElement extends HTMLElement {
   /* ── JSON data loading ───────────────────────────────────────── */
 
   /**
-   * Fetch a JSON file and call `onJsonData(data)` with the parsed result.
+   * Fetch a JSON file and call `onJsonData(data: any)` with the parsed result.
    * Used internally by `data-src-json` attribute handling.
    * @param url
    */

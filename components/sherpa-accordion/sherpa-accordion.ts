@@ -50,7 +50,7 @@ export class SherpaAccordion extends SherpaElement {
     this.#syncDisabled();
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     switch (name) {
       case 'data-label': this.#syncLabel(); break;
       case 'data-icon':  this.#syncIcon(); break;

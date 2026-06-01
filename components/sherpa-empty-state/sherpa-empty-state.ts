@@ -99,7 +99,7 @@ export class SherpaEmptyState extends SherpaElement {
     // Visibility is handled entirely by CSS using data-has-* and data-* selectors.
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     switch (name) {
       case "data-label":
         this.#updateHeading();

@@ -70,7 +70,7 @@ export class SherpaGaugeChart extends SherpaElement {
     this.#syncValue();
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     switch (name) {
       case 'data-title': this.#syncTitle(); break;
       case 'data-value': this.#syncValue(); break;

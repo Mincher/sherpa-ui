@@ -68,7 +68,7 @@ export class SherpaNodeSocket extends SherpaElement {
     this.#syncCount();
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     if (
       name === "data-connection-count" ||
       name === "data-multi" ||

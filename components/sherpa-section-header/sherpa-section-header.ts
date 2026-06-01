@@ -36,7 +36,7 @@ export class SherpaSectionHeader extends SherpaElement {
     this.#syncHeading();
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     if (name === 'data-label') {
       this.#syncHeading();
     }

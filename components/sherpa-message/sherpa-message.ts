@@ -63,7 +63,7 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     });
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     if (name === 'data-label') this.#syncLabel();
     else if (name === 'data-action-label' || name === 'data-action-href' || name === 'data-action-icon') this.#syncAction();
   }

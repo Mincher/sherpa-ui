@@ -68,7 +68,7 @@ export class SherpaNodeHeader extends SherpaElement {
     this.#tagSockets();
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     if (name === "data-icon") this.#syncIcon();
   }
 

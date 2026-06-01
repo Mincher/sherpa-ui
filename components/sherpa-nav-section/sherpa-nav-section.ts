@@ -101,7 +101,7 @@ export class SherpaNavSection extends SherpaElement {
     }
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     switch (name) {
       case "data-heading":
         this.#syncHeading();

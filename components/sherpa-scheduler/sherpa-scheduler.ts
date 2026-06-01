@@ -65,7 +65,7 @@ export class SherpaScheduler extends SherpaElement {
     this.#readFromInputs();
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     if (name === 'data-frequency') {
       this.#value.frequency = this.dataset.frequency || 'weekly';
       this.#readFromInputs();

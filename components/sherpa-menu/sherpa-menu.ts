@@ -112,7 +112,7 @@ export class SherpaMenu extends SherpaElement {
     this.addEventListener("toggle", this.#onToggle);
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     if (name === 'data-loading-text') this.#syncLoadingText();
   }
 

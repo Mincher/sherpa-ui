@@ -55,7 +55,7 @@ export class SherpaList extends SherpaElement {
     this.#syncEmpty();
   }
 
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string) {
     if (name === 'data-heading') this.#syncHeading();
     if (name === 'data-empty')   this.#syncEmpty();
   }
