@@ -39,9 +39,14 @@ export interface StatusMixinInterface {
   statusChanged?(oldValue: Status | null, newValue: Status | null): void;
 }
 
+/** Static members the mixin adds to the class (surfaced for subclass `super` access). */
+export interface StatusMixinStatics {
+  readonly statusIcons: Record<Status, string | null>;
+}
+
 export function StatusMixin<T extends Constructor<HTMLElement>>(
   Base: T,
-): T & Constructor<StatusMixinInterface> {
+): T & Constructor<StatusMixinInterface> & StatusMixinStatics {
   class StatusMixinClass extends Base implements StatusMixinInterface {
     static get observedAttributes(): string[] {
       const baseAttrs = (Base as any).observedAttributes || [];
@@ -84,5 +89,5 @@ export function StatusMixin<T extends Constructor<HTMLElement>>(
     statusChanged?(_oldValue: Status | null, _newValue: Status | null): void;
   }
 
-  return StatusMixinClass as T & Constructor<StatusMixinInterface>;
+  return StatusMixinClass as unknown as T & Constructor<StatusMixinInterface> & StatusMixinStatics;
 }

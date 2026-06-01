@@ -32,6 +32,18 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
 
+/** Options accepted by SherpaToast.show() and the status helpers. */
+interface ToastOptions {
+  status?: string;
+  heading?: string;
+  value?: string;
+  duration?: number;
+  timerDismiss?: boolean;
+  position?: string;
+  actionText?: string | null;
+  actionCallback?: (() => void) | null;
+}
+
 export class SherpaToast extends StatusMixin(SherpaElement) {
 
   /* ── Config ───────────────────────────────────────────────────── */
@@ -44,9 +56,8 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
   }
 
   /** Toast uses circle-xmark for critical instead of circle-exclamation. */
-  static get statusIcons() {
+  static override get statusIcons() {
     return {
-      // @ts-expect-error - TODO: Fix type
       ...super.statusIcons,
       critical: 'fa-solid fa-circle-xmark',
     };
@@ -54,12 +65,12 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   /* ── Static container registry ────────────────────────────────── */
 
-  static #containers = {};
+  static #containers: Record<string, HTMLElement> = {};
 
   /* ── Private state ────────────────────────────────────────────── */
 
-  #timeoutId = null;
-  #actionCallback = null;
+  #timeoutId: ReturnType<typeof setTimeout> | null = null;
+  #actionCallback: (() => void) | null = null;
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
@@ -71,7 +82,6 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     this.$('.toast-close')?.addEventListener('click', () => this.hide());
     this.$('.toast-action')?.addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('action', { bubbles: true, composed: true }));
-      // @ts-expect-error - TODO: Fix type
       if (this.#actionCallback) this.#actionCallback();
     });
   }
@@ -105,18 +115,16 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
   /* ── Public methods ───────────────────────────────────────────── */
 
   show() {
-    const toast = this.$('.toast');
+    const toast = this.$<HTMLElement>('.toast');
     if (toast) {
-      // @ts-expect-error - TODO: Fix type
       toast.dataset["state"] = 'visible';
       this.#startAutoHide();
     }
   }
 
   hide() {
-    const toast = this.$('.toast');
+    const toast = this.$<HTMLElement>('.toast');
     if (!toast) return;
-    // @ts-expect-error - TODO: Fix type
     toast.dataset["state"] = 'hiding';
 
     setTimeout(() => {
@@ -125,8 +133,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     }, 300);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setAction(text, callback) {
+  setAction(text: string, callback: (() => void) | null) {
     this.#actionCallback = callback;
     const btn = this.$('.toast-action');
     if (btn) {
@@ -140,8 +147,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
   #syncStatusIcon() {
     const iconEl = this.$('.default-icon');
     if (!iconEl) return;
-    // @ts-expect-error - TODO: Fix type
-    const iconClass = this.statusIcon || this.constructor.statusIcons.info;
+    const iconClass = this.statusIcon || (this.constructor as typeof SherpaToast).statusIcons["info"];
     iconEl.className = `${iconClass} sherpa-icon default-icon`;
   }
 
@@ -157,11 +163,9 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   #startAutoHide() {
     if (this.dataset["timerDismiss"] !== 'true') return;
-    // @ts-expect-error - TODO: Fix type
-    const duration = parseInt(this.dataset["duration"]) || 5000;
+    const duration = parseInt(this.dataset["duration"] || "") || 5000;
     if (duration <= 0) return;
     if (this.#timeoutId) clearTimeout(this.#timeoutId);
-    // @ts-expect-error - TODO: Fix type
     this.#timeoutId = setTimeout(() => this.hide(), duration);
   }
 
@@ -202,58 +206,43 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     SherpaToast.#stylesInjected = true;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  static #getContainer(position) {
+  static #getContainer(position: string): HTMLElement {
     SherpaToast.#ensureContainerStyles();
-    // @ts-expect-error - TODO: Fix type
     if (!SherpaToast.#containers[position]) {
       const el = document.createElement('div');
       el.className = 'sherpa-toast-container';
       el.dataset["position"] = position;
       document.body.appendChild(el);
-      // @ts-expect-error - TODO: Fix type
       SherpaToast.#containers[position] = el;
     }
-    // @ts-expect-error - TODO: Fix type
-    return SherpaToast.#containers[position];
+    return SherpaToast.#containers[position]!;
   }
 
   /**
    * Create and show a toast programmatically.
-   * @param {Object} options
-   * @returns {SherpaToast}
    */
-  static show(options = {}) {
+  static show(options: ToastOptions = {}): SherpaToast {
     const {
-      // @ts-expect-error - TODO: Fix type
       status = 'info',
-      // @ts-expect-error - TODO: Fix type
       heading = '',
-      // @ts-expect-error - TODO: Fix type
       value = '',
-      // @ts-expect-error - TODO: Fix type
       duration = 5000,
-      // @ts-expect-error - TODO: Fix type
       timerDismiss = false,
-      // @ts-expect-error - TODO: Fix type
       position = 'top-right',
-      // @ts-expect-error - TODO: Fix type
       actionText = null,
-      // @ts-expect-error - TODO: Fix type
       actionCallback = null,
     } = options;
 
-    const toast = document.createElement('sherpa-toast');
+    const toast = document.createElement('sherpa-toast') as SherpaToast;
     toast.dataset["status"] = status;
     if (heading) toast.dataset["label"] = heading;
     if (value) toast.dataset["value"] = value;
-    toast.dataset["duration"] = duration;
+    toast.dataset["duration"] = String(duration);
     toast.dataset["timerDismiss"] = timerDismiss ? 'true' : 'false';
     toast.dataset["position"] = position;
 
     // Defer action setup until rendered
     if (actionText) {
-      // @ts-expect-error - TODO: Fix type
       toast.rendered.then(() => toast.setAction(actionText, actionCallback));
     }
 
@@ -263,14 +252,10 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     return toast;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  static success(value, options = {})  { return SherpaToast.show({ ...options, status: 'success', value }); }
-  // @ts-expect-error - TODO: Fix type
-  static critical(value, options = {}) { return SherpaToast.show({ ...options, status: 'critical', value }); }
-  // @ts-expect-error - TODO: Fix type
-  static warning(value, options = {})  { return SherpaToast.show({ ...options, status: 'warning', value }); }
-  // @ts-expect-error - TODO: Fix type
-  static info(value, options = {})     { return SherpaToast.show({ ...options, status: 'info', value }); }
+  static success(value: string, options: ToastOptions = {})  { return SherpaToast.show({ ...options, status: 'success', value }); }
+  static critical(value: string, options: ToastOptions = {}) { return SherpaToast.show({ ...options, status: 'critical', value }); }
+  static warning(value: string, options: ToastOptions = {})  { return SherpaToast.show({ ...options, status: 'warning', value }); }
+  static info(value: string, options: ToastOptions = {})     { return SherpaToast.show({ ...options, status: 'info', value }); }
 }
 
 customElements.define('sherpa-toast', SherpaToast);
