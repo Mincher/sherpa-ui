@@ -66,14 +66,16 @@ export class SherpaCalendar extends SherpaElement {
   // ── Private state ──────────────────────────────────────────────────
 
   #viewDate = new Date(); // Currently displayed month
-  #daysGridEl = null;
   #dayTpl = null;
   #rangeStart = null; // For range mode: first selected date
+
+  els = this.cacheElements({
+    daysGrid: '.cal-days'
+  });
 
   // ── Lifecycle ──────────────────────────────────────────────────────
 
   override onRender(): void {
-    this.#daysGridEl = this.$('.cal-days');
     this.#dayTpl = this.$('.cal-day-tpl');
 
     // Initialize view date
@@ -95,7 +97,7 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   onAttributeChanged(name, oldValue, newValue) {
-    if (!this.#daysGridEl) return;
+    if (!this.els.daysGrid) return;
 
     if (name === 'data-value' || name === 'data-value-end' || name === 'data-mode') {
       this.#render();
@@ -183,7 +185,7 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   #renderDays() {
-    if (!this.#daysGridEl || !this.#dayTpl) return;
+    if (!this.els.daysGrid || !this.#dayTpl) return;
 
     const mode = this.dataset.mode || 'single';
     const selectedIso = this.dataset.value || null;
@@ -192,7 +194,7 @@ export class SherpaCalendar extends SherpaElement {
     const maxIso = this.dataset.max || null;
 
     renderCalendarGrid(
-      this.#daysGridEl,
+      this.els.daysGrid,
       this.#dayTpl,
       this.#viewDate,
       selectedIso,

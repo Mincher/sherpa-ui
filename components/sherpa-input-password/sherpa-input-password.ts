@@ -36,19 +36,21 @@ export class SherpaInputPassword extends SherpaInputBase {
   static override get cssUrl(): string { return new URL('./sherpa-input-password.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-password.html', import.meta.url).href; }
 
-  #toggleBtnEl = null;
+  els = this.cacheElements({
+    toggleBtn: { selector: '.toggle-visibility', type: HTMLButtonElement }
+  });
+
   #visible = false;
 
-  async onInputRender() {
-    this.#toggleBtnEl = this.$('.toggle-visibility');
+  override async onInputRender() {
   }
 
-  onInputConnect() {
-    this.#toggleBtnEl?.addEventListener('click', this.#onToggle);
+  override onInputConnect() {
+    this.els.toggleBtn?.addEventListener('click', this.#onToggle);
   }
 
   onInputDisconnect() {
-    this.#toggleBtnEl?.removeEventListener('click', this.#onToggle);
+    this.els.toggleBtn?.removeEventListener('click', this.#onToggle);
   }
 
   /* ── Public API ─────────────────────────────────────────────── */
@@ -70,11 +72,11 @@ export class SherpaInputPassword extends SherpaInputBase {
   #updateVisibility() {
     const el = this.getInputElement();
     if (el) el.type = this.#visible ? 'text' : 'password';
-    if (this.#toggleBtnEl) {
-      this.#toggleBtnEl.setAttribute('data-icon-start',
+    if (this.els.toggleBtn) {
+      this.els.toggleBtn.setAttribute('data-icon-start',
         this.#visible ? '\uf070' : '\uf06e'
       );
-      this.#toggleBtnEl.dataset.label = this.#visible ? 'Hide' : 'Show';
+      this.els.toggleBtn.dataset.label = this.#visible ? 'Hide' : 'Show';
     }
   }
 }

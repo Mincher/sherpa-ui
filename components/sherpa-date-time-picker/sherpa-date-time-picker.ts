@@ -61,10 +61,13 @@ export class SherpaDateTimePicker extends SherpaElement {
   #weekdaysEl    = null;
   #dayTpl        = null;
   #hourInputEl   = null;
-  #minuteInputEl = null;
   #hiddenInput   = null;
 
-  /* ── Private state ────────────────────────────────── */
+  els = this.cacheElements({
+    minuteInput: { selector: '.minute-input', type: HTMLInputElement }
+  });
+
+  /* ── Private state ────────────────────────────────────── */
 
   #viewDate     = new Date();   // anchor for current view
   #viewMode     = 'day';        // 'day' | 'month' | 'year'
@@ -84,14 +87,13 @@ export class SherpaDateTimePicker extends SherpaElement {
     this.#nextBtnEl     = this.$('.cal-next');
     this.#dayTpl        = this.$('.cal-day-tpl');
     this.#hourInputEl   = this.$('.hour-input');
-    this.#minuteInputEl = this.$('.minute-input');
     this.#hiddenInput   = this.$('.hidden-input');
 
     // Reach into each sherpa-input-number and switch its inner <input>
     // from type="number" to type="text" so leading zeros (e.g. "05") are
     // preserved visually. Each sherpa-input-number bootstraps its own
     // shadow DOM asynchronously, so wait until the inner input exists.
-    for (const wrap of [this.#hourInputEl, this.#minuteInputEl]) {
+    for (const wrap of [this.#hourInputEl, this.els.minuteInput]) {
       this.#convertToTextInput(wrap);
     }
 
@@ -166,8 +168,8 @@ export class SherpaDateTimePicker extends SherpaElement {
         this.#emitChange();
       }
     });
-    this.#minuteInputEl?.addEventListener('change', () => {
-      const n = parseInt(this.#minuteInputEl.value, 10);
+    this.els.minuteInput?.addEventListener('change', () => {
+      const n = parseInt(this.els.minuteInput.value, 10);
       if (Number.isFinite(n)) {
         this.#minutes = Math.min(59, Math.max(0, n));
         this.#syncSpinners();
@@ -322,7 +324,7 @@ export class SherpaDateTimePicker extends SherpaElement {
     // Always show two digits so the field reads as a time component
     // (e.g. "01", "09") regardless of the underlying numeric value.
     if (this.#hourInputEl)   this.#hourInputEl.value   = String(this.#hours24).padStart(2, '0');
-    if (this.#minuteInputEl) this.#minuteInputEl.value = String(this.#minutes).padStart(2, '0');
+    if (this.els.minuteInput) this.els.minuteInput.value = String(this.#minutes).padStart(2, '0');
   }
 
   /**

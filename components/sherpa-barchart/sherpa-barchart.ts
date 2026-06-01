@@ -78,13 +78,16 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   #menuId = null;
   #originalOrderBy = null;
   #originalSegmentBy = null;
-  #tipEl = null;
   #chartRowTpl = null;
   #segmentTpl = null;
   #axisValueTpl = null;
   #legendItemTpl = null;
   #filterMenuTpl = null;
   #bound = false;
+
+  els = this.cacheElements({
+    tip: 'sherpa-tooltip'
+  });
 
   override onRender(): void {
     // Mark as viz component for container CSS targeting
@@ -95,9 +98,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     if (!this.#menuId) {
       this.#menuId = generateUniqueId("barchart");
     }
-
-    // Tooltip element (nested sherpa-tooltip component)
-    this.#tipEl = this.$("sherpa-tooltip");
 
     // Cache cloning prototypes
     this.#chartRowTpl = this.$("template.chart-row-tpl");
@@ -122,8 +122,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
         "pointerenter",
         (e) => {
           const seg = e.target.closest?.(".chart-segment[data-tooltip]");
-          if (!seg || !this.#tipEl) return;
-          this.#tipEl.showFor(seg, seg.dataset.tooltip);
+          if (!seg || !this.els.tip) return;
+          this.els.tip.showFor(seg, seg.dataset.tooltip);
         },
         true,
       );
@@ -132,7 +132,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
         "pointerleave",
         (e) => {
           if (e.target.matches?.(".chart-segment")) {
-            this.#tipEl?.hide();
+            this.els.tip?.hide();
           }
         },
         true,
