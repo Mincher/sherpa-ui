@@ -111,7 +111,7 @@ export class SherpaStepper extends SherpaElement {
    * to prevent a double fetch.
    * @param {{ steps: object[] }} data
    */
-  onJsonData(data) {
+  override onJsonData(data) {
     const current = this.dataset.srcJson;
     if (current && current === this.#srcLoaded) {
       this.#srcLoaded = ""; // Reset so future attribute changes are processed

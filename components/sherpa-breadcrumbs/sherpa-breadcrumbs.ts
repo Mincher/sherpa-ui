@@ -34,7 +34,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
     this.shadowRoot.addEventListener('click', this.#onClick);
   }
 
-  onJsonData(items) {
+  override onJsonData(items) {
     if (Array.isArray(items)) this.#syncItems(items);
   }
 

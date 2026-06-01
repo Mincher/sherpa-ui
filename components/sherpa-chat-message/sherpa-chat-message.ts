@@ -51,8 +51,8 @@ class SherpaChatMessage extends SherpaElement {
 
   /* ── public API ──────────────────────────────────────────── */
 
-  get role()  { return this.dataset.role || "ai"; }
-  set role(v) { this.dataset.role = v === "user" ? "user" : "ai"; }
+  override get role()  { return this.dataset.role || "ai"; }
+  override set role(v) { this.dataset.role = v === "user" ? "user" : "ai"; }
 }
 
 customElements.define("sherpa-chat-message", SherpaChatMessage);

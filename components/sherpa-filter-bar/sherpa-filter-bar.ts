@@ -358,7 +358,7 @@ export class SherpaFilterBar extends SherpaElement {
    *
    * @param {object} data
    */
-  onJsonData(data) {
+  override onJsonData(data) {
     if (Array.isArray(data?.fields)) {
       this.setAttribute("data-available-fields", JSON.stringify(data.fields));
     }

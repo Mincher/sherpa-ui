@@ -57,7 +57,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     return [...super.observedAttributes, 'data-template', 'data-tree'];
   }
 
-  get templateId() {
+  override get templateId() {
     return this.dataset.template === 'tree' ? 'tree' : 'default';
   }
 
