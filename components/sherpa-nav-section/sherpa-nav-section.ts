@@ -74,33 +74,29 @@ export class SherpaNavSection extends SherpaElement {
   /** @type {Array<{label: string, items: Array<object>}>} */
   #sections = [];
 
-  /** @type {HTMLElement|null} */ #headingEl = null;
-  /** @type {HTMLButtonElement|null} */ #backEl = null;
-  /** @type {HTMLElement|null} */ #sectionsEl = null;
-  /** @type {HTMLTemplateElement|null} */ #groupTpl = null;
-  /** @type {HTMLTemplateElement|null} */ #headerItemTpl = null;
-  /** @type {HTMLTemplateElement|null} */ #itemTpl = null;
+  els = this.cacheElements({
+    heading: '.heading',
+    back: { selector: '.back', type: HTMLButtonElement },
+    sections: '.sections',
+    groupTpl: { selector: 'template.group-tpl', type: HTMLTemplateElement },
+    headerItemTpl: { selector: 'template.header-item-tpl', type: HTMLTemplateElement },
+    itemTpl: { selector: 'template.item-tpl', type: HTMLTemplateElement }
+  });
+
   #bound = false;
 
   /* ── lifecycle ───────────────────────── */
 
   override onRender(): void {
-    this.#headingEl = this.$(".heading");
-    this.#backEl = this.$(".back");
-    this.#sectionsEl = this.$(".sections");
-    this.#groupTpl = this.$("template.group-tpl");
-    this.#headerItemTpl = this.$("template.header-item-tpl");
-    this.#itemTpl = this.$("template.item-tpl");
-
     this.#syncHeading();
     this.#syncBack();
     this.#syncFromAttribute();
     this.#renderSections();
 
     if (!this.#bound) {
-      this.#backEl?.addEventListener("click", this.#onBack);
-      this.#sectionsEl?.addEventListener("click", this.#onClick);
-      this.#sectionsEl?.addEventListener("keydown", this.#onKeyDown);
+      this.els.back?.addEventListener("click", this.#onBack);
+      this.els.sections?.addEventListener("click", this.#onClick);
+      this.els.sections?.addEventListener("keydown", this.#onKeyDown);
       this.#bound = true;
     }
   }
@@ -148,8 +144,8 @@ export class SherpaNavSection extends SherpaElement {
   /* ── internal: rendering ─────────────────────────────────── */
 
   #syncHeading() {
-    if (this.#headingEl) {
-      this.#headingEl.textContent = this.dataset.heading || "";
+    if (this.els.heading) {
+      this.els.heading.textContent = this.dataset.heading || "";
     }
   }
 
@@ -171,14 +167,14 @@ export class SherpaNavSection extends SherpaElement {
   }
 
   #renderSections() {
-    if (!this.#sectionsEl) return;
+    if (!this.els.sections) return;
     const activeId = this.getAttribute("data-active-id");
     const groups = this.#sections.map((group) => this.#buildGroup(group, activeId));
-    this.#sectionsEl.replaceChildren(...groups);
+    this.els.sections.replaceChildren(...groups);
   }
 
   #buildGroup(group, activeId) {
-    const node = this.#groupTpl.content.firstElementChild.cloneNode(true);
+    const node = this.els.groupTpl.content.firstElementChild.cloneNode(true);
     const labelEl = node.querySelector(".group-label");
     const listEl = node.querySelector(".group-list");
     if (group?.label) {
@@ -196,7 +192,7 @@ export class SherpaNavSection extends SherpaElement {
     if (!item) return null;
 
     if (item.type === "header") {
-      const node = this.#headerItemTpl.content.firstElementChild.cloneNode(true);
+      const node = this.els.headerItemTpl.content.firstElementChild.cloneNode(true);
       node.querySelector(".header-item-name").textContent = item.label || "";
       const desc = node.querySelector(".header-item-description");
       if (item.description) {
@@ -206,7 +202,7 @@ export class SherpaNavSection extends SherpaElement {
       return node;
     }
 
-    const node = this.#itemTpl.content.firstElementChild.cloneNode(true);
+    const node = this.els.itemTpl.content.firstElementChild.cloneNode(true);
     const btn = node.querySelector(".item");
     const id = item.id || "";
     const isActive = id && id === activeId;
@@ -229,9 +225,9 @@ export class SherpaNavSection extends SherpaElement {
   }
 
   #syncActiveState() {
-    if (!this.#sectionsEl) return;
+    if (!this.els.sections) return;
     const activeId = this.getAttribute("data-active-id");
-    for (const btn of this.#sectionsEl.querySelectorAll(".item")) {
+    for (const btn of this.els.sections.querySelectorAll(".item")) {
       const isActive = btn.dataset.id && btn.dataset.id === activeId;
       if (isActive) {
         btn.dataset.active = "true";

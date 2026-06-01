@@ -57,18 +57,18 @@ class SherpaProductBarV2 extends SherpaElement {
     ];
   }
 
-  /** @type {HTMLSpanElement|null} */ #nameEl = null;
-  /** @type {HTMLSpanElement|null} */ #timeEl = null;
-  /** @type {HTMLButtonElement|null} */ #triggerEl = null;
+  els = this.cacheElements({
+    name: { selector: '.system-name', type: HTMLSpanElement },
+    time: { selector: '.system-time-value', type: HTMLSpanElement },
+    trigger: { selector: '.system-trigger', type: HTMLButtonElement }
+  });
+
   #bound = false;
   #slotBound = false;
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#nameEl = this.$(".system-name");
-    this.#timeEl = this.$(".system-time-value");
-    this.#triggerEl = this.$(".system-trigger");
 
     if (!this.hasAttribute("role")) this.setAttribute("role", "banner");
 
@@ -78,11 +78,11 @@ class SherpaProductBarV2 extends SherpaElement {
 
     if (!this.#bound) {
       if (this.dataset.showSystemMenu !== "false") {
-        this.#triggerEl?.addEventListener("click", this.#onTriggerClick);
+        this.els.trigger?.addEventListener("click", this.#onTriggerClick);
         this.addEventListener("menu-close", this.#onMenuClose);
       } else {
-        this.#triggerEl?.removeAttribute("aria-haspopup");
-        this.#triggerEl?.removeAttribute("aria-expanded");
+        this.els.trigger?.removeAttribute("aria-haspopup");
+        this.els.trigger?.removeAttribute("aria-expanded");
       }
       this.#bound = true;
     }
@@ -102,26 +102,26 @@ class SherpaProductBarV2 extends SherpaElement {
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncName() {
-    if (this.#nameEl) {
-      this.#nameEl.textContent = this.dataset.productName || "";
+    if (this.els.name) {
+      this.els.name.textContent = this.dataset.productName || "";
     }
   }
 
   #syncTime() {
-    if (this.#timeEl) {
-      this.#timeEl.textContent = this.dataset.time || "--:--";
+    if (this.els.time) {
+      this.els.time.textContent = this.dataset.time || "--:--";
     }
   }
 
   #onTriggerClick = () => {
-    const expanded = this.#triggerEl?.getAttribute("aria-expanded") === "true";
+    const expanded = this.els.trigger?.getAttribute("aria-expanded") === "true";
     const next = !expanded;
-    this.#triggerEl?.setAttribute("aria-expanded", next ? "true" : "false");
+    this.els.trigger?.setAttribute("aria-expanded", next ? "true" : "false");
 
     const menu = this.#getSystemMenu();
     if (menu) {
       if (next) {
-        menu.show?.(this.#triggerEl);
+        menu.show?.(this.els.trigger);
       } else {
         menu.hide?.();
       }
@@ -144,7 +144,7 @@ class SherpaProductBarV2 extends SherpaElement {
   }
 
   #onMenuClose = () => {
-    this.#triggerEl?.setAttribute("aria-expanded", "false");
+    this.els.trigger?.setAttribute("aria-expanded", "false");
   };
 
   /**
