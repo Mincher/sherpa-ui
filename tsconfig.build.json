@@ -6,7 +6,9 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "removeComments": false
+    "removeComments": false,
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo"
   },
   "include": [
     "components/**/*.ts"
