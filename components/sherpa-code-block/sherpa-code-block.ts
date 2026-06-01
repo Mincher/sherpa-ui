@@ -118,10 +118,6 @@ export class SherpaCodeBlock extends SherpaElement {
   }
 
   override onRender(): void {
-    this.els.code = this.$('code');
-    this.els.pre = this.$('pre');
-    this.els.copyBtn = this.$('sherpa-button[class="copy-btn"]');
-    this.els.languageLabel = this.$('.code-language');
 
     // Set ARIA attributes
     if (!this.hasAttribute('role')) {
