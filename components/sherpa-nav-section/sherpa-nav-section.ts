@@ -250,13 +250,13 @@ export class SherpaNavSection extends SherpaElement {
     );
   };
 
-  #onClick = (e) => {
+  #onClick = (e: Event) => {
     const btn = e.target.closest?.(".item");
     if (!btn || btn.hasAttribute("disabled")) return;
     this.#dispatchSelect(btn);
   };
 
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: Event) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     const btn = e.target.closest?.(".item");
     if (!btn || btn.hasAttribute("disabled")) return;

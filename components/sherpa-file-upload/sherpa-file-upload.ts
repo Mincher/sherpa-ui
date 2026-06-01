@@ -169,20 +169,20 @@ class SherpaFileUpload extends SherpaElement {
 
   /* ── drag & drop ─────────────────────────────────────────── */
 
-  #onDragEnter(e) {
+  #onDragEnter(e: Event) {
     e.preventDefault();
     if (this.hasAttribute("disabled")) return;
     this.#dragCounter++;
     this.toggleAttribute("data-drag-over", true);
   }
 
-  #onDragOver(e) {
+  #onDragOver(e: Event) {
     e.preventDefault();
     if (this.hasAttribute("disabled")) return;
     e.dataTransfer.dropEffect = "copy";
   }
 
-  #onDragLeave(e) {
+  #onDragLeave(e: Event) {
     e.preventDefault();
     this.#dragCounter--;
     if (this.#dragCounter <= 0) {
@@ -191,7 +191,7 @@ class SherpaFileUpload extends SherpaElement {
     }
   }
 
-  #onDrop(e) {
+  #onDrop(e: Event) {
     e.preventDefault();
     this.#dragCounter = 0;
     this.removeAttribute("data-drag-over");

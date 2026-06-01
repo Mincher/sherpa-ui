@@ -119,7 +119,7 @@ class SherpaSlider extends SherpaElement {
     this.#syncAll();
   }
 
-  override onAttributeChanged(name, _old, _new) {
+  override onAttributeChanged(name: string, _old, _new) {
     switch (name) {
       case "data-label":
         this.#syncLabel();
@@ -310,7 +310,7 @@ class SherpaSlider extends SherpaElement {
     return this.#snap(this.#min + pct * (this.#max - this.#min));
   }
 
-  #getPctFromPointer(e) {
+  #getPctFromPointer(e: Event) {
     const rect = this.els.trackArea.getBoundingClientRect();
     const x = e.clientX - rect.left;
     return Math.min(1, Math.max(0, x / rect.width));
@@ -318,7 +318,7 @@ class SherpaSlider extends SherpaElement {
 
   /* ── pointer events ──────────────────────────────────────── */
 
-  #onPointerDown(e) {
+  #onPointerDown(e: Event) {
     if (this.hasAttribute("disabled")) return;
     if (e.button !== 0) return;
 

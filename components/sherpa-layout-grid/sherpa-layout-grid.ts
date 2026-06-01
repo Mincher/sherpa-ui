@@ -124,7 +124,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     return target?.closest?.('sherpa-container');
   }
 
-  #onDragStart = (e) => {
+  #onDragStart = (e: Event) => {
     const src = this.#containerFor(e.target);
     if (!src || src.parentElement !== this) return;
     this.#dragSource = src;
@@ -135,7 +135,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     }
   };
 
-  #onDragOver = (e) => {
+  #onDragOver = (e: Event) => {
     if (!this.#dragSource) return;
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
@@ -144,12 +144,12 @@ export class SherpaLayoutGrid extends SherpaElement {
     if (target && target !== this.#dragSource) target.setAttribute('data-drop-target', '');
   };
 
-  #onDragLeave = (e) => {
+  #onDragLeave = (e: Event) => {
     const target = this.#containerFor(e.target);
     if (target) target.removeAttribute('data-drop-target');
   };
 
-  #onDrop = (e) => {
+  #onDrop = (e: Event) => {
     if (!this.#dragSource) return;
     e.preventDefault();
     const target = this.#containerFor(e.target);

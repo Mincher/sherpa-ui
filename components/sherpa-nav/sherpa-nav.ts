@@ -180,7 +180,7 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
-  override onAttributeChanged(name, _oldValue, newValue) {
+  override onAttributeChanged(name: string, _oldValue, newValue: string | null) {
     if (name === "data-active-target" && this.#ready) {
       if (newValue) {
         this.setActiveLink(newValue);
@@ -637,7 +637,7 @@ export class SherpaNav extends SherpaElement {
   }
 
   /** Delegated host-level click handler — registered once in onRender(). */
-  #onHostClick(e) {
+  #onHostClick(e: Event) {
     const navItem = e
       .composedPath()
       .find((n) => n instanceof HTMLElement && n.tagName === "SHERPA-NAV-ITEM");

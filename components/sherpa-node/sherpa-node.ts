@@ -367,7 +367,7 @@ export class SherpaNode extends SherpaElement {
     return ctrl ?? null;
   }
 
-  #onControlChange = (e) => {
+  #onControlChange = (e: Event) => {
     // Ignore our own subtype dropdown — that has its own event path.
     if (e.composedPath().includes(this.els.subtypeSelect)) return;
     // Re-evaluate conditional row visibility on every value change.
@@ -570,7 +570,7 @@ export class SherpaNode extends SherpaElement {
     }
   }
 
-  #onSubtypeChange = (e) => {
+  #onSubtypeChange = (e: Event) => {
     // sherpa-input-select fires a `change` CustomEvent with detail.value.
     // Fall back to reading value off the element for safety.
     const value = e?.detail?.value ?? this.els.subtypeSelect?.getAttribute("value") ?? "";
@@ -581,9 +581,9 @@ export class SherpaNode extends SherpaElement {
     }));
   };
 
-  #stopPointer = (e) => { e.stopPropagation(); };
+  #stopPointer = (e: Event) => { e.stopPropagation(); };
 
-  #onPointerDown = (e) => {
+  #onPointerDown = (e: Event) => {
     // Sockets stop propagation themselves; everything else here is body.
     this.dispatchEvent(new CustomEvent("sherpa-node-pointerdown", {
       bubbles: true,

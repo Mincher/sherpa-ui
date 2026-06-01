@@ -73,7 +73,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
 
   /* ── Click delegation ────────────────────────────────────────── */
 
-  #onClick = (e) => {
+  #onClick = (e: Event) => {
     const text = e.composedPath().find(
       n => n instanceof HTMLElement && n.classList?.contains('crumb-text')
     );

@@ -364,9 +364,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     CSS.highlights?.delete("data-grid-col-search");
   }
 
-  override onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) return;
-    super.onAttributeChanged(name, oldValue, newValue);
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === "data-src-json") {
       if (newValue) this.setAttribute("data-loading", "");
       return;
@@ -379,7 +379,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       const bar = this.$("sherpa-filter-bar");
       if (bar) {
         if (newValue == null) bar.removeAttribute("data-preset-filters");
-        else bar.setAttribute("data-preset-filters", newValue);
+        else bar.setAttribute("data-preset-filters", newValue: string | null);
       }
       return;
     }
@@ -1525,13 +1525,13 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     try {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) this.setActionMenuItems(parsed);
-    } catch (e) {
+    } catch (e: Event) {
       console.warn("sherpa-data-grid: invalid data-action-menu JSON:", e);
     }
   }
 
   /** Fetch `{ columns, rows }` JSON from the given URL and load it. */
-  async onJsonData(data) {
+  async onJsonData(data: any) {
     await this.setData(data);
   }
 
@@ -1545,7 +1545,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     btn.setMenuItems(this.#actionMenuSections);
   }
 
-  #onActionMenuSelect(e) {
+  #onActionMenuSelect(e: Event) {
     const detail = e?.detail || {};
     this.dispatchEvent(
       new CustomEvent("grid-action", {
@@ -1560,7 +1560,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     );
   }
 
-  #onHostClick(e) {
+  #onHostClick(e: Event) {
     const path = e.composedPath();
 
     // Row action
@@ -1656,7 +1656,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     btn.setMenuItems(sections);
   }
 
-  #onOverflowMenuSelect(e) {
+  #onOverflowMenuSelect(e: Event) {
     const data = e?.detail?.data || {};
     const action = data.action;
 
@@ -1740,7 +1740,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     btn.setMenuItems([{ heading: "Columns", items }]);
   }
 
-  #onColumnSelectMenuSelect(e) {
+  #onColumnSelectMenuSelect(e: Event) {
     const data = e?.detail?.data || {};
 
     // Handle "Select all"
@@ -1891,7 +1891,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.toggleAttribute("data-filters");
   };
 
-  #onMenuPopulate: EventHandler<CustomEvent> = (e) => {
+  #onMenuPopulate: EventHandler<CustomEvent> = (e: Event) => {
     const menu = e.detail?.menu;
     if (!menu) return;
     const item = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');

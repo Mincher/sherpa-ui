@@ -71,7 +71,7 @@ export class SherpaInputText extends SherpaInputBase {
    */
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
-    super.onAttributeChanged(name, oldValue, newValue);
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === 'data-multiline') {
       // Only swap templates after the initial render. The first
       // parser-driven attribute change fires before the shadow DOM

@@ -90,8 +90,8 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
     this.#syncDisabled();
   }
 
-  override onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     switch (name) {
       case 'data-label':       this.#syncLegend(); break;
       case 'data-description': this.#syncDescription(); break;
@@ -211,7 +211,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
   }
 
   #onChildChange = () => this.#emitChange();
-  #onSlottedChange = (e) => {
+  #onSlottedChange = (e: Event) => {
     if (e.target === this) return;        // ignore our own re-dispatch
     if (e.target.tagName === 'SHERPA-INPUT-CHECKBOX') this.#emitChange();
   };

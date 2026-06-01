@@ -48,7 +48,7 @@ class SherpaLoader extends SherpaElement {
     this.#syncLabel();
   }
 
-  override onAttributeChanged(name, _old, _new) {
+  override onAttributeChanged(name: string, _old, _new) {
     if (name === "data-label") this.#syncLabel();
   }
 

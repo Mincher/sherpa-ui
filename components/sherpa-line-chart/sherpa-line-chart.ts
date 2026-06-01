@@ -120,9 +120,9 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.#filterMenuTpl = null;
   }
 
-  override onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) return;
-    super.onAttributeChanged(name, oldValue, newValue);
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === 'data-title') this.#syncTitle();
     if (name === 'data-segment-field' || name === 'data-segment-mode') {
       this.#syncTitle();
@@ -494,7 +494,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.toggleAttribute('data-hide-legend');
   };
 
-  #onMenuPopulate = (e) => {
+  #onMenuPopulate = (e: Event) => {
     const menu = e.detail?.menu;
     if (!menu) return;
     const filterItem = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');

@@ -96,7 +96,7 @@ export class SherpaCalendar extends SherpaElement {
     this.#render();
   }
 
-  override onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     if (!this.els.daysGrid) return;
 
     if (name === 'data-value' || name === 'data-value-end' || name === 'data-mode') {

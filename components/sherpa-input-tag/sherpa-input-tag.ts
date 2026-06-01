@@ -91,8 +91,8 @@ export class SherpaInputTag extends SherpaInputBase {
     input.removeEventListener('keydown', this.#onKeyDown);
   }
 
-  override onAttributeChanged(name, oldValue, newValue): void {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === 'data-value') this.#renderChips();
   }
 
@@ -171,7 +171,7 @@ export class SherpaInputTag extends SherpaInputBase {
     wrapper.insertBefore(frag, input);
   }
 
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: Event) => {
     const input = this.getInputElement();
     if (!input) return;
     const sep = (this.dataset.separator ?? ',').slice(0, 1);

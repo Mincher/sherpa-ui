@@ -125,7 +125,7 @@ export class SherpaPagination extends SherpaElement {
     this.#update();
   }
 
-  override onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) return;
     if (name === "data-allowed-sizes") {
       this.#populateSizeOptions();
@@ -218,7 +218,7 @@ export class SherpaPagination extends SherpaElement {
      Click Handling
      ══════════════════════════════════════════════════════════════ */
 
-  #onHostClick: EventHandler<MouseEvent> = (e) => {
+  #onHostClick: EventHandler<MouseEvent> = (e: Event) => {
     const btn = e
       .composedPath()
       .find(
@@ -244,7 +244,7 @@ export class SherpaPagination extends SherpaElement {
     }
   };
 
-  #onPageSizeChange: EventHandler<Event> = (e) => {
+  #onPageSizeChange: EventHandler<Event> = (e: Event) => {
     const newSize = parseInt((e.target as HTMLSelectElement).value, 10);
     if (newSize <= 0) return;
 

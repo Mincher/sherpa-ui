@@ -122,7 +122,7 @@ export class SherpaListItem extends SherpaElement {
     }));
   };
 
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: Event) => {
     if (this.dataset.interactive === undefined || this.hasAttribute('disabled')) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();

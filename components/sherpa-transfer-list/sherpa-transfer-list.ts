@@ -76,8 +76,8 @@ export class SherpaTransferList extends SherpaElement {
 
   /* ── handlers ──────────────────────────────────────────── */
 
-  #onSourceSearch = (e) => { this.#sourceFilter = (e.target.value || '').toLowerCase(); this.#renderPanes(); };
-  #onTargetSearch = (e) => { this.#targetFilter = (e.target.value || '').toLowerCase(); this.#renderPanes(); };
+  #onSourceSearch = (e: Event) => { this.#sourceFilter = (e.target.value || '').toLowerCase(); this.#renderPanes(); };
+  #onTargetSearch = (e: Event) => { this.#targetFilter = (e.target.value || '').toLowerCase(); this.#renderPanes(); };
 
   #onAddSelected = () => {
     const moved = [];

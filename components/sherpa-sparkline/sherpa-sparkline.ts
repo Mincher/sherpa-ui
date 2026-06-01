@@ -73,11 +73,11 @@ export class SherpaSparkline extends SherpaElement {
     });
   }
 
-  override onAttributeChanged(name, _oldValue, _newValue) {
+  override onAttributeChanged(name: string, _oldValue, _newValue) {
     if (name === 'data-values') this.#updateFromAttribute();
   }
 
-  #onPointEnter = (e) => {
+  #onPointEnter = (e: Event) => {
     const point = e.target;
     if (!this.els.tip) return;
 
@@ -89,7 +89,7 @@ export class SherpaSparkline extends SherpaElement {
     this.els.tip.showPopover();
   };
 
-  #onPointLeave = (e) => {
+  #onPointLeave = (e: Event) => {
     this.els.tip?.hidePopover();
     e.target.style.removeProperty('anchor-name');
   };

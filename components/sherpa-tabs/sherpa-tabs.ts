@@ -89,7 +89,7 @@ export class SherpaTabs extends SherpaElement {
   /**
    * When slotted content changes (panels added/removed), rebuild tabs.
    */
-  onSlotChange() {
+  onSlotChange(e?: Event) {
     this.#buildTabs();
   }
 
@@ -179,13 +179,13 @@ export class SherpaTabs extends SherpaElement {
 
   /* ── Event handlers ───────────────────────────────────────────── */
 
-  #onTabClick: EventHandler<MouseEvent> = (e) => {
+  #onTabClick: EventHandler<MouseEvent> = (e: Event) => {
     const btn = e.currentTarget as HTMLElement;
     const index = parseInt(btn.dataset.index, 10);
     this.selectTab(index);
   };
 
-  #onTabKeyDown: EventHandler<KeyboardEvent> = (e) => {
+  #onTabKeyDown: EventHandler<KeyboardEvent> = (e: Event) => {
     const current = parseInt((e.currentTarget as HTMLElement).dataset.index || '0', 10);
     let next = current;
 

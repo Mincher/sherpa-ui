@@ -111,7 +111,7 @@ export class SherpaNodeSocket extends SherpaElement {
 
   /* ── Events ────────────────────────────────────────────────────── */
 
-  #onPointerDown = (e) => {
+  #onPointerDown = (e: Event) => {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();

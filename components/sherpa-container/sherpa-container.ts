@@ -164,7 +164,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     }
   };
 
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: Event) => {
     if (this.disabled) return;
     if (!(this.interactive || this.selectable)) return;
     if (e.key === 'Enter' || e.key === ' ') {
@@ -196,7 +196,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     grip.addEventListener('pointercancel', this.#onGripPointerEnd);
   }
 
-  #onGripPointerDown = (e) => {
+  #onGripPointerDown = (e: Event) => {
     if (this.disabled) return;
     if (e.button !== 0) return;
     const grip = e.currentTarget;
@@ -219,7 +219,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     };
   };
 
-  #onGripPointerMove = (e) => {
+  #onGripPointerMove = (e: Event) => {
     const s = this.#resizeState;
     if (!s || e.pointerId !== s.pointerId) return;
     const dx = e.clientX - s.startX;
@@ -241,7 +241,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     }
   };
 
-  #onGripPointerEnd = (e) => {
+  #onGripPointerEnd = (e: Event) => {
     const s = this.#resizeState;
     if (!s || e.pointerId !== s.pointerId) return;
     const grip = e.currentTarget;

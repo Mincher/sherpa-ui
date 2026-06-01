@@ -70,7 +70,7 @@ class SherpaPromptComposer extends SherpaElement {
 
   /* ── handlers ────────────────────────────────────────────── */
 
-  #onSubmit = (e) => {
+  #onSubmit = (e: Event) => {
     e.preventDefault();
     if (this.#isDisabled()) return;
     const value = (this.els.input?.value ?? "").trim();
@@ -84,7 +84,7 @@ class SherpaPromptComposer extends SherpaElement {
 
   #onInput = () => this.#autoresize();
 
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: Event) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       this.els.form?.requestSubmit();

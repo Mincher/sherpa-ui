@@ -63,11 +63,11 @@ export class SherpaInputTime extends SherpaInputBase {
   #minutes = -1;
 
   /** Bound document handlers stored for removeEventListener. */
-  #onDocClick = (e) => {
+  #onDocClick = (e: Event) => {
     if (!e.composedPath().includes(this)) this.#close();
   };
 
-  #onDocKey = (e) => {
+  #onDocKey = (e: Event) => {
     if (e.key === 'Escape') this.#close();
   };
 
@@ -118,14 +118,14 @@ export class SherpaInputTime extends SherpaInputBase {
     document.removeEventListener('keydown', this.#onDocKey);
   }
 
-  override onAttributeChanged(name, oldValue, newValue): void {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
 
     if (['min', 'max', 'step'].includes(name)) {
       const el = this.getInputElement();
       if (el) {
         newValue !== null
-          ? el.setAttribute(name, newValue)
+          ? el.setAttribute(name, newValue: string | null)
           : el.removeAttribute(name);
       }
     }

@@ -84,7 +84,7 @@ export class SherpaScheduler extends SherpaElement {
 
   /* ── handlers ──────────────────────────────────────────── */
 
-  #onFrequencyChange = (e) => {
+  #onFrequencyChange = (e: Event) => {
     const next = e.target?.value || 'weekly';
     this.dataset.frequency = next;
   };

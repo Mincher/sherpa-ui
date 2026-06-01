@@ -52,7 +52,7 @@ class SherpaProgressBar extends SherpaElement {
     this.#syncValue();
   }
 
-  override onAttributeChanged(name, _old, _new) {
+  override onAttributeChanged(name: string, _old, _new) {
     switch (name) {
       case "data-label":
         this.#syncLabel();

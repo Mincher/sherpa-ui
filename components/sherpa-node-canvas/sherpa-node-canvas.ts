@@ -474,7 +474,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    * events bubble up to the host — without this guard the canvas
    * would steal scroll & click interactions from the panels.
    */
-  #isFromSidePanel(e) {
+  #isFromSidePanel(e: Event) {
     const path = e.composedPath ? e.composedPath() : [];
     for (const n of path) {
       if (n === this) return false;
@@ -484,7 +484,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     return false;
   }
 
-  #onWheel = (e) => {
+  #onWheel = (e: Event) => {
     if (this.#isFromSidePanel(e)) return;
     e.preventDefault();
     // Trackpad pinch gestures are reported as wheel events with
@@ -514,7 +514,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#emitViewport();
   };
 
-  #onPointerDown = (e) => {
+  #onPointerDown = (e: Event) => {
     if (this.#isFromSidePanel(e)) return;
     // Middle-mouse OR space+left = pan.
     if (e.button === 1 || (e.button === 0 && this.#spaceDown)) {
@@ -552,7 +552,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     }
   };
 
-  #onPointerMove = (e) => {
+  #onPointerMove = (e: Event) => {
     this.#lastClientX = e.clientX;
     this.#lastClientY = e.clientY;
 
@@ -591,7 +591,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     }
   };
 
-  #onPointerUp = (e) => {
+  #onPointerUp = (e: Event) => {
     if (this.#pan) {
       this.#pan = null;
       this.removeAttribute("data-grabbing");
@@ -667,7 +667,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     }
   };
 
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: Event) => {
     if (e.code === "Space" && !this.#spaceDown) {
       this.#spaceDown = true;
       this.setAttribute("data-space-down", "");
@@ -696,7 +696,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       this.removeNode(this.#selectedNodeId);
     }
   };
-  #onKeyUp = (e) => {
+  #onKeyUp = (e: Event) => {
     if (e.code === "Space") {
       this.#spaceDown = false;
       this.removeAttribute("data-space-down");
@@ -727,7 +727,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Edge drag / re-attach ─────────────────────────────────────── */
 
-  #onSocketPointerDown = (e) => {
+  #onSocketPointerDown = (e: Event) => {
     const { direction, portName, originalEvent } = e.detail;
     const socket = e.composedPath().find((n) => n?.localName === "sherpa-node-socket");
     const node = socket?.closest("sherpa-node");
@@ -770,7 +770,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#scheduleDraw();
   };
 
-  #onNodePointerDown = (e) => {
+  #onNodePointerDown = (e: Event) => {
     const { nodeId, originalEvent } = e.detail;
     if (!nodeId || this.#spaceDown) return;
     const node = this.#nodeById(nodeId);
@@ -1439,7 +1439,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     return { parentId: top.parentId, label: top.label };
   }
 
-  #onNodeDrillDown = (e) => {
+  #onNodeDrillDown = (e: Event) => {
     const nodeId = e.detail?.nodeId;
     if (!nodeId) return;
     const label = e.detail?.label ?? this.#labelForNode(nodeId);
@@ -1565,7 +1565,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    * API so per-frame snapshots are cached the same way as a back-button
    * click — re-entering the parent later restores the work.
    */
-  #onBreadcrumbClick = (e) => {
+  #onBreadcrumbClick = (e: Event) => {
     e.preventDefault?.();
     const trail = this.els.viewHeader?.querySelector(
       ':scope > sherpa-breadcrumbs[data-canvas-breadcrumbs]'
@@ -1581,7 +1581,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Utilities ─────────────────────────────────────────────────── */
 
-  #normEdge(e) {
+  #normEdge(e: Event) {
     return {
       from: { nodeId: e.from.nodeId, portName: e.from.portName },
       to:   { nodeId: e.to.nodeId,   portName: e.to.portName },

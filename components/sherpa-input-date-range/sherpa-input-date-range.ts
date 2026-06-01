@@ -78,11 +78,11 @@ export class SherpaInputDateRange extends SherpaInputBase {
   #endViewDate   = new Date();
 
   /** Bound document handlers stored for removeEventListener. */
-  #onDocClick = (e) => {
+  #onDocClick = (e: Event) => {
     if (!e.composedPath().includes(this)) this.#closeAll();
   };
 
-  #onDocKey = (e) => {
+  #onDocKey = (e: Event) => {
     if (e.key === "Escape") this.#closeAll();
   };
 
@@ -187,8 +187,8 @@ export class SherpaInputDateRange extends SherpaInputBase {
     document.removeEventListener("keydown", this.#onDocKey);
   }
 
-  override onAttributeChanged(name, oldValue, newValue): void {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     switch (name) {
       case "data-value-start":
       case "data-value-end":

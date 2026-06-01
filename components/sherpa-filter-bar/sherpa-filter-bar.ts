@@ -119,7 +119,7 @@ export class SherpaFilterBar extends SherpaElement {
       this.els.scope = this.parentElement || this.getRootNode()?.host || null;
     }
     if (this.els.scope && !this.#sortChangeHandler) {
-      this.#sortChangeHandler = (e) => this.#onSortChange(e);
+      this.#sortChangeHandler = (e: Event) => this.#onSortChange(e);
       this.els.scope.addEventListener("sort-change", this.#sortChangeHandler);
     }
 
@@ -322,7 +322,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.els.scope = null;
   }
 
-  override onAttributeChanged(name, _old, newValue) {
+  override onAttributeChanged(name: string, _old, newValue: string | null) {
     if (name === "data-preset-filters" && newValue) {
       this.#initPresetChips(newValue);
     }
@@ -358,7 +358,7 @@ export class SherpaFilterBar extends SherpaElement {
    *
    * @param {object} data
    */
-  override onJsonData(data) {
+  override onJsonData(data: any) {
     if (Array.isArray(data?.fields)) {
       this.setAttribute("data-available-fields", JSON.stringify(data.fields));
     }
@@ -685,7 +685,7 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Handle selection from the "Add filter" menu. */
-  #onAddMenuSelect: EventHandler<CustomEvent> = (e) => {
+  #onAddMenuSelect: EventHandler<CustomEvent> = (e: Event) => {
     const field = e.detail?.value;
     if (!field) return;
 
@@ -828,7 +828,7 @@ export class SherpaFilterBar extends SherpaElement {
   /**
    * Handle sortchange from a viz child — sync the sort chip to match.
    */
-  #onSortChange(e) {
+  #onSortChange(e: Event) {
     const sortChip = this.$('sherpa-button[data-behavior="sort"]');
     if (!sortChip) return;
 

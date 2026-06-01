@@ -123,7 +123,7 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Event delegation ──────────────────────────────────────── */
 
-  #onClick: EventHandler<MouseEvent> = (e) => {
+  #onClick: EventHandler<MouseEvent> = (e: Event) => {
     const item = (e.target as Element).closest?.("sherpa-menu-item");
     if (!item || item.hasAttribute("disabled")) return;
 
@@ -155,7 +155,7 @@ export class SherpaMenu extends SherpaElement {
     }
   };
 
-  #onKeyDown: EventHandler<KeyboardEvent> = (e) => {
+  #onKeyDown: EventHandler<KeyboardEvent> = (e: Event) => {
     const items = this.#focusableItems();
     if (!items.length) return;
 
@@ -318,7 +318,7 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Popover light-dismiss ─────────────────────────────────── */
 
-  #onToggle: EventHandler<ToggleEvent> = (e) => {
+  #onToggle: EventHandler<ToggleEvent> = (e: Event) => {
     // popover="auto" light-dismiss: browser closed us externally
     if (e.newState === "closed" && this.open && !this.#hiding) {
       this.hide();

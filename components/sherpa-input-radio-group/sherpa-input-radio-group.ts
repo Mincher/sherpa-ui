@@ -84,8 +84,8 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
     this.#syncDisabled();
   }
 
-  override onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     switch (name) {
       case 'data-label':       this.#syncLegend(); break;
       case 'data-description': this.#syncDescription(); break;
@@ -180,7 +180,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
     }
   }
 
-  #onChildChange = (e) => {
+  #onChildChange = (e: Event) => {
     if (e.target === this) return;
     if (e.target.tagName !== 'SHERPA-INPUT-RADIO') return;
     const v = this.getValue();

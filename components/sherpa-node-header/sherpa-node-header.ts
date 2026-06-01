@@ -86,7 +86,7 @@ export class SherpaNodeHeader extends SherpaElement {
     }
   }
 
-  #onDrillClick = (e) => {
+  #onDrillClick = (e: Event) => {
     e.stopPropagation();
     const node = this.closest("sherpa-node");
     this.dispatchEvent(new CustomEvent("sherpa-node-drilldown", {

@@ -100,8 +100,8 @@ export class SherpaInputSelect extends SherpaInputBase {
     }
   }
 
-  override onAttributeChanged(name, oldValue, newValue): void {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (name === "placeholder") {
       this.#ensurePlaceholder();
       const display = this.$('.tree-display');
@@ -283,7 +283,7 @@ export class SherpaInputSelect extends SherpaInputBase {
 
   #bindOutside() {
     if (this.#outsideHandler) return;
-    this.#outsideHandler = (e) => {
+    this.#outsideHandler = (e: Event) => {
       if (!this.contains(e.target) && !e.composedPath().includes(this)) {
         this.removeAttribute('data-expanded');
         const button = this.$('.tree-button');

@@ -75,7 +75,7 @@ export class SherpaStepper extends SherpaElement {
         const data = await fetch(src).then((r) => r.json());
         this.#steps = data.steps || [];
         this.#srcLoaded = src; // Prevent base class post-connect trigger from double-loading
-      } catch (e) {
+      } catch (e: Event) {
         console.warn("sherpa-stepper: failed to load data-src-json:", e);
       }
     }
@@ -85,7 +85,7 @@ export class SherpaStepper extends SherpaElement {
     this.#ready = true;
   }
 
-  override onAttributeChanged(name, _old, newValue) {
+  override onAttributeChanged(name: string, _old, newValue: string | null) {
     if (!this.#ready) return;
     if (name === "data-current-step") {
       const n = parseInt(newValue) || 1;
@@ -111,7 +111,7 @@ export class SherpaStepper extends SherpaElement {
    * to prevent a double fetch.
    * @param {{ steps: object[] }} data
    */
-  override onJsonData(data) {
+  override onJsonData(data: any) {
     const current = this.dataset.srcJson;
     if (current && current === this.#srcLoaded) {
       this.#srcLoaded = ""; // Reset so future attribute changes are processed

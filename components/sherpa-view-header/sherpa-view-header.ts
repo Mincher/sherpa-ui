@@ -87,7 +87,7 @@ export class SherpaViewHeader extends SherpaElement {
   #optionSlotObserver = null;
   #pickerRowTpl = null;
 
-  override onAttributeChanged(name, oldValue, newValue) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     switch (name) {
       case 'data-label': {
         const label = this.$('.heading-label');

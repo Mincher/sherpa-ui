@@ -82,12 +82,12 @@ export class SherpaInputNumber extends SherpaInputBase {
     this.getInputElement()?.removeEventListener('keydown', this.#onKeyDown);
   }
 
-  override onAttributeChanged(name, oldValue, newValue): void {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
     if (['min', 'max', 'step'].includes(name)) {
       const el = this.getInputElement();
       if (el) {
-        newValue !== null ? el.setAttribute(name, newValue) : el.removeAttribute(name);
+        newValue !== null ? el.setAttribute(name, newValue: string | null) : el.removeAttribute(name);
       }
     }
   }
@@ -155,7 +155,7 @@ export class SherpaInputNumber extends SherpaInputBase {
    * (`.`, `,`, `e`, `E`). Other keys (digits, sign, navigation,
    * shortcuts) are passed through unchanged.
    */
-  #onKeyDown = (e) => {
+  #onKeyDown = (e: Event) => {
     const step = parseFloat(this.step);
     if (!isFinite(step) || step % 1 !== 0) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;

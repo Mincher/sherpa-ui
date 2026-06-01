@@ -140,8 +140,8 @@ export class SherpaCodeBlock extends SherpaElement {
     await this.#loadAndHighlightCode();
   }
 
-  override onAttributeChanged(name, oldValue, newValue) {
-    super.onAttributeChanged(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
 
     if (name === 'data-max-height' && this.els.pre) {
       if (newValue) {
