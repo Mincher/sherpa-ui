@@ -12,23 +12,6 @@ Date range picker with calendar popups for start and end dates. Inherits label, 
 | `data-value-end` | string | End date (YYYY-MM-DD) | — | — |
 | `min` | string | Minimum selectable date (YYYY-MM-DD) | — | — |
 | `max` | string | Maximum selectable date (YYYY-MM-DD) | — | — |
-| `data-label` | string |  | — | — |
-| `data-description` | string |  | — | — |
-| `data-helper` | string |  | — | — |
-| `data-layout` | string |  | — | — |
-| `disabled` | string |  | — | — |
-| `readonly` | string |  | — | — |
-| `required` | string |  | — | — |
-| `name` | string |  | — | — |
-| `value` | string |  | — | — |
-| `placeholder` | string |  | — | — |
-| `pattern` | string |  | — | — |
-| `minlength` | string |  | — | — |
-| `maxlength` | string |  | — | — |
-| `novalidate` | string |  | — | — |
-| `data-status` | string |  | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -86,13 +69,7 @@ element.addEventListener("input", (e) => {
 ### Basic
 
 ```html
-<sherpa-input-date-range data-value-start="value" data-value-end="value" min="value" data-label="Example Label"></sherpa-input-date-range>
-```
-
-### Disabled
-
-```html
-<sherpa-input-date-range data-label="Disabled" disabled></sherpa-input-date-range>
+<sherpa-input-date-range data-value-start="value" data-value-end="value" min="value"></sherpa-input-date-range>
 ```
 
 ## Import

@@ -15,8 +15,6 @@ File upload drop zone with drag-and-drop, file list, and per-file progress/statu
 | `data-max-files` | string | Maximum number of files | — | — |
 | `data-helper` | string | Constraint / helper text | — | — |
 | `disabled` | boolean | Disabled state | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

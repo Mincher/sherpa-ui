@@ -15,8 +15,6 @@ Standalone calendar component for date selection. Supports single date and date 
 | `data-mode` | enum | single \| range (default: single) | — | `single`, `range` |
 | `data-view` | enum | day \| month \| year (default: day) | — | `day`, `month`, `year` |
 | `data-view-date` | string | Currently displayed month (ISO format, defaults to today) | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

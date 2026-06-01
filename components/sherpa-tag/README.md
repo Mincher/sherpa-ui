@@ -11,8 +11,6 @@ Compact label component with variant and status support.
 | `data-variant` | enum | primary \| secondary | — | `primary`, `secondary` |
 | `data-status` | enum | critical \| info \| success \| warning \| urgent \| brand | — | `critical`, `info`, `success`, `warning`, `urgent`, `brand` |
 | `data-collapsed` | boolean | Renders as small circular indicator | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -63,7 +61,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-tag data-variant="primary" data-status="critical" data-src-html="value">
+<sherpa-tag data-variant="primary" data-status="critical">
   <!-- Default slot content -->
   <p>Your content here</p>
 </sherpa-tag>

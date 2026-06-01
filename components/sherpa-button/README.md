@@ -29,8 +29,6 @@ Set via `data-type` attribute:
 | `data-menu-position` | enum | Menu placement (top \| bottom \| left \| right) | — | `top`, `bottom`, `left`, `right` |
 | `data-menu-template` | string | Menu template id to stamp from SherpaMenu | — | — |
 | `disabled` | boolean | Native disabled state | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

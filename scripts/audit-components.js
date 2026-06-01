@@ -258,22 +258,25 @@ async function getComponents() {
     return [SPECIFIC_COMPONENT];
   }
 
-  const jsFiles = await glob('components/sherpa-*/*.js', {
+  const sourceFiles = await glob('components/sherpa-*/*.{ts,js}', {
     cwd: ROOT,
-    ignore: ['**/utilities/**'],
+    ignore: ['**/utilities/**', '**/*.examples.*', '**/*.test.*'],
   });
 
-  return jsFiles.map(file => {
-    const dir = path.dirname(file);
-    return path.basename(dir);
-  }).sort();
+  // Use a Set to dedupe (a component may have both .ts and .js during migration)
+  const dirs = new Set(
+    sourceFiles.map(file => path.basename(path.dirname(file)))
+  );
+  return Array.from(dirs).sort();
 }
 
 // ─── Main Audit ──────────────────────────────────────────────────────
 
 async function auditComponent(componentName) {
   const componentDir = path.join(ROOT, 'components', componentName);
-  const jsPath = path.join(componentDir, `${componentName}.js`);
+  const tsPath = path.join(componentDir, `${componentName}.ts`);
+  const jsCandidate = path.join(componentDir, `${componentName}.js`);
+  const jsPath = fs.existsSync(tsPath) ? tsPath : jsCandidate;
   const cssPath = path.join(componentDir, `${componentName}.css`);
   const htmlPath = path.join(componentDir, `${componentName}.html`);
 

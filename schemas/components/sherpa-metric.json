@@ -47,18 +47,6 @@
       "name": "data-delta",
       "type": "string",
       "description": "Change amount (e.g. \"+12.5%\")"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [],

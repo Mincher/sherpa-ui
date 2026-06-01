@@ -26,8 +26,6 @@ Available templates:
 | `data-show-actions` | boolean | Show row action column | — | — |
 | `data-show-secondary-headers` | boolean | Show secondary column headers | — | — |
 | `data-show-pagination` | boolean | Show pagination bar | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

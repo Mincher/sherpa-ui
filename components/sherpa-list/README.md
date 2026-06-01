@@ -12,8 +12,6 @@ Grouping container for sherpa-list-item children. Provides variant + density sty
 | `data-density` | enum | compact \| default \| comfortable | `default` | `compact`, `default`, `comfortable` |
 | `data-heading` | string | Optional list heading text | — | — |
 | `data-empty` | string | Empty-state message (shown when no | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

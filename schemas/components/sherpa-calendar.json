@@ -49,18 +49,6 @@
       "name": "data-view-date",
       "type": "string",
       "description": "Currently displayed month (ISO format, defaults to today)"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [

@@ -36,18 +36,6 @@
       "name": "data-icon",
       "type": "string",
       "description": "Override status icon (FA class)"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [

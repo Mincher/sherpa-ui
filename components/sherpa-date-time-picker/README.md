@@ -13,8 +13,6 @@ Combined date + time picker popup panel.
 | `min` | string | Minimum selectable date-time (YYYY-MM-DDTHH:mm) | — | — |
 | `max` | string | Maximum selectable date-time (YYYY-MM-DDTHH:mm) | — | — |
 | `data-mode` | enum | 'date-time' (default) \| 'date' \| 'time' | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

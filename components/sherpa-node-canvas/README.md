@@ -12,8 +12,6 @@ sherpa-node-canvas.js — Pan/zoom canvas hosting sherpa-node children. Owns: - 
 | `data-heading` | string | Root-level heading shown by the canvas header | — | — |
 | `data-show-header` | boolean | Reveals the built-in canvas header strip | — | — |
 | `data-export-title` | string | Title used when exporting the canvas (PDF / image) | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

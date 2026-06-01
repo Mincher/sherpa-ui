@@ -25,8 +25,6 @@ Set via `data-type` attribute:
 | `data-state` | enum | selected | — | — |
 | `data-type` | enum | promo — renders a large CTA-style row | — | — |
 | `data-description` | string | Promo description text (data-type="promo" only) | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

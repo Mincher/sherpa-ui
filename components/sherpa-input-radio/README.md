@@ -16,8 +16,6 @@ Atomic radio primitive. Single radio with label-on-the-right. Use multiple insta
 | `data-label` | string | Inline label text | — | — |
 | `data-description` | string | Helper line below the label | — | — |
 | `data-status` | enum | critical \| warning \| success \| info \| urgent | — | `critical`, `warning`, `success`, `info`, `urgent` |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

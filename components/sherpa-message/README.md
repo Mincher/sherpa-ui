@@ -14,8 +14,6 @@ Banner / inline message with status variants.
 | `data-action-href` | string | Inline action link href | — | — |
 | `data-action-icon` | string | FA classes for trailing link icon | — | — |
 | `data-dismissible` | boolean | Show close button | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

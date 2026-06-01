@@ -34,18 +34,6 @@
       "name": "data-panel",
       "type": "boolean",
       "description": "Surface background panel mode"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [],

@@ -21,14 +21,6 @@ Multi-tag input. Replaces DevExtreme DxTagBox for free-text tag entry. Behaviour
 | `data-separator` | string | Extra character that commits a chip | `","` | — |
 | `data-allow-duplicates` | boolean | Allow repeated values | — | — |
 | `data-max-tags` | number | Hard cap on tag count | — | — |
-| `value` | string |  | — | — |
-| `pattern` | string |  | — | — |
-| `minlength` | string |  | — | — |
-| `maxlength` | string |  | — | — |
-| `novalidate` | string |  | — | — |
-| `data-status` | string |  | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

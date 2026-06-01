@@ -30,12 +30,6 @@
       "name": "data-available-fields",
       "type": "json",
       "description": "Field definitions: [{ field, name, type }]"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [

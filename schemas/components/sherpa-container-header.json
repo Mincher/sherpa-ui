@@ -30,18 +30,6 @@
       "name": "data-drag-handle",
       "type": "boolean",
       "description": "Show the drag handle"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [],

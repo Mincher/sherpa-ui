@@ -9,8 +9,6 @@ sherpa-node-row.js — Generic field row for sherpa-node bodies. Pure layout com
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-multi` | boolean | Visually expand for multi-input rows | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -39,7 +37,7 @@ Slot usage:
 ### Basic
 
 ```html
-<sherpa-node-row data-src-html="value" data-src-json="value">
+<sherpa-node-row>
   <span slot="label"><!-- Field label --></span>
   <span slot="control"><!-- Input/select/chip group --></span>
 </sherpa-node-row>

@@ -15,18 +15,6 @@
       "name": "data-product-icon",
       "type": "string",
       "description": "Font Awesome icon class (e.g. \"fa-cube\")"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [

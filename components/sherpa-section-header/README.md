@@ -11,8 +11,6 @@ Section heading with slots for badge, description, and actions.
 | `data-label` | string | Section title text | — | — |
 | `data-heading-level` | enum | primary \| secondary \| tertiary | — | `primary`, `secondary`, `tertiary` |
 | `data-divider` | boolean | Show bottom divider | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -78,7 +76,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-section-header data-label="Example Label" data-heading-level="primary" data-src-html="value">
+<sherpa-section-header data-label="Example Label" data-heading-level="primary">
   <span slot="heading"><!-- Custom heading element (replaces default) --></span>
   <span slot="badge"><!-- Badge/tag next to heading --></span>
 </sherpa-section-header>

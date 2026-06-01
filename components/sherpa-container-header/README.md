@@ -13,8 +13,6 @@ Header row for sherpa-container. Renders title, description, and optional action
 | `data-open-external` | boolean | Show the open-external button | — | — |
 | `data-menu-button` | boolean | Show the overflow menu button | — | — |
 | `data-drag-handle` | boolean | Show the drag handle | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Internal CSS Custom Properties
 
@@ -29,7 +27,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-container-header data-title="Example Title" data-description="A brief description" data-src-html="value"></sherpa-container-header>
+<sherpa-container-header data-title="Example Title" data-description="A brief description"></sherpa-container-header>
 ```
 
 ## Import

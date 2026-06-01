@@ -14,7 +14,7 @@
  *   1 - Some components have missing or malformed documentation
  */
 
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -85,8 +85,10 @@ function parseJSDocTags(lines) {
  * Validate a component's JSDoc documentation
  */
 function validateComponent(componentName, componentPath) {
+  const tsFile = join(componentPath, `${componentName}.ts`);
   const jsFile = join(componentPath, `${componentName}.js`);
-  const jsdoc = extractJSDoc(jsFile);
+  const sourceFile = existsSync(tsFile) ? tsFile : jsFile;
+  const jsdoc = extractJSDoc(sourceFile);
 
   if (!jsdoc) {
     return {

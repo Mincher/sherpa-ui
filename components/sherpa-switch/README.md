@@ -10,8 +10,6 @@ Toggle switch component.
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-state` | enum | on \| off | — | `on`, `off` |
 | `disabled` | boolean | Native disabled state | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -61,7 +59,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-switch data-state="on" data-src-html="value" data-src-json="value"></sherpa-switch>
+<sherpa-switch data-state="on"></sherpa-switch>
 ```
 
 ### Disabled

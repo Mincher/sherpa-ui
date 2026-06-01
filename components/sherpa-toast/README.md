@@ -15,8 +15,6 @@ Toast notification with auto-dismiss, status variants, and static factory method
 | `data-timer-dismiss` | boolean | Enable auto-dismiss | — | — |
 | `data-show-close` | boolean | Show close button | `true` | — |
 | `data-position` | enum | top-right \| top-left \| bottom-right \| bottom-left \| top-center \| bottom-center | — | `top-right`, `top-left`, `bottom-right`, `bottom-left`, `top-center`, `bottom-center` |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

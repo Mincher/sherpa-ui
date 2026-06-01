@@ -30,18 +30,6 @@
       "name": "data-export-title",
       "type": "string",
       "description": "Title used when exporting the grid (PDF / image)"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [

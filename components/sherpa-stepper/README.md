@@ -20,7 +20,6 @@ Available templates:
 | `data-show-step-numbers` | enum | true \| false (default: true) | — | `true`, `false` |
 | `data-src-json` | string | URL to load steps JSON | — | — |
 | `data-template` | enum | default \| timeline (vertical timeline layout) | — | `default`, `timeline` |
-| `data-src-html` | string |  | — | — |
 
 ## Events
 

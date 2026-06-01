@@ -17,8 +17,6 @@ Available templates:
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-density` | enum | Display density variant | — | — |
 | `data-template` | enum | Layout variant: default \| actions (default: default) | — | `default`, `actions` |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -67,7 +65,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-toolbar data-template="default" data-src-html="value">
+<sherpa-toolbar data-template="default">
   <span slot="leading"><!-- Start zone (title, CTA buttons) --></span>
   <span slot="center"><!-- Center zone (search — grows to fill) --></span>
 </sherpa-toolbar>

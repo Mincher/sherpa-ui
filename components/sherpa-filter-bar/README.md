@@ -20,7 +20,6 @@ Available templates:
 | `data-src-json` | string | URL of a JSON file describing the filter bar | — | — |
 | `data-preset-filters` | json | Preset filter configuration JSON | — | — |
 | `data-available-fields` | json | Field definitions: [{ field, name, type }] | — | — |
-| `data-src-html` | string |  | — | — |
 
 ## Slots
 
@@ -165,7 +164,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-filter-bar data-src-json="value" data-src-html="value">
+<sherpa-filter-bar data-src-json="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="toggle"><!-- Filter on/off toggle --></span>

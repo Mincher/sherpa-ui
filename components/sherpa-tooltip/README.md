@@ -10,8 +10,6 @@ Singleton tooltip with CSS anchor positioning fallback. Operates as a singleton:
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-visible` | boolean | Whether the tooltip is currently shown | — | — |
 | `data-position` | enum | top \| bottom \| left \| right | — | `top`, `bottom`, `left`, `right` |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Methods
 
@@ -65,7 +63,7 @@ Position and show for an anchor element
 ### Basic
 
 ```html
-<sherpa-tooltip data-position="top" data-src-html="value" data-src-json="value"></sherpa-tooltip>
+<sherpa-tooltip data-position="top"></sherpa-tooltip>
 ```
 
 ## Import

@@ -23,8 +23,6 @@ Available templates:
 | `data-page` | number | (paged) Active 0-based page index | — | — |
 | `data-pages` | number | (paged) Total page count for the indicator | — | — |
 | `data-animation` | enum | none (default) \| slide | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

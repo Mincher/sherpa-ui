@@ -12,8 +12,6 @@ Animated loading indicator with spinner and optional label. Sets role="status" a
 | `data-orientation` | enum | horizontal \| vertical | — | `horizontal`, `vertical` |
 | `data-size` | enum | small \| default \| large | — | `small`, `default`, `large` |
 | `data-panel` | boolean | Surface background panel mode | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Internal CSS Custom Properties
 

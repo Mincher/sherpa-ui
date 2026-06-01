@@ -43,12 +43,6 @@
         "default",
         "timeline"
       ]
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [],

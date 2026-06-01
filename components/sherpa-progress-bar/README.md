@@ -12,8 +12,6 @@ Horizontal progress indicator — determinate or indeterminate. Sets role="progr
 | `data-value` | number | 0–100 percentage (determinate) | — | — |
 | `data-variant` | enum | determinate \| indeterminate | `determinate` | `determinate`, `indeterminate` |
 | `data-status-text` | string | Override auto-generated status text | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Internal CSS Custom Properties
 

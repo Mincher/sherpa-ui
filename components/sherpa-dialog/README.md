@@ -25,8 +25,6 @@ Available templates:
 | `data-page` | number | (wizard) Active 0-based page index | — | — |
 | `data-pages` | number | (wizard) Total page count override | — | — |
 | `data-finish-label` | string | (wizard) Label shown on the next button at last page (default: "Finish") | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

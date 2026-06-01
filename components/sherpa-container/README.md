@@ -21,8 +21,6 @@ Universal container for dashboard composition and standalone card layouts. Owns 
 | `data-elevation` | enum | none \| sm \| md \| lg | — | `none`, `sm`, `md`, `lg` |
 | `data-group-position` | enum | Managed by an enclosing <sherpa-container-group>: "first" \| "follow". The first tile in a group renders its header normally (and serves as the group title); follower tiles have header content visually muted while the header band preserves height for cross-tile content alignment. Consumers should not set this manually. | — | — |
 | `disabled` | boolean | Native disabled state | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

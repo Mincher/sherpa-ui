@@ -15,8 +15,6 @@ Versatile list item with leading, content, and trailing areas. Supports labels, 
 | `data-interactive` | boolean | Enables hover/click behaviour | — | — |
 | `data-draggable` | boolean | Shows drag handle | — | — |
 | `disabled` | boolean | Disabled state | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

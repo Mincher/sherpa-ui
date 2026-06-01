@@ -13,8 +13,6 @@ Inline contextual callout with status variants and expandable/dismissible body.
 | `data-expanded` | boolean | Body visible | — | — |
 | `data-dismissible` | boolean | Show toggle button | — | — |
 | `data-icon` | string | Override status icon (FA class) | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

@@ -35,12 +35,6 @@
       "name": "data-promo-link-url",
       "type": "string",
       "description": "Footer promo CTA link URL"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [],

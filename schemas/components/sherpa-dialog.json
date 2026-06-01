@@ -72,18 +72,6 @@
       "name": "data-finish-label",
       "type": "string",
       "description": "(wizard) Label shown on the next button at last page (default: \"Finish\")"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [

@@ -24,18 +24,6 @@
       "name": "data-row-span",
       "type": "number",
       "description": "Number of outer-grid rows this group"
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [

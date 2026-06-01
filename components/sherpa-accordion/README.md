@@ -12,8 +12,6 @@ Collapsible content panel using native <details>/<summary>. The browser handles 
 | `data-icon` | string | FontAwesome unicode for optional leading icon | — | — |
 | `open` | boolean | Native details open/expanded state | — | — |
 | `disabled` | boolean | Prevents interaction | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -51,7 +49,7 @@ sherpa-accordion::part(details) {
 ### Basic
 
 ```html
-<sherpa-accordion data-label="Example Label" data-icon="value" data-src-html="value">
+<sherpa-accordion data-label="Example Label" data-icon="value">
   <!-- Default slot content -->
   <p>Your content here</p>
   <span slot="actions"><!-- Trailing action buttons in the summary row --></span>

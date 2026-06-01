@@ -15,8 +15,6 @@ Semantic description list built on the native <dl> element. Content authored as 
 | `data-truncate` | boolean | Clip long values with ellipsis | — | — |
 | `data-key-width` | string | Key column width (default: auto) | — | — |
 | `data-type` | enum | Template variant | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## CSS Parts
 

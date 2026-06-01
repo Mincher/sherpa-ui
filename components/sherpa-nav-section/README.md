@@ -12,8 +12,6 @@ Secondary navigation panel: a heading with optional back button, followed by a v
 | `data-show-back` | string | "true" reveals the back button | — | — |
 | `data-active-id` | string | Currently active item id | — | — |
 | `data-sections` | string | JSON-encoded sections array | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

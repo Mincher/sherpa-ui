@@ -12,8 +12,6 @@ Empty-state placeholder with illustration, heading, description, and action slot
 | `data-description` | string | Description text | — | — |
 | `data-illustration` | string | Built-in illustration name | — | — |
 | `data-small-print` | string | Footer small-print text | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

@@ -13,8 +13,6 @@ Light-themed product bar (Apr 2026 redesign). System name trigger + time, option
 | `data-show-system` | string | "false" hides the brand stack | — | — |
 | `data-show-time` | string | "false" hides the time line | — | — |
 | `data-show-system-menu` | string | "false" hides the dropdown caret | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

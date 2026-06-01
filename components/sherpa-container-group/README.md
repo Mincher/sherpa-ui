@@ -10,8 +10,6 @@ Subgrid tile cluster for sherpa-layout-grid. Wraps a set of <sherpa-container> t
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-col-span` | enum | 2 \| 3 \| 4 \| 6 \| 8 \| 9 \| 12 — span across | — | `2`, `3`, `4`, `6`, `8`, `9`, `12` |
 | `data-row-span` | number | Number of outer-grid rows this group | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 
@@ -43,7 +41,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-container-group data-col-span="2" data-src-html="value" data-src-json="value">
+<sherpa-container-group data-col-span="2">
   <!-- Default slot content -->
   <p>Your content here</p>
 </sherpa-container-group>

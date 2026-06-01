@@ -10,18 +10,6 @@
       "name": "data-rationale",
       "type": "string",
       "description": "Italic rationale shown above the ops."
-    },
-    {
-      "name": "data-src-html",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
-    },
-    {
-      "name": "data-src-json",
-      "type": "string",
-      "description": "",
-      "inherited": "SherpaElement"
     }
   ],
   "slots": [

@@ -18,8 +18,6 @@ Group of radios with shared label, description, helper and a single selected val
 | `data-status` | enum | critical \| warning \| success \| info \| urgent | — | `critical`, `warning`, `success`, `info`, `urgent` |
 | `disabled` | boolean |  | — | — |
 | `required` | boolean |  | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

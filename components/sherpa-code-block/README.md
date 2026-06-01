@@ -17,8 +17,6 @@ Syntax-highlighted, copyable code display with optional line numbers. Uses Prism
 | `data-theme` | enum | light \| dark \| auto (inherits from page mode) | `auto` | `light`, `dark`, `auto` |
 | `data-supported-languages` | string | Read-only: comma-separated supported langs | — | — |
 | `data-highlight-error` | string | Read-only: error message if highlighting failed | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

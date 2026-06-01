@@ -18,23 +18,6 @@ Available templates:
 | `min` | string | Minimum selectable time (HH:MM) | — | — |
 | `max` | string | Maximum selectable time (HH:MM) | — | — |
 | `step` | number | Step increment in seconds (default 60) | — | — |
-| `data-label` | string |  | — | — |
-| `data-description` | string |  | — | — |
-| `data-helper` | string |  | — | — |
-| `data-layout` | string |  | — | — |
-| `disabled` | string |  | — | — |
-| `readonly` | string |  | — | — |
-| `required` | string |  | — | — |
-| `name` | string |  | — | — |
-| `value` | string |  | — | — |
-| `placeholder` | string |  | — | — |
-| `pattern` | string |  | — | — |
-| `minlength` | string |  | — | — |
-| `maxlength` | string |  | — | — |
-| `novalidate` | string |  | — | — |
-| `data-status` | string |  | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -101,13 +84,7 @@ sherpa-input-time::part(trigger) {
 ### Basic
 
 ```html
-<sherpa-input-time min="value" max="value" data-label="Example Label"></sherpa-input-time>
-```
-
-### Disabled
-
-```html
-<sherpa-input-time data-label="Disabled" disabled></sherpa-input-time>
+<sherpa-input-time min="value" max="value"></sherpa-input-time>
 ```
 
 ## Import

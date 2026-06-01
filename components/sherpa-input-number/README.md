@@ -11,23 +11,6 @@ Numerical input with stepper buttons. Inherits label, description, helper, layou
 | `min` | number | Minimum allowed value | — | — |
 | `max` | number | Maximum allowed value | — | — |
 | `step` | number | Step increment (default: 1) | — | — |
-| `data-label` | string |  | — | — |
-| `data-description` | string |  | — | — |
-| `data-helper` | string |  | — | — |
-| `data-layout` | string |  | — | — |
-| `disabled` | string |  | — | — |
-| `readonly` | string |  | — | — |
-| `required` | string |  | — | — |
-| `name` | string |  | — | — |
-| `value` | string |  | — | — |
-| `placeholder` | string |  | — | — |
-| `pattern` | string |  | — | — |
-| `minlength` | string |  | — | — |
-| `maxlength` | string |  | — | — |
-| `novalidate` | string |  | — | — |
-| `data-status` | string |  | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -106,13 +89,7 @@ Decrement value by n steps
 ### Basic
 
 ```html
-<sherpa-input-number data-label="Example Label" data-description="A brief description" data-helper="value"></sherpa-input-number>
-```
-
-### Disabled
-
-```html
-<sherpa-input-number data-label="Disabled" disabled></sherpa-input-number>
+<sherpa-input-number></sherpa-input-number>
 ```
 
 ## Import

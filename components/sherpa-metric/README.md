@@ -14,8 +14,6 @@ KPI card with value, trend, and sparkline. Extends ContentAttributesMixin(Sherpa
 | `data-label` | string | Metric heading/label | — | — |
 | `value` | string | Formatted metric value | — | — |
 | `data-delta` | string | Change amount (e.g. "+12.5%") | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Methods
 

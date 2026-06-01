@@ -28,8 +28,6 @@ Available templates:
 | `data-empty` | string | Empty-state message when search yields zero matches (default: `No results`) | — | — |
 | `data-can-archive` | boolean | (AI variant) Enables the archive button | — | — |
 | `data-busy` | boolean | (AI variant) Disables new-chat and archive buttons | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

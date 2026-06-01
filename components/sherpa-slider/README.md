@@ -19,8 +19,6 @@ Single or dual-handle range slider with optional numeric inputs. Pointer event d
 | `data-show-inputs` | boolean | Show numeric input fields beside track | — | — |
 | `data-show-labels` | boolean | Show min/max increment labels | — | — |
 | `disabled` | boolean | Disabled state | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

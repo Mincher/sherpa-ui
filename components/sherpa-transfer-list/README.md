@@ -11,8 +11,6 @@ Two-pane shuttle (available <-> selected). Composes sherpa-list, sherpa-list-ite
 | `data-source-heading` | string | Available pane heading | `Available` | — |
 | `data-target-heading` | string | Selected pane heading | `Selected` | — |
 | `data-search` | boolean | Show search inputs | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -55,7 +53,7 @@ options: [{ value, label, selected? }]
 ### Basic
 
 ```html
-<sherpa-transfer-list data-source-heading="value" data-target-heading="value" data-src-html="value"></sherpa-transfer-list>
+<sherpa-transfer-list data-source-heading="value" data-target-heading="value"></sherpa-transfer-list>
 ```
 
 ## Import

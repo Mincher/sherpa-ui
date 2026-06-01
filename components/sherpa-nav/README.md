@@ -14,7 +14,6 @@ Collapsible navigation sidebar with search and edit modes. Loads an HTML nav tem
 | `data-promo-message` | string | Footer promo body message | — | — |
 | `data-promo-link-text` | string | Footer promo CTA link label | — | — |
 | `data-promo-link-url` | string | Footer promo CTA link URL | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 

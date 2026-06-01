@@ -23,8 +23,6 @@ Set via `data-type` attribute:
 | `data-show-apply` | boolean | Show apply button (default: true) | — | — |
 | `data-apply-closes` | boolean | Apply auto-closes parent (default: true) | — | — |
 | `data-selected` | boolean | Drives radio checked state (card-select) | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

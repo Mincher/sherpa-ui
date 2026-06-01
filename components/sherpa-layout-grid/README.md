@@ -13,8 +13,6 @@ Responsive dashboard grid. Slotted <sherpa-container data-variant="resizable"> c
 | `data-editable` | boolean | Enables drag-to-reposition for slotted containers | — | — |
 | `data-heading` | string | Heading text shown on the grid header strip | — | — |
 | `data-export-title` | string | Title used when exporting the grid (PDF / image) | — | — |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 

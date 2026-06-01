@@ -9,8 +9,6 @@ Recurrence/schedule picker. Composes sherpa-input-select (frequency), sherpa-inp
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-frequency` | enum | once \| hourly \| daily \| weekly \| monthly | `weekly` | `once`, `hourly`, `daily`, `weekly`, `monthly` |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Events
 
@@ -44,7 +42,7 @@ element.addEventListener("schedule-change", (e) => {
 ### Basic
 
 ```html
-<sherpa-scheduler data-frequency="once" data-src-html="value" data-src-json="value"></sherpa-scheduler>
+<sherpa-scheduler data-frequency="once"></sherpa-scheduler>
 ```
 
 ## Import

@@ -19,8 +19,6 @@ Available templates:
 | `data-loading` | boolean | Show a spinner instead of slot content | — | — |
 | `data-loading-text` | string | Optional caption shown next to the spinner | — | — |
 | `data-position` | enum | bottom-start (default) \| bottom-end \| top-start \| top-end | — | `bottom-end`, `top-start`, `top-end` |
-| `data-src-html` | string |  | — | — |
-| `data-src-json` | string |  | — | — |
 
 ## Slots
 
