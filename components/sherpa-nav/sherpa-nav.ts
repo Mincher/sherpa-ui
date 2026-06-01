@@ -73,14 +73,40 @@ import "../sherpa-nav-item/sherpa-nav-item.js";
 
 import { setupDragSort } from "../utilities/drag-sort.js";
 
+/* ── Domain types ──────────────────────────────────────────────── */
+
+/** The last active selection, replayed after a template re-render. */
+interface NavSelection {
+  kind: "item" | "link";
+  itemId?: string;
+  sectionId?: string | null;
+  target?: string;
+}
+
+/** Footer-promo configuration. */
+interface PromoConfig {
+  title?: string;
+  message?: string;
+  link?: { text?: string; url?: string } | null;
+}
+
+/** A nav item descriptor used to stamp the nav-item template. */
+interface NavItemData {
+  label?: string;
+  id?: string;
+  icon?: string;
+  badge?: string;
+  route?: string;
+  active?: boolean;
+}
+
 export class SherpaNav extends SherpaElement {
   static MODES = { DEFAULT: "default", SEARCH: "search", EDIT: "edit" };
 
   static override get cssUrl(): string {
     return new URL("./sherpa-nav.css", import.meta.url).href;
   }
-  static override get htmlUrl(): string {
-    // @ts-expect-error - TODO: Fix type
+  static override get htmlUrl(): string | null {
     return null;
   }
 
@@ -95,42 +121,42 @@ export class SherpaNav extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
-    searchField: '.search-field'
-  });
+  /** The embedded search input, if the nav template includes one. */
+  get #searchField(): (HTMLElement & { value?: string; clear?: () => void }) | null {
+    return this.$(".nav-search sherpa-input-search");
+  }
 
   #endingSearch = false; // Guard flag to prevent infinite recursion
   #ready = false;
   #hostClickWired = false;
   #defaultUrl = new URL("./sherpa-nav.html", import.meta.url).href;
-  #navItemTpl = null; // Cached <template class="nav-item-tpl">
-  #badgeTpl = null; // Cached <template class="badge-tpl">
-  #defaultOrders = null; // Map<groupIndex, sortKey[]> captured at render
+  #navItemTpl: HTMLTemplateElement | null = null; // Cached <template class="nav-item-tpl">
+  #badgeTpl: HTMLTemplateElement | null = null; // Cached <template class="badge-tpl">
+  #defaultOrders: Map<number, string[]> | null = null; // captured at render
   // Last selection requested by the host. Persisted on the instance so we
   // can re-apply the active-state styling after the nav template is
   // swapped via data-src-html or otherwise re-rendered — without this the
   // current page would visually deselect every time the definition
   // changes (the new DOM has no [data-state="selected"] markers).
-  #lastSelection = null; // { kind: 'item'|'link', itemId?, sectionId?, target? }
+  #lastSelection: NavSelection | null = null;
   // Last pinned state observed on the host. Captured before a data-src-html
   // swap (and updated whenever the user toggles the pin button) so we
   // can restore it after the new template renders — otherwise the new
   // template's own data-pinned default would clobber the user's choice.
-  #lastPinned = null;
+  #lastPinned: string | null = null;
   // Programmatic footer-promo config set via setPromoConfig(); takes
   // precedence over data-promo-* host attributes when present.
-  #promoConfig = null;
+  #promoConfig: PromoConfig | null = null;
   #initialized = false;
 
-  /** @returns {HTMLElement|null} The .sherpa-nav-root wrapper inside the shadow root. */
-  get #root() {
-    return this.$(".sherpa-nav-root");
+  /** The .sherpa-nav-root wrapper inside the shadow root. */
+  get #root(): HTMLElement | null {
+    return this.$<HTMLElement>(".sherpa-nav-root");
   }
 
   // ═══════════════════════ SherpaElement Hooks ═══════════════════════
 
-  // @ts-expect-error - TODO: Fix type
-  async onRender() {
+  override async onRender(): Promise<void> {
     if (!this.#initialized) {
       // Guard re-entrant onRender() calls triggered by renderFromUrl().
       // Without this, the first render can recursively refetch the nav
@@ -147,15 +173,11 @@ export class SherpaNav extends SherpaElement {
       this.addEventListener("click", (e) => this.#onHostClick(e));
       this.#hostClickWired = true;
     }
-    // @ts-expect-error - TODO: Fix type
-    this.els.searchField = this.$(".nav-search sherpa-input-search");
-    // @ts-expect-error - TODO: Fix type
-    this.#navItemTpl = this.$("template.nav-item-tpl") || this.#injectFallbackTemplate(
+    this.#navItemTpl = this.$<HTMLTemplateElement>("template.nav-item-tpl") || this.#injectFallbackTemplate(
       "nav-item-tpl",
       '<sherpa-nav-item data-variant="child" tabindex="0" role="button"></sherpa-nav-item>',
     );
-    // @ts-expect-error - TODO: Fix type
-    this.#badgeTpl = this.$("template.badge-tpl") || this.#injectFallbackTemplate(
+    this.#badgeTpl = this.$<HTMLTemplateElement>("template.badge-tpl") || this.#injectFallbackTemplate(
       "badge-tpl",
       '<sherpa-tag slot="badge" data-status="success"></sherpa-tag>',
     );
@@ -177,13 +199,10 @@ export class SherpaNav extends SherpaElement {
     // otherwise replay whichever setActive* call last fired.
     if (!target && this.#lastSelection) {
       const sel = this.#lastSelection;
-      // @ts-expect-error - TODO: Fix type
       if (sel.kind === "item") {
         // @ts-expect-error - TODO: Fix type
         this.#applyActiveItem(sel.itemId, sel.sectionId);
-      // @ts-expect-error - TODO: Fix type
       } else if (sel.kind === "link") {
-        // @ts-expect-error - TODO: Fix type
         this.#applyActiveLink(sel.target);
       }
     }
@@ -206,18 +225,14 @@ export class SherpaNav extends SherpaElement {
   // ═══════════════════════════ Public API ═══════════════════════════
 
   get isPinned() {
-    // @ts-expect-error - TODO: Fix type
     return this.#root?.dataset["pinned"] === "true";
   }
   set isPinned(v) {
     const root = this.#root;
     if (!root) return;
     const pinned = !!v;
-    // @ts-expect-error - TODO: Fix type
     root.dataset["pinned"] = pinned ? "true" : "false";
-    // @ts-expect-error - TODO: Fix type
     this.dataset["pinned"] = root.dataset["pinned"];
-    // @ts-expect-error - TODO: Fix type
     this.#lastPinned = root.dataset["pinned"];
     this.#onPinnedChange(pinned);
   }
@@ -230,31 +245,24 @@ export class SherpaNav extends SherpaElement {
   }
 
   get mode() {
-    // @ts-expect-error - TODO: Fix type
     return this.#root?.dataset["mode"] || SherpaNav.MODES.DEFAULT;
   }
   set mode(v) {
     const root = this.#root;
     if (!root) return;
-    // @ts-expect-error - TODO: Fix type
     const oldMode = root.dataset["mode"] || SherpaNav.MODES.DEFAULT;
     if (Object.values(SherpaNav.MODES).includes(v)) {
-      // @ts-expect-error - TODO: Fix type
       root.dataset["mode"] = v;
     } else {
-      // @ts-expect-error - TODO: Fix type
       root.dataset["mode"] = SherpaNav.MODES.DEFAULT;
     }
-    // @ts-expect-error - TODO: Fix type
     this.dataset["mode"] = root.dataset["mode"];
-    // @ts-expect-error - TODO: Fix type
     this.#onModeChange(root.dataset["mode"], oldMode);
   }
 
   startSearch() {
     this.mode = SherpaNav.MODES.SEARCH;
-    // @ts-expect-error - TODO: Fix type
-    this.els.searchField?.focus();
+    this.#searchField?.focus();
   }
 
   endSearch() {
@@ -264,11 +272,10 @@ export class SherpaNav extends SherpaElement {
 
     try {
       this.mode = SherpaNav.MODES.DEFAULT;
-      if (this.els.searchField) {
+      if (this.#searchField) {
+        this.#searchField.value = "";
         // @ts-expect-error - TODO: Fix type
-        this.els.searchField.value = "";
-        // @ts-expect-error - TODO: Fix type
-        this.els.searchField.clear();
+        this.#searchField.clear();
       }
       this.#applySearchFilter("");
     } finally {
@@ -278,7 +285,6 @@ export class SherpaNav extends SherpaElement {
 
   // @ts-expect-error - TODO: Fix type
   setActiveLink(target) {
-    // @ts-expect-error - TODO: Fix type
     this.#lastSelection = { kind: "link", target };
     this.#applyActiveLink(target);
   }
@@ -293,7 +299,6 @@ export class SherpaNav extends SherpaElement {
 
   // @ts-expect-error - TODO: Fix type
   setActiveItem(itemId, sectionId = null) {
-    // @ts-expect-error - TODO: Fix type
     this.#lastSelection = { kind: "item", itemId, sectionId };
     this.#applyActiveItem(itemId, sectionId);
   }
@@ -653,12 +658,9 @@ export class SherpaNav extends SherpaElement {
     if (root) {
       // Restore the host's last pinned choice across template swaps; fall
       // back to whatever the new template declared on first render.
-      // @ts-expect-error - TODO: Fix type
       const pinned = this.#lastPinned ?? root.dataset["pinned"] ?? "false";
-      // @ts-expect-error - TODO: Fix type
       root.dataset["pinned"] = pinned;
       this.dataset["pinned"] = pinned;
-      // @ts-expect-error - TODO: Fix type
       this.dataset["mode"] = root.dataset["mode"] || SherpaNav.MODES.DEFAULT;
     }
     const pinBtn = this.$(".nav-pin-btn");
@@ -681,10 +683,9 @@ export class SherpaNav extends SherpaElement {
         : SherpaNav.MODES.EDIT;
     });
 
-    const sf = this.els.searchField;
+    const sf = this.#searchField;
     // @ts-expect-error - TODO: Fix type
     sf?.addEventListener("input", (e: CustomEvent) => {
-      // @ts-expect-error - TODO: Fix type
       const value = e.detail?.value ?? sf.value;
       this.#applySearchFilter(value);
       this.mode = value.trim()
@@ -699,7 +700,6 @@ export class SherpaNav extends SherpaElement {
         this.endSearch();
       }
     });
-    // @ts-expect-error - TODO: Fix type
     sf?.addEventListener("search", (e: CustomEvent) => {
       if (!e.detail?.value) this.endSearch();
     });
@@ -891,22 +891,17 @@ export class SherpaNav extends SherpaElement {
    * data-src-html nav HTML omits the cloning templates that the component
    * relies on for hydrating recents/favorites and section headers.
    */
-  // @ts-expect-error - TODO: Fix type
-  #injectFallbackTemplate(className, innerHTML) {
+  #injectFallbackTemplate(className: string, innerHTML: string): HTMLTemplateElement {
     const tpl = document.createElement("template");
     tpl.className = className;
     tpl.innerHTML = innerHTML;
-    // @ts-expect-error - TODO: Fix type
-    (this.$(".sherpa-nav-root") || this.shadowRoot).appendChild(tpl);
+    (this.$(".sherpa-nav-root") || this.shadow).appendChild(tpl);
     return tpl;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #createNavItem(item, editable = false) {
-    // @ts-expect-error - TODO: Fix type
-    const el = this.#navItemTpl.content
-      .cloneNode(true)
-      .querySelector("sherpa-nav-item");
+  #createNavItem(item: NavItemData, editable = false): HTMLElement {
+    const el = (this.#navItemTpl!.content.cloneNode(true) as DocumentFragment)
+      .querySelector<HTMLElement>("sherpa-nav-item")!;
     el.textContent = item.label ?? "";
     if (item.id) el.dataset["itemId"] = item.id;
     if (item.icon) el.dataset["icon"] = item.icon;
@@ -917,12 +912,9 @@ export class SherpaNav extends SherpaElement {
     return el;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #createBadgeElement(text) {
-    // @ts-expect-error - TODO: Fix type
-    const tag = this.#badgeTpl.content
-      .cloneNode(true)
-      .querySelector("sherpa-tag");
+  #createBadgeElement(text: string): HTMLElement {
+    const tag = (this.#badgeTpl!.content.cloneNode(true) as DocumentFragment)
+      .querySelector<HTMLElement>("sherpa-tag")!;
     tag.textContent = text;
     return tag;
   }
@@ -980,10 +972,8 @@ export class SherpaNav extends SherpaElement {
   }
 
   #captureDefaultOrders() {
-    // @ts-expect-error - TODO: Fix type
     if (!this.#defaultOrders) this.#defaultOrders = new Map();
     // Always recapture on render — the template may have changed.
-    // @ts-expect-error - TODO: Fix type
     this.#defaultOrders.clear();
     this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
       // @ts-expect-error - TODO: Fix type
