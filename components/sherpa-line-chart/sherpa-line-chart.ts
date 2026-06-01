@@ -82,14 +82,15 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
+
     if (!this.hasAttribute('data-viz')) this.setAttribute('data-viz', '');
 
-    this.#titleEl     = this.$('.chart-title');
-    this.#yLabelEls   = this.$$('.y-label');
-    this.#chartAreaEl = this.$('.chart-area');
-    this.#seriesLayerEl = this.$('.series-layer');
-    this.#xAxisEl     = this.$('.x-axis');
-    this.#legendEl    = this.$('.chart-legend');
+    this.els.title     = this.$('.chart-title');
+    this.els.yLabels   = this.$$('.y-label');
+    this.els.chartArea = this.$('.chart-area');
+    this.els.seriesLayer = this.$('.series-layer');
+    this.els.xAxis     = this.$('.x-axis');
+    this.els.legend    = this.$('.chart-legend');
 
     // Cloning prototypes live inside the shadow root
     const root = this.shadowRoot;
@@ -321,13 +322,13 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   /* ── Private: sync ────────────────────────────────────────────── */
 
   #syncTitle() {
-    if (this.#titleEl) {
+    if (this.els.title) {
       const entity = cleanTitleBase(this.dataset.title || '');
       const segMode = this.getAttribute('data-segment-mode');
       const groupField = this.getAttribute('data-segment-field')
         || this.getAttribute('data-category');
       const hasActiveGroup = segMode !== 'off' && !!groupField;
-      this.#titleEl.textContent = hasActiveGroup
+      this.els.title.textContent = hasActiveGroup
         ? `${entity} by ${formatFieldName(groupField)}`
         : `All ${entity}`;
     }
@@ -354,7 +355,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   /* ── Private: render ──────────────────────────────────────────── */
 
   #render() {
-    if (!this.#seriesLayerEl || !this.#data) return;
+    if (!this.els.seriesLayer || !this.#data) return;
 
     const { labels = [] } = this.#data;
     let { series = [] } = this.#data;
@@ -384,7 +385,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.style.setProperty('--_range', yMax - yMin || 1);
 
     // ── Y-axis labels (top → bottom = max → min) ────────────────
-    const yLabels = Array.from(this.#yLabelEls);
+    const yLabels = Array.from(this.els.yLabels);
     const tickCount = yLabels.length;
     for (let i = 0; i < tickCount; i++) {
       const val = yMax - (yMax - yMin) * (i / (tickCount - 1));
@@ -392,11 +393,11 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     }
 
     // ── X-axis labels ───────────────────────────────────────────
-    this.#xAxisEl.replaceChildren();
+    this.els.xAxis.replaceChildren();
     for (const label of labels) {
       const span = this.#xLabelTpl.content.firstElementChild.cloneNode(true);
       span.textContent = label;
-      this.#xAxisEl.appendChild(span);
+      this.els.xAxis.appendChild(span);
     }
 
     // ── Series (smart diff — only replace changed/new shapes) ───
@@ -410,10 +411,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       const prev = prevSeries?.[si];
 
       // Reuse existing .series element or create a new one
-      let seriesEl = this.#seriesLayerEl.children[si];
+      let seriesEl = this.els.seriesLayer.children[si];
       if (!seriesEl) {
         seriesEl = this.#seriesTpl.content.firstElementChild.cloneNode(true);
-        this.#seriesLayerEl.appendChild(seriesEl);
+        this.els.seriesLayer.appendChild(seriesEl);
       }
       seriesEl.style.color = color;
 
@@ -455,21 +456,21 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     });
 
     // Remove extra series elements left over from a dataset with more series
-    while (this.#seriesLayerEl.children.length > series.length) {
-      this.#seriesLayerEl.removeChild(this.#seriesLayerEl.lastChild);
+    while (this.els.seriesLayer.children.length > series.length) {
+      this.els.seriesLayer.removeChild(this.els.seriesLayer.lastChild);
     }
 
     // Snapshot current series values for the next diff
     this.#prevSeriesData = series.map(s => ({ ...s, values: [...s.values] }));
 
     // ── Legend ───────────────────────────────────────────────────
-    this.#legendEl.replaceChildren();
+    this.els.legend.replaceChildren();
     series.forEach((s, si) => {
       const color = s.color || DEFAULT_COLORS[si % DEFAULT_COLORS.length];
       const item = this.#legendItemTpl.content.firstElementChild.cloneNode(true);
       item.querySelector('.legend-key').style.backgroundColor = color;
       item.querySelector('.legend-label').textContent = s.name || '';
-      this.#legendEl.appendChild(item);
+      this.els.legend.appendChild(item);
     });
   }
 
