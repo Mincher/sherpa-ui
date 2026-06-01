@@ -72,6 +72,15 @@ if (!document.adoptedStyleSheets.includes(viewHeaderGroupSheet)) {
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, viewHeaderGroupSheet];
 }
 
+/** A selectable view-picker entry. */
+interface PickerItem {
+  value: string;
+  label?: string;
+  badge?: string;
+  badgeStatus?: string;
+  checked?: boolean;
+}
+
 export class SherpaViewHeader extends SherpaElement {
   static override get cssUrl(): string  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-view-header.html', import.meta.url).href; }
@@ -80,15 +89,14 @@ export class SherpaViewHeader extends SherpaElement {
     return [...super.observedAttributes, 'data-label', 'data-show-debug-toggles', 'data-favorite', 'data-edit-mode', 'data-back-button', 'data-export-title', 'data-breadcrumbs'];
   }
 
-  #viewId = null;
-  #viewPickerEls = [];
-  #pickerItems = [];
-  #pickerValue = null;
-  #optionSlotObserver = null;
-  #pickerRowTpl = null;
+  #viewId: string | null = null;
+  #viewPickerEls: HTMLElement[] = [];
+  #pickerItems: PickerItem[] = [];
+  #pickerValue: string | null = null;
+  #optionSlotObserver: MutationObserver | null = null;
+  #pickerRowTpl: HTMLTemplateElement | null = null;
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, _oldValue: string | null, newValue: string | null): void {
     switch (name) {
       case 'data-label': {
         const label = this.$('.heading-label');
@@ -107,8 +115,7 @@ export class SherpaViewHeader extends SherpaElement {
     }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #applyEditMode(on) {
+  #applyEditMode(on: boolean) {
     // Sync toggle state
     const toggle = this.$('#edit-mode-toggle');
     // @ts-expect-error - TODO: Fix type
@@ -122,18 +129,15 @@ export class SherpaViewHeader extends SherpaElement {
 
   // ============ Public API ============
 
-  // @ts-expect-error - TODO: Fix type
-  setHeading(name) { this.dataset["label"] = name; }
+  setHeading(name: string) { this.dataset["label"] = name; }
   getHeading() { return this.dataset["label"] || ''; }
-  // @ts-expect-error - TODO: Fix type
-  setViewId(id) {
+  setViewId(id: string | null) {
     this.#viewId = id;
     if (id) this.dataset["viewId"] = id;
     else delete this.dataset["viewId"];
   }
   getViewId() { return this.#viewId; }
-  // @ts-expect-error - TODO: Fix type
-  setFavorite(on) {
+  setFavorite(on: boolean) {
     this.dataset["favorite"] = on ? 'true' : 'false';
     this.#syncFavoriteButton(on);
   }
@@ -152,8 +156,11 @@ export class SherpaViewHeader extends SherpaElement {
    * Fires `viewselectionchange` (bubbles, composed) with detail
    * `{ value, item }` when the user picks an option.
    */
-  // @ts-expect-error - TODO: Fix type
-  setViewOptions(items, currentValue, opts = {}) {
+  setViewOptions(
+    items: PickerItem[],
+    currentValue?: string | null,
+    opts: { ariaLabel?: string; placeholder?: string } = {},
+  ) {
     this.#renderViewPicker(Array.isArray(items) ? items : [], currentValue, opts);
   }
 
@@ -162,18 +169,13 @@ export class SherpaViewHeader extends SherpaElement {
 
   /** Remove any picker chrome and clear stored options. */
   clearViewOptions() {
-    // @ts-expect-error - TODO: Fix type
     this.#viewPickerEls.forEach((el) => el.remove());
     this.#viewPickerEls = [];
     this.#pickerItems = [];
     this.#pickerValue = null;
   }
-  // @ts-expect-error - TODO: Fix type
-  #resizeHandler = null;
-
   override onDisconnect(): void {
     if (this.#optionSlotObserver) {
-      // @ts-expect-error - TODO: Fix type
       this.#optionSlotObserver.disconnect();
       this.#optionSlotObserver = null;
     }
@@ -182,8 +184,7 @@ export class SherpaViewHeader extends SherpaElement {
   // ============ Private Methods ============
 
   override onRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.#pickerRowTpl = this.$('template.picker-row-tpl');
+    this.#pickerRowTpl = this.$<HTMLTemplateElement>('template.picker-row-tpl');
     this.#setupSelectors();
     this.#setupExport();
     this.#setupFavorite();
@@ -265,8 +266,7 @@ export class SherpaViewHeader extends SherpaElement {
     });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #syncFavoriteButton(on) {
+  #syncFavoriteButton(on: boolean) {
     const btn = this.$('#favorite-btn');
     if (!btn) return;
     // @ts-expect-error - TODO: Fix type
@@ -305,8 +305,7 @@ export class SherpaViewHeader extends SherpaElement {
    * the attribute is missing/invalid, the row is hidden via
    * `data-has-breadcrumbs`.
    */
-  // @ts-expect-error - TODO: Fix type
-  #syncBreadcrumbs(raw) {
+  #syncBreadcrumbs(raw: string | null | undefined) {
     const crumbsEl = this.$('#view-breadcrumbs');
     if (!crumbsEl) return;
     // @ts-expect-error - TODO: Fix type
@@ -368,7 +367,6 @@ export class SherpaViewHeader extends SherpaElement {
       this.setViewOptions(items, selected, { ariaLabel });
     };
     harvest();
-    // @ts-expect-error - TODO: Fix type
     this.#optionSlotObserver = new MutationObserver((records) => {
       const sawOption = records.some((r) =>
         [...r.addedNodes].some(
@@ -378,14 +376,11 @@ export class SherpaViewHeader extends SherpaElement {
       );
       if (sawOption) harvest();
     });
-    // @ts-expect-error - TODO: Fix type
     this.#optionSlotObserver.observe(this, { childList: true });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #renderViewPicker(items, currentValue, { ariaLabel = 'Select view', placeholder = 'Select…' } = {}) {
+  #renderViewPicker(items: PickerItem[], currentValue: string | null | undefined, { ariaLabel = 'Select view', placeholder = 'Select…' } = {}) {
     // Strip any chrome from a previous render.
-    // @ts-expect-error - TODO: Fix type
     this.#viewPickerEls.forEach((el) => el.remove());
     this.#viewPickerEls = [];
     this.#pickerItems = items;
@@ -394,7 +389,6 @@ export class SherpaViewHeader extends SherpaElement {
     const resolvedValue =
       // @ts-expect-error - TODO: Fix type
       items.find((it) => it.value === currentValue)?.value || items[0].value;
-    // @ts-expect-error - TODO: Fix type
     const currentEntry = items.find((it) => it.value === resolvedValue);
     this.#pickerValue = resolvedValue;
 
@@ -445,7 +439,6 @@ export class SherpaViewHeader extends SherpaElement {
     if (triggerBadge) this.appendChild(triggerBadge);
     this.appendChild(menu);
 
-    // @ts-expect-error - TODO: Fix type
     this.#viewPickerEls = triggerBadge ? [trigger, triggerBadge, menu] : [trigger, menu];
 
     // Wait for sherpa-button's shadow DOM, then patch its trigger
@@ -490,65 +483,55 @@ export class SherpaViewHeader extends SherpaElement {
       // @ts-expect-error - TODO: Fix type
       menu.hide?.();
       if (!value) return;
-      // @ts-expect-error - TODO: Fix type
       const picked = this.#pickerItems.find((it) => it.value === value);
       if (!picked) return;
-      // @ts-expect-error - TODO: Fix type
       this.#pickerValue = picked.value;
       // Update trigger label + badge in place so the picker reflects
       // the new selection without a full re-render.
       // @ts-expect-error - TODO: Fix type
       trigger.setAttribute('data-label', picked.label);
-      // @ts-expect-error - TODO: Fix type
       if (this.#viewPickerEls[1]?.tagName === 'SHERPA-TAG') {
-        // @ts-expect-error - TODO: Fix type
         this.#viewPickerEls[1].remove();
         this.#viewPickerEls.splice(1, 1);
       }
-      // @ts-expect-error - TODO: Fix type
       if (picked.badge) {
         const tag = document.createElement('sherpa-tag');
         tag.dataset["viewPicker"] = '';
         tag.setAttribute('slot', 'view-selection');
         tag.setAttribute('data-variant', 'secondary');
-        // @ts-expect-error - TODO: Fix type
         if (picked.badgeStatus) tag.setAttribute('data-status', picked.badgeStatus);
-        // @ts-expect-error - TODO: Fix type
         tag.textContent = picked.badge;
         trigger.after(tag);
-        // @ts-expect-error - TODO: Fix type
         this.#viewPickerEls.splice(1, 0, tag);
       }
       // Update the radio-style indicators in the menu.
       menu.querySelectorAll('sherpa-menu-item').forEach((it) => {
         const v = it.getAttribute('value');
-        // @ts-expect-error - TODO: Fix type
         it.setAttribute('aria-checked', v === picked.value ? 'true' : 'false');
-        // @ts-expect-error - TODO: Fix type
         if (v === picked.value) it.setAttribute('data-state', 'selected');
         else it.removeAttribute('data-state');
       });
       this.dispatchEvent(new CustomEvent('view-selection-change', {
         bubbles: true, composed: true,
-        // @ts-expect-error - TODO: Fix type
         detail: { value: picked.value, item: picked },
       }));
     });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #buildPickerRow({ value, label, badge, badgeStatus, checked }) {
-    // @ts-expect-error - TODO: Fix type
-    const node = this.#pickerRowTpl.content.firstElementChild.cloneNode(true);
+  #buildPickerRow({ value, label, badge, badgeStatus, checked }: PickerItem): HTMLElement {
+    const node = this.#pickerRowTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
     const item = node.querySelector('sherpa-menu-item');
-    item.setAttribute('value', value);
-    item.setAttribute('aria-checked', checked ? 'true' : 'false');
-    if (checked) item.setAttribute('data-state', 'selected');
+    if (item) {
+      item.setAttribute('value', value);
+      item.setAttribute('aria-checked', checked ? 'true' : 'false');
+      if (checked) item.setAttribute('data-state', 'selected');
+    }
 
-    node.querySelector('.picker-label').textContent = label;
+    const labelEl = node.querySelector('.picker-label');
+    if (labelEl) labelEl.textContent = label ?? '';
 
-    const tag = node.querySelector('.picker-badge');
-    if (badge) {
+    const tag = node.querySelector<HTMLElement & { hidden: boolean }>('.picker-badge');
+    if (badge && tag) {
       if (badgeStatus) tag.setAttribute('data-status', badgeStatus);
       tag.textContent = badge;
       tag.hidden = false;
