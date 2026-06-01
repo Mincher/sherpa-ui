@@ -64,6 +64,7 @@ import {
   getDateFieldProvider,
 } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import type { EventHandler } from "../utilities/types.js";
 import "../sherpa-button/sherpa-button.js";
 import "../sherpa-tag/sherpa-tag.js";
 import "../sherpa-input-search/sherpa-input-search.js";
@@ -126,7 +127,29 @@ function columnWidth(type) {
   }
 }
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaDataGridDataset extends DOMStringMap {
+  loading?: string;
+  segmentField?: string;
+  segmentMode?: string;
+  sortField?: string;
+  sortDirection?: 'asc' | 'desc';
+  page?: string;
+  pageSize?: string;
+  selectable?: string;
+  showActions?: string;
+  showSecondaryHeaders?: string;
+  showPagination?: string;
+  filters?: string;
+}
+
 class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
+
+  override get dataset(): SherpaDataGridDataset {
+    return super.dataset as SherpaDataGridDataset;
+  }
+
   static override get cssUrl(): string {
     return new URL("./sherpa-data-grid.css", import.meta.url).href;
   }
@@ -1864,11 +1887,11 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Filter menu ─────────────────────────────────────────────────────── */
 
-  #onToggleFilters = () => {
+  #onToggleFilters: EventHandler = () => {
     this.toggleAttribute("data-filters");
   };
 
-  #onMenuPopulate = (e) => {
+  #onMenuPopulate: EventHandler<CustomEvent> = (e) => {
     const menu = e.detail?.menu;
     if (!menu) return;
     const item = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
