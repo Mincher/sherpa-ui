@@ -57,6 +57,20 @@ interface SherpaFilterBarDataset extends DOMStringMap {
   type?: string;
 }
 
+/* ── Domain types ──────────────────────────────────────────────── */
+
+/** An available-field descriptor for the add-filter menu. */
+interface FieldDef {
+  field: string;
+  name?: string;
+  type?: string;
+}
+
+/** A sherpa-button acting as a menu trigger. */
+interface MenuButtonLike extends HTMLElement {
+  setMenuItems?(items: unknown[], options?: unknown): void;
+}
+
 export class SherpaFilterBar extends SherpaElement {
 
   override get dataset(): SherpaFilterBarDataset {
@@ -96,38 +110,37 @@ export class SherpaFilterBar extends SherpaElement {
     return this.$("sherpa-button[data-behavior='segment']");
   }
 
-  #observer = null;
-  #columns = [];
-  #rows = [];
+  #observer: MutationObserver | null = null;
+  #columns: FieldDef[] = [];
+  #rows: Record<string, unknown>[] = [];
   #applied = true; // Toggle state — when false, getFilters() returns []
   #pendingEmit = false; // Microtask debounce for observer-driven filterchange
-  #sortChangeHandler = null; // Bound handler for sortchange events
+  #sortChangeHandler: ((e: Event) => void) | null = null; // Bound sortchange handler
   #syncingSort = false; // Guard against re-entrant filterchange during sort sync
   #bound = false;
 
-  els = this.cacheElements({
-    addButton: { selector: '.add-button', type: HTMLButtonElement },
-    scope: '.filter-scope' // Parent element used as event scope for sortchange
-  });
+  /** Event scope (container or shadow host) for sortchange listening. */
+  #scope: Element | null = null;
+  /** The "add filter" menu button, resolved after render. */
+  #addButton: MenuButtonLike | null = null;
 
   override onRender(): void {
     if (this.#bound) return;
 
     // Wire sortchange listener on parent scope (container or shadow host)
     // Fallback to parent element or host if shadow scope doesn't exist
-    if (!this.els.scope) {
-      // @ts-expect-error - TODO: Fix type
-      this.els.scope = this.parentElement || this.getRootNode()?.host || null;
+    if (!this.#scope) {
+      const root = this.getRootNode();
+      this.#scope = this.parentElement
+        || (root instanceof ShadowRoot ? root.host : null)
+        || null;
     }
-    if (this.els.scope && !this.#sortChangeHandler) {
-      // @ts-expect-error - TODO: Fix type
-      this.#sortChangeHandler = (e: Event) => this.#onSortChange(e);
-      // @ts-expect-error - TODO: Fix type
-      this.els.scope.addEventListener("sort-change", this.#sortChangeHandler);
+    if (this.#scope && !this.#sortChangeHandler) {
+      this.#sortChangeHandler = (e: Event) => this.#onSortChange(e as CustomEvent);
+      this.#scope.addEventListener("sort-change", this.#sortChangeHandler);
     }
 
     // Watch for attribute changes on slotted filter chips
-    // @ts-expect-error - TODO: Fix type
     this.#observer = new MutationObserver(() => {
       this.#syncActiveState();
       // Debounce filterchange emission via microtask so that rapid
@@ -144,7 +157,6 @@ export class SherpaFilterBar extends SherpaElement {
         });
       }
     });
-    // @ts-expect-error - TODO: Fix type
     this.#observer.observe(this, {
       subtree: true,
       attributes: true,
@@ -183,11 +195,9 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     // Add filter button — sherpa-button with data-menu="true"
-    // @ts-expect-error - TODO: Fix type
-    this.els.addButton = this.$(".add-filter-button");
+    this.#addButton = this.$<MenuButtonLike>(".add-filter-button");
     // Listen for menu-select on the add button to create new chips
-    // @ts-expect-error - TODO: Fix type
-    this.els.addButton?.addEventListener("menu-select", this.#onAddMenuSelect);
+    this.#addButton?.addEventListener("menu-select", this.#onAddMenuSelect);
 
     // Listen for button clicks from behavior chips (mode cycling) and dismiss buttons
     // @ts-expect-error - TODO: Fix type
@@ -236,7 +246,7 @@ export class SherpaFilterBar extends SherpaElement {
       const chip = e.composedPath()[0];
 
       // Skip the add-filter button's own menu-select — handled separately
-      if (chip === this.els.addButton) return;
+      if (chip === this.#addButton) return;
 
       // ── New API: data-filter-field chips ──
       // e.target may be the chevron button — resolve the filter-field label button
@@ -280,7 +290,6 @@ export class SherpaFilterBar extends SherpaElement {
         if (field) {
           labelBtn.dataset["field"] = field;
           const col = this.#columns.find((c: any) => c.field === field);
-          // @ts-expect-error - TODO: Fix type
           const valueLabel = col?.name || formatFieldName(field);
           labelBtn.dataset["label"] = `${prefix}: ${valueLabel}`;
           // Reset to default mode for a newly-picked field
@@ -332,19 +341,17 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    // @ts-expect-error - TODO: Fix type
     this.#observer?.disconnect();
     this.#observer = null;
 
-    if (this.els.scope && this.#sortChangeHandler) {
-      this.els.scope.removeEventListener(
+    if (this.#scope && this.#sortChangeHandler) {
+      this.#scope.removeEventListener(
         "sort-change",
         this.#sortChangeHandler,
       );
     }
     this.#sortChangeHandler = null;
-    // @ts-expect-error - TODO: Fix type
-    this.els.scope = null;
+    this.#scope = null;
   }
 
   // @ts-expect-error - TODO: Fix type
@@ -405,7 +412,6 @@ export class SherpaFilterBar extends SherpaElement {
     try {
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return;
-      // @ts-expect-error - TODO: Fix type
       this.#columns = parsed;
     } catch {
       return;
@@ -417,7 +423,6 @@ export class SherpaFilterBar extends SherpaElement {
     for (const chip of chips) {
       if (chip.hasAttribute("data-filter-field")) {
         const field = chip.getAttribute("data-filter-field");
-        // @ts-expect-error - TODO: Fix type
         const col = this.#columns.find((c) => c.field === field);
         if (col) {
           // @ts-expect-error - TODO: Fix type
@@ -486,9 +491,9 @@ export class SherpaFilterBar extends SherpaElement {
       const size = btn.getAttribute("data-size");
       if (!size || size === "base") btn.setAttribute("data-size", "small");
     }
-    if (this.els.addButton) {
-      const size = this.els.addButton.getAttribute("data-size");
-      if (!size || size === "base") this.els.addButton.setAttribute("data-size", "small");
+    if (this.#addButton) {
+      const size = this.#addButton.getAttribute("data-size");
+      if (!size || size === "base") this.#addButton.setAttribute("data-size", "small");
     }
   }
 
@@ -676,15 +681,12 @@ export class SherpaFilterBar extends SherpaElement {
       .map((f) => f.trim())
       .filter(Boolean);
     for (const field of fieldList) {
-      // @ts-expect-error - TODO: Fix type
       const col = this.#columns.find((c) => c.field === field);
-      // @ts-expect-error - TODO: Fix type
       const filterType = this.#inferFilterType(col?.type);
 
       const { container, chip } = this.#createFilterChipGroup({
         filterField: field,
         filterType,
-        // @ts-expect-error - TODO: Fix type
         label: col?.name || formatFieldName(field),
         slot: "presets",
       });
@@ -701,20 +703,17 @@ export class SherpaFilterBar extends SherpaElement {
 
   /** Populate the "Add filter" button menu with available (unused) columns. */
   #populateAddMenu() {
-    if (!this.els.addButton) return;
+    if (!this.#addButton) return;
 
     const usedFields = this.#getUsedFilterFields();
-    // @ts-expect-error - TODO: Fix type
     const available = this.#columns.filter((c) => !usedFields.has(c.field));
 
     // Always re-sync menu items (including clearing to empty) so the
     // previously-shown set never lingers and lets users re-add the last field.
     // @ts-expect-error - TODO: Fix type
-    this.els.addButton.setMenuItems(
+    this.#addButton.setMenuItems(
       available.map((col) => ({
-        // @ts-expect-error - TODO: Fix type
         value: col.field,
-        // @ts-expect-error - TODO: Fix type
         text: col.name || formatFieldName(col.field),
       })),
     );
@@ -723,8 +722,8 @@ export class SherpaFilterBar extends SherpaElement {
     // when every column is already in use so the button stays visible but
     // unclickable.
     const noColumns = this.#columns.length === 0;
-    this.els.addButton.toggleAttribute("hidden", noColumns);
-    this.els.addButton.toggleAttribute("disabled", !noColumns && available.length === 0);
+    this.#addButton.toggleAttribute("hidden", noColumns);
+    this.#addButton.toggleAttribute("disabled", !noColumns && available.length === 0);
     // Reflect Add-button visibility on the host so CSS can light up the
     // Custom-zone divider even when no ad-hoc filter chips exist yet.
     this.toggleAttribute("data-has-add", !noColumns);
@@ -735,11 +734,9 @@ export class SherpaFilterBar extends SherpaElement {
     const field = e.detail?.value;
     if (!field) return;
 
-    // @ts-expect-error - TODO: Fix type
     const col = this.#columns.find((c) => c.field === field);
     if (!col) return;
 
-    // @ts-expect-error - TODO: Fix type
     const filterType = this.#inferFilterType(col.type);
 
     // Create a new filter chip (in default slot — user filters zone)
@@ -747,7 +744,6 @@ export class SherpaFilterBar extends SherpaElement {
     const { container, chip } = this.#createFilterChipGroup({
       filterField: field,
       filterType,
-      // @ts-expect-error - TODO: Fix type
       label: col.name || formatFieldName(field),
       dismissable: true,
     });
@@ -861,7 +857,6 @@ export class SherpaFilterBar extends SherpaElement {
   // @ts-expect-error - TODO: Fix type
   setAvailableColumns(columns, rows) {
     if (!Array.isArray(columns) || !columns.length) return;
-    // @ts-expect-error - TODO: Fix type
     if (Array.isArray(rows)) this.#rows = rows;
     this.setAttribute("data-available-fields", JSON.stringify(columns));
   }
@@ -893,7 +888,6 @@ export class SherpaFilterBar extends SherpaElement {
       // @ts-expect-error - TODO: Fix type
       sortChip.dataset["field"] = field;
       const col = this.#columns.find((c: any) => c.field === field);
-      // @ts-expect-error - TODO: Fix type
       const valueLabel = col?.name || formatFieldName(field);
       // @ts-expect-error - TODO: Fix type
       sortChip.dataset["label"] = `Sort: ${valueLabel}`;
@@ -986,7 +980,6 @@ export class SherpaFilterBar extends SherpaElement {
    */
   // @ts-expect-error - TODO: Fix type
   #getValuesForField(field) {
-    // @ts-expect-error - TODO: Fix type
     const col = this.#columns.find((c) => c.field === field);
     // @ts-expect-error - TODO: Fix type
     const declared = col?.values?.length ? col.values.map(String) : [];
