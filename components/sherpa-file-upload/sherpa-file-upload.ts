@@ -58,22 +58,16 @@ class SherpaFileUpload extends SherpaElement {
 
   /* ── cached refs ─────────────────────────────────────────── */
 
-  /** @type {HTMLSpanElement|null} */
-  #labelEl = null;
-  /** @type {HTMLDivElement|null} */
-  #dropZoneEl = null;
-  /** @type {HTMLInputElement|null} */
-  #fileInputEl = null;
-  /** @type {HTMLDivElement|null} */
-  #fileListEl = null;
-  /** @type {HTMLTemplateElement|null} */
-  #fileItemTpl = null;
-  /** @type {HTMLSpanElement|null} */
-  #constraintsTextEl = null;
-  /** @type {HTMLButtonElement|null} */
-  #uploadBtnEl = null;
-  /** @type {HTMLButtonElement|null} */
-  #removeAllBtnEl = null;
+  els = this.cacheElements({
+    label: '.label',
+    dropZone: '.drop-zone',
+    fileInput: { selector: '.file-input', type: HTMLInputElement },
+    fileList: '.file-list',
+    fileItemTpl: { selector: '.file-item-tpl', type: HTMLTemplateElement },
+    constraintsText: '.constraints-text',
+    uploadBtn: { selector: '.upload-btn', type: HTMLButtonElement },
+    removeAllBtn: { selector: '.remove-all-btn', type: HTMLButtonElement }
+  });
 
   /** @type {{ file: File, el: HTMLElement }[]} */
   #files = [];
@@ -84,40 +78,32 @@ class SherpaFileUpload extends SherpaElement {
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#labelEl = this.$(".label");
-    this.#dropZoneEl = this.$(".drop-zone");
-    this.#fileInputEl = this.$(".file-input");
-    this.#fileListEl = this.$(".file-list");
-    this.#fileItemTpl = this.$(".file-item-tpl");
-    this.#constraintsTextEl = this.$(".constraints-text");
-    this.#uploadBtnEl = this.$(".upload-btn");
-    this.#removeAllBtnEl = this.$(".remove-all-btn");
 
     // Drop zone click → trigger file input
-    this.#dropZoneEl.addEventListener("click", () => {
-      if (!this.hasAttribute("disabled")) this.#fileInputEl.click();
+    this.els.dropZone.addEventListener("click", () => {
+      if (!this.hasAttribute("disabled")) this.els.fileInput.click();
     });
-    this.#dropZoneEl.addEventListener("keydown", (e) => {
+    this.els.dropZone.addEventListener("keydown", (e) => {
       if ((e.key === "Enter" || e.key === " ") && !this.hasAttribute("disabled")) {
         e.preventDefault();
-        this.#fileInputEl.click();
+        this.els.fileInput.click();
       }
     });
 
     // File input change
-    this.#fileInputEl.addEventListener("change", () => {
-      this.#addFiles(Array.from(this.#fileInputEl.files));
-      this.#fileInputEl.value = "";
+    this.els.fileInput.addEventListener("change", () => {
+      this.#addFiles(Array.from(this.els.fileInput.files));
+      this.els.fileInput.value = "";
     });
 
     // Drag events on drop zone
-    this.#dropZoneEl.addEventListener("dragenter", (e) => this.#onDragEnter(e));
-    this.#dropZoneEl.addEventListener("dragover", (e) => this.#onDragOver(e));
-    this.#dropZoneEl.addEventListener("dragleave", (e) => this.#onDragLeave(e));
-    this.#dropZoneEl.addEventListener("drop", (e) => this.#onDrop(e));
+    this.els.dropZone.addEventListener("dragenter", (e) => this.#onDragEnter(e));
+    this.els.dropZone.addEventListener("dragover", (e) => this.#onDragOver(e));
+    this.els.dropZone.addEventListener("dragleave", (e) => this.#onDragLeave(e));
+    this.els.dropZone.addEventListener("drop", (e) => this.#onDrop(e));
 
     // Action buttons
-    this.#uploadBtnEl.addEventListener("click", () => {
+    this.els.uploadBtn.addEventListener("click", () => {
       this.dispatchEvent(
         new CustomEvent("file-upload-start", {
           bubbles: true,
@@ -126,7 +112,7 @@ class SherpaFileUpload extends SherpaElement {
         })
       );
     });
-    this.#removeAllBtnEl.addEventListener("click", () => this.#clearAll());
+    this.els.removeAllBtn.addEventListener("click", () => this.#clearAll());
 
     // Initial sync
     this.#syncLabel();
@@ -152,28 +138,28 @@ class SherpaFileUpload extends SherpaElement {
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncLabel() {
-    if (this.#labelEl) {
-      this.#labelEl.textContent = this.dataset.label || "";
+    if (this.els.label) {
+      this.els.label.textContent = this.dataset.label || "";
     }
   }
 
   #syncHelper() {
-    if (this.#constraintsTextEl) {
-      this.#constraintsTextEl.textContent = this.dataset.helper || "";
+    if (this.els.constraintsText) {
+      this.els.constraintsText.textContent = this.dataset.helper || "";
     }
   }
 
   #syncFileInput() {
-    if (!this.#fileInputEl) return;
+    if (!this.els.fileInput) return;
     if (this.dataset.accept) {
-      this.#fileInputEl.setAttribute("accept", this.dataset.accept);
+      this.els.fileInput.setAttribute("accept", this.dataset.accept);
     } else {
-      this.#fileInputEl.removeAttribute("accept");
+      this.els.fileInput.removeAttribute("accept");
     }
     if (this.hasAttribute("data-multiple")) {
-      this.#fileInputEl.setAttribute("multiple", "");
+      this.els.fileInput.setAttribute("multiple", "");
     } else {
-      this.#fileInputEl.removeAttribute("multiple");
+      this.els.fileInput.removeAttribute("multiple");
     }
   }
 
@@ -244,7 +230,7 @@ class SherpaFileUpload extends SherpaElement {
 
     for (const file of valid) {
       const el = this.#createFileItem(file);
-      this.#fileListEl.appendChild(el);
+      this.els.fileList.appendChild(el);
       this.#files.push({ file, el });
     }
 
@@ -275,7 +261,7 @@ class SherpaFileUpload extends SherpaElement {
   }
 
   #createFileItem(file) {
-    const clone = this.#fileItemTpl.content.cloneNode(true);
+    const clone = this.els.fileItemTpl.content.cloneNode(true);
     const item = clone.querySelector(".file-item");
 
     item.querySelector(".file-name").textContent = file.name;
@@ -314,7 +300,7 @@ class SherpaFileUpload extends SherpaElement {
 
   #clearAll() {
     this.#files = [];
-    this.#fileListEl.textContent = "";
+    this.els.fileList.textContent = "";
     this.#updateHasFiles();
     this.dispatchEvent(
       new CustomEvent("file-clear", {

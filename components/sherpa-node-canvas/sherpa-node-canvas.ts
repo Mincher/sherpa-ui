@@ -110,34 +110,29 @@ export class SherpaNodeCanvas extends SherpaElement {
   #subgraphs = new Map();
 
   // DOM refs
-  #rootEl = null;
-  #surfaceEl = null;
-  #bodyEl = null;
-  #gridCanvasEl = null;
-  #edgesCanvasEl = null;
+  els = this.cacheElements({
+    root: '.root',
+    surface: '.surface',
+    body: '.canvas-stack',
+    gridCanvas: { selector: '.layer.grid', type: HTMLCanvasElement },
+    edgesCanvas: { selector: '.layer.edges', type: HTMLCanvasElement },
+    slot: 'slot:not([name])',
+    viewHeader: 'sherpa-view-header.canvas-header'
+  });
+
   #gridCtx = null;
   #edgesCtx = null;
   #ro = null;
-  #slotEl = null;
-  #colorProbeEl = null;
-  #viewHeaderEl = null;
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#rootEl     = this.$(".root");
-    // .canvas-body is now a flex row hosting the canvas stack and a
-    // trailing side-panel slot; the canvas's own size — used for
-    // pointer math, ResizeObserver, and the layer canvases — must
-    // come from the stack alone, not the row that includes the panel.
-    this.#bodyEl     = this.$(".canvas-stack") ?? this.$(".canvas-body");
-    this.#surfaceEl  = this.$(".surface");
-    this.#gridCanvasEl = this.$(".layer.grid");
-    this.#edgesCanvasEl = this.$(".layer.edges");
-    this.#slotEl     = this.$('slot:not([name])');
-    this.#gridCtx    = this.#gridCanvasEl.getContext("2d");
-    this.#edgesCtx   = this.#edgesCanvasEl.getContext("2d");
-    this.#viewHeaderEl = this.$("sherpa-view-header.canvas-header");
+    // Fallback for .canvas-body if .canvas-stack doesn't exist
+    if (!this.els.body) {
+      this.els.body = this.$(".canvas-body");
+    }
+    this.#gridCtx    = this.els.gridCanvas.getContext("2d");
+    this.#edgesCtx   = this.els.edgesCanvas.getContext("2d");
     this.#applyTransform();
     this.#syncHeader();
   }
@@ -156,16 +151,16 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.addEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
     this.addEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
     this.addEventListener("sherpa-node-drilldown",     this.#onNodeDrillDown);
-    this.#viewHeaderEl?.addEventListener("view-header-back", this.#onViewHeaderBack);
+    this.els.viewHeader?.addEventListener("view-header-back", this.#onViewHeaderBack);
 
-    this.#slotEl?.addEventListener("slotchange", this.#onSlotChange);
+    this.els.slot?.addEventListener("slotchange", this.#onSlotChange);
     this.#listenToNodes();
 
     this.#ro = new ResizeObserver(() => this.#resizeCanvases());
     // Observe the canvas stack so a slotted side-panel collapsing
     // (changing the stack width without changing the host width)
     // still triggers a layer-canvas resize.
-    this.#ro.observe(this.#bodyEl ?? this);
+    this.#ro.observe(this.els.body ?? this);
     this.#resizeCanvases();
   }
 
@@ -180,8 +175,8 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.removeEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
     this.removeEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
     this.removeEventListener("sherpa-node-drilldown",     this.#onNodeDrillDown);
-    this.#viewHeaderEl?.removeEventListener("view-header-back", this.#onViewHeaderBack);
-    this.#slotEl?.removeEventListener("slotchange", this.#onSlotChange);
+    this.els.viewHeader?.removeEventListener("view-header-back", this.#onViewHeaderBack);
+    this.els.slot?.removeEventListener("slotchange", this.#onSlotChange);
     this.#ro?.disconnect();
   }
 
@@ -354,7 +349,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    * body doesn't shift node / edge alignment.
    */
   #bodyRect() {
-    return (this.#bodyEl ?? this).getBoundingClientRect();
+    return (this.els.body ?? this).getBoundingClientRect();
   }
 
   #screenToWorld(sx, sy) {
@@ -1004,9 +999,9 @@ export class SherpaNodeCanvas extends SherpaElement {
   /* ── Rendering ─────────────────────────────────────────────────── */
 
   #applyTransform() {
-    if (!this.#surfaceEl) return;
+    if (!this.els.surface) return;
     const { x, y, zoom } = this.#viewport;
-    this.#surfaceEl.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${zoom})`;
+    this.els.surface.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${zoom})`;
   }
 
   #scheduleDraw() {
@@ -1127,7 +1122,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #resizeCanvases() {
     const dpr = window.devicePixelRatio || 1;
     const r = this.#bodyRect();
-    for (const cv of [this.#gridCanvasEl, this.#edgesCanvasEl]) {
+    for (const cv of [this.els.gridCanvas, this.els.edgesCanvas]) {
       if (!cv) continue;
       cv.width  = Math.max(1, Math.floor(r.width  * dpr));
       cv.height = Math.max(1, Math.floor(r.height * dpr));
@@ -1517,7 +1512,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     // style nested-frame state (e.g. hide root-only header actions).
     const depth = this.#drillStack.length;
     this.setAttribute("data-depth", String(depth));
-    const header = this.#viewHeaderEl;
+    const header = this.els.viewHeader;
     if (!header) return;
     const stack = this.#drillStack;
     const rootHeading = this.getAttribute("data-heading") || "";
@@ -1572,7 +1567,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    */
   #onBreadcrumbClick = (e) => {
     e.preventDefault?.();
-    const trail = this.#viewHeaderEl?.querySelector(
+    const trail = this.els.viewHeader?.querySelector(
       ':scope > sherpa-breadcrumbs[data-canvas-breadcrumbs]'
     );
     if (!trail) return;
