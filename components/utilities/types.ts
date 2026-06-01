@@ -430,6 +430,15 @@ export interface SherpaEventMap {
   'toggle-legend': CustomEvent<ToggleEventDetail>;
   'view-header-back': CustomEvent<void>;
   'global-filter-change': CustomEvent<FilterChangeEventDetail>;
+  // Node-graph family
+  'sherpa-socket-pointerdown': CustomEvent<{
+    nodeId?: string;
+    portName?: string;
+    direction?: string;
+    originalEvent: PointerEvent;
+  }>;
+  'sherpa-node-pointerdown': CustomEvent<{ nodeId: string; originalEvent: PointerEvent }>;
+  'sherpa-node-drilldown': CustomEvent<{ nodeId: string; label?: string }>;
 }
 
 declare global {

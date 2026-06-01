@@ -61,6 +61,86 @@ const ZOOM_MAX = 2.5;
 const WHEEL_K = 0.0025;
 const BEZIER_SAMPLES = 32;   // polyline segments per edge for hit-test
 
+/* ── Domain types ──────────────────────────────────────────────────── */
+
+/** A world-space coordinate. */
+interface Point {
+  x: number;
+  y: number;
+}
+
+/** Reference to a specific port on a specific node. */
+interface EdgeEndpoint {
+  nodeId: string;
+  portName: string;
+}
+
+/** A connection between two ports, rendered as a bezier curve. */
+interface Edge {
+  from: EdgeEndpoint;
+  to: EdgeEndpoint;
+  control: boolean;
+}
+
+interface Viewport {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+/** Pan gesture anchor: pointer origin + viewport origin. */
+interface PanState {
+  x0: number;
+  y0: number;
+  vx0: number;
+  vy0: number;
+}
+
+/** Edge drag-to-connect / drag-to-redirect gesture state. */
+interface DragState {
+  fromNodeId: string;
+  fromPortName: string;
+  fromSide: string;
+  cursorX: number;
+  cursorY: number;
+  redirectIdx?: number;
+  redirectFixedEnd?: EdgeEndpoint;
+}
+
+/** Node-move gesture state. */
+interface NodeDragState {
+  nodeId: string;
+  x0: number;
+  y0: number;
+  nx0: number;
+  ny0: number;
+}
+
+/** A resolved port position in world space (from #portWorld / cache). */
+interface PortPos {
+  x: number;
+  y: number;
+  side: string;
+  status?: string;
+  multi?: boolean;
+  count?: number;
+  height?: number;
+}
+
+/** A drill-down stack frame capturing the canvas at the moment of entry. */
+interface DrillFrame {
+  parentId: string;
+  label: string;
+  snapshot: unknown;
+}
+
+/** A candidate socket under the cursor when completing an edge drag. */
+interface DropTarget {
+  nodeId: string;
+  portName: string;
+  side: string;
+}
+
 export class SherpaNodeCanvas extends SherpaElement {
   static override get cssUrl(): string { return new URL("./sherpa-node-canvas.css", import.meta.url).href; }
   static override get htmlUrl(): string { return new URL("./sherpa-node-canvas.html", import.meta.url).href; }
@@ -85,59 +165,55 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── State ─────────────────────────────────────────────────────── */
 
-  #viewport = { x: 0, y: 0, zoom: 1 };
-  #edges = [];                     // Array<Edge>
-  #portCache = new Map();          // nodeId → Map<portName, {x,y,side,multi,count,height}>
+  #viewport: Viewport = { x: 0, y: 0, zoom: 1 };
+  #edges: Edge[] = [];
+  #portCache = new Map<string, Map<string, PortPos>>();  // nodeId → portName → pos
   #spaceDown = false;
-  #pan = null;                     // {x0,y0,vx0,vy0}
-  #drag = null;                    // {fromNodeId,fromPortName,fromSide,redirectIdx?,redirectFixedEnd?,cursorX,cursorY}
-  #nodeDrag = null;                // {nodeId, x0, y0, nx0, ny0}
+  #pan: PanState | null = null;
+  #drag: DragState | null = null;
+  #nodeDrag: NodeDragState | null = null;
   #rafPending = false;
   #hoverEdgeIdx = -1;
   #selectedEdgeIdx = -1;
-  #selectedNodeId = null;
-  // @ts-expect-error - TODO: Fix type
-  #lastClientX = 0;
-  // @ts-expect-error - TODO: Fix type
-  #lastClientY = 0;
+  #selectedNodeId: string | null = null;
 
   // Drill-down state — internal stack of {parentId, label, snapshot}
   // frames. Each frame holds a serialised picture of the canvas at
   // the moment we drilled into a sub-graph; popping restores it.
-  #drillStack = [];
+  #drillStack: DrillFrame[] = [];
 
   // Cached snapshots of CHILD sub-graphs, keyed by parent node id.
   // Captured on popSubgraph so a subsequent pushSubgraph(sameParent)
   // restores the work the user did inside, rather than starting fresh.
-  #subgraphs = new Map();
+  #subgraphs = new Map<string, unknown>();
 
   // DOM refs
   els = this.cacheElements({
     root: '.root',
     surface: '.surface',
-    body: '.canvas-stack',
     gridCanvas: { selector: '.layer.grid', type: HTMLCanvasElement },
     edgesCanvas: { selector: '.layer.edges', type: HTMLCanvasElement },
     slot: 'slot:not([name])',
     viewHeader: 'sherpa-view-header.canvas-header'
   });
 
-  #gridCtx = null;
-  #edgesCtx = null;
-  #ro = null;
+  /**
+   * The canvas body element used for coordinate math and resize
+   * observation. Prefers `.canvas-stack`; falls back to `.canvas-body`.
+   */
+  get #body(): HTMLElement | null {
+    return this.$<HTMLElement>(".canvas-stack") ?? this.$<HTMLElement>(".canvas-body");
+  }
+
+  #gridCtx: CanvasRenderingContext2D | null = null;
+  #edgesCtx: CanvasRenderingContext2D | null = null;
+  #ro: ResizeObserver | null = null;
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
   override onRender(): void {
-    // Fallback for .canvas-body if .canvas-stack doesn't exist
-    if (!this.els.body) {
-      // @ts-expect-error - TODO: Fix type
-      this.els.body = this.$(".canvas-body");
-    }
-    // @ts-expect-error - TODO: Fix type
-    this.#gridCtx    = this.els.gridCanvas.getContext("2d");
-    // @ts-expect-error - TODO: Fix type
-    this.#edgesCtx   = this.els.edgesCanvas.getContext("2d");
+    this.#gridCtx    = this.els.gridCanvas?.getContext("2d") ?? null;
+    this.#edgesCtx   = this.els.edgesCanvas?.getContext("2d") ?? null;
     this.#applyTransform();
     this.#syncHeader();
   }
@@ -152,25 +228,20 @@ export class SherpaNodeCanvas extends SherpaElement {
     window.addEventListener("keydown", this.#onKeyDown);
     window.addEventListener("keyup",   this.#onKeyUp);
 
-    // @ts-expect-error - TODO: Fix type
     this.addEventListener("sherpa-socket-pointerdown", this.#onSocketPointerDown);
-    // @ts-expect-error - TODO: Fix type
     this.addEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
     this.addEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
-    // @ts-expect-error - TODO: Fix type
     this.addEventListener("sherpa-node-drilldown",     this.#onNodeDrillDown);
     this.els.viewHeader?.addEventListener("view-header-back", this.#onViewHeaderBack);
 
     this.els.slot?.addEventListener("slotchange", this.#onSlotChange);
     this.#listenToNodes();
 
-    // @ts-expect-error - TODO: Fix type
     this.#ro = new ResizeObserver(() => this.#resizeCanvases());
     // Observe the canvas stack so a slotted side-panel collapsing
     // (changing the stack width without changing the host width)
     // still triggers a layer-canvas resize.
-    // @ts-expect-error - TODO: Fix type
-    this.#ro.observe(this.els.body ?? this);
+    this.#ro.observe(this.#body ?? this);
     this.#resizeCanvases();
   }
 
@@ -181,16 +252,12 @@ export class SherpaNodeCanvas extends SherpaElement {
     window.removeEventListener("pointerup",   this.#onPointerUp);
     window.removeEventListener("keydown", this.#onKeyDown);
     window.removeEventListener("keyup",   this.#onKeyUp);
-    // @ts-expect-error - TODO: Fix type
     this.removeEventListener("sherpa-socket-pointerdown", this.#onSocketPointerDown);
-    // @ts-expect-error - TODO: Fix type
     this.removeEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
     this.removeEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
-    // @ts-expect-error - TODO: Fix type
     this.removeEventListener("sherpa-node-drilldown",     this.#onNodeDrillDown);
     this.els.viewHeader?.removeEventListener("view-header-back", this.#onViewHeaderBack);
     this.els.slot?.removeEventListener("slotchange", this.#onSlotChange);
-    // @ts-expect-error - TODO: Fix type
     this.#ro?.disconnect();
   }
 
@@ -201,47 +268,30 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  getViewport() { return { ...this.#viewport }; }
-  // @ts-expect-error - TODO: Fix type
-  setViewport({ x, y, zoom }) {
-    if (Number.isFinite(x))    this.#viewport.x = x;
-    if (Number.isFinite(y))    this.#viewport.y = y;
-    if (Number.isFinite(zoom)) this.#viewport.zoom = this.#clampZoom(zoom);
+  getViewport(): Viewport { return { ...this.#viewport }; }
+  setViewport({ x, y, zoom }: Partial<Viewport>) {
+    if (typeof x === "number" && Number.isFinite(x))       this.#viewport.x = x;
+    if (typeof y === "number" && Number.isFinite(y))       this.#viewport.y = y;
+    if (typeof zoom === "number" && Number.isFinite(zoom)) this.#viewport.zoom = this.#clampZoom(zoom);
     this.#applyTransform();
     this.#scheduleDraw();
     this.#emitViewport();
   }
 
-  /**
-   * Convert client (screen) coordinates to world coordinates inside the
-   * canvas surface. Uses the internal body rect (the canvas-stack), so
-   * any leading `side-panel-start` slot offset is automatically
-   * accounted for — consumers must use this rather than measuring the
-   * host themselves.
-   */
-  // @ts-expect-error - TODO: Fix type
-  screenToWorld(sx, sy) { return this.#screenToWorld(sx, sy); }
-
-  // @ts-expect-error - TODO: Fix type
-  getEdges() { return this.#edges.map((e) => ({ ...e })); }
-  // @ts-expect-error - TODO: Fix type
-  setEdges(edges) {
-    // @ts-expect-error - TODO: Fix type
+  getEdges(): Edge[] { return this.#edges.map((e) => ({ ...e })); }
+  setEdges(edges: Edge[] | null | undefined) {
     this.#edges = (edges || []).map((e) => this.#normEdge(e));
     this.#selectedEdgeIdx = -1;
     this.#hoverEdgeIdx = -1;
     this.#schedulePropagate();
     this.#scheduleDraw();
   }
-  // @ts-expect-error - TODO: Fix type
-  addEdge(edge) {
-    // @ts-expect-error - TODO: Fix type
+  addEdge(edge: Edge) {
     this.#edges.push(this.#normEdge(edge));
     this.#schedulePropagate();
     this.#scheduleDraw();
   }
-  // @ts-expect-error - TODO: Fix type
-  removeEdge(idx) {
+  removeEdge(idx: number) {
     if (idx < 0 || idx >= this.#edges.length) return;
     this.#edges.splice(idx, 1);
     if (this.#selectedEdgeIdx === idx) this.#selectedEdgeIdx = -1;
@@ -255,13 +305,13 @@ export class SherpaNodeCanvas extends SherpaElement {
   }
 
   /**
-   * Convert client (screen) coordinates to world coordinates. Useful
-   * for callers that need to drop a node at a cursor position (e.g. a
-   * drag-from-palette flow): pass `event.clientX`/`event.clientY` and
-   * place the new node at the returned `{x, y}`.
+   * Convert client (screen) coordinates to world coordinates inside the
+   * canvas surface. Uses the internal body rect (the canvas-stack), so
+   * any leading `side-panel-start` slot offset is automatically
+   * accounted for. Useful for callers that need to drop a node at a
+   * cursor position (e.g. a drag-from-palette flow).
    */
-  // @ts-expect-error - TODO: Fix type
-  screenToWorld(sx, sy) { return this.#screenToWorld(sx, sy); }
+  screenToWorld(sx: number, sy: number): Point { return this.#screenToWorld(sx, sy); }
 
   /* ── Node selection ───────────────────────────────────────────── */
   getSelectedNode() { return this.#selectedNodeId; }
@@ -349,7 +399,6 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   #onSlotChange = () => {
     this.#listenToNodes();
-    // @ts-expect-error - TODO: Fix type
     this.#invalidatePortCache();
     this.#scheduleDraw();
   };
@@ -380,11 +429,10 @@ export class SherpaNodeCanvas extends SherpaElement {
    * body doesn't shift node / edge alignment.
    */
   #bodyRect() {
-    return (this.els.body ?? this).getBoundingClientRect();
+    return (this.#body ?? this).getBoundingClientRect();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #screenToWorld(sx, sy) {
+  #screenToWorld(sx: number, sy: number): Point {
     const r = this.#bodyRect();
     return {
       x: (sx - r.left - this.#viewport.x) / this.#viewport.zoom,
@@ -402,11 +450,10 @@ export class SherpaNodeCanvas extends SherpaElement {
    * current viewport — this is invariant under zoom/pan because the
    * unprojection cancels whatever transform the surface has applied.
    */
-  // @ts-expect-error - TODO: Fix type
-  #portWorld(nodeId, portName, lane = 0, count = 1) {
+  #portWorld(nodeId: string, portName: string, lane = 0, count = 1): PortPos | null {
     const node = this.#nodeById(nodeId);
     if (!node) return null;
-    const sock = node.querySelector(
+    const sock = node.querySelector<HTMLElement>(
       `sherpa-node-socket[data-port-name="${CSS.escape(portName)}"]`
     );
     if (!sock) return null;
@@ -417,9 +464,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const cy = (r.top  + r.bottom) / 2 - canvasRect.top;
     let wx = (cx - vx) / zoom;
     let wy = (cy - vy) / zoom;
-    // @ts-expect-error - TODO: Fix type
     const side = sock.dataset["direction"] === "out" ? "out" : "in";
-    // @ts-expect-error - TODO: Fix type
     const status = sock.dataset["status"] || "";
     const multi = sock.hasAttribute("data-multi");
     if (multi && count > 1) {
@@ -431,16 +476,14 @@ export class SherpaNodeCanvas extends SherpaElement {
     return { x: wx, y: wy, side, status };
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #nodeById(nodeId) {
-    return this.querySelector(`sherpa-node[data-node-id="${CSS.escape(nodeId)}"]`);
+  #nodeById(nodeId: string): HTMLElement | null {
+    return this.querySelector<HTMLElement>(`sherpa-node[data-node-id="${CSS.escape(nodeId)}"]`);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #findSocket(nodeId, portName) {
+  #findSocket(nodeId: string, portName: string): HTMLElement | null {
     const node = this.#nodeById(nodeId);
     if (!node) return null;
-    return node.querySelector(
+    return node.querySelector<HTMLElement>(
       `sherpa-node-socket[data-port-name="${CSS.escape(portName)}"]`,
     );
   }
@@ -462,8 +505,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    *        variable.text    → text
    *        anything else    → any
    */
-  // @ts-expect-error - TODO: Fix type
-  #socketType(sock) {
+  #socketType(sock: HTMLElement | null): string {
     if (!sock) return "any";
     if (sock.dataset["valueType"]) return sock.dataset["valueType"];
 
@@ -480,9 +522,9 @@ export class SherpaNodeCanvas extends SherpaElement {
       }
     }
 
-    const node    = sock.closest("sherpa-node");
-    const kind    = node?.dataset?.kind || "";
-    const subtype = node?.dataset?.subtype || "";
+    const node    = sock.closest<HTMLElement>("sherpa-node");
+    const kind    = node?.dataset?.["kind"] || "";
+    const subtype = node?.dataset?.["subtype"] || "";
     if (kind === "math") return "number";
     if (kind === "variable") {
       if (subtype === "number") return "number";
@@ -491,22 +533,19 @@ export class SherpaNodeCanvas extends SherpaElement {
     return "any";
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #typesCompatible(fromType, toType) {
+  #typesCompatible(fromType: string, toType: string): boolean {
     if (fromType === "any" || toType === "any") return true;
     return fromType === toType;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #invalidatePortCache(nodeId) {
+  #invalidatePortCache(nodeId?: string | null) {
     if (nodeId) this.#portCache.delete(nodeId);
     else this.#portCache.clear();
   }
 
   /* ── Zoom / pan ────────────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #clampZoom(z) { return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z)); }
+  #clampZoom(z: number): number { return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z)); }
 
   /**
    * Returns true when the event originated inside a slotted
@@ -519,39 +558,32 @@ export class SherpaNodeCanvas extends SherpaElement {
     const path = e.composedPath ? e.composedPath() : [];
     for (const n of path) {
       if (n === this) return false;
-      // @ts-expect-error - TODO: Fix type
-      const slot = n?.getAttribute?.("slot");
+      const slot = n instanceof Element ? n.getAttribute("slot") : null;
       if (slot && slot.startsWith("side-panel-")) return true;
     }
     return false;
   }
 
-  #onWheel = (e: Event) => {
+  #onWheel = (e: WheelEvent) => {
     if (this.#isFromSidePanel(e)) return;
     e.preventDefault();
     // Trackpad pinch gestures are reported as wheel events with
     // ctrlKey=true (synthetic). Treat those — and the explicit
     // Ctrl/Cmd-modifier — as zoom. Plain two-finger scroll pans.
-    // @ts-expect-error - TODO: Fix type
     const isZoom = e.ctrlKey || e.metaKey;
     if (!isZoom) {
-      // @ts-expect-error - TODO: Fix type
       this.#viewport.x -= e.deltaX;
-      // @ts-expect-error - TODO: Fix type
       this.#viewport.y -= e.deltaY;
       this.#applyTransform();
       this.#scheduleDraw();
       this.#emitViewport();
       return;
     }
-    // @ts-expect-error - TODO: Fix type
     const factor = Math.exp(-e.deltaY * WHEEL_K);
     const newZoom = this.#clampZoom(this.#viewport.zoom * factor);
     if (newZoom === this.#viewport.zoom) return;
     const r = this.#bodyRect();
-    // @ts-expect-error - TODO: Fix type
     const cx = e.clientX - r.left;
-    // @ts-expect-error - TODO: Fix type
     const cy = e.clientY - r.top;
     const k = newZoom / this.#viewport.zoom;
     this.#viewport.x = cx - (cx - this.#viewport.x) * k;
@@ -562,26 +594,21 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#emitViewport();
   };
 
-  #onPointerDown = (e: Event) => {
+  #onPointerDown = (e: PointerEvent) => {
     if (this.#isFromSidePanel(e)) return;
     // Middle-mouse OR space+left = pan.
-    // @ts-expect-error - TODO: Fix type
     if (e.button === 1 || (e.button === 0 && this.#spaceDown)) {
       e.preventDefault();
-      // @ts-expect-error - TODO: Fix type
       this.#pan = {
-        // @ts-expect-error - TODO: Fix type
         x0: e.clientX, y0: e.clientY,
         vx0: this.#viewport.x, vy0: this.#viewport.y,
       };
       this.setAttribute("data-grabbing", "");
-      // @ts-expect-error - TODO: Fix type
       this.setPointerCapture?.(e.pointerId);
       return;
     }
 
     // Plain left-click: select edge under cursor, or clear selection.
-    // @ts-expect-error - TODO: Fix type
     if (e.button === 0) {
       // If the click originated inside a <sherpa-node>, the
       // node-level handler (#onNodePointerDown) has already taken
@@ -594,7 +621,6 @@ export class SherpaNodeCanvas extends SherpaElement {
         // @ts-expect-error - TODO: Fix type
         if (n?.localName === "sherpa-node") return;
       }
-      // @ts-expect-error - TODO: Fix type
       const idx = this.#findEdgeAt(e.clientX, e.clientY);
       if (idx >= 0) {
         this.setSelectedNode(null);
@@ -607,50 +633,34 @@ export class SherpaNodeCanvas extends SherpaElement {
     }
   };
 
-  #onPointerMove = (e: Event) => {
-    // @ts-expect-error - TODO: Fix type
-    this.#lastClientX = e.clientX;
-    // @ts-expect-error - TODO: Fix type
-    this.#lastClientY = e.clientY;
-
+  #onPointerMove = (e: PointerEvent) => {
     if (this.#pan) {
-      // @ts-expect-error - TODO: Fix type
       this.#viewport.x = this.#pan.vx0 + (e.clientX - this.#pan.x0);
-      // @ts-expect-error - TODO: Fix type
       this.#viewport.y = this.#pan.vy0 + (e.clientY - this.#pan.y0);
       this.#applyTransform();
       this.#scheduleDraw();
       return;
     }
     if (this.#nodeDrag) {
-      // @ts-expect-error - TODO: Fix type
       const dx = (e.clientX - this.#nodeDrag.x0) / this.#viewport.zoom;
-      // @ts-expect-error - TODO: Fix type
       const dy = (e.clientY - this.#nodeDrag.y0) / this.#viewport.zoom;
-      // @ts-expect-error - TODO: Fix type
       const node = this.#nodeById(this.#nodeDrag.nodeId);
       if (node) {
-        // @ts-expect-error - TODO: Fix type
         node.dataset["x"] = String(this.#nodeDrag.nx0 + dx);
-        // @ts-expect-error - TODO: Fix type
         node.dataset["y"] = String(this.#nodeDrag.ny0 + dy);
       }
       this.#scheduleDraw();
       return;
     }
     if (this.#drag) {
-      // @ts-expect-error - TODO: Fix type
       const w = this.#screenToWorld(e.clientX, e.clientY);
-      // @ts-expect-error - TODO: Fix type
       this.#drag.cursorX = w.x;
-      // @ts-expect-error - TODO: Fix type
       this.#drag.cursorY = w.y;
       this.#scheduleDraw();
       return;
     }
 
     // Idle hover — update hovered edge.
-    // @ts-expect-error - TODO: Fix type
     const idx = this.#findEdgeAt(e.clientX, e.clientY);
     if (idx !== this.#hoverEdgeIdx) {
       this.#hoverEdgeIdx = idx;
@@ -659,7 +669,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     }
   };
 
-  #onPointerUp = (e: Event) => {
+  #onPointerUp = (e: PointerEvent) => {
     if (this.#pan) {
       this.#pan = null;
       this.removeAttribute("data-grabbing");
@@ -669,31 +679,27 @@ export class SherpaNodeCanvas extends SherpaElement {
       this.#nodeDrag = null;
     }
     if (this.#drag) {
-      // @ts-expect-error - TODO: Fix type
       const drop = this.#findDropTarget(e.clientX, e.clientY);
       const drag = this.#drag;
       this.#drag = null;
 
-      // @ts-expect-error - TODO: Fix type
       if (drag.redirectIdx != null) {
+        const redirectIdx = drag.redirectIdx;
+        const fixedEnd = drag.redirectFixedEnd;
         // Re-attach mode.
         if (!drop) {
           // Dropped on empty canvas → delete the edge.
           this.dispatchEvent(new CustomEvent("sherpa-edge-delete", {
             bubbles: true, composed: true,
-            // @ts-expect-error - TODO: Fix type
-            detail: { edgeIdx: drag.redirectIdx },
+            detail: { edgeIdx: redirectIdx },
           }));
-          // @ts-expect-error - TODO: Fix type
-          this.#edges.splice(drag.redirectIdx, 1);
-          // @ts-expect-error - TODO: Fix type
-          if (this.#selectedEdgeIdx === drag.redirectIdx) this.#selectedEdgeIdx = -1;
-        // @ts-expect-error - TODO: Fix type
-        } else if (drop.side === drag.fromSide && drop.nodeId !== drag.redirectFixedEnd.nodeId) {
+          this.#edges.splice(redirectIdx, 1);
+          if (this.#selectedEdgeIdx === redirectIdx) this.#selectedEdgeIdx = -1;
+        } else if (drop.side === drag.fromSide && drop.nodeId !== fixedEnd?.nodeId) {
           // Dropped on a same-side socket on a different node → re-attach.
-          // @ts-expect-error - TODO: Fix type
-          const edge = { ...this.#edges[drag.redirectIdx] };
-          // @ts-expect-error - TODO: Fix type
+          const src = this.#edges[redirectIdx];
+          if (!src) return;
+          const edge: Edge = { ...src };
           if (drag.fromSide === "in") {
             edge.to = { nodeId: drop.nodeId, portName: drop.portName };
           } else {
@@ -706,20 +712,16 @@ export class SherpaNodeCanvas extends SherpaElement {
             this.#scheduleDraw();
             return;
           }
-          // @ts-expect-error - TODO: Fix type
-          this.#edges[drag.redirectIdx] = edge;
+          this.#edges[redirectIdx] = edge;
           this.dispatchEvent(new CustomEvent("sherpa-edge-update", {
             bubbles: true, composed: true,
-            // @ts-expect-error - TODO: Fix type
-            detail: { edgeIdx: drag.redirectIdx, edge },
+            detail: { edgeIdx: redirectIdx, edge },
           }));
         }
         // Otherwise: invalid drop → snap back (no-op).
       } else {
         // Fresh-connection mode.
-        // @ts-expect-error - TODO: Fix type
         if (drop && drop.nodeId !== drag.fromNodeId && drop.side !== drag.fromSide) {
-          // @ts-expect-error - TODO: Fix type
           const a = { nodeId: drag.fromNodeId, portName: drag.fromPortName, side: drag.fromSide };
           const b = drop;
           const out = a.side === "out" ? a : b;
@@ -747,14 +749,12 @@ export class SherpaNodeCanvas extends SherpaElement {
     }
   };
 
-  #onKeyDown = (e: Event) => {
-    // @ts-expect-error - TODO: Fix type
+  #onKeyDown = (e: KeyboardEvent) => {
     if (e.code === "Space" && !this.#spaceDown) {
       this.#spaceDown = true;
       this.setAttribute("data-space-down", "");
     }
     // Delete selected edge.
-    // @ts-expect-error - TODO: Fix type
     if ((e.code === "Delete" || e.code === "Backspace") && this.#selectedEdgeIdx >= 0) {
       if (this.#focusInsideEditableControl()) return;
       const idx = this.#selectedEdgeIdx;
@@ -769,7 +769,6 @@ export class SherpaNodeCanvas extends SherpaElement {
       return;
     }
     // Delete selected node (and any edges touching it).
-    // @ts-expect-error - TODO: Fix type
     if ((e.code === "Delete" || e.code === "Backspace") && this.#selectedNodeId) {
       // Don't intercept the key when the user is actually editing a
       // control inside a node (text input, textarea, contentEditable,
@@ -779,8 +778,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       this.removeNode(this.#selectedNodeId);
     }
   };
-  #onKeyUp = (e: Event) => {
-    // @ts-expect-error - TODO: Fix type
+  #onKeyUp = (e: KeyboardEvent) => {
     if (e.code === "Space") {
       this.#spaceDown = false;
       this.removeAttribute("data-space-down");
@@ -832,7 +830,6 @@ export class SherpaNodeCanvas extends SherpaElement {
         const edge = this.#edges[candidate.idx];
         const fixed = edge.from; // we picked up the "to" end
         const w = this.#screenToWorld(originalEvent.clientX, originalEvent.clientY);
-        // @ts-expect-error - TODO: Fix type
         this.#drag = {
           redirectIdx: candidate.idx,
           redirectFixedEnd: fixed,
@@ -849,7 +846,6 @@ export class SherpaNodeCanvas extends SherpaElement {
     }
 
     const w = this.#screenToWorld(originalEvent.clientX, originalEvent.clientY);
-    // @ts-expect-error - TODO: Fix type
     this.#drag = {
       fromNodeId: nodeId,
       fromPortName: portName,
@@ -868,32 +864,27 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (!node) return;
     // Click on a node selects it (and clears any selected edge).
     this.setSelectedNode(nodeId);
-    // @ts-expect-error - TODO: Fix type
     this.#nodeDrag = {
       nodeId,
       x0: originalEvent.clientX,
       y0: originalEvent.clientY,
-      // @ts-expect-error - TODO: Fix type
       nx0: parseFloat(node.dataset["x"] || "0") || 0,
-      // @ts-expect-error - TODO: Fix type
       ny0: parseFloat(node.dataset["y"] || "0") || 0,
     };
   };
 
-  // @ts-expect-error - TODO: Fix type
-  #findDropTarget(clientX, clientY) {
+  #findDropTarget(clientX: number, clientY: number): DropTarget | null {
     const w = this.#screenToWorld(clientX, clientY);
     const hitR = HIT_R / this.#viewport.zoom;
-    let best = null;
+    let best: DropTarget | null = null;
     let bestD = Infinity;
-    const sockets = this.querySelectorAll("sherpa-node sherpa-node-socket[data-port-name]");
+    const sockets = this.querySelectorAll<HTMLElement>("sherpa-node sherpa-node-socket[data-port-name]");
     for (const sock of sockets) {
-      const node = sock.closest("sherpa-node");
-      // @ts-expect-error - TODO: Fix type
-      const id = node?.dataset?.nodeId;
+      const node = sock.closest<HTMLElement>("sherpa-node");
+      const id = node?.dataset?.["nodeId"];
       if (!id) continue;
-      // @ts-expect-error - TODO: Fix type
       const portName = sock.dataset["portName"];
+      if (!portName) continue;
       const pos = this.#portWorld(id, portName);
       if (!pos) continue;
       const d = Math.hypot(pos.x - w.x, pos.y - w.y);
@@ -961,9 +952,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const edge = this.#edges[edgeIdx];
     if (!edge) return null;
     const counts = this.#multiCounts();
-    // @ts-expect-error - TODO: Fix type
     const fromKey = edge.from.nodeId + "\0" + edge.from.portName;
-    // @ts-expect-error - TODO: Fix type
     const toKey   = edge.to.nodeId   + "\0" + edge.to.portName;
     const fromInfo = counts.get(fromKey);
     const toInfo   = counts.get(toKey);
@@ -971,9 +960,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const fromCount = fromInfo ? fromInfo.lanes.size : 1;
     const toLane = toInfo ? toInfo.lanes.get(edgeIdx) ?? 0 : 0;
     const toCount = toInfo ? toInfo.lanes.size : 1;
-    // @ts-expect-error - TODO: Fix type
     const a = this.#portWorld(edge.from.nodeId, edge.from.portName, fromLane, fromCount);
-    // @ts-expect-error - TODO: Fix type
     const b = this.#portWorld(edge.to.nodeId,   edge.to.portName,   toLane,   toCount);
     if (!a || !b) return null;
     const { x: vx, y: vy, zoom } = this.#viewport;
@@ -1161,9 +1148,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const incomingByNode = new Map();   // nodeId → Map<portName, value | value[]>
     const targetKeys = new Set();       // "nodeId|portName" of every connected input
     for (const e of this.#edges) {
-      // @ts-expect-error - TODO: Fix type
       if (!e?.from || !e?.to) continue;
-      // @ts-expect-error - TODO: Fix type
       targetKeys.add(`${e.to.nodeId}|${e.to.portName}`);
     }
 
@@ -1174,32 +1159,23 @@ export class SherpaNodeCanvas extends SherpaElement {
       // Reset incoming map each pass; re-resolve from current node state.
       incomingByNode.clear();
       for (const e of this.#edges) {
-        // @ts-expect-error - TODO: Fix type
         if (!e?.from || !e?.to) continue;
-        // @ts-expect-error - TODO: Fix type
         const src = nodeMap.get(e.from.nodeId);
         if (!src) continue;
         // Source's own incoming map for this pass (may be empty on
         // pass 0 but populated on subsequent passes).
-        // @ts-expect-error - TODO: Fix type
         const srcIncoming = this.#asPlainIncoming(incomingByNode.get(e.from.nodeId));
-        // @ts-expect-error - TODO: Fix type
         const value = src.getOutputValue?.(e.from.portName, srcIncoming) ?? null;
 
-        // @ts-expect-error - TODO: Fix type
         let bucket = incomingByNode.get(e.to.nodeId);
-        // @ts-expect-error - TODO: Fix type
         if (!bucket) { bucket = new Map(); incomingByNode.set(e.to.nodeId, bucket); }
 
-        // @ts-expect-error - TODO: Fix type
         const existing = bucket.get(e.to.portName);
         if (existing === undefined) {
-          // @ts-expect-error - TODO: Fix type
           bucket.set(e.to.portName, value);
         } else if (Array.isArray(existing)) {
           existing.push(value);
         } else {
-          // @ts-expect-error - TODO: Fix type
           bucket.set(e.to.portName, [existing, value]);
         }
       }
@@ -1254,9 +1230,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       cv.width  = Math.max(1, Math.floor(r.width  * dpr));
       cv.height = Math.max(1, Math.floor(r.height * dpr));
     }
-    // @ts-expect-error - TODO: Fix type
     this.#gridCtx?.setTransform(dpr, 0, 0, dpr, 0, 0);
-    // @ts-expect-error - TODO: Fix type
     this.#edgesCtx?.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.#scheduleDraw();
   }
@@ -1270,7 +1244,6 @@ export class SherpaNodeCanvas extends SherpaElement {
     const ctx = this.#gridCtx;
     if (!ctx) return;
     const r = this.#bodyRect();
-    // @ts-expect-error - TODO: Fix type
     ctx.clearRect(0, 0, r.width, r.height);
     if (this.dataset["grid"] === "none") return;
 
@@ -1288,25 +1261,17 @@ export class SherpaNodeCanvas extends SherpaElement {
     const startX = ((vx % step) + step) % step;
     const startY = ((vy % step) + step) % step;
 
-    // @ts-expect-error - TODO: Fix type
     ctx.strokeStyle = color;
-    // @ts-expect-error - TODO: Fix type
     ctx.lineWidth = 0.5;
-    // @ts-expect-error - TODO: Fix type
     ctx.beginPath();
     for (let sy = startY; sy < r.height; sy += step) {
       for (let sx = startX; sx < r.width; sx += step) {
-        // @ts-expect-error - TODO: Fix type
         ctx.moveTo(sx - arm, sy);
-        // @ts-expect-error - TODO: Fix type
         ctx.lineTo(sx + arm, sy);
-        // @ts-expect-error - TODO: Fix type
         ctx.moveTo(sx, sy - arm);
-        // @ts-expect-error - TODO: Fix type
         ctx.lineTo(sx, sy + arm);
       }
     }
-    // @ts-expect-error - TODO: Fix type
     ctx.stroke();
   }
 
@@ -1339,7 +1304,6 @@ export class SherpaNodeCanvas extends SherpaElement {
     const ctx = this.#edgesCtx;
     if (!ctx) return;
     const r = this.#bodyRect();
-    // @ts-expect-error - TODO: Fix type
     ctx.clearRect(0, 0, r.width, r.height);
 
     const counts = this.#multiCounts();
@@ -1384,41 +1348,27 @@ export class SherpaNodeCanvas extends SherpaElement {
 
     // Live drag preview
     if (this.#drag) {
-      let a;
-      // @ts-expect-error - TODO: Fix type
+      let a: PortPos | null = null;
       if (this.#drag.redirectIdx != null) {
-        // @ts-expect-error - TODO: Fix type
         const fixed = this.#drag.redirectFixedEnd;
-        a = this.#portWorld(fixed.nodeId, fixed.portName);
+        if (fixed) a = this.#portWorld(fixed.nodeId, fixed.portName);
       } else {
-        // @ts-expect-error - TODO: Fix type
         a = this.#portWorld(this.#drag.fromNodeId, this.#drag.fromPortName);
       }
       if (a) {
         const ax = a.x * zoom + vx;
         const ay = a.y * zoom + vy;
-        // @ts-expect-error - TODO: Fix type
         const bx = this.#drag.cursorX * zoom + vx;
-        // @ts-expect-error - TODO: Fix type
         const by = this.#drag.cursorY * zoom + vy;
-        // @ts-expect-error - TODO: Fix type
         ctx.save();
-        // @ts-expect-error - TODO: Fix type
         ctx.setLineDash([6, 4]);
-        // @ts-expect-error - TODO: Fix type
         ctx.strokeStyle = colorGhost;
-        // @ts-expect-error - TODO: Fix type
         ctx.lineWidth = widthDefault;
         const dx = Math.max(40, Math.abs(bx - ax) * 0.5);
-        // @ts-expect-error - TODO: Fix type
         ctx.beginPath();
-        // @ts-expect-error - TODO: Fix type
         ctx.moveTo(ax, ay);
-        // @ts-expect-error - TODO: Fix type
         ctx.bezierCurveTo(ax + dx, ay, bx - dx, by, bx, by);
-        // @ts-expect-error - TODO: Fix type
         ctx.stroke();
-        // @ts-expect-error - TODO: Fix type
         ctx.restore();
       }
     }
@@ -1436,10 +1386,8 @@ export class SherpaNodeCanvas extends SherpaElement {
     // True/false outputs carry their semantic colour through every
     // state — the connector's identity wins over hover/selected.
     // (Hover/selected still drive stroke width.)
-    // @ts-expect-error - TODO: Fix type
     const node = this.#nodeById(edge.from.nodeId);
     const sock = node?.querySelector(
-      // @ts-expect-error - TODO: Fix type
       `sherpa-node-socket[data-port-name="${CSS.escape(edge.from.portName)}"]`
     );
     // @ts-expect-error - TODO: Fix type
@@ -1448,7 +1396,6 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (status === "false") return palette.false;
     if (state === "hover")    return palette.hover;
     if (state === "selected") return palette.selected;
-    // @ts-expect-error - TODO: Fix type
     if (edge.control) return palette.control;
     return palette.default;
   }
@@ -1457,9 +1404,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #strokeEdge(ctx, edgeIdx, counts, color, width) {
     const edge = this.#edges[edgeIdx];
     if (!edge) return;
-    // @ts-expect-error - TODO: Fix type
     const fromKey = edge.from.nodeId + "\0" + edge.from.portName;
-    // @ts-expect-error - TODO: Fix type
     const toKey   = edge.to.nodeId + "\0" + edge.to.portName;
     const fromInfo = counts.get(fromKey);
     const toInfo   = counts.get(toKey);
@@ -1467,9 +1412,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const fromCount = fromInfo ? fromInfo.lanes.size : 1;
     const toLane = toInfo ? toInfo.lanes.get(edgeIdx) ?? 0 : 0;
     const toCount = toInfo ? toInfo.lanes.size : 1;
-    // @ts-expect-error - TODO: Fix type
     const a = this.#portWorld(edge.from.nodeId, edge.from.portName, fromLane, fromCount);
-    // @ts-expect-error - TODO: Fix type
     const b = this.#portWorld(edge.to.nodeId,   edge.to.portName,   toLane,   toCount);
     if (!a || !b) return;
     const { x: vx, y: vy, zoom } = this.#viewport;
@@ -1505,7 +1448,6 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (!parentId) return;
     const snapshot = this.#snapshot();
     const resolvedLabel = label ?? this.#labelForNode(parentId) ?? parentId;
-    // @ts-expect-error - TODO: Fix type
     this.#drillStack.push({ parentId, label: resolvedLabel, snapshot });
     this.#clearFrame();
     const cached = this.#subgraphs.get(parentId);
@@ -1604,7 +1546,6 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /** Read-only copy of the drill stack: top of stack is last. */
   getDrillStack() {
-    // @ts-expect-error - TODO: Fix type
     return this.#drillStack.map((f) => ({ parentId: f.parentId, label: f.label }));
   }
 
@@ -1687,7 +1628,6 @@ export class SherpaNodeCanvas extends SherpaElement {
     // Prefer the slotted [slot="title"] text on the node header.
     const title = node.querySelector('[slot="title"]');
     if (title?.textContent?.trim()) return title.textContent.trim();
-    // @ts-expect-error - TODO: Fix type
     return node.dataset["label"] || node.dataset["nodeId"] || null;
   }
 
@@ -1769,13 +1709,10 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Utilities ─────────────────────────────────────────────────── */
 
-  #normEdge(e: Event) {
+  #normEdge(e: Edge): Edge {
     return {
-      // @ts-expect-error - TODO: Fix type
       from: { nodeId: e.from.nodeId, portName: e.from.portName },
-      // @ts-expect-error - TODO: Fix type
       to:   { nodeId: e.to.nodeId,   portName: e.to.portName },
-      // @ts-expect-error - TODO: Fix type
       control: !!e.control,
     };
   }
