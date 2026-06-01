@@ -99,22 +99,28 @@ export class SherpaFilterBar extends SherpaElement {
   #observer = null;
   #columns = [];
   #rows = [];
-  #addButtonEl = null;
   #applied = true; // Toggle state — when false, getFilters() returns []
   #pendingEmit = false; // Microtask debounce for observer-driven filterchange
   #sortChangeHandler = null; // Bound handler for sortchange events
   #syncingSort = false; // Guard against re-entrant filterchange during sort sync
-  #scopeEl = null; // Parent element used as event scope for sortchange
   #bound = false;
+
+  els = this.cacheElements({
+    addButton: { selector: '.add-button', type: HTMLButtonElement },
+    scope: '.filter-scope' // Parent element used as event scope for sortchange
+  });
 
   override onRender(): void {
     if (this.#bound) return;
 
     // Wire sortchange listener on parent scope (container or shadow host)
-    this.#scopeEl = this.parentElement || this.getRootNode()?.host || null;
-    if (this.#scopeEl && !this.#sortChangeHandler) {
+    // Fallback to parent element or host if shadow scope doesn't exist
+    if (!this.els.scope) {
+      this.els.scope = this.parentElement || this.getRootNode()?.host || null;
+    }
+    if (this.els.scope && !this.#sortChangeHandler) {
       this.#sortChangeHandler = (e) => this.#onSortChange(e);
-      this.#scopeEl.addEventListener("sort-change", this.#sortChangeHandler);
+      this.els.scope.addEventListener("sort-change", this.#sortChangeHandler);
     }
 
     // Watch for attribute changes on slotted filter chips
@@ -171,9 +177,9 @@ export class SherpaFilterBar extends SherpaElement {
     });
 
     // Add filter button — sherpa-button with data-menu="true"
-    this.#addButtonEl = this.$(".add-filter-button");
+    this.els.addButton = this.$(".add-filter-button");
     // Listen for menu-select on the add button to create new chips
-    this.#addButtonEl?.addEventListener("menu-select", this.#onAddMenuSelect);
+    this.els.addButton?.addEventListener("menu-select", this.#onAddMenuSelect);
 
     // Listen for button clicks from behavior chips (mode cycling) and dismiss buttons
     this.addEventListener("button-click", (e) => {
@@ -215,7 +221,7 @@ export class SherpaFilterBar extends SherpaElement {
       const chip = e.composedPath()[0];
 
       // Skip the add-filter button's own menu-select — handled separately
-      if (chip === this.#addButtonEl) return;
+      if (chip === this.els.addButton) return;
 
       // ── New API: data-filter-field chips ──
       // e.target may be the chevron button — resolve the filter-field label button
@@ -306,14 +312,14 @@ export class SherpaFilterBar extends SherpaElement {
     this.#observer?.disconnect();
     this.#observer = null;
 
-    if (this.#scopeEl && this.#sortChangeHandler) {
-      this.#scopeEl.removeEventListener(
+    if (this.els.scope && this.#sortChangeHandler) {
+      this.els.scope.removeEventListener(
         "sort-change",
         this.#sortChangeHandler,
       );
     }
     this.#sortChangeHandler = null;
-    this.#scopeEl = null;
+    this.els.scope = null;
   }
 
   onAttributeChanged(name, _old, newValue) {
@@ -448,9 +454,9 @@ export class SherpaFilterBar extends SherpaElement {
       const size = btn.getAttribute("data-size");
       if (!size || size === "base") btn.setAttribute("data-size", "small");
     }
-    if (this.#addButtonEl) {
-      const size = this.#addButtonEl.getAttribute("data-size");
-      if (!size || size === "base") this.#addButtonEl.setAttribute("data-size", "small");
+    if (this.els.addButton) {
+      const size = this.els.addButton.getAttribute("data-size");
+      if (!size || size === "base") this.els.addButton.setAttribute("data-size", "small");
     }
   }
 
@@ -653,14 +659,14 @@ export class SherpaFilterBar extends SherpaElement {
 
   /** Populate the "Add filter" button menu with available (unused) columns. */
   #populateAddMenu() {
-    if (!this.#addButtonEl) return;
+    if (!this.els.addButton) return;
 
     const usedFields = this.#getUsedFilterFields();
     const available = this.#columns.filter((c) => !usedFields.has(c.field));
 
     // Always re-sync menu items (including clearing to empty) so the
     // previously-shown set never lingers and lets users re-add the last field.
-    this.#addButtonEl.setMenuItems(
+    this.els.addButton.setMenuItems(
       available.map((col) => ({
         value: col.field,
         text: col.name || formatFieldName(col.field),
@@ -671,8 +677,8 @@ export class SherpaFilterBar extends SherpaElement {
     // when every column is already in use so the button stays visible but
     // unclickable.
     const noColumns = this.#columns.length === 0;
-    this.#addButtonEl.toggleAttribute("hidden", noColumns);
-    this.#addButtonEl.toggleAttribute("disabled", !noColumns && available.length === 0);
+    this.els.addButton.toggleAttribute("hidden", noColumns);
+    this.els.addButton.toggleAttribute("disabled", !noColumns && available.length === 0);
     // Reflect Add-button visibility on the host so CSS can light up the
     // Custom-zone divider even when no ad-hoc filter chips exist yet.
     this.toggleAttribute("data-has-add", !noColumns);

@@ -33,16 +33,14 @@ class SherpaProductBar extends SherpaElement {
     ];
   }
 
-  /** @type {HTMLSpanElement|null} */
-  #nameEl = null;
-  /** @type {HTMLDivElement|null} */
-  #iconEl = null;
+  els = this.cacheElements({
+    name: '.product-name',
+    icon: '.product-icon'
+  });
 
   /* ── lifecycle ───────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#nameEl = this.$(".product-name");
-    this.#iconEl = this.$(".product-icon");
 
     // ARIA
     if (!this.hasAttribute("role")) this.setAttribute("role", "banner");
@@ -66,16 +64,16 @@ class SherpaProductBar extends SherpaElement {
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncName() {
-    if (this.#nameEl) {
-      this.#nameEl.textContent = this.dataset.productName || "";
+    if (this.els.name) {
+      this.els.name.textContent = this.dataset.productName || "";
     }
   }
 
   #syncIcon() {
-    if (!this.#iconEl) return;
+    if (!this.els.icon) return;
 
     const iconClass = this.dataset.productIcon;
-    const iconEl = this.#iconEl.querySelector(".auto-icon");
+    const iconEl = this.els.icon.querySelector(".auto-icon");
 
     if (iconClass && iconEl) {
       iconEl.className = `auto-icon fa-solid ${iconClass}`;

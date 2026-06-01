@@ -50,18 +50,18 @@ export class SherpaNodeSocket extends SherpaElement {
     ];
   }
 
-  #btnEl = null;
-  #connectorsEl = null;
-  #connectorTpl = null;
+  els = this.cacheElements({
+    btn: { selector: '.socket', type: HTMLButtonElement },
+    connectors: '.connectors',
+    connectorTpl: { selector: '.connector-tpl', type: HTMLTemplateElement }
+  });
+
   #bound = false;
 
   override onRender(): void {
-    this.#btnEl = this.$(".socket");
-    this.#connectorsEl = this.$(".connectors");
-    this.#connectorTpl = this.shadowRoot?.querySelector(".connector-tpl");
 
     if (!this.#bound) {
-      this.#btnEl?.addEventListener("pointerdown", this.#onPointerDown);
+      this.els.btn?.addEventListener("pointerdown", this.#onPointerDown);
       this.#bound = true;
     }
 
@@ -86,17 +86,17 @@ export class SherpaNodeSocket extends SherpaElement {
     // Per-connection dots only exist on input sockets (the template's
     // .connectors container is hidden via CSS for outputs anyway, but
     // we also gate here so we never inject dots on outputs).
-    if (!this.#connectorsEl || !this.#connectorTpl) return;
+    if (!this.els.connectors || !this.els.connectorTpl) return;
     if (this.dataset.direction === "out") {
-      this.#connectorsEl.replaceChildren();
+      this.els.connectors.replaceChildren();
       return;
     }
     // Render exactly `count` dots — zero when disconnected.
     const dots = [];
     for (let i = 0; i < count; i++) {
-      dots.push(this.#connectorTpl.content.firstElementChild.cloneNode(true));
+      dots.push(this.els.connectorTpl.content.firstElementChild.cloneNode(true));
     }
-    this.#connectorsEl.replaceChildren(...dots);
+    this.els.connectors.replaceChildren(...dots);
   }
 
   /* ── Public API ────────────────────────────────────────────────── */

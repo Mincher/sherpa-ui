@@ -101,19 +101,20 @@ export class SherpaNode extends SherpaElement {
     ];
   }
 
-  #nodeEl = null;
-  #subtypeSelectEl = null;
+  els = this.cacheElements({
+    node: '.node',
+    subtypeSelect: { selector: '.subtype-select', type: HTMLSelectElement }
+  });
+
   #bound = false;
 
   override onRender(): void {
-    this.#nodeEl = this.$(".node");
-    this.#subtypeSelectEl = this.$(".subtype-select");
 
     if (!this.#bound) {
-      this.#nodeEl?.addEventListener("pointerdown", this.#onPointerDown);
-      this.#subtypeSelectEl?.addEventListener("change", this.#onSubtypeChange);
-      this.#subtypeSelectEl?.addEventListener("pointerdown", this.#stopPointer);
-      this.#subtypeSelectEl?.addEventListener("click", this.#stopPointer);
+      this.els.node?.addEventListener("pointerdown", this.#onPointerDown);
+      this.els.subtypeSelect?.addEventListener("change", this.#onSubtypeChange);
+      this.els.subtypeSelect?.addEventListener("pointerdown", this.#stopPointer);
+      this.els.subtypeSelect?.addEventListener("click", this.#stopPointer);
       // Light-DOM <sherpa-input-*> controls bubble `change` (composed:true)
       // up to the host. Re-emit a node-level event so the canvas can run
       // value propagation along edges.
@@ -133,8 +134,8 @@ export class SherpaNode extends SherpaElement {
     else if (name === "data-subtypes") this.#syncSubtypeOptions();
     else if (name === "data-subtype-label") this.#syncSubtypeOptions();
     else if (name === "data-subtype") {
-      if (this.#subtypeSelectEl && this.#subtypeSelectEl.getAttribute("value") !== this.dataset.subtype) {
-        this.#subtypeSelectEl.setAttribute("value", this.dataset.subtype || "");
+      if (this.els.subtypeSelect && this.els.subtypeSelect.getAttribute("value") !== this.dataset.subtype) {
+        this.els.subtypeSelect.setAttribute("value", this.dataset.subtype || "");
       }
       this.#applyTemplate();
     }
@@ -368,7 +369,7 @@ export class SherpaNode extends SherpaElement {
 
   #onControlChange = (e) => {
     // Ignore our own subtype dropdown — that has its own event path.
-    if (e.composedPath().includes(this.#subtypeSelectEl)) return;
+    if (e.composedPath().includes(this.els.subtypeSelect)) return;
     // Re-evaluate conditional row visibility on every value change.
     this.#applyShowIf();
     // Driven controls fire change as a side-effect of being written by
@@ -400,11 +401,11 @@ export class SherpaNode extends SherpaElement {
   }
 
   #syncSubtypeOptions() {
-    if (!this.#subtypeSelectEl) return;
+    if (!this.els.subtypeSelect) return;
     const raw = this.dataset.subtypes;
     if (!raw) {
-      if (typeof this.#subtypeSelectEl.setOptions === "function") {
-        this.#subtypeSelectEl.setOptions([]);
+      if (typeof this.els.subtypeSelect.setOptions === "function") {
+        this.els.subtypeSelect.setOptions([]);
       }
       return;
     }
@@ -445,23 +446,23 @@ export class SherpaNode extends SherpaElement {
     this.toggleAttribute("data-single-subtype", totalChoices <= 1);
     // Allow per-host relabelling of the subtype select (e.g. logic
     // nodes label it "Operation" rather than the default "Type").
-    if (this.#subtypeSelectEl) {
+    if (this.els.subtypeSelect) {
       const label = this.dataset.subtypeLabel || "Type";
-      if (this.#subtypeSelectEl.getAttribute("data-label") !== label) {
-        this.#subtypeSelectEl.setAttribute("data-label", label);
+      if (this.els.subtypeSelect.getAttribute("data-label") !== label) {
+        this.els.subtypeSelect.setAttribute("data-label", label);
       }
     }
     const apply = () => {
-      if (typeof this.#subtypeSelectEl.setOptions !== "function") return;
-      this.#subtypeSelectEl.setOptions(normalised);
+      if (typeof this.els.subtypeSelect.setOptions !== "function") return;
+      this.els.subtypeSelect.setOptions(normalised);
       const firstValue = isGrouped
         ? normalised.find((g) => g.options?.length)?.options?.[0]?.value
         : normalised[0]?.value;
       const initial = this.dataset.subtype || (firstValue ?? "");
-      if (initial) this.#subtypeSelectEl.setAttribute("value", initial);
+      if (initial) this.els.subtypeSelect.setAttribute("value", initial);
     };
     // sherpa-input-select upgrades asynchronously; wait if needed.
-    if (typeof this.#subtypeSelectEl.setOptions === "function") {
+    if (typeof this.els.subtypeSelect.setOptions === "function") {
       apply();
     } else if (window.customElements?.whenDefined) {
       customElements.whenDefined("sherpa-input-select").then(apply);
@@ -520,9 +521,9 @@ export class SherpaNode extends SherpaElement {
     // subtype (Type) select via `data-subtype-helper="…"` on the
     // <template> element — mirror it onto the subtype-select.
     const helper = tpl.getAttribute("data-subtype-helper") || "";
-    if (this.#subtypeSelectEl) {
-      if (helper) this.#subtypeSelectEl.setAttribute("data-helper", helper);
-      else this.#subtypeSelectEl.removeAttribute("data-helper");
+    if (this.els.subtypeSelect) {
+      if (helper) this.els.subtypeSelect.setAttribute("data-helper", helper);
+      else this.els.subtypeSelect.removeAttribute("data-helper");
     }
     // Apply data-show-if conditional row visibility, then re-apply
     // whenever a control value changes (handled in #onControlChange).
@@ -572,7 +573,7 @@ export class SherpaNode extends SherpaElement {
   #onSubtypeChange = (e) => {
     // sherpa-input-select fires a `change` CustomEvent with detail.value.
     // Fall back to reading value off the element for safety.
-    const value = e?.detail?.value ?? this.#subtypeSelectEl?.getAttribute("value") ?? "";
+    const value = e?.detail?.value ?? this.els.subtypeSelect?.getAttribute("value") ?? "";
     this.setAttribute("data-subtype", value);
     this.dispatchEvent(new CustomEvent("sherpa-node-subtype-change", {
       bubbles: true, composed: true,
