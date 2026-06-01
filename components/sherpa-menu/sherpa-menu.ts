@@ -155,7 +155,7 @@ export class SherpaMenu extends SherpaElement {
     }
   };
 
-  #onKeyDown: EventHandler<KeyboardEvent> = (e: Event) => {
+  #onKeyDown: EventHandler<KeyboardEvent> = (e: KeyboardEvent) => {
     const items = this.#focusableItems();
     if (!items.length) return;
 

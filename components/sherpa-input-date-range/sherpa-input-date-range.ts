@@ -82,7 +82,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     if (!e.composedPath().includes(this)) this.#closeAll();
   };
 
-  #onDocKey = (e: Event) => {
+  #onDocKey = (e: KeyboardEvent) => {
     if (e.key === "Escape") this.#closeAll();
   };
 

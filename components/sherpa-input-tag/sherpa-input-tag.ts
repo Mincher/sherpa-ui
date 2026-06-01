@@ -171,7 +171,7 @@ export class SherpaInputTag extends SherpaInputBase {
     wrapper.insertBefore(frag, input);
   }
 
-  #onKeyDown = (e: Event) => {
+  #onKeyDown = (e: KeyboardEvent) => {
     const input = this.getInputElement();
     if (!input) return;
     const sep = (this.dataset["separator"] ?? ',').slice(0, 1);

@@ -155,7 +155,7 @@ export class SherpaInputNumber extends SherpaInputBase {
    * (`.`, `,`, `e`, `E`). Other keys (digits, sign, navigation,
    * shortcuts) are passed through unchanged.
    */
-  #onKeyDown = (e: Event) => {
+  #onKeyDown = (e: KeyboardEvent) => {
     const step = parseFloat(this.step);
     if (!isFinite(step) || step % 1 !== 0) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;

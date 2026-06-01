@@ -185,7 +185,7 @@ export class SherpaTabs extends SherpaElement {
     this.selectTab(index);
   };
 
-  #onTabKeyDown: EventHandler<KeyboardEvent> = (e: Event) => {
+  #onTabKeyDown: EventHandler<KeyboardEvent> = (e: KeyboardEvent) => {
     const current = parseInt((e.currentTarget as HTMLElement).dataset["index"] || '0', 10);
     let next = current;
 

@@ -84,7 +84,7 @@ class SherpaPromptComposer extends SherpaElement {
 
   #onInput = () => this.#autoresize();
 
-  #onKeyDown = (e: Event) => {
+  #onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       this.els.form?.requestSubmit();

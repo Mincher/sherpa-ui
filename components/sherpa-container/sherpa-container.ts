@@ -164,7 +164,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     }
   };
 
-  #onKeyDown = (e: Event) => {
+  #onKeyDown = (e: KeyboardEvent) => {
     if (this.disabled) return;
     if (!(this.interactive || this.selectable)) return;
     if (e.key === 'Enter' || e.key === ' ') {

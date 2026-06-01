@@ -256,7 +256,7 @@ export class SherpaNavSection extends SherpaElement {
     this.#dispatchSelect(btn);
   };
 
-  #onKeyDown = (e: Event) => {
+  #onKeyDown = (e: KeyboardEvent) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     const btn = e.target.closest?.(".item");
     if (!btn || btn.hasAttribute("disabled")) return;
