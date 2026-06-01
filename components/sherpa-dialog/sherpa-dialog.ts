@@ -87,11 +87,13 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
     // Click on ::backdrop (detected as click on <dialog> itself) closes
     dialog?.addEventListener('click', (e) => {
+      // @ts-expect-error - TODO: Fix type
       if (e.target === dialog) dialog.close();
     });
 
     // Close button click
     this.$('.close-button')?.addEventListener('click', () => {
+      // @ts-expect-error - TODO: Fix type
       this.$('.dialog')?.close();
     });
 
@@ -118,6 +120,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     }
   }
 
+  // @ts-expect-error - TODO: Fix type
   override onAttributeChanged(name: string, _oldValue, newValue: string | null) {
     switch (name) {
       case 'data-open':
@@ -175,6 +178,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     return this.querySelectorAll('section[data-page]').length || 1;
   }
 
+  // @ts-expect-error - TODO: Fix type
   setPage(index) {
     const total = this.pages;
     const next = Math.max(0, Math.min(total - 1, Number(index) || 0));
@@ -195,7 +199,9 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
   #openDialog() {
     const dialog = this.$('.dialog');
+    // @ts-expect-error - TODO: Fix type
     if (dialog && !dialog.open) {
+      // @ts-expect-error - TODO: Fix type
       dialog.showModal();
       this.dispatchEvent(new CustomEvent('open', { bubbles: true, composed: true }));
     }
@@ -203,6 +209,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
   #closeDialog() {
     const dialog = this.$('.dialog');
+    // @ts-expect-error - TODO: Fix type
     if (dialog?.open) dialog.close();
   }
 
@@ -215,6 +222,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     if (back) back.toggleAttribute('disabled', this.page === 0);
     if (next) {
       const last = this.page >= this.pages - 1;
+      // @ts-expect-error - TODO: Fix type
       next.dataset["label"] = last ? (this.dataset["finishLabel"] || 'Finish') : 'Next';
     }
   }

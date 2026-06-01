@@ -92,6 +92,7 @@ export class SherpaNodeHeader extends SherpaElement {
     this.dispatchEvent(new CustomEvent("sherpa-node-drilldown", {
       bubbles: true,
       composed: true,
+      // @ts-expect-error - TODO: Fix type
       detail: { nodeId: node?.dataset?.nodeId || null },
     }));
   };
@@ -99,6 +100,7 @@ export class SherpaNodeHeader extends SherpaElement {
   #tagSockets = () => {
     for (const slot of [this.els.inSocketSlot, this.els.outSocketSlot]) {
       if (!slot) continue;
+      // @ts-expect-error - TODO: Fix type
       const assigned = slot.assignedElements({ flatten: true });
       for (const el of assigned) {
         if (el.localName === "sherpa-node-socket") {

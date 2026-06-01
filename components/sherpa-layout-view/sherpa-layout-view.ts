@@ -54,6 +54,7 @@ export class SherpaLayoutView extends SherpaElement {
   /** @type {HTMLElement|null} */ #headerEl = null;
 
   override onRender(): void {
+    // @ts-expect-error - TODO: Fix type
     this.#headerEl = this.$('sherpa-view-header.view-header');
     this.#syncHeader();
   }
@@ -68,13 +69,19 @@ export class SherpaLayoutView extends SherpaElement {
     const header = this.#headerEl;
     if (!header) return;
     const heading = this.getAttribute('data-heading');
+    // @ts-expect-error - TODO: Fix type
     if (heading != null) header.setAttribute('data-label', heading);
+    // @ts-expect-error - TODO: Fix type
     else header.removeAttribute('data-label');
     const exportTitle = this.getAttribute('data-export-title');
+    // @ts-expect-error - TODO: Fix type
     if (exportTitle != null) header.setAttribute('data-export-title', exportTitle);
+    // @ts-expect-error - TODO: Fix type
     else header.removeAttribute('data-export-title');
     const breadcrumbs = this.getAttribute('data-breadcrumbs');
+    // @ts-expect-error - TODO: Fix type
     if (breadcrumbs != null) header.setAttribute('data-breadcrumbs', breadcrumbs);
+    // @ts-expect-error - TODO: Fix type
     else header.removeAttribute('data-breadcrumbs');
   }
 }

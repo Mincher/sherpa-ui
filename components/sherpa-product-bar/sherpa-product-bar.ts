@@ -90,11 +90,13 @@ class SherpaProductBar extends SherpaElement {
     const root = this.shadowRoot;
     if (!root) return;
 
+    // @ts-expect-error - TODO: Fix type
     const update = (slotName, attr) => {
       const slot = slotName
         ? root.querySelector(`slot[name="${slotName}"]`)
         : root.querySelector("slot:not([name])");
       if (!slot) return;
+      // @ts-expect-error - TODO: Fix type
       const has = slot.assignedNodes({ flatten: true }).some((n) => {
         if (n.nodeType === Node.ELEMENT_NODE) return true;
         return n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0;

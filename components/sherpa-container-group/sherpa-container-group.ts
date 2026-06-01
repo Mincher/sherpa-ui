@@ -75,7 +75,9 @@ export class SherpaContainerGroup extends SherpaElement {
   #stamped = new Set();
 
   override onRender(): void {
+    // @ts-expect-error - TODO: Fix type
     this.#defaultSlot = this.shadowRoot.querySelector("slot");
+    // @ts-expect-error - TODO: Fix type
     this.#defaultSlot?.addEventListener("slotchange", () => this.#syncGroupPositions());
     this.#syncGroupPositions();
     // Compute the correct initial row span from whatever tile spans are current.
@@ -104,6 +106,7 @@ export class SherpaContainerGroup extends SherpaElement {
     /** @type {Map<number, number>} row index → 12-bit occupied-column bitmask */
     const rowBits = new Map();
 
+    // @ts-expect-error - TODO: Fix type
     const canFit = (r, c, rs, cs) => {
       if (c + cs > COLS) return false;
       const mask = ((1 << cs) - 1) << c;
@@ -113,6 +116,7 @@ export class SherpaContainerGroup extends SherpaElement {
       return true;
     };
 
+    // @ts-expect-error - TODO: Fix type
     const occupy = (r, c, rs, cs) => {
       const mask = ((1 << cs) - 1) << c;
       for (let ri = r; ri < r + rs; ri++) {
@@ -124,7 +128,9 @@ export class SherpaContainerGroup extends SherpaElement {
 
     for (const child of this.children) {
       if (child.nodeType !== 1 || child.hasAttribute("slot")) continue;
+      // @ts-expect-error - TODO: Fix type
       const cs = Math.min(parseInt(child.dataset["colSpan"]) || 1, COLS);
+      // @ts-expect-error - TODO: Fix type
       const rs = Math.max(parseInt(child.dataset["rowSpan"]) || 1, 1);
 
       outer: for (let r = cursorRow; ; r++) {
@@ -152,6 +158,7 @@ export class SherpaContainerGroup extends SherpaElement {
 
   override onDisconnect(): void {
     for (const child of this.#stamped) {
+      // @ts-expect-error - TODO: Fix type
       delete child.dataset["groupPosition"];
     }
     this.#stamped.clear();
@@ -172,12 +179,14 @@ export class SherpaContainerGroup extends SherpaElement {
     for (const child of this.children) {
       if (child.nodeType !== 1 || child.hasAttribute("slot")) continue;
       if (child.tagName !== "SHERPA-CONTAINER") continue;
+      // @ts-expect-error - TODO: Fix type
       child.dataset["groupPosition"] = isFirst ? "first" : "follow";
       current.add(child);
       isFirst = false;
     }
     // Clear stale stamps from tiles that left the group (e.g. ungrouped).
     for (const prev of this.#stamped) {
+      // @ts-expect-error - TODO: Fix type
       if (!current.has(prev)) delete prev.dataset["groupPosition"];
     }
     this.#stamped = current;

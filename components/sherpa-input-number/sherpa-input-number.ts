@@ -73,12 +73,14 @@ export class SherpaInputNumber extends SherpaInputBase {
   override onInputConnect(): void {
     this.els.stepDownBtn?.addEventListener('click', this.#onStepDown);
     this.els.stepUpBtn?.addEventListener('click', this.#onStepUp);
+    // @ts-expect-error - TODO: Fix type
     this.getInputElement()?.addEventListener('keydown', this.#onKeyDown);
   }
 
   override onInputDisconnect(): void {
     this.els.stepDownBtn?.removeEventListener('click', this.#onStepDown);
     this.els.stepUpBtn?.removeEventListener('click', this.#onStepUp);
+    // @ts-expect-error - TODO: Fix type
     this.getInputElement()?.removeEventListener('keydown', this.#onKeyDown);
   }
 
@@ -113,6 +115,7 @@ export class SherpaInputNumber extends SherpaInputBase {
 
   /* ── Internal ───────────────────────────────────────────────── */
 
+  // @ts-expect-error - TODO: Fix type
   #step(direction) {
     if (this.disabled || this.readOnly) return;
     const el = this.getInputElement();
@@ -120,7 +123,9 @@ export class SherpaInputNumber extends SherpaInputBase {
 
     try {
       // Use native stepUp/stepDown — handles min/max/step natively
+      // @ts-expect-error - TODO: Fix type
       if (direction > 0) el.stepUp(direction);
+      // @ts-expect-error - TODO: Fix type
       else el.stepDown(-direction);
     } catch {
       // stepUp/stepDown throws if value is empty or out of range

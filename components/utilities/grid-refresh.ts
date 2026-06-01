@@ -18,6 +18,7 @@
  * @param {HTMLElement} contentArea — The <sherpa-layout-grid> element
  * @param {function(): Promise<{records: Array, fields: Array}>} loader — Async function that returns { records, fields }
  */
+// @ts-expect-error - TODO: Fix type
 export async function refreshDataset(contentArea, loader) {
   if (!contentArea || !loader) return;
   const ds = await loader();

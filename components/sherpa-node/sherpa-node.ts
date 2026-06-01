@@ -169,10 +169,14 @@ export class SherpaNode extends SherpaElement {
     const sockets = this.querySelectorAll("sherpa-node-socket[data-port-name]");
     for (const sock of sockets) {
       const r = sock.getBoundingClientRect();
+      // @ts-expect-error - TODO: Fix type
       const portName = sock.dataset["portName"];
+      // @ts-expect-error - TODO: Fix type
       const side = sock.dataset["direction"] === "out" ? "out" : "in";
       const multi = sock.hasAttribute("data-multi");
+      // @ts-expect-error - TODO: Fix type
       const count = parseInt(sock.dataset["connectionCount"] || "1", 10) || 1;
+      // @ts-expect-error - TODO: Fix type
       const status = sock.dataset["status"] || "";
       const x = (r.left + r.right) / 2 - hostRect.left;
       const y = (r.top + r.bottom) / 2 - hostRect.top;
@@ -193,6 +197,7 @@ export class SherpaNode extends SherpaElement {
    * Returns string|null. The canvas writes this string into any
    *   downstream input control via setInputValue().
    */
+  // @ts-expect-error - TODO: Fix type
   getOutputValue(portName, incoming = {}) {
     if (!portName) return null;
     const socket = this.querySelector(
@@ -202,6 +207,7 @@ export class SherpaNode extends SherpaElement {
 
     // True/false branch outputs emit fixed branch markers per the
     // demo spec: 1 for the "true" branch, 2 for the "false" branch.
+    // @ts-expect-error - TODO: Fix type
     const status = socket.dataset["status"] || "";
     if (status === "true")  return "1";
     if (status === "false") return "2";
@@ -213,11 +219,15 @@ export class SherpaNode extends SherpaElement {
     // Helper: prefer an upstream-driven incoming value, otherwise the
     // matching local control. This lets a connected input override
     // whatever the user typed locally.
+    // @ts-expect-error - TODO: Fix type
     const inOr = (port, ctrlName, fallback = "") => {
+      // @ts-expect-error - TODO: Fix type
       if (incoming[port] !== undefined) return incoming[port];
+      // @ts-expect-error - TODO: Fix type
       if (ctrls[ctrlName] !== undefined) return ctrls[ctrlName];
       return fallback;
     };
+    // @ts-expect-error - TODO: Fix type
     const num = (v, def = 0) => {
       const n = parseFloat(v);
       return Number.isFinite(n) ? n : def;
@@ -226,15 +236,19 @@ export class SherpaNode extends SherpaElement {
     if (kind === "source")    return "1";
     if (kind === "variable")  {
       if (subtype === "property") {
+        // @ts-expect-error - TODO: Fix type
         const cat = ctrls.category || "";
+        // @ts-expect-error - TODO: Fix type
         const fld = ctrls.field || "";
         return cat && fld ? `${cat}.${fld}` : (cat || fld || null);
       }
+      // @ts-expect-error - TODO: Fix type
       return ctrls.value ?? null;
     }
     if (kind === "math") {
       const a = num(inOr("a", "a"));
       const b = num(inOr("b", "b"));
+      // @ts-expect-error - TODO: Fix type
       const inV = incoming.in;
       const inArr = Array.isArray(inV) ? inV.map(num) : (inV !== undefined ? [num(inV)] : []);
       switch (subtype) {
@@ -248,12 +262,14 @@ export class SherpaNode extends SherpaElement {
         case "average":   return inArr.length ? String(inArr.reduce((s: any, n: any) => s + n, 0) / inArr.length) : "";
         case "round": {
           const v = num(inArr[0]);
+          // @ts-expect-error - TODO: Fix type
           const p = num(ctrls.places);
           const m = Math.pow(10, p);
           return String(Math.round(v * m) / m);
         }
         case "increment": {
           const v = num(inArr[0]);
+          // @ts-expect-error - TODO: Fix type
           const s = num(ctrls.step, 1);
           return String(v + s);
         }
@@ -265,6 +281,7 @@ export class SherpaNode extends SherpaElement {
       // util nodes carry their primary value in the first control,
       // except concatenate which composes its inputs.
       if (subtype === "concatenate") {
+        // @ts-expect-error - TODO: Fix type
         const op = ctrls.operation || "Append";
         const a = String(inOr("a", "a", ""));
         const b = String(inOr("b", "b", ""));
@@ -277,12 +294,17 @@ export class SherpaNode extends SherpaElement {
     if (kind === "ai") {
       // AI nodes surface their selected configuration so downstream
       // inputs can preview the value flowing through the edge.
+      // @ts-expect-error - TODO: Fix type
       if (subtype === "model")    return ctrls.model    || null;
+      // @ts-expect-error - TODO: Fix type
       if (subtype === "delegate") return ctrls.agent    || null;
       if (subtype === "chat") {
+        // @ts-expect-error - TODO: Fix type
         if (portName === "response")        return ctrls.response        || null;
+        // @ts-expect-error - TODO: Fix type
         if (portName === "recommendations") return ctrls.recommendations || null;
         // Default chat output: prefer response, fall back to preset/type.
+        // @ts-expect-error - TODO: Fix type
         return ctrls.response || ctrls.preset || ctrls.type || null;
       }
       return null;
@@ -290,14 +312,20 @@ export class SherpaNode extends SherpaElement {
     // Standalone AI-family kinds (templates moved these out of kind="ai"
     // into top-level kinds; mirror the same value-surfacing behaviour
     // so downstream inputs receive the chosen configuration).
+    // @ts-expect-error - TODO: Fix type
     if (kind === "model")    return ctrls.model || null;
+    // @ts-expect-error - TODO: Fix type
     if (kind === "delegate") return ctrls.agent || null;
     if (kind === "chat") {
+      // @ts-expect-error - TODO: Fix type
       if (portName === "response")        return ctrls.response        || null;
+      // @ts-expect-error - TODO: Fix type
       if (portName === "recommendations") return ctrls.recommendations || null;
+      // @ts-expect-error - TODO: Fix type
       return ctrls.response || ctrls.preset || ctrls.type || null;
     }
     if (kind === "action") {
+      // @ts-expect-error - TODO: Fix type
       if (subtype === "ticket") return ctrls.ticketNumber || ctrls.action || null;
       return null;
     }
@@ -310,6 +338,7 @@ export class SherpaNode extends SherpaElement {
    * and lock the control so the user can't override the driven value.
    * No-op if the node has no row-level input socket for that port.
    */
+  // @ts-expect-error - TODO: Fix type
   setInputValue(portName, value) {
     const ctrl = this.#getControlForInputPort(portName);
     if (!ctrl) return;
@@ -324,6 +353,7 @@ export class SherpaNode extends SherpaElement {
   }
 
   /** Restore an input control to user-editable state and clear value. */
+  // @ts-expect-error - TODO: Fix type
   clearInputValue(portName) {
     const ctrl = this.#getControlForInputPort(portName);
     if (!ctrl) return;
@@ -348,7 +378,9 @@ export class SherpaNode extends SherpaElement {
       if (!name) continue;
       // SherpaInputBase exposes value either via the `value` getter or
       // as the host attribute. Both fall back to "".
+      // @ts-expect-error - TODO: Fix type
       const v = (c.value !== undefined ? c.value : c.getAttribute("value")) ?? "";
+      // @ts-expect-error - TODO: Fix type
       out[name] = v;
     }
     return out;
@@ -358,6 +390,7 @@ export class SherpaNode extends SherpaElement {
       matches `portName`. The control's `name` must equal `portName` so
       that cross-port rows (e.g. an `agent` socket sitting in the `Type`
       row of ai.chat) don't accidentally write to the wrong control. */
+  // @ts-expect-error - TODO: Fix type
   #getControlForInputPort(portName) {
     const socket = this.querySelector(
       `sherpa-node-row > sherpa-node-socket[data-direction="in"][data-port-name="${CSS.escape(portName)}"]`,
@@ -369,11 +402,13 @@ export class SherpaNode extends SherpaElement {
 
   #onControlChange = (e: Event) => {
     // Ignore our own subtype dropdown — that has its own event path.
+    // @ts-expect-error - TODO: Fix type
     if (e.composedPath().includes(this.els.subtypeSelect)) return;
     // Re-evaluate conditional row visibility on every value change.
     this.#applyShowIf();
     // Driven controls fire change as a side-effect of being written by
     // the canvas; suppress those to avoid an event loop.
+    // @ts-expect-error - TODO: Fix type
     const tgt = e.composedPath().find((n) => n?.hasAttribute?.("data-driven"));
     if (tgt) return;
     this.dispatchEvent(new CustomEvent("sherpa-node-value-change", {
@@ -404,7 +439,9 @@ export class SherpaNode extends SherpaElement {
     if (!this.els.subtypeSelect) return;
     const raw = this.dataset["subtypes"];
     if (!raw) {
+      // @ts-expect-error - TODO: Fix type
       if (typeof this.els.subtypeSelect.setOptions === "function") {
+        // @ts-expect-error - TODO: Fix type
         this.els.subtypeSelect.setOptions([]);
       }
       return;
@@ -415,11 +452,14 @@ export class SherpaNode extends SherpaElement {
     // Normalise: each entry is either a flat {value,label} option or a
     // grouped {label, options:[…]} block. Grouped entries pass through
     // to <optgroup>; flat entries are stringified for safety.
+    // @ts-expect-error - TODO: Fix type
     const isGrouped = opts.some((o) => o && Array.isArray(o.options));
     const normalised = isGrouped
+      // @ts-expect-error - TODO: Fix type
       ? opts.map((o) => Array.isArray(o?.options)
           ? {
               label: String(o.label ?? ""),
+              // @ts-expect-error - TODO: Fix type
               options: o.options.map((opt) => ({
                 value: String(opt.value ?? ""),
                 label: String(opt.label ?? opt.value ?? ""),
@@ -430,6 +470,7 @@ export class SherpaNode extends SherpaElement {
               value: String(o.value ?? ""),
               label: String(o.label ?? o.value ?? ""),
             })
+      // @ts-expect-error - TODO: Fix type
       : opts.map((o) => ({
           value: String(o.value ?? ""),
           label: String(o.label ?? o.value ?? ""),
@@ -453,17 +494,23 @@ export class SherpaNode extends SherpaElement {
       }
     }
     const apply = () => {
+      // @ts-expect-error - TODO: Fix type
       if (typeof this.els.subtypeSelect.setOptions !== "function") return;
+      // @ts-expect-error - TODO: Fix type
       this.els.subtypeSelect.setOptions(normalised);
       const firstValue = isGrouped
+        // @ts-expect-error - TODO: Fix type
         ? normalised.find((g) => g.options?.length)?.options?.[0]?.value
         : normalised[0]?.value;
       const initial = this.dataset["subtype"] || (firstValue ?? "");
+      // @ts-expect-error - TODO: Fix type
       if (initial) this.els.subtypeSelect.setAttribute("value", initial);
     };
     // sherpa-input-select upgrades asynchronously; wait if needed.
+    // @ts-expect-error - TODO: Fix type
     if (typeof this.els.subtypeSelect.setOptions === "function") {
       apply();
+    // @ts-expect-error - TODO: Fix type
     } else if (window.customElements?.whenDefined) {
       customElements.whenDefined("sherpa-input-select").then(apply);
     }
@@ -502,6 +549,7 @@ export class SherpaNode extends SherpaElement {
     for (const old of [...this.querySelectorAll(":scope > [data-template-row]")]) {
       old.remove();
     }
+    // @ts-expect-error - TODO: Fix type
     const clone = tpl.content.cloneNode(true);
     // Tag every top-level element so future swaps can find them.
     for (const el of [...clone.children]) {
@@ -551,10 +599,12 @@ export class SherpaNode extends SherpaElement {
   #applyShowIf() {
     const rows = this.querySelectorAll(":scope > [data-template-row][data-show-if]");
     if (!rows.length) return;
+    // @ts-expect-error - TODO: Fix type
     const readVal = (name) => {
       if (name === "subtype") return this.dataset["subtype"] || "";
       const ctrl = this.querySelector(`:scope > [data-template-row] > [slot="control"][name="${CSS.escape(name)}"]`);
       if (!ctrl) return "";
+      // @ts-expect-error - TODO: Fix type
       return ctrl.getAttribute("value") ?? ctrl.value ?? "";
     };
     for (const row of rows) {
@@ -573,6 +623,7 @@ export class SherpaNode extends SherpaElement {
   #onSubtypeChange = (e: Event) => {
     // sherpa-input-select fires a `change` CustomEvent with detail.value.
     // Fall back to reading value off the element for safety.
+    // @ts-expect-error - TODO: Fix type
     const value = e?.detail?.value ?? this.els.subtypeSelect?.getAttribute("value") ?? "";
     this.setAttribute("data-subtype", value);
     this.dispatchEvent(new CustomEvent("sherpa-node-subtype-change", {

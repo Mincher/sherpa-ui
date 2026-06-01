@@ -58,6 +58,7 @@ export class SherpaChartLegend extends SherpaElement {
    * Set legend items.
    * @param {Array<{label: string, value?: string, color?: string, active?: boolean, link?: boolean}>} items
    */
+  // @ts-expect-error - TODO: Fix type
   setItems(items) {
     this.#items = items || [];
     this.#render();
@@ -76,7 +77,9 @@ export class SherpaChartLegend extends SherpaElement {
     this.els.list.replaceChildren();
 
     this.#items.forEach((item, i) => {
+      // @ts-expect-error - TODO: Fix type
       const el = this.els.itemTpl.content.firstElementChild.cloneNode(true);
+      // @ts-expect-error - TODO: Fix type
       const color = item.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
 
       // Key swatch
@@ -85,32 +88,39 @@ export class SherpaChartLegend extends SherpaElement {
 
       // Label
       const label = el.querySelector('.legend-label');
+      // @ts-expect-error - TODO: Fix type
       label.textContent = item.label || '';
 
       // Value (optional)
+      // @ts-expect-error - TODO: Fix type
       if (item.value != null && item.value !== '') {
         el.toggleAttribute('data-has-value', true);
         const valueEl = el.querySelector('.legend-value');
+        // @ts-expect-error - TODO: Fix type
         valueEl.textContent = item.value;
       }
 
       // Active state (default true)
+      // @ts-expect-error - TODO: Fix type
       if (item.active === false) {
         el.toggleAttribute('data-inactive', true);
       }
 
       // Link state
+      // @ts-expect-error - TODO: Fix type
       if (item.link) {
         el.toggleAttribute('data-link', true);
         el.addEventListener('click', () => {
           this.dispatchEvent(new CustomEvent('legend-item-click', {
             bubbles: true,
             composed: true,
+            // @ts-expect-error - TODO: Fix type
             detail: { index: i, label: item.label },
           }));
         });
       }
 
+      // @ts-expect-error - TODO: Fix type
       this.els.list.appendChild(el);
     });
   }

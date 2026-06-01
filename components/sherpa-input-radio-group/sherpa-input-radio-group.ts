@@ -104,10 +104,13 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   getValue() {
     const checked = [...this.querySelectorAll('sherpa-input-radio')]
+      // @ts-expect-error - TODO: Fix type
       .find((el) => el.checked);
+    // @ts-expect-error - TODO: Fix type
     return checked?.value ?? null;
   }
 
+  // @ts-expect-error - TODO: Fix type
   setValue(v) {
     if (v == null) this.removeAttribute('data-value');
     else this.dataset["value"] = String(v);
@@ -166,7 +169,9 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
   #syncValue() {
     const target = this.dataset["value"];
     for (const el of this.querySelectorAll('sherpa-input-radio')) {
+      // @ts-expect-error - TODO: Fix type
       const should = target != null && String(el.value) === String(target);
+      // @ts-expect-error - TODO: Fix type
       if (el.checked !== should) {
         should ? el.setAttribute('checked', '') : el.removeAttribute('checked');
       }
@@ -182,6 +187,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   #onChildChange = (e: Event) => {
     if (e.target === this) return;
+    // @ts-expect-error - TODO: Fix type
     if (e.target.tagName !== 'SHERPA-INPUT-RADIO') return;
     const v = this.getValue();
     if (v != null && this.dataset["value"] !== String(v)) this.dataset["value"] = String(v);

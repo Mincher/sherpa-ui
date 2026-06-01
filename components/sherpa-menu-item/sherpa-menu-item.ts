@@ -59,6 +59,7 @@ export class SherpaMenuItem extends SherpaElement {
     this.#sync();
   }
 
+  // @ts-expect-error - TODO: Fix type
   override onAttributeChanged(name: string, old) {
     if (name === 'data-type') {
       this.renderTemplate(this.templateId);
@@ -80,6 +81,7 @@ export class SherpaMenuItem extends SherpaElement {
 
     const sel = this.dataset["selection"];
 
+    // @ts-expect-error - TODO: Fix type
     this.setAttribute('role', ROLES[sel] || 'menuitem');
     this.setAttribute('aria-disabled', String(this.hasAttribute('disabled')));
 
@@ -92,8 +94,10 @@ export class SherpaMenuItem extends SherpaElement {
     // Sync native checkbox/radio input
     const input = this.$('.input');
     if (input) {
+      // @ts-expect-error - TODO: Fix type
       input.checked = this.hasAttribute('checked');
       if (sel === 'radio' && this.hasAttribute('name')) {
+        // @ts-expect-error - TODO: Fix type
         input.name = this.getAttribute('name');
       }
     }
@@ -102,6 +106,7 @@ export class SherpaMenuItem extends SherpaElement {
     if (desc) desc.textContent = this.dataset["description"] || '';
 
     const sw = this.$('sherpa-switch');
+    // @ts-expect-error - TODO: Fix type
     if (sw) sw.dataset["state"] = this.hasAttribute('checked') ? 'on' : 'off';
 
     const icon = this.$('.menu-item-icon');

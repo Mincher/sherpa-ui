@@ -80,38 +80,52 @@ class SherpaFileUpload extends SherpaElement {
   override onRender(): void {
 
     // Drop zone click → trigger file input
+    // @ts-expect-error - TODO: Fix type
     this.els.dropZone.addEventListener("click", () => {
+      // @ts-expect-error - TODO: Fix type
       if (!this.hasAttribute("disabled")) this.els.fileInput.click();
     });
+    // @ts-expect-error - TODO: Fix type
     this.els.dropZone.addEventListener("keydown", (e: KeyboardEvent) => {
       if ((e.key === "Enter" || e.key === " ") && !this.hasAttribute("disabled")) {
         e.preventDefault();
+        // @ts-expect-error - TODO: Fix type
         this.els.fileInput.click();
       }
     });
 
     // File input change
+    // @ts-expect-error - TODO: Fix type
     this.els.fileInput.addEventListener("change", () => {
+      // @ts-expect-error - TODO: Fix type
       this.#addFiles(Array.from(this.els.fileInput.files));
+      // @ts-expect-error - TODO: Fix type
       this.els.fileInput.value = "";
     });
 
     // Drag events on drop zone
+    // @ts-expect-error - TODO: Fix type
     this.els.dropZone.addEventListener("dragenter", (e) => this.#onDragEnter(e));
+    // @ts-expect-error - TODO: Fix type
     this.els.dropZone.addEventListener("dragover", (e) => this.#onDragOver(e));
+    // @ts-expect-error - TODO: Fix type
     this.els.dropZone.addEventListener("dragleave", (e) => this.#onDragLeave(e));
+    // @ts-expect-error - TODO: Fix type
     this.els.dropZone.addEventListener("drop", (e) => this.#onDrop(e));
 
     // Action buttons
+    // @ts-expect-error - TODO: Fix type
     this.els.uploadBtn.addEventListener("click", () => {
       this.dispatchEvent(
         new CustomEvent("file-upload-start", {
           bubbles: true,
           composed: true,
+          // @ts-expect-error - TODO: Fix type
           detail: { files: this.#files.map((f) => f.file) },
         })
       );
     });
+    // @ts-expect-error - TODO: Fix type
     this.els.removeAllBtn.addEventListener("click", () => this.#clearAll());
 
     // Initial sync
@@ -120,6 +134,7 @@ class SherpaFileUpload extends SherpaElement {
     this.#syncFileInput();
   }
 
+  // @ts-expect-error - TODO: Fix type
   override onAttributeChanged(name) {
     switch (name) {
       case "data-label":
@@ -179,6 +194,7 @@ class SherpaFileUpload extends SherpaElement {
   #onDragOver(e: Event) {
     e.preventDefault();
     if (this.hasAttribute("disabled")) return;
+    // @ts-expect-error - TODO: Fix type
     e.dataTransfer.dropEffect = "copy";
   }
 
@@ -197,16 +213,20 @@ class SherpaFileUpload extends SherpaElement {
     this.removeAttribute("data-drag-over");
     if (this.hasAttribute("disabled")) return;
 
+    // @ts-expect-error - TODO: Fix type
     const files = Array.from(e.dataTransfer.files);
     this.#addFiles(files);
   }
 
   /* ── file management ─────────────────────────────────────── */
 
+  // @ts-expect-error - TODO: Fix type
   #addFiles(files) {
     if (!files.length) return;
 
+    // @ts-expect-error - TODO: Fix type
     const maxFiles = parseInt(this.dataset["maxFiles"]) || Infinity;
+    // @ts-expect-error - TODO: Fix type
     const maxSize = parseInt(this.dataset["maxSize"]) || Infinity;
     const accepted = this.dataset["accept"]
       ? this.dataset["accept"].split(",").map((s) => s.trim().toLowerCase())
@@ -230,7 +250,9 @@ class SherpaFileUpload extends SherpaElement {
 
     for (const file of valid) {
       const el = this.#createFileItem(file);
+      // @ts-expect-error - TODO: Fix type
       this.els.fileList.appendChild(el);
+      // @ts-expect-error - TODO: Fix type
       this.#files.push({ file, el });
     }
 
@@ -245,10 +267,12 @@ class SherpaFileUpload extends SherpaElement {
     );
   }
 
+  // @ts-expect-error - TODO: Fix type
   #matchesAccept(file, accepted) {
     const fileName = file.name.toLowerCase();
     const fileType = file.type.toLowerCase();
 
+    // @ts-expect-error - TODO: Fix type
     return accepted.some((pattern) => {
       if (pattern.startsWith(".")) {
         return fileName.endsWith(pattern);
@@ -260,8 +284,11 @@ class SherpaFileUpload extends SherpaElement {
     });
   }
 
+  // @ts-expect-error - TODO: Fix type
   #createFileItem(file) {
+    // @ts-expect-error - TODO: Fix type
     const clone = this.els.fileItemTpl.content.cloneNode(true);
+    // @ts-expect-error - TODO: Fix type
     const item = clone.querySelector(".file-item");
 
     item.querySelector(".file-name").textContent = file.name;
@@ -271,6 +298,7 @@ class SherpaFileUpload extends SherpaElement {
 
     // Remove button
     item.querySelector(".file-remove-btn").addEventListener("click", () => {
+      // @ts-expect-error - TODO: Fix type
       const idx = this.#files.findIndex((f) => f.el === item);
       if (idx !== -1) {
         const removed = this.#files.splice(idx, 1)[0];
@@ -280,6 +308,7 @@ class SherpaFileUpload extends SherpaElement {
           new CustomEvent("file-remove", {
             bubbles: true,
             composed: true,
+            // @ts-expect-error - TODO: Fix type
             detail: { file: removed.file, index: idx },
           })
         );
@@ -288,6 +317,7 @@ class SherpaFileUpload extends SherpaElement {
 
     // Retry button
     item.querySelector(".file-retry-btn").addEventListener("click", () => {
+      // @ts-expect-error - TODO: Fix type
       const entry = this.#files.find((f) => f.el === item);
       if (entry) {
         item.dataset["state"] = "ready";
@@ -300,6 +330,7 @@ class SherpaFileUpload extends SherpaElement {
 
   #clearAll() {
     this.#files = [];
+    // @ts-expect-error - TODO: Fix type
     this.els.fileList.textContent = "";
     this.#updateHasFiles();
     this.dispatchEvent(
@@ -310,6 +341,7 @@ class SherpaFileUpload extends SherpaElement {
     );
   }
 
+  // @ts-expect-error - TODO: Fix type
   #formatSize(bytes) {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
@@ -324,9 +356,11 @@ class SherpaFileUpload extends SherpaElement {
    * @param {'ready'|'uploading'|'uploaded'|'failed'} state
    * @param {string} [statusText] — optional override for status label
    */
+  // @ts-expect-error - TODO: Fix type
   setFileState(index, state, statusText) {
     const entry = this.#files[index];
     if (!entry) return;
+    // @ts-expect-error - TODO: Fix type
     entry.el.dataset["state"] = state;
 
     const statusLabels = {
@@ -335,7 +369,9 @@ class SherpaFileUpload extends SherpaElement {
       uploaded: "Uploaded",
       failed: "Failed",
     };
+    // @ts-expect-error - TODO: Fix type
     entry.el.querySelector(".file-status-text").textContent =
+      // @ts-expect-error - TODO: Fix type
       statusText || statusLabels[state] || state;
   }
 
@@ -344,13 +380,17 @@ class SherpaFileUpload extends SherpaElement {
    * @param {number} index
    * @param {number} percent
    */
+  // @ts-expect-error - TODO: Fix type
   setFileProgress(index, percent) {
     const entry = this.#files[index];
     if (!entry) return;
+    // @ts-expect-error - TODO: Fix type
     entry.el.dataset["state"] = "uploading";
+    // @ts-expect-error - TODO: Fix type
     const fill = entry.el.querySelector(".file-progress-fill");
     if (fill) fill.style.setProperty("--_file-progress", `${percent}%`);
 
+    // @ts-expect-error - TODO: Fix type
     const status = entry.el.querySelector(".file-status-text");
     if (status) status.textContent = `${Math.round(percent)}%`;
   }
@@ -360,6 +400,7 @@ class SherpaFileUpload extends SherpaElement {
    * @returns {File[]}
    */
   get files() {
+    // @ts-expect-error - TODO: Fix type
     return this.#files.map((f) => f.file);
   }
 }

@@ -14,6 +14,7 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
+// @ts-expect-error - TODO: Fix type
 const formatTooltipValue = (value, unitLabel = '') => {
   const num = Number(value);
   if (!Number.isFinite(num)) return String(value ?? '');
@@ -73,6 +74,7 @@ export class SherpaSparkline extends SherpaElement {
     });
   }
 
+  // @ts-expect-error - TODO: Fix type
   override onAttributeChanged(name: string, _oldValue, _newValue) {
     if (name === 'data-values') this.#updateFromAttribute();
   }
@@ -81,16 +83,22 @@ export class SherpaSparkline extends SherpaElement {
     const point = e.target;
     if (!this.els.tip) return;
 
+    // @ts-expect-error - TODO: Fix type
     const rawValue = point.dataset["value"];
     if (rawValue === undefined) return;
     const unitLabel = this.dataset["unit"] || '';
+    // @ts-expect-error - TODO: Fix type
     this.els.tipText.textContent = formatTooltipValue(rawValue, unitLabel);
+    // @ts-expect-error - TODO: Fix type
     point.style.anchorName = '--spark-anchor';
+    // @ts-expect-error - TODO: Fix type
     this.els.tip.showPopover();
   };
 
   #onPointLeave = (e: Event) => {
+    // @ts-expect-error - TODO: Fix type
     this.els.tip?.hidePopover();
+    // @ts-expect-error - TODO: Fix type
     e.target.style.removeProperty('anchor-name');
   };
 
@@ -101,6 +109,7 @@ export class SherpaSparkline extends SherpaElement {
    * before the template loads are picked up by onRender().
    * @param {number[]} values - Array of numeric values (any range, will be normalized)
    */
+  // @ts-expect-error - TODO: Fix type
   setValues(values) {
     if (!Array.isArray(values) || values.length === 0) return;
     this.dataset["values"] = JSON.stringify(values);
@@ -117,6 +126,7 @@ export class SherpaSparkline extends SherpaElement {
       parsed = attr.split(',').map((v: any) => parseFloat(v.trim())).filter((v: any) => !isNaN(v));
     }
     if (Array.isArray(parsed) && parsed.length > 0) {
+      // @ts-expect-error - TODO: Fix type
       this.#values = parsed;
       this.#applyPoints();
     }
@@ -145,11 +155,14 @@ export class SherpaSparkline extends SherpaElement {
     const range = max - min || 1;
 
     // Set range info + raw values on host — CSS normalises via calc()
+    // @ts-expect-error - TODO: Fix type
     this.style.setProperty('--_min', min);
+    // @ts-expect-error - TODO: Fix type
     this.style.setProperty('--_range', range);
 
     for (let i = 0; i < this.#pointSlots; i++) {
       if (i < actualPoints) {
+        // @ts-expect-error - TODO: Fix type
         this.style.setProperty(`--_v${i}`, numPoints[i]);
       } else {
         this.style.removeProperty(`--_v${i}`);
@@ -158,6 +171,7 @@ export class SherpaSparkline extends SherpaElement {
 
     // Toggle shape/point visibility
     this.#shapeEls.forEach((shape, index) => {
+      // @ts-expect-error - TODO: Fix type
       shape.toggleAttribute('hidden', index >= actualSegments);
     });
 

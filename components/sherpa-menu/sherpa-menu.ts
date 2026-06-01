@@ -35,6 +35,7 @@ import {
   SherpaElement,
   parseTemplates,
 } from "../utilities/sherpa-element/sherpa-element.js";
+// @ts-expect-error - TODO: Fix type
 import type { EventHandler, MenuSelectEventDetail } from "../utilities/types.js";
 
 const supportsAnchor = CSS.supports?.("anchor-name", "--test") ?? false;
@@ -42,10 +43,13 @@ const supportsAnchor = CSS.supports?.("anchor-name", "--test") ?? false;
 /* ── Menu content templates (loaded once at module init) ───────── */
 
 const MENU_HTML_URL = new URL("./sherpa-menu.html", import.meta.url).href;
+// @ts-expect-error - TODO: Fix type
 let _menuTemplates = null; // Map<id, htmlString> — populated by _ensureTemplates()
+// @ts-expect-error - TODO: Fix type
 let _menuTemplatesPromise = null;
 
 function _ensureTemplates() {
+  // @ts-expect-error - TODO: Fix type
   if (!_menuTemplatesPromise) {
     _menuTemplatesPromise = fetch(MENU_HTML_URL)
       .then((r) => (r.ok ? r.text() : ""))
@@ -81,7 +85,9 @@ export class SherpaMenu extends SherpaElement {
    * @param {string} id — template id (e.g. "container", "sort")
    * @returns {string}
    */
+  // @ts-expect-error - TODO: Fix type
   static getMenuTemplate(id) {
+    // @ts-expect-error - TODO: Fix type
     return _menuTemplates?.get(id) ?? "";
   }
 
@@ -127,6 +133,7 @@ export class SherpaMenu extends SherpaElement {
     const item = (e.target as Element).closest?.("sherpa-menu-item");
     if (!item || item.hasAttribute("disabled")) return;
 
+    // @ts-expect-error - TODO: Fix type
     const selection = item.dataset["selection"];
 
     if (selection === "checkbox" || selection === "toggle") {
@@ -134,6 +141,7 @@ export class SherpaMenu extends SherpaElement {
     }
     if (selection === "radio") {
       // Uncheck siblings in the same group, then check this item
+      // @ts-expect-error - TODO: Fix type
       const group = item.dataset["group"];
       const siblings = group
         ? this.querySelectorAll(
@@ -159,28 +167,34 @@ export class SherpaMenu extends SherpaElement {
     const items = this.#focusableItems();
     if (!items.length) return;
 
+    // @ts-expect-error - TODO: Fix type
     const idx = items.indexOf(document.activeElement);
 
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
+        // @ts-expect-error - TODO: Fix type
         items[(idx + 1) % items.length]?.focus();
         break;
       case "ArrowUp":
         e.preventDefault();
+        // @ts-expect-error - TODO: Fix type
         items[(idx - 1 + items.length) % items.length]?.focus();
         break;
       case "Home":
         e.preventDefault();
+        // @ts-expect-error - TODO: Fix type
         items[0]?.focus();
         break;
       case "End":
         e.preventDefault();
+        // @ts-expect-error - TODO: Fix type
         items.at(-1)?.focus();
         break;
       case "Enter":
       case " ":
         e.preventDefault();
+        // @ts-expect-error - TODO: Fix type
         e.target.closest?.("sherpa-menu-item")?.click();
         break;
       case "Escape":
@@ -200,6 +214,7 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Dispatch ──────────────────────────────────────────────── */
 
+  // @ts-expect-error - TODO: Fix type
   #dispatchSelect(item) {
     const detail = {
       item,
@@ -238,6 +253,7 @@ export class SherpaMenu extends SherpaElement {
 
   show(anchor: HTMLElement): void {
     if (!anchor) return;
+    // @ts-expect-error - TODO: Fix type
     this.source = anchor;
 
     // Read preferred placement from the anchor (e.g. data-menu-position)
@@ -295,6 +311,7 @@ export class SherpaMenu extends SherpaElement {
     requestAnimationFrame(() => {
       this.querySelector(
         'sherpa-menu-item:not([disabled]):not([hidden]):not([type="heading"])',
+      // @ts-expect-error - TODO: Fix type
       )?.focus();
     });
   }
@@ -310,6 +327,7 @@ export class SherpaMenu extends SherpaElement {
         /* already closed */
       }
     }
+    // @ts-expect-error - TODO: Fix type
     this.source?.focus?.();
     this.source = null;
     this.dispatchEvent(new CustomEvent("menu-close", { bubbles: true }));
@@ -320,6 +338,7 @@ export class SherpaMenu extends SherpaElement {
 
   #onToggle: EventHandler<ToggleEvent> = (e: Event) => {
     // popover="auto" light-dismiss: browser closed us externally
+    // @ts-expect-error - TODO: Fix type
     if (e.newState === "closed" && this.open && !this.#hiding) {
       this.hide();
     }

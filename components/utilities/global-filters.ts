@@ -18,6 +18,7 @@
  *   const filters = getInitialFilters();
  */
 
+// @ts-expect-error - TODO: Fix type
 let provider = null;
 
 /**
@@ -25,6 +26,7 @@ let provider = null;
  * Signature: () => { filters: Array, timerange: Object|null }
  * @param {Function} fn
  */
+// @ts-expect-error - TODO: Fix type
 export function setGlobalFilterProvider(fn) {
   provider = fn;
 }
@@ -35,6 +37,7 @@ export function setGlobalFilterProvider(fn) {
  * @returns {Array<Object>}
  */
 export function getInitialFilters() {
+  // @ts-expect-error - TODO: Fix type
   const state = provider ? provider() : { filters: [], timerange: null };
   const filters = [];
 

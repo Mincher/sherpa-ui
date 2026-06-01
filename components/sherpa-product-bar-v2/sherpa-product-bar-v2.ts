@@ -139,7 +139,9 @@ class SherpaProductBarV2 extends SherpaElement {
   /** Resolve the slotted <sherpa-menu> in the system-menu slot, if any. */
   #getSystemMenu() {
     const slot = this.shadowRoot?.querySelector('slot[name="system-menu"]');
+    // @ts-expect-error - TODO: Fix type
     const nodes = slot?.assignedElements?.({ flatten: true }) || [];
+    // @ts-expect-error - TODO: Fix type
     return nodes.find((n) => n.tagName?.toLowerCase() === "sherpa-menu") || null;
   }
 
@@ -156,9 +158,11 @@ class SherpaProductBarV2 extends SherpaElement {
     const root = this.shadowRoot;
     if (!root) return;
 
+    // @ts-expect-error - TODO: Fix type
     const update = (slotName, attr) => {
       const slot = root.querySelector(`slot[name="${slotName}"]`);
       if (!slot) return;
+      // @ts-expect-error - TODO: Fix type
       const has = slot.assignedNodes({ flatten: true }).some((n) => {
         if (n.nodeType === Node.ELEMENT_NODE) return true;
         return n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0;

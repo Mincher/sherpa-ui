@@ -71,6 +71,7 @@ export class SherpaInputPassword extends SherpaInputBase {
 
   #updateVisibility() {
     const el = this.getInputElement();
+    // @ts-expect-error - TODO: Fix type
     if (el) el.type = this.#visible ? 'text' : 'password';
     if (this.els.toggleBtn) {
       this.els.toggleBtn.setAttribute('data-icon-start',

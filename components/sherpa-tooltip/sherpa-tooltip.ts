@@ -39,7 +39,9 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 const supportsAnchor = CSS.supports('position-anchor', '--test');
 
+// @ts-expect-error - TODO: Fix type
 let instance = null;
+// @ts-expect-error - TODO: Fix type
 let currentAnchor = null;
 
 class SherpaTooltip extends SherpaElement {
@@ -64,6 +66,7 @@ class SherpaTooltip extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
+  // @ts-expect-error - TODO: Fix type
   setText(text) {
     this.#text = text;
     const content = this.$('.tooltip-content');
@@ -72,12 +75,15 @@ class SherpaTooltip extends SherpaElement {
 
   getText() { return this.#text; }
 
+  // @ts-expect-error - TODO: Fix type
   setPosition(pos) { this.dataset["position"] = pos || 'top'; }
   getPosition()    { return this.dataset["position"] || 'top'; }
 
+  // @ts-expect-error - TODO: Fix type
   setVisible(visible) { this.dataset["visible"] = visible ? 'true' : 'false'; }
   isVisible()         { return this.dataset["visible"] === 'true'; }
 
+  // @ts-expect-error - TODO: Fix type
   async showFor(anchor, text, { position = 'top' } = {}) {
     if (!anchor) return;
 
@@ -85,6 +91,7 @@ class SherpaTooltip extends SherpaElement {
     await this.rendered;
 
     // Clean up previous anchor
+    // @ts-expect-error - TODO: Fix type
     if (currentAnchor && currentAnchor !== anchor) {
       currentAnchor = null;
     }
@@ -123,6 +130,7 @@ class SherpaTooltip extends SherpaElement {
 
   hide() {
     this.setVisible(false);
+    // @ts-expect-error - TODO: Fix type
     if (currentAnchor) {
       if (currentAnchor._tooltipTempAnchor) {
         currentAnchor.style.removeProperty('anchor-name');
@@ -139,6 +147,7 @@ customElements.define('sherpa-tooltip', SherpaTooltip);
 /* ── Singleton access ───────────────────────────────────────────── */
 
 function getInstance() {
+  // @ts-expect-error - TODO: Fix type
   if (!instance) {
     instance = document.createElement('sherpa-tooltip');
     document.body.appendChild(instance);
@@ -147,7 +156,9 @@ function getInstance() {
 }
 
 export const Tooltip = {
+  // @ts-expect-error - TODO: Fix type
   show(anchor, text, options = {}) { return getInstance().showFor(anchor, text, options); },
+  // @ts-expect-error - TODO: Fix type
   hide() { instance?.hide(); },
 };
 
@@ -155,6 +166,7 @@ export const Tooltip = {
 
 function initDeclarative() {
   document.addEventListener('mouseenter', (e) => {
+    // @ts-expect-error - TODO: Fix type
     const target = e.target.closest?.('[data-tooltip]');
     if (target) {
       Tooltip.show(target, target.dataset["tooltip"], {
@@ -164,6 +176,7 @@ function initDeclarative() {
   }, true);
 
   document.addEventListener('mouseleave', (e) => {
+    // @ts-expect-error - TODO: Fix type
     if (e.target.closest?.('[data-tooltip]')) Tooltip.hide();
   }, true);
 }

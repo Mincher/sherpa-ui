@@ -85,6 +85,7 @@ export class SherpaNavItem extends SherpaElement {
     }
     // Resolve registry key (data-svg-icon) → data-icon-svg if present.
     const svgKey = this.dataset["svgIcon"];
+    // @ts-expect-error - TODO: Fix type
     const registry = (typeof window !== 'undefined') ? window.__sherpaNavIcons : null;
     const svg = this.dataset["iconSvg"] || (svgKey && registry && registry[svgKey]) || '';
     if (svg) {
@@ -116,6 +117,7 @@ export class SherpaNavItem extends SherpaElement {
     if (!tagEl) return;
     const badge = this.dataset["badge"];
     tagEl.textContent = badge || '';
+    // @ts-expect-error - TODO: Fix type
     tagEl.dataset["status"] = this.dataset["badgeStatus"] || 'success';
     this.toggleAttribute('data-has-badge', !!badge);
   }

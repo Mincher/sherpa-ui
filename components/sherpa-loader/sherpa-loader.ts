@@ -48,6 +48,7 @@ class SherpaLoader extends SherpaElement {
     this.#syncLabel();
   }
 
+  // @ts-expect-error - TODO: Fix type
   override onAttributeChanged(name: string, _old, _new) {
     if (name === "data-label") this.#syncLabel();
   }

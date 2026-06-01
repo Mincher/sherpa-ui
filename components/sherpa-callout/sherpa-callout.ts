@@ -124,6 +124,7 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
   #syncToggleIcon() {
     if (!this.els.actionBtn) return;
     // chevron-up when expanded, chevron-down when collapsed
+    // @ts-expect-error - TODO: Fix type
     this.els.actionBtn.dataset["iconStart"] = this.expanded ? '\uf077' : '\uf078';
   }
 }

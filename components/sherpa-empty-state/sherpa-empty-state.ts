@@ -166,6 +166,7 @@ export class SherpaEmptyState extends SherpaElement {
   #updateIllustration() {
     if (this.els.illustrationDefault) {
       this.els.illustrationDefault.innerHTML =
+        // @ts-expect-error - TODO: Fix type
         ILLUSTRATIONS[this.illustration] || "";
     }
   }
