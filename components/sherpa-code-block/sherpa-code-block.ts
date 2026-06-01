@@ -82,10 +82,13 @@ export class SherpaCodeBlock extends SherpaElement {
   // Prism.js CDN config
   static PRISM_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
 
-  #codeEl = null;
-  #preEl = null;
-  #copyBtnEl = null;
-  #languageLabelEl = null;
+  els = this.cacheElements({
+    code: 'code',
+    pre: 'pre',
+    copyBtn: '.copy-btn',
+    languageLabel: '.language-label'
+  });
+
   #prismLoaded = false;
   #detectedLanguage = null;
   #highlightError = null;
@@ -115,10 +118,10 @@ export class SherpaCodeBlock extends SherpaElement {
   }
 
   override onRender(): void {
-    this.#codeEl = this.$('code');
-    this.#preEl = this.$('pre');
-    this.#copyBtnEl = this.$('sherpa-button[class="copy-btn"]');
-    this.#languageLabelEl = this.$('.code-language');
+    this.els.code = this.$('code');
+    this.els.pre = this.$('pre');
+    this.els.copyBtn = this.$('sherpa-button[class="copy-btn"]');
+    this.els.languageLabel = this.$('.code-language');
 
     // Set ARIA attributes
     if (!this.hasAttribute('role')) {
@@ -129,8 +132,8 @@ export class SherpaCodeBlock extends SherpaElement {
     }
 
     // Wire copy button
-    if (this.#copyBtnEl) {
-      this.#copyBtnEl.addEventListener('click', () => this.#onCopyClick());
+    if (this.els.copyBtn) {
+      this.els.copyBtn.addEventListener('click', () => this.#onCopyClick());
     }
 
     // Cache for data access
@@ -144,11 +147,11 @@ export class SherpaCodeBlock extends SherpaElement {
   onAttributeChanged(name, oldValue, newValue) {
     super.onAttributeChanged(name, oldValue, newValue);
 
-    if (name === 'data-max-height' && this.#preEl) {
+    if (name === 'data-max-height' && this.els.pre) {
       if (newValue) {
-        this.#preEl.style.maxHeight = newValue;
+        this.els.pre.style.maxHeight = newValue;
       } else {
-        this.#preEl.style.maxHeight = '';
+        this.els.pre.style.maxHeight = '';
       }
     }
 
@@ -166,8 +169,8 @@ export class SherpaCodeBlock extends SherpaElement {
   async highlightCode(code, language) {
     if (!code) return;
 
-    if (this.#codeEl) {
-      this.#codeEl.textContent = code;
+    if (this.els.code) {
+      this.els.code.textContent = code;
     }
 
     this.#detectedLanguage = language || 'text';
@@ -198,8 +201,8 @@ export class SherpaCodeBlock extends SherpaElement {
     }
 
     // Set code in <code> element
-    if (this.#codeEl) {
-      this.#codeEl.textContent = codeContent;
+    if (this.els.code) {
+      this.els.code.textContent = codeContent;
     }
 
     // Detect language from attribute or auto-detect from content
@@ -228,8 +231,8 @@ export class SherpaCodeBlock extends SherpaElement {
     }
 
     // Apply max-height if set
-    if (this.dataset.maxHeight && this.#preEl) {
-      this.#preEl.style.maxHeight = this.dataset.maxHeight;
+    if (this.dataset.maxHeight && this.els.pre) {
+      this.els.pre.style.maxHeight = this.dataset.maxHeight;
     }
 
     // Apply theme
@@ -356,22 +359,22 @@ export class SherpaCodeBlock extends SherpaElement {
    * Highlight code element using Prism.
    */
   async #highlightElement() {
-    if (!window.Prism || !this.#codeEl) return;
+    if (!window.Prism || !this.els.code) return;
 
     // Set language class
     const langClass = `language-${this.#detectedLanguage}`;
-    this.#codeEl.className = `hljs ${langClass}`;
+    this.els.code.className = `hljs ${langClass}`;
 
     // Run Prism highlight
     if (window.Prism.highlightElement) {
-      window.Prism.highlightElement(this.#codeEl);
+      window.Prism.highlightElement(this.els.code);
     } else if (window.Prism.highlight) {
       const highlighted = window.Prism.highlight(
-        this.#codeEl.textContent,
+        this.els.code.textContent,
         window.Prism.languages[this.#detectedLanguage] || window.Prism.languages.text,
         this.#detectedLanguage
       );
-      this.#codeEl.innerHTML = highlighted;
+      this.els.code.innerHTML = highlighted;
     }
   }
 
@@ -379,19 +382,19 @@ export class SherpaCodeBlock extends SherpaElement {
    * Apply line numbers via Prism plugin.
    */
   #applyLineNumbers() {
-    if (!this.#preEl) return;
+    if (!this.els.pre) return;
 
-    this.#preEl.dataset.lineNumbers = 'true';
+    this.els.pre.dataset.lineNumbers = 'true';
 
     // Set line-start if provided
     const lineStart = this.dataset.lineStart || '1';
     if (lineStart && lineStart !== '1') {
-      this.#preEl.setAttribute('data-start', lineStart);
+      this.els.pre.setAttribute('data-start', lineStart);
     }
 
     // Trigger line-numbers plugin
     if (window.Prism && window.Prism.plugins && window.Prism.plugins.lineNumbers) {
-      window.Prism.plugins.lineNumbers.highlightLines(this.#preEl);
+      window.Prism.plugins.lineNumbers.highlightLines(this.els.pre);
     }
   }
 
@@ -399,18 +402,18 @@ export class SherpaCodeBlock extends SherpaElement {
    * Update language label display.
    */
   #updateLanguageLabel() {
-    if (!this.#languageLabelEl) return;
+    if (!this.els.languageLabel) return;
 
     const lang = this.#detectedLanguage || 'plaintext';
     const display = lang.charAt(0).toUpperCase() + lang.slice(1);
-    this.#languageLabelEl.textContent = display;
+    this.els.languageLabel.textContent = display;
   }
 
   /**
    * Apply theme CSS (light/dark).
    */
   #applyThemeCSS() {
-    if (this.#preEl) {
+    if (this.els.pre) {
       const theme = this.dataset.theme || 'auto';
       const isDark =
         theme === 'dark' || (theme === 'auto' && this.#getPageMode() === 'dark');
@@ -431,7 +434,7 @@ export class SherpaCodeBlock extends SherpaElement {
    * Handle copy button click.
    */
   async #onCopyClick() {
-    const code = this.#codeEl?.textContent || '';
+    const code = this.els.code?.textContent || '';
     if (!code) return;
 
     try {
