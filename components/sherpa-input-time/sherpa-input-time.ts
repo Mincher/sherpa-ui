@@ -73,7 +73,6 @@ export class SherpaInputTime extends SherpaInputBase {
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
   override onInputRender(): void {
 
     // Parse initial value

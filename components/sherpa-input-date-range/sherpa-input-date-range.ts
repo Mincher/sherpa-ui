@@ -69,9 +69,9 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   /* ── Private state ──────────────────────────────────────────── */
 
-  /** @type {HTMLInputElement|null} */     #startEl       = null;
-  /** @type {HTMLInputElement|null} */     #endEl         = null;
-  /** @type {HTMLTemplateElement|null} */  #dayTpl        = null;
+  #startEl: HTMLInputElement | null       = null;
+  #endEl: HTMLInputElement | null         = null;
+  #dayTpl: HTMLTemplateElement | null     = null;
   /** Current month displayed in the start calendar. */
   #startViewDate = new Date();
   /** Current month displayed in the end calendar. */
@@ -88,14 +88,10 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
   override onInputRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.#startEl = this.$(".input-start");
-    // @ts-expect-error - TODO: Fix type
-    this.#endEl   = this.$(".input-end");
-    // @ts-expect-error - TODO: Fix type
-    this.#dayTpl  = this.$(".cal-day-tpl");
+    this.#startEl = this.$<HTMLInputElement>(".input-start");
+    this.#endEl   = this.$<HTMLInputElement>(".input-end");
+    this.#dayTpl  = this.$<HTMLTemplateElement>(".cal-day-tpl");
 
     // Initialise view months from current values (or today / today + 1 month)
     const today = new Date();
@@ -116,8 +112,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#syncEndTrigger();
 
     // ── Trigger buttons ──────────────────────────────────────
-    // @ts-expect-error - TODO: Fix type
-    this.$(".trigger-start").addEventListener("click", (e: CustomEvent) => {
+    this.$(".trigger-start")?.addEventListener("click", (e: Event) => {
       e.stopPropagation();
       if (this.hasAttribute("disabled") || this.hasAttribute("readonly")) return;
       if (this.hasAttribute("data-open-start")) {
@@ -128,8 +123,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
       }
     });
 
-    // @ts-expect-error - TODO: Fix type
-    this.$(".trigger-end").addEventListener("click", (e: CustomEvent) => {
+    this.$(".trigger-end")?.addEventListener("click", (e: Event) => {
       e.stopPropagation();
       if (this.hasAttribute("disabled") || this.hasAttribute("readonly")) return;
       if (this.hasAttribute("data-open-end")) {
@@ -141,8 +135,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     });
 
     // ── Start calendar navigation ────────────────────────────
-    // @ts-expect-error - TODO: Fix type
-    this.$(".prev-start").addEventListener("click", (e: CustomEvent) => {
+    this.$(".prev-start")?.addEventListener("click", (e: Event) => {
       e.stopPropagation();
       this.#startViewDate = new Date(
         this.#startViewDate.getFullYear(),
@@ -152,8 +145,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
       this.#renderStartCalendar();
     });
 
-    // @ts-expect-error - TODO: Fix type
-    this.$(".next-start").addEventListener("click", (e: CustomEvent) => {
+    this.$(".next-start")?.addEventListener("click", (e: Event) => {
       e.stopPropagation();
       this.#startViewDate = new Date(
         this.#startViewDate.getFullYear(),
@@ -164,8 +156,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     });
 
     // ── End calendar navigation ──────────────────────────────
-    // @ts-expect-error - TODO: Fix type
-    this.$(".prev-end").addEventListener("click", (e: CustomEvent) => {
+    this.$(".prev-end")?.addEventListener("click", (e: Event) => {
       e.stopPropagation();
       this.#endViewDate = new Date(
         this.#endViewDate.getFullYear(),
@@ -175,8 +166,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
       this.#renderEndCalendar();
     });
 
-    // @ts-expect-error - TODO: Fix type
-    this.$(".next-end").addEventListener("click", (e: CustomEvent) => {
+    this.$(".next-end")?.addEventListener("click", (e: Event) => {
       e.stopPropagation();
       this.#endViewDate = new Date(
         this.#endViewDate.getFullYear(),
@@ -219,7 +209,6 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /* ── Overrides ──────────────────────────────────────────────── */
 
   /** The primary input for base-class focus handling. */
-  // @ts-expect-error - TODO: Fix type
   override getInputElement() {
     return this.#startEl || this.$(".input-start");
   }
@@ -227,7 +216,6 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /* ── Open / Close ───────────────────────────────────────────── */
 
   #openStart() {
-    // @ts-expect-error - TODO: Fix type
     const val = this.#startEl?.value;
     if (val) {
       const d = isoToDate(val);
@@ -244,7 +232,6 @@ export class SherpaInputDateRange extends SherpaInputBase {
   }
 
   #openEnd() {
-    // @ts-expect-error - TODO: Fix type
     const val = this.#endEl?.value;
     if (val) {
       const d = isoToDate(val);
@@ -276,21 +263,17 @@ export class SherpaInputDateRange extends SherpaInputBase {
       `${MONTH_NAMES[this.#startViewDate.getMonth()]} ${this.#startViewDate.getFullYear()}`;
 
     // End value constrains start max; global max constrains further
-    // @ts-expect-error - TODO: Fix type
     const startMax = this.#endEl?.value || this.getAttribute("max");
 
     renderCalendarGrid(
       daysEl,
       this.#dayTpl,
       this.#startViewDate,
-      // @ts-expect-error - TODO: Fix type
       this.#startEl?.value || null,
-      // @ts-expect-error - TODO: Fix type
       this.#endEl?.value   || null,
       this.getAttribute("min"),
       startMax || null,
-      // @ts-expect-error - TODO: Fix type
-      (iso) => this.#selectStart(iso),
+      (iso: string) => this.#selectStart(iso),
     );
   }
 
@@ -303,30 +286,24 @@ export class SherpaInputDateRange extends SherpaInputBase {
       `${MONTH_NAMES[this.#endViewDate.getMonth()]} ${this.#endViewDate.getFullYear()}`;
 
     // Start value constrains end min; global min constrains further
-    // @ts-expect-error - TODO: Fix type
     const endMin = this.#startEl?.value || this.getAttribute("min");
 
     renderCalendarGrid(
       daysEl,
       this.#dayTpl,
       this.#endViewDate,
-      // @ts-expect-error - TODO: Fix type
       this.#startEl?.value || null,
-      // @ts-expect-error - TODO: Fix type
       this.#endEl?.value   || null,
       endMin || null,
       this.getAttribute("max"),
-      // @ts-expect-error - TODO: Fix type
-      (iso) => this.#selectEnd(iso),
+      (iso: string) => this.#selectEnd(iso),
     );
   }
 
   /* ── Date selection ─────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #selectStart(iso) {
+  #selectStart(iso: string) {
     if (!this.#startEl) return;
-    // @ts-expect-error - TODO: Fix type
     this.#startEl.value = iso;
     this.dataset["valueStart"] = iso;
     this.#updateCrossConstraints();
@@ -335,10 +312,8 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#closeStart();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #selectEnd(iso) {
+  #selectEnd(iso: string) {
     if (!this.#endEl) return;
-    // @ts-expect-error - TODO: Fix type
     this.#endEl.value = iso;
     this.dataset["valueEnd"] = iso;
     this.#updateCrossConstraints();
@@ -351,11 +326,9 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   #syncValues() {
     if (this.#startEl) {
-      // @ts-expect-error - TODO: Fix type
       this.#startEl.value = this.dataset["valueStart"] || "";
     }
     if (this.#endEl) {
-      // @ts-expect-error - TODO: Fix type
       this.#endEl.value = this.dataset["valueEnd"] || "";
     }
     this.#updateCrossConstraints();
@@ -366,15 +339,11 @@ export class SherpaInputDateRange extends SherpaInputBase {
     const max = this.getAttribute("max");
 
     if (this.#startEl) {
-      // @ts-expect-error - TODO: Fix type
       min ? this.#startEl.setAttribute("min", min) : this.#startEl.removeAttribute("min");
-      // @ts-expect-error - TODO: Fix type
       max ? this.#startEl.setAttribute("max", max) : this.#startEl.removeAttribute("max");
     }
     if (this.#endEl) {
-      // @ts-expect-error - TODO: Fix type
       min ? this.#endEl.setAttribute("min", min) : this.#endEl.removeAttribute("min");
-      // @ts-expect-error - TODO: Fix type
       max ? this.#endEl.setAttribute("max", max) : this.#endEl.removeAttribute("max");
     }
     this.#updateCrossConstraints();
@@ -387,66 +356,52 @@ export class SherpaInputDateRange extends SherpaInputBase {
   #updateCrossConstraints() {
     if (!this.#startEl || !this.#endEl) return;
 
-    // @ts-expect-error - TODO: Fix type
     const startVal = this.#startEl.value;
-    // @ts-expect-error - TODO: Fix type
     const endVal   = this.#endEl.value;
 
     // End can't be before start
     if (startVal) {
-      // @ts-expect-error - TODO: Fix type
       this.#endEl.min = startVal;
     } else {
       const globalMin = this.getAttribute("min");
       globalMin
-        // @ts-expect-error - TODO: Fix type
         ? this.#endEl.setAttribute("min", globalMin)
-        // @ts-expect-error - TODO: Fix type
         : this.#endEl.removeAttribute("min");
     }
 
     // Start can't be after end
     if (endVal) {
-      // @ts-expect-error - TODO: Fix type
       this.#startEl.max = endVal;
     } else {
       const globalMax = this.getAttribute("max");
       globalMax
-        // @ts-expect-error - TODO: Fix type
         ? this.#startEl.setAttribute("max", globalMax)
-        // @ts-expect-error - TODO: Fix type
         : this.#startEl.removeAttribute("max");
     }
   }
 
   /** Update the start trigger display and slot data-has-value. */
   #syncStartTrigger() {
-    // @ts-expect-error - TODO: Fix type
     const val    = this.#startEl?.value || "";
     const textEl = this.$(".start-text");
     if (textEl) textEl.textContent = formatDateDisplay(val);
 
-    const slot = this.$(".slot-start");
+    const slot = this.$<HTMLElement>(".slot-start");
     if (slot) {
-      // @ts-expect-error - TODO: Fix type
       if (val) slot.dataset["hasValue"] = "";
-      // @ts-expect-error - TODO: Fix type
       else     delete slot.dataset["hasValue"];
     }
   }
 
   /** Update the end trigger display and slot data-has-value. */
   #syncEndTrigger() {
-    // @ts-expect-error - TODO: Fix type
     const val    = this.#endEl?.value || "";
     const textEl = this.$(".end-text");
     if (textEl) textEl.textContent = formatDateDisplay(val);
 
-    const slot = this.$(".slot-end");
+    const slot = this.$<HTMLElement>(".slot-end");
     if (slot) {
-      // @ts-expect-error - TODO: Fix type
       if (val) slot.dataset["hasValue"] = "";
-      // @ts-expect-error - TODO: Fix type
       else     delete slot.dataset["hasValue"];
     }
   }
@@ -459,9 +414,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
         bubbles: true,
         composed: true,
         detail: {
-          // @ts-expect-error - TODO: Fix type
           start: this.#startEl?.value || null,
-          // @ts-expect-error - TODO: Fix type
           end:   this.#endEl?.value   || null,
         },
       }),

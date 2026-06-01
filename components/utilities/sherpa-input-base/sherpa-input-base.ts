@@ -225,7 +225,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
   /* ── Subclass hooks (override these, NOT onRender/onConnect) ── */
 
   /** Called after base onRender(). Override for type-specific element wiring. */
-  async onInputRender(): Promise<void> {}
+  onInputRender(): void | Promise<void> {}
 
   /** Called after base onConnect(). Override for type-specific event wiring. */
   onInputConnect(): void {}

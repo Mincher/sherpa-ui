@@ -89,7 +89,6 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
   override onInputRender(): void {
     // @ts-expect-error - TODO: Fix type
     this.els.trigger   = this.$('.picker-trigger');
