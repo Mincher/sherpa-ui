@@ -40,12 +40,28 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import type { EventHandler } from "../utilities/types.js";
 import "../sherpa-button/sherpa-button.js";
 import { formatFieldName } from "../utilities/format-utils.js";
 import { TIME_RANGE_PRESETS } from "../utilities/timeframes.js";
 import { applyLocalFilters } from "../utilities/aggregate.js";
 
+/* ── Dataset Interface ─────────────────────────────────────────── */
+
+interface SherpaFilterBarDataset extends DOMStringMap {
+  density?: string;
+  active?: string;
+  srcJson?: string;
+  presetFilters?: string;
+  availableFields?: string;
+  type?: string;
+}
+
 export class SherpaFilterBar extends SherpaElement {
+
+  override get dataset(): SherpaFilterBarDataset {
+    return super.dataset as SherpaFilterBarDataset;
+  }
   static override get cssUrl(): string {
     return new URL("./sherpa-filter-bar.css", import.meta.url).href;
   }
@@ -663,7 +679,7 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Handle selection from the "Add filter" menu. */
-  #onAddMenuSelect = (e) => {
+  #onAddMenuSelect: EventHandler<CustomEvent> = (e) => {
     const field = e.detail?.value;
     if (!field) return;
 
