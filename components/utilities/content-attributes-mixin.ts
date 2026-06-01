@@ -161,6 +161,11 @@ export interface ContentAttributesMixinInterface {
   reAggregate(): void;
   _suppressAttrReaction?: boolean;
 
+  // View-switching helpers
+  getViewOptions(opts: { activeType?: string; canShowChart?: boolean }): any[];
+  configureHeader(opts?: { title?: string; viewOptions?: any[] }): void;
+  wireContentMenu(root: any, activeType?: string): Promise<void> | void;
+
   // Setters
   setName(v: any): this;
   setDatasetName(v: any): this;

@@ -20,25 +20,27 @@
  */
 import "../sherpa-sparkline/sherpa-sparkline.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
-import {
-  ContentAttributesMixin,
-  // @ts-expect-error - TODO: Fix type
-  CONTENT_ATTRIBUTES,
-} from "../utilities/content-attributes-mixin.js";
+import { ContentAttributesMixin } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { getCurrencyCode, getCurrencySymbol } from "../utilities/format-utils.js";
 
 /* ── Pluggable trend-to-status mapping ───────────────────────── */
 
-let _trendStatusMap = { up: 'success', down: 'critical', flat: 'neutral' };
+let _trendStatusMap: { up: string; down: string; flat: string; [k: string]: string } = { up: 'success', down: 'critical', flat: 'neutral' };
 
 /**
  * Override the default mapping from trend direction to status.
- * @param {{ up?: string, down?: string, flat?: string }} map
  */
-// @ts-expect-error - TODO: Fix type
-export function setTrendStatusMap(map) {
+export function setTrendStatusMap(map: { up?: string; down?: string; flat?: string }) {
   _trendStatusMap = { ..._trendStatusMap, ...map };
+}
+
+/** Content payload delivered to the metric via setData(). */
+interface MetricData {
+  name?: string;
+  summary?: Record<string, unknown>;
+  config?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
@@ -57,8 +59,8 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     ];
   }
 
-  #contentData = null; // Unified format from DataQueryHandler
-  #sparklineValues = [];
+  #contentData: MetricData | null = null; // Unified format from DataQueryHandler
+  #sparklineValues: number[] = [];
   #sparklineUnit = "";
   #suppressSparkline = false;
 
@@ -78,9 +80,9 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     if (deltaEl) deltaEl.textContent = this.dataset["delta"] || '';
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setVisible(visible) {
+  override setVisible(visible: boolean): this {
     this.dataset["visible"] = visible === false ? "false" : "true";
+    return this;
   }
   isVisible() {
     return this.dataset["visible"] !== "false";
@@ -95,16 +97,16 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
         if (titleEl) titleEl.textContent = newValue || "";
         break;
       }
-      case "value":
-        if (this.$(".metric-value"))
-          // @ts-expect-error - TODO: Fix type
-          this.$(".metric-value").textContent = newValue || "";
+      case "value": {
+        const el = this.$(".metric-value");
+        if (el) el.textContent = newValue || "";
         break;
-      case "data-delta":
-        if (this.$(".metric-delta"))
-          // @ts-expect-error - TODO: Fix type
-          this.$(".metric-delta").textContent = newValue || "";
+      }
+      case "data-delta": {
+        const el = this.$(".metric-delta");
+        if (el) el.textContent = newValue || "";
         break;
+      }
       case "data-status": {
         // Status drives sparkline visibility
         this.#updateSparkline({ forceHidden: this.#suppressSparkline });
@@ -116,8 +118,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   /**
    * Get configuration for switching to another presentation type
    */
-  // @ts-expect-error - TODO: Fix type
-  getTransferableConfig(presentationType) {
+  getTransferableConfig(presentationType: string) {
     return this.#contentData
       ? getTransferableConfig(this.#contentData, presentationType)
       : null;
@@ -134,8 +135,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     return config;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  async setData(data) {
+  async setData(data: MetricData & { _fromCascade?: boolean }) {
     await this.rendered;
 
     // Pre-aggregated data from dataset cascade
@@ -160,21 +160,17 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     }
 
     // Configure the header using the parent class method
-    // @ts-expect-error - TODO: Fix type
     const viewOptions = this.getViewOptions({
       activeType: "kpi-metric",
       canShowChart: true,
     });
 
-    // @ts-expect-error - TODO: Fix type
     this.configureHeader({
-      // @ts-expect-error - TODO: Fix type
       title: this.#contentData?.name || "",
       viewOptions,
     });
 
     this.#populate();
-    // @ts-expect-error - TODO: Fix type
     this.wireContentMenu(this, "kpi-metric");
   }
 
@@ -189,12 +185,11 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
       total: 0,
       delta: 0,
       deltaPercent: 0,
-      values: [],
-      // @ts-expect-error - TODO: Fix type
+      values: [] as number[],
+      status: undefined as string | undefined,
       ...(data.summary || {}),
     };
-    // @ts-expect-error - TODO: Fix type
-    const config = data.config || {};
+    const config = (data.config || {}) as { unit?: string; showStatus?: boolean; status?: string };
     const values = Array.isArray(summary.values) ? summary.values : [];
     const totalValue = Number.isFinite(summary.total) ? summary.total : 0;
     const unitText = config.unit || "";
@@ -220,7 +215,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     const trendLabel = trendDir === "flat" ? unitText : formattedDelta;
 
     // Status only applied when explicitly set via config or attribute
-    const explicitStatus = config.status || this.dataset["status"] || "";
+    const explicitStatus: string = config.status || this.dataset["status"] || "";
 
     // Derive trend-based status for the card wrapper (not the host)
     let cardStatus = explicitStatus;
@@ -238,9 +233,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
     // Set trend direction attribute (trend label always visible, just icons hidden when flat)
     this.setAttribute("data-trend", trendDir);
-    // @ts-expect-error - TODO: Fix type
     this.dataset["metricId"] = data.name || "";
-    // @ts-expect-error - TODO: Fix type
     this.dataset["label"] = data.name || "";
     this.setAttribute("value", formattedValue);
     this.dataset["delta"] = trendLabel;
@@ -257,13 +250,11 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     }
 
     // Apply trend-derived status to .metric-card so tokens cascade to children
-    const card = this.$(".metric-card");
+    const card = this.$<HTMLElement>(".metric-card");
     if (card) {
       if (cardStatus && cardStatus !== "default" && cardStatus !== "none") {
-        // @ts-expect-error - TODO: Fix type
         card.dataset["status"] = cardStatus;
       } else {
-        // @ts-expect-error - TODO: Fix type
         delete card.dataset["status"];
       }
     }
@@ -291,8 +282,9 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #updateSparkline({ status, unitText, values, forceHidden } = {}) {
+  #updateSparkline(
+    { unitText, values, forceHidden }: { status?: string; unitText?: string; values?: number[]; forceHidden?: boolean } = {},
+  ) {
     if (forceHidden !== undefined) {
       this.#suppressSparkline = !!forceHidden;
     }
@@ -304,7 +296,6 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     }
 
     if (values !== undefined) {
-      // @ts-expect-error - TODO: Fix type
       this.#sparklineValues = Array.isArray(values) ? values : [];
     } else {
       values = this.#sparklineValues;
@@ -317,17 +308,14 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
     if (!showSparkline) return;
 
-    const sparkline = this.$("sherpa-sparkline");
+    const sparkline = this.$<HTMLElement & { setValues?: (v: number[]) => void }>("sherpa-sparkline");
     if (!sparkline) return;
 
-    // @ts-expect-error - TODO: Fix type
     sparkline.dataset["unit"] = unitText || "";
-    // @ts-expect-error - TODO: Fix type
-    sparkline.setValues(Array.isArray(values) ? values : []);
+    sparkline.setValues?.(Array.isArray(values) ? values : []);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #formatNumber(num, unit) {
+  #formatNumber(num: number, unit: string) {
     const isCurrency = unit === getCurrencyCode();
     const isPercent = unit === "percent" || unit === "%";
     let str;
@@ -339,8 +327,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     return str;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #formatDelta(num, unit) {
+  #formatDelta(num: number, unit: string) {
     const isCurrency = unit === getCurrencyCode();
     const isPercent = unit === "percent" || unit === "%";
     const abs = Math.abs(num);
@@ -354,8 +341,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   }
 
   /** Strip unnecessary trailing zeros: "1.50" → "1.5", "2.00" → "2" */
-  // @ts-expect-error - TODO: Fix type
-  #trimDecimals(str) {
+  #trimDecimals(str: string) {
     return str.replace(/(\.[0-9]*?)0+$/, "$1").replace(/\.$/, "");
   }
 }

@@ -801,7 +801,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #renderControls() {
-    // @ts-expect-error - TODO: Fix type
     const viewOptions = this.getViewOptions({
       activeType: "barchart",
       canShowChart: true,
@@ -817,13 +816,11 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       ? `${entity} by ${formatFieldName(groupField)}`
       : `All ${entity}`;
 
-    // @ts-expect-error - TODO: Fix type
     this.configureHeader({
       title: escapeHtml(displayTitle),
       viewOptions,
     });
 
-    // @ts-expect-error - TODO: Fix type
     this.wireContentMenu(this, "barchart");
   }
 
