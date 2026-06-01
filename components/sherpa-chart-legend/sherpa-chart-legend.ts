@@ -40,15 +40,15 @@ export class SherpaChartLegend extends SherpaElement {
   /* ── State ────────────────────────────────────────────────────── */
 
   #items = [];
-  #listEl;
-  #itemTpl;
+
+  els = this.cacheElements({
+    list: '.legend-list',
+    itemTpl: 'template.item-tpl'
+  });
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#listEl  = this.$('.legend-list');
-    this.#itemTpl = this.shadowRoot.querySelector('template.item-tpl');
-
     if (this.#items.length) this.#render();
   }
 
@@ -71,12 +71,12 @@ export class SherpaChartLegend extends SherpaElement {
   /* ── Private: render ──────────────────────────────────────────── */
 
   #render() {
-    if (!this.#listEl || !this.#itemTpl) return;
+    if (!this.els.list || !this.els.itemTpl) return;
 
-    this.#listEl.replaceChildren();
+    this.els.list.replaceChildren();
 
     this.#items.forEach((item, i) => {
-      const el = this.#itemTpl.content.firstElementChild.cloneNode(true);
+      const el = this.els.itemTpl.content.firstElementChild.cloneNode(true);
       const color = item.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
 
       // Key swatch
@@ -111,7 +111,7 @@ export class SherpaChartLegend extends SherpaElement {
         });
       }
 
-      this.#listEl.appendChild(el);
+      this.els.list.appendChild(el);
     });
   }
 }

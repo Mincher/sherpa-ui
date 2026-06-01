@@ -50,10 +50,12 @@ export class SherpaInputTime extends SherpaInputBase {
 
   /* ── Private state ──────────────────────────────────────────── */
 
-  /** @type {HTMLButtonElement|null} */ #triggerEl  = null;
-  /** @type {HTMLElement|null} */       #popupEl    = null;
-  /** @type {HTMLElement|null} */       #hourValEl  = null;
-  /** @type {HTMLElement|null} */       #minuteValEl = null;
+  els = this.cacheElements({
+    trigger: { selector: '.picker-trigger', type: HTMLButtonElement },
+    popup: '.picker-popup',
+    hourVal: '.hour-val',
+    minuteVal: '.minute-val'
+  });
 
   /** Current hours value (0–23). -1 means no selection. */
   #hours   = -1;
@@ -72,10 +74,6 @@ export class SherpaInputTime extends SherpaInputBase {
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
   override onInputRender(): void {
-    this.#triggerEl   = this.$('.picker-trigger');
-    this.#popupEl     = this.$('.picker-popup');
-    this.#hourValEl   = this.$('.hour-val');
-    this.#minuteValEl = this.$('.minute-val');
 
     // Parse initial value
     this.#parseNativeValue();
@@ -83,7 +81,7 @@ export class SherpaInputTime extends SherpaInputBase {
     this.#syncSpinners();
 
     // Trigger toggle
-    this.#triggerEl.addEventListener('click', (e) => {
+    this.els.trigger.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.hasAttribute('disabled') || this.hasAttribute('readonly')) return;
       this.hasAttribute('data-open') ? this.#close() : this.#open();
@@ -145,12 +143,12 @@ export class SherpaInputTime extends SherpaInputBase {
     this.#parseNativeValue();
     this.#syncSpinners();
     this.setAttribute('data-open', '');
-    this.#triggerEl?.setAttribute('aria-expanded', 'true');
+    this.els.trigger?.setAttribute('aria-expanded', 'true');
   }
 
   #close() {
     this.removeAttribute('data-open');
-    this.#triggerEl?.setAttribute('aria-expanded', 'false');
+    this.els.trigger?.setAttribute('aria-expanded', 'false');
   }
 
   /* ── Spinner adjustments ────────────────────────────────────── */
@@ -209,12 +207,12 @@ export class SherpaInputTime extends SherpaInputBase {
 
   /** Update the spinner display spans from #hours / #minutes. */
   #syncSpinners() {
-    if (this.#hourValEl) {
-      this.#hourValEl.textContent =
+    if (this.els.hourVal) {
+      this.els.hourVal.textContent =
         this.#hours >= 0 ? String(this.#hours).padStart(2, '0') : '--';
     }
-    if (this.#minuteValEl) {
-      this.#minuteValEl.textContent =
+    if (this.els.minuteVal) {
+      this.els.minuteVal.textContent =
         this.#minutes >= 0 ? String(this.#minutes).padStart(2, '0') : '--';
     }
   }
