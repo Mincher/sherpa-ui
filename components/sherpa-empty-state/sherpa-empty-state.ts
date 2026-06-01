@@ -81,21 +81,16 @@ export class SherpaEmptyState extends SherpaElement {
 
   /* ── Cached element refs ──────────────────────────────────────── */
 
-  #titleEl = null;
-  #descriptionEl = null;
-  #illustrationDefaultEl = null;
-  #smallPrintTextEl = null;
+  els = this.cacheElements({
+    title: '.sherpa-empty-state__title',
+    description: '.sherpa-empty-state__description',
+    illustrationDefault: '.sherpa-empty-state__illustration-default',
+    smallPrintText: '.sherpa-empty-state__small-print-text'
+  });
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#titleEl = this.$(".sherpa-empty-state__title");
-    this.#descriptionEl = this.$(".sherpa-empty-state__description");
-    this.#illustrationDefaultEl = this.$(
-      ".sherpa-empty-state__illustration-default",
-    );
-    this.#smallPrintTextEl = this.$(".sherpa-empty-state__small-print-text");
-
     this.#syncAll();
   }
 
@@ -161,23 +156,23 @@ export class SherpaEmptyState extends SherpaElement {
   }
 
   #updateHeading() {
-    if (this.#titleEl) this.#titleEl.textContent = this.heading;
+    if (this.els.title) this.els.title.textContent = this.heading;
   }
 
   #updateDescription() {
-    if (this.#descriptionEl) this.#descriptionEl.textContent = this.description;
+    if (this.els.description) this.els.description.textContent = this.description;
   }
 
   #updateIllustration() {
-    if (this.#illustrationDefaultEl) {
-      this.#illustrationDefaultEl.innerHTML =
+    if (this.els.illustrationDefault) {
+      this.els.illustrationDefault.innerHTML =
         ILLUSTRATIONS[this.illustration] || "";
     }
   }
 
   #updateSmallPrint() {
-    if (this.#smallPrintTextEl)
-      this.#smallPrintTextEl.textContent = this.smallPrint;
+    if (this.els.smallPrintText)
+      this.els.smallPrintText.textContent = this.smallPrint;
   }
 }
 

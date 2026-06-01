@@ -29,10 +29,11 @@ class SherpaChatMessage extends SherpaElement {
     ];
   }
 
-  /** @type {HTMLElement|null} */ #iconEl = null;
+  els = this.cacheElements({
+    icon: '.avatar-icon'
+  });
 
   override onRender(): void {
-    this.#iconEl = this.$(".avatar-icon");
     if (!this.dataset.role) this.dataset.role = "ai";
     this.#syncIcon();
   }
@@ -42,10 +43,10 @@ class SherpaChatMessage extends SherpaElement {
   }
 
   #syncIcon() {
-    if (!this.#iconEl) return;
+    if (!this.els.icon) return;
     const cls = this.dataset.avatarIcon || "";
     // Preserve the structural class while swapping the FA glyph classes.
-    this.#iconEl.className = `avatar-icon ${cls}`.trim();
+    this.els.icon.className = `avatar-icon ${cls}`.trim();
   }
 
   /* ── public API ──────────────────────────────────────────── */

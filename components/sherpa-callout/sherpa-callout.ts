@@ -49,17 +49,15 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
 
   /* ── Element refs ─────────────────────────────────────────────── */
 
-  #headingEl;
-  #statusIconEl;
-  #actionBtnEl;
+  els = this.cacheElements({
+    heading: '.heading-text',
+    statusIcon: '.status-icon',
+    actionBtn: '.action-btn'
+  });
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#headingEl    = this.$('.heading-text');
-    this.#statusIconEl = this.$('.status-icon');
-    this.#actionBtnEl  = this.$('.action-btn');
-
     // Defaults
     if (!this.dataset.status) this.dataset.status = 'info';
     if (!this.hasAttribute('role')) this.setAttribute('role', 'note');
@@ -70,7 +68,7 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
     this.#syncToggleIcon();
 
     // Events
-    this.#actionBtnEl?.addEventListener('button-click', () => this.toggle());
+    this.els.actionBtn?.addEventListener('button-click', () => this.toggle());
   }
 
   onAttributeChanged(name) {
@@ -111,22 +109,22 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
   /* ── Private ──────────────────────────────────────────────────── */
 
   #syncHeading() {
-    if (this.#headingEl) {
-      this.#headingEl.textContent = this.dataset.heading || '';
+    if (this.els.heading) {
+      this.els.heading.textContent = this.dataset.heading || '';
     }
   }
 
   #syncStatusIcon() {
-    if (!this.#statusIconEl) return;
+    if (!this.els.statusIcon) return;
     const override = this.dataset.icon;
     const iconClass = override || this.statusIcon || 'fa-solid fa-circle-info';
-    this.#statusIconEl.className = `${iconClass} status-icon`;
+    this.els.statusIcon.className = `${iconClass} status-icon`;
   }
 
   #syncToggleIcon() {
-    if (!this.#actionBtnEl) return;
+    if (!this.els.actionBtn) return;
     // chevron-up when expanded, chevron-down when collapsed
-    this.#actionBtnEl.dataset.iconStart = this.expanded ? '\uf077' : '\uf078';
+    this.els.actionBtn.dataset.iconStart = this.expanded ? '\uf077' : '\uf078';
   }
 }
 
