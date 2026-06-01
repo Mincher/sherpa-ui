@@ -58,19 +58,17 @@ export class SherpaTabs extends SherpaElement {
 
   /* ── Cached refs ──────────────────────────────────────────────── */
 
-  #stripEl   = null;
-  #tabTpl    = null;
-  #tabs      = [];   // shadow DOM button elements
-  #panels    = [];   // light DOM panel children
+  #stripEl: HTMLElement | null   = null;
+  #tabTpl: HTMLTemplateElement | null = null;
+  #tabs: HTMLElement[]      = [];   // shadow DOM button elements
+  #panels: HTMLElement[]    = [];   // light DOM panel children
   #initialized = false;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.#stripEl = this.$('.tab-strip');
-    // @ts-expect-error - TODO: Fix type
-    this.#tabTpl  = this.$('.tab-tpl');
+    this.#stripEl = this.$<HTMLElement>('.tab-strip');
+    this.#tabTpl  = this.$<HTMLTemplateElement>('.tab-tpl');
 
     if (!this.#initialized) {
       if (!this.hasAttribute('data-active-tab')) {
@@ -91,26 +89,22 @@ export class SherpaTabs extends SherpaElement {
   /**
    * When slotted content changes (panels added/removed), rebuild tabs.
    */
-  // @ts-expect-error - TODO: Fix type
-  onSlotChange(e?: Event) {
+  override onSlotChange(): void {
     this.#buildTabs();
   }
 
   /* ── Public API ───────────────────────────────────────────────── */
 
   /** The currently active tab index. */
-  // @ts-expect-error - TODO: Fix type
-  get activeTab() { return parseInt(this.dataset["activeTab"], 10) || 0; }
-  set activeTab(v) { this.dataset["activeTab"] = String(v); }
+  get activeTab() { return parseInt(this.dataset["activeTab"] || "", 10) || 0; }
+  set activeTab(v: number) { this.dataset["activeTab"] = String(v); }
 
   /** Select a tab by index. */
-  // @ts-expect-error - TODO: Fix type
-  selectTab(index) {
+  selectTab(index: number) {
     const prev = this.activeTab;
     if (index === prev) return;
     if (index < 0 || index >= this.#panels.length) return;
     // Skip inactive tabs
-    // @ts-expect-error - TODO: Fix type
     if (this.#panels[index]?.hasAttribute('data-tab-inactive')) return;
 
     this.dataset["activeTab"] = String(index);
@@ -123,27 +117,28 @@ export class SherpaTabs extends SherpaElement {
     if (!this.#stripEl || !this.#tabTpl) return;
 
     // Collect panel children (those with data-tab-label)
-    const slot = this.$('slot:not([name])');
-    // @ts-expect-error - TODO: Fix type
+    const slot = this.$<HTMLSlotElement>('slot:not([name])');
     const assigned = slot ? slot.assignedElements() : [];
-    this.#panels = assigned.filter((el: any) => el.hasAttribute('data-tab-label'));
+    this.#panels = assigned.filter((el): el is HTMLElement =>
+      el instanceof HTMLElement && el.hasAttribute('data-tab-label'));
 
     // Remove existing tab buttons (keep the template)
-    this.#tabs.forEach((btn: any) => btn.remove());
+    this.#tabs.forEach((btn) => btn.remove());
     this.#tabs = [];
+
+    const strip = this.#stripEl;
+    const tabTpl = this.#tabTpl;
 
     // Clone prototype for each panel
     this.#panels.forEach((panel, i) => {
-      // @ts-expect-error - TODO: Fix type
-      const tpl = this.#tabTpl.content.cloneNode(true);
-      const btn = tpl.querySelector('.tab');
+      const tpl = tabTpl.content.cloneNode(true) as DocumentFragment;
+      const btn = tpl.querySelector<HTMLElement>('.tab');
+      if (!btn) return;
       const label = btn.querySelector('.tab-label');
 
-      // @ts-expect-error - TODO: Fix type
-      label.textContent = panel.dataset["tabLabel"] || `Tab ${i + 1}`;
+      if (label) label.textContent = panel.dataset["tabLabel"] || `Tab ${i + 1}`;
       btn.dataset["index"] = String(i);
 
-      // @ts-expect-error - TODO: Fix type
       if (panel.hasAttribute('data-tab-inactive')) {
         btn.setAttribute('data-inactive', '');
         btn.setAttribute('aria-disabled', 'true');
@@ -152,9 +147,7 @@ export class SherpaTabs extends SherpaElement {
       btn.addEventListener('click', this.#onTabClick);
       btn.addEventListener('keydown', this.#onTabKeyDown);
 
-      // @ts-expect-error - TODO: Fix type
-      this.#stripEl.appendChild(btn);
-      // @ts-expect-error - TODO: Fix type
+      strip.appendChild(btn);
       this.#tabs.push(btn);
     });
 
@@ -167,28 +160,22 @@ export class SherpaTabs extends SherpaElement {
     // Update tab buttons
     this.#tabs.forEach((btn, i) => {
       const isActive = i === index;
-      // @ts-expect-error - TODO: Fix type
       btn.setAttribute('aria-selected', String(isActive));
-      // @ts-expect-error - TODO: Fix type
       btn.setAttribute('tabindex', isActive ? '0' : '-1');
     });
 
     // Update panel visibility
     this.#panels.forEach((panel, i) => {
-      // @ts-expect-error - TODO: Fix type
       panel.toggleAttribute('data-tab-active', i === index);
     });
 
     // Lazy load: fire tab-load the first time a panel becomes active.
     if (this.dataset["loadMode"] === 'lazy') {
       const panel = this.#panels[index];
-      // @ts-expect-error - TODO: Fix type
       if (panel && !panel.hasAttribute('data-tab-loaded')) {
-        // @ts-expect-error - TODO: Fix type
         panel.setAttribute('data-tab-loaded', '');
         this.dispatchEvent(new CustomEvent('tab-load', {
           bubbles: true, composed: true,
-          // @ts-expect-error - TODO: Fix type
           detail: { index, label: panel.dataset["tabLabel"] || '', panel },
         }));
       }
@@ -199,8 +186,7 @@ export class SherpaTabs extends SherpaElement {
 
   #onTabClick: EventHandler<MouseEvent> = (e: Event) => {
     const btn = e.currentTarget as HTMLElement;
-    // @ts-expect-error - TODO: Fix type
-    const index = parseInt(btn.dataset["index"], 10);
+    const index = parseInt(btn.dataset["index"] || "", 10);
     this.selectTab(index);
   };
 
@@ -233,31 +219,26 @@ export class SherpaTabs extends SherpaElement {
 
     if (next !== current) {
       this.selectTab(next);
-      // @ts-expect-error - TODO: Fix type
       this.#tabs[next]?.focus();
     }
   };
 
   /** Find the next non-inactive tab in a given direction. */
-  // @ts-expect-error - TODO: Fix type
-  #findNextTab(from, direction) {
+  #findNextTab(from: number, direction: number): number {
     let i = from + direction;
     while (i >= 0 && i < this.#tabs.length) {
-      // @ts-expect-error - TODO: Fix type
       if (!this.#panels[i]?.hasAttribute('data-tab-inactive')) return i;
       i += direction;
     }
     return from; // no available tab found
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #emitTabChange(index, previousIndex) {
+  #emitTabChange(index: number, previousIndex: number) {
     this.dispatchEvent(new CustomEvent('tab-change', {
       bubbles: true,
       composed: true,
       detail: {
         index,
-        // @ts-expect-error - TODO: Fix type
         label: this.#panels[index]?.dataset["tabLabel"] || '',
         previousIndex,
       },
