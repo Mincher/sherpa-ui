@@ -52,16 +52,16 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   /* ── Private refs ───────────────────────────────────────── */
 
-  #calDaysEl     = null;
-  #calMonthsEl   = null;
-  #calYearsEl    = null;
-  #modeBtnEl     = null;
-  #prevBtnEl     = null;
-  #nextBtnEl     = null;
-  #weekdaysEl    = null;
-  #dayTpl        = null;
-  #hourInputEl   = null;
-  #hiddenInput   = null;
+  #calDaysEl: HTMLElement | null     = null;
+  #calMonthsEl: HTMLElement | null   = null;
+  #calYearsEl: HTMLElement | null    = null;
+  #modeBtnEl: HTMLElement | null     = null;
+  #prevBtnEl: HTMLElement | null     = null;
+  #nextBtnEl: HTMLElement | null     = null;
+  #weekdaysEl: HTMLElement | null    = null;
+  #dayTpl: HTMLTemplateElement | null = null;
+  #hourInputEl: HTMLInputElement | null = null;
+  #hiddenInput: HTMLInputElement | null = null;
 
   els = this.cacheElements({
     minuteInput: { selector: '.minute-input', type: HTMLInputElement }
@@ -70,34 +70,24 @@ export class SherpaDateTimePicker extends SherpaElement {
   /* ── Private state ────────────────────────────────────── */
 
   #viewDate     = new Date();   // anchor for current view
-  #viewMode     = 'day';        // 'day' | 'month' | 'year'
-  #selectedDate = null;         // Date (date only, no time)
+  #viewMode: 'day' | 'month' | 'year' = 'day';
+  #selectedDate: Date | null = null;  // Date (date only, no time)
   #hours24      = 0;            // 0–23 (24-hour clock)
   #minutes      = 0;            // 0–59
 
   /* ── Lifecycle ──────────────────────────────────────────── */
 
   override onRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.#calDaysEl     = this.$('.cal-days');
-    // @ts-expect-error - TODO: Fix type
-    this.#calMonthsEl   = this.$('.cal-months');
-    // @ts-expect-error - TODO: Fix type
-    this.#calYearsEl    = this.$('.cal-years');
-    // @ts-expect-error - TODO: Fix type
-    this.#weekdaysEl    = this.$('.cal-weekdays');
-    // @ts-expect-error - TODO: Fix type
-    this.#modeBtnEl     = this.$('.cal-mode');
-    // @ts-expect-error - TODO: Fix type
-    this.#prevBtnEl     = this.$('.cal-prev');
-    // @ts-expect-error - TODO: Fix type
-    this.#nextBtnEl     = this.$('.cal-next');
-    // @ts-expect-error - TODO: Fix type
-    this.#dayTpl        = this.$('.cal-day-tpl');
-    // @ts-expect-error - TODO: Fix type
-    this.#hourInputEl   = this.$('.hour-input');
-    // @ts-expect-error - TODO: Fix type
-    this.#hiddenInput   = this.$('.hidden-input');
+    this.#calDaysEl     = this.$<HTMLElement>('.cal-days');
+    this.#calMonthsEl   = this.$<HTMLElement>('.cal-months');
+    this.#calYearsEl    = this.$<HTMLElement>('.cal-years');
+    this.#weekdaysEl    = this.$<HTMLElement>('.cal-weekdays');
+    this.#modeBtnEl     = this.$<HTMLElement>('.cal-mode');
+    this.#prevBtnEl     = this.$<HTMLElement>('.cal-prev');
+    this.#nextBtnEl     = this.$<HTMLElement>('.cal-next');
+    this.#dayTpl        = this.$<HTMLTemplateElement>('.cal-day-tpl');
+    this.#hourInputEl   = this.$<HTMLInputElement>('.hour-input');
+    this.#hiddenInput   = this.$<HTMLInputElement>('.hidden-input');
 
     // Reach into each sherpa-input-number and switch its inner <input>
     // from type="number" to type="text" so leading zeros (e.g. "05") are
@@ -140,11 +130,8 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   get value() {
     if (!this.#selectedDate) return '';
-    // @ts-expect-error - TODO: Fix type
     const y  = this.#selectedDate.getFullYear();
-    // @ts-expect-error - TODO: Fix type
     const mo = String(this.#selectedDate.getMonth() + 1).padStart(2, '0');
-    // @ts-expect-error - TODO: Fix type
     const d  = String(this.#selectedDate.getDate()).padStart(2, '0');
     const hh = String(this.#hours24).padStart(2, '0');
     const mm = String(this.#minutes).padStart(2, '0');
@@ -163,23 +150,18 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   #wireEvents() {
     // Calendar navigation — prev/next step depends on current view mode
-    // @ts-expect-error - TODO: Fix type
-    this.#prevBtnEl.addEventListener('button-click', () => this.#step(-1));
-    // @ts-expect-error - TODO: Fix type
-    this.#nextBtnEl.addEventListener('button-click', () => this.#step(+1));
+    this.#prevBtnEl?.addEventListener('button-click', () => this.#step(-1));
+    this.#nextBtnEl?.addEventListener('button-click', () => this.#step(+1));
 
     // Mode toggle: day → month → year (year is the terminal step)
-    // @ts-expect-error - TODO: Fix type
-    this.#modeBtnEl.addEventListener('button-click', () => {
+    this.#modeBtnEl?.addEventListener('button-click', () => {
       if (this.#viewMode === 'day')        this.#setViewMode('month');
       else if (this.#viewMode === 'month') this.#setViewMode('year');
     });
 
     // Hour / minute — sherpa-input-number fires native input/change events
-    // @ts-expect-error - TODO: Fix type
     this.#hourInputEl?.addEventListener('change', () => {
-      // @ts-expect-error - TODO: Fix type
-      const n = parseInt(this.#hourInputEl.value, 10);
+      const n = parseInt(this.#hourInputEl?.value ?? '', 10);
       if (Number.isFinite(n)) {
         this.#hours24 = Math.min(23, Math.max(0, n));
         this.#syncSpinners();
@@ -187,8 +169,7 @@ export class SherpaDateTimePicker extends SherpaElement {
       }
     });
     this.els.minuteInput?.addEventListener('change', () => {
-      // @ts-expect-error - TODO: Fix type
-      const n = parseInt(this.els.minuteInput.value, 10);
+      const n = parseInt(this.els.minuteInput?.value ?? '', 10);
       if (Number.isFinite(n)) {
         this.#minutes = Math.min(59, Math.max(0, n));
         this.#syncSpinners();
@@ -197,23 +178,19 @@ export class SherpaDateTimePicker extends SherpaElement {
     });
 
     // Footer — nested sherpa-button elements dispatch 'button-click'
-    // @ts-expect-error - TODO: Fix type
-    this.$('.btn-today').addEventListener('button-click', () => {
+    this.$('.btn-today')?.addEventListener('button-click', () => {
       const today = new Date();
-      // @ts-expect-error - TODO: Fix type
       this.#selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       this.#viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
       this.#renderCalendar();
       this.#emitChange();
     });
 
-    // @ts-expect-error - TODO: Fix type
-    this.$('.btn-close').addEventListener('button-click', () => {
+    this.$('.btn-close')?.addEventListener('button-click', () => {
       this.dispatchEvent(new CustomEvent('datetime-close', { bubbles: true, composed: true }));
     });
 
-    // @ts-expect-error - TODO: Fix type
-    this.$('.btn-apply').addEventListener('button-click', () => {
+    this.$('.btn-apply')?.addEventListener('button-click', () => {
       this.dispatchEvent(new CustomEvent('datetime-submit', {
         bubbles: true,
         composed: true,
@@ -224,15 +201,13 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   /* ── Private: rendering ─────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #setViewMode(mode) {
+  #setViewMode(mode: 'day' | 'month' | 'year') {
     this.#viewMode = mode;
     this.#renderCalendar();
   }
 
   /** Prev/Next behaviour depends on the active view. */
-  // @ts-expect-error - TODO: Fix type
-  #step(direction) {
+  #step(direction: number) {
     if (this.#viewMode === 'day') {
       this.#viewDate = new Date(this.#viewDate.getFullYear(), this.#viewDate.getMonth() + direction, 1);
     } else if (this.#viewMode === 'month') {
@@ -250,34 +225,25 @@ export class SherpaDateTimePicker extends SherpaElement {
     const isYear  = this.#viewMode === 'year';
 
     // Toggle visibility of the three grids and the weekday header
-    // @ts-expect-error - TODO: Fix type
-    this.#weekdaysEl.hidden  = !isDay;
-    // @ts-expect-error - TODO: Fix type
-    this.#calDaysEl.hidden   = !isDay;
-    // @ts-expect-error - TODO: Fix type
-    this.#calMonthsEl.hidden = !isMonth;
-    // @ts-expect-error - TODO: Fix type
-    this.#calYearsEl.hidden  = !isYear;
+    if (this.#weekdaysEl)  this.#weekdaysEl.hidden  = !isDay;
+    if (this.#calDaysEl)   this.#calDaysEl.hidden   = !isDay;
+    if (this.#calMonthsEl) this.#calMonthsEl.hidden = !isMonth;
+    if (this.#calYearsEl)  this.#calYearsEl.hidden  = !isYear;
 
     // Update the mode-toggle label + interactivity
+    const modeBtn = this.#modeBtnEl;
     const year = this.#viewDate.getFullYear();
     if (isDay) {
-      // @ts-expect-error - TODO: Fix type
-      this.#modeBtnEl.setAttribute('data-label', `${MONTH_NAMES[this.#viewDate.getMonth()]} ${year}`);
-      // @ts-expect-error - TODO: Fix type
-      this.#modeBtnEl.removeAttribute('disabled');
+      modeBtn?.setAttribute('data-label', `${MONTH_NAMES[this.#viewDate.getMonth()]} ${year}`);
+      modeBtn?.removeAttribute('disabled');
     } else if (isMonth) {
-      // @ts-expect-error - TODO: Fix type
-      this.#modeBtnEl.setAttribute('data-label', String(year));
-      // @ts-expect-error - TODO: Fix type
-      this.#modeBtnEl.removeAttribute('disabled');
+      modeBtn?.setAttribute('data-label', String(year));
+      modeBtn?.removeAttribute('disabled');
     } else {
       const { start, end } = SherpaDateTimePicker.#yearRange(year);
-      // @ts-expect-error - TODO: Fix type
-      this.#modeBtnEl.setAttribute('data-label', `${start} – ${end}`);
+      modeBtn?.setAttribute('data-label', `${start} – ${end}`);
       // Year is the terminal step — disable the toggle here.
-      // @ts-expect-error - TODO: Fix type
-      this.#modeBtnEl.setAttribute('disabled', '');
+      modeBtn?.setAttribute('disabled', '');
     }
 
     if (isDay)        this.#renderDayGrid();
@@ -300,9 +266,7 @@ export class SherpaDateTimePicker extends SherpaElement {
       null,
       minDate,
       maxDate,
-      // @ts-expect-error - TODO: Fix type
-      (iso) => {
-        // @ts-expect-error - TODO: Fix type
+      (iso: string) => {
         this.#selectedDate = isoToDate(iso);
         this.#renderCalendar();
         this.#emitChange();
@@ -312,41 +276,34 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   #renderMonthGrid() {
     const year = this.#viewDate.getFullYear();
-    // @ts-expect-error - TODO: Fix type
     const selMonth = this.#selectedDate && this.#selectedDate.getFullYear() === year
-      // @ts-expect-error - TODO: Fix type
       ? this.#selectedDate.getMonth() : -1;
     const todayMonth = (new Date().getFullYear() === year) ? new Date().getMonth() : -1;
 
-    // @ts-expect-error - TODO: Fix type
-    this.#calMonthsEl.replaceChildren();
+    this.#calMonthsEl?.replaceChildren();
     for (let m = 0; m < 12; m++) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'cal-cell cal-month';
       btn.setAttribute('role', 'gridcell');
-      // @ts-expect-error - TODO: Fix type
-      btn.textContent = MONTH_NAMES[m].slice(0, 3);
+      btn.textContent = (MONTH_NAMES[m] ?? '').slice(0, 3);
       if (m === selMonth)   btn.setAttribute('data-selected', '');
       if (m === todayMonth) btn.setAttribute('data-today', '');
       btn.addEventListener('click', () => {
         this.#viewDate = new Date(year, m, 1);
         this.#setViewMode('day');
       });
-      // @ts-expect-error - TODO: Fix type
-      this.#calMonthsEl.appendChild(btn);
+      this.#calMonthsEl?.appendChild(btn);
     }
   }
 
   #renderYearGrid() {
     const year = this.#viewDate.getFullYear();
     const { start } = SherpaDateTimePicker.#yearRange(year);
-    // @ts-expect-error - TODO: Fix type
     const selYear = this.#selectedDate ? this.#selectedDate.getFullYear() : -1;
     const todayYear = new Date().getFullYear();
 
-    // @ts-expect-error - TODO: Fix type
-    this.#calYearsEl.replaceChildren();
+    this.#calYearsEl?.replaceChildren();
     for (let i = 0; i < 12; i++) {
       const y = start + i;
       const btn = document.createElement('button');
@@ -360,15 +317,13 @@ export class SherpaDateTimePicker extends SherpaElement {
         this.#viewDate = new Date(y, this.#viewDate.getMonth(), 1);
         this.#setViewMode('month');
       });
-      // @ts-expect-error - TODO: Fix type
-      this.#calYearsEl.appendChild(btn);
+      this.#calYearsEl?.appendChild(btn);
     }
   }
 
   #syncSpinners() {
     // Always show two digits so the field reads as a time component
     // (e.g. "01", "09") regardless of the underlying numeric value.
-    // @ts-expect-error - TODO: Fix type
     if (this.#hourInputEl)   this.#hourInputEl.value   = String(this.#hours24).padStart(2, '0');
     if (this.els.minuteInput) this.els.minuteInput.value = String(this.#minutes).padStart(2, '0');
   }
@@ -379,8 +334,10 @@ export class SherpaDateTimePicker extends SherpaElement {
    * on rAF until the inner input is available, since sherpa-input-number
    * bootstraps its own shadow DOM asynchronously.
    */
-  // @ts-expect-error - TODO: Fix type
-  #convertToTextInput(wrap, attempts = 10) {
+  #convertToTextInput(
+    wrap: (HTMLElement & { getInputElement?: () => HTMLInputElement | null }) | null,
+    attempts = 10,
+  ) {
     if (!wrap) return;
     const inner = wrap.getInputElement?.();
     if (inner) {
@@ -399,13 +356,11 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   /* ── Private: value helpers ─────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #parseValue(isoString) {
+  #parseValue(isoString: string | null | undefined) {
     if (!isoString) return;
     const [datePart, timePart = '00:00'] = isoString.split('T');
     const d = isoToDate(datePart);
     if (!d) return;
-    // @ts-expect-error - TODO: Fix type
     this.#selectedDate = d;
     this.#viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
     const [hStr = '0', mStr = '0'] = timePart.split(':');
@@ -415,7 +370,6 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   #emitChange() {
     const val = this.value;
-    // @ts-expect-error - TODO: Fix type
     if (this.#hiddenInput) this.#hiddenInput.value = val;
     this.dispatchEvent(new CustomEvent('datetime-change', {
       bubbles: true,
@@ -428,8 +382,7 @@ export class SherpaDateTimePicker extends SherpaElement {
 
   /** 12-year page for the year grid, anchored so each page starts on a
    *  multiple of 12 (e.g. 2016–2027, 2028–2039). */
-  // @ts-expect-error - TODO: Fix type
-  static #yearRange(year) {
+  static #yearRange(year: number) {
     const start = year - (((year % 12) + 12) % 12);
     return { start, end: start + 11 };
   }
