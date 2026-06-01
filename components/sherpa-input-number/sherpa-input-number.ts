@@ -83,7 +83,7 @@ export class SherpaInputNumber extends SherpaInputBase {
   }
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
-    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
+    super.onAttributeChanged(name, oldValue, newValue);
     if (['min', 'max', 'step'].includes(name)) {
       const el = this.getInputElement();
       if (el) {

@@ -122,7 +122,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) return;
-    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
+    super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'data-title') this.#syncTitle();
     if (name === 'data-segment-field' || name === 'data-segment-mode') {
       this.#syncTitle();

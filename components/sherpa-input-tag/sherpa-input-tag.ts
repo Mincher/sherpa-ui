@@ -92,7 +92,7 @@ export class SherpaInputTag extends SherpaInputBase {
   }
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
-    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
+    super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'data-value') this.#renderChips();
   }
 

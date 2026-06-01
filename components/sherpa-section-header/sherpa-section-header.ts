@@ -46,8 +46,8 @@ export class SherpaSectionHeader extends SherpaElement {
    * When a custom heading is slotted, hide the default heading text.
    * Other slots use the base `.has-content` toggle.
    */
-  onSlotChange(slotEl: HTMLSlotElement) {
-    super.onSlotChange(slotEl: HTMLSlotElement);
+  onSlotChange(slotEl) {
+    super.onSlotChange(slotEl);
 
     if (slotEl.name === 'heading') {
       const hasCustomHeading = slotEl.assignedNodes().length > 0;

@@ -101,7 +101,7 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
-    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
+    super.onAttributeChanged(name, oldValue, newValue);
     if (name === "placeholder") {
       this.#ensurePlaceholder();
       const display = this.$('.tree-display');

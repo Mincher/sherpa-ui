@@ -109,7 +109,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) return;
-    super.onAttributeChanged(name: string, oldValue: string | null, newValue: string | null);
+    super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
       case 'data-title':          this.#syncTitle(); break;
       case 'data-inner-label':
