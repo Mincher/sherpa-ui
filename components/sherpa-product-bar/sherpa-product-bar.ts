@@ -65,14 +65,14 @@ class SherpaProductBar extends SherpaElement {
 
   #syncName() {
     if (this.els.name) {
-      this.els.name.textContent = this.dataset.productName || "";
+      this.els.name.textContent = this.dataset["productName"] || "";
     }
   }
 
   #syncIcon() {
     if (!this.els.icon) return;
 
-    const iconClass = this.dataset.productIcon;
+    const iconClass = this.dataset["productIcon"];
     const iconEl = this.els.icon.querySelector(".auto-icon");
 
     if (iconClass && iconEl) {

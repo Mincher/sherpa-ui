@@ -118,7 +118,7 @@ export class SherpaMenu extends SherpaElement {
 
   #syncLoadingText() {
     const el = this.$('.menu-loader-text');
-    if (el) el.textContent = this.dataset.loadingText || '';
+    if (el) el.textContent = this.dataset["loadingText"] || '';
   }
 
   /* ── Event delegation ──────────────────────────────────────── */
@@ -127,14 +127,14 @@ export class SherpaMenu extends SherpaElement {
     const item = (e.target as Element).closest?.("sherpa-menu-item");
     if (!item || item.hasAttribute("disabled")) return;
 
-    const selection = item.dataset.selection;
+    const selection = item.dataset["selection"];
 
     if (selection === "checkbox" || selection === "toggle") {
       item.toggleAttribute("checked");
     }
     if (selection === "radio") {
       // Uncheck siblings in the same group, then check this item
-      const group = item.dataset.group;
+      const group = item.dataset["group"];
       const siblings = group
         ? this.querySelectorAll(
             `sherpa-menu-item[data-group="${CSS.escape(group)}"]`,
@@ -203,13 +203,13 @@ export class SherpaMenu extends SherpaElement {
   #dispatchSelect(item) {
     const detail = {
       item,
-      action: item.dataset.action || undefined,
+      action: item.dataset["action"] || undefined,
       value: item.getAttribute("value") ?? undefined,
       label: item.textContent.trim(),
-      selection: item.dataset.selection || undefined,
+      selection: item.dataset["selection"] || undefined,
       checked: item.hasAttribute("checked"),
       group:
-        item.dataset.group || item.closest("ul")?.dataset.group || undefined,
+        item.dataset["group"] || item.closest("ul")?.dataset["group"] || undefined,
       data: { ...item.dataset },
     };
 
@@ -222,7 +222,7 @@ export class SherpaMenu extends SherpaElement {
     );
 
     // Auto-dispatch a named domain event when data-event is set on the item
-    const eventName = item.dataset.event;
+    const eventName = item.dataset["event"];
     if (eventName) {
       this.dispatchEvent(
         new CustomEvent(eventName, {
@@ -242,7 +242,7 @@ export class SherpaMenu extends SherpaElement {
 
     // Read preferred placement from the anchor (e.g. data-menu-position)
     const position = anchor.dataset?.menuPosition || "bottom-start";
-    this.dataset.position = position;
+    this.dataset["position"] = position;
 
     // Position via CSS anchor or JS fallback.
     //

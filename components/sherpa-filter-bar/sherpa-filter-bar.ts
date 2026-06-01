@@ -72,7 +72,7 @@ export class SherpaFilterBar extends SherpaElement {
   /* ── Template selection ───────────────────────────────────────── */
 
   override get templateId(): string {
-    return this.dataset.type || "default";
+    return this.dataset["type"] || "default";
   }
 
   static override get observedAttributes(): string[] {
@@ -170,7 +170,7 @@ export class SherpaFilterBar extends SherpaElement {
           n instanceof HTMLElement &&
           n.slot === "actions" &&
           n.tagName === "SHERPA-BUTTON" &&
-          (n.dataset.action === "clear" ||
+          (n.dataset["action"] === "clear" ||
             n.textContent.trim().toLowerCase().includes("clear")),
       );
       if (clearBtn) this.#clearAll();
@@ -259,19 +259,19 @@ export class SherpaFilterBar extends SherpaElement {
         const field = e.detail?.value;
         const prefix = behavior === "sort" ? "Sort" : "Group";
         if (field) {
-          labelBtn.dataset.field = field;
+          labelBtn.dataset["field"] = field;
           const col = this.#columns.find(c => c.field === field);
           const valueLabel = col?.name || formatFieldName(field);
-          labelBtn.dataset.label = `${prefix}: ${valueLabel}`;
+          labelBtn.dataset["label"] = `${prefix}: ${valueLabel}`;
           // Reset to default mode for a newly-picked field
           // (clear any stale "off" mode left over from a previous cycle).
-          labelBtn.dataset.mode = behavior === "sort" ? "asc" : "on";
+          labelBtn.dataset["mode"] = behavior === "sort" ? "asc" : "on";
           labelBtn.toggleAttribute("data-active", true);
         } else {
           // Deactivate (e.g. user picked "None")
-          delete labelBtn.dataset.field;
-          delete labelBtn.dataset.mode;
-          labelBtn.dataset.label = prefix;
+          delete labelBtn.dataset["field"];
+          delete labelBtn.dataset["mode"];
+          labelBtn.dataset["label"] = prefix;
           labelBtn.removeAttribute("data-active");
         }
         // Shadow DOM mutations aren't observed by the MutationObserver — emit explicitly.
@@ -283,7 +283,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.addEventListener("change", (e) => {
       const sw = e.target;
       if (sw?.tagName === "SHERPA-SWITCH" && sw.slot === "toggle") {
-        this.#applied = sw.dataset.state === "on";
+        this.#applied = sw.dataset["state"] === "on";
         this.#emitFilterChange();
       }
     });
@@ -338,11 +338,11 @@ export class SherpaFilterBar extends SherpaElement {
   #syncSortType() {
     const sortBtn = this.sortChip;
     if (!sortBtn) return;
-    const type = this.dataset.sortType;
+    const type = this.dataset["sortType"];
     if (type) {
-      sortBtn.dataset.sortType = type;
+      sortBtn.dataset["sortType"] = type;
     } else {
-      delete sortBtn.dataset.sortType;
+      delete sortBtn.dataset["sortType"];
     }
   }
 
@@ -390,8 +390,8 @@ export class SherpaFilterBar extends SherpaElement {
         const field = chip.getAttribute("data-filter-field");
         const col = this.#columns.find((c) => c.field === field);
         if (col) {
-          chip.dataset.label = col.name || formatFieldName(col.field);
-          chip.dataset.defaultLabel = chip.dataset.label;
+          chip.dataset["label"] = col.name || formatFieldName(col.field);
+          chip.dataset["defaultLabel"] = chip.dataset["label"];
         }
         this.#populateFilterChip(chip);
         continue;
@@ -477,8 +477,8 @@ export class SherpaFilterBar extends SherpaElement {
         } else {
           // Declarative / preset chips — clear values but keep in DOM
           this.#getChipMenuButton(chip).clearSelection?.();
-          delete chip.dataset.count;
-          chip.dataset.label = chip.dataset.defaultLabel || chip.dataset.label;
+          delete chip.dataset["count"];
+          chip.dataset["label"] = chip.dataset["defaultLabel"] || chip.dataset["label"];
           chip.removeAttribute("data-active");
         }
       } else {
@@ -487,7 +487,7 @@ export class SherpaFilterBar extends SherpaElement {
         chip.removeAttribute("data-field");
         chip.removeAttribute("data-mode");
         chip.removeAttribute("data-active");
-        chip.dataset.label = behavior === "sort" ? "Sort" : "Group";
+        chip.dataset["label"] = behavior === "sort" ? "Sort" : "Group";
       }
     }
     this.removeAttribute("data-active");
@@ -539,8 +539,8 @@ export class SherpaFilterBar extends SherpaElement {
     chip.setAttribute("data-variant", "secondary");
     chip.setAttribute("data-menu-scope", "none");
     chip.setAttribute("data-size", "small");
-    chip.dataset.label = label;
-    chip.dataset.defaultLabel = label;
+    chip.dataset["label"] = label;
+    chip.dataset["defaultLabel"] = label;
 
     if (dismissable) chip.setAttribute("data-user-filter", "");
 
@@ -764,7 +764,7 @@ export class SherpaFilterBar extends SherpaElement {
 
           // Boolean chips have no menu — value comes from the stored truthy value
           if (filterType === "boolean") {
-            const boolValue = chip.dataset.filterBooleanValue || "true";
+            const boolValue = chip.dataset["filterBooleanValue"] || "true";
             return {
               field: chip.getAttribute("data-filter-field"),
               type: "boolean",
@@ -835,21 +835,21 @@ export class SherpaFilterBar extends SherpaElement {
     const { field, direction } = e.detail || {};
     this.#syncingSort = true;
     if (field && direction !== "off") {
-      sortChip.dataset.field = field;
+      sortChip.dataset["field"] = field;
       const col = this.#columns.find(c => c.field === field);
       const valueLabel = col?.name || formatFieldName(field);
-      sortChip.dataset.label = `Sort: ${valueLabel}`;
-      sortChip.dataset.mode = direction;
+      sortChip.dataset["label"] = `Sort: ${valueLabel}`;
+      sortChip.dataset["mode"] = direction;
       sortChip.toggleAttribute("data-active", true);
     } else {
       // Sort paused — preserve the remembered field and "Sort: <Field>"
       // label so the user can re-engage the same field via another click
       // cycle. The field is only cleared when the user explicitly picks
       // "None" from the menu.
-      sortChip.dataset.mode = "off";
+      sortChip.dataset["mode"] = "off";
       sortChip.removeAttribute("data-active");
-      if (!sortChip.dataset.field) {
-        sortChip.dataset.label = "Sort";
+      if (!sortChip.dataset["field"]) {
+        sortChip.dataset["label"] = "Sort";
       }
     }
     // Clear flag after microtask so the MutationObserver callback
@@ -987,7 +987,7 @@ export class SherpaFilterBar extends SherpaElement {
       const menuBtn = this.#getChipMenuButton(chip);
       const items = menuBtn.menuElement?.querySelectorAll("sherpa-menu-item") ?? [];
       for (const item of items) {
-        const base = item.dataset.baseText;
+        const base = item.dataset["baseText"];
         if (base === undefined) continue;
         const key = (item.getAttribute("value") ?? base).toLowerCase();
         const n = counts.get(key) ?? 0;
@@ -1022,7 +1022,7 @@ export class SherpaFilterBar extends SherpaElement {
           // Stash the raw label so #refreshOptionCounts can re-append the
           // "(N)" suffix without losing the original text.
           for (const el of menuBtn.menuElement?.querySelectorAll("sherpa-menu-item") ?? []) {
-            el.dataset.baseText = el.textContent.trim();
+            el.dataset["baseText"] = el.textContent.trim();
           }
           this.#refreshOptionCounts();
         }
@@ -1034,8 +1034,8 @@ export class SherpaFilterBar extends SherpaElement {
         break;
       case "boolean":
         // No menu — chip acts as a simple toggle.
-        if (!chip.dataset.filterBooleanValue) {
-          chip.dataset.filterBooleanValue = "true";
+        if (!chip.dataset["filterBooleanValue"]) {
+          chip.dataset["filterBooleanValue"] = "true";
         }
         break;
       case "number-range":
@@ -1052,21 +1052,21 @@ export class SherpaFilterBar extends SherpaElement {
    *   0 selected  → "Label" (default), no badge.
    */
   #syncFilterChipLabel(chip, count) {
-    const defaultLabel = chip.dataset.defaultLabel || chip.dataset.label || "";
+    const defaultLabel = chip.dataset["defaultLabel"] || chip.dataset["label"] || "";
     if (count === 1) {
       const menuEl = this.#getChipMenuButton(chip)?.menuElement ?? chip.menuElement ?? chip.querySelector("sherpa-menu");
       const checked = menuEl?.querySelector("sherpa-menu-item[checked]");
       // Prefer the stashed base text (without the "(N)" count suffix that
       // #refreshOptionCounts appends) so the chip label stays clean.
-      const value = checked?.dataset.baseText ?? checked?.textContent?.trim();
-      chip.dataset.label = value ? `${defaultLabel}: ${value}` : defaultLabel;
-      delete chip.dataset.count;
+      const value = checked?.dataset["baseText"] ?? checked?.textContent?.trim();
+      chip.dataset["label"] = value ? `${defaultLabel}: ${value}` : defaultLabel;
+      delete chip.dataset["count"];
     } else if (count > 1) {
-      chip.dataset.label = `${defaultLabel}:`;
-      chip.dataset.count = String(count);
+      chip.dataset["label"] = `${defaultLabel}:`;
+      chip.dataset["count"] = String(count);
     } else {
-      chip.dataset.label = defaultLabel;
-      delete chip.dataset.count;
+      chip.dataset["label"] = defaultLabel;
+      delete chip.dataset["count"];
     }
   }
 
@@ -1180,39 +1180,39 @@ export class SherpaFilterBar extends SherpaElement {
    * from the menu — handled in the menu-select listener.
    */
   #cycleSortMode(chip) {
-    const current = chip.dataset.mode;
-    const sortType = chip.dataset.sortType;
+    const current = chip.dataset["mode"];
+    const sortType = chip.dataset["sortType"];
 
     if (sortType === "time") {
       // Time sort: off → desc (Newest first) → asc (Oldest first) → off
       if (!current || current === "off") {
-        chip.dataset.mode = "desc";
-        chip.dataset.iconStart = "\uf063"; // fa-arrow-down
-        chip.dataset.label = "Newest first";
+        chip.dataset["mode"] = "desc";
+        chip.dataset["iconStart"] = "\uf063"; // fa-arrow-down
+        chip.dataset["label"] = "Newest first";
         chip.toggleAttribute("data-active", true);
       } else if (current === "desc") {
-        chip.dataset.mode = "asc";
-        chip.dataset.iconStart = "\uf062"; // fa-arrow-up
-        chip.dataset.label = "Oldest first";
+        chip.dataset["mode"] = "asc";
+        chip.dataset["iconStart"] = "\uf062"; // fa-arrow-up
+        chip.dataset["label"] = "Oldest first";
       } else {
-        chip.dataset.mode = "off";
-        chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
+        chip.dataset["mode"] = "off";
+        chip.dataset["iconStart"] = "\uf0dc"; // fa-sort (neutral)
         chip.removeAttribute("data-active");
       }
     } else if (sortType === "value") {
       // Value sort: off → desc (Largest first) → asc (Smallest first) → off
       if (!current || current === "off") {
-        chip.dataset.mode = "desc";
-        chip.dataset.iconStart = "\uf063"; // fa-arrow-down
-        chip.dataset.label = "Largest first";
+        chip.dataset["mode"] = "desc";
+        chip.dataset["iconStart"] = "\uf063"; // fa-arrow-down
+        chip.dataset["label"] = "Largest first";
         chip.toggleAttribute("data-active", true);
       } else if (current === "desc") {
-        chip.dataset.mode = "asc";
-        chip.dataset.iconStart = "\uf062"; // fa-arrow-up
-        chip.dataset.label = "Smallest first";
+        chip.dataset["mode"] = "asc";
+        chip.dataset["iconStart"] = "\uf062"; // fa-arrow-up
+        chip.dataset["label"] = "Smallest first";
       } else {
-        chip.dataset.mode = "off";
-        chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
+        chip.dataset["mode"] = "off";
+        chip.dataset["iconStart"] = "\uf0dc"; // fa-sort (neutral)
         chip.removeAttribute("data-active");
       }
     } else {
@@ -1225,15 +1225,15 @@ export class SherpaFilterBar extends SherpaElement {
       // the user must pick a field from the menu first.
       if (!chip.hasAttribute("data-field")) return;
       if (!current || current === "off") {
-        chip.dataset.mode = "asc";
-        chip.dataset.iconStart = "\uf062"; // fa-arrow-up
+        chip.dataset["mode"] = "asc";
+        chip.dataset["iconStart"] = "\uf062"; // fa-arrow-up
         chip.toggleAttribute("data-active", true);
       } else if (current === "asc") {
-        chip.dataset.mode = "desc";
-        chip.dataset.iconStart = "\uf063"; // fa-arrow-down
+        chip.dataset["mode"] = "desc";
+        chip.dataset["iconStart"] = "\uf063"; // fa-arrow-down
       } else {
-        chip.dataset.mode = "off";
-        chip.dataset.iconStart = "\uf0dc"; // fa-sort (neutral)
+        chip.dataset["mode"] = "off";
+        chip.dataset["iconStart"] = "\uf0dc"; // fa-sort (neutral)
         chip.removeAttribute("data-active");
       }
     }
@@ -1250,10 +1250,10 @@ export class SherpaFilterBar extends SherpaElement {
     // No field selected yet — user must pick from the dropdown first
     if (!chip.hasAttribute("data-field")) return;
     if (chip.hasAttribute("data-active")) {
-      chip.dataset.mode = "off";
+      chip.dataset["mode"] = "off";
       chip.removeAttribute("data-active");
     } else {
-      chip.dataset.mode = "on";
+      chip.dataset["mode"] = "on";
       chip.toggleAttribute("data-active", true);
     }
     // Shadow DOM mutations aren't observed by the MutationObserver — emit explicitly.

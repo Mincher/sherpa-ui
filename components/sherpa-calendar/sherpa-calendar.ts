@@ -79,12 +79,12 @@ export class SherpaCalendar extends SherpaElement {
     this.#dayTpl = this.$('.cal-day-tpl');
 
     // Initialize view date
-    const viewDateIso = this.dataset.viewDate;
+    const viewDateIso = this.dataset["viewDate"];
     if (viewDateIso) {
       const parsed = isoToDate(viewDateIso);
       if (parsed) this.#viewDate = parsed;
-    } else if (this.dataset.value) {
-      const parsed = isoToDate(this.dataset.value);
+    } else if (this.dataset["value"]) {
+      const parsed = isoToDate(this.dataset["value"]);
       if (parsed) this.#viewDate = parsed;
     }
 
@@ -119,7 +119,7 @@ export class SherpaCalendar extends SherpaElement {
    * @returns {Date|null}
    */
   get valueAsDate() {
-    return isoToDate(this.dataset.value);
+    return isoToDate(this.dataset["value"]);
   }
 
   /**
@@ -127,7 +127,7 @@ export class SherpaCalendar extends SherpaElement {
    * @param {Date|null} date
    */
   set valueAsDate(date) {
-    this.dataset.value = dateToIso(date);
+    this.dataset["value"] = dateToIso(date);
   }
 
   /**
@@ -136,8 +136,8 @@ export class SherpaCalendar extends SherpaElement {
    */
   get selectedRange() {
     return {
-      start: isoToDate(this.dataset.value),
-      end: isoToDate(this.dataset.valueEnd),
+      start: isoToDate(this.dataset["value"]),
+      end: isoToDate(this.dataset["valueEnd"]),
     };
   }
 
@@ -146,8 +146,8 @@ export class SherpaCalendar extends SherpaElement {
    * @param {{start: Date|null, end: Date|null}} range
    */
   set selectedRange(range) {
-    this.dataset.value = dateToIso(range.start);
-    this.dataset.valueEnd = dateToIso(range.end);
+    this.dataset["value"] = dateToIso(range.start);
+    this.dataset["valueEnd"] = dateToIso(range.end);
   }
 
   /**
@@ -156,7 +156,7 @@ export class SherpaCalendar extends SherpaElement {
    */
   goToMonth(date) {
     this.#viewDate = new Date(date.getFullYear(), date.getMonth(), 1);
-    this.dataset.viewDate = dateToIso(this.#viewDate);
+    this.dataset["viewDate"] = dateToIso(this.#viewDate);
     this.#render();
     this.#dispatchViewChange();
   }
@@ -187,11 +187,11 @@ export class SherpaCalendar extends SherpaElement {
   #renderDays() {
     if (!this.els.daysGrid || !this.#dayTpl) return;
 
-    const mode = this.dataset.mode || 'single';
-    const selectedIso = this.dataset.value || null;
-    const selectedEndIso = mode === 'range' ? this.dataset.valueEnd || null : null;
-    const minIso = this.dataset.min || null;
-    const maxIso = this.dataset.max || null;
+    const mode = this.dataset["mode"] || 'single';
+    const selectedIso = this.dataset["value"] || null;
+    const selectedEndIso = mode === 'range' ? this.dataset["valueEnd"] || null : null;
+    const minIso = this.dataset["min"] || null;
+    const maxIso = this.dataset["max"] || null;
 
     renderCalendarGrid(
       this.els.daysGrid,
@@ -206,7 +206,7 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   #handleDayClick(iso) {
-    const mode = this.dataset.mode || 'single';
+    const mode = this.dataset["mode"] || 'single';
 
     if (mode === 'range') {
       this.#handleRangeSelection(iso);
@@ -216,7 +216,7 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   #handleSingleSelection(iso) {
-    this.dataset.value = iso;
+    this.dataset["value"] = iso;
 
     this.dispatchEvent(
       new CustomEvent('dateselect', {
@@ -236,8 +236,8 @@ export class SherpaCalendar extends SherpaElement {
     // If no range start, or clicking before range start, set new start
     if (!this.#rangeStart || clickedDate < this.#rangeStart) {
       this.#rangeStart = clickedDate;
-      this.dataset.value = iso;
-      this.dataset.valueEnd = '';
+      this.dataset["value"] = iso;
+      this.dataset["valueEnd"] = '';
       this.#render();
       return;
     }
@@ -246,8 +246,8 @@ export class SherpaCalendar extends SherpaElement {
     const startIso = dateToIso(this.#rangeStart);
     const endIso = iso;
 
-    this.dataset.value = startIso;
-    this.dataset.valueEnd = endIso;
+    this.dataset["value"] = startIso;
+    this.dataset["valueEnd"] = endIso;
     this.#rangeStart = null;
 
     this.dispatchEvent(
@@ -266,14 +266,14 @@ export class SherpaCalendar extends SherpaElement {
 
   #prevMonth() {
     this.#viewDate.setMonth(this.#viewDate.getMonth() - 1);
-    this.dataset.viewDate = dateToIso(this.#viewDate);
+    this.dataset["viewDate"] = dateToIso(this.#viewDate);
     this.#render();
     this.#dispatchViewChange();
   }
 
   #nextMonth() {
     this.#viewDate.setMonth(this.#viewDate.getMonth() + 1);
-    this.dataset.viewDate = dateToIso(this.#viewDate);
+    this.dataset["viewDate"] = dateToIso(this.#viewDate);
     this.#render();
     this.#dispatchViewChange();
   }
@@ -281,7 +281,7 @@ export class SherpaCalendar extends SherpaElement {
   #toggleView() {
     // Future: toggle between day/month/year views
     // For now, just a placeholder
-    const currentView = this.dataset.view || 'day';
+    const currentView = this.dataset["view"] || 'day';
     this.dispatchEvent(
       new CustomEvent('viewchange', {
         bubbles: true,
@@ -301,7 +301,7 @@ export class SherpaCalendar extends SherpaElement {
         composed: true,
         detail: {
           viewDate: dateToIso(this.#viewDate),
-          view: this.dataset.view || 'day',
+          view: this.dataset["view"] || 'day',
         },
       }),
     );

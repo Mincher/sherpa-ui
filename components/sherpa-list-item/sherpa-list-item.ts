@@ -61,7 +61,7 @@ export class SherpaListItem extends SherpaElement {
     this.#syncDescription();
     this.#syncIcon();
 
-    if (this.dataset.interactive !== undefined) {
+    if (this.dataset["interactive"] !== undefined) {
       this.#updateInteractive();
     }
   }
@@ -77,11 +77,11 @@ export class SherpaListItem extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get label()       { return this.dataset.label || ''; }
-  set label(v)      { v ? (this.dataset.label = v) : delete this.dataset.label; }
+  get label()       { return this.dataset["label"] || ''; }
+  set label(v)      { v ? (this.dataset["label"] = v) : delete this.dataset["label"]; }
 
-  get description() { return this.dataset.description || ''; }
-  set description(v){ v ? (this.dataset.description = v) : delete this.dataset.description; }
+  get description() { return this.dataset["description"] || ''; }
+  set description(v){ v ? (this.dataset["description"] = v) : delete this.dataset["description"]; }
 
   get active()      { return this.hasAttribute('data-active'); }
   set active(v)     { this.toggleAttribute('data-active', Boolean(v)); }
@@ -89,21 +89,21 @@ export class SherpaListItem extends SherpaElement {
   /* ── Sync methods ─────────────────────────────────────────────── */
 
   #syncLabel() {
-    if (this.els.label) this.els.label.textContent = this.dataset.label || '';
+    if (this.els.label) this.els.label.textContent = this.dataset["label"] || '';
   }
 
   #syncDescription() {
-    if (this.els.description) this.els.description.textContent = this.dataset.description || '';
+    if (this.els.description) this.els.description.textContent = this.dataset["description"] || '';
   }
 
   #syncIcon() {
     if (!this.els.icon) return;
-    const icon = (this.dataset.icon || '').trim();
+    const icon = (this.dataset["icon"] || '').trim();
     this.els.icon.className = icon ? `icon ${icon}` : 'icon';
   }
 
   #updateInteractive() {
-    if (this.dataset.interactive !== undefined) {
+    if (this.dataset["interactive"] !== undefined) {
       if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
     } else {
       this.removeAttribute('tabindex');
@@ -113,7 +113,7 @@ export class SherpaListItem extends SherpaElement {
   /* ── Event handlers ───────────────────────────────────────────── */
 
   #onClick = () => {
-    if (this.dataset.interactive === undefined || this.hasAttribute('disabled')) return;
+    if (this.dataset["interactive"] === undefined || this.hasAttribute('disabled')) return;
     this.active = true;
     this.dispatchEvent(new CustomEvent('list-item-click', {
       bubbles: true,
@@ -123,7 +123,7 @@ export class SherpaListItem extends SherpaElement {
   };
 
   #onKeyDown = (e: Event) => {
-    if (this.dataset.interactive === undefined || this.hasAttribute('disabled')) return;
+    if (this.dataset["interactive"] === undefined || this.hasAttribute('disabled')) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       this.#onClick();

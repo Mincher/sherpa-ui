@@ -39,8 +39,8 @@ export class SherpaMenuItem extends SherpaElement {
   }
 
   override get templateId(): string {
-    if (this.dataset.type === 'heading') return 'heading';
-    const sel = this.dataset.selection;
+    if (this.dataset["type"] === 'heading') return 'heading';
+    const sel = this.dataset["selection"];
     if (sel === 'checkbox') return 'checkbox';
     if (sel === 'radio') return 'radio';
     if (sel === 'toggle') return 'toggle';
@@ -53,7 +53,7 @@ export class SherpaMenuItem extends SherpaElement {
   }
 
   override onRender(): void {
-    if (this.dataset.type !== 'heading' && !this.hasAttribute('tabindex')) {
+    if (this.dataset["type"] !== 'heading' && !this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '-1');
     }
     this.#sync();
@@ -72,13 +72,13 @@ export class SherpaMenuItem extends SherpaElement {
   }
 
   #sync() {
-    if (this.dataset.type === 'heading') {
+    if (this.dataset["type"] === 'heading') {
       this.setAttribute('role', 'presentation');
       this.removeAttribute('tabindex');
       return;
     }
 
-    const sel = this.dataset.selection;
+    const sel = this.dataset["selection"];
 
     this.setAttribute('role', ROLES[sel] || 'menuitem');
     this.setAttribute('aria-disabled', String(this.hasAttribute('disabled')));
@@ -99,16 +99,16 @@ export class SherpaMenuItem extends SherpaElement {
     }
 
     const desc = this.$('.description');
-    if (desc) desc.textContent = this.dataset.description || '';
+    if (desc) desc.textContent = this.dataset["description"] || '';
 
     const sw = this.$('sherpa-switch');
-    if (sw) sw.dataset.state = this.hasAttribute('checked') ? 'on' : 'off';
+    if (sw) sw.dataset["state"] = this.hasAttribute('checked') ? 'on' : 'off';
 
     const icon = this.$('.menu-item-icon');
     if (icon) {
-      const name = this.dataset.icon;
+      const name = this.dataset["icon"];
       if (name) {
-        const weight = this.dataset.iconWeight || 'solid';
+        const weight = this.dataset["iconWeight"] || 'solid';
         icon.className = `menu-item-icon sherpa-icon fa-${weight} fa-${name}`;
       } else {
         icon.className = 'menu-item-icon sherpa-icon';

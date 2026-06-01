@@ -94,7 +94,7 @@ class SherpaPromptComposer extends SherpaElement {
   /* ── sync helpers ────────────────────────────────────────── */
 
   #syncPlaceholder() {
-    if (this.els.input) this.els.input.placeholder = this.dataset.placeholder ?? "";
+    if (this.els.input) this.els.input.placeholder = this.dataset["placeholder"] ?? "";
   }
   #syncDisabled() {
     const off = this.#isDisabled();
@@ -102,7 +102,7 @@ class SherpaPromptComposer extends SherpaElement {
     if (this.els.send)  this.els.send.disabled  = off;
   }
   #syncMaxHeight() {
-    const px = Number(this.dataset.maxHeight);
+    const px = Number(this.dataset["maxHeight"]);
     if (Number.isFinite(px) && px > 0) this.style.setProperty("--_max-height", `${px}px`);
     else this.style.removeProperty("--_max-height");
     this.#autoresize();

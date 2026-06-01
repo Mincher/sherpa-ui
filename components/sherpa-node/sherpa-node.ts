@@ -23,7 +23,7 @@
  *   entries (e.g. user-saved subgraphs). Consumers populate it by
  *   overwriting data-subtypes with their own grouped JSON, e.g.
  *
- *     node.dataset.subtypes = JSON.stringify([
+ *     node.dataset["subtypes"] = JSON.stringify([
  *       { label: "Preset", options: presetSubtypes },
  *       { label: "Custom", options: [
  *         { value: "saved:abc123", label: "Monitor CPU usage" },
@@ -134,8 +134,8 @@ export class SherpaNode extends SherpaElement {
     else if (name === "data-subtypes") this.#syncSubtypeOptions();
     else if (name === "data-subtype-label") this.#syncSubtypeOptions();
     else if (name === "data-subtype") {
-      if (this.els.subtypeSelect && this.els.subtypeSelect.getAttribute("value") !== this.dataset.subtype) {
-        this.els.subtypeSelect.setAttribute("value", this.dataset.subtype || "");
+      if (this.els.subtypeSelect && this.els.subtypeSelect.getAttribute("value") !== this.dataset["subtype"]) {
+        this.els.subtypeSelect.setAttribute("value", this.dataset["subtype"] || "");
       }
       this.#applyTemplate();
     }
@@ -144,7 +144,7 @@ export class SherpaNode extends SherpaElement {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get nodeId() { return this.dataset.nodeId || ""; }
+  get nodeId() { return this.dataset["nodeId"] || ""; }
 
   /**
    * Returns a Map<portKey, {x, y, side, multi, count}> of every socket in
@@ -169,11 +169,11 @@ export class SherpaNode extends SherpaElement {
     const sockets = this.querySelectorAll("sherpa-node-socket[data-port-name]");
     for (const sock of sockets) {
       const r = sock.getBoundingClientRect();
-      const portName = sock.dataset.portName;
-      const side = sock.dataset.direction === "out" ? "out" : "in";
+      const portName = sock.dataset["portName"];
+      const side = sock.dataset["direction"] === "out" ? "out" : "in";
       const multi = sock.hasAttribute("data-multi");
-      const count = parseInt(sock.dataset.connectionCount || "1", 10) || 1;
-      const status = sock.dataset.status || "";
+      const count = parseInt(sock.dataset["connectionCount"] || "1", 10) || 1;
+      const status = sock.dataset["status"] || "";
       const x = (r.left + r.right) / 2 - hostRect.left;
       const y = (r.top + r.bottom) / 2 - hostRect.top;
       map.set(portName, { x, y, side, multi, count, height: r.height, status });
@@ -202,12 +202,12 @@ export class SherpaNode extends SherpaElement {
 
     // True/false branch outputs emit fixed branch markers per the
     // demo spec: 1 for the "true" branch, 2 for the "false" branch.
-    const status = socket.dataset.status || "";
+    const status = socket.dataset["status"] || "";
     if (status === "true")  return "1";
     if (status === "false") return "2";
 
-    const kind    = this.dataset.kind || "";
-    const subtype = this.dataset.subtype || "";
+    const kind    = this.dataset["kind"] || "";
+    const subtype = this.dataset["subtype"] || "";
     const ctrls   = this.#getControlValues();
 
     // Helper: prefer an upstream-driven incoming value, otherwise the
@@ -385,14 +385,14 @@ export class SherpaNode extends SherpaElement {
   /* ── Internals ─────────────────────────────────────────────────── */
 
   #syncPosition() {
-    const x = parseFloat(this.dataset.x || "0") || 0;
-    const y = parseFloat(this.dataset.y || "0") || 0;
+    const x = parseFloat(this.dataset["x"] || "0") || 0;
+    const y = parseFloat(this.dataset["y"] || "0") || 0;
     this.style.setProperty("--sherpa-node-x", `${x}px`);
     this.style.setProperty("--sherpa-node-y", `${y}px`);
   }
 
   #syncWidth() {
-    const w = parseFloat(this.dataset.w || "");
+    const w = parseFloat(this.dataset["w"] || "");
     if (Number.isFinite(w) && w > 0) {
       this.style.setProperty("--sherpa-node-w", `${w}px`);
     } else {
@@ -402,7 +402,7 @@ export class SherpaNode extends SherpaElement {
 
   #syncSubtypeOptions() {
     if (!this.els.subtypeSelect) return;
-    const raw = this.dataset.subtypes;
+    const raw = this.dataset["subtypes"];
     if (!raw) {
       if (typeof this.els.subtypeSelect.setOptions === "function") {
         this.els.subtypeSelect.setOptions([]);
@@ -447,7 +447,7 @@ export class SherpaNode extends SherpaElement {
     // Allow per-host relabelling of the subtype select (e.g. logic
     // nodes label it "Operation" rather than the default "Type").
     if (this.els.subtypeSelect) {
-      const label = this.dataset.subtypeLabel || "Type";
+      const label = this.dataset["subtypeLabel"] || "Type";
       if (this.els.subtypeSelect.getAttribute("data-label") !== label) {
         this.els.subtypeSelect.setAttribute("data-label", label);
       }
@@ -458,7 +458,7 @@ export class SherpaNode extends SherpaElement {
       const firstValue = isGrouped
         ? normalised.find((g) => g.options?.length)?.options?.[0]?.value
         : normalised[0]?.value;
-      const initial = this.dataset.subtype || (firstValue ?? "");
+      const initial = this.dataset["subtype"] || (firstValue ?? "");
       if (initial) this.els.subtypeSelect.setAttribute("value", initial);
     };
     // sherpa-input-select upgrades asynchronously; wait if needed.
@@ -478,8 +478,8 @@ export class SherpaNode extends SherpaElement {
    * structural rows — JS only clones what HTML declares.
    */
   #applyTemplate() {
-    const kind = this.dataset.kind || "";
-    const subtype = this.dataset.subtype || "";
+    const kind = this.dataset["kind"] || "";
+    const subtype = this.dataset["subtype"] || "";
     if (!subtype) return;
     const tpl = this.querySelector(
       `template.rows-tpl[data-kind="${CSS.escape(kind)}"][data-subtype="${CSS.escape(subtype)}"]`
@@ -552,7 +552,7 @@ export class SherpaNode extends SherpaElement {
     const rows = this.querySelectorAll(":scope > [data-template-row][data-show-if]");
     if (!rows.length) return;
     const readVal = (name) => {
-      if (name === "subtype") return this.dataset.subtype || "";
+      if (name === "subtype") return this.dataset["subtype"] || "";
       const ctrl = this.querySelector(`:scope > [data-template-row] > [slot="control"][name="${CSS.escape(name)}"]`);
       if (!ctrl) return "";
       return ctrl.getAttribute("value") ?? ctrl.value ?? "";

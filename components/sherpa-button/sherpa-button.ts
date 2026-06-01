@@ -148,7 +148,7 @@ export class SherpaButton extends SherpaElement {
   /* ── Template selection ───────────────────────────────────────── */
 
   override get templateId(): string {
-    const type = this.dataset.type;
+    const type = this.dataset["type"];
     // button-menu → default, icon-menu → icon for backward compat
     if (type === "button-menu") return "default";
     if (type === "icon-menu") return "icon";
@@ -176,12 +176,12 @@ export class SherpaButton extends SherpaElement {
     // Element cache auto-populated on first access
 
     // Default variant for standard buttons
-    const type = this.dataset.type;
-    if (!type && !this.dataset.variant) {
-      this.dataset.variant = "primary";
+    const type = this.dataset["type"];
+    if (!type && !this.dataset["variant"]) {
+      this.dataset["variant"] = "primary";
     }
-    if (!this.dataset.size) {
-      this.dataset.size = "base";
+    if (!this.dataset["size"]) {
+      this.dataset["size"] = "base";
     }
 
     if (this.hasAttribute("disabled")) {
@@ -219,7 +219,7 @@ export class SherpaButton extends SherpaElement {
 
   #syncLabel() {
     if (!this.els.label) return;
-    this.els.label.textContent = this.dataset.label ?? "";
+    this.els.label.textContent = this.dataset["label"] ?? "";
   }
 
   /* ── Icons sync ───────────────────────────────────────────────── */
@@ -230,8 +230,8 @@ export class SherpaButton extends SherpaElement {
   // value is rendered as textContent and the global font-family fallback
   // (set inline below) lets FA's @font-face show the glyph.
   #syncIcons(): void {
-    if (this.els.iconStart) this.#applyIconValue(this.els.iconStart, 'icon-start', this.dataset.iconStart);
-    if (this.els.iconEnd) this.#applyIconValue(this.els.iconEnd, 'icon-end', this.dataset.iconEnd);
+    if (this.els.iconStart) this.#applyIconValue(this.els.iconStart, 'icon-start', this.dataset["iconStart"]);
+    if (this.els.iconEnd) this.#applyIconValue(this.els.iconEnd, 'icon-end', this.dataset["iconEnd"]);
   }
 
   #applyIconValue(el: HTMLElement, baseClass: string, value: string | undefined): void {
@@ -254,7 +254,7 @@ export class SherpaButton extends SherpaElement {
 
   #syncBadge(): void {
     if (!this.els.badge) return;
-    this.els.badge.textContent = this.dataset.count ?? "";
+    this.els.badge.textContent = this.dataset["count"] ?? "";
   }
 
   /* ── Event handlers ───────────────────────────────────────────── */
@@ -263,7 +263,7 @@ export class SherpaButton extends SherpaElement {
     if (this.disabled) return;
 
     // Any button with data-menu="true" acts as a menu trigger
-    if (this.dataset.menu === "true") {
+    if (this.dataset["menu"] === "true") {
       e.stopPropagation();
       this.#toggleMenu();
       return;
@@ -342,7 +342,7 @@ export class SherpaButton extends SherpaElement {
 
     // Stamp static template from the menu template registry (if set).
     // Only clear when stamping a template — setMenuItems() content persists.
-    const tplId = this.dataset.menuTemplate;
+    const tplId = this.dataset["menuTemplate"];
     if (tplId) {
       menu.replaceChildren();
       await SherpaMenu.ready;
@@ -399,9 +399,9 @@ export class SherpaButton extends SherpaElement {
 
     // "none" — skip ancestor template collection entirely;
     // this button-menu uses only setMenuItems() content.
-    if (this.dataset.menuScope === "none") return;
+    if (this.dataset["menuScope"] === "none") return;
 
-    const scopeToShadow = this.dataset.menuScope === "shadow";
+    const scopeToShadow = this.dataset["menuScope"] === "shadow";
     let node: Node | null = (this.getRootNode() as ShadowRoot)?.host ?? this.parentElement;
     while (node) {
       const element = node as Element;
@@ -441,10 +441,10 @@ export class SherpaButton extends SherpaElement {
   }
 
   get label(): string {
-    return this.dataset.label ?? "";
+    return this.dataset["label"] ?? "";
   }
   set label(val: string) {
-    this.dataset.label = val;
+    this.dataset["label"] = val;
   }
 
   /**

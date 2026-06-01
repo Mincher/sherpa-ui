@@ -62,7 +62,7 @@ export class SherpaContainerFooter extends SherpaElement {
   /* ── Template selection ───────────────────────────────────────── */
 
   override get templateId(): string {
-    return this.dataset.type || "slot";
+    return this.dataset["type"] || "slot";
   }
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
@@ -91,52 +91,52 @@ export class SherpaContainerFooter extends SherpaElement {
   /* ── Public API ───────────────────────────────────────────────── */
 
   get type() {
-    return this.dataset.type || "slot";
+    return this.dataset["type"] || "slot";
   }
   set type(v) {
-    this.dataset.type = v;
+    this.dataset["type"] = v;
   }
 
   get cancelLabel() {
-    return this.dataset.cancelLabel || "Cancel";
+    return this.dataset["cancelLabel"] || "Cancel";
   }
   set cancelLabel(v) {
-    v ? (this.dataset.cancelLabel = v) : delete this.dataset.cancelLabel;
+    v ? (this.dataset["cancelLabel"] = v) : delete this.dataset["cancelLabel"];
   }
 
   get applyLabel() {
-    return this.dataset.applyLabel || "Apply";
+    return this.dataset["applyLabel"] || "Apply";
   }
   set applyLabel(v) {
-    v ? (this.dataset.applyLabel = v) : delete this.dataset.applyLabel;
+    v ? (this.dataset["applyLabel"] = v) : delete this.dataset["applyLabel"];
   }
 
   get showCancel() {
-    return this.dataset.showCancel !== "false";
+    return this.dataset["showCancel"] !== "false";
   }
   set showCancel(v) {
-    this.dataset.showCancel = v ? "true" : "false";
+    this.dataset["showCancel"] = v ? "true" : "false";
   }
 
   get showApply() {
-    return this.dataset.showApply !== "false";
+    return this.dataset["showApply"] !== "false";
   }
   set showApply(v) {
-    this.dataset.showApply = v ? "true" : "false";
+    this.dataset["showApply"] = v ? "true" : "false";
   }
 
   get applyCloses() {
-    return this.dataset.applyCloses !== "false";
+    return this.dataset["applyCloses"] !== "false";
   }
   set applyCloses(v) {
-    this.dataset.applyCloses = v ? "true" : "false";
+    this.dataset["applyCloses"] = v ? "true" : "false";
   }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
   #syncRadio() {
     if (!this.els.radio) return;
-    this.dataset.selected === "true"
+    this.dataset["selected"] === "true"
       ? this.els.radio.setAttribute("checked", "")
       : this.els.radio.removeAttribute("checked");
   }

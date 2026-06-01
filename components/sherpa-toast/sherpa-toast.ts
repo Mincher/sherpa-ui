@@ -76,7 +76,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   override onConnect(): void {
     // Auto-show if created with a value
-    if (this.dataset.value) {
+    if (this.dataset["value"]) {
       this.show();
     }
   }
@@ -105,7 +105,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
   show() {
     const toast = this.$('.toast');
     if (toast) {
-      toast.dataset.state = 'visible';
+      toast.dataset["state"] = 'visible';
       this.#startAutoHide();
     }
   }
@@ -113,7 +113,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
   hide() {
     const toast = this.$('.toast');
     if (!toast) return;
-    toast.dataset.state = 'hiding';
+    toast.dataset["state"] = 'hiding';
 
     setTimeout(() => {
       this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
@@ -141,17 +141,17 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   #syncHeading() {
     const el = this.$('.toast-heading');
-    if (el) el.textContent = this.dataset.label || '';
+    if (el) el.textContent = this.dataset["label"] || '';
   }
 
   #syncValue() {
     const el = this.$('.toast-value');
-    if (el) el.textContent = this.dataset.value || '';
+    if (el) el.textContent = this.dataset["value"] || '';
   }
 
   #startAutoHide() {
-    if (this.dataset.timerDismiss !== 'true') return;
-    const duration = parseInt(this.dataset.duration) || 5000;
+    if (this.dataset["timerDismiss"] !== 'true') return;
+    const duration = parseInt(this.dataset["duration"]) || 5000;
     if (duration <= 0) return;
     if (this.#timeoutId) clearTimeout(this.#timeoutId);
     this.#timeoutId = setTimeout(() => this.hide(), duration);
@@ -199,7 +199,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     if (!SherpaToast.#containers[position]) {
       const el = document.createElement('div');
       el.className = 'sherpa-toast-container';
-      el.dataset.position = position;
+      el.dataset["position"] = position;
       document.body.appendChild(el);
       SherpaToast.#containers[position] = el;
     }
@@ -224,12 +224,12 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     } = options;
 
     const toast = document.createElement('sherpa-toast');
-    toast.dataset.status = status;
-    if (heading) toast.dataset.label = heading;
-    if (value) toast.dataset.value = value;
-    toast.dataset.duration = duration;
-    toast.dataset.timerDismiss = timerDismiss ? 'true' : 'false';
-    toast.dataset.position = position;
+    toast.dataset["status"] = status;
+    if (heading) toast.dataset["label"] = heading;
+    if (value) toast.dataset["value"] = value;
+    toast.dataset["duration"] = duration;
+    toast.dataset["timerDismiss"] = timerDismiss ? 'true' : 'false';
+    toast.dataset["position"] = position;
 
     // Defer action setup until rendered
     if (actionText) {

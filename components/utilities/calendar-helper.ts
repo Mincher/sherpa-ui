@@ -112,7 +112,7 @@ export function renderCalendarGrid(
     btn.textContent = dayNum;
 
     if (flags.otherMonth) {
-      btn.dataset.otherMonth = 'true';
+      btn.dataset["otherMonth"] = 'true';
       btn.disabled = true;
     } else {
       // Accessibility
@@ -130,11 +130,11 @@ export function renderCalendarGrid(
 
       if (isDisabled) {
         btn.disabled = true;
-        btn.dataset.disabled = 'true';
+        btn.dataset["disabled"] = 'true';
       }
-      if (isSelected) btn.dataset.selected = 'true';
-      if (isInRange)  btn.dataset.inRange   = 'true';
-      if (isToday)    btn.dataset.today     = 'true';
+      if (isSelected) btn.dataset["selected"] = 'true';
+      if (isInRange)  btn.dataset["inRange"]   = 'true';
+      if (isToday)    btn.dataset["today"]     = 'true';
 
       btn.setAttribute('aria-pressed', String(isSelected));
 

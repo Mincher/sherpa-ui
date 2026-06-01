@@ -241,8 +241,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       const pagination = this.$(".grid-pagination");
       pagination?.addEventListener("page-change", (e) => {
         const { page, pageSize } = e.detail;
-        this.dataset.page = String(page);
-        this.dataset.pageSize = String(pageSize);
+        this.dataset["page"] = String(page);
+        this.dataset["pageSize"] = String(pageSize);
         this.#render();
       });
 
@@ -255,14 +255,14 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
             const el = globalSearch.getInputElement?.();
             const val = el?.value ?? e.detail?.value ?? "";
             this.#globalSearchTerm = val.trim().toLowerCase();
-            this.dataset.page = "1";
+            this.dataset["page"] = "1";
             this.#render();
           }, 200);
         });
         // Also handle clear via the search event (Enter/clear button)
         globalSearch.addEventListener("search", (e) => {
           this.#globalSearchTerm = (e.detail?.value || "").trim().toLowerCase();
-          this.dataset.page = "1";
+          this.dataset["page"] = "1";
           this.#render();
         });
       }
@@ -285,13 +285,13 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
           (f) => Array.isArray(f.values) && f.values.length > 0,
         );
 
-        this.dataset.page = "1";
+        this.dataset["page"] = "1";
         queueMicrotask(() => this.#render());
       });
 
       this.addEventListener("filter-clear", () => {
         this.#valueFilters = [];
-        this.dataset.page = "1";
+        this.dataset["page"] = "1";
         this.#render();
       });
 
@@ -339,8 +339,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       }
 
     // Set defaults
-      if (!this.dataset.page) this.dataset.page = "1";
-      if (!this.dataset.pageSize) this.dataset.pageSize = "25";
+      if (!this.dataset["page"]) this.dataset["page"] = "1";
+      if (!this.dataset["pageSize"]) this.dataset["pageSize"] = "25";
 
     // Inject filter-menu template into light DOM for the overflow menu
       this.#filterMenuTpl = injectFilterMenu(this);
@@ -410,7 +410,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         }
       }
       if (this.#data) {
-        this.dataset.page = "1";
+        this.dataset["page"] = "1";
         this.#render();
       }
     }
@@ -644,7 +644,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       const isNum = NUMERIC_TYPES.has(col.type);
       const w = columnWidth(col.type);
       const th = this.#headerCellTpl.content.firstElementChild.cloneNode(true);
-      th.dataset.field = col.field;
+      th.dataset["field"] = col.field;
       if (isNum) th.toggleAttribute("data-numeric", true);
       th.style.width = `${w}px`;
       th.style.minWidth = `${w}px`;
@@ -666,7 +666,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // Wire header click for sorting
     for (const cell of primaryRow.querySelectorAll(".header-cell")) {
       cell.addEventListener("click", () => {
-        const field = cell.dataset.field;
+        const field = cell.dataset["field"];
         this.#onColumnSort(field);
       });
     }
@@ -690,12 +690,12 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       for (const col of columns) {
         const w = columnWidth(col.type);
         const th = this.#searchCellTpl.content.firstElementChild.cloneNode(true);
-        th.dataset.field = col.field;
+        th.dataset["field"] = col.field;
         th.style.width = `${w}px`;
         th.style.minWidth = `${w}px`;
         const searchEl = th.querySelector(".col-search");
         searchEl.setAttribute("aria-label", `Search ${col.name || col.field}`);
-        searchEl.dataset.field = col.field;
+        searchEl.dataset["field"] = col.field;
         secondaryRow.appendChild(th);
       }
 
@@ -717,7 +717,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
             } else {
               delete this.#columnFilters[field];
             }
-            this.dataset.page = "1";
+            this.dataset["page"] = "1";
             this.#render();
           }, 200);
         });
@@ -731,7 +731,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
           } else {
             delete this.#columnFilters[field];
           }
-          this.dataset.page = "1";
+          this.dataset["page"] = "1";
           this.#render();
         });
       }
@@ -747,7 +747,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const sortDir = this.getAttribute("data-sort-direction") || "asc";
 
     for (const cell of primaryRow.querySelectorAll(".header-cell")) {
-      const field = cell.dataset.field;
+      const field = cell.dataset["field"];
       const isSorted = sortField === field;
       cell.toggleAttribute("data-sorted", isSorted);
       cell.setAttribute(
@@ -786,12 +786,12 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #createRowElement(row, columns, index) {
     const tr = this.#rowTpl.content.cloneNode(true).querySelector(".grid-row");
     const rowId = row._rowId ?? String(index);
-    tr.dataset.rowId = rowId;
+    tr.dataset["rowId"] = rowId;
 
     // Selection checkbox
     const check = tr.querySelector(".row-check");
     check.checked = this.#selectedRows.has(rowId);
-    if (this.#selectedRows.has(rowId)) tr.dataset.selected = "";
+    if (this.#selectedRows.has(rowId)) tr.dataset["selected"] = "";
     check.addEventListener("change", (ev) => {
       const isChecked = ev.target.checked;
       this.#onRowSelect(rowId, isChecked, ev);
@@ -833,7 +833,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       case "link": {
         cell = this.#linkCellTpl.content.cloneNode(true).querySelector("td");
         const a = cell.querySelector("a");
-        a.dataset.field = column.field;
+        a.dataset["field"] = column.field;
         a.textContent = value != null ? String(value) : "";
         break;
       }
@@ -855,7 +855,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
 
     const isNum = NUMERIC_TYPES.has(column.type);
-    if (isNum) cell.dataset.numeric = "";
+    if (isNum) cell.dataset["numeric"] = "";
 
     return cell;
   }
@@ -871,11 +871,11 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       value === "Yes";
     const node = this.#boolCellTpl.content.firstElementChild.cloneNode(true);
     if (isTrue) {
-      node.dataset.bool = "true";
+      node.dataset["bool"] = "true";
       node.textContent = "\uf00c";
       node.setAttribute("aria-label", "Yes");
     } else {
-      node.dataset.bool = "false";
+      node.dataset["bool"] = "false";
       node.textContent = "\uf00d";
       node.setAttribute("aria-label", "No");
     }
@@ -886,7 +886,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const str = String(value ?? "").toLowerCase();
     const map = column?._statusMap || {};
     const status = map[str];
-    if (status) tag.dataset.status = status;
+    if (status) tag.dataset["status"] = status;
     tag.textContent = value != null ? String(value) : "";
   }
 
@@ -970,8 +970,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
           columns,
           `${entry.group.label}-${entry.group.rows.indexOf(entry.row)}`,
         );
-        child.dataset.groupChild = "";
-        child.dataset.group = entry.group.label;
+        child.dataset["groupChild"] = "";
+        child.dataset["group"] = entry.group.label;
         // Children in the display list are always visible (expanded)
         frag.appendChild(child);
         const parentData = renderedParents.get(entry.group.label);
@@ -1007,7 +1007,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // ── Parent row — clone from template ────────────────────────
     const tplContent = this.#groupRowTpl.content.cloneNode(true);
     const parentRow = tplContent.querySelector(".group-parent-row");
-    parentRow.dataset.groupValue = group.label;
+    parentRow.dataset["groupValue"] = group.label;
     if (isExpanded) parentRow.setAttribute("data-expanded", "");
 
     // Set colspan
@@ -1087,7 +1087,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   expandAllGroups() {
     const groups = this.$$(".group-parent-row");
     for (const parent of groups) {
-      this.#expandedGroups.add(parent.dataset.groupValue);
+      this.#expandedGroups.add(parent.dataset["groupValue"]);
     }
     this.#render();
   }
@@ -1312,7 +1312,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     for (const check of body.querySelectorAll(".row-check")) {
       check.checked = checked;
       const rowEl = check.closest(".grid-row");
-      const rowId = rowEl?.dataset.rowId;
+      const rowId = rowEl?.dataset["rowId"];
       if (rowId != null) {
         checked
           ? this.#selectedRows.add(rowId)
@@ -1343,15 +1343,15 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     if (checked && event?.shiftKey && this.#lastClickedRowId != null) {
       const allRowEls = Array.from(this.$$(".grid-body .grid-row"));
       const lastIdx = allRowEls.findIndex(
-        (r) => r.dataset.rowId === this.#lastClickedRowId,
+        (r) => r.dataset["rowId"] === this.#lastClickedRowId,
       );
-      const currIdx = allRowEls.findIndex((r) => r.dataset.rowId === rowId);
+      const currIdx = allRowEls.findIndex((r) => r.dataset["rowId"] === rowId);
       if (lastIdx !== -1 && currIdx !== -1) {
         const [start, end] =
           lastIdx < currIdx ? [lastIdx, currIdx] : [currIdx, lastIdx];
         for (let i = start; i <= end; i++) {
           const el = allRowEls[i];
-          const id = el.dataset.rowId;
+          const id = el.dataset["rowId"];
           if (id != null) {
             this.#selectedRows.add(id);
             el.setAttribute("data-selected", "");
@@ -1404,7 +1404,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       const groupCheck = parentRow.querySelector(".group-check");
       if (!groupCheck) continue;
 
-      const groupValue = parentRow.dataset.groupValue;
+      const groupValue = parentRow.dataset["groupValue"];
       const rows = groupMap.get(groupValue) || [];
       const total = rows.length;
       const checked = rows.filter(
@@ -1569,7 +1569,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     );
     if (rowAction) {
       const rowEl = rowAction.closest(".grid-row");
-      const rowId = rowEl?.dataset.rowId;
+      const rowId = rowEl?.dataset["rowId"];
       const rowData =
         rowId != null ? this.#allRows.find((r) => r._rowId === rowId) : null;
       this.dispatchEvent(
@@ -1776,11 +1776,11 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #showEmptyState(message = "No data available") {
     const emptyEl = this.$(".empty-state");
     if (emptyEl) emptyEl.heading = message;
-    this.dataset.empty = "";
+    this.dataset["empty"] = "";
   }
 
   #hideEmptyState() {
-    delete this.dataset.empty;
+    delete this.dataset["empty"];
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -1881,7 +1881,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     this.#externalFilters = Array.isArray(externalFilters)
       ? externalFilters
       : [];
-    this.dataset.page = "1";
+    this.dataset["page"] = "1";
     if (this.#data) this.#render();
   }
 

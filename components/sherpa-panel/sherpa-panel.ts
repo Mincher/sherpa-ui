@@ -87,7 +87,7 @@ class SherpaPanel extends SherpaElement {
   /* ── Template selection ───────────────────────────────────── */
 
   override get templateId(): string {
-    return this.dataset.variant === "ai" ? "ai" : null;
+    return this.dataset["variant"] === "ai" ? "ai" : null;
   }
 
   // Cached shadow DOM elements (typed for better autocomplete)
@@ -114,8 +114,8 @@ class SherpaPanel extends SherpaElement {
     // Element cache auto-populated on first access
 
     // Defaults
-    if (!this.dataset.variant) this.dataset.variant = "inline";
-    if (!this.dataset.position) this.dataset.position = "right";
+    if (!this.dataset["variant"]) this.dataset["variant"] = "inline";
+    if (!this.dataset["position"]) this.dataset["position"] = "right";
 
     if (!this.#bound) {
       // Listeners
@@ -199,14 +199,14 @@ class SherpaPanel extends SherpaElement {
   /* ── handlers ────────────────────────────────────────────── */
 
   #onClose = () => {
-    delete this.dataset.expanded;
+    delete this.dataset["expanded"];
     this.dispatchEvent(
       new CustomEvent("panel-close", { bubbles: true, composed: true })
     );
   };
 
   #onExpand = () => {
-    this.dataset.expanded = "";
+    this.dataset["expanded"] = "";
   };
 
   #onSearchChange = (e: Event) => {
@@ -233,14 +233,14 @@ class SherpaPanel extends SherpaElement {
 
   #syncHeading() {
     if (this.els.heading) {
-      this.els.heading.textContent = this.dataset.heading || "";
+      this.els.heading.textContent = this.dataset["heading"] || "";
     }
   }
 
   #syncRestoreLabel() {
     if (this.els.restoreLabel) {
       this.els.restoreLabel.textContent =
-        this.dataset.restoreLabel || this.dataset.heading || "";
+        this.dataset["restoreLabel"] || this.dataset["heading"] || "";
     }
   }
 
@@ -256,8 +256,8 @@ class SherpaPanel extends SherpaElement {
   }
 
   #syncWidth() {
-    if (this.dataset.width) {
-      this.style.setProperty("--_panel-width", this.dataset.width);
+    if (this.dataset["width"]) {
+      this.style.setProperty("--_panel-width", this.dataset["width"]);
     } else {
       this.style.removeProperty("--_panel-width");
     }
@@ -265,7 +265,7 @@ class SherpaPanel extends SherpaElement {
 
   #syncEmptyMessage() {
     if (this.els.empty) {
-      this.els.empty.textContent = this.dataset.empty || "No results";
+      this.els.empty.textContent = this.dataset["empty"] || "No results";
     }
   }
 
@@ -285,7 +285,7 @@ class SherpaPanel extends SherpaElement {
   /* ── search filter logic ─────────────────────────────────── */
 
   #getMatchSelector() {
-    return this.dataset.searchMatch || "sherpa-list-item";
+    return this.dataset["searchMatch"] || "sherpa-list-item";
   }
 
   #applyFilter(rawValue) {

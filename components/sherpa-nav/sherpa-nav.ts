@@ -134,7 +134,7 @@ export class SherpaNav extends SherpaElement {
       // Without this, the first render can recursively refetch the nav
       // template and cause visible flicker.
       this.#initialized = true;
-      const url = this.dataset.srcHtml || this.#defaultUrl;
+      const url = this.dataset["srcHtml"] || this.#defaultUrl;
       const ok = await this.renderFromUrl(url);
       this.#ready = ok;
       if (!ok) this.#initialized = false;
@@ -164,7 +164,7 @@ export class SherpaNav extends SherpaElement {
     this.#syncPromo();
 
     // Apply data-active-target if set before render
-    const target = this.dataset.activeTarget;
+    const target = this.dataset["activeTarget"];
     if (target) this.setActiveLink(target);
 
     // Re-apply the host's last requested selection after a re-render
@@ -196,15 +196,15 @@ export class SherpaNav extends SherpaElement {
   // ═══════════════════════════ Public API ═══════════════════════════
 
   get isPinned() {
-    return this.#root?.dataset.pinned === "true";
+    return this.#root?.dataset["pinned"] === "true";
   }
   set isPinned(v) {
     const root = this.#root;
     if (!root) return;
     const pinned = !!v;
-    root.dataset.pinned = pinned ? "true" : "false";
-    this.dataset.pinned = root.dataset.pinned;
-    this.#lastPinned = root.dataset.pinned;
+    root.dataset["pinned"] = pinned ? "true" : "false";
+    this.dataset["pinned"] = root.dataset["pinned"];
+    this.#lastPinned = root.dataset["pinned"];
     this.#onPinnedChange(pinned);
   }
 
@@ -216,19 +216,19 @@ export class SherpaNav extends SherpaElement {
   }
 
   get mode() {
-    return this.#root?.dataset.mode || SherpaNav.MODES.DEFAULT;
+    return this.#root?.dataset["mode"] || SherpaNav.MODES.DEFAULT;
   }
   set mode(v) {
     const root = this.#root;
     if (!root) return;
-    const oldMode = root.dataset.mode || SherpaNav.MODES.DEFAULT;
+    const oldMode = root.dataset["mode"] || SherpaNav.MODES.DEFAULT;
     if (Object.values(SherpaNav.MODES).includes(v)) {
-      root.dataset.mode = v;
+      root.dataset["mode"] = v;
     } else {
-      root.dataset.mode = SherpaNav.MODES.DEFAULT;
+      root.dataset["mode"] = SherpaNav.MODES.DEFAULT;
     }
-    this.dataset.mode = root.dataset.mode;
-    this.#onModeChange(root.dataset.mode, oldMode);
+    this.dataset["mode"] = root.dataset["mode"];
+    this.#onModeChange(root.dataset["mode"], oldMode);
   }
 
   startSearch() {
@@ -261,7 +261,7 @@ export class SherpaNav extends SherpaElement {
   #applyActiveLink(target) {
     this.#clearAllActiveStates();
     const item = this.$(`[data-nav-target="${target}"]`);
-    if (item) item.dataset.state = "selected";
+    if (item) item.dataset["state"] = "selected";
   }
 
   setActiveItem(itemId, sectionId = null) {
@@ -281,27 +281,27 @@ export class SherpaNav extends SherpaElement {
       `sherpa-nav-item[data-item-id="${itemId}"]`,
     );
     matches.forEach((el) => {
-      el.dataset.state = "selected";
+      el.dataset["state"] = "selected";
     });
     if (sectionId) {
       const primary = root.querySelector(
         `.nav-section[data-section-id="${sectionId}"] sherpa-nav-item[data-item-id="${itemId}"]`,
       );
-      if (primary) primary.dataset.state = "selected";
+      if (primary) primary.dataset["state"] = "selected";
     }
   }
 
   // ═══════════════════════ Recents & Favorites ═════════════════════
 
   isFavorite(itemId) {
-    const secId = this.dataset.favoritesSection || 'favorites';
+    const secId = this.dataset["favoritesSection"] || 'favorites';
     return !!this.$(
       `.nav-section[data-section-id="${secId}"] sherpa-nav-item[data-item-id="${itemId}"]`,
     );
   }
 
   setFavorite(itemId, label, route, on) {
-    const secId = this.dataset.favoritesSection || 'favorites';
+    const secId = this.dataset["favoritesSection"] || 'favorites';
     const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
     const existing = sec.querySelector(
@@ -310,12 +310,12 @@ export class SherpaNav extends SherpaElement {
     if (on && !existing) {
       const item = this.#createNavItem(
         { id: itemId, label, route },
-        sec.dataset.editable === "true",
+        sec.dataset["editable"] === "true",
       );
       // Mirror selection state from any other live entry with the same id
       // so the new favorite lights up alongside the canonical nav item.
       if (this.$(`sherpa-nav-item[data-item-id="${itemId}"][data-state="selected"]`)) {
-        item.dataset.state = 'selected';
+        item.dataset["state"] = 'selected';
       }
       sec.appendChild(item);
     } else if (!on && existing) {
@@ -328,10 +328,10 @@ export class SherpaNav extends SherpaElement {
 
   async addToRecent(itemId, label, route) {
     await this.rendered;
-    const secId = this.dataset.recentSection || 'recent';
+    const secId = this.dataset["recentSection"] || 'recent';
     const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
-    const max = parseInt(sec.dataset.maxItems, 10) || 5;
+    const max = parseInt(sec.dataset["maxItems"], 10) || 5;
     // If this item is already in the Recents section, leave the existing
     // entry exactly where it is — re-clicking a recent should NOT cause
     // the list to reorder. We still refresh its label/route in case the
@@ -339,9 +339,9 @@ export class SherpaNav extends SherpaElement {
     const existing = sec.querySelector(`:scope > sherpa-nav-item[data-item-id="${itemId}"]`);
     if (existing) {
       if (label) existing.setAttribute('data-label', label);
-      if (route) existing.dataset.route = route;
+      if (route) existing.dataset["route"] = route;
       if (this.$(`sherpa-nav-item[data-item-id="${itemId}"][data-state="selected"]`)) {
-        existing.dataset.state = 'selected';
+        existing.dataset["state"] = 'selected';
       }
       this.#persistQuickAccess('recent');
       this.#syncSectionBadges();
@@ -349,12 +349,12 @@ export class SherpaNav extends SherpaElement {
     }
     const newItem = this.#createNavItem(
       { id: itemId, label, route },
-      sec.dataset.editable === "true",
+      sec.dataset["editable"] === "true",
     );
     // If this item is the currently active route, mirror selection so the
     // freshly-inserted recent entry shows the active style immediately.
     if (this.$(`sherpa-nav-item[data-item-id="${itemId}"][data-state="selected"]`)) {
-      newItem.dataset.state = 'selected';
+      newItem.dataset["state"] = 'selected';
     }
     const summary = sec.querySelector(":scope > summary");
     summary ? summary.after(newItem) : sec.prepend(newItem);
@@ -378,11 +378,11 @@ export class SherpaNav extends SherpaElement {
 
   #wirePromo() {
     const close = this.$(".nav-promo .promo-close");
-    if (!close || close.dataset.wired === "true") return;
-    close.dataset.wired = "true";
+    if (!close || close.dataset["wired"] === "true") return;
+    close.dataset["wired"] = "true";
     close.addEventListener("click", () => {
       const promo = this.$(".nav-promo");
-      if (promo) promo.dataset.dismissed = "";
+      if (promo) promo.dataset["dismissed"] = "";
       this.#emit("navpromodismiss", {});
     });
   }
@@ -398,18 +398,18 @@ export class SherpaNav extends SherpaElement {
     if (textEl) textEl.textContent = cfg?.message || "";
     if (linkEl) {
       linkEl.textContent = cfg?.link?.text || "";
-      if (cfg?.link?.url) linkEl.dataset.url = cfg.link.url;
-      else delete linkEl.dataset.url;
+      if (cfg?.link?.url) linkEl.dataset["url"] = cfg.link.url;
+      else delete linkEl.dataset["url"];
     }
     const hasContent = !!(cfg?.title || cfg?.message || cfg?.link?.text);
     promo.toggleAttribute("hidden", !hasContent);
   }
 
   #promoConfigFromAttrs() {
-    const title = this.dataset.promoTitle;
-    const message = this.dataset.promoMessage;
-    const linkText = this.dataset.promoLinkText;
-    const linkUrl = this.dataset.promoLinkUrl;
+    const title = this.dataset["promoTitle"];
+    const message = this.dataset["promoMessage"];
+    const linkText = this.dataset["promoLinkText"];
+    const linkUrl = this.dataset["promoLinkUrl"];
     if (!title && !message && !linkText) return null;
     return {
       title: title || "",
@@ -427,10 +427,10 @@ export class SherpaNav extends SherpaElement {
    * `data-recent-storage-key` / `data-favorites-storage-key` on the host.
    */
   get #recentStorageKey() {
-    return this.dataset.recentStorageKey || 'sherpa-nav-recent';
+    return this.dataset["recentStorageKey"] || 'sherpa-nav-recent';
   }
   get #favoritesStorageKey() {
-    return this.dataset.favoritesStorageKey || 'sherpa-nav-favorites';
+    return this.dataset["favoritesStorageKey"] || 'sherpa-nav-favorites';
   }
 
   #readStored(key) {
@@ -452,12 +452,12 @@ export class SherpaNav extends SherpaElement {
     if (!sec) return [];
     const out = [];
     sec.querySelectorAll(':scope > sherpa-nav-item').forEach((el) => {
-      const id = el.dataset.itemId;
+      const id = el.dataset["itemId"];
       if (!id) return;
       out.push({
         id,
         label: (el.textContent || '').trim(),
-        route: el.dataset.route || '',
+        route: el.dataset["route"] || '',
       });
     });
     return out;
@@ -466,8 +466,8 @@ export class SherpaNav extends SherpaElement {
   /** Persist current state of a quick-access section ('recent' | 'favorites'). */
   #persistQuickAccess(which) {
     const secId = which === 'favorites'
-      ? (this.dataset.favoritesSection || 'favorites')
-      : (this.dataset.recentSection || 'recent');
+      ? (this.dataset["favoritesSection"] || 'favorites')
+      : (this.dataset["recentSection"] || 'recent');
     const key = which === 'favorites' ? this.#favoritesStorageKey : this.#recentStorageKey;
     const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
@@ -486,15 +486,15 @@ export class SherpaNav extends SherpaElement {
       const stored = this.#readStored(key);
       // Wipe template-declared placeholders before injecting stored entries.
       sec.querySelectorAll(':scope > sherpa-nav-item').forEach((n) => n.remove());
-      const editable = sec.dataset.editable === 'true';
-      const limit = max ?? (parseInt(sec.dataset.maxItems, 10) || stored.length);
+      const editable = sec.dataset["editable"] === 'true';
+      const limit = max ?? (parseInt(sec.dataset["maxItems"], 10) || stored.length);
       stored.slice(0, limit).forEach((item) => {
         if (!item || !item.id) return;
         sec.appendChild(this.#createNavItem(item, editable));
       });
     };
-    hydrate(this.dataset.recentSection || 'recent', this.#recentStorageKey);
-    hydrate(this.dataset.favoritesSection || 'favorites', this.#favoritesStorageKey);
+    hydrate(this.dataset["recentSection"] || 'recent', this.#recentStorageKey);
+    hydrate(this.dataset["favoritesSection"] || 'favorites', this.#favoritesStorageKey);
   }
 
   /**
@@ -519,24 +519,24 @@ export class SherpaNav extends SherpaElement {
       if (!summaryItem) return;
       // Skip items that already have a non-aggregated badge.
       if (summaryItem.hasAttribute('data-badge') &&
-          summaryItem.dataset.aggregatedBadge !== 'true') return;
+          summaryItem.dataset["aggregatedBadge"] !== 'true') return;
       // Find badged descendants (any depth, but skip nested section summaries
       // since those are themselves aggregating their own children).
       const descendants = sec.querySelectorAll('sherpa-nav-item[data-badge]');
       let best = null;
       descendants.forEach((d) => {
         if (d === summaryItem) return;
-        if (d.dataset.aggregatedBadge === 'true') return;
-        if (!best || rank(d.dataset.badgeStatus) < rank(best.dataset.badgeStatus)) {
+        if (d.dataset["aggregatedBadge"] === 'true') return;
+        if (!best || rank(d.dataset["badgeStatus"]) < rank(best.dataset["badgeStatus"])) {
           best = d;
         }
       });
       if (best) {
-        summaryItem.dataset.aggregatedBadge = 'true';
-        summaryItem.dataset.badge = best.dataset.badge || '•';
-        summaryItem.dataset.badgeStatus = best.dataset.badgeStatus || 'success';
-      } else if (summaryItem.dataset.aggregatedBadge === 'true') {
-        delete summaryItem.dataset.aggregatedBadge;
+        summaryItem.dataset["aggregatedBadge"] = 'true';
+        summaryItem.dataset["badge"] = best.dataset["badge"] || '•';
+        summaryItem.dataset["badgeStatus"] = best.dataset["badgeStatus"] || 'success';
+      } else if (summaryItem.dataset["aggregatedBadge"] === 'true') {
+        delete summaryItem.dataset["aggregatedBadge"];
         summaryItem.removeAttribute('data-badge');
         summaryItem.removeAttribute('data-badge-status');
       }
@@ -566,7 +566,7 @@ export class SherpaNav extends SherpaElement {
         if (!details.matches(".nav-section, .nav-subsection")) return;
         if (details.open && details.matches(".nav-section")) {
           this.#emit("navsectionexpand", {
-            sectionId: details.dataset.sectionId,
+            sectionId: details.dataset["sectionId"],
           });
         }
       },
@@ -580,10 +580,10 @@ export class SherpaNav extends SherpaElement {
     if (root) {
       // Restore the host's last pinned choice across template swaps; fall
       // back to whatever the new template declared on first render.
-      const pinned = this.#lastPinned ?? root.dataset.pinned ?? "false";
-      root.dataset.pinned = pinned;
-      this.dataset.pinned = pinned;
-      this.dataset.mode = root.dataset.mode || SherpaNav.MODES.DEFAULT;
+      const pinned = this.#lastPinned ?? root.dataset["pinned"] ?? "false";
+      root.dataset["pinned"] = pinned;
+      this.dataset["pinned"] = pinned;
+      this.dataset["mode"] = root.dataset["mode"] || SherpaNav.MODES.DEFAULT;
     }
     const pinBtn = this.$(".nav-pin-btn");
     if (pinBtn) pinBtn.active = this.isPinned;
@@ -654,10 +654,10 @@ export class SherpaNav extends SherpaElement {
       e.preventDefault();
       e.stopPropagation();
       const sec = navItem.closest(".nav-section");
-      if (navItem.dataset.itemId) {
+      if (navItem.dataset["itemId"]) {
         this.#emit("navitemdelete", {
-          itemId: navItem.dataset.itemId,
-          sectionId: sec?.dataset.sectionId || null,
+          itemId: navItem.dataset["itemId"],
+          sectionId: sec?.dataset["sectionId"] || null,
         });
       }
       navItem.remove();
@@ -673,14 +673,14 @@ export class SherpaNav extends SherpaElement {
       return;
 
     // Static targets: home, settings, search
-    if (navItem.dataset.navTarget) {
-      if (navItem.dataset.navTarget === "search") {
+    if (navItem.dataset["navTarget"]) {
+      if (navItem.dataset["navTarget"] === "search") {
         this.startSearch();
         return;
       }
       this.#clearAllActiveStates();
-      navItem.dataset.state = "selected";
-      this.#emit(`nav${navItem.dataset.navTarget}`);
+      navItem.dataset["state"] = "selected";
+      this.#emit(`nav${navItem.dataset["navTarget"]}`);
       return;
     }
 
@@ -689,14 +689,14 @@ export class SherpaNav extends SherpaElement {
     // (icon, chevron, padding) toggle the <details>. Childless headers
     // always behave like leaves. Headers without a route always toggle.
     if (
-      navItem.dataset.variant === "section" ||
-      navItem.dataset.variant === "subsection"
+      navItem.dataset["variant"] === "section" ||
+      navItem.dataset["variant"] === "subsection"
     ) {
       const details = navItem.closest("details");
       const hasChildren = details
         ? details.querySelector(":scope > sherpa-nav-item, :scope > :not(summary)")
         : null;
-      const hasRoute = !!navItem.dataset.route;
+      const hasRoute = !!navItem.dataset["route"];
       const onLabel = e.composedPath().some(
         (n) => n?.getAttribute && n.getAttribute("part") === "label",
       );
@@ -708,16 +708,16 @@ export class SherpaNav extends SherpaElement {
       // Either childless, or label-click on a routed parent → navigate.
       e.preventDefault();
       this.#clearAllActiveStates();
-      navItem.dataset.state = "selected";
+      navItem.dataset["state"] = "selected";
       if (this.isEditing) this.mode = SherpaNav.MODES.DEFAULT;
       if (this.isSearching) this.endSearch();
-      const headerSectionId = details?.dataset.sectionId
-        || details?.closest(".nav-section")?.dataset.sectionId
+      const headerSectionId = details?.dataset["sectionId"]
+        || details?.closest(".nav-section")?.dataset["sectionId"]
         || null;
       this.#emit("navitemclick", {
-        itemId: navItem.dataset.itemId,
+        itemId: navItem.dataset["itemId"],
         sectionId: headerSectionId,
-        route: navItem.dataset.route,
+        route: navItem.dataset["route"],
         label: this.#getItemLabel(navItem),
       });
       this.#trackRecentForLeaf(navItem, headerSectionId);
@@ -727,11 +727,11 @@ export class SherpaNav extends SherpaElement {
     // Regular child item
     if (this.isEditing) this.mode = SherpaNav.MODES.DEFAULT;
     if (this.isSearching) this.endSearch();
-    const leafSectionId = navItem.closest(".nav-section")?.dataset.sectionId || null;
+    const leafSectionId = navItem.closest(".nav-section")?.dataset["sectionId"] || null;
     this.#emit("navitemclick", {
-      itemId: navItem.dataset.itemId,
+      itemId: navItem.dataset["itemId"],
       sectionId: leafSectionId,
-      route: navItem.dataset.route,
+      route: navItem.dataset["route"],
       label: this.#getItemLabel(navItem),
     });
     this.#trackRecentForLeaf(navItem, leafSectionId);
@@ -746,15 +746,15 @@ export class SherpaNav extends SherpaElement {
    *  - the item has no `data-item-id` (nothing to key on)
    */
   #trackRecentForLeaf(navItem, sectionId) {
-    if (this.dataset.trackRecents === "false") return;
-    const itemId = navItem.dataset.itemId;
+    if (this.dataset["trackRecents"] === "false") return;
+    const itemId = navItem.dataset["itemId"];
     if (!itemId) return;
-    const recentSectionId = this.dataset.recentSection || "recent";
+    const recentSectionId = this.dataset["recentSection"] || "recent";
     if (sectionId && sectionId === recentSectionId) return;
     const utilityIds = new Set(["favorites", "recent", "recents"]);
     if (utilityIds.has(itemId.toLowerCase())) return;
     const label = this.#getItemLabel(navItem);
-    const route = navItem.dataset.route || "";
+    const route = navItem.dataset["route"] || "";
     this.addToRecent(itemId, label, route);
   }
 
@@ -797,12 +797,12 @@ export class SherpaNav extends SherpaElement {
       .cloneNode(true)
       .querySelector("sherpa-nav-item");
     el.textContent = item.label ?? "";
-    if (item.id) el.dataset.itemId = item.id;
-    if (item.icon) el.dataset.icon = item.icon;
+    if (item.id) el.dataset["itemId"] = item.id;
+    if (item.icon) el.dataset["icon"] = item.icon;
     if (item.badge) el.appendChild(this.#createBadgeElement(item.badge));
-    if (item.route) el.dataset.route = item.route;
-    if (editable) el.dataset.editable = "true";
-    if (item.active) el.dataset.state = "selected";
+    if (item.route) el.dataset["route"] = item.route;
+    if (editable) el.dataset["editable"] = "true";
+    if (item.active) el.dataset["state"] = "selected";
     return el;
   }
 
@@ -821,7 +821,7 @@ export class SherpaNav extends SherpaElement {
     // we apply any persisted user reorder, so resetOrder() can restore it.
     this.#captureDefaultOrders();
     this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
-      const gi = parseInt(container.dataset.groupIndex, 10);
+      const gi = parseInt(container.dataset["groupIndex"], 10);
       // Mirror sectionId / itemId into a single dataset.sortKey so the
       // generic drag-sort utility reads one attribute for both kinds of
       // draggable item (collapsible section + standalone top-level row).
@@ -829,7 +829,7 @@ export class SherpaNav extends SherpaElement {
         container
           .querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')
           .forEach((el) => {
-            el.dataset.sortKey = el.dataset.sectionId || el.dataset.itemId || '';
+            el.dataset["sortKey"] = el.dataset["sectionId"] || el.dataset["itemId"] || '';
           });
       };
       tagSortKeys();
@@ -857,8 +857,8 @@ export class SherpaNav extends SherpaElement {
 
   /** localStorage key for the user-applied group order, scoped by template src. */
   get #orderStorageKey() {
-    const scope = this.dataset.orderStorageKey
-      || (this.dataset.srcHtml ? `sherpa-nav-order::${this.dataset.srcHtml}` : 'sherpa-nav-order');
+    const scope = this.dataset["orderStorageKey"]
+      || (this.dataset["srcHtml"] ? `sherpa-nav-order::${this.dataset["srcHtml"]}` : 'sherpa-nav-order');
     return scope;
   }
 
@@ -867,9 +867,9 @@ export class SherpaNav extends SherpaElement {
     // Always recapture on render — the template may have changed.
     this.#defaultOrders.clear();
     this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
-      const gi = parseInt(container.dataset.groupIndex, 10);
+      const gi = parseInt(container.dataset["groupIndex"], 10);
       const order = [...container.querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')]
-        .map((el) => el.dataset.sectionId || el.dataset.itemId || '')
+        .map((el) => el.dataset["sectionId"] || el.dataset["itemId"] || '')
         .filter(Boolean);
       this.#defaultOrders.set(gi, order);
     });
@@ -898,7 +898,7 @@ export class SherpaNav extends SherpaElement {
     const store = this.#readOrderStore();
     if (!store || !Object.keys(store).length) return;
     this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
-      const gi = parseInt(container.dataset.groupIndex, 10);
+      const gi = parseInt(container.dataset["groupIndex"], 10);
       const order = store[String(gi)];
       if (!Array.isArray(order) || !order.length) return;
       this.#applyOrderToContainer(container, order);
@@ -910,7 +910,7 @@ export class SherpaNav extends SherpaElement {
     container
       .querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')
       .forEach((el) => {
-        const key = el.dataset.sectionId || el.dataset.itemId;
+        const key = el.dataset["sectionId"] || el.dataset["itemId"];
         if (key) lookup.set(key, el);
       });
     order.forEach((key) => {
@@ -929,7 +929,7 @@ export class SherpaNav extends SherpaElement {
   resetOrder() {
     if (!this.#defaultOrders) return;
     this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
-      const gi = parseInt(container.dataset.groupIndex, 10);
+      const gi = parseInt(container.dataset["groupIndex"], 10);
       const order = this.#defaultOrders.get(gi);
       if (order && order.length) this.#applyOrderToContainer(container, order);
     });
@@ -1004,7 +1004,7 @@ export class SherpaNav extends SherpaElement {
     items.forEach((i) => i.removeAttribute('data-search-hidden'));
     headers.forEach((h) => h.removeAttribute('data-search-hidden'));
     details.forEach((d) => {
-      d.dataset.searchWasOpen ??= d.open ? "true" : "false";
+      d.dataset["searchWasOpen"] ??= d.open ? "true" : "false";
       d.removeAttribute('data-search-hidden');
     });
     groups.forEach((g) => g.removeAttribute('data-search-hidden'));
@@ -1017,7 +1017,7 @@ export class SherpaNav extends SherpaElement {
 
     if (!filter) {
       details.forEach((d) => {
-        d.open = d.dataset.searchWasOpen === "true";
+        d.open = d.dataset["searchWasOpen"] === "true";
         d.removeAttribute('data-search-was-open');
       });
       scope
@@ -1028,19 +1028,19 @@ export class SherpaNav extends SherpaElement {
 
     const ranges = [];
 
-    items.forEach((i) => (i.dataset.searchHidden = "true"));
-    headers.forEach((h) => (h.dataset.searchHidden = "true"));
+    items.forEach((i) => (i.dataset["searchHidden"] = "true"));
+    headers.forEach((h) => (h.dataset["searchHidden"] = "true"));
     details.forEach((d) => {
-      d.dataset.searchHidden = "true";
+      d.dataset["searchHidden"] = "true";
       d.open = true;
     });
-    groups.forEach((g) => (g.dataset.searchHidden = "true"));
+    groups.forEach((g) => (g.dataset["searchHidden"] = "true"));
 
     items.forEach((item) => {
       if (this.#getItemLabel(item).toLowerCase().includes(filter)) {
         const range = this.#createMatchRange(item, filter);
         if (range) ranges.push(range);
-        delete item.dataset.searchHidden;
+        delete item.dataset["searchHidden"];
         this.#revealAncestors(item);
       }
     });
@@ -1049,7 +1049,7 @@ export class SherpaNav extends SherpaElement {
       if (this.#getItemLabel(h).toLowerCase().includes(filter)) {
         const range = this.#createMatchRange(h, filter);
         if (range) ranges.push(range);
-        delete h.dataset.searchHidden;
+        delete h.dataset["searchHidden"];
         const container = h.closest(".nav-subsection, .nav-section");
         if (container) this.#revealAncestors(container);
       }

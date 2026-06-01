@@ -224,9 +224,9 @@ export class SherpaInputTime extends SherpaInputBase {
     if (textEl) textEl.textContent = SherpaInputTime.#formatTime(val);
 
     if (val) {
-      this.dataset.hasValue = '';
+      this.dataset["hasValue"] = '';
     } else {
-      delete this.dataset.hasValue;
+      delete this.dataset["hasValue"];
     }
   }
 

@@ -241,43 +241,43 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
   /* ── Public API ─────────────────────────────────────────────── */
 
   get label(): string {
-    return this.dataset.label || "";
+    return this.dataset["label"] || "";
   }
   set label(v: string) {
     if (v) {
-      this.dataset.label = v;
+      this.dataset["label"] = v;
     } else {
-      delete this.dataset.label;
+      delete this.dataset["label"];
     }
   }
 
   get description(): string {
-    return this.dataset.description || "";
+    return this.dataset["description"] || "";
   }
   set description(v: string) {
     if (v) {
-      this.dataset.description = v;
+      this.dataset["description"] = v;
     } else {
-      delete this.dataset.description;
+      delete this.dataset["description"];
     }
   }
 
   get helper(): string {
-    return this.dataset.helper || "";
+    return this.dataset["helper"] || "";
   }
   set helper(v: string) {
     if (v) {
-      this.dataset.helper = v;
+      this.dataset["helper"] = v;
     } else {
-      delete this.dataset.helper;
+      delete this.dataset["helper"];
     }
   }
 
   get layout(): Orientation {
-    return (this.dataset.layout as Orientation) || "vertical";
+    return (this.dataset["layout"] as Orientation) || "vertical";
   }
   set layout(v: Orientation) {
-    this.dataset.layout = v;
+    this.dataset["layout"] = v;
   }
 
   get value(): string {
@@ -390,7 +390,7 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
 
   #syncLabel(): void {
     if (!this.#labelEl) return;
-    this.#labelEl.textContent = this.dataset.label || "";
+    this.#labelEl.textContent = this.dataset["label"] || "";
     // Required asterisk visibility is handled by CSS:
     //   .input-required { display: none; }
     //   :host([required]) .input-required { display: inline; }
@@ -398,12 +398,12 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
 
   #syncDescription(): void {
     if (!this.#descriptionEl) return;
-    this.#descriptionEl.textContent = this.dataset.description || "";
+    this.#descriptionEl.textContent = this.dataset["description"] || "";
   }
 
   #syncHelper(): void {
     if (!this.#helperEl) return;
-    this.#helperEl.textContent = this.dataset.helper || "";
+    this.#helperEl.textContent = this.dataset["helper"] || "";
   }
 
   /**

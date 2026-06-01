@@ -139,20 +139,20 @@ class SherpaFileUpload extends SherpaElement {
 
   #syncLabel() {
     if (this.els.label) {
-      this.els.label.textContent = this.dataset.label || "";
+      this.els.label.textContent = this.dataset["label"] || "";
     }
   }
 
   #syncHelper() {
     if (this.els.constraintsText) {
-      this.els.constraintsText.textContent = this.dataset.helper || "";
+      this.els.constraintsText.textContent = this.dataset["helper"] || "";
     }
   }
 
   #syncFileInput() {
     if (!this.els.fileInput) return;
-    if (this.dataset.accept) {
-      this.els.fileInput.setAttribute("accept", this.dataset.accept);
+    if (this.dataset["accept"]) {
+      this.els.fileInput.setAttribute("accept", this.dataset["accept"]);
     } else {
       this.els.fileInput.removeAttribute("accept");
     }
@@ -206,10 +206,10 @@ class SherpaFileUpload extends SherpaElement {
   #addFiles(files) {
     if (!files.length) return;
 
-    const maxFiles = parseInt(this.dataset.maxFiles) || Infinity;
-    const maxSize = parseInt(this.dataset.maxSize) || Infinity;
-    const accepted = this.dataset.accept
-      ? this.dataset.accept.split(",").map((s) => s.trim().toLowerCase())
+    const maxFiles = parseInt(this.dataset["maxFiles"]) || Infinity;
+    const maxSize = parseInt(this.dataset["maxSize"]) || Infinity;
+    const accepted = this.dataset["accept"]
+      ? this.dataset["accept"].split(",").map((s) => s.trim().toLowerCase())
       : null;
 
     const valid = [];
@@ -267,7 +267,7 @@ class SherpaFileUpload extends SherpaElement {
     item.querySelector(".file-name").textContent = file.name;
     item.querySelector(".file-size").textContent = this.#formatSize(file.size);
     item.querySelector(".file-status-text").textContent = "Ready to upload";
-    item.dataset.state = "ready";
+    item.dataset["state"] = "ready";
 
     // Remove button
     item.querySelector(".file-remove-btn").addEventListener("click", () => {
@@ -290,7 +290,7 @@ class SherpaFileUpload extends SherpaElement {
     item.querySelector(".file-retry-btn").addEventListener("click", () => {
       const entry = this.#files.find((f) => f.el === item);
       if (entry) {
-        item.dataset.state = "ready";
+        item.dataset["state"] = "ready";
         item.querySelector(".file-status-text").textContent = "Ready to upload";
       }
     });
@@ -327,7 +327,7 @@ class SherpaFileUpload extends SherpaElement {
   setFileState(index, state, statusText) {
     const entry = this.#files[index];
     if (!entry) return;
-    entry.el.dataset.state = state;
+    entry.el.dataset["state"] = state;
 
     const statusLabels = {
       ready: "Ready to upload",
@@ -347,7 +347,7 @@ class SherpaFileUpload extends SherpaElement {
   setFileProgress(index, percent) {
     const entry = this.#files[index];
     if (!entry) return;
-    entry.el.dataset.state = "uploading";
+    entry.el.dataset["state"] = "uploading";
     const fill = entry.el.querySelector(".file-progress-fill");
     if (fill) fill.style.setProperty("--_file-progress", `${percent}%`);
 

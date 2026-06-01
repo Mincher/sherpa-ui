@@ -41,7 +41,7 @@ class SherpaProgressBar extends SherpaElement {
 
   override onRender(): void {
     // Defaults
-    if (!this.dataset.variant) this.dataset.variant = "determinate";
+    if (!this.dataset["variant"]) this.dataset["variant"] = "determinate";
 
     // Accessibility
     if (!this.hasAttribute("role")) this.setAttribute("role", "progressbar");
@@ -69,13 +69,13 @@ class SherpaProgressBar extends SherpaElement {
 
   #syncLabel() {
     if (this.els.label) {
-      this.els.label.textContent = this.dataset.label || "";
+      this.els.label.textContent = this.dataset["label"] || "";
     }
   }
 
   #syncValue() {
-    const isIndeterminate = this.dataset.variant === "indeterminate";
-    const raw = parseFloat(this.dataset.value);
+    const isIndeterminate = this.dataset["variant"] === "indeterminate";
+    const raw = parseFloat(this.dataset["value"]);
     const value = Number.isFinite(raw) ? Math.min(100, Math.max(0, raw)) : 0;
 
     // Fill width
@@ -96,7 +96,7 @@ class SherpaProgressBar extends SherpaElement {
         this.els.status.textContent = "";
       } else {
         this.els.status.textContent =
-          this.dataset.statusText || `Loading: ${Math.round(value)}%`;
+          this.dataset["statusText"] || `Loading: ${Math.round(value)}%`;
       }
     }
   }

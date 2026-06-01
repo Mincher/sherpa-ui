@@ -80,14 +80,14 @@ export class SherpaNodeSocket extends SherpaElement {
   }
 
   #syncCount() {
-    const n = parseInt(this.dataset.connectionCount || "0", 10);
+    const n = parseInt(this.dataset["connectionCount"] || "0", 10);
     const count = Number.isFinite(n) && n > 0 ? n : 0;
 
     // Per-connection dots only exist on input sockets (the template's
     // .connectors container is hidden via CSS for outputs anyway, but
     // we also gate here so we never inject dots on outputs).
     if (!this.els.connectors || !this.els.connectorTpl) return;
-    if (this.dataset.direction === "out") {
+    if (this.dataset["direction"] === "out") {
       this.els.connectors.replaceChildren();
       return;
     }
@@ -101,8 +101,8 @@ export class SherpaNodeSocket extends SherpaElement {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get portName() { return this.dataset.portName || ""; }
-  get direction() { return this.dataset.direction || "in"; }
+  get portName() { return this.dataset["portName"] || ""; }
+  get direction() { return this.dataset["direction"] || "in"; }
   get connected() { return this.hasAttribute("data-connected"); }
   set connected(v) {
     if (v) this.setAttribute("data-connected", "");
@@ -121,7 +121,7 @@ export class SherpaNodeSocket extends SherpaElement {
       detail: {
         direction: this.direction,
         portName: this.portName,
-        status: this.dataset.status || "default",
+        status: this.dataset["status"] || "default",
         originalEvent: e,
       },
     }));

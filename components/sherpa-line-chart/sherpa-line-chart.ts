@@ -323,7 +323,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   #syncTitle() {
     if (this.els.title) {
-      const entity = cleanTitleBase(this.dataset.title || '');
+      const entity = cleanTitleBase(this.dataset["title"] || '');
       const segMode = this.getAttribute('data-segment-mode');
       const groupField = this.getAttribute('data-segment-field')
         || this.getAttribute('data-category');

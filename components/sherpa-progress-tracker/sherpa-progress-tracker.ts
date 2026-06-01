@@ -78,13 +78,13 @@ export class SherpaProgressTracker extends SherpaElement {
 
   #syncHeading() {
     if (this.els.heading) {
-      this.els.heading.textContent = this.dataset.heading || '';
+      this.els.heading.textContent = this.dataset["heading"] || '';
     }
   }
 
   #syncPercentage() {
     if (this.els.percentage) {
-      this.els.percentage.textContent = this.dataset.percentage || '';
+      this.els.percentage.textContent = this.dataset["percentage"] || '';
     }
   }
 
@@ -103,7 +103,7 @@ export class SherpaProgressTracker extends SherpaElement {
       const el   = frag.querySelector('.milestone');
 
       // Status
-      el.dataset.status = m.status || 'default';
+      el.dataset["status"] = m.status || 'default';
 
       // Label
       const labelEl = el.querySelector('.milestone-label');
@@ -111,14 +111,14 @@ export class SherpaProgressTracker extends SherpaElement {
 
       // Description
       if (m.description) {
-        el.dataset.hasDescription = '';
+        el.dataset["hasDescription"] = '';
         const descEl = el.querySelector('.milestone-description');
         if (descEl) descEl.textContent = m.description;
       }
 
       // Timestamp
       if (m.timestamp) {
-        el.dataset.hasTimestamp = '';
+        el.dataset["hasTimestamp"] = '';
         const tsEl = el.querySelector('.milestone-timestamp');
         if (tsEl) tsEl.textContent = m.timestamp;
       }

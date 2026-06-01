@@ -34,7 +34,7 @@ class SherpaChatMessage extends SherpaElement {
   });
 
   override onRender(): void {
-    if (!this.dataset.role) this.dataset.role = "ai";
+    if (!this.dataset["role"]) this.dataset["role"] = "ai";
     this.#syncIcon();
   }
 
@@ -44,15 +44,15 @@ class SherpaChatMessage extends SherpaElement {
 
   #syncIcon() {
     if (!this.els.icon) return;
-    const cls = this.dataset.avatarIcon || "";
+    const cls = this.dataset["avatarIcon"] || "";
     // Preserve the structural class while swapping the FA glyph classes.
     this.els.icon.className = `avatar-icon ${cls}`.trim();
   }
 
   /* ── public API ──────────────────────────────────────────── */
 
-  override get role()  { return this.dataset.role || "ai"; }
-  override set role(v) { this.dataset.role = v === "user" ? "user" : "ai"; }
+  override get role()  { return this.dataset["role"] || "ai"; }
+  override set role(v) { this.dataset["role"] = v === "user" ? "user" : "ai"; }
 }
 
 customElements.define("sherpa-chat-message", SherpaChatMessage);

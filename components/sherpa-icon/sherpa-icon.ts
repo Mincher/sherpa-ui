@@ -134,10 +134,10 @@ export class SherpaIcon extends StatusMixin(SherpaElement) {
   }
 
   get weight(): IconWeight {
-    return (this.dataset.weight as IconWeight) || 'solid';
+    return (this.dataset["weight"] as IconWeight) || 'solid';
   }
   set weight(v: IconWeight) {
-    v ? (this.dataset.weight = v) : delete this.dataset.weight;
+    v ? (this.dataset["weight"] = v) : delete this.dataset["weight"];
   }
 
   /* ── Private ───────────────────────────────────────────────────── */

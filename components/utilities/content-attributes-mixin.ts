@@ -551,7 +551,7 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       // MutationObserver doesn't fire containerfilterchange while
       // chips are being populated — that would strip segment attrs.
       const bar = this.shadowRoot?.querySelector("sherpa-filter-bar");
-      if (bar) bar.dataset.syncing = "";
+      if (bar) bar.dataset["syncing"] = "";
 
       // Sync chip state BEFORE populating menus so that
       // #populateColumnsMenu sees the current data-field and
@@ -603,7 +603,7 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       } catch { /* ignore malformed JSON */ }
       const displayName = (f) => fieldNames.get(f) || formatFieldName(f);
 
-      bar.dataset.syncing = "";
+      bar.dataset["syncing"] = "";
 
       // ── Segment chip ──
       // Chips are now in the filter bar's shadow DOM — use the public
@@ -623,16 +623,16 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
         }
 
         if (field && mode !== "off") {
-          segChip.dataset.field = field;
-          segChip.dataset.label = `Group: ${displayName(field)}`;
+          segChip.dataset["field"] = field;
+          segChip.dataset["label"] = `Group: ${displayName(field)}`;
           segChip.toggleAttribute("data-active", true);
         } else if (field) {
           // Field retained but toggled off — keep field & label, deactivate
           segChip.removeAttribute("data-active");
         } else {
           // Sort fully cleared (e.g. "None" picked) — reset chip completely
-          delete segChip.dataset.field;
-          segChip.dataset.label = "Group";
+          delete segChip.dataset["field"];
+          segChip.dataset["label"] = "Group";
           segChip.removeAttribute("data-active");
         }
       }
@@ -646,7 +646,7 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
       if (sortChip) {
         // Prefer sort type declared on the chip itself; fall back to the
         // filter bar host attribute (used when chip is in shadow DOM).
-        const sortType = sortChip.dataset.sortType ?? bar.dataset.sortType;
+        const sortType = sortChip.dataset["sortType"] ?? bar.dataset["sortType"];
         const dir = this.getAttribute("data-sort-direction");
 
         if (sortType === "time" || sortType === "value") {
@@ -654,45 +654,45 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
             ? { desc: "Newest first", asc: "Oldest first" }
             : { desc: "Largest first", asc: "Smallest first" };
           if (dir && dir !== "off") {
-            sortChip.dataset.mode = dir;
-            sortChip.dataset.label = labels[dir] || labels.desc;
-            sortChip.dataset.iconStart =
+            sortChip.dataset["mode"] = dir;
+            sortChip.dataset["label"] = labels[dir] || labels.desc;
+            sortChip.dataset["iconStart"] =
               dir === "desc" ? "\uf063" : "\uf062";
             sortChip.toggleAttribute("data-active", true);
           } else {
             // Retain chip label — just deactivate
-            sortChip.dataset.mode = "off";
-            sortChip.dataset.iconStart = "\uf0dc";
+            sortChip.dataset["mode"] = "off";
+            sortChip.dataset["iconStart"] = "\uf0dc";
             sortChip.removeAttribute("data-active");
           }
         } else {
           const field = this.getAttribute("data-sort-field");
           if (field && dir && dir !== "off") {
-            sortChip.dataset.field = field;
-            sortChip.dataset.label = `Sort: ${displayName(field)}`;
-            sortChip.dataset.mode = dir;
-            sortChip.dataset.iconStart =
+            sortChip.dataset["field"] = field;
+            sortChip.dataset["label"] = `Sort: ${displayName(field)}`;
+            sortChip.dataset["mode"] = dir;
+            sortChip.dataset["iconStart"] =
               dir === "desc" ? "\uf063" : "\uf062";
             sortChip.toggleAttribute("data-active", true);
           } else if (field) {
             // Field retained but direction is off (cycle-off) — keep field & label, deactivate
-            sortChip.dataset.field = field;
-            sortChip.dataset.label = `Sort: ${displayName(field)}`;
-            sortChip.dataset.mode = "off";
-            sortChip.dataset.iconStart = "\uf0dc";
+            sortChip.dataset["field"] = field;
+            sortChip.dataset["label"] = `Sort: ${displayName(field)}`;
+            sortChip.dataset["mode"] = "off";
+            sortChip.dataset["iconStart"] = "\uf0dc";
             sortChip.removeAttribute("data-active");
           } else {
             // Sort fully cleared (e.g. "None" picked) — reset chip completely
-            delete sortChip.dataset.field;
-            sortChip.dataset.label = "Sort";
-            sortChip.dataset.mode = "off";
-            sortChip.dataset.iconStart = "\uf0dc";
+            delete sortChip.dataset["field"];
+            sortChip.dataset["label"] = "Sort";
+            sortChip.dataset["mode"] = "off";
+            sortChip.dataset["iconStart"] = "\uf0dc";
             sortChip.removeAttribute("data-active");
           }
         }
       }
 
-      setTimeout(() => { delete bar.dataset.syncing; }, 0);
+      setTimeout(() => { delete bar.dataset["syncing"]; }, 0);
     }
 
     /* ── View-switching ─────────────────────────────────────── */
@@ -746,7 +746,7 @@ export function ContentAttributesMixin<T extends Constructor<HTMLElement>>(
         this.getAttribute("data-show-view-menu") !== "false";
       const shouldShowMenu = showViewMenu;
       this.toggleAttribute("data-menu-button", shouldShowMenu);
-      if (shouldShowMenu) this.dataset.menuButton = "true";
+      if (shouldShowMenu) this.dataset["menuButton"] = "true";
 
       if (shouldShowMenu) {
         this.#pendingMenuData = { showViewMenu, viewOptions };

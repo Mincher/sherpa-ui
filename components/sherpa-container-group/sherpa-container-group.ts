@@ -124,8 +124,8 @@ export class SherpaContainerGroup extends SherpaElement {
 
     for (const child of this.children) {
       if (child.nodeType !== 1 || child.hasAttribute("slot")) continue;
-      const cs = Math.min(parseInt(child.dataset.colSpan) || 1, COLS);
-      const rs = Math.max(parseInt(child.dataset.rowSpan) || 1, 1);
+      const cs = Math.min(parseInt(child.dataset["colSpan"]) || 1, COLS);
+      const rs = Math.max(parseInt(child.dataset["rowSpan"]) || 1, 1);
 
       outer: for (let r = cursorRow; ; r++) {
         const startCol = r === cursorRow ? cursorCol : 0;
@@ -147,12 +147,12 @@ export class SherpaContainerGroup extends SherpaElement {
 
   #updateRowSpan() {
     const required = this.#computeRequiredRows();
-    if (required > 0) this.dataset.rowSpan = String(required);
+    if (required > 0) this.dataset["rowSpan"] = String(required);
   }
 
   override onDisconnect(): void {
     for (const child of this.#stamped) {
-      delete child.dataset.groupPosition;
+      delete child.dataset["groupPosition"];
     }
     this.#stamped.clear();
   }
@@ -172,13 +172,13 @@ export class SherpaContainerGroup extends SherpaElement {
     for (const child of this.children) {
       if (child.nodeType !== 1 || child.hasAttribute("slot")) continue;
       if (child.tagName !== "SHERPA-CONTAINER") continue;
-      child.dataset.groupPosition = isFirst ? "first" : "follow";
+      child.dataset["groupPosition"] = isFirst ? "first" : "follow";
       current.add(child);
       isFirst = false;
     }
     // Clear stale stamps from tiles that left the group (e.g. ungrouped).
     for (const prev of this.#stamped) {
-      if (!current.has(prev)) delete prev.dataset.groupPosition;
+      if (!current.has(prev)) delete prev.dataset["groupPosition"];
     }
     this.#stamped = current;
   }

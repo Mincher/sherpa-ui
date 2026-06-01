@@ -12,8 +12,8 @@
  *   } from "sherpa-ui/components/sherpa-node/sherpa-node-templates.js";
  *
  *   await attachAllTemplatesForKind(nodeEl, "math");
- *   nodeEl.dataset.subtypes = JSON.stringify(getSubtypesForKind("math"));
- *   nodeEl.dataset.subtype = "add";
+ *   nodeEl.dataset["subtypes"] = JSON.stringify(getSubtypesForKind("math"));
+ *   nodeEl.dataset["subtype"] = "add";
  */
 
 const TEMPLATES_URL = new URL("./sherpa-node-templates.html", import.meta.url).href;
@@ -86,7 +86,7 @@ export async function attachAllTemplatesForKind(nodeEl, kind) {
     `template.rows-tpl[data-kind="${CSS.escape(kind)}"]`
   );
   for (const tpl of templates) {
-    const subtype = tpl.dataset.subtype || "";
+    const subtype = tpl.dataset["subtype"] || "";
     const exists = nodeEl.querySelector(
       `:scope > template.rows-tpl[data-kind="${CSS.escape(kind)}"][data-subtype="${CSS.escape(subtype)}"]`
     );
@@ -106,7 +106,7 @@ export async function getSubtypesForKind(kind) {
   );
   const out = [];
   for (const tpl of templates) {
-    const value = tpl.dataset.subtype || "";
+    const value = tpl.dataset["subtype"] || "";
     const label = SUBTYPE_LABELS[value] || value;
     out.push({ value, label });
   }
@@ -143,9 +143,9 @@ export async function configureNode(nodeEl, kind, subtype) {
   nodeEl.setAttribute("data-kind", kind);
   await attachAllTemplatesForKind(nodeEl, kind);
   const subtypes = await getSubtypesForKind(kind);
-  nodeEl.dataset.subtypes = JSON.stringify(subtypes);
-  nodeEl.dataset.subtype = subtype || subtypes[0]?.value || "";
+  nodeEl.dataset["subtypes"] = JSON.stringify(subtypes);
+  nodeEl.dataset["subtype"] = subtype || subtypes[0]?.value || "";
   const subtypeLabel = KIND_SUBTYPE_LABELS[kind];
-  if (subtypeLabel) nodeEl.dataset.subtypeLabel = subtypeLabel;
-  else delete nodeEl.dataset.subtypeLabel;
+  if (subtypeLabel) nodeEl.dataset["subtypeLabel"] = subtypeLabel;
+  else delete nodeEl.dataset["subtypeLabel"];
 }

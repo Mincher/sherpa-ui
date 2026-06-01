@@ -81,9 +81,9 @@ export class SherpaSparkline extends SherpaElement {
     const point = e.target;
     if (!this.els.tip) return;
 
-    const rawValue = point.dataset.value;
+    const rawValue = point.dataset["value"];
     if (rawValue === undefined) return;
-    const unitLabel = this.dataset.unit || '';
+    const unitLabel = this.dataset["unit"] || '';
     this.els.tipText.textContent = formatTooltipValue(rawValue, unitLabel);
     point.style.anchorName = '--spark-anchor';
     this.els.tip.showPopover();
@@ -103,11 +103,11 @@ export class SherpaSparkline extends SherpaElement {
    */
   setValues(values) {
     if (!Array.isArray(values) || values.length === 0) return;
-    this.dataset.values = JSON.stringify(values);
+    this.dataset["values"] = JSON.stringify(values);
   }
 
   #updateFromAttribute() {
-    const attr = this.dataset.values;
+    const attr = this.dataset["values"];
     if (!attr) return;
     let parsed;
     try {
@@ -162,13 +162,13 @@ export class SherpaSparkline extends SherpaElement {
     });
 
     this.#pointEls.forEach(point => {
-      const index = Number(point.dataset.index);
+      const index = Number(point.dataset["index"]);
       const active = Number.isFinite(index) && index < actualPoints;
       point.toggleAttribute('hidden', !active);
       if (active) {
-        point.dataset.value = points[index];
+        point.dataset["value"] = points[index];
       } else {
-        delete point.dataset.value;
+        delete point.dataset["value"];
       }
     });
   }

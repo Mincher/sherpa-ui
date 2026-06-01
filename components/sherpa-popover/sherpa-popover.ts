@@ -55,7 +55,7 @@ class SherpaPopover extends SherpaElement {
   }
 
   override get templateId(): string {
-    return this.dataset.template === 'paged' ? 'paged' : 'default';
+    return this.dataset["template"] === 'paged' ? 'paged' : 'default';
   }
 
   els = this.cacheElements({
@@ -72,7 +72,7 @@ class SherpaPopover extends SherpaElement {
   override onRender(): void {
 
     // Defaults
-    if (!this.dataset.position) this.dataset.position = "bottom";
+    if (!this.dataset["position"]) this.dataset["position"] = "bottom";
 
     if (!this.#bound) {
       this.els.closeBtn?.addEventListener("click", this.#onClose);
@@ -127,9 +127,9 @@ class SherpaPopover extends SherpaElement {
 
   /* ── Paged API ─────────────────────────────────── */
 
-  get page()  { return parseInt(this.dataset.page  || '0', 10) || 0; }
+  get page()  { return parseInt(this.dataset["page"]  || '0', 10) || 0; }
   get pages() {
-    const explicit = parseInt(this.dataset.pages || '', 10);
+    const explicit = parseInt(this.dataset["pages"] || '', 10);
     if (Number.isFinite(explicit) && explicit > 0) return explicit;
     return this.querySelectorAll('section[data-page]').length || 1;
   }
@@ -137,7 +137,7 @@ class SherpaPopover extends SherpaElement {
   setPage(index) {
     const total = this.pages;
     const next = Math.max(0, Math.min(total - 1, Number(index) || 0));
-    this.dataset.page = String(next);
+    this.dataset["page"] = String(next);
   }
   nextPage() { this.setPage(this.page + 1); }
   prevPage() { this.setPage(this.page - 1); }
@@ -170,7 +170,7 @@ class SherpaPopover extends SherpaElement {
   /* ── handlers ────────────────────────────────────────────── */
 
   #onClose = () => {
-    delete this.dataset.open;
+    delete this.dataset["open"];
     this.dispatchEvent(
       new CustomEvent("popover-close", { bubbles: true, composed: true })
     );
@@ -180,13 +180,13 @@ class SherpaPopover extends SherpaElement {
 
   #syncHeading() {
     if (this.els.heading) {
-      this.els.heading.textContent = this.dataset.heading || "";
+      this.els.heading.textContent = this.dataset["heading"] || "";
     }
   }
 
   #syncAnchor() {
-    if (this.dataset.anchor) {
-      this.style.setProperty("--_popover-anchor", `--${this.dataset.anchor}`);
+    if (this.dataset["anchor"]) {
+      this.style.setProperty("--_popover-anchor", `--${this.dataset["anchor"]}`);
     }
   }
 
@@ -234,7 +234,7 @@ class SherpaPopover extends SherpaElement {
     // Only run if CSS anchor positioning is NOT supported
     if (CSS.supports?.("anchor-name: --test")) return;
 
-    const anchorName = this.dataset.anchor;
+    const anchorName = this.dataset["anchor"];
     if (!anchorName) return;
 
     // Find the trigger element by anchor-name custom property
@@ -244,7 +244,7 @@ class SherpaPopover extends SherpaElement {
     if (!trigger) return;
 
     const rect = trigger.getBoundingClientRect();
-    const pos = this.dataset.position || "bottom";
+    const pos = this.dataset["position"] || "bottom";
 
     switch (pos) {
       case "bottom":

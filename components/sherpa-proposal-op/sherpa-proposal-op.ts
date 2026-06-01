@@ -40,9 +40,9 @@ class SherpaProposalOp extends SherpaElement {
 
   #sync() {
     if (!this.#tagEl || !this.#labelEl) return;
-    const op = this.dataset.op || "";
+    const op = this.dataset["op"] || "";
     this.#tagEl.textContent   = TAGS[op] || "·";
-    this.#labelEl.textContent = this.dataset.label || "";
+    this.#labelEl.textContent = this.dataset["label"] || "";
   }
 }
 

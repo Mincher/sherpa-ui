@@ -97,22 +97,22 @@ export class SherpaGaugeChart extends SherpaElement {
 
   #syncTitle() {
     if (this.#titleEl) {
-      this.#titleEl.textContent = this.dataset.title || '';
+      this.#titleEl.textContent = this.dataset["title"] || '';
     }
   }
 
   #syncLabel() {
     if (this.#labelEl) {
-      this.#labelEl.textContent = this.dataset.label || '';
+      this.#labelEl.textContent = this.dataset["label"] || '';
     }
   }
 
   #syncRange() {
     if (this.#rangeMinEl) {
-      this.#rangeMinEl.textContent = this.dataset.min ?? '0%';
+      this.#rangeMinEl.textContent = this.dataset["min"] ?? '0%';
     }
     if (this.#rangeMaxEl) {
-      this.#rangeMaxEl.textContent = this.dataset.max ?? '100%';
+      this.#rangeMaxEl.textContent = this.dataset["max"] ?? '100%';
     }
   }
 
@@ -122,7 +122,7 @@ export class SherpaGaugeChart extends SherpaElement {
    * CSS transform-origin is bottom-centre of the needle.
    */
   #syncValue() {
-    const raw = parseFloat(this.dataset.value);
+    const raw = parseFloat(this.dataset["value"]);
     const pct = Number.isFinite(raw) ? Math.max(0, Math.min(100, raw)) : 0;
 
     // Needle angle: -90 (left) → +90 (right)
@@ -147,7 +147,7 @@ export class SherpaGaugeChart extends SherpaElement {
 
     // Label text
     if (this.#labelEl) {
-      this.#labelEl.textContent = this.dataset.label || '';
+      this.#labelEl.textContent = this.dataset["label"] || '';
     }
   }
 

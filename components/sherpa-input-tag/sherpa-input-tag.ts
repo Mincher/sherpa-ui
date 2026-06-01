@@ -101,7 +101,7 @@ export class SherpaInputTag extends SherpaInputBase {
   override get value() { return this.#readValue(); }
   override set value(arr) {
     const list = Array.isArray(arr) ? arr.map(String) : [];
-    this.dataset.value = JSON.stringify(list);
+    this.dataset["value"] = JSON.stringify(list);
     this.#emit('set');
   }
 
@@ -110,10 +110,10 @@ export class SherpaInputTag extends SherpaInputBase {
     if (!v) return false;
     const current = this.#readValue();
     if (!this.hasAttribute('data-allow-duplicates') && current.includes(v)) return false;
-    const max = parseInt(this.dataset.maxTags ?? '', 10);
+    const max = parseInt(this.dataset["maxTags"] ?? '', 10);
     if (Number.isFinite(max) && current.length >= max) return false;
     current.push(v);
-    this.dataset.value = JSON.stringify(current);
+    this.dataset["value"] = JSON.stringify(current);
     this.#emit('add', v);
     return true;
   }
@@ -123,13 +123,13 @@ export class SherpaInputTag extends SherpaInputBase {
     const i = current.indexOf(String(tag));
     if (i < 0) return false;
     current.splice(i, 1);
-    this.dataset.value = JSON.stringify(current);
+    this.dataset["value"] = JSON.stringify(current);
     this.#emit('remove', String(tag));
     return true;
   }
 
   clear() {
-    this.dataset.value = '[]';
+    this.dataset["value"] = '[]';
     this.#emit('set');
   }
 
@@ -137,7 +137,7 @@ export class SherpaInputTag extends SherpaInputBase {
 
   #readValue() {
     try {
-      const v = JSON.parse(this.dataset.value || '[]');
+      const v = JSON.parse(this.dataset["value"] || '[]');
       return Array.isArray(v) ? v.map(String) : [];
     } catch { return []; }
   }
@@ -154,7 +154,7 @@ export class SherpaInputTag extends SherpaInputBase {
     for (const v of this.#readValue()) {
       const chip = document.createElement('span');
       chip.className = 'tag-chip';
-      chip.dataset.value = v;
+      chip.dataset["value"] = v;
       chip.innerHTML = `
         <span class="tag-chip-label"></span>
         <button type="button" class="tag-chip-remove" tabindex="-1" aria-label="Remove tag">
@@ -174,7 +174,7 @@ export class SherpaInputTag extends SherpaInputBase {
   #onKeyDown = (e: Event) => {
     const input = this.getInputElement();
     if (!input) return;
-    const sep = (this.dataset.separator ?? ',').slice(0, 1);
+    const sep = (this.dataset["separator"] ?? ',').slice(0, 1);
 
     if (e.key === 'Enter' || (sep && e.key === sep)) {
       const raw = input.value.trim();

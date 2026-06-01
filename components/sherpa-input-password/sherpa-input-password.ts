@@ -76,7 +76,7 @@ export class SherpaInputPassword extends SherpaInputBase {
       this.els.toggleBtn.setAttribute('data-icon-start',
         this.#visible ? '\uf070' : '\uf06e'
       );
-      this.els.toggleBtn.dataset.label = this.#visible ? 'Hide' : 'Show';
+      this.els.toggleBtn.dataset["label"] = this.#visible ? 'Hide' : 'Show';
     }
   }
 }

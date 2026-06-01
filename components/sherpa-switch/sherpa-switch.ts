@@ -40,8 +40,8 @@ export class SherpaSwitch extends SherpaElement {
       this.#bound = true;
     }
 
-    if (!this.dataset.state) {
-      this.dataset.state = 'off';
+    if (!this.dataset["state"]) {
+      this.dataset["state"] = 'off';
     }
     this.#updateDisplay();
   }
@@ -54,8 +54,8 @@ export class SherpaSwitch extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get state()     { return this.dataset.state || 'off'; }
-  set state(v)    { this.dataset.state = v === 'on' ? 'on' : 'off'; }
+  get state()     { return this.dataset["state"] || 'off'; }
+  set state(v)    { this.dataset["state"] = v === 'on' ? 'on' : 'off'; }
 
   get checked()   { return this.state === 'on'; }
   set checked(v)  { this.state = v ? 'on' : 'off'; }

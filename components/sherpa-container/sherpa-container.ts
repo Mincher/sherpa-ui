@@ -66,7 +66,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
 
   override onRender(): void {
     super.onRender();
-    if (!this.dataset.variant) this.dataset.variant = "fit";
+    if (!this.dataset["variant"]) this.dataset["variant"] = "fit";
     this.#initResizeGrip();
 
     // Reflect descendant overflow-menu state onto the host so CSS can
@@ -75,12 +75,12 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     this.addEventListener("menu-close", this.#onMenuClose);
 
     // Normalise boolean-presence attributes ("") → explicit "true" so CSS value selectors match.
-    if (this.dataset.selectable  === '') this.dataset.selectable  = 'true';
-    if (this.dataset.interactive === '') this.dataset.interactive = 'true';
-    if (this.dataset.selected    === '') this.dataset.selected    = 'true';
+    if (this.dataset["selectable"]  === '') this.dataset["selectable"]  = 'true';
+    if (this.dataset["interactive"] === '') this.dataset["interactive"] = 'true';
+    if (this.dataset["selected"]    === '') this.dataset["selected"]    = 'true';
 
     // Selectable containers are implicitly interactive.
-    if (this.selectable && !this.interactive) this.dataset.interactive = 'true';
+    if (this.selectable && !this.interactive) this.dataset["interactive"] = 'true';
 
     if ((this.interactive || this.selectable) && !this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '0');
@@ -103,29 +103,29 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
 
   /* ── Public API ───────────────────────────────────────────── */
 
-  get selected()     { return this.hasAttribute('data-selected')    && this.dataset.selected    !== 'false'; }
-  set selected(v)    { this.dataset.selected    = v ? 'true' : 'false'; }
+  get selected()     { return this.hasAttribute('data-selected')    && this.dataset["selected"]    !== 'false'; }
+  set selected(v)    { this.dataset["selected"]    = v ? 'true' : 'false'; }
 
-  get interactive()  { return this.hasAttribute('data-interactive') && this.dataset.interactive !== 'false'; }
-  set interactive(v) { this.dataset.interactive = v ? 'true' : 'false'; }
+  get interactive()  { return this.hasAttribute('data-interactive') && this.dataset["interactive"] !== 'false'; }
+  set interactive(v) { this.dataset["interactive"] = v ? 'true' : 'false'; }
 
-  get selectable()   { return this.hasAttribute('data-selectable')  && this.dataset.selectable  !== 'false'; }
-  set selectable(v)  { v ? this.dataset.selectable = 'true' : delete this.dataset.selectable; }
+  get selectable()   { return this.hasAttribute('data-selectable')  && this.dataset["selectable"]  !== 'false'; }
+  set selectable(v)  { v ? this.dataset["selectable"] = 'true' : delete this.dataset["selectable"]; }
 
   get disabled()     { return this.hasAttribute('disabled'); }
   set disabled(v)    { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
 
-  get elevation()    { return this.dataset.elevation || 'none'; }
-  set elevation(v)   { v ? this.dataset.elevation = v : delete this.dataset.elevation; }
+  get elevation()    { return this.dataset["elevation"] || 'none'; }
+  set elevation(v)   { v ? this.dataset["elevation"] = v : delete this.dataset["elevation"]; }
 
   /* ── Private ──────────────────────────────────────────────── */
 
   #onMenuOpen = () => {
-    this.dataset.menuOpen = "true";
+    this.dataset["menuOpen"] = "true";
   };
 
   #onMenuClose = () => {
-    delete this.dataset.menuOpen;
+    delete this.dataset["menuOpen"];
   };
 
   #updateInteractive() {
@@ -149,7 +149,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
 
   #syncFooterSelected() {
     const footer = this.querySelector('sherpa-container-footer[data-type="card-select"]');
-    if (footer) footer.dataset.selected = this.selected ? 'true' : 'false';
+    if (footer) footer.dataset["selected"] = this.selected ? 'true' : 'false';
   }
 
   #onClick = () => {
@@ -232,11 +232,11 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
       Math.min(SherpaContainer.#MAX_ROW, Math.round(targetRow)),
     );
     if (nextCol !== s.lastCol) {
-      this.dataset.colSpan = String(nextCol);
+      this.dataset["colSpan"] = String(nextCol);
       s.lastCol = nextCol;
     }
     if (nextRow !== s.lastRow) {
-      this.dataset.rowSpan = String(nextRow);
+      this.dataset["rowSpan"] = String(nextRow);
       s.lastRow = nextRow;
     }
   };
@@ -250,11 +250,11 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
   };
 
   #currentColSpan() {
-    const v = parseInt(this.dataset.colSpan, 10);
+    const v = parseInt(this.dataset["colSpan"], 10);
     return Number.isFinite(v) ? v : SherpaContainer.#COL_STOPS[0];
   }
   #currentRowSpan() {
-    const v = parseInt(this.dataset.rowSpan, 10);
+    const v = parseInt(this.dataset["rowSpan"], 10);
     return Number.isFinite(v) ? v : 1;
   }
   static #nearestColStop(value) {

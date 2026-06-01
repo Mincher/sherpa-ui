@@ -72,7 +72,7 @@ export class SherpaTabs extends SherpaElement {
 
     if (!this.#initialized) {
       if (!this.hasAttribute('data-active-tab')) {
-        this.dataset.activeTab = '0';
+        this.dataset["activeTab"] = '0';
       }
       this.#initialized = true;
     }
@@ -96,8 +96,8 @@ export class SherpaTabs extends SherpaElement {
   /* ── Public API ───────────────────────────────────────────────── */
 
   /** The currently active tab index. */
-  get activeTab() { return parseInt(this.dataset.activeTab, 10) || 0; }
-  set activeTab(v) { this.dataset.activeTab = String(v); }
+  get activeTab() { return parseInt(this.dataset["activeTab"], 10) || 0; }
+  set activeTab(v) { this.dataset["activeTab"] = String(v); }
 
   /** Select a tab by index. */
   selectTab(index) {
@@ -107,7 +107,7 @@ export class SherpaTabs extends SherpaElement {
     // Skip inactive tabs
     if (this.#panels[index]?.hasAttribute('data-tab-inactive')) return;
 
-    this.dataset.activeTab = String(index);
+    this.dataset["activeTab"] = String(index);
     this.#emitTabChange(index, prev);
   }
 
@@ -131,8 +131,8 @@ export class SherpaTabs extends SherpaElement {
       const btn = tpl.querySelector('.tab');
       const label = btn.querySelector('.tab-label');
 
-      label.textContent = panel.dataset.tabLabel || `Tab ${i + 1}`;
-      btn.dataset.index = String(i);
+      label.textContent = panel.dataset["tabLabel"] || `Tab ${i + 1}`;
+      btn.dataset["index"] = String(i);
 
       if (panel.hasAttribute('data-tab-inactive')) {
         btn.setAttribute('data-inactive', '');
@@ -165,13 +165,13 @@ export class SherpaTabs extends SherpaElement {
     });
 
     // Lazy load: fire tab-load the first time a panel becomes active.
-    if (this.dataset.loadMode === 'lazy') {
+    if (this.dataset["loadMode"] === 'lazy') {
       const panel = this.#panels[index];
       if (panel && !panel.hasAttribute('data-tab-loaded')) {
         panel.setAttribute('data-tab-loaded', '');
         this.dispatchEvent(new CustomEvent('tab-load', {
           bubbles: true, composed: true,
-          detail: { index, label: panel.dataset.tabLabel || '', panel },
+          detail: { index, label: panel.dataset["tabLabel"] || '', panel },
         }));
       }
     }
@@ -181,12 +181,12 @@ export class SherpaTabs extends SherpaElement {
 
   #onTabClick: EventHandler<MouseEvent> = (e: Event) => {
     const btn = e.currentTarget as HTMLElement;
-    const index = parseInt(btn.dataset.index, 10);
+    const index = parseInt(btn.dataset["index"], 10);
     this.selectTab(index);
   };
 
   #onTabKeyDown: EventHandler<KeyboardEvent> = (e: Event) => {
-    const current = parseInt((e.currentTarget as HTMLElement).dataset.index || '0', 10);
+    const current = parseInt((e.currentTarget as HTMLElement).dataset["index"] || '0', 10);
     let next = current;
 
     switch (e.key) {
@@ -234,7 +234,7 @@ export class SherpaTabs extends SherpaElement {
       composed: true,
       detail: {
         index,
-        label: this.#panels[index]?.dataset.tabLabel || '',
+        label: this.#panels[index]?.dataset["tabLabel"] || '',
         previousIndex,
       },
     }));

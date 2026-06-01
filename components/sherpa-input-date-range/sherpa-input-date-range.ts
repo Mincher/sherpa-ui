@@ -95,8 +95,8 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
     // Initialise view months from current values (or today / today + 1 month)
     const today = new Date();
-    const startD = isoToDate(this.dataset.valueStart);
-    const endD   = isoToDate(this.dataset.valueEnd);
+    const startD = isoToDate(this.dataset["valueStart"]);
+    const endD   = isoToDate(this.dataset["valueEnd"]);
 
     this.#startViewDate = startD
       ? new Date(startD.getFullYear(), startD.getMonth(), 1)
@@ -305,7 +305,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
   #selectStart(iso) {
     if (!this.#startEl) return;
     this.#startEl.value = iso;
-    this.dataset.valueStart = iso;
+    this.dataset["valueStart"] = iso;
     this.#updateCrossConstraints();
     this.#syncStartTrigger();
     this.#onDateChange();
@@ -315,7 +315,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
   #selectEnd(iso) {
     if (!this.#endEl) return;
     this.#endEl.value = iso;
-    this.dataset.valueEnd = iso;
+    this.dataset["valueEnd"] = iso;
     this.#updateCrossConstraints();
     this.#syncEndTrigger();
     this.#onDateChange();
@@ -326,10 +326,10 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   #syncValues() {
     if (this.#startEl) {
-      this.#startEl.value = this.dataset.valueStart || "";
+      this.#startEl.value = this.dataset["valueStart"] || "";
     }
     if (this.#endEl) {
-      this.#endEl.value = this.dataset.valueEnd || "";
+      this.#endEl.value = this.dataset["valueEnd"] || "";
     }
     this.#updateCrossConstraints();
   }
@@ -388,8 +388,8 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
     const slot = this.$(".slot-start");
     if (slot) {
-      if (val) slot.dataset.hasValue = "";
-      else     delete slot.dataset.hasValue;
+      if (val) slot.dataset["hasValue"] = "";
+      else     delete slot.dataset["hasValue"];
     }
   }
 
@@ -401,8 +401,8 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
     const slot = this.$(".slot-end");
     if (slot) {
-      if (val) slot.dataset.hasValue = "";
-      else     delete slot.dataset.hasValue;
+      if (val) slot.dataset["hasValue"] = "";
+      else     delete slot.dataset["hasValue"];
     }
   }
 
@@ -424,16 +424,16 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /* ── Public API ─────────────────────────────────────────────── */
 
   /** Start date as a string (YYYY-MM-DD). */
-  get valueStart() { return this.dataset.valueStart || ""; }
-  set valueStart(v) { this.dataset.valueStart = v || ""; }
+  get valueStart() { return this.dataset["valueStart"] || ""; }
+  set valueStart(v) { this.dataset["valueStart"] = v || ""; }
 
   /** End date as a string (YYYY-MM-DD). */
-  get valueEnd() { return this.dataset.valueEnd || ""; }
-  set valueEnd(v) { this.dataset.valueEnd = v || ""; }
+  get valueEnd() { return this.dataset["valueEnd"] || ""; }
+  set valueEnd(v) { this.dataset["valueEnd"] = v || ""; }
 
   /** Start date as a Date object, or null. */
   get startAsDate() {
-    const v = this.dataset.valueStart;
+    const v = this.dataset["valueStart"];
     if (!v) return null;
     const d = new Date(v + "T00:00:00");
     return isNaN(d.getTime()) ? null : d;
@@ -441,7 +441,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   /** End date as a Date object, or null. */
   get endAsDate() {
-    const v = this.dataset.valueEnd;
+    const v = this.dataset["valueEnd"];
     if (!v) return null;
     const d = new Date(v + "T00:00:00");
     return isNaN(d.getTime()) ? null : d;

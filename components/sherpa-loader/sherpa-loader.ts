@@ -37,8 +37,8 @@ class SherpaLoader extends SherpaElement {
 
   override onRender(): void {
     // Defaults
-    if (!this.dataset.orientation) this.dataset.orientation = "horizontal";
-    if (!this.dataset.size) this.dataset.size = "default";
+    if (!this.dataset["orientation"]) this.dataset["orientation"] = "horizontal";
+    if (!this.dataset["size"]) this.dataset["size"] = "default";
 
     // Accessibility — live region
     if (!this.hasAttribute("role")) this.setAttribute("role", "status");
@@ -56,7 +56,7 @@ class SherpaLoader extends SherpaElement {
 
   #syncLabel() {
     if (this.els.label) {
-      this.els.label.textContent = this.dataset.label || "";
+      this.els.label.textContent = this.dataset["label"] || "";
     }
   }
 }

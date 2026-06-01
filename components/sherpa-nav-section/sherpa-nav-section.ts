@@ -145,7 +145,7 @@ export class SherpaNavSection extends SherpaElement {
 
   #syncHeading() {
     if (this.els.heading) {
-      this.els.heading.textContent = this.dataset.heading || "";
+      this.els.heading.textContent = this.dataset["heading"] || "";
     }
   }
 
@@ -207,10 +207,10 @@ export class SherpaNavSection extends SherpaElement {
     const id = item.id || "";
     const isActive = id && id === activeId;
 
-    btn.dataset.id = id;
-    if (item.action) btn.dataset.action = item.action;
+    btn.dataset["id"] = id;
+    if (item.action) btn.dataset["action"] = item.action;
     if (isActive) {
-      btn.dataset.active = "true";
+      btn.dataset["active"] = "true";
       btn.setAttribute("aria-current", "page");
     }
     if (item.disabled) btn.setAttribute("disabled", "");
@@ -228,9 +228,9 @@ export class SherpaNavSection extends SherpaElement {
     if (!this.els.sections) return;
     const activeId = this.getAttribute("data-active-id");
     for (const btn of this.els.sections.querySelectorAll(".item")) {
-      const isActive = btn.dataset.id && btn.dataset.id === activeId;
+      const isActive = btn.dataset["id"] && btn.dataset["id"] === activeId;
       if (isActive) {
-        btn.dataset.active = "true";
+        btn.dataset["active"] = "true";
         btn.setAttribute("aria-current", "page");
       } else {
         btn.removeAttribute("data-active");
@@ -265,8 +265,8 @@ export class SherpaNavSection extends SherpaElement {
   };
 
   #dispatchSelect(btn) {
-    const id = btn.dataset.id || "";
-    const action = btn.dataset.action || undefined;
+    const id = btn.dataset["id"] || "";
+    const action = btn.dataset["action"] || undefined;
     const item = this.#findItem(id);
     if (!action) this.setActive(id);
     this.dispatchEvent(

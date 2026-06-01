@@ -332,7 +332,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       if (n.__sherpaCanvasBound) continue;
       n.__sherpaCanvasBound = true;
       const ro = new ResizeObserver(() => {
-        this.#invalidatePortCache(n.dataset.nodeId);
+        this.#invalidatePortCache(n.dataset["nodeId"]);
         this.#scheduleDraw();
       });
       ro.observe(n);
@@ -384,8 +384,8 @@ export class SherpaNodeCanvas extends SherpaElement {
     const cy = (r.top  + r.bottom) / 2 - canvasRect.top;
     let wx = (cx - vx) / zoom;
     let wy = (cy - vy) / zoom;
-    const side = sock.dataset.direction === "out" ? "out" : "in";
-    const status = sock.dataset.status || "";
+    const side = sock.dataset["direction"] === "out" ? "out" : "in";
+    const status = sock.dataset["status"] || "";
     const multi = sock.hasAttribute("data-multi");
     if (multi && count > 1) {
       // Spread lanes vertically across the socket's world-space height.
@@ -427,7 +427,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    */
   #socketType(sock) {
     if (!sock) return "any";
-    if (sock.dataset.valueType) return sock.dataset.valueType;
+    if (sock.dataset["valueType"]) return sock.dataset["valueType"];
 
     const row = sock.closest("sherpa-node-row");
     if (row) {
@@ -568,8 +568,8 @@ export class SherpaNodeCanvas extends SherpaElement {
       const dy = (e.clientY - this.#nodeDrag.y0) / this.#viewport.zoom;
       const node = this.#nodeById(this.#nodeDrag.nodeId);
       if (node) {
-        node.dataset.x = String(this.#nodeDrag.nx0 + dx);
-        node.dataset.y = String(this.#nodeDrag.ny0 + dy);
+        node.dataset["x"] = String(this.#nodeDrag.nx0 + dx);
+        node.dataset["y"] = String(this.#nodeDrag.ny0 + dy);
       }
       this.#scheduleDraw();
       return;
@@ -732,7 +732,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const socket = e.composedPath().find((n) => n?.localName === "sherpa-node-socket");
     const node = socket?.closest("sherpa-node");
     if (!node) return;
-    const nodeId = node.dataset.nodeId;
+    const nodeId = node.dataset["nodeId"];
     if (!nodeId) return;
 
     // If this is an INPUT socket and an existing edge ends here, enter
@@ -781,8 +781,8 @@ export class SherpaNodeCanvas extends SherpaElement {
       nodeId,
       x0: originalEvent.clientX,
       y0: originalEvent.clientY,
-      nx0: parseFloat(node.dataset.x || "0") || 0,
-      ny0: parseFloat(node.dataset.y || "0") || 0,
+      nx0: parseFloat(node.dataset["x"] || "0") || 0,
+      ny0: parseFloat(node.dataset["y"] || "0") || 0,
     };
   };
 
@@ -796,7 +796,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       const node = sock.closest("sherpa-node");
       const id = node?.dataset?.nodeId;
       if (!id) continue;
-      const portName = sock.dataset.portName;
+      const portName = sock.dataset["portName"];
       const pos = this.#portWorld(id, portName);
       if (!pos) continue;
       const d = Math.hypot(pos.x - w.x, pos.y - w.y);
@@ -945,7 +945,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const groups = this.querySelectorAll('sherpa-node[data-kind="group"]');
     if (!groups.length) return;
     for (const group of groups) {
-      const id = group.dataset.nodeId;
+      const id = group.dataset["nodeId"];
       const snap = id ? this.#subgraphs.get(id) : null;
       const sock = group.querySelector('sherpa-node-socket[data-direction="in"]');
       if (!sock) continue;
@@ -1041,7 +1041,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     // 1. Build node lookup once.
     const nodeMap = new Map();
     for (const n of this.querySelectorAll("sherpa-node")) {
-      const id = n.dataset.nodeId;
+      const id = n.dataset["nodeId"];
       if (id) nodeMap.set(id, n);
     }
     // 2. Group edges by target nodeId for fast lookup of incoming values.
@@ -1142,7 +1142,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (!ctx) return;
     const r = this.#bodyRect();
     ctx.clearRect(0, 0, r.width, r.height);
-    if (this.dataset.grid === "none") return;
+    if (this.dataset["grid"] === "none") return;
 
     const { x: vx, y: vy } = this.#viewport;
     const css = getComputedStyle(this);
@@ -1503,7 +1503,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     // Prefer the slotted [slot="title"] text on the node header.
     const title = node.querySelector('[slot="title"]');
     if (title?.textContent?.trim()) return title.textContent.trim();
-    return node.dataset.label || node.dataset.nodeId || null;
+    return node.dataset["label"] || node.dataset["nodeId"] || null;
   }
 
   /** Sync embedded view-header attrs + breadcrumb trail from drill stack. */
@@ -1551,7 +1551,7 @@ export class SherpaNodeCanvas extends SherpaElement {
         const a = document.createElement("a");
         a.href = "#";
         a.textContent = label;
-        a.dataset.targetDepth = String(targetDepth);
+        a.dataset["targetDepth"] = String(targetDepth);
         crumbs.appendChild(a);
       }
       crumbs.addEventListener("breadcrumb-click", this.#onBreadcrumbClick);
@@ -1574,7 +1574,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const idx = e.detail?.index;
     if (typeof idx !== "number") return;
     const link = trail.querySelectorAll("a")[idx];
-    const target = Number(link?.dataset.targetDepth);
+    const target = Number(link?.dataset["targetDepth"]);
     if (!Number.isFinite(target)) return;
     while (this.#drillStack.length > target) this.popSubgraph();
   };

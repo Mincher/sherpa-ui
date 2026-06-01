@@ -75,20 +75,20 @@ class SherpaSlider extends SherpaElement {
     // Element cache auto-populated on first access
 
     // Defaults
-    if (!this.dataset.type) this.dataset.type = "single";
-    if (!this.dataset.min) this.dataset.min = "0";
-    if (!this.dataset.max) this.dataset.max = "100";
-    if (!this.dataset.step) this.dataset.step = "1";
+    if (!this.dataset["type"]) this.dataset["type"] = "single";
+    if (!this.dataset["min"]) this.dataset["min"] = "0";
+    if (!this.dataset["max"]) this.dataset["max"] = "100";
+    if (!this.dataset["step"]) this.dataset["step"] = "1";
 
     // Set initial values if not provided
     if (this.#isRange) {
-      if (!this.dataset.valueLow)
-        this.dataset.valueLow = this.dataset.min || "0";
-      if (!this.dataset.valueHigh)
-        this.dataset.valueHigh = this.dataset.max || "100";
+      if (!this.dataset["valueLow"])
+        this.dataset["valueLow"] = this.dataset["min"] || "0";
+      if (!this.dataset["valueHigh"])
+        this.dataset["valueHigh"] = this.dataset["max"] || "100";
     } else {
-      if (!this.dataset.value)
-        this.dataset.value = this.dataset.min || "0";
+      if (!this.dataset["value"])
+        this.dataset["value"] = this.dataset["min"] || "0";
     }
 
     // Set up input attributes
@@ -154,34 +154,34 @@ class SherpaSlider extends SherpaElement {
   /* ── getters ─────────────────────────────────────────────── */
 
   get #isRange() {
-    return this.dataset.type === "range";
+    return this.dataset["type"] === "range";
   }
 
   get #min() {
-    return parseFloat(this.dataset.min) || 0;
+    return parseFloat(this.dataset["min"]) || 0;
   }
 
   get #max() {
-    const v = parseFloat(this.dataset.max);
+    const v = parseFloat(this.dataset["max"]);
     return Number.isFinite(v) ? v : 100;
   }
 
   get #step() {
-    const v = parseFloat(this.dataset.step);
+    const v = parseFloat(this.dataset["step"]);
     return v > 0 ? v : 1;
   }
 
   get #valueLow() {
-    const v = parseFloat(this.dataset.valueLow);
+    const v = parseFloat(this.dataset["valueLow"]);
     return Number.isFinite(v) ? this.#clamp(v) : this.#min;
   }
 
   get #valueHigh() {
     if (this.#isRange) {
-      const v = parseFloat(this.dataset.valueHigh);
+      const v = parseFloat(this.dataset["valueHigh"]);
       return Number.isFinite(v) ? this.#clamp(v) : this.#max;
     }
-    const v = parseFloat(this.dataset.value);
+    const v = parseFloat(this.dataset["value"]);
     return Number.isFinite(v) ? this.#clamp(v) : this.#min;
   }
 
@@ -199,7 +199,7 @@ class SherpaSlider extends SherpaElement {
 
   #syncLabel() {
     if (this.els.label) {
-      this.els.label.textContent = this.dataset.label || "";
+      this.els.label.textContent = this.dataset["label"] || "";
     }
   }
 
@@ -370,14 +370,14 @@ class SherpaSlider extends SherpaElement {
     if (handle === "low") {
       // Collision avoidance: low can't exceed high
       const maxLow = this.#valueHigh;
-      this.dataset.valueLow = String(Math.min(clamped, maxLow));
+      this.dataset["valueLow"] = String(Math.min(clamped, maxLow));
     } else {
       if (this.#isRange) {
         // Collision avoidance: high can't go below low
         const minHigh = this.#valueLow;
-        this.dataset.valueHigh = String(Math.max(clamped, minHigh));
+        this.dataset["valueHigh"] = String(Math.max(clamped, minHigh));
       } else {
-        this.dataset.value = String(clamped);
+        this.dataset["value"] = String(clamped);
       }
     }
   }

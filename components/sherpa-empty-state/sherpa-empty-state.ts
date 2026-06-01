@@ -119,31 +119,31 @@ export class SherpaEmptyState extends SherpaElement {
   /* ── Public getters / setters ─────────────────────────────────── */
 
   get heading() {
-    return this.dataset.label || "";
+    return this.dataset["label"] || "";
   }
   set heading(v) {
-    v ? (this.dataset.label = v) : delete this.dataset.label;
+    v ? (this.dataset["label"] = v) : delete this.dataset["label"];
   }
 
   get description() {
-    return this.dataset.description || "";
+    return this.dataset["description"] || "";
   }
   set description(v) {
-    v ? (this.dataset.description = v) : delete this.dataset.description;
+    v ? (this.dataset["description"] = v) : delete this.dataset["description"];
   }
 
   get illustration() {
-    return this.dataset.illustration || "";
+    return this.dataset["illustration"] || "";
   }
   set illustration(v) {
-    v ? (this.dataset.illustration = v) : delete this.dataset.illustration;
+    v ? (this.dataset["illustration"] = v) : delete this.dataset["illustration"];
   }
 
   get smallPrint() {
-    return this.dataset.smallPrint || "";
+    return this.dataset["smallPrint"] || "";
   }
   set smallPrint(v) {
-    v ? (this.dataset.smallPrint = v) : delete this.dataset.smallPrint;
+    v ? (this.dataset["smallPrint"] = v) : delete this.dataset["smallPrint"];
   }
 
   /* ── Sync helpers ─────────────────────────────────────────────── */

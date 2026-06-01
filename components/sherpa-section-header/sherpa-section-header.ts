@@ -57,20 +57,20 @@ export class SherpaSectionHeader extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get heading()     { return this.dataset.label || ''; }
-  set heading(v)    { v ? (this.dataset.label = v) : delete this.dataset.label; }
+  get heading()     { return this.dataset["label"] || ''; }
+  set heading(v)    { v ? (this.dataset["label"] = v) : delete this.dataset["label"]; }
 
-  get headingType() { return this.dataset.headingLevel || 'primary'; }
-  set headingType(v){ this.dataset.headingLevel = v; }
+  get headingType() { return this.dataset["headingLevel"] || 'primary'; }
+  set headingType(v){ this.dataset["headingLevel"] = v; }
 
-  get hasDivider()  { return this.dataset.divider === 'true'; }
-  set hasDivider(v) { this.dataset.divider = v ? 'true' : 'false'; }
+  get hasDivider()  { return this.dataset["divider"] === 'true'; }
+  set hasDivider(v) { this.dataset["divider"] = v ? 'true' : 'false'; }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
   #syncHeading() {
     const el = this.$('.default-heading');
-    if (el) el.textContent = this.dataset.label || '';
+    if (el) el.textContent = this.dataset["label"] || '';
   }
 }
 

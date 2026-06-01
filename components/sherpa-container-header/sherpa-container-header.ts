@@ -61,12 +61,12 @@ export class SherpaContainerHeader extends SherpaElement {
   /* ── Private sync ──────────────────────────────────────────── */
 
   #syncTitle() {
-    if (this.els.title) this.els.title.textContent = this.dataset.title || "";
+    if (this.els.title) this.els.title.textContent = this.dataset["title"] || "";
   }
 
   #syncDescription() {
     if (this.els.description)
-      this.els.description.textContent = this.dataset.description || "";
+      this.els.description.textContent = this.dataset["description"] || "";
   }
 }
 

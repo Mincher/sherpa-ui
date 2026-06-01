@@ -36,12 +36,12 @@ class SherpaProposalPreview extends SherpaElement {
   }
 
   #syncRationale() {
-    if (this.#rationaleEl) this.#rationaleEl.textContent = this.dataset.rationale || "";
+    if (this.#rationaleEl) this.#rationaleEl.textContent = this.dataset["rationale"] || "";
   }
 
   /* ── public API ──────────────────────────────────────────── */
-  get rationale()  { return this.dataset.rationale || ""; }
-  set rationale(v) { if (v == null) this.removeAttribute("data-rationale"); else this.dataset.rationale = String(v); }
+  get rationale()  { return this.dataset["rationale"] || ""; }
+  set rationale(v) { if (v == null) this.removeAttribute("data-rationale"); else this.dataset["rationale"] = String(v); }
 }
 
 customElements.define("sherpa-proposal-preview", SherpaProposalPreview);

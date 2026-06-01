@@ -67,20 +67,20 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     // Sync text content from attributes that were set before the shadow DOM
     // was ready — onAttributeChanged fires early but $() returns null then.
     const titleEl = this.$('.header-title');
-    if (titleEl) titleEl.textContent = this.dataset.label || '';
+    if (titleEl) titleEl.textContent = this.dataset["label"] || '';
 
     const valueEl = this.$('.metric-value');
     if (valueEl) valueEl.textContent = this.getAttribute('value') || '';
 
     const deltaEl = this.$('.metric-delta');
-    if (deltaEl) deltaEl.textContent = this.dataset.delta || '';
+    if (deltaEl) deltaEl.textContent = this.dataset["delta"] || '';
   }
 
   setVisible(visible) {
-    this.dataset.visible = visible === false ? "false" : "true";
+    this.dataset["visible"] = visible === false ? "false" : "true";
   }
   isVisible() {
-    return this.dataset.visible !== "false";
+    return this.dataset["visible"] !== "false";
   }
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
@@ -207,7 +207,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     const trendLabel = trendDir === "flat" ? unitText : formattedDelta;
 
     // Status only applied when explicitly set via config or attribute
-    const explicitStatus = config.status || this.dataset.status || "";
+    const explicitStatus = config.status || this.dataset["status"] || "";
 
     // Derive trend-based status for the card wrapper (not the host)
     let cardStatus = explicitStatus;
@@ -225,10 +225,10 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
     // Set trend direction attribute (trend label always visible, just icons hidden when flat)
     this.setAttribute("data-trend", trendDir);
-    this.dataset.metricId = data.name || "";
-    this.dataset.label = data.name || "";
+    this.dataset["metricId"] = data.name || "";
+    this.dataset["label"] = data.name || "";
     this.setAttribute("value", formattedValue);
-    this.dataset.delta = trendLabel;
+    this.dataset["delta"] = trendLabel;
 
     // Apply explicit status to the host element
     if (
@@ -236,18 +236,18 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
       explicitStatus !== "default" &&
       explicitStatus !== "none"
     ) {
-      this.dataset.status = explicitStatus;
+      this.dataset["status"] = explicitStatus;
     } else {
-      delete this.dataset.status;
+      delete this.dataset["status"];
     }
 
     // Apply trend-derived status to .metric-card so tokens cascade to children
     const card = this.$(".metric-card");
     if (card) {
       if (cardStatus && cardStatus !== "default" && cardStatus !== "none") {
-        card.dataset.status = cardStatus;
+        card.dataset["status"] = cardStatus;
       } else {
-        delete card.dataset.status;
+        delete card.dataset["status"];
       }
     }
 
@@ -301,7 +301,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     const sparkline = this.$("sherpa-sparkline");
     if (!sparkline) return;
 
-    sparkline.dataset.unit = unitText || "";
+    sparkline.dataset["unit"] = unitText || "";
     sparkline.setValues(Array.isArray(values) ? values : []);
   }
 

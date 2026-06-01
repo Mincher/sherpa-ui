@@ -123,7 +123,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
         (e) => {
           const seg = e.target.closest?.(".chart-segment[data-tooltip]");
           if (!seg || !this.els.tip) return;
-          this.els.tip.showFor(seg, seg.dataset.tooltip);
+          this.els.tip.showFor(seg, seg.dataset["tooltip"]);
         },
         true,
       );
@@ -248,13 +248,13 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       this.removeAttribute("data-loading");
       await this.rendered;
 
-      if (!this.dataset.orientation) {
+      if (!this.dataset["orientation"]) {
         const { width, height } = this.getBoundingClientRect();
         if (width && height) {
-          this.dataset.orientation =
+          this.dataset["orientation"] =
             width / height > CONFIG.aspectThreshold ? "horizontal" : "vertical";
         } else {
-          this.dataset.orientation = "horizontal";
+          this.dataset["orientation"] = "horizontal";
         }
       }
 
@@ -283,13 +283,13 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     await this.rendered;
 
     // Set default orientation if not yet established by ResizeObserver
-    if (!this.dataset.orientation) {
+    if (!this.dataset["orientation"]) {
       const { width, height } = this.getBoundingClientRect();
       if (width && height) {
-        this.dataset.orientation =
+        this.dataset["orientation"] =
           width / height > CONFIG.aspectThreshold ? "horizontal" : "vertical";
       } else {
-        this.dataset.orientation = "horizontal";
+        this.dataset["orientation"] = "horizontal";
       }
     }
 
@@ -573,8 +573,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const isHorizontal = width / height > CONFIG.aspectThreshold;
     const orientation = isHorizontal ? "horizontal" : "vertical";
 
-    if (orientation !== this.dataset.orientation) {
-      this.dataset.orientation = orientation;
+    if (orientation !== this.dataset["orientation"]) {
+      this.dataset["orientation"] = orientation;
       if (this.#data) this.#render();
     }
   }
@@ -591,13 +591,13 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     if (!data?.categories?.length || !data?.series?.length) {
       rows.replaceChildren();
-      this.dataset.empty = "";
+      this.dataset["empty"] = "";
       if (axisValues) axisValues.replaceChildren();
       if (legend) legend.replaceChildren();
       return;
     }
 
-    delete this.dataset.empty;
+    delete this.dataset["empty"];
     const capped = this.#capCategories(data);
     const { categories } = capped;
     let { series } = capped;
@@ -607,8 +607,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const maxValue = this.#getMaxValue(series, isStacked);
     const niceMax = this.#niceNumber(maxValue);
 
-    this.dataset.barCount = categories.length;
-    this.dataset.seriesCount = series.length;
+    this.dataset["barCount"] = categories.length;
+    this.dataset["seriesCount"] = series.length;
 
     this.#renderChart(rows, categories, series, niceMax, isStacked);
     this.#renderAxis(axisValues, niceMax);
@@ -627,13 +627,13 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
     if (!data?.categories?.length || !data?.series?.length) {
       rows.replaceChildren();
-      this.dataset.empty = "";
+      this.dataset["empty"] = "";
       if (axisValues) axisValues.replaceChildren();
       if (legend) legend.replaceChildren();
       return;
     }
 
-    delete this.dataset.empty;
+    delete this.dataset["empty"];
 
     const capped = this.#capCategories(data);
     const { categories } = capped;
@@ -643,8 +643,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const maxValue = this.#getMaxValue(series, isStacked);
     const niceMax = this.#niceNumber(maxValue);
 
-    this.dataset.barCount = categories.length;
-    this.dataset.seriesCount = series.length;
+    this.dataset["barCount"] = categories.length;
+    this.dataset["seriesCount"] = series.length;
 
     // Try in-place update of existing rows
     const existingRows = rows.querySelectorAll(".chart-row");
@@ -676,7 +676,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
               "--_segment-size",
               `${seg.percent}%`,
             );
-            segmentEls[i].dataset.tooltip = seg.tooltip;
+            segmentEls[i].dataset["tooltip"] = seg.tooltip;
           });
         }
       });
@@ -917,9 +917,9 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   #buildSegment(name, value, percent, colorIdx) {
     const node = this.#segmentTpl.content.firstElementChild.cloneNode(true);
-    node.dataset.colorIndex = String((colorIdx % CONFIG.numColors) + 1);
+    node.dataset["colorIndex"] = String((colorIdx % CONFIG.numColors) + 1);
     node.style.setProperty("--_segment-size", `${percent}%`);
-    node.dataset.tooltip = `${name}: ${formatCompact(value)}`;
+    node.dataset["tooltip"] = `${name}: ${formatCompact(value)}`;
     return node;
   }
 
@@ -927,8 +927,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const items = series.map((s, i) => {
       const node = this.#legendItemTpl.content.firstElementChild.cloneNode(true);
       const hasData = s.values.some((v) => v > 0);
-      if (!hasData) node.dataset.disabled = "";
-      node.querySelector(".chart-legend-key").dataset.colorIndex = String((i % CONFIG.numColors) + 1);
+      if (!hasData) node.dataset["disabled"] = "";
+      node.querySelector(".chart-legend-key").dataset["colorIndex"] = String((i % CONFIG.numColors) + 1);
       node.querySelector(".chart-legend-label").textContent = s.name;
       return node;
     });

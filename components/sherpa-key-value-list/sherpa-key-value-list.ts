@@ -27,11 +27,11 @@ export class SherpaKeyValueList extends SherpaElement {
   }
 
   override get templateId(): string {
-    return this.dataset.type || 'default';
+    return this.dataset["type"] || 'default';
   }
 
   override onRender(): void {
-    const keyWidth = this.dataset.keyWidth;
+    const keyWidth = this.dataset["keyWidth"];
     if (keyWidth && keyWidth !== 'auto') {
       this.style.setProperty('--_key-width', keyWidth);
     }

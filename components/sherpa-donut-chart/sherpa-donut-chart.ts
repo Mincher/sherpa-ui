@@ -229,7 +229,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     if (segMode === 'off') {
       const total = rows.reduce((s, r) => s + (Number(r[valueField]) || 0), 0);
       this.#data = [{ label: 'Total', value: total }];
-      this.dataset.innerLabel = formatCompact(total);
+      this.dataset["innerLabel"] = formatCompact(total);
       return;
     }
 
@@ -264,14 +264,14 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
     // Auto-set centre label to total + sublabel to chart name
     const total = this.#data.reduce((s, d) => s + d.value, 0);
-    this.dataset.innerLabel = formatCompact(total);
+    this.dataset["innerLabel"] = formatCompact(total);
   }
 
   /* ── Private: sync ────────────────────────────────────────────── */
 
   #syncTitle() {
     if (this.els.title) {
-      const entity = cleanTitleBase(this.dataset.title || '');
+      const entity = cleanTitleBase(this.dataset["title"] || '');
       const segMode = this.getAttribute('data-segment-mode');
       const groupField = this.getAttribute('data-segment-field')
         || this.getAttribute('data-category');
@@ -284,10 +284,10 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   #syncCentreLabel() {
     if (this.els.centreValue) {
-      this.els.centreValue.textContent = this.dataset.innerLabel || '';
+      this.els.centreValue.textContent = this.dataset["innerLabel"] || '';
     }
     if (this.els.centreSublabel) {
-      this.els.centreSublabel.textContent = this.dataset.innerSublabel || '';
+      this.els.centreSublabel.textContent = this.dataset["innerSublabel"] || '';
     }
   }
 

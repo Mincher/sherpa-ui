@@ -77,7 +77,7 @@ class SherpaProductBarV2 extends SherpaElement {
     this.#syncSlotState();
 
     if (!this.#bound) {
-      if (this.dataset.showSystemMenu !== "false") {
+      if (this.dataset["showSystemMenu"] !== "false") {
         this.els.trigger?.addEventListener("click", this.#onTriggerClick);
         this.addEventListener("menu-close", this.#onMenuClose);
       } else {
@@ -103,13 +103,13 @@ class SherpaProductBarV2 extends SherpaElement {
 
   #syncName() {
     if (this.els.name) {
-      this.els.name.textContent = this.dataset.productName || "";
+      this.els.name.textContent = this.dataset["productName"] || "";
     }
   }
 
   #syncTime() {
     if (this.els.time) {
-      this.els.time.textContent = this.dataset.time || "--:--";
+      this.els.time.textContent = this.dataset["time"] || "--:--";
     }
   }
 
@@ -131,7 +131,7 @@ class SherpaProductBarV2 extends SherpaElement {
       new CustomEvent("system-trigger-click", {
         bubbles: true,
         composed: true,
-        detail: { name: this.dataset.productName || "" },
+        detail: { name: this.dataset["productName"] || "" },
       }),
     );
   };

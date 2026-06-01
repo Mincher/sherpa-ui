@@ -42,7 +42,7 @@ export class SherpaNavItem extends SherpaElement {
     return [...super.observedAttributes, 'data-icon', 'data-icon-svg', 'data-svg-icon', 'data-badge', 'data-badge-status', 'data-type', 'data-description'];
   }
 
-  override get templateId(): string { return this.dataset.type === 'promo' ? 'promo' : 'item'; }
+  override get templateId(): string { return this.dataset["type"] === 'promo' ? 'promo' : 'item'; }
 
   override onRender(): void {
     this.#syncIcon();
@@ -66,10 +66,10 @@ export class SherpaNavItem extends SherpaElement {
 
   #syncIcon() {
     // Promo template: simple icon swap, no SVG/inner-wrapper logic.
-    if (this.dataset.type === 'promo') {
+    if (this.dataset["type"] === 'promo') {
       const promoIconEl = this.$('.nav-promo-icon .sherpa-icon');
       if (promoIconEl) {
-        const icon = this.dataset.icon;
+        const icon = this.dataset["icon"];
         promoIconEl.className = icon ? `${icon} sherpa-icon` : 'sherpa-icon';
         if (!promoIconEl.hasAttribute('data-size')) promoIconEl.setAttribute('data-size', 'lg');
       }
@@ -84,15 +84,15 @@ export class SherpaNavItem extends SherpaElement {
       container.prepend(inner);
     }
     // Resolve registry key (data-svg-icon) → data-icon-svg if present.
-    const svgKey = this.dataset.svgIcon;
+    const svgKey = this.dataset["svgIcon"];
     const registry = (typeof window !== 'undefined') ? window.__sherpaNavIcons : null;
-    const svg = this.dataset.iconSvg || (svgKey && registry && registry[svgKey]) || '';
+    const svg = this.dataset["iconSvg"] || (svgKey && registry && registry[svgKey]) || '';
     if (svg) {
       // Inline SVG mode — replace inner contents with raw SVG markup.
       inner.innerHTML = svg;
       const svgEl = inner.querySelector('svg');
       if (svgEl) {
-        svgEl.dataset.navItemSvg = 'true';
+        svgEl.dataset["navItemSvg"] = 'true';
         svgEl.setAttribute('aria-hidden', 'true');
       }
       return;
@@ -107,23 +107,23 @@ export class SherpaNavItem extends SherpaElement {
       iconEl.setAttribute('aria-hidden', 'true');
       inner.appendChild(iconEl);
     }
-    const icon = this.dataset.icon;
+    const icon = this.dataset["icon"];
     iconEl.className = icon ? `${icon} sherpa-icon` : 'sherpa-icon';
   }
 
   #syncBadge() {
     const tagEl = this.$('.nav-item-tag');
     if (!tagEl) return;
-    const badge = this.dataset.badge;
+    const badge = this.dataset["badge"];
     tagEl.textContent = badge || '';
-    tagEl.dataset.status = this.dataset.badgeStatus || 'success';
+    tagEl.dataset["status"] = this.dataset["badgeStatus"] || 'success';
     this.toggleAttribute('data-has-badge', !!badge);
   }
 
   #syncDescription() {
     const descEl = this.$('.nav-promo-description');
     if (!descEl) return;
-    descEl.textContent = this.dataset.description || '';
+    descEl.textContent = this.dataset["description"] || '';
   }
 }
 

@@ -100,7 +100,7 @@ export const ThemeManager = {
    * @param {string} theme — Theme slug, e.g. 'apex-2-purple', 'classic'
    */
   setTheme(theme) {
-    _root().dataset.theme = theme;
+    _root().dataset["theme"] = theme;
     _write(_config.storageKeyTheme, theme);
   },
 
@@ -120,7 +120,7 @@ export const ThemeManager = {
    * @param {'auto'|'light'|'dark'|'hc'} mode
    */
   setMode(mode) {
-    _root().dataset.mode = mode;
+    _root().dataset["mode"] = mode;
     _write(_config.storageKeyMode, mode);
   },
 
@@ -135,7 +135,7 @@ export const ThemeManager = {
    * @param {'compact'|'base'|'comfortable'} density
    */
   setDensity(density) {
-    _root().dataset.density = density;
+    _root().dataset["density"] = density;
     _write(_config.storageKeyDensity, density);
   },
 
@@ -154,8 +154,8 @@ export const ThemeManager = {
    * @param {'critical'|'info'|'success'|'warning'|'urgent'|null} status
    */
   setStatus(status) {
-    if (status) _root().dataset.status = status;
-    else        delete _root().dataset.status;
+    if (status) _root().dataset["status"] = status;
+    else        delete _root().dataset["status"];
     _write(_config.storageKeyStatus, status);
   },
 };

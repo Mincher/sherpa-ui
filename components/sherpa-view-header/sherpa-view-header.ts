@@ -109,7 +109,7 @@ export class SherpaViewHeader extends SherpaElement {
   #applyEditMode(on) {
     // Sync toggle state
     const toggle = this.$('#edit-mode-toggle');
-    if (toggle) toggle.dataset.state = on ? 'on' : 'off';
+    if (toggle) toggle.dataset["state"] = on ? 'on' : 'off';
     // Dispatch so app coordinator can toggle containers, body attribute, etc.
     this.dispatchEvent(new CustomEvent('edit-mode-change', {
       bubbles: true, composed: true,
@@ -119,19 +119,19 @@ export class SherpaViewHeader extends SherpaElement {
 
   // ============ Public API ============
 
-  setHeading(name) { this.dataset.label = name; }
-  getHeading() { return this.dataset.label || ''; }
+  setHeading(name) { this.dataset["label"] = name; }
+  getHeading() { return this.dataset["label"] || ''; }
   setViewId(id) {
     this.#viewId = id;
-    if (id) this.dataset.viewId = id;
-    else delete this.dataset.viewId;
+    if (id) this.dataset["viewId"] = id;
+    else delete this.dataset["viewId"];
   }
   getViewId() { return this.#viewId; }
   setFavorite(on) {
-    this.dataset.favorite = on ? 'true' : 'false';
+    this.dataset["favorite"] = on ? 'true' : 'false';
     this.#syncFavoriteButton(on);
   }
-  isFavorite() { return this.dataset.favorite === 'true'; }
+  isFavorite() { return this.dataset["favorite"] === 'true'; }
 
   /**
    * Render an inline view-selection picker into the `view-selection`
@@ -179,15 +179,15 @@ export class SherpaViewHeader extends SherpaElement {
     this.#setupBackButton();
     this.#setupEditMode();
     this.#setupOptionSlotWatcher();
-    this.#syncBreadcrumbs(this.dataset.breadcrumbs);
+    this.#syncBreadcrumbs(this.dataset["breadcrumbs"]);
 
     // Apply any attributes that were set before render completed
-    const heading = this.dataset.label;
+    const heading = this.dataset["label"];
     if (heading) {
       const label = this.$('.heading-label');
       if (label) label.textContent = heading;
     }
-    this.#syncFavoriteButton(this.dataset.favorite === 'true');
+    this.#syncFavoriteButton(this.dataset["favorite"] === 'true');
   }
 
   #setupSelectors() {
@@ -230,7 +230,7 @@ export class SherpaViewHeader extends SherpaElement {
     if (!btn) return;
     
     btn.addEventListener('click', () => {
-      const pageTitle = this.getHeading() || this.dataset.exportTitle || 'Export';
+      const pageTitle = this.getHeading() || this.dataset["exportTitle"] || 'Export';
       this.dispatchEvent(new CustomEvent('view-export', {
         bubbles: true, composed: true,
         detail: { title: pageTitle }
@@ -243,14 +243,14 @@ export class SherpaViewHeader extends SherpaElement {
     if (!toggle) return;
     toggle.addEventListener('change', e => {
       const next = e.detail.checked;
-      this.dataset.editMode = next ? 'true' : 'false';
+      this.dataset["editMode"] = next ? 'true' : 'false';
     });
   }
 
   #syncFavoriteButton(on) {
     const btn = this.$('#favorite-btn');
     if (!btn) return;
-    btn.dataset.favorite = on.toString();
+    btn.dataset["favorite"] = on.toString();
     // Toggle between filled (solid) and outlined (regular) star via FA classes.
     btn.setAttribute('data-icon-start', on ? 'fa-solid fa-star' : 'fa-regular fa-star');
   }
@@ -307,9 +307,9 @@ export class SherpaViewHeader extends SherpaElement {
       }
     }
     if (items.length) {
-      crumbsEl.dataset.items = JSON.stringify(items);
+      crumbsEl.dataset["items"] = JSON.stringify(items);
     } else {
-      delete crumbsEl.dataset.items;
+      delete crumbsEl.dataset["items"];
     }
     this.toggleAttribute('data-has-breadcrumbs', items.length > 0);
   }
@@ -327,14 +327,14 @@ export class SherpaViewHeader extends SherpaElement {
       const items = opts.map((o) => ({
         value: o.value || o.getAttribute('value') || o.textContent.trim(),
         label: o.textContent.trim(),
-        badge: o.dataset.badge || o.getAttribute('data-badge') || undefined,
-        badgeStatus: o.dataset.badgeStatus || o.getAttribute('data-badge-status') || undefined,
+        badge: o.dataset["badge"] || o.getAttribute('data-badge') || undefined,
+        badgeStatus: o.dataset["badgeStatus"] || o.getAttribute('data-badge-status') || undefined,
       }));
       const selected =
         opts.find((o) => o.hasAttribute('selected'))?.value ||
         opts.find((o) => o.hasAttribute('selected'))?.textContent.trim() ||
         items[0]?.value;
-      const ariaLabel = this.dataset.viewSelectionLabel || 'Select view';
+      const ariaLabel = this.dataset["viewSelectionLabel"] || 'Select view';
       // Remove the originals so they don't leak into layout.
       opts.forEach((o) => o.remove());
       this.setViewOptions(items, selected, { ariaLabel });
@@ -364,7 +364,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#pickerValue = resolvedValue;
 
     const trigger = document.createElement('sherpa-button');
-    trigger.dataset.viewPicker = '';
+    trigger.dataset["viewPicker"] = '';
     trigger.setAttribute('slot', 'view-selection');
     trigger.setAttribute('data-variant', 'secondary');
     trigger.setAttribute('data-size', 'small');
@@ -378,7 +378,7 @@ export class SherpaViewHeader extends SherpaElement {
     let triggerBadge = null;
     if (currentEntry?.badge) {
       triggerBadge = document.createElement('sherpa-tag');
-      triggerBadge.dataset.viewPicker = '';
+      triggerBadge.dataset["viewPicker"] = '';
       triggerBadge.setAttribute('slot', 'view-selection');
       triggerBadge.setAttribute('data-variant', 'secondary');
       if (currentEntry.badgeStatus) {
@@ -388,7 +388,7 @@ export class SherpaViewHeader extends SherpaElement {
     }
 
     const menu = document.createElement('sherpa-menu');
-    menu.dataset.viewPicker = '';
+    menu.dataset["viewPicker"] = '';
     menu.setAttribute('slot', 'view-selection');
     menu.setAttribute('popover', 'auto');
     menu.style.inlineSize = '240px';
@@ -420,7 +420,7 @@ export class SherpaViewHeader extends SherpaElement {
       if (!sr || !sr.querySelector('.trigger')) return false;
       if (sr.querySelector('style[data-view-picker-truncate]')) return true;
       const style = document.createElement('style');
-      style.dataset.viewPickerTruncate = '';
+      style.dataset["viewPickerTruncate"] = '';
       style.textContent = `
         .trigger { inline-size: 100%; display: inline-flex; align-items: center; justify-content: flex-start; gap: var(--sherpa-space-xs, 12px); }
         .label { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: start; }
@@ -461,7 +461,7 @@ export class SherpaViewHeader extends SherpaElement {
       }
       if (picked.badge) {
         const tag = document.createElement('sherpa-tag');
-        tag.dataset.viewPicker = '';
+        tag.dataset["viewPicker"] = '';
         tag.setAttribute('slot', 'view-selection');
         tag.setAttribute('data-variant', 'secondary');
         if (picked.badgeStatus) tag.setAttribute('data-status', picked.badgeStatus);

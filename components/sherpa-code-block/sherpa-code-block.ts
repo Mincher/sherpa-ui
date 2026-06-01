@@ -182,7 +182,7 @@ export class SherpaCodeBlock extends SherpaElement {
   async reloadHighlighter() {
     this.#prismLoaded = false;
     this.#highlightError = null;
-    this.dataset.highlightError = '';
+    this.dataset["highlightError"] = '';
     await this.#loadAndHighlightCode();
   }
 
@@ -202,7 +202,7 @@ export class SherpaCodeBlock extends SherpaElement {
     }
 
     // Detect language from attribute or auto-detect from content
-    const requestedLanguage = this.dataset.language || 'auto';
+    const requestedLanguage = this.dataset["language"] || 'auto';
     this.#detectedLanguage = this.#detectLanguage(codeContent, requestedLanguage);
 
     // Emit detection event
@@ -227,8 +227,8 @@ export class SherpaCodeBlock extends SherpaElement {
     }
 
     // Apply max-height if set
-    if (this.dataset.maxHeight && this.els.pre) {
-      this.els.pre.style.maxHeight = this.dataset.maxHeight;
+    if (this.dataset["maxHeight"] && this.els.pre) {
+      this.els.pre.style.maxHeight = this.dataset["maxHeight"];
     }
 
     // Apply theme
@@ -271,7 +271,7 @@ export class SherpaCodeBlock extends SherpaElement {
    */
   #getConfidence(code, language) {
     if (language === 'text') return 0.2; // Low confidence for plaintext fallback
-    if (this.dataset.language && this.dataset.language !== 'auto') return 1.0; // Explicit match
+    if (this.dataset["language"] && this.dataset["language"] !== 'auto') return 1.0; // Explicit match
     return 0.8; // Auto-detected with reasonable confidence
   }
 
@@ -302,10 +302,10 @@ export class SherpaCodeBlock extends SherpaElement {
 
       this.#prismLoaded = true;
       this.#highlightError = null;
-      this.dataset.highlightError = '';
+      this.dataset["highlightError"] = '';
     } catch (err) {
       this.#highlightError = `Failed to load syntax highlighter: ${err.message}`;
-      this.dataset.highlightError = this.#highlightError;
+      this.dataset["highlightError"] = this.#highlightError;
 
       this.#emit('code-highlight-error', {
         language: this.#detectedLanguage,
@@ -380,10 +380,10 @@ export class SherpaCodeBlock extends SherpaElement {
   #applyLineNumbers() {
     if (!this.els.pre) return;
 
-    this.els.pre.dataset.lineNumbers = 'true';
+    this.els.pre.dataset["lineNumbers"] = 'true';
 
     // Set line-start if provided
-    const lineStart = this.dataset.lineStart || '1';
+    const lineStart = this.dataset["lineStart"] || '1';
     if (lineStart && lineStart !== '1') {
       this.els.pre.setAttribute('data-start', lineStart);
     }
@@ -410,11 +410,11 @@ export class SherpaCodeBlock extends SherpaElement {
    */
   #applyThemeCSS() {
     if (this.els.pre) {
-      const theme = this.dataset.theme || 'auto';
+      const theme = this.dataset["theme"] || 'auto';
       const isDark =
         theme === 'dark' || (theme === 'auto' && this.#getPageMode() === 'dark');
 
-      this.dataset.resolvedTheme = isDark ? 'dark' : 'light';
+      this.dataset["resolvedTheme"] = isDark ? 'dark' : 'light';
     }
   }
 
@@ -469,7 +469,7 @@ export class SherpaCodeBlock extends SherpaElement {
    * Show copy feedback toast.
    */
   #showToast() {
-    const message = this.dataset.copyToastMessage || 'Copied to clipboard!';
+    const message = this.dataset["copyToastMessage"] || 'Copied to clipboard!';
 
     // Try to use SherpaToast if available
     if (window.SherpaToast) {

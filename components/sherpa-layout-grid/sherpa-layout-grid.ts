@@ -78,7 +78,7 @@ export class SherpaLayoutGrid extends SherpaElement {
   }
 
   #syncRowHeight() {
-    const value = this.dataset.rowHeight;
+    const value = this.dataset["rowHeight"];
     if (value) {
       this.style.setProperty("--row-height", value);
     } else {
@@ -163,7 +163,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     if (fromIdx < toIdx) target.after(this.#dragSource);
     else target.before(this.#dragSource);
 
-    const order = Array.from(this.children).map((c, i) => c.dataset.containerId || String(i));
+    const order = Array.from(this.children).map((c, i) => c.dataset["containerId"] || String(i));
     this.dispatchEvent(new CustomEvent('layout-reorder', {
       bubbles: true, composed: true,
       detail: { from: fromIdx, to: toIdx, order },

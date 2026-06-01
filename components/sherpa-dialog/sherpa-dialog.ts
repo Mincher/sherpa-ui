@@ -68,7 +68,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
   /* ── Template selection ───────────────────────────────────────── */
 
   override get templateId(): string {
-    return this.dataset.template || this.dataset.type || 'default';
+    return this.dataset["template"] || this.dataset["type"] || 'default';
   }
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
@@ -81,7 +81,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
     // Native <dialog> fires "close" when closed by .close() or Escape
     dialog?.addEventListener('close', () => {
-      delete this.dataset.open;
+      delete this.dataset["open"];
       this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
     });
 
@@ -113,7 +113,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
   }
 
   override onConnect(): void {
-    if (this.dataset.open === 'true') {
+    if (this.dataset["open"] === 'true') {
       this.#openDialog();
     }
   }
@@ -147,30 +147,30 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get heading()    { return this.dataset.label || ''; }
-  set heading(v)   { v ? this.dataset.label = v : delete this.dataset.label; }
+  get heading()    { return this.dataset["label"] || ''; }
+  set heading(v)   { v ? this.dataset["label"] = v : delete this.dataset["label"]; }
 
-  get subtitle()   { return this.dataset.subtitle || ''; }
-  set subtitle(v)  { v ? this.dataset.subtitle = v : delete this.dataset.subtitle; }
+  get subtitle()   { return this.dataset["subtitle"] || ''; }
+  set subtitle(v)  { v ? this.dataset["subtitle"] = v : delete this.dataset["subtitle"]; }
 
-  get size()       { return this.dataset.size || 'medium'; }
-  set size(v)      { this.dataset.size = v; }
+  get size()       { return this.dataset["size"] || 'medium'; }
+  set size(v)      { this.dataset["size"] = v; }
 
-  get open()       { return this.dataset.open === 'true'; }
-  set open(v)      { v ? this.dataset.open = 'true' : delete this.dataset.open; }
+  get open()       { return this.dataset["open"] === 'true'; }
+  set open(v)      { v ? this.dataset["open"] = 'true' : delete this.dataset["open"]; }
 
-  get dismissible()  { return this.dataset.dismissible !== 'false'; }
-  set dismissible(v) { this.dataset.dismissible = v ? 'true' : 'false'; }
+  get dismissible()  { return this.dataset["dismissible"] !== 'false'; }
+  set dismissible(v) { this.dataset["dismissible"] = v ? 'true' : 'false'; }
 
-  show()   { this.dataset.open = 'true'; }
-  hide()   { delete this.dataset.open; }
+  show()   { this.dataset["open"] = 'true'; }
+  hide()   { delete this.dataset["open"]; }
   toggle() { this.open ? this.hide() : this.show(); }
 
   /* ── Wizard API ───────────────────────────────────────── */
 
-  get page()  { return parseInt(this.dataset.page  || '0', 10) || 0; }
+  get page()  { return parseInt(this.dataset["page"]  || '0', 10) || 0; }
   get pages() {
-    const explicit = parseInt(this.dataset.pages || '', 10);
+    const explicit = parseInt(this.dataset["pages"] || '', 10);
     if (Number.isFinite(explicit) && explicit > 0) return explicit;
     return this.querySelectorAll('section[data-page]').length || 1;
   }
@@ -178,7 +178,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
   setPage(index) {
     const total = this.pages;
     const next = Math.max(0, Math.min(total - 1, Number(index) || 0));
-    this.dataset.page = String(next);
+    this.dataset["page"] = String(next);
   }
   nextPage() { this.setPage(this.page + 1); }
   prevPage() { this.setPage(this.page - 1); }
@@ -215,7 +215,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     if (back) back.toggleAttribute('disabled', this.page === 0);
     if (next) {
       const last = this.page >= this.pages - 1;
-      next.dataset.label = last ? (this.dataset.finishLabel || 'Finish') : 'Next';
+      next.dataset["label"] = last ? (this.dataset["finishLabel"] || 'Finish') : 'Next';
     }
   }
 }

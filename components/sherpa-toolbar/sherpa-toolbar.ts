@@ -27,7 +27,7 @@ export class SherpaToolbar extends SherpaElement {
      Consumers pick a layout via `data-template="actions"` etc.
      Defaults to the leading/center/trailing layout. */
   override get templateId(): string {
-    return this.dataset.template || 'default';
+    return this.dataset["template"] || 'default';
   }
 }
 

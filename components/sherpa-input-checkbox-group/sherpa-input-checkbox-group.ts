@@ -70,7 +70,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
   /* ── Template selection ────────────────────────────────────────── */
 
   override get templateId(): string {
-    return this.dataset.template === 'weekdays' ? 'weekdays' : 'default';
+    return this.dataset["template"] === 'weekdays' ? 'weekdays' : 'default';
   }
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
@@ -112,7 +112,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
 
   setValue(arr) {
     const list = Array.isArray(arr) ? arr.map(String) : [];
-    this.dataset.value = JSON.stringify(list);
+    this.dataset["value"] = JSON.stringify(list);
   }
 
   clear() { this.setValue([]); }
@@ -121,17 +121,17 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
 
   #syncLegend() {
     const el = this.$('.group-label');
-    if (el) el.textContent = this.dataset.label || '';
+    if (el) el.textContent = this.dataset["label"] || '';
   }
 
   #syncDescription() {
     const el = this.$('.group-description');
-    if (el) el.textContent = this.dataset.description || '';
+    if (el) el.textContent = this.dataset["description"] || '';
   }
 
   #syncHelper() {
     const el = this.$('.group-helper');
-    if (el) el.textContent = this.dataset.helper || '';
+    if (el) el.textContent = this.dataset["helper"] || '';
   }
 
   #stampOptions() {
@@ -139,7 +139,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
     const host = this.$('.group-options');
     if (!host) return;
 
-    const raw = this.dataset.options;
+    const raw = this.dataset["options"];
     if (!raw) return;
     let opts;
     try { opts = JSON.parse(raw); } catch { return; }
@@ -154,10 +154,10 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
     const frag = document.createDocumentFragment();
     for (const opt of opts) {
       const el = document.createElement('sherpa-input-checkbox');
-      el.dataset.stamped = '';
+      el.dataset["stamped"] = '';
       el.setAttribute('value', opt.value);
-      if (opt.label) el.dataset.label = opt.label;
-      if (opt.description) el.dataset.description = opt.description;
+      if (opt.label) el.dataset["label"] = opt.label;
+      if (opt.description) el.dataset["description"] = opt.description;
       if (opt.disabled) el.setAttribute('disabled', '');
       const name = this.getAttribute('name');
       if (name) el.setAttribute('name', name);
@@ -173,7 +173,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
 
   #syncValue() {
     let target;
-    try { target = JSON.parse(this.dataset.value || '[]'); }
+    try { target = JSON.parse(this.dataset["value"] || '[]'); }
     catch { target = []; }
     if (!Array.isArray(target)) target = [];
     const set = new Set(target.map(String));
@@ -220,7 +220,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
     const value = this.#readValue();
     // Reflect to attribute without triggering observer-triggered re-stamp.
     const serialised = JSON.stringify(value);
-    if (this.dataset.value !== serialised) this.dataset.value = serialised;
+    if (this.dataset["value"] !== serialised) this.dataset["value"] = serialised;
     this.dispatchEvent(new CustomEvent('change', {
       bubbles: true, composed: true,
       detail: { value, values: value },

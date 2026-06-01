@@ -58,7 +58,7 @@ export class SherpaInputSelect extends SherpaInputBase {
   }
 
   override get templateId() {
-    return this.dataset.template === 'tree' ? 'tree' : 'default';
+    return this.dataset["template"] === 'tree' ? 'tree' : 'default';
   }
 
   override getInputElement() {
@@ -105,7 +105,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     if (name === "placeholder") {
       this.#ensurePlaceholder();
       const display = this.$('.tree-display');
-      if (display) display.dataset.placeholder = this.getAttribute('placeholder') || '';
+      if (display) display.dataset["placeholder"] = this.getAttribute('placeholder') || '';
     }
     if (name === 'data-template') {
       this.renderTemplate(this.templateId).then(() => this.onInputRender());
@@ -202,14 +202,14 @@ export class SherpaInputSelect extends SherpaInputBase {
   /* ── Tree template ─────────────────────────────────────── */
 
   setTree(nodes) {
-    this.dataset.tree = JSON.stringify(Array.isArray(nodes) ? nodes : []);
+    this.dataset["tree"] = JSON.stringify(Array.isArray(nodes) ? nodes : []);
   }
 
   #renderTree() {
     const panel = this.$('.tree-panel');
     if (!panel) return;
     let nodes = [];
-    try { nodes = JSON.parse(this.dataset.tree || '[]'); } catch {}
+    try { nodes = JSON.parse(this.dataset["tree"] || '[]'); } catch {}
     this.#pathByValue.clear();
     panel.replaceChildren();
     panel.appendChild(this.#buildTree(nodes, []));
@@ -225,14 +225,14 @@ export class SherpaInputSelect extends SherpaInputBase {
       const wrapper = document.createElement('div');
       wrapper.className = 'tree-node';
       wrapper.setAttribute('role', 'treeitem');
-      wrapper.dataset.value = String(node.value);
+      wrapper.dataset["value"] = String(node.value);
       const hasChildren = Array.isArray(node.children) && node.children.length > 0;
-      if (hasChildren) wrapper.dataset.hasChildren = '';
+      if (hasChildren) wrapper.dataset["hasChildren"] = '';
 
       const row = document.createElement('div');
       row.className = 'tree-row';
       if (node.disabled) row.setAttribute('aria-disabled', 'true');
-      row.dataset.value = String(node.value);
+      row.dataset["value"] = String(node.value);
       row.innerHTML = `<span class="tree-toggle" aria-hidden="true"></span><span class="tree-label"></span>`;
       row.querySelector('.tree-label').textContent = node.label || String(node.value);
       wrapper.appendChild(row);
@@ -264,8 +264,8 @@ export class SherpaInputSelect extends SherpaInputBase {
       const toggle = e.target.closest('.tree-toggle');
       if (toggle) {
         const node = toggle.closest('.tree-node');
-        if (node?.dataset.hasChildren !== undefined) {
-          node.dataset.expanded = node.dataset.expanded === 'true' ? 'false' : 'true';
+        if (node?.dataset["hasChildren"] !== undefined) {
+          node.dataset["expanded"] = node.dataset["expanded"] === 'true' ? 'false' : 'true';
         }
         e.stopPropagation();
         return;
@@ -273,11 +273,11 @@ export class SherpaInputSelect extends SherpaInputBase {
       const row = e.target.closest('.tree-row');
       if (!row || row.getAttribute('aria-disabled') === 'true') return;
       const node = row.closest('.tree-node');
-      if (node?.dataset.hasChildren !== undefined) {
-        node.dataset.expanded = node.dataset.expanded === 'true' ? 'false' : 'true';
+      if (node?.dataset["hasChildren"] !== undefined) {
+        node.dataset["expanded"] = node.dataset["expanded"] === 'true' ? 'false' : 'true';
         return;
       }
-      this.#selectTreeValue(row.dataset.value);
+      this.#selectTreeValue(row.dataset["value"]);
     });
   }
 
@@ -317,14 +317,14 @@ export class SherpaInputSelect extends SherpaInputBase {
   #syncTreeDisplay() {
     const display = this.$('.tree-display');
     if (!display) return;
-    display.dataset.placeholder = this.getAttribute('placeholder') || '';
+    display.dataset["placeholder"] = this.getAttribute('placeholder') || '';
     const v = this.getAttribute('value') || '';
     if (!v) { display.textContent = ''; return; }
     const meta = this.#pathByValue.get(v);
     display.textContent = meta?.label || v;
     // Mark selected row
     for (const row of this.$$('.tree-row')) {
-      row.setAttribute('aria-selected', row.dataset.value === v ? 'true' : 'false');
+      row.setAttribute('aria-selected', row.dataset["value"] === v ? 'true' : 'false');
     }
   }
 }

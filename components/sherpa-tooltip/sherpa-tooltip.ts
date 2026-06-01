@@ -59,7 +59,7 @@ class SherpaTooltip extends SherpaElement {
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
   override onRender(): void {
-    this.dataset.position = this.#position;
+    this.dataset["position"] = this.#position;
   }
 
   /* ── Public API ───────────────────────────────────────────────── */
@@ -72,11 +72,11 @@ class SherpaTooltip extends SherpaElement {
 
   getText() { return this.#text; }
 
-  setPosition(pos) { this.dataset.position = pos || 'top'; }
-  getPosition()    { return this.dataset.position || 'top'; }
+  setPosition(pos) { this.dataset["position"] = pos || 'top'; }
+  getPosition()    { return this.dataset["position"] || 'top'; }
 
-  setVisible(visible) { this.dataset.visible = visible ? 'true' : 'false'; }
-  isVisible()         { return this.dataset.visible === 'true'; }
+  setVisible(visible) { this.dataset["visible"] = visible ? 'true' : 'false'; }
+  isVisible()         { return this.dataset["visible"] === 'true'; }
 
   async showFor(anchor, text, { position = 'top' } = {}) {
     if (!anchor) return;
@@ -157,8 +157,8 @@ function initDeclarative() {
   document.addEventListener('mouseenter', (e) => {
     const target = e.target.closest?.('[data-tooltip]');
     if (target) {
-      Tooltip.show(target, target.dataset.tooltip, {
-        position: target.dataset.tooltipPosition || 'top',
+      Tooltip.show(target, target.dataset["tooltip"], {
+        position: target.dataset["tooltipPosition"] || 'top',
       });
     }
   }, true);

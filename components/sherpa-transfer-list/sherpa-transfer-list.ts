@@ -134,8 +134,8 @@ export class SherpaTransferList extends SherpaElement {
   #syncHeadings() {
     const src = this.$('.source-list');
     const tgt = this.$('.target-list');
-    if (src) src.dataset.heading = this.dataset.sourceHeading || 'Available';
-    if (tgt) tgt.dataset.heading = this.dataset.targetHeading || 'Selected';
+    if (src) src.dataset["heading"] = this.dataset["sourceHeading"] || 'Available';
+    if (tgt) tgt.dataset["heading"] = this.dataset["targetHeading"] || 'Selected';
   }
 
   #renderPanes() {
@@ -154,9 +154,9 @@ export class SherpaTransferList extends SherpaElement {
       const frag  = tpl.content.cloneNode(true);
       const item  = frag.querySelector('sherpa-list-item');
       const check = frag.querySelector('.option-check');
-      item.dataset.label = opt.label;
-      item.dataset.value = opt.value;
-      check.dataset.checked = this.#checked.has(opt.value) ? '' : null;
+      item.dataset["label"] = opt.label;
+      item.dataset["value"] = opt.value;
+      check.dataset["checked"] = this.#checked.has(opt.value) ? '' : null;
       if (this.#checked.has(opt.value)) check.setAttribute('data-checked', '');
       check.addEventListener('change', (e) => {
         const isChecked = e.target.hasAttribute('data-checked') || e.target.checked;

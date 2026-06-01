@@ -104,12 +104,12 @@ export class SherpaInputRadio extends StatusMixin(SherpaElement) {
 
   #syncLabel() {
     const el = this.$('.check-text');
-    if (el) el.textContent = this.dataset.label || '';
+    if (el) el.textContent = this.dataset["label"] || '';
   }
 
   #syncDescription() {
     const el = this.$('.check-description');
-    if (el) el.textContent = this.dataset.description || '';
+    if (el) el.textContent = this.dataset["description"] || '';
   }
 
   #syncNative() {

@@ -61,7 +61,7 @@ export class SherpaAccordion extends SherpaElement {
   /* ── Sync ─────────────────────────────────────────────────────── */
 
   #syncLabel() {
-    if (this.els.label) this.els.label.textContent = this.dataset.label || '';
+    if (this.els.label) this.els.label.textContent = this.dataset["label"] || '';
   }
 
   #syncDisabled() {
@@ -73,7 +73,7 @@ export class SherpaAccordion extends SherpaElement {
     if (!this.els.icon) return;
     // data-icon accepts either a Font Awesome class string
     // (e.g. "fa-solid fa-star") or a single FA unicode codepoint.
-    const v = this.dataset.icon || '';
+    const v = this.dataset["icon"] || '';
     if (/\bfa-/.test(v)) {
       this.els.icon.className = `trigger-icon ${v}`.trim();
       this.els.icon.textContent = '';

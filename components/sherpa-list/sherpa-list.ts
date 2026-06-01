@@ -65,11 +65,11 @@ export class SherpaList extends SherpaElement {
   }
 
   #syncHeading() {
-    if (this.els.heading) this.els.heading.textContent = this.dataset.heading || '';
+    if (this.els.heading) this.els.heading.textContent = this.dataset["heading"] || '';
   }
 
   #syncEmpty() {
-    const message = this.dataset.empty || '';
+    const message = this.dataset["empty"] || '';
     if (this.els.empty) this.els.empty.textContent = message;
     const hasItems = this.items.length > 0;
     this.toggleAttribute('data-empty-visible', !hasItems && !!message);

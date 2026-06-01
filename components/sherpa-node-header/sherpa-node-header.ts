@@ -76,7 +76,7 @@ export class SherpaNodeHeader extends SherpaElement {
 
   #syncIcon() {
     if (!this.els.iconBuiltIn || !this.els.iconWrap) return;
-    const cls = this.dataset.icon;
+    const cls = this.dataset["icon"];
     if (cls) {
       this.els.iconBuiltIn.className = `icon-built-in ${cls}`;
       this.els.iconWrap.toggleAttribute("data-has-built-in", true);

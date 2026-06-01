@@ -230,7 +230,7 @@ export class SherpaPagination extends SherpaElement {
     const totalPages = this.totalPages;
     let newPage = page;
 
-    switch (btn.dataset.action) {
+    switch (btn.dataset["action"]) {
       case "first": newPage = 1; break;
       case "prev":  newPage = Math.max(1, page - 1); break;
       case "next":  newPage = Math.min(totalPages, page + 1); break;

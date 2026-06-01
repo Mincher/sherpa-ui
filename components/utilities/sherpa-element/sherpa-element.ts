@@ -27,7 +27,7 @@
  *   instance's `templateId` getter. The first template is the default.
  *
  *   Subclasses override `get templateId()` to select a template:
- *     get templateId() { return this.dataset.type === 'radio' ? 'radio' : 'default'; }
+ *     get templateId() { return this.dataset["type"] === 'radio' ? 'radio' : 'default'; }
  *
  * Slot presence:
  *   Slot wrappers receive `data-has-content` when the slot has content.

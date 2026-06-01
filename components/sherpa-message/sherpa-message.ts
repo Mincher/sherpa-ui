@@ -58,7 +58,7 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     this.$('.message-action')?.addEventListener('click', (e) => {
       this.dispatchEvent(new CustomEvent('action', {
         bubbles: true, composed: true,
-        detail: { href: this.dataset.actionHref || '' },
+        detail: { href: this.dataset["actionHref"] || '' },
       }));
     });
   }
@@ -74,11 +74,11 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get status()      { return this.dataset.status || ''; }
-  set status(v)     { v ? (this.dataset.status = v) : delete this.dataset.status; }
+  get status()      { return this.dataset["status"] || ''; }
+  set status(v)     { v ? (this.dataset["status"] = v) : delete this.dataset["status"]; }
 
-  get dismissible() { return this.hasAttribute('data-dismissible') && this.dataset.dismissible !== 'false'; }
-  set dismissible(v){ v ? (this.dataset.dismissible = 'true') : this.removeAttribute('data-dismissible'); }
+  get dismissible() { return this.hasAttribute('data-dismissible') && this.dataset["dismissible"] !== 'false'; }
+  set dismissible(v){ v ? (this.dataset["dismissible"] = 'true') : this.removeAttribute('data-dismissible'); }
 
   dismiss() {
     this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
@@ -92,12 +92,12 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     if (!iconEl) return;
     const iconClass = this.statusIcon || this.constructor.statusIcons.info;
     iconEl.className = `${iconClass} sherpa-icon default-icon`;
-    iconEl.dataset.size = 'sm';
+    iconEl.dataset["size"] = 'sm';
   }
 
   #syncLabel() {
     const el = this.$('.message-label');
-    if (el) el.textContent = this.dataset.label || '';
+    if (el) el.textContent = this.dataset["label"] || '';
   }
 
   #syncAction() {
@@ -105,16 +105,16 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     const labelEl = this.$('.message-action-label');
     const iconEl = this.$('.message-action-icon');
     if (!link) return;
-    const label = this.dataset.actionLabel || '';
-    const href = this.dataset.actionHref || '';
-    const iconClass = this.dataset.actionIcon || DEFAULT_ACTION_ICON;
+    const label = this.dataset["actionLabel"] || '';
+    const href = this.dataset["actionHref"] || '';
+    const iconClass = this.dataset["actionIcon"] || DEFAULT_ACTION_ICON;
      this.toggleAttribute('data-has-action', !!label);
      if (!label) return;
     if (href) link.setAttribute('href', href); else link.removeAttribute('href');
     if (labelEl) labelEl.textContent = label;
     if (iconEl) {
       iconEl.className = `message-action-icon sherpa-icon ${iconClass}`;
-      iconEl.dataset.size = 'xs';
+      iconEl.dataset["size"] = 'xs';
     }
   }
 }

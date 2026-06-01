@@ -110,7 +110,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   setValue(v) {
     if (v == null) this.removeAttribute('data-value');
-    else this.dataset.value = String(v);
+    else this.dataset["value"] = String(v);
   }
 
   clear() { this.setValue(null); }
@@ -119,19 +119,19 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   #syncLegend() {
     const el = this.$('.group-label');
-    if (el) el.textContent = this.dataset.label || '';
+    if (el) el.textContent = this.dataset["label"] || '';
   }
   #syncDescription() {
     const el = this.$('.group-description');
-    if (el) el.textContent = this.dataset.description || '';
+    if (el) el.textContent = this.dataset["description"] || '';
   }
   #syncHelper() {
     const el = this.$('.group-helper');
-    if (el) el.textContent = this.dataset.helper || '';
+    if (el) el.textContent = this.dataset["helper"] || '';
   }
 
   #stampOptions() {
-    const raw = this.dataset.options;
+    const raw = this.dataset["options"];
     if (!raw) return;
     let opts;
     try { opts = JSON.parse(raw); } catch { return; }
@@ -144,10 +144,10 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
     const frag = document.createDocumentFragment();
     for (const opt of opts) {
       const el = document.createElement('sherpa-input-radio');
-      el.dataset.stamped = '';
+      el.dataset["stamped"] = '';
       el.setAttribute('value', opt.value);
-      if (opt.label) el.dataset.label = opt.label;
-      if (opt.description) el.dataset.description = opt.description;
+      if (opt.label) el.dataset["label"] = opt.label;
+      if (opt.description) el.dataset["description"] = opt.description;
       if (opt.disabled) el.setAttribute('disabled', '');
       if (name) el.setAttribute('name', name);
       frag.appendChild(el);
@@ -164,7 +164,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
   }
 
   #syncValue() {
-    const target = this.dataset.value;
+    const target = this.dataset["value"];
     for (const el of this.querySelectorAll('sherpa-input-radio')) {
       const should = target != null && String(el.value) === String(target);
       if (el.checked !== should) {
@@ -184,7 +184,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
     if (e.target === this) return;
     if (e.target.tagName !== 'SHERPA-INPUT-RADIO') return;
     const v = this.getValue();
-    if (v != null && this.dataset.value !== String(v)) this.dataset.value = String(v);
+    if (v != null && this.dataset["value"] !== String(v)) this.dataset["value"] = String(v);
     this.dispatchEvent(new CustomEvent('change', {
       bubbles: true, composed: true,
       detail: { value: v },

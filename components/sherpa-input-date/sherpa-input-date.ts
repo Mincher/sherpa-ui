@@ -239,8 +239,8 @@ export class SherpaInputDate extends SherpaInputBase {
 
   #syncHasValue() {
     const v = this.getInputElement()?.value || '';
-    if (v) this.dataset.hasValue = '';
-    else   delete this.dataset.hasValue;
+    if (v) this.dataset["hasValue"] = '';
+    else   delete this.dataset["hasValue"];
   }
 
   /** Validates typed value against ISO format + min / max, via setCustomValidity. */

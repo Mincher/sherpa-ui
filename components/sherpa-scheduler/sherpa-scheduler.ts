@@ -46,11 +46,11 @@ export class SherpaScheduler extends SherpaElement {
   /* ── lifecycle ─────────────────────────────────────────── */
 
   override onRender(): void {
-    if (!this.dataset.frequency) this.dataset.frequency = 'weekly';
+    if (!this.dataset["frequency"]) this.dataset["frequency"] = 'weekly';
 
     const freq = this.$('.freq-select');
     if (freq) {
-      freq.value = this.dataset.frequency;
+      freq.value = this.dataset["frequency"];
       freq.addEventListener('change', this.#onFrequencyChange);
     }
 
@@ -67,7 +67,7 @@ export class SherpaScheduler extends SherpaElement {
 
   override onAttributeChanged(name: string) {
     if (name === 'data-frequency') {
-      this.#value.frequency = this.dataset.frequency || 'weekly';
+      this.#value.frequency = this.dataset["frequency"] || 'weekly';
       this.#readFromInputs();
     }
   }
@@ -78,7 +78,7 @@ export class SherpaScheduler extends SherpaElement {
   set value(v) {
     if (!v || typeof v !== 'object') return;
     this.#value = { ...v };
-    if (v.frequency) this.dataset.frequency = v.frequency;
+    if (v.frequency) this.dataset["frequency"] = v.frequency;
     this.#writeToInputs();
   }
 
@@ -86,7 +86,7 @@ export class SherpaScheduler extends SherpaElement {
 
   #onFrequencyChange = (e: Event) => {
     const next = e.target?.value || 'weekly';
-    this.dataset.frequency = next;
+    this.dataset["frequency"] = next;
   };
 
   #onInputChange = () => {
@@ -99,7 +99,7 @@ export class SherpaScheduler extends SherpaElement {
   /* ── sync helpers ──────────────────────────────────────── */
 
   #readFromInputs() {
-    const freq = this.dataset.frequency || 'weekly';
+    const freq = this.dataset["frequency"] || 'weekly';
     const value = { frequency: freq };
 
     const get = (sel) => this.$(sel)?.value;
