@@ -14,8 +14,31 @@
  * @param {string} presentationType - Target presentation type
  * @returns {Object} Plain config object suitable for JSON serialisation
  */
-// @ts-expect-error - TODO: Fix type
-export function getTransferableConfig(data, presentationType) {
+interface TransferableMetadata {
+  dataset?: unknown;
+  category?: unknown;
+  series?: unknown;
+  value?: unknown;
+  agg?: unknown;
+  measures?: unknown;
+  orderBy?: unknown;
+  segmentBy?: unknown;
+  limit?: unknown;
+  filters?: unknown;
+  valueField?: unknown;
+  categoryField?: unknown;
+}
+
+interface TransferableSource {
+  name?: string;
+  metadata?: TransferableMetadata;
+  config?: { showStatus?: boolean; unit?: string };
+}
+
+export function getTransferableConfig(
+  data: TransferableSource | null | undefined,
+  presentationType: string,
+) {
   const meta = data?.metadata || {};
   return {
     name: data?.name || '',

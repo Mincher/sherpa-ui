@@ -258,8 +258,7 @@ export class SherpaElement extends HTMLElement {
    * Default: toggles `data-has-content` on the slot wrapper
    * and sets `data-has-{name}` on the host.
    */
-  // @ts-expect-error - TODO: Fix type
-  onSlotChange(slotEl): void {
+  onSlotChange(slotEl: HTMLSlotElement): void {
     const hasContent = this.#slotHasContent(slotEl);
     const wrapper = slotEl.parentElement;
     if (wrapper && (wrapper as Node) !== this.#shadow) {

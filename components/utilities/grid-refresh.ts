@@ -18,8 +18,15 @@
  * @param {HTMLElement} contentArea — The <sherpa-layout-grid> element
  * @param {function(): Promise<{records: Array, fields: Array}>} loader — Async function that returns { records, fields }
  */
-// @ts-expect-error - TODO: Fix type
-export async function refreshDataset(contentArea, loader) {
+interface DatasetResult {
+  records: unknown[];
+  fields: unknown[];
+}
+
+export async function refreshDataset(
+  contentArea: HTMLElement | null,
+  loader: (() => Promise<DatasetResult | null | undefined>) | null,
+) {
   if (!contentArea || !loader) return;
   const ds = await loader();
   if (!ds) return;

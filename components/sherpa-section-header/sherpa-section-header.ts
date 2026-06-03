@@ -46,8 +46,7 @@ export class SherpaSectionHeader extends SherpaElement {
    * When a custom heading is slotted, hide the default heading text.
    * Other slots use the base `.has-content` toggle.
    */
-  // @ts-expect-error - TODO: Fix type
-  onSlotChange(slotEl) {
+  override onSlotChange(slotEl: HTMLSlotElement): void {
     super.onSlotChange(slotEl);
 
     if (slotEl.name === 'heading') {
