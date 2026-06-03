@@ -27,6 +27,19 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-input-select/sherpa-input-select.js';
+
+/** Current schedule payload exposed via the host `value` property. */
+interface SchedulePayload {
+  frequency: string;
+  date?: string;
+  time?: string;
+  interval?: number;
+  weekdays?: string[];
+  dayOfMonth?: number;
+}
+
+/** A nested input element exposing a value (string for most, string[] for groups). */
+type ValueEl = Element & { value?: string | string[] };
 import '../sherpa-input-date/sherpa-input-date.js';
 import '../sherpa-input-time/sherpa-input-time.js';
 import '../sherpa-input-number/sherpa-input-number.js';
@@ -40,17 +53,15 @@ export class SherpaScheduler extends SherpaElement {
     return [...super.observedAttributes, 'data-frequency'];
   }
 
-  /** @type {SchedulePayload} */
-  #value = { frequency: 'weekly' };
+  #value: SchedulePayload = { frequency: 'weekly' };
 
   /* ── lifecycle ─────────────────────────────────────────── */
 
   override onRender(): void {
     if (!this.dataset["frequency"]) this.dataset["frequency"] = 'weekly';
 
-    const freq = this.$('.freq-select');
+    const freq = this.$('.freq-select') as (Element & { value?: string }) | null;
     if (freq) {
-      // @ts-expect-error - TODO: Fix type
       freq.value = this.dataset["frequency"];
       freq.addEventListener('change', this.#onFrequencyChange);
     }
@@ -76,7 +87,7 @@ export class SherpaScheduler extends SherpaElement {
   /* ── public api ────────────────────────────────────────── */
 
   get value() { return { ...this.#value }; }
-  set value(v) {
+  set value(v: SchedulePayload) {
     if (!v || typeof v !== 'object') return;
     this.#value = { ...v };
     if (v.frequency) this.dataset["frequency"] = v.frequency;
@@ -86,8 +97,7 @@ export class SherpaScheduler extends SherpaElement {
   /* ── handlers ──────────────────────────────────────────── */
 
   #onFrequencyChange = (e: Event) => {
-    // @ts-expect-error - TODO: Fix type
-    const next = e.target?.value || 'weekly';
+    const next = (e.target as HTMLSelectElement | null)?.value || 'weekly';
     this.dataset["frequency"] = next;
   };
 
@@ -102,33 +112,27 @@ export class SherpaScheduler extends SherpaElement {
 
   #readFromInputs() {
     const freq = this.dataset["frequency"] || 'weekly';
-    const value = { frequency: freq };
+    const value: SchedulePayload = { frequency: freq };
 
-    // @ts-expect-error - TODO: Fix type
-    const get = (sel) => this.$(sel)?.value;
+    const getStr = (sel: string): string => {
+      const v = (this.$(sel) as ValueEl | null)?.value;
+      return typeof v === 'string' ? v : '';
+    };
 
     if (freq === 'once') {
-      // @ts-expect-error - TODO: Fix type
-      value.date = get('.date-once') || '';
-      // @ts-expect-error - TODO: Fix type
-      value.time = get('.time-once') || '';
+      value.date = getStr('.date-once');
+      value.time = getStr('.time-once');
     } else if (freq === 'hourly') {
-      // @ts-expect-error - TODO: Fix type
-      value.interval = Number(get('.hourly-interval')) || 1;
+      value.interval = Number(getStr('.hourly-interval')) || 1;
     } else if (freq === 'daily') {
-      // @ts-expect-error - TODO: Fix type
-      value.time = get('.time-of-day') || '';
+      value.time = getStr('.time-of-day');
     } else if (freq === 'weekly') {
-      // @ts-expect-error - TODO: Fix type
-      value.time = get('.time-of-day') || '';
-      const wg = this.$('.weekday-group');
-      // @ts-expect-error - TODO: Fix type
-      value.weekdays = Array.isArray(wg?.value) ? wg.value : [];
+      value.time = getStr('.time-of-day');
+      const wgVal = (this.$('.weekday-group') as ValueEl | null)?.value;
+      value.weekdays = Array.isArray(wgVal) ? wgVal : [];
     } else if (freq === 'monthly') {
-      // @ts-expect-error - TODO: Fix type
-      value.time = get('.time-of-day') || '';
-      // @ts-expect-error - TODO: Fix type
-      value.dayOfMonth = Number(get('.monthly-day')) || 1;
+      value.time = getStr('.time-of-day');
+      value.dayOfMonth = Number(getStr('.monthly-day')) || 1;
     }
 
     this.#value = value;
@@ -136,25 +140,19 @@ export class SherpaScheduler extends SherpaElement {
 
   #writeToInputs() {
     const v = this.#value;
-    // @ts-expect-error - TODO: Fix type
-    const set = (sel, val) => { const el = this.$(sel); if (el && val != null) el.value = val; };
-    // @ts-expect-error - TODO: Fix type
+    const set = (sel: string, val: string | string[]) => {
+      const el = this.$(sel) as ValueEl | null;
+      if (el && val != null) el.value = val;
+    };
     if (v.date != null)        set('.date-once', v.date);
-    // @ts-expect-error - TODO: Fix type
     if (v.time != null) {
-      // @ts-expect-error - TODO: Fix type
       set('.time-once',   v.time);
-      // @ts-expect-error - TODO: Fix type
       set('.time-of-day', v.time);
     }
-    // @ts-expect-error - TODO: Fix type
-    if (v.interval != null)    set('.hourly-interval', v.interval);
-    // @ts-expect-error - TODO: Fix type
-    if (v.dayOfMonth != null)  set('.monthly-day', v.dayOfMonth);
-    // @ts-expect-error - TODO: Fix type
+    if (v.interval != null)    set('.hourly-interval', String(v.interval));
+    if (v.dayOfMonth != null)  set('.monthly-day', String(v.dayOfMonth));
     if (Array.isArray(v.weekdays)) {
-      const wg = this.$('.weekday-group');
-      // @ts-expect-error - TODO: Fix type
+      const wg = this.$('.weekday-group') as ValueEl | null;
       if (wg) wg.value = v.weekdays;
     }
   }
