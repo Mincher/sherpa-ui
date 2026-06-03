@@ -53,7 +53,7 @@ export class SherpaLayoutGrid extends SherpaElement {
   });
 
   /** @type {HTMLElement|null} */
-  #dragSource = null;
+  #dragSource: Element | null = null;
 
   override onRender(): void {
     this.#syncRowHeight();
@@ -61,8 +61,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     this.#syncHeader();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name) {
+  override onAttributeChanged(name: string, _old: string | null, _new: string | null): void {
     if (name === "data-row-height") {
       this.#syncRowHeight();
     }
@@ -121,41 +120,36 @@ export class SherpaLayoutGrid extends SherpaElement {
     }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #containerFor(target) {
-    return target?.closest?.('sherpa-container');
+  #containerFor(target: EventTarget | null): Element | null {
+    return (target as Element | null)?.closest?.('sherpa-container') ?? null;
   }
 
-  #onDragStart = (e: Event) => {
+  #onDragStart = (e: DragEvent) => {
     const src = this.#containerFor(e.target);
     if (!src || src.parentElement !== this) return;
     this.#dragSource = src;
     src.setAttribute('data-dragging', '');
-    // @ts-expect-error - TODO: Fix type
     if (e.dataTransfer) {
-      // @ts-expect-error - TODO: Fix type
       e.dataTransfer.effectAllowed = 'move';
-      // @ts-expect-error - TODO: Fix type
       e.dataTransfer.setData('text/plain', '');
     }
   };
 
-  #onDragOver = (e: Event) => {
+  #onDragOver = (e: DragEvent) => {
     if (!this.#dragSource) return;
     e.preventDefault();
-    // @ts-expect-error - TODO: Fix type
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
     const target = this.#containerFor(e.target);
     for (const c of this.children) c.removeAttribute('data-drop-target');
     if (target && target !== this.#dragSource) target.setAttribute('data-drop-target', '');
   };
 
-  #onDragLeave = (e: Event) => {
+  #onDragLeave = (e: DragEvent) => {
     const target = this.#containerFor(e.target);
     if (target) target.removeAttribute('data-drop-target');
   };
 
-  #onDrop = (e: Event) => {
+  #onDrop = (e: DragEvent) => {
     if (!this.#dragSource) return;
     e.preventDefault();
     const target = this.#containerFor(e.target);
@@ -169,8 +163,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     if (fromIdx < toIdx) target.after(this.#dragSource);
     else target.before(this.#dragSource);
 
-    // @ts-expect-error - TODO: Fix type
-    const order = Array.from(this.children).map((c, i) => c.dataset["containerId"] || String(i));
+    const order = Array.from(this.children).map((c, i) => (c as HTMLElement).dataset["containerId"] || String(i));
     this.dispatchEvent(new CustomEvent('layout-reorder', {
       bubbles: true, composed: true,
       detail: { from: fromIdx, to: toIdx, order },

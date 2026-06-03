@@ -54,14 +54,12 @@ const _config = {
 
 const _root = () => document.documentElement;
 
-// @ts-expect-error - TODO: Fix type
-function _read(key, fallback) {
+function _read<T extends string | null>(key: string, fallback: T): string | T {
   if (!_config.persist) return fallback;
   try { return localStorage.getItem(key) ?? fallback; }
   catch { return fallback; }
 }
-// @ts-expect-error - TODO: Fix type
-function _write(key, value) {
+function _write(key: string, value: string | null) {
   if (!_config.persist) return;
   try {
     if (value == null) localStorage.removeItem(key);
@@ -101,8 +99,7 @@ export const ThemeManager = {
    * selectors in that file activate only the matching theme at zero cost.
    * @param {string} theme — Theme slug, e.g. 'apex-2-purple', 'classic'
    */
-  // @ts-expect-error - TODO: Fix type
-  setTheme(theme) {
+  setTheme(theme: string) {
     _root().dataset["theme"] = theme;
     _write(_config.storageKeyTheme, theme);
   },
@@ -122,8 +119,7 @@ export const ThemeManager = {
    *   'hc'    → forces High Contrast tokens (overrides both light + dark)
    * @param {'auto'|'light'|'dark'|'hc'} mode
    */
-  // @ts-expect-error - TODO: Fix type
-  setMode(mode) {
+  setMode(mode: string) {
     _root().dataset["mode"] = mode;
     _write(_config.storageKeyMode, mode);
   },
@@ -138,8 +134,7 @@ export const ThemeManager = {
    * with `[data-density]` rescale automatically.
    * @param {'compact'|'base'|'comfortable'} density
    */
-  // @ts-expect-error - TODO: Fix type
-  setDensity(density) {
+  setDensity(density: string) {
     _root().dataset["density"] = density;
     _write(_config.storageKeyDensity, density);
   },
@@ -158,8 +153,7 @@ export const ThemeManager = {
    * Pass `null` to clear.
    * @param {'critical'|'info'|'success'|'warning'|'urgent'|null} status
    */
-  // @ts-expect-error - TODO: Fix type
-  setStatus(status) {
+  setStatus(status: string | null) {
     if (status) _root().dataset["status"] = status;
     else        delete _root().dataset["status"];
     _write(_config.storageKeyStatus, status);

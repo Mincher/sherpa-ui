@@ -27,6 +27,7 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
+import type { Status } from '../utilities/status-mixin.js';
 
 const DEFAULT_ACTION_ICON = 'fa-solid fa-arrow-up-right-from-square';
 
@@ -55,8 +56,7 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     this.#syncLabel();
     this.#syncAction();
     this.$('.message-close')?.addEventListener('button-click', () => this.dismiss());
-    // @ts-expect-error - TODO: Fix type
-    this.$('.message-action')?.addEventListener('click', (e) => {
+    this.$<HTMLElement>('.message-action')?.addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('action', {
         bubbles: true, composed: true,
         detail: { href: this.dataset["actionHref"] || '' },
@@ -75,10 +75,8 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  get status()      { return this.dataset["status"] || ''; }
-  // @ts-expect-error - TODO: Fix type
-  set status(v)     { v ? (this.dataset["status"] = v) : delete this.dataset["status"]; }
+  override get status(): Status | null { return (this.dataset["status"] as Status) || null; }
+  override set status(v: Status | null) { v ? (this.dataset["status"] = v) : delete this.dataset["status"]; }
 
   get dismissible() { return this.hasAttribute('data-dismissible') && this.dataset["dismissible"] !== 'false'; }
   set dismissible(v){ v ? (this.dataset["dismissible"] = 'true') : this.removeAttribute('data-dismissible'); }
@@ -91,12 +89,10 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
   /* ── Private ──────────────────────────────────────────────────── */
 
   #syncStatusIcon() {
-    const iconEl = this.$('.default-icon');
+    const iconEl = this.$<HTMLElement>('.default-icon');
     if (!iconEl) return;
-    // @ts-expect-error - TODO: Fix type
-    const iconClass = this.statusIcon || this.constructor.statusIcons.info;
+    const iconClass = this.statusIcon || (this.constructor as typeof SherpaMessage).statusIcons.info;
     iconEl.className = `${iconClass} sherpa-icon default-icon`;
-    // @ts-expect-error - TODO: Fix type
     iconEl.dataset["size"] = 'sm';
   }
 
@@ -108,7 +104,7 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
   #syncAction() {
     const link = this.$('.message-action');
     const labelEl = this.$('.message-action-label');
-    const iconEl = this.$('.message-action-icon');
+    const iconEl = this.$<HTMLElement>('.message-action-icon');
     if (!link) return;
     const label = this.dataset["actionLabel"] || '';
     const href = this.dataset["actionHref"] || '';
@@ -119,7 +115,6 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     if (labelEl) labelEl.textContent = label;
     if (iconEl) {
       iconEl.className = `message-action-icon sherpa-icon ${iconClass}`;
-      // @ts-expect-error - TODO: Fix type
       iconEl.dataset["size"] = 'xs';
     }
   }

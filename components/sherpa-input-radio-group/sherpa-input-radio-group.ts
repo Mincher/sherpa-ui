@@ -32,6 +32,12 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
 import '../sherpa-input-radio/sherpa-input-radio.js';
 
+/** Structural type for the slotted <sherpa-input-radio> children. */
+interface RadioChild extends HTMLElement {
+  checked: boolean;
+  value: string;
+}
+
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
 interface SherpaInputRadioGroupDataset extends DOMStringMap {
@@ -103,15 +109,12 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
   set value(v) { this.setValue(v); }
 
   getValue() {
-    const checked = [...this.querySelectorAll('sherpa-input-radio')]
-      // @ts-expect-error - TODO: Fix type
+    const checked = [...this.querySelectorAll<RadioChild>('sherpa-input-radio')]
       .find((el) => el.checked);
-    // @ts-expect-error - TODO: Fix type
     return checked?.value ?? null;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setValue(v) {
+  setValue(v: string | null) {
     if (v == null) this.removeAttribute('data-value');
     else this.dataset["value"] = String(v);
   }
@@ -168,10 +171,8 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   #syncValue() {
     const target = this.dataset["value"];
-    for (const el of this.querySelectorAll('sherpa-input-radio')) {
-      // @ts-expect-error - TODO: Fix type
+    for (const el of this.querySelectorAll<RadioChild>('sherpa-input-radio')) {
       const should = target != null && String(el.value) === String(target);
-      // @ts-expect-error - TODO: Fix type
       if (el.checked !== should) {
         should ? el.setAttribute('checked', '') : el.removeAttribute('checked');
       }
@@ -187,8 +188,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   #onChildChange = (e: Event) => {
     if (e.target === this) return;
-    // @ts-expect-error - TODO: Fix type
-    if (e.target.tagName !== 'SHERPA-INPUT-RADIO') return;
+    if ((e.target as HTMLElement | null)?.tagName !== 'SHERPA-INPUT-RADIO') return;
     const v = this.getValue();
     if (v != null && this.dataset["value"] !== String(v)) this.dataset["value"] = String(v);
     this.dispatchEvent(new CustomEvent('change', {

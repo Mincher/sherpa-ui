@@ -32,6 +32,7 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { clearElementCache } from "../utilities/element-cache.js";
 
 class SherpaPopover extends SherpaElement {
   static override get cssUrl(): string {
@@ -63,8 +64,7 @@ class SherpaPopover extends SherpaElement {
     closeBtn: { selector: '.close-btn', type: HTMLButtonElement }
   });
 
-  /** @type {AbortController|null} */
-  #outsideController = null;
+  #outsideController: AbortController | null = null;
   #bound = false;
 
   /* ── lifecycle ───────────────────────────────────────────── */
@@ -103,10 +103,9 @@ class SherpaPopover extends SherpaElement {
       case "data-template":
         this.renderTemplate(this.templateId).then(() => {
           this.#bound = false;
-          // @ts-expect-error - TODO: Fix type
-          this.els.heading  = this.$(".header-title");
-          // @ts-expect-error - TODO: Fix type
-          this.els.closeBtn = this.$(".close-btn");
+          // Template swap invalidates cached element refs — clear so the
+          // frozen `els` getters re-query the new shadow content.
+          clearElementCache(this);
           this.els.closeBtn?.addEventListener("click", this.#onClose);
           this.#wirePageButtons();
           this.#bound = true;
@@ -136,8 +135,7 @@ class SherpaPopover extends SherpaElement {
     return this.querySelectorAll('section[data-page]').length || 1;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setPage(index) {
+  setPage(index: number) {
     const total = this.pages;
     const next = Math.max(0, Math.min(total - 1, Number(index) || 0));
     this.dataset["page"] = String(next);
@@ -210,27 +208,24 @@ class SherpaPopover extends SherpaElement {
 
   #setupOutsideClick() {
     this.#teardownOutsideClick();
-    // @ts-expect-error - TODO: Fix type
-    this.#outsideController = new AbortController();
+    const controller = new AbortController();
+    this.#outsideController = controller;
 
     // Delay to avoid catching the opening click
     requestAnimationFrame(() => {
       document.addEventListener(
         "pointerdown",
         (e) => {
-          // @ts-expect-error - TODO: Fix type
-          if (!this.contains(e.target) && !e.composedPath().includes(this)) {
+          if (!this.contains(e.target as Node | null) && !e.composedPath().includes(this)) {
             this.#onClose();
           }
         },
-        // @ts-expect-error - TODO: Fix type
-        { signal: this.#outsideController.signal }
+        { signal: controller.signal }
       );
     });
   }
 
   #teardownOutsideClick() {
-    // @ts-expect-error - TODO: Fix type
     this.#outsideController?.abort();
     this.#outsideController = null;
   }
