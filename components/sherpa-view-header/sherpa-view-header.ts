@@ -117,8 +117,7 @@ export class SherpaViewHeader extends SherpaElement {
 
   #applyEditMode(on: boolean) {
     // Sync toggle state
-    const toggle = this.$('#edit-mode-toggle');
-    // @ts-expect-error - TODO: Fix type
+    const toggle = this.$<HTMLElement>('#edit-mode-toggle');
     if (toggle) toggle.dataset["state"] = on ? 'on' : 'off';
     // Dispatch so app coordinator can toggle containers, body attribute, etc.
     this.dispatchEvent(new CustomEvent('edit-mode-change', {
@@ -216,30 +215,24 @@ export class SherpaViewHeader extends SherpaElement {
     ThemeManager.setDensity(ThemeManager.getDensity());
 
     // Theme (brand)
-    const themeSelect = this.$('#theme-select');
+    const themeSelect = this.$<HTMLSelectElement>('#theme-select');
     if (themeSelect) {
-      // @ts-expect-error - TODO: Fix type
       themeSelect.value = ThemeManager.getTheme();
-      // @ts-expect-error - TODO: Fix type
-      themeSelect.addEventListener('change', e => ThemeManager.setTheme(e.target.value));
+      themeSelect.addEventListener('change', e => ThemeManager.setTheme((e.target as HTMLSelectElement).value));
     }
 
     // Mode (light / dark / auto)
-    const modeSelect = this.$('#mode-select');
+    const modeSelect = this.$<HTMLSelectElement>('#mode-select');
     if (modeSelect) {
-      // @ts-expect-error - TODO: Fix type
       modeSelect.value = ThemeManager.getMode();
-      // @ts-expect-error - TODO: Fix type
-      modeSelect.addEventListener('change', e => ThemeManager.setMode(e.target.value));
+      modeSelect.addEventListener('change', e => ThemeManager.setMode((e.target as HTMLSelectElement).value));
     }
 
     // Density
-    const densitySelect = this.$('#density-select');
+    const densitySelect = this.$<HTMLSelectElement>('#density-select');
     if (densitySelect) {
-      // @ts-expect-error - TODO: Fix type
       densitySelect.value = ThemeManager.getDensity();
-      // @ts-expect-error - TODO: Fix type
-      densitySelect.addEventListener('change', e => ThemeManager.setDensity(e.target.value));
+      densitySelect.addEventListener('change', e => ThemeManager.setDensity((e.target as HTMLSelectElement).value));
     }
   }
 
@@ -259,17 +252,15 @@ export class SherpaViewHeader extends SherpaElement {
   #setupEditMode() {
     const toggle = this.$('#edit-mode-toggle');
     if (!toggle) return;
-    // @ts-expect-error - TODO: Fix type
-    toggle.addEventListener('change', (e: CustomEvent) => {
-      const next = e.detail.checked;
+    toggle.addEventListener('change', (e) => {
+      const next = (e as CustomEvent).detail?.checked;
       this.dataset["editMode"] = next ? 'true' : 'false';
     });
   }
 
   #syncFavoriteButton(on: boolean) {
-    const btn = this.$('#favorite-btn');
+    const btn = this.$<HTMLElement>('#favorite-btn');
     if (!btn) return;
-    // @ts-expect-error - TODO: Fix type
     btn.dataset["favorite"] = on.toString();
     // Toggle between filled (solid) and outlined (regular) star via FA classes.
     btn.setAttribute('data-icon-start', on ? 'fa-solid fa-star' : 'fa-regular fa-star');
@@ -306,32 +297,29 @@ export class SherpaViewHeader extends SherpaElement {
    * `data-has-breadcrumbs`.
    */
   #syncBreadcrumbs(raw: string | null | undefined) {
-    const crumbsEl = this.$('#view-breadcrumbs');
+    const crumbsEl = this.$<HTMLElement>('#view-breadcrumbs');
     if (!crumbsEl) return;
-    // @ts-expect-error - TODO: Fix type
-    let items = [];
+    let items: { label: string; href?: string }[] = [];
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
           items = parsed
-            .filter((it) => it && typeof it === 'object')
+            .filter((it): it is { label?: unknown; href?: unknown } => it && typeof it === 'object')
             .map((it) => {
               const label = String(it.label ?? '').trim();
               if (!label) return null;
               return it.href ? { label, href: String(it.href) } : { label };
             })
-            .filter(Boolean);
+            .filter((it): it is { label: string; href?: string } => it !== null);
         }
       } catch {
         // Ignore malformed JSON; treat as empty.
       }
     }
     if (items.length) {
-      // @ts-expect-error - TODO: Fix type
       crumbsEl.dataset["items"] = JSON.stringify(items);
     } else {
-      // @ts-expect-error - TODO: Fix type
       delete crumbsEl.dataset["items"];
     }
     this.toggleAttribute('data-has-breadcrumbs', items.length > 0);
@@ -345,21 +333,17 @@ export class SherpaViewHeader extends SherpaElement {
   #setupOptionSlotWatcher() {
     if (this.#optionSlotObserver) return;
     const harvest = () => {
-      const opts = [...this.querySelectorAll(':scope > option[slot="view-selection"]')];
+      const opts = [...this.querySelectorAll<HTMLOptionElement>(':scope > option[slot="view-selection"]')];
       if (!opts.length) return;
       const items = opts.map((o) => ({
-        // @ts-expect-error - TODO: Fix type
-        value: o.value || o.getAttribute('value') || o.textContent.trim(),
-        label: o.textContent.trim(),
-        // @ts-expect-error - TODO: Fix type
+        value: o.value || o.getAttribute('value') || o.textContent?.trim() || '',
+        label: o.textContent?.trim() || '',
         badge: o.dataset["badge"] || o.getAttribute('data-badge') || undefined,
-        // @ts-expect-error - TODO: Fix type
         badgeStatus: o.dataset["badgeStatus"] || o.getAttribute('data-badge-status') || undefined,
       }));
       const selected =
-        // @ts-expect-error - TODO: Fix type
         opts.find((o) => o.hasAttribute('selected'))?.value ||
-        opts.find((o) => o.hasAttribute('selected'))?.textContent.trim() ||
+        opts.find((o) => o.hasAttribute('selected'))?.textContent?.trim() ||
         items[0]?.value;
       const ariaLabel = this.dataset["viewSelectionLabel"] || 'Select view';
       // Remove the originals so they don't leak into layout.
@@ -370,8 +354,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#optionSlotObserver = new MutationObserver((records) => {
       const sawOption = records.some((r) =>
         [...r.addedNodes].some(
-          // @ts-expect-error - TODO: Fix type
-          (n) => n.nodeType === 1 && n.tagName === 'OPTION' && n.getAttribute('slot') === 'view-selection',
+          (n) => n.nodeType === 1 && (n as Element).tagName === 'OPTION' && (n as Element).getAttribute('slot') === 'view-selection',
         ),
       );
       if (sawOption) harvest();
@@ -387,12 +370,11 @@ export class SherpaViewHeader extends SherpaElement {
     if (!items.length) { this.#pickerValue = null; return; }
 
     const resolvedValue =
-      // @ts-expect-error - TODO: Fix type
-      items.find((it) => it.value === currentValue)?.value || items[0].value;
+      items.find((it) => it.value === currentValue)?.value || items[0]?.value;
     const currentEntry = items.find((it) => it.value === resolvedValue);
-    this.#pickerValue = resolvedValue;
+    this.#pickerValue = resolvedValue ?? null;
 
-    const trigger = document.createElement('sherpa-button');
+    const trigger = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<unknown> };
     trigger.dataset["viewPicker"] = '';
     trigger.setAttribute('slot', 'view-selection');
     trigger.setAttribute('data-variant', 'secondary');
@@ -416,7 +398,10 @@ export class SherpaViewHeader extends SherpaElement {
       triggerBadge.textContent = currentEntry.badge;
     }
 
-    const menu = document.createElement('sherpa-menu');
+    const menu = document.createElement('sherpa-menu') as HTMLElement & {
+      show?(anchor?: HTMLElement): void;
+      hide?(): void;
+    };
     menu.dataset["viewPicker"] = '';
     menu.setAttribute('slot', 'view-selection');
     menu.setAttribute('popover', 'auto');
@@ -464,23 +449,18 @@ export class SherpaViewHeader extends SherpaElement {
       requestAnimationFrame(() => waitForRender(attempts - 1));
     };
     waitForRender();
-    // @ts-expect-error - TODO: Fix type
     if (trigger.rendered && typeof trigger.rendered.then === 'function') {
-      // @ts-expect-error - TODO: Fix type
       trigger.rendered.then(applyTruncation);
     }
 
     trigger.addEventListener('button-click', (e) => {
       e.stopPropagation();
-      // @ts-expect-error - TODO: Fix type
       if (menu.hasAttribute('open')) menu.hide?.();
-      // @ts-expect-error - TODO: Fix type
       else menu.show?.(trigger);
     });
 
-    menu.addEventListener('menu-select', (e: CustomEvent) => {
-      const value = e.detail?.value;
-      // @ts-expect-error - TODO: Fix type
+    menu.addEventListener('menu-select', (e) => {
+      const value = (e as CustomEvent).detail?.value;
       menu.hide?.();
       if (!value) return;
       const picked = this.#pickerItems.find((it) => it.value === value);
@@ -488,8 +468,7 @@ export class SherpaViewHeader extends SherpaElement {
       this.#pickerValue = picked.value;
       // Update trigger label + badge in place so the picker reflects
       // the new selection without a full re-render.
-      // @ts-expect-error - TODO: Fix type
-      trigger.setAttribute('data-label', picked.label);
+      trigger.setAttribute('data-label', picked.label || '');
       if (this.#viewPickerEls[1]?.tagName === 'SHERPA-TAG') {
         this.#viewPickerEls[1].remove();
         this.#viewPickerEls.splice(1, 1);
