@@ -81,33 +81,28 @@ export class SherpaInputTime extends SherpaInputBase {
     this.#syncSpinners();
 
     // Trigger toggle
-    // @ts-expect-error - TODO: Fix type
-    this.els.trigger.addEventListener('click', (e) => {
+    this.els.trigger?.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.hasAttribute('disabled') || this.hasAttribute('readonly')) return;
       this.hasAttribute('data-open') ? this.#close() : this.#open();
     });
 
     // Hour spinner buttons
-    // @ts-expect-error - TODO: Fix type
-    this.$('.hour-up').addEventListener('click', (e) => {
+    this.$('.hour-up')?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.#adjustHour(+1);
     });
-    // @ts-expect-error - TODO: Fix type
-    this.$('.hour-down').addEventListener('click', (e) => {
+    this.$('.hour-down')?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.#adjustHour(-1);
     });
 
     // Minute spinner buttons
-    // @ts-expect-error - TODO: Fix type
-    this.$('.minute-up').addEventListener('click', (e) => {
+    this.$('.minute-up')?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.#adjustMinute(+1);
     });
-    // @ts-expect-error - TODO: Fix type
-    this.$('.minute-down').addEventListener('click', (e) => {
+    this.$('.minute-down')?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.#adjustMinute(-1);
     });
@@ -158,16 +153,14 @@ export class SherpaInputTime extends SherpaInputBase {
 
   /* ── Spinner adjustments ────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #adjustHour(delta) {
+  #adjustHour(delta: number) {
     const current = this.#hours < 0 ? 0 : this.#hours;
     this.#hours   = ((current + delta) + 24) % 24;
     if (this.#minutes < 0) this.#minutes = 0;
     this.#commitTime();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #adjustMinute(delta) {
+  #adjustMinute(delta: number) {
     const step    = this.#minuteStepSize;
     const current = this.#minutes < 0 ? 0 : this.#minutes;
     this.#minutes = ((current + delta * step) + 60) % 60;
@@ -243,12 +236,11 @@ export class SherpaInputTime extends SherpaInputBase {
    * @param {string} timeStr
    * @returns {string}
    */
-  // @ts-expect-error - TODO: Fix type
-  static #formatTime(timeStr) {
+  static #formatTime(timeStr: string | null | undefined) {
     if (!timeStr) return '';
     const parts = timeStr.split(':');
     if (parts.length < 2) return timeStr;
-    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    return `${parts[0]!.padStart(2, '0')}:${parts[1]!.padStart(2, '0')}`;
   }
 
   /* ── Public API ─────────────────────────────────────────────── */

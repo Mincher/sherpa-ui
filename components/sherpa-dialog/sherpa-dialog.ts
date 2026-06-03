@@ -74,7 +74,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
   override onRender(): void {
-    const dialog = this.$('.dialog');
+    const dialog = this.$<HTMLDialogElement>('.dialog');
 
     this.#syncHeading();
     this.#syncSubtitle();
@@ -87,14 +87,12 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
 
     // Click on ::backdrop (detected as click on <dialog> itself) closes
     dialog?.addEventListener('click', (e) => {
-      // @ts-expect-error - TODO: Fix type
       if (e.target === dialog) dialog.close();
     });
 
     // Close button click
     this.$('.close-button')?.addEventListener('click', () => {
-      // @ts-expect-error - TODO: Fix type
-      this.$('.dialog')?.close();
+      this.$<HTMLDialogElement>('.dialog')?.close();
     });
 
     // Wizard navigation
@@ -120,8 +118,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, _oldValue, newValue: string | null) {
+  override onAttributeChanged(name: string, _oldValue: string | null, newValue: string | null) {
     switch (name) {
       case 'data-open':
         newValue !== null ? this.#openDialog() : this.#closeDialog();
@@ -178,8 +175,7 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     return this.querySelectorAll('section[data-page]').length || 1;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setPage(index) {
+  setPage(index: number) {
     const total = this.pages;
     const next = Math.max(0, Math.min(total - 1, Number(index) || 0));
     this.dataset["page"] = String(next);
@@ -198,18 +194,15 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
   }
 
   #openDialog() {
-    const dialog = this.$('.dialog');
-    // @ts-expect-error - TODO: Fix type
+    const dialog = this.$<HTMLDialogElement>('.dialog');
     if (dialog && !dialog.open) {
-      // @ts-expect-error - TODO: Fix type
       dialog.showModal();
       this.dispatchEvent(new CustomEvent('open', { bubbles: true, composed: true }));
     }
   }
 
   #closeDialog() {
-    const dialog = this.$('.dialog');
-    // @ts-expect-error - TODO: Fix type
+    const dialog = this.$<HTMLDialogElement>('.dialog');
     if (dialog?.open) dialog.close();
   }
 
@@ -218,11 +211,10 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
     const ind = this.$('.wizard-step-indicator');
     if (ind) ind.textContent = `Step ${this.page + 1} of ${this.pages}`;
     const back = this.$('.wizard-back');
-    const next = this.$('.wizard-next');
+    const next = this.$<HTMLElement>('.wizard-next');
     if (back) back.toggleAttribute('disabled', this.page === 0);
     if (next) {
       const last = this.page >= this.pages - 1;
-      // @ts-expect-error - TODO: Fix type
       next.dataset["label"] = last ? (this.dataset["finishLabel"] || 'Finish') : 'Next';
     }
   }

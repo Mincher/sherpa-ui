@@ -31,25 +31,24 @@ export class SherpaBreadcrumbs extends SherpaElement {
   static override get htmlUrl(): string { return new URL('./sherpa-breadcrumbs.html', import.meta.url).href; }
 
   override onRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.shadowRoot.addEventListener('click', this.#onClick);
+    this.shadowRoot?.addEventListener('click', this.#onClick);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onJsonData(items) {
+  override onJsonData(items: unknown): void {
     if (Array.isArray(items)) this.#syncItems(items);
   }
 
   /* ── Dynamic items ───────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #syncItems(items) {
+  #syncItems(items: unknown[]) {
     const trail = this.$('.breadcrumb-trail');
     if (!trail) return;
 
-    const crumbs = items
-      .filter((item: any) => item && typeof item === 'object')
-      // @ts-expect-error - TODO: Fix type
+    const objects = items.filter(
+      (item): item is { label?: unknown; href?: unknown } =>
+        item != null && typeof item === 'object',
+    );
+    const crumbs = objects
       .map((item, i, arr) => {
         const label = String(item.label ?? '').trim();
         if (!label) return null;
@@ -61,11 +60,10 @@ export class SherpaBreadcrumbs extends SherpaElement {
         else el.setAttribute('href', item.href ? String(item.href) : '#');
         return el;
       })
-      .filter(Boolean);
+      .filter((el): el is HTMLElement => el !== null);
 
     if (!crumbs.length) return;
 
-    // @ts-expect-error - TODO: Fix type
     trail.replaceChildren(...crumbs.flatMap((el, i, arr) => {
       if (i === arr.length - 1) return [el];
       const sep = document.createElement('span');
@@ -80,14 +78,12 @@ export class SherpaBreadcrumbs extends SherpaElement {
 
   #onClick = (e: Event) => {
     const text = e.composedPath().find(
-      n => n instanceof HTMLElement && n.classList?.contains('crumb-text')
+      (n): n is HTMLElement => n instanceof HTMLElement && n.classList?.contains('crumb-text'),
     );
     if (!text) return;
 
     const crumbs = Array.from(this.$$('.crumb-text'));
-    // @ts-expect-error - TODO: Fix type
     const index = crumbs.indexOf(text);
-    // @ts-expect-error - TODO: Fix type
     const isCurrent = text.getAttribute('aria-current') === 'page';
 
     this.dispatchEvent(new CustomEvent('breadcrumb-click', {
@@ -95,10 +91,8 @@ export class SherpaBreadcrumbs extends SherpaElement {
       composed: true,
       detail: {
         index,
-        // @ts-expect-error - TODO: Fix type
         href: text.getAttribute('href') || '',
-        // @ts-expect-error - TODO: Fix type
-        label: text.textContent.trim(),
+        label: text.textContent?.trim() ?? '',
         current: isCurrent,
       },
     }));

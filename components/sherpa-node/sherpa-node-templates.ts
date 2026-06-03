@@ -18,14 +18,19 @@
 
 const TEMPLATES_URL = new URL("./sherpa-node-templates.html", import.meta.url).href;
 
-/** @type {Promise<Document> | null} */
-// @ts-expect-error - TODO: Fix type
-let _docPromise = null;
+/** A subtype option in the picker. */
+interface SubtypeOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+let _docPromise: Promise<Document> | null = null;
 
 /** Default human-friendly labels per subtype value, used when the template
  *  doesn't override. Consumers can pass their own labels into
  *  getSubtypesForKind(). */
-const SUBTYPE_LABELS = {
+const SUBTYPE_LABELS: Record<string, string> = {
   // variable
   number: "Number", decimal: "Decimal", text: "Text", property: "Property",
   // math
@@ -63,12 +68,11 @@ const SUBTYPE_LABELS = {
 
 /** Per-kind label for the subtype picker itself ("Type" by default).
  *  Logic nodes call it "Operation" to match common UX conventions. */
-const KIND_SUBTYPE_LABELS = {
+const KIND_SUBTYPE_LABELS: Record<string, string> = {
   logic: "Operation",
 };
 
 async function loadDoc() {
-  // @ts-expect-error - TODO: Fix type
   if (!_docPromise) {
     _docPromise = fetch(TEMPLATES_URL)
       .then((r) => r.text())
@@ -82,10 +86,9 @@ async function loadDoc() {
  * catalogue into nodeEl as light-DOM children. Idempotent — duplicates
  * are skipped if already present.
  */
-// @ts-expect-error - TODO: Fix type
-export async function attachAllTemplatesForKind(nodeEl, kind) {
+export async function attachAllTemplatesForKind(nodeEl: HTMLElement, kind: string) {
   const doc = await loadDoc();
-  const templates = doc.querySelectorAll(
+  const templates = doc.querySelectorAll<HTMLTemplateElement>(
     `template.rows-tpl[data-kind="${CSS.escape(kind)}"]`
   );
   for (const tpl of templates) {
@@ -102,16 +105,14 @@ export async function attachAllTemplatesForKind(nodeEl, kind) {
  * Returns [{value, label}] for every subtype defined for a given kind.
  * Order matches their order in sherpa-node-templates.html.
  */
-// @ts-expect-error - TODO: Fix type
-export async function getSubtypesForKind(kind) {
+export async function getSubtypesForKind(kind: string): Promise<SubtypeOption[]> {
   const doc = await loadDoc();
-  const templates = doc.querySelectorAll(
+  const templates = doc.querySelectorAll<HTMLTemplateElement>(
     `template.rows-tpl[data-kind="${CSS.escape(kind)}"]`
   );
-  const out = [];
+  const out: SubtypeOption[] = [];
   for (const tpl of templates) {
     const value = tpl.dataset["subtype"] || "";
-    // @ts-expect-error - TODO: Fix type
     const label = SUBTYPE_LABELS[value] || value;
     out.push({ value, label });
   }
@@ -131,8 +132,7 @@ export async function getSubtypesForKind(kind) {
  * @param {Array<{value:string,label:string,disabled?:boolean}>} [customOptions]
  * @returns {Promise<Array<{label:string, options:Array}>>}
  */
-// @ts-expect-error - TODO: Fix type
-export async function getGroupedSubtypesForKind(kind, customOptions = []) {
+export async function getGroupedSubtypesForKind(kind: string, customOptions: SubtypeOption[] = []) {
   const presets = await getSubtypesForKind(kind);
   const groups = [{ label: "Preset", options: presets }];
   if (customOptions && customOptions.length) {
@@ -145,14 +145,12 @@ export async function getGroupedSubtypesForKind(kind, customOptions = []) {
  * Convenience: attach templates AND set data-subtypes / data-subtype.
  * If subtype is omitted, the first subtype is selected.
  */
-// @ts-expect-error - TODO: Fix type
-export async function configureNode(nodeEl, kind, subtype) {
+export async function configureNode(nodeEl: HTMLElement, kind: string, subtype?: string) {
   nodeEl.setAttribute("data-kind", kind);
   await attachAllTemplatesForKind(nodeEl, kind);
   const subtypes = await getSubtypesForKind(kind);
   nodeEl.dataset["subtypes"] = JSON.stringify(subtypes);
   nodeEl.dataset["subtype"] = subtype || subtypes[0]?.value || "";
-  // @ts-expect-error - TODO: Fix type
   const subtypeLabel = KIND_SUBTYPE_LABELS[kind];
   if (subtypeLabel) nodeEl.dataset["subtypeLabel"] = subtypeLabel;
   else delete nodeEl.dataset["subtypeLabel"];
