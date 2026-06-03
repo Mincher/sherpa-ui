@@ -86,8 +86,7 @@ class SherpaPanel extends SherpaElement {
 
   /* ── Template selection ───────────────────────────────────── */
 
-  override get templateId(): string {
-    // @ts-expect-error - TODO: Fix type
+  override get templateId(): string | null {
     return this.dataset["variant"] === "ai" ? "ai" : null;
   }
 
@@ -97,15 +96,14 @@ class SherpaPanel extends SherpaElement {
     restoreLabel: { selector: '.collapse-label', type: HTMLSpanElement },
     closeBtn: { selector: '.close-btn', type: HTMLButtonElement },
     trigger: { selector: '.collapse-trigger', type: HTMLButtonElement },
-    search: '.panel-search',
+    search: { selector: '.panel-search', type: HTMLElement },
     empty: '.panel-empty',
-    newChatBtn: '[part="new-chat-btn"]',
-    archiveBtn: '[part="archive-btn"]',
+    newChatBtn: { selector: '[part="new-chat-btn"]', type: HTMLButtonElement },
+    archiveBtn: { selector: '[part="archive-btn"]', type: HTMLButtonElement },
   });
 
   // Panel state (not cached elements)
-  /** @type {MutationObserver|null} */
-  #observer = null;
+  #observer: MutationObserver | null = null;
   #currentFilter = "";
   #bound = false;
 
@@ -122,19 +120,15 @@ class SherpaPanel extends SherpaElement {
       // Listeners
       this.els.closeBtn?.addEventListener("click", this.#onClose);
       this.els.trigger?.addEventListener("click", this.#onExpand);
-      // @ts-expect-error - TODO: Fix type
-      this.els.search?.addEventListener("input", this.#onSearchChange);
-      // @ts-expect-error - TODO: Fix type
-      this.els.search?.addEventListener("search", this.#onSearchChange);
+      this.els.search?.addEventListener("input", this.#onSearchChange as EventListener);
+      this.els.search?.addEventListener("search", this.#onSearchChange as EventListener);
       this.els.newChatBtn?.addEventListener("click", this.#onNewChat);
       this.els.archiveBtn?.addEventListener("click", this.#onArchive);
 
       // Re-run filter when consumer mutates light-DOM (e.g. async data load).
-      // @ts-expect-error - TODO: Fix type
       this.#observer = new MutationObserver(() => {
         if (this.#currentFilter) this.#applyFilter(this.#currentFilter);
       });
-      // @ts-expect-error - TODO: Fix type
       this.#observer.observe(this, { childList: true, subtree: true });
       this.#bound = true;
     }
@@ -194,10 +188,9 @@ class SherpaPanel extends SherpaElement {
   toggle() { this.expanded = !this.expanded; }
 
   clearSearch() {
-    // @ts-expect-error - TODO: Fix type
-    if (this.els.search && typeof this.els.search.clear === "function") {
-      // @ts-expect-error - TODO: Fix type
-      this.els.search.clear();
+    const search = this.els.search as (HTMLElement & { clear?: () => void }) | null;
+    if (search && typeof search.clear === "function") {
+      search.clear();
     } else {
       this.#applyFilter("");
     }
@@ -216,9 +209,9 @@ class SherpaPanel extends SherpaElement {
     this.dataset["expanded"] = "";
   };
 
-  #onSearchChange = (e: CustomEvent) => {
-    // @ts-expect-error - TODO: Fix type
-    const value = (e.detail?.value ?? e.target?.value ?? "").toString();
+  #onSearchChange = (e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    const value = (detail?.value ?? (e.target as HTMLInputElement | null)?.value ?? "").toString();
     this.#applyFilter(value);
   };
 
@@ -279,14 +272,12 @@ class SherpaPanel extends SherpaElement {
 
   #syncArchive() {
     if (!this.els.archiveBtn) return;
-    // @ts-expect-error - TODO: Fix type
     this.els.archiveBtn.disabled =
       !this.hasAttribute("data-can-archive") || this.hasAttribute("data-busy");
   }
 
   #syncBusy() {
     if (this.els.newChatBtn) {
-      // @ts-expect-error - TODO: Fix type
       this.els.newChatBtn.disabled = this.hasAttribute("data-busy");
     }
     this.#syncArchive();
@@ -298,8 +289,7 @@ class SherpaPanel extends SherpaElement {
     return this.dataset["searchMatch"] || "sherpa-list-item";
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #applyFilter(rawValue) {
+  #applyFilter(rawValue: string) {
     const filter = (rawValue || "").trim().toLowerCase();
     this.#currentFilter = filter;
 
@@ -321,7 +311,7 @@ class SherpaPanel extends SherpaElement {
       return;
     }
 
-    const ranges = [];
+    const ranges: Range[] = [];
     let matchCount = 0;
 
     for (const item of items) {
@@ -373,8 +363,7 @@ class SherpaPanel extends SherpaElement {
    * shadow DOM, so the host's light-DOM textContent is empty. Fall back to
    * common text-bearing attributes so the panel can still match those rows.
    */
-  // @ts-expect-error - TODO: Fix type
-  #getMatchText(item) {
+  #getMatchText(item: Element) {
     return [
       item.textContent || "",
       item.getAttribute("data-label") || "",
@@ -386,18 +375,16 @@ class SherpaPanel extends SherpaElement {
   }
 
   /** Build a Range for the first occurrence of `filter` in the item's text descendants. */
-  // @ts-expect-error - TODO: Fix type
-  #createMatchRange(item, filter) {
+  #createMatchRange(item: Element, filter: string) {
     const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT, {
       acceptNode: (n) =>
         n.textContent && n.textContent.trim()
           ? NodeFilter.FILTER_ACCEPT
           : NodeFilter.FILTER_REJECT,
     });
-    let node;
+    let node: Node | null;
     while ((node = walker.nextNode())) {
-      // @ts-expect-error - TODO: Fix type
-      const idx = node.textContent.toLowerCase().indexOf(filter);
+      const idx = (node.textContent ?? "").toLowerCase().indexOf(filter);
       if (idx < 0) continue;
       const range = new Range();
       range.setStart(node, idx);

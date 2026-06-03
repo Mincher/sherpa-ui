@@ -39,10 +39,11 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 const supportsAnchor = CSS.supports('position-anchor', '--test');
 
-// @ts-expect-error - TODO: Fix type
-let instance = null;
-// @ts-expect-error - TODO: Fix type
-let currentAnchor = null;
+/** An anchor element, optionally tagged with a temporary generated anchor-name. */
+type AnchorEl = HTMLElement & { _tooltipTempAnchor?: boolean };
+
+let instance: SherpaTooltip | null = null;
+let currentAnchor: AnchorEl | null = null;
 
 class SherpaTooltip extends SherpaElement {
 
@@ -66,8 +67,7 @@ class SherpaTooltip extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  setText(text) {
+  setText(text: string) {
     this.#text = text;
     const content = this.$('.tooltip-content');
     if (content) content.textContent = text;
@@ -75,23 +75,19 @@ class SherpaTooltip extends SherpaElement {
 
   getText() { return this.#text; }
 
-  // @ts-expect-error - TODO: Fix type
-  setPosition(pos) { this.dataset["position"] = pos || 'top'; }
+  setPosition(pos: string) { this.dataset["position"] = pos || 'top'; }
   getPosition()    { return this.dataset["position"] || 'top'; }
 
-  // @ts-expect-error - TODO: Fix type
-  setVisible(visible) { this.dataset["visible"] = visible ? 'true' : 'false'; }
+  setVisible(visible: boolean) { this.dataset["visible"] = visible ? 'true' : 'false'; }
   isVisible()         { return this.dataset["visible"] === 'true'; }
 
-  // @ts-expect-error - TODO: Fix type
-  async showFor(anchor, text, { position = 'top' } = {}) {
+  async showFor(anchor: AnchorEl, text: string, { position = 'top' }: { position?: string } = {}) {
     if (!anchor) return;
 
     // Ensure rendered
     await this.rendered;
 
     // Clean up previous anchor
-    // @ts-expect-error - TODO: Fix type
     if (currentAnchor && currentAnchor !== anchor) {
       currentAnchor = null;
     }
@@ -130,7 +126,6 @@ class SherpaTooltip extends SherpaElement {
 
   hide() {
     this.setVisible(false);
-    // @ts-expect-error - TODO: Fix type
     if (currentAnchor) {
       if (currentAnchor._tooltipTempAnchor) {
         currentAnchor.style.removeProperty('anchor-name');
@@ -146,19 +141,18 @@ customElements.define('sherpa-tooltip', SherpaTooltip);
 
 /* ── Singleton access ───────────────────────────────────────────── */
 
-function getInstance() {
-  // @ts-expect-error - TODO: Fix type
+function getInstance(): SherpaTooltip {
   if (!instance) {
-    instance = document.createElement('sherpa-tooltip');
+    instance = document.createElement('sherpa-tooltip') as SherpaTooltip;
     document.body.appendChild(instance);
   }
   return instance;
 }
 
 export const Tooltip = {
-  // @ts-expect-error - TODO: Fix type
-  show(anchor, text, options = {}) { return getInstance().showFor(anchor, text, options); },
-  // @ts-expect-error - TODO: Fix type
+  show(anchor: AnchorEl, text: string, options: { position?: string } = {}) {
+    return getInstance().showFor(anchor, text, options);
+  },
   hide() { instance?.hide(); },
 };
 
@@ -166,18 +160,16 @@ export const Tooltip = {
 
 function initDeclarative() {
   document.addEventListener('mouseenter', (e) => {
-    // @ts-expect-error - TODO: Fix type
-    const target = e.target.closest?.('[data-tooltip]');
-    if (target) {
-      Tooltip.show(target, target.dataset["tooltip"], {
+    const target = (e.target as Element | null)?.closest?.('[data-tooltip]');
+    if (target instanceof HTMLElement) {
+      Tooltip.show(target, target.dataset["tooltip"] || '', {
         position: target.dataset["tooltipPosition"] || 'top',
       });
     }
   }, true);
 
   document.addEventListener('mouseleave', (e) => {
-    // @ts-expect-error - TODO: Fix type
-    if (e.target.closest?.('[data-tooltip]')) Tooltip.hide();
+    if ((e.target as Element | null)?.closest?.('[data-tooltip]')) Tooltip.hide();
   }, true);
 }
 

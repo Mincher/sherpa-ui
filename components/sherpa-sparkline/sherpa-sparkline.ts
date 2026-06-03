@@ -14,8 +14,7 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
-// @ts-expect-error - TODO: Fix type
-const formatTooltipValue = (value, unitLabel = '') => {
+const formatTooltipValue = (value: unknown, unitLabel = ''): string => {
   const num = Number(value);
   if (!Number.isFinite(num)) return String(value ?? '');
   
@@ -40,25 +39,25 @@ export class SherpaSparkline extends SherpaElement {
 
   static override get observedAttributes(): string[] { return [...super.observedAttributes, 'data-values']; }
 
-  #values = [];
-  #shapeEls = [];
-  #pointEls = [];
+  #values: number[] = [];
+  #shapeEls: HTMLElement[] = [];
+  #pointEls: HTMLElement[] = [];
   #shapeSlots = 0;
   #pointSlots = 0;
 
   els = this.cacheElements({
-    tip: '.tip',
+    tip: { selector: '.tip', type: HTMLElement },
     tipText: '.tip-text'
   });
 
   override onRender(): void {
-    this.#shapeEls = Array.from(this.$$('.shape'));
-    this.#pointEls = Array.from(this.$$('.point'));
+    this.#shapeEls = Array.from(this.$$<HTMLElement>('.shape'));
+    this.#pointEls = Array.from(this.$$<HTMLElement>('.point'));
     this.#shapeSlots = this.#shapeEls.length;
     this.#pointSlots = this.#shapeSlots + 1;
 
     // Add tooltip handlers to points
-    this.#pointEls.forEach((point: any) => {
+    this.#pointEls.forEach((point) => {
       point.addEventListener('pointerenter', this.#onPointEnter);
       point.addEventListener('pointerleave', this.#onPointLeave);
     });
@@ -68,38 +67,31 @@ export class SherpaSparkline extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    this.#pointEls.forEach((point: any) => {
+    this.#pointEls.forEach((point) => {
       point.removeEventListener('pointerenter', this.#onPointEnter);
       point.removeEventListener('pointerleave', this.#onPointLeave);
     });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, _oldValue, _newValue) {
+  override onAttributeChanged(name: string, _oldValue: string | null, _newValue: string | null): void {
     if (name === 'data-values') this.#updateFromAttribute();
   }
 
   #onPointEnter = (e: Event) => {
     const point = e.target;
-    if (!this.els.tip) return;
+    if (!this.els.tip || !(point instanceof HTMLElement)) return;
 
-    // @ts-expect-error - TODO: Fix type
     const rawValue = point.dataset["value"];
     if (rawValue === undefined) return;
     const unitLabel = this.dataset["unit"] || '';
-    // @ts-expect-error - TODO: Fix type
-    this.els.tipText.textContent = formatTooltipValue(rawValue, unitLabel);
-    // @ts-expect-error - TODO: Fix type
-    point.style.anchorName = '--spark-anchor';
-    // @ts-expect-error - TODO: Fix type
+    if (this.els.tipText) this.els.tipText.textContent = formatTooltipValue(rawValue, unitLabel);
+    point.style.setProperty('anchor-name', '--spark-anchor');
     this.els.tip.showPopover();
   };
 
   #onPointLeave = (e: Event) => {
-    // @ts-expect-error - TODO: Fix type
     this.els.tip?.hidePopover();
-    // @ts-expect-error - TODO: Fix type
-    e.target.style.removeProperty('anchor-name');
+    if (e.target instanceof HTMLElement) e.target.style.removeProperty('anchor-name');
   };
 
   /**
@@ -109,8 +101,7 @@ export class SherpaSparkline extends SherpaElement {
    * before the template loads are picked up by onRender().
    * @param {number[]} values - Array of numeric values (any range, will be normalized)
    */
-  // @ts-expect-error - TODO: Fix type
-  setValues(values) {
+  setValues(values: number[]) {
     if (!Array.isArray(values) || values.length === 0) return;
     this.dataset["values"] = JSON.stringify(values);
   }
@@ -118,16 +109,15 @@ export class SherpaSparkline extends SherpaElement {
   #updateFromAttribute() {
     const attr = this.dataset["values"];
     if (!attr) return;
-    let parsed;
+    let parsed: unknown;
     try {
       parsed = JSON.parse(attr);
     } catch {
       // Try comma-separated format
-      parsed = attr.split(',').map((v: any) => parseFloat(v.trim())).filter((v: any) => !isNaN(v));
+      parsed = attr.split(',').map((v) => parseFloat(v.trim())).filter((v) => !isNaN(v));
     }
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // @ts-expect-error - TODO: Fix type
-      this.#values = parsed;
+      this.#values = parsed.map(Number);
       this.#applyPoints();
     }
   }
@@ -143,27 +133,24 @@ export class SherpaSparkline extends SherpaElement {
     const actualSegments = Math.max(actualPoints - 1, 0);
 
     if (!actualPoints) {
-      this.#shapeEls.forEach((shape: any) => shape.toggleAttribute('hidden', true));
-      this.#pointEls.forEach((point: any) => point.toggleAttribute('hidden', true));
+      this.#shapeEls.forEach((shape) => shape.toggleAttribute('hidden', true));
+      this.#pointEls.forEach((point) => point.toggleAttribute('hidden', true));
       return;
     }
 
     // Compute range for CSS calc() normalisation
-    const numPoints = points.map((v: any) => Number(v));
+    const numPoints = points.map((v) => Number(v));
     const min = Math.min(...numPoints);
     const max = Math.max(...numPoints);
     const range = max - min || 1;
 
     // Set range info + raw values on host — CSS normalises via calc()
-    // @ts-expect-error - TODO: Fix type
-    this.style.setProperty('--_min', min);
-    // @ts-expect-error - TODO: Fix type
-    this.style.setProperty('--_range', range);
+    this.style.setProperty('--_min', String(min));
+    this.style.setProperty('--_range', String(range));
 
     for (let i = 0; i < this.#pointSlots; i++) {
       if (i < actualPoints) {
-        // @ts-expect-error - TODO: Fix type
-        this.style.setProperty(`--_v${i}`, numPoints[i]);
+        this.style.setProperty(`--_v${i}`, String(numPoints[i]));
       } else {
         this.style.removeProperty(`--_v${i}`);
       }
@@ -171,16 +158,15 @@ export class SherpaSparkline extends SherpaElement {
 
     // Toggle shape/point visibility
     this.#shapeEls.forEach((shape, index) => {
-      // @ts-expect-error - TODO: Fix type
       shape.toggleAttribute('hidden', index >= actualSegments);
     });
 
-    this.#pointEls.forEach((point: any) => {
+    this.#pointEls.forEach((point) => {
       const index = Number(point.dataset["index"]);
       const active = Number.isFinite(index) && index < actualPoints;
       point.toggleAttribute('hidden', !active);
       if (active) {
-        point.dataset["value"] = points[index];
+        point.dataset["value"] = String(points[index]);
       } else {
         delete point.dataset["value"];
       }
