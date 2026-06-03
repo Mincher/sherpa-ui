@@ -17,17 +17,35 @@
  *   CompositionValidator.validate(componentElement);
  */
 
-// @ts-expect-error - TODO: Fix type
-import { getCategory, getTier, ROLE_TIERS } from './component-categories.js';
+import { getCategory, getTier } from './component-categories.js';
+
+// ─── Types ───────────────────────────────────────────────────────────
+
+interface Violation {
+  type: string;
+  slotName?: string;
+  childElement?: Element;
+  message: string;
+}
+
+interface ErrorContext {
+  hostTag?: string;
+  slotName?: string;
+  childTag?: string;
+  childCategory?: string | null;
+  childTier?: number | null;
+  hostTier?: number | null;
+  acceptedRoles?: string[];
+  requiredSlots?: string[];
+  [key: string]: unknown;
+}
 
 // ─── Configuration ───────────────────────────────────────────────────
 
 let _enabled = false;
 let _strictMode = false;
-// @ts-expect-error - TODO: Fix type
-let _devModeOnly = true;
 
-const _warnedViolations = new Set();
+const _warnedViolations = new Set<string>();
 
 // ─── Validation Rules ────────────────────────────────────────────────
 
@@ -39,8 +57,7 @@ const _warnedViolations = new Set();
  * @param {number} childTier
  * @returns {boolean}
  */
-// @ts-expect-error - TODO: Fix type
-function isTierValid(hostTier, childTier) {
+function isTierValid(hostTier: number | null, childTier: number | null): boolean {
   if (hostTier == null || childTier == null) return true;
   return childTier >= hostTier;
 }
@@ -55,12 +72,16 @@ function isTierValid(hostTier, childTier) {
  * @param {boolean} isSherpaComponent
  * @returns {boolean}
  */
-// @ts-expect-error - TODO: Fix type
-function isRoleAccepted(acceptedRoles, childCategory, allowHtml, isSherpaComponent) {
+function isRoleAccepted(
+  acceptedRoles: string[] | null,
+  childCategory: string | null,
+  allowHtml: boolean,
+  isSherpaComponent: boolean,
+): boolean {
   if (!acceptedRoles) return true;
 
   if (isSherpaComponent) {
-    return childCategory && acceptedRoles.includes(childCategory);
+    return !!(childCategory && acceptedRoles.includes(childCategory));
   }
 
   return allowHtml;
@@ -75,13 +96,11 @@ function isRoleAccepted(acceptedRoles, childCategory, allowHtml, isSherpaCompone
  * @param {Object} context
  * @returns {string}
  */
-// @ts-expect-error - TODO: Fix type
-function getErrorMessage(type, context) {
+function getErrorMessage(type: string, context: ErrorContext): string {
   const { hostTag, slotName, childTag, childCategory, childTier, hostTier, acceptedRoles } = context;
 
   if (type === 'tier') {
-    // @ts-expect-error - TODO: Fix type
-    const tierName = (tier) => {
+    const tierName = (tier: number | null | undefined): string => {
       if (tier === 1) return 'Shell/Nav';
       if (tier === 2) return 'Container/Overlay';
       if (tier === 3) return 'Content';
@@ -103,8 +122,8 @@ function getErrorMessage(type, context) {
   }
 
   if (type === 'role') {
-    const allowed = acceptedRoles.join(', ');
-    const isSherpa = childTag.startsWith('sherpa-');
+    const allowed = acceptedRoles?.join(', ') ?? '';
+    const isSherpa = childTag?.startsWith('sherpa-') ?? false;
 
     if (!isSherpa) {
       return [
@@ -133,8 +152,8 @@ function getErrorMessage(type, context) {
   }
 
   if (type === 'required-slot') {
-    const { requiredSlots } = context;
-    const missing = requiredSlots.filter((name: any) => !context[`has_${name}`]);
+    const requiredSlots = context.requiredSlots ?? [];
+    const missing = requiredSlots.filter((name) => !context[`has_${name}`]);
 
     return [
       `[sherpa] Invalid composition: <${hostTag}> is missing required slot content.`,
@@ -143,7 +162,7 @@ function getErrorMessage(type, context) {
       `  `,
       `  Fix: `,
       `    • Add content to the required slot(s)`,
-      ...missing.map((name: any) => `    • <${hostTag}><span slot="${name}">...</span></${hostTag}>`),
+      ...missing.map((name) => `    • <${hostTag}><span slot="${name}">...</span></${hostTag}>`),
       ``,
     ].join('\n');
   }
@@ -160,10 +179,8 @@ function getErrorMessage(type, context) {
  * @param {HTMLElement} hostEl
  * @returns {Object[]} Array of violations
  */
-// @ts-expect-error - TODO: Fix type
-export function validateSlot(slotEl, hostEl) {
-  // @ts-expect-error - TODO: Fix type
-  const violations = [];
+export function validateSlot(slotEl: HTMLSlotElement, hostEl: HTMLElement): Violation[] {
+  const violations: Violation[] = [];
   const hostTag = hostEl.localName;
   const hostTier = getTier(hostTag);
   const slotName = slotEl.name || '(default)';
@@ -171,12 +188,11 @@ export function validateSlot(slotEl, hostEl) {
 
   // No validation rules apply
   if (!acceptsAttr && hostTier == null) {
-    // @ts-expect-error - TODO: Fix type
     return violations;
   }
 
   const acceptedRoles = acceptsAttr
-    ? acceptsAttr.split(',').map((s: any) => s.trim()).filter(Boolean)
+    ? acceptsAttr.split(',').map((s) => s.trim()).filter(Boolean)
     : null;
   const allowHtml = acceptedRoles ? acceptedRoles.includes('html') : true;
 
@@ -232,17 +248,20 @@ export function validateSlot(slotEl, hostEl) {
  * @param {string[]} requiredSlots - Array of slot names that must have content
  * @returns {Object|null} Violation object or null
  */
-// @ts-expect-error - TODO: Fix type
-export function validateRequiredSlots(shadowRoot, hostEl, requiredSlots) {
+export function validateRequiredSlots(
+  shadowRoot: ShadowRoot,
+  hostEl: HTMLElement,
+  requiredSlots: string[],
+): Violation | null {
   if (!requiredSlots || requiredSlots.length === 0) return null;
 
   const hostTag = hostEl.localName;
-  const slotStatus = {};
+  const slotStatus: Record<string, boolean> = {};
 
   for (const slotName of requiredSlots) {
     const slotEl = slotName === 'default'
-      ? shadowRoot.querySelector('slot:not([name])')
-      : shadowRoot.querySelector(`slot[name="${slotName}"]`);
+      ? shadowRoot.querySelector<HTMLSlotElement>('slot:not([name])')
+      : shadowRoot.querySelector<HTMLSlotElement>(`slot[name="${slotName}"]`);
 
     if (!slotEl) {
       console.warn(`[sherpa] Required slot "${slotName}" not found in <${hostTag}> template`);
@@ -250,17 +269,15 @@ export function validateRequiredSlots(shadowRoot, hostEl, requiredSlots) {
     }
 
     const assigned = slotEl.assignedNodes();
-    const hasContent = assigned.some((node: any) =>
-      (node.nodeType === Node.ELEMENT_NODE && node.localName !== 'template') ||
-      (node.nodeType === Node.TEXT_NODE && node.textContent.trim())
+    const hasContent = assigned.some((node) =>
+      (node.nodeType === Node.ELEMENT_NODE && (node as Element).localName !== 'template') ||
+      (node.nodeType === Node.TEXT_NODE && !!node.textContent?.trim())
     );
 
-    // @ts-expect-error - TODO: Fix type
     slotStatus[`has_${slotName}`] = hasContent;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  const missingSlots = requiredSlots.filter((name: any) => !slotStatus[`has_${name}`]);
+  const missingSlots = requiredSlots.filter((name) => !slotStatus[`has_${name}`]);
 
   if (missingSlots.length > 0) {
     return {
@@ -284,13 +301,13 @@ export function validateRequiredSlots(shadowRoot, hostEl, requiredSlots) {
  * @param {string[]} options.requiredSlots - Slot names that must have content
  * @returns {Object[]} Array of all violations
  */
-// @ts-expect-error - TODO: Fix type
-export function validateComponent(componentEl, options = {}) {
-  // @ts-expect-error - TODO: Fix type
-  const violations = [];
+export function validateComponent(
+  componentEl: HTMLElement,
+  options: { requiredSlots?: string[] } = {},
+): Violation[] {
+  const violations: Violation[] = [];
 
   if (!componentEl || !componentEl.shadowRoot) {
-    // @ts-expect-error - TODO: Fix type
     return violations;
   }
 
@@ -304,9 +321,7 @@ export function validateComponent(componentEl, options = {}) {
   }
 
   // Validate required slots
-  // @ts-expect-error - TODO: Fix type
   if (options.requiredSlots && options.requiredSlots.length > 0) {
-    // @ts-expect-error - TODO: Fix type
     const requiredViolation = validateRequiredSlots(shadowRoot, componentEl, options.requiredSlots);
     if (requiredViolation) {
       violations.push(requiredViolation);
@@ -329,8 +344,8 @@ export const CompositionValidator = {
   enable({ strict = false, devModeOnly = true } = {}) {
     // Check if we're in dev mode
     if (devModeOnly) {
-      // @ts-expect-error - TODO: Fix type
-      const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV === 'development';
+      const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
+      const isDev = proc?.env?.["NODE_ENV"] === 'development';
       const isLocalhost = typeof window !== 'undefined' &&
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
@@ -342,7 +357,6 @@ export const CompositionValidator = {
 
     _enabled = true;
     _strictMode = strict;
-    _devModeOnly = devModeOnly;
 
     console.info('[sherpa] Composition validator enabled', { strict: _strictMode });
   },
@@ -378,8 +392,7 @@ export const CompositionValidator = {
    * @param {Object} options
    * @returns {Object[]} Array of violations
    */
-  // @ts-expect-error - TODO: Fix type
-  validate(componentEl, options = {}) {
+  validate(componentEl: HTMLElement, options: { requiredSlots?: string[] } = {}) {
     if (!_enabled) return [];
 
     const violations = validateComponent(componentEl, options);
