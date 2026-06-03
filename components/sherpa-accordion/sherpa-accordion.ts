@@ -31,9 +31,9 @@ export class SherpaAccordion extends SherpaElement {
 
   els = this.cacheElements({
     label: '.trigger-label',
-    icon: '.trigger-icon',
+    icon: { selector: '.trigger-icon', type: HTMLElement },
     chevronBtn: '.chevron-btn',
-    details: 'details'
+    details: { selector: 'details', type: HTMLDetailsElement }
   });
 
   #bound = false;
@@ -77,21 +77,17 @@ export class SherpaAccordion extends SherpaElement {
     if (/\bfa-/.test(v)) {
       this.els.icon.className = `trigger-icon ${v}`.trim();
       this.els.icon.textContent = '';
-      // @ts-expect-error - TODO: Fix type
       this.els.icon.style.fontFamily = '';
     } else {
       this.els.icon.className = 'trigger-icon';
       this.els.icon.textContent = v;
-      // @ts-expect-error - TODO: Fix type
       this.els.icon.style.fontFamily = v ? '"Font Awesome 6 Free"' : '';
-      // @ts-expect-error - TODO: Fix type
       this.els.icon.style.fontWeight = v ? '900' : '';
     }
   }
 
   /** Mirror the host `open` attribute to the inner <details>. */
   #syncOpen() {
-    // @ts-expect-error - TODO: Fix type
     if (this.els.details) this.els.details.open = this.hasAttribute('open');
   }
 
@@ -99,8 +95,7 @@ export class SherpaAccordion extends SherpaElement {
 
   /** Keep the host `open` attribute in sync with the native toggle. */
   #onToggle = () => {
-    // @ts-expect-error - TODO: Fix type
-    this.toggleAttribute('open', this.els.details.open);
+    if (this.els.details) this.toggleAttribute('open', this.els.details.open);
   };
 }
 

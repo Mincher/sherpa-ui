@@ -27,7 +27,7 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-switch/sherpa-switch.js';
 
-const ROLES = { radio: 'menuitemradio', checkbox: 'menuitemcheckbox', toggle: 'menuitemcheckbox' };
+const ROLES: Record<string, string> = { radio: 'menuitemradio', checkbox: 'menuitemcheckbox', toggle: 'menuitemcheckbox' };
 
 export class SherpaMenuItem extends SherpaElement {
 
@@ -59,8 +59,7 @@ export class SherpaMenuItem extends SherpaElement {
     this.#sync();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, old) {
+  override onAttributeChanged(name: string, _old: string | null, _new: string | null): void {
     if (name === 'data-type') {
       this.renderTemplate(this.templateId);
       return;
@@ -81,8 +80,7 @@ export class SherpaMenuItem extends SherpaElement {
 
     const sel = this.dataset["selection"];
 
-    // @ts-expect-error - TODO: Fix type
-    this.setAttribute('role', ROLES[sel] || 'menuitem');
+    this.setAttribute('role', (sel && ROLES[sel]) || 'menuitem');
     this.setAttribute('aria-disabled', String(this.hasAttribute('disabled')));
 
     if (sel === 'radio' || sel === 'checkbox' || sel === 'toggle') {
@@ -92,21 +90,18 @@ export class SherpaMenuItem extends SherpaElement {
     }
 
     // Sync native checkbox/radio input
-    const input = this.$('.input');
+    const input = this.$<HTMLInputElement>('.input');
     if (input) {
-      // @ts-expect-error - TODO: Fix type
       input.checked = this.hasAttribute('checked');
       if (sel === 'radio' && this.hasAttribute('name')) {
-        // @ts-expect-error - TODO: Fix type
-        input.name = this.getAttribute('name');
+        input.name = this.getAttribute('name') || '';
       }
     }
 
     const desc = this.$('.description');
     if (desc) desc.textContent = this.dataset["description"] || '';
 
-    const sw = this.$('sherpa-switch');
-    // @ts-expect-error - TODO: Fix type
+    const sw = this.$<HTMLElement>('sherpa-switch');
     if (sw) sw.dataset["state"] = this.hasAttribute('checked') ? 'on' : 'off';
 
     const icon = this.$('.menu-item-icon');

@@ -36,20 +36,16 @@ export class SherpaNodeRow extends SherpaElement {
     return [...super.observedAttributes, "data-multi"];
   }
 
-  #inSocketSlot = null;
-  #outSocketSlot = null;
+  #inSocketSlot: HTMLSlotElement | null = null;
+  #outSocketSlot: HTMLSlotElement | null = null;
   #bound = false;
 
   override onRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.#inSocketSlot = this.$('slot[name="input-socket"]');
-    // @ts-expect-error - TODO: Fix type
-    this.#outSocketSlot = this.$('slot[name="output-socket"]');
+    this.#inSocketSlot = this.$<HTMLSlotElement>('slot[name="input-socket"]');
+    this.#outSocketSlot = this.$<HTMLSlotElement>('slot[name="output-socket"]');
 
     if (!this.#bound) {
-      // @ts-expect-error - TODO: Fix type
       this.#inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
-      // @ts-expect-error - TODO: Fix type
       this.#outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
       this.#bound = true;
     }
@@ -61,7 +57,6 @@ export class SherpaNodeRow extends SherpaElement {
   #tagSockets = () => {
     for (const slot of [this.#inSocketSlot, this.#outSocketSlot]) {
       if (!slot) continue;
-      // @ts-expect-error - TODO: Fix type
       const assigned = slot.assignedElements({ flatten: true });
       for (const el of assigned) {
         if (el.localName === "sherpa-node-socket") {

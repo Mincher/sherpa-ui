@@ -40,6 +40,12 @@ import "../sherpa-input-search/sherpa-input-search.js";
 import "../sherpa-menu/sherpa-menu.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
+/** Structural type for the slotted <sherpa-menu> overlay element. */
+interface SystemMenuElement extends HTMLElement {
+  show?(anchor?: HTMLElement | null): void;
+  hide?(): void;
+}
+
 class SherpaProductBarV2 extends SherpaElement {
   static override get cssUrl(): string {
     return new URL("sherpa-product-bar-v2.css", import.meta.url).href;
@@ -137,12 +143,10 @@ class SherpaProductBarV2 extends SherpaElement {
   };
 
   /** Resolve the slotted <sherpa-menu> in the system-menu slot, if any. */
-  #getSystemMenu() {
-    const slot = this.shadowRoot?.querySelector('slot[name="system-menu"]');
-    // @ts-expect-error - TODO: Fix type
+  #getSystemMenu(): SystemMenuElement | null {
+    const slot = this.shadowRoot?.querySelector<HTMLSlotElement>('slot[name="system-menu"]');
     const nodes = slot?.assignedElements?.({ flatten: true }) || [];
-    // @ts-expect-error - TODO: Fix type
-    return nodes.find((n) => n.tagName?.toLowerCase() === "sherpa-menu") || null;
+    return (nodes.find((n) => n.tagName?.toLowerCase() === "sherpa-menu") as SystemMenuElement | undefined) || null;
   }
 
   #onMenuClose = () => {
@@ -158,14 +162,12 @@ class SherpaProductBarV2 extends SherpaElement {
     const root = this.shadowRoot;
     if (!root) return;
 
-    // @ts-expect-error - TODO: Fix type
-    const update = (slotName, attr) => {
-      const slot = root.querySelector(`slot[name="${slotName}"]`);
+    const update = (slotName: string, attr: string) => {
+      const slot = root.querySelector<HTMLSlotElement>(`slot[name="${slotName}"]`);
       if (!slot) return;
-      // @ts-expect-error - TODO: Fix type
       const has = slot.assignedNodes({ flatten: true }).some((n) => {
         if (n.nodeType === Node.ELEMENT_NODE) return true;
-        return n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0;
+        return n.nodeType === Node.TEXT_NODE && (n.textContent?.trim().length ?? 0) > 0;
       });
       this.toggleAttribute(attr, has);
     };

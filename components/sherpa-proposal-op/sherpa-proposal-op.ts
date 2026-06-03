@@ -11,7 +11,7 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
-const TAGS = {
+const TAGS: Record<string, string> = {
   "add":         "+",
   "add-edge":    "+",
   "remove":      "−",
@@ -27,14 +27,12 @@ class SherpaProposalOp extends SherpaElement {
     return [...super.observedAttributes, "data-op", "data-label"];
   }
 
-  /** @type {HTMLElement|null} */ #tagEl   = null;
-  /** @type {HTMLElement|null} */ #labelEl = null;
+  #tagEl: HTMLElement | null   = null;
+  #labelEl: HTMLElement | null = null;
 
   override onRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.#tagEl   = this.$(".tag");
-    // @ts-expect-error - TODO: Fix type
-    this.#labelEl = this.$(".label");
+    this.#tagEl   = this.$<HTMLElement>(".tag");
+    this.#labelEl = this.$<HTMLElement>(".label");
     this.#sync();
   }
 
@@ -43,9 +41,7 @@ class SherpaProposalOp extends SherpaElement {
   #sync() {
     if (!this.#tagEl || !this.#labelEl) return;
     const op = this.dataset["op"] || "";
-    // @ts-expect-error - TODO: Fix type
     this.#tagEl.textContent   = TAGS[op] || "·";
-    // @ts-expect-error - TODO: Fix type
     this.#labelEl.textContent = this.dataset["label"] || "";
   }
 }

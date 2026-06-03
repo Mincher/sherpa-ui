@@ -159,10 +159,10 @@ export class SherpaButton extends SherpaElement {
 
   // Cached shadow DOM elements
   els = this.cacheElements({
-    trigger: '.trigger',
+    trigger: { selector: '.trigger', type: HTMLElement },
     label: '.label',
-    iconStart: '.icon-start',
-    iconEnd: '.icon-end',
+    iconStart: { selector: '.icon-start', type: HTMLElement },
+    iconEnd: { selector: '.icon-end', type: HTMLElement },
     badge: '.badge',
   });
 
@@ -191,7 +191,6 @@ export class SherpaButton extends SherpaElement {
     this.#syncLabel();
     this.#syncIcons();
     this.#syncBadge();
-    // @ts-expect-error - TODO: Fix type
     this.els.trigger?.addEventListener("click", this.#onTriggerClick);
   }
 
@@ -231,9 +230,7 @@ export class SherpaButton extends SherpaElement {
   // value is rendered as textContent and the global font-family fallback
   // (set inline below) lets FA's @font-face show the glyph.
   #syncIcons(): void {
-    // @ts-expect-error - TODO: Fix type
     if (this.els.iconStart) this.#applyIconValue(this.els.iconStart, 'icon-start', this.dataset["iconStart"]);
-    // @ts-expect-error - TODO: Fix type
     if (this.els.iconEnd) this.#applyIconValue(this.els.iconEnd, 'icon-end', this.dataset["iconEnd"]);
   }
 
@@ -413,8 +410,8 @@ export class SherpaButton extends SherpaElement {
       );
       if (templates) {
         for (const tpl of templates) {
-          // @ts-expect-error - TODO: Fix type
-          const clone = tpl.content.cloneNode(true);
+          if (!(tpl instanceof HTMLTemplateElement)) continue;
+          const clone = tpl.content.cloneNode(true) as DocumentFragment;
           // Mark each top-level node so it can be removed on re-open
           for (const child of clone.children) {
             child.setAttribute("data-from-ancestor-tpl", "");
@@ -424,8 +421,8 @@ export class SherpaButton extends SherpaElement {
       }
       // Stop after the immediate shadow host when scoped
       if (scopeToShadow) break;
-      // @ts-expect-error - TODO: Fix type
-      node = node.getRootNode?.()?.host ?? node.parentElement;
+      const root = node.getRootNode?.();
+      node = (root instanceof ShadowRoot ? root.host : null) ?? element.parentElement;
     }
   }
 
