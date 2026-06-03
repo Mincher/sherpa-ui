@@ -71,7 +71,7 @@ export class SherpaInputDate extends SherpaInputBase {
     trigger: { selector: '.picker-trigger', type: HTMLButtonElement },
     popup: '.picker-popup',
     monthYear: '.cal-month-year',
-    daysGrid: '.cal-days',
+    daysGrid: { selector: '.cal-days', type: HTMLElement },
     dayTpl: { selector: '.day-tpl', type: HTMLTemplateElement }
   });
 
@@ -225,7 +225,6 @@ export class SherpaInputDate extends SherpaInputBase {
       null,
       this.getAttribute('min'),
       this.getAttribute('max'),
-      // @ts-expect-error - TODO: Fix type
       (iso) => this.#selectDate(iso),
     );
   }

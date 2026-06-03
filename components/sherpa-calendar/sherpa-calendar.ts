@@ -70,7 +70,7 @@ export class SherpaCalendar extends SherpaElement {
   #rangeStart: Date | null = null; // For range mode: first selected date
 
   els = this.cacheElements({
-    daysGrid: '.cal-days'
+    daysGrid: { selector: '.cal-days', type: HTMLElement }
   });
 
   // ── Lifecycle ──────────────────────────────────────────────────────

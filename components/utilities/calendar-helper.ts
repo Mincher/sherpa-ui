@@ -20,11 +20,10 @@ export const WEEKDAY_SHORT = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
  * @param {string|null|undefined} s
  * @returns {Date|null}
  */
-// @ts-expect-error - TODO: Fix type
-export function isoToDate(s) {
+export function isoToDate(s: string | null | undefined): Date | null {
   if (!s) return null;
   const [y, m, d] = s.split('-').map(Number);
-  if (!y || isNaN(y)) return null;
+  if (y == null || m == null || d == null || isNaN(y)) return null;
   return new Date(y, m - 1, d);
 }
 
@@ -33,8 +32,7 @@ export function isoToDate(s) {
  * @param {Date|null} d
  * @returns {string}
  */
-// @ts-expect-error - TODO: Fix type
-export function dateToIso(d) {
+export function dateToIso(d: Date | null | undefined): string {
   if (!d) return '';
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -48,8 +46,7 @@ export function dateToIso(d) {
  * @param {string} isoStr
  * @returns {string}
  */
-// @ts-expect-error - TODO: Fix type
-export function formatDateDisplay(isoStr) {
+export function formatDateDisplay(isoStr: string | null | undefined): string {
   const d = isoToDate(isoStr);
   if (!d) return '';
   return new Intl.DateTimeFormat('en-US', {
@@ -81,22 +78,14 @@ export function formatDateDisplay(isoStr) {
  * @param {(iso: string) => void} onSelect       - Called when a non-disabled day is clicked
  */
 export function renderCalendarGrid(
-  // @ts-expect-error - TODO: Fix type
-  container,
-  // @ts-expect-error - TODO: Fix type
-  tpl,
-  // @ts-expect-error - TODO: Fix type
-  viewDate,
-  // @ts-expect-error - TODO: Fix type
-  selectedIso,
-  // @ts-expect-error - TODO: Fix type
-  selectedEndIso,
-  // @ts-expect-error - TODO: Fix type
-  minIso,
-  // @ts-expect-error - TODO: Fix type
-  maxIso,
-  // @ts-expect-error - TODO: Fix type
-  onSelect,
+  container: HTMLElement,
+  tpl: HTMLTemplateElement,
+  viewDate: Date,
+  selectedIso: string | null,
+  selectedEndIso: string | null,
+  minIso: string | null,
+  maxIso: string | null,
+  onSelect: (iso: string) => void,
 ) {
   const year  = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -114,16 +103,20 @@ export function renderCalendarGrid(
   container.innerHTML = '';
 
   /** Clone one day cell from the prototype template. */
-  // @ts-expect-error - TODO: Fix type
-  const makeCell = (dayNum, cellYear, cellMonth, flags = {}) => {
+  const makeCell = (
+    dayNum: number,
+    cellYear: number,
+    cellMonth: number,
+    flags: { otherMonth?: boolean } = {},
+  ): DocumentFragment => {
     const thisDate = new Date(cellYear, cellMonth, dayNum);
     const iso      = dateToIso(thisDate);
-    const frag     = tpl.content.cloneNode(true);
-    const btn      = frag.querySelector('.cal-day');
+    const frag     = tpl.content.cloneNode(true) as DocumentFragment;
+    const btn      = frag.querySelector<HTMLButtonElement>('.cal-day');
+    if (!btn) return frag;
 
-    btn.textContent = dayNum;
+    btn.textContent = String(dayNum);
 
-    // @ts-expect-error - TODO: Fix type
     if (flags.otherMonth) {
       btn.dataset["otherMonth"] = 'true';
       btn.disabled = true;
@@ -152,7 +145,6 @@ export function renderCalendarGrid(
       btn.setAttribute('aria-pressed', String(isSelected));
 
       if (!isDisabled) {
-        // @ts-expect-error - TODO: Fix type
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           onSelect(iso);

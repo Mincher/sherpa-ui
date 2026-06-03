@@ -256,7 +256,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   #renderStartCalendar() {
     const monthYearEl = this.$(".month-year-start");
-    const daysEl      = this.$(".days-start");
+    const daysEl      = this.$<HTMLElement>(".days-start");
     if (!monthYearEl || !daysEl || !this.#dayTpl) return;
 
     monthYearEl.textContent =
@@ -279,7 +279,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   #renderEndCalendar() {
     const monthYearEl = this.$(".month-year-end");
-    const daysEl      = this.$(".days-end");
+    const daysEl      = this.$<HTMLElement>(".days-end");
     if (!monthYearEl || !daysEl || !this.#dayTpl) return;
 
     monthYearEl.textContent =

@@ -252,10 +252,11 @@ export class SherpaDateTimePicker extends SherpaElement {
   }
 
   #renderDayGrid() {
+    if (!this.#calDaysEl || !this.#dayTpl) return;
     const minAttr = this.getAttribute('min');
     const maxAttr = this.getAttribute('max');
-    const minDate = minAttr ? minAttr.split('T')[0] : null;
-    const maxDate = maxAttr ? maxAttr.split('T')[0] : null;
+    const minDate = minAttr ? (minAttr.split('T')[0] ?? null) : null;
+    const maxDate = maxAttr ? (maxAttr.split('T')[0] ?? null) : null;
     const selIso  = this.#selectedDate ? dateToIso(this.#selectedDate) : null;
 
     renderCalendarGrid(
