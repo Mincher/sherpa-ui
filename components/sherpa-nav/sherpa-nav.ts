@@ -76,12 +76,9 @@ import { setupDragSort } from "../utilities/drag-sort.js";
 /* ── Domain types ──────────────────────────────────────────────── */
 
 /** The last active selection, replayed after a template re-render. */
-interface NavSelection {
-  kind: "item" | "link";
-  itemId?: string;
-  sectionId?: string | null;
-  target?: string;
-}
+type NavSelection =
+  | { kind: "item"; itemId: string; sectionId: string | null }
+  | { kind: "link"; target: string };
 
 /** Footer-promo configuration. */
 interface PromoConfig {
@@ -200,7 +197,6 @@ export class SherpaNav extends SherpaElement {
     if (!target && this.#lastSelection) {
       const sel = this.#lastSelection;
       if (sel.kind === "item") {
-        // @ts-expect-error - TODO: Fix type
         this.#applyActiveItem(sel.itemId, sel.sectionId);
       } else if (sel.kind === "link") {
         this.#applyActiveLink(sel.target);
@@ -208,8 +204,7 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, _oldValue, newValue: string | null) {
+  override onAttributeChanged(name: string, _oldValue: string | null, newValue: string | null): void {
     if (name === "data-active-target" && this.#ready) {
       if (newValue) {
         this.setActiveLink(newValue);
@@ -227,7 +222,7 @@ export class SherpaNav extends SherpaElement {
   get isPinned() {
     return this.#root?.dataset["pinned"] === "true";
   }
-  set isPinned(v) {
+  set isPinned(v: boolean) {
     const root = this.#root;
     if (!root) return;
     const pinned = !!v;
@@ -247,7 +242,7 @@ export class SherpaNav extends SherpaElement {
   get mode() {
     return this.#root?.dataset["mode"] || SherpaNav.MODES.DEFAULT;
   }
-  set mode(v) {
+  set mode(v: string) {
     const root = this.#root;
     if (!root) return;
     const oldMode = root.dataset["mode"] || SherpaNav.MODES.DEFAULT;
@@ -274,8 +269,7 @@ export class SherpaNav extends SherpaElement {
       this.mode = SherpaNav.MODES.DEFAULT;
       if (this.#searchField) {
         this.#searchField.value = "";
-        // @ts-expect-error - TODO: Fix type
-        this.#searchField.clear();
+        this.#searchField.clear?.();
       }
       this.#applySearchFilter("");
     } finally {
@@ -283,28 +277,23 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setActiveLink(target) {
+  setActiveLink(target: string): void {
     this.#lastSelection = { kind: "link", target };
     this.#applyActiveLink(target);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #applyActiveLink(target) {
+  #applyActiveLink(target: string): void {
     this.#clearAllActiveStates();
-    const item = this.$(`[data-nav-target="${target}"]`);
-    // @ts-expect-error - TODO: Fix type
+    const item = this.$<HTMLElement>(`[data-nav-target="${target}"]`);
     if (item) item.dataset["state"] = "selected";
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setActiveItem(itemId, sectionId = null) {
+  setActiveItem(itemId: string, sectionId: string | null = null): void {
     this.#lastSelection = { kind: "item", itemId, sectionId };
     this.#applyActiveItem(itemId, sectionId);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #applyActiveItem(itemId, sectionId = null) {
+  #applyActiveItem(itemId: string, sectionId: string | null = null): void {
     this.#clearAllActiveStates();
     // Always highlight every nav item that matches the itemId, so mirrors of
     // the same target inside Favorites / Recents (or any other section) are
@@ -312,44 +301,39 @@ export class SherpaNav extends SherpaElement {
     // is still honoured to pick a primary item when callers care about it.
     const root = this.#root;
     if (!root) return;
-    const matches = root.querySelectorAll(
+    const matches = root.querySelectorAll<HTMLElement>(
       `sherpa-nav-item[data-item-id="${itemId}"]`,
     );
     matches.forEach((el) => {
-      // @ts-expect-error - TODO: Fix type
       el.dataset["state"] = "selected";
     });
     if (sectionId) {
-      const primary = root.querySelector(
+      const primary = root.querySelector<HTMLElement>(
         `.nav-section[data-section-id="${sectionId}"] sherpa-nav-item[data-item-id="${itemId}"]`,
       );
-      // @ts-expect-error - TODO: Fix type
       if (primary) primary.dataset["state"] = "selected";
     }
   }
 
   // ═══════════════════════ Recents & Favorites ═════════════════════
 
-  // @ts-expect-error - TODO: Fix type
-  isFavorite(itemId) {
+  isFavorite(itemId: string): boolean {
     const secId = this.dataset["favoritesSection"] || 'favorites';
-    return !!this.$(
+    return !!this.$<HTMLElement>(
       `.nav-section[data-section-id="${secId}"] sherpa-nav-item[data-item-id="${itemId}"]`,
     );
   }
 
-  // @ts-expect-error - TODO: Fix type
-  setFavorite(itemId, label, route, on) {
+  setFavorite(itemId: string, label: string, route: string | undefined, on: boolean): void {
     const secId = this.dataset["favoritesSection"] || 'favorites';
-    const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
+    const sec = this.$<HTMLElement>(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
-    const existing = sec.querySelector(
+    const existing = sec.querySelector<HTMLElement>(
       `sherpa-nav-item[data-item-id="${itemId}"]`,
     );
     if (on && !existing) {
       const item = this.#createNavItem(
         { id: itemId, label, route },
-        // @ts-expect-error - TODO: Fix type
         sec.dataset["editable"] === "true",
       );
       // Mirror selection state from any other live entry with the same id
@@ -366,25 +350,21 @@ export class SherpaNav extends SherpaElement {
     this.#emit("navfavoritechange", { itemId, label, favorite: on });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  async addToRecent(itemId, label, route) {
+  async addToRecent(itemId: string, label?: string, route?: string): Promise<void> {
     await this.rendered;
     const secId = this.dataset["recentSection"] || 'recent';
-    const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
+    const sec = this.$<HTMLElement>(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
-    // @ts-expect-error - TODO: Fix type
-    const max = parseInt(sec.dataset["maxItems"], 10) || 5;
+    const max = parseInt(sec.dataset["maxItems"] || '', 10) || 5;
     // If this item is already in the Recents section, leave the existing
     // entry exactly where it is — re-clicking a recent should NOT cause
     // the list to reorder. We still refresh its label/route in case the
     // upstream metadata changed, and re-mirror selection styling below.
-    const existing = sec.querySelector(`:scope > sherpa-nav-item[data-item-id="${itemId}"]`);
+    const existing = sec.querySelector<HTMLElement>(`:scope > sherpa-nav-item[data-item-id="${itemId}"]`);
     if (existing) {
       if (label) existing.setAttribute('data-label', label);
-      // @ts-expect-error - TODO: Fix type
       if (route) existing.dataset["route"] = route;
       if (this.$(`sherpa-nav-item[data-item-id="${itemId}"][data-state="selected"]`)) {
-        // @ts-expect-error - TODO: Fix type
         existing.dataset["state"] = 'selected';
       }
       this.#persistQuickAccess('recent');
@@ -393,7 +373,6 @@ export class SherpaNav extends SherpaElement {
     }
     const newItem = this.#createNavItem(
       { id: itemId, label, route },
-      // @ts-expect-error - TODO: Fix type
       sec.dataset["editable"] === "true",
     );
     // If this item is the currently active route, mirror selection so the
@@ -401,11 +380,14 @@ export class SherpaNav extends SherpaElement {
     if (this.$(`sherpa-nav-item[data-item-id="${itemId}"][data-state="selected"]`)) {
       newItem.dataset["state"] = 'selected';
     }
-    const summary = sec.querySelector(":scope > summary");
-    summary ? summary.after(newItem) : sec.prepend(newItem);
-    const items = sec.querySelectorAll(":scope > sherpa-nav-item");
-    // @ts-expect-error - TODO: Fix type
-    for (let i = max; i < items.length; i++) items[i].remove();
+    const summary = sec.querySelector<HTMLElement>(":scope > summary");
+    if (summary) summary.after(newItem);
+    else sec.prepend(newItem);
+    const items = sec.querySelectorAll<HTMLElement>(":scope > sherpa-nav-item");
+    for (let i = max; i < items.length; i++) {
+      const item = items[i];
+      if (item) item.remove();
+    }
     this.#persistQuickAccess('recent');
     this.#syncSectionBadges();
   }
@@ -415,49 +397,43 @@ export class SherpaNav extends SherpaElement {
    * Takes precedence over data-promo-* host attributes until cleared.
    * @param {{ title?: string, message?: string, link?: { text: string, url: string } } | null} config
    */
-  // @ts-expect-error - TODO: Fix type
-  setPromoConfig(config) {
+  setPromoConfig(config: PromoConfig | null): void {
     this.#promoConfig = config || null;
     if (this.#ready) this.#syncPromo();
   }
 
   // ═══════════════════ Footer Promo ════════════════════════════════
 
-  #wirePromo() {
-    const close = this.$(".nav-promo .promo-close");
-    // @ts-expect-error - TODO: Fix type
+  #wirePromo(): void {
+    const close = this.$<HTMLElement>(".nav-promo .promo-close");
     if (!close || close.dataset["wired"] === "true") return;
-    // @ts-expect-error - TODO: Fix type
     close.dataset["wired"] = "true";
     close.addEventListener("click", () => {
-      const promo = this.$(".nav-promo");
-      // @ts-expect-error - TODO: Fix type
+      const promo = this.$<HTMLElement>(".nav-promo");
       if (promo) promo.dataset["dismissed"] = "";
       this.#emit("navpromodismiss", {});
     });
   }
 
-  #syncPromo() {
+  #syncPromo(): void {
     const promo = this.$(".nav-promo");
     if (!promo) return;
     const cfg = this.#promoConfig || this.#promoConfigFromAttrs();
-    const titleEl = promo.querySelector(".promo-title");
-    const textEl = promo.querySelector(".promo-text");
-    const linkEl = promo.querySelector(".promo-link");
+    const titleEl = promo.querySelector<HTMLElement>(".promo-title");
+    const textEl = promo.querySelector<HTMLElement>(".promo-text");
+    const linkEl = promo.querySelector<HTMLElement>(".promo-link");
     if (titleEl) titleEl.textContent = cfg?.title || "";
     if (textEl) textEl.textContent = cfg?.message || "";
     if (linkEl) {
       linkEl.textContent = cfg?.link?.text || "";
-      // @ts-expect-error - TODO: Fix type
       if (cfg?.link?.url) linkEl.dataset["url"] = cfg.link.url;
-      // @ts-expect-error - TODO: Fix type
       else delete linkEl.dataset["url"];
     }
     const hasContent = !!(cfg?.title || cfg?.message || cfg?.link?.text);
     promo.toggleAttribute("hidden", !hasContent);
   }
 
-  #promoConfigFromAttrs() {
+  #promoConfigFromAttrs(): PromoConfig | null {
     const title = this.dataset["promoTitle"];
     const message = this.dataset["promoMessage"];
     const linkText = this.dataset["promoLinkText"];
@@ -485,8 +461,7 @@ export class SherpaNav extends SherpaElement {
     return this.dataset["favoritesStorageKey"] || 'sherpa-nav-favorites';
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #readStored(key) {
+  #readStored(key: string): Array<{ id?: string; label?: string; route?: string }> {
     try {
       const raw = localStorage.getItem(key);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -496,19 +471,17 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #writeStored(key, items) {
-    try { localStorage.setItem(key, JSON.stringify(items)); } catch {}
+  #writeStored(key: string, items: Array<{ id?: string; label?: string; route?: string }>): void {
+    try { localStorage.setItem(key, JSON.stringify(items)); } catch {
+      /* noop */
+    }
   }
 
   /** Snapshot the live items in a quick-access section to {id,label,route}. */
-  // @ts-expect-error - TODO: Fix type
-  #snapshotSection(sec) {
+  #snapshotSection(sec: HTMLElement | null): Array<{ id: string; label: string; route: string }> {
     if (!sec) return [];
-    // @ts-expect-error - TODO: Fix type
-    const out = [];
-    // @ts-expect-error - TODO: Fix type
-    sec.querySelectorAll(':scope > sherpa-nav-item').forEach((el) => {
+    const out: Array<{ id: string; label: string; route: string }> = [];
+    sec.querySelectorAll<HTMLElement>(':scope > sherpa-nav-item').forEach((el) => {
       const id = el.dataset["itemId"];
       if (!id) return;
       out.push({
@@ -517,18 +490,16 @@ export class SherpaNav extends SherpaElement {
         route: el.dataset["route"] || '',
       });
     });
-    // @ts-expect-error - TODO: Fix type
     return out;
   }
 
   /** Persist current state of a quick-access section ('recent' | 'favorites'). */
-  // @ts-expect-error - TODO: Fix type
-  #persistQuickAccess(which) {
+  #persistQuickAccess(which: 'favorites' | 'recent'): void {
     const secId = which === 'favorites'
       ? (this.dataset["favoritesSection"] || 'favorites')
       : (this.dataset["recentSection"] || 'recent');
     const key = which === 'favorites' ? this.#favoritesStorageKey : this.#recentStorageKey;
-    const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
+    const sec = this.$<HTMLElement>(`.nav-section[data-section-id="${secId}"]`);
     if (!sec) return;
     this.#writeStored(key, this.#snapshotSection(sec));
   }
@@ -538,26 +509,20 @@ export class SherpaNav extends SherpaElement {
    * sections from localStorage so the user's history survives template
    * switches and full page reloads.
    */
-  #hydrateQuickAccess() {
-    // @ts-expect-error - TODO: Fix type
-    const hydrate = (secId, key, max) => {
-      const sec = this.$(`.nav-section[data-section-id="${secId}"]`);
+  #hydrateQuickAccess(): void {
+    const hydrate = (secId: string, key: string, max?: number): void => {
+      const sec = this.$<HTMLElement>(`.nav-section[data-section-id="${secId}"]`);
       if (!sec) return;
       const stored = this.#readStored(key);
-      // Wipe template-declared placeholders before injecting stored entries.
-      sec.querySelectorAll(':scope > sherpa-nav-item').forEach((n) => n.remove());
-      // @ts-expect-error - TODO: Fix type
+      sec.querySelectorAll<HTMLElement>(':scope > sherpa-nav-item').forEach((n) => n.remove());
       const editable = sec.dataset["editable"] === 'true';
-      // @ts-expect-error - TODO: Fix type
-      const limit = max ?? (parseInt(sec.dataset["maxItems"], 10) || stored.length);
+      const limit = max ?? (parseInt(sec.dataset["maxItems"] || '', 10) || stored.length);
       stored.slice(0, limit).forEach((item) => {
         if (!item || !item.id) return;
         sec.appendChild(this.#createNavItem(item, editable));
       });
     };
-    // @ts-expect-error - TODO: Fix type
     hydrate(this.dataset["recentSection"] || 'recent', this.#recentStorageKey);
-    // @ts-expect-error - TODO: Fix type
     hydrate(this.dataset["favoritesSection"] || 'favorites', this.#favoritesStorageKey);
   }
 
@@ -568,49 +533,40 @@ export class SherpaNav extends SherpaElement {
    * The aggregated tag remains visible whether the section is open or closed —
    * in collapsed nav state, sherpa-nav-item.css renders it as a status dot.
    */
-  #syncSectionBadges() {
+  #syncSectionBadges(): void {
     // Severity order from highest → lowest. "success" (New) outranks
     // "brand" (Preview) so that a section parent showing an aggregated
     // status reflects newly-shipped work over previews.
     const PRIORITY = ['critical', 'urgent', 'warning', 'info', 'success', 'brand'];
-    // @ts-expect-error - TODO: Fix type
-    const rank = (s) => {
+    const rank = (s: string | undefined): number => {
       const i = PRIORITY.indexOf(s || 'success');
       return i === -1 ? PRIORITY.length : i;
     };
-    const sections = this.$$('.nav-section, .nav-subsection');
+    const sections = Array.from(this.$$('.nav-section, .nav-subsection')) as HTMLElement[];
     sections.forEach((sec) => {
-      const summaryItem = sec.querySelector(':scope > summary > sherpa-nav-item');
+      const summaryItem = sec.querySelector<HTMLElement>(':scope > summary > sherpa-nav-item');
       if (!summaryItem) return;
-      // Skip items that already have a non-aggregated badge.
-      if (summaryItem.hasAttribute('data-badge') &&
-          // @ts-expect-error - TODO: Fix type
-          summaryItem.dataset["aggregatedBadge"] !== 'true') return;
-      // Find badged descendants (any depth, but skip nested section summaries
-      // since those are themselves aggregating their own children).
-      const descendants = sec.querySelectorAll('sherpa-nav-item[data-badge]');
-      // @ts-expect-error - TODO: Fix type
-      let best = null;
-      descendants.forEach((d) => {
-        if (d === summaryItem) return;
-        // @ts-expect-error - TODO: Fix type
-        if (d.dataset["aggregatedBadge"] === 'true') return;
-        // @ts-expect-error - TODO: Fix type
-        if (!best || rank(d.dataset["badgeStatus"]) < rank(best.dataset["badgeStatus"])) {
+      if (summaryItem.hasAttribute('data-badge') && summaryItem.dataset['aggregatedBadge'] !== 'true') return;
+      const descendants = Array.from(sec.querySelectorAll<HTMLElement>('sherpa-nav-item[data-badge]'));
+      let best: HTMLElement | undefined = undefined;
+      let bestRank = Infinity;
+      for (const d of descendants) {
+        if (d === summaryItem) continue;
+        if (d.dataset['aggregatedBadge'] === 'true') continue;
+        const dRank = rank(d.dataset['badgeStatus']);
+        if (dRank < bestRank) {
           best = d;
+          bestRank = dRank;
         }
-      });
+      }
       if (best) {
-        // @ts-expect-error - TODO: Fix type
-        summaryItem.dataset["aggregatedBadge"] = 'true';
-        // @ts-expect-error - TODO: Fix type
-        summaryItem.dataset["badge"] = best.dataset["badge"] || '•';
-        // @ts-expect-error - TODO: Fix type
-        summaryItem.dataset["badgeStatus"] = best.dataset["badgeStatus"] || 'success';
-      // @ts-expect-error - TODO: Fix type
-      } else if (summaryItem.dataset["aggregatedBadge"] === 'true') {
-        // @ts-expect-error - TODO: Fix type
-        delete summaryItem.dataset["aggregatedBadge"];
+        const bestBadge = best.dataset['badge'];
+        const bestStatus = best.dataset['badgeStatus'];
+        summaryItem.dataset['aggregatedBadge'] = 'true';
+        summaryItem.dataset['badge'] = bestBadge || '•';
+        summaryItem.dataset['badgeStatus'] = bestStatus || 'success';
+      } else if (summaryItem.dataset['aggregatedBadge'] === 'true') {
+        delete summaryItem.dataset['aggregatedBadge'];
         summaryItem.removeAttribute('data-badge');
         summaryItem.removeAttribute('data-badge-status');
       }
@@ -619,31 +575,27 @@ export class SherpaNav extends SherpaElement {
 
   // ═══════════════════════ Private — Helpers ══════════════════════
 
-  // @ts-expect-error - TODO: Fix type
-  #emit(name, detail = {}) {
+  #emit(name: string, detail: Record<string, unknown> = {}): void {
     this.dispatchEvent(new CustomEvent(name, { bubbles: true, detail }));
   }
 
-  #clearAllActiveStates() {
+  #clearAllActiveStates(): void {
     this.$$('[data-state="selected"]').forEach((el) => el.removeAttribute('data-state'));
   }
 
   // ════════════════════ Private — Template Loading ═════════════════
 
   /** Wire delegated toggle listener for <details> → emit section-expand events. */
-  #wireToggleListeners() {
+  #wireToggleListeners(): void {
     const sections = this.$(".nav-sections");
     if (!sections) return;
     sections.addEventListener(
       "toggle",
       (e) => {
-        const details = e.target;
-        // @ts-expect-error - TODO: Fix type
-        if (!details.matches(".nav-section, .nav-subsection")) return;
-        // @ts-expect-error - TODO: Fix type
-        if (details.open && details.matches(".nav-section")) {
+        const details = e.target as HTMLElement | null;
+        if (!details || !details.matches(".nav-section, .nav-subsection")) return;
+        if ((details as HTMLDetailsElement).open && details.matches(".nav-section")) {
           this.#emit("navsectionexpand", {
-            // @ts-expect-error - TODO: Fix type
             sectionId: details.dataset["sectionId"],
           });
         }
@@ -653,7 +605,7 @@ export class SherpaNav extends SherpaElement {
   }
 
   /** Sync button active states and layout from template-declared initial values. */
-  #syncInitialState() {
+  #syncInitialState(): void {
     const root = this.#root;
     if (root) {
       // Restore the host's last pinned choice across template swaps; fall
@@ -663,17 +615,15 @@ export class SherpaNav extends SherpaElement {
       this.dataset["pinned"] = pinned;
       this.dataset["mode"] = root.dataset["mode"] || SherpaNav.MODES.DEFAULT;
     }
-    const pinBtn = this.$(".nav-pin-btn");
-    // @ts-expect-error - TODO: Fix type
+    const pinBtn = this.$<HTMLElement>(".nav-pin-btn") as HTMLElement & { active?: boolean } | null;
     if (pinBtn) pinBtn.active = this.isPinned;
-    const editBtn = this.$(".nav-edit-btn");
-    // @ts-expect-error - TODO: Fix type
+    const editBtn = this.$<HTMLElement>(".nav-edit-btn") as HTMLElement & { active?: boolean } | null;
     if (editBtn) editBtn.active = this.isEditing;
   }
 
   // ═══════════════════════ Private — Events ══════════════════════
 
-  #attachContentEvents() {
+  #attachContentEvents(): void {
     this.$(".nav-pin-btn")?.addEventListener("click", () => {
       this.isPinned = !this.isPinned;
     });
@@ -683,25 +633,25 @@ export class SherpaNav extends SherpaElement {
         : SherpaNav.MODES.EDIT;
     });
 
-    const sf = this.#searchField;
-    // @ts-expect-error - TODO: Fix type
-    sf?.addEventListener("input", (e: CustomEvent) => {
-      const value = e.detail?.value ?? sf.value;
+    const sf = this.#searchField as HTMLElement & { value?: string } | null;
+    sf?.addEventListener("input", (e: Event) => {
+      const customEvent = e as CustomEvent<{ value?: string }>;
+      const value = customEvent.detail?.value ?? sf?.value ?? "";
       this.#applySearchFilter(value);
       this.mode = value.trim()
         ? SherpaNav.MODES.SEARCH
         : SherpaNav.MODES.DEFAULT;
     });
-    // @ts-expect-error - TODO: Fix type
-    sf?.addEventListener("keydown", (e: CustomEvent) => {
-      // @ts-expect-error - TODO: Fix type
-      if (e.key === "Escape") {
-        e.stopPropagation();
+    sf?.addEventListener("keydown", (e: Event) => {
+      const keyboardEvent = e as KeyboardEvent;
+      if (keyboardEvent.key === "Escape") {
+        keyboardEvent.stopPropagation();
         this.endSearch();
       }
     });
-    sf?.addEventListener("search", (e: CustomEvent) => {
-      if (!e.detail?.value) this.endSearch();
+    sf?.addEventListener("search", (e: Event) => {
+      const customEvent = e as CustomEvent<{ value?: string }>;
+      if (!customEvent.detail?.value) this.endSearch();
     });
 
     this.$(".nav-edit-reset")?.addEventListener("click", () => {
@@ -720,13 +670,15 @@ export class SherpaNav extends SherpaElement {
   }
 
   /** Delegated host-level click handler — registered once in onRender(). */
-  #onHostClick(e: Event) {
+  #onHostClick(e: Event): void {
     const navItem = e
       .composedPath()
-      .find((n) => n instanceof HTMLElement && n.tagName === "SHERPA-NAV-ITEM");
+      .find(
+        (n): n is HTMLElement =>
+          n instanceof HTMLElement && n.tagName === "SHERPA-NAV-ITEM",
+      );
     if (!navItem) return;
 
-    // Delete button (shadow DOM → composedPath)
     if (
       e
         .composedPath()
@@ -736,22 +688,17 @@ export class SherpaNav extends SherpaElement {
     ) {
       e.preventDefault();
       e.stopPropagation();
-      // @ts-expect-error - TODO: Fix type
-      const sec = navItem.closest(".nav-section");
-      // @ts-expect-error - TODO: Fix type
+      const sec = navItem.closest<HTMLElement>(".nav-section");
       if (navItem.dataset["itemId"]) {
         this.#emit("navitemdelete", {
-          // @ts-expect-error - TODO: Fix type
           itemId: navItem.dataset["itemId"],
           sectionId: sec?.dataset["sectionId"] || null,
         });
       }
-      // @ts-expect-error - TODO: Fix type
       navItem.remove();
       return;
     }
 
-    // Drag handle — ignore
     if (
       e
         .composedPath()
@@ -759,63 +706,45 @@ export class SherpaNav extends SherpaElement {
     )
       return;
 
-    // Static targets: home, settings, search
-    // @ts-expect-error - TODO: Fix type
     if (navItem.dataset["navTarget"]) {
-      // @ts-expect-error - TODO: Fix type
       if (navItem.dataset["navTarget"] === "search") {
         this.startSearch();
         return;
       }
       this.#clearAllActiveStates();
-      // @ts-expect-error - TODO: Fix type
       navItem.dataset["state"] = "selected";
-      // @ts-expect-error - TODO: Fix type
       this.#emit(`nav${navItem.dataset["navTarget"]}`);
       return;
     }
 
-    // Section/subsection headers — when the summary has its own route,
-    // clicks on the LABEL navigate; clicks anywhere else on the row
-    // (icon, chevron, padding) toggle the <details>. Childless headers
-    // always behave like leaves. Headers without a route always toggle.
     if (
-      // @ts-expect-error - TODO: Fix type
       navItem.dataset["variant"] === "section" ||
-      // @ts-expect-error - TODO: Fix type
       navItem.dataset["variant"] === "subsection"
     ) {
-      // @ts-expect-error - TODO: Fix type
-      const details = navItem.closest("details");
+      const details = navItem.closest<HTMLDetailsElement>("details");
       const hasChildren = details
-        ? details.querySelector(":scope > sherpa-nav-item, :scope > :not(summary)")
+        ? details.querySelector<HTMLElement>(
+            ":scope > sherpa-nav-item, :scope > :not(summary)",
+          )
         : null;
-      // @ts-expect-error - TODO: Fix type
       const hasRoute = !!navItem.dataset["route"];
       const onLabel = e.composedPath().some(
-        // @ts-expect-error - TODO: Fix type
-        (n) => n?.getAttribute && n.getAttribute("part") === "label",
+        (n) => n instanceof HTMLElement && n.getAttribute("part") === "label",
       );
-      // No route — pure toggle (default <details> behaviour).
       if (hasChildren && !hasRoute) return;
-      // Has route + has children: only the label navigates. Anything
-      // else on the row falls through to the native <details> toggle.
       if (hasChildren && hasRoute && !onLabel) return;
-      // Either childless, or label-click on a routed parent → navigate.
       e.preventDefault();
       this.#clearAllActiveStates();
-      // @ts-expect-error - TODO: Fix type
       navItem.dataset["state"] = "selected";
       if (this.isEditing) this.mode = SherpaNav.MODES.DEFAULT;
       if (this.isSearching) this.endSearch();
-      const headerSectionId = details?.dataset["sectionId"]
-        || details?.closest(".nav-section")?.dataset["sectionId"]
-        || null;
+      const headerSectionId =
+        details?.dataset["sectionId"] ||
+        details?.closest<HTMLElement>(".nav-section")?.dataset["sectionId"] ||
+        null;
       this.#emit("navitemclick", {
-        // @ts-expect-error - TODO: Fix type
         itemId: navItem.dataset["itemId"],
         sectionId: headerSectionId,
-        // @ts-expect-error - TODO: Fix type
         route: navItem.dataset["route"],
         label: this.#getItemLabel(navItem),
       });
@@ -823,16 +752,13 @@ export class SherpaNav extends SherpaElement {
       return;
     }
 
-    // Regular child item
     if (this.isEditing) this.mode = SherpaNav.MODES.DEFAULT;
     if (this.isSearching) this.endSearch();
-    // @ts-expect-error - TODO: Fix type
-    const leafSectionId = navItem.closest(".nav-section")?.dataset["sectionId"] || null;
+    const leafSectionId =
+      navItem.closest<HTMLElement>(".nav-section")?.dataset["sectionId"] || null;
     this.#emit("navitemclick", {
-      // @ts-expect-error - TODO: Fix type
       itemId: navItem.dataset["itemId"],
       sectionId: leafSectionId,
-      // @ts-expect-error - TODO: Fix type
       route: navItem.dataset["route"],
       label: this.#getItemLabel(navItem),
     });
@@ -847,8 +773,7 @@ export class SherpaNav extends SherpaElement {
    *  - the item is a known utility shortcut (favorites/recent/recents)
    *  - the item has no `data-item-id` (nothing to key on)
    */
-  // @ts-expect-error - TODO: Fix type
-  #trackRecentForLeaf(navItem, sectionId) {
+  #trackRecentForLeaf(navItem: HTMLElement, sectionId: string | null): void {
     if (this.dataset["trackRecents"] === "false") return;
     const itemId = navItem.dataset["itemId"];
     if (!itemId) return;
@@ -863,23 +788,19 @@ export class SherpaNav extends SherpaElement {
 
   // ═══════════════════ Private — State Changes ══════════════════
 
-  // @ts-expect-error - TODO: Fix type
-  #onPinnedChange(pinned) {
-    const pinBtn = this.$(".nav-pin-btn");
-    // @ts-expect-error - TODO: Fix type
+  #onPinnedChange(pinned: boolean): void {
+    const pinBtn = this.$<HTMLElement>(".nav-pin-btn") as HTMLElement & { active?: boolean } | null;
     if (pinBtn) pinBtn.active = pinned;
     this.#emit("navpinchange", { pinned });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #onModeChange(newMode, oldMode) {
+  #onModeChange(newMode: string, oldMode: string): void {
     if (
       oldMode === SherpaNav.MODES.SEARCH &&
       newMode !== SherpaNav.MODES.SEARCH
     )
       this.#applySearchFilter("");
-    const editBtn = this.$(".nav-edit-btn");
-    // @ts-expect-error - TODO: Fix type
+    const editBtn = this.$<HTMLElement>(".nav-edit-btn") as HTMLElement & { active?: boolean } | null;
     if (editBtn) editBtn.active = newMode === SherpaNav.MODES.EDIT;
     this.#emit("navmodechange", { mode: newMode, previousMode: oldMode });
   }
@@ -900,8 +821,11 @@ export class SherpaNav extends SherpaElement {
   }
 
   #createNavItem(item: NavItemData, editable = false): HTMLElement {
-    const el = (this.#navItemTpl!.content.cloneNode(true) as DocumentFragment)
-      .querySelector<HTMLElement>("sherpa-nav-item")!;
+    const navItemTpl = this.#navItemTpl;
+    if (!navItemTpl) throw new Error("Missing nav item template");
+    const el = (navItemTpl.content.cloneNode(true) as DocumentFragment)
+      .querySelector<HTMLElement>("sherpa-nav-item");
+    if (!el) throw new Error("Missing nav item element in template");
     el.textContent = item.label ?? "";
     if (item.id) el.dataset["itemId"] = item.id;
     if (item.icon) el.dataset["icon"] = item.icon;
@@ -913,28 +837,27 @@ export class SherpaNav extends SherpaElement {
   }
 
   #createBadgeElement(text: string): HTMLElement {
-    const tag = (this.#badgeTpl!.content.cloneNode(true) as DocumentFragment)
-      .querySelector<HTMLElement>("sherpa-tag")!;
+    const badgeTpl = this.#badgeTpl;
+    if (!badgeTpl) throw new Error("Missing badge template");
+    const tag = (badgeTpl.content.cloneNode(true) as DocumentFragment)
+      .querySelector<HTMLElement>("sherpa-tag");
+    if (!tag) throw new Error("Missing badge element in template");
     tag.textContent = text;
     return tag;
   }
 
   // ═════════════════════ Private — Drag & Drop ══════════════════
 
-  #setupDragDrop() {
+  #setupDragDrop(): void {
     // Capture the template-declared order for each draggable group BEFORE
     // we apply any persisted user reorder, so resetOrder() can restore it.
     this.#captureDefaultOrders();
     this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
       const gi = parseInt(container.dataset["groupIndex"] || "", 10);
-      // Mirror sectionId / itemId into a single dataset.sortKey so the
-      // generic drag-sort utility reads one attribute for both kinds of
-      // draggable item (collapsible section + standalone top-level row).
       const tagSortKeys = () => {
         container
-          .querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')
+          .querySelectorAll<HTMLElement>(':scope > .nav-section, :scope > sherpa-nav-item')
           .forEach((el) => {
-            // @ts-expect-error - TODO: Fix type
             el.dataset["sortKey"] = el.dataset["sectionId"] || el.dataset["itemId"] || '';
           });
       };
@@ -947,10 +870,11 @@ export class SherpaNav extends SherpaElement {
         idAttribute: "sortKey",
         isEnabled: () => this.isEditing,
         onReorder: (order) => {
-          this.#persistGroupOrder(gi, order);
+          const filteredOrder = order.filter((id): id is string => id !== undefined);
+          this.#persistGroupOrder(gi, filteredOrder);
           this.#emit("navsectionreorder", {
             groupIndex: gi,
-            sectionOrder: order,
+            sectionOrder: filteredOrder,
           });
         },
       });
@@ -968,22 +892,19 @@ export class SherpaNav extends SherpaElement {
     return scope;
   }
 
-  #captureDefaultOrders() {
+  #captureDefaultOrders(): void {
     if (!this.#defaultOrders) this.#defaultOrders = new Map();
-    // Always recapture on render — the template may have changed.
     this.#defaultOrders.clear();
     this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
       const gi = parseInt(container.dataset["groupIndex"] || "", 10);
-      const order = [...container.querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')]
-        // @ts-expect-error - TODO: Fix type
+      const order = [...container.querySelectorAll<HTMLElement>(':scope > .nav-section, :scope > sherpa-nav-item')]
         .map((el) => el.dataset["sectionId"] || el.dataset["itemId"] || '')
-        .filter(Boolean);
-      // @ts-expect-error - TODO: Fix type
-      this.#defaultOrders.set(gi, order);
+        .filter((key): key is string => Boolean(key));
+      this.#defaultOrders!.set(gi, order);
     });
   }
 
-  #readOrderStore() {
+  #readOrderStore(): Record<string, unknown> {
     try {
       const raw = localStorage.getItem(this.#orderStorageKey);
       const parsed = raw ? JSON.parse(raw) : {};
@@ -991,20 +912,20 @@ export class SherpaNav extends SherpaElement {
     } catch { return {}; }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #writeOrderStore(store) {
-    try { localStorage.setItem(this.#orderStorageKey, JSON.stringify(store)); } catch {}
+  #writeOrderStore(store: Record<string, unknown>): void {
+    try { localStorage.setItem(this.#orderStorageKey, JSON.stringify(store)); } catch {
+      /* noop */
+    }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #persistGroupOrder(groupIndex, order) {
+  #persistGroupOrder(groupIndex: number, order: string[]): void {
     const store = this.#readOrderStore();
     store[String(groupIndex)] = order;
     this.#writeOrderStore(store);
   }
 
   /** Reorder children of each draggable group to match the persisted order. */
-  #applyStoredOrders() {
+  #applyStoredOrders(): void {
     const store = this.#readOrderStore();
     if (!store || !Object.keys(store).length) return;
     this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
@@ -1015,23 +936,18 @@ export class SherpaNav extends SherpaElement {
     });
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #applyOrderToContainer(container, order) {
-    const lookup = new Map();
+  #applyOrderToContainer(container: HTMLElement, order: string[]): void {
+    const lookup = new Map<string, HTMLElement>();
     container
-      .querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')
-      // @ts-expect-error - TODO: Fix type
+      .querySelectorAll<HTMLElement>(':scope > .nav-section, :scope > sherpa-nav-item')
       .forEach((el) => {
         const key = el.dataset["sectionId"] || el.dataset["itemId"];
         if (key) lookup.set(key, el);
       });
-    // @ts-expect-error - TODO: Fix type
     order.forEach((key) => {
       const el = lookup.get(key);
-      if (el) container.appendChild(el); // append in order; unknown keys ignored
+      if (el) container.appendChild(el);
     });
-    // Items not present in the stored order keep their template position
-    // relative to the appended block (they remain at the end of the container).
   }
 
   /**
@@ -1039,35 +955,35 @@ export class SherpaNav extends SherpaElement {
    * to the template-declared defaults, clear persisted order, and notify
    * listeners via `naveditreset`.
    */
-  resetOrder() {
+  resetOrder(): void {
     if (!this.#defaultOrders) return;
     this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
       const gi = parseInt(container.dataset["groupIndex"] || "", 10);
-      // @ts-expect-error - TODO: Fix type
-      const order = this.#defaultOrders.get(gi);
+      const order = this.#defaultOrders!.get(gi);
       if (order && order.length) this.#applyOrderToContainer(container, order);
     });
-    try { localStorage.removeItem(this.#orderStorageKey); } catch {}
+    try { localStorage.removeItem(this.#orderStorageKey); } catch {
+      /* noop */
+    }
     this.#emit('naveditreset');
   }
 
   // ═══════════════════ Private — Search Filter ══════════════════
 
-  // @ts-expect-error - TODO: Fix type
-  #getItemLabel(item) {
+  #getItemLabel(item: HTMLElement): string {
     return [...item.childNodes]
       .filter((n) => n.nodeType === Node.TEXT_NODE)
-      .map((n) => n.textContent)
+      .map((n) => n.textContent || "")
       .join("")
       .trim();
   }
 
   /** Create a Range highlighting the first occurrence of filterLower in item's text nodes. */
-  // @ts-expect-error - TODO: Fix type
-  #createMatchRange(item, filterLower) {
+  #createMatchRange(item: HTMLElement, filterLower: string): Range | null {
     for (const node of item.childNodes) {
       if (node.nodeType !== Node.TEXT_NODE) continue;
-      const idx = node.textContent.toLowerCase().indexOf(filterLower);
+      const text = node.textContent || '';
+      const idx = text.toLowerCase().indexOf(filterLower);
       if (idx < 0) continue;
       const range = new Range();
       range.setStart(node, idx);
@@ -1077,15 +993,13 @@ export class SherpaNav extends SherpaElement {
     return null;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #revealAncestors(node) {
+  #revealAncestors(node: Node | null): void {
     let el = node instanceof HTMLElement ? node : null;
     while (el) {
       if (el.matches("sherpa-nav-item")) el.removeAttribute('data-search-hidden');
       else if (el.matches(".nav-subsection, .nav-section")) {
         el.removeAttribute('data-search-hidden');
-        // @ts-expect-error - TODO: Fix type
-        el.open = true;
+        (el as HTMLDetailsElement).open = true;
       } else if (el.matches(".nav-group")) el.removeAttribute('data-search-hidden');
       el =
         el.parentElement?.closest(
@@ -1094,19 +1008,12 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #applySearchFilter(value) {
-    const scope = this.$(".nav-sections");
+  #applySearchFilter(value: string): void {
+    const scope = this.$<HTMLElement>(".nav-sections");
     if (!scope) return;
 
     const filter = (value || "").trim().toLowerCase();
-    // Headers = section/subsection summary rows (handled separately so a
-    // header match can reveal its container without highlighting children).
-    // Items = every other nav-item in the scrollable area, including
-    // standalone top-level rows that have no data-variant attribute and
-    // any non-standard variants. This guarantees every visible nav row
-    // participates in search matching.
-    const allItems = [...scope.querySelectorAll("sherpa-nav-item")];
+    const allItems = [...scope.querySelectorAll<HTMLElement>("sherpa-nav-item")];
     const headers = allItems.filter((i) =>
       i.matches(
         'sherpa-nav-item[data-variant="section"], sherpa-nav-item[data-variant="subsection"]',
@@ -1114,31 +1021,21 @@ export class SherpaNav extends SherpaElement {
     );
     const headerSet = new Set(headers);
     const items = allItems.filter((i) => !headerSet.has(i));
-    const details = [
-      ...scope.querySelectorAll(".nav-section, .nav-subsection"),
-    ];
-    const groups = [...scope.querySelectorAll(".nav-group")];
+    const details = [...scope.querySelectorAll<HTMLDetailsElement>(".nav-section, .nav-subsection")];
+    const groups = [...scope.querySelectorAll<HTMLElement>(".nav-group")];
 
-    // Reset visibility + highlight
     items.forEach((i) => i.removeAttribute('data-search-hidden'));
     headers.forEach((h) => h.removeAttribute('data-search-hidden'));
     details.forEach((d) => {
-      // @ts-expect-error - TODO: Fix type
-      d.dataset["searchWasOpen"] ??= d.open ? "true" : "false";
+      d.dataset['searchWasOpen'] ??= d.open ? "true" : "false";
       d.removeAttribute('data-search-hidden');
     });
     groups.forEach((g) => g.removeAttribute('data-search-hidden'));
     CSS.highlights.delete("nav-search-match");
-    // TODO: migrate to this.shadowRoot.highlights?.delete() once
-    // all target browsers support shadow-scoped highlights (Chrome 130+).
-    // Currently blocked because nav-item text nodes live in nested
-    // shadow roots; the highlight registry must match the tree that
-    // owns the text. See https://crbug.com/1480854.
 
     if (!filter) {
       details.forEach((d) => {
-        // @ts-expect-error - TODO: Fix type
-        d.open = d.dataset["searchWasOpen"] === "true";
+        d.open = d.dataset['searchWasOpen'] === "true";
         d.removeAttribute('data-search-was-open');
       });
       scope
@@ -1147,28 +1044,21 @@ export class SherpaNav extends SherpaElement {
       return;
     }
 
-    // @ts-expect-error - TODO: Fix type
-    const ranges = [];
+    const ranges: Range[] = [];
 
-    // @ts-expect-error - TODO: Fix type
-    items.forEach((i) => (i.dataset["searchHidden"] = "true"));
-    // @ts-expect-error - TODO: Fix type
-    headers.forEach((h) => (h.dataset["searchHidden"] = "true"));
+    items.forEach((i) => (i.dataset['searchHidden'] = "true"));
+    headers.forEach((h) => (h.dataset['searchHidden'] = "true"));
     details.forEach((d) => {
-      // @ts-expect-error - TODO: Fix type
-      d.dataset["searchHidden"] = "true";
-      // @ts-expect-error - TODO: Fix type
+      d.dataset['searchHidden'] = "true";
       d.open = true;
     });
-    // @ts-expect-error - TODO: Fix type
-    groups.forEach((g) => (g.dataset["searchHidden"] = "true"));
+    groups.forEach((g) => (g.dataset['searchHidden'] = "true"));
 
     items.forEach((item) => {
       if (this.#getItemLabel(item).toLowerCase().includes(filter)) {
         const range = this.#createMatchRange(item, filter);
         if (range) ranges.push(range);
-        // @ts-expect-error - TODO: Fix type
-        delete item.dataset["searchHidden"];
+        delete item.dataset['searchHidden'];
         this.#revealAncestors(item);
       }
     });
@@ -1177,18 +1067,14 @@ export class SherpaNav extends SherpaElement {
       if (this.#getItemLabel(h).toLowerCase().includes(filter)) {
         const range = this.#createMatchRange(h, filter);
         if (range) ranges.push(range);
-        // @ts-expect-error - TODO: Fix type
-        delete h.dataset["searchHidden"];
-        const container = h.closest(".nav-subsection, .nav-section");
+        delete h.dataset['searchHidden'];
+        const container = h.closest<HTMLElement>(".nav-subsection, .nav-section");
         if (container) this.#revealAncestors(container);
       }
     });
 
     if (ranges.length)
-      // @ts-expect-error - TODO: Fix type
       CSS.highlights.set("nav-search-match", new Highlight(...ranges));
-    // TODO: migrate to this.shadowRoot.highlights?.set() — see
-    // delete call above for rationale.
   }
 }
 
