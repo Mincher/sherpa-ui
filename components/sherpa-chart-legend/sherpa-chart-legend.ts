@@ -17,6 +17,15 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
+/** A single legend entry. */
+interface LegendItem {
+  label?: string;
+  value?: string | number | null;
+  color?: string;
+  active?: boolean;
+  link?: boolean;
+}
+
 const DEFAULT_COLORS = [
   '#7b1ce6', '#16abe2', '#2bd1c1',
   '#ffaa00', '#f3699d', '#c046ff',
@@ -39,11 +48,11 @@ export class SherpaChartLegend extends SherpaElement {
 
   /* ── State ────────────────────────────────────────────────────── */
 
-  #items = [];
+  #items: LegendItem[] = [];
 
   els = this.cacheElements({
     list: '.legend-list',
-    itemTpl: 'template.item-tpl'
+    itemTpl: { selector: 'template.item-tpl', type: HTMLTemplateElement }
   });
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
@@ -58,8 +67,7 @@ export class SherpaChartLegend extends SherpaElement {
    * Set legend items.
    * @param {Array<{label: string, value?: string, color?: string, active?: boolean, link?: boolean}>} items
    */
-  // @ts-expect-error - TODO: Fix type
-  setItems(items) {
+  setItems(items: LegendItem[]) {
     this.#items = items || [];
     this.#render();
   }
@@ -77,51 +85,43 @@ export class SherpaChartLegend extends SherpaElement {
     this.els.list.replaceChildren();
 
     this.#items.forEach((item, i) => {
-      // @ts-expect-error - TODO: Fix type
-      const el = this.els.itemTpl.content.firstElementChild.cloneNode(true);
-      // @ts-expect-error - TODO: Fix type
+      const el = this.els.itemTpl?.content.firstElementChild?.cloneNode(true);
+      if (!(el instanceof HTMLElement)) return;
       const color = item.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
 
       // Key swatch
-      const key = el.querySelector('.legend-key');
-      key.style.backgroundColor = color;
+      const key = el.querySelector<HTMLElement>('.legend-key');
+      if (key) key.style.backgroundColor = color || '';
 
       // Label
       const label = el.querySelector('.legend-label');
-      // @ts-expect-error - TODO: Fix type
-      label.textContent = item.label || '';
+      if (label) label.textContent = item.label || '';
 
       // Value (optional)
-      // @ts-expect-error - TODO: Fix type
       if (item.value != null && item.value !== '') {
         el.toggleAttribute('data-has-value', true);
         const valueEl = el.querySelector('.legend-value');
-        // @ts-expect-error - TODO: Fix type
-        valueEl.textContent = item.value;
+        if (valueEl) valueEl.textContent = String(item.value);
       }
 
       // Active state (default true)
-      // @ts-expect-error - TODO: Fix type
       if (item.active === false) {
         el.toggleAttribute('data-inactive', true);
       }
 
       // Link state
-      // @ts-expect-error - TODO: Fix type
       if (item.link) {
         el.toggleAttribute('data-link', true);
         el.addEventListener('click', () => {
           this.dispatchEvent(new CustomEvent('legend-item-click', {
             bubbles: true,
             composed: true,
-            // @ts-expect-error - TODO: Fix type
             detail: { index: i, label: item.label },
           }));
         });
       }
 
-      // @ts-expect-error - TODO: Fix type
-      this.els.list.appendChild(el);
+      this.els.list?.appendChild(el);
     });
   }
 }

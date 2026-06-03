@@ -16,6 +16,12 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
+/** A coloured arc segment in the series variant. */
+interface GaugeSegment {
+  value: number;
+  color?: string;
+}
+
 const DEFAULT_COLORS = [
   '#058142', // green
   '#ffaa00', // amber
@@ -45,32 +51,25 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /* ── State ────────────────────────────────────────────────────── */
 
-  #segments = [];
-  // @ts-expect-error - TODO: Fix type
-  #titleEl;
-  // @ts-expect-error - TODO: Fix type
-  #fillEl;
-  // @ts-expect-error - TODO: Fix type
-  #needleEl;
-  // @ts-expect-error - TODO: Fix type
-  #valueEl;
-  // @ts-expect-error - TODO: Fix type
-  #labelEl;
-  // @ts-expect-error - TODO: Fix type
-  #rangeMinEl;
-  // @ts-expect-error - TODO: Fix type
-  #rangeMaxEl;
+  #segments: GaugeSegment[] = [];
+  #titleEl: HTMLElement | null = null;
+  #fillEl: HTMLElement | null = null;
+  #needleEl: HTMLElement | null = null;
+  #valueEl: HTMLElement | null = null;
+  #labelEl: HTMLElement | null = null;
+  #rangeMinEl: HTMLElement | null = null;
+  #rangeMaxEl: HTMLElement | null = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#titleEl    = this.$('.chart-title');
-    this.#fillEl     = this.$('.gauge-fill');
-    this.#needleEl   = this.$('.needle');
-    this.#valueEl    = this.$('.gauge-value');
-    this.#labelEl    = this.$('.gauge-label');
-    this.#rangeMinEl = this.$('.range-min');
-    this.#rangeMaxEl = this.$('.range-max');
+    this.#titleEl    = this.$<HTMLElement>('.chart-title');
+    this.#fillEl     = this.$<HTMLElement>('.gauge-fill');
+    this.#needleEl   = this.$<HTMLElement>('.needle');
+    this.#valueEl    = this.$<HTMLElement>('.gauge-value');
+    this.#labelEl    = this.$<HTMLElement>('.gauge-label');
+    this.#rangeMinEl = this.$<HTMLElement>('.range-min');
+    this.#rangeMaxEl = this.$<HTMLElement>('.range-max');
 
     this.#syncTitle();
     this.#syncRange();
@@ -95,8 +94,7 @@ export class SherpaGaugeChart extends SherpaElement {
    * Values should sum to ≤ 100.
    * @param {Array<{value: number, color?: string}>} segments
    */
-  // @ts-expect-error - TODO: Fix type
-  setSegments(segments) {
+  setSegments(segments: GaugeSegment[]) {
     this.#segments = segments || [];
     this.#renderSeries();
   }
@@ -130,8 +128,7 @@ export class SherpaGaugeChart extends SherpaElement {
    * CSS transform-origin is bottom-centre of the needle.
    */
   #syncValue() {
-    // @ts-expect-error - TODO: Fix type
-    const raw = parseFloat(this.dataset["value"]);
+    const raw = parseFloat(this.dataset["value"] || "");
     const pct = Number.isFinite(raw) ? Math.max(0, Math.min(100, raw)) : 0;
 
     // Needle angle: -90 (left) → +90 (right)
@@ -165,7 +162,7 @@ export class SherpaGaugeChart extends SherpaElement {
   #renderSeries() {
     if (!this.#fillEl) return;
 
-    const total = this.#segments.reduce((s: any, seg: any) => s + (seg.value || 0), 0);
+    const total = this.#segments.reduce((s, seg) => s + (seg.value || 0), 0);
     if (!total) {
       this.#fillEl.style.setProperty('--_fill-gradient',
         'conic-gradient(from 0.5turn, transparent 0% 50%, transparent 50% 100%)');
@@ -173,13 +170,11 @@ export class SherpaGaugeChart extends SherpaElement {
     }
 
     // Build conic-gradient stops across the top semicircle (0–50% of circle)
-    const stops = [];
+    const stops: string[] = [];
     let cumulative = 0;
 
     this.#segments.forEach((seg, i) => {
-      // @ts-expect-error - TODO: Fix type
       const color = seg.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
-      // @ts-expect-error - TODO: Fix type
       const segPct = (seg.value / 100) * 50; // map 0–100 → 0–50%
       const start = cumulative;
       cumulative += segPct;

@@ -43,12 +43,12 @@ interface SherpaInputDateDataset extends DOMStringMap {
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Returns true when `iso` is a real calendar date in YYYY-MM-DD form. */
-// @ts-expect-error - TODO: Fix type
-function isValidIso(iso) {
+function isValidIso(iso: string): boolean {
   if (!ISO_RE.test(iso)) return false;
   const d = isoToDate(iso);
   if (!d) return false;
   const [y, m, day] = iso.split('-').map(Number);
+  if (y == null || m == null || day == null) return false;
   return d.getFullYear() === y && d.getMonth() === m - 1 && d.getDate() === day;
 }
 
@@ -90,16 +90,7 @@ export class SherpaInputDate extends SherpaInputBase {
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
   override onInputRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.els.trigger   = this.$('.picker-trigger');
-    // @ts-expect-error - TODO: Fix type
-    this.els.popup     = this.$('.picker-popup');
-    // @ts-expect-error - TODO: Fix type
-    this.els.monthYear = this.$('.cal-month-year');
-    // @ts-expect-error - TODO: Fix type
-    this.els.daysGrid  = this.$('.cal-days');
-    // @ts-expect-error - TODO: Fix type
-    this.els.dayTpl      = this.$('.cal-day-tpl');
+    // Element refs are resolved lazily via the cached `els` getters.
 
     // Initialise view month from current value (or today)
     const inputEl = this.getInputElement();
@@ -128,8 +119,7 @@ export class SherpaInputDate extends SherpaInputBase {
     }
 
     // Month navigation
-    // @ts-expect-error - TODO: Fix type
-    this.$('.cal-prev').addEventListener('click', (e) => {
+    this.$('.cal-prev')?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.#viewDate = new Date(
         this.#viewDate.getFullYear(),
@@ -139,8 +129,7 @@ export class SherpaInputDate extends SherpaInputBase {
       this.#renderCalendar();
     });
 
-    // @ts-expect-error - TODO: Fix type
-    this.$('.cal-next').addEventListener('click', (e) => {
+    this.$('.cal-next')?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.#viewDate = new Date(
         this.#viewDate.getFullYear(),
@@ -151,8 +140,7 @@ export class SherpaInputDate extends SherpaInputBase {
     });
 
     // Calendar-icon button toggles the popup
-    // @ts-expect-error - TODO: Fix type
-    this.els.trigger.addEventListener('click', (e) => {
+    this.els.trigger?.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.hasAttribute('disabled') || this.hasAttribute('readonly')) return;
       this.hasAttribute('data-open') ? this.#close() : this.#open();
@@ -231,8 +219,7 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Date selection ─────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #selectDate(iso) {
+  #selectDate(iso: string) {
     const inputEl = this.getInputElement();
     if (!inputEl) return;
 
