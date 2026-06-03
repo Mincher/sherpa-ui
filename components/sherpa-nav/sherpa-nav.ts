@@ -925,9 +925,8 @@ export class SherpaNav extends SherpaElement {
     // Capture the template-declared order for each draggable group BEFORE
     // we apply any persisted user reorder, so resetOrder() can restore it.
     this.#captureDefaultOrders();
-    this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
-      // @ts-expect-error - TODO: Fix type
-      const gi = parseInt(container.dataset["groupIndex"], 10);
+    this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
+      const gi = parseInt(container.dataset["groupIndex"] || "", 10);
       // Mirror sectionId / itemId into a single dataset.sortKey so the
       // generic drag-sort utility reads one attribute for both kinds of
       // draggable item (collapsible section + standalone top-level row).
@@ -946,9 +945,7 @@ export class SherpaNav extends SherpaElement {
         itemSelector: ':scope > .nav-section, :scope > sherpa-nav-item',
         handleSelector: ".nav-item-drag",
         idAttribute: "sortKey",
-        // @ts-expect-error - TODO: Fix type
         isEnabled: () => this.isEditing,
-        // @ts-expect-error - TODO: Fix type
         onReorder: (order) => {
           this.#persistGroupOrder(gi, order);
           this.#emit("navsectionreorder", {
@@ -975,9 +972,8 @@ export class SherpaNav extends SherpaElement {
     if (!this.#defaultOrders) this.#defaultOrders = new Map();
     // Always recapture on render — the template may have changed.
     this.#defaultOrders.clear();
-    this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
-      // @ts-expect-error - TODO: Fix type
-      const gi = parseInt(container.dataset["groupIndex"], 10);
+    this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
+      const gi = parseInt(container.dataset["groupIndex"] || "", 10);
       const order = [...container.querySelectorAll(':scope > .nav-section, :scope > sherpa-nav-item')]
         // @ts-expect-error - TODO: Fix type
         .map((el) => el.dataset["sectionId"] || el.dataset["itemId"] || '')
@@ -1011,9 +1007,8 @@ export class SherpaNav extends SherpaElement {
   #applyStoredOrders() {
     const store = this.#readOrderStore();
     if (!store || !Object.keys(store).length) return;
-    this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
-      // @ts-expect-error - TODO: Fix type
-      const gi = parseInt(container.dataset["groupIndex"], 10);
+    this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
+      const gi = parseInt(container.dataset["groupIndex"] || "", 10);
       const order = store[String(gi)];
       if (!Array.isArray(order) || !order.length) return;
       this.#applyOrderToContainer(container, order);
@@ -1046,9 +1041,8 @@ export class SherpaNav extends SherpaElement {
    */
   resetOrder() {
     if (!this.#defaultOrders) return;
-    this.$$('.nav-group[data-draggable="true"]').forEach((container) => {
-      // @ts-expect-error - TODO: Fix type
-      const gi = parseInt(container.dataset["groupIndex"], 10);
+    this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
+      const gi = parseInt(container.dataset["groupIndex"] || "", 10);
       // @ts-expect-error - TODO: Fix type
       const order = this.#defaultOrders.get(gi);
       if (order && order.length) this.#applyOrderToContainer(container, order);

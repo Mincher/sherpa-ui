@@ -106,12 +106,11 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
   get required()  { return this.hasAttribute('required'); }
   set required(v) { v ? this.setAttribute('required', '') : this.removeAttribute('required'); }
 
-  // @ts-expect-error - TODO: Fix type
-  override focus(opts) { this.#input?.focus(opts); }
+  override focus(opts?: FocusOptions) { this.#input?.focus(opts); }
 
   /* ── Private ───────────────────────────────────────────────────── */
 
-  get #input() { return this.$('.check-input'); }
+  get #input(): HTMLInputElement | null { return this.$<HTMLInputElement>('.check-input'); }
 
   #syncLabel() {
     const el = this.$('.check-text');
@@ -127,18 +126,13 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
     const input = this.#input;
     if (!input) return;
 
-    // @ts-expect-error - TODO: Fix type
     input.checked = this.checked;
-    // @ts-expect-error - TODO: Fix type
     input.indeterminate = this.indeterminate;
-    // @ts-expect-error - TODO: Fix type
     input.disabled = this.disabled;
-    // @ts-expect-error - TODO: Fix type
     input.required = this.required;
 
     const name = this.getAttribute('name');
     name != null ? input.setAttribute('name', name) : input.removeAttribute('name');
-    // @ts-expect-error - TODO: Fix type
     input.value = this.value;
   }
 
@@ -147,7 +141,6 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
     if (!input) return;
 
     // Mirror native state back to host attributes
-    // @ts-expect-error - TODO: Fix type
     input.checked
       ? this.setAttribute('checked', '')
       : this.removeAttribute('checked');
@@ -157,10 +150,8 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
     this.dispatchEvent(new CustomEvent('change', {
       bubbles: true, composed: true,
       detail: {
-        // @ts-expect-error - TODO: Fix type
         checked: input.checked,
         value: this.value,
-        // @ts-expect-error - TODO: Fix type
         indeterminate: input.indeterminate,
       },
     }));

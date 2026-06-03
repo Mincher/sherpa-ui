@@ -66,8 +66,8 @@ export class SherpaCalendar extends SherpaElement {
   // ── Private state ──────────────────────────────────────────────────
 
   #viewDate = new Date(); // Currently displayed month
-  #dayTpl = null;
-  #rangeStart = null; // For range mode: first selected date
+  #dayTpl: HTMLTemplateElement | null = null;
+  #rangeStart: Date | null = null; // For range mode: first selected date
 
   els = this.cacheElements({
     daysGrid: '.cal-days'
@@ -76,8 +76,7 @@ export class SherpaCalendar extends SherpaElement {
   // ── Lifecycle ──────────────────────────────────────────────────────
 
   override onRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.#dayTpl = this.$('.cal-day-tpl');
+    this.#dayTpl = this.$<HTMLTemplateElement>('.cal-day-tpl');
 
     // Initialize view date
     const viewDateIso = this.dataset["viewDate"];
@@ -97,8 +96,7 @@ export class SherpaCalendar extends SherpaElement {
     this.#render();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, _oldValue: string | null, newValue: string | null) {
     if (!this.els.daysGrid) return;
 
     if (name === 'data-value' || name === 'data-value-end' || name === 'data-mode') {
@@ -156,8 +154,7 @@ export class SherpaCalendar extends SherpaElement {
    * Navigate to a specific month.
    * @param {Date} date
    */
-  // @ts-expect-error - TODO: Fix type
-  goToMonth(date) {
+  goToMonth(date: Date) {
     this.#viewDate = new Date(date.getFullYear(), date.getMonth(), 1);
     this.dataset["viewDate"] = dateToIso(this.#viewDate);
     this.#render();
@@ -204,13 +201,11 @@ export class SherpaCalendar extends SherpaElement {
       selectedEndIso,
       minIso,
       maxIso,
-      // @ts-expect-error - TODO: Fix type
-      (iso) => this.#handleDayClick(iso),
+      (iso: string) => this.#handleDayClick(iso),
     );
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #handleDayClick(iso) {
+  #handleDayClick(iso: string) {
     const mode = this.dataset["mode"] || 'single';
 
     if (mode === 'range') {
@@ -220,8 +215,7 @@ export class SherpaCalendar extends SherpaElement {
     }
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #handleSingleSelection(iso) {
+  #handleSingleSelection(iso: string) {
     this.dataset["value"] = iso;
 
     this.dispatchEvent(
@@ -236,14 +230,11 @@ export class SherpaCalendar extends SherpaElement {
     );
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #handleRangeSelection(iso) {
+  #handleRangeSelection(iso: string) {
     const clickedDate = isoToDate(iso);
 
     // If no range start, or clicking before range start, set new start
-    // @ts-expect-error - TODO: Fix type
-    if (!this.#rangeStart || clickedDate < this.#rangeStart) {
-      // @ts-expect-error - TODO: Fix type
+    if (!this.#rangeStart || (clickedDate && clickedDate < this.#rangeStart)) {
       this.#rangeStart = clickedDate;
       this.dataset["value"] = iso;
       this.dataset["valueEnd"] = '';

@@ -22,43 +22,49 @@
  * @param {() => boolean} [options.isEnabled] - Predicate; drag only starts when true.
  * @param {(orderedIds: string[]) => void} [options.onReorder] - Called after drop with new order.
  */
-// @ts-expect-error - TODO: Fix type
-export function setupDragSort(container, {
-  // @ts-expect-error - TODO: Fix type
+interface DragSortOptions {
+  itemSelector: string;
+  handleSelector: string;
+  idAttribute?: string;
+  isEnabled?: () => boolean;
+  onReorder?: (orderedIds: (string | undefined)[]) => void;
+}
+
+export function setupDragSort(container: HTMLElement, {
   itemSelector,
-  // @ts-expect-error - TODO: Fix type
   handleSelector,
   idAttribute = 'id',
   isEnabled = () => true,
-  onReorder = () => {}
-} = {}) {
+  onReorder = () => {},
+}: DragSortOptions) {
 
   // Delegated mousedown — crosses shadow boundaries via composedPath()
-  // @ts-expect-error - TODO: Fix type
   container.addEventListener('mousedown', (e) => {
     if (!isEnabled()) return;
     const isHandle = e.composedPath().some(
-      // @ts-expect-error - TODO: Fix type
-      n => n instanceof HTMLElement && n.matches?.(handleSelector)
+      (n) => n instanceof HTMLElement && n.matches?.(handleSelector)
     );
     if (!isHandle) return;
     // Find the draggable item (direct child of container)
-    const item = e.composedPath().find((n: any) => n instanceof HTMLElement && n.parentElement === container);
+    const item = e.composedPath().find(
+      (n): n is HTMLElement => n instanceof HTMLElement && n.parentElement === container
+    );
     if (!item) return;
     item.draggable = true;
     const reset = () => { item.draggable = false; document.removeEventListener('mouseup', reset, true); };
     document.addEventListener('mouseup', reset, true);
   });
 
-  container.querySelectorAll(itemSelector).forEach((item: any) => {
+  container.querySelectorAll<HTMLElement>(itemSelector).forEach((item) => {
     item.draggable = false;
 
-    // @ts-expect-error - TODO: Fix type
     item.addEventListener('dragstart', (e) => {
       if (!isEnabled()) { e.preventDefault(); return; }
       item.setAttribute('data-dragging', '');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', item.dataset[idAttribute]);
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.dataset[idAttribute] || '');
+      }
     });
 
     item.addEventListener('dragend', () => {
@@ -67,27 +73,24 @@ export function setupDragSort(container, {
     });
   });
 
-  // @ts-expect-error - TODO: Fix type
   container.addEventListener('dragover', (e) => {
     if (!isEnabled()) return;
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
     const dragging = container.querySelector('[data-dragging]');
     if (!dragging) return;
     const siblings = [...container.querySelectorAll(`${itemSelector}:not([data-dragging])`)];
-    const next = siblings.find((s: any) =>
+    const next = siblings.find((s) =>
       e.clientY - s.getBoundingClientRect().top - s.getBoundingClientRect().height / 2 < 0
     );
-    container.insertBefore(dragging, next);
+    container.insertBefore(dragging, next ?? null);
   });
 
-  // @ts-expect-error - TODO: Fix type
   container.addEventListener('drop', (e) => {
     e.preventDefault();
-    const orderedIds = [...container.querySelectorAll(itemSelector)].map(
-      el => el.dataset[idAttribute]
+    const orderedIds = [...container.querySelectorAll<HTMLElement>(itemSelector)].map(
+      (el) => el.dataset[idAttribute]
     );
-    // @ts-expect-error - TODO: Fix type
     onReorder(orderedIds);
   });
 }
