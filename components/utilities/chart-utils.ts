@@ -15,8 +15,7 @@
  * @param {HTMLElement} host
  * @returns {string|null}
  */
-// @ts-expect-error - TODO: Fix type
-export function getSegmentField(host) {
+export function getSegmentField(host: HTMLElement): string | null {
   return host.getAttribute("data-segment-field") || null;
 }
 
@@ -25,8 +24,7 @@ export function getSegmentField(host) {
  * @param {HTMLElement} host
  * @returns {boolean}
  */
-// @ts-expect-error - TODO: Fix type
-export function isSegmentEnabled(host) {
+export function isSegmentEnabled(host: HTMLElement): boolean {
   const mode = host.getAttribute("data-segment-mode");
   const field = getSegmentField(host);
   return mode !== "off" && !!field;
@@ -37,8 +35,7 @@ export function isSegmentEnabled(host) {
  * @param {HTMLElement} host
  * @returns {{ dir: string }|null}
  */
-// @ts-expect-error - TODO: Fix type
-export function getActiveSort(host) {
+export function getActiveSort(host: HTMLElement): { dir: string } | null {
   const dir = host.getAttribute("data-sort-direction") || null;
   if (!dir || dir === "off") return null;
   return { dir };

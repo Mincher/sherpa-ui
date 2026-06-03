@@ -18,16 +18,26 @@
  *   const filters = getInitialFilters();
  */
 
-// @ts-expect-error - TODO: Fix type
-let provider = null;
+interface GlobalFilter {
+  field?: string;
+  values?: unknown[];
+}
+
+interface GlobalFilterState {
+  filters?: GlobalFilter[];
+  timerange?: Record<string, unknown> | null;
+}
+
+type GlobalFilterProvider = () => GlobalFilterState;
+
+let provider: GlobalFilterProvider | null = null;
 
 /**
  * Register a provider that returns current global filter state.
  * Signature: () => { filters: Array, timerange: Object|null }
  * @param {Function} fn
  */
-// @ts-expect-error - TODO: Fix type
-export function setGlobalFilterProvider(fn) {
+export function setGlobalFilterProvider(fn: GlobalFilterProvider) {
   provider = fn;
 }
 
@@ -36,10 +46,9 @@ export function setGlobalFilterProvider(fn) {
  * Returns [] when no provider is registered or no filters are active.
  * @returns {Array<Object>}
  */
-export function getInitialFilters() {
-  // @ts-expect-error - TODO: Fix type
-  const state = provider ? provider() : { filters: [], timerange: null };
-  const filters = [];
+export function getInitialFilters(): Record<string, unknown>[] {
+  const state: GlobalFilterState = provider ? provider() : { filters: [], timerange: null };
+  const filters: Record<string, unknown>[] = [];
 
   for (const gf of state.filters || []) {
     if (gf.values?.length) {
