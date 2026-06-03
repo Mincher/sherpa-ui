@@ -37,6 +37,9 @@ jobs:
       - name: TypeScript suppression budget
         run: npm run ts:suppressions
 
+      - name: Check for suppression regressions
+        run: npm run ts:check-regression
+
   build:
     name: Build Validation
     runs-on: ubuntu-latest

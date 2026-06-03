@@ -1,0 +1,24 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run type-check to prevent commits with TypeScript errors
+echo "🔍 Running TypeScript type-check..."
+npm run type-check
+TYPE_CHECK_RESULT=$?
+
+if [ $TYPE_CHECK_RESULT -ne 0 ]; then
+  echo "❌ Type-check failed. Commit blocked."
+  exit 1
+fi
+
+# Check suppression count hasn't increased
+echo "📊 Checking suppression budget..."
+npm run ts:suppressions
+SUPPRESSION_RESULT=$?
+
+if [ $SUPPRESSION_RESULT -ne 0 ]; then
+  echo "❌ Suppression budget exceeded. Commit blocked."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"

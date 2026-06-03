@@ -5,6 +5,7 @@
     "module": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
+    "types": ["@web/test-runner"],
 
     // Emit
     "outDir": "./dist",
@@ -51,7 +52,6 @@
   },
   "include": [
     "components/**/*.ts",
-    "test/**/*.ts",
     "demo/**/*.ts",
     "playground/**/*.ts",
     "scripts/**/*.ts"
@@ -59,6 +59,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "**/*.test.ts"
   ]
 }
