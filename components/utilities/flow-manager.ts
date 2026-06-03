@@ -24,6 +24,30 @@
 
 import { SherpaToast } from '../sherpa-toast/sherpa-toast.js';
 
+/** A sherpa-dialog element exposing imperative show/hide. */
+interface DialogEl extends HTMLElement {
+  show(): void;
+  hide(): void;
+}
+
+interface FlowLabels {
+  addTitle: string;
+  editTitle: string;
+  saveLabel: string;
+  updateLabel: string;
+  deleteTitle: string;
+}
+
+interface FlowManagerOptions {
+  entity: string;
+  contentArea: HTMLElement | null;
+  dialogs?: { addEdit?: DialogEl | null; delete?: DialogEl | null };
+  onSave?: ((record: unknown, flowType: 'add' | 'edit') => Promise<unknown>) | null;
+  onDelete?: ((ids: unknown[]) => Promise<unknown>) | null;
+  onRefresh?: (() => void) | null;
+  labels?: Partial<FlowLabels>;
+}
+
 /**
  * @typedef {Object} FlowManagerOptions
  * @property {string} entity — Entity name (e.g. 'device', 'detection')
@@ -43,30 +67,26 @@ import { SherpaToast } from '../sherpa-toast/sherpa-toast.js';
  */
 
 export class FlowManager {
-  #entity;
-  #contentArea;
-  #addEditDialog;
-  #deleteDialog;
-  #saveCallback;
-  #deleteCallback;
-  #refreshCallback;
-  #labels;
+  #entity: string;
+  #contentArea: HTMLElement | null;
+  #addEditDialog: DialogEl | null;
+  #deleteDialog: DialogEl | null;
+  #saveCallback: FlowManagerOptions['onSave'];
+  #deleteCallback: FlowManagerOptions['onDelete'];
+  #refreshCallback: FlowManagerOptions['onRefresh'];
+  #labels: FlowLabels;
 
   // State
-  #editingRecord = null;
-  #deleteTargetIds = [];
+  #editingRecord: unknown = null;
+  #deleteTargetIds: unknown[] = [];
 
   // Cached refs
-  #saveBtnEl = null;
-  #cancelBtnEl = null;
-  #confirmDeleteBtnEl = null;
-  #cancelDeleteBtnEl = null;
+  #saveBtnEl: HTMLElement | null = null;
+  #cancelBtnEl: HTMLElement | null = null;
+  #confirmDeleteBtnEl: HTMLElement | null = null;
+  #cancelDeleteBtnEl: HTMLElement | null = null;
 
-  /**
-   * @param {FlowManagerOptions} options
-   */
-  // @ts-expect-error - TODO: Fix type
-  constructor(options) {
+  constructor(options: FlowManagerOptions) {
     this.#entity = options.entity;
     this.#contentArea = options.contentArea;
     this.#addEditDialog = options.dialogs?.addEdit ?? null;
@@ -96,7 +116,6 @@ export class FlowManager {
     if (!this.#addEditDialog) return;
     this.#editingRecord = null;
     this.#addEditDialog.setAttribute('data-label', this.#labels.addTitle);
-    // @ts-expect-error - TODO: Fix type
     if (this.#saveBtnEl) this.#saveBtnEl.setAttribute('data-label', this.#labels.saveLabel);
     this.#dispatch('flow-start', { flow: 'add', entity: this.#entity });
     this.#addEditDialog.show();
@@ -106,12 +125,10 @@ export class FlowManager {
    * Open the add/edit dialog in "edit" mode, pre-populated.
    * @param {Object} record — The existing record to edit
    */
-  // @ts-expect-error - TODO: Fix type
-  startEdit(record) {
+  startEdit(record: unknown) {
     if (!this.#addEditDialog) return;
     this.#editingRecord = record;
     this.#addEditDialog.setAttribute('data-label', this.#labels.editTitle);
-    // @ts-expect-error - TODO: Fix type
     if (this.#saveBtnEl) this.#saveBtnEl.setAttribute('data-label', this.#labels.updateLabel);
     this.#dispatch('flow-start', { flow: 'edit', entity: this.#entity, data: record });
     this.#addEditDialog.show();
@@ -122,8 +139,7 @@ export class FlowManager {
    * @param {Array} ids — Record identifiers to delete
    * @param {string} [message] — Override the confirmation message
    */
-  // @ts-expect-error - TODO: Fix type
-  startDelete(ids, message) {
+  startDelete(ids: unknown[], message?: string) {
     if (!this.#deleteDialog || !ids.length) return;
     this.#deleteTargetIds = ids;
 
@@ -161,24 +177,20 @@ export class FlowManager {
   #wireAddEditDialog() {
     if (!this.#addEditDialog) return;
 
-    this.#saveBtnEl = this.#addEditDialog.querySelector('[slot="footer"][data-variant="primary"]');
-    this.#cancelBtnEl = this.#addEditDialog.querySelector('[slot="footer"][data-variant="secondary"]');
+    this.#saveBtnEl = this.#addEditDialog.querySelector<HTMLElement>('[slot="footer"][data-variant="primary"]');
+    this.#cancelBtnEl = this.#addEditDialog.querySelector<HTMLElement>('[slot="footer"][data-variant="secondary"]');
 
-    // @ts-expect-error - TODO: Fix type
     this.#saveBtnEl?.addEventListener('button-click', () => this.#onSave());
-    // @ts-expect-error - TODO: Fix type
     this.#cancelBtnEl?.addEventListener('button-click', () => this.#onCancelAddEdit());
   }
 
   #wireDeleteDialog() {
     if (!this.#deleteDialog) return;
 
-    this.#confirmDeleteBtnEl = this.#deleteDialog.querySelector('[slot="footer"][data-variant="primary"]');
-    this.#cancelDeleteBtnEl = this.#deleteDialog.querySelector('[slot="footer"][data-variant="secondary"]');
+    this.#confirmDeleteBtnEl = this.#deleteDialog.querySelector<HTMLElement>('[slot="footer"][data-variant="primary"]');
+    this.#cancelDeleteBtnEl = this.#deleteDialog.querySelector<HTMLElement>('[slot="footer"][data-variant="secondary"]');
 
-    // @ts-expect-error - TODO: Fix type
     this.#confirmDeleteBtnEl?.addEventListener('button-click', () => this.#onConfirmDelete());
-    // @ts-expect-error - TODO: Fix type
     this.#cancelDeleteBtnEl?.addEventListener('button-click', () => this.#onCancelDelete());
   }
 
@@ -207,10 +219,9 @@ export class FlowManager {
       this.#editingRecord = null;
       this.#refreshCallback?.();
     } catch (err) {
-      // @ts-expect-error - TODO: Fix type
-      this.#dispatch('flow-error', { flow: flowType, entity: this.#entity, error: err.message });
-      // @ts-expect-error - TODO: Fix type
-      SherpaToast.critical(err.message || `Failed to save ${this.#entity}.`);
+      const message = (err as Error)?.message;
+      this.#dispatch('flow-error', { flow: flowType, entity: this.#entity, error: message });
+      SherpaToast.critical(message || `Failed to save ${this.#entity}.`);
     }
   }
 
@@ -238,10 +249,9 @@ export class FlowManager {
       this.#deleteTargetIds = [];
       this.#refreshCallback?.();
     } catch (err) {
-      // @ts-expect-error - TODO: Fix type
-      this.#dispatch('flow-error', { flow: 'delete', entity: this.#entity, error: err.message });
-      // @ts-expect-error - TODO: Fix type
-      SherpaToast.critical(err.message || `Failed to delete ${this.#entity}.`);
+      const message = (err as Error)?.message;
+      this.#dispatch('flow-error', { flow: 'delete', entity: this.#entity, error: message });
+      SherpaToast.critical(message || `Failed to delete ${this.#entity}.`);
     }
   }
 
@@ -252,15 +262,13 @@ export class FlowManager {
 
   /* ── Private — helpers ───────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #dispatch(name, detail) {
+  #dispatch(name: string, detail: unknown) {
     this.#contentArea?.dispatchEvent(
       new CustomEvent(name, { bubbles: true, composed: true, detail })
     );
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #capitalize(s) {
+  #capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 }

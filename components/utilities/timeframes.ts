@@ -87,12 +87,17 @@ const MONTH_ABBR = [
  * @param {string|number} dateStr
  * @returns {{ year: number, month: number, day: number }}
  */
-// @ts-expect-error - TODO: Fix type
-export function parseDateId(dateStr) {
+interface DateParts {
+  year: number;
+  month: number;
+  day: number;
+}
+
+export function parseDateId(dateStr: string | number): DateParts {
   const s = String(dateStr);
   if (s.includes('-')) {
     const [y, m, d] = s.split('-').map(Number);
-    return { year: y, month: m, day: d };
+    return { year: y ?? 0, month: m ?? 0, day: d ?? 0 };
   }
   // Legacy YYYYMMDD integer
   const n = Number(dateStr);
@@ -109,8 +114,7 @@ export function parseDateId(dateStr) {
  * @param {number} day    1-31
  * @returns {string}
  */
-// @ts-expect-error - TODO: Fix type
-export function buildDateId(year, month, day) {
+export function buildDateId(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
 }
 
@@ -119,10 +123,8 @@ export function buildDateId(year, month, day) {
  * @param {string|number} dateStr
  * @returns {Date}
  */
-// @ts-expect-error - TODO: Fix type
-export function dateIdToDate(dateStr) {
+export function dateIdToDate(dateStr: string | number): Date {
   const { year, month, day } = parseDateId(dateStr);
-  // @ts-expect-error - TODO: Fix type
   return new Date(year, month - 1, day);
 }
 
@@ -132,10 +134,8 @@ export function dateIdToDate(dateStr) {
  * @param {string|number} dateStr
  * @returns {string}
  */
-// @ts-expect-error - TODO: Fix type
-export function formatDateId(dateStr) {
+export function formatDateId(dateStr: string | number): string {
   const { year, month } = parseDateId(dateStr);
-  // @ts-expect-error - TODO: Fix type
   return `${MONTH_ABBR[month - 1]} ${year}`;
 }
 
@@ -156,16 +156,15 @@ export function formatDateId(dateStr) {
  * @param {string} [dateField] — field name to read dates from (defaults to auto-detect)
  * @returns {Object|null}  null when no valid date values exist
  */
-// @ts-expect-error - TODO: Fix type
-export function computeTimeRange(records, dateField) {
+export function computeTimeRange(records: Record<string, unknown>[], dateField?: string) {
   if (!records?.length) return null;
 
   // Auto-detect date field if not provided
   const field = dateField || autoDetectDateField(records[0]);
   if (!field) return null;
 
-  let min = null;
-  let max = null;
+  let min: string | null = null;
+  let max: string | null = null;
   for (const r of records) {
     const v = r[field];
     if (v == null) continue;
@@ -173,12 +172,11 @@ export function computeTimeRange(records, dateField) {
     if (!min || s < min) min = s;
     if (!max || s > max) max = s;
   }
-  if (!min) return null;
+  if (!min || !max) return null;
 
   const minDate = dateIdToDate(min);
   const maxDate = dateIdToDate(max);
-  // @ts-expect-error - TODO: Fix type
-  const span = maxDate - minDate;
+  const span = maxDate.getTime() - minDate.getTime();
   const granularity = inferGranularity(minDate, maxDate);
   const label = formatTimeRangeLabel(min, max, granularity);
 
@@ -187,8 +185,9 @@ export function computeTimeRange(records, dateField) {
 
 /* ── Pluggable date-field detector ───────────────────────────────── */
 
-// @ts-expect-error - TODO: Fix type
-let _dateFieldDetector = null;
+type DateFieldDetector = (record: Record<string, unknown>) => string | null;
+
+let _dateFieldDetector: DateFieldDetector | null = null;
 
 /**
  * Register a custom date-field detector.
@@ -196,8 +195,7 @@ let _dateFieldDetector = null;
  * (string) to use as the date/time column, or null.
  * @param {(record: Object) => string|null} fn
  */
-// @ts-expect-error - TODO: Fix type
-export function setDateFieldDetector(fn) {
+export function setDateFieldDetector(fn: DateFieldDetector) {
   _dateFieldDetector = fn;
 }
 
@@ -208,10 +206,8 @@ export function setDateFieldDetector(fn) {
  * @param {Object} record
  * @returns {string|null}
  */
-// @ts-expect-error - TODO: Fix type
-export function autoDetectDateField(record) {
+export function autoDetectDateField(record: Record<string, unknown> | null | undefined): string | null {
   if (!record) return null;
-  // @ts-expect-error - TODO: Fix type
   if (_dateFieldDetector) {
     const result = _dateFieldDetector(record);
     if (result) return result;
@@ -229,9 +225,8 @@ export function autoDetectDateField(record) {
  * @param {Date} maxDate
  * @returns {string} A TimeUnit value
  */
-// @ts-expect-error - TODO: Fix type
-function inferGranularity(minDate, maxDate) {
-  const diffMs = maxDate - minDate;
+function inferGranularity(minDate: Date, maxDate: Date): string {
+  const diffMs = maxDate.getTime() - minDate.getTime();
   const days = diffMs / (1000 * 60 * 60 * 24);
 
   if (days <= 1)   return TimeUnit.HOUR;
@@ -255,14 +250,11 @@ function inferGranularity(minDate, maxDate) {
  * @param {string} [_granularity]  unused currently; reserved for future granularity-aware formatting
  * @returns {string}
  */
-// @ts-expect-error - TODO: Fix type
-export function formatTimeRangeLabel(minVal, maxVal, _granularity) {
+export function formatTimeRangeLabel(minVal: string | number, maxVal: string | number, _granularity?: string): string {
   const a = parseDateId(minVal);
   const b = parseDateId(maxVal);
 
-  // @ts-expect-error - TODO: Fix type
   const aMonth = MONTH_ABBR[a.month - 1];
-  // @ts-expect-error - TODO: Fix type
   const bMonth = MONTH_ABBR[b.month - 1];
 
   if (a.year === b.year && a.month === b.month) {
@@ -284,10 +276,8 @@ export function formatTimeRangeLabel(minVal, maxVal, _granularity) {
  * @param {number} count
  * @returns {string}
  */
-// @ts-expect-error - TODO: Fix type
-export function formatTimeUnitLabel(unit, count = 1) {
-  // @ts-expect-error - TODO: Fix type
-  const entry = TIME_UNIT_LABELS[unit];
+export function formatTimeUnitLabel(unit: string, count = 1): string {
+  const entry = (TIME_UNIT_LABELS as Record<string, { singular: string; plural: string }>)[unit];
   if (!entry) return unit;
   return count === 1 ? entry.singular : entry.plural;
 }
