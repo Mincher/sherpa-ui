@@ -50,8 +50,8 @@ export class SherpaNodeHeader extends SherpaElement {
     iconBuiltIn: '.icon-built-in',
     iconWrap: '.icon',
     drillBtn: '.drill-down',
-    inSocketSlot: 'slot[name="input-socket"]',
-    outSocketSlot: 'slot[name="output-socket"]'
+    inSocketSlot: { selector: 'slot[name="input-socket"]', type: HTMLSlotElement },
+    outSocketSlot: { selector: 'slot[name="output-socket"]', type: HTMLSlotElement }
   });
 
   #bound = false;
@@ -88,19 +88,17 @@ export class SherpaNodeHeader extends SherpaElement {
 
   #onDrillClick = (e: Event) => {
     e.stopPropagation();
-    const node = this.closest("sherpa-node");
+    const node = this.closest<HTMLElement>("sherpa-node");
     this.dispatchEvent(new CustomEvent("sherpa-node-drilldown", {
       bubbles: true,
       composed: true,
-      // @ts-expect-error - TODO: Fix type
-      detail: { nodeId: node?.dataset?.nodeId || null },
+      detail: { nodeId: node?.dataset?.["nodeId"] || null },
     }));
   };
 
   #tagSockets = () => {
     for (const slot of [this.els.inSocketSlot, this.els.outSocketSlot]) {
       if (!slot) continue;
-      // @ts-expect-error - TODO: Fix type
       const assigned = slot.assignedElements({ flatten: true });
       for (const el of assigned) {
         if (el.localName === "sherpa-node-socket") {

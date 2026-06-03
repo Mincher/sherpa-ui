@@ -92,10 +92,12 @@ export class SherpaNodeSocket extends SherpaElement {
       return;
     }
     // Render exactly `count` dots — zero when disconnected.
-    const dots = [];
-    for (let i = 0; i < count; i++) {
-      // @ts-expect-error - TODO: Fix type
-      dots.push(this.els.connectorTpl.content.firstElementChild.cloneNode(true));
+    const proto = this.els.connectorTpl.content.firstElementChild;
+    const dots: Node[] = [];
+    if (proto) {
+      for (let i = 0; i < count; i++) {
+        dots.push(proto.cloneNode(true));
+      }
     }
     this.els.connectors.replaceChildren(...dots);
   }
@@ -112,8 +114,7 @@ export class SherpaNodeSocket extends SherpaElement {
 
   /* ── Events ────────────────────────────────────────────────────── */
 
-  #onPointerDown = (e: Event) => {
-    // @ts-expect-error - TODO: Fix type
+  #onPointerDown = (e: PointerEvent) => {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();

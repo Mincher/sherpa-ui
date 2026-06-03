@@ -33,6 +33,13 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-tag/sherpa-tag.js';
 
+declare global {
+  interface Window {
+    /** Optional registry mapping svg-icon keys to inline SVG markup. */
+    __sherpaNavIcons?: Record<string, string>;
+  }
+}
+
 export class SherpaNavItem extends SherpaElement {
 
   static override get cssUrl(): string  { return new URL('./sherpa-nav-item.css', import.meta.url).href; }
@@ -85,7 +92,6 @@ export class SherpaNavItem extends SherpaElement {
     }
     // Resolve registry key (data-svg-icon) → data-icon-svg if present.
     const svgKey = this.dataset["svgIcon"];
-    // @ts-expect-error - TODO: Fix type
     const registry = (typeof window !== 'undefined') ? window.__sherpaNavIcons : null;
     const svg = this.dataset["iconSvg"] || (svgKey && registry && registry[svgKey]) || '';
     if (svg) {
@@ -113,11 +119,10 @@ export class SherpaNavItem extends SherpaElement {
   }
 
   #syncBadge() {
-    const tagEl = this.$('.nav-item-tag');
+    const tagEl = this.$<HTMLElement>('.nav-item-tag');
     if (!tagEl) return;
     const badge = this.dataset["badge"];
     tagEl.textContent = badge || '';
-    // @ts-expect-error - TODO: Fix type
     tagEl.dataset["status"] = this.dataset["badgeStatus"] || 'success';
     this.toggleAttribute('data-has-badge', !!badge);
   }

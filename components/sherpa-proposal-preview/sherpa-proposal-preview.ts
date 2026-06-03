@@ -24,11 +24,10 @@ class SherpaProposalPreview extends SherpaElement {
     return [...super.observedAttributes, "data-rationale"];
   }
 
-  /** @type {HTMLElement|null} */ #rationaleEl = null;
+  #rationaleEl: HTMLElement | null = null;
 
   override onRender(): void {
-    // @ts-expect-error - TODO: Fix type
-    this.#rationaleEl = this.$(".rationale");
+    this.#rationaleEl = this.$<HTMLElement>(".rationale");
     this.#syncRationale();
   }
 
@@ -37,7 +36,6 @@ class SherpaProposalPreview extends SherpaElement {
   }
 
   #syncRationale() {
-    // @ts-expect-error - TODO: Fix type
     if (this.#rationaleEl) this.#rationaleEl.textContent = this.dataset["rationale"] || "";
   }
 

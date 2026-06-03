@@ -52,8 +52,7 @@ class SherpaProgressBar extends SherpaElement {
     this.#syncValue();
   }
 
-  // @ts-expect-error - TODO: Fix type
-  override onAttributeChanged(name: string, _old, _new) {
+  override onAttributeChanged(name: string, _old: string | null, _new: string | null): void {
     switch (name) {
       case "data-label":
         this.#syncLabel();
@@ -76,8 +75,7 @@ class SherpaProgressBar extends SherpaElement {
 
   #syncValue() {
     const isIndeterminate = this.dataset["variant"] === "indeterminate";
-    // @ts-expect-error - TODO: Fix type
-    const raw = parseFloat(this.dataset["value"]);
+    const raw = parseFloat(this.dataset["value"] || "");
     const value = Number.isFinite(raw) ? Math.min(100, Math.max(0, raw)) : 0;
 
     // Fill width

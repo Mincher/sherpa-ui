@@ -18,9 +18,13 @@
  * @param {HTMLElement & { $: Function }} host - SherpaElement instance
  * @returns {HTMLTemplateElement|null} The injected template, or null if already injected or source missing
  */
-// @ts-expect-error - TODO: Fix type
-export function injectFilterMenu(host) {
-  const src = host.$('#filter-menu');
+interface FilterMenuHost {
+  $<E extends Element = HTMLElement>(selector: string): E | null;
+  append(...nodes: (Node | string)[]): void;
+}
+
+export function injectFilterMenu(host: FilterMenuHost): HTMLTemplateElement | null {
+  const src = host.$<HTMLTemplateElement>('#filter-menu');
   if (!src) return null;
   const tpl = document.createElement('template');
   tpl.setAttribute('data-menu', '');
@@ -34,7 +38,6 @@ export function injectFilterMenu(host) {
  *
  * @param {HTMLTemplateElement|null} tpl - The template ref returned by injectFilterMenu
  */
-// @ts-expect-error - TODO: Fix type
-export function removeFilterMenu(tpl) {
+export function removeFilterMenu(tpl: HTMLTemplateElement | null) {
   tpl?.remove();
 }

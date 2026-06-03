@@ -121,11 +121,9 @@ class SherpaPromptComposer extends SherpaElement {
   get value()        { return this.els.input?.value ?? ""; }
   set value(v)       { if (this.els.input) { this.els.input.value = v ?? ""; this.#autoresize(); } }
 
-  // @ts-expect-error - TODO: Fix type
-  focus()            { this.els.input?.focus(); }
+  override focus()   { this.els.input?.focus(); }
   clear()            { this.value = ""; }
-  // @ts-expect-error - TODO: Fix type
-  setBusy(busy)      {
+  setBusy(busy: boolean) {
     if (busy) this.setAttribute("data-disabled", "");
     else      this.removeAttribute("data-disabled");
   }

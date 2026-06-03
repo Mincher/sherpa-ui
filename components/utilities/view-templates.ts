@@ -18,7 +18,7 @@
  */
 
 /** Module-level cache: filename → parsed Document. */
-const cache = new Map();
+const cache = new Map<string, Document>();
 
 /** Default base path resolved relative to this module. */
 const DEFAULT_BASE = new URL(
@@ -36,9 +36,11 @@ const DEFAULT_BASE = new URL(
  * @param {string}  [opts.baseUrl]  Override the base URL for template files.
  * @returns {Promise<DocumentFragment>} The cloned fragment (already in DOM).
  */
-// @ts-expect-error - TODO: Fix type
-export async function stampViewTemplate(templateId, target, opts = {}) {
-  // @ts-expect-error - TODO: Fix type
+export async function stampViewTemplate(
+  templateId: string,
+  target: Element,
+  opts: { baseUrl?: string } = {},
+): Promise<DocumentFragment> {
   const base = opts.baseUrl || DEFAULT_BASE;
   const file = `${templateId}.html`;
   const url = new URL(file, base).href;
@@ -53,13 +55,13 @@ export async function stampViewTemplate(templateId, target, opts = {}) {
   }
 
   const tpl = doc.getElementById(templateId);
-  if (!tpl) {
+  if (!(tpl instanceof HTMLTemplateElement)) {
     throw new Error(
       `<template id="${templateId}"> not found in ${file}`,
     );
   }
 
-  const fragment = tpl.content.cloneNode(true);
+  const fragment = tpl.content.cloneNode(true) as DocumentFragment;
   target.appendChild(fragment);
   return fragment;
 }
