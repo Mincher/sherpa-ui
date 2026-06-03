@@ -66,38 +66,32 @@ export class SherpaPagination extends SherpaElement {
      ══════════════════════════════════════════════════════════════ */
 
   get page() {
-    // @ts-expect-error - TODO: Fix type
-    return Math.max(1, parseInt(this.getAttribute("data-page"), 10) || 1);
+    return Math.max(1, parseInt(this.getAttribute("data-page") || "", 10) || 1);
   }
 
-  set page(v) {
-    // @ts-expect-error - TODO: Fix type
-    this.setAttribute("data-page", String(Math.max(1, parseInt(v, 10) || 1)));
+  set page(v: number) {
+    this.setAttribute("data-page", String(Math.max(1, parseInt(String(v), 10) || 1)));
   }
 
   get pageSize() {
-    // @ts-expect-error - TODO: Fix type
-    return Math.max(1, parseInt(this.getAttribute("data-page-size"), 10) || 25);
+    return Math.max(1, parseInt(this.getAttribute("data-page-size") || "", 10) || 25);
   }
 
-  set pageSize(v) {
+  set pageSize(v: number) {
     this.setAttribute(
       "data-page-size",
-      // @ts-expect-error - TODO: Fix type
-      String(Math.max(1, parseInt(v, 10) || 25)),
+      String(Math.max(1, parseInt(String(v), 10) || 25)),
     );
   }
 
   get totalRows() {
-    // @ts-expect-error - TODO: Fix type
-    return Math.max(0, parseInt(this.getAttribute("data-total-rows"), 10) || 0);
+    return Math.max(0, parseInt(this.getAttribute("data-total-rows") || "", 10) || 0);
   }
 
-  set totalRows(v) {
+  set totalRows(v: number) {
     this.setAttribute(
       "data-total-rows",
-      // @ts-expect-error - TODO: Fix type
-      String(Math.max(0, parseInt(v, 10) || 0)),
+      String(Math.max(0, parseInt(String(v), 10) || 0)),
     );
   }
 
@@ -153,26 +147,28 @@ export class SherpaPagination extends SherpaElement {
       this.setAttribute("data-page-size", String(sizes[0]));
     }
     const currentSize = this.pageSize;
-    const optTpl = this.$("template.option-tpl");
+    const optTpl = this.$<HTMLTemplateElement>("template.option-tpl");
+
+    const makeOption = (size: number, selected: boolean): HTMLOptionElement | null => {
+      const opt = (optTpl?.content.cloneNode(true) as DocumentFragment | undefined)
+        ?.querySelector<HTMLOptionElement>("option");
+      if (!opt) return null;
+      opt.value = String(size);
+      opt.textContent = String(size);
+      if (selected) opt.selected = true;
+      return opt;
+    };
 
     select.replaceChildren();
     for (const size of sizes) {
-      // @ts-expect-error - TODO: Fix type
-      const opt = optTpl.content.cloneNode(true).querySelector("option");
-      opt.value = size;
-      opt.textContent = size;
-      if (size === currentSize) opt.selected = true;
-      select.appendChild(opt);
+      const opt = makeOption(size, size === currentSize);
+      if (opt) select.appendChild(opt);
     }
 
     // If the current pageSize isn't in allowed sizes, add it
     if (!sizes.includes(currentSize)) {
-      // @ts-expect-error - TODO: Fix type
-      const opt = optTpl.content.cloneNode(true).querySelector("option");
-      opt.value = currentSize;
-      opt.textContent = currentSize;
-      opt.selected = true;
-      select.appendChild(opt);
+      const opt = makeOption(currentSize, true);
+      if (opt) select.appendChild(opt);
     }
   }
 
@@ -186,10 +182,8 @@ export class SherpaPagination extends SherpaElement {
     // Page indicator
     const pageCurrent = this.$(".page-current");
     const pageTotal = this.$(".page-total");
-    // @ts-expect-error - TODO: Fix type
-    if (pageCurrent) pageCurrent.textContent = page;
-    // @ts-expect-error - TODO: Fix type
-    if (pageTotal) pageTotal.textContent = totalPages;
+    if (pageCurrent) pageCurrent.textContent = String(page);
+    if (pageTotal) pageTotal.textContent = String(totalPages);
 
     // Row range
     const rangeEl = this.$(".row-range");
@@ -204,29 +198,23 @@ export class SherpaPagination extends SherpaElement {
     }
 
     // Select sync
-    const select = this.$(".page-size-select");
-    // @ts-expect-error - TODO: Fix type
+    const select = this.$<HTMLSelectElement>(".page-size-select");
     if (select && parseInt(select.value, 10) !== pageSize) {
-      // @ts-expect-error - TODO: Fix type
-      select.value = pageSize;
+      select.value = String(pageSize);
     }
 
     // Button states
     const isFirst = page <= 1;
     const isLast = page >= totalPages;
 
-    const firstBtn = this.$(".page-first");
-    const prevBtn = this.$(".page-prev");
-    const nextBtn = this.$(".page-next");
-    const lastBtn = this.$(".page-last");
+    const firstBtn = this.$<HTMLButtonElement>(".page-first");
+    const prevBtn = this.$<HTMLButtonElement>(".page-prev");
+    const nextBtn = this.$<HTMLButtonElement>(".page-next");
+    const lastBtn = this.$<HTMLButtonElement>(".page-last");
 
-    // @ts-expect-error - TODO: Fix type
     if (firstBtn) firstBtn.disabled = isFirst;
-    // @ts-expect-error - TODO: Fix type
     if (prevBtn) prevBtn.disabled = isFirst;
-    // @ts-expect-error - TODO: Fix type
     if (nextBtn) nextBtn.disabled = isLast;
-    // @ts-expect-error - TODO: Fix type
     if (lastBtn) lastBtn.disabled = isLast;
   }
 
@@ -239,8 +227,7 @@ export class SherpaPagination extends SherpaElement {
       .composedPath()
       .find(
         (n) => n instanceof HTMLElement && n.dataset?.["action"],
-      ) as HTMLElement | undefined;
-    // @ts-expect-error - TODO: Fix type
+      ) as (HTMLElement & { disabled?: boolean }) | undefined;
     if (!btn || btn.disabled) return;
 
     const page = this.page;
@@ -296,11 +283,10 @@ export class SherpaPagination extends SherpaElement {
      ══════════════════════════════════════════════════════════════ */
 
   /** Go to a specific page (clamped to valid range). */
-  // @ts-expect-error - TODO: Fix type
-  goToPage(n) {
+  goToPage(n: number) {
     const clamped = Math.max(
       1,
-      Math.min(parseInt(n, 10) || 1, this.totalPages),
+      Math.min(Math.trunc(n) || 1, this.totalPages),
     );
     this.setAttribute("data-page", String(clamped));
     this.#update();
@@ -308,11 +294,10 @@ export class SherpaPagination extends SherpaElement {
   }
 
   /** Update total rows (e.g. after filtering). */
-  // @ts-expect-error - TODO: Fix type
-  setTotalRows(count) {
+  setTotalRows(count: number) {
     this.setAttribute(
       "data-total-rows",
-      String(Math.max(0, parseInt(count, 10) || 0)),
+      String(Math.max(0, Math.trunc(count) || 0)),
     );
     // Clamp page if needed
     if (this.page > this.totalPages) {
