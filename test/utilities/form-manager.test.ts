@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { expect } from '@esm-bundle/chai';
-import { FormManager } from '../../components/utilities/form-manager.js';
+import { FormManager } from '../../components/app-utils/form-manager.js';
 
 function makeField(name: string, value = '', required = false): HTMLInputElement {
   const el = document.createElement('input');

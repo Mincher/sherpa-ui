@@ -36,24 +36,21 @@ export interface ResizeBehaviorInterface {
   _resizeMenuTpl: HTMLTemplateElement | null;
 }
 
-/* ── Menu template (loaded from resize-behavior.html) ──────────── */
+/* ── Menu template (inlined) ────────────────────────────────────── */
 
-const RESIZE_HTML_URL = new URL("./resize-behavior.html", import.meta.url).href;
+const RESIZE_MENU_HTML = `
+  <sherpa-menu-item data-type="heading">Width</sherpa-menu-item>
+  <ul data-group="width">
+    <li><sherpa-menu-item data-event="container-decrease-cols" data-icon="fa-solid fa-minus">Decrease</sherpa-menu-item></li>
+    <li><sherpa-menu-item data-event="container-increase-cols" data-icon="fa-solid fa-plus">Increase</sherpa-menu-item></li>
+  </ul>
+  <sherpa-menu-item data-type="heading">Height</sherpa-menu-item>
+  <ul data-group="height">
+    <li><sherpa-menu-item data-event="container-decrease-rows" data-icon="fa-solid fa-minus">Decrease</sherpa-menu-item></li>
+    <li><sherpa-menu-item data-event="container-increase-rows" data-icon="fa-solid fa-plus">Increase</sherpa-menu-item></li>
+  </ul>
+`;
 
-/** Parsed resize-menu template */
-let resizeMenuSourceTpl: HTMLTemplateElement | null = null;
-
-/** Promise that resolves once the HTML template is fetched and parsed */
-const resizeMenuReady: Promise<void> = fetch(RESIZE_HTML_URL)
-  .then((r) => r.text())
-  .then((html) => {
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const tpl = doc.getElementById("resize-menu") as HTMLTemplateElement;
-    if (tpl) resizeMenuSourceTpl = tpl;
-  })
-  .catch(() => {
-    /* Silently degrade — resize menu items will simply not appear */
-  });
 
 /* ── Mixin ─────────────────────────────────────────────────────── */
 
@@ -87,18 +84,13 @@ export function ResizeBehavior<T extends Constructor<HTMLElement>>(
      * the host's light DOM. The button's composed-tree template
      * collection picks this up when the overflow menu opens.
      */
-    async _injectResizeMenu(): Promise<void> {
-      // Avoid duplicates if reconnected
+    _injectResizeMenu(): void {
       if (this.querySelector(":scope > template[data-menu-resize]")) return;
-
-      // Wait for the HTML template to load
-      await resizeMenuReady;
-      if (!resizeMenuSourceTpl) return;
 
       const tpl = document.createElement("template");
       tpl.setAttribute("data-menu", "");
       tpl.setAttribute("data-menu-resize", "");
-      tpl.content.appendChild(resizeMenuSourceTpl.content.cloneNode(true));
+      tpl.innerHTML = RESIZE_MENU_HTML;
       this.prepend(tpl);
       this._resizeMenuTpl = tpl;
     }

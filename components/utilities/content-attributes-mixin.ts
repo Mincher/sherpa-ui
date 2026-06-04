@@ -81,54 +81,14 @@ export function getDateFieldProvider(): DateFieldProvider {
   return _dateFieldProvider;
 }
 
-type AttrType = 'string' | 'string?' | 'json' | 'json?' | 'int?' | 'bool';
-type AttrDefault = string | number | boolean | null | any[];
 type Constructor<T = {}> = new (...args: any[]) => T;
 
-/* ── Attribute schema ───────────────────────────────────────────── *
- * Each entry: [attr, type, default]
- *   type: 'string' | 'string?' | 'json' | 'json?' | 'int?' | 'bool'
- *   'string'  → getAttribute() || default
- *   'string?' → getAttribute() || null
- *   'json'    → JSON.parse or default
- *   'json?'   → JSON.parse or null
- *   'int?'    → parseInt or null
- *   'bool'    → getAttribute() !== 'false'
+/* ── Mixin interface ─────────────────────────────────────────────── *
+ * Describes the members ContentAttributesMixin adds to the base class.
+ * All properties are explicit getters on CAMClass — this interface is
+ * the return-type annotation so TypeScript surfaces them on subclasses.
  */
-const ATTR_SCHEMA = {
-  name:               ["data-label",                "string",  ""],
-  datasetName:        ["data-dataset",              "string",  ""],
-  category:           ["data-category",             "string?", null],
-  series:             ["data-series",               "string?", null],
-  valueField:         ["data-value-field",          "string",  ""],
-  agg:                ["data-agg",                  "string",  "sum"],
-  measures:           ["data-measures",             "json",    []],
-  orderBy:            ["data-order-by",             "json",    []],
-  segmentField:       ["data-segment-field",        "string?", null],
-  dateGroupBy:        ["data-date-group-by",        "string?", null],
-  showStatus:         ["data-show-status",          "bool",    true],
-  unit:               ["data-unit",                 "string?", ""],
-  sortField:          ["data-sort-field",           "string?", null],
-  sortDirection:      ["data-sort-direction",       "string",  "asc"],
-  limit:              ["data-limit",                "int?",    null],
-  filters:            ["data-filters",              "json",    []],
-  visible:            ["data-visible",              "bool",    true],
-  showHeader:         ["data-show-header",          "bool",    true],
-  showHeaderControls: ["data-show-header-controls", "bool",    true],
-  showViewMenu:       ["data-show-view-menu",       "bool",    true],
-  presentationType:   ["data-presentation-type",    "string?", null],
-  fields:             ["data-fields",               "json?",   null],
-};
-
-/** Flat list of attribute names (used by observedAttributes). */
-export const CONTENT_ATTRIBUTES = Object.values(ATTR_SCHEMA).map(
-  ([attr]) => attr,
-);
-
-/* ── ContentAttributesMixin Interface ───────────────────────────── */
-
 export interface ContentAttributesMixinInterface {
-  // Property getters/setters from ATTR_SCHEMA
   name: string;
   datasetName: string;
   category: string | null;
@@ -151,25 +111,6 @@ export interface ContentAttributesMixinInterface {
   showViewMenu: boolean;
   presentationType: string | null;
   fields: any[] | null;
-
-  // Methods
-  getConfig(): any;
-  setConfig(config: any): this;
-  getDataset(): string;
-  setFactTable(): this;
-  setDimensions(dims: any[]): this;
-  reAggregate(): void;
-  /** @protected — use suppressAttrReaction()/resumeAttrReaction() instead */
-  readonly isAttrReactionSuppressed: boolean;
-  suppressAttrReaction(): void;
-  resumeAttrReaction(): void;
-
-  // View-switching helpers
-  getViewOptions(opts: { activeType?: string; canShowChart?: boolean }): any[];
-  configureHeader(opts?: { title?: string; viewOptions?: any[] }): void;
-  wireContentMenu(root: any, activeType?: string): Promise<void> | void;
-
-  // Setters
   setName(v: any): this;
   setDatasetName(v: any): this;
   setCategory(v: any): this;
@@ -192,9 +133,31 @@ export interface ContentAttributesMixinInterface {
   setShowViewMenu(v: any): this;
   setPresentationType(v: any): this;
   setFields(v: any): this;
+  getConfig(): Record<string, any>;
+  setConfig(config: Record<string, any>): this;
+  getDataset(): string;
+  setFactTable(): this;
+  setDimensions(dims: any[]): this;
+  reAggregate(): void;
+  readonly isAttrReactionSuppressed: boolean;
+  suppressAttrReaction(): void;
+  resumeAttrReaction(): void;
+  getViewOptions(opts: { activeType?: string; canShowChart?: boolean }): any[];
+  configureHeader(opts?: { title?: string; viewOptions?: any[] }): void;
+  wireContentMenu(root: any, activeType?: string): Promise<void> | void;
 }
 
-/* ── Getter/setter/config generators ────────────────────────────── */
+export const CONTENT_ATTRIBUTES = [
+  'data-label', 'data-dataset', 'data-category', 'data-series',
+  'data-value-field', 'data-agg', 'data-measures', 'data-order-by',
+  'data-segment-field', 'data-date-group-by', 'data-show-status',
+  'data-unit', 'data-sort-field', 'data-sort-direction', 'data-limit',
+  'data-filters', 'data-visible', 'data-show-header',
+  'data-show-header-controls', 'data-show-view-menu',
+  'data-presentation-type', 'data-fields',
+];
+
+/* ── Helpers ────────────────────────────────────────────────────── */
 
 function parseJsonSafe(raw: string | null, fallback: any): any {
   if (!raw) return fallback;
@@ -202,79 +165,6 @@ function parseJsonSafe(raw: string | null, fallback: any): any {
     return JSON.parse(raw);
   } catch {
     return fallback;
-  }
-}
-
-function makeGetter(attr: string, type: AttrType, defaultVal: AttrDefault): (this: HTMLElement) => any {
-  switch (type) {
-    case "string":
-      return function (this: HTMLElement) {
-        return this.getAttribute(attr) || defaultVal;
-      };
-    case "string?":
-      return function (this: HTMLElement) {
-        return this.getAttribute(attr) || null;
-      };
-    case "json":
-      return function (this: HTMLElement) {
-        return parseJsonSafe(this.getAttribute(attr), defaultVal);
-      };
-    case "json?":
-      return function (this: HTMLElement) {
-        return parseJsonSafe(this.getAttribute(attr), null);
-      };
-    case "int?":
-      return function (this: HTMLElement) {
-        const v = this.getAttribute(attr);
-        return v ? parseInt(v, 10) : null;
-      };
-    case "bool":
-      return function (this: HTMLElement) {
-        return this.getAttribute(attr) !== "false";
-      };
-  }
-}
-
-function makeSetter(attr: string, type: AttrType): (this: HTMLElement, v: any) => any {
-  switch (type) {
-    case "string":
-      return function (this: HTMLElement, v: any) {
-        this.setAttribute(attr, v);
-        return this;
-      };
-    case "string?":
-      return function (this: HTMLElement, v: any) {
-        v ? this.setAttribute(attr, v) : this.removeAttribute(attr);
-        return this;
-      };
-    case "json":
-      return function (this: HTMLElement, v: any) {
-        this.setAttribute(attr, JSON.stringify(v || []));
-        return this;
-      };
-    case "json?":
-      return function (this: HTMLElement, v: any) {
-        Array.isArray(v)
-          ? this.setAttribute(attr, JSON.stringify(v))
-          : this.removeAttribute(attr);
-        return this;
-      };
-    case "int?":
-      return function (this: HTMLElement, v: any) {
-        v !== null && v !== undefined
-          ? this.setAttribute(attr, String(v))
-          : this.removeAttribute(attr);
-        return this;
-      };
-    case "bool":
-      return function (this: HTMLElement, v: any) {
-        if (v === undefined || v === null) {
-          this.removeAttribute(attr);
-        } else {
-          this.setAttribute(attr, String(Boolean(v)));
-        }
-        return this;
-      };
   }
 }
 
@@ -294,55 +184,75 @@ function normalizeMeasures(config: any): any[] {
  */
 export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
   Base: T
-): Constructor<ContentAttributesMixinInterface> & T {
+): T & Constructor<ContentAttributesMixinInterface> {
   class CAMClass extends Base {
-    /* ── Members installed dynamically by the ATTR_SCHEMA loop below;
-     *    declared here so the type system knows they exist. ───────── */
-    declare name: string;
-    declare datasetName: string;
-    declare category: string | null;
-    declare series: string | null;
-    declare valueField: string;
-    declare agg: string;
-    declare measures: any[];
-    declare orderBy: any[];
-    declare segmentField: string | null;
-    declare dateGroupBy: string | null;
-    declare showStatus: boolean;
-    declare unit: string;
-    declare sortField: string | null;
-    declare sortDirection: string;
-    declare limit: number | null;
-    declare filters: FilterSpec[];
-    declare visible: boolean;
-    declare showHeader: boolean;
-    declare showHeaderControls: boolean;
-    declare showViewMenu: boolean;
-    declare presentationType: string | null;
-    declare fields: any[] | null;
+    /* ── Content attribute getters ───────────────────────────────── */
 
-    declare setName: (v: any) => this;
-    declare setDatasetName: (v: any) => this;
-    declare setCategory: (v: any) => this;
-    declare setSeries: (v: any) => this;
-    declare setValueField: (v: any) => this;
-    declare setAgg: (v: any) => this;
-    declare setMeasures: (v: any) => this;
-    declare setOrderBy: (v: any) => this;
-    declare setSegmentField: (v: any) => this;
-    declare setDateGroupBy: (v: any) => this;
-    declare setShowStatus: (v: any) => this;
-    declare setUnit: (v: any) => this;
-    declare setSortField: (v: any) => this;
-    declare setSortDirection: (v: any) => this;
-    declare setLimit: (v: any) => this;
-    declare setFilters: (v: any) => this;
-    declare setVisible: (v: any) => this;
-    declare setShowHeader: (v: any) => this;
-    declare setShowHeaderControls: (v: any) => this;
-    declare setShowViewMenu: (v: any) => this;
-    declare setPresentationType: (v: any) => this;
-    declare setFields: (v: any) => this;
+    get name(): string { return this.getAttribute('data-label') || ''; }
+    setName(v: any): this { this.setAttribute('data-label', v); return this; }
+
+    get datasetName(): string { return this.getAttribute('data-dataset') || ''; }
+    setDatasetName(v: any): this { this.setAttribute('data-dataset', v); return this; }
+
+    get category(): string | null { return this.getAttribute('data-category') || null; }
+    setCategory(v: any): this { v ? this.setAttribute('data-category', v) : this.removeAttribute('data-category'); return this; }
+
+    get series(): string | null { return this.getAttribute('data-series') || null; }
+    setSeries(v: any): this { v ? this.setAttribute('data-series', v) : this.removeAttribute('data-series'); return this; }
+
+    get valueField(): string { return this.getAttribute('data-value-field') || ''; }
+    setValueField(v: any): this { this.setAttribute('data-value-field', v); return this; }
+
+    get agg(): string { return this.getAttribute('data-agg') || 'sum'; }
+    setAgg(v: any): this { this.setAttribute('data-agg', v); return this; }
+
+    get measures(): any[] { return parseJsonSafe(this.getAttribute('data-measures'), []); }
+    setMeasures(v: any): this { this.setAttribute('data-measures', JSON.stringify(v || [])); return this; }
+
+    get orderBy(): any[] { return parseJsonSafe(this.getAttribute('data-order-by'), []); }
+    setOrderBy(v: any): this { this.setAttribute('data-order-by', JSON.stringify(v || [])); return this; }
+
+    get segmentField(): string | null { return this.getAttribute('data-segment-field') || null; }
+    setSegmentField(v: any): this { v ? this.setAttribute('data-segment-field', v) : this.removeAttribute('data-segment-field'); return this; }
+
+    get dateGroupBy(): string | null { return this.getAttribute('data-date-group-by') || null; }
+    setDateGroupBy(v: any): this { v ? this.setAttribute('data-date-group-by', v) : this.removeAttribute('data-date-group-by'); return this; }
+
+    get showStatus(): boolean { return this.getAttribute('data-show-status') !== 'false'; }
+    setShowStatus(v: any): this { v == null ? this.removeAttribute('data-show-status') : this.setAttribute('data-show-status', String(Boolean(v))); return this; }
+
+    get unit(): string { return this.getAttribute('data-unit') ?? ''; }
+    setUnit(v: any): this { v ? this.setAttribute('data-unit', v) : this.removeAttribute('data-unit'); return this; }
+
+    get sortField(): string | null { return this.getAttribute('data-sort-field') || null; }
+    setSortField(v: any): this { v ? this.setAttribute('data-sort-field', v) : this.removeAttribute('data-sort-field'); return this; }
+
+    get sortDirection(): string { return this.getAttribute('data-sort-direction') || 'asc'; }
+    setSortDirection(v: any): this { this.setAttribute('data-sort-direction', v); return this; }
+
+    get limit(): number | null { const v = this.getAttribute('data-limit'); return v ? parseInt(v, 10) : null; }
+    setLimit(v: any): this { v != null ? this.setAttribute('data-limit', String(v)) : this.removeAttribute('data-limit'); return this; }
+
+    get filters(): FilterSpec[] { return parseJsonSafe(this.getAttribute('data-filters'), []); }
+    setFilters(v: any): this { this.setAttribute('data-filters', JSON.stringify(v || [])); return this; }
+
+    get visible(): boolean { return this.getAttribute('data-visible') !== 'false'; }
+    setVisible(v: any): this { v == null ? this.removeAttribute('data-visible') : this.setAttribute('data-visible', String(Boolean(v))); return this; }
+
+    get showHeader(): boolean { return this.getAttribute('data-show-header') !== 'false'; }
+    setShowHeader(v: any): this { v == null ? this.removeAttribute('data-show-header') : this.setAttribute('data-show-header', String(Boolean(v))); return this; }
+
+    get showHeaderControls(): boolean { return this.getAttribute('data-show-header-controls') !== 'false'; }
+    setShowHeaderControls(v: any): this { v == null ? this.removeAttribute('data-show-header-controls') : this.setAttribute('data-show-header-controls', String(Boolean(v))); return this; }
+
+    get showViewMenu(): boolean { return this.getAttribute('data-show-view-menu') !== 'false'; }
+    setShowViewMenu(v: any): this { v == null ? this.removeAttribute('data-show-view-menu') : this.setAttribute('data-show-view-menu', String(Boolean(v))); return this; }
+
+    get presentationType(): string | null { return this.getAttribute('data-presentation-type') || null; }
+    setPresentationType(v: any): this { v ? this.setAttribute('data-presentation-type', v) : this.removeAttribute('data-presentation-type'); return this; }
+
+    get fields(): any[] | null { return parseJsonSafe(this.getAttribute('data-fields'), null); }
+    setFields(v: any): this { Array.isArray(v) ? this.setAttribute('data-fields', JSON.stringify(v)) : this.removeAttribute('data-fields'); return this; }
 
     /* ── Host-component contract (implemented by the concrete element) ── */
     declare setData: (data: any) => void;
@@ -387,32 +297,50 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     /* ── Config serialisation ───────────────────────────────── */
 
     getConfig(): Record<string, any> {
-      const self = this as Record<string, any>;
-      const config: Record<string, any> = {};
-      for (const [prop] of Object.entries(ATTR_SCHEMA)) {
-        config[prop] = self[prop];
-      }
-      // Aliases for backward compat
-      config["dataset"] = config["datasetName"];
-      config["value"] = config["valueField"];
-      config["timerange"] = this.getAttribute("data-timerange");
-      return config;
+      return {
+        name: this.name, datasetName: this.datasetName, category: this.category,
+        series: this.series, valueField: this.valueField, agg: this.agg,
+        measures: this.measures, orderBy: this.orderBy, segmentField: this.segmentField,
+        dateGroupBy: this.dateGroupBy, showStatus: this.showStatus, unit: this.unit,
+        sortField: this.sortField, sortDirection: this.sortDirection, limit: this.limit,
+        filters: this.filters, visible: this.visible, showHeader: this.showHeader,
+        showHeaderControls: this.showHeaderControls, showViewMenu: this.showViewMenu,
+        presentationType: this.presentationType, fields: this.fields,
+        // Aliases for backward compat
+        dataset: this.datasetName, value: this.valueField,
+        timerange: this.getAttribute('data-timerange'),
+      };
     }
 
     setConfig(config: Record<string, any>): this {
-      const self = this as Record<string, any>;
-      for (const [prop] of Object.entries(ATTR_SCHEMA)) {
-        const val =
-          config[prop] ??
-          (prop === "datasetName" ? config["dataset"] : undefined) ??
-          (prop === "valueField" ? config["value"] : undefined);
-        if (val !== undefined) {
-          const setter = `set${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
-          if (typeof self[setter] === "function") {
-            self[setter](val);
-          }
-        }
-      }
+      const {
+        name, datasetName, dataset, category, series, valueField, value,
+        agg, measures, orderBy, segmentField, dateGroupBy, showStatus, unit,
+        sortField, sortDirection, limit, filters, visible, showHeader,
+        showHeaderControls, showViewMenu, presentationType, fields,
+      } = config;
+      if (name !== undefined) this.setName(name);
+      if ((datasetName ?? dataset) !== undefined) this.setDatasetName(datasetName ?? dataset);
+      if (category !== undefined) this.setCategory(category);
+      if (series !== undefined) this.setSeries(series);
+      if ((valueField ?? value) !== undefined) this.setValueField(valueField ?? value);
+      if (agg !== undefined) this.setAgg(agg);
+      if (measures !== undefined) this.setMeasures(measures);
+      if (orderBy !== undefined) this.setOrderBy(orderBy);
+      if (segmentField !== undefined) this.setSegmentField(segmentField);
+      if (dateGroupBy !== undefined) this.setDateGroupBy(dateGroupBy);
+      if (showStatus !== undefined) this.setShowStatus(showStatus);
+      if (unit !== undefined) this.setUnit(unit);
+      if (sortField !== undefined) this.setSortField(sortField);
+      if (sortDirection !== undefined) this.setSortDirection(sortDirection);
+      if (limit !== undefined) this.setLimit(limit);
+      if (filters !== undefined) this.setFilters(filters);
+      if (visible !== undefined) this.setVisible(visible);
+      if (showHeader !== undefined) this.setShowHeader(showHeader);
+      if (showHeaderControls !== undefined) this.setShowHeaderControls(showHeaderControls);
+      if (showViewMenu !== undefined) this.setShowViewMenu(showViewMenu);
+      if (presentationType !== undefined) this.setPresentationType(presentationType);
+      if (fields !== undefined) this.setFields(fields);
       return this;
     }
 
@@ -1135,22 +1063,6 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     }
   };
 
-  /* ── Auto-generate getters and setters from ATTR_SCHEMA ─────── */
 
-  const proto = CAMClass.prototype as unknown as Record<string, unknown>;
-  for (const [prop, [attr, type, defaultVal]] of Object.entries(ATTR_SCHEMA) as [
-    string,
-    [string, AttrType, AttrDefault],
-  ][]) {
-    Object.defineProperty(CAMClass.prototype, prop, {
-      get: makeGetter(attr, type, defaultVal),
-      enumerable: true,
-      configurable: true,
-    });
-
-    const setterName = `set${prop.charAt(0).toUpperCase()}${prop.slice(1)}`;
-    proto[setterName] = makeSetter(attr, type);
-  }
-
-  return CAMClass as unknown as Constructor<ContentAttributesMixinInterface> & T;
+  return CAMClass as unknown as T & Constructor<ContentAttributesMixinInterface>;
 }

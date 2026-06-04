@@ -113,13 +113,12 @@ export function formatValue(value: unknown, type: string | null | undefined): st
     case 'date': {
       const d = new Date(value as string | number | Date);
       if (isNaN(d.getTime())) return escapeHtml(String(value));
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const dd = String(d.getDate()).padStart(2, '0');
-      const hh = String(d.getHours()).padStart(2, '0');
-      const mm = String(d.getMinutes()).padStart(2, '0');
-      const ss = String(d.getSeconds()).padStart(2, '0');
-      return `${days[d.getDay()]} ${dd} ${months[d.getMonth()]} ${d.getFullYear()}, ${hh}:${mm}:${ss}`;
+      const fmt = new Intl.DateTimeFormat(_currencyConfig.locale, {
+        weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+      });
+      const p = Object.fromEntries(fmt.formatToParts(d).map(({ type, value: v }) => [type, v]));
+      return `${p['weekday']} ${p['day']} ${p['month']} ${p['year']}, ${p['hour']}:${p['minute']}:${p['second']}`;
     }
     case 'currency':
       return new Intl.NumberFormat(_currencyConfig.locale, {

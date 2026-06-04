@@ -71,7 +71,75 @@ import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
 import "../sherpa-nav-item/sherpa-nav-item.js";
 
-import { setupDragSort } from "../utilities/drag-sort.js";
+/* ── Drag-sort (inline — only used here) ────────────────────────── */
+
+interface DragSortOptions {
+  itemSelector: string;
+  handleSelector: string;
+  idAttribute?: string;
+  isEnabled?: () => boolean;
+  onReorder?: (orderedIds: (string | undefined)[]) => void;
+}
+
+function setupDragSort(container: HTMLElement, {
+  itemSelector,
+  handleSelector,
+  idAttribute = 'id',
+  isEnabled = () => true,
+  onReorder = () => {},
+}: DragSortOptions) {
+  container.addEventListener('mousedown', (e) => {
+    if (!isEnabled()) return;
+    const isHandle = e.composedPath().some(
+      (n) => n instanceof HTMLElement && n.matches?.(handleSelector)
+    );
+    if (!isHandle) return;
+    const item = e.composedPath().find(
+      (n): n is HTMLElement => n instanceof HTMLElement && n.parentElement === container
+    );
+    if (!item) return;
+    item.draggable = true;
+    const reset = () => { item.draggable = false; document.removeEventListener('mouseup', reset, true); };
+    document.addEventListener('mouseup', reset, true);
+  });
+
+  container.querySelectorAll<HTMLElement>(itemSelector).forEach((item) => {
+    item.draggable = false;
+    item.addEventListener('dragstart', (e) => {
+      if (!isEnabled()) { e.preventDefault(); return; }
+      item.setAttribute('data-dragging', '');
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.dataset[idAttribute] || '');
+      }
+    });
+    item.addEventListener('dragend', () => {
+      item.draggable = false;
+      item.removeAttribute('data-dragging');
+    });
+  });
+
+  container.addEventListener('dragover', (e) => {
+    if (!isEnabled()) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    const dragging = container.querySelector('[data-dragging]');
+    if (!dragging) return;
+    const siblings = [...container.querySelectorAll(`${itemSelector}:not([data-dragging])`)];
+    const next = siblings.find((s) =>
+      e.clientY - s.getBoundingClientRect().top - s.getBoundingClientRect().height / 2 < 0
+    );
+    container.insertBefore(dragging, next ?? null);
+  });
+
+  container.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const orderedIds = [...container.querySelectorAll<HTMLElement>(itemSelector)].map(
+      (el) => el.dataset[idAttribute]
+    );
+    onReorder(orderedIds);
+  });
+}
 
 /* ── Domain types ──────────────────────────────────────────────── */
 

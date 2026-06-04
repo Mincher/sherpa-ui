@@ -186,28 +186,30 @@ function readComponentSource(tagName, kind) {
   return fs.readFileSync(filePath, "utf8");
 }
 
-/** Discover utility modules (single-file or single-folder) under components/utilities. */
+/** Discover utility modules under components/utilities and components/app-utils. */
 function loadUtilities() {
-  const dir = path.join(COMPONENTS_DIR, "utilities");
-  if (!fs.existsSync(dir)) return new Map();
   const utilities = new Map();
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isFile() && entry.name.endsWith(".js")) {
-      const id = entry.name.replace(/\.js$/, "");
-      utilities.set(id, {
-        id,
-        kind: "module",
-        files: { js: path.join(dir, entry.name) },
-      });
-    } else if (entry.isDirectory()) {
-      const sub = path.join(dir, entry.name);
-      const files = {};
-      for (const ext of ["js", "css", "html"]) {
-        const f = path.join(sub, `${entry.name}.${ext}`);
-        if (fs.existsSync(f)) files[ext] = f;
-      }
-      if (Object.keys(files).length) {
-        utilities.set(entry.name, { id: entry.name, kind: "folder", files });
+  for (const subdir of ["utilities", "app-utils"]) {
+    const dir = path.join(COMPONENTS_DIR, subdir);
+    if (!fs.existsSync(dir)) continue;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith(".js")) {
+        const id = entry.name.replace(/\.js$/, "");
+        utilities.set(id, {
+          id,
+          kind: "module",
+          files: { js: path.join(dir, entry.name) },
+        });
+      } else if (entry.isDirectory()) {
+        const sub = path.join(dir, entry.name);
+        const files = {};
+        for (const ext of ["js", "css", "html"]) {
+          const f = path.join(sub, `${entry.name}.${ext}`);
+          if (fs.existsSync(f)) files[ext] = f;
+        }
+        if (Object.keys(files).length) {
+          utilities.set(entry.name, { id: entry.name, kind: "folder", files });
+        }
       }
     }
   }
@@ -841,8 +843,8 @@ For v1.0 patterns, use get_pattern instead.`,
     // Generate JavaScript
     let js = `// Generated JavaScript for ${patternId}\n`;
     js += `// Entity: ${entityType}\n\n`;
-    js += `import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';\n`;
-    js += `import { FormManager } from 'sherpa-ui/components/utilities/form-manager.js';\n`;
+    js += `import { FlowManager } from 'sherpa-ui/components/app-utils/flow-manager.js';\n`;
+    js += `import { FormManager } from 'sherpa-ui/components/app-utils/form-manager.js';\n`;
     js += `import { SherpaToast } from 'sherpa-ui/components/sherpa-toast/sherpa-toast.js';\n\n`;
     js += `const dialog = document.getElementById('${pattern.presentation.components.find(c => c.type === 'sherpa-dialog')?.id}');\n`;
     js += `const form = new FormManager(dialog);\n\n`;
@@ -1030,9 +1032,9 @@ ${fieldHTML.trimEnd()}
 
 <!-- ── Setup script ─────────────────────────────────────────── -->
 <script type="module">
-import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
-import { FormManager } from 'sherpa-ui/components/utilities/form-manager.js';
-import { refreshDataset } from 'sherpa-ui/components/utilities/grid-refresh.js';
+import { FlowManager } from 'sherpa-ui/components/app-utils/flow-manager.js';
+import { FormManager } from 'sherpa-ui/components/app-utils/form-manager.js';
+import { refreshDataset } from 'sherpa-ui/components/app-utils/grid-refresh.js';
 // import { loadDataset } from '/scripts/services/DataService.js';
 
 const contentArea = document.querySelector('[data-dataset="TODO_DATASET"]');
@@ -1085,8 +1087,8 @@ document.getElementById('${triggerId}')?.addEventListener('button-click', () => 
 
 <!-- ── Setup script ─────────────────────────────────────────── -->
 <script type="module">
-import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';
-import { refreshDataset } from 'sherpa-ui/components/utilities/grid-refresh.js';
+import { FlowManager } from 'sherpa-ui/components/app-utils/flow-manager.js';
+import { refreshDataset } from 'sherpa-ui/components/app-utils/grid-refresh.js';
 // import { loadDataset } from '/scripts/services/DataService.js';
 
 const contentArea = document.querySelector('[data-dataset="TODO_DATASET"]');

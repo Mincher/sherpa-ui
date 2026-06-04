@@ -1,23 +1,12 @@
 /**
- * @fileoverview Type-safe lazy element caching for Sherpa UI components
+ * @fileoverview Type-safe element caching for Sherpa UI components.
  *
- * Eliminates boilerplate element caching by providing decorators and helpers
- * for lazy-queried, memoized element references with full TypeScript typing.
+ * Usage (via SherpaElement.cacheElements — the preferred API):
+ *   els = this.cacheElements({ label: '.label', trigger: '.trigger' });
+ *   // Access: this.els.label, this.els.trigger
  *
- * Three usage patterns (all compatible):
- *
- * 1. @cached decorator (advanced):
- *    @cached('.label') get labelEl() { return null; }
- *
- * 2. defineCachedElements helper (bulk definitions):
- *    const { labelEl, triggerEl } = defineCachedElements(this, {
- *      labelEl: '.label',
- *      triggerEl: '.trigger'
- *    });
- *
- * 3. SherpaElement.cacheElements (convenience):
- *    els = this.cacheElements({ label: '.label' });
- *    // Access: this.els.label
+ * Lower-level API:
+ *   defineCachedElements(this, { labelEl: '.label' })
  */
 
 /* ── Types ─────────────────────────────────────────────────────────── */
@@ -77,64 +66,6 @@ function getCache(target: any): CacheStorage {
   return target[CACHE_KEY];
 }
 
-/* ── Decorator ─────────────────────────────────────────────────────── */
-
-/**
- * @cached decorator — Converts a getter into a lazy, memoized element query.
- *
- * The getter body is ignored (return value unused). The decorator replaces
- * the getter with one that queries the shadow DOM on first access, caches
- * the result, and returns the cached value on subsequent calls.
- *
- * @example
- * ```typescript
- * class SherpaButton extends SherpaElement {
- *   @cached('.label')
- *   get labelEl(): HTMLElement | null { return null; }
- *
- *   @cached('.icon', HTMLSpanElement)
- *   get iconEl(): HTMLSpanElement | null { return null; }
- *
- *   @cached('.item', Element, true)  // all=true
- *   get items(): NodeListOf<Element> { return null as any; }
- *
- *   onRender() {
- *     this.labelEl.textContent = 'Click me';  // Queried on first access
- *     this.labelEl.classList.add('active');   // Cached, no re-query
- *   }
- * }
- * ```
- *
- * @param selector - CSS selector (resolved via this.$() or this.$$())
- * @param type - Element constructor for type hints (optional, TypeScript-only)
- * @param all - If true, queries all matching elements (this.$$())
- */
-export function cached<T extends Element = Element>(
-  selector: string,
-  _type?: { new (): T },
-  all: boolean = false
-) {
-  return (_target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-    const cacheKey = `${propertyKey}:${selector}`;
-
-    descriptor.get = function (this: any) {
-      const cache = getCache(this);
-
-      // Return cached value if found (skip null — shadow DOM may not be ready yet)
-      if (cacheKey in cache && cache[cacheKey] != null) {
-        return cache[cacheKey];
-      }
-
-      // Query and cache
-      const result = all ? this.$$(selector) : this.$(selector);
-
-      if (result != null) cache[cacheKey] = result;
-      return result;
-    };
-
-    return descriptor;
-  };
-}
 
 /* ── Helper Functions ──────────────────────────────────────────────── */
 
