@@ -170,10 +170,10 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     if (this.selectable) {
       const next = !this.selected;
       this.selected = next;
-      this.dispatchEvent(new CustomEvent('card-select', { bubbles: true, composed: true, detail: { selected: next } }));
+      this.emit('card-select', { selected: next });
     }
     if (this.interactive) {
-      this.dispatchEvent(new CustomEvent('card-click', { bubbles: true, composed: true, detail: {} }));
+      this.emit('card-click', {});
     }
   };
 

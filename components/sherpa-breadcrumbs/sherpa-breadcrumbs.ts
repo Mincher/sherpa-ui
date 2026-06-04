@@ -86,16 +86,12 @@ export class SherpaBreadcrumbs extends SherpaElement {
     const index = crumbs.indexOf(text);
     const isCurrent = text.getAttribute('aria-current') === 'page';
 
-    this.dispatchEvent(new CustomEvent('breadcrumb-click', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        index,
-        href: text.getAttribute('href') || '',
-        label: text.textContent?.trim() ?? '',
-        current: isCurrent,
-      },
-    }));
+    this.emit('breadcrumb-click', {
+      index,
+      href: text.getAttribute('href') || '',
+      label: text.textContent?.trim() ?? '',
+      current: isCurrent,
+    });
   };
 }
 

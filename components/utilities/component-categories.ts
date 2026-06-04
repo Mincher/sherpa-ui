@@ -168,7 +168,7 @@ export const COMPONENT_TIERS: Record<string, number> = Object.freeze({
   'sherpa-nav-item': 1,
   'sherpa-nav-section': 1,
   'sherpa-node': 3,
-  'sherpa-node-canvas': 4,
+  'sherpa-node-canvas': 3,
   'sherpa-node-header': 3,
   'sherpa-node-row': 3,
   'sherpa-node-socket': 3,

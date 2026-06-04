@@ -25,7 +25,7 @@
  * @prop {Date|null} endAsDate   — End value as Date (getter-only)
  */
 
-import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
+import { SherpaInputBase, SherpaInputDataset } from "../utilities/sherpa-input-base/sherpa-input-base.js";
 import {
   MONTH_NAMES,
   isoToDate,
@@ -35,11 +35,7 @@ import {
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
-interface SherpaInputDateRangeDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  helper?: string;
-  layout?: 'horizontal' | 'vertical';
+interface SherpaInputDateRangeDataset extends SherpaInputDataset {
   valueStart?: string;
   valueEnd?: string;
 }

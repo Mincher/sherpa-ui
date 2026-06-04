@@ -37,15 +37,11 @@
  * @method clear()     — Remove all tags.
  */
 
-import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { SherpaInputBase, SherpaInputDataset } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
-interface SherpaInputTagDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  helper?: string;
-  layout?: 'horizontal' | 'vertical';
+interface SherpaInputTagDataset extends SherpaInputDataset {
   value?: string;
   separator?: string;
   allowDuplicates?: string;
@@ -206,10 +202,7 @@ export class SherpaInputTag extends SherpaInputBase<string[]> {
   };
 
   #emit(action: string, tag?: string) {
-    this.dispatchEvent(new CustomEvent('change', {
-      bubbles: true, composed: true,
-      detail: { value: this.#readValue(), action, tag },
-    }));
+    this.emit('change', { value: this.#readValue(), action, tag });
   }
 }
 

@@ -174,10 +174,7 @@ export class SherpaTabs extends SherpaElement {
       const panel = this.#panels[index];
       if (panel && !panel.hasAttribute('data-tab-loaded')) {
         panel.setAttribute('data-tab-loaded', '');
-        this.dispatchEvent(new CustomEvent('tab-load', {
-          bubbles: true, composed: true,
-          detail: { index, label: panel.dataset["tabLabel"] || '', panel },
-        }));
+        this.emit('tab-load', { index, label: panel.dataset["tabLabel"] || '', panel });
       }
     }
   }
@@ -234,15 +231,11 @@ export class SherpaTabs extends SherpaElement {
   }
 
   #emitTabChange(index: number, previousIndex: number) {
-    this.dispatchEvent(new CustomEvent('tab-change', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        index,
-        label: this.#panels[index]?.dataset["tabLabel"] || '',
-        previousIndex,
-      },
-    }));
+    this.emit('tab-change', {
+      index,
+      label: this.#panels[index]?.dataset["tabLabel"] || '',
+      previousIndex,
+    });
   }
 }
 

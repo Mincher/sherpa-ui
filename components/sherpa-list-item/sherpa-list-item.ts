@@ -115,11 +115,7 @@ export class SherpaListItem extends SherpaElement {
   #onClick = () => {
     if (this.dataset["interactive"] === undefined || this.hasAttribute('disabled')) return;
     this.active = true;
-    this.dispatchEvent(new CustomEvent('list-item-click', {
-      bubbles: true,
-      composed: true,
-      detail: { label: this.label },
-    }));
+    this.emit('list-item-click', { label: this.label });
   };
 
   #onKeyDown = (e: KeyboardEvent) => {

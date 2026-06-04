@@ -29,6 +29,7 @@
  */
 
 import { SherpaInputGroupBase } from '../utilities/sherpa-input-group/sherpa-input-group-base.js';
+import { SherpaInputDataset } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-input-radio/sherpa-input-radio.js';
 
 /** Structural type for the slotted <sherpa-input-radio> children. */
@@ -39,10 +40,7 @@ interface RadioChild extends HTMLElement {
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
-interface SherpaInputRadioGroupDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  helper?: string;
+interface SherpaInputRadioGroupDataset extends SherpaInputDataset {
   orientation?: 'horizontal' | 'vertical';
   options?: string;
   value?: string;
@@ -166,10 +164,7 @@ export class SherpaInputRadioGroup extends SherpaInputGroupBase {
     if ((e.target as HTMLElement | null)?.tagName !== 'SHERPA-INPUT-RADIO') return;
     const v = this.getValue();
     if (v != null && this.dataset["value"] !== String(v)) this.dataset["value"] = String(v);
-    this.dispatchEvent(new CustomEvent('change', {
-      bubbles: true, composed: true,
-      detail: { value: v },
-    }));
+    this.emit('change', { value: v });
   };
 }
 

@@ -8,8 +8,9 @@
  * @category content
  *
  * @attr {enum}    data-direction        — "in" | "out"
- * @attr {enum}    data-location         — "header" | "row" (auto-set by parent slot)
- * @attr {boolean} data-multi            — Input accepts multiple connections
+ * @attr {enum}    data-location         — "header" | "row" (auto-detected from DOM context)
+ * @attr {enum}    data-variant          — "single" | "multiple" | "step-single" | "step-multiple" (replaces data-multi for inputs)
+ * @attr {boolean} data-multi            — DEPRECATED: use data-variant instead. Input accepts multiple connections
  * @attr {boolean} data-connected        — Filled with accent color
  * @attr {string}  data-port-name        — Port identifier
  * @attr {enum}    data-status           — "default" | "true" | "false"
@@ -41,6 +42,7 @@ export class SherpaNodeSocket extends SherpaElement {
       ...super.observedAttributes,
       "data-direction",
       "data-location",
+      "data-variant",
       "data-multi",
       "data-connected",
       "data-status",
@@ -65,17 +67,66 @@ export class SherpaNodeSocket extends SherpaElement {
       this.#bound = true;
     }
 
+    this.#autoDetectLocation();
+    this.#syncVariantToMulti();
     this.#syncCount();
   }
 
   override onAttributeChanged(name: string) {
-    if (
+    if (name === "data-variant") {
+      this.#syncVariantToMulti();
+      this.#syncCount();
+    } else if (
       name === "data-connection-count" ||
       name === "data-multi" ||
       name === "data-connected" ||
       name === "data-direction"
     ) {
       this.#syncCount();
+    }
+  }
+
+  /**
+   * Auto-detect location from DOM context instead of relying on parent tagging.
+   * Checks if socket is within a [slot="header"] ancestor to determine header vs row.
+   */
+  #autoDetectLocation() {
+    // Skip if already explicitly set
+    if (this.dataset["location"]) return;
+
+    // Walk up the DOM to find if we're inside a header slot
+    let el: Element | null = this;
+    while (el && el !== document.body) {
+      if (el.getAttribute("slot") === "header") {
+        this.dataset["location"] = "header";
+        return;
+      }
+      el = el.parentElement;
+    }
+
+    // Default to row if not in header
+    this.dataset["location"] = "row";
+  }
+
+  /**
+   * Sync the new data-variant attribute to the legacy data-multi attribute
+   * for backward compatibility with existing CSS.
+   *
+   * Variant mapping:
+   * - single → data-multi absent
+   * - multiple → data-multi present
+   * - step-single → data-multi absent (step variant for header/control-flow)
+   * - step-multiple → data-multi present (step variant for header/control-flow)
+   */
+  #syncVariantToMulti() {
+    const variant = this.dataset["variant"];
+    if (!variant) return;
+
+    const isMulti = variant === "multiple" || variant === "step-multiple";
+    if (isMulti) {
+      this.setAttribute("data-multi", "");
+    } else {
+      this.removeAttribute("data-multi");
     }
   }
 
@@ -118,16 +169,12 @@ export class SherpaNodeSocket extends SherpaElement {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();
-    this.dispatchEvent(new CustomEvent("sherpa-socket-pointerdown", {
-      bubbles: true,
-      composed: true,
-      detail: {
-        direction: this.direction,
-        portName: this.portName,
-        status: this.dataset["status"] || "default",
-        originalEvent: e,
-      },
-    }));
+    this.emit("sherpa-socket-pointerdown", {
+      direction: this.direction,
+      portName: this.portName,
+      status: this.dataset["status"] || "default",
+      originalEvent: e,
+    });
   };
 }
 

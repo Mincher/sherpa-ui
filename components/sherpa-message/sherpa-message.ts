@@ -57,10 +57,7 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     this.#syncAction();
     this.$('.message-close')?.addEventListener('button-click', () => this.dismiss());
     this.$<HTMLElement>('.message-action')?.addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('action', {
-        bubbles: true, composed: true,
-        detail: { href: this.dataset["actionHref"] || '' },
-      }));
+      this.emit('action', { href: this.dataset["actionHref"] || '' });
     });
   }
 
@@ -82,7 +79,7 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
   set dismissible(v){ v ? (this.dataset["dismissible"] = 'true') : this.removeAttribute('data-dismissible'); }
 
   dismiss() {
-    this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+    this.emit('close');
     this.remove();
   }
 

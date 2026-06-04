@@ -582,4 +582,11 @@ export class SherpaElement extends HTMLElement {
   get rendered(): Promise<void> {
     return this.#renderPromise || Promise.resolve();
   }
+
+  /* ── Utility: event dispatch ──────────────────────────────────── */
+
+  /** Dispatch a bubbling, composed CustomEvent. */
+  emit<T = unknown>(name: string, detail?: T): void {
+    this.dispatchEvent(new CustomEvent<T>(name, { bubbles: true, composed: true, detail }));
+  }
 }

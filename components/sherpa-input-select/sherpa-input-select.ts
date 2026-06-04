@@ -20,7 +20,7 @@
  * @method setTree(nodes)      — (tree) Set the node forest
  */
 
-import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
+import { SherpaInputBase, SherpaInputDataset } from "../utilities/sherpa-input-base/sherpa-input-base.js";
 
 /** A flat option or an <optgroup> with nested options. */
 interface OptionDef {
@@ -46,11 +46,7 @@ interface TreePathEntry {
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
-interface SherpaInputSelectDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  helper?: string;
-  layout?: 'horizontal' | 'vertical';
+interface SherpaInputSelectDataset extends SherpaInputDataset {
   template?: 'default' | 'tree';
   tree?: string;
 }
@@ -335,10 +331,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     const button = this.$('.tree-button');
     if (button) button.setAttribute('aria-expanded', 'false');
     this.#syncTreeDisplay();
-    this.dispatchEvent(new CustomEvent('change', {
-      bubbles: true, composed: true,
-      detail: { value: String(v), path: meta?.path ?? [String(v)] },
-    }));
+    this.emit('change', { value: String(v), path: meta?.path ?? [String(v)] });
   }
 
   #syncTreeDisplay() {

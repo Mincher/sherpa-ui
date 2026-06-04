@@ -178,10 +178,7 @@ export class SherpaTransferList extends SherpaElement {
   }
 
   #fire(moved: string[], direction: 'add' | 'remove') {
-    this.dispatchEvent(new CustomEvent('transfer-change', {
-      bubbles: true, composed: true,
-      detail: { values: this.getSelectedValues(), moved, direction },
-    }));
+    this.emit('transfer-change', { values: this.getSelectedValues(), moved, direction });
   }
 }
 

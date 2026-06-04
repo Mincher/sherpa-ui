@@ -91,18 +91,11 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
 
   toggle() {
     this.expanded = !this.expanded;
-    this.dispatchEvent(new CustomEvent('callout-toggle', {
-      bubbles: true,
-      composed: true,
-      detail: { expanded: this.expanded },
-    }));
+    this.emit('callout-toggle', { expanded: this.expanded });
   }
 
   dismiss() {
-    this.dispatchEvent(new CustomEvent('callout-dismiss', {
-      bubbles: true,
-      composed: true,
-    }));
+    this.emit('callout-dismiss');
     this.remove();
   }
 

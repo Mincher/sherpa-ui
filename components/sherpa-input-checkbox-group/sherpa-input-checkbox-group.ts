@@ -31,14 +31,12 @@
  */
 
 import { SherpaInputGroupBase } from '../utilities/sherpa-input-group/sherpa-input-group-base.js';
+import { SherpaInputDataset } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-input-checkbox/sherpa-input-checkbox.js';
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
-interface SherpaInputCheckboxGroupDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  helper?: string;
+interface SherpaInputCheckboxGroupDataset extends SherpaInputDataset {
   orientation?: 'horizontal' | 'vertical';
   options?: string;
   value?: string;
@@ -194,10 +192,7 @@ export class SherpaInputCheckboxGroup extends SherpaInputGroupBase {
     // Reflect to attribute without triggering observer-triggered re-stamp.
     const serialised = JSON.stringify(value);
     if (this.dataset["value"] !== serialised) this.dataset["value"] = serialised;
-    this.dispatchEvent(new CustomEvent('change', {
-      bubbles: true, composed: true,
-      detail: { value, values: value },
-    }));
+    this.emit('change', { value, values: value });
   }
 }
 

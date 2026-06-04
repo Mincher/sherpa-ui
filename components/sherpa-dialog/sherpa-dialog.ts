@@ -83,7 +83,7 @@ export class SherpaDialog extends PageNavigationMixin(StatusMixin(SherpaElement)
     // Native <dialog> fires "close" when closed by .close() or Escape
     dialog?.addEventListener('close', () => {
       delete this.dataset["open"];
-      this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+      this.emit('close');
     });
 
     // Click on ::backdrop (detected as click on <dialog> itself) closes
@@ -101,10 +101,7 @@ export class SherpaDialog extends PageNavigationMixin(StatusMixin(SherpaElement)
       this.$('.wizard-back')?.addEventListener('button-click', () => this.prevPage());
       this.$('.wizard-next')?.addEventListener('button-click', () => {
         if (this.page >= this.pages - 1) {
-          this.dispatchEvent(new CustomEvent('dialog-finish', {
-            bubbles: true, composed: true,
-            detail: { page: this.page, total: this.pages },
-          }));
+          this.emit('dialog-finish', { page: this.page, total: this.pages });
         } else {
           this.nextPage();
         }
@@ -137,10 +134,7 @@ export class SherpaDialog extends PageNavigationMixin(StatusMixin(SherpaElement)
       case 'data-pages':
         this.#syncWizard();
         if (name === 'data-page') {
-          this.dispatchEvent(new CustomEvent('dialog-page-change', {
-            bubbles: true, composed: true,
-            detail: { page: this.page, total: this.pages },
-          }));
+          this.emit('dialog-page-change', { page: this.page, total: this.pages });
         }
         break;
     }
@@ -181,7 +175,7 @@ export class SherpaDialog extends PageNavigationMixin(StatusMixin(SherpaElement)
     const dialog = this.$<HTMLDialogElement>('.dialog');
     if (dialog && !dialog.open) {
       dialog.showModal();
-      this.dispatchEvent(new CustomEvent('open', { bubbles: true, composed: true }));
+      this.emit('open');
     }
   }
 

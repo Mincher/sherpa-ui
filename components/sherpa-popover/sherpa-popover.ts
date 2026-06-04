@@ -118,10 +118,7 @@ class SherpaPopover extends PageNavigationMixin(SherpaElement) {
       case "data-pages":
         this.#syncPageIndicator();
         if (name === 'data-page') {
-          this.dispatchEvent(new CustomEvent('popover-page-change', {
-            bubbles: true, composed: true,
-            detail: { page: this.page, total: this.pages },
-          }));
+          this.emit('popover-page-change', { page: this.page, total: this.pages });
         }
         break;
     }
@@ -133,10 +130,7 @@ class SherpaPopover extends PageNavigationMixin(SherpaElement) {
     if (back) back.addEventListener('click', () => this.prevPage());
     if (next) next.addEventListener('click', () => {
       if (this.page >= this.pages - 1) {
-        this.dispatchEvent(new CustomEvent('popover-page-finish', {
-          bubbles: true, composed: true,
-          detail: { page: this.page, total: this.pages },
-        }));
+        this.emit('popover-page-finish', { page: this.page, total: this.pages });
       } else {
         this.nextPage();
       }

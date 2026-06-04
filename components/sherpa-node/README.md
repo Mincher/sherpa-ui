@@ -22,8 +22,8 @@ sherpa-node.js — Host element for a node-graph node. Mirrors data-x / data-y a
 
 | Slot | Description |
 | ---- | ----------- |
-| `header` | A <sherpa-node-header> |
-| `(default)` | Default: zero or more <sherpa-node-row>s plus optional |
+| `header` | A <sherpa-node-row data-variant="header"> |
+| `(default)` | Default: zero or more <sherpa-node-row>s (body variant) plus optional |
 | `footer` | Optional footer |
 
 Slot usage:
@@ -32,7 +32,7 @@ Slot usage:
 <sherpa-node>
   <!-- Default slot -->
   <p>Content goes here</p>
-  <div slot="header"><!-- A <sherpa-node-header> --></div>
+  <div slot="header"><!-- A <sherpa-node-row data-variant="header"> --></div>
   <div slot="footer"><!-- Optional footer --></div>
 </sherpa-node>
 ```
@@ -80,7 +80,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 <sherpa-node data-kind="source" data-node-id="value" data-subtype="value">
   <!-- Default slot content -->
   <p>Your content here</p>
-  <span slot="header"><!-- A <sherpa-node-header> --></span>
+  <span slot="header"><!-- A <sherpa-node-row data-variant="header"> --></span>
   <span slot="footer"><!-- Optional footer --></span>
 </sherpa-node>
 ```

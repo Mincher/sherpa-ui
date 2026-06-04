@@ -120,10 +120,7 @@ export class SherpaViewHeader extends SherpaElement {
     const toggle = this.$<HTMLElement>('#edit-mode-toggle');
     if (toggle) toggle.dataset["state"] = on ? 'on' : 'off';
     // Dispatch so app coordinator can toggle containers, body attribute, etc.
-    this.dispatchEvent(new CustomEvent('edit-mode-change', {
-      bubbles: true, composed: true,
-      detail: { editMode: on },
-    }));
+    this.emit('edit-mode-change', { editMode: on });
   }
 
   // ============ Public API ============
@@ -242,10 +239,7 @@ export class SherpaViewHeader extends SherpaElement {
     
     btn.addEventListener('click', () => {
       const pageTitle = this.getHeading() || this.dataset["exportTitle"] || 'Export';
-      this.dispatchEvent(new CustomEvent('view-export', {
-        bubbles: true, composed: true,
-        detail: { title: pageTitle }
-      }));
+      this.emit('view-export', { title: pageTitle });
     });
   }
 
@@ -272,10 +266,7 @@ export class SherpaViewHeader extends SherpaElement {
     btn.addEventListener('click', () => {
       const next = !this.isFavorite();
       this.setFavorite(next);
-      this.dispatchEvent(new CustomEvent('favorite-toggle', {
-        bubbles: true, composed: true,
-        detail: { viewId: this.#viewId, favorite: next }
-      }));
+      this.emit('favorite-toggle', { viewId: this.#viewId, favorite: next });
     });
   }
 
@@ -283,10 +274,7 @@ export class SherpaViewHeader extends SherpaElement {
     const btn = this.$('#back-btn');
     if (!btn) return;
     btn.addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('view-header-back', {
-        bubbles: true, composed: true,
-        detail: {},
-      }));
+      this.emit('view-header-back', {});
     });
   }
 
@@ -490,10 +478,7 @@ export class SherpaViewHeader extends SherpaElement {
         if (v === picked.value) it.setAttribute('data-state', 'selected');
         else it.removeAttribute('data-state');
       });
-      this.dispatchEvent(new CustomEvent('view-selection-change', {
-        bubbles: true, composed: true,
-        detail: { value: picked.value, item: picked },
-      }));
+      this.emit('view-selection-change', { value: picked.value, item: picked });
     });
   }
 

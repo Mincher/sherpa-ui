@@ -3,20 +3,22 @@
  *
  * Locked shape matrix:
  *
- *   Position           | State          | Shape           | Border
- *   -------------------|----------------|-----------------|---------
- *   header in single   | any            | circle          | purple
- *   header in multi    | any            | tall capsule    | purple
- *   row in single      | any            | D (curve out)   | blue
- *   row in multi       | any            | taller D        | blue
- *   output single      | disconnected   | square          | purple/green/red
- *   output single      | connected      | triangle        | purple/green/red
+ *   Variant        | Position | State        | Shape           | Border
+ *   ---------------|----------|--------------|-----------------|----------
+ *   single         | header   | any          | circle          | purple
+ *   multiple       | header   | any          | tall capsule    | purple
+ *   single         | row      | any          | D (curve out)   | blue
+ *   multiple       | row      | any          | taller D        | blue
+ *   step-single    | header   | any          | pill/capsule    | purple
+ *   step-multiple  | header   | any          | tall capsule    | purple
+ *   (output)       | any      | disconnected | square          | purple/green/red
+ *   (output)       | any      | connected    | triangle        | purple/green/red
  *
  * Shape is derived purely from attributes:
- *   data-direction × data-location × data-multi × data-connected × data-status
+ *   data-direction × data-location × data-variant × data-connected × data-status
  *
- * data-location is auto-set by the parent (sherpa-node-header → "header",
- * sherpa-node-row → "row"). Defaults to "header" when absent.
+ * data-location is auto-detected from DOM context (header vs row).
+ * data-variant replaces the legacy data-multi attribute for clearer intent.
  *
  * Multi-input growth: the canvas writes `data-connection-count="N"` and
  * the JS clones N dots into the .connectors container. The shape's
@@ -102,11 +104,23 @@
   background: var(--_socket-stroke);
   border: var(--sherpa-node-socket-stroke-w, 2px) solid var(--_socket-stroke);
 }
+/* ── Input socket shapes by location ──────────────────────────── */
+
+/* Header inputs: circle by default */
 :host([data-location="header"][data-direction="in"]) .socket-shape {
   border-radius: 999px;
 }
+
+/* Row inputs: D-shape (rounded on right, flat on left) */
 :host([data-location="row"][data-direction="in"]) .socket-shape {
   border-radius: 0 999px 999px 0;
+}
+
+/* Step variants: pill/capsule shape (taller, full rounded) for control-flow */
+:host([data-variant="step-single"][data-direction="in"]) .socket-shape,
+:host([data-variant="step-multiple"][data-direction="in"]) .socket-shape {
+  min-height: 24px;
+  border-radius: 999px;
 }
 :host([data-direction="out"]) .socket-shape {
   width: 14px;

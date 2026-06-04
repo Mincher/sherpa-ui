@@ -81,7 +81,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
     this.$('.toast-close')?.addEventListener('click', () => this.hide());
     this.$('.toast-action')?.addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('action', { bubbles: true, composed: true }));
+      this.emit('action');
       if (this.#actionCallback) this.#actionCallback();
     });
   }
@@ -128,7 +128,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     toast.dataset["state"] = 'hiding';
 
     setTimeout(() => {
-      this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+      this.emit('close');
       this.remove();
     }, 300);
   }

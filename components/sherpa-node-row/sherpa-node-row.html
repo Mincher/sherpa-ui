@@ -1,22 +1,61 @@
 <!--
-  sherpa-node-row — Generic field row inside a sherpa-node body.
+  sherpa-node-row — Unified row component for sherpa-node.
 
-  Slots:
+  Supports two variants via data-variant attribute:
+    - "header": Title row with icon, actions, and drill-down button
+    - "body" (default): Field row with label, control, and helper
+
+  Slots (header variant):
+    icon           — Leading icon element (overrides data-icon)
+    title          — Header title text
+    actions        — Trailing icons/buttons
+    input-socket   — LEFT gutter socket
+    output-socket  — RIGHT gutter socket
+
+  Slots (body variant):
     label          — Field label (text or small element)
     control        — The actual input/select/chip group
     helper         — Optional helper text below control
-    input-socket   — Slot mounted in the LEFT gutter (centered vertically)
-    output-socket  — Slot mounted in the RIGHT gutter (centered vertically)
-
-  Slot presence is auto-mirrored as data-has-* on the host (via SherpaElement).
+    input-socket   — LEFT gutter socket
+    output-socket  — RIGHT gutter socket
 
   Variants:
-    data-multi          — Visually expand for multi-input rows
-    data-has-helper     — Auto-set when helper slot has content
-    data-has-input-socket  — Auto-set when input-socket slot has content
-    data-has-output-socket — Auto-set when output-socket slot has content
+    data-variant       — "header" | "body" (default: "body")
+    data-icon          — FontAwesome class (header only)
+    data-drill-down    — Show drill-down button (header only)
+    data-multi         — Visually expand for multi-input rows (body only)
 -->
-<div class="row">
+
+<!-- Header variant -->
+<div class="header" data-variant="header">
+  <div class="gutter gutter-in">
+    <slot name="input-socket"></slot>
+  </div>
+  <div class="header-body">
+    <span class="icon">
+      <i class="icon-built-in" aria-hidden="true"></i>
+      <slot name="icon"></slot>
+    </span>
+    <span class="title"><slot name="title"></slot></span>
+    <span class="actions">
+      <button
+        class="drill-down"
+        type="button"
+        aria-label="Open sub-graph"
+        title="Open sub-graph"
+      >
+        <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
+      </button>
+      <slot name="actions"></slot>
+    </span>
+  </div>
+  <div class="gutter gutter-out">
+    <slot name="output-socket"></slot>
+  </div>
+</div>
+
+<!-- Body variant -->
+<div class="row" data-variant="body">
   <div class="row-label">
     <slot name="label"></slot>
   </div>

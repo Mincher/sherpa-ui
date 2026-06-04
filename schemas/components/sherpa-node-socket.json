@@ -14,12 +14,17 @@
     {
       "name": "data-location",
       "type": "enum",
-      "description": "\"header\" | \"row\" (auto-set by parent slot)"
+      "description": "\"header\" | \"row\" (auto-detected from DOM context)"
+    },
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "description": "\"single\" | \"multiple\" | \"step-single\" | \"step-multiple\" (replaces data-multi for inputs)"
     },
     {
       "name": "data-multi",
       "type": "boolean",
-      "description": "Input accepts multiple connections"
+      "description": "DEPRECATED: use data-variant instead. Input accepts multiple connections"
     },
     {
       "name": "data-connected",

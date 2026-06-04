@@ -346,10 +346,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       this.setSelectedEdge(null);
       this.#nodeById(next)?.setAttribute("data-selected", "");
     }
-    this.dispatchEvent(new CustomEvent("sherpa-node-select", {
-      bubbles: true, composed: true,
-      detail: { nodeId: next },
-    }));
+    this.emit("sherpa-node-select", { nodeId: next });
   }
 
   /**
@@ -369,10 +366,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     for (let i = this.#edges.length - 1; i >= 0; i--) {
       const e = this.#edges[i];
       if (e && (e.from?.nodeId === nodeId || e.to?.nodeId === nodeId)) {
-        this.dispatchEvent(new CustomEvent("sherpa-edge-delete", {
-          bubbles: true, composed: true,
-          detail: { edgeIdx: i },
-        }));
+        this.emit("sherpa-edge-delete", { edgeIdx: i });
         this.#edges.splice(i, 1);
         if (this.#selectedEdgeIdx === i) this.#selectedEdgeIdx = -1;
         else if (this.#selectedEdgeIdx > i) this.#selectedEdgeIdx--;
@@ -383,10 +377,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (this.#selectedNodeId === nodeId) this.#selectedNodeId = null;
     this.#hoverEdgeIdx = -1;
     this.#invalidatePortCache(nodeId);
-    this.dispatchEvent(new CustomEvent("sherpa-node-delete", {
-      bubbles: true, composed: true,
-      detail: { nodeId },
-    }));
+    this.emit("sherpa-node-delete", { nodeId });
     this.#schedulePropagate();
     this.#scheduleDraw();
   }
@@ -398,15 +389,9 @@ export class SherpaNodeCanvas extends SherpaElement {
       // Edge selection clears node selection (mutually exclusive).
       this.#nodeById(this.#selectedNodeId)?.removeAttribute("data-selected");
       this.#selectedNodeId = null;
-      this.dispatchEvent(new CustomEvent("sherpa-node-select", {
-        bubbles: true, composed: true,
-        detail: { nodeId: null },
-      }));
+      this.emit("sherpa-node-select", { nodeId: null });
     }
-    this.dispatchEvent(new CustomEvent("sherpa-edge-select", {
-      bubbles: true, composed: true,
-      detail: { edgeIdx: next === -1 ? null : next },
-    }));
+    this.emit("sherpa-edge-select", { edgeIdx: next === -1 ? null : next });
     this.#scheduleDraw();
   }
 
@@ -700,10 +685,7 @@ export class SherpaNodeCanvas extends SherpaElement {
         // Re-attach mode.
         if (!drop) {
           // Dropped on empty canvas → delete the edge.
-          this.dispatchEvent(new CustomEvent("sherpa-edge-delete", {
-            bubbles: true, composed: true,
-            detail: { edgeIdx: redirectIdx },
-          }));
+          this.emit("sherpa-edge-delete", { edgeIdx: redirectIdx });
           this.#edges.splice(redirectIdx, 1);
           if (this.#selectedEdgeIdx === redirectIdx) this.#selectedEdgeIdx = -1;
         } else if (drop.side === drag.fromSide && drop.nodeId !== fixedEnd?.nodeId) {
@@ -724,10 +706,7 @@ export class SherpaNodeCanvas extends SherpaElement {
             return;
           }
           this.#edges[redirectIdx] = edge;
-          this.dispatchEvent(new CustomEvent("sherpa-edge-update", {
-            bubbles: true, composed: true,
-            detail: { edgeIdx: redirectIdx, edge },
-          }));
+          this.emit("sherpa-edge-update", { edgeIdx: redirectIdx, edge });
         }
         // Otherwise: invalid drop → snap back (no-op).
       } else {
@@ -750,10 +729,7 @@ export class SherpaNodeCanvas extends SherpaElement {
             to:   { nodeId: inn.nodeId, portName: inn.portName },
             control: false,
           };
-          this.dispatchEvent(new CustomEvent("sherpa-edge-create", {
-            bubbles: true, composed: true,
-            detail: edge,
-          }));
+          this.emit("sherpa-edge-create", edge);
         }
       }
       this.#scheduleDraw();
@@ -769,10 +745,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     if ((e.code === "Delete" || e.code === "Backspace") && this.#selectedEdgeIdx >= 0) {
       if (this.#focusInsideEditableControl()) return;
       const idx = this.#selectedEdgeIdx;
-      this.dispatchEvent(new CustomEvent("sherpa-edge-delete", {
-        bubbles: true, composed: true,
-        detail: { edgeIdx: idx },
-      }));
+      this.emit("sherpa-edge-delete", { edgeIdx: idx });
       this.#edges.splice(idx, 1);
       this.#selectedEdgeIdx = -1;
       this.#hoverEdgeIdx = -1;
@@ -1441,10 +1414,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const cached = this.#subgraphs.get(parentId);
     if (cached) this.#restore(cached as CanvasSnapshot);
     this.#syncHeader();
-    this.dispatchEvent(new CustomEvent("sherpa-canvas-subgraph-enter", {
-      bubbles: true, composed: true,
-      detail: { parentId, label: resolvedLabel, depth: this.#drillStack.length, cached: !!cached },
-    }));
+    this.emit("sherpa-canvas-subgraph-enter", { parentId, label: resolvedLabel, depth: this.#drillStack.length, cached: !!cached });
   }
 
   /**
@@ -1466,10 +1436,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#clearFrame();
     this.#restore(frame.snapshot as CanvasSnapshot);
     this.#syncHeader();
-    this.dispatchEvent(new CustomEvent("sherpa-canvas-subgraph-exit", {
-      bubbles: true, composed: true,
-      detail: { parentId: frame.parentId, label: frame.label, depth: this.#drillStack.length },
-    }));
+    this.emit("sherpa-canvas-subgraph-exit", { parentId: frame.parentId, label: frame.label, depth: this.#drillStack.length });
     return frame;
   }
 
@@ -1691,10 +1658,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   }
 
   #emitViewport() {
-    this.dispatchEvent(new CustomEvent("sherpa-viewport-change", {
-      bubbles: true, composed: true,
-      detail: this.getViewport(),
-    }));
+    this.emit("sherpa-viewport-change", this.getViewport());
   }
 }
 

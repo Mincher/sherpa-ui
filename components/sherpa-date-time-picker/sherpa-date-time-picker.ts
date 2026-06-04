@@ -187,15 +187,11 @@ export class SherpaDateTimePicker extends SherpaElement {
     });
 
     this.$('.btn-close')?.addEventListener('button-click', () => {
-      this.dispatchEvent(new CustomEvent('datetime-close', { bubbles: true, composed: true }));
+      this.emit('datetime-close');
     });
 
     this.$('.btn-apply')?.addEventListener('button-click', () => {
-      this.dispatchEvent(new CustomEvent('datetime-submit', {
-        bubbles: true,
-        composed: true,
-        detail: { value: this.value },
-      }));
+      this.emit('datetime-submit', { value: this.value });
     });
   }
 
@@ -372,11 +368,7 @@ export class SherpaDateTimePicker extends SherpaElement {
   #emitChange() {
     const val = this.value;
     if (this.#hiddenInput) this.#hiddenInput.value = val;
-    this.dispatchEvent(new CustomEvent('datetime-change', {
-      bubbles: true,
-      composed: true,
-      detail: { value: val },
-    }));
+    this.emit('datetime-change', { value: val });
   }
 
   /* ── Static helpers ─────────────────────────────────────── */

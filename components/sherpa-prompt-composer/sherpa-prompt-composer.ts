@@ -75,11 +75,7 @@ class SherpaPromptComposer extends SherpaElement {
     if (this.#isDisabled()) return;
     const value = (this.els.input?.value ?? "").trim();
     if (!value) return;
-    this.dispatchEvent(new CustomEvent("prompt-submit", {
-      bubbles: true,
-      composed: true,
-      detail: { value },
-    }));
+    this.emit("prompt-submit", { value });
   };
 
   #onInput = () => this.#autoresize();

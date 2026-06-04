@@ -103,9 +103,7 @@ export class SherpaScheduler extends SherpaElement {
 
   #onInputChange = () => {
     this.#readFromInputs();
-    this.dispatchEvent(new CustomEvent('schedule-change', {
-      bubbles: true, composed: true, detail: { value: this.value },
-    }));
+    this.emit('schedule-change', { value: this.value });
   };
 
   /* ── sync helpers ──────────────────────────────────────── */

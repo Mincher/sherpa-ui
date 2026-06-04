@@ -113,11 +113,7 @@ export class SherpaChartLegend extends SherpaElement {
       if (item.link) {
         el.toggleAttribute('data-link', true);
         el.addEventListener('click', () => {
-          this.dispatchEvent(new CustomEvent('legend-item-click', {
-            bubbles: true,
-            composed: true,
-            detail: { index: i, label: item.label },
-          }));
+          this.emit('legend-item-click', { index: i, label: item.label });
         });
       }
 

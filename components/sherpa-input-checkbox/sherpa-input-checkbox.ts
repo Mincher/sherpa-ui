@@ -76,10 +76,7 @@ export class SherpaInputCheckbox extends SherpaInputChoiceBase {
     this._mirrorChecked();
     // Native toggling clears indeterminate
     if (this.hasAttribute('indeterminate')) this.removeAttribute('indeterminate');
-    this.dispatchEvent(new CustomEvent('change', {
-      bubbles: true, composed: true,
-      detail: { checked: input.checked, value: this.value, indeterminate: input.indeterminate },
-    }));
+    this.emit('change', { checked: input.checked, value: this.value, indeterminate: input.indeterminate });
   }
 }
 

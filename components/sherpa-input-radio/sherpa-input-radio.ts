@@ -62,10 +62,7 @@ export class SherpaInputRadio extends SherpaInputChoiceBase {
     const input = this._input;
     if (!input) return;
     this._mirrorChecked();
-    this.dispatchEvent(new CustomEvent('change', {
-      bubbles: true, composed: true,
-      detail: { checked: input.checked, value: this.value },
-    }));
+    this.emit('change', { checked: input.checked, value: this.value });
   }
 }
 

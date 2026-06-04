@@ -51,7 +51,7 @@ import type { Orientation, ChangeEventDetail } from "../types.js";
 /* ── Type Definitions ─────────────────────────────────────────────── */
 
 /** Input-specific dataset interface */
-interface SherpaInputDataset extends DOMStringMap {
+export interface SherpaInputDataset extends DOMStringMap {
   label?: string;
   description?: string;
   helper?: string;

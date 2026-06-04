@@ -164,10 +164,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     else target.before(this.#dragSource);
 
     const order = Array.from(this.children).map((c, i) => (c as HTMLElement).dataset["containerId"] || String(i));
-    this.dispatchEvent(new CustomEvent('layout-reorder', {
-      bubbles: true, composed: true,
-      detail: { from: fromIdx, to: toIdx, order },
-    }));
+    this.emit('layout-reorder', { from: fromIdx, to: toIdx, order });
   };
 
   #onDragEnd = () => {

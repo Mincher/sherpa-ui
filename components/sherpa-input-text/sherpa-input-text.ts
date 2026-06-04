@@ -31,15 +31,11 @@
  *   detail: { value: string }
  */
 
-import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { SherpaInputBase, SherpaInputDataset } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
-interface SherpaInputTextDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  helper?: string;
-  layout?: 'horizontal' | 'vertical';
+interface SherpaInputTextDataset extends SherpaInputDataset {
   multiline?: string;
 }
 
