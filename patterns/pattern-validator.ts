@@ -61,7 +61,7 @@ export class PatternValidator {
 
     // Validate metadata
     const metadataWarnings = this.validateMetadata(pattern);
-    warnings.push(...metadataWarnings);
+    if (metadataWarnings) warnings.push(...metadataWarnings);
 
     return {
       valid: errors.length === 0,

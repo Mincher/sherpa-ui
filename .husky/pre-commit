@@ -1,6 +1,4 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
 # Run type-check to prevent commits with TypeScript errors
 echo "🔍 Running TypeScript type-check..."
 npm run type-check

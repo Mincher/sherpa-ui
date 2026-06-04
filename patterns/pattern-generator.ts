@@ -47,9 +47,9 @@ export class PatternGenerator {
   /**
    * Generate HTML markup from presentation config
    */
-  private generateHTML(pattern: Pattern, data: Record<string, any>): string {
+  private generateHTML(pattern: Pattern, _data: Record<string, any>): string {
     const components = pattern.presentation.components;
-    const html = components.map((component) => this.renderComponent(component, data)).join('\n');
+    const html = components.map((component) => this.renderComponent(component, _data)).join('\n');
     return html;
   }
 
@@ -110,7 +110,7 @@ export class PatternGenerator {
   /**
    * Generate JavaScript for interaction logic
    */
-  private generateJavaScript(pattern: Pattern, data: Record<string, any>): string {
+  private generateJavaScript(pattern: Pattern, _data: Record<string, any>): string {
     const { interaction, resolution } = pattern;
 
     const lines: string[] = [];
@@ -141,7 +141,7 @@ export class PatternGenerator {
     // Generate trigger handlers
     lines.push('// Event handlers');
     interaction.triggers.forEach((trigger) => {
-      lines.push(this.generateTriggerHandler(trigger, pattern, data));
+      lines.push(this.generateTriggerHandler(trigger, pattern, _data));
     });
 
     // Generate validation logic
@@ -209,7 +209,7 @@ export class PatternGenerator {
   private generateTriggerHandler(
     trigger: TriggerDefinition,
     pattern: Pattern,
-    data: Record<string, any>
+    _data: Record<string, any>
   ): string {
     const targetVar = this.toCamelCase(trigger.target);
     const eventName = trigger.event;
@@ -270,14 +270,14 @@ export class PatternGenerator {
     }
 
     if (rule.startsWith('minLength:')) {
-      const length = rule.split(':')[1];
+      const length = rule.split(':')[1] ?? '0';
       return `  if (${fieldVar}.value.length < ${length}) {
     errors.push({ field: '${validation.field}', message: '${message}' });
   }`;
     }
 
     if (rule.startsWith('maxLength:')) {
-      const length = rule.split(':')[1];
+      const length = rule.split(':')[1] ?? '0';
       return `  if (${fieldVar}.value.length > ${length}) {
     errors.push({ field: '${validation.field}', message: '${message}' });
   }`;
@@ -290,7 +290,7 @@ export class PatternGenerator {
     }
 
     if (rule.startsWith('pattern:')) {
-      const pattern = rule.split(':')[1];
+      const pattern = rule.split(':')[1] ?? '';
       return `  if (!new RegExp('${pattern}').test(${fieldVar}.value)) {
     errors.push({ field: '${validation.field}', message: '${message}' });
   }`;
@@ -372,7 +372,7 @@ export class PatternGenerator {
    */
   private generateListeners(
     pattern: Pattern,
-    data: Record<string, any>
+    _data: Record<string, any>
   ): PatternGenerationResult['listeners'] {
     const listeners: PatternGenerationResult['listeners'] = [];
 
@@ -391,7 +391,7 @@ export class PatternGenerator {
    * Create handler function
    */
   private createHandlerFunction(trigger: TriggerDefinition, pattern: Pattern): (event: Event) => void {
-    return (event: Event) => {
+    return (_event: Event) => {
       if (trigger.condition) {
         // Evaluate condition (simplified)
         // TODO: Implement safe condition evaluation
@@ -446,12 +446,12 @@ export class PatternGenerator {
       }
 
       if (rule.startsWith('minLength:')) {
-        const length = parseInt(rule.split(':')[1]);
+        const length = parseInt(rule.split(':')[1] ?? '0');
         return String(value).length >= length ? null : validation.message;
       }
 
       if (rule.startsWith('maxLength:')) {
-        const length = parseInt(rule.split(':')[1]);
+        const length = parseInt(rule.split(':')[1] ?? '0');
         return String(value).length <= length ? null : validation.message;
       }
 
@@ -461,7 +461,7 @@ export class PatternGenerator {
       }
 
       if (rule.startsWith('pattern:')) {
-        const pattern = rule.split(':')[1];
+        const pattern = rule.split(':')[1] ?? '';
         const regex = new RegExp(pattern);
         return regex.test(String(value)) ? null : validation.message;
       }

@@ -5,7 +5,6 @@
  */
 
 import { patternValidator } from './pattern-validator';
-import { patternGenerator } from './pattern-generator';
 import type { Pattern } from './pattern-schema';
 
 // Load the add-entity-flow pattern
@@ -21,7 +20,7 @@ async function testPattern() {
   console.log('Test 1: Pattern Validation');
   console.log('-'.repeat(80));
 
-  const pattern = addEntityFlow as Pattern;
+  const pattern = addEntityFlow as unknown as Pattern;
   const validationResult = patternValidator.validate(pattern);
 
   console.log(`Pattern ID: ${pattern.id}`);
@@ -93,7 +92,7 @@ async function testPattern() {
   console.log(`Status: ${pattern.metadata.status}`);
   console.log(`Version: ${pattern.metadata.version}`);
   console.log(`MCP Compatible: ${pattern.metadata.mcp_compatible ? 'Yes' : 'No'}`);
-  console.log(`Tags: ${pattern.metadata.tags.join(', ')}`);
+  console.log(`Tags: ${pattern.metadata.tags?.join(', ') ?? ''}`);
   console.log('');
 
   // Test 4: Pattern Structure Analysis
@@ -131,7 +130,7 @@ function countComponents(components: Pattern['presentation']['components']): num
 /**
  * Generate mock HTML for testing
  */
-function generateMockHTML(pattern: Pattern, data: Record<string, any>): string {
+function generateMockHTML(pattern: Pattern, _data: Record<string, any>): string {
   const components = pattern.presentation.components;
 
   return components
