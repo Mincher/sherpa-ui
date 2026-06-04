@@ -29,7 +29,6 @@
  */
 
 import { SherpaInputGroupBase } from '../utilities/sherpa-input-group/sherpa-input-group-base.js';
-import { SherpaInputDataset } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-input-radio/sherpa-input-radio.js';
 
 /** Structural type for the slotted <sherpa-input-radio> children. */
@@ -38,22 +37,9 @@ interface RadioChild extends HTMLElement {
   value: string;
 }
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaInputRadioGroupDataset extends SherpaInputDataset {
-  orientation?: 'horizontal' | 'vertical';
-  options?: string;
-  value?: string;
-  status?: string;
-}
-
 let _gid = 0;
 
 export class SherpaInputRadioGroup extends SherpaInputGroupBase {
-
-  override get dataset(): SherpaInputRadioGroupDataset {
-    return super.dataset as SherpaInputRadioGroupDataset;
-  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-radio-group.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-radio-group.html', import.meta.url).href; }
@@ -77,12 +63,7 @@ export class SherpaInputRadioGroup extends SherpaInputGroupBase {
     if (!this.getAttribute('name')) {
       this.setAttribute('name', `sherpa-radio-group-${++_gid}`);
     }
-    this._syncLegend();
-    this._syncDescription();
-    this._syncHelper();
-    this._stampOptions();
-    this._syncValue();
-    this._syncDisabled();
+    this._syncAll();
   }
 
   protected override _onExtraAttributeChanged(name: string) {
@@ -110,11 +91,8 @@ export class SherpaInputRadioGroup extends SherpaInputGroupBase {
   /* ── Private ───────────────────────────────────────────────────── */
 
   protected override _stampOptions() {
-    const raw = this.dataset["options"];
-    if (!raw) return;
-    let opts;
-    try { opts = JSON.parse(raw); } catch { return; }
-    if (!Array.isArray(opts)) return;
+    const opts = this._parseJsonOptions();
+    if (!opts) return;
 
     [...this.querySelectorAll('sherpa-input-radio[data-stamped]')]
       .forEach((n) => n.remove());

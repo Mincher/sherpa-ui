@@ -31,24 +31,9 @@
  */
 
 import { SherpaInputGroupBase } from '../utilities/sherpa-input-group/sherpa-input-group-base.js';
-import { SherpaInputDataset } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 import '../sherpa-input-checkbox/sherpa-input-checkbox.js';
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaInputCheckboxGroupDataset extends SherpaInputDataset {
-  orientation?: 'horizontal' | 'vertical';
-  options?: string;
-  value?: string;
-  status?: string;
-  template?: string;
-}
-
 export class SherpaInputCheckboxGroup extends SherpaInputGroupBase {
-
-  override get dataset(): SherpaInputCheckboxGroupDataset {
-    return super.dataset as SherpaInputCheckboxGroupDataset;
-  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-checkbox-group.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-checkbox-group.html', import.meta.url).href; }
@@ -77,12 +62,7 @@ export class SherpaInputCheckboxGroup extends SherpaInputGroupBase {
       this._bound = true;
     }
 
-    this._syncLegend();
-    this._syncDescription();
-    this._syncHelper();
-    this._stampOptions();
-    this._syncValue();
-    this._syncDisabled();
+    this._syncAll();
   }
 
   protected override _onExtraAttributeChanged(name: string) {
@@ -110,11 +90,8 @@ export class SherpaInputCheckboxGroup extends SherpaInputGroupBase {
     const host = this.$('.group-options');
     if (!host) return;
 
-    const raw = this.dataset["options"];
-    if (!raw) return;
-    let opts;
-    try { opts = JSON.parse(raw); } catch { return; }
-    if (!Array.isArray(opts)) return;
+    const opts = this._parseJsonOptions();
+    if (!opts) return;
 
     // Replace any previously-stamped checkboxes (children we created).
     // We tag stamped children with data-stamped so consumer-supplied slot

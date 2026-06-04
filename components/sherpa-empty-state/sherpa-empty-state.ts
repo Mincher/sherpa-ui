@@ -7,7 +7,6 @@
  * @attr {string}  [data-label]        — Heading text
  * @attr {string}  [data-description]  — Description text
  * @attr {string}  [data-illustration]  — Built-in illustration name
- * @attr {string}  [data-small-print]   — Footer small-print text
  *
  * @slot illustration — Custom illustration content
  * @slot heading      — Custom heading
@@ -15,11 +14,6 @@
  * @slot (default)    — Arbitrary content between description and actions
  * @slot actions      — CTA buttons
  * @slot footer       — Footer content / small print
- *
- * @prop {string} heading      — Getter/setter for data-label
- * @prop {string} description  — Getter/setter for data-description
- * @prop {string} illustration — Getter/setter for data-illustration
- * @prop {string} smallPrint   — Getter/setter for data-small-print
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
@@ -79,7 +73,8 @@ export class SherpaEmptyState extends SherpaElement {
     ];
   }
 
-  /* ── Cached element refs ──────────────────────────────────────── */
+
+  /* ── Cached element refs ────────────────────────────────────────── */
 
   els = this.cacheElements({
     title: '.sherpa-empty-state__title',
@@ -88,15 +83,10 @@ export class SherpaEmptyState extends SherpaElement {
     smallPrintText: '.sherpa-empty-state__small-print-text'
   });
 
-  /* ── Lifecycle ────────────────────────────────────────────────── */
+  /* ── Lifecycle ───────────────────────────────────────────────── */
 
   override onRender(): void {
     this.#syncAll();
-  }
-
-  override onConnect(): void {
-    // Slot listeners are auto-wired by SherpaElement.
-    // Visibility is handled entirely by CSS using data-has-* and data-* selectors.
   }
 
   override onAttributeChanged(name: string) {
@@ -116,36 +106,6 @@ export class SherpaEmptyState extends SherpaElement {
     }
   }
 
-  /* ── Public getters / setters ─────────────────────────────────── */
-
-  get heading() {
-    return this.dataset["label"] || "";
-  }
-  set heading(v) {
-    v ? (this.dataset["label"] = v) : delete this.dataset["label"];
-  }
-
-  get description() {
-    return this.dataset["description"] || "";
-  }
-  set description(v) {
-    v ? (this.dataset["description"] = v) : delete this.dataset["description"];
-  }
-
-  get illustration() {
-    return this.dataset["illustration"] || "";
-  }
-  set illustration(v) {
-    v ? (this.dataset["illustration"] = v) : delete this.dataset["illustration"];
-  }
-
-  get smallPrint() {
-    return this.dataset["smallPrint"] || "";
-  }
-  set smallPrint(v) {
-    v ? (this.dataset["smallPrint"] = v) : delete this.dataset["smallPrint"];
-  }
-
   /* ── Sync helpers ─────────────────────────────────────────────── */
 
   #syncAll() {
@@ -156,23 +116,23 @@ export class SherpaEmptyState extends SherpaElement {
   }
 
   #updateHeading() {
-    if (this.els.title) this.els.title.textContent = this.heading;
+    if (this.els.title) this.els.title.textContent = this.dataset["label"] || "";
   }
 
   #updateDescription() {
-    if (this.els.description) this.els.description.textContent = this.description;
+    if (this.els.description) this.els.description.textContent = this.dataset["description"] || "";
   }
 
   #updateIllustration() {
     if (this.els.illustrationDefault) {
       this.els.illustrationDefault.innerHTML =
-        ILLUSTRATIONS[this.illustration as keyof typeof ILLUSTRATIONS] || "";
+        ILLUSTRATIONS[this.dataset["illustration"] as keyof typeof ILLUSTRATIONS] || "";
     }
   }
 
   #updateSmallPrint() {
     if (this.els.smallPrintText)
-      this.els.smallPrintText.textContent = this.smallPrint;
+      this.els.smallPrintText.textContent = this.dataset["smallPrint"] || "";
   }
 }
 

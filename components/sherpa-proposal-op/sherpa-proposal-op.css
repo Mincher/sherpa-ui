@@ -11,17 +11,10 @@
   text-align: center;
   font-weight: 700;
 }
-:host([data-op="add"]) .tag,
-:host([data-op="add-edge"]) .tag {
-  color: var(--sherpa-content-context-success-default, #15803d);
-}
-:host([data-op="remove"]) .tag,
-:host([data-op="remove-edge"]) .tag {
-  color: var(--sherpa-content-context-error-default, #b91c1c);
-}
-:host([data-op="update"]) .tag {
-  color: var(--sherpa-content-context-warning-default, #92400e);
-}
-:host .label {
-  word-break: break-word;
-}
+/* Op type characters via CSS — no JS required */
+:host([data-op="add"])         .tag::after,
+:host([data-op="add-edge"])    .tag::after { content: "+"; color: var(--sherpa-content-context-success-default, #15803d); }
+:host([data-op="remove"])      .tag::after,
+:host([data-op="remove-edge"]) .tag::after { content: "−"; color: var(--sherpa-content-context-error-default, #b91c1c); }
+:host([data-op="update"])      .tag::after { content: "~"; color: var(--sherpa-content-context-warning-default, #92400e); }
+:host .tag::after                          { content: "·"; } /* fallback */

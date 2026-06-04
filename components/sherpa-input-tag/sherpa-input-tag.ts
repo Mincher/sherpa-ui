@@ -37,22 +37,9 @@
  * @method clear()     — Remove all tags.
  */
 
-import { SherpaInputBase, SherpaInputDataset } from '../utilities/sherpa-input-base/sherpa-input-base.js';
-
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaInputTagDataset extends SherpaInputDataset {
-  value?: string;
-  separator?: string;
-  allowDuplicates?: string;
-  maxTags?: string;
-}
+import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
 export class SherpaInputTag extends SherpaInputBase<string[]> {
-
-  override get dataset(): SherpaInputTagDataset {
-    return super.dataset as SherpaInputTagDataset;
-  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-tag.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-tag.html', import.meta.url).href; }

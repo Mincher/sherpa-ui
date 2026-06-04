@@ -5,45 +5,16 @@
  * @element sherpa-proposal-op
  * @category ai
  *
- * @attr {enum}   [data-op]     add | remove | update | add-edge | remove-edge
- * @attr {string} [data-label]  Body text describing the change.
+ * @attr {enum}   [data-op]  add | remove | update | add-edge | remove-edge
+ *
+ * @slot — Label text describing the change
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
-const TAGS: Record<string, string> = {
-  "add":         "+",
-  "add-edge":    "+",
-  "remove":      "−",
-  "remove-edge": "−",
-  "update":      "~",
-};
-
 class SherpaProposalOp extends SherpaElement {
   static override get cssUrl(): string  { return new URL("./sherpa-proposal-op.css",  import.meta.url).href; }
   static override get htmlUrl(): string { return new URL("./sherpa-proposal-op.html", import.meta.url).href; }
-
-  static override get observedAttributes(): string[] {
-    return [...super.observedAttributes, "data-op", "data-label"];
-  }
-
-  #tagEl: HTMLElement | null   = null;
-  #labelEl: HTMLElement | null = null;
-
-  override onRender(): void {
-    this.#tagEl   = this.$<HTMLElement>(".tag");
-    this.#labelEl = this.$<HTMLElement>(".label");
-    this.#sync();
-  }
-
-  override onAttributeChanged() { this.#sync(); }
-
-  #sync() {
-    if (!this.#tagEl || !this.#labelEl) return;
-    const op = this.dataset["op"] || "";
-    this.#tagEl.textContent   = TAGS[op] || "·";
-    this.#labelEl.textContent = this.dataset["label"] || "";
-  }
 }
 
 customElements.define("sherpa-proposal-op", SherpaProposalOp);

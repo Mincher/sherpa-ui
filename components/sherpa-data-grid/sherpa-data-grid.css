@@ -20,6 +20,8 @@
  *   --_group-parent-bg:      Group parent row fill
  */
 
+@import "../utilities/sherpa-check.css";
+
 /* ═══════════════════════════════════════════════════════════════
    Host
    ═══════════════════════════════════════════════════════════════ */
@@ -281,104 +283,6 @@ th.header-cell[data-numeric] .header-content {
     --sherpa-border-control-secondary-default: transparent;
     --sherpa-border-control-active-default: transparent;
     --sherpa-surface-control-default: transparent;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Native Checkbox — sherpa-styled via appearance:none
-   ═══════════════════════════════════════════════════════════════ */
-
-.sherpa-check {
-  appearance: none;
-  -webkit-appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--sherpa-size-sm, 16px);
-  height: var(--sherpa-size-sm, 16px);
-  margin: 0;
-  padding: 0;
-  border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
-  border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: var(--sherpa-surface-control-default, #ffffff);
-  cursor: pointer;
-  transition: --transition-fast(background-color), --transition-fast(border-color);
-  flex-shrink: 0;
-  position: relative;
-
-  &:hover {
-    border-color: var(--sherpa-border-control-hover, #6a6a7a);
-    background: var(--sherpa-surface-control-hover, #f5f5f8);
-  }
-
-  &:active {
-    scale: 0.92;
-  }
-
-  &:focus-visible {
-    outline: --focus-ring(var(--sherpa-border-control-active-default));
-    outline-offset: 2px;
-  }
-
-  &:checked {
-    background: var(--sherpa-surface-control-primary-default, #0060df);
-    border-color: var(--sherpa-surface-control-primary-default, #0060df);
-  }
-
-  &:checked:hover {
-    background: var(--sherpa-border-control-primary-default, #004fc4);
-    border-color: var(--sherpa-border-control-primary-default, #004fc4);
-  }
-
-  &:checked::after {
-    content: "";
-    display: block;
-    width: 10px;
-    height: 10px;
-    background-color: #ffffff;
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
-    mask-size: contain;
-    mask-repeat: no-repeat;
-    mask-position: center;
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
-    -webkit-mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-  }
-
-  &:indeterminate {
-    background: var(--sherpa-surface-control-primary-default, #0060df);
-    border-color: var(--sherpa-surface-control-primary-default, #0060df);
-  }
-
-  &:indeterminate:hover {
-    background: var(--sherpa-border-control-primary-default, #004fc4);
-    border-color: var(--sherpa-border-control-primary-default, #004fc4);
-  }
-
-  &:indeterminate::after {
-    content: "";
-    display: block;
-    width: 8px;
-    height: 2px;
-    background-color: #ffffff;
-    border-radius: 1px;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  &:disabled:checked,
-  &:disabled:indeterminate {
-    background: var(--sherpa-surface-control-inactive, #dddde6);
-    border-color: var(--sherpa-surface-control-inactive, #dddde6);
-  }
-
-  &:disabled:not(:checked):not(:indeterminate) {
-    border-color: var(--sherpa-border-control-inactive, #7e7e8f);
-    background: var(--sherpa-surface-control-inactive, #dddde6);
   }
 }
 

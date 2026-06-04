@@ -80,6 +80,8 @@
   min-width: 24px;
   text-align: center;
 }
+:host([data-state="on"]) .switch-label::after  { content: "ON"; }
+:host(:not([data-state="on"])) .switch-label::after { content: "OFF"; }
 :host([data-state="on"]) {
   & .switch-track {
     background-color: var(

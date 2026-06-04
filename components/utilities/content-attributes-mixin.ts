@@ -493,6 +493,17 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       });
     }
 
+    /** Resolve display unit from explicit attribute or first measure's field type. */
+    #resolveUnit(measures: Array<{ field: string; agg: string }>): string | null {
+      let unit: string | null = this.unit || null;
+      if (!unit && measures.length) {
+        const fm = this.#fields.find((f) => f.name === measures[0]!.field);
+        if (fm?.type === 'currency') unit = getCurrencyCode();
+        else if (fm?.type === 'percent') unit = '%';
+      }
+      return unit;
+    }
+
     /** Metric: count records, compute sparkline */
     #aggregateMetric(records: Record<string, unknown>[], presetFilters: FilterSpec[]) {
       let dateField = _dateFieldProvider
@@ -523,12 +534,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
 
       const summary = computeMetricSummary(records, measures, dateField, resolvedFilters);
       const displayName = this.name || formatFieldName(this.datasetName || '');
-      let unit: string | null = this.unit || null;
-      if (!unit && measures.length) {
-        const fm = this.#fields.find((f) => f.name === measures[0].field);
-        if (fm?.type === 'currency') unit = getCurrencyCode();
-        else if (fm?.type === 'percent') unit = '%';
-      }
+      const unit = this.#resolveUnit(measures);
 
       this.setData({
         _fromCascade: true,
@@ -609,13 +615,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       const visibleFields = [...groupByFields, ...measures.map((m) => m.field)];
       const columns = buildColumns(this.#fields, visibleFields);
       const displayName = this.name || formatFieldName(this.datasetName || '');
-
-      let unit: string | null = this.unit || null;
-      if (!unit && measures.length) {
-        const fm = this.#fields.find((f) => f.name === measures[0].field);
-        if (fm?.type === 'currency') unit = getCurrencyCode();
-        else if (fm?.type === 'percent') unit = '%';
-      }
+      const unit = this.#resolveUnit(measures);
 
       this.setData({
         _fromCascade: true,

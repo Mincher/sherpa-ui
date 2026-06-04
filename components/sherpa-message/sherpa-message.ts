@@ -26,12 +26,11 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { StatusMixin } from '../utilities/status-mixin.js';
 import type { Status } from '../utilities/status-mixin.js';
 
 const DEFAULT_ACTION_ICON = 'fa-solid fa-arrow-up-right-from-square';
 
-export class SherpaMessage extends StatusMixin(SherpaElement) {
+export class SherpaMessage extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -52,7 +51,6 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#syncStatusIcon();
     this.#syncLabel();
     this.#syncAction();
     this.$('.message-close')?.addEventListener('button-click', () => this.dismiss());
@@ -66,14 +64,11 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
     else if (name === 'data-action-label' || name === 'data-action-href' || name === 'data-action-icon') this.#syncAction();
   }
 
-  onStatusChanged() {
-    this.#syncStatusIcon();
-  }
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  override get status(): Status | null { return (this.dataset["status"] as Status) || null; }
-  override set status(v: Status | null) { v ? (this.dataset["status"] = v) : delete this.dataset["status"]; }
+  get status(): Status | null { return (this.dataset["status"] as Status) || null; }
+  set status(v: Status | null) { v ? (this.dataset["status"] = v) : delete this.dataset["status"]; }
 
   get dismissible() { return this.hasAttribute('data-dismissible') && this.dataset["dismissible"] !== 'false'; }
   set dismissible(v){ v ? (this.dataset["dismissible"] = 'true') : this.removeAttribute('data-dismissible'); }
@@ -84,14 +79,6 @@ export class SherpaMessage extends StatusMixin(SherpaElement) {
   }
 
   /* ── Private ──────────────────────────────────────────────────── */
-
-  #syncStatusIcon() {
-    const iconEl = this.$<HTMLElement>('.default-icon');
-    if (!iconEl) return;
-    const iconClass = this.statusIcon || (this.constructor as typeof SherpaMessage).statusIcons.info;
-    iconEl.className = `${iconClass} sherpa-icon default-icon`;
-    iconEl.dataset["size"] = 'sm';
-  }
 
   #syncLabel() {
     const el = this.$('.message-label');

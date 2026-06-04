@@ -20,7 +20,7 @@
  * @method setTree(nodes)      — (tree) Set the node forest
  */
 
-import { SherpaInputBase, SherpaInputDataset } from "../utilities/sherpa-input-base/sherpa-input-base.js";
+import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
 
 /** A flat option or an <optgroup> with nested options. */
 interface OptionDef {
@@ -44,18 +44,8 @@ interface TreePathEntry {
   path: string[];
 }
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaInputSelectDataset extends SherpaInputDataset {
-  template?: 'default' | 'tree';
-  tree?: string;
-}
-
 export class SherpaInputSelect extends SherpaInputBase {
 
-  override get dataset(): SherpaInputSelectDataset {
-    return super.dataset as SherpaInputSelectDataset;
-  }
   static override get cssUrl(): string {
     return new URL("./sherpa-input-select.css", import.meta.url).href;
   }

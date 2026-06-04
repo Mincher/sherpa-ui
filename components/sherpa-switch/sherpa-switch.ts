@@ -72,10 +72,7 @@ export class SherpaSwitch extends SherpaElement {
   };
 
   #updateDisplay() {
-    const track = this.$('.switch-track');
-    const label = this.$('.switch-label');
-    if (track) track.setAttribute('aria-checked', String(this.checked));
-    if (label) label.textContent = this.state === 'on' ? 'ON' : 'OFF';
+    this.$('.switch-track')?.setAttribute('aria-checked', String(this.checked));
   }
 }
 

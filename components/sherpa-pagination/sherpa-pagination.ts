@@ -26,21 +26,8 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import type { EventHandler } from "../utilities/types.js";
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaPaginationDataset extends DOMStringMap {
-  page?: string;
-  pageSize?: string;
-  totalRows?: string;
-  allowedSizes?: string;
-  density?: string;
-}
-
 export class SherpaPagination extends SherpaElement {
 
-  override get dataset(): SherpaPaginationDataset {
-    return super.dataset as SherpaPaginationDataset;
-  }
   static override get cssUrl(): string {
     return new URL("./sherpa-pagination.css", import.meta.url).href;
   }

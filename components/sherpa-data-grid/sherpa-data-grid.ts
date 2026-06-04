@@ -76,6 +76,7 @@ import "../sherpa-filter-bar/sherpa-filter-bar.js";
 import { formatValue } from "../utilities/format-utils.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
 import { injectFilterMenu } from "../utilities/filter-menu-utils.js";
+import { applyFieldValueFilters } from "../utilities/filter-utils.js";
 
 const NUMERIC_TYPES = new Set([
   "number",
@@ -121,23 +122,6 @@ function columnWidth(type: string | null | undefined): number {
     default:
       return 200;
   }
-}
-
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaDataGridDataset extends DOMStringMap {
-  loading?: string;
-  segmentField?: string;
-  segmentMode?: string;
-  sortField?: string;
-  sortDirection?: 'asc' | 'desc';
-  page?: string;
-  pageSize?: string;
-  selectable?: string;
-  showActions?: string;
-  showSecondaryHeaders?: string;
-  showPagination?: string;
-  filters?: string;
 }
 
 /* ── Domain types ──────────────────────────────────────────────── */
@@ -192,10 +176,6 @@ interface DataPipelineConfig extends GridData {
 }
 
 class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
-
-  override get dataset(): SherpaDataGridDataset {
-    return super.dataset as SherpaDataGridDataset;
-  }
 
   static override get cssUrl(): string {
     return new URL("./sherpa-data-grid.css", import.meta.url).href;
@@ -625,10 +605,10 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     filtered = this.#applyColumnFilters(filtered);
 
     // 3. Apply value filters from filter-bar chips
-    filtered = this.#applyValueFilters(filtered);
+    filtered = applyFieldValueFilters(filtered, this.#valueFilters);
 
     // 3b. Apply external filters from FilterCoordinator (layered scoping)
-    filtered = this.#applyExternalFilters(filtered);
+    filtered = applyFieldValueFilters(filtered, this.#externalFilters);
 
     // 4. Sort — use explicit sort or fall back to chronological default
     const sortField = this.getAttribute("data-sort-field");
@@ -1386,32 +1366,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         const val = row[field];
         if (val == null) return false;
         return String(val).toLowerCase().includes(term);
-      }),
-    );
-  }
-
-  /** Apply value filters from filter-bar chips. */
-  #applyValueFilters(rows: GridRow[]): GridRow[] {
-    if (!this.#valueFilters.length) return rows;
-
-    return rows.filter((row) =>
-      this.#valueFilters.every(({ field, values }) => {
-        const val = row[field];
-        if (val == null) return false;
-        return values.includes(String(val));
-      }),
-    );
-  }
-
-  /** Apply external filters from FilterCoordinator (layered scoping). */
-  #applyExternalFilters(rows: GridRow[]): GridRow[] {
-    if (!this.#externalFilters.length) return rows;
-
-    return rows.filter((row) =>
-      this.#externalFilters.every(({ field, values }) => {
-        const val = row[field];
-        if (val == null) return false;
-        return values.includes(String(val));
       }),
     );
   }

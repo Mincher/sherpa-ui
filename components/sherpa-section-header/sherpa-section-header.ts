@@ -12,7 +12,6 @@
  * @slot description — Description text below heading
  * @slot actions     — Action buttons on the right side
  *
- * @prop {string}  heading     — Getter/setter for data-label
  * @prop {string}  headingType — Getter/setter for data-heading-level
  * @prop {boolean} hasDivider  — Getter/setter for data-divider
  */
@@ -57,8 +56,6 @@ export class SherpaSectionHeader extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get heading()     { return this.dataset["label"] || ''; }
-  set heading(v)    { v ? (this.dataset["label"] = v) : delete this.dataset["label"]; }
 
   get headingType() { return this.dataset["headingLevel"] || 'primary'; }
   set headingType(v){ this.dataset["headingLevel"] = v; }

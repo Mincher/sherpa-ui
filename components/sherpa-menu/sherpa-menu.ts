@@ -23,6 +23,8 @@
  *
  * @method show(anchor)  — Open and position the menu relative to anchor element
  * @method hide()        — Close the menu
+ * @method getSelectedValues() — Get values of all checked menu items
+ * @method clearSelection()    — Uncheck all menu items
  * @method getMenuTemplate(id) — (static) Return menu template HTML by id
  *
  * @prop {boolean}  open   — Whether the menu is currently visible
@@ -240,6 +242,7 @@ export class SherpaMenu extends SherpaElement {
   show(anchor: HTMLElement): void {
     if (!anchor) return;
     this.source = anchor;
+    anchor.setAttribute('aria-expanded', 'true');
 
     // Read preferred placement from the anchor (e.g. data-menu-position)
     const position = anchor.dataset?.["menuPosition"] || "bottom-start";
@@ -312,6 +315,7 @@ export class SherpaMenu extends SherpaElement {
       }
     }
     this.source?.focus?.();
+    this.source?.setAttribute('aria-expanded', 'false');
     this.source = null;
     this.dispatchEvent(new CustomEvent("menu-close", { bubbles: true }));
     this.#hiding = false;
@@ -325,6 +329,18 @@ export class SherpaMenu extends SherpaElement {
       this.hide();
     }
   };
+  /** Get values of all checked menu items. */
+  getSelectedValues(): string[] {
+    const checked = this.querySelectorAll('sherpa-menu-item[checked]');
+    return Array.from(checked, (item) => item.getAttribute('value') ?? '').filter(Boolean);
+  }
+
+  /** Uncheck all menu items. */
+  clearSelection(): void {
+    for (const item of this.querySelectorAll('sherpa-menu-item[checked]')) {
+      item.removeAttribute('checked');
+    }
+  }
 }
 
 customElements.define("sherpa-menu", SherpaMenu);

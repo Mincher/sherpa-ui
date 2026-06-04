@@ -23,7 +23,7 @@ export class SherpaKeyValueList extends SherpaElement {
   static override get htmlUrl(): string { return new URL('./sherpa-key-value-list.html', import.meta.url).href; }
 
   static override get observedAttributes(): string[] {
-    return [...super.observedAttributes, "data-type", "data-key-width"];
+    return [...super.observedAttributes, "data-type"];
   }
 
   override get templateId(): string {

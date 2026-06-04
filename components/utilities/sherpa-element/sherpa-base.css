@@ -32,14 +32,22 @@
 
 /* ── Icon element reset ────────────────────────────────────────────────── */
 /*
- * Components use <i> as an icon carrier (Font Awesome convention). The
- * default UA italic styling is always wrong in that context. Centralised
- * here so per-component CSS does not need to re-declare it.
+ * Components use <i class="fa-solid fa-* sherpa-icon"> as icon carriers.
+ * font-style reset is always needed; sizing tokens are inherited so
+ * a parent can set --icon-size to override the default from sherpa-icon-classes.css.
+ * Status colouring crosses shadow boundaries via the normal CSS custom property
+ * cascade: set --sherpa-icon-color on a host or ancestor to tint all descendant icons.
  */
 i,
 i::before,
 i::after {
   font-style: normal;
+}
+:host {
+  --sherpa-icon-color: currentColor;
+}
+i.sherpa-icon {
+  color: var(--sherpa-icon-color, currentColor);
 }
 
 /* ── Tap highlight ─────────────────────────────────────────────────────── */

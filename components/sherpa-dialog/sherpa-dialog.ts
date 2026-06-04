@@ -46,11 +46,10 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { StatusMixin } from '../utilities/status-mixin.js';
 import { PageNavigationMixin } from '../utilities/page-navigation-mixin.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 
-export class SherpaDialog extends PageNavigationMixin(StatusMixin(SherpaElement)) {
+export class SherpaDialog extends PageNavigationMixin(SherpaElement) {
 
   /* ── Config ─────────────────────────────────────────── */
 

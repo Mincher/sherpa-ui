@@ -154,7 +154,7 @@ interface LaneInfo {
 
 /** A <sherpa-node> element with its value-propagation API. */
 interface SherpaNodeElement extends HTMLElement {
-  getOutputValue?(portName: string, incoming: Record<string, unknown>): unknown;
+  getOutputValue?(portName: string, incoming: Record<string, unknown>): string | number | boolean | Record<string, unknown> | null;
   setInputValue?(portName: string, value: unknown): void;
   clearInputValue?(portName: string): void;
 }
@@ -924,11 +924,10 @@ export class SherpaNodeCanvas extends SherpaElement {
     return best;
   }
 
-  /** Return Array<{x,y}> of polyline samples for an edge in screen space. */
-  #edgeScreenSamples(edgeIdx: number): Point[] | null {
+  /** Resolve screen-space endpoint coordinates for an edge. Returns null if either port is unmapped. */
+  #edgeScreenCoords(edgeIdx: number, counts: Map<string, LaneInfo>): { x0: number; y0: number; x1: number; y1: number; dx: number } | null {
     const edge = this.#edges[edgeIdx];
     if (!edge) return null;
-    const counts = this.#multiCounts();
     const fromKey = edge.from.nodeId + "\0" + edge.from.portName;
     const toKey   = edge.to.nodeId   + "\0" + edge.to.portName;
     const fromInfo = counts.get(fromKey);
@@ -944,6 +943,15 @@ export class SherpaNodeCanvas extends SherpaElement {
     const x0 = a.x * zoom + vx, y0 = a.y * zoom + vy;
     const x1 = b.x * zoom + vx, y1 = b.y * zoom + vy;
     const dx = Math.max(40, Math.abs(x1 - x0) * 0.5);
+    return { x0, y0, x1, y1, dx };
+  }
+
+  /** Return Array<{x,y}> of polyline samples for an edge in screen space. */
+  #edgeScreenSamples(edgeIdx: number): Point[] | null {
+    const counts = this.#multiCounts();
+    const coords = this.#edgeScreenCoords(edgeIdx, counts);
+    if (!coords) return null;
+    const { x0, y0, x1, y1, dx } = coords;
     const c1x = x0 + dx, c1y = y0;
     const c2x = x1 - dx, c2y = y1;
     const out = [];
@@ -1364,23 +1372,9 @@ export class SherpaNodeCanvas extends SherpaElement {
   }
 
   #strokeEdge(ctx: CanvasRenderingContext2D, edgeIdx: number, counts: Map<string, LaneInfo>, color: string, width: number) {
-    const edge = this.#edges[edgeIdx];
-    if (!edge) return;
-    const fromKey = edge.from.nodeId + "\0" + edge.from.portName;
-    const toKey   = edge.to.nodeId + "\0" + edge.to.portName;
-    const fromInfo = counts.get(fromKey);
-    const toInfo   = counts.get(toKey);
-    const fromLane = fromInfo ? fromInfo.lanes.get(edgeIdx) ?? 0 : 0;
-    const fromCount = fromInfo ? fromInfo.lanes.size : 1;
-    const toLane = toInfo ? toInfo.lanes.get(edgeIdx) ?? 0 : 0;
-    const toCount = toInfo ? toInfo.lanes.size : 1;
-    const a = this.#portWorld(edge.from.nodeId, edge.from.portName, fromLane, fromCount);
-    const b = this.#portWorld(edge.to.nodeId,   edge.to.portName,   toLane,   toCount);
-    if (!a || !b) return;
-    const { x: vx, y: vy, zoom } = this.#viewport;
-    const x0 = a.x * zoom + vx, y0 = a.y * zoom + vy;
-    const x1 = b.x * zoom + vx, y1 = b.y * zoom + vy;
-    const dx = Math.max(40, Math.abs(x1 - x0) * 0.5);
+    const coords = this.#edgeScreenCoords(edgeIdx, counts);
+    if (!coords) return;
+    const { x0, y0, x1, y1, dx } = coords;
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
     ctx.beginPath();

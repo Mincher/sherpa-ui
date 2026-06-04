@@ -18,8 +18,6 @@
  * icons (e.g. toast overrides `critical` to use `fa-circle-xmark`).
  */
 
-import { property } from './decorators.js';
-
 export type Status =
   | 'success'
   | 'error'
@@ -71,9 +69,13 @@ export function StatusMixin<T extends Constructor<HTMLElement>>(
       };
     }
 
-    /** Current status value (reactive property) */
-    @property({ type: String, attribute: 'data-status' })
-    status: Status | null = null;
+    /** Current status value. */
+    get status(): Status | null {
+      return (this.getAttribute('data-status') as Status) || null;
+    }
+    set status(v: Status | null) {
+      v ? this.setAttribute('data-status', v) : this.removeAttribute('data-status');
+    }
 
     /** Font Awesome class for the current status icon, or null. */
     get statusIcon(): string | null {

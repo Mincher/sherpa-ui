@@ -70,46 +70,17 @@
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { SherpaMenu } from "../sherpa-menu/sherpa-menu.js";
 import type {
-  ComponentSize,
-  ColorVariant,
-  Status,
   MenuItem,
   MenuSection,
   MenuItems,
   MenuOptions,
-  PopoverPosition
 } from "../utilities/types.js";
 
 /* ── Type Definitions ─────────────────────────────────────────────── */
 
-/** Button types (template variants) */
-type ButtonType = 'default' | 'icon' | 'button-menu' | 'icon-menu';
-
-/** Font Awesome icon weights */
-type IconWeight = 'fa-solid' | 'fa-regular' | 'fa-light';
-
 /** Button-specific event details */
 interface ButtonClickEventDetail {
   timestamp: number;
-}
-
-/* ── Dataset Interface ───────────────────────────────────────────── */
-
-interface SherpaButtonDataset extends DOMStringMap {
-  type?: ButtonType;
-  label?: string;
-  variant?: ColorVariant;
-  size?: ComponentSize;
-  active?: string;
-  status?: Status;
-  iconStart?: string;
-  iconEnd?: string;
-  iconWeight?: IconWeight;
-  count?: string;
-  menu?: 'true' | 'false';
-  menuPosition?: PopoverPosition;
-  menuTemplate?: string;
-  menuScope?: 'shadow' | 'none';
 }
 
 /* ── Component ─────────────────────────────────────────────── */
@@ -137,12 +108,6 @@ export class SherpaButton extends SherpaElement {
       "data-menu-position",
       "data-menu-template",
     ];
-  }
-
-  /* ── Typed dataset ────────────────────────────────────────────── */
-
-  override get dataset(): SherpaButtonDataset {
-    return super.dataset as SherpaButtonDataset;
   }
 
   /* ── Template selection ───────────────────────────────────────── */
@@ -319,7 +284,6 @@ export class SherpaButton extends SherpaElement {
 
     menu.addEventListener("menu-close", (e: CustomEvent) => {
       e.stopPropagation();
-      this.removeAttribute("aria-expanded");
       this.#menuClosedAt = Date.now();
       this.dispatchEvent(
         new CustomEvent("menu-close", { bubbles: true, composed: true }),
@@ -337,7 +301,6 @@ export class SherpaButton extends SherpaElement {
    * dynamic content injection. Also fires `menu-open`.
    */
   async #showMenu(): Promise<void> {
-    this.setAttribute("aria-expanded", "true");
     const menu = this.#ensureMenu();
 
     // Stamp static template from the menu template registry (if set).
@@ -574,19 +537,14 @@ export class SherpaButton extends SherpaElement {
    * Get values of all checked/selected menu items.
    */
   getSelectedValues(): string[] {
-    if (!this.#menuEl) return [];
-    const checked = this.#menuEl.querySelectorAll("sherpa-menu-item[checked]");
-    return Array.from(checked, (item) => item.getAttribute("value") ?? "").filter(Boolean);
+    return this.#menuEl?.getSelectedValues() ?? [];
   }
 
   /**
    * Clear all checked/selected menu items.
    */
   clearSelection(): void {
-    if (!this.#menuEl) return;
-    for (const item of this.#menuEl.querySelectorAll("sherpa-menu-item[checked]")) {
-      item.removeAttribute("checked");
-    }
+    this.#menuEl?.clearSelection();
   }
 }
 

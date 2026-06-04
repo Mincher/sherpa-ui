@@ -70,6 +70,17 @@
     --icon-size: var(--sherpa-size-sm, 16px);
   }
 }
+/* Status icons via CSS — no JS required */
+:host .default-icon {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-style: normal;
+}
+:host([data-status="success"])  .default-icon::after { content: "\f058"; } /* fa-circle-check */
+:host([data-status="critical"]) .default-icon::after { content: "\f06a"; } /* fa-circle-exclamation */
+:host([data-status="warning"])  .default-icon::after { content: "\f071"; } /* fa-triangle-exclamation */
+:host([data-status="info"])     .default-icon::after { content: "\f05a"; } /* fa-circle-info */
+:host([data-status="urgent"])   .default-icon::after { content: "\f0e7"; } /* fa-bolt */
 :host .message-content {
   flex: 1;
   min-width: 0;

@@ -77,6 +77,8 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { computeNodeOutput, nodeValueToString, type NodeOutputValue } from "../utilities/node-compute.js";
+import "../utilities/node-kinds/index.js";
 
 /** A subtype picker option — flat {value,label} or a grouped {label, options}. */
 interface SubtypeOption {
@@ -236,123 +238,22 @@ export class SherpaNode extends SherpaElement {
    *   or value[] (for `data-multi` aggregation ports). The canvas builds
    *   this map by resolving every edge that targets this node.
    *
-   * Returns string|null. The canvas writes this string into any
-   *   downstream input control via setInputValue().
+   * Returns NodeOutputValue. The canvas coerces to string via nodeValueToString()
+   *   before writing into a downstream input control via setInputValue().
    */
-  getOutputValue(portName: string, incoming: Record<string, unknown> = {}): string | null {
+  getOutputValue(portName: string, incoming: Record<string, unknown> = {}): NodeOutputValue {
     if (!portName) return null;
     const socket = this.querySelector<HTMLElement>(
       `sherpa-node-socket[data-direction="out"][data-port-name="${CSS.escape(portName)}"]`,
     );
     if (!socket) return null;
-
-    // True/false branch outputs emit fixed branch markers per the
-    // demo spec: 1 for the "true" branch, 2 for the "false" branch.
-    const status = socket.dataset["status"] || "";
-    if (status === "true")  return "1";
-    if (status === "false") return "2";
-
-    const kind    = this.dataset["kind"] || "";
-    const subtype = this.dataset["subtype"] || "";
-    const ctrls   = this.#getControlValues();
-
-    // Helper: prefer an upstream-driven incoming value, otherwise the
-    // matching local control. This lets a connected input override
-    // whatever the user typed locally.
-    const inOr = (port: string, ctrlName: string, fallback: unknown = ""): unknown => {
-      if (incoming[port] !== undefined) return incoming[port];
-      if (ctrls[ctrlName] !== undefined) return ctrls[ctrlName];
-      return fallback;
-    };
-    const num = (v: unknown, def = 0): number => {
-      const n = parseFloat(String(v));
-      return Number.isFinite(n) ? n : def;
-    };
-
-    if (kind === "source")    return "1";
-    if (kind === "variable")  {
-      if (subtype === "property") {
-        const cat = ctrls["category"] || "";
-        const fld = ctrls["field"] || "";
-        return cat && fld ? `${cat}.${fld}` : (cat || fld || null);
-      }
-      return ctrls["value"] ?? null;
-    }
-    if (kind === "math") {
-      const a = num(inOr("a", "a"));
-      const b = num(inOr("b", "b"));
-      const inV = incoming["in"];
-      const inArr = Array.isArray(inV) ? inV.map(num) : (inV !== undefined ? [num(inV)] : []);
-      switch (subtype) {
-        case "add":       return String(a + b);
-        case "subtract":  return String(a - b);
-        case "multiply":  return String(a * b);
-        case "divide":    return b === 0 ? "" : String(a / b);
-        case "ratio":     return b === 0 ? "" : String(a / b);
-        case "floor":
-        case "min":      return inArr.length ? String(Math.min(...inArr)) : "";
-        case "ceiling":
-        case "max":      return inArr.length ? String(Math.max(...inArr)) : "";
-        case "average":
-        case "avg":      return inArr.length ? String(inArr.reduce((s: any, n: any) => s + n, 0) / inArr.length) : "";
-        case "sum":      return inArr.length ? String(inArr.reduce((s: any, n: any) => s + n, 0)) : "";
-        case "round": {
-          const v = num(inArr[0]);
-          const p = num(ctrls["places"]);
-          const m = Math.pow(10, p);
-          return String(Math.round(v * m) / m);
-        }
-        case "increment": {
-          const v = num(inArr[0]);
-          const s = num(ctrls["step"], 1);
-          return String(v + s);
-        }
-        default: return null;
-      }
-    }
-    if (kind === "collection") return subtype || null;
-    if (kind === "util") {
-      // util nodes carry their primary value in the first control,
-      // except concatenate which composes its inputs.
-      if (subtype === "concatenate") {
-        const op = ctrls["operation"] || "Append";
-        const a = String(inOr("a", "a", ""));
-        const b = String(inOr("b", "b", ""));
-        if (!a && !b) return null;
-        return op === "Prepend" ? `${b}${a}` : `${a}${b}`;
-      }
-      const first = Object.values(ctrls).find((v) => v !== "" && v != null);
-      return first ?? subtype ?? null;
-    }
-    if (kind === "ai") {
-      // AI nodes surface their selected configuration so downstream
-      // inputs can preview the value flowing through the edge.
-      if (subtype === "model")    return ctrls["model"]    || null;
-      if (subtype === "delegate") return ctrls["agent"]    || null;
-      if (subtype === "chat") {
-        if (portName === "response")        return ctrls["response"]        || null;
-        if (portName === "recommendations") return ctrls["recommendations"] || null;
-        // Default chat output: prefer response, fall back to preset/type.
-        return ctrls["response"] || ctrls["preset"] || ctrls["type"] || null;
-      }
-      return null;
-    }
-    // Standalone AI-family kinds (templates moved these out of kind="ai"
-    // into top-level kinds; mirror the same value-surfacing behaviour
-    // so downstream inputs receive the chosen configuration).
-    if (kind === "model")    return ctrls["model"] || null;
-    if (kind === "delegate") return ctrls["agent"] || null;
-    if (kind === "chat") {
-      if (portName === "response")        return ctrls["response"]        || null;
-      if (portName === "recommendations") return ctrls["recommendations"] || null;
-      return ctrls["response"] || ctrls["preset"] || ctrls["type"] || null;
-    }
-    if (kind === "action") {
-      if (subtype === "ticket") return ctrls["ticketNumber"] || ctrls["action"] || null;
-      return null;
-    }
-    // logic nodes only expose status outputs (handled above).
-    return null;
+    return computeNodeOutput(portName, {
+      kind:         this.dataset["kind"]    || "",
+      subtype:      this.dataset["subtype"] || "",
+      socketStatus: socket.dataset["status"] || "",
+      controls:     this.#getControlValues(),
+      incoming,
+    });
   }
 
   /**
@@ -363,7 +264,7 @@ export class SherpaNode extends SherpaElement {
   setInputValue(portName: string, value: unknown) {
     const ctrl = this.#getControlForInputPort(portName);
     if (!ctrl) return;
-    const v = value == null ? "" : String(value);
+    const v = nodeValueToString(value as NodeOutputValue);
     if (ctrl.getAttribute("value") !== v) ctrl.setAttribute("value", v);
     if (!ctrl.hasAttribute("readonly")) ctrl.setAttribute("readonly", "");
     // <select> ignores `readonly`; mirror to `disabled` so it can't change.

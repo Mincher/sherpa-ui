@@ -13,17 +13,6 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import type { ColorVariant, Status } from '../utilities/types.js';
-
-/* ── Type Definitions ─────────────────────────────────────────────── */
-
-interface SherpaTagDataset extends DOMStringMap {
-  variant?: ColorVariant;
-  status?: Status;
-  collapsed?: string;
-}
-
-/* ── Component ─────────────────────────────────────────────────────── */
 
 export class SherpaTag extends SherpaElement {
 
@@ -32,10 +21,6 @@ export class SherpaTag extends SherpaElement {
   }
   static override get htmlUrl(): string {
     return new URL('./sherpa-tag.html', import.meta.url).href;
-  }
-
-  override get dataset(): SherpaTagDataset {
-    return super.dataset as SherpaTagDataset;
   }
 }
 

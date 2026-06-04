@@ -34,18 +34,7 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import type { EventHandler } from '../utilities/types.js';
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaTabsDataset extends DOMStringMap {
-  activeTab?: string;
-  loadMode?: 'eager' | 'lazy';
-}
-
 export class SherpaTabs extends SherpaElement {
-
-  override get dataset(): SherpaTabsDataset {
-    return super.dataset as SherpaTabsDataset;
-  }
 
   /* ── Config ───────────────────────────────────────────────────── */
 

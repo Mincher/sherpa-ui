@@ -28,9 +28,8 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { StatusMixin } from '../utilities/status-mixin.js';
 
-export class SherpaCallout extends StatusMixin(SherpaElement) {
+export class SherpaCallout extends SherpaElement {
 
   /* ── Config ───────────────────────────────────────────────────── */
 
@@ -64,7 +63,7 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
 
     // Sync
     this.#syncHeading();
-    this.#syncStatusIcon();
+    this.#syncIconOverride();
     this.#syncToggleIcon();
 
     // Events
@@ -75,13 +74,8 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
     switch (name) {
       case 'data-heading':  this.#syncHeading(); break;
       case 'data-expanded': this.#syncToggleIcon(); break;
-      case 'data-status':
-      case 'data-icon':    this.#syncStatusIcon(); break;
+      case 'data-icon':     this.#syncIconOverride(); break;
     }
-  }
-
-  onStatusChanged() {
-    this.#syncStatusIcon();
   }
 
   /* ── Public API ───────────────────────────────────────────────── */
@@ -107,11 +101,12 @@ export class SherpaCallout extends StatusMixin(SherpaElement) {
     }
   }
 
-  #syncStatusIcon() {
-    if (!this.els.statusIcon) return;
+  /** CSS handles default icons via ::after + data-status. JS only applies an override FA class. */
+  #syncIconOverride() {
+    const el = this.els.statusIcon;
+    if (!el) return;
     const override = this.dataset["icon"];
-    const iconClass = override || this.statusIcon || 'fa-solid fa-circle-info';
-    this.els.statusIcon.className = `${iconClass} status-icon`;
+    el.className = override ? `${override} status-icon` : 'status-icon';
   }
 
   #syncToggleIcon() {

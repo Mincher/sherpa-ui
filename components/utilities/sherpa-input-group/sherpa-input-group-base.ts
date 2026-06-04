@@ -54,6 +54,28 @@ export abstract class SherpaInputGroupBase extends StatusMixin(SherpaElement) {
     if (el) el.textContent = this.dataset['helper'] || '';
   }
 
+  /** Run all sync operations in the standard order. Call from onRender(). */
+  protected _syncAll(): void {
+    this._syncLegend();
+    this._syncDescription();
+    this._syncHelper();
+    this._stampOptions();
+    this._syncValue();
+    this._syncDisabled();
+  }
+
+  /** Parse data-options JSON, returning a typed array or null on failure. */
+  protected _parseJsonOptions(): Array<{ value: string; label?: string; description?: string; disabled?: boolean }> | null {
+    const raw = this.dataset['options'];
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
   protected _onExtraAttributeChanged(_name: string, _old: string | null, _new: string | null): void {}
 
   protected abstract _stampOptions(): void;

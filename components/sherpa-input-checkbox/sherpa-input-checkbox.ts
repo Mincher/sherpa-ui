@@ -31,19 +31,7 @@
 
 import { SherpaInputChoiceBase } from '../utilities/sherpa-input-choice/sherpa-input-choice-base.js';
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaInputCheckboxDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  status?: string;
-}
-
 export class SherpaInputCheckbox extends SherpaInputChoiceBase {
-
-  override get dataset(): SherpaInputCheckboxDataset {
-    return super.dataset as SherpaInputCheckboxDataset;
-  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-checkbox.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-checkbox.html', import.meta.url).href; }

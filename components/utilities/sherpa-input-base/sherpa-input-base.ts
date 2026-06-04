@@ -50,13 +50,7 @@ import type { Orientation, ChangeEventDetail } from "../types.js";
 
 /* ── Type Definitions ─────────────────────────────────────────────── */
 
-/** Input-specific dataset interface */
-export interface SherpaInputDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  helper?: string;
-  layout?: Orientation;
-}
+
 
 /** Native input element types */
 type NativeInputElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -125,12 +119,6 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
       "maxlength",
       "novalidate",
     ];
-  }
-
-  /* ── Typed dataset ────────────────────────────────────────────── */
-
-  override get dataset(): SherpaInputDataset {
-    return super.dataset as SherpaInputDataset;
   }
 
   /* ── Internal refs ──────────────────────────────────────────── */
@@ -485,6 +473,14 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
     ]) {
       const val = this.getAttribute(attr);
       val !== null ? el.setAttribute(attr, val) : el.removeAttribute(attr);
+    }
+  }
+
+  /** Forward a single reactive attribute change to the native input element. */
+  protected _syncAttributeToNative(name: string, newValue: string | null): void {
+    const el = this.getInputElement();
+    if (el) {
+      newValue !== null ? el.setAttribute(name, newValue) : el.removeAttribute(name);
     }
   }
 

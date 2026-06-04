@@ -36,68 +36,11 @@
  * @slot output-socket — Slot in right gutter (control-flow output)
  */
 
-import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { SherpaNodeRow } from "../sherpa-node-row/sherpa-node-row.js";
 
-export class SherpaNodeHeader extends SherpaElement {
+export class SherpaNodeHeader extends SherpaNodeRow {
   static override get cssUrl(): string { return new URL("./sherpa-node-header.css", import.meta.url).href; }
   static override get htmlUrl(): string { return new URL("./sherpa-node-header.html", import.meta.url).href; }
-
-  /** Adopt the sherpa-node family tokens into every shadow root. */
-  static override get sharedStyles() {
-    return [
-      ...super.sharedStyles,
-      new URL("../sherpa-node/sherpa-node-tokens.css", import.meta.url).href,
-    ];
-  }
-
-  static override get observedAttributes(): string[] {
-    return [
-      ...super.observedAttributes,
-      "data-icon",
-      "data-drill-down",
-    ];
-  }
-
-  els = this.cacheElements({
-    iconBuiltIn: '.icon-built-in',
-    iconWrap: '.icon',
-    drillBtn: '.drill-down'
-  });
-
-  #bound = false;
-
-  override onRender(): void {
-    if (!this.#bound) {
-      this.els.drillBtn?.addEventListener("click", this.#onDrillClick);
-      this.#bound = true;
-    }
-
-    this.#syncIcon();
-  }
-
-  override onAttributeChanged(name: string) {
-    if (name === "data-icon") this.#syncIcon();
-  }
-
-  /* ── Internals ─────────────────────────────────────────────────── */
-
-  #syncIcon() {
-    if (!this.els.iconBuiltIn || !this.els.iconWrap) return;
-    const cls = this.dataset["icon"];
-    if (cls) {
-      this.els.iconBuiltIn.className = `icon-built-in ${cls}`;
-      this.els.iconWrap.toggleAttribute("data-has-built-in", true);
-    } else {
-      this.els.iconBuiltIn.className = "icon-built-in";
-      this.els.iconWrap.toggleAttribute("data-has-built-in", false);
-    }
-  }
-
-  #onDrillClick = (e: Event) => {
-    e.stopPropagation();
-    const node = this.closest<HTMLElement>("sherpa-node");
-    this.emit("sherpa-node-drilldown", { nodeId: node?.dataset?.["nodeId"] || null });
-  };
 }
 
 if (!customElements.get("sherpa-node-header")) {

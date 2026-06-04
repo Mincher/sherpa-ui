@@ -41,7 +41,6 @@
 
 import { getSheet } from '../stylesheet-cache.js';
 import { getCategory, getTier } from '../component-categories.js';
-import { initializeProperties, getObservedAttributes } from '../decorators.js';
 import {
   defineCachedElements,
   clearElementCache,
@@ -125,7 +124,7 @@ export class SherpaElement extends HTMLElement {
   /* ── Observed attributes ──────────────────────────────────────── */
 
   static get observedAttributes(): string[] {
-    return [...getObservedAttributes(this), 'data-src-html', 'data-src-json'];
+    return ['data-src-html', 'data-src-json'];
   }
 
   /* ── Template selection (override in subclass) ────────────────── */
@@ -190,9 +189,6 @@ export class SherpaElement extends HTMLElement {
 
   async connectedCallback(): Promise<void> {
     if (!this.#rendered) {
-      // Initialize reactive properties from attributes
-      initializeProperties(this);
-
       this.#renderPromise = this.#bootstrap();
       await this.#renderPromise;
     }

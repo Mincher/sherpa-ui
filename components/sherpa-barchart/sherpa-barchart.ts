@@ -44,6 +44,7 @@ import {
   applySegmentBy,
 } from "../utilities/chart-utils.js";
 import { injectFilterMenu, toggleFilters, toggleLegend, syncFilterMenuItems } from "../utilities/filter-menu-utils.js";
+import { applyFieldValueFilters } from "../utilities/filter-utils.js";
 
 const CONFIG = {
   maxGridLines: 6,
@@ -336,7 +337,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       return { categories: [], series: [], stacked: false };
     }
 
-    const rows = this.#applyExternalFilters(this.#contentData.rows || []);
+    const rows = applyFieldValueFilters(this.#contentData.rows || [], this.#externalFilters);
     const columns = this.#contentData.columns || [];
 
     if (!rows.length) {
@@ -1018,17 +1019,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       this.#updateDisplayData();
       this.#render();
     }
-  }
-
-  #applyExternalFilters(rows: Record<string, unknown>[]): Record<string, unknown>[] {
-    if (!this.#externalFilters.length) return rows;
-    return rows.filter((row) =>
-      this.#externalFilters.every(({ field, values }) => {
-        const val = row[field];
-        if (val == null) return false;
-        return values.includes(String(val));
-      }),
-    );
   }
 
   // ============ Public Data Accessors ============

@@ -30,19 +30,7 @@
 
 import { SherpaInputChoiceBase } from '../utilities/sherpa-input-choice/sherpa-input-choice-base.js';
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaInputRadioDataset extends DOMStringMap {
-  label?: string;
-  description?: string;
-  status?: string;
-}
-
 export class SherpaInputRadio extends SherpaInputChoiceBase {
-
-  override get dataset(): SherpaInputRadioDataset {
-    return super.dataset as SherpaInputRadioDataset;
-  }
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-radio.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-radio.html', import.meta.url).href; }

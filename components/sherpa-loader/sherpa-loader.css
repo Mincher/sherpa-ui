@@ -3,10 +3,12 @@
  * Animated loading indicator with optional label text.
  *
  * Host attributes:
- *   data-label           — Loading text displayed beside spinner
  *   data-orientation     — horizontal (default) | vertical (flex-column)
  *   data-size            — small (12px) | default (20px) | large (48px)
  *   data-panel           — Add surface background behind loader
+ *
+ * Slots:
+ *   label                — Loading text displayed beside spinner
  */
 
 :host {
@@ -40,10 +42,7 @@
   flex-direction: column;
   text-align: center;
 }
-:host(:not([data-label])) .label {
-  display: none;
-}
-:host .label {
+:host slot[name="label"] {
   line-height: var(--sherpa-line-height-default, 1.4);
 }
 :host .spinner {

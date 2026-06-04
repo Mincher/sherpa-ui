@@ -46,17 +46,6 @@ import { formatFieldName } from "../utilities/format-utils.js";
 import { TIME_RANGE_PRESETS } from "../utilities/timeframes.js";
 import { applyLocalFilters, type FilterSpec } from "../utilities/aggregate.js";
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaFilterBarDataset extends DOMStringMap {
-  density?: string;
-  active?: string;
-  srcJson?: string;
-  presetFilters?: string;
-  availableFields?: string;
-  type?: string;
-}
-
 /* ── Domain types ──────────────────────────────────────────────── */
 
 /** An available-field descriptor for the add-filter menu. */
@@ -77,9 +66,6 @@ interface MenuButtonLike extends HTMLElement {
 
 export class SherpaFilterBar extends SherpaElement {
 
-  override get dataset(): SherpaFilterBarDataset {
-    return super.dataset as SherpaFilterBarDataset;
-  }
   static override get cssUrl(): string {
     return new URL("./sherpa-filter-bar.css", import.meta.url).href;
   }

@@ -31,19 +31,9 @@
  *   detail: { value: string }
  */
 
-import { SherpaInputBase, SherpaInputDataset } from '../utilities/sherpa-input-base/sherpa-input-base.js';
-
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaInputTextDataset extends SherpaInputDataset {
-  multiline?: string;
-}
+import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
 
 export class SherpaInputText extends SherpaInputBase {
-
-  override get dataset(): SherpaInputTextDataset {
-    return super.dataset as SherpaInputTextDataset;
-  }
 
   static override get cssUrl(): string {
     return new URL('./sherpa-input-text.css', import.meta.url).href;

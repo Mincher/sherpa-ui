@@ -32,7 +32,6 @@ import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-input-number/sherpa-input-number.js';
 import '../sherpa-button/sherpa-button.js';
-import '../sherpa-icon/sherpa-icon.js';
 
 export class SherpaDateTimePicker extends SherpaElement {
 

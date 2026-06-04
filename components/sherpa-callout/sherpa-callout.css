@@ -49,7 +49,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* FA font so ::after can render icons without a FA class on the element */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-style: normal;
 }
+/* Default status icons via CSS (no JS required) */
+:host([data-status="info"])     .status-icon::after { content: "\f05a"; } /* fa-circle-info */
+:host([data-status="warning"])  .status-icon::after { content: "\f071"; } /* fa-triangle-exclamation */
+:host([data-status="critical"]) .status-icon::after { content: "\f06a"; } /* fa-circle-exclamation */
+:host([data-status="success"])  .status-icon::after { content: "\f058"; } /* fa-circle-check */
+/* When data-icon override is active, JS puts the FA class on the element;
+   suppress our ::after so only FA's ::before renders. */
+:host([data-icon]) .status-icon::after { content: none; }
 
 .heading-area {
   flex: 1;

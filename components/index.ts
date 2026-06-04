@@ -8,9 +8,6 @@
 // Base class
 export { SherpaElement } from "./utilities/sherpa-element/sherpa-element.js";
 
-// View layout template helper
-export { stampViewTemplate } from "./utilities/view-templates.js";
-
 // Core layout components
 export * from "./sherpa-nav/sherpa-nav.js";
 export * from "./sherpa-nav-item/sherpa-nav-item.js";
@@ -92,9 +89,6 @@ export * from "./sherpa-input-checkbox-group/sherpa-input-checkbox-group.js";
 export * from "./sherpa-input-radio/sherpa-input-radio.js";
 export * from "./sherpa-input-radio-group/sherpa-input-radio-group.js";
 export * from "./sherpa-input-tag/sherpa-input-tag.js";
-
-// Atomic primitives
-export * from "./sherpa-icon/sherpa-icon.js";
 
 // Utility components
 export * from "./sherpa-code-block/sherpa-code-block.js";

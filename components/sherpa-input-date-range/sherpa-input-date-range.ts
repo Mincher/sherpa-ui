@@ -25,7 +25,7 @@
  * @prop {Date|null} endAsDate   — End value as Date (getter-only)
  */
 
-import { SherpaInputBase, SherpaInputDataset } from "../utilities/sherpa-input-base/sherpa-input-base.js";
+import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
 import {
   MONTH_NAMES,
   isoToDate,
@@ -33,18 +33,8 @@ import {
   renderCalendarGrid,
 } from "../utilities/calendar-helper.js";
 
-/* ── Dataset Interface ─────────────────────────────────────────── */
-
-interface SherpaInputDateRangeDataset extends SherpaInputDataset {
-  valueStart?: string;
-  valueEnd?: string;
-}
-
 export class SherpaInputDateRange extends SherpaInputBase {
 
-  override get dataset(): SherpaInputDateRangeDataset {
-    return super.dataset as SherpaInputDateRangeDataset;
-  }
   static override get cssUrl(): string {
     return new URL("sherpa-input-date-range.css", import.meta.url).href;
   }
@@ -123,51 +113,44 @@ export class SherpaInputDateRange extends SherpaInputBase {
       }
     });
 
-    // ── Start calendar navigation ────────────────────────────
-    this.$(".prev-start")?.addEventListener("click", (e: Event) => {
-      e.stopPropagation();
-      this.#startViewDate = new Date(
-        this.#startViewDate.getFullYear(),
-        this.#startViewDate.getMonth() - 1,
-        1,
-      );
-      this.#renderStartCalendar();
-    });
-
-    this.$(".next-start")?.addEventListener("click", (e: Event) => {
-      e.stopPropagation();
-      this.#startViewDate = new Date(
-        this.#startViewDate.getFullYear(),
-        this.#startViewDate.getMonth() + 1,
-        1,
-      );
-      this.#renderStartCalendar();
-    });
-
-    // ── End calendar navigation ──────────────────────────────
-    this.$(".prev-end")?.addEventListener("click", (e: Event) => {
-      e.stopPropagation();
-      this.#endViewDate = new Date(
-        this.#endViewDate.getFullYear(),
-        this.#endViewDate.getMonth() - 1,
-        1,
-      );
-      this.#renderEndCalendar();
-    });
-
-    this.$(".next-end")?.addEventListener("click", (e: Event) => {
-      e.stopPropagation();
-      this.#endViewDate = new Date(
-        this.#endViewDate.getFullYear(),
-        this.#endViewDate.getMonth() + 1,
-        1,
-      );
-      this.#renderEndCalendar();
-    });
+    // ── Calendar navigation ──────────────────────────────────
+    this.#wireMonthNav(
+      ".prev-start", ".next-start",
+      () => this.#startViewDate,
+      (d) => { this.#startViewDate = d; },
+      () => this.#renderStartCalendar(),
+    );
+    this.#wireMonthNav(
+      ".prev-end", ".next-end",
+      () => this.#endViewDate,
+      (d) => { this.#endViewDate = d; },
+      () => this.#renderEndCalendar(),
+    );
   }
 
   override onInputConnect(): void    { this._attachPopupListeners(); }
   override onInputDisconnect(): void { this._detachPopupListeners(); }
+
+  /** Wire prev/next month nav buttons for one calendar panel. */
+  #wireMonthNav(
+    prevSel: string, nextSel: string,
+    getDate: () => Date,
+    setDate: (d: Date) => void,
+    render: () => void,
+  ): void {
+    this.$(prevSel)?.addEventListener("click", (e: Event) => {
+      e.stopPropagation();
+      const d = getDate();
+      setDate(new Date(d.getFullYear(), d.getMonth() - 1, 1));
+      render();
+    });
+    this.$(nextSel)?.addEventListener("click", (e: Event) => {
+      e.stopPropagation();
+      const d = getDate();
+      setDate(new Date(d.getFullYear(), d.getMonth() + 1, 1));
+      render();
+    });
+  }
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name, oldValue, newValue);

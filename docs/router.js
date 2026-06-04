@@ -556,10 +556,10 @@ function setViewHeading(heading, breadcrumbs = null) {
 
 const outlet = document.getElementById('docs-outlet');
 
-// Delegated card-click → route navigation. Each navigable card carries
+// Delegated card-click → route navigation. Each navigable container carries
 // a data-route attribute set when populated from its cloning prototype.
 outlet?.addEventListener('card-click', e => {
-  const card = e.composedPath().find(n => n instanceof HTMLElement && n.tagName === 'SHERPA-CARD');
+  const card = e.composedPath().find(n => n instanceof HTMLElement && n.tagName === 'SHERPA-CONTAINER');
   const route = card?.dataset?.route;
   if (route) navigate(route);
 });
@@ -850,13 +850,6 @@ async function mountPartial(name) {
 }
 
 /** Convert a Font Awesome class string ('fa-solid fa-house') to a sherpa-icon name ('house'). */
-function faToIconName(faClass) {
-  if (!faClass) return '';
-  const tokens = faClass.split(/\s+/);
-  const glyph  = tokens.find(t => t.startsWith('fa-') && !/^fa-(solid|regular|light|thin|duotone|brands)$/.test(t));
-  return glyph ? glyph.replace(/^fa-/, '') : '';
-}
-
 // ── Page builders ─────────────────────────────────────────────────────────────
 
 async function renderHomePage() {
@@ -876,8 +869,8 @@ async function renderHomePage() {
     const header = node.querySelector('sherpa-container-header');
     if (header) header.dataset.title = cat.label;
 
-    const icon = node.querySelector('sherpa-icon');
-    if (icon) icon.setAttribute('name', faToIconName(cat.icon));
+    const icon = node.querySelector('i.sherpa-icon');
+    if (icon && cat.icon) icon.className = `fa-solid ${cat.icon.replace(/^fa-solid\s+/, '')} sherpa-icon`;
 
     const count$ = node.querySelector('.docs-category-count');
     if (count$) count$.textContent = `${count} component${count !== 1 ? 's' : ''}`;

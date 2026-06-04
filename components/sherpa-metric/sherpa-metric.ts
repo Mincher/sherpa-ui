@@ -209,7 +209,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
     const formattedValue = this.#formatNumber(totalValue, unitText);
     const sign = deltaValue >= 0 ? "+" : "";
-    const formattedDelta = `${sign}${this.#trimDecimals(deltaPercent.toFixed(2))}% (${sign}${this.#formatDelta(deltaValue, unitText)})`;
+    const formattedDelta = `${sign}${this.#trimDecimals(deltaPercent.toFixed(2))}% (${sign}${this.#formatNumber(deltaValue, unitText)})`;
 
     // Show delta when trending, unit when flat
     const trendLabel = trendDir === "flat" ? unitText : formattedDelta;
@@ -316,18 +316,6 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   }
 
   #formatNumber(num: number, unit: string) {
-    const isCurrency = unit === getCurrencyCode();
-    const isPercent = unit === "percent" || unit === "%";
-    let str;
-    if (num >= 1e6) str = this.#trimDecimals((num / 1e6).toFixed(2)) + "M";
-    else if (num >= 1e3) str = this.#trimDecimals((num / 1e3).toFixed(2)) + "K";
-    else str = this.#trimDecimals(num.toFixed(2));
-    if (isCurrency) return getCurrencySymbol() + str;
-    if (isPercent) return str + "%";
-    return str;
-  }
-
-  #formatDelta(num: number, unit: string) {
     const isCurrency = unit === getCurrencyCode();
     const isPercent = unit === "percent" || unit === "%";
     const abs = Math.abs(num);
