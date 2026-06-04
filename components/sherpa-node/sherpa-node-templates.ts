@@ -35,7 +35,7 @@ const SUBTYPE_LABELS: Record<string, string> = {
   number: "Number", decimal: "Decimal", text: "Text", property: "Property",
   // math
   add: "Add", subtract: "Subtract", multiply: "Multiply", divide: "Divide",
-  ratio: "Ratio", floor: "Floor", ceiling: "Ceiling", average: "Average",
+  ratio: "Ratio", min: "Min", max: "Max", avg: "Average", sum: "Sum",
   round: "Round", increment: "Increment",
   // logic
   and: "And", or: "Or",

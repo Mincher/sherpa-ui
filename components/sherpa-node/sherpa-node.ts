@@ -530,7 +530,14 @@ export class SherpaNode extends SherpaElement {
       `template.rows-tpl[data-kind="${CSS.escape(kind)}"][data-subtype="${CSS.escape(subtype)}"]`
     );
     if (!tpl) {
-      // Template not found - log warning in development
+      // No templates attached yet — auto-load from the catalogue and retry.
+      if (!this.querySelector("template.rows-tpl")) {
+        import("./sherpa-node-templates.js").then(({ attachAllTemplatesForKind }) =>
+          attachAllTemplatesForKind(this, kind).then(() => this.#applyTemplate())
+        );
+        return;
+      }
+      // Templates present but this specific subtype isn't registered — log a warning.
       if (typeof process === "undefined" || process.env?.["NODE_ENV"] !== "production") {
         console.warn(
           `[sherpa-node] No template found for kind="${kind}" subtype="${subtype}". ` +

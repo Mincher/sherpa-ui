@@ -2,12 +2,12 @@
   sherpa-node-socket — Live examples.
 -->
 <template data-label="Directions" data-layout="col">
-  <sherpa-node-socket data-direction="input"  data-port-name="value-in"></sherpa-node-socket>
-  <sherpa-node-socket data-direction="output" data-port-name="value-out"></sherpa-node-socket>
+  <sherpa-node-socket data-direction="in"  data-port-name="value-in"></sherpa-node-socket>
+  <sherpa-node-socket data-direction="out" data-port-name="value-out"></sherpa-node-socket>
 </template>
 
 <template data-label="Connection states" data-layout="col">
-  <sherpa-node-socket data-direction="input"  data-port-name="connected"   data-connected data-connection-count="1"></sherpa-node-socket>
-  <sherpa-node-socket data-direction="output" data-port-name="multi"       data-multi data-connected data-connection-count="3"></sherpa-node-socket>
-  <sherpa-node-socket data-direction="output" data-port-name="flow-active" data-connected data-flow-active></sherpa-node-socket>
+  <sherpa-node-socket data-direction="in"  data-port-name="connected"   data-connected data-connection-count="1"></sherpa-node-socket>
+  <sherpa-node-socket data-direction="out" data-port-name="multi"       data-multi data-connected data-connection-count="3"></sherpa-node-socket>
+  <sherpa-node-socket data-direction="out" data-port-name="flow-active" data-connected data-flow-active></sherpa-node-socket>
 </template>
