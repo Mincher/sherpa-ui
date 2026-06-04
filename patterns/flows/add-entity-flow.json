@@ -1,0 +1,420 @@
+{
+  "id": "add-entity-flow",
+  "name": "Add Entity Flow",
+  "category": "flows",
+  "description": "Complete flow for adding a new entity with dialog form, validation, and feedback. Manages full lifecycle from trigger button through form submission to success/error handling.",
+
+  "presentation": {
+    "layout": "dialog",
+    "components": [
+      {
+        "type": "sherpa-button",
+        "id": "add-trigger-btn",
+        "attributes": {
+          "data-label": "Add",
+          "data-variant": "primary",
+          "data-icon-start": "&#xf067;"
+        },
+        "content": "Trigger button for opening add dialog"
+      },
+      {
+        "type": "sherpa-dialog",
+        "id": "add-dialog",
+        "attributes": {
+          "data-label": "Add Entity",
+          "data-size": "medium",
+          "data-dismissible": true
+        },
+        "required": true,
+        "children": [
+          {
+            "type": "sherpa-input-text",
+            "id": "name-input",
+            "attributes": {
+              "data-label": "Name",
+              "name": "name",
+              "required": true,
+              "placeholder": "Enter name"
+            },
+            "required": true
+          },
+          {
+            "type": "sherpa-input-text",
+            "id": "description-input",
+            "attributes": {
+              "data-label": "Description",
+              "name": "description",
+              "placeholder": "Enter description"
+            }
+          },
+          {
+            "type": "sherpa-button",
+            "id": "cancel-btn",
+            "attributes": {
+              "slot": "footer",
+              "data-label": "Cancel",
+              "data-variant": "secondary"
+            }
+          },
+          {
+            "type": "sherpa-button",
+            "id": "save-btn",
+            "attributes": {
+              "slot": "footer",
+              "data-label": "Save",
+              "data-variant": "primary"
+            }
+          }
+        ]
+      }
+    ],
+    "template": "patterns/flows/add.html",
+    "layoutConfig": {
+      "dialogSize": "medium",
+      "dismissible": true,
+      "backdrop": "native"
+    }
+  },
+
+  "interaction": {
+    "triggers": [
+      {
+        "event": "button-click",
+        "target": "add-trigger-btn",
+        "action": "open_dialog"
+      },
+      {
+        "event": "button-click",
+        "target": "save-btn",
+        "action": "validate_and_submit"
+      },
+      {
+        "event": "button-click",
+        "target": "cancel-btn",
+        "action": "cancel_flow"
+      },
+      {
+        "event": "dialog-close",
+        "target": "add-dialog",
+        "action": "cancel_flow"
+      },
+      {
+        "event": "keydown",
+        "target": "add-dialog",
+        "action": "handle_keyboard",
+        "condition": "event.key === 'Enter' && !event.shiftKey"
+      },
+      {
+        "event": "keydown",
+        "target": "add-dialog",
+        "action": "cancel_flow",
+        "condition": "event.key === 'Escape'"
+      }
+    ],
+
+    "validations": [
+      {
+        "field": "name-input",
+        "rule": "required",
+        "message": "Name is required",
+        "trigger": "submit"
+      },
+      {
+        "field": "name-input",
+        "rule": "minLength:1",
+        "message": "Name cannot be empty",
+        "trigger": "submit"
+      },
+      {
+        "field": "name-input",
+        "rule": "maxLength:255",
+        "message": "Name must be less than 255 characters",
+        "trigger": "blur"
+      }
+    ],
+
+    "navigation": {
+      "next": [
+        "clear_form",
+        "open_dialog",
+        "dispatch_flow_start"
+      ],
+      "cancel": [
+        "close_dialog",
+        "dispatch_flow_cancel"
+      ],
+      "error": [
+        "show_error_toast",
+        "focus_invalid_field",
+        "dispatch_flow_error"
+      ]
+    },
+
+    "state": {
+      "initial": {
+        "dialogOpen": false,
+        "formDirty": false,
+        "submitting": false,
+        "entity": null
+      },
+      "transitions": [
+        {
+          "from": "initial",
+          "to": "dialog_open",
+          "trigger": "open_dialog"
+        },
+        {
+          "from": "dialog_open",
+          "to": "submitting",
+          "trigger": "validate_and_submit"
+        },
+        {
+          "from": "submitting",
+          "to": "success",
+          "trigger": "submit_success"
+        },
+        {
+          "from": "submitting",
+          "to": "dialog_open",
+          "trigger": "submit_error"
+        },
+        {
+          "from": "dialog_open",
+          "to": "initial",
+          "trigger": "cancel_flow"
+        },
+        {
+          "from": "success",
+          "to": "initial",
+          "trigger": "flow_complete"
+        }
+      ]
+    },
+
+    "shortcuts": [
+      {
+        "key": "Enter",
+        "action": "validate_and_submit",
+        "description": "Submit form (when not in textarea)"
+      },
+      {
+        "key": "Escape",
+        "action": "cancel_flow",
+        "description": "Cancel and close dialog"
+      }
+    ]
+  },
+
+  "resolution": {
+    "success": {
+      "action": "close_dialog",
+      "events": [
+        "flow-start",
+        "flow-progress",
+        "flow-complete"
+      ],
+      "feedback": {
+        "type": "toast",
+        "message": "Entity created successfully",
+        "status": "success",
+        "duration": 3000
+      },
+      "navigation": "refresh_dataset",
+      "data": {
+        "refreshTarget": "contentArea",
+        "clearForm": true
+      }
+    },
+
+    "cancel": {
+      "action": "close_dialog",
+      "events": [
+        "flow-cancel"
+      ]
+    },
+
+    "error": {
+      "action": "show_toast",
+      "events": [
+        "flow-error"
+      ],
+      "feedback": {
+        "type": "toast",
+        "message": "Failed to create entity. Please check the form and try again.",
+        "status": "critical",
+        "duration": 5000
+      }
+    }
+  },
+
+  "metadata": {
+    "status": "stable",
+    "version": "2.0.0",
+    "mcp_compatible": true,
+    "agent_skill": "patterns/skills/add-entity.js",
+    "author": "Sherpa Team",
+    "updated": "2026-06-04",
+    "tags": [
+      "form",
+      "dialog",
+      "crud",
+      "create",
+      "flow",
+      "validation"
+    ]
+  },
+
+  "examples": [
+    {
+      "title": "Add User",
+      "description": "Create a new user account with username and email",
+      "data": {
+        "entityType": "User",
+        "entityName": "user",
+        "dialogTitle": "Add User",
+        "triggerLabel": "Add User",
+        "fields": [
+          {
+            "id": "username-input",
+            "type": "sherpa-input-text",
+            "label": "Username",
+            "name": "username",
+            "required": true,
+            "placeholder": "Enter username",
+            "validations": [
+              {
+                "rule": "required",
+                "message": "Username is required"
+              },
+              {
+                "rule": "minLength:3",
+                "message": "Username must be at least 3 characters"
+              },
+              {
+                "rule": "pattern:^[a-zA-Z0-9_]+$",
+                "message": "Username can only contain letters, numbers, and underscores"
+              }
+            ]
+          },
+          {
+            "id": "email-input",
+            "type": "sherpa-input-text",
+            "label": "Email Address",
+            "name": "email",
+            "required": true,
+            "placeholder": "user@example.com",
+            "validations": [
+              {
+                "rule": "required",
+                "message": "Email is required"
+              },
+              {
+                "rule": "email",
+                "message": "Must be a valid email address"
+              }
+            ]
+          }
+        ],
+        "successMessage": "User created successfully",
+        "errorMessage": "Failed to create user"
+      }
+    },
+    {
+      "title": "Add Device",
+      "description": "Register a new device in the system",
+      "data": {
+        "entityType": "Device",
+        "entityName": "device",
+        "dialogTitle": "Register Device",
+        "triggerLabel": "Add Device",
+        "fields": [
+          {
+            "id": "device-name-input",
+            "type": "sherpa-input-text",
+            "label": "Device Name",
+            "name": "deviceName",
+            "required": true,
+            "placeholder": "Enter device name"
+          },
+          {
+            "id": "device-type-input",
+            "type": "sherpa-input-select",
+            "label": "Device Type",
+            "name": "deviceType",
+            "required": true,
+            "options": [
+              "Server",
+              "Workstation",
+              "Router",
+              "Switch"
+            ]
+          },
+          {
+            "id": "ip-address-input",
+            "type": "sherpa-input-text",
+            "label": "IP Address",
+            "name": "ipAddress",
+            "placeholder": "192.168.1.1",
+            "validations": [
+              {
+                "rule": "pattern:^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$",
+                "message": "Must be a valid IP address"
+              }
+            ]
+          }
+        ],
+        "successMessage": "Device registered successfully",
+        "errorMessage": "Failed to register device"
+      }
+    },
+    {
+      "title": "Add Task",
+      "description": "Create a new task in a project",
+      "data": {
+        "entityType": "Task",
+        "entityName": "task",
+        "dialogTitle": "Create Task",
+        "triggerLabel": "New Task",
+        "fields": [
+          {
+            "id": "task-title-input",
+            "type": "sherpa-input-text",
+            "label": "Task Title",
+            "name": "title",
+            "required": true,
+            "placeholder": "Enter task title"
+          },
+          {
+            "id": "task-description-input",
+            "type": "sherpa-input-textarea",
+            "label": "Description",
+            "name": "description",
+            "placeholder": "Enter task description",
+            "rows": 4
+          },
+          {
+            "id": "task-priority-input",
+            "type": "sherpa-input-select",
+            "label": "Priority",
+            "name": "priority",
+            "required": true,
+            "options": [
+              "Low",
+              "Medium",
+              "High",
+              "Critical"
+            ]
+          },
+          {
+            "id": "task-duedate-input",
+            "type": "sherpa-input-date",
+            "label": "Due Date",
+            "name": "dueDate"
+          }
+        ],
+        "successMessage": "Task created successfully",
+        "errorMessage": "Failed to create task"
+      }
+    }
+  ]
+}

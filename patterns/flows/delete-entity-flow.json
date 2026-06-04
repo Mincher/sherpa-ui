@@ -1,0 +1,275 @@
+{
+  "id": "delete-entity-flow",
+  "name": "Delete Entity Flow",
+  "category": "flows",
+  "description": "Complete flow for deleting an entity with confirmation dialog, warning callout, and feedback. Manages destructive action lifecycle with explicit user confirmation.",
+
+  "presentation": {
+    "layout": "dialog",
+    "components": [
+      {
+        "type": "sherpa-button",
+        "id": "delete-trigger-btn",
+        "attributes": {
+          "data-label": "Delete",
+          "data-variant": "secondary",
+          "data-status": "critical",
+          "data-icon-start": "&#xf2ed;"
+        },
+        "content": "Trigger button for opening delete confirmation dialog"
+      },
+      {
+        "type": "sherpa-dialog",
+        "id": "delete-dialog",
+        "attributes": {
+          "data-label": "Delete Entity",
+          "data-size": "small",
+          "data-dismissible": true
+        },
+        "required": true,
+        "children": [
+          {
+            "type": "sherpa-callout",
+            "id": "delete-warning",
+            "attributes": {
+              "data-status": "warning",
+              "data-heading": "This action cannot be undone"
+            },
+            "content": "Are you sure you want to delete this entity? This will permanently remove it and all associated data.",
+            "required": true
+          },
+          {
+            "type": "sherpa-button",
+            "id": "cancel-btn",
+            "attributes": {
+              "slot": "footer",
+              "data-label": "Cancel",
+              "data-variant": "secondary"
+            }
+          },
+          {
+            "type": "sherpa-button",
+            "id": "delete-btn",
+            "attributes": {
+              "slot": "footer",
+              "data-label": "Delete",
+              "data-variant": "primary",
+              "data-status": "critical"
+            }
+          }
+        ]
+      }
+    ],
+    "template": "patterns/flows/delete.html",
+    "layoutConfig": {
+      "dialogSize": "small",
+      "dismissible": true,
+      "backdrop": "native"
+    }
+  },
+
+  "interaction": {
+    "triggers": [
+      {
+        "event": "button-click",
+        "target": "delete-trigger-btn",
+        "action": "open_confirmation_dialog"
+      },
+      {
+        "event": "button-click",
+        "target": "delete-btn",
+        "action": "confirm_delete"
+      },
+      {
+        "event": "button-click",
+        "target": "cancel-btn",
+        "action": "cancel_flow"
+      },
+      {
+        "event": "dialog-close",
+        "target": "delete-dialog",
+        "action": "cancel_flow"
+      },
+      {
+        "event": "keydown",
+        "target": "delete-dialog",
+        "action": "cancel_flow",
+        "condition": "event.key === 'Escape'"
+      }
+    ],
+
+    "validations": [],
+
+    "navigation": {
+      "next": [
+        "open_confirmation_dialog",
+        "dispatch_flow_start",
+        "await_user_confirmation"
+      ],
+      "cancel": [
+        "close_dialog",
+        "dispatch_flow_cancel"
+      ],
+      "error": [
+        "show_error_toast",
+        "dispatch_flow_error",
+        "keep_dialog_open"
+      ]
+    },
+
+    "state": {
+      "initial": {
+        "dialogOpen": false,
+        "confirming": false,
+        "deleting": false,
+        "entity": null,
+        "deleteIds": []
+      },
+      "transitions": [
+        {
+          "from": "initial",
+          "to": "confirming",
+          "trigger": "open_confirmation_dialog"
+        },
+        {
+          "from": "confirming",
+          "to": "deleting",
+          "trigger": "confirm_delete"
+        },
+        {
+          "from": "deleting",
+          "to": "success",
+          "trigger": "delete_success"
+        },
+        {
+          "from": "deleting",
+          "to": "confirming",
+          "trigger": "delete_error"
+        },
+        {
+          "from": "confirming",
+          "to": "initial",
+          "trigger": "cancel_flow"
+        },
+        {
+          "from": "success",
+          "to": "initial",
+          "trigger": "flow_complete"
+        }
+      ]
+    },
+
+    "shortcuts": [
+      {
+        "key": "Escape",
+        "action": "cancel_flow",
+        "description": "Cancel and close dialog"
+      }
+    ]
+  },
+
+  "resolution": {
+    "success": {
+      "action": "close_dialog",
+      "events": [
+        "flow-start",
+        "flow-progress",
+        "flow-complete"
+      ],
+      "feedback": {
+        "type": "toast",
+        "message": "Entity deleted successfully",
+        "status": "success",
+        "duration": 3000
+      },
+      "navigation": "refresh_dataset",
+      "data": {
+        "refreshTarget": "contentArea",
+        "clearSelection": true
+      }
+    },
+
+    "cancel": {
+      "action": "close_dialog",
+      "events": [
+        "flow-cancel"
+      ]
+    },
+
+    "error": {
+      "action": "show_toast",
+      "events": [
+        "flow-error"
+      ],
+      "feedback": {
+        "type": "toast",
+        "message": "Failed to delete entity. Please try again.",
+        "status": "critical",
+        "duration": 5000
+      }
+    }
+  },
+
+  "metadata": {
+    "status": "stable",
+    "version": "2.0.0",
+    "mcp_compatible": true,
+    "agent_skill": "patterns/skills/delete-entity.js",
+    "author": "Sherpa Team",
+    "updated": "2026-06-04",
+    "tags": [
+      "dialog",
+      "crud",
+      "delete",
+      "destructive",
+      "confirmation",
+      "flow"
+    ]
+  },
+
+  "examples": [
+    {
+      "title": "Delete User",
+      "description": "Delete a user account with confirmation",
+      "data": {
+        "entityType": "User",
+        "entityName": "user",
+        "dialogTitle": "Delete User",
+        "triggerLabel": "Delete User",
+        "warningMessage": "Are you sure you want to delete this user? This will permanently remove the account and all associated data.",
+        "confirmLabel": "Delete User",
+        "successMessage": "User deleted successfully",
+        "errorMessage": "Failed to delete user"
+      }
+    },
+    {
+      "title": "Delete Multiple Devices",
+      "description": "Delete multiple selected devices",
+      "data": {
+        "entityType": "Device",
+        "entityName": "device",
+        "dialogTitle": "Delete Devices",
+        "triggerLabel": "Delete Selected",
+        "warningMessage": "Are you sure you want to delete 3 devices? This action cannot be undone.",
+        "confirmLabel": "Delete 3 Devices",
+        "deleteIds": ["device-123", "device-456", "device-789"],
+        "successMessage": "3 devices deleted successfully",
+        "errorMessage": "Failed to delete devices"
+      }
+    },
+    {
+      "title": "Delete Project",
+      "description": "Delete a project with all its data",
+      "data": {
+        "entityType": "Project",
+        "entityName": "project",
+        "dialogTitle": "Delete Project",
+        "triggerLabel": "Delete Project",
+        "warningMessage": "Are you sure you want to delete this project? This will permanently remove the project and all tasks, files, and comments associated with it. This action cannot be undone.",
+        "confirmLabel": "Delete Project",
+        "successMessage": "Project deleted successfully",
+        "errorMessage": "Failed to delete project"
+      }
+    }
+  ]
+}

@@ -1,0 +1,329 @@
+{
+  "id": "edit-entity-flow",
+  "name": "Edit Entity Flow",
+  "category": "flows",
+  "description": "Complete flow for editing an existing entity with pre-populated dialog form, validation, and feedback. Manages full lifecycle from trigger through form modification to success/error handling.",
+
+  "presentation": {
+    "layout": "dialog",
+    "components": [
+      {
+        "type": "sherpa-button",
+        "id": "edit-trigger-btn",
+        "attributes": {
+          "data-label": "Edit",
+          "data-variant": "secondary",
+          "data-icon-start": "&#xf044;"
+        },
+        "content": "Trigger button for opening edit dialog"
+      },
+      {
+        "type": "sherpa-dialog",
+        "id": "edit-dialog",
+        "attributes": {
+          "data-label": "Edit Entity",
+          "data-size": "medium",
+          "data-dismissible": true
+        },
+        "required": true,
+        "children": [
+          {
+            "type": "sherpa-input-text",
+            "id": "name-input",
+            "attributes": {
+              "data-label": "Name",
+              "name": "name",
+              "required": true,
+              "placeholder": "Enter name"
+            },
+            "required": true
+          },
+          {
+            "type": "sherpa-input-text",
+            "id": "description-input",
+            "attributes": {
+              "data-label": "Description",
+              "name": "description",
+              "placeholder": "Enter description"
+            }
+          },
+          {
+            "type": "sherpa-button",
+            "id": "cancel-btn",
+            "attributes": {
+              "slot": "footer",
+              "data-label": "Cancel",
+              "data-variant": "secondary"
+            }
+          },
+          {
+            "type": "sherpa-button",
+            "id": "save-btn",
+            "attributes": {
+              "slot": "footer",
+              "data-label": "Save",
+              "data-variant": "primary"
+            }
+          }
+        ]
+      }
+    ],
+    "template": "patterns/flows/edit.html",
+    "layoutConfig": {
+      "dialogSize": "medium",
+      "dismissible": true,
+      "backdrop": "native"
+    }
+  },
+
+  "interaction": {
+    "triggers": [
+      {
+        "event": "button-click",
+        "target": "edit-trigger-btn",
+        "action": "open_dialog_with_data"
+      },
+      {
+        "event": "row-action",
+        "target": "edit-trigger-btn",
+        "action": "open_dialog_with_data"
+      },
+      {
+        "event": "button-click",
+        "target": "save-btn",
+        "action": "validate_and_submit"
+      },
+      {
+        "event": "button-click",
+        "target": "cancel-btn",
+        "action": "cancel_flow"
+      },
+      {
+        "event": "dialog-close",
+        "target": "edit-dialog",
+        "action": "cancel_flow"
+      },
+      {
+        "event": "keydown",
+        "target": "edit-dialog",
+        "action": "handle_keyboard",
+        "condition": "event.key === 'Enter' && !event.shiftKey"
+      },
+      {
+        "event": "keydown",
+        "target": "edit-dialog",
+        "action": "cancel_flow",
+        "condition": "event.key === 'Escape'"
+      }
+    ],
+
+    "validations": [
+      {
+        "field": "name-input",
+        "rule": "required",
+        "message": "Name is required",
+        "trigger": "submit"
+      },
+      {
+        "field": "name-input",
+        "rule": "minLength:1",
+        "message": "Name cannot be empty",
+        "trigger": "submit"
+      },
+      {
+        "field": "name-input",
+        "rule": "maxLength:255",
+        "message": "Name must be less than 255 characters",
+        "trigger": "blur"
+      }
+    ],
+
+    "navigation": {
+      "next": [
+        "populate_form",
+        "open_dialog",
+        "dispatch_flow_start"
+      ],
+      "cancel": [
+        "close_dialog",
+        "dispatch_flow_cancel"
+      ],
+      "error": [
+        "show_error_toast",
+        "focus_invalid_field",
+        "dispatch_flow_error"
+      ]
+    },
+
+    "state": {
+      "initial": {
+        "dialogOpen": false,
+        "formDirty": false,
+        "submitting": false,
+        "entity": null,
+        "editingRecord": null
+      },
+      "transitions": [
+        {
+          "from": "initial",
+          "to": "dialog_open",
+          "trigger": "open_dialog_with_data"
+        },
+        {
+          "from": "dialog_open",
+          "to": "submitting",
+          "trigger": "validate_and_submit"
+        },
+        {
+          "from": "submitting",
+          "to": "success",
+          "trigger": "submit_success"
+        },
+        {
+          "from": "submitting",
+          "to": "dialog_open",
+          "trigger": "submit_error"
+        },
+        {
+          "from": "dialog_open",
+          "to": "initial",
+          "trigger": "cancel_flow"
+        },
+        {
+          "from": "success",
+          "to": "initial",
+          "trigger": "flow_complete"
+        }
+      ]
+    },
+
+    "shortcuts": [
+      {
+        "key": "Enter",
+        "action": "validate_and_submit",
+        "description": "Submit form (when not in textarea)"
+      },
+      {
+        "key": "Escape",
+        "action": "cancel_flow",
+        "description": "Cancel and close dialog"
+      }
+    ]
+  },
+
+  "resolution": {
+    "success": {
+      "action": "close_dialog",
+      "events": [
+        "flow-start",
+        "flow-progress",
+        "flow-complete"
+      ],
+      "feedback": {
+        "type": "toast",
+        "message": "Entity updated successfully",
+        "status": "success",
+        "duration": 3000
+      },
+      "navigation": "refresh_dataset",
+      "data": {
+        "refreshTarget": "contentArea",
+        "clearForm": false
+      }
+    },
+
+    "cancel": {
+      "action": "close_dialog",
+      "events": [
+        "flow-cancel"
+      ]
+    },
+
+    "error": {
+      "action": "show_toast",
+      "events": [
+        "flow-error"
+      ],
+      "feedback": {
+        "type": "toast",
+        "message": "Failed to update entity. Please check the form and try again.",
+        "status": "critical",
+        "duration": 5000
+      }
+    }
+  },
+
+  "metadata": {
+    "status": "stable",
+    "version": "2.0.0",
+    "mcp_compatible": true,
+    "agent_skill": "patterns/skills/edit-entity.js",
+    "author": "Sherpa Team",
+    "updated": "2026-06-04",
+    "tags": [
+      "form",
+      "dialog",
+      "crud",
+      "update",
+      "edit",
+      "flow",
+      "validation"
+    ]
+  },
+
+  "examples": [
+    {
+      "title": "Edit User",
+      "description": "Update an existing user account",
+      "data": {
+        "entityType": "User",
+        "entityName": "user",
+        "dialogTitle": "Edit User",
+        "triggerLabel": "Edit User",
+        "existingRecord": {
+          "id": "user-123",
+          "name": "John Doe",
+          "email": "john.doe@example.com"
+        },
+        "fields": [
+          {
+            "id": "username-input",
+            "type": "sherpa-input-text",
+            "label": "Username",
+            "name": "username",
+            "required": true,
+            "value": "johndoe"
+          },
+          {
+            "id": "email-input",
+            "type": "sherpa-input-text",
+            "label": "Email Address",
+            "name": "email",
+            "required": true,
+            "value": "john.doe@example.com"
+          }
+        ],
+        "successMessage": "User updated successfully",
+        "errorMessage": "Failed to update user"
+      }
+    },
+    {
+      "title": "Edit Device",
+      "description": "Modify device configuration",
+      "data": {
+        "entityType": "Device",
+        "entityName": "device",
+        "dialogTitle": "Edit Device",
+        "triggerLabel": "Edit Device",
+        "existingRecord": {
+          "id": "device-456",
+          "deviceName": "Server-01",
+          "deviceType": "Server",
+          "ipAddress": "192.168.1.100"
+        },
+        "successMessage": "Device updated successfully",
+        "errorMessage": "Failed to update device"
+      }
+    }
+  ]
+}

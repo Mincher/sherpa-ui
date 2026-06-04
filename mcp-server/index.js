@@ -24,6 +24,7 @@
  *   validate_usage          — Schema-aware audit of component HTML
  *   list_patterns           — List view layout and UX patterns
  *   get_pattern             — Get full HTML for a pattern
+ *   generate_pattern        — Generate behavior-driven pattern with interaction logic (v2.0)
  *   compose_view            — Compose a complete view from layout + components
  *   generate_flow           — Generate a CRUD flow (add/edit/delete) for an entity
  *
@@ -760,6 +761,152 @@ server.registerTool(
     return { content: [{ type: "text", text: html }] };
   }
 );
+
+server.registerTool(
+  "generate_pattern",
+  {
+    title: "Generate Pattern (v2.0)",
+    description: `Generate a complete pattern implementation with HTML, JavaScript, validation, and event handling.
+
+Behavior-driven patterns follow the presentation-interaction-resolution paradigm:
+- Presentation: Visual layout and component composition
+- Interaction: User actions, validations, navigation flows
+- Resolution: Expected outcomes (success, cancel, error) with feedback
+
+Use this for complete interactive flows like add/edit/delete entities. For static layouts use get_pattern instead.
+
+Available v2.0 patterns: add-entity-flow, edit-entity-flow, delete-entity-flow`,
+    inputSchema: {
+      patternId: z.string().describe('Pattern ID (e.g. "add-entity-flow", "edit-entity-flow", "delete-entity-flow")'),
+      entityType: z.string().describe('Entity type (e.g. "User", "Device", "Task")'),
+      entityName: z.string().optional().describe('Entity name for variables (defaults to lowercase entityType)'),
+      fields: z.array(z.object({
+        name: z.string(),
+        label: z.string(),
+        type: z.string().optional(),
+        required: z.boolean().optional(),
+        placeholder: z.string().optional(),
+      })).optional().describe('Form fields configuration'),
+      customData: z.record(z.any()).optional().describe('Additional custom data for pattern'),
+    },
+  },
+  async ({ patternId, entityType, entityName, fields, customData }) => {
+    // Check if pattern exists in v2.0 format
+    const v2Patterns = ['add-entity-flow', 'edit-entity-flow', 'delete-entity-flow'];
+    if (!v2Patterns.includes(patternId)) {
+      return {
+        content: [{
+          type: "text",
+          text: `Pattern "${patternId}" is not available in v2.0 format yet.
+
+Available v2.0 patterns:
+- add-entity-flow: Complete add flow with dialog, validation, feedback
+- edit-entity-flow: Edit flow with pre-population
+- delete-entity-flow: Delete flow with confirmation
+
+For v1.0 patterns, use get_pattern instead.`,
+        }],
+      };
+    }
+
+    // Load pattern JSON
+    const patternPath = path.join(PATTERNS_DIR, "flows", `${patternId}.json`);
+    if (!fs.existsSync(patternPath)) {
+      return {
+        content: [{
+          type: "text",
+          text: `Pattern definition not found: ${patternPath}`,
+        }],
+        isError: true,
+      };
+    }
+
+    const pattern = JSON.parse(fs.readFileSync(patternPath, "utf8"));
+    const eName = entityName || entityType.toLowerCase();
+
+    // Generate HTML
+    let html = `<!-- Generated Pattern: ${pattern.name} -->\n`;
+    html += `<!-- Entity: ${entityType} -->\n\n`;
+
+    for (const component of pattern.presentation.components) {
+      html += generatePatternComponent(component, {
+        entityType,
+        entityName: eName,
+        fields,
+        ...customData,
+      });
+      html += "\n\n";
+    }
+
+    // Generate JavaScript
+    let js = `// Generated JavaScript for ${patternId}\n`;
+    js += `// Entity: ${entityType}\n\n`;
+    js += `import { FlowManager } from 'sherpa-ui/components/utilities/flow-manager.js';\n`;
+    js += `import { FormManager } from 'sherpa-ui/components/utilities/form-manager.js';\n`;
+    js += `import { SherpaToast } from 'sherpa-ui/components/sherpa-toast/sherpa-toast.js';\n\n`;
+    js += `const dialog = document.getElementById('${pattern.presentation.components.find(c => c.type === 'sherpa-dialog')?.id}');\n`;
+    js += `const form = new FormManager(dialog);\n\n`;
+    js += `// TODO: Implement ${patternId === 'delete-entity-flow' ? 'onDelete' : 'onSave'} callback\n`;
+    js += `// TODO: Wire up trigger button event listeners\n`;
+
+    // Format comprehensive output
+    let output = `# Generated Pattern: ${pattern.name}\n\n`;
+    output += `## Pattern Information\n`;
+    output += `- **ID:** ${pattern.id}\n`;
+    output += `- **Version:** ${pattern.metadata.version}\n`;
+    output += `- **Entity:** ${entityType}\n`;
+    output += `- **Status:** ${pattern.metadata.status}\n\n`;
+    output += `## Description\n${pattern.description}\n\n`;
+    output += `---\n\n`;
+    output += `## Generated HTML\n\n\`\`\`html\n${html}\`\`\`\n\n`;
+    output += `---\n\n`;
+    output += `## Generated JavaScript\n\n\`\`\`javascript\n${js}\`\`\`\n\n`;
+    output += `---\n\n`;
+    output += `## Next Steps\n\n`;
+    output += `1. Copy the HTML above into your application\n`;
+    output += `2. Copy the JavaScript and implement the TODO callbacks\n`;
+    output += `3. Wire up API calls for ${entityType} operations\n`;
+    output += `4. Test the complete flow\n\n`;
+    output += `## Events Dispatched\n`;
+    for (const event of pattern.resolution.success.events) {
+      output += `- \`${event}\`\n`;
+    }
+    output += `\n## Feedback\n`;
+    output += `- Success: "${pattern.resolution.success.feedback?.message || 'Success'}"\n`;
+    output += `- Error: "${pattern.resolution.error.feedback?.message || 'Error'}"\n`;
+
+    return { content: [{ type: "text", text: output }] };
+  }
+);
+
+function generatePatternComponent(component, data) {
+  const attrs = component.attributes || {};
+  let attrStr = "";
+  for (const [key, value] of Object.entries(attrs)) {
+    if (typeof value === "boolean") {
+      if (value) attrStr += ` ${key}`;
+    } else {
+      const interpolated = String(value)
+        .replace(/\{\{entityType\}\}/g, data.entityType || "Entity")
+        .replace(/\{\{entityName\}\}/g, data.entityName || "entity");
+      attrStr += ` ${key}="${interpolated}"`;
+    }
+  }
+
+  const id = component.id ? ` id="${component.id}"` : "";
+  const tag = component.type;
+
+  if (!component.children || component.children.length === 0) {
+    return `<${tag}${id}${attrStr}></${tag}>`;
+  }
+
+  let children = "";
+  for (const child of component.children) {
+    children += "  " + generatePatternComponent(child, data) + "\n";
+  }
+
+  return `<${tag}${id}${attrStr}>\n${children}</${tag}>`;
+}
 
 server.registerTool(
   "compose_view",

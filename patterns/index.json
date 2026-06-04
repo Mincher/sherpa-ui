@@ -1,5 +1,50 @@
 [
   {
+    "id": "add-entity-flow",
+    "name": "Add Entity Flow (v2.0)",
+    "category": "flows",
+    "file": "patterns/flows/add-entity-flow.json",
+    "description": "Behavior-driven add-entity flow with presentation-interaction-resolution",
+    "status": "stable",
+    "version": "2.0.0",
+    "mcp_compatible": true,
+    "components": [
+      "sherpa-button",
+      "sherpa-dialog",
+      "sherpa-input-text"
+    ]
+  },
+  {
+    "id": "edit-entity-flow",
+    "name": "Edit Entity Flow (v2.0)",
+    "category": "flows",
+    "file": "patterns/flows/edit-entity-flow.json",
+    "description": "Behavior-driven edit-entity flow with pre-population and validation",
+    "status": "stable",
+    "version": "2.0.0",
+    "mcp_compatible": true,
+    "components": [
+      "sherpa-button",
+      "sherpa-dialog",
+      "sherpa-input-text"
+    ]
+  },
+  {
+    "id": "delete-entity-flow",
+    "name": "Delete Entity Flow (v2.0)",
+    "category": "flows",
+    "file": "patterns/flows/delete-entity-flow.json",
+    "description": "Behavior-driven delete-entity flow with confirmation",
+    "status": "stable",
+    "version": "2.0.0",
+    "mcp_compatible": true,
+    "components": [
+      "sherpa-button",
+      "sherpa-dialog",
+      "sherpa-callout"
+    ]
+  },
+  {
     "id": "confirmation-dialog",
     "name": "Modal dialog for confirming destructive actions",
     "category": "feedback",

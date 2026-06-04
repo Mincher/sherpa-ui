@@ -1,9 +1,19 @@
 /**
  * sherpa-node-header.js — 48-tall header for sherpa-node.
  *
- * @deprecated Use <sherpa-node-row data-variant="header"> instead.
- * This component is maintained for backward compatibility but new code
- * should use the unified sherpa-node-row component with data-variant="header".
+ * @deprecated since v2.1.0 — Will be removed in v3.0.0
+ *
+ * Use <sherpa-node-row data-variant="header"> instead.
+ * This component is maintained for backward compatibility only.
+ * New code should use the unified sherpa-node-row component.
+ *
+ * Migration:
+ *   <sherpa-node-header data-icon="fa-home">Title</sherpa-node-header>
+ *   →
+ *   <sherpa-node-row data-variant="header" data-icon="fa-home">Title</sherpa-node-row>
+ *
+ * All attributes and slots remain identical. See:
+ * docs/migrations/node-header-to-node-row.md
  *
  * Provides:
  *   • Built-in icon shorthand via data-icon="fa-..." (FontAwesome class)

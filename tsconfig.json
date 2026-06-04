@@ -55,7 +55,8 @@
     "components/**/*.ts",
     "demo/**/*.ts",
     "playground/**/*.ts",
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "patterns/**/*.ts"
   ],
   "exclude": [
     "node_modules",
