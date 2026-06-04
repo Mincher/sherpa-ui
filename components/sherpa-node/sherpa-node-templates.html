@@ -3,7 +3,7 @@
 
   Library of <template class="rows-tpl" data-kind="…" data-subtype="…">
   blocks. Each template defines:
-    • A <sherpa-node-header slot="header"> with kind-specific icon/title
+    • A <sherpa-node-row data-variant="header" slot="header"> with kind-specific icon/title
       and any header sockets
     • Zero or more <sherpa-node-row> rows
     • Optional <sherpa-node-socket slot="footer-output"> for false-out
@@ -18,18 +18,18 @@
 
 <template class="rows-tpl" data-kind="source" data-subtype="unified-agent"
           data-subtype-helper="Starts the flow from the unified agent.">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Source</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
 </template>
 
 <template class="rows-tpl" data-kind="source" data-subtype="api"
           data-subtype-helper="Starts the flow from an API endpoint.">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Source</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">URL</span>
     <sherpa-input-text slot="control" name="url" placeholder="https://example.com/api"></sherpa-input-text>
@@ -44,10 +44,10 @@
 
 <template class="rows-tpl" data-kind="source" data-subtype="model"
           data-subtype-helper="Uses the selected model to process natural language.">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Source</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Large Language Model</span>
     <sherpa-input-select slot="control" name="model">
@@ -58,10 +58,10 @@
 
 <template class="rows-tpl" data-kind="source" data-subtype="custom"
           data-subtype-helper="Custom source defined by the consumer.">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Source</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
 </template>
 
 <!-- ════════════════════════════════════════════════════════════════
@@ -69,11 +69,11 @@
      ════════════════════════════════════════════════════════════════ -->
 
 <template class="rows-tpl" data-kind="group" data-subtype="default">
-  <sherpa-node-header slot="header" data-icon="fa-solid fa-layer-group" data-drill-down>
+  <sherpa-node-row data-variant="header" slot="header" data-icon="fa-solid fa-layer-group" data-drill-down>
     <span slot="title">Group</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="helper">Click the open icon to edit the sub-graph.</span>
   </sherpa-node-row>
@@ -84,9 +84,9 @@
      ════════════════════════════════════════════════════════════════ -->
 
 <template class="rows-tpl" data-kind="variable" data-subtype="number">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Number</span>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value</span>
     <sherpa-input-number slot="control" name="value" value="0" step="1"></sherpa-input-number>
@@ -95,9 +95,9 @@
 </template>
 
 <template class="rows-tpl" data-kind="variable" data-subtype="decimal">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Decimal</span>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value</span>
     <sherpa-input-number slot="control" name="value" value="0.0" step="0.1"></sherpa-input-number>
@@ -106,9 +106,9 @@
 </template>
 
 <template class="rows-tpl" data-kind="variable" data-subtype="text">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Text</span>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value</span>
     <sherpa-input-text slot="control" name="value" value="Text" placeholder="Enter text"></sherpa-input-text>
@@ -117,11 +117,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="variable" data-subtype="property">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Property</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Category</span>
     <sherpa-input-select slot="control" name="category">
@@ -141,10 +141,10 @@
      ════════════════════════════════════════════════════════════════ -->
 
 <template class="rows-tpl" data-kind="math" data-subtype="add">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="helper">A + B</span>
   </sherpa-node-row>
@@ -161,10 +161,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="subtract">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A − B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -179,10 +179,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="multiply">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A × B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -197,10 +197,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="divide">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A ÷ B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -215,10 +215,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="ratio">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A as a ratio of B (0–1)</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -233,38 +233,38 @@
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="floor">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Lowest of all incoming values.</span></sherpa-node-row>
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="ceiling">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Highest of all incoming values.</span></sherpa-node-row>
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="average">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Mean of all incoming values.</span></sherpa-node-row>
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="round">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Round input to N decimal places.</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Places</span>
@@ -273,11 +273,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="math" data-subtype="increment">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Math</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Increment input by step.</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Step</span>
@@ -291,29 +291,29 @@
 
 <template class="rows-tpl" data-kind="logic" data-subtype="and"
           data-subtype-helper="Returns true if all values are positive.">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-socket slot="footer-output" data-direction="out" data-port-name="false" data-status="false"></sherpa-node-socket>
 </template>
 
 <template class="rows-tpl" data-kind="logic" data-subtype="or">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Any input must be true.</span></sherpa-node-row>
   <sherpa-node-socket slot="footer-output" data-direction="out" data-port-name="false" data-status="false"></sherpa-node-socket>
 </template>
 
 <template class="rows-tpl" data-kind="logic" data-subtype="gt">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A &gt; B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -329,10 +329,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="logic" data-subtype="gte">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A ≥ B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -348,10 +348,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="logic" data-subtype="lt">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A &lt; B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -367,10 +367,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="logic" data-subtype="lte">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A ≤ B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -386,10 +386,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="logic" data-subtype="eq">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A = B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -405,10 +405,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="logic" data-subtype="neq">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Compare</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">A ≠ B</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Value A</span>
@@ -428,11 +428,11 @@
      ════════════════════════════════════════════════════════════════ -->
 
 <template class="rows-tpl" data-kind="time" data-subtype="between">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Time</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Now is between Start and End.</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Start</span>
@@ -446,11 +446,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="time" data-subtype="duration">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Time</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Triggers after duration elapses.</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Amount</span>
@@ -466,10 +466,10 @@
 </template>
 
 <template class="rows-tpl" data-kind="time" data-subtype="schedule">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Time</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Cron-style schedule trigger.</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Frequency</span>
@@ -488,11 +488,11 @@
      ════════════════════════════════════════════════════════════════ -->
 
 <template class="rows-tpl" data-kind="collection" data-subtype="asset">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Collection</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Filter</span>
     <sherpa-input-text slot="control" name="filter" placeholder="All assets"></sherpa-input-text>
@@ -500,11 +500,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="collection" data-subtype="user">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Collection</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Filter</span>
     <sherpa-input-text slot="control" name="filter" placeholder="All users"></sherpa-input-text>
@@ -512,11 +512,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="collection" data-subtype="group">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Collection</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Filter</span>
     <sherpa-input-text slot="control" name="filter" placeholder="All groups"></sherpa-input-text>
@@ -524,11 +524,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="collection" data-subtype="role">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Collection</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Filter</span>
     <sherpa-input-text slot="control" name="filter" placeholder="All roles"></sherpa-input-text>
@@ -541,11 +541,11 @@
      UTIL
      ════════════════════════════════════════════════════════════════ -->
 <template class="rows-tpl" data-kind="util" data-subtype="tag">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Tag</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Operation</span>
     <sherpa-input-select slot="control" name="operation">
@@ -560,10 +560,10 @@
 
 <template class="rows-tpl" data-kind="util" data-subtype="concatenate"
           data-subtype-helper="Creates a string by adding Value B to the end of Value A.">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Modify text</span>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Operation</span>
     <sherpa-input-select slot="control" name="operation">
@@ -582,11 +582,11 @@
   </sherpa-node-row>
 </template>
 <template class="rows-tpl" data-kind="util" data-subtype="listen-frequency">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Listen</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Listen for value changes at frequency.</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Every</span>
@@ -602,11 +602,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="util" data-subtype="listen-status">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Listen</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="true" data-status="true"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row><span slot="helper">Trigger when status changes.</span></sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Status</span>
@@ -618,11 +618,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="util" data-subtype="skill">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Skill</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Skill</span>
     <sherpa-input-select slot="control" name="skill">
@@ -636,20 +636,20 @@
      ════════════════════════════════════════════════════════════════ -->
 
 <template class="rows-tpl" data-kind="output" data-subtype="default">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Output</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="helper">Terminates the flow.</span>
   </sherpa-node-row>
 </template>
 
 <template class="rows-tpl" data-kind="output" data-subtype="outcome">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Outcome</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in" data-multi></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Type</span>
     <sherpa-input-select slot="control" name="type">
@@ -705,11 +705,11 @@
 
 <template class="rows-tpl" data-kind="delegate" data-subtype="default"
           data-subtype-helper="Uses the selected agent to handle any linked AI interactions.">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Delegate</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="model"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Agent</span>
     <sherpa-input-select slot="control" name="agent">
@@ -724,11 +724,11 @@
      ════════════════════════════════════════════════════════════════ -->
 
 <template class="rows-tpl" data-kind="chat" data-subtype="default">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Ask N-zo</span>
     <sherpa-node-socket slot="input-socket"  data-direction="in"  data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Type</span>
     <sherpa-input-select slot="control" name="type">
@@ -759,11 +759,11 @@
      ════════════════════════════════════════════════════════════════ -->
 
 <template class="rows-tpl" data-kind="action" data-subtype="ticket">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Action</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Module</span>
     <sherpa-input-select slot="control" name="module">
@@ -783,11 +783,11 @@
 </template>
 
 <template class="rows-tpl" data-kind="action" data-subtype="notify">
-  <sherpa-node-header slot="header">
+  <sherpa-node-row data-variant="header" slot="header">
     <span slot="title">Notify</span>
     <sherpa-node-socket slot="input-socket" data-direction="in" data-port-name="in"></sherpa-node-socket>
     <sherpa-node-socket slot="output-socket" data-direction="out" data-port-name="out"></sherpa-node-socket>
-  </sherpa-node-header>
+  </sherpa-node-row>
   <sherpa-node-row>
     <span slot="label">Recipients</span>
     <sherpa-input-text slot="control" name="recipients" placeholder="Recipients"></sherpa-input-text>

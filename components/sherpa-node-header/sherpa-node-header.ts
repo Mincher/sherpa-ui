@@ -1,11 +1,13 @@
 /**
  * sherpa-node-header.js — 48-tall header for sherpa-node.
  *
+ * @deprecated Use <sherpa-node-row data-variant="header"> instead.
+ * This component is maintained for backward compatibility but new code
+ * should use the unified sherpa-node-row component with data-variant="header".
+ *
  * Provides:
  *   • Built-in icon shorthand via data-icon="fa-..." (FontAwesome class)
  *   • Built-in drill-down button via data-drill-down (used by Group nodes)
- *   • Auto-tags slotted sockets with data-location="header" so their
- *     CSS picks the correct shape from the locked matrix.
  *
  * @element sherpa-node-header
  * @category content
@@ -49,9 +51,7 @@ export class SherpaNodeHeader extends SherpaElement {
   els = this.cacheElements({
     iconBuiltIn: '.icon-built-in',
     iconWrap: '.icon',
-    drillBtn: '.drill-down',
-    inSocketSlot: { selector: 'slot[name="input-socket"]', type: HTMLSlotElement },
-    outSocketSlot: { selector: 'slot[name="output-socket"]', type: HTMLSlotElement }
+    drillBtn: '.drill-down'
   });
 
   #bound = false;
@@ -59,13 +59,10 @@ export class SherpaNodeHeader extends SherpaElement {
   override onRender(): void {
     if (!this.#bound) {
       this.els.drillBtn?.addEventListener("click", this.#onDrillClick);
-      this.els.inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
-      this.els.outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
       this.#bound = true;
     }
 
     this.#syncIcon();
-    this.#tagSockets();
   }
 
   override onAttributeChanged(name: string) {
@@ -94,18 +91,6 @@ export class SherpaNodeHeader extends SherpaElement {
       composed: true,
       detail: { nodeId: node?.dataset?.["nodeId"] || null },
     }));
-  };
-
-  #tagSockets = () => {
-    for (const slot of [this.els.inSocketSlot, this.els.outSocketSlot]) {
-      if (!slot) continue;
-      const assigned = slot.assignedElements({ flatten: true });
-      for (const el of assigned) {
-        if (el.localName === "sherpa-node-socket") {
-          el.setAttribute("data-location", "header");
-        }
-      }
-    }
   };
 }
 

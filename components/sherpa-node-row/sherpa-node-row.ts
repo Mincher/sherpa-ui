@@ -1,18 +1,29 @@
 /**
- * sherpa-node-row.js — Generic field row for sherpa-node bodies.
+ * sherpa-node-row.js — Unified row component for sherpa-node.
  *
- * Pure layout component. Holds slots; emits no events.
+ * Handles both header rows and body rows via data-variant attribute.
+ * Pure layout component. Holds slots; emits events only for header actions.
  * Slot presence is auto-mirrored on the host as data-has-{slotname}
  * via SherpaElement's default onSlotChange handler.
  *
  * @element sherpa-node-row
  * @category content
  *
- * @attr {boolean} data-multi  — Visually expand for multi-input rows
+ * @attr {enum}    data-variant   — "header" | "body" (default: "body")
+ * @attr {boolean} data-multi     — Visually expand for multi-input rows
+ * @attr {string}  data-icon      — FontAwesome class for built-in icon (header variant only)
+ * @attr {boolean} data-drill-down — Show drill-down button (header variant only)
  *
- * @slot label         — Field label
- * @slot control       — Input/select/chip group
- * @slot helper        — Optional helper text
+ * @fires sherpa-node-drilldown (header variant only)
+ *   bubbles: true, composed: true
+ *   detail: { nodeId | null }
+ *
+ * @slot icon          — Custom leading icon (header variant only, overrides data-icon)
+ * @slot title         — Header title text (header variant)
+ * @slot actions       — Trailing icons/buttons (header variant)
+ * @slot label         — Field label (body variant)
+ * @slot control       — Input/select/chip group (body variant)
+ * @slot helper        — Optional helper text (body variant)
  * @slot input-socket  — Slot in the LEFT gutter
  * @slot output-socket — Slot in the RIGHT gutter
  */
@@ -33,37 +44,58 @@ export class SherpaNodeRow extends SherpaElement {
   }
 
   static override get observedAttributes(): string[] {
-    return [...super.observedAttributes, "data-multi"];
+    return [
+      ...super.observedAttributes,
+      "data-variant",
+      "data-multi",
+      "data-icon",
+      "data-drill-down",
+    ];
   }
 
-  #inSocketSlot: HTMLSlotElement | null = null;
-  #outSocketSlot: HTMLSlotElement | null = null;
+  els = this.cacheElements({
+    iconBuiltIn: '.icon-built-in',
+    iconWrap: '.icon',
+    drillBtn: '.drill-down'
+  });
+
   #bound = false;
 
   override onRender(): void {
-    this.#inSocketSlot = this.$<HTMLSlotElement>('slot[name="input-socket"]');
-    this.#outSocketSlot = this.$<HTMLSlotElement>('slot[name="output-socket"]');
-
     if (!this.#bound) {
-      this.#inSocketSlot?.addEventListener("slotchange", this.#tagSockets);
-      this.#outSocketSlot?.addEventListener("slotchange", this.#tagSockets);
+      this.els.drillBtn?.addEventListener("click", this.#onDrillClick);
       this.#bound = true;
     }
 
-    this.#tagSockets();
+    this.#syncIcon();
   }
 
-  /** Tag slotted <sherpa-node-socket> with data-location="row". */
-  #tagSockets = () => {
-    for (const slot of [this.#inSocketSlot, this.#outSocketSlot]) {
-      if (!slot) continue;
-      const assigned = slot.assignedElements({ flatten: true });
-      for (const el of assigned) {
-        if (el.localName === "sherpa-node-socket") {
-          el.setAttribute("data-location", "row");
-        }
-      }
+  override onAttributeChanged(name: string) {
+    if (name === "data-icon") this.#syncIcon();
+  }
+
+  /* ── Internals ─────────────────────────────────────────────────── */
+
+  #syncIcon() {
+    if (!this.els.iconBuiltIn || !this.els.iconWrap) return;
+    const cls = this.dataset["icon"];
+    if (cls) {
+      this.els.iconBuiltIn.className = `icon-built-in ${cls}`;
+      this.els.iconWrap.toggleAttribute("data-has-built-in", true);
+    } else {
+      this.els.iconBuiltIn.className = "icon-built-in";
+      this.els.iconWrap.toggleAttribute("data-has-built-in", false);
     }
+  }
+
+  #onDrillClick = (e: Event) => {
+    e.stopPropagation();
+    const node = this.closest<HTMLElement>("sherpa-node");
+    this.dispatchEvent(new CustomEvent("sherpa-node-drilldown", {
+      bubbles: true,
+      composed: true,
+      detail: { nodeId: node?.dataset?.["nodeId"] || null },
+    }));
   };
 }
 

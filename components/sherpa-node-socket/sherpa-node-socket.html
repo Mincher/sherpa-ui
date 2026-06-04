@@ -3,16 +3,17 @@
 
   Variants (all data-* attributes on the host):
     data-direction        — "in" | "out"
-    data-location         — "header" | "row" (auto-set by parent slot)
-    data-multi            — boolean: input accepts multiple connections
+    data-location         — "header" | "row" (auto-detected from DOM context)
+    data-variant          — "single" | "multiple" | "step-single" | "step-multiple"
+                            Replaces data-multi for clearer intent. Maps to data-multi internally for CSS compatibility.
+    data-multi            — DEPRECATED: use data-variant instead. Boolean: input accepts multiple connections
     data-connected        — boolean: filled with accent color
     data-port-name        — string: port identifier
-    data-status           — "default" | "true" | "false"
+    data-status           — "default" | "true" | "false" (affects output socket color)
     data-connection-count — number: count of incoming edges (set by canvas)
     data-flow-active      — boolean: group input — subgraph has source→output flow; renders larger filled dot
 
-  Shape is determined entirely by CSS using these attributes — no
-  shape attribute exists.
+  Shape is determined entirely by CSS using these attributes.
 
   Events:
     sherpa-socket-pointerdown

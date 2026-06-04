@@ -7,7 +7,7 @@
  * Exposes getPortPositions() so the host canvas can measure where each
  * socket lives in node-local coordinates (unscaled, top-left origin).
  *
- * Sub-type system:
+ * Template system:
  *   • data-subtypes — JSON. Either a flat array [{value,label}] or a
  *     grouped array [{label, options:[{value,label}]}]. Grouped form
  *     renders <optgroup>s in the picker (e.g. "Preset" vs "Custom").
@@ -17,6 +17,11 @@
  *     template's content is cloned into light DOM, replacing any rows
  *     that came from a previous template clone (those are tagged
  *     data-template-row).
+ *   • Conditional visibility: Use data-show-if="name=value" on rows.
+ *     Supports: =, !=, OR (|), AND (,). Example: data-show-if="type=Email, priority!=Low"
+ *   • Value preservation: Control values are automatically preserved across
+ *     template swaps (including empty strings).
+ *   • Validation: Missing templates log warnings in development mode.
  *
  * Custom subtypes (consumer contract):
  *   The "Custom" group is a hook for consumers to inject saved-graph
@@ -65,8 +70,8 @@
  *   bubbles: true, composed: true
  *   detail: { nodeId, subtype }
  *
- * @slot header  — A <sherpa-node-header>
- * @slot         — Default: zero or more <sherpa-node-row>s plus optional
+ * @slot header  — A <sherpa-node-row data-variant="header">
+ * @slot         — Default: zero or more <sherpa-node-row>s (body variant) plus optional
  *                 <template class="rows-tpl"…> prototypes
  * @slot footer  — Optional footer
  */
@@ -157,6 +162,34 @@ export class SherpaNode extends SherpaElement {
   /* ── Public API ────────────────────────────────────────────────── */
 
   get nodeId() { return this.dataset["nodeId"] || ""; }
+
+  /**
+   * Get all available template kinds and subtypes registered on this node.
+   * Useful for building UI that lets users select node types.
+   * Returns: Map<kind, subtype[]>
+   */
+  getAvailableTemplates(): Map<string, string[]> {
+    const map = new Map<string, string[]>();
+    const templates = this.querySelectorAll<HTMLTemplateElement>("template.rows-tpl[data-kind][data-subtype]");
+    for (const tpl of templates) {
+      const kind = tpl.dataset["kind"];
+      const subtype = tpl.dataset["subtype"];
+      if (!kind || !subtype) continue;
+      if (!map.has(kind)) map.set(kind, []);
+      map.get(kind)!.push(subtype);
+    }
+    return map;
+  }
+
+  /**
+   * Check if a template exists for the given kind and subtype.
+   * Useful for validation before setting data-kind/data-subtype.
+   */
+  hasTemplate(kind: string, subtype: string): boolean {
+    return !!this.querySelector(
+      `template.rows-tpl[data-kind="${CSS.escape(kind)}"][data-subtype="${CSS.escape(subtype)}"]`
+    );
+  }
 
   /**
    * Returns a Map<portKey, {x, y, side, multi, count}> of every socket in
@@ -495,19 +528,33 @@ export class SherpaNode extends SherpaElement {
     const tpl = this.querySelector<HTMLTemplateElement>(
       `template.rows-tpl[data-kind="${CSS.escape(kind)}"][data-subtype="${CSS.escape(subtype)}"]`
     );
-    if (!tpl) return;
+    if (!tpl) {
+      // Template not found - log warning in development
+      if (typeof process === "undefined" || process.env?.["NODE_ENV"] !== "production") {
+        console.warn(
+          `[sherpa-node] No template found for kind="${kind}" subtype="${subtype}". ` +
+          `Available templates:`,
+          [...this.querySelectorAll("template.rows-tpl")].map(t =>
+            `kind="${t.getAttribute("data-kind") || "?"}" subtype="${t.getAttribute("data-subtype") || "?"}"`
+          )
+        );
+      }
+      return;
+    }
     // Capture existing template-row control values BEFORE removing
     // them, so we can restore them onto the freshly-cloned template.
     // Without this, every #applyTemplate run (including the one that
     // fires when a node is reattached after a subgraph push/pop
     // snapshot/restore cycle) silently wipes user-set values.
-    const preserved = new Map();
+    const preserved = new Map<string, string>();
     for (const ctrl of this.querySelectorAll(
       ":scope > [data-template-row] [slot='control'][name]"
     )) {
       const name = ctrl.getAttribute("name");
+      // Preserve all values, including empty strings - empty is a valid state
+      // (e.g., user cleared the field). Only skip null/undefined.
       const v = ctrl.getAttribute("value");
-      if (name && v != null && v !== "") preserved.set(name, v);
+      if (name && v != null) preserved.set(name, v);
     }
     // Remove rows from a previous template clone (tagged data-template-row).
     for (const old of [...this.querySelectorAll(":scope > [data-template-row]")]) {
@@ -524,7 +571,10 @@ export class SherpaNode extends SherpaElement {
     if (preserved.size) {
       for (const ctrl of clone.querySelectorAll("[slot='control'][name]")) {
         const name = ctrl.getAttribute("name");
-        if (preserved.has(name)) ctrl.setAttribute("value", preserved.get(name));
+        if (name && preserved.has(name)) {
+          const value = preserved.get(name);
+          if (value !== undefined) ctrl.setAttribute("value", value);
+        }
       }
     }
     this.appendChild(clone);
@@ -552,9 +602,14 @@ export class SherpaNode extends SherpaElement {
 
   /**
    * Evaluate `data-show-if` on every template-cloned row and toggle
-   * the `hidden` attribute. Format: `data-show-if="ctrlName=val|val2"`.
-   * Multiple clauses comma-separated are AND-ed:
-   *   data-show-if="type=Notify, severity=Critical"
+   * the `hidden` attribute.
+   *
+   * Supported syntax:
+   *   data-show-if="ctrlName=val|val2"         — Show if value is val OR val2
+   *   data-show-if="ctrlName!=val"             — Show if value is NOT val
+   *   data-show-if="type=Notify, severity=High" — AND: both conditions must be true
+   *
+   * Multiple clauses (comma-separated) are AND-ed together.
    * The referenced control is matched by its `name` attribute on a
    * sibling `[slot="control"]` within the same node. Subtype select
    * is also addressable via the special name "subtype".
@@ -572,10 +627,14 @@ export class SherpaNode extends SherpaElement {
       const expr = row.getAttribute("data-show-if") || "";
       const clauses = expr.split(",").map((s) => s.trim()).filter(Boolean);
       const ok = clauses.every((c) => {
-        const [name, vals] = c.split("=").map((s) => s.trim());
+        // Support both = and != operators
+        const isNegated = c.includes("!=");
+        const [name, vals] = c.split(isNegated ? "!=" : "=").map((s) => s.trim());
         if (!name || vals == null) return true;
         const allowed = vals.split("|").map((s) => s.trim());
-        return allowed.includes(String(readVal(name)));
+        const currentVal = String(readVal(name));
+        const matches = allowed.includes(currentVal);
+        return isNegated ? !matches : matches;
       });
       row.toggleAttribute("hidden", !ok);
     }

@@ -1,23 +1,152 @@
 /**
- * sherpa-node-row.css — Phase 2 Modernization (CSS Nesting)
- * Grid layout for node canvas row: [in-gutter | control | out-gutter]
- * Label and helper span full width; sockets align to control center.
+ * sherpa-node-row.css — Unified row component
+ * Supports both header and body variants via data-variant attribute.
+ *
+ * Header variant: 48px flex row [in-gutter | header-body (icon + title + actions) | out-gutter]
+ * Body variant: Grid layout [in-gutter | control | out-gutter] with full-width label and helper
  */
 
 :host {
   display: block;
   position: relative;
-  /* ──────────────────────────────────────────────────────────
-             ROW GRID (3 columns: in-gutter | control | out-gutter)
-             ────────────────────────────────────────────────────────── */
-  /* ── Label + Helper (full-width, span all columns) ─– */
-  /* ── Gutters (socket containers, vertically centered) ––– */
-  /* Sockets centered on node edge via half-width translate */
-  /* ── Control (flex row for inputs) ──────────────────– */
-  /* ── Hidden state ───────────────────────────────────────– */
+}
+
+/* ────────────────────────────────────────────────────────────────
+   VARIANT VISIBILITY: Show only the matching variant
+──────────────────────────────────────────────────────────────── */
+
+/* Default to body variant if not specified */
+:host .header {
+  display: none;
 }
 :host .row {
   display: grid;
+}
+
+/* Header variant active */
+:host([data-variant="header"]) .header {
+  display: flex;
+}
+:host([data-variant="header"]) .row {
+  display: none;
+}
+
+/* Body variant explicitly active (same as default) */
+:host([data-variant="body"]) .header {
+  display: none;
+}
+:host([data-variant="body"]) .row {
+  display: grid;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   SHARED: Gutters (socket containers)
+──────────────────────────────────────────────────────────────── */
+
+:host .gutter {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+:host .gutter-in {
+  justify-content: flex-start;
+}
+:host .gutter-out {
+  justify-content: flex-end;
+}
+:host .gutter-in ::slotted(*) {
+  transform: translateX(-50%);
+}
+:host .gutter-out ::slotted(*) {
+  transform: translateX(50%);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   HEADER VARIANT
+──────────────────────────────────────────────────────────────── */
+
+:host .header {
+  align-items: stretch;
+}
+:host .gutter {
+  flex: 0 0 var(--sherpa-node-socket-gutter, 16px);
+}
+:host .header-body {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  min-width: 0;
+}
+:host .icon {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  color: var(--sherpa-content-default-body, #2e2e33);
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+:host(:not([data-icon])) .icon-built-in {
+  display: none;
+}
+:host .icon:not([data-has-content]):not([data-has-built-in]) {
+  display: none;
+}
+:host .title {
+  flex: 1 1 auto;
+  font-size: var(--sherpa-font-base-size, 16px);
+  font-weight: 600;
+  color: var(--sherpa-content-default-heading, #18191a);
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:host .actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex: 0 0 auto;
+}
+:host .drill-down {
+  all: unset;
+  display: none;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: 1px solid var(--sherpa-border-container-default, #d5d5d5);
+  color: var(--sherpa-content-default-body, #2e2e33);
+  cursor: pointer;
+  font-size: 14px;
+  transition: --transition-fast(background), --transition-fast(border-color);
+
+  &:hover {
+    background: var(
+      --sherpa-surface-container-hover,
+      var(--sherpa-surface-container-default, #ffffff)
+    );
+    border-color: var(--sherpa-border-container-default, #d5d5d5);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+:host([data-drill-down]) .drill-down {
+  display: inline-flex;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   BODY VARIANT
+──────────────────────────────────────────────────────────────── */
+
+:host .row {
   grid-template-columns: var(--sherpa-node-socket-gutter, 16px) 1fr var(
       --sherpa-node-socket-gutter,
       16px
@@ -48,23 +177,6 @@
   &:not([data-has-content]) {
     display: none;
   }
-}
-:host .gutter {
-  display: flex;
-  align-items: center;
-  overflow: visible;
-}
-:host .gutter-in {
-  justify-content: flex-start;
-}
-:host .gutter-out {
-  justify-content: flex-end;
-}
-:host .gutter-in ::slotted(*) {
-  transform: translateX(-50%);
-}
-:host .gutter-out ::slotted(*) {
-  transform: translateX(50%);
 }
 :host .row-control {
   display: flex;

@@ -9,8 +9,9 @@ sherpa-node-socket.js — Connection-point primitive for sherpa-node. Pure prese
 | Attribute | Type | Description | Default | Values |
 | --------- | ---- | ----------- | ------- | ------ |
 | `data-direction` | enum | "in" \| "out" | — | — |
-| `data-location` | enum | "header" \| "row" (auto-set by parent slot) | — | — |
-| `data-multi` | boolean | Input accepts multiple connections | — | — |
+| `data-location` | enum | "header" \| "row" (auto-detected from DOM context) | — | — |
+| `data-variant` | enum | "single" \| "multiple" \| "step-single" \| "step-multiple" (replaces data-multi for inputs) | — | — |
+| `data-multi` | boolean | DEPRECATED: use data-variant instead. Input accepts multiple connections | — | — |
 | `data-connected` | boolean | Filled with accent color | — | — |
 | `data-port-name` | string | Port identifier | — | — |
 | `data-status` | enum | "default" \| "true" \| "false" | — | — |
@@ -46,7 +47,7 @@ influenced by setting `data-*` attributes or status on ancestors:
 ### Basic
 
 ```html
-<sherpa-node-socket data-port-name="value"></sherpa-node-socket>
+<sherpa-node-socket></sherpa-node-socket>
 ```
 
 ## Import
