@@ -29,8 +29,7 @@
  * @method focus() — Move focus to the underlying native input.
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { StatusMixin } from '../utilities/status-mixin.js';
+import { SherpaInputChoiceBase } from '../utilities/sherpa-input-choice/sherpa-input-choice-base.js';
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
@@ -40,57 +39,20 @@ interface SherpaInputCheckboxDataset extends DOMStringMap {
   status?: string;
 }
 
-export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
+export class SherpaInputCheckbox extends SherpaInputChoiceBase {
 
   override get dataset(): SherpaInputCheckboxDataset {
     return super.dataset as SherpaInputCheckboxDataset;
   }
 
-  #bound = false;
-
   static override get cssUrl(): string  { return new URL('./sherpa-input-checkbox.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-checkbox.html', import.meta.url).href; }
 
   static override get observedAttributes(): string[] {
-    return [
-      ...super.observedAttributes,
-      'name', 'value', 'checked', 'indeterminate', 'disabled', 'required',
-      'data-label', 'data-description',
-    ];
-  }
-
-  /* ── Lifecycle ─────────────────────────────────────────────────── */
-
-  override onRender() {
-    if (!this.#bound) {
-      const input = this.#input;
-      if (input) input.addEventListener('change', this.#onChange);
-      this.#bound = true;
-    }
-
-    this.#syncLabel();
-    this.#syncDescription();
-    this.#syncNative();
-  }
-
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
-    super.onAttributeChanged(name, oldValue, newValue);
-    switch (name) {
-      case 'data-label':       this.#syncLabel(); break;
-      case 'data-description': this.#syncDescription(); break;
-      case 'name':
-      case 'value':
-      case 'checked':
-      case 'indeterminate':
-      case 'disabled':
-      case 'required':         this.#syncNative(); break;
-    }
+    return [...super.observedAttributes, 'indeterminate'];
   }
 
   /* ── Public API ────────────────────────────────────────────────── */
-
-  get checked()  { return this.hasAttribute('checked'); }
-  set checked(v) { v ? this.setAttribute('checked', '') : this.removeAttribute('checked'); }
 
   get indeterminate()  { return this.hasAttribute('indeterminate'); }
   set indeterminate(v) {
@@ -100,62 +62,25 @@ export class SherpaInputCheckbox extends StatusMixin(SherpaElement) {
   get value()  { return this.getAttribute('value') ?? 'on'; }
   set value(v) { v == null ? this.removeAttribute('value') : this.setAttribute('value', String(v)); }
 
-  get disabled()  { return this.hasAttribute('disabled'); }
-  set disabled(v) { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
+  /* ── Protected ─────────────────────────────────────────────────── */
 
-  get required()  { return this.hasAttribute('required'); }
-  set required(v) { v ? this.setAttribute('required', '') : this.removeAttribute('required'); }
-
-  override focus(opts?: FocusOptions) { this.#input?.focus(opts); }
-
-  /* ── Private ───────────────────────────────────────────────────── */
-
-  get #input(): HTMLInputElement | null { return this.$<HTMLInputElement>('.check-input'); }
-
-  #syncLabel() {
-    const el = this.$('.check-text');
-    if (el) el.textContent = this.dataset["label"] || '';
+  protected override _syncNative() {
+    this._syncNativeBase();
+    const input = this._input;
+    if (input) input.indeterminate = this.indeterminate;
   }
 
-  #syncDescription() {
-    const el = this.$('.check-description');
-    if (el) el.textContent = this.dataset["description"] || '';
-  }
-
-  #syncNative() {
-    const input = this.#input;
+  protected override _handleChange() {
+    const input = this._input;
     if (!input) return;
-
-    input.checked = this.checked;
-    input.indeterminate = this.indeterminate;
-    input.disabled = this.disabled;
-    input.required = this.required;
-
-    const name = this.getAttribute('name');
-    name != null ? input.setAttribute('name', name) : input.removeAttribute('name');
-    input.value = this.value;
-  }
-
-  #onChange = () => {
-    const input = this.#input;
-    if (!input) return;
-
-    // Mirror native state back to host attributes
-    input.checked
-      ? this.setAttribute('checked', '')
-      : this.removeAttribute('checked');
+    this._mirrorChecked();
     // Native toggling clears indeterminate
     if (this.hasAttribute('indeterminate')) this.removeAttribute('indeterminate');
-
     this.dispatchEvent(new CustomEvent('change', {
       bubbles: true, composed: true,
-      detail: {
-        checked: input.checked,
-        value: this.value,
-        indeterminate: input.indeterminate,
-      },
+      detail: { checked: input.checked, value: this.value, indeterminate: input.indeterminate },
     }));
-  };
+  }
 }
 
 customElements.define('sherpa-input-checkbox', SherpaInputCheckbox);

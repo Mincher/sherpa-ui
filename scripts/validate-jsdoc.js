@@ -17,6 +17,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { jsdocLines } from './jsdoc-utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,15 +52,6 @@ function extractJSDoc(filePath) {
  * Split a JSDoc block into an array of cleaned lines
  * (Same approach as extract-component-schemas.js)
  */
-function jsdocLines(block) {
-  return block
-    .replace(/^\/\*\*/, '')
-    .replace(/\*\/$/, '')
-    .split('\n')
-    .map(l => l.replace(/^\s*\*\s?/, ''))
-    .filter(l => l !== undefined);
-}
-
 /**
  * Parse JSDoc tags from cleaned lines
  */

@@ -66,16 +66,17 @@
     >
   </sherpa-filter-bar>
 
-  <div class="chart-layout">
+  <div class="chart-layout" role="img" aria-label="">
+    <span class="chart-sr-summary" aria-live="polite"></span>
     <div class="chart-area">
       <div class="chart-rows"></div>
       <div class="chart-empty">No data</div>
-      <div class="chart-axis">
+      <div class="chart-axis" aria-hidden="true">
         <span class="chart-axis-pad"></span>
         <div class="chart-axis-values"></div>
       </div>
     </div>
-    <div class="chart-legend"></div>
+    <div class="chart-legend" aria-hidden="true"></div>
   </div>
   <sherpa-tooltip></sherpa-tooltip>
 

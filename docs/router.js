@@ -10,8 +10,8 @@
  * so it stays in sync with the MCP server's source of truth.
  */
 
-import { ThemeManager }        from '/components/utilities/theme-manager.js';
-import { COMPONENT_CATEGORIES } from '/components/utilities/component-categories.js';
+import { ThemeManager }        from '/dist/components/utilities/theme-manager.js';
+import { COMPONENT_CATEGORIES } from '/dist/components/utilities/component-categories.js';
 
 // ── Role taxonomy ────────────────────────────────────────────────────────────
 // The 11 roles defined in docs/COMPONENT-CATEGORIES.md. Listed in tier order

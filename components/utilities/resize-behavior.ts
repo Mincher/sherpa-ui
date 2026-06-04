@@ -72,11 +72,7 @@ export function ResizeBehavior<T extends Constructor<HTMLElement>>(
     /* ── Lifecycle ──────────────────────────────────────────────── */
 
     onRender(): void {
-      // Call parent onRender if it exists
-      const parent = Object.getPrototypeOf(this.constructor.prototype);
-      if (parent && typeof parent.onRender === 'function') {
-        parent.onRender.call(this);
-      }
+      (Base.prototype as unknown as { onRender?: () => void }).onRender?.call(this);
       this._injectResizeMenu();
       this.addEventListener("container-increase-cols", this._onIncreaseCols as EventListener);
       this.addEventListener("container-decrease-cols", this._onDecreaseCols as EventListener);

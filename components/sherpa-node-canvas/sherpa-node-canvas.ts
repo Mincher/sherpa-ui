@@ -51,6 +51,7 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import type { Edge, EdgeEndpoint, Viewport } from "../utilities/types.js";
 import "../sherpa-view-header/sherpa-view-header.js";
 import "../sherpa-breadcrumbs/sherpa-breadcrumbs.js";
 
@@ -67,25 +68,6 @@ const BEZIER_SAMPLES = 32;   // polyline segments per edge for hit-test
 interface Point {
   x: number;
   y: number;
-}
-
-/** Reference to a specific port on a specific node. */
-interface EdgeEndpoint {
-  nodeId: string;
-  portName: string;
-}
-
-/** A connection between two ports, rendered as a bezier curve. */
-interface Edge {
-  from: EdgeEndpoint;
-  to: EdgeEndpoint;
-  control: boolean;
-}
-
-interface Viewport {
-  x: number;
-  y: number;
-  zoom: number;
 }
 
 /** Pan gesture anchor: pointer origin + viewport origin. */
@@ -139,6 +121,42 @@ interface DropTarget {
   nodeId: string;
   portName: string;
   side: string;
+}
+
+/** HTMLElement extended with the per-node canvas binding flag. */
+interface SherpaNodeEl extends HTMLElement {
+  __sherpaCanvasBound?: boolean;
+}
+
+/** Colour palette for edge rendering states. */
+interface EdgePalette {
+  default: string;
+  hover: string;
+  selected: string;
+  control: string;
+  true: string;
+  false: string;
+}
+
+/** Serialised canvas state produced by #snapshot and consumed by #restore. */
+interface CanvasSnapshot {
+  nodes: Node[];
+  edges: Edge[];
+  viewport: Viewport;
+}
+
+/** Per-port multi-connection lane info produced by #multiCounts. */
+interface LaneInfo {
+  lanes: Map<number, number>;
+  nodeId: string;
+  portName: string;
+}
+
+/** A <sherpa-node> element with its value-propagation API. */
+interface SherpaNodeElement extends HTMLElement {
+  getOutputValue?(portName: string, incoming: Record<string, unknown>): unknown;
+  setInputValue?(portName: string, value: unknown): void;
+  clearInputValue?(portName: string): void;
 }
 
 export class SherpaNodeCanvas extends SherpaElement {
@@ -208,6 +226,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #gridCtx: CanvasRenderingContext2D | null = null;
   #edgesCtx: CanvasRenderingContext2D | null = null;
   #ro: ResizeObserver | null = null;
+  #colorProbeEl: HTMLSpanElement | null = null;
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
@@ -315,8 +334,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Node selection ───────────────────────────────────────────── */
   getSelectedNode() { return this.#selectedNodeId; }
-  // @ts-expect-error - TODO: Fix type
-  setSelectedNode(nodeId) {
+  setSelectedNode(nodeId: string | null) {
     const next = nodeId || null;
     if (next === this.#selectedNodeId) return;
     if (this.#selectedNodeId) {
@@ -339,8 +357,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    * `sherpa-edge-delete` for each removed edge and `sherpa-node-delete`
    * for the node itself.
    */
-  // @ts-expect-error - TODO: Fix type
-  removeNode(nodeId) {
+  removeNode(nodeId: string) {
     if (!nodeId) return;
     // Locked nodes (e.g. the Trigger / Output boundary nodes inside a
     // group sub-graph) cannot be removed — they represent the
@@ -351,8 +368,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     // splice indices stay valid).
     for (let i = this.#edges.length - 1; i >= 0; i--) {
       const e = this.#edges[i];
-      // @ts-expect-error - TODO: Fix type
-      if (e.from?.nodeId === nodeId || e.to?.nodeId === nodeId) {
+      if (e && (e.from?.nodeId === nodeId || e.to?.nodeId === nodeId)) {
         this.dispatchEvent(new CustomEvent("sherpa-edge-delete", {
           bubbles: true, composed: true,
           detail: { edgeIdx: i },
@@ -374,8 +390,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#schedulePropagate();
     this.#scheduleDraw();
   }
-  // @ts-expect-error - TODO: Fix type
-  setSelectedEdge(idx) {
+  setSelectedEdge(idx: number | null) {
     const next = (typeof idx === "number" && idx >= 0 && idx < this.#edges.length) ? idx : -1;
     if (next === this.#selectedEdgeIdx) return;
     this.#selectedEdgeIdx = next;
@@ -404,14 +419,11 @@ export class SherpaNodeCanvas extends SherpaElement {
   };
 
   #listenToNodes() {
-    const nodes = this.querySelectorAll("sherpa-node");
+    const nodes = this.querySelectorAll<SherpaNodeEl>("sherpa-node");
     for (const n of nodes) {
-      // @ts-expect-error - TODO: Fix type
       if (n.__sherpaCanvasBound) continue;
-      // @ts-expect-error - TODO: Fix type
       n.__sherpaCanvasBound = true;
       const ro = new ResizeObserver(() => {
-        // @ts-expect-error - TODO: Fix type
         this.#invalidatePortCache(n.dataset["nodeId"]);
         this.#scheduleDraw();
       });
@@ -618,8 +630,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       const path = e.composedPath ? e.composedPath() : [];
       for (const n of path) {
         if (n === this) break;
-        // @ts-expect-error - TODO: Fix type
-        if (n?.localName === "sherpa-node") return;
+        if ((n as Element)?.localName === "sherpa-node") return;
       }
       const idx = this.#findEdgeAt(e.clientX, e.clientY);
       if (idx >= 0) {
@@ -796,13 +807,12 @@ export class SherpaNodeCanvas extends SherpaElement {
       el = el.shadowRoot.activeElement;
     }
     if (!el) return false;
-    // @ts-expect-error - TODO: Fix type
-    if (el.isContentEditable) return true;
-    const tag = el.tagName;
+    const hel = el as HTMLElement;
+    if (hel.isContentEditable) return true;
+    const tag = hel.tagName;
     if (tag === "TEXTAREA") return true;
     if (tag === "INPUT") {
-      // @ts-expect-error - TODO: Fix type
-      const type = (el.type || "text").toLowerCase();
+      const type = ((hel as HTMLInputElement).type || "text").toLowerCase();
       // Buttons / boxes don't consume the delete key for text editing.
       return !["button", "checkbox", "radio", "submit", "reset", "image", "file"].includes(type);
     }
@@ -813,10 +823,8 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   #onSocketPointerDown = (e: CustomEvent) => {
     const { direction, portName, originalEvent } = e.detail;
-    // @ts-expect-error - TODO: Fix type
-    const socket = e.composedPath().find((n) => n?.localName === "sherpa-node-socket");
-    // @ts-expect-error - TODO: Fix type
-    const node = socket?.closest("sherpa-node");
+    const socket = e.composedPath().find((n) => (n as Element)?.localName === "sherpa-node-socket") as HTMLElement | undefined;
+    const node = socket?.closest<HTMLElement>("sherpa-node");
     if (!node) return;
     const nodeId = node.dataset["nodeId"];
     if (!nodeId) return;
@@ -826,8 +834,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (direction === "in") {
       const candidate = this.#findEdgeEndingAt(nodeId, portName, originalEvent.clientX, originalEvent.clientY);
       if (candidate) {
-        // @ts-expect-error - TODO: Fix type
-        const edge = this.#edges[candidate.idx];
+        const edge = this.#edges[candidate.idx]!;
         const fixed = edge.from; // we picked up the "to" end
         const w = this.#screenToWorld(originalEvent.clientX, originalEvent.clientY);
         this.#drag = {
@@ -898,25 +905,23 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /** Find an edge whose "to" end matches (nodeId, portName), preferring
    *  the one whose endpoint Y is closest to (clientX, clientY). */
-  // @ts-expect-error - TODO: Fix type
-  #findEdgeEndingAt(nodeId, portName, clientX, clientY) {
+  #findEdgeEndingAt(nodeId: string, portName: string, clientX: number, clientY: number): { idx: number } | null {
     const w = this.#screenToWorld(clientX, clientY);
-    const candidates = [];
+    const candidates: number[] = [];
     for (let i = 0; i < this.#edges.length; i++) {
       const e = this.#edges[i];
-      // @ts-expect-error - TODO: Fix type
-      if (e.to.nodeId === nodeId && e.to.portName === portName) {
+      if (e && e.to.nodeId === nodeId && e.to.portName === portName) {
         candidates.push(i);
       }
     }
     if (!candidates.length) return null;
-    if (candidates.length === 1) return { idx: candidates[0] };
+    if (candidates.length === 1) return { idx: candidates[0]! };
     // Compute spread positions to pick closest by Y.
     const count = candidates.length;
-    let bestIdx = candidates[0];
+    let bestIdx = candidates[0]!;
     let bestD = Infinity;
     for (let lane = 0; lane < count; lane++) {
-      const idx = candidates[lane];
+      const idx = candidates[lane]!;
       const pos = this.#portWorld(nodeId, portName, lane, count);
       if (!pos) continue;
       const d = Math.hypot(pos.x - w.x, pos.y - w.y);
@@ -927,8 +932,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /* ── Edge hit-testing ──────────────────────────────────────────── */
 
-  // @ts-expect-error - TODO: Fix type
-  #findEdgeAt(clientX, clientY) {
+  #findEdgeAt(clientX: number, clientY: number): number {
     const r = this.#bodyRect();
     const sx = clientX - r.left;
     const sy = clientY - r.top;
@@ -938,8 +942,9 @@ export class SherpaNodeCanvas extends SherpaElement {
       const pts = this.#edgeScreenSamples(i);
       if (!pts) continue;
       for (let k = 1; k < pts.length; k++) {
-        // @ts-expect-error - TODO: Fix type
-        const d = pointSegDist(sx, sy, pts[k - 1].x, pts[k - 1].y, pts[k].x, pts[k].y);
+        const prev = pts[k - 1]!;
+        const curr = pts[k]!;
+        const d = pointSegDist(sx, sy, prev.x, prev.y, curr.x, curr.y);
         if (d < bestD) { bestD = d; best = i; }
       }
     }
@@ -947,8 +952,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   }
 
   /** Return Array<{x,y}> of polyline samples for an edge in screen space. */
-  // @ts-expect-error - TODO: Fix type
-  #edgeScreenSamples(edgeIdx) {
+  #edgeScreenSamples(edgeIdx: number): Point[] | null {
     const edge = this.#edges[edgeIdx];
     if (!edge) return null;
     const counts = this.#multiCounts();
@@ -984,10 +988,9 @@ export class SherpaNodeCanvas extends SherpaElement {
    *   {lanes: Map<edgeIdx, lane>, multi:bool}
    * Also writes data-connection-count onto the corresponding socket.
    */
-  #multiCounts() {
-    const map = new Map(); // key → {lanes:Map<edgeIdx,lane>}
-    // @ts-expect-error - TODO: Fix type
-    const touch = (nodeId, portName, edgeIdx) => {
+  #multiCounts(): Map<string, LaneInfo> {
+    const map = new Map<string, LaneInfo>();
+    const touch = (nodeId: string, portName: string, edgeIdx: number) => {
       const k = nodeId + "\0" + portName;
       let entry = map.get(k);
       if (!entry) {
@@ -998,10 +1001,9 @@ export class SherpaNodeCanvas extends SherpaElement {
       entry.lanes.set(edgeIdx, nextLane);
     };
     for (let i = 0; i < this.#edges.length; i++) {
-      // @ts-expect-error - TODO: Fix type
-      touch(this.#edges[i].from.nodeId, this.#edges[i].from.portName, i);
-      // @ts-expect-error - TODO: Fix type
-      touch(this.#edges[i].to.nodeId,   this.#edges[i].to.portName,   i);
+      const e = this.#edges[i]!;
+      touch(e.from.nodeId, e.from.portName, i);
+      touch(e.to.nodeId,   e.to.portName,   i);
     }
     // Mirror count to sockets.
     const seen = new Set();
@@ -1040,8 +1042,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #syncGroupFlowIndicators() {
     const groups = this.querySelectorAll('sherpa-node[data-kind="group"]');
     if (!groups.length) return;
-    for (const group of groups) {
-      // @ts-expect-error - TODO: Fix type
+    for (const group of groups as NodeListOf<HTMLElement>) {
       const id = group.dataset["nodeId"];
       const snap = id ? this.#subgraphs.get(id) : null;
       const sock = group.querySelector('sherpa-node-socket[data-direction="in"]');
@@ -1055,15 +1056,15 @@ export class SherpaNodeCanvas extends SherpaElement {
    * BFS the cloned subgraph snapshot for any directed source→output
    * path. Returns true on first hit.
    */
-  // @ts-expect-error - TODO: Fix type
-  #subgraphHasSourceToOutput(snap) {
-    const nodes = snap?.nodes;
-    const edges = snap?.edges;
+  #subgraphHasSourceToOutput(snap: unknown): boolean {
+    const s = snap as CanvasSnapshot | null | undefined;
+    const nodes = s?.nodes;
+    const edges = s?.edges;
     if (!nodes?.length || !edges?.length) return false;
     const kindById = new Map();
-    for (const n of nodes) {
-      const nid = n?.dataset?.nodeId;
-      const kind = n?.dataset?.kind;
+    for (const n of nodes as HTMLElement[]) {
+      const nid = n?.dataset?.["nodeId"];
+      const kind = n?.dataset?.["kind"];
       if (nid) kindById.set(nid, kind);
     }
     // Build forward adjacency: from.nodeId → [to.nodeId, ...].
@@ -1099,8 +1100,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   #applyTransform() {
     if (!this.els.surface) return;
     const { x, y, zoom } = this.#viewport;
-    // @ts-expect-error - TODO: Fix type
-    this.els.surface.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${zoom})`;
+    (this.els.surface as HTMLElement).style.transform = `translate3d(${x}px, ${y}px, 0) scale(${zoom})`;
   }
 
   #scheduleDraw() {
@@ -1116,7 +1116,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   // Tracks every input we've driven so we can clear those that are no
   // longer connected. Keyed by `${nodeId}|${portName}`.
-  #drivenInputs = new Set();
+  #drivenInputs = new Set<string>();
   #propagatePending = false;
 
   #onNodeValueChange = () => { this.#schedulePropagate(); };
@@ -1138,15 +1138,14 @@ export class SherpaNodeCanvas extends SherpaElement {
    */
   #propagateValues() {
     // 1. Build node lookup once.
-    const nodeMap = new Map();
-    for (const n of this.querySelectorAll("sherpa-node")) {
-      // @ts-expect-error - TODO: Fix type
+    const nodeMap = new Map<string, SherpaNodeElement>();
+    for (const n of this.querySelectorAll<SherpaNodeElement>("sherpa-node")) {
       const id = n.dataset["nodeId"];
       if (id) nodeMap.set(id, n);
     }
     // 2. Group edges by target nodeId for fast lookup of incoming values.
     const incomingByNode = new Map();   // nodeId → Map<portName, value | value[]>
-    const targetKeys = new Set();       // "nodeId|portName" of every connected input
+    const targetKeys = new Set<string>();       // "nodeId|portName" of every connected input
     for (const e of this.#edges) {
       if (!e?.from || !e?.to) continue;
       targetKeys.add(`${e.to.nodeId}|${e.to.portName}`);
@@ -1181,7 +1180,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       }
 
       // Apply incoming values to target inputs.
-      const nextDriven = new Set();
+      const nextDriven = new Set<string>();
       for (const [nodeId, bucket] of incomingByNode) {
         const node = nodeMap.get(nodeId);
         if (!node) continue;
@@ -1206,18 +1205,15 @@ export class SherpaNodeCanvas extends SherpaElement {
     // 4. Clear inputs we previously drove that are no longer connected.
     for (const key of this.#drivenInputs) {
       if (targetKeys.has(key)) continue;
-      // @ts-expect-error - TODO: Fix type
-      const [nodeId, port] = key.split("|");
+      const [nodeId, port] = key.split("|") as [string, string];
       nodeMap.get(nodeId)?.clearInputValue?.(port);
     }
     this.#drivenInputs = targetKeys;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #asPlainIncoming(bucket) {
+  #asPlainIncoming(bucket: Map<string, unknown> | null | undefined): Record<string, unknown> {
     if (!bucket) return {};
-    const out = {};
-    // @ts-expect-error - TODO: Fix type
+    const out: Record<string, unknown> = {};
     for (const [k, v] of bucket) out[k] = v;
     return out;
   }
@@ -1283,16 +1279,12 @@ export class SherpaNodeCanvas extends SherpaElement {
    * for our tokens is still a `var(...)` chain — unusable as a
    * canvas strokeStyle. The probe forces the cascade to resolve.
    */
-  // @ts-expect-error - TODO: Fix type
-  #resolveColor(varName, fallback) {
-    // @ts-expect-error - TODO: Fix type
+  #resolveColor(varName: string, fallback: string): string {
     let probe = this.#colorProbeEl;
     if (!probe) {
       probe = document.createElement("span");
       probe.className = "color-probe";
-      // @ts-expect-error - TODO: Fix type
-      this.shadowRoot.appendChild(probe);
-      // @ts-expect-error - TODO: Fix type
+      this.shadow.appendChild(probe);
       this.#colorProbeEl = probe;
     }
     probe.style.color = `var(${varName}, ${fallback})`;
@@ -1379,19 +1371,17 @@ export class SherpaNodeCanvas extends SherpaElement {
    * Status edges (true/false outputs) and control edges always win over
    * the default colour, but hover/selected colours still override them.
    */
-  // @ts-expect-error - TODO: Fix type
-  #edgeColor(edgeIdx, palette, state) {
+  #edgeColor(edgeIdx: number, palette: EdgePalette, state: string): string {
     const edge = this.#edges[edgeIdx];
     if (!edge) return palette.default;
     // True/false outputs carry their semantic colour through every
     // state — the connector's identity wins over hover/selected.
     // (Hover/selected still drive stroke width.)
     const node = this.#nodeById(edge.from.nodeId);
-    const sock = node?.querySelector(
+    const sock = node?.querySelector<HTMLElement>(
       `sherpa-node-socket[data-port-name="${CSS.escape(edge.from.portName)}"]`
     );
-    // @ts-expect-error - TODO: Fix type
-    const status = sock?.dataset?.status;
+    const status = sock?.dataset?.["status"];
     if (status === "true")  return palette.true;
     if (status === "false") return palette.false;
     if (state === "hover")    return palette.hover;
@@ -1400,8 +1390,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     return palette.default;
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #strokeEdge(ctx, edgeIdx, counts, color, width) {
+  #strokeEdge(ctx: CanvasRenderingContext2D, edgeIdx: number, counts: Map<string, LaneInfo>, color: string, width: number) {
     const edge = this.#edges[edgeIdx];
     if (!edge) return;
     const fromKey = edge.from.nodeId + "\0" + edge.from.portName;
@@ -1443,15 +1432,14 @@ export class SherpaNodeCanvas extends SherpaElement {
    *   bubbles: true, composed: true
    *   detail: { parentId, label, depth, cached:boolean }
    */
-  // @ts-expect-error - TODO: Fix type
-  pushSubgraph(parentId, label) {
+  pushSubgraph(parentId: string, label?: string) {
     if (!parentId) return;
     const snapshot = this.#snapshot();
     const resolvedLabel = label ?? this.#labelForNode(parentId) ?? parentId;
     this.#drillStack.push({ parentId, label: resolvedLabel, snapshot });
     this.#clearFrame();
     const cached = this.#subgraphs.get(parentId);
-    if (cached) this.#restore(cached);
+    if (cached) this.#restore(cached as CanvasSnapshot);
     this.#syncHeader();
     this.dispatchEvent(new CustomEvent("sherpa-canvas-subgraph-enter", {
       bubbles: true, composed: true,
@@ -1471,17 +1459,15 @@ export class SherpaNodeCanvas extends SherpaElement {
   popSubgraph() {
     if (!this.#drillStack.length) return null;
     const frame = this.#drillStack.pop();
+    if (!frame) return null;
     // Cache whatever the user did inside the sub-graph so the next
     // pushSubgraph(sameParent) restores it.
-    // @ts-expect-error - TODO: Fix type
     this.#subgraphs.set(frame.parentId, this.#snapshot());
     this.#clearFrame();
-    // @ts-expect-error - TODO: Fix type
-    this.#restore(frame.snapshot);
+    this.#restore(frame.snapshot as CanvasSnapshot);
     this.#syncHeader();
     this.dispatchEvent(new CustomEvent("sherpa-canvas-subgraph-exit", {
       bubbles: true, composed: true,
-      // @ts-expect-error - TODO: Fix type
       detail: { parentId: frame.parentId, label: frame.label, depth: this.#drillStack.length },
     }));
     return frame;
@@ -1489,8 +1475,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
   /** Drop any cached child snapshot for the given parent (e.g. after
    *  the parent group node is deleted). */
-  // @ts-expect-error - TODO: Fix type
-  forgetSubgraph(parentId) {
+  forgetSubgraph(parentId: string) {
     if (!parentId) return;
     this.#subgraphs.delete(parentId);
   }
@@ -1519,8 +1504,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    * Snapshots are populated on popSubgraph(parentId) and consulted on
    * the next pushSubgraph(parentId).
    */
-  // @ts-expect-error - TODO: Fix type
-  getSubgraphCache(parentId) {
+  getSubgraphCache(parentId: string): unknown {
     if (!parentId) return null;
     return this.#subgraphs.get(parentId) || null;
   }
@@ -1534,8 +1518,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    * Snapshot shape — `nodes` must be detached <sherpa-node> elements
    * ready to be appended; `edges` and `viewport` are plain JSON.
    */
-  // @ts-expect-error - TODO: Fix type
-  setSubgraphCache(parentId, snapshot) {
+  setSubgraphCache(parentId: string, snapshot: unknown) {
     if (!parentId) return;
     if (!snapshot) {
       this.#subgraphs.delete(parentId);
@@ -1552,8 +1535,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   /** Convenience: top frame, or null. */
   getCurrentSubgraph() {
     if (!this.#drillStack.length) return null;
-    const top = this.#drillStack[this.#drillStack.length - 1];
-    // @ts-expect-error - TODO: Fix type
+    const top = this.#drillStack[this.#drillStack.length - 1]!;
     return { parentId: top.parentId, label: top.label };
   }
 
@@ -1577,21 +1559,17 @@ export class SherpaNodeCanvas extends SherpaElement {
     const liveNodes = [...this.children].filter((el) => el.tagName?.toLowerCase() === "sherpa-node");
     const cloned = liveNodes.map((node) => {
       const liveControls = node.querySelectorAll("input, select, textarea");
-      const clone = node.cloneNode(true);
-      // @ts-expect-error - TODO: Fix type
-      const cloneControls = clone.querySelectorAll("input, select, textarea");
-      for (let i = 0; i < liveControls.length && i < cloneControls.length; i++) {
-        const src = liveControls[i];
-        const tgt = cloneControls[i];
-        // @ts-expect-error - TODO: Fix type
+      const clone = node.cloneNode(true) as Element;
+      const cloneControls = Array.from(clone.querySelectorAll<HTMLInputElement>("input, select, textarea"));
+      const liveArr = Array.from(liveControls) as HTMLInputElement[];
+      for (let i = 0; i < liveArr.length && i < cloneControls.length; i++) {
+        const src = liveArr[i]!;
+        const tgt = cloneControls[i]!;
         if (src.type === "checkbox" || src.type === "radio") {
-          // @ts-expect-error - TODO: Fix type
           if (src.checked) tgt.setAttribute("checked", "");
           else tgt.removeAttribute("checked");
         } else {
-          // @ts-expect-error - TODO: Fix type
           tgt.setAttribute("value", src.value);
-          // @ts-expect-error - TODO: Fix type
           if (tgt.tagName === "TEXTAREA") tgt.textContent = src.value;
         }
       }
@@ -1613,16 +1591,14 @@ export class SherpaNodeCanvas extends SherpaElement {
   }
 
   /** Inverse of #snapshot: append cloned nodes, restore edges + viewport. */
-  // @ts-expect-error - TODO: Fix type
-  #restore(snap) {
+  #restore(snap: CanvasSnapshot | null | undefined) {
     if (!snap) return;
     for (const n of snap.nodes) this.appendChild(n);
     if (snap.edges) this.setEdges(snap.edges);
     if (snap.viewport) this.setViewport(snap.viewport);
   }
 
-  // @ts-expect-error - TODO: Fix type
-  #labelForNode(nodeId) {
+  #labelForNode(nodeId: string): string | null {
     const node = this.#nodeById?.(nodeId) ?? this.querySelector(`sherpa-node[data-node-id="${nodeId}"]`);
     if (!node) return null;
     // Prefer the slotted [slot="title"] text on the node header.
@@ -1646,8 +1622,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     else header.removeAttribute("data-export-title");
     // Heading: top of stack label, falling back to data-heading at root.
     if (stack.length) {
-      // @ts-expect-error - TODO: Fix type
-      header.setAttribute("data-label", stack[stack.length - 1].label);
+      header.setAttribute("data-label", stack[stack.length - 1]!.label);
       header.setAttribute("data-back-button", "true");
     } else {
       if (rootHeading) header.setAttribute("data-label", rootHeading);
@@ -1671,8 +1646,7 @@ export class SherpaNodeCanvas extends SherpaElement {
       const trail = [];
       if (rootHeading) trail.push({ label: rootHeading, depth: 0 });
       for (let i = 0; i < stack.length - 1; i++) {
-        // @ts-expect-error - TODO: Fix type
-        trail.push({ label: stack[i].label, depth: i + 1 });
+        trail.push({ label: stack[i]!.label, depth: i + 1 });
       }
       for (const { label, depth: targetDepth } of trail) {
         const a = document.createElement("a");
@@ -1681,8 +1655,7 @@ export class SherpaNodeCanvas extends SherpaElement {
         a.dataset["targetDepth"] = String(targetDepth);
         crumbs.appendChild(a);
       }
-      // @ts-expect-error - TODO: Fix type
-      crumbs.addEventListener("breadcrumb-click", this.#onBreadcrumbClick);
+      crumbs.addEventListener("breadcrumb-click", this.#onBreadcrumbClick as EventListener);
       header.appendChild(crumbs);
     }
   }
@@ -1727,8 +1700,7 @@ export class SherpaNodeCanvas extends SherpaElement {
 
 /* ── Geometry helpers ─────────────────────────────────────────────── */
 
-// @ts-expect-error - TODO: Fix type
-function cubic(t, x0, y0, x1, y1, x2, y2, x3, y3) {
+function cubic(t: number, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): Point {
   const u = 1 - t;
   const uu = u * u, uuu = uu * u;
   const tt = t * t, ttt = tt * t;
@@ -1738,19 +1710,13 @@ function cubic(t, x0, y0, x1, y1, x2, y2, x3, y3) {
   };
 }
 
-// @ts-expect-error - TODO: Fix type
-function pointSegDist(px, py, x0, y0, x1, y1) {
+function pointSegDist(px: number, py: number, x0: number, y0: number, x1: number, y1: number): number {
   const dx = x1 - x0, dy = y1 - y0;
   const len2 = dx * dx + dy * dy;
   let t = len2 ? ((px - x0) * dx + (py - y0) * dy) / len2 : 0;
   t = Math.max(0, Math.min(1, t));
   const cx = x0 + t * dx, cy = y0 + t * dy;
   return Math.hypot(px - cx, py - cy);
-}
-
-// @ts-expect-error - TODO: Fix type
-function edgeColor(edge, base, control) {
-  return edge.control ? control : base;
 }
 
 if (!customElements.get("sherpa-node-canvas")) {

@@ -451,7 +451,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     ) {
       // Skip heavy re-render when the mixin is batch-setting attrs
       // (the mixin calls #aggregate() → setData() afterward).
-      if (this._suppressAttrReaction) return;
+      if (this.isAttrReactionSuppressed) return;
       // Reset expanded groups when grouping field changes
       if (name === "data-segment-field") {
         this.#expandedGroups.clear();

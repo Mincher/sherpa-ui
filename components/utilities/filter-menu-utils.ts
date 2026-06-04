@@ -41,3 +41,23 @@ export function injectFilterMenu(host: FilterMenuHost): HTMLTemplateElement | nu
 export function removeFilterMenu(tpl: HTMLTemplateElement | null) {
   tpl?.remove();
 }
+
+/** Toggle the `data-filters` attribute on the host element. */
+export function toggleFilters(host: Element): void {
+  host.toggleAttribute('data-filters');
+}
+
+/** Toggle the `data-hide-legend` attribute on the host element. */
+export function toggleLegend(host: Element): void {
+  host.toggleAttribute('data-hide-legend');
+}
+
+/** Sync checked state of filter/legend menu items when the overflow menu opens. */
+export function syncFilterMenuItems(e: CustomEvent, host: Element): void {
+  const menu = e.detail?.menu;
+  if (!menu) return;
+  const filterItem = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
+  if (filterItem) filterItem.toggleAttribute('checked', host.hasAttribute('data-filters'));
+  const legendItem = menu.querySelector('sherpa-menu-item[data-event="toggle-legend"]');
+  if (legendItem) legendItem.toggleAttribute('checked', !host.hasAttribute('data-hide-legend'));
+}

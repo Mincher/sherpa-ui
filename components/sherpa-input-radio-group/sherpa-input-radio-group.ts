@@ -28,8 +28,7 @@
  * @method clear()       — Deselect all.
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { StatusMixin } from '../utilities/status-mixin.js';
+import { SherpaInputGroupBase } from '../utilities/sherpa-input-group/sherpa-input-group-base.js';
 import '../sherpa-input-radio/sherpa-input-radio.js';
 
 /** Structural type for the slotted <sherpa-input-radio> children. */
@@ -52,13 +51,11 @@ interface SherpaInputRadioGroupDataset extends DOMStringMap {
 
 let _gid = 0;
 
-export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
+export class SherpaInputRadioGroup extends SherpaInputGroupBase {
 
   override get dataset(): SherpaInputRadioGroupDataset {
     return super.dataset as SherpaInputRadioGroupDataset;
   }
-
-  #bound = false;
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-radio-group.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-radio-group.html', import.meta.url).href; }
@@ -74,33 +71,24 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
   override onRender(): void {
-    if (!this.#bound) {
+    if (!this._bound) {
       this.addEventListener('change', this.#onChildChange);
-      this.#bound = true;
+      this._bound = true;
     }
 
     if (!this.getAttribute('name')) {
       this.setAttribute('name', `sherpa-radio-group-${++_gid}`);
     }
-    this.#syncLegend();
-    this.#syncDescription();
-    this.#syncHelper();
-    this.#stampOptions();
-    this.#syncValue();
-    this.#syncDisabled();
+    this._syncLegend();
+    this._syncDescription();
+    this._syncHelper();
+    this._stampOptions();
+    this._syncValue();
+    this._syncDisabled();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
-    super.onAttributeChanged(name, oldValue, newValue);
-    switch (name) {
-      case 'data-label':       this.#syncLegend(); break;
-      case 'data-description': this.#syncDescription(); break;
-      case 'data-helper':      this.#syncHelper(); break;
-      case 'data-options':     this.#stampOptions(); this.#syncValue(); break;
-      case 'data-value':       this.#syncValue(); break;
-      case 'disabled':         this.#syncDisabled(); break;
-      case 'name':             this.#cascadeName(); break;
-    }
+  protected override _onExtraAttributeChanged(name: string) {
+    if (name === 'name') this.#cascadeName();
   }
 
   /* ── Public API ────────────────────────────────────────────────── */
@@ -123,20 +111,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
 
   /* ── Private ───────────────────────────────────────────────────── */
 
-  #syncLegend() {
-    const el = this.$('.group-label');
-    if (el) el.textContent = this.dataset["label"] || '';
-  }
-  #syncDescription() {
-    const el = this.$('.group-description');
-    if (el) el.textContent = this.dataset["description"] || '';
-  }
-  #syncHelper() {
-    const el = this.$('.group-helper');
-    if (el) el.textContent = this.dataset["helper"] || '';
-  }
-
-  #stampOptions() {
+  protected override _stampOptions() {
     const raw = this.dataset["options"];
     if (!raw) return;
     let opts;
@@ -169,7 +144,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
     }
   }
 
-  #syncValue() {
+  protected override _syncValue() {
     const target = this.dataset["value"];
     for (const el of this.querySelectorAll<RadioChild>('sherpa-input-radio')) {
       const should = target != null && String(el.value) === String(target);
@@ -179,7 +154,7 @@ export class SherpaInputRadioGroup extends StatusMixin(SherpaElement) {
     }
   }
 
-  #syncDisabled() {
+  protected override _syncDisabled() {
     const disable = this.hasAttribute('disabled');
     for (const el of this.querySelectorAll('sherpa-input-radio')) {
       disable ? el.setAttribute('disabled', '') : el.removeAttribute('disabled');

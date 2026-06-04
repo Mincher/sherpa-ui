@@ -120,15 +120,15 @@ export function cached<T extends Element = Element>(
     descriptor.get = function (this: any) {
       const cache = getCache(this);
 
-      // Return cached value if exists
-      if (cacheKey in cache) {
+      // Return cached value if found (skip null — shadow DOM may not be ready yet)
+      if (cacheKey in cache && cache[cacheKey] != null) {
         return cache[cacheKey];
       }
 
       // Query and cache
       const result = all ? this.$$(selector) : this.$(selector);
 
-      cache[cacheKey] = result;
+      if (result != null) cache[cacheKey] = result;
       return result;
     };
 
@@ -180,15 +180,15 @@ export function defineCachedElements<M extends ElementCacheMap>(
 
     Object.defineProperty(result, key, {
       get() {
-        // Return cached value if exists
-        if (cacheKey in cache) {
+        // Return cached value if found (skip null — shadow DOM may not be ready yet)
+        if (cacheKey in cache && cache[cacheKey] != null) {
           return cache[cacheKey];
         }
 
         // Query and cache
         const el = all ? target.$$(selector) : target.$(selector);
 
-        cache[cacheKey] = el;
+        if (el != null) cache[cacheKey] = el;
 
         // Enforce required constraint
         if (required && !el) {

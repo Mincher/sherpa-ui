@@ -104,7 +104,7 @@ function loadWrapperTemplate(): Promise<HTMLTemplateElement> {
 
 /* ── Component ──────────────────────────────────────────────────── */
 
-export class SherpaInputBase extends StatusMixin(SherpaElement) {
+export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement) {
   /* ── Observed attributes ────────────────────────────────────── */
 
   static override get observedAttributes(): string[] {
@@ -233,6 +233,49 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
   /** Called on disconnect. Override for cleanup. */
   onInputDisconnect(): void {}
 
+  /* ── Popup-close helpers (opt-in for picker inputs) ─────────── */
+
+  /**
+   * Called when a click outside the element or Escape is detected.
+   * Override in popup inputs (date, time, date-range) to close the picker.
+   */
+  protected _popupClose(): void {}
+
+  /**
+   * Called when the trigger button is clicked while the popup is closed.
+   * Override in popup inputs to open the picker.
+   */
+  protected _popupOpen(): void {}
+
+  /**
+   * Wire a trigger element to toggle the popup on click.
+   * Handles stopPropagation and the disabled/readonly guard automatically.
+   */
+  protected _wireTriggerToggle(trigger: HTMLElement | null): void {
+    trigger?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.hasAttribute('disabled') || this.hasAttribute('readonly')) return;
+      this.hasAttribute('data-open') ? this._popupClose() : this._popupOpen();
+    });
+  }
+
+  readonly #_popupClick = (e: Event) => {
+    if (!e.composedPath().includes(this)) this._popupClose();
+  };
+  readonly #_popupKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') this._popupClose();
+  };
+
+  protected _attachPopupListeners(): void {
+    document.addEventListener('click',   this.#_popupClick);
+    document.addEventListener('keydown', this.#_popupKey);
+  }
+
+  protected _detachPopupListeners(): void {
+    document.removeEventListener('click',   this.#_popupClick);
+    document.removeEventListener('keydown', this.#_popupKey);
+  }
+
   /** Return the primary native <input> or <select> element. */
   getInputElement(): NativeInputElement | null {
     return this.$<NativeInputElement>('.input-field');
@@ -280,14 +323,15 @@ export class SherpaInputBase extends StatusMixin(SherpaElement) {
     this.dataset["layout"] = v;
   }
 
-  get value(): string {
+  get value(): TValue {
     const el = this.getInputElement();
-    return el ? el.value : this.getAttribute("value") || "";
+    return (el ? el.value : this.getAttribute("value") || "") as TValue;
   }
-  set value(v: string) {
+  set value(v: TValue) {
     const el = this.getInputElement();
-    if (el) el.value = v ?? "";
-    this.setAttribute("value", v ?? "");
+    const str = String(v) ?? "";
+    if (el) el.value = str;
+    this.setAttribute("value", str);
   }
 
   get name(): string {

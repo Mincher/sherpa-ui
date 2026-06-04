@@ -52,7 +52,7 @@ interface SherpaInputTagDataset extends DOMStringMap {
   maxTags?: string;
 }
 
-export class SherpaInputTag extends SherpaInputBase {
+export class SherpaInputTag extends SherpaInputBase<string[]> {
 
   override get dataset(): SherpaInputTagDataset {
     return super.dataset as SherpaInputTagDataset;
@@ -100,9 +100,7 @@ export class SherpaInputTag extends SherpaInputBase {
 
   // Intentional API divergence: this multi-value control exposes value as
   // a string[] (the tag list), unlike the base's single string value.
-  // @ts-expect-error - value is string[] here, not the base's string
   override get value(): string[] { return this.#readValue(); }
-  // @ts-expect-error - value is string[] here, not the base's string
   override set value(arr: string[]) {
     const list = Array.isArray(arr) ? arr.map(String) : [];
     this.dataset["value"] = JSON.stringify(list);
@@ -124,8 +122,10 @@ export class SherpaInputTag extends SherpaInputBase {
 
   // Intentional API divergence: shadows Element.remove() to remove a tag
   // from the value list rather than detaching the element.
-  // @ts-expect-error - remove(tag) intentionally overrides Element.remove()
-  remove(tag: string): boolean {
+  override remove(): void;
+  override remove(tag: string): boolean;
+  override remove(tag?: string): boolean | void {
+    if (tag === undefined) return;
     const current = this.#readValue();
     const i = current.indexOf(String(tag));
     if (i < 0) return false;

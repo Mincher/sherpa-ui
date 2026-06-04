@@ -22,9 +22,9 @@
 
 import { ContentAttributesMixin } from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { formatCompact, formatFieldName, cleanTitleBase } from '../utilities/format-utils.js';
-import { getSegmentField, isSegmentEnabled, getActiveSort } from '../utilities/chart-utils.js';
-import { injectFilterMenu } from '../utilities/filter-menu-utils.js';
+import { formatCompact } from '../utilities/format-utils.js';
+import { getSegmentField, isSegmentEnabled, getActiveSort, applySegmentBy, syncChartTitle } from '../utilities/chart-utils.js';
+import { injectFilterMenu, toggleFilters, toggleLegend, syncFilterMenuItems } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-filter-bar/sherpa-filter-bar.js';
 
@@ -122,19 +122,24 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
-      case 'data-title':          this.#syncTitle(); break;
+      case 'data-title': {
+        this.#syncTitle();
+        const layout = this.$<HTMLElement>('.chart-layout');
+        if (layout) layout.setAttribute('aria-label', newValue || 'Donut chart');
+        break;
+      }
       case 'data-inner-label':
       case 'data-inner-sublabel': this.#syncCentreLabel(); break;
       case 'data-segment-field':
       case 'data-segment-mode':
         this.#syncTitle();
-        if (this._suppressAttrReaction) break;
+        if (this.isAttrReactionSuppressed) break;
         // External attribute change — full re-aggregate needed
         if (this.#contentData) this.reAggregate();
         break;
       case 'data-sort-field':
       case 'data-sort-direction':
-        if (this._suppressAttrReaction) break;
+        if (this.isAttrReactionSuppressed) break;
         // Local re-sort of existing data
         if (this.#contentData) {
           this.#transformContentData();
@@ -170,22 +175,8 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       return;
     }
 
-    // Content config from ContentAttributesMixin (legacy)
-    const explicitSegmentBy =
-      data && Object.prototype.hasOwnProperty.call(data, "segmentBy");
     this.#contentData = data;
-
-    // Apply segmentBy from config
-    if (explicitSegmentBy) {
-      if (data.segmentBy) {
-        this.setAttribute("data-segment-field", data.segmentBy);
-        this.setAttribute("data-segment-mode", "on");
-      } else {
-        this.removeAttribute("data-segment-field");
-        this.removeAttribute("data-segment-mode");
-      }
-    }
-
+    applySegmentBy(this, data);
     this.#transformContentData();
     this.#render();
   }
@@ -280,18 +271,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: sync ────────────────────────────────────────────── */
 
-  #syncTitle() {
-    if (this.els.title) {
-      const entity = cleanTitleBase(this.dataset["title"] || '');
-      const segMode = this.getAttribute('data-segment-mode');
-      const groupField = this.getAttribute('data-segment-field')
-        || this.getAttribute('data-category');
-      const hasActiveGroup = segMode !== 'off' && !!groupField;
-      this.els.title.textContent = hasActiveGroup
-        ? `${entity} by ${formatFieldName(groupField)}`
-        : `All ${entity}`;
-    }
-  }
+  #syncTitle() { syncChartTitle(this.els.title ?? null, this); }
 
   #syncCentreLabel() {
     if (this.els.centreValue) {
@@ -363,30 +343,28 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       if (val) val.textContent = d.value != null ? d.value.toLocaleString() : '';
       this.els.legend?.appendChild(item);
     });
+
+    this.#updateAriaLabel(displayData, total);
+  }
+
+  #updateAriaLabel(segments: DonutDatum[], total: number) {
+    const title = this.getAttribute('data-title') || 'Donut chart';
+    const layout = this.$<HTMLElement>('.chart-layout');
+    const summary = this.$<HTMLElement>('.chart-sr-summary');
+    if (layout) layout.setAttribute('aria-label', title);
+    if (summary && segments.length) {
+      const topSegment = [...segments].sort((a, b) => b.value - a.value)[0];
+      const topLabel = topSegment?.label ?? '';
+      const topPct = total > 0 ? Math.round(((topSegment?.value ?? 0) / total) * 100) : 0;
+      summary.textContent = `${title}. ${segments.length} segments. Largest: ${topLabel} at ${topPct}%.`;
+    }
   }
 
   /* ── Filter menu ─────────────────────────────────────────────────────── */
 
-  #onToggleFilters = () => {
-    this.toggleAttribute('data-filters');
-  };
-
-  #onToggleLegend = () => {
-    this.toggleAttribute('data-hide-legend');
-  };
-
-  #onMenuPopulate = (e: CustomEvent) => {
-    const menu = e.detail?.menu;
-    if (!menu) return;
-    const filterItem = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
-    if (filterItem) {
-      filterItem.toggleAttribute('checked', this.hasAttribute('data-filters'));
-    }
-    const legendItem = menu.querySelector('sherpa-menu-item[data-event="toggle-legend"]');
-    if (legendItem) {
-      legendItem.toggleAttribute('checked', !this.hasAttribute('data-hide-legend'));
-    }
-  };
+  #onToggleFilters = () => toggleFilters(this);
+  #onToggleLegend  = () => toggleLegend(this);
+  #onMenuPopulate  = (e: CustomEvent) => syncFilterMenuItems(e, this);
 }
 
 customElements.define('sherpa-donut-chart', SherpaDonutChart);

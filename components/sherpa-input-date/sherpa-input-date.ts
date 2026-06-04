@@ -78,14 +78,8 @@ export class SherpaInputDate extends SherpaInputBase {
   /** Month / year currently displayed in the calendar. */
   #viewDate = new Date();
 
-  /** Bound handler stored for removeEventListener. */
-  #onDocClick = (e: Event) => {
-    if (!e.composedPath().includes(this)) this.#close();
-  };
-
-  #onDocKey = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') this.#close();
-  };
+  protected override _popupClose() { this.#close(); }
+  protected override _popupOpen()  { this.#open(); }
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
@@ -139,23 +133,11 @@ export class SherpaInputDate extends SherpaInputBase {
       this.#renderCalendar();
     });
 
-    // Calendar-icon button toggles the popup
-    this.els.trigger?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (this.hasAttribute('disabled') || this.hasAttribute('readonly')) return;
-      this.hasAttribute('data-open') ? this.#close() : this.#open();
-    });
+    this._wireTriggerToggle(this.els.trigger ?? null);
   }
 
-  override onInputConnect(): void {
-    document.addEventListener('click',   this.#onDocClick);
-    document.addEventListener('keydown', this.#onDocKey);
-  }
-
-  override onInputDisconnect(): void {
-    document.removeEventListener('click',   this.#onDocClick);
-    document.removeEventListener('keydown', this.#onDocKey);
-  }
+  override onInputConnect(): void    { this._attachPopupListeners(); }
+  override onInputDisconnect(): void { this._detachPopupListeners(); }
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name, oldValue, newValue);

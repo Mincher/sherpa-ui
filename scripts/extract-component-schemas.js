@@ -15,6 +15,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { jsdocLines, prettyLabel } from "./jsdoc-utils.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -141,14 +142,6 @@ function tierOf(role) {
   return ROLE_TIERS[role] ?? null;
 }
 
-function prettyLabel(tag) {
-  return tag
-    .replace(/^sherpa-/, "")
-    .split("-")
-    .map((p) => p[0].toUpperCase() + p.slice(1))
-    .join(" ");
-}
-
 /* ── Helpers ───────────────────────────────────────────────────── */
 
 /**
@@ -184,15 +177,6 @@ function extractJSDoc(source) {
 }
 
 /** Split a JSDoc block into an array of cleaned lines */
-function jsdocLines(block) {
-  return block
-    .replace(/^\/\*\*/, "")
-    .replace(/\*\/$/, "")
-    .split("\n")
-    .map((l) => l.replace(/^\s*\*\s?/, ""))
-    .filter((l) => l !== undefined);
-}
-
 /**
  * Parse a JSDoc block into structured component API data.
  *

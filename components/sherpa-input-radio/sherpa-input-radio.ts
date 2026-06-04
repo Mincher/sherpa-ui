@@ -28,8 +28,7 @@
  * @method focus() — Move focus to the underlying native input.
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { StatusMixin } from '../utilities/status-mixin.js';
+import { SherpaInputChoiceBase } from '../utilities/sherpa-input-choice/sherpa-input-choice-base.js';
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
 
@@ -39,101 +38,35 @@ interface SherpaInputRadioDataset extends DOMStringMap {
   status?: string;
 }
 
-export class SherpaInputRadio extends StatusMixin(SherpaElement) {
+export class SherpaInputRadio extends SherpaInputChoiceBase {
 
   override get dataset(): SherpaInputRadioDataset {
     return super.dataset as SherpaInputRadioDataset;
   }
 
-  #bound = false;
-
   static override get cssUrl(): string  { return new URL('./sherpa-input-radio.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-radio.html', import.meta.url).href; }
 
-  static override get observedAttributes(): string[] {
-    return [
-      ...super.observedAttributes,
-      'name', 'value', 'checked', 'disabled', 'required',
-      'data-label', 'data-description',
-    ];
-  }
-
-  /* ── Lifecycle ─────────────────────────────────────────────────── */
-
-  override onRender() {
-    if (!this.#bound) {
-      const input = this.#input;
-      if (input) input.addEventListener('change', this.#onChange);
-      this.#bound = true;
-    }
-
-    this.#syncLabel();
-    this.#syncDescription();
-    this.#syncNative();
-  }
-
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
-    super.onAttributeChanged(name, oldValue, newValue);
-    switch (name) {
-      case 'data-label':       this.#syncLabel(); break;
-      case 'data-description': this.#syncDescription(); break;
-      case 'name':
-      case 'value':
-      case 'checked':
-      case 'disabled':
-      case 'required':         this.#syncNative(); break;
-    }
-  }
-
   /* ── Public API ────────────────────────────────────────────────── */
-
-  get checked()  { return this.hasAttribute('checked'); }
-  set checked(v) { v ? this.setAttribute('checked', '') : this.removeAttribute('checked'); }
 
   get value()  { return this.getAttribute('value') ?? ''; }
   set value(v) { v == null ? this.removeAttribute('value') : this.setAttribute('value', String(v)); }
 
-  get disabled()  { return this.hasAttribute('disabled'); }
-  set disabled(v) { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
+  /* ── Protected ─────────────────────────────────────────────────── */
 
-  override focus(opts?: FocusOptions) { this.#input?.focus(opts); }
-
-  /* ── Private ───────────────────────────────────────────────────── */
-
-  get #input(): HTMLInputElement | null { return this.$<HTMLInputElement>('.check-input'); }
-
-  #syncLabel() {
-    const el = this.$('.check-text');
-    if (el) el.textContent = this.dataset["label"] || '';
+  protected override _syncNative() {
+    this._syncNativeBase();
   }
 
-  #syncDescription() {
-    const el = this.$('.check-description');
-    if (el) el.textContent = this.dataset["description"] || '';
-  }
-
-  #syncNative() {
-    const input = this.#input;
+  protected override _handleChange() {
+    const input = this._input;
     if (!input) return;
-    input.checked = this.checked;
-    input.disabled = this.disabled;
-    input.required = this.hasAttribute('required');
-    const name = this.getAttribute('name');
-    name != null ? input.setAttribute('name', name) : input.removeAttribute('name');
-    input.value = this.value;
-  }
-
-  #onChange = () => {
-    const input = this.#input;
-    if (!input) return;
-    input.checked
-      ? this.setAttribute('checked', '')
-      : this.removeAttribute('checked');
+    this._mirrorChecked();
     this.dispatchEvent(new CustomEvent('change', {
       bubbles: true, composed: true,
       detail: { checked: input.checked, value: this.value },
     }));
-  };
+  }
 }
 
 customElements.define('sherpa-input-radio', SherpaInputRadio);

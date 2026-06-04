@@ -77,14 +77,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /** Current month displayed in the end calendar. */
   #endViewDate   = new Date();
 
-  /** Bound document handlers stored for removeEventListener. */
-  #onDocClick = (e: Event) => {
-    if (!e.composedPath().includes(this)) this.#closeAll();
-  };
-
-  #onDocKey = (e: KeyboardEvent) => {
-    if (e.key === "Escape") this.#closeAll();
-  };
+  protected override _popupClose() { this.#closeAll(); }
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
@@ -177,15 +170,8 @@ export class SherpaInputDateRange extends SherpaInputBase {
     });
   }
 
-  override onInputConnect(): void {
-    document.addEventListener("click",   this.#onDocClick);
-    document.addEventListener("keydown", this.#onDocKey);
-  }
-
-  override onInputDisconnect(): void {
-    document.removeEventListener("click",   this.#onDocClick);
-    document.removeEventListener("keydown", this.#onDocKey);
-  }
+  override onInputConnect(): void    { this._attachPopupListeners(); }
+  override onInputDisconnect(): void { this._detachPopupListeners(); }
 
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     super.onAttributeChanged(name, oldValue, newValue);

@@ -18,11 +18,10 @@
 
 import { ContentAttributesMixin } from '../utilities/content-attributes-mixin.js';
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { getSegmentField, isSegmentEnabled, getActiveSort } from '../utilities/chart-utils.js';
-import { injectFilterMenu, removeFilterMenu } from '../utilities/filter-menu-utils.js';
+import { getSegmentField, isSegmentEnabled, getActiveSort, syncChartTitle } from '../utilities/chart-utils.js';
+import { injectFilterMenu, removeFilterMenu, toggleFilters, toggleLegend, syncFilterMenuItems } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-filter-bar/sherpa-filter-bar.js';
-import { formatFieldName, cleanTitleBase } from '../utilities/format-utils.js';
 
 const MAX_SEGMENTS = 8;
 const OTHER_COLOR = '#9e9ea8';
@@ -145,15 +144,19 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
-    if (name === 'data-title') this.#syncTitle();
+    if (name === 'data-title') {
+      this.#syncTitle();
+      const layout = this.$<HTMLElement>('.chart-layout');
+      if (layout) layout.setAttribute('aria-label', newValue || 'Line chart');
+    }
     if (name === 'data-segment-field' || name === 'data-segment-mode') {
       this.#syncTitle();
-      if (this._suppressAttrReaction) return;
+      if (this.isAttrReactionSuppressed) return;
       // External attribute change — full re-aggregate needed
       if (this.#contentData) this.reAggregate();
     }
     if (name === 'data-sort-field' || name === 'data-sort-direction') {
-      if (this._suppressAttrReaction) return;
+      if (this.isAttrReactionSuppressed) return;
       // Local re-sort of existing data
       if (this.#contentData) {
         this.#transformContentData();
@@ -344,18 +347,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: sync ────────────────────────────────────────────── */
 
-  #syncTitle() {
-    if (this.els.title) {
-      const entity = cleanTitleBase(this.dataset["title"] || '');
-      const segMode = this.getAttribute('data-segment-mode');
-      const groupField = this.getAttribute('data-segment-field')
-        || this.getAttribute('data-category');
-      const hasActiveGroup = segMode !== 'off' && !!groupField;
-      this.els.title.textContent = hasActiveGroup
-        ? `${entity} by ${formatFieldName(groupField)}`
-        : `All ${entity}`;
-    }
-  }
+  #syncTitle() { syncChartTitle(this.els.title ?? null, this); }
 
   /* ── Private: cap series ──────────────────────────────────────── */
 
@@ -500,6 +492,8 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     // Snapshot current series values for the next diff
     this.#prevSeriesData = series.map((s) => ({ ...s, values: [...s.values] }));
 
+    this.#updateAriaLabel(labels, series);
+
     // ── Legend ───────────────────────────────────────────────────
     const legend = this.els.legend;
     const legendItemTpl = this.#legendItemTpl;
@@ -518,6 +512,19 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
+  #updateAriaLabel(labels: string[], series: { name: string }[]) {
+    const title = this.getAttribute('data-title') || 'Line chart';
+    const layout = this.$<HTMLElement>('.chart-layout');
+    const summary = this.$<HTMLElement>('.chart-sr-summary');
+    if (layout) layout.setAttribute('aria-label', title);
+    if (summary && labels.length) {
+      const seriesNames = series.map((s) => s.name).filter(Boolean).join(', ');
+      summary.textContent = seriesNames
+        ? `${title}. ${series.length} series: ${seriesNames}. ${labels.length} data points.`
+        : `${title}. ${labels.length} data points.`;
+    }
+  }
+
   /* ── Private: format ──────────────────────────────────────────── */
 
   #formatAxisValue(val: number) {
@@ -530,26 +537,9 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Filter menu ─────────────────────────────────────────────────────── */
 
-  #onToggleFilters = () => {
-    this.toggleAttribute('data-filters');
-  };
-
-  #onToggleLegend = () => {
-    this.toggleAttribute('data-hide-legend');
-  };
-
-  #onMenuPopulate = (e: CustomEvent) => {
-    const menu = e.detail?.menu;
-    if (!menu) return;
-    const filterItem = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
-    if (filterItem) {
-      filterItem.toggleAttribute('checked', this.hasAttribute('data-filters'));
-    }
-    const legendItem = menu.querySelector('sherpa-menu-item[data-event="toggle-legend"]');
-    if (legendItem) {
-      legendItem.toggleAttribute('checked', !this.hasAttribute('data-hide-legend'));
-    }
-  };
+  #onToggleFilters = () => toggleFilters(this);
+  #onToggleLegend  = () => toggleLegend(this);
+  #onMenuPopulate  = (e: CustomEvent) => syncFilterMenuItems(e, this);
 }
 
 customElements.define('sherpa-line-chart', SherpaLineChart);

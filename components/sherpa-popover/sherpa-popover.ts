@@ -33,8 +33,9 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { clearElementCache } from "../utilities/element-cache.js";
+import { PageNavigationMixin } from "../utilities/page-navigation-mixin.js";
 
-class SherpaPopover extends SherpaElement {
+class SherpaPopover extends PageNavigationMixin(SherpaElement) {
   static override get cssUrl(): string {
     return new URL("sherpa-popover.css", import.meta.url).href;
   }
@@ -125,23 +126,6 @@ class SherpaPopover extends SherpaElement {
         break;
     }
   }
-
-  /* ── Paged API ─────────────────────────────────── */
-
-  get page()  { return parseInt(this.dataset["page"]  || '0', 10) || 0; }
-  get pages() {
-    const explicit = parseInt(this.dataset["pages"] || '', 10);
-    if (Number.isFinite(explicit) && explicit > 0) return explicit;
-    return this.querySelectorAll('section[data-page]').length || 1;
-  }
-
-  setPage(index: number) {
-    const total = this.pages;
-    const next = Math.max(0, Math.min(total - 1, Number(index) || 0));
-    this.dataset["page"] = String(next);
-  }
-  nextPage() { this.setPage(this.page + 1); }
-  prevPage() { this.setPage(this.page - 1); }
 
   #wirePageButtons() {
     const back = this.$('.page-back');

@@ -30,8 +30,7 @@
  * @method clear()         — Uncheck every option.
  */
 
-import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { StatusMixin } from '../utilities/status-mixin.js';
+import { SherpaInputGroupBase } from '../utilities/sherpa-input-group/sherpa-input-group-base.js';
 import '../sherpa-input-checkbox/sherpa-input-checkbox.js';
 
 /* ── Dataset Interface ─────────────────────────────────────────── */
@@ -47,13 +46,11 @@ interface SherpaInputCheckboxGroupDataset extends DOMStringMap {
   template?: string;
 }
 
-export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
+export class SherpaInputCheckboxGroup extends SherpaInputGroupBase {
 
   override get dataset(): SherpaInputCheckboxGroupDataset {
     return super.dataset as SherpaInputCheckboxGroupDataset;
   }
-
-  #bound = false;
 
   static override get cssUrl(): string  { return new URL('./sherpa-input-checkbox-group.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-checkbox-group.html', import.meta.url).href; }
@@ -76,31 +73,22 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
   override onRender(): void {
-    if (!this.#bound) {
+    if (!this._bound) {
       this.shadow.addEventListener('change', this.#onChildChange);
       this.addEventListener('change', this.#onSlottedChange);
-      this.#bound = true;
+      this._bound = true;
     }
 
-    this.#syncLegend();
-    this.#syncDescription();
-    this.#syncHelper();
-    this.#stampOptions();
-    this.#syncValue();
-    this.#syncDisabled();
+    this._syncLegend();
+    this._syncDescription();
+    this._syncHelper();
+    this._stampOptions();
+    this._syncValue();
+    this._syncDisabled();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
-    super.onAttributeChanged(name, oldValue, newValue);
-    switch (name) {
-      case 'data-label':       this.#syncLegend(); break;
-      case 'data-description': this.#syncDescription(); break;
-      case 'data-helper':      this.#syncHelper(); break;
-      case 'data-options':     this.#stampOptions(); this.#syncValue(); break;
-      case 'data-value':       this.#syncValue(); break;
-      case 'data-template':    this.renderTemplate(this.templateId).then(() => this.onRender()); break;
-      case 'disabled':         this.#syncDisabled(); break;
-    }
+  protected override _onExtraAttributeChanged(name: string) {
+    if (name === 'data-template') this.renderTemplate(this.templateId).then(() => this.onRender());
   }
 
   /* ── Public API ────────────────────────────────────────────────── */
@@ -119,22 +107,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
 
   /* ── Private ───────────────────────────────────────────────────── */
 
-  #syncLegend() {
-    const el = this.$('.group-label');
-    if (el) el.textContent = this.dataset["label"] || '';
-  }
-
-  #syncDescription() {
-    const el = this.$('.group-description');
-    if (el) el.textContent = this.dataset["description"] || '';
-  }
-
-  #syncHelper() {
-    const el = this.$('.group-helper');
-    if (el) el.textContent = this.dataset["helper"] || '';
-  }
-
-  #stampOptions() {
+  protected override _stampOptions() {
     if (this.templateId !== 'default') return;
     const host = this.$('.group-options');
     if (!host) return;
@@ -171,7 +144,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
     return inputs.filter((i) => i.checked).map((i) => i.value);
   }
 
-  #syncValue() {
+  protected override _syncValue() {
     let target;
     try { target = JSON.parse(this.dataset["value"] || '[]'); }
     catch { target = []; }
@@ -189,7 +162,7 @@ export class SherpaInputCheckboxGroup extends StatusMixin(SherpaElement) {
     }
   }
 
-  #syncDisabled() {
+  protected override _syncDisabled() {
     const disable = this.hasAttribute('disabled');
     for (const input of this.#allInputs()) {
       input.disabled = disable;

@@ -47,9 +47,10 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { StatusMixin } from '../utilities/status-mixin.js';
+import { PageNavigationMixin } from '../utilities/page-navigation-mixin.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 
-export class SherpaDialog extends StatusMixin(SherpaElement) {
+export class SherpaDialog extends PageNavigationMixin(StatusMixin(SherpaElement)) {
 
   /* ── Config ─────────────────────────────────────────── */
 
@@ -165,23 +166,6 @@ export class SherpaDialog extends StatusMixin(SherpaElement) {
   show()   { this.dataset["open"] = 'true'; }
   hide()   { delete this.dataset["open"]; }
   toggle() { this.open ? this.hide() : this.show(); }
-
-  /* ── Wizard API ───────────────────────────────────────── */
-
-  get page()  { return parseInt(this.dataset["page"]  || '0', 10) || 0; }
-  get pages() {
-    const explicit = parseInt(this.dataset["pages"] || '', 10);
-    if (Number.isFinite(explicit) && explicit > 0) return explicit;
-    return this.querySelectorAll('section[data-page]').length || 1;
-  }
-
-  setPage(index: number) {
-    const total = this.pages;
-    const next = Math.max(0, Math.min(total - 1, Number(index) || 0));
-    this.dataset["page"] = String(next);
-  }
-  nextPage() { this.setPage(this.page + 1); }
-  prevPage() { this.setPage(this.page - 1); }
 
   /* ── Private ──────────────────────────────────────────────────── */
 

@@ -40,7 +40,7 @@ This rule overrides personal taste, convenience, and "I'll just hardcode it for 
 
 1. Is there a Sherpa token for this? → use it (with fallback).
 2. Is there an existing Sherpa component for this? → nest it.
-3. Is the design source explicit about this exact pixel value? → use the literal, snap to grid, leave a comment.
+3. Is the design source explicit about this exact pixel value? → use the literal, snap to grid, leave a comment. *When working from Figma, step 3 is satisfied if the value appears in `figma_get_component_for_development` output. Apply the snapping rules from the [Figma-driven authoring workflow](#figma-driven-authoring-workflow) section before writing the literal.*
 4. Otherwise → **stop and ask the user** before inventing anything.
 
 If the system genuinely lacks something the design needs, surface that gap explicitly: *"The design calls for X but there is no Sherpa token / component for it — should I add one, or use the closest match Y?"*
@@ -64,7 +64,7 @@ Every Sherpa component is exactly 3 files in a `components/sherpa-{name}/` folde
 1. Create: `components/sherpa-{name}/`
 2. Copy the 3 starters from this skill's `assets/` folder
 3. Rename files and replace every `example` / `Example` occurrence
-4. Study a similar component: `get_component_source({ component: "sherpa-button" })`
+4. Study a similar component: `get_component_source({ component: "sherpa-button" })` — if this returns an error or empty result, notify the user and proceed using only the patterns documented in this skill. Do not infer the missing component's API from its name or general web component conventions.
 5. After updating JSDoc: run `npm run schemas`
 
 ---
@@ -169,6 +169,8 @@ Key CSS rules:
 
 ## JS Base Class Pattern
 
+> **Note:** The code example below omits the JSDoc block for brevity. In the actual file, the JSDoc block precedes the `import` line — see the [JSDoc Header Format](#jsdoc-header-format) section.
+
 ```js
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
@@ -202,6 +204,8 @@ export class SherpaName extends SherpaElement {
 
   onAttributeChanged(name, oldValue, newValue) {
     super.onAttributeChanged(name, oldValue, newValue);
+    // When newValue is null, the attribute was removed — restore the property to its default value.
+    // #syncLabel uses `?? ''` so it handles null safely; apply the same null-safe pattern to all attribute handlers.
     if (name === 'data-label') this.#syncLabel();
   }
 
@@ -290,8 +294,8 @@ Web components compose. Inside one component's template, prefer nesting existing
 
 ### When NOT to nest
 
-- When you need a **unified, contiguously-bordered visual control** (e.g. a calendar header where prev / month-label / next share a single bordered pill). Three `<sherpa-button>`s here can't share a border. Use plain `<button>` elements with custom CSS inside that one bounded box.
-- When the child would only ever appear once and applying its full attribute API costs more than the few lines of CSS it would replace.
+- When you need a **unified, contiguously-bordered visual control** (e.g. a calendar header where prev / month-label / next share a single bordered pill). Three `<sherpa-button>`s here can't share a border. Use plain `<button>` elements with custom CSS inside that one bounded box. **This is the sole exception to the Prime Directive's no-plain-button rule** — it applies only when the visual requirement (a physically shared border or outline) makes separate `<sherpa-button>` instances impossible. If the design does not mandate a shared border, use `<sherpa-button>` per the Prime Directive.
+- When nesting a Sherpa component would require more than 5 attribute bindings to replicate 1–3 CSS properties that are already constrained by the parent's design token context, a plain HTML element is acceptable. Document why in a comment.
 
 ### Listening for events from nested Sherpa components
 

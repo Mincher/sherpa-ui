@@ -47,9 +47,10 @@
     >
   </sherpa-filter-bar>
 
-  <div class="chart-layout">
+  <div class="chart-layout" role="img" aria-label="">
+    <span class="chart-sr-summary" aria-live="polite"></span>
     <div class="chart-body">
-      <div class="y-axis">
+      <div class="y-axis" aria-hidden="true">
         <span class="y-label"></span>
         <span class="y-label"></span>
         <span class="y-label"></span>
@@ -62,10 +63,10 @@
           <div class="grid-lines" aria-hidden="true"></div>
           <div class="series-layer"></div>
         </div>
-        <div class="x-axis"></div>
+        <div class="x-axis" aria-hidden="true"></div>
       </div>
     </div>
-    <div class="chart-legend"></div>
+    <div class="chart-legend" aria-hidden="true"></div>
   </div>
   <sherpa-tooltip></sherpa-tooltip>
   <!-- Cloning prototype — one per data series; .shape elements injected by JS -->

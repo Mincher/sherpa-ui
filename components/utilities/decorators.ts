@@ -35,6 +35,14 @@ export interface PropertyConverter<T = unknown> {
   toAttribute?(value: T | null): string | null;
 }
 
+interface PropertyMeta {
+  attribute: string | false;
+  type: PropertyType;
+  reflect: boolean;
+  converter: PropertyConverter;
+  privateKey: symbol;
+}
+
 /**
  * Default converters for each type (typed Record for indexing)
  */
@@ -90,20 +98,21 @@ export function property<T = unknown>(options: PropertyOptions<T> = {}) {
       converter
     } = options;
 
-    // Get or create property metadata map on the class
-    if (!target.constructor._propertyMetadata) {
+    // Get or create property metadata map on the exact constructor (not inherited via chain)
+    if (!Object.prototype.hasOwnProperty.call(target.constructor, '_propertyMetadata')) {
       target.constructor._propertyMetadata = new Map();
     }
 
-    const metadata = target.constructor._propertyMetadata;
+    const metadata = target.constructor._propertyMetadata as Map<string, PropertyMeta>;
     const privateKey = Symbol(propertyKey);
 
     // Store metadata for this property
+    const resolvedConverter = (converter || defaultConverters[type.name]) as PropertyConverter;
     metadata.set(propertyKey, {
       attribute,
       type,
       reflect,
-      converter: converter || defaultConverters[type.name],
+      converter: resolvedConverter,
       privateKey
     });
 
@@ -118,13 +127,13 @@ export function property<T = unknown>(options: PropertyOptions<T> = {}) {
 
         // Reflect to attribute if configured
         if (reflect && attribute !== false) {
-          const conv = metadata.get(propertyKey).converter;
-          const attrValue = conv.toAttribute(value);
+          const meta = metadata.get(propertyKey);
+          const attrValue = meta?.converter.toAttribute?.(value) ?? null;
 
           if (attrValue === null) {
-            this.removeAttribute(attribute);
+            this.removeAttribute(attribute as string);
           } else {
-            this.setAttribute(attribute, attrValue);
+            this.setAttribute(attribute as string, attrValue);
           }
         }
 
@@ -146,35 +155,51 @@ export function property<T = unknown>(options: PropertyOptions<T> = {}) {
 }
 
 /**
- * Helper to initialize reactive properties from attributes
+ * Helper to initialize reactive properties from attributes.
+ * Walks the prototype chain so subclasses inherit parent @property initializations.
  * Call this in connectedCallback or constructor
  */
 export function initializeProperties(instance: any): void {
-  const metadata = instance.constructor._propertyMetadata;
-  if (!metadata) return;
-
-  for (const [propKey, meta] of metadata.entries()) {
-    if (meta.attribute !== false && instance.hasAttribute(meta.attribute)) {
-      const attrValue = instance.getAttribute(meta.attribute);
-      const propValue = meta.converter.fromAttribute(attrValue);
-      instance[propKey] = propValue;
+  const seen = new Set<string>();
+  let proto = instance.constructor;
+  while (proto && proto !== Function.prototype) {
+    if (Object.prototype.hasOwnProperty.call(proto, '_propertyMetadata')) {
+      const metadata = proto._propertyMetadata as Map<string, PropertyMeta>;
+      for (const [propKey, meta] of metadata.entries()) {
+        if (!seen.has(propKey) && meta.attribute !== false && instance.hasAttribute(meta.attribute)) {
+          seen.add(propKey);
+          const attrValue = instance.getAttribute(meta.attribute as string);
+          const propValue = meta.converter.fromAttribute?.(attrValue);
+          instance[propKey] = propValue;
+        }
+      }
     }
+    proto = Object.getPrototypeOf(proto);
   }
 }
 
 /**
- * Helper to get observed attributes from property metadata
+ * Helper to get observed attributes from property metadata.
+ * Walks the prototype chain so subclasses inherit parent @property attributes.
  * Use in static get observedAttributes()
  */
 export function getObservedAttributes(constructor: any): string[] {
-  const metadata = constructor._propertyMetadata;
-  if (!metadata) return [];
-
   const attrs: string[] = [];
-  for (const [, meta] of metadata.entries()) {
-    if (meta.attribute !== false) {
-      attrs.push(meta.attribute);
+  const seen = new Set<string>();
+
+  let proto = constructor;
+  while (proto && proto !== Function.prototype) {
+    if (Object.prototype.hasOwnProperty.call(proto, '_propertyMetadata')) {
+      const metadata = proto._propertyMetadata as Map<string, PropertyMeta>;
+      for (const [, meta] of metadata.entries()) {
+        if (meta.attribute !== false && !seen.has(meta.attribute as string)) {
+          seen.add(meta.attribute as string);
+          attrs.push(meta.attribute as string);
+        }
+      }
     }
+    proto = Object.getPrototypeOf(proto);
   }
+
   return attrs;
 }

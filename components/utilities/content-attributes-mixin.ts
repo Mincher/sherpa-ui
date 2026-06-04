@@ -159,7 +159,10 @@ export interface ContentAttributesMixinInterface {
   setFactTable(): this;
   setDimensions(dims: any[]): this;
   reAggregate(): void;
-  _suppressAttrReaction?: boolean;
+  /** @protected — use suppressAttrReaction()/resumeAttrReaction() instead */
+  readonly isAttrReactionSuppressed: boolean;
+  suppressAttrReaction(): void;
+  resumeAttrReaction(): void;
 
   // View-switching helpers
   getViewOptions(opts: { activeType?: string; canShowChart?: boolean }): any[];
@@ -345,8 +348,20 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     declare setData: (data: any) => void;
     declare getData?: () => any;
 
-    /** Guard flag honoured by chart subclasses' onAttributeChanged. */
-    _suppressAttrReaction = false;
+    /** Counter-based re-entrance-safe reaction suppression. */
+    #suppressCount = 0;
+
+    protected get isAttrReactionSuppressed(): boolean {
+      return this.#suppressCount > 0;
+    }
+
+    protected suppressAttrReaction(): void {
+      this.#suppressCount++;
+    }
+
+    protected resumeAttrReaction(): void {
+      this.#suppressCount--;
+    }
 
     /* ── Legacy accessors ───────────────────────────────────── */
 
@@ -984,7 +999,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       // Suppress chart onAttributeChanged reactions while we batch-set
       // multiple attributes. Charts check this flag and skip heavy
       // work; the mixin handles the single authoritative re-aggregate.
-      this._suppressAttrReaction = true;
+      this.suppressAttrReaction();
 
       // Sort attrs
       if (sortFilter && sortFilter.field) {
@@ -1026,7 +1041,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
         this.setAttribute("data-segment-mode", "off");
       }
 
-      this._suppressAttrReaction = false;
+      this.resumeAttrReaction();
 
       // Single authoritative re-aggregate + render.
       this.#aggregate();
@@ -1041,7 +1056,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       // Sync the embedded filter bar whenever segment or sort
       // attributes change from outside the mixin's own batch flow.
       if (
-        !this._suppressAttrReaction &&
+        !this.isAttrReactionSuppressed &&
         (name === "data-segment-field" ||
           name === "data-segment-mode" ||
           name === "data-sort-field" ||
