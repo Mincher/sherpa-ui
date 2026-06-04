@@ -16,14 +16,12 @@
       "types": "./dist/components/*.d.ts",
       "default": "./dist/components/*"
     },
-    "./css/*": "./css/styles/*",
-    "./templates/*": "./html/templates/*"
+    "./css/*": "./css/styles/*"
   },
   "files": [
     "dist/",
     "components/**/*.ts",
     "css/",
-    "html/templates/",
     "schemas/",
     "patterns/",
     "mcp-server/"
@@ -54,45 +52,36 @@
     "format": "prettier --write 'components/**/*.css'",
     "format:check": "prettier --check 'components/**/*.css'",
     "prebuild": "npm run clean",
-    "build": "npm run build:ts && npm run assets:copy && run-p tokens:generate schemas patterns component-docs",
-    "build:serial": "npm run build:ts && npm run assets:copy && npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
-    "build:measure": "node scripts/measure-build-time.js",
+    "build": "npm run build:ts && npm run assets:copy && npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
     "test:a11y": "node scripts/test-a11y.js",
     "test:a11y:verbose": "node scripts/test-a11y.js --verbose",
     "audit": "node scripts/audit-components.js",
     "audit:verbose": "node scripts/audit-components.js --verbose",
     "test": "npm run build:ts && web-test-runner",
     "test:watch": "npm run build:ts && web-test-runner --watch",
-    "test:coverage": "npm run build:ts && web-test-runner --coverage",
-    "test:visual": "playwright test",
-    "test:visual:update": "UPDATE_SNAPSHOTS=true playwright test",
-    "test:visual:ui": "playwright test --ui",
-    "test:visual:report": "playwright show-report test/visual/report",
-    "benchmark": "node scripts/run-performance-benchmarks.js",
-    "benchmark:baseline": "node scripts/run-performance-benchmarks.js --baseline",
-    "benchmark:compare": "node scripts/run-performance-benchmarks.js"
+    "test:coverage": "npm run build:ts && web-test-runner --coverage"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@open-wc/testing": "^4.0.0",
     "@open-wc/testing-helpers": "^3.0.1",
-    "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@typescript-eslint/eslint-plugin": "^8.60.1",
     "@typescript-eslint/parser": "^8.60.1",
     "@web/test-runner": "^0.20.2",
-    "typescript": "^6.0.3",
     "axe-core": "^4.11.4",
     "eslint": "^8.55.0",
-    "fallow": "^2.88.2",
+    "fallow": "^2.88.3",
     "glob": "^13.0.6",
     "husky": "^9.1.7",
-    "npm-run-all": "^4.1.5",
     "pa11y": "^9.1.1",
-    "prettier": "^3.1.0"
+    "prettier": "^3.1.0",
+    "typescript": "^6.0.3",
+    "zod": "^3.23.8"
   },
   "keywords": [
     "web-components",
@@ -100,10 +89,5 @@
     "ui-library",
     "design-tokens"
   ],
-  "license": "MIT",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1",
-    "fallow": "^2.88.3",
-    "zod": "^3.23.8"
-  }
+  "license": "MIT"
 }
