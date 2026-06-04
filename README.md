@@ -1,16 +1,16 @@
 # Sherpa UI
 
-A standards-based Web Component library and design token system. No bundler required — pure ES modules served directly.
+A TypeScript-first Web Component library and design token system. The package ships prebuilt ES modules in `dist/` for browser consumption.
 
 ## Quick Start
 
-```bash
+```
 npm install sherpa-ui
 ```
 
 ### JavaScript — import all components
 
-```js
+```
 import "sherpa-ui";
 ```
 
@@ -27,8 +27,8 @@ Or with an import map:
 <script type="importmap">
   {
     "imports": {
-      "sherpa-ui": "./node_modules/sherpa-ui/components/index.js",
-      "sherpa-ui/": "./node_modules/sherpa-ui/"
+      "sherpa-ui": "./node_modules/sherpa-ui/dist/components/index.js",
+      "sherpa-ui/": "./node_modules/sherpa-ui/dist/"
     }
   }
 </script>
@@ -36,24 +36,41 @@ Or with an import map:
 
 ## Entry Points
 
-| Entry     | Path                   | Purpose                                                           |
-| --------- | ---------------------- | ----------------------------------------------------------------- |
-| **JS**    | `components/index.js`  | Barrel export — registers all custom elements                     |
-| **CSS**   | `css/styles/index.css` | Tokens + utility classes (`@layer tokens, utilities, components`) |
-| **Reset** | `css/styles/reset.css` | Minimal CSS reset                                                 |
+| Entry | Path | Purpose |
+| --- | --- | --- |
+| **JS** | `dist/components/index.js` | Barrel export — registers all custom elements |
+| **Types** | `dist/components/index.d.ts` | Type declarations for TS consumers |
+| **CSS** | `css/styles/index.css` | Tokens + utility classes (`@layer tokens, utilities, components`) |
+| **Reset** | `css/styles/reset.css` | Minimal CSS reset |
 
 ## Architecture
 
-- **No bundler** — native ES modules with `import.meta.url` for template/style resolution
-- **Shadow DOM** — components encapsulate styles via `SherpaElement` base class
-- **CSS Cascade Layers** — `reset → tokens → utilities → components → app`
-- **Design tokens** — sourced from Figma Variables API, processed via `npm run tokens:generate`
+*   **TypeScript source + dist build** — source lives in `components/**/*.ts`, compiled to `dist/components/**/*.js` (+ `.d.ts`)
+*   **No bundler required for consumers** — prebuilt native ES modules can be loaded directly in browsers
+*   **Shadow DOM** — components encapsulate styles via `SherpaElement` base class
+*   **CSS Cascade Layers** — `reset → tokens → utilities → components → app`
+*   **Design tokens** — sourced from Figma Variables API, processed via `npm run tokens:generate`
+
+## Development Build Workflow
+
+```
+npm run type-check      # Validate TS across repo (no emit)
+npm run build:ts        # Compile components TS -> dist/components
+npm run assets:copy     # Copy non-TS component assets needed at runtime
+npm run build           # Full build (TS + assets + tokens + schemas + patterns + docs)
+```
+
+Primary build outputs:
+
+*   `dist/components/**/*.js`
+*   `dist/components/**/*.d.ts`
+*   `dist/components/**/*.js.map`
 
 ## Data-Viz Components
 
 `sherpa-data-grid`, `sherpa-barchart`, and `sherpa-metric` accept data via the **dataset cascade** pattern: the app shell loads a dataset, applies global filters, and dispatches a `datasetfiltered` event on the content area. Each viz component listens, aggregates locally, and renders.
 
-```js
+```
 import {
   setDateFieldProvider,
 } from "sherpa-ui/components/utilities/content-attributes-mixin.js";
@@ -66,10 +83,10 @@ setDateFieldProvider((datasetName) => {
 
 ## Global Filters
 
-Register a global filter provider so viz components seed their first data load
+Register a global filter provider so viz components seed their first data load  
 with any active global filters (timerange, value filters, etc.):
 
-```js
+```
 import { setGlobalFilterProvider } from "sherpa-ui/components/utilities/global-filters.js";
 
 setGlobalFilterProvider(() => ({
@@ -78,33 +95,33 @@ setGlobalFilterProvider(() => ({
 }));
 ```
 
-Viz components using `ContentAttributesMixin` auto-load from their
-`data-query-src` / `data-query-key` attributes on connect and automatically
+Viz components using `ContentAttributesMixin` auto-load from their  
+`data-query-src` / `data-query-key` attributes on connect and automatically  
 include these global filters in the initial request.
 
 ## Events
 
 Components dispatch these events (bubble + composed) for app-level integration:
 
-| Event                   | Source               | Detail                          |
-| ----------------------- | -------------------- | ------------------------------- |
-| `containerfilterchange` | `sherpa-filter-bar`  | `{ filters }`                    |
-| `globalfilterchange`    | `sherpa-filter-bar`  | `{ filters }` (on `document`)   |
-| `container-export`       | `sherpa-menu-item`   | `{ value }` (bubbles from menu) |
-| `viewexport`            | `sherpa-view-header` | `{ title }`                     |
+| Event | Source | Detail |
+| --- | --- | --- |
+| `containerfilterchange` | `sherpa-filter-bar` | `{ filters }` |
+| `globalfilterchange` | `sherpa-filter-bar` | `{ filters }` (on `document`) |
+| `container-export` | `sherpa-menu-item` | `{ value }` (bubbles from menu) |
+| `viewexport` | `sherpa-view-header` | `{ title }` |
 
 ## MCP Server
 
-Sherpa UI ships with an [MCP](https://modelcontextprotocol.io/) server that
+Sherpa UI ships with an [MCP](https://modelcontextprotocol.io/) server that  
 exposes component APIs, design tokens, and usage validation to AI agents.
 
-```bash
+```
 npm run mcp                # Start the MCP server (stdio transport)
 ```
 
 Add to your VS Code `.vscode/mcp.json`:
 
-```json
+```
 {
   "servers": {
     "sherpa-ui": {
@@ -116,18 +133,24 @@ Add to your VS Code `.vscode/mcp.json`:
 }
 ```
 
-5 tools (`query_component`, `list_components`, `generate_component`,
-`browse_tokens`, `validate_usage`), 59 resources (6 guideline docs + 53
-component schemas), and a `build_ui` prompt. See
+5 tools (`query_component`, `list_components`, `generate_component`,  
+`browse_tokens`, `validate_usage`), 59 resources (6 guideline docs + 53  
+component schemas), and a `build_ui` prompt. See  
 [mcp-server/README.md](mcp-server/README.md) for full details.
 
 ## Scripts
 
-```bash
-npm run build              # Generate tokens + API docs + schemas
+```
+npm run clean              # Remove build output + TS incremental cache
+npm run type-check         # Type-check all TS without emitting files
+npm run build:ts           # Compile component TS to dist/components
+npm run build:ts:watch     # Rebuild TS on file changes
+npm run assets:copy        # Copy component HTML/CSS and related runtime assets
+npm run build              # Full build (TS + assets + tokens + schemas + patterns + docs)
 npm run tokens:extract     # Fetch variables from Figma REST API
 npm run tokens:generate    # Generate CSS from figma-variables.json
 npm run schemas            # Generate component JSON schemas
+npm run patterns           # Generate pattern index data
 npm run component-docs     # Generate per-component README.md files
 npm run mcp                # Start the MCP server
 ```

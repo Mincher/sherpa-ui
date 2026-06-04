@@ -2,6 +2,7 @@
 node_modules/
 .venv/
 .vscode/
+.mcp.json
 *.code-search
 
 # TypeScript compiled output
