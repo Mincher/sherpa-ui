@@ -7,11 +7,6 @@
   "baseClass": "SherpaElement",
   "attributes": [
     {
-      "name": "data-label",
-      "type": "string",
-      "description": "Loading text beside the spinner"
-    },
-    {
       "name": "data-orientation",
       "type": "enum",
       "description": "horizontal | vertical",
@@ -36,6 +31,11 @@
       "description": "Surface background panel mode"
     }
   ],
-  "slots": [],
+  "slots": [
+    {
+      "name": "label",
+      "description": "Loading text displayed beside the spinner"
+    }
+  ],
   "events": []
 }

@@ -1,22 +1,26 @@
 /**
  * @element sherpa-layout-grid
  * @category shell
- * @description Responsive dashboard grid. Slotted
- *   <sherpa-container data-variant="resizable"> children take grid spans
- *   from their data-col-span / data-row-span attributes.
+ * @description Main page content grid. Use it inside an app shell to hold
+ *   the page header, optional side rails, and the primary content area.
+ *   Slotted <sherpa-container data-variant="resizable"> children take grid
+ *   spans from their data-col-span / data-row-span attributes.
  *
  *   Replaces the legacy `.sherpa-content-area` CSS class with a real
  *   web component so the grid setup, breakpoints, and span rules are
  *   shadow-scoped and don't leak into consumer CSS.
  *
  * @attr {string}  [data-row-height] — CSS length for grid-auto-rows (default: 160px)
- * @attr {enum}    [data-content]    — "static" — opts out of grid; stacks children vertically
- * @attr {boolean} [data-editable]  — Enables drag-to-reposition for slotted containers
- * @attr {boolean} [data-pad]       — Apply padding inside the content surface
- * @attr {enum}    [data-gap]       — sm | base | lg — gap between stacked content children
+ * @attr {enum}    [data-content]    — "static" — stacks children vertically instead of using the CSS grid
+ * @attr {enum}    [data-fill]       — "viewport" — clamps the layout to the viewport height
+ * @attr {boolean} [data-pad]        — Adds padding inside the content surface
+ * @attr {enum}    [data-gap]        — sm | base | lg — gap between stacked children in static mode
+ * @attr {boolean} [data-editable]   — Enables drag-to-reposition for slotted containers
  *
- * @slot view-header — Optional sherpa-view-header, sits above the grid surface full-width
- * @slot (default)   — sherpa-container children
+ * @slot view-header      — Optional sherpa-view-header above the content surface
+ * @slot side-panel-start — Leading side rail
+ * @slot side-panel-end   — Trailing side rail
+ * @slot (default)        — Main page content (sherpa-container tiles, filters, tables, charts, and similar content)
  *
  * @fires layout-reorder — Fires after a successful reposition.
  *   bubbles: true, composed: true

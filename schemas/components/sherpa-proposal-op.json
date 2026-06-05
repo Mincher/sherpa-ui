@@ -17,13 +17,13 @@
         "add-edge",
         "remove-edge"
       ]
-    },
-    {
-      "name": "data-label",
-      "type": "string",
-      "description": "Body text describing the change."
     }
   ],
-  "slots": [],
+  "slots": [
+    {
+      "name": "",
+      "description": "Label text describing the change"
+    }
+  ],
   "events": []
 }

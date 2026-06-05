@@ -13,10 +13,12 @@ Layout patterns provide the foundational structure for application views. They d
 **Purpose:** Full-page application layout with persistent navigation
 
 **Structure:**
-- `<sherpa-app-shell>` — Full-page layout shell (nav + product bar + content)
+- `<sherpa-app-shell>` — Full-page layout shell (nav + product bar + main content)
 - `<sherpa-nav>` — Global navigation sidebar (slot="nav" on app-shell)
 - `<sherpa-product-bar-v2>` — Top product bar (slot="product-bar" on app-shell)
-- `<sherpa-layout-grid>` — Main content area (default slot on app-shell)
+- `<sherpa-layout-grid data-content="static" data-fill="viewport">` — Main page content grid in the app shell's default slot
+- `<sherpa-view-header slot="view-header">` — Page title and actions inside the layout grid
+- `<sherpa-data-grid>`, `<sherpa-panel>`, `<sherpa-container>` — Body content, rails, and cards inside the layout grid
 
 **When to use:**
 - Starting a new application
@@ -27,6 +29,7 @@ Layout patterns provide the foundational structure for application views. They d
 - Responsive navigation (collapsible on mobile)
 - Sticky header and nav
 - Scrollable content area
+- Layout grid header / rails / body composition
 - Footer at bottom
 
 ---
@@ -180,9 +183,9 @@ Layout patterns provide the foundational structure for application views. They d
   <sherpa-app-shell>
     <sherpa-nav slot="nav">...</sherpa-nav>
     <sherpa-product-bar-v2 slot="product-bar" data-product-name="My App"></sherpa-product-bar-v2>
-    <sherpa-layout-grid>
+    <sherpa-layout-grid data-content="static" data-fill="viewport" data-pad data-gap="base">
       <sherpa-view-header slot="view-header" data-label="Home"></sherpa-view-header>
-      <!-- page content -->
+      <!-- page content lives in the default slot of sherpa-layout-grid -->
     </sherpa-layout-grid>
   </sherpa-app-shell>
 
@@ -207,8 +210,9 @@ Page
     ├── Header (sherpa-product-bar)
     └── View (sherpa-layout-grid)
         ├── View Header (sherpa-view-header, slot="view-header")
-        ├── Filters (sherpa-filter-bar)
-        ├── Content (sherpa-container / sherpa-data-grid)
+    ├── Left rail (slot="side-panel-start")
+    ├── Content (default slot: sherpa-container / sherpa-data-grid / filters)
+    ├── Right rail (slot="side-panel-end")
         └── Footer (sherpa-pagination / actions)
 ```
 

@@ -75,6 +75,14 @@
       "description": "Close the menu"
     },
     {
+      "name": "getSelectedValues()",
+      "description": "Get values of all checked menu items"
+    },
+    {
+      "name": "clearSelection()",
+      "description": "Uncheck all menu items"
+    },
+    {
       "name": "getMenuTemplate(id)",
       "description": "Return menu template HTML by id",
       "static": true,

@@ -9,20 +9,23 @@ All 13 patterns indexed at `patterns/index.json`.
 
 ## `app-shell`
 **Use when:** Building a full application with a collapsible sidebar nav.
-**Components:** `sherpa-nav`, `sherpa-view-header`, `sherpa-filter-bar`, `sherpa-layout-grid`
-**CSS:** 2-column grid — `var(--nav-column-width)` + `1fr`, `height: 100vh`
+**Components:** `sherpa-app-shell`, `sherpa-nav`, `sherpa-product-bar-v2`, `sherpa-layout-grid`, `sherpa-view-header`, `sherpa-filter-bar`
+**CSS:** app shell reserves the nav rail; the main view uses `<sherpa-layout-grid data-content="static" data-fill="viewport">`
 
 ```
 ┌──nav──┬─────────────────────────────────┐
-│       │  sherpa-view-header             │
-│       │  sherpa-filter-bar              │
+│       │  sherpa-product-bar-v2          │
 │       │  ┌──────────────────────────┐   │
 │       │  │  sherpa-layout-grid      │   │
+│       │  │  view-header slot        │   │
+│       │  │  default slot: content   │   │
 │       │  └──────────────────────────┘   │
 └───────┴─────────────────────────────────┘
 ```
 
 Key attributes on `sherpa-nav`: `data-pinned="false"` (collapsed by default), `data-searchable`, `data-editable`
+
+Key attributes on `sherpa-layout-grid`: `data-content="static"` for stacked page content, `data-fill="viewport"` to clamp the shell height, `data-pad`, `data-gap="base"`, `slot="view-header"`, `slot="side-panel-start"`, and `slot="side-panel-end"`
 
 ---
 

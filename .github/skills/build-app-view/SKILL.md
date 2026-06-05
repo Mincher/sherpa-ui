@@ -53,50 +53,31 @@ Use `validate_usage` MCP tool to audit your HTML against schema.
 ## Step 3 — App Shell Structure
 
 ```html
-<style>
-  .sherpa-app-layout {
-    display: grid;
-    grid-template-columns: var(--nav-column-width, 48px) 1fr;
-    height: 100vh;
-  }
-  .sherpa-main-content {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    height: 100%;
-    overflow: hidden;
-  }
-  .sherpa-main-content-slot {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-  }
-</style>
-
-<div class="sherpa-app-layout">
-  <sherpa-nav data-pinned="false" data-searchable data-editable>
+<sherpa-app-shell>
+  <sherpa-nav slot="nav" data-pinned="false" data-searchable data-editable>
     <sherpa-nav-section data-label="Main">
       <sherpa-nav-item data-label="Dashboard" data-icon="&#xf3fd;"
                        data-route="/dashboard"></sherpa-nav-item>
-      <sherpa-nav-item data-label="Devices"   data-icon="&#xf108;"
+      <sherpa-nav-item data-label="Devices" data-icon="&#xf108;"
                        data-route="/devices"></sherpa-nav-item>
     </sherpa-nav-section>
   </sherpa-nav>
 
-  <div class="sherpa-main-content">
-    <sherpa-view-header data-label="Page Title">
+  <sherpa-product-bar-v2 slot="product-bar" data-product-name="My App"></sherpa-product-bar-v2>
+
+  <sherpa-layout-grid data-content="static" data-fill="viewport" data-pad data-gap="base">
+    <sherpa-view-header slot="view-header" data-label="Page Title">
       <sherpa-toolbar slot="actions">
         <sherpa-button data-label="Add" data-variant="primary"
                        data-icon-start="&#xf067;"></sherpa-button>
       </sherpa-toolbar>
     </sherpa-view-header>
-    <sherpa-filter-bar data-global></sherpa-filter-bar>
 
-    <div class="sherpa-main-content-slot">
-      <!-- View content goes here -->
-    </div>
-  </div>
-</div>
+    <!-- Page content goes in the default slot of sherpa-layout-grid -->
+    <sherpa-filter-bar data-global></sherpa-filter-bar>
+    <sherpa-data-grid></sherpa-data-grid>
+  </sherpa-layout-grid>
+</sherpa-app-shell>
 ```
 
 Listen for nav clicks:
@@ -111,14 +92,21 @@ nav.addEventListener('navitemclick', (e) => {
 
 ### Data list view
 ```html
-<div class="sherpa-list-layout">
+<sherpa-layout-grid data-content="static" data-fill="viewport" data-pad data-gap="base">
+  <sherpa-view-header slot="view-header" data-label="Records">
+    <sherpa-toolbar slot="actions">
+      <sherpa-button data-label="Add" data-variant="primary"></sherpa-button>
+    </sherpa-toolbar>
+  </sherpa-view-header>
+
+  <sherpa-filter-bar></sherpa-filter-bar>
   <sherpa-data-grid data-show-pagination></sherpa-data-grid>
-</div>
+</sherpa-layout-grid>
 ```
 
 ### Dashboard
 ```html
-<sherpa-layout-grid>
+<sherpa-layout-grid data-pad data-gap="base">
   <!-- Metrics row: 4 × quarter-width cards -->
   <sherpa-container data-col-span="3">
     <sherpa-container-header data-title="Total"></sherpa-container-header>
@@ -177,7 +165,7 @@ nav.addEventListener('navitemclick', (e) => {
 <sherpa-layout-grid data-content="static" data-fill="viewport">
   <sherpa-view-header slot="view-header" data-label="Devices"></sherpa-view-header>
   <sherpa-panel slot="side-panel-start" data-label="Filters"></sherpa-panel>
-  <!-- body: scrollable main content -->
+  <!-- body: scrollable main content in the default slot -->
   <sherpa-data-grid data-show-pagination></sherpa-data-grid>
   <sherpa-panel slot="side-panel-end" data-label="Details"></sherpa-panel>
 </sherpa-layout-grid>
@@ -190,4 +178,5 @@ nav.addEventListener('navitemclick', (e) => {
 | `sherpa-button` directly in shell slot expecting tier 2 | Wrap in `sherpa-toolbar` or `sherpa-container` |
 | Inline `style="display: grid"` for layout | Use a CSS class with token-based values |
 | No `min-height: 0` on flex children | Add `min-height: 0` to flex/grid children that need to scroll |
-| `sherpa-filter-bar` without context | Set `data-global` for app-level, `data-embedded` inside a grid |
+| Page content placed directly in `<sherpa-app-shell>` | Put the view inside `<sherpa-layout-grid>` in the app shell's default slot |
+| `sherpa-filter-bar` without context | Place it inside the main layout grid and use `data-global` for app-level filtering |

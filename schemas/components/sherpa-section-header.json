@@ -48,11 +48,6 @@
   "events": [],
   "properties": [
     {
-      "name": "heading",
-      "type": "string",
-      "description": "Getter/setter for data-label"
-    },
-    {
       "name": "headingType",
       "type": "string",
       "description": "Getter/setter for data-heading-level"

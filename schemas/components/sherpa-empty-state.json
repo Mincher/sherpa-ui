@@ -20,11 +20,6 @@
       "name": "data-illustration",
       "type": "string",
       "description": "Built-in illustration name"
-    },
-    {
-      "name": "data-small-print",
-      "type": "string",
-      "description": "Footer small-print text"
     }
   ],
   "slots": [
@@ -56,27 +51,5 @@
       "description": "Footer content / small print"
     }
   ],
-  "events": [],
-  "properties": [
-    {
-      "name": "heading",
-      "type": "string",
-      "description": "Getter/setter for data-label"
-    },
-    {
-      "name": "description",
-      "type": "string",
-      "description": "Getter/setter for data-description"
-    },
-    {
-      "name": "illustration",
-      "type": "string",
-      "description": "Getter/setter for data-illustration"
-    },
-    {
-      "name": "smallPrint",
-      "type": "string",
-      "description": "Getter/setter for data-small-print"
-    }
-  ]
+  "events": []
 }

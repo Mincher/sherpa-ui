@@ -3,15 +3,19 @@
 
   Provides the structural frame for a full-page application:
     • Sidebar navigation (sherpa-nav)
-    • Main content area with view-header + optional global filter bar
-    • Scrollable content viewport with responsive grid
+    • Product bar (sherpa-product-bar-v2)
+    • Main content area composed with sherpa-layout-grid
 
-  Components: sherpa-nav, sherpa-view-header, sherpa-filter-bar
+  Components: sherpa-app-shell, sherpa-nav, sherpa-product-bar-v2,
+              sherpa-layout-grid, sherpa-view-header, sherpa-filter-bar
 
   Customisation:
     • Add nav items to sherpa-nav (via data-src-html or light-DOM children)
     • Set data-label on sherpa-view-header for the page title
-    • Add sherpa-container elements into <sherpa-layout-grid>
+    • Put the page inside <sherpa-layout-grid data-content="static" data-fill="viewport">
+    • Put the view header in the grid's slot="view-header"
+    • Put side rails in slot="side-panel-start" and slot="side-panel-end"
+    • Put the page body in the grid's default slot
     • Add data-global to sherpa-filter-bar for global filtering
     • Set data-preset-filters on sherpa-filter-bar for auto-created presets
 
@@ -63,16 +67,17 @@
   </style>
 
   <div class="sherpa-app-layout">
-    <sherpa-nav data-pinned="false" data-editable data-searchable></sherpa-nav>
+    <sherpa-nav slot="nav" data-pinned="false" data-editable data-searchable></sherpa-nav>
 
     <div class="sherpa-main-content">
       <header class="sherpa-view-header-group sherpa-scroll-under">
-        <sherpa-view-header data-label=""></sherpa-view-header>
-        <sherpa-filter-bar data-global></sherpa-filter-bar>
+        <sherpa-view-header slot="view-header" data-label=""></sherpa-view-header>
       </header>
 
       <div class="sherpa-main-content-slot">
-        <sherpa-layout-grid></sherpa-layout-grid>
+        <sherpa-layout-grid data-content="static" data-fill="viewport" data-pad data-gap="base">
+          <!-- Page body goes in the default slot -->
+        </sherpa-layout-grid>
       </div>
     </div>
   </div>

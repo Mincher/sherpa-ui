@@ -1,5 +1,6 @@
 [
   "sherpa-accordion",
+  "sherpa-app-shell",
   "sherpa-barchart",
   "sherpa-breadcrumbs",
   "sherpa-button",
@@ -34,7 +35,6 @@
   "sherpa-input-text",
   "sherpa-input-time",
   "sherpa-key-value-list",
-  "sherpa-app-shell",
   "sherpa-layout-grid",
   "sherpa-line-chart",
   "sherpa-list",
