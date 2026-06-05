@@ -98,9 +98,9 @@ Add to `.cursor/mcp.json` in your project:
 
 | Capability     | Count | What it gives the AI                                      |
 | -------------- | ----- | --------------------------------------------------------- |
-| **Tools**      | 15    | Actions the AI can call (query, generate, validate, search, compose, etc.) |
+| **Tools**      | 23    | Query, generate, validate, search, token resolution, component suggestions, flows |
 | **Resources**  | 250+  | Schemas, HTML templates, CSS, JS, READMEs, utilities, patterns, guidelines |
-| **Prompts**    | 1     | A guided workflow for building complete UI layouts          |
+| **Prompts**    | 4     | build_ui, review_component_usage, create_component, debug_component |
 
 The AI uses these automatically — you just ask it to build something with
 Sherpa components and it pulls in what it needs.
@@ -442,6 +442,50 @@ or extending it.
 
 ---
 
+### `server_info` — Server health check
+
+Returns the library version, counts of loaded schemas/tokens/patterns/utilities, startup time, and a list of all available tools and resources.
+
+**Use when:** At the start of a session to confirm the server is running and check what data is loaded.
+
+---
+
+### `get_token_value` — Resolve a token's value
+
+Follows a design token's alias chain to its concrete CSS value. Returns each step in the chain with the source file.
+
+**Input:**
+```json
+{ "name": "--sherpa-surface-app-background-default" }
+```
+
+**Output:**
+```
+--sherpa-surface-app-background-default
+  → var(--sherpa-color-neutral-0)  (sherpa-themes.css)
+  ↳ var(--core-color-basic-monochrome-0)  (sherpa-alias.css)
+Resolved: var(--core-color-basic-monochrome-0)
+```
+
+**Use when:** You need to understand what a token actually resolves to before using it in custom CSS.
+
+---
+
+### `suggest_components` — Semantic component recommendations
+
+Scores every component against a plain-English description and returns the best matches with rationale and quick stats.
+
+**Input:**
+```json
+{ "query": "filter a data table" }
+```
+
+**Output:** Ranked list of components with category, description, attribute counts, and a `query_component` follow-up call.
+
+**Use when:** You're not sure which component to use and want a ranked recommendation before committing to one.
+
+---
+
 ### `get_architecture` — Layered architecture rules
 
 Returns the canonical architecture rules for the library: layer separation
@@ -466,13 +510,16 @@ The AI can read these reference documents directly from the server:
 | `sherpa://guidelines/copilot-instructions`  | Canonical agent guidance — full coding rules   |
 | `sherpa://guidelines/api-standard`          | JSDoc format and attribute naming conventions  |
 | `sherpa://guidelines/component-template`    | Starter template for new components            |
+| `sherpa://guidelines/css-file-template`     | CSS file structure, section order, nesting rules |
 | `sherpa://guidelines/token-usage`           | How to use design tokens correctly             |
 | `sherpa://guidelines/text-styles`           | Typography scale and text utility classes      |
 | `sherpa://schema/{tagName}`                 | JSON schema for any component                  |
 | `sherpa://template/{tagName}`               | Raw HTML template for any component            |
 | `sherpa://component/{tagName}/css`          | Raw CSS source for any component               |
 | `sherpa://component/{tagName}/js`           | Raw JS source for any component                |
+| `sherpa://component/{tagName}/examples`     | Structured examples for any component          |
 | `sherpa://component/{tagName}/readme`       | Generated README for any component             |
+| `sherpa://css-utility/{className}`          | JSON schema for a CSS utility class            |
 | `sherpa://utility/{id}`                     | Source for a utility module (FlowManager etc.) |
 | `sherpa://pattern/{patternId}`              | View layout or UX pattern HTML                 |
 
@@ -490,6 +537,36 @@ context and the library's rules.
 
 **Example:** "Build a settings page with a form containing text inputs for
 name and email, a password input, and save/cancel buttons."
+
+---
+
+**`review_component_usage`** — Audit existing HTML for correctness and anti-patterns. Injects the component schemas for all Sherpa tags found in the HTML, plus COMPONENT-API-STANDARD.md and CSS-FILE-TEMPLATE.md so CSS and TypeScript violations can be flagged too.
+
+| Argument  | Required | Description                                    |
+| --------- | -------- | ---------------------------------------------- |
+| `html`    | Yes      | HTML to review                                 |
+| `context` | No       | What the HTML is supposed to do                |
+
+---
+
+**`create_component`** — Scaffold a new Sherpa UI component following library conventions. Injects the full COMPONENT-TEMPLATE.md, COMPONENT-API-STANDARD.md, and CSS-FILE-TEMPLATE.md so the AI has the complete authoring contract.
+
+| Argument      | Required | Description                        |
+| ------------- | -------- | ---------------------------------- |
+| `tagName`     | Yes      | Component tag name                 |
+| `description` | Yes      | What the component does            |
+| `category`    | No       | Category for the component         |
+| `attributes`  | No       | Comma-separated attribute names    |
+
+---
+
+**`debug_component`** — Step-by-step diagnosis for a component that isn't working. Injects the full component schema, COMPONENT-API-STANDARD.md, CSS-FILE-TEMPLATE.md, and a structured diagnostic checklist covering attributes, slots, events, CSS imports, shadow DOM, and token usage.
+
+| Argument  | Required | Description                               |
+| --------- | -------- | ----------------------------------------- |
+| `tagName` | Yes      | Component tag name                        |
+| `issue`   | Yes      | What's wrong or not working               |
+| `html`    | No       | The HTML being used                       |
 
 ---
 
@@ -608,21 +685,40 @@ new data.
 ```
 sherpa-ui/
 ├── mcp-server/
-│   └── index.js              ← MCP server (stdio transport)
+│   ├── index.js              ← Entry point (stdio transport)
+│   ├── server.js             ← Server factory: loads data, registers everything
+│   ├── lib/
+│   │   ├── loader.js         ← Data loading (schemas, tokens+values, patterns, utils)
+│   │   ├── validation.js     ← HTML audit (unknown attrs, enum values, self-closing)
+│   │   ├── generators.js     ← HTML/flow/pattern generation
+│   │   ├── icons.js          ← Font Awesome icon→entity map
+│   │   └── logger.js         ← stderr-only logger
+│   ├── tools/
+│   │   ├── component.js      ← query_component, list_components, generate_component
+│   │   ├── examples.js       ← get_component_source/examples, list_component_examples
+│   │   ├── tokens.js         ← browse_tokens, list_token_groups, get_token_value
+│   │   ├── patterns.js       ← list/get/generate_pattern, compose_view, generate_flow
+│   │   ├── utilities.js      ← list/get_utility, list/get_css_utility
+│   │   ├── search.js         ← search_api (paginated), suggest_components
+│   │   └── meta.js           ← server_info, validate_usage, get_architecture
+│   ├── resources/
+│   │   └── index.js          ← All sherpa:// resource registrations
+│   └── prompts/
+│       └── index.js          ← build_ui, review_component_usage, create_component, debug_component
 ├── schemas/
 │   ├── component-schema.json ← JSON Schema definition
 │   └── components/
-│       ├── index.json        ← List of all 53 tag names
+│       ├── index.json        ← List of all component tag names
 │       ├── sherpa-button.json
 │       └── ...               ← One JSON file per component
 ├── patterns/
 │   ├── index.json            ← Pattern catalog (generated)
 │   ├── layouts/              ← View layout patterns (HTML)
 │   ├── feedback/             ← Feedback/state patterns (HTML)
-│   └── flows/                ← CRUD flow patterns (HTML)
+│   └── flows/                ← CRUD flow patterns (HTML + JSON)
 ├── components/               ← Component source (HTML templates served)
 ├── docs/                     ← Guidelines served as resources
-├── css/styles/               ← Token CSS files scanned by browse_tokens
+├── css/styles/               ← Token CSS files scanned by browse_tokens (values captured)
 └── .github/
     └── copilot-instructions.md
 ```

@@ -129,7 +129,13 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
     setTimeout(() => {
       this.emit('close');
+      const container = this.parentElement;
       this.remove();
+      if (container?.childElementCount === 0) {
+        const pos = container.dataset["position"];
+        if (pos) delete SherpaToast.#containers[pos];
+        container.remove();
+      }
     }, 300);
   }
 
@@ -185,7 +191,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     style.textContent = `
       .sherpa-toast-container {
         position: fixed;
-        z-index: var(--sherpa-z-toast, 1100);
+        z-index: var(--sherpa-z-toast, 1050);
         display: flex;
         flex-direction: column;
         gap: var(--sherpa-space-xs, 8px);
@@ -212,6 +218,9 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
       const el = document.createElement('div');
       el.className = 'sherpa-toast-container';
       el.dataset["position"] = position;
+      el.setAttribute('role', 'log');
+      el.setAttribute('aria-live', 'polite');
+      el.setAttribute('aria-relevant', 'additions');
       document.body.appendChild(el);
       SherpaToast.#containers[position] = el;
     }

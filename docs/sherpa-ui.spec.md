@@ -374,8 +374,43 @@ Architectural decisions are documented in individual ADR files in [`docs/adr/`](
 
 ### 10.6 Observability contract
 
-*   **MCP tools:** schemas, sources, tokens, utilities, patterns, and architecture rules are queryable through registered tools.
-*   **MCP resources:** `sherpa://schema/{tag}`, `sherpa://template/{tag}`, `sherpa://component/{tag}/{kind}`, `sherpa://utility/{id}`, `sherpa://pattern/{id}`, `sherpa://guidelines/{slug}`.
+The MCP server (`mcp-server/`) provides AI coding assistants with structured access to the full library surface. It runs as a stdio transport (v2.0.0) and exposes tools, resources, and prompts.
+
+#### Tools (23)
+
+| Module | Tools |
+|--------|-------|
+| Component | `query_component`, `list_components`, `generate_component` |
+| Examples | `get_component_source`, `get_component_examples`, `list_component_examples` |
+| Tokens | `browse_tokens`, `list_token_groups`, `get_token_value` |
+| Patterns | `list_patterns`, `get_pattern`, `generate_pattern`, `compose_view`, `generate_flow` |
+| Utilities | `list_utilities`, `get_utility`, `list_css_utilities`, `get_css_utility` |
+| Search | `search_api`, `suggest_components` |
+| Meta | `server_info`, `validate_usage`, `get_architecture` |
+
+`generate_pattern` is v2.0 behaviour-driven: it generates complete HTML + JavaScript with `FlowManager`/`FormManager` wiring for `add-entity-flow`, `edit-entity-flow`, and `delete-entity-flow` patterns.
+
+#### Resources (250+, `sherpa://` URI scheme)
+
+| URI pattern | Content |
+|-------------|---------|
+| `sherpa://guidelines/{slug}` | `copilot-instructions`, `api-standard`, `component-template`, `css-file-template`, `token-usage`, `text-styles` |
+| `sherpa://schema/{tag}` | JSON API schema for any component |
+| `sherpa://template/{tag}` | Raw HTML template for any component |
+| `sherpa://component/{tag}/{kind}` | `kind` ∈ `css`, `js`, `examples`, `readme` |
+| `sherpa://css-utility/{className}` | JSON schema for a CSS utility class |
+| `sherpa://utility/{id}` | Source for a utility module (FlowManager, FormManager, etc.) |
+| `sherpa://pattern/{id}` | View layout or UX pattern HTML |
+
+#### Prompts (4)
+
+| Name | Purpose |
+|------|---------|
+| `build_ui` | Generate a complete UI layout from component API + patterns |
+| `review_component_usage` | Audit HTML for schema violations, CSS anti-patterns, TS violations |
+| `create_component` | Scaffold a new component with full template, API standard, and CSS standard injected |
+| `debug_component` | Diagnose a broken component with schema + CSS/TS standards injected |
+
 *   **Custom events** are the runtime observability surface (see CON-03).
 *   **Generated artifacts:** `schemas/components/*.json`, `patterns/index.json`, per-component `README.md`.
 

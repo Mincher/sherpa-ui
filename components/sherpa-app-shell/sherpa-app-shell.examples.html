@@ -1,0 +1,55 @@
+<!--
+  sherpa-app-shell — Live examples.
+-->
+<template
+  data-label="Standard app shell"
+  data-description="Full-page application shell with nav, product bar, and a dashboard grid."
+  data-layout="block"
+>
+  <sherpa-app-shell>
+    <sherpa-nav slot="nav" data-track-recents="false"></sherpa-nav>
+    <sherpa-product-bar-v2 slot="product-bar" data-product-name="My App"></sherpa-product-bar-v2>
+    <sherpa-layout-grid>
+      <sherpa-view-header slot="view-header" data-label="Dashboard"></sherpa-view-header>
+      <sherpa-container data-variant="resizable" data-col-span="6">
+        <sherpa-container-header slot="header" data-title="Overview"></sherpa-container-header>
+      </sherpa-container>
+      <sherpa-container data-variant="resizable" data-col-span="6">
+        <sherpa-container-header slot="header" data-title="Activity"></sherpa-container-header>
+      </sherpa-container>
+    </sherpa-layout-grid>
+  </sherpa-app-shell>
+</template>
+
+<template
+  data-label="Shell with static content"
+  data-description="App shell using sherpa-layout-grid in static (non-grid) mode for scrollable list/form views."
+  data-layout="block"
+>
+  <sherpa-app-shell>
+    <sherpa-nav slot="nav" data-track-recents="false"></sherpa-nav>
+    <sherpa-product-bar-v2 slot="product-bar" data-product-name="My App"></sherpa-product-bar-v2>
+    <sherpa-layout-grid data-content="static" data-fill="viewport" data-pad data-gap="base">
+      <sherpa-view-header slot="view-header" data-label="Settings"></sherpa-view-header>
+      <sherpa-panel data-bordered data-heading="Profile" data-expanded>
+        <p>Profile settings go here.</p>
+      </sherpa-panel>
+      <sherpa-panel data-bordered data-heading="Security" data-expanded>
+        <p>Security settings go here.</p>
+      </sherpa-panel>
+    </sherpa-layout-grid>
+  </sherpa-app-shell>
+</template>
+
+<template
+  data-label="Shell without product bar"
+  data-description="The product-bar slot is empty — the bar row collapses automatically."
+  data-layout="block"
+>
+  <sherpa-app-shell>
+    <sherpa-nav slot="nav" data-track-recents="false"></sherpa-nav>
+    <sherpa-layout-grid>
+      <sherpa-view-header slot="view-header" data-label="No product bar"></sherpa-view-header>
+    </sherpa-layout-grid>
+  </sherpa-app-shell>
+</template>

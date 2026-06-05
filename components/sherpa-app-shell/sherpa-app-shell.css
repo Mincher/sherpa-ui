@@ -1,0 +1,84 @@
+/**
+ * sherpa-app-shell.css — Shadow-scoped full-page application shell.
+ *
+ * Structure (flex row):
+ *   :host (flex row, 100dvh, position: relative)
+ *   ├── .nav-slot (position: absolute — does NOT participate in flex flow)
+ *   │   └── <slot name="nav">
+ *   └── .app-main (flex: 1, flex column — sole flex item, fills width)
+ *       ├── .product-bar-row (flex: 0 0 auto)
+ *       │   └── <slot name="product-bar">
+ *       └── .content-row (flex: 1 1 auto)
+ *           └── <slot> (default)
+ *
+ * Nav rail behaviour:
+ *   The nav is absolutely positioned so it never participates in flex flow.
+ *   .app-main uses margin-inline-start to carve out the nav rail reservation:
+ *     — collapsed (default): --_nav-rail-width = 60px
+ *     — pinned:              --_nav-rail-width = 320px
+ *   On hover (not pinned), sherpa-nav expands its own host width from 60px
+ *   to 320px — but since it is absolutely positioned this overlays main
+ *   rather than pushing it. Only the pinned toggle reflows the content area.
+ */
+
+:host {
+  --_nav-rail-width: calc(var(--sherpa-space-default, 20px) * 3);
+
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+:host:has([slot="nav"][data-pinned="true"]) {
+  --_nav-rail-width: 320px;
+}
+
+/* ── Nav slot ──────────────────────────────────────────────────── */
+
+/* Absolutely positioned — removed from flex flow so hover expansion
+   overlays main instead of pushing it. */
+.nav-slot {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 10000;
+}
+
+/* ── App main ──────────────────────────────────────────────────── */
+
+/* Sole flex item — fills all available width. margin-inline-start
+   reserves space for the nav rail; transitions only on pinned toggle. */
+.app-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  margin-inline-start: var(--_nav-rail-width);
+  transition: margin-inline-start var(--sherpa-motion-duration-base, 200ms) var(--sherpa-motion-easing-default, ease-out);
+}
+
+/* ── Product bar row ───────────────────────────────────────────── */
+
+.product-bar-row {
+  flex: 0 0 auto;
+}
+
+:host(:not([data-has-product-bar])) .product-bar-row {
+  display: none;
+}
+
+/* ── Content row ───────────────────────────────────────────────── */
+
+.content-row {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+::slotted(*) {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}

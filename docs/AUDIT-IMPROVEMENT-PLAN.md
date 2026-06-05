@@ -1,7 +1,8 @@
 # Sherpa UI — Codebase Audit & Improvement Plan
 
 > Audit date: 25 May 2026  
-> Scope: All components assessed against established HTML-first / CSS-first principles.
+> Scope: All components assessed against established HTML-first / CSS-first principles.  
+> Status legend: **Open** — not yet fixed · **In Progress** — work underway · **Resolved** — fix merged
 
 ---
 
@@ -18,27 +19,27 @@ The Sherpa-UI library demonstrates a mature, well-structured Web Components arch
 
 ## Priority Matrix
 
-| # | Priority | Component | Issue | Impact |
-|---|----------|-----------|-------|--------|
-| 1 | **Critical** | `sherpa-toast` | Container memory leak — empty containers never removed | DOM bloat, performance degradation |
-| 2 | **Critical** | `sherpa-tooltip` | CSS anchor positioning fallback incomplete | Tooltip invisible in non-supporting browsers |
-| 3 | **High** | `sherpa-toast` | Z-index higher than tooltip (`1100` vs `10000`) | Potential stacking-order inversion |
-| 4 | **High** | `sherpa-tooltip` | Singleton instance never removed from DOM | Memory leak in SPAs |
-| 5 | **High** | `sherpa-nav-section` | `.hidden = false` on shadow DOM internals (3×) | Breaks CSS visibility contract |
-| 6 | **High** | `sherpa-message` | `.hidden = true/false` on shadow DOM internals | Breaks CSS visibility contract |
-| 7 | **Medium** | `sherpa-toast` | Missing `aria-live` on toast container | Screen readers miss dynamically added toasts |
-| 8 | **Medium** | `sherpa-code-block` | CDN dependency with no SRI hash or error fallback | Silent failure on CDN outage |
-| 9 | **Medium** | `sherpa-tooltip` | CSS fallback missing `left` / `right` position rules | Broken positioning in some browsers |
-| 10 | **Medium** | `sherpa-input-select` | `placeholderOpt.hidden = true` on shadow DOM internal | Breaks CSS visibility contract |
-| 11 | **Medium** | `sherpa-breadcrumbs` | No `aria-label` on breadcrumb `<nav>` | Screen reader navigation context missing |
-| 12 | **Medium** | `sherpa-view-header` | `tag.hidden = false` + heavy `createElement` usage | JS creating structural DOM |
-| 13 | **Low** | `sherpa-toast` | CSS placeholder section comments left in stylesheet | Code bloat, confuses developers |
-| 14 | **Low** | `sherpa-icon` | SVG registry never cleared — accumulates in SPAs | Gradual memory growth |
-| 15 | **Low** | `sherpa-code-block` | `classList.toggle('hljs-dark', ...)` for visual state | Should be driven by `data-theme` + CSS selector |
-| 16 | **Low** | `sherpa-input-base` | `opacity: 0.45` for disabled state | Should use inactive tokens per property |
-| 17 | **Low** | `sherpa-nav` | CSS Highlight API used without feature detection guard | Runtime error in non-supporting browsers |
-| 18 | **Low** | `sherpa-tag` | `light-dark()` used in component CSS | Contradicts the "no `light-dark()` in components" rule |
-| 19 | **Low** | `sherpa-nav-item` | `light-dark()` used in component CSS | Same as above |
+| # | Priority | Status | Component | Issue | Impact |
+|---|----------|--------|-----------|-------|--------|
+| 1 | **Critical** | Open | `sherpa-toast` | Container memory leak — empty containers never removed | DOM bloat, performance degradation |
+| 2 | **Critical** | Open | `sherpa-tooltip` | CSS anchor positioning fallback incomplete | Tooltip invisible in non-supporting browsers |
+| 3 | **High** | Open | `sherpa-toast` | Z-index higher than tooltip (`1100` vs `10000`) | Potential stacking-order inversion |
+| 4 | **High** | Open | `sherpa-tooltip` | Singleton instance never removed from DOM | Memory leak in SPAs |
+| 5 | **High** | Open | `sherpa-nav-section` | `.hidden = false` on shadow DOM internals (3×) | Breaks CSS visibility contract |
+| 6 | **High** | Open | `sherpa-message` | `.hidden = true/false` on shadow DOM internals | Breaks CSS visibility contract |
+| 7 | **Medium** | Open | `sherpa-toast` | Missing `aria-live` on toast container | Screen readers miss dynamically added toasts |
+| 8 | **Medium** | Open | `sherpa-code-block` | CDN dependency with no SRI hash or error fallback | Silent failure on CDN outage |
+| 9 | **Medium** | Open | `sherpa-tooltip` | CSS fallback missing `left` / `right` position rules | Broken positioning in some browsers |
+| 10 | **Medium** | Open | `sherpa-input-select` | `placeholderOpt.hidden = true` on shadow DOM internal | Breaks CSS visibility contract |
+| 11 | **Medium** | Open | `sherpa-breadcrumbs` | No `aria-label` on breadcrumb `<nav>` | Screen reader navigation context missing |
+| 12 | **Medium** | Open | `sherpa-view-header` | `tag.hidden = false` + heavy `createElement` usage | JS creating structural DOM |
+| 13 | **Low** | Open | `sherpa-toast` | CSS placeholder section comments left in stylesheet | Code bloat, confuses developers |
+| 14 | **Low** | Open | `sherpa-icon` | SVG registry never cleared — accumulates in SPAs | Gradual memory growth |
+| 15 | **Low** | Open | `sherpa-code-block` | `classList.toggle('hljs-dark', ...)` for visual state | Should be driven by `data-theme` + CSS selector |
+| 16 | **Low** | Open | `sherpa-input-base` | `opacity: 0.45` for disabled state | Should use inactive tokens per property |
+| 17 | **Low** | Open | `sherpa-nav` | CSS Highlight API used without feature detection guard | Runtime error in non-supporting browsers |
+| 18 | **Low** | Open | `sherpa-tag` | `light-dark()` used in component CSS | Contradicts the "no `light-dark()` in components" rule |
+| 19 | **Low** | Open | `sherpa-nav-item` | `light-dark()` used in component CSS | Same as above |
 
 ---
 

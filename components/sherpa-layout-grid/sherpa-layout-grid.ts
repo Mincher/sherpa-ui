@@ -9,13 +9,14 @@
  *   web component so the grid setup, breakpoints, and span rules are
  *   shadow-scoped and don't leak into consumer CSS.
  *
- * @attr {string}  [data-row-height]      — CSS length for grid-auto-rows (default: 160px)
- * @attr {enum}    [data-content]         — "static" — opts out of grid; stacks children
- * @attr {boolean} [data-editable]        — Enables drag-to-reposition for slotted containers
- * @attr {string}  [data-heading]         — Heading text shown on the grid header strip
- * @attr {string}  [data-export-title]    — Title used when exporting the grid (PDF / image)
+ * @attr {string}  [data-row-height] — CSS length for grid-auto-rows (default: 160px)
+ * @attr {enum}    [data-content]    — "static" — opts out of grid; stacks children vertically
+ * @attr {boolean} [data-editable]  — Enables drag-to-reposition for slotted containers
+ * @attr {boolean} [data-pad]       — Apply padding inside the content surface
+ * @attr {enum}    [data-gap]       — sm | base | lg — gap between stacked content children
  *
- * @slot (default) — sherpa-container children
+ * @slot view-header — Optional sherpa-view-header, sits above the grid surface full-width
+ * @slot (default)   — sherpa-container children
  *
  * @fires layout-reorder — Fires after a successful reposition.
  *   bubbles: true, composed: true
@@ -27,7 +28,6 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
-import "../sherpa-view-header/sherpa-view-header.js";
 
 export class SherpaLayoutGrid extends SherpaElement {
   static override get htmlUrl(): string {
@@ -43,30 +43,19 @@ export class SherpaLayoutGrid extends SherpaElement {
       ...super.observedAttributes,
       "data-row-height",
       "data-editable",
-      "data-heading",
-      "data-export-title",
     ];
   }
 
-  els = this.cacheElements({
-    header: 'sherpa-view-header.grid-header'
-  });
-
-  /** @type {HTMLElement|null} */
   #dragSource: Element | null = null;
 
   override onRender(): void {
     this.#syncRowHeight();
     this.#syncEditable();
-    this.#syncHeader();
   }
 
   override onAttributeChanged(name: string, _old: string | null, _new: string | null): void {
-    if (name === "data-row-height") {
-      this.#syncRowHeight();
-    }
+    if (name === "data-row-height") this.#syncRowHeight();
     if (name === "data-editable") this.#syncEditable();
-    if (name === "data-heading" || name === "data-export-title") this.#syncHeader();
   }
 
   override onDisconnect(): void {
@@ -84,17 +73,6 @@ export class SherpaLayoutGrid extends SherpaElement {
     } else {
       this.style.removeProperty("--row-height");
     }
-  }
-
-  #syncHeader() {
-    const header = this.els.header;
-    if (!header) return;
-    const heading = this.getAttribute("data-heading");
-    if (heading != null) header.setAttribute("data-label", heading);
-    else header.removeAttribute("data-label");
-    const exportTitle = this.getAttribute("data-export-title");
-    if (exportTitle != null) header.setAttribute("data-export-title", exportTitle);
-    else header.removeAttribute("data-export-title");
   }
 
   #syncEditable() {

@@ -1,0 +1,29 @@
+<!--
+  sherpa-app-shell.html — Shadow DOM template for sherpa-app-shell.
+
+  Layout (:host is a flex row):
+    .nav-slot  — position: absolute; does not participate in flex flow.
+                 sherpa-nav expands on hover over the main area (overlay, no reflow).
+                 margin-inline-start on .app-main reserves the collapsed/pinned rail width.
+    .app-main  — flex: 1; sole flex item; flex column
+      .product-bar-row — flex: 0 0 auto; 48px product bar
+      .content-row     — flex: 1; hosts sherpa-layout-grid
+
+  Slots:
+    nav          — sherpa-nav element
+    product-bar  — sherpa-product-bar-v2 element
+    (default)    — sherpa-layout-grid
+-->
+<template id="default">
+  <div class="nav-slot">
+    <slot name="nav"></slot>
+  </div>
+  <div class="app-main">
+    <div class="product-bar-row">
+      <slot name="product-bar"></slot>
+    </div>
+    <div class="content-row">
+      <slot></slot>
+    </div>
+  </div>
+</template>

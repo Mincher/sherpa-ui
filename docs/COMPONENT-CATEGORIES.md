@@ -14,7 +14,7 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 
 | Role        | Tier | Purpose                                                        | Examples                                                                                                              |
 | ----------- | :--: | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `shell`     | 1 | Top-level page scaffolding.                                       | `sherpa-view-header`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-nav`, `sherpa-layout-grid`, `sherpa-layout-view` |
+| `shell`     | 1 | Top-level page scaffolding.                                       | `sherpa-app-shell`, `sherpa-view-header`, `sherpa-product-bar-v2`, `sherpa-nav`, `sherpa-layout-grid` |
 | `nav`       | 1 | Navigation chrome children, only inside the `shell` nav rail.     | `sherpa-nav-item`, `sherpa-nav-section` |
 | `container` | 2 | Surfaces that hold other components.                              | `sherpa-container`, `sherpa-container-header`, `sherpa-accordion`, `sherpa-panel`, `sherpa-container-footer` |
 | `overlay`   | 2 | Floating UI surfaces.                                             | `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-menu`, `sherpa-menu-item` |
@@ -29,6 +29,13 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 
 > Some components naturally span two purposes (e.g. `sherpa-gauge-chart` is
 > both `media` and `display`). Pick the **primary** role.
+
+> **Note — MCP tool categories vs roles:** The `list_components` MCP tool
+> filters by 8 browsing categories (`core`, `layout`, `navigation`, `form`,
+> `data-display`, `data-viz`, `feedback`, `page-level`). These are discovery
+> groupings for AI assistants and do not map 1:1 to the 11 roles above.
+> Roles are the architectural composability contract; tool categories are a
+> practical browsing convenience. The two taxonomies coexist intentionally.
 
 ---
 

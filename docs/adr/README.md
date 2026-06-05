@@ -112,6 +112,15 @@ Any specific guidance for implementing this decision (optional).
 
 - [ADR-007: Custom Events Bubble; Cross Shadow Only When Needed](0007-custom-events-bubble.md) — Event propagation policy
 
+### Responsive Layout
+
+- [ADR-010: Container Queries Only in Component CSS](0010-container-queries-only.md) — No viewport @media in components; use @container
+
+### Application Patterns
+
+- [ADR-011: CRUD Flows via Composition, Not a Flow Component](0011-crud-flow-composition.md) — FlowManager + FormManager app-utils; no `<sherpa-flow>`
+- [ADR-012: Status via CSS Cascade, Not Per-Component Blocks](0012-status-cascade.md) — `[data-status]` sets `--_status-*` private vars; components consume them
+
 ---
 
 ## Complete Index Table
@@ -127,6 +136,9 @@ Any specific guidance for implementing this decision (optional).
 | [0007](0007-custom-events-bubble.md) | Custom Events Bubble; Cross Shadow Only When Needed | Accepted | 2024 |
 | [0008](0008-constructable-stylesheets.md) | Constructable Stylesheets Cached Per `cssUrl` | Accepted | 2024 |
 | [0009](0009-consolidate-override-layers.md) | Consolidate Override Layers (Density + Status → Overrides) | Accepted | 2026-05-28 |
+| [0010](0010-container-queries-only.md) | Container Queries Only in Component CSS | Accepted | 2026-06-05 |
+| [0011](0011-crud-flow-composition.md) | CRUD Flows via Composition, Not a Flow Component | Accepted | 2026-06-05 |
+| [0012](0012-status-cascade.md) | Status via CSS Cascade, Not Per-Component Blocks | Accepted | 2026-06-05 |
 
 ## Resources
 

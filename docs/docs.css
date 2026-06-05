@@ -14,46 +14,6 @@
      .docs-table             — API reference table
 ============================================================================= */
 
-/* ── App shell ────────────────────────────────────────────────────────────── */
-
-.docs-shell {
-  display: block;
-  position: relative;
-  height: 100dvh;
-  overflow: hidden;
-  /* z-index removed: stacking context now managed by nav and overlays only */
-  /* Reserved left gutter for the nav. Defaults to the nav's collapsed
-     rail width (--_w-collapsed inside sherpa-nav = calc(space-default * 3)
-     = 60px). When the nav is pinned open, sherpa-nav mirrors data-pinned
-     onto its host and we widen the rail so the content area reflows —
-     when unpinned, the nav overlay-expands on hover without pushing
-     content. Hover/search/edit expansion is purely visual; only
-     data-pinned drives the layout. */
-  --docs-nav-rail: calc(var(--sherpa-space-default, 20px) * 3);
-}
-
-/* Pinned nav → reserve full expanded width so content sits beside the nav. */
-.docs-shell:has(> #docs-nav-panel[data-pinned="true"]) {
-  --docs-nav-rail: 320px;
-}
-
-#docs-nav-panel {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  z-index: 10000; /* Ensure nav is above outlet and most overlays */
-}
-
-#docs-view {
-  height: 100%;
-  width: calc(100% - var(--docs-nav-rail));
-  margin-inline-start: var(--docs-nav-rail);
-  transition:
-    width var(--sherpa-motion-duration-base, 0.25s) var(--sherpa-motion-easing-default, ease-out),
-    margin-inline-start var(--sherpa-motion-duration-base, 0.25s)
-      var(--sherpa-motion-easing-default, ease-out);
-}
-
 /* ── Outlet scroll ─────────────────────────────────────────────────────────── */
 
 #docs-outlet {
@@ -453,4 +413,115 @@
   grid-template-columns: repeat(var(--_cg-columns, 3), 1fr);
   gap: var(--sherpa-space-xs, 8px);
   grid-auto-rows: var(--_cg-row-height, auto);
+}
+
+/* ── MCP generated example pages ────────────────────────────────────────────── */
+
+.docs-mcp-page > .sherpa-section-header:first-child,
+.docs-mcp-overview-page > .sherpa-section-header:first-child {
+  margin-block-end: var(--sherpa-space-lg, 24px);
+}
+
+.docs-mcp-page > sherpa-view-header {
+  display: block;
+  margin-block-end: var(--sherpa-space-lg, 24px);
+}
+
+.docs-mcp-page > sherpa-layout-grid + sherpa-layout-grid,
+.docs-mcp-page > sherpa-section-header + sherpa-layout-grid,
+.docs-mcp-page > sherpa-tabs + sherpa-filter-bar,
+.docs-mcp-page > sherpa-filter-bar + sherpa-data-grid,
+.docs-mcp-page > sherpa-section-header + sherpa-data-grid {
+  margin-block-start: var(--sherpa-space-lg, 24px);
+}
+
+.docs-mcp-page sherpa-callout {
+  display: block;
+  margin-block-start: var(--sherpa-space-2xl, 32px);
+}
+
+.docs-mcp-page sherpa-callout ul,
+.docs-mcp-page sherpa-callout [slot="content"] ul {
+  margin: 0;
+  padding-inline-start: var(--sherpa-space-default, 16px);
+  display: grid;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+.docs-mcp-intro .docs-mcp-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: mcp-step;
+  display: grid;
+  gap: var(--sherpa-space-sm, 12px);
+}
+
+.docs-mcp-intro .docs-mcp-steps li {
+  counter-increment: mcp-step;
+  padding-inline-start: var(--sherpa-space-2xl, 32px);
+  position: relative;
+  color: var(--sherpa-text-default-body, #333);
+}
+
+.docs-mcp-intro .docs-mcp-steps li::before {
+  content: counter(mcp-step);
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  width: var(--sherpa-size-lg, 24px);
+  height: var(--sherpa-size-lg, 24px);
+  border-radius: 9999px;
+  background: var(--sherpa-surface-context-info-strong-default, #4a7eff);
+  color: var(--sherpa-text-on-color-default, #fff);
+  font: var(--sherpa-text-label-sm, 600 12px/24px 'Manrope', sans-serif);
+  text-align: center;
+}
+
+.docs-mcp-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-default, 16px);
+  color: var(--sherpa-text-default-body, #333);
+}
+
+.docs-mcp-card-body .sherpa-icon {
+  color: var(--sherpa-icon-context-brand-default, #4a7eff);
+}
+
+.docs-mcp-card-desc {
+  margin: 0;
+  font: var(--sherpa-text-body-sm, 14px/1.5 'Manrope', sans-serif);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+.docs-mcp-card-meta {
+  margin-block-start: auto;
+}
+
+.docs-mcp-server-stats dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--sherpa-space-2xs, 4px) var(--sherpa-space-default, 16px);
+  margin: 0;
+}
+
+.docs-mcp-server-stats dt {
+  font-weight: 600;
+  color: var(--sherpa-text-default-secondary, #5c5c66);
+}
+
+.docs-mcp-server-stats dd {
+  margin: 0;
+  color: var(--sherpa-text-default-body, #333);
+}
+
+.docs-mcp-server-foot {
+  margin-block-start: var(--sherpa-space-default, 16px);
+  padding-block-start: var(--sherpa-space-sm, 12px);
+  border-block-start: 1px solid var(--sherpa-border-container-default, rgba(0, 0, 0, 0.08));
+  font-size: var(--sherpa-font-sm-size, 12px);
+  color: var(--sherpa-text-default-secondary, #5c5c66);
 }

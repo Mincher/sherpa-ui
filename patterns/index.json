@@ -216,7 +216,8 @@
     "file": "patterns/layouts/view-with-rails.html",
     "status": "stable",
     "components": [
-      "sherpa-layout-view",
+      "sherpa-layout-grid",
+      "sherpa-view-header",
       "sherpa-panel",
       "sherpa-data-grid"
     ]

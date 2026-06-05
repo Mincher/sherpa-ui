@@ -41,6 +41,16 @@
     transform: translateX(-50%);
     margin-top: var(--sherpa-space-2xs, 0.375rem);
   }
+
+  :host([data-position="left"]) {
+    transform: translateX(-100%) translateY(-50%);
+    margin-left: calc(-1 * var(--sherpa-space-2xs, 0.375rem));
+  }
+
+  :host([data-position="right"]) {
+    transform: translateX(0) translateY(-50%);
+    margin-left: var(--sherpa-space-2xs, 0.375rem);
+  }
 }
 :host([data-visible="true"]) {
   display: block;

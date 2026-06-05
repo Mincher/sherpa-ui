@@ -1,6 +1,7 @@
 # Master-Detail Grid Investigation
 
 **Date:** June 4, 2026  
+**Status:** Backlog — `data-expandable-rows` API not yet implemented in `sherpa-data-grid`  
 **Investigation:** Phase 2, Priority 2.3  
 **Goal:** Add master-detail (expandable detail rows) to sherpa-data-grid
 

@@ -1,6 +1,7 @@
 # Advanced Select Investigation
 
 **Date:** June 4, 2026  
+**Status:** Partial — `data-template="tree"` confirmed in `sherpa-input-select`; `data-template="multi"` (flat multi-select) and multi-select tree not yet implemented  
 **Investigation:** Phase 2, Priority 2.2  
 **Goal:** Create multi-select and tree-select via composition
 

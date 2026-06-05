@@ -5,6 +5,8 @@
  *   #/                        → Home page (category grid)
  *   #/category/:id            → Category overview (component grid)
  *   #/components/:tag         → Component detail page
+ *   #/experimental/:id        → Experimental page (docs/pages/experimental-*.html)
+ *   #/mcp-demo/:id            → MCP-generated example page (MCP Generated Content/*.html)
  *
  * Navigation is built dynamically from /schemas/components/index.json
  * so it stays in sync with the MCP server's source of truth.
@@ -536,19 +538,31 @@ function setActiveNavItem(path) {
   if (!nav) return;
 
   const normalised = path.startsWith('/') ? path : `/${path}`;
-  // Derive itemId: '/' → home item, '/components/:tag' → tag, '/experimental/:id' → experimental/:id
-  const itemId = normalised === '/' ? '/' : normalised.replace(/^\/components\//, '').replace(/^\//, '');
+  // Derive itemId for nav.setActiveItem.
+  //   '/'                          → '/'
+  //   '/components/:tag'           → ':tag'           (matches data-item-id on nav items)
+  //   '/category/:id'              → ':id'            (no nav item — sets nothing)
+  //   '/experimental/:id'          → 'experimental/:id'
+  //   '/mcp-demo/:id'              → 'mcp-demo/:id'
+  let itemId;
+  if (normalised === '/') {
+    itemId = '/';
+  } else if (normalised.startsWith('/components/')) {
+    itemId = normalised.replace(/^\/components\//, '');
+  } else {
+    itemId = normalised.replace(/^\//, '');
+  }
   nav.setActiveItem?.(itemId);
 }
 
 function setViewHeading(heading, breadcrumbs = null) {
-  const view = document.getElementById('docs-view');
-  if (!view) return;
-  view.dataset.heading = heading;
+  const header = document.getElementById('docs-view-header');
+  if (!header) return;
+  header.setAttribute('data-label', heading);
   if (breadcrumbs && breadcrumbs.length) {
-    view.setAttribute('data-breadcrumbs', JSON.stringify(breadcrumbs));
+    header.setAttribute('data-breadcrumbs', JSON.stringify(breadcrumbs));
   } else {
-    view.removeAttribute('data-breadcrumbs');
+    header.removeAttribute('data-breadcrumbs');
   }
 }
 
@@ -571,6 +585,7 @@ function parseHash(hash) {
   if (parts[0] === 'category'     && parts[1]) return { type: 'category',     id:  parts[1] };
   if (parts[0] === 'components'   && parts[1]) return { type: 'component',    tag: parts[1] };
   if (parts[0] === 'experimental' && parts[1]) return { type: 'experimental', id:  parts[1] };
+  if (parts[0] === 'mcp-demo'     && parts[1]) return { type: 'mcp-demo',     id:  parts[1] };
   return { type: 'not-found', path };
 }
 
@@ -625,7 +640,7 @@ async function renderCurrentRoute() {
   setActiveNavItem(path);
 
   // Scroll: either reset to top, or jump to a pending child-section anchor.
-  const viewContent = document.getElementById('docs-view')?.shadowRoot?.querySelector('[part="content"]');
+  const viewContent = document.getElementById('docs-grid')?.shadowRoot?.querySelector('[part="surface"]');
   if (pendingScrollAnchor && outlet) {
     const id = pendingScrollAnchor;
     pendingScrollAnchor = null;
@@ -808,6 +823,30 @@ async function renderRoute(route) {
     return;
   }
 
+  if (route.type === 'mcp-demo') {
+    // MCP-generated example pages live in /MCP Generated Content/*.html.
+    // Folders aren't normally served, so we encode each id as
+    // `MCP%20Generated%20Content/{id}.html`.
+    const prettyLabel = (route.id || '')
+      .split('-')
+      .map(p => p[0]?.toUpperCase() + p.slice(1))
+      .join(' ');
+    setViewHeading(prettyLabel, [
+      { label: 'Home', href: '#/' },
+      { label: 'MCP Examples', href: '#/mcp-demo/overview' },
+    ]);
+    try {
+      await mountMcpDemoPartial(route.id);
+    } catch (e) {
+      outlet.innerHTML = buildNotFound(`/mcp-demo/${escapeHtml(route.id)}`);
+      console.warn('[docs] mcp-demo load failed:', e);
+    }
+    bindOutletLinks();
+    highlightOutlet();
+    runPendingSetups();
+    return;
+  }
+
   setViewHeading('Not found', [{ label: 'Home', href: '#/' }]);
   outlet.innerHTML = buildNotFound(escapeHtml(route.path ?? ''));
   bindOutletLinks();
@@ -846,6 +885,52 @@ async function loadPagePartial(name) {
 async function mountPartial(name) {
   const tpl  = await loadPagePartial(name);
   outlet.replaceChildren(tpl.content.cloneNode(true));
+  return outlet;
+}
+
+/**
+ * Load an MCP-generated example page from the top-level
+ * `MCP Generated Content/` directory. Spaces in the path are percent-encoded
+ * by the browser when the file is served from a sub-folder-less dev server.
+ *
+ * Side effect: looks for a sibling `${id}.setup.js` and registers every
+ * exported key in the global `pendingSetups` map. HTML elements carrying
+ * `data-setup-key="<name>"` will then have that callback applied via
+ * `runPendingSetups()`.
+ */
+async function mountMcpDemoPartial(id) {
+  // Cache lives outside partialCache so MCP partials don't clash on name.
+  const cacheKey = `mcp:${id}`;
+  let tpl;
+  if (partialCache.has(cacheKey)) {
+    tpl = partialCache.get(cacheKey);
+  } else {
+    const url = `/MCP%20Generated%20Content/${encodeURIComponent(id)}.html`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to load MCP demo: ${id} (${res.status})`);
+    const html = await res.text();
+    tpl = document.createElement('template');
+    tpl.innerHTML = html;
+    partialCache.set(cacheKey, tpl);
+  }
+  outlet.replaceChildren(tpl.content.cloneNode(true));
+
+  // Load the sibling setup module (if any) and register every export as a
+  // pending setup. Page authors can then add `data-setup-key="<name>"`
+  // on any example block to wire it up to the matching callback.
+  try {
+    const setupUrl = `/MCP%20Generated%20Content/${encodeURIComponent(id)}.setup.js`;
+    const mod = await import(/* @vite-ignore */ setupUrl);
+    const set = (mod.default && typeof mod.default === 'object') ? mod.default : null;
+    if (set) {
+      for (const [name, fn] of Object.entries(set)) {
+        if (typeof fn === 'function') pendingSetups.set(name, fn);
+      }
+    }
+  } catch {
+    /* setup file is optional */
+  }
+
   return outlet;
 }
 

@@ -1,6 +1,7 @@
 # Node Component Consolidation Analysis
 
 **Date:** June 4, 2026  
+**Status:** Partial — deprecation of `sherpa-node-header` in favour of `sherpa-node-row data-variant="header"` is decided and documented; 5 example usages in `sherpa-node-canvas.examples.html` still need updating; v3.0 removal timeline not formalised  
 **Investigation:** Phase 1, Priority 1.2  
 **Goal:** Reduce node component count by consolidating `sherpa-node-header` into `sherpa-node-row`
 

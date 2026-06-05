@@ -13,10 +13,10 @@ Layout patterns provide the foundational structure for application views. They d
 **Purpose:** Full-page application layout with persistent navigation
 
 **Structure:**
-- `<sherpa-nav>` — Global navigation sidebar
-- `<sherpa-product-bar>` — Top header with branding
-- `<sherpa-layout-view>` — Main content area
-- `<sherpa-container-footer>` — Global footer
+- `<sherpa-app-shell>` — Full-page layout shell (nav + product bar + content)
+- `<sherpa-nav>` — Global navigation sidebar (slot="nav" on app-shell)
+- `<sherpa-product-bar-v2>` — Top product bar (slot="product-bar" on app-shell)
+- `<sherpa-layout-grid>` — Main content area (default slot on app-shell)
 
 **When to use:**
 - Starting a new application
@@ -177,10 +177,14 @@ Layout patterns provide the foundational structure for application views. They d
 </head>
 <body>
   <!-- Copy pattern HTML here -->
-  <div class="app-shell">
-    <sherpa-nav>...</sherpa-nav>
-    <sherpa-layout-view>...</sherpa-layout-view>
-  </div>
+  <sherpa-app-shell>
+    <sherpa-nav slot="nav">...</sherpa-nav>
+    <sherpa-product-bar-v2 slot="product-bar" data-product-name="My App"></sherpa-product-bar-v2>
+    <sherpa-layout-grid>
+      <sherpa-view-header slot="view-header" data-label="Home"></sherpa-view-header>
+      <!-- page content -->
+    </sherpa-layout-grid>
+  </sherpa-app-shell>
 
   <script type="module">
     import 'sherpa-ui';
@@ -201,8 +205,8 @@ Page
 └── App Shell
     ├── Navigation (sherpa-nav)
     ├── Header (sherpa-product-bar)
-    └── View (sherpa-layout-view)
-        ├── View Header (sherpa-view-header)
+    └── View (sherpa-layout-grid)
+        ├── View Header (sherpa-view-header, slot="view-header")
         ├── Filters (sherpa-filter-bar)
         ├── Content (sherpa-container / sherpa-data-grid)
         └── Footer (sherpa-pagination / actions)

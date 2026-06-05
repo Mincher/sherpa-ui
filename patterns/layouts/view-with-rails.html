@@ -2,9 +2,8 @@
   view-with-rails — Body-content view bounded to the viewport with
   optional left/right side rails and a scrolling content column.
 
-  Uses the sherpa-layout-view primitive — the body-area sibling of
-  sherpa-layout-grid. Provides:
-    • Embedded view header
+  Uses sherpa-layout-grid in static (non-grid) mode. Provides:
+    • Slotted view header (sherpa-view-header)
     • Left rail (filters / list navigation) — sticky search, scrolls
       independently
     • Right rail (details / inspector) — scrolls independently
@@ -16,12 +15,12 @@
   — typically:
       html, body { height: 100dvh; overflow: hidden; }
 
-  Components: sherpa-layout-view, sherpa-panel, sherpa-data-grid,
-              sherpa-key-value-list
+  Components: sherpa-layout-grid, sherpa-view-header, sherpa-panel,
+              sherpa-data-grid, sherpa-key-value-list
 
   Customisation:
-    • data-heading on sherpa-layout-view sets the embedded view-header label
-    • data-fill="parent" if embedded inside another viewport-bound layout
+    • slot="view-header" on sherpa-view-header sets the heading
+    • data-content="static" opts out of the CSS grid (stacks vertically)
     • data-pad / data-gap for the content column
     • Either rail may be omitted by removing the slotted sherpa-panel
     • Use slot="search" on the rail's sherpa-panel for a sticky
@@ -31,14 +30,15 @@
 <template id="view-with-rails"
   data-pattern-category="layouts"
   data-pattern-status="stable"
-  data-pattern-components="sherpa-layout-view, sherpa-panel, sherpa-data-grid">
+  data-pattern-components="sherpa-layout-grid, sherpa-view-header, sherpa-panel, sherpa-data-grid">
 
-  <sherpa-layout-view data-heading="Devices" data-pad data-gap="base">
+  <sherpa-layout-grid data-content="static" data-fill="viewport" data-pad data-gap="base">
 
-    <!-- Header trailing actions -->
-    <sherpa-toolbar slot="header-actions">
-      <sherpa-button data-label="Add" data-variant="primary" data-icon-start="&#xf067;"></sherpa-button>
-    </sherpa-toolbar>
+    <sherpa-view-header slot="view-header" data-label="Devices">
+      <sherpa-toolbar slot="actions">
+        <sherpa-button data-label="Add" data-variant="primary" data-icon-start="&#xf067;"></sherpa-button>
+      </sherpa-toolbar>
+    </sherpa-view-header>
 
     <!-- Left rail: searchable filter / navigation list -->
     <sherpa-panel
@@ -75,5 +75,5 @@
       <sherpa-key-value-list></sherpa-key-value-list>
     </sherpa-panel>
 
-  </sherpa-layout-view>
+  </sherpa-layout-grid>
 </template>

@@ -1,6 +1,7 @@
 # Navigation Component Consolidation Analysis
 
 **Date:** June 4, 2026  
+**Status:** No action — KEEP `sherpa-nav-item` separate (recommendation confirmed); alternative improvements (JSON-driven nav, icon API simplification) are backlog  
 **Investigation:** Phase 1, Priority 1.1  
 **Goal:** Reduce navigation component fragmentation by consolidating `sherpa-nav-item` and potentially `sherpa-nav-section` into `sherpa-nav`
 

@@ -23,7 +23,7 @@ The playground is **built entirely using Sherpa UI components**, demonstrating r
 
 ### Components Used
 
-- **`sherpa-layout-view`** — Main page layout
+- **`sherpa-layout-grid`** — Main page layout (static mode)
 - **`sherpa-layout-grid`** — Three-column grid (sidebar, main, api)
 - **`sherpa-container`** — Panels and sections
 - **`sherpa-container-header`** — Panel headers
@@ -88,7 +88,7 @@ This is a perfect example of **"eating our own dog food"** — the playground sh
 ### Component Architecture
 
 ```html
-<sherpa-layout-view>
+<sherpa-layout-grid data-content="static">
   <div slot="product-bar">
     <!-- Header with logo and sherpa-tag -->
   </div>
@@ -124,7 +124,7 @@ This is a perfect example of **"eating our own dog food"** — the playground sh
       </sherpa-container>
     </sherpa-layout-grid>
   </div>
-</sherpa-layout-view>
+</sherpa-layout-grid>
 ```
 
 ### Data Flow

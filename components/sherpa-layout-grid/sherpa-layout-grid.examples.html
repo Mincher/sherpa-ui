@@ -6,7 +6,8 @@
   data-description="A typical 6-tile dashboard. data-col-span sizes each card on a 12-column grid."
   data-layout="block"
 >
-  <sherpa-layout-grid data-heading="Platform status" data-row-height="140">
+  <sherpa-layout-grid data-row-height="140">
+    <sherpa-view-header slot="view-header" data-label="Platform status"></sherpa-view-header>
     <sherpa-container data-col-span="3">
       <sherpa-container-header slot="header" data-title="Devices online"></sherpa-container-header>
       <div slot="body" style="padding: var(--sherpa-space-default)">
@@ -94,7 +95,8 @@
   data-description="data-editable lets users drag tiles by the header and resize them."
   data-layout="block"
 >
-  <sherpa-layout-grid data-heading="Editable dashboard" data-editable data-row-height="120">
+  <sherpa-layout-grid data-editable data-row-height="120">
+    <sherpa-view-header slot="view-header" data-label="Editable dashboard"></sherpa-view-header>
     <sherpa-container data-col-span="3" data-editable>
       <sherpa-container-header
         slot="header"

@@ -73,7 +73,7 @@ Find a pattern that matches your use case in the categories above.
 
 ```html
 <!-- Example: Copy from patterns/layouts/list-view.html -->
-<sherpa-layout-view>
+<sherpa-layout-grid data-content="static">
   <sherpa-view-header data-label="Users"></sherpa-view-header>
   
   <sherpa-filter-bar>
@@ -85,7 +85,7 @@ Find a pattern that matches your use case in the categories above.
   </sherpa-data-grid>
   
   <sherpa-pagination></sherpa-pagination>
-</sherpa-layout-view>
+</sherpa-layout-grid>
 ```
 
 ### 3. Customize
@@ -142,12 +142,12 @@ Create a pattern when you:
   Accessibility: [Key a11y considerations]
 -->
 
-<sherpa-layout-view>
+<sherpa-layout-grid data-content="static">
   <!-- Main content -->
   <sherpa-container>
     <!-- Component composition -->
   </sherpa-container>
-</sherpa-layout-view>
+</sherpa-layout-grid>
 
 <!--
   Customization Notes:

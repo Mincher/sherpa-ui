@@ -68,14 +68,15 @@ Structure: view-header → repeating (`sherpa-section-header` + field group) →
 
 ## `view-with-rails`
 **Use when:** Main scrollable content bounded by sticky side panels (e.g. filter rail + detail rail, node graph + property panel).
-**Components:** `sherpa-layout-view`, `sherpa-panel`, `sherpa-data-grid`
+**Components:** `sherpa-layout-grid`, `sherpa-view-header`, `sherpa-panel`, `sherpa-data-grid`
 
-`sherpa-layout-view` slots:
-- `slot="start"` — left rail (optional)
-- `slot="end"` — right rail (optional)
+`sherpa-layout-grid data-content="static"` slots:
+- `slot="view-header"` — optional `sherpa-view-header` above the content area
+- `slot="side-panel-start"` — left rail (optional)
+- `slot="side-panel-end"` — right rail (optional)
 - default slot — scrollable main content
 
-Content area and rails scroll independently; entire layout is viewport-bounded.
+Content area and rails scroll independently; use `data-fill="viewport"` to bound the entire layout to the viewport.
 
 ---
 

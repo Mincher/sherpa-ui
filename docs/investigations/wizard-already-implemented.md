@@ -1,6 +1,7 @@
 # Wizard Component Investigation
 
 **Date:** June 4, 2026  
+**Status:** Partial — core wizard implemented as `sherpa-dialog data-template="wizard"` (80% parity); 3 enhancements backlog: stepper slot, `data-validate-on-next`, comprehensive examples  
 **Investigation:** Phase 2, Priority 2.1  
 **Goal:** Implement wizard as dialog variant
 

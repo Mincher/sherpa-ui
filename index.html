@@ -33,48 +33,55 @@
   <body>
 
     <!-- ── App shell ────────────────────────────────────────────────────── -->
-    <div class="docs-shell">
+    <sherpa-app-shell>
 
-      <!-- Left — full-height nav -->
       <sherpa-nav
+        slot="nav"
         id="docs-nav-panel"
         data-src-html="/docs/nav.html"
         data-track-recents="false"
       ></sherpa-nav>
 
-      <!-- Right — layout view with embedded view header -->
-      <sherpa-layout-view id="docs-view" data-fill="parent" data-heading="Sherpa UI">
+      <sherpa-product-bar-v2
+        slot="product-bar"
+        data-product-name="Sherpa UI"
+      ></sherpa-product-bar-v2>
 
-        <!-- Appearance controls forwarded to the view header's view-selection area -->
-        <sherpa-input-select
-          slot="header-actions"
-          id="theme-select"
-          data-size="small"
-          data-label="Theme"
-          data-layout="horizontal"
-        ></sherpa-input-select>
-        <sherpa-input-select
-          slot="header-actions"
-          id="mode-select"
-          data-size="small"
-          data-label="Mode"
-          data-layout="horizontal"
-        ></sherpa-input-select>
-        <sherpa-input-select
-          slot="header-actions"
-          id="density-select"
-          data-size="small"
-          data-label="Density"
-          data-layout="horizontal"
-        ></sherpa-input-select>
+      <sherpa-layout-grid id="docs-grid" data-content="static" data-fill="viewport">
+
+        <sherpa-view-header slot="view-header" id="docs-view-header" data-label="Sherpa UI">
+          <!-- Appearance controls -->
+          <sherpa-input-select
+            slot="view-selection"
+            id="theme-select"
+            data-size="small"
+            data-label="Theme"
+            data-layout="horizontal"
+          ></sherpa-input-select>
+          <sherpa-input-select
+            slot="view-selection"
+            id="mode-select"
+            data-size="small"
+            data-label="Mode"
+            data-layout="horizontal"
+          ></sherpa-input-select>
+          <sherpa-input-select
+            slot="view-selection"
+            id="density-select"
+            data-size="small"
+            data-label="Density"
+            data-layout="horizontal"
+          ></sherpa-input-select>
+        </sherpa-view-header>
 
         <!-- Router outlet -->
         <main id="docs-outlet" aria-live="polite" aria-label="Documentation content">
           <!-- Page content injected by router.js -->
         </main>
 
-      </sherpa-layout-view>
-    </div>
+      </sherpa-layout-grid>
+
+    </sherpa-app-shell>
 
     <script type="module" src="./dist/components/index.js"></script>
     <script type="module" src="./docs/router.js"></script>

@@ -76,10 +76,14 @@
   flex-direction: column;
 }
 :host .group-label {
+  display: none;
   margin: 0;
   padding: var(--sherpa-space-base, 16px) var(--sherpa-space-base, 16px)
     var(--sherpa-space-2xs, 4px);
   color: var(--sherpa-content-default-secondary, #464646);
+}
+:host .group[data-has-label] .group-label {
+  display: block;
 }
 :host .group-list {
   list-style: none;

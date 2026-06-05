@@ -25,6 +25,7 @@ export const COMPONENT_CATEGORIES: Record<string, ComponentCategory> = Object.fr
   'sherpa-accordion': 'container',
   'sherpa-barchart': 'media',
   'sherpa-breadcrumbs': 'control',
+  'sherpa-app-shell': 'shell',
   'sherpa-button': 'control',
   'sherpa-calendar': 'utility',
   'sherpa-callout': 'feedback',
@@ -59,7 +60,6 @@ export const COMPONENT_CATEGORIES: Record<string, ComponentCategory> = Object.fr
   'sherpa-input-time': 'input',
   'sherpa-key-value-list': 'content',
   'sherpa-layout-grid': 'shell',
-  'sherpa-layout-view': 'shell',
   'sherpa-line-chart': 'media',
   'sherpa-list': 'content',
   'sherpa-list-item': 'content',
@@ -118,6 +118,7 @@ export const ROLE_TIERS: Record<ComponentCategory, number> = Object.freeze({
 });
 
 export const COMPONENT_TIERS: Record<string, number> = Object.freeze({
+  'sherpa-app-shell': 1,
   'sherpa-accordion': 2,
   'sherpa-barchart': 4,
   'sherpa-breadcrumbs': 4,
@@ -155,7 +156,6 @@ export const COMPONENT_TIERS: Record<string, number> = Object.freeze({
   'sherpa-input-time': 4,
   'sherpa-key-value-list': 3,
   'sherpa-layout-grid': 1,
-  'sherpa-layout-view': 1,
   'sherpa-line-chart': 4,
   'sherpa-list': 3,
   'sherpa-list-item': 3,

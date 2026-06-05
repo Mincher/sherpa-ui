@@ -61,7 +61,7 @@
   flex: 0 0 auto;
   display: none;
 }
-:host([data-heading]) .grid-header {
+:host([data-has-view-header]) .grid-header {
   display: block;
 }
 :host .grid-body {
@@ -106,6 +106,18 @@
   flex-direction: column;
   grid-template-columns: none;
   grid-auto-rows: auto;
+}
+:host([data-pad]) .grid-surface {
+  padding: var(--sherpa-space-base, 16px);
+}
+:host([data-gap="sm"]) .grid-surface {
+  gap: var(--sherpa-space-sm, 12px);
+}
+:host([data-gap="base"]) .grid-surface {
+  gap: var(--sherpa-space-base, 16px);
+}
+:host([data-gap="lg"]) .grid-surface {
+  gap: var(--sherpa-space-lg, 24px);
 }
 :host([data-editable]) ::slotted(sherpa-container) {
   cursor: grab;

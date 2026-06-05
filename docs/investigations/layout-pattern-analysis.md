@@ -1,6 +1,7 @@
 # Layout & Pattern System Investigation
 
 **Date:** June 4, 2026  
+**Status:** Partial — `generate_pattern` implements 3 behaviour-driven flow patterns (add/edit/delete entity); full PIR (Presentation-Interaction-Resolution) schema and additional layout components are backlog  
 **Investigation:** Phase 4, Priority 4  
 **Goal:** Analyze layout system and transform pattern paradigm
 
@@ -23,7 +24,7 @@
 | Component | Purpose | Status |
 |-----------|---------|--------|
 | `sherpa-layout-grid` | 12-column responsive grid | ✅ Exists |
-| `sherpa-layout-view` | View container with header/footer | ✅ Exists |
+| `sherpa-app-shell` | Full-page app shell (nav + product bar + content) | ✅ Exists |
 | `sherpa-container` | Generic container | ✅ Exists |
 | `sherpa-container-header` | Container header | ✅ Exists |
 | `sherpa-container-footer` | Container footer | ✅ Exists |

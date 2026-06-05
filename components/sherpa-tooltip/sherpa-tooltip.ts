@@ -154,6 +154,13 @@ export const Tooltip = {
     return getInstance().showFor(anchor, text, options);
   },
   hide() { instance?.hide(); },
+  destroy() {
+    if (instance) {
+      instance.remove();
+      instance = null;
+      currentAnchor = null;
+    }
+  },
 };
 
 /* ── Declarative data-tooltip support ───────────────────────────── */

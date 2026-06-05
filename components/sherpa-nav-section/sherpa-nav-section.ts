@@ -198,7 +198,7 @@ export class SherpaNavSection extends SherpaElement {
     const listEl = node.querySelector(".group-list");
     if (group?.label && labelEl) {
       labelEl.textContent = group.label;
-      labelEl.hidden = false;
+      node.toggleAttribute('data-has-label', true);
     }
     for (const it of group?.items || []) {
       const itemNode = this.#buildItem(it, activeId);

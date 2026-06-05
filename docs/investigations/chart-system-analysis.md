@@ -1,6 +1,7 @@
 # Chart System Investigation
 
 **Date:** June 4, 2026  
+**Status:** Backlog — recommendations not yet actioned  
 **Investigation:** Phase 3, Priority 3  
 **Goal:** Analyze chart system and plan enhancements
 

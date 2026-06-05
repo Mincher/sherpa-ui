@@ -21,7 +21,7 @@ description: 'Build and compose a Sherpa UI app view or page. Use when: creating
 | Single record detail with metadata | `detail-view` | `sherpa-view-header`, `sherpa-breadcrumbs`, `sherpa-tabs`, `sherpa-key-value-list` |
 | Filterable table or list | `list-view` | `sherpa-view-header`, `sherpa-filter-bar`, `sherpa-data-grid` |
 | Settings or profile form | `settings-form` | `sherpa-view-header`, `sherpa-section-header`, inputs, `sherpa-button` |
-| Scrollable content with sticky side rails | `view-with-rails` | `sherpa-layout-view`, `sherpa-panel`, `sherpa-data-grid` |
+| Scrollable content with sticky side rails | `view-with-rails` | `sherpa-layout-grid`, `sherpa-view-header`, `sherpa-panel`, `sherpa-data-grid` |
 | Toolbar that hides overflow items | `flex-truncate` | `.flex-truncate` CSS utility class |
 
 See [references/layout-patterns.md](./references/layout-patterns.md) for full HTML structure and component list per pattern.
@@ -39,7 +39,7 @@ Components declare a role and belong to a tier. A slot at tier N can only accept
 
 | Tier | Roles | Examples |
 |------|-------|---------|
-| 1 | `shell`, `nav` | `sherpa-nav`, `sherpa-view-header`, `sherpa-layout-grid`, `sherpa-layout-view` |
+| 1 | `shell`, `nav` | `sherpa-app-shell`, `sherpa-nav`, `sherpa-view-header`, `sherpa-layout-grid` |
 | 2 | `container`, `overlay` | `sherpa-container`, `sherpa-dialog`, `sherpa-panel`, `sherpa-accordion` |
 | 3 | `content` | `sherpa-toolbar`, `sherpa-tabs`, `sherpa-list`, `sherpa-section-header`, `sherpa-key-value-list` |
 | 4 | `control`, `input`, `display`, `feedback`, `media`, `data` | buttons, inputs, metrics, charts, grids |
@@ -174,12 +174,13 @@ nav.addEventListener('navitemclick', (e) => {
 ## Step 5 — View-with-Rails
 
 ```html
-<sherpa-layout-view>
-  <sherpa-panel slot="start" data-label="Filters"></sherpa-panel>
+<sherpa-layout-grid data-content="static" data-fill="viewport">
+  <sherpa-view-header slot="view-header" data-label="Devices"></sherpa-view-header>
+  <sherpa-panel slot="side-panel-start" data-label="Filters"></sherpa-panel>
   <!-- body: scrollable main content -->
   <sherpa-data-grid data-show-pagination></sherpa-data-grid>
-  <sherpa-panel slot="end" data-label="Details"></sherpa-panel>
-</sherpa-layout-view>
+  <sherpa-panel slot="side-panel-end" data-label="Details"></sherpa-panel>
+</sherpa-layout-grid>
 ```
 
 ## Common Mistakes
