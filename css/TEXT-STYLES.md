@@ -203,13 +203,13 @@ Components should:
 ## Text Color Tokens
 
 Use these tokens for text colors (not part of the text-styles section in style.css):
-- `--sherpa-text-default-body` - Primary body text
-- `--sherpa-text-default-secondary` - Secondary/muted text
-- `--sherpa-text-primary-default` - Primary brand color text
-- `--sherpa-text-context-success-default` - Success status text
-- `--sherpa-text-context-error-default` - Error status text
-- `--sherpa-text-context-warning-default` - Warning status text
-- And many more in `color-tokens.css`
+- `--sherpa-content-default-body` - Primary body text
+- `--sherpa-content-default-secondary` - Secondary/muted text
+- `--sherpa-content-primary-default` - Primary brand color text
+- `--sherpa-content-context-success-default` - Success status text
+- `--sherpa-content-context-error-default` - Error status text
+- `--sherpa-content-context-warning-default` - Warning status text
+- And many more in `sherpa-themes.css`
 
 ## Legacy Classes
 

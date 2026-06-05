@@ -82,7 +82,7 @@ owns the visual cascade including `color-scheme`. JS never touches
 
 .my-component {
   background-color: var(--sherpa-surface-container-default);
-  color: var(--sherpa-text-default-body);
+  color: var(--sherpa-content-default-body);
   padding: var(--sherpa-space-default);
   border-radius: var(--sherpa-border-rounding-base);
   box-shadow: var(--sherpa-effects-shadow-200);
@@ -112,7 +112,7 @@ link.href = '/css/styles/sherpa-theme-data-protection.css';
 
 ### 1. Color Tokens
 
-**Namespace:** `--sherpa-color-*`, `--sherpa-surface-*`, `--sherpa-text-*`, `--sherpa-icon-*`
+**Namespace:** `--sherpa-color-*`, `--sherpa-surface-*`, `--sherpa-content-*`
 
 #### Brand Colors
 ```css
@@ -129,13 +129,13 @@ link.href = '/css/styles/sherpa-theme-data-protection.css';
 --sherpa-color-info-*         /* Info/neutral states */
 ```
 
-#### Surface & Text
+#### Surface & Content
 ```css
 --sherpa-surface-container-default
 --sherpa-surface-container-hover
---sherpa-text-default-body
---sherpa-text-default-secondary
---sherpa-text-inactive-default
+--sherpa-content-default-body
+--sherpa-content-default-secondary
+--sherpa-content-inactive-default
 ```
 
 ### 2. Spacing Tokens
@@ -261,7 +261,7 @@ Common UI dimensions:
   border: var(--sherpa-border-width-xs) solid var(--sherpa-border-control-secondary-default);
   border-radius: var(--sherpa-border-rounding-base);
   font-size: var(--sherpa-fonts-scale-base);
-  color: var(--sherpa-text-default-body);
+  color: var(--sherpa-content-default-body);
 }
 
 .input:focus {

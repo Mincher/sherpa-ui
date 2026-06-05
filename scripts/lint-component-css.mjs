@@ -29,6 +29,7 @@ const explicitFiles = args.filter((a) => !a.startsWith("--"));
 // ── File discovery ─────────────────────────────────────────────────────────
 const COMPONENT_GLOB_ROOTS = [
   join(ROOT, "components"),
+  join(ROOT, "docs"),
 ];
 // Files exempt from the "no redeclare base rules" check.
 const BASE_SHEETS = new Set([
@@ -134,6 +135,19 @@ function lintFile(absPath, raw) {
       push("error", lineOf(raw, dm.index), "disabled-opacity",
         "Never use `opacity` for `[disabled]`. Apply inactive tokens per property (color / background / border).");
     }
+  }
+
+  // R8: stale token namespace — semantic color tokens were renamed from
+  // --sherpa-text-{default|inactive|primary|context|on-color}-* and
+  // --sherpa-icon-context-* to --sherpa-content-* in the apex-2 theme.
+  // Using the old names silently falls through to hardcoded light-mode fallbacks,
+  // producing dark text in dark mode. Component-API hooks like --sherpa-icon-color
+  // are not affected (they use a shorter path with no semantic segment).
+  for (const m of code.matchAll(
+    /var\(\s*(--sherpa-(?:text-(?:default|inactive|primary|context|on-color|placeholder)|icon-context)-[\w-]+)/g,
+  )) {
+    push("error", lineOf(raw, m.index), "stale-token-namespace",
+      `\`${m[1]}\` uses a removed namespace. Replace with the equivalent \`--sherpa-content-*\` token (e.g. --sherpa-text-default-body → --sherpa-content-default-body).`);
   }
 
   // R7: off-grid pixel literals.
