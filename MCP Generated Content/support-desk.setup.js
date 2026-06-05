@@ -1,6 +1,14 @@
 // @ts-nocheck
 // support-desk.setup.js — populates the Support Desk page and wires the
 // Add-ticket dialog up to a confirmation toast.
+//
+// The page does not render its own <sherpa-view-header>. The setup
+// script configures the docs shell's view-header (the one in
+// index.html that is a child of <sherpa-layout-grid>) via
+// globalThis.docsView.setHeading / setTitleIcon / setActions. The
+// "New ticket" trigger lives in the section-header's actions slot so
+// it stays inside the page root and the existing id-based wiring keeps
+// working.
 
 const TICKET_COLS = [
   { field: 'id',         name: 'ID',         type: 'string' },
@@ -30,23 +38,34 @@ const TICKETS = [
 const q = (root, sel) => root.querySelector(sel);
 
 export default {
-  'support-desk-page': async (root) => {
-    const all = root.querySelectorAll('*');
+  'support-desk-page': async (outlet) => {
+    // Configure the docs shell's view-header (sole view-header on page).
+    const view = globalThis.docsView;
+    view.setHeading('Tickets', [
+      { label: 'Support', href: '#/' },
+      { label: 'Queue' },
+    ]);
+    view.setTitleIcon('<span class="fa-solid fa-headset sherpa-icon" aria-hidden="true"></span>');
+    // Page actions (other than the New-ticket button which lives in the
+    // section-header's actions slot) could go here; none in this page.
+    view.setActions('');
+
+    const all = outlet.querySelectorAll('*');
     await Promise.all(
       [...all]
         .filter(el => el.tagName?.startsWith('SHERPA-') && el.rendered)
         .map(el => el.rendered)
     );
 
-    const grid = q(root, 'sherpa-data-grid');
+    const grid = q(outlet, 'sherpa-data-grid');
     grid?.setData?.({ columns: TICKET_COLS, rows: TICKETS });
 
-    // Wire New-ticket dialog: clicking the toolbar button opens the dialog,
-    // the dialog's confirm button dispatches a success toast.
-    const openBtn   = q(root, '#new-ticket-btn');
-    const dialog    = q(root, '#new-ticket-dialog');
-    const submitBtn = q(root, '#new-ticket-submit');
-    const cancelBtn = q(root, '#new-ticket-cancel');
+    // Wire New-ticket dialog: clicking the section-header button opens
+    // the dialog, the dialog's confirm button dispatches a success toast.
+    const openBtn   = q(outlet, '#new-ticket-btn');
+    const dialog    = q(outlet, '#new-ticket-dialog');
+    const submitBtn = q(outlet, '#new-ticket-submit');
+    const cancelBtn = q(outlet, '#new-ticket-cancel');
 
     openBtn?.addEventListener?.('button-click', () => dialog?.show?.());
     cancelBtn?.addEventListener?.('button-click', () => dialog?.hide?.());

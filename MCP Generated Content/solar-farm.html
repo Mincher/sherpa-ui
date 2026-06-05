@@ -5,168 +5,135 @@
   `compose_view` + `query_component` MCP calls.
   Data wired up by solar-farm.setup.js.
 
-  Layout: view-header is slotted into the first layout-grid (per the
-  new sherpa-layout-grid API). The page is content for the docs shell,
-  not a full sherpa-app-shell (the docs already provides one).
+  Layout: the page contributes its content directly to <main id="docs-outlet">
+  inside <sherpa-layout-grid id="docs-grid">. CSS grid auto-flow places the
+  metric and chart containers into rows based on their data-col-span values.
+  The page view-header is configured on the docs shell's view-header by
+  solar-farm.setup.js.
 -->
-<div class="docs-page docs-mcp-page" data-setup-key="solar-farm-page">
+<sherpa-section-header
+  data-label="Solar Farm Operations"
+  data-heading-level="primary"
+  data-divider="true"
+>
+  <sherpa-tag slot="badge" data-variant="secondary" data-status="success">MCP</sherpa-tag>
+  <sherpa-tag slot="badge" data-variant="secondary">7 components</sherpa-tag>
+  <p slot="description">
+    Operations dashboard for a 120&thinsp;MW utility-scale PV plant. Built
+    from the <code>dashboard-grid</code> layout pattern returned by
+    <code>get_pattern</code>, populated with solar-domain data the MCP
+    server's <code>query_component</code> calls confirmed. The setup
+    script calls <code>setData()</code> on every chart and the
+    <code>setSegments()</code> series gauge from real arrays.
+  </p>
+</sherpa-section-header>
 
-  <sherpa-section-header
-    data-label="Solar Farm Operations"
-    data-heading-level="primary"
-    data-divider="true"
-  >
-    <sherpa-tag slot="badge" data-variant="secondary" data-status="success">MCP</sherpa-tag>
-    <sherpa-tag slot="badge" data-variant="secondary">7 components</sherpa-tag>
-    <p slot="description">
-      Operations dashboard for a 120&thinsp;MW utility-scale PV plant. Built
-      from the <code>dashboard-grid</code> layout pattern returned by
-      <code>get_pattern</code>, populated with solar-domain data the MCP
-      server's <code>query_component</code> calls confirmed. The setup
-      script calls <code>setData()</code> on every chart and the
-      <code>setSegments()</code> series gauge from real arrays.
-    </p>
-  </sherpa-section-header>
+<!-- Metric row (auto-flows: four col-span=3 tiles fill a 12-col row) -->
+<sherpa-container data-variant="resizable" data-col-span="3">
+  <sherpa-container-header slot="header" data-title="Active Capacity"></sherpa-container-header>
+  <sherpa-metric
+    data-label="vs. nameplate"
+    data-status="success"
+    data-trend="up"
+    value="112.4 MW"
+    data-delta="+3.1%"
+  ></sherpa-metric>
+</sherpa-container>
 
-  <!-- Metric row + page view-header (slotted in the new layout-grid API) -->
-  <sherpa-layout-grid data-row-height="compact">
+<sherpa-container data-variant="resizable" data-col-span="3">
+  <sherpa-container-header slot="header" data-title="Energy Today"></sherpa-container-header>
+  <sherpa-metric
+    data-label="since 00:00 local"
+    data-trend="up"
+    value="486.2 MWh"
+    data-delta="+8.4%"
+  ></sherpa-metric>
+</sherpa-container>
 
-    <sherpa-view-header
-      slot="view-header"
-      data-label="Mojave Array — Site 04"
-      data-breadcrumbs='[{"label":"Operations","href":"#/"},{"label":"Solar Farms"},{"label":"Mojave 04"}]'
-    >
-      <span slot="title-icon" class="fa-solid fa-solar-panel sherpa-icon" aria-hidden="true"></span>
-      <sherpa-button
-        slot="actions"
-        data-variant="secondary"
-        data-size="small"
-        data-icon-start="fa-solid fa-arrow-up-right-from-square"
-        data-label="Open in SCADA"
-      ></sherpa-button>
-      <sherpa-button
-        slot="actions"
-        data-variant="primary"
-        data-size="small"
-        data-icon-start="fa-solid fa-file-export"
-        data-label="Export shift report"
-      ></sherpa-button>
-    </sherpa-view-header>
+<sherpa-container data-variant="resizable" data-col-span="3">
+  <sherpa-container-header slot="header" data-title="Performance Ratio"></sherpa-container-header>
+  <sherpa-metric
+    data-label="7-day rolling"
+    data-status="warning"
+    data-trend="down"
+    value="86.7%"
+    data-delta="−1.2%"
+  ></sherpa-metric>
+</sherpa-container>
 
-    <sherpa-container data-variant="resizable" data-col-span="3">
-      <sherpa-container-header slot="header" data-title="Active Capacity"></sherpa-container-header>
-      <sherpa-metric
-        data-label="vs. nameplate"
-        data-status="success"
-        data-trend="up"
-        value="112.4 MW"
-        data-delta="+3.1%"
-      ></sherpa-metric>
-    </sherpa-container>
+<sherpa-container data-variant="resizable" data-col-span="3">
+  <sherpa-container-header slot="header" data-title="Grid Feed-In"></sherpa-container-header>
+  <sherpa-metric
+    data-label="to CAISO"
+    data-trend="up"
+    value="108.1 MW"
+    data-delta="+2.7%"
+  ></sherpa-metric>
+</sherpa-container>
 
-    <sherpa-container data-variant="resizable" data-col-span="3">
-      <sherpa-container-header slot="header" data-title="Energy Today"></sherpa-container-header>
-      <sherpa-metric
-        data-label="since 00:00 local"
-        data-trend="up"
-        value="486.2 MWh"
-        data-delta="+8.4%"
-      ></sherpa-metric>
-    </sherpa-container>
+<!-- Charts row 1 (col-span=9 + col-span=3 fill a row) -->
+<sherpa-container data-variant="resizable" data-col-span="9" data-row-span="3">
+  <sherpa-container-header slot="header" data-title="Inverter Output — Last 24 hours" data-menu-button="true"></sherpa-container-header>
+  <sherpa-line-chart
+    data-title=""
+    data-variant="line"
+    style="height: 280px;"
+  ></sherpa-line-chart>
+</sherpa-container>
 
-    <sherpa-container data-variant="resizable" data-col-span="3">
-      <sherpa-container-header slot="header" data-title="Performance Ratio"></sherpa-container-header>
-      <sherpa-metric
-        data-label="7-day rolling"
-        data-status="warning"
-        data-trend="down"
-        value="86.7%"
-        data-delta="−1.2%"
-      ></sherpa-metric>
-    </sherpa-container>
+<sherpa-container data-variant="resizable" data-col-span="3" data-row-span="3">
+  <sherpa-container-header slot="header" data-title="Performance Ratio"></sherpa-container-header>
+  <sherpa-gauge-chart
+    data-title=""
+    data-variant="series"
+    data-label="PR target ≥ 90%"
+    style="height: 280px;"
+  ></sherpa-gauge-chart>
+</sherpa-container>
 
-    <sherpa-container data-variant="resizable" data-col-span="3">
-      <sherpa-container-header slot="header" data-title="Grid Feed-In"></sherpa-container-header>
-      <sherpa-metric
-        data-label="to CAISO"
-        data-trend="up"
-        value="108.1 MW"
-        data-delta="+2.7%"
-      ></sherpa-metric>
-    </sherpa-container>
+<!-- Charts row 2 (two col-span=6 tiles fill a row) -->
+<sherpa-container data-variant="resizable" data-col-span="6" data-row-span="3">
+  <sherpa-container-header slot="header" data-title="Energy by Array" data-menu-button="true"></sherpa-container-header>
+  <sherpa-barchart
+    data-title=""
+    data-orientation="horizontal"
+    data-sort-field="value"
+    data-sort-direction="desc"
+    style="height: 260px;"
+  ></sherpa-barchart>
+</sherpa-container>
 
-  </sherpa-layout-grid>
+<sherpa-container data-variant="resizable" data-col-span="6" data-row-span="3">
+  <sherpa-container-header slot="header" data-title="Source Mix" data-menu-button="true"></sherpa-container-header>
+  <sherpa-donut-chart
+    data-title=""
+    style="height: 260px;"
+  ></sherpa-donut-chart>
+</sherpa-container>
 
-  <!-- Charts row ────────────────────────────────────────────────────── -->
-  <sherpa-layout-grid>
+<sherpa-section-header
+  data-label="Open Alarms"
+  data-heading-level="secondary"
+  data-divider="true"
+>
+  <sherpa-tag slot="badge" data-variant="secondary" data-status="warning">3 active</sherpa-tag>
+</sherpa-section-header>
 
-    <sherpa-container data-variant="resizable" data-col-span="9" data-row-span="3">
-      <sherpa-container-header slot="header" data-title="Inverter Output — Last 24 hours" data-menu-button="true"></sherpa-container-header>
-      <sherpa-line-chart
-        data-title=""
-        data-variant="line"
-        style="height: 280px;"
-      ></sherpa-line-chart>
-    </sherpa-container>
+<sherpa-data-grid
+  data-label="Alarms"
+  data-page-size="5"
+  data-show-pagination
+  style="min-height: 320px;"
+></sherpa-data-grid>
 
-    <sherpa-container data-variant="resizable" data-col-span="3" data-row-span="3">
-      <sherpa-container-header slot="header" data-title="Performance Ratio"></sherpa-container-header>
-      <sherpa-gauge-chart
-        data-title=""
-        data-variant="series"
-        data-label="PR target ≥ 90%"
-        style="height: 280px;"
-      ></sherpa-gauge-chart>
-    </sherpa-container>
-
-    <sherpa-container data-variant="resizable" data-col-span="6" data-row-span="3">
-      <sherpa-container-header slot="header" data-title="Energy by Array" data-menu-button="true"></sherpa-container-header>
-      <sherpa-barchart
-        data-title=""
-        data-orientation="horizontal"
-        data-sort-field="value"
-        data-sort-direction="desc"
-        style="height: 260px;"
-      ></sherpa-barchart>
-    </sherpa-container>
-
-    <sherpa-container data-variant="resizable" data-col-span="6" data-row-span="3">
-      <sherpa-container-header slot="header" data-title="Source Mix" data-menu-button="true"></sherpa-container-header>
-      <sherpa-donut-chart
-        data-title=""
-        style="height: 260px;"
-      ></sherpa-donut-chart>
-    </sherpa-container>
-
-  </sherpa-layout-grid>
-
-  <!-- Alarms row ────────────────────────────────────────────────────── -->
-  <sherpa-section-header
-    data-label="Open Alarms"
-    data-heading-level="secondary"
-    data-divider="true"
-  >
-    <sherpa-tag slot="badge" data-variant="secondary" data-status="warning">3 active</sherpa-tag>
-  </sherpa-section-header>
-
-  <sherpa-data-grid
-    data-label="Alarms"
-    data-page-size="5"
-    data-show-pagination
-    style="height: 320px;"
-  ></sherpa-data-grid>
-
-  <!-- Source data attributes the MCP recommended ─────────────────── -->
-  <sherpa-callout
-    data-label="How this page was generated"
-    data-status="info"
-    data-variant="subtle"
-  >
-    <ul slot="content">
-      <li><code>get_pattern("dashboard-grid")</code> &rarr; returned the layout skeleton above</li>
-      <li><code>query_component("sherpa-metric" | "sherpa-line-chart" | "sherpa-barchart" | "sherpa-gauge-chart" | "sherpa-donut-chart" | "sherpa-data-grid")</code> &rarr; confirmed attribute names and <code>setData</code> payload shape</li>
-      <li><code>setGlobalFilterProvider</code> / <code>setDateFieldProvider</code> not needed &mdash; the data is static for this demo</li>
-    </ul>
-  </sherpa-callout>
-
-</div>
+<sherpa-callout
+  data-label="How this page was generated"
+  data-status="info"
+  data-variant="subtle"
+>
+  <ul slot="content">
+    <li><code>get_pattern("dashboard-grid")</code> &rarr; returned the layout skeleton above</li>
+    <li><code>query_component("sherpa-metric" | "sherpa-line-chart" | "sherpa-barchart" | "sherpa-gauge-chart" | "sherpa-donut-chart" | "sherpa-data-grid")</code> &rarr; confirmed attribute names and <code>setData</code> payload shape</li>
+    <li><code>setGlobalFilterProvider</code> / <code>setDateFieldProvider</code> not needed &mdash; the data is static for this demo</li>
+  </ul>
+</sherpa-callout>

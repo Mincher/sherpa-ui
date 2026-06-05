@@ -1,5 +1,11 @@
 // @ts-nocheck
 // orders.setup.js — feeds the Order Management page.
+//
+// The page does not render its own <sherpa-view-header>. The setup
+// script configures the docs shell's view-header (the one in
+// index.html that is a child of <sherpa-layout-grid>) via
+// globalThis.docsView.setHeading / setTitleIcon / setSelection /
+// setActions.
 
 const DATE_VALUE_COLS = [
   { field: 'date',  name: 'Date',  type: 'string' },
@@ -65,17 +71,42 @@ const ORDERS = [
 const q = (root, sel) => root.querySelector(sel);
 
 export default {
-  'orders-page': async (root) => {
-    const all = root.querySelectorAll('*');
+  'orders-page': async (outlet) => {
+    // Configure the docs shell's view-header (sole view-header on page).
+    const view = globalThis.docsView;
+    view.setHeading('Orders', [
+      { label: 'Storefront', href: '#/' },
+      { label: 'Operations', href: '#/' },
+      { label: 'Orders' },
+    ]);
+    view.setTitleIcon('<span class="fa-solid fa-cart-shopping sherpa-icon" aria-hidden="true"></span>');
+    view.setSelection(`
+      <sherpa-input-select data-label="Region" data-size="small">
+        <option value="all">All regions</option>
+        <option value="na">North America</option>
+        <option value="eu">Europe</option>
+        <option value="apac">Asia-Pacific</option>
+      </sherpa-input-select>
+    `);
+    view.setActions(`
+      <sherpa-button data-variant="secondary" data-size="small"
+        data-icon-start="fa-solid fa-file-export"
+        data-label="Export CSV"></sherpa-button>
+      <sherpa-button data-variant="primary" data-size="small"
+        data-icon-start="fa-solid fa-plus"
+        data-label="New order"></sherpa-button>
+    `);
+
+    const all = outlet.querySelectorAll('*');
     await Promise.all(
       [...all]
         .filter(el => el.tagName?.startsWith('SHERPA-') && el.rendered)
         .map(el => el.rendered)
     );
 
-    q(root, 'sherpa-line-chart')?.setData?.({ columns: DATE_VALUE_COLS, rows: REVENUE });
-    q(root, 'sherpa-donut-chart')?.setData?.({ columns: CAT_VALUE_COLS, rows: SOURCES });
-    q(root, 'sherpa-barchart')?.setData?.({ columns: CAT_VALUE_COLS, rows: STATUS });
-    q(root, 'sherpa-data-grid')?.setData?.({ columns: ORDER_COLS, rows: ORDERS });
+    q(outlet, 'sherpa-line-chart')?.setData?.({ columns: DATE_VALUE_COLS, rows: REVENUE });
+    q(outlet, 'sherpa-donut-chart')?.setData?.({ columns: CAT_VALUE_COLS, rows: SOURCES });
+    q(outlet, 'sherpa-barchart')?.setData?.({ columns: CAT_VALUE_COLS, rows: STATUS });
+    q(outlet, 'sherpa-data-grid')?.setData?.({ columns: ORDER_COLS, rows: ORDERS });
   },
 };

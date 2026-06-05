@@ -7,6 +7,11 @@
 //   • sherpa-donut-chart→ setData({ columns, rows })
 //   • sherpa-gauge-chart→ setSegments([{ value, color }])
 //   • sherpa-data-grid  → setData({ columns, rows })
+//
+// The page does not render its own <sherpa-view-header>. Instead, the
+// setup script configures the docs shell's view-header (the one in
+// index.html that is a child of <sherpa-layout-grid>) via
+// globalThis.docsView.setHeading / setTitleIcon / setActions.
 
 const CAT_VALUE_COLS = [
   { field: 'category', name: 'Category', type: 'string' },
@@ -68,22 +73,42 @@ const ALARMS_ROWS = [
 const q = (root, sel) => root.querySelector(sel);
 
 export default {
-  'solar-farm-page': async (root) => {
+  'solar-farm-page': async (outlet) => {
+    // Configure the docs shell's view-header — this is the only view-header
+    // on the page. The router's default for mcp-demo pages set the page
+    // group label; we override it with the specific site, plus the icon
+    // and the page-specific action buttons.
+    const view = globalThis.docsView;
+    view.setHeading('Mojave Array — Site 04', [
+      { label: 'Operations',   href: '#/' },
+      { label: 'Solar Farms',  href: '#/' },
+      { label: 'Mojave 04' },
+    ]);
+    view.setTitleIcon('<span class="fa-solid fa-solar-panel sherpa-icon" aria-hidden="true"></span>');
+    view.setActions(`
+      <sherpa-button data-variant="secondary" data-size="small"
+        data-icon-start="fa-solid fa-arrow-up-right-from-square"
+        data-label="Open in SCADA"></sherpa-button>
+      <sherpa-button data-variant="primary" data-size="small"
+        data-icon-start="fa-solid fa-file-export"
+        data-label="Export shift report"></sherpa-button>
+    `);
+
     // Wait for any sherpa components to finish rendering before setData().
-    const elems = root.querySelectorAll('*');
+    const elems = outlet.querySelectorAll('*');
     await Promise.all(
       [...elems]
         .filter(el => el.tagName?.startsWith('SHERPA-') && el.rendered)
         .map(el => el.rendered)
     );
 
-    q(root, 'sherpa-line-chart')?.setData?.({ labels: LINE_LABELS, series: [{ name: 'Output (MW)', values: LINE_VALUES }] });
-    q(root, 'sherpa-barchart')?.setData?.({ columns: CAT_VALUE_COLS, rows: ARRAYS });
-    q(root, 'sherpa-donut-chart')?.setData?.({ columns: CAT_VALUE_COLS, rows: MIX });
-    q(root, 'sherpa-gauge-chart')?.setSegments?.([
+    q(outlet, 'sherpa-line-chart')?.setData?.({ labels: LINE_LABELS, series: [{ name: 'Output (MW)', values: LINE_VALUES }] });
+    q(outlet, 'sherpa-barchart')?.setData?.({ columns: CAT_VALUE_COLS, rows: ARRAYS });
+    q(outlet, 'sherpa-donut-chart')?.setData?.({ columns: CAT_VALUE_COLS, rows: MIX });
+    q(outlet, 'sherpa-gauge-chart')?.setSegments?.([
       { value: 86.7, color: 'var(--sherpa-surface-context-warning-strong-default)' },
       { value: 13.3, color: 'var(--sherpa-surface-container-default, #eee)' },
     ]);
-    q(root, 'sherpa-data-grid')?.setData?.({ columns: ALARMS_COLS, rows: ALARMS_ROWS });
+    q(outlet, 'sherpa-data-grid')?.setData?.({ columns: ALARMS_COLS, rows: ALARMS_ROWS });
   },
 };

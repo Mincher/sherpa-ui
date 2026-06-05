@@ -289,7 +289,11 @@ async function runPendingSetups() {
     const fn  = pendingSetups.get(key);
     if (!fn) continue;
     pendingSetups.delete(key);
-    try { await fn(node); } catch (err) {
+    // Pass (node, outlet). Example-level setups ignore the second arg
+    // and use `node` to scope queries to their preview container.
+    // Page-level setups (MCP demo pages) use `outlet` to query across
+    // the whole page when they have no wrapper of their own.
+    try { await fn(node, outlet); } catch (err) {
       console.warn('[docs] example setup failed:', err);
     }
   }
@@ -563,6 +567,96 @@ function setViewHeading(heading, breadcrumbs = null) {
     header.setAttribute('data-breadcrumbs', JSON.stringify(breadcrumbs));
   } else {
     header.removeAttribute('data-breadcrumbs');
+  }
+  // Drop any page-specific slotted children left over from the previous page
+  // (title-icon / actions / view-selection). The global Theme/Mode/Density
+  // selects in index.html have no `data-view-header-temporary` marker, so
+  // they survive the reset.
+  header.querySelectorAll('[data-view-header-temporary]').forEach((el) => el.remove());
+}
+
+// Expose view-header helpers on the window so dynamically-imported
+// `*.setup.js` modules can call them without needing to import from
+// router.js (which would re-run all the routing side effects).
+globalThis.docsView = {
+  setHeading: setViewHeading,
+  setTitleIcon: setViewTitleIcon,
+  setActions: setViewActions,
+  setSelection: setViewSelection,
+};
+
+/**
+ * Append a page-supplied title icon to the docs view-header. Pass null/empty
+ * to clear. Wraps the markup in a template so light-DOM children get parsed
+ * correctly. Marks the appended element so setViewHeading() can reap it on
+ * the next navigation.
+ */
+function setViewTitleIcon(html) {
+  const header = document.getElementById('docs-view-header');
+  if (!header) return;
+  if (html) {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = String(html).trim();
+    const el = tpl.content.firstElementChild;
+    if (el) {
+      el.setAttribute('slot', 'title-icon');
+      el.setAttribute('data-view-header-temporary', '');
+      header.appendChild(el);
+    }
+  }
+}
+
+/**
+ * Append one or more page-supplied action buttons to the docs view-header.
+ * Accepts an HTML string (one or more elements) or a NodeList/array of
+ * elements. Elements get slot="actions" and the temporary marker so
+ * setViewHeading() reaps them on the next navigation.
+ */
+function setViewActions(actions) {
+  const header = document.getElementById('docs-view-header');
+  if (!header) return;
+  if (!actions) return;
+  if (typeof actions === 'string') {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = actions.trim();
+    [...tpl.content.children].forEach((el) => {
+      el.setAttribute('slot', 'actions');
+      el.setAttribute('data-view-header-temporary', '');
+      header.appendChild(el);
+    });
+  } else {
+    const list = Array.from(actions);
+    list.forEach((el) => {
+      el.setAttribute('slot', 'actions');
+      el.setAttribute('data-view-header-temporary', '');
+      header.appendChild(el);
+    });
+  }
+}
+
+/**
+ * Append page-supplied view-selection controls (e.g. a region picker) to the
+ * docs view-header. Same lifecycle rules as setViewActions.
+ */
+function setViewSelection(controls) {
+  const header = document.getElementById('docs-view-header');
+  if (!header) return;
+  if (!controls) return;
+  if (typeof controls === 'string') {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = controls.trim();
+    [...tpl.content.children].forEach((el) => {
+      el.setAttribute('slot', 'view-selection');
+      el.setAttribute('data-view-header-temporary', '');
+      header.appendChild(el);
+    });
+  } else {
+    const list = Array.from(controls);
+    list.forEach((el) => {
+      el.setAttribute('slot', 'view-selection');
+      el.setAttribute('data-view-header-temporary', '');
+      header.appendChild(el);
+    });
   }
 }
 
@@ -915,16 +1009,19 @@ async function mountMcpDemoPartial(id) {
   }
   outlet.replaceChildren(tpl.content.cloneNode(true));
 
-  // Load the sibling setup module (if any) and register every export as a
-  // pending setup. Page authors can then add `data-setup-key="<name>"`
-  // on any example block to wire it up to the matching callback.
+  // Load the sibling setup module (if any) and invoke the page setup
+  // directly. Pages contribute their own markup straight to #docs-outlet
+  // (no .docs-page wrapper) so the outlet is the natural root for queries.
   try {
     const setupUrl = `/MCP%20Generated%20Content/${encodeURIComponent(id)}.setup.js`;
     const mod = await import(/* @vite-ignore */ setupUrl);
     const set = (mod.default && typeof mod.default === 'object') ? mod.default : null;
     if (set) {
-      for (const [name, fn] of Object.entries(set)) {
-        if (typeof fn === 'function') pendingSetups.set(name, fn);
+      const pageSetup = set[`${id}-page`];
+      if (typeof pageSetup === 'function') {
+        try { await pageSetup(outlet); } catch (err) {
+          console.warn(`[docs] mcp-demo ${id} setup failed:`, err);
+        }
       }
     }
   } catch {

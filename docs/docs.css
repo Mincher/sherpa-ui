@@ -18,11 +18,26 @@
 
 #docs-outlet {
   padding: var(--sherpa-space-default, 16px);
-  /* view-transition moved to per-page wrapper (.docs-page) so the outlet
-     itself isn't promoted to a composite layer that can paint above the
-     nav during route transitions. */
-  position: relative;
-  z-index: 0;
+  /* The outlet is a passthrough to <sherpa-layout-grid id="docs-grid">'s
+   * grid surface. display: contents lets the outlet's children participate
+   * directly in the grid. */
+  display: contents;
+}
+
+/* Non-container slotted elements default to a full row of the docs-grid.
+ * (Container / container-group set their own grid-column via :host rules
+ * or data-col-span.) The ::slotted() rules inside sherpa-layout-grid's
+ * shadow CSS only target directly slotted children, so when the outlet
+ * uses display: contents and exposes its children to the grid, we set
+ * the full-row spans here at the light-DOM level. */
+#docs-outlet > sherpa-section-header,
+#docs-outlet > sherpa-tabs,
+#docs-outlet > sherpa-filter-bar,
+#docs-outlet > sherpa-data-grid,
+#docs-outlet > sherpa-callout,
+#docs-outlet > sherpa-dialog,
+#docs-outlet > :not(sherpa-container):not(sherpa-container-group) {
+  grid-column: 1 / -1;
 }
 
 /* View transitions removed — route crossfade animations disabled globally. */
@@ -142,6 +157,10 @@
   padding-block-end: var(--sherpa-space-2xl, 48px);
   position: relative;
   z-index: 0;
+  /* The docs-grid is the active 12-col grid; a `.docs-page` wrapper acts
+   * as a single full-width grid item. Inside the wrapper, content flows
+   * as block (section-headers, accordions, API tables, …). */
+  grid-column: 1 / -1;
 }
 
 /* ── Page header ───────────────────────────────────────────────────────────── */
@@ -417,31 +436,34 @@
 
 /* ── MCP generated example pages ────────────────────────────────────────────── */
 
-.docs-mcp-page > .sherpa-section-header:first-child,
-.docs-mcp-overview-page > .sherpa-section-header:first-child {
+/* MCP pages contribute directly to the docs-grid (no .docs-page wrapper,
+ * no nested sherpa-layout-grid). The selectors below target the outlet's
+ * direct children — section-headers, containers, data-grids, filter-bars,
+ * tabs, dialogs, callouts — and apply row spacing between them. */
+
+#docs-outlet > .sherpa-section-header:first-child {
   margin-block-end: var(--sherpa-space-lg, 24px);
 }
 
-.docs-mcp-page > sherpa-view-header {
-  display: block;
-  margin-block-end: var(--sherpa-space-lg, 24px);
-}
-
-.docs-mcp-page > sherpa-layout-grid + sherpa-layout-grid,
-.docs-mcp-page > sherpa-section-header + sherpa-layout-grid,
-.docs-mcp-page > sherpa-tabs + sherpa-filter-bar,
-.docs-mcp-page > sherpa-filter-bar + sherpa-data-grid,
-.docs-mcp-page > sherpa-section-header + sherpa-data-grid {
+#docs-outlet > sherpa-section-header + sherpa-container-group,
+#docs-outlet > sherpa-section-header + sherpa-container,
+#docs-outlet > sherpa-container-group + sherpa-section-header,
+#docs-outlet > sherpa-container + sherpa-section-header,
+#docs-outlet > sherpa-container + sherpa-container,
+#docs-outlet > sherpa-section-header + sherpa-tabs,
+#docs-outlet > sherpa-tabs + sherpa-filter-bar,
+#docs-outlet > sherpa-filter-bar + sherpa-data-grid,
+#docs-outlet > sherpa-section-header + sherpa-data-grid {
   margin-block-start: var(--sherpa-space-lg, 24px);
 }
 
-.docs-mcp-page sherpa-callout {
+#docs-outlet > sherpa-callout {
   display: block;
   margin-block-start: var(--sherpa-space-2xl, 32px);
 }
 
-.docs-mcp-page sherpa-callout ul,
-.docs-mcp-page sherpa-callout [slot="content"] ul {
+#docs-outlet > sherpa-callout ul,
+#docs-outlet > sherpa-callout [slot="content"] ul {
   margin: 0;
   padding-inline-start: var(--sherpa-space-default, 16px);
   display: grid;
@@ -461,7 +483,7 @@
   counter-increment: mcp-step;
   padding-inline-start: var(--sherpa-space-2xl, 32px);
   position: relative;
-  color: var(--sherpa-text-default-body, #333);
+  color: var(--sherpa-content-default-body, #333);
 }
 
 .docs-mcp-intro .docs-mcp-steps li::before {
@@ -473,8 +495,8 @@
   height: var(--sherpa-size-lg, 24px);
   border-radius: 9999px;
   background: var(--sherpa-surface-context-info-strong-default, #4a7eff);
-  color: var(--sherpa-text-on-color-default, #fff);
-  font: var(--sherpa-text-label-sm, 600 12px/24px 'Manrope', sans-serif);
+  color: var(--sherpa-content-default-on-color-label, #fff);
+  font: 600 var(--sherpa-font-sm-size, 12px)/24px var(--sherpa-fonts-context-brand, 'Manrope', sans-serif);
   text-align: center;
 }
 
@@ -484,21 +506,36 @@
   align-items: flex-start;
   gap: var(--sherpa-space-sm, 12px);
   padding: var(--sherpa-space-default, 16px);
-  color: var(--sherpa-text-default-body, #333);
+  color: var(--sherpa-content-default-body, #333);
 }
 
 .docs-mcp-card-body .sherpa-icon {
-  color: var(--sherpa-icon-context-brand-default, #4a7eff);
+  color: var(--sherpa-content-primary-default, #4a7eff);
 }
 
 .docs-mcp-card-desc {
   margin: 0;
-  font: var(--sherpa-text-body-sm, 14px/1.5 'Manrope', sans-serif);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  font: var(--sherpa-font-sm-size, 14px)/1.5 var(--sherpa-fonts-context-brand, 'Manrope', sans-serif);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 
 .docs-mcp-card-meta {
   margin-block-start: auto;
+}
+
+/* Tab panel internal row layout: 4 metric containers in a row, wrapping
+ * on narrow viewports. Used by the "Open" tab on the support-desk page.
+ * sherpa-metric uses `flex: 1 1 0` on its host, which would collapse the
+ * host to 0 height inside a flex container with no defined row height.
+ * Give the container a min-height so the metric has room to render. */
+.docs-mcp-tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-default, 16px);
+}
+.docs-mcp-tab-row > sherpa-container {
+  flex: 1 1 220px;
+  min-height: 120px;
 }
 
 .docs-mcp-server-stats dl {
@@ -510,12 +547,12 @@
 
 .docs-mcp-server-stats dt {
   font-weight: 600;
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 
 .docs-mcp-server-stats dd {
   margin: 0;
-  color: var(--sherpa-text-default-body, #333);
+  color: var(--sherpa-content-default-body, #333);
 }
 
 .docs-mcp-server-foot {
@@ -523,5 +560,5 @@
   padding-block-start: var(--sherpa-space-sm, 12px);
   border-block-start: 1px solid var(--sherpa-border-container-default, rgba(0, 0, 0, 0.08));
   font-size: var(--sherpa-font-sm-size, 12px);
-  color: var(--sherpa-text-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }

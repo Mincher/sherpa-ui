@@ -2,111 +2,98 @@
   MCP Generated Content / Overview
   Loaded by router.js for the route #/mcp-demo/overview.
   Renders inside #docs-outlet; uses docs-* CSS classes from docs.css.
+  Contributes section-headers, intro steps, card grid, and a server-info
+  block directly to the docs-grid (no .docs-page wrapper, no nested
+  sherpa-layout-grid).
 -->
-<div class="docs-page docs-mcp-overview-page" data-setup-key="overview-page">
+<sherpa-section-header
+  data-label="MCP Generated Examples"
+  data-heading-level="primary"
+  data-divider="true"
+>
+  <sherpa-tag slot="badge" data-variant="secondary" data-status="success">MCP</sherpa-tag>
+  <p slot="description">
+    Pages in this section were composed end-to-end by querying the
+    <a href="https://modelcontextprotocol.io/">Model Context Protocol</a>
+    server that ships with Sherpa UI. The MCP server exposes
+    <code>query_component</code>, <code>compose_view</code>,
+    <code>get_pattern</code>, <code>search_api</code>, and 19 other tools
+    over stdio &mdash; every page below is the result of asking it
+    &ldquo;build me a dashboard for X&rdquo; and reading back the recommended
+    component APIs, slot composition, and data shapes.
+  </p>
+</sherpa-section-header>
 
-  <sherpa-section-header
-    data-label="MCP Generated Examples"
-    data-heading-level="primary"
-    data-divider="true"
+<sherpa-section-header
+  data-label="How these pages were built"
+  data-heading-level="secondary"
+  data-divider="true"
+></sherpa-section-header>
+
+<ol class="docs-mcp-steps">
+  <li>
+    Spawned <code>node mcp-server/index.js</code> over stdio and completed
+    the JSON-RPC <code>initialize</code> handshake.
+  </li>
+  <li>
+    Used <code>get_architecture</code> + <code>list_components</code> to
+    discover the role taxonomy and which components are available.
+  </li>
+  <li>
+    For each scenario, called <code>compose_view</code> with a layout
+    pattern (e.g. <code>dashboard-grid</code>) and a list of components
+    the page should use.
+  </li>
+  <li>
+    Called <code>query_component</code> on every relevant tag to confirm
+    attribute names, accepted values, and <code>setData()</code> payload
+    shapes from the actual schema.
+  </li>
+  <li>
+    Pasted the generated markup into an HTML partial, then wrote a small
+    <code>.setup.js</code> sibling module to feed real data via the
+    component APIs the MCP server documented.
+  </li>
+</ol>
+
+<sherpa-section-header
+  data-label="Pick a scenario"
+  data-heading-level="secondary"
+  data-divider="true"
+>
+  <p slot="description">
+    Each card opens a fully working example page. The markup is real
+    Sherpa UI &mdash; the data layer is supplied by the
+    <code>.setup.js</code> companion file the MCP server recommended.
+  </p>
+</sherpa-section-header>
+
+<div class="docs-card-grid" data-region="mcp-cards" role="region" aria-label="MCP example pages"></div>
+
+<template class="mcp-card-tpl">
+  <sherpa-container
+    data-interactive="true"
+    data-elevation="sm"
+    tabindex="0"
+    role="link"
   >
-    <sherpa-tag slot="badge" data-variant="secondary" data-status="success">MCP</sherpa-tag>
-    <p slot="description">
-      Pages in this section were composed end-to-end by querying the
-      <a href="https://modelcontextprotocol.io/">Model Context Protocol</a>
-      server that ships with Sherpa UI. The MCP server exposes
-      <code>query_component</code>, <code>compose_view</code>,
-      <code>get_pattern</code>, <code>search_api</code>, and 19 other tools
-      over stdio &mdash; every page below is the result of asking it
-      &ldquo;build me a dashboard for X&rdquo; and reading back the recommended
-      component APIs, slot composition, and data shapes.
-    </p>
-  </sherpa-section-header>
-
-  <section class="docs-mcp-intro">
-
-    <sherpa-section-header
-      data-label="How these pages were built"
-      data-heading-level="secondary"
-      data-divider="true"
-    ></sherpa-section-header>
-
-    <ol class="docs-mcp-steps">
-      <li>
-        Spawned <code>node mcp-server/index.js</code> over stdio and completed
-        the JSON-RPC <code>initialize</code> handshake.
-      </li>
-      <li>
-        Used <code>get_architecture</code> + <code>list_components</code> to
-        discover the role taxonomy and which components are available.
-      </li>
-      <li>
-        For each scenario, called <code>compose_view</code> with a layout
-        pattern (e.g. <code>dashboard-grid</code>) and a list of components
-        the page should use.
-      </li>
-      <li>
-        Called <code>query_component</code> on every relevant tag to confirm
-        attribute names, accepted values, and <code>setData()</code> payload
-        shapes from the actual schema.
-      </li>
-      <li>
-        Pasted the generated markup into an HTML partial, then wrote a small
-        <code>.setup.js</code> sibling module to feed real data via the
-        component APIs the MCP server documented.
-      </li>
-    </ol>
-
-  </section>
-
-  <section class="docs-mcp-grid-section">
-
-    <sherpa-section-header
-      data-label="Pick a scenario"
-      data-heading-level="secondary"
-      data-divider="true"
-    >
-      <p slot="description">
-        Each card opens a fully working example page. The markup is real
-        Sherpa UI &mdash; the data layer is supplied by the
-        <code>.setup.js</code> companion file the MCP server recommended.
-      </p>
-    </sherpa-section-header>
-
-    <div class="docs-card-grid" data-region="mcp-cards" aria-label="MCP example pages"></div>
-
-    <template class="mcp-card-tpl">
-      <sherpa-container
-        data-interactive="true"
-        data-elevation="sm"
-        tabindex="0"
-        role="link"
-      >
-        <sherpa-container-header slot="header" data-title=""></sherpa-container-header>
-        <div class="docs-mcp-card-body">
-          <i class="fa-solid sherpa-icon" data-size="2xl" aria-hidden="true"></i>
-          <p class="docs-mcp-card-desc"></p>
-          <div class="docs-mcp-card-meta">
-            <sherpa-tag data-variant="secondary" data-size="small" class="docs-mcp-card-tag"></sherpa-tag>
-          </div>
-        </div>
-      </sherpa-container>
-    </template>
-
-  </section>
-
-  <section class="docs-mcp-server-section">
-
-    <sherpa-section-header
-      data-label="What the MCP server loaded for these pages"
-      data-heading-level="secondary"
-      data-divider="true"
-    ></sherpa-section-header>
-
-    <div data-region="mcp-server-info" class="docs-mcp-server-info">
-      <sherpa-loader data-label="Querying MCP server_info"></sherpa-loader>
+    <sherpa-container-header slot="header" data-title=""></sherpa-container-header>
+    <div class="docs-mcp-card-body">
+      <i class="fa-solid sherpa-icon" data-size="2xl" aria-hidden="true"></i>
+      <p class="docs-mcp-card-desc"></p>
+      <div class="docs-mcp-card-meta">
+        <sherpa-tag data-variant="secondary" data-size="small" class="docs-mcp-card-tag"></sherpa-tag>
+      </div>
     </div>
+  </sherpa-container>
+</template>
 
-  </section>
+<sherpa-section-header
+  data-label="What the MCP server loaded for these pages"
+  data-heading-level="secondary"
+  data-divider="true"
+></sherpa-section-header>
 
+<div data-region="mcp-server-info" class="docs-mcp-server-info">
+  <sherpa-loader data-label="Querying MCP server_info"></sherpa-loader>
 </div>

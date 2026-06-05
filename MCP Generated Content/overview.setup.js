@@ -33,9 +33,9 @@ const CARDS = [
   },
 ];
 
-const POPULATE_CARDS = (root) => {
-  const grid = root.querySelector('[data-region="mcp-cards"]');
-  const tpl  = root.querySelector('template.mcp-card-tpl');
+const POPULATE_CARDS = (outlet) => {
+  const grid = outlet.querySelector('[data-region="mcp-cards"]');
+  const tpl  = outlet.querySelector('template.mcp-card-tpl');
   if (!grid || !tpl) return;
 
   const frag = document.createDocumentFragment();
@@ -61,8 +61,8 @@ const POPULATE_CARDS = (root) => {
   grid.appendChild(frag);
 };
 
-const POPULATE_SERVER_INFO = async (root) => {
-  const region = root.querySelector('[data-region="mcp-server-info"]');
+const POPULATE_SERVER_INFO = async (outlet) => {
+  const region = outlet.querySelector('[data-region="mcp-server-info"]');
   if (!region) return;
 
   // Inline snapshot of the server's startup log (captured during authoring).
@@ -95,8 +95,8 @@ const POPULATE_SERVER_INFO = async (root) => {
 };
 
 export default {
-  'overview-page': async (root) => {
-    POPULATE_CARDS(root);
-    await POPULATE_SERVER_INFO(root);
+  'overview-page': async (outlet) => {
+    POPULATE_CARDS(outlet);
+    await POPULATE_SERVER_INFO(outlet);
   },
 };
