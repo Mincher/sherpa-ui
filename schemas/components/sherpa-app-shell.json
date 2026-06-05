@@ -17,7 +17,7 @@
     },
     {
       "name": "",
-      "description": "main content area (typically a sherpa-layout-grid)"
+      "description": "main content area (typically sherpa-layout-grid)"
     }
   ],
   "events": []

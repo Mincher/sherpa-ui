@@ -3,6 +3,10 @@
   Loaded by router.js for the route #/mcp-demo/orders.
   Composed from the dashboard-grid pattern; uses revenue trend, source mix,
   status barchart, and a filterable order grid.
+
+  Layout: view-header is slotted into the first layout-grid (per the
+  new sherpa-layout-grid API). The page is content for the docs shell,
+  not a full sherpa-app-shell (the docs already provides one).
 -->
 <div class="docs-page docs-mcp-page" data-setup-key="orders-page">
 
@@ -22,39 +26,40 @@
     </p>
   </sherpa-section-header>
 
-  <sherpa-view-header
-    data-label="Orders"
-    data-breadcrumbs='[{"label":"Storefront","href":"#/"},{"label":"Operations"},{"label":"Orders"}]'
-  >
-    <span slot="title-icon" class="fa-solid fa-cart-shopping sherpa-icon" aria-hidden="true"></span>
-    <sherpa-input-select
-      slot="view-selection"
-      data-label="Region"
-      data-size="small"
-    >
-      <option value="all">All regions</option>
-      <option value="na">North America</option>
-      <option value="eu">Europe</option>
-      <option value="apac">Asia-Pacific</option>
-    </sherpa-input-select>
-    <sherpa-button
-      slot="actions"
-      data-variant="secondary"
-      data-size="small"
-      data-icon-start="fa-solid fa-file-export"
-      data-label="Export CSV"
-    ></sherpa-button>
-    <sherpa-button
-      slot="actions"
-      data-variant="primary"
-      data-size="small"
-      data-icon-start="fa-solid fa-plus"
-      data-label="New order"
-    ></sherpa-button>
-  </sherpa-view-header>
-
-  <!-- Metrics row ────────────────────────────────────────────────────── -->
+  <!-- Metrics row + page view-header (slotted in the new layout-grid API) -->
   <sherpa-layout-grid data-row-height="compact">
+
+    <sherpa-view-header
+      slot="view-header"
+      data-label="Orders"
+      data-breadcrumbs='[{"label":"Storefront","href":"#/"},{"label":"Operations"},{"label":"Orders"}]'
+    >
+      <span slot="title-icon" class="fa-solid fa-cart-shopping sherpa-icon" aria-hidden="true"></span>
+      <sherpa-input-select
+        slot="view-selection"
+        data-label="Region"
+        data-size="small"
+      >
+        <option value="all">All regions</option>
+        <option value="na">North America</option>
+        <option value="eu">Europe</option>
+        <option value="apac">Asia-Pacific</option>
+      </sherpa-input-select>
+      <sherpa-button
+        slot="actions"
+        data-variant="secondary"
+        data-size="small"
+        data-icon-start="fa-solid fa-file-export"
+        data-label="Export CSV"
+      ></sherpa-button>
+      <sherpa-button
+        slot="actions"
+        data-variant="primary"
+        data-size="small"
+        data-icon-start="fa-solid fa-plus"
+        data-label="New order"
+      ></sherpa-button>
+    </sherpa-view-header>
 
     <sherpa-container data-variant="resizable" data-col-span="3">
       <sherpa-container-header slot="header" data-title="Orders today"></sherpa-container-header>

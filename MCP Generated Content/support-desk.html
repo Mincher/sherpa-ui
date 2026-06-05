@@ -3,6 +3,10 @@
   Loaded by router.js for the route #/mcp-demo/support-desk.
   Composed from the list-view pattern; uses sherpa-tabs, sherpa-filter-bar,
   sherpa-data-grid, sherpa-callout, and a sherpa-toast feedback pattern.
+
+  Layout: page content lives in a sherpa-layout-grid with
+  data-content="static" so tabs/filter/grid stack vertically. The
+  sherpa-view-header is slotted into the grid per the new API.
 -->
 <div class="docs-page docs-mcp-page" data-setup-key="support-desk-page">
 
@@ -22,89 +26,94 @@
     </p>
   </sherpa-section-header>
 
-  <sherpa-view-header
-    data-label="Tickets"
-    data-breadcrumbs='[{"label":"Support","href":"#/"},{"label":"Queue"}]'
-  >
-    <span slot="title-icon" class="fa-solid fa-headset sherpa-icon" aria-hidden="true"></span>
-    <sherpa-button
-      slot="actions"
-      data-variant="primary"
-      data-size="small"
-      data-icon-start="fa-solid fa-plus"
-      data-label="New ticket"
-      id="new-ticket-btn"
-    ></sherpa-button>
-  </sherpa-view-header>
+  <sherpa-layout-grid data-content="static" data-pad data-gap="base">
 
-  <!-- Tabs scope the visible tickets; the grid listens for the change. -->
-  <sherpa-tabs data-active-tab="0" id="queue-tabs">
-    <div data-tab-label="Open">
-      <sherpa-layout-grid data-row-height="compact">
+    <sherpa-view-header
+      slot="view-header"
+      data-label="Tickets"
+      data-breadcrumbs='[{"label":"Support","href":"#/"},{"label":"Queue"}]'
+    >
+      <span slot="title-icon" class="fa-solid fa-headset sherpa-icon" aria-hidden="true"></span>
+      <sherpa-button
+        slot="actions"
+        data-variant="primary"
+        data-size="small"
+        data-icon-start="fa-solid fa-plus"
+        data-label="New ticket"
+        id="new-ticket-btn"
+      ></sherpa-button>
+    </sherpa-view-header>
 
-        <sherpa-container data-variant="resizable" data-col-span="3">
-          <sherpa-container-header slot="header" data-title="Open"></sherpa-container-header>
-          <sherpa-metric data-label="all severities" value="142" data-trend="down" data-delta="−8"></sherpa-metric>
-        </sherpa-container>
-        <sherpa-container data-variant="resizable" data-col-span="3">
-          <sherpa-container-header slot="header" data-title="SLA at risk"></sherpa-container-header>
-          <sherpa-metric data-label="< 1h to breach" data-status="critical" value="11" data-trend="up" data-delta="+3"></sherpa-metric>
-        </sherpa-container>
-        <sherpa-container data-variant="resizable" data-col-span="3">
-          <sherpa-container-header slot="header" data-title="Avg first response"></sherpa-container-header>
-          <sherpa-metric data-label="last 7 days" data-trend="down" value="14 min" data-delta="−2 min"></sherpa-metric>
-        </sherpa-container>
-        <sherpa-container data-variant="resizable" data-col-span="3">
-          <sherpa-container-header slot="header" data-title="CSAT (30d)"></sherpa-container-header>
-          <sherpa-metric data-label="rated ≥ 4 / 5" data-status="success" data-trend="up" value="94%" data-delta="+1.2%"></sherpa-metric>
-        </sherpa-container>
+    <!-- Tabs scope the visible tickets; the grid listens for the change. -->
+    <sherpa-tabs data-active-tab="0" id="queue-tabs">
+      <div data-tab-label="Open">
+        <sherpa-layout-grid data-row-height="compact">
 
-      </sherpa-layout-grid>
-    </div>
+          <sherpa-container data-variant="resizable" data-col-span="3">
+            <sherpa-container-header slot="header" data-title="Open"></sherpa-container-header>
+            <sherpa-metric data-label="all severities" value="142" data-trend="down" data-delta="−8"></sherpa-metric>
+          </sherpa-container>
+          <sherpa-container data-variant="resizable" data-col-span="3">
+            <sherpa-container-header slot="header" data-title="SLA at risk"></sherpa-container-header>
+            <sherpa-metric data-label="< 1h to breach" data-status="critical" value="11" data-trend="up" data-delta="+3"></sherpa-metric>
+          </sherpa-container>
+          <sherpa-container data-variant="resizable" data-col-span="3">
+            <sherpa-container-header slot="header" data-title="Avg first response"></sherpa-container-header>
+            <sherpa-metric data-label="last 7 days" data-trend="down" value="14 min" data-delta="−2 min"></sherpa-metric>
+          </sherpa-container>
+          <sherpa-container data-variant="resizable" data-col-span="3">
+            <sherpa-container-header slot="header" data-title="CSAT (30d)"></sherpa-container-header>
+            <sherpa-metric data-label="rated ≥ 4 / 5" data-status="success" data-trend="up" value="94%" data-delta="+1.2%"></sherpa-metric>
+          </sherpa-container>
 
-    <div data-tab-label="Mine">
-      <sherpa-callout
-        data-heading="12 tickets assigned to you"
-        data-status="info"
-      >
-        <p slot="content">
-          The tab is rendered eagerly (<code>data-load-mode="eager"</code> is
-          the default). When you flip the MCP <code>data-load-mode</code> to
-          <code>lazy</code>, the grid would be populated the first time the
-          tab becomes active, on a <code>tab-load</code> event.
-        </p>
-      </sherpa-callout>
-    </div>
+        </sherpa-layout-grid>
+      </div>
 
-    <div data-tab-label="Waiting">
-      <sherpa-callout data-heading="Awaiting customer reply" data-status="warning">
-        <p slot="content">No tickets in this view.</p>
-      </sherpa-callout>
-    </div>
+      <div data-tab-label="Mine">
+        <sherpa-callout
+          data-heading="12 tickets assigned to you"
+          data-status="info"
+        >
+          <p slot="content">
+            The tab is rendered eagerly (<code>data-load-mode="eager"</code> is
+            the default). When you flip the MCP <code>data-load-mode</code> to
+            <code>lazy</code>, the grid would be populated the first time the
+            tab becomes active, on a <code>tab-load</code> event.
+          </p>
+        </sherpa-callout>
+      </div>
 
-    <div data-tab-label="Closed (7d)">
-      <sherpa-callout data-heading="Closed in the last 7 days" data-status="success">
-        <p slot="content">248 tickets closed. Average resolution: 3 h 12 min.</p>
-      </sherpa-callout>
-    </div>
-  </sherpa-tabs>
+      <div data-tab-label="Waiting">
+        <sherpa-callout data-heading="Awaiting customer reply" data-status="warning">
+          <p slot="content">No tickets in this view.</p>
+        </sherpa-callout>
+      </div>
 
-  <!-- Filter bar with preset chips the MCP recommended for support data. -->
-  <sherpa-filter-bar
-    data-label="Queue filters"
-    data-available-fields='[{"field":"severity","name":"Severity","type":"string","values":["P1","P2","P3"]},{"field":"channel","name":"Channel","type":"string","values":["email","chat","phone","portal"]}]'
-    data-preset-filters="severity,channel"
-  ></sherpa-filter-bar>
+      <div data-tab-label="Closed (7d)">
+        <sherpa-callout data-heading="Closed in the last 7 days" data-status="success">
+          <p slot="content">248 tickets closed. Average resolution: 3 h 12 min.</p>
+        </sherpa-callout>
+      </div>
+    </sherpa-tabs>
 
-  <sherpa-data-grid
-    data-label="Open tickets"
-    data-show-pagination
-    data-page-size="8"
-    data-selectable
-    data-show-actions
-    data-action-menu='{"sections":[{"items":[{"value":"assign","text":"Assign to me"},{"value":"reply","text":"Reply"}]},{"items":[{"value":"escalate","text":"Escalate"}]},{"items":[{"value":"close","text":"Close"}]}]}'
-    style="height: 420px;"
-  ></sherpa-data-grid>
+    <!-- Filter bar with preset chips the MCP recommended for support data. -->
+    <sherpa-filter-bar
+      data-label="Queue filters"
+      data-available-fields='[{"field":"severity","name":"Severity","type":"string","values":["P1","P2","P3"]},{"field":"channel","name":"Channel","type":"string","values":["email","chat","phone","portal"]}]'
+      data-preset-filters="severity,channel"
+    ></sherpa-filter-bar>
+
+    <sherpa-data-grid
+      data-label="Open tickets"
+      data-show-pagination
+      data-page-size="8"
+      data-selectable
+      data-show-actions
+      data-action-menu='{"sections":[{"items":[{"value":"assign","text":"Assign to me"},{"value":"reply","text":"Reply"}]},{"items":[{"value":"escalate","text":"Escalate"}]},{"items":[{"value":"close","text":"Close"}]}]}'
+      style="min-height: 420px;"
+    ></sherpa-data-grid>
+
+  </sherpa-layout-grid>
 
   <!-- Add-ticket dialog ─────────────────────────────────────────────── -->
   <sherpa-dialog data-label="New ticket" id="new-ticket-dialog">

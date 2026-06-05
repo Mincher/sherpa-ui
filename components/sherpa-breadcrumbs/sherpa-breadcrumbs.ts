@@ -10,13 +10,15 @@
  *     2. Template override: point data-src-html at an HTML file containing a
  *        <template id="default"> — the entire shadow DOM is replaced.
  *     3. Dynamic data: set data-src-json to a URL pointing to a JSON file that
- *        exports an array of {label, href?} objects. The last entry is
- *        rendered as the current page (aria-current="page", no link, no separator).
+ *        exports an array of {label, href?} objects, OR set data-items to an
+ *        inline JSON array of the same shape. The last entry is rendered as
+ *        the current page (aria-current="page", no link, no separator).
  *
  *   JS only delegates clicks and emits a normalized event.
  *
  * @attr {string} [data-src-html] — URL of an HTML template file to replace the shadow DOM
  * @attr {string} [data-src-json] — URL of a JSON file: [{label: string, href?: string}]
+ * @attr {json}   [data-items]    — Inline JSON array: [{label: string, href?: string}]
  *
  * @fires breadcrumb-click
  *   bubbles: true, composed: true
@@ -30,12 +32,35 @@ export class SherpaBreadcrumbs extends SherpaElement {
   static override get cssUrl(): string  { return new URL('./sherpa-breadcrumbs.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-breadcrumbs.html', import.meta.url).href; }
 
+  static override get observedAttributes(): string[] {
+    return [...super.observedAttributes, 'data-items'];
+  }
+
   override onRender(): void {
     this.shadowRoot?.addEventListener('click', this.#onClick);
+    this.#applyDataItems();
+  }
+
+  override attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+    super.attributeChangedCallback(name, oldValue, newValue);
+    if (name === 'data-items' && newValue !== oldValue) {
+      this.#applyDataItems();
+    }
   }
 
   override onJsonData(items: unknown): void {
     if (Array.isArray(items)) this.#syncItems(items);
+  }
+
+  #applyDataItems(): void {
+    const raw = this.dataset["items"];
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) this.#syncItems(parsed);
+    } catch {
+      /* ignore malformed JSON; keep static default */
+    }
   }
 
   /* ── Dynamic items ───────────────────────────────────────────── */

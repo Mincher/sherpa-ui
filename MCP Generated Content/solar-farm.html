@@ -4,6 +4,10 @@
   Markup composed from the dashboard-grid pattern via
   `compose_view` + `query_component` MCP calls.
   Data wired up by solar-farm.setup.js.
+
+  Layout: view-header is slotted into the first layout-grid (per the
+  new sherpa-layout-grid API). The page is content for the docs shell,
+  not a full sherpa-app-shell (the docs already provides one).
 -->
 <div class="docs-page docs-mcp-page" data-setup-key="solar-farm-page">
 
@@ -24,29 +28,30 @@
     </p>
   </sherpa-section-header>
 
-  <sherpa-view-header
-    data-label="Mojave Array — Site 04"
-    data-breadcrumbs='[{"label":"Operations","href":"#/"},{"label":"Solar Farms"},{"label":"Mojave 04"}]'
-  >
-    <span slot="title-icon" class="fa-solid fa-solar-panel sherpa-icon" aria-hidden="true"></span>
-    <sherpa-button
-      slot="actions"
-      data-variant="secondary"
-      data-size="small"
-      data-icon-start="fa-solid fa-arrow-up-right-from-square"
-      data-label="Open in SCADA"
-    ></sherpa-button>
-    <sherpa-button
-      slot="actions"
-      data-variant="primary"
-      data-size="small"
-      data-icon-start="fa-solid fa-file-export"
-      data-label="Export shift report"
-    ></sherpa-button>
-  </sherpa-view-header>
-
-  <!-- Metric row ────────────────────────────────────────────────────── -->
+  <!-- Metric row + page view-header (slotted in the new layout-grid API) -->
   <sherpa-layout-grid data-row-height="compact">
+
+    <sherpa-view-header
+      slot="view-header"
+      data-label="Mojave Array — Site 04"
+      data-breadcrumbs='[{"label":"Operations","href":"#/"},{"label":"Solar Farms"},{"label":"Mojave 04"}]'
+    >
+      <span slot="title-icon" class="fa-solid fa-solar-panel sherpa-icon" aria-hidden="true"></span>
+      <sherpa-button
+        slot="actions"
+        data-variant="secondary"
+        data-size="small"
+        data-icon-start="fa-solid fa-arrow-up-right-from-square"
+        data-label="Open in SCADA"
+      ></sherpa-button>
+      <sherpa-button
+        slot="actions"
+        data-variant="primary"
+        data-size="small"
+        data-icon-start="fa-solid fa-file-export"
+        data-label="Export shift report"
+      ></sherpa-button>
+    </sherpa-view-header>
 
     <sherpa-container data-variant="resizable" data-col-span="3">
       <sherpa-container-header slot="header" data-title="Active Capacity"></sherpa-container-header>
