@@ -10,14 +10,16 @@
  *   web component so the grid setup, breakpoints, and span rules are
  *   shadow-scoped and don't leak into consumer CSS.
  *
- * @attr {string}  [data-row-height] — CSS length for grid-auto-rows (default: 160px)
+ * @attr {string}  [data-row-height] — CSS length for grid-auto-rows (default: 64px)
  * @attr {enum}    [data-content]    — "static" — stacks children vertically instead of using the CSS grid
  * @attr {enum}    [data-fill]       — "viewport" — clamps the layout to the viewport height
  * @attr {boolean} [data-pad]        — Adds padding inside the content surface
  * @attr {enum}    [data-gap]        — sm | base | lg — gap between stacked children in static mode
  * @attr {boolean} [data-editable]   — Enables drag-to-reposition for slotted containers
  *
- * @slot view-header      — Optional sherpa-view-header above the content surface
+ * @slot view-header      — Optional sherpa-view-header; grouped with tab-row into a seamless header band
+ * @slot tab-row          — Optional sherpa-tabs row displayed below the view-header in the same grouped band
+ * @slot banner           — Optional full-width messaging area (alert, notice) rendered above the grid containers
  * @slot side-panel-start — Leading side rail
  * @slot side-panel-end   — Trailing side rail
  * @slot (default)        — Main page content (sherpa-container tiles, filters, tables, charts, and similar content)
@@ -28,7 +30,7 @@
  *   list of moved-container ids/keys (data-container-id where present, else index)
  *
  * @cssprop --maxColCount — Integer column count (default 12, registered)
- * @cssprop --row-height  — Row height (default 160px, registered)
+ * @cssprop --row-height  — Row height (default 64px, registered)
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
@@ -40,6 +42,13 @@ export class SherpaLayoutGrid extends SherpaElement {
 
   static override get cssUrl(): string {
     return new URL("./sherpa-layout-grid.css", import.meta.url).href;
+  }
+
+  static override get sharedStyles(): string[] {
+    return [
+      ...super.sharedStyles,
+      new URL("../../css/styles/sherpa-utility-classes.css", import.meta.url).href,
+    ];
   }
 
   static override get observedAttributes(): string[] {
@@ -71,11 +80,13 @@ export class SherpaLayoutGrid extends SherpaElement {
   }
 
   #syncRowHeight() {
+    const surface = this.$<HTMLElement>(".grid-surface");
+    if (!surface) return;
     const value = this.dataset["rowHeight"];
     if (value) {
-      this.style.setProperty("--row-height", value);
+      surface.style.setProperty("--row-height", value);
     } else {
-      this.style.removeProperty("--row-height");
+      surface.style.removeProperty("--row-height");
     }
   }
 

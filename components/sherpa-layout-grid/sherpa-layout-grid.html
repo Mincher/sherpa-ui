@@ -8,12 +8,8 @@
   Use data-content="static" for non-grid (scrollable stacked column) views.
   Use data-pad / data-gap on the host for padding and gap in static mode.
 
-  A <sherpa-view-header slot="view-header"> child sits above the grid
-  surface, full-width, with no extra margin. Shown only when the slot
-  is populated (data-has-view-header auto-attribute).
-
   Host attributes:
-    data-row-height — CSS length for grid-auto-rows (default: 160px)
+    data-row-height — CSS length for grid-auto-rows (default: 64px)
     data-content    — "static" — opts out of grid; stacks children vertically
     data-pad        — Adds padding inside the content surface
     data-gap        — sm | base | lg — gap between stacked children (static mode)
@@ -21,18 +17,22 @@
     data-editable   — Enables drag-to-reposition for slotted containers
   Slots:
     view-header      — Optional sherpa-view-header above the grid surface
+    tab-row          — Optional sherpa-tabs row, grouped below view-header
+    banner           — Optional full-width messaging area above the grid containers
     (default)        — sherpa-container resizable children (or any content)
     side-panel-start — Leading side panel on the inline-start edge
     side-panel-end   — Trailing side panel (typically a sherpa-panel)
 -->
 
 <template id="default">
-  <div class="grid-header" part="header">
+  <div class="grid-header grouped-component" data-direction="vertical" part="header">
     <slot name="view-header"></slot>
+    <slot name="tab-row"></slot>
   </div>
   <div class="grid-body">
     <slot name="side-panel-start" class="side-panel-start"></slot>
     <div class="grid-surface" part="surface">
+      <slot name="banner" class="banner-slot"></slot>
       <slot></slot>
     </div>
     <slot name="side-panel-end" class="side-panel-end"></slot>

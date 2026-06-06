@@ -25,7 +25,6 @@
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link href="/css/styles/index.css" rel="stylesheet" />
-    <link href="/docs/docs.css" rel="stylesheet" />
     <style>
       html, body { margin: 0; height: 100dvh; overflow: hidden; }
     </style>
@@ -47,9 +46,9 @@
         data-product-name="Sherpa UI"
       ></sherpa-product-bar-v2>
 
-      <sherpa-layout-grid id="docs-grid" data-fill="viewport">
+      <sherpa-layout-grid id="layout-grid" data-fill="viewport" data-content="static">
 
-        <sherpa-view-header slot="view-header" id="docs-view-header" data-label="Sherpa UI">
+        <sherpa-view-header slot="view-header" id="view-header" data-label="Sherpa UI">
           <!-- Appearance controls -->
           <sherpa-input-select
             slot="view-selection"
@@ -74,10 +73,7 @@
           ></sherpa-input-select>
         </sherpa-view-header>
 
-        <!-- Router outlet -->
-        <main id="docs-outlet" aria-live="polite" aria-label="Documentation content">
-          <!-- Page content injected by router.js -->
-        </main>
+        <div id="layout-grid-content" class="layout-grid-outlet" aria-live="polite"></div>
 
       </sherpa-layout-grid>
 

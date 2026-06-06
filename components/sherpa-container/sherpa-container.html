@@ -21,7 +21,9 @@
   Host attributes:
     data-variant     — "fit" | "resizable" | "fill" | "worksheet" (default: fit)
     data-col-span    — "3" | "6" | "9" | "12" (resizable variant only)
-    data-row-span    — "1"–"6" (resizable variant only)
+    data-row-span    — "1"–"24" (resizable variant only; recommended stops
+                       are 4, 8, 12, 16, 20, 24 to match the 4-row-track
+                       minimum at the default 64px row height)
     data-editable    — Edit mode (resizable variant only)
     data-menu-open   — Set automatically while a descendant overflow menu is open
     data-state       — ready | loading | empty | error — controls overlay

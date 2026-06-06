@@ -9,7 +9,10 @@
  *
  * @attr {enum}    [data-variant=fit]   — fit | resizable | fill | worksheet
  * @attr {number}  [data-col-span]      — Column span: 3 | 6 | 9 | 12 (resizable)
- * @attr {number}  [data-row-span]      — Row span: 1–6 (resizable)
+ * @attr {number}  [data-row-span]      — Row span: 1–24 (resizable). Recommended
+ *                                          stops are 4, 8, 12, 16, 20, 24 to
+ *                                          match the 4-row-track minimum at
+ *                                          the default 64px row height.
  * @attr {boolean} [data-editable]      — Edit mode (e.g. allows menu-driven resize)
  * @attr {enum}    [data-resize-mode]    — Experimental: "drag" enables a pointer-driven snap-resize grip (default mode uses the header overflow menu only)
  * @attr {boolean} [data-menu-open]     — Reflected while a descendant menu is open
@@ -21,7 +24,8 @@
  * @attr {enum}    [data-group-position] — Managed by an enclosing <sherpa-container-group>: "first" | "follow". The first tile in a group renders its header normally (and serves as the group title); follower tiles have header content visually muted while the header band preserves height for cross-tile content alignment. Consumers should not set this manually.
  * @attr {boolean} disabled             — Native disabled state
  *
- * @slot (default) — Main content (dashboard children or card body)
+ * @slot (default) — Main content. Rendered inside a scrollable flex-column area with 16px padding.
+ *                   Content that exceeds the container's row-span height scrolls vertically.
  * @slot header    — Card-style header (use sherpa-container-header); edge-to-edge with separator
  * @slot footer    — Card-style footer (use sherpa-container-footer or sherpa-button)
  * @slot loading   — Shown when data-state="loading"
@@ -190,14 +194,14 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
      Pointer-driven resize that snaps to whole col/row-span
      increments. Writes `data-col-span` / `data-row-span` only;
      never sets inline width/height (which would override grid
-     placement). Valid col-spans: 3, 6, 9, 12. Valid row-spans: 1–6.
+     placement). Valid col-spans: 3, 6, 9, 12. Valid row-spans: 1–24.
      The grip element is always in the shadow template; CSS hides
      it unless data-variant="resizable" + data-editable are set.
   ─────────────────────────────────────────────────────────────── */
 
   static #COL_STOPS = [3, 6, 9, 12];
   static #MIN_ROW = 1;
-  static #MAX_ROW = 6;
+  static #MAX_ROW = 24;
   #resizeState: ResizeState | null = null;
 
   #initResizeGrip() {

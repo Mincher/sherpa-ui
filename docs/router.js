@@ -5,8 +5,6 @@
  *   #/                        → Home page (category grid)
  *   #/category/:id            → Category overview (component grid)
  *   #/components/:tag         → Component detail page
- *   #/experimental/:id        → Experimental page (docs/pages/experimental-*.html)
- *   #/mcp-demo/:id            → MCP-generated example page (MCP Generated Content/*.html)
  *
  * Navigation is built dynamically from /schemas/components/index.json
  * so it stays in sync with the MCP server's source of truth.
@@ -240,30 +238,33 @@ function buildExampleBlock(ex) {
     setupAttr = ` data-setup-key="${key}"`;
   }
 
+  const previewStyle = layout === 'col'
+    ? 'display:flex;flex-direction:column;align-items:stretch;gap:var(--sherpa-space-default,16px);padding:var(--sherpa-space-lg,24px);min-height:120px;overflow:auto;'
+    : layout === 'block'
+      ? 'display:block;padding:var(--sherpa-space-lg,24px);min-height:120px;overflow:auto;'
+      : 'display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--sherpa-space-default,16px);padding:var(--sherpa-space-lg,24px);min-height:120px;overflow:auto;';
+
   return `
-    <div class="docs-example">
-      <sherpa-section-header
-        data-label="${escapeHtml(ex.label)}"
-        data-heading-level="tertiary"
-      >
-        ${ex.description ? `<p slot="description">${escapeHtml(ex.description)}</p>` : ''}
-      </sherpa-section-header>
-      ${showPrev ? `<div class="docs-example-preview" data-layout="${escapeHtml(layout)}"${setupAttr}>${html}</div>` : ''}
-      <div class="docs-code-block">
-        <div class="docs-code-header">
-          <span class="docs-code-lang">HTML</span>
-          <sherpa-button
-            class="docs-copy-btn"
-            data-variant="tertiary"
-            data-size="small"
-            data-icon-start="&#xf0c5;"
-            data-label="Copy"
-            aria-label="Copy code"
-          ></sherpa-button>
+    <sherpa-container class="docs-example" data-col-span="12" data-variant="fit">
+      <sherpa-container-header slot="header" data-title="${escapeHtml(ex.label)}"${ex.description ? ` data-description="${escapeHtml(ex.description)}"` : ''}></sherpa-container-header>
+      ${showPrev ? `<div class="docs-example-preview" data-layout="${escapeHtml(layout)}"${setupAttr} style="${previewStyle}">${html}</div>` : ''}
+      <div class="docs-code-block" style="border-radius:var(--sherpa-border-rounding-base,6px);overflow:hidden;border:1px solid var(--sherpa-border-container-default,#e0e0e0);">
+        <div class="docs-code-header" style="display:flex;align-items:center;justify-content:space-between;padding:var(--sherpa-space-xs,8px) var(--sherpa-space-default,16px);background:var(--sherpa-surface-container-secondary-default,#f5f5f5);border-bottom:1px solid var(--sherpa-border-container-default,#e0e0e0);">
+          <span class="docs-code-lang" style="font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--sherpa-content-default-secondary,#6a6a75);">HTML</span>
+          <div style="display:flex;gap:var(--sherpa-space-xs,8px);">
+            <sherpa-button
+              class="docs-copy-btn"
+              data-variant="tertiary"
+              data-size="small"
+              data-icon-start="&#xf0c5;"
+              data-label="Copy"
+              aria-label="Copy code"
+            ></sherpa-button>
+          </div>
         </div>
-        <pre><code class="language-html">${escapeHtml(dedentHtml(html))}</code></pre>
+        <pre style="margin:0;overflow:auto;"><code class="language-html">${escapeHtml(dedentHtml(html))}</code></pre>
       </div>
-    </div>`;
+    </sherpa-container>`;
 }
 
 /**
@@ -395,14 +396,13 @@ async function getExamples(tag, schema) {
 function buildExamplesSection(tag, examples) {
   if (!examples?.length) return '';
   return `
-    <section class="docs-examples-section">
-      <sherpa-section-header
-        data-label="Examples"
-        data-heading-level="secondary"
-        data-divider="true"
-      ></sherpa-section-header>
-      ${examples.map(buildExampleBlock).join('')}
-    </section>`;
+    <sherpa-section-header
+      data-col-span="12"
+      data-label="Examples"
+      data-heading-level="secondary"
+      data-divider="true"
+    ></sherpa-section-header>
+    ${examples.map(buildExampleBlock).join('')}`;
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -414,8 +414,9 @@ const schemaCache = new Map();
 // ── Theme management ──────────────────────────────────────────────────────────
 
 const THEMES = [
-  { value: 'apex-2-purple', label: 'Apex 2 (Purple)' },
-  { value: 'apex-2-teal',   label: 'Apex 2 (Teal)' },
+  { value: 'apex-2-purple',          label: 'Apex 2 (Purple)' },
+  { value: 'apex-2-purple-hairline', label: 'Apex 2 (Purple Hairline)' },
+  { value: 'apex-2-teal',            label: 'Apex 2 (Teal)' },
   { value: 'apex-2-blue',   label: 'Apex 2 (Blue)' },
   { value: 'classic',       label: 'Classic' },
 ];
@@ -547,7 +548,6 @@ function setActiveNavItem(path) {
   //   '/components/:tag'           → ':tag'           (matches data-item-id on nav items)
   //   '/category/:id'              → ':id'            (no nav item — sets nothing)
   //   '/experimental/:id'          → 'experimental/:id'
-  //   '/mcp-demo/:id'              → 'mcp-demo/:id'
   let itemId;
   if (normalised === '/') {
     itemId = '/';
@@ -560,7 +560,7 @@ function setActiveNavItem(path) {
 }
 
 function setViewHeading(heading, breadcrumbs = null) {
-  const header = document.getElementById('docs-view-header');
+  const header = document.getElementById('view-header');
   if (!header) return;
   header.setAttribute('data-label', heading);
   if (breadcrumbs && breadcrumbs.length) {
@@ -592,7 +592,7 @@ globalThis.docsView = {
  * the next navigation.
  */
 function setViewTitleIcon(html) {
-  const header = document.getElementById('docs-view-header');
+  const header = document.getElementById('view-header');
   if (!header) return;
   if (html) {
     const tpl = document.createElement('template');
@@ -613,7 +613,7 @@ function setViewTitleIcon(html) {
  * setViewHeading() reaps them on the next navigation.
  */
 function setViewActions(actions) {
-  const header = document.getElementById('docs-view-header');
+  const header = document.getElementById('view-header');
   if (!header) return;
   if (!actions) return;
   if (typeof actions === 'string') {
@@ -639,7 +639,7 @@ function setViewActions(actions) {
  * docs view-header. Same lifecycle rules as setViewActions.
  */
 function setViewSelection(controls) {
-  const header = document.getElementById('docs-view-header');
+  const header = document.getElementById('view-header');
   if (!header) return;
   if (!controls) return;
   if (typeof controls === 'string') {
@@ -662,7 +662,7 @@ function setViewSelection(controls) {
 
 // ── Routing ───────────────────────────────────────────────────────────────────
 
-const outlet = document.getElementById('docs-outlet');
+const outlet = document.getElementById('layout-grid-content');
 
 // Delegated card-click → route navigation. Each navigable container carries
 // a data-route attribute set when populated from its cloning prototype.
@@ -678,8 +678,6 @@ function parseHash(hash) {
   if (!parts.length) return { type: 'home' };
   if (parts[0] === 'category'     && parts[1]) return { type: 'category',     id:  parts[1] };
   if (parts[0] === 'components'   && parts[1]) return { type: 'component',    tag: parts[1] };
-  if (parts[0] === 'experimental' && parts[1]) return { type: 'experimental', id:  parts[1] };
-  if (parts[0] === 'mcp-demo'     && parts[1]) return { type: 'mcp-demo',     id:  parts[1] };
   return { type: 'not-found', path };
 }
 
@@ -734,7 +732,7 @@ async function renderCurrentRoute() {
   setActiveNavItem(path);
 
   // Scroll: either reset to top, or jump to a pending child-section anchor.
-  const viewContent = document.getElementById('docs-grid')?.shadowRoot?.querySelector('[part="surface"]');
+  const viewContent = document.getElementById('layout-grid')?.shadowRoot?.querySelector('[part="surface"]');
   if (pendingScrollAnchor && outlet) {
     const id = pendingScrollAnchor;
     pendingScrollAnchor = null;
@@ -821,126 +819,6 @@ async function renderRoute(route) {
     return;
   }
 
-  if (route.type === 'experimental') {
-    const LABELS = { 'flex-truncate': 'Flex Truncate', 'component-grouping': 'Component Grouping' };
-    const label = LABELS[route.id] ?? route.id
-      .split('-').map(p => p[0].toUpperCase() + p.slice(1)).join(' ');
-    setViewHeading(label, [
-      { label: 'Home', href: '#/' },
-      { label: 'Experimental', href: null },
-    ]);
-    if (route.id === 'component-grouping') {
-      // mode 'class'   — toggle the real .grouped-component utility on the preview
-      //                  (used when the preview wrapper IS the grouping div)
-      // mode 'attr'    — toggle a [data-grouped] attribute on the preview
-      //                  (used when the preview is a state-switch wrapper that
-      //                  must NOT receive the .grouped-component utility's chrome)
-      const makeGroupToggle = (btnId, previewId, mode = 'class') => (container) => {
-        const btn     = container.querySelector(`#${btnId}`);
-        const preview = container.querySelector(`#${previewId}`);
-        if (!btn || !preview) return;
-        btn.addEventListener('button-click', () => {
-          let isGrouped;
-          if (mode === 'attr') {
-            const willGroup = !preview.hasAttribute('data-grouped');
-            preview.toggleAttribute('data-grouped', willGroup);
-            isGrouped = willGroup;
-          } else {
-            isGrouped = preview.classList.toggle('grouped-component');
-          }
-          btn.toggleAttribute('data-active', isGrouped);
-          btn.dataset.label = isGrouped ? 'Ungroup' : 'Group';
-        });
-      };
-      pendingSetups.set('row-group-toggle',   makeGroupToggle('row-group-toggle', 'row-group-preview', 'class'));
-      pendingSetups.set('col-group-toggle',   makeGroupToggle('col-group-toggle', 'col-group-preview', 'class'));
-
-      // KPI dashboard toggle — physically wraps/unwraps tiles in a
-      // <sherpa-container-group>. Using one DOM tree means user edits
-      // (resizes, span changes) persist across the Group/Ungroup toggle.
-      // The first tile's own header serves as the group title; while
-      // grouped, we temporarily swap its data-title to "KPIs" and restore
-      // the tile's original title on ungroup.
-      pendingSetups.set('kpi-grouped-toggle', (container) => {
-        const btn  = container.querySelector('#kpi-group-toggle');
-        const grid = container.querySelector('#kpi-grid');
-        if (!btn || !grid) return;
-        btn.addEventListener('button-click', () => {
-          const group = grid.querySelector(':scope > sherpa-container-group');
-          if (group) {
-            // Ungroup — restore the first tile's original title, move
-            // tiles back out, drop the group wrapper.
-            const tiles = [...group.querySelectorAll(':scope > sherpa-container')];
-            const firstTile = tiles[0];
-            if (firstTile) {
-              const header = firstTile.querySelector(':scope > sherpa-container-header[slot="header"]');
-              if (header && header.dataset.originalTitle !== undefined) {
-                header.dataset.title = header.dataset.originalTitle;
-                delete header.dataset.originalTitle;
-              }
-            }
-            for (const tile of tiles) grid.appendChild(tile);
-            group.remove();
-            btn.removeAttribute('data-active');
-            btn.dataset.label = 'Group';
-          } else {
-            // Group — wrap tiles in a fresh sherpa-container-group and
-            // promote the first tile's header to the group title.
-            const wrapper = document.createElement('sherpa-container-group');
-            wrapper.setAttribute('data-col-span', '12');
-            wrapper.setAttribute('data-row-span', '4');
-            const tiles = [...grid.querySelectorAll(':scope > sherpa-container')];
-            const firstTile = tiles[0];
-            if (firstTile) {
-              const header = firstTile.querySelector(':scope > sherpa-container-header[slot="header"]');
-              if (header) {
-                header.dataset.originalTitle = header.dataset.title ?? '';
-                header.dataset.title = 'KPIs';
-              }
-            }
-            for (const tile of tiles) wrapper.appendChild(tile);
-            grid.appendChild(wrapper);
-            btn.setAttribute('data-active', 'true');
-            btn.dataset.label = 'Ungroup';
-          }
-        });
-      });
-    }
-    try {
-      await mountPartial(`experimental-${route.id}`);
-    } catch {
-      outlet.innerHTML = buildNotFound(`/experimental/${escapeHtml(route.id)}`);
-    }
-    bindOutletLinks();
-    highlightOutlet();
-    runPendingSetups();
-    return;
-  }
-
-  if (route.type === 'mcp-demo') {
-    // MCP-generated example pages live in /MCP Generated Content/*.html.
-    // Folders aren't normally served, so we encode each id as
-    // `MCP%20Generated%20Content/{id}.html`.
-    const prettyLabel = (route.id || '')
-      .split('-')
-      .map(p => p[0]?.toUpperCase() + p.slice(1))
-      .join(' ');
-    setViewHeading(prettyLabel, [
-      { label: 'Home', href: '#/' },
-      { label: 'MCP Examples', href: '#/mcp-demo/overview' },
-    ]);
-    try {
-      await mountMcpDemoPartial(route.id);
-    } catch (e) {
-      outlet.innerHTML = buildNotFound(`/mcp-demo/${escapeHtml(route.id)}`);
-      console.warn('[docs] mcp-demo load failed:', e);
-    }
-    bindOutletLinks();
-    highlightOutlet();
-    runPendingSetups();
-    return;
-  }
-
   setViewHeading('Not found', [{ label: 'Home', href: '#/' }]);
   outlet.innerHTML = buildNotFound(escapeHtml(route.path ?? ''));
   bindOutletLinks();
@@ -958,144 +836,83 @@ function bindOutletLinks() {
   });
 }
 
-// ── Page partials (HTML-first) ────────────────────────────────────────────────
-// Page chrome lives in docs/pages/*.html. JS only fetches the partial,
-// clones it into the outlet, then populates dynamic regions and clones
-// cloning-prototype templates per data row.
-
-const partialCache = new Map();
-
-async function loadPagePartial(name) {
-  if (partialCache.has(name)) return partialCache.get(name);
-  const res = await fetch(`/docs/pages/${name}.html`);
-  if (!res.ok) throw new Error(`Failed to load partial: ${name}`);
-  const html = await res.text();
-  const tpl = document.createElement('template');
-  tpl.innerHTML = html;
-  partialCache.set(name, tpl);
-  return tpl;
-}
-
-async function mountPartial(name) {
-  const tpl  = await loadPagePartial(name);
-  outlet.replaceChildren(tpl.content.cloneNode(true));
-  return outlet;
-}
-
-/**
- * Load an MCP-generated example page from the top-level
- * `MCP Generated Content/` directory. Spaces in the path are percent-encoded
- * by the browser when the file is served from a sub-folder-less dev server.
- *
- * Side effect: looks for a sibling `${id}.setup.js` and registers every
- * exported key in the global `pendingSetups` map. HTML elements carrying
- * `data-setup-key="<name>"` will then have that callback applied via
- * `runPendingSetups()`.
- */
-async function mountMcpDemoPartial(id) {
-  // Cache lives outside partialCache so MCP partials don't clash on name.
-  const cacheKey = `mcp:${id}`;
-  let tpl;
-  if (partialCache.has(cacheKey)) {
-    tpl = partialCache.get(cacheKey);
-  } else {
-    const url = `/MCP%20Generated%20Content/${encodeURIComponent(id)}.html`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to load MCP demo: ${id} (${res.status})`);
-    const html = await res.text();
-    tpl = document.createElement('template');
-    tpl.innerHTML = html;
-    partialCache.set(cacheKey, tpl);
-  }
-  outlet.replaceChildren(tpl.content.cloneNode(true));
-
-  // Load the sibling setup module (if any) and invoke the page setup
-  // directly. Pages contribute their own markup straight to #docs-outlet
-  // (no .docs-page wrapper) so the outlet is the natural root for queries.
-  try {
-    const setupUrl = `/MCP%20Generated%20Content/${encodeURIComponent(id)}.setup.js`;
-    const mod = await import(/* @vite-ignore */ setupUrl);
-    const set = (mod.default && typeof mod.default === 'object') ? mod.default : null;
-    if (set) {
-      const pageSetup = set[`${id}-page`];
-      if (typeof pageSetup === 'function') {
-        try { await pageSetup(outlet); } catch (err) {
-          console.warn(`[docs] mcp-demo ${id} setup failed:`, err);
-        }
-      }
-    }
-  } catch {
-    /* setup file is optional */
-  }
-
-  return outlet;
-}
-
-/** Convert a Font Awesome class string ('fa-solid fa-house') to a sherpa-icon name ('house'). */
 // ── Page builders ─────────────────────────────────────────────────────────────
 
 async function renderHomePage() {
-  await mountPartial('home');
-
-  const grid = outlet.querySelector('[data-region="category-cards"]');
-  const tpl  = outlet.querySelector('template.category-card-tpl');
-  if (!grid || !tpl) return;
-
-  const frag = document.createDocumentFragment();
-  for (const cat of CATEGORIES) {
+  const cardHtml = CATEGORIES.map(cat => {
     const count = visibleComponents().filter(c => c.category === cat.id).length;
-    const node  = tpl.content.firstElementChild.cloneNode(true);
-    node.dataset.route       = `/category/${cat.id}`;
-    node.setAttribute('aria-label', `${cat.label} — ${count} components`);
+    const iconClass = cat.icon ? cat.icon.replace(/^fa-solid\s+/, '') : 'fa-folder';
+    return `
+      <sherpa-container
+        data-interactive="true"
+        data-elevation="sm"
+        data-route="/category/${escapeHtml(cat.id)}"
+        tabindex="0"
+        role="link"
+        aria-label="${escapeHtml(cat.label)} — ${count} component${count !== 1 ? 's' : ''}"
+      >
+        <sherpa-container-header slot="header" data-title="${escapeHtml(cat.label)}"></sherpa-container-header>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--sherpa-space-xs,8px);">
+          <i class="fa-solid ${escapeHtml(iconClass)} sherpa-icon" data-size="2xl" aria-hidden="true"></i>
+          <span>${count} component${count !== 1 ? 's' : ''}</span>
+        </div>
+      </sherpa-container>`;
+  }).join('');
 
-    const header = node.querySelector('sherpa-container-header');
-    if (header) header.dataset.title = cat.label;
-
-    const icon = node.querySelector('i.sherpa-icon');
-    if (icon && cat.icon) icon.className = `fa-solid ${cat.icon.replace(/^fa-solid\s+/, '')} sherpa-icon`;
-
-    const count$ = node.querySelector('.docs-category-count');
-    if (count$) count$.textContent = `${count} component${count !== 1 ? 's' : ''}`;
-
-    frag.appendChild(node);
-  }
-  grid.appendChild(frag);
+  outlet.innerHTML = `
+    <sherpa-section-header
+      data-col-span="12"
+      data-label="Design System"
+      data-heading-level="primary"
+      data-divider="true"
+    >
+      <p slot="description">
+        A library of accessible Web Components built on design tokens and a
+        progressive-enhancement philosophy &mdash; HTML for structure, CSS for
+        state, JavaScript only when the first two can&rsquo;t do the job. Pick a
+        category below, or use the search in the sidebar to jump straight to a
+        component.
+      </p>
+    </sherpa-section-header>
+    <sherpa-container data-col-span="12" data-variant="fit">
+      <div
+        style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--sherpa-space-default,16px);"
+        aria-label="Component categories"
+      >${cardHtml}</div>
+    </sherpa-container>`;
 }
 
 async function renderCategoryPage(cat, items) {
-  await mountPartial('category');
+  const cardHtml = items.map(comp => `
+    <sherpa-container
+      data-interactive="true"
+      data-elevation="sm"
+      data-label="${escapeHtml(comp.label)}"
+      data-description="&lt;${escapeHtml(comp.tag)}&gt;"
+      data-route="/components/${escapeHtml(comp.tag)}"
+      tabindex="0"
+      role="link"
+      aria-label="${escapeHtml(comp.label)}"
+    ></sherpa-container>`).join('');
 
-  const desc = outlet.querySelector('[data-region="header-description"]');
-  if (desc) {
-    if (cat.description) {
-      desc.textContent = cat.description;
-      desc.hidden = false;
-    } else {
-      desc.hidden = true;
-    }
-  }
+  const emptyHtml = !items.length
+    ? `<sherpa-empty-state data-label="No components in this category"></sherpa-empty-state>`
+    : '';
 
-  const grid  = outlet.querySelector('[data-region="component-cards"]');
-  const empty = outlet.querySelector('[data-region="empty"]');
-  const tpl   = outlet.querySelector('template.component-card-tpl');
-
-  if (!items.length) {
-    if (empty) empty.hidden = false;
-    return;
-  }
-  if (empty) empty.hidden = true;
-
-  if (!grid || !tpl) return;
-  const frag = document.createDocumentFragment();
-  for (const comp of items) {
-    const node = tpl.content.firstElementChild.cloneNode(true);
-    node.dataset.label       = comp.label;
-    node.dataset.description = `<${comp.tag}>`;
-    node.dataset.route       = `/components/${comp.tag}`;
-    node.setAttribute('aria-label', comp.label);
-    frag.appendChild(node);
-  }
-  grid.appendChild(frag);
+  outlet.innerHTML = `
+    <sherpa-section-header
+      data-col-span="12"
+      data-heading-level="primary"
+      data-divider="true"
+      data-label="${escapeHtml(cat.label)}"
+    >${cat.description ? `<p slot="description">${escapeHtml(cat.description)}</p>` : ''}</sherpa-section-header>
+    <sherpa-container data-col-span="12" data-variant="fit">
+      ${emptyHtml}
+      <div
+        style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--sherpa-space-default,16px);"
+        aria-label="Components in this category"
+      >${cardHtml}</div>
+    </sherpa-container>`;
 }
 
 /** Build the four API tables (attributes / slots / events / methods) for a
@@ -1221,7 +1038,7 @@ function buildApiAccordion(schema, label = 'API Reference') {
   const { attrsHtml, slotsHtml, eventsHtml, methodsHtml } = buildApiSections(schema);
   if (!attrsHtml && !slotsHtml && !eventsHtml && !methodsHtml) return '';
   return `
-    <sherpa-accordion class="docs-api-accordion" data-label="${escapeHtml(label)}" open>
+    <sherpa-accordion class="docs-api-accordion" data-col-span="12" data-label="${escapeHtml(label)}" open>
       ${attrsHtml}
       ${slotsHtml}
       ${eventsHtml}
@@ -1233,24 +1050,22 @@ function buildApiAccordion(schema, label = 'API Reference') {
 function buildChildSection(child) {
   const { lead, rest } = splitDescription(child.schema.description);
   return `
-    <section id="child-${escapeHtml(child.tag)}" class="docs-child-section">
-      <sherpa-section-header
-        data-label="${escapeHtml(child.label)}"
-        data-heading-level="secondary"
-        data-divider="true"
-      >
-        <sherpa-tag slot="badge" data-variant="secondary">&lt;${escapeHtml(child.tag)}&gt;</sherpa-tag>
-        ${lead ? `<p slot="description">${escapeHtml(lead)}</p>` : ''}
-      </sherpa-section-header>
-
-      ${rest.length ? `
-      <sherpa-accordion class="docs-impl-notes" data-label="Implementation notes">
-        ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
-      </sherpa-accordion>` : ''}
-
-      ${buildExamplesSection(child.tag, child.examples)}
-      ${buildApiAccordion(child.schema, `${child.label} API`)}
-    </section>`;
+    <sherpa-section-header
+      id="child-${escapeHtml(child.tag)}"
+      data-col-span="12"
+      data-label="${escapeHtml(child.label)}"
+      data-heading-level="secondary"
+      data-divider="true"
+    >
+      <sherpa-tag slot="badge" data-variant="secondary">&lt;${escapeHtml(child.tag)}&gt;</sherpa-tag>
+      ${lead ? `<p slot="description">${escapeHtml(lead)}</p>` : ''}
+    </sherpa-section-header>
+    ${rest.length ? `
+    <sherpa-accordion class="docs-impl-notes" data-col-span="12" data-label="Implementation notes">
+      ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+    </sherpa-accordion>` : ''}
+    ${buildExamplesSection(child.tag, child.examples)}
+    ${buildApiAccordion(child.schema, `${child.label} API`)}`;
 }
 
 /** Add interactive playground to examples with attribute controls. */
@@ -1284,20 +1099,20 @@ async function makeExamplesInteractive(tag, schema) {
     playground.style.display = 'none';
 
     playground.innerHTML = `
-      <div class="docs-playground-grid">
-        <div class="docs-playground-controls">
-          <h4>Attributes</h4>
+      <div class="docs-playground-grid" style="display:grid;grid-template-columns:280px 1fr;gap:var(--sherpa-space-default,16px);margin-bottom:var(--sherpa-space-default,16px);">
+        <div class="docs-playground-controls" style="display:flex;flex-direction:column;gap:var(--sherpa-space-sm,12px);">
+          <h4 style="margin:0;font-size:var(--sherpa-font-base-size,14px);font-weight:600;">Attributes</h4>
           <div class="docs-playground-attrs"></div>
         </div>
-        <div class="docs-playground-preview">
+        <div class="docs-playground-preview" style="display:flex;align-items:center;justify-content:center;padding:var(--sherpa-space-lg,24px);border:1px solid var(--sherpa-border-container-default,#e0e0e0);border-radius:var(--sherpa-border-rounding-base,6px);min-height:80px;max-height:300px;overflow:auto;">
           <div class="docs-playground-stage"></div>
         </div>
       </div>
-      <div class="docs-playground-code">
-        <div class="docs-code-header">
-          <span class="docs-code-lang">Generated HTML</span>
+      <div class="docs-playground-code" style="border-radius:var(--sherpa-border-rounding-base,6px);overflow:hidden;border:1px solid var(--sherpa-border-container-default,#e0e0e0);">
+        <div class="docs-code-header" style="display:flex;align-items:center;padding:var(--sherpa-space-xs,8px) var(--sherpa-space-default,16px);background:var(--sherpa-surface-container-secondary-default,#f5f5f5);border-bottom:1px solid var(--sherpa-border-container-default,#e0e0e0);">
+          <span class="docs-code-lang" style="font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--sherpa-content-default-secondary,#6a6a75);">Generated HTML</span>
         </div>
-        <pre><code class="docs-playground-output language-html"></code></pre>
+        <pre style="margin:0;overflow:auto;"><code class="docs-playground-output language-html"></code></pre>
       </div>
     `;
 
@@ -1451,50 +1266,45 @@ function buildComponentPage(tag, label, schema, examples, children = []) {
   const apiHtml = buildApiAccordion(schema);
 
   const childrenHtml = children.length ? `
-    <section class="docs-children-group">
-      <sherpa-section-header
-        data-label="Sub-components"
-        data-heading-level="secondary"
-        data-divider="true"
-      >
-        <p slot="description">Child components scoped to <code>&lt;${escapeHtml(tag)}&gt;</code>. Each is also reachable directly via its own tag.</p>
-      </sherpa-section-header>
-      ${children.map(buildChildSection).join('')}
-    </section>` : '';
+    <sherpa-section-header
+      data-col-span="12"
+      data-label="Sub-components"
+      data-heading-level="secondary"
+      data-divider="true"
+    >
+      <p slot="description">Child components scoped to <code>&lt;${escapeHtml(tag)}&gt;</code>. Each is also reachable directly via its own tag.</p>
+    </sherpa-section-header>
+    ${children.map(buildChildSection).join('')}` : '';
 
   return `
-    <div class="docs-page docs-component-page">
-      <sherpa-section-header
-        data-label="${escapeHtml(label)}"
-        data-heading-level="primary"
-        data-divider="true"
-      >
-        <sherpa-tag slot="badge" data-variant="secondary">&lt;${escapeHtml(tag)}&gt;</sherpa-tag>
-        ${lead ? `<p slot="description">${escapeHtml(lead)}</p>` : ''}
-      </sherpa-section-header>
-
-      ${rest.length ? `
-      <sherpa-accordion class="docs-impl-notes" data-label="Implementation notes">
-        ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
-      </sherpa-accordion>` : ''}
-
-      ${buildExamplesSection(tag, examples)}
-      ${apiHtml}
-      ${childrenHtml}
-    </div>`;
+    <sherpa-section-header
+      data-col-span="12"
+      data-label="${escapeHtml(label)}"
+      data-heading-level="primary"
+      data-divider="true"
+    >
+      <sherpa-tag slot="badge" data-variant="secondary">&lt;${escapeHtml(tag)}&gt;</sherpa-tag>
+      ${lead ? `<p slot="description">${escapeHtml(lead)}</p>` : ''}
+    </sherpa-section-header>
+    ${rest.length ? `
+    <sherpa-accordion class="docs-impl-notes" data-col-span="12" data-label="Implementation notes">
+      ${rest.map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+    </sherpa-accordion>` : ''}
+    ${buildExamplesSection(tag, examples)}
+    ${apiHtml}
+    ${childrenHtml}`;
 }
 
 function buildNotFound(what) {
   return `
-    <div class="docs-page docs-not-found-page">
-      <sherpa-section-header
-        data-label="Not found"
-        data-heading-level="primary"
-        data-divider="true"
-      >
-        <p slot="description">No documentation found for <code>${what}</code>.</p>
-      </sherpa-section-header>
-    </div>`;
+    <sherpa-section-header
+      data-col-span="12"
+      data-label="Not found"
+      data-heading-level="primary"
+      data-divider="true"
+    >
+      <p slot="description">No documentation found for <code>${what}</code>.</p>
+    </sherpa-section-header>`;
 }
 
 // ── Initialisation ────────────────────────────────────────────────────────────

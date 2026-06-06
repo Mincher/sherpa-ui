@@ -892,6 +892,36 @@ function writeDocsNav(outPath, categoryMap) {
   }
   lines.push("    </div>");
 
+  // MCP Generated Examples — static section, not schema-driven.
+  const MCP_DEMOS = [
+    { id: 'overview',     label: 'Overview' },
+    { id: 'orders',       label: 'Order Management' },
+    { id: 'solar-farm',   label: 'Solar Farm Operations' },
+    { id: 'support-desk', label: 'Support Desk Tickets' },
+  ];
+  lines.push("");
+  lines.push('    <div class="nav-group" data-group-index="2">');
+  lines.push('      <details class="nav-section" data-section-id="mcp-demo">');
+  lines.push("        <summary>");
+  lines.push("          <sherpa-nav-item");
+  lines.push('            data-variant="section"');
+  lines.push('            data-icon="fa-solid fa-robot"');
+  lines.push('            tabindex="0"');
+  lines.push('            role="button"');
+  lines.push("          >MCP Examples</sherpa-nav-item>");
+  lines.push("        </summary>");
+  for (const demo of MCP_DEMOS) {
+    lines.push("        <sherpa-nav-item");
+    lines.push('          data-variant="child"');
+    lines.push(`          data-item-id="mcp-demo/${demo.id}"`);
+    lines.push(`          data-route="/mcp-demo/${demo.id}"`);
+    lines.push('          tabindex="0"');
+    lines.push('          role="button"');
+    lines.push(`        >${escapeHtml(demo.label)}</sherpa-nav-item>`);
+  }
+  lines.push("      </details>");
+  lines.push("    </div>");
+
   lines.push("  </div>");
   lines.push("");
   lines.push('  <template class="nav-item-tpl">');

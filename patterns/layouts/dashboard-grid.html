@@ -26,39 +26,39 @@
   <sherpa-layout-grid>
 
     <!-- Row 1: Metric cards -->
-    <sherpa-container data-variant="resizable" data-col-span="3">
+    <sherpa-container data-variant="resizable" data-col-span="3" data-row-span="2">
       <sherpa-container-header data-title="Total Items"></sherpa-container-header>
       <sherpa-metric></sherpa-metric>
     </sherpa-container>
 
-    <sherpa-container data-variant="resizable" data-col-span="3">
+    <sherpa-container data-variant="resizable" data-col-span="3" data-row-span="2">
       <sherpa-container-header data-title="Active"></sherpa-container-header>
       <sherpa-metric></sherpa-metric>
     </sherpa-container>
 
-    <sherpa-container data-variant="resizable" data-col-span="3">
+    <sherpa-container data-variant="resizable" data-col-span="3" data-row-span="2">
       <sherpa-container-header data-title="Pending"></sherpa-container-header>
       <sherpa-metric></sherpa-metric>
     </sherpa-container>
 
-    <sherpa-container data-variant="resizable" data-col-span="3">
+    <sherpa-container data-variant="resizable" data-col-span="3" data-row-span="2">
       <sherpa-container-header data-title="Resolved"></sherpa-container-header>
       <sherpa-metric></sherpa-metric>
     </sherpa-container>
 
     <!-- Row 2: Charts -->
-    <sherpa-container data-variant="resizable" data-col-span="6" data-row-span="2">
+    <sherpa-container data-variant="resizable" data-col-span="6" data-row-span="6">
       <sherpa-container-header data-title="Trend" data-menu-button="true"></sherpa-container-header>
-      <sherpa-barchart></sherpa-barchart>
+      <sherpa-barchart data-viz></sherpa-barchart>
     </sherpa-container>
 
-    <sherpa-container data-variant="resizable" data-col-span="6" data-row-span="2">
+    <sherpa-container data-variant="resizable" data-col-span="6" data-row-span="6">
       <sherpa-container-header data-title="Distribution" data-menu-button="true"></sherpa-container-header>
-      <sherpa-donut-chart></sherpa-donut-chart>
+      <sherpa-donut-chart data-viz></sherpa-donut-chart>
     </sherpa-container>
 
     <!-- Row 3: Detail table -->
-    <sherpa-container data-variant="resizable" data-col-span="12" data-row-span="3">
+    <sherpa-container data-variant="resizable" data-col-span="12" data-row-span="8">
       <sherpa-container-header data-title="Details" data-menu-button="true"></sherpa-container-header>
       <sherpa-data-grid></sherpa-data-grid>
     </sherpa-container>

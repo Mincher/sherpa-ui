@@ -11,8 +11,12 @@
  *
  * Host attributes:
  *   data-variant     {enum}    — "fit" | "resizable" | "fill" | "worksheet"
- *   data-col-span    {number}  — "2"–"12" (any grid parent honours it)
- *   data-row-span    {number}  — "2"–"6"  (any grid parent honours it)
+ *   data-col-span    {number}  — "3" | "6" | "9" | "12" (resizable; grid parent honours it)
+ *   data-row-span    {number}  — "1"–"24" (any grid parent honours it; the
+ *                                 recommended stops are 4, 8, 12, 16, 20, 24
+ *                                 to match the 4-row-track minimum the grid
+ *                                 uses for chart-sized tiles at the default
+ *                                 64px row height)
  *   data-editable    {boolean} — enables resize grip
  *   data-menu-open   {boolean} — set while overflow menu is open
  *   data-interactive {boolean} — clickable surface
@@ -182,7 +186,9 @@
 .card-content {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: var(--_card-content-flex, 1);
+  min-height: 0;
+  overflow-y: auto;
   padding: var(--sherpa-space-base, 16px);
 }
 
@@ -266,50 +272,6 @@
   pointer-events: none;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   GRID SIZING — applies whenever the container is a grid item
-   ───────────────────────────────────────────────────────────────────────────
-   The container is self-describing: it declares its own column and row
-   span via `data-col-span` / `data-row-span` so any grid parent
-   (sherpa-layout-grid, sherpa-container-group subgrid, or a consumer
-   custom grid) honours those values without per-parent ::slotted rules.
-   These properties are inert when the container is not a grid item.
-   Grids that want a different default for the resizable variant can
-   still override via `::slotted(...)` rules (e.g. layout-grid sets
-   span 3 as the resizable default when no data-col-span is set).
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Valid container col-spans: 3, 6, 9, 12. Snap-to-span resize keeps
-   widths on these stops; intermediate values (2/4/5/7/8/10/11) are not
-   supported on containers. */
-:host([data-col-span="3"]) {
-  grid-column: span 3;
-}
-:host([data-col-span="6"]) {
-  grid-column: span 6;
-}
-:host([data-col-span="9"]) {
-  grid-column: span 9;
-}
-:host([data-col-span="12"]) {
-  grid-column: span 12;
-}
-
-:host([data-row-span="2"]) {
-  grid-row: span 2;
-}
-:host([data-row-span="3"]) {
-  grid-row: span 3;
-}
-:host([data-row-span="4"]) {
-  grid-row: span 4;
-}
-:host([data-row-span="5"]) {
-  grid-row: span 5;
-}
-:host([data-row-span="6"]) {
-  grid-row: span 6;
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RESIZE GRIP (experimental snap-to-span drag)

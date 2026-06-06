@@ -27,7 +27,7 @@ const PATTERNS_DIR    = path.join(ROOT, "patterns");
 const DOCS_DIR        = path.join(ROOT, "docs");
 const CSS_DIR         = path.join(ROOT, "css");
 const CSS_STYLES_DIR  = path.join(ROOT, "css", "styles");
-const COPILOT_PATH    = path.join(ROOT, ".github", "copilot-instructions.md");
+const COPILOT_PATH    = path.join(ROOT, ".github", "instructions", "copilot-instructions.md");
 
 const PATHS = {
   rootDir:       ROOT,

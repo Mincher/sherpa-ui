@@ -8,10 +8,15 @@
  * Slotted children:
  *   <sherpa-container data-variant="resizable" data-col-span data-row-span>
  *     — takes grid-column / grid-row spans from its data-* attributes.
+ *     data-row-span="N" maps to N×4 row tracks (see sherpa-container.css
+ *     for the 4× row-height multiplier; the base row track is 64px).
  *
  * Host attributes:
- *   data-row-height — CSS length, sets grid-auto-rows (default 160px)
- *   data-content    — "static" — opt out of the grid (stacks children)
+ *   data-row-height — CSS length, sets grid-auto-rows (default 64px)
+ *   data-content    — "static" — stacks children as an auto-height flex
+ *                     column instead of a fixed-row grid. Set permanently
+ *                     on the docs shell; dashboard / MCP pages use a
+ *                     nested sherpa-layout-grid without this attribute.
  *   data-fill       — "viewport" — clamp the layout to the available
  *                     viewport height. The host caps at 100dvh (or fills
  *                     its flex parent), the grid surface scrolls
@@ -21,17 +26,10 @@
  *   ≥1200px → 12 cols, 640–1199px → 6 cols, <640px → 3 cols
  */
 
-@property --maxColCount {
-  syntax: "<integer>";
-
-  inherits: true;
-  initial-value: 12;
-}
-
 @property --row-height {
   syntax: "<length>";
   inherits: true;
-  initial-value: 160px;
+  initial-value: 64px;
 }
 
 :host {
@@ -60,9 +58,15 @@
 :host .grid-header {
   flex: 0 0 auto;
   display: none;
+  /* Override grouped-component defaults — header spans full width, no rounding */
+  width: 100%;
+  border-radius: 0;
+  border-inline: none;
+  border-top: none;
 }
-:host([data-has-view-header]) .grid-header {
-  display: block;
+:host([data-has-view-header]) .grid-header,
+:host([data-has-tab-row]) .grid-header {
+  display: flex; /* grouped-component uses inline-flex; override for full-width */
 }
 :host .grid-body {
   display: flex;
@@ -93,12 +97,12 @@
   container-type: inline-size;
   container-name: sherpa-layout-grid;
   --maxColCount: 12;
-  --row-height: var(--sherpa-space-default, 16px);
-  --row-height: calc(var(--sherpa-space-default, 16px) * 10);
+  --row-height: 64px;
   grid-template-columns: repeat(var(--maxColCount), 1fr);
   grid-auto-rows: var(--row-height);
   padding: var(--sherpa-space-sm, 12px);
-  gap: var(--sherpa-space-xs, 8px);
+  column-gap: var(--sherpa-space-xs, 8px);
+  row-gap: var(--sherpa-space-default, 16px);
   align-content: start;
 }
 :host([data-content="static"]) .grid-surface {
@@ -106,6 +110,13 @@
   flex-direction: column;
   grid-template-columns: none;
   grid-auto-rows: auto;
+}
+/* In static mode, containers auto-size to their content instead of stretching
+   to a fixed grid-row span. !important is required because ::slotted() rules
+   lose to :host rules in the inner shadow tree without it. */
+:host([data-content="static"]) ::slotted(sherpa-container) {
+  height: auto !important;
+  --_card-content-flex: 0 0 auto;
 }
 :host([data-pad]) .grid-surface {
   padding: var(--sherpa-space-base, 16px);
@@ -119,6 +130,15 @@
 :host([data-gap="lg"]) .grid-surface {
   gap: var(--sherpa-space-lg, 24px);
 }
+/* Banner slot — full-width above containers, hidden when empty */
+slot[name="banner"] {
+  display: none;
+  grid-column: 1 / -1;
+}
+:host([data-has-banner]) slot[name="banner"] {
+  display: block;
+}
+
 :host([data-editable]) ::slotted(sherpa-container) {
   cursor: grab;
 }
@@ -136,6 +156,13 @@
  * data-col-span / data-row-span (see sherpa-container.css). Rows are
  * definite tracks via grid-auto-rows: var(--row-height), so a span N
  * tile is exactly N row tracks tall (plus N-1 row-gaps). */
+/* .layout-grid-outlet in the default slot is a transparent router outlet —
+ * its children participate directly in the grid as grid items.
+ * display:contents is also enforced by sherpa-utility-classes.css in the light DOM. */
+::slotted(.layout-grid-outlet) {
+  display: contents;
+}
+
 ::slotted(sherpa-container[data-variant="resizable"]):not([data-col-span]) {
   grid-column: span 3;
 }
@@ -175,6 +202,10 @@
   ::slotted(sherpa-container-group[data-col-span="12"]) {
     grid-column: span 6;
   }
+  ::slotted(sherpa-accordion[data-col-span="9"]),
+  ::slotted(sherpa-accordion[data-col-span="12"]) {
+    grid-column: span 6 !important;
+  }
 }
 
 @container sherpa-layout-grid (max-width: 639px) {
@@ -188,6 +219,9 @@
     grid-column-end: span 3 !important;
   }
   ::slotted(sherpa-container-group) {
+    grid-column: 1 / -1 !important;
+  }
+  ::slotted(sherpa-accordion) {
     grid-column: 1 / -1 !important;
   }
 }
