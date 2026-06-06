@@ -29,7 +29,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
-const OUT_FILE    = path.join(ROOT, 'figma-tokens', 'figma-variables.json');
+const OUT_FILE    = process.env.FIGMA_VARIABLES_OUT || path.join(ROOT, 'figma-tokens', 'figma-variables.json');
 const CONFIG_FILE = path.join(ROOT, 'figma-tokens', 'figma-config.json');
 
 const TOKEN = process.env.FIGMA_ACCESS_TOKEN;

@@ -45,6 +45,7 @@
     "tokens:extract": "node scripts/extract-figma-vars.js",
     "tokens:generate": "node scripts/generate-css-tokens.js",
     "tokens:refresh": "npm run tokens:extract && npm run tokens:generate",
+    "tokens:studio": "node tools/token-studio/server.js --open",
     "tokens:codemod": "node scripts/codemod-compat-aliases.js",
     "css:fallbacks": "node scripts/inject-css-fallbacks.js",
     "css:fallbacks:check": "node scripts/inject-css-fallbacks.js --dry",
