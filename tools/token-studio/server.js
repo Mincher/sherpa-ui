@@ -264,6 +264,81 @@ function handleResolve(url, res) {
   json(res, { prop, theme, mode, chain });
 }
 
+function handleComponents(res) {
+  try {
+    const dirs = fs.readdirSync(PATHS.components).sort();
+    const components = dirs.filter(d =>
+      fs.existsSync(path.join(PATHS.components, d, `${d}.css`))
+    );
+    json(res, components);
+  } catch (e) { err(res, e.message); }
+}
+
+/** Extract all unique --prop names from a CSS value string. */
+function extractAllVars(value) {
+  const vars = [];
+  const re = /var\((--[\w-]+)/g;
+  let m;
+  while ((m = re.exec(value)) !== null) {
+    if (!vars.includes(m[1])) vars.push(m[1]);
+  }
+  return vars;
+}
+
+function handleComponentTokens(url, res) {
+  const params = new URL(url, 'http://x').searchParams;
+  const name  = params.get('name');
+  const theme = params.get('theme') || null;
+  const mode  = params.get('mode')  || null;
+  if (!name) { err(res, 'Missing ?name=', 400); return; }
+
+  const cssPath = path.join(PATHS.components, name, `${name}.css`);
+  if (!fs.existsSync(cssPath)) { err(res, 'Component not found', 404); return; }
+
+  const css = fs.readFileSync(cssPath, 'utf8');
+  const parsed = parseCSS(css, `@components/${name}/${name}.css`);
+
+  const result = { component: name, selectors: [] };
+
+  for (const block of parsed.selectors) {
+    const tokenProps = [];
+    for (const prop of block.properties) {
+      const varRefs = extractAllVars(prop.value);
+      if (!varRefs.length) continue;
+
+      // Prefer --sherpa-* / --core-* as the primary var to resolve;
+      // fall back to the first reference (e.g. --_status-* tokens).
+      const primary = varRefs.find(v => v.startsWith('--sherpa-') || v.startsWith('--core-'))
+                   || varRefs[0];
+
+      const chain = resolve(primary, resolutionMap, theme, mode);
+      const terminal = chain[chain.length - 1];
+
+      tokenProps.push({
+        cssProperty: prop.name,
+        rawValue:    prop.value,
+        primaryVar:  primary,
+        allVars:     varRefs,
+        chain,
+        terminal: terminal
+          ? { value: terminal.displayValue, isColor: terminal.isColor }
+          : null,
+      });
+    }
+
+    if (tokenProps.length) {
+      result.selectors.push({
+        selector: block.selector,
+        layer:    block.layer,
+        media:    block.media,
+        tokens:   tokenProps,
+      });
+    }
+  }
+
+  json(res, result);
+}
+
 // ── Main router ──────────────────────────────────────────────────────
 
 const server = http.createServer(async (req, res) => {
@@ -296,9 +371,11 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/diff'      && method === 'GET')    { handleDiff(res);                 return; }
   if (pathname === '/api/apply'     && method === 'POST')   { handleApply(res);                return; }
   if (pathname === '/api/staged'    && method === 'DELETE') { handleCancelStaged(res);         return; }
-  if (pathname === '/api/css-files' && method === 'GET')    { handleCssFiles(res);             return; }
-  if (pathname === '/api/css-file'  && method === 'GET')    { handleCssFile(req.url, res);     return; }
-  if (pathname === '/api/resolve'   && method === 'GET')    { handleResolve(req.url, res);     return; }
+  if (pathname === '/api/css-files'        && method === 'GET') { handleCssFiles(res);                  return; }
+  if (pathname === '/api/css-file'         && method === 'GET') { handleCssFile(req.url, res);          return; }
+  if (pathname === '/api/resolve'          && method === 'GET') { handleResolve(req.url, res);          return; }
+  if (pathname === '/api/components'       && method === 'GET') { handleComponents(res);                return; }
+  if (pathname === '/api/component-tokens' && method === 'GET') { handleComponentTokens(req.url, res); return; }
 
   err(res, 'Not found', 404);
 });

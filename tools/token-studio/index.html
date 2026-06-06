@@ -261,6 +261,34 @@
       display: flex;
       flex-direction: column;
     }
+
+    /* Mode toggle */
+    .panel-mode-toggle {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--sherpa-border-control-secondary-default, #d5d5d5);
+      border-radius: var(--sherpa-border-rounding-base, 4px);
+      overflow: hidden;
+    }
+    .mode-tab {
+      height: 28px;
+      padding: 0 12px;
+      border: none;
+      background: var(--sherpa-surface-container-default, #fff);
+      color: var(--sherpa-content-default-secondary, #5c5c66);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .mode-tab + .mode-tab { border-left: 1px solid var(--sherpa-border-control-secondary-default, #d5d5d5); }
+    .mode-tab.active {
+      background: var(--sherpa-surface-control-primary-default, #8500cc);
+      color: #fff;
+      font-weight: 600;
+    }
+    .mode-tab:not(.active):hover { background: var(--sherpa-surface-control-secondary-hover, #f0f0f4); }
+
     .chain-controls {
       display: flex;
       align-items: center;
@@ -270,6 +298,120 @@
       background: var(--sherpa-surface-container-default, #fff);
       flex-wrap: wrap;
     }
+
+    /* Component view */
+    .component-controls {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      background: var(--sherpa-surface-container-default, #fff);
+    }
+    .component-controls.visible { display: flex; }
+
+    .comp-selector-group {
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+    }
+    .comp-selector-header {
+      padding: 6px var(--sherpa-space-sm, 12px);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      background: var(--sherpa-surface-container-hover, #f4f4f6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    .comp-selector-header:hover { background: var(--sherpa-surface-control-secondary-hover, #ebebf0); }
+    .comp-selector-count {
+      font-weight: 400;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+    }
+    .comp-token-row {
+      padding: 7px var(--sherpa-space-sm, 12px);
+      border-bottom: 1px solid var(--sherpa-border-container-subtle, rgba(0,0,0,0.06));
+      cursor: pointer;
+    }
+    .comp-token-row:hover { background: var(--sherpa-surface-container-hover, #f8f8fb); }
+    .comp-token-row.expanded { background: var(--sherpa-surface-context-default-subtle-default, #f4f0ff); }
+    .comp-token-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .comp-token-css-prop {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--sherpa-content-default-secondary, #5c5c66);
+      flex-shrink: 0;
+      min-width: 140px;
+    }
+    .comp-token-arrow { color: var(--sherpa-content-inactive-default, #8c8c99); font-size: 11px; }
+    .comp-token-primary {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--sherpa-content-default-body, #2e2e33);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .comp-token-terminal {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .comp-token-swatch {
+      width: 14px; height: 14px;
+      border-radius: 2px;
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+    .comp-token-val {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .comp-token-chain {
+      display: none;
+      padding: 8px 0 4px 16px;
+      border-top: 1px solid var(--sherpa-border-container-subtle, rgba(0,0,0,0.06));
+      margin-top: 6px;
+    }
+    .comp-token-row.expanded .comp-token-chain { display: block; }
+    .comp-chain-step {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 11px;
+      padding: 2px 0;
+      font-family: 'Courier New', monospace;
+    }
+    .comp-chain-prop { color: var(--sherpa-content-default-body, #2e2e33); }
+    .comp-chain-file {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--sherpa-surface-container-hover, #f4f4f6);
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      font-family: inherit;
+    }
+    .comp-chain-val { color: var(--sherpa-content-default-secondary, #5c5c66); }
+    .comp-chain-swatch {
+      width: 10px; height: 10px;
+      border-radius: 1px;
+      border: 1px solid rgba(0,0,0,0.12);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .comp-chain-indent { color: var(--sherpa-content-inactive-default, #8c8c99); }
     .chain-select {
       height: 32px;
       padding: 0 10px;
@@ -466,26 +608,60 @@
 
   <!-- Right: chain explorer -->
   <div class="panel-chain">
+
+    <!-- Mode toggle + controls row -->
     <div class="chain-controls">
-      <select class="chain-select" id="sel-file">
-        <option value="">Select file…</option>
-      </select>
-      <span class="chain-separator">›</span>
-      <select class="chain-select" id="sel-selector" disabled>
-        <option value="">Select selector…</option>
-      </select>
-      <span class="chain-separator">›</span>
-      <select class="chain-select" id="sel-prop" disabled>
-        <option value="">Select property…</option>
-      </select>
-    </div>
-    <div class="panel-label">Token Chain</div>
-    <div class="chain-content">
-      <div class="chain-empty" id="chain-empty">
-        Select a file, selector, and property to see its token chain.
+      <div class="panel-mode-toggle">
+        <button class="mode-tab active" id="tab-property">Property</button>
+        <button class="mode-tab"        id="tab-component">Component</button>
       </div>
-      <div id="chain-steps"></div>
+
+      <!-- Property mode selectors -->
+      <div id="property-controls" style="display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap;">
+        <select class="chain-select" id="sel-file">
+          <option value="">Select file…</option>
+        </select>
+        <span class="chain-separator">›</span>
+        <select class="chain-select" id="sel-selector" disabled>
+          <option value="">Select selector…</option>
+        </select>
+        <span class="chain-separator">›</span>
+        <select class="chain-select" id="sel-prop" disabled>
+          <option value="">Select property…</option>
+        </select>
+      </div>
+
+      <!-- Component mode selectors (hidden initially) -->
+      <div id="component-controls" style="display:none;align-items:center;gap:8px;flex:1;flex-wrap:wrap;">
+        <select class="chain-select" id="sel-component" style="min-width:200px;">
+          <option value="">Select component…</option>
+        </select>
+        <select class="chain-select" id="sel-comp-selector" style="min-width:180px;">
+          <option value="">All selectors</option>
+        </select>
+      </div>
     </div>
+
+    <!-- Property mode content -->
+    <div id="property-panel">
+      <div class="panel-label">Token Chain</div>
+      <div class="chain-content">
+        <div class="chain-empty" id="chain-empty">
+          Select a file, selector, and property to see its token chain.
+        </div>
+        <div id="chain-steps"></div>
+      </div>
+    </div>
+
+    <!-- Component mode content -->
+    <div id="component-panel" style="display:none;overflow-y:auto;flex:1;">
+      <div class="panel-label" id="comp-panel-label">Component Tokens</div>
+      <div class="chain-empty" id="comp-empty">
+        Select a component to see all tokens it uses.
+      </div>
+      <div id="comp-list"></div>
+    </div>
+
   </div>
 </div>
 
@@ -502,7 +678,8 @@
 
 <script type="module">
 // ── State ─────────────────────────────────────────────────────────────
-let state = 'idle'; // idle | extracting | reviewing | applying
+let state = 'idle';     // idle | extracting | reviewing | applying
+let panelMode = 'property'; // 'property' | 'component'
 let cssFiles = [];
 let parsedFile = null;
 
@@ -513,11 +690,19 @@ document.getElementById('theme-select').addEventListener('change', e => {
   if (e.target.value) html.setAttribute('data-theme', e.target.value);
   else html.removeAttribute('data-theme');
   refreshChain();
+  refreshComponentIfActive();
 });
 document.getElementById('mode-select').addEventListener('change', e => {
   html.setAttribute('data-mode', e.target.value || 'auto');
   refreshChain();
+  refreshComponentIfActive();
 });
+
+function refreshComponentIfActive() {
+  if (panelMode !== 'component') return;
+  const name = document.getElementById('sel-component').value;
+  if (name) loadComponentTokens(name);
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────
 async function api(method, path, body) {
@@ -935,8 +1120,216 @@ function renderChain(rootProp, chain) {
   });
 }
 
+// ── Panel mode toggle ─────────────────────────────────────────────────
+
+document.getElementById('tab-property').addEventListener('click', () => setPanelMode('property'));
+document.getElementById('tab-component').addEventListener('click', () => setPanelMode('component'));
+
+function setPanelMode(mode) {
+  panelMode = mode;
+  document.getElementById('tab-property').classList.toggle('active', mode === 'property');
+  document.getElementById('tab-component').classList.toggle('active', mode === 'component');
+  document.getElementById('property-controls').style.display  = mode === 'property'  ? 'flex' : 'none';
+  document.getElementById('component-controls').style.display = mode === 'component' ? 'flex' : 'none';
+  document.getElementById('property-panel').style.display     = mode === 'property'  ? ''     : 'none';
+  document.getElementById('component-panel').style.display    = mode === 'component' ? ''     : 'none';
+}
+
+// ── Component mode ────────────────────────────────────────────────────
+async function loadComponentList() {
+  const components = await api('GET', '/api/components');
+  const sel = document.getElementById('sel-component');
+  for (const name of components) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  }
+}
+
+document.getElementById('sel-component').addEventListener('change', async e => {
+  const name = e.target.value;
+  const selectorSel = document.getElementById('sel-comp-selector');
+  selectorSel.innerHTML = '<option value="">All selectors</option>';
+  document.getElementById('comp-list').innerHTML = '';
+  document.getElementById('comp-empty').style.display = name ? 'none' : '';
+  if (!name) return;
+  await loadComponentTokens(name);
+});
+
+document.getElementById('sel-comp-selector').addEventListener('change', async () => {
+  const name = document.getElementById('sel-component').value;
+  if (name) await loadComponentTokens(name);
+});
+
+async function loadComponentTokens(name) {
+  const theme = document.getElementById('theme-select').value || null;
+  const mode  = document.getElementById('mode-select').value  || null;
+  const params = new URLSearchParams({ name });
+  if (theme) params.set('theme', theme);
+  if (mode && mode !== 'auto') params.set('mode', mode);
+
+  const data = await api('GET', `/api/component-tokens?${params}`);
+  if (data.error) return;
+
+  // Populate selector filter
+  const selectorSel = document.getElementById('sel-comp-selector');
+  const currentFilter = selectorSel.value;
+  selectorSel.innerHTML = '<option value="">All selectors</option>';
+  for (const block of data.selectors) {
+    const opt = document.createElement('option');
+    opt.value = block.selector;
+    opt.textContent = block.selector;
+    selectorSel.appendChild(opt);
+  }
+  if (currentFilter) selectorSel.value = currentFilter;
+
+  const filter = selectorSel.value;
+
+  // Update panel label
+  const totalTokens = data.selectors.reduce((n, b) => n + b.tokens.length, 0);
+  document.getElementById('comp-panel-label').textContent =
+    `${name} — ${totalTokens} token references across ${data.selectors.length} selectors`;
+
+  // Render
+  const list = document.getElementById('comp-list');
+  list.innerHTML = '';
+
+  const visibleBlocks = filter
+    ? data.selectors.filter(b => b.selector === filter)
+    : data.selectors;
+
+  for (const block of visibleBlocks) {
+    renderComponentBlock(list, block);
+  }
+}
+
+function renderComponentBlock(container, block) {
+  const section = document.createElement('div');
+  section.className = 'comp-selector-group';
+
+  const header = document.createElement('div');
+  header.className = 'comp-selector-header';
+  const selectorText = document.createElement('span');
+  selectorText.textContent = block.selector;
+  const count = document.createElement('span');
+  count.className = 'comp-selector-count';
+  count.textContent = `${block.tokens.length} token${block.tokens.length !== 1 ? 's' : ''}`;
+  header.appendChild(selectorText);
+  header.appendChild(count);
+  section.appendChild(header);
+
+  const rows = document.createElement('div');
+  let collapsed = false;
+  header.addEventListener('click', () => {
+    collapsed = !collapsed;
+    rows.style.display = collapsed ? 'none' : '';
+  });
+
+  for (const token of block.tokens) {
+    rows.appendChild(renderTokenRow(token));
+  }
+
+  section.appendChild(rows);
+  container.appendChild(section);
+}
+
+function renderTokenRow(token) {
+  const row = document.createElement('div');
+  row.className = 'comp-token-row';
+
+  const header = document.createElement('div');
+  header.className = 'comp-token-header';
+
+  const cssProp = document.createElement('span');
+  cssProp.className = 'comp-token-css-prop';
+  cssProp.textContent = token.cssProperty;
+  header.appendChild(cssProp);
+
+  const arrow = document.createElement('span');
+  arrow.className = 'comp-token-arrow';
+  arrow.textContent = '›';
+  header.appendChild(arrow);
+
+  const primaryVar = document.createElement('span');
+  primaryVar.className = 'comp-token-primary';
+  primaryVar.textContent = token.primaryVar;
+  header.appendChild(primaryVar);
+
+  if (token.terminal?.value) {
+    const terminalGroup = document.createElement('span');
+    terminalGroup.className = 'comp-token-terminal';
+
+    if (token.terminal.isColor) {
+      const swatch = document.createElement('span');
+      swatch.className = 'comp-token-swatch';
+      swatch.style.background = token.terminal.value;
+      terminalGroup.appendChild(swatch);
+    }
+
+    const val = document.createElement('span');
+    val.className = 'comp-token-val';
+    val.textContent = token.terminal.value;
+    terminalGroup.appendChild(val);
+    header.appendChild(terminalGroup);
+  }
+
+  row.appendChild(header);
+
+  // Expandable chain detail
+  const chainEl = document.createElement('div');
+  chainEl.className = 'comp-token-chain';
+  renderMiniChain(chainEl, token.chain);
+  row.appendChild(chainEl);
+
+  row.addEventListener('click', () => row.classList.toggle('expanded'));
+
+  return row;
+}
+
+function renderMiniChain(container, chain) {
+  chain.forEach((step, i) => {
+    const line = document.createElement('div');
+    line.className = 'comp-chain-step';
+
+    const indent = document.createElement('span');
+    indent.className = 'comp-chain-indent';
+    indent.textContent = '  '.repeat(i) + (i > 0 ? '↳ ' : '');
+
+    const prop = document.createElement('span');
+    prop.className = 'comp-chain-prop';
+    prop.textContent = step.property;
+
+    line.appendChild(indent);
+    line.appendChild(prop);
+
+    if (step.file) {
+      const fileBadge = document.createElement('span');
+      fileBadge.className = 'comp-chain-file';
+      fileBadge.textContent = step.file.split('/').pop();
+      line.appendChild(fileBadge);
+    }
+
+    if (step.isTerminal && step.displayValue) {
+      if (step.isColor) {
+        const sw = document.createElement('span');
+        sw.className = 'comp-chain-swatch';
+        sw.style.background = step.displayValue;
+        line.appendChild(sw);
+      }
+      const val = document.createElement('span');
+      val.className = 'comp-chain-val';
+      val.textContent = step.displayValue;
+      line.appendChild(val);
+    }
+
+    container.appendChild(line);
+  });
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────
 init();
+loadComponentList();
 </script>
 
 </body>
