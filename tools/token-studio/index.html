@@ -727,14 +727,26 @@
       <!-- Filters -->
       <div class="comp-filter-row">
         <span class="comp-filter-label">Template</span>
-        <select class="chain-select" id="sel-comp-template" style="min-width:140px;">
+        <select class="chain-select" id="sel-comp-template" style="min-width:130px;">
           <option value="default">default</option>
         </select>
-        <span class="comp-filter-label" style="margin-left:8px;">Filter</span>
-        <select class="chain-select" id="sel-comp-variant" style="min-width:180px;">
-          <option value="">All variants</option>
+
+        <span class="comp-filter-label" id="lbl-variant" style="margin-left:8px;">Variant</span>
+        <select class="chain-select" id="sel-comp-variant" style="min-width:130px;">
+          <option value="">—</option>
         </select>
-        <select class="chain-select" id="sel-comp-selector" style="min-width:200px;">
+
+        <span class="comp-filter-label" id="lbl-size" style="margin-left:4px;">Size</span>
+        <select class="chain-select" id="sel-comp-size" style="min-width:100px;">
+          <option value="">—</option>
+        </select>
+
+        <span class="comp-filter-label" id="lbl-status" style="margin-left:4px;">Status</span>
+        <select class="chain-select" id="sel-comp-status" style="min-width:110px;">
+          <option value="">—</option>
+        </select>
+
+        <select class="chain-select" id="sel-comp-selector" style="min-width:200px;margin-left:4px;">
           <option value="">All selectors</option>
         </select>
       </div>
@@ -1379,11 +1391,16 @@ async function renderComponentPreview(name, variantAttrs, templateId = 'default'
   preview.insertBefore(el, note);
 }
 
-/** Parse the current variant filter value into [[attr, val], …] pairs. */
-function parseVariantAttrs(filterValue) {
-  if (!filterValue) return [];
-  return [...filterValue.matchAll(/\[data-([\w-]+)="([^"]+)"\]/g)]
-    .map(([, attr, val]) => [attr, val]);
+/** Read the three attribute filter dropdowns and return [[attr, val], …] pairs. */
+function readVariantAttrs() {
+  const attrs = [];
+  const v = document.getElementById('sel-comp-variant').value;
+  const s = document.getElementById('sel-comp-size').value;
+  const t = document.getElementById('sel-comp-status').value;
+  if (v) attrs.push(['variant', v]);
+  if (s) attrs.push(['size', s]);
+  if (t) attrs.push(['status', t]);
+  return attrs;
 }
 
 document.getElementById('sel-component').addEventListener('change', async e => {
@@ -1394,7 +1411,9 @@ document.getElementById('sel-component').addEventListener('change', async e => {
   document.getElementById('comp-empty').style.display = name ? 'none' : '';
   // Reset filters
   document.getElementById('sel-comp-template').innerHTML = '<option value="default">default</option>';
-  document.getElementById('sel-comp-variant').innerHTML  = '<option value="">All variants</option>';
+  document.getElementById('sel-comp-variant').innerHTML  = '<option value="">—</option>';
+  document.getElementById('sel-comp-size').innerHTML     = '<option value="">—</option>';
+  document.getElementById('sel-comp-status').innerHTML   = '<option value="">—</option>';
   document.getElementById('sel-comp-selector').innerHTML = '<option value="">All selectors</option>';
   if (!name) {
     if (previewElement) { previewElement.remove(); previewElement = null; }
@@ -1403,24 +1422,19 @@ document.getElementById('sel-component').addEventListener('change', async e => {
   await loadComponentTokens(name);
 });
 
-document.getElementById('sel-comp-template').addEventListener('change', () => {
-  const name = document.getElementById('sel-component').value;
-  if (!name) return;
-  const templateId   = document.getElementById('sel-comp-template').value;
-  const variantAttrs = parseVariantAttrs(document.getElementById('sel-comp-variant').value);
-  renderComponentPreview(name, variantAttrs, templateId);
-});
-
-document.getElementById('sel-comp-variant').addEventListener('change', () => {
+function onAttrFilterChange() {
   const name = document.getElementById('sel-component').value;
   if (name) {
-    const templateId   = document.getElementById('sel-comp-template').value;
-    const variantAttrs = parseVariantAttrs(document.getElementById('sel-comp-variant').value);
-    renderComponentPreview(name, variantAttrs, templateId);
+    const templateId = document.getElementById('sel-comp-template').value;
+    renderComponentPreview(name, readVariantAttrs(), templateId);
   }
   if (componentData) renderComponentList(componentData);
-});
+}
 
+document.getElementById('sel-comp-template').addEventListener('change', onAttrFilterChange);
+document.getElementById('sel-comp-variant').addEventListener('change', onAttrFilterChange);
+document.getElementById('sel-comp-size').addEventListener('change', onAttrFilterChange);
+document.getElementById('sel-comp-status').addEventListener('change', onAttrFilterChange);
 document.getElementById('sel-comp-selector').addEventListener('change', () => {
   if (componentData) renderComponentList(componentData);
 });
@@ -1472,28 +1486,37 @@ async function loadComponentTokens(name) {
     templates.length <= 1 ? 'none' : '';
   templateSel.style.display = templates.length <= 1 ? 'none' : '';
 
-  // Render the live component preview
-  const templateId   = templateSel.value;
-  const variantAttrs = parseVariantAttrs(document.getElementById('sel-comp-variant').value);
-  await renderComponentPreview(name, variantAttrs, templateId);
+  // ── Attribute filter dropdowns ────────────────────────────────────
+  // Populate variant/size/status dropdowns from values found in selectors;
+  // hide each label+select when the component has no values for that attribute.
+  const attrGroups = extractVariants(data.selectors);
 
-  // ── Variant filter ─────────────────────────────────────────────────
-  const variantSel = document.getElementById('sel-comp-variant');
-  const prevVariant = variantSel.value;
-  variantSel.innerHTML = '<option value="">All variants</option>';
-  const variantGroups = extractVariants(data.selectors);
-  for (const [attr, values] of variantGroups) {
-    const og = document.createElement('optgroup');
-    og.label = `data-${attr}`;
-    for (const val of [...values].sort()) {
-      const opt = document.createElement('option');
-      opt.value = `[data-${attr}="${val}"]`;
-      opt.textContent = val;
-      og.appendChild(opt);
+  function populateAttrSel(selId, lblId, attr) {
+    const sel  = document.getElementById(selId);
+    const lbl  = document.getElementById(lblId);
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">—</option>';
+    const values = attrGroups.get(attr);
+    const hasValues = values && values.size > 0;
+    sel.style.display = lbl.style.display = hasValues ? '' : 'none';
+    if (hasValues) {
+      for (const val of [...values].sort()) {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        sel.appendChild(opt);
+      }
+      if (prev && values.has(prev)) sel.value = prev;
     }
-    variantSel.appendChild(og);
   }
-  if (prevVariant) variantSel.value = prevVariant;
+
+  populateAttrSel('sel-comp-variant', 'lbl-variant', 'variant');
+  populateAttrSel('sel-comp-size',    'lbl-size',    'size');
+  populateAttrSel('sel-comp-status',  'lbl-status',  'status');
+
+  // Render the live component preview with current filter state
+  const templateId = templateSel.value;
+  await renderComponentPreview(name, readVariantAttrs(), templateId);
 
   // ── Selector filter ────────────────────────────────────────────────
   const selectorSel = document.getElementById('sel-comp-selector');
@@ -1511,11 +1534,15 @@ async function loadComponentTokens(name) {
 }
 
 function renderComponentList(data) {
-  const variantFilter  = document.getElementById('sel-comp-variant').value;  // e.g. '[data-variant="primary"]'
-  const selectorFilter = document.getElementById('sel-comp-selector').value; // exact selector string
+  const variant        = document.getElementById('sel-comp-variant').value;
+  const size           = document.getElementById('sel-comp-size').value;
+  const status         = document.getElementById('sel-comp-status').value;
+  const selectorFilter = document.getElementById('sel-comp-selector').value;
 
   let visibleBlocks = data.selectors;
-  if (variantFilter)  visibleBlocks = visibleBlocks.filter(b => b.selector.includes(variantFilter));
+  if (variant)        visibleBlocks = visibleBlocks.filter(b => b.selector.includes(`[data-variant="${variant}"]`));
+  if (size)           visibleBlocks = visibleBlocks.filter(b => b.selector.includes(`[data-size="${size}"]`));
+  if (status)         visibleBlocks = visibleBlocks.filter(b => b.selector.includes(`[data-status="${status}"]`));
   if (selectorFilter) visibleBlocks = visibleBlocks.filter(b => b.selector === selectorFilter);
 
   const list = document.getElementById('comp-list');
