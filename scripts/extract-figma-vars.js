@@ -12,10 +12,12 @@
  *
  * Requires:
  *   FIGMA_ACCESS_TOKEN  — personal access token with file_variables:read scope
+ *                         (Enterprise plan required for the Variables API)
  *
  * Usage:
  *   FIGMA_ACCESS_TOKEN=xxx node scripts/extract-figma-vars.js
- *   # or export FIGMA_ACCESS_TOKEN first
+ *   # or: export FIGMA_ACCESS_TOKEN=xxx && npm run tokens:extract
+ *   # or: npm run tokens:refresh   (extract + generate in one step)
  */
 
 import fs from 'fs';
@@ -27,27 +29,31 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
-const OUT_FILE = path.join(ROOT, 'figma-tokens', 'figma-variables.json');
+const OUT_FILE    = path.join(ROOT, 'figma-tokens', 'figma-variables.json');
+const CONFIG_FILE = path.join(ROOT, 'figma-tokens', 'figma-config.json');
 
 const TOKEN = process.env.FIGMA_ACCESS_TOKEN;
 if (!TOKEN) {
   console.error('Error: FIGMA_ACCESS_TOKEN environment variable is required.');
-  console.error('Usage: FIGMA_ACCESS_TOKEN=xxx node scripts/extract-figma-vars.js');
+  console.error('  Copy .env.example → .env, fill in your token, then re-run.');
+  console.error('  Usage: FIGMA_ACCESS_TOKEN=xxx npm run tokens:extract');
   process.exit(1);
 }
 
-// Read the existing JSON to get the file key
-let existingData;
+// Read the committed bootstrap config (file key + theme collection IDs).
+// figma-variables.json is gitignored; figma-config.json is the stable source.
+let config;
 try {
-  existingData = JSON.parse(fs.readFileSync(OUT_FILE, 'utf8'));
+  config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
 } catch {
-  console.error(`Error: Cannot read ${OUT_FILE}. Ensure figma-variables.json exists with at least a "meta" section.`);
+  console.error(`Error: Cannot read ${CONFIG_FILE}.`);
+  console.error('  Ensure figma-tokens/figma-config.json is present and valid JSON.');
   process.exit(1);
 }
 
-const FILE_KEY = existingData.meta?.file;
-if (!FILE_KEY) {
-  console.error('Error: No meta.file key found in figma-variables.json');
+const FILE_KEY = config.file?.key;
+if (!FILE_KEY || FILE_KEY.startsWith('REPLACE_WITH')) {
+  console.error('Error: figma-config.json must contain a valid file.key (replace the placeholder).');
   process.exit(1);
 }
 
@@ -55,17 +61,27 @@ const API_BASE = 'https://api.figma.com';
 
 // ─── API Helpers ────────────────────────────────────────────────────
 
-async function figmaGet(endpoint) {
+/**
+ * GET a Figma API endpoint with exponential backoff on rate limit (429) responses.
+ * Delays: 1s → 2s → 4s → 8s (maxRetries = 4 attempts beyond the initial try).
+ */
+async function figmaGet(endpoint, { maxRetries = 4, baseDelayMs = 1000 } = {}) {
   const url = `${API_BASE}${endpoint}`;
-  console.log(`  GET ${url}`);
-  const res = await fetch(url, {
-    headers: { 'X-Figma-Token': TOKEN }
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Figma API ${res.status}: ${body}`);
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (attempt > 0) {
+      const delay = baseDelayMs * 2 ** (attempt - 1);
+      console.log(`  Retrying in ${delay}ms (attempt ${attempt}/${maxRetries})...`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+    console.log(`  GET ${url}`);
+    const res = await fetch(url, { headers: { 'X-Figma-Token': TOKEN } });
+    if (res.status === 429 && attempt < maxRetries) continue;
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Figma API ${res.status}: ${body}`);
+    }
+    return res.json();
   }
-  return res.json();
 }
 
 // ─── Collection / Theme Identification ──────────────────────────────
@@ -75,23 +91,40 @@ async function figmaGet(endpoint) {
  * The base collection and all its extensions are themes.
  * Everything else (Primitives, Alias, Status, Density, component collections)
  * is a non-theme collection.
+ *
+ * Primary identification is by stored collection ID (from figma-config.json).
+ * Secondary fallback uses collection name — tolerates cases where a collection
+ * was recreated in Figma (new ID, same name). Warns when a name-match fires so
+ * the operator knows to update the collectionId in figma-config.json.
  */
-function identifyThemeCollections(collections) {
-  const themes = existingData.themes;
+function identifyThemeCollections(collections, themes) {
   const baseId = themes.base.collectionId;
-
-  // Base collection
   const themeIds = new Set([baseId]);
 
-  // Extended collections — match by collectionId from metadata or by
-  // parentVariableCollectionId / rootVariableCollectionId from the API
+  // Extended collections — match by collectionId from config
   for (const ext of themes.extended) {
     themeIds.add(ext.collectionId);
   }
 
-  // Also add any API-reported extensions of the base
+  // Also add any API-reported extensions of the base (isExtension flag)
   for (const [id, col] of Object.entries(collections)) {
     if (col.isExtension && (col.rootVariableCollectionId === baseId || col.parentVariableCollectionId === baseId)) {
+      themeIds.add(id);
+    }
+  }
+
+  // Name-based fallback: if a config ID isn't present in the API response but a
+  // collection with the same name exists, use it and warn the operator.
+  for (const [id, col] of Object.entries(collections)) {
+    if (themeIds.has(id)) continue;
+    const matchesTheme =
+      col.name === themes.base.name ||
+      themes.extended.some(ext => ext.name === col.name);
+    if (matchesTheme) {
+      console.warn(
+        `  ⚠ Collection "${col.name}" matched by name (ID mismatch). ` +
+        `Update figma-config.json collectionId to "${id}".`
+      );
       themeIds.add(id);
     }
   }
@@ -102,70 +135,51 @@ function identifyThemeCollections(collections) {
 // ─── Value Conversion ───────────────────────────────────────────────
 
 /**
- * Build a lookup map from variable ID → { collectionName, variableName }
+ * Build a lookup map from variable ID → { name, collectionName, collectionId }.
  * Used to resolve VariableAlias references into `@path/name` strings.
  */
 function buildVarIdMap(variables, collections) {
   const map = new Map();
   for (const [varId, v] of Object.entries(variables)) {
     const col = collections[v.variableCollectionId];
-    const collectionName = col?.name || '';
     map.set(varId, {
       name: v.name,
-      collectionName,
-      collectionId: v.variableCollectionId
+      collectionName: col?.name || '',
+      collectionId: v.variableCollectionId,
     });
   }
   return map;
 }
 
-/**
- * Map a Figma collection name to the prefix used in our @-reference syntax.
- * e.g., "Primitives" vars are referenced as @color/basic/... or @scale/...
- *       "Alias" vars are referenced as @color/neutral/... or @border/rounding/...
- *       Theme vars referencing each other use the Figma variable name directly.
- *
- * The existing JSON uses a flat @name convention where the collection prefix
- * is omitted and variable names are unique across collections.
- */
 function varIdToRef(varId, varIdMap) {
   const info = varIdMap.get(varId);
   if (!info) return null;
-  // Use the Figma variable name as the reference path
-  // Figma uses "/" separators already - matches our JSON format
   return `@${info.name}`;
 }
 
 /**
  * Convert a Figma API variable value to the JSON format used by our system.
  *
- * Figma value types:
- *   - Boolean / Number / String — pass through
- *   - Color object { r, g, b, a } — convert to rgba() string
- *   - VariableAlias { type: "VARIABLE_ALIAS", id: "VariableID:..." } — convert to @ref
+ *   Boolean / Number / String  — pass through
+ *   Color { r, g, b, a }       — rgba() string
+ *   VariableAlias { type, id } — @reference string
  */
 function convertValue(val, varIdMap) {
   if (val === null || val === undefined) return null;
 
-  // VariableAlias
   if (typeof val === 'object' && val.type === 'VARIABLE_ALIAS') {
     return varIdToRef(val.id, varIdMap);
   }
 
-  // Color object { r, g, b, a }
   if (typeof val === 'object' && 'r' in val && 'g' in val && 'b' in val) {
     const r = Math.round(val.r * 255);
     const g = Math.round(val.g * 255);
     const b = Math.round(val.b * 255);
     const a = val.a !== undefined ? val.a : 1;
-    if (a < 1) {
-      return `rgba(${r},${g},${b},${parseFloat(a.toFixed(4))})`;
-    }
-    // Fully opaque — still use rgba for consistency
+    if (a < 1) return `rgba(${r},${g},${b},${parseFloat(a.toFixed(4))})`;
     return `rgba(${r},${g},${b},1)`;
   }
 
-  // Boolean / Number / String — pass through
   return val;
 }
 
@@ -188,112 +202,82 @@ function convertValue(val, varIdMap) {
  * @param {object} collections  - All collections from the API
  * @param {object} variables    - All variables from the API
  * @param {Map} varIdMap        - Variable ID → name/collection lookup
- * @returns {{ modes: string[], vars: object[] }}
+ * @returns {{ modes: string[], vars: object[] } | null}
  */
 function extractCollection(collectionId, collections, variables, varIdMap) {
   const col = collections[collectionId];
   if (!col) return null;
 
-  // Mode names and IDs
   const modes = col.modes.map(m => m.name);
   const modeIdToName = {};
   for (const m of col.modes) {
     modeIdToName[m.modeId] = m.name;
   }
 
-  // For extended collections, build a mapping from extended modeId → parent modeId
-  // and collect the base variable values
-  let parentModeMap = null;   // extendedModeId → parentModeName
-  let baseVariables = null;   // variableId → { values per mode name }
+  let baseVariables = null;
 
   if (col.isExtension) {
-    parentModeMap = {};
+    // Build parent mode name mapping (extended modeId → parent mode name)
+    const parentModeMap = {};
     for (const m of col.modes) {
       if (m.parentModeId) {
-        // Find the parent mode name
         const parentCol = collections[col.parentVariableCollectionId || col.rootVariableCollectionId];
         if (parentCol) {
           const parentMode = parentCol.modes.find(pm => pm.modeId === m.parentModeId);
-          if (parentMode) {
-            parentModeMap[m.modeId] = parentMode.name;
-          }
+          if (parentMode) parentModeMap[m.modeId] = parentMode.name;
         }
       }
     }
 
-    // Collect base variable values
+    // Collect base (root) variable values for inheritance
     const rootId = col.rootVariableCollectionId || col.parentVariableCollectionId;
     if (rootId) {
       baseVariables = {};
+      const rootCol = collections[rootId];
       for (const [varId, v] of Object.entries(variables)) {
-        if (v.variableCollectionId === rootId) {
-          const vals = {};
-          const rootCol = collections[rootId];
-          for (const m of rootCol.modes) {
-            const modeName = m.name;
-            const rawVal = v.valuesByMode?.[m.modeId];
-            vals[modeName] = convertValue(rawVal, varIdMap);
-          }
-          baseVariables[varId] = {
-            name: v.name,
-            type: v.resolvedType,
-            values: vals
-          };
+        if (v.variableCollectionId !== rootId) continue;
+        const vals = {};
+        for (const m of rootCol.modes) {
+          vals[m.name] = convertValue(v.valuesByMode?.[m.modeId], varIdMap);
         }
+        baseVariables[varId] = { name: v.name, type: v.resolvedType, values: vals };
       }
     }
   }
 
-  // Collect this collection's own variables
   const varList = [];
   const processedNames = new Set();
 
-  // For extended collections: start with inherited variables (from base)
+  // Extended: start with inherited base variables, applying per-variable overrides
   if (col.isExtension && baseVariables) {
     const overrides = col.variableOverrides || {};
 
     for (const [varId, base] of Object.entries(baseVariables)) {
       const v = {};
       for (const modeName of modes) {
-        // Find the modeId for this mode in the extended collection
         const extMode = col.modes.find(m => m.name === modeName);
         const overrideForVar = overrides[varId];
-
         if (overrideForVar && extMode && overrideForVar[extMode.modeId] !== undefined) {
-          // This variable has an override in this mode
           v[modeName] = convertValue(overrideForVar[extMode.modeId], varIdMap);
         } else {
-          // Inherit from base
           v[modeName] = base.values[modeName];
         }
       }
-
-      varList.push({
-        n: base.name,
-        t: base.type,
-        v
-      });
+      varList.push({ n: base.name, t: base.type, v });
       processedNames.add(base.name);
     }
   }
 
-  // Add variables that belong directly to this collection
-  for (const [varId, v] of Object.entries(variables)) {
+  // Add variables that belong directly to this collection (not already inherited)
+  for (const [, v] of Object.entries(variables)) {
     if (v.variableCollectionId !== collectionId) continue;
-    if (processedNames.has(v.name)) continue; // Already processed as inherited
+    if (processedNames.has(v.name)) continue;
 
     const vals = {};
     for (const m of col.modes) {
-      const modeName = modeIdToName[m.modeId];
-      const rawVal = v.valuesByMode?.[m.modeId];
-      vals[modeName] = convertValue(rawVal, varIdMap);
+      vals[modeIdToName[m.modeId]] = convertValue(v.valuesByMode?.[m.modeId], varIdMap);
     }
-
-    varList.push({
-      n: v.name,
-      t: v.resolvedType,
-      v: vals
-    });
+    varList.push({ n: v.name, t: v.resolvedType, v: vals });
   }
 
   return { modes, vars: varList };
@@ -302,22 +286,18 @@ function extractCollection(collectionId, collections, variables, varIdMap) {
 // ─── Non-Theme Collection Extraction ────────────────────────────────
 
 /**
- * Extract non-theme collections (Primitives, Alias, Status, Density,
- * component collections) into the same JSON format.
+ * Extract non-theme collections (Primitives, Alias, Status, Density, etc.)
+ * into the same JSON format. Uses the Figma collection display name as key.
  */
 function extractNonThemeCollections(collections, variables, varIdMap, themeCollectionIds) {
   const result = {};
-
   for (const [colId, col] of Object.entries(collections)) {
-    if (themeCollectionIds.has(colId)) continue; // Skip theme collections
-
+    if (themeCollectionIds.has(colId)) continue;
     const data = extractCollection(colId, collections, variables, varIdMap);
     if (data && data.vars.length > 0) {
-      // Use collection name as the key
       result[col.name] = data;
     }
   }
-
   return result;
 }
 
@@ -326,7 +306,6 @@ function extractNonThemeCollections(collections, variables, varIdMap, themeColle
 async function main() {
   console.log(`\nExtracting Figma variables from file: ${FILE_KEY}\n`);
 
-  // Fetch all local variables
   const response = await figmaGet(`/v1/files/${FILE_KEY}/variables/local`);
   const { variables, variableCollections: collections } = response.meta;
 
@@ -334,42 +313,35 @@ async function main() {
   const colCount = Object.keys(collections).length;
   console.log(`\n  Found ${varCount} variables in ${colCount} collections\n`);
 
-  // Build lookup map
   const varIdMap = buildVarIdMap(variables, collections);
-
-  // Identify theme collections
-  const themeCollectionIds = identifyThemeCollections(collections);
+  const themes = config.themes;
+  const themeCollectionIds = identifyThemeCollections(collections, themes);
 
   // ── Build output ──
 
-  const themes = existingData.themes;
   const output = {};
 
   // 1. Meta
   output.meta = {
     file: FILE_KEY,
-    name: existingData.meta.name,
-    date: new Date().toISOString()
+    name: config.file.name,
+    date: new Date().toISOString(),
   };
 
-  // 2. Themes metadata — update with fresh mode IDs from API
+  // 2. Themes metadata — refresh mode IDs from API while preserving hand-authored slugs/folders
   const baseCol = collections[themes.base.collectionId];
   if (baseCol) {
     const baseModes = {};
-    for (const m of baseCol.modes) {
-      baseModes[m.name] = m.modeId;
-    }
+    for (const m of baseCol.modes) baseModes[m.name] = m.modeId;
+
     output.themes = {
-      _doc: themes._doc,
       base: {
-        name: themes.base.name,
-        // Preserve hand-authored slug + folder (required by the generator;
-        // the Figma REST API does not expose them).
-        slug: themes.base.slug,
-        folder: themes.base.folder,
-        collectionId: themes.base.collectionId,
+        name:          themes.base.name,
+        slug:          themes.base.slug,
+        folder:        themes.base.folder,
+        collectionId:  themes.base.collectionId,
         defaultModeId: baseCol.defaultModeId,
-        modes: baseModes
+        modes:         baseModes,
       },
       extended: themes.extended.map(ext => {
         const extCol = collections[ext.collectionId];
@@ -377,52 +349,78 @@ async function main() {
 
         const extModes = {};
         for (const m of extCol.modes) {
-          extModes[m.name] = {
-            modeId: m.modeId,
-            parentModeId: m.parentModeId || null
-          };
+          extModes[m.name] = { modeId: m.modeId, parentModeId: m.parentModeId || null };
         }
         return {
-          name: ext.name,
-          slug: ext.slug,
-          // Preserve hand-authored folder.
-          folder: ext.folder,
-          collectionId: ext.collectionId,
+          name:          ext.name,
+          slug:          ext.slug,
+          folder:        ext.folder,
+          collectionId:  ext.collectionId,
           defaultModeId: extCol.defaultModeId,
-          modes: extModes
+          modes:         extModes,
         };
-      })
+      }),
     };
   } else {
     output.themes = themes;
   }
 
-  // 3. Non-theme collections (Primitives, Alias, Status, Density, components)
+  // 3. Non-theme collections (Primitives, Alias, Status, Density, etc.)
   const nonTheme = extractNonThemeCollections(collections, variables, varIdMap, themeCollectionIds);
   for (const [name, data] of Object.entries(nonTheme)) {
     output[name] = data;
   }
 
-  // 4. Theme collections — each as a fully standalone entry
-  //    Base theme — use the Figma collection name (e.g. "Apex 2.0") as the JSON key.
-  //    The generator tries data[themes.base.name] then data["Apex 2.0"] as fallback.
-  const baseColName = baseCol?.name || themes.base.name;
-  const baseData = extractCollection(themes.base.collectionId, collections, variables, varIdMap);
-  if (baseData) {
-    output[baseColName] = baseData;
-    console.log(`  Theme "${baseColName}": ${baseData.vars.length} variables (${baseData.modes.join(', ')})`);
+  // Alias completeness check — warn early if live Alias collection is shallow.
+  // The aliasSnapshot in token-overrides.json fills the gap, but a warning here
+  // prompts the operator to verify output rather than silently accepting bad data.
+  const minVarCount = config.aliasValidation?.minVarCount ?? 150;
+  const liveAliasVars = (nonTheme['Alias']?.vars || []).filter(v => !v.n.startsWith('properties/'));
+  if (liveAliasVars.length < minVarCount) {
+    console.warn(
+      `\n  ⚠ ALIAS COLLECTION SHALLOW: live Alias has ${liveAliasVars.length} semantic vars ` +
+      `(threshold: ${minVarCount}).\n` +
+      `  The aliasSnapshot in figma-tokens/token-overrides.json will fill the gap — verify output.\n`
+    );
   }
 
-  //    Extended themes
+  // 4. Theme collections — each as a fully standalone entry
+  const baseColName = baseCol?.name || themes.base.name;
+  const baseData = extractCollection(themes.base.collectionId, collections, variables, varIdMap);
+  if (baseData) output[baseColName] = baseData;
+
   for (const ext of themes.extended) {
     const extData = extractCollection(ext.collectionId, collections, variables, varIdMap);
     if (extData) {
       output[ext.name] = extData;
-      console.log(`  Theme "${ext.name}": ${extData.vars.length} variables (${extData.modes.join(', ')})`);
     } else {
       console.warn(`  ⚠ Theme "${ext.name}" (${ext.collectionId}) — collection not found in API response`);
     }
   }
+
+  // ── Summary table ──
+
+  const summaryRows = [
+    { label: 'Base theme', name: baseColName, count: baseData?.vars.length ?? 0 },
+    ...themes.extended.map(ext => ({
+      label: 'Extended theme',
+      name:  ext.name,
+      count: output[ext.name]?.vars.length ?? 0,
+    })),
+    ...Object.entries(nonTheme).map(([name, d]) => ({
+      label: 'Collection',
+      name,
+      count: d.vars.length,
+    })),
+  ];
+
+  console.log('\n  Extraction summary:');
+  console.log('  ─────────────────────────────────────────────────');
+  for (const row of summaryRows) {
+    const pad = ' '.repeat(Math.max(1, 36 - row.name.length));
+    console.log(`  ${row.name}${pad}${row.count} vars`);
+  }
+  console.log('  ─────────────────────────────────────────────────\n');
 
   // ── Write output ──
 
@@ -430,7 +428,7 @@ async function main() {
   fs.writeFileSync(OUT_FILE, JSON.stringify(output, null, 2) + '\n', 'utf8');
 
   const size = fs.statSync(OUT_FILE).size;
-  console.log(`\n✓ Wrote ${OUT_FILE} (${(size / 1024).toFixed(1)} KB)\n`);
+  console.log(`✓ Wrote ${OUT_FILE} (${(size / 1024).toFixed(1)} KB)\n`);
 }
 
 main().catch(err => {
