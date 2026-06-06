@@ -417,20 +417,52 @@
     .comp-header {
       display: none;
       flex-direction: column;
-      gap: 8px;
-      padding: var(--sherpa-space-sm, 12px);
+      gap: 0;
       border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
       background: var(--sherpa-surface-container-default, #fff);
       flex-shrink: 0;
     }
     .comp-header.visible { display: flex; }
+
+    /* Live component preview */
+    .comp-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
+      padding: 24px;
+      background-image:
+        linear-gradient(45deg, var(--sherpa-border-container-subtle, rgba(0,0,0,0.05)) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--sherpa-border-container-subtle, rgba(0,0,0,0.05)) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--sherpa-border-container-subtle, rgba(0,0,0,0.05)) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--sherpa-border-container-subtle, rgba(0,0,0,0.05)) 75%);
+      background-size: 12px 12px;
+      background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .comp-preview-note {
+      font-size: 11px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* Meta row: name + stats */
+    .comp-meta {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sherpa-space-xs, 8px);
+      padding: 8px var(--sherpa-space-sm, 12px) 6px;
+    }
     .comp-name-row {
       display: flex;
       align-items: baseline;
       gap: var(--sherpa-space-xs, 8px);
     }
     .comp-name {
-      font-size: var(--sherpa-fonts-scale-lg, 16px);
+      font-size: var(--sherpa-fonts-scale-base, 14px);
       font-weight: 700;
       color: var(--sherpa-content-default-heading, #18191a);
       font-family: 'Courier New', monospace;
@@ -444,6 +476,7 @@
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+      padding: 0 var(--sherpa-space-sm, 12px) 8px;
     }
     .comp-filter-label {
       font-size: 11px;
@@ -680,12 +713,18 @@
       </div>
     </div>
 
-    <!-- Component header: name, stats, variant + selector filters -->
+    <!-- Component header: live preview + name/stats + filters -->
     <div class="comp-header" id="comp-header">
-      <div class="comp-name-row">
+      <!-- Live rendered component -->
+      <div class="comp-preview" id="comp-preview">
+        <span class="comp-preview-note" id="comp-preview-note"></span>
+      </div>
+      <!-- Name + stats -->
+      <div class="comp-meta">
         <span class="comp-name" id="comp-name-display"></span>
         <span class="comp-stats" id="comp-stats-display"></span>
       </div>
+      <!-- Filters -->
       <div class="comp-filter-row">
         <span class="comp-filter-label">Filter</span>
         <select class="chain-select" id="sel-comp-variant" style="min-width:180px;">
@@ -1203,7 +1242,64 @@ async function loadComponentList() {
 }
 
 // Cached component data for re-filtering without a round-trip
-let componentData = null;
+let componentData   = null;
+let previewElement  = null; // the live rendered component element
+
+// ── Sensible defaults per component ──────────────────────────────────
+// Components that need a label or content to render usefully.
+const COMPONENT_DEFAULTS = {
+  'sherpa-button':       el => { el.setAttribute('data-label', 'Button'); },
+  'sherpa-input-text':   el => { el.setAttribute('data-label', 'Label'); el.setAttribute('data-placeholder', 'Placeholder text'); },
+  'sherpa-input-select': el => { el.setAttribute('data-label', 'Select'); el.setAttribute('data-placeholder', 'Choose…'); },
+  'sherpa-input-checkbox': el => { el.setAttribute('data-label', 'Checkbox label'); },
+  'sherpa-input-radio':  el => { el.setAttribute('data-label', 'Radio label'); },
+  'sherpa-tag':          el => { el.textContent = 'Tag label'; },
+  'sherpa-switch':       el => { el.setAttribute('data-label', 'Toggle'); },
+  'sherpa-slider':       el => { /* renders fine by default */ },
+  'sherpa-callout':      el => { el.setAttribute('data-label', 'Callout heading'); el.textContent = 'Callout body text for preview.'; },
+  'sherpa-loader':       el => { /* renders fine */ },
+  'sherpa-progress-bar': el => { el.setAttribute('data-value', '60'); el.setAttribute('data-label', 'Progress'); },
+  'sherpa-metric':       el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric label'); },
+  'sherpa-breadcrumbs':  el => { el.setAttribute('data-items', JSON.stringify([{label:'Home'},{label:'Section'},{label:'Page'}])); },
+};
+
+async function renderComponentPreview(name, variantAttrs) {
+  const preview = document.getElementById('comp-preview');
+  const note    = document.getElementById('comp-preview-note');
+
+  // Remove previous rendered element
+  if (previewElement) { previewElement.remove(); previewElement = null; }
+  note.textContent = '';
+
+  // Dynamically import the component JS (idempotent — re-import is a no-op once registered)
+  try {
+    await import(`/sherpa/components/${name}/${name}.js`);
+  } catch {
+    note.textContent = 'No JS module for this component.';
+    return;
+  }
+
+  const el = document.createElement(name);
+
+  // Apply variant/attribute filters currently selected
+  for (const [attr, val] of variantAttrs) {
+    el.setAttribute(`data-${attr}`, val);
+  }
+
+  // Apply sensible content defaults
+  (COMPONENT_DEFAULTS[name] || (() => {}))(el);
+
+  previewElement = el;
+  // Insert before the note span so it appears centred in the preview area
+  preview.insertBefore(el, note);
+}
+
+/** Parse the current variant filter value into [[attr, val], …] pairs. */
+function parseVariantAttrs(filterValue) {
+  if (!filterValue) return [];
+  return [...filterValue.matchAll(/\[data-([\w-]+)="([^"]+)"\]/g)]
+    .map(([, attr, val]) => [attr, val]);
+}
 
 document.getElementById('sel-component').addEventListener('change', async e => {
   const name = e.target.value;
@@ -1211,11 +1307,19 @@ document.getElementById('sel-component').addEventListener('change', async e => {
   document.getElementById('comp-list').innerHTML = '';
   document.getElementById('comp-header').classList.remove('visible');
   document.getElementById('comp-empty').style.display = name ? 'none' : '';
-  if (!name) return;
+  // Reset filters
+  document.getElementById('sel-comp-variant').innerHTML  = '<option value="">All variants</option>';
+  document.getElementById('sel-comp-selector').innerHTML = '<option value="">All selectors</option>';
+  if (!name) {
+    if (previewElement) { previewElement.remove(); previewElement = null; }
+    return;
+  }
   await loadComponentTokens(name);
 });
 
 document.getElementById('sel-comp-variant').addEventListener('change', () => {
+  const name = document.getElementById('sel-component').value;
+  if (name) renderComponentPreview(name, parseVariantAttrs(document.getElementById('sel-comp-variant').value));
   if (componentData) renderComponentList(componentData);
 });
 
@@ -1252,6 +1356,9 @@ async function loadComponentTokens(name) {
   document.getElementById('comp-stats-display').textContent =
     `${data.selectors.length} selectors · ${totalTokens} token references`;
   document.getElementById('comp-header').classList.add('visible');
+
+  // Render the live component preview with the currently selected variant attrs
+  await renderComponentPreview(name, parseVariantAttrs(document.getElementById('sel-comp-variant').value));
 
   // ── Variant filter ─────────────────────────────────────────────────
   const variantSel = document.getElementById('sel-comp-variant');
