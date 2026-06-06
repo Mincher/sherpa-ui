@@ -726,7 +726,11 @@
       </div>
       <!-- Filters -->
       <div class="comp-filter-row">
-        <span class="comp-filter-label">Filter</span>
+        <span class="comp-filter-label">Template</span>
+        <select class="chain-select" id="sel-comp-template" style="min-width:140px;">
+          <option value="default">default</option>
+        </select>
+        <span class="comp-filter-label" style="margin-left:8px;">Filter</span>
         <select class="chain-select" id="sel-comp-variant" style="min-width:180px;">
           <option value="">All variants</option>
         </select>
@@ -1245,33 +1249,102 @@ async function loadComponentList() {
 let componentData   = null;
 let previewElement  = null; // the live rendered component element
 
-// ── Sensible defaults per component ──────────────────────────────────
-// Components that need a label or content to render usefully.
-const COMPONENT_DEFAULTS = {
-  'sherpa-button':       el => { el.setAttribute('data-label', 'Button'); },
-  'sherpa-input-text':   el => { el.setAttribute('data-label', 'Label'); el.setAttribute('data-placeholder', 'Placeholder text'); },
-  'sherpa-input-select': el => { el.setAttribute('data-label', 'Select'); el.setAttribute('data-placeholder', 'Choose…'); },
-  'sherpa-input-checkbox': el => { el.setAttribute('data-label', 'Checkbox label'); },
-  'sherpa-input-radio':  el => { el.setAttribute('data-label', 'Radio label'); },
-  'sherpa-tag':          el => { el.textContent = 'Tag label'; },
-  'sherpa-switch':       el => { el.setAttribute('data-label', 'Toggle'); },
-  'sherpa-slider':       el => { /* renders fine by default */ },
-  'sherpa-callout':      el => { el.setAttribute('data-label', 'Callout heading'); el.textContent = 'Callout body text for preview.'; },
-  'sherpa-loader':       el => { /* renders fine */ },
-  'sherpa-progress-bar': el => { el.setAttribute('data-value', '60'); el.setAttribute('data-label', 'Progress'); },
-  'sherpa-metric':       el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric label'); },
-  'sherpa-breadcrumbs':  el => { el.setAttribute('data-items', JSON.stringify([{label:'Home'},{label:'Section'},{label:'Page'}])); },
+// ── Template defaults ─────────────────────────────────────────────────
+// Per-component, per-template: what content/attrs to set so the preview
+// renders usefully. Falls back to component-level defaults if not listed.
+const TEMPLATE_DEFAULTS = {
+  'sherpa-button': {
+    'default': el => { el.setAttribute('data-label', 'Button'); },
+    'icon':    el => { el.setAttribute('data-icon-start', 'fa-solid fa-star'); },
+  },
+  'sherpa-input-text': {
+    'default':   el => { el.setAttribute('data-label', 'Label'); el.setAttribute('data-placeholder', 'Enter text…'); },
+    'multiline': el => { el.setAttribute('data-label', 'Label'); el.setAttribute('data-placeholder', 'Enter text…'); },
+  },
+  'sherpa-tag': {
+    'default':   el => { el.textContent = 'Tag label'; },
+    'removable': el => { el.textContent = 'Removable'; },
+  },
+  'sherpa-nav-item': {
+    'item':    el => { el.setAttribute('data-label', 'Nav item'); el.setAttribute('data-icon-start', 'fa-solid fa-home'); },
+    'divider': el => {},
+    'promo':   el => { el.setAttribute('data-label', 'Promo item'); el.setAttribute('data-description', 'Promo description'); },
+  },
+  'sherpa-menu-item': {
+    'default':  el => { el.textContent = 'Menu item'; },
+    'checkbox': el => { el.textContent = 'Checkbox item'; },
+    'radio':    el => { el.textContent = 'Radio item'; el.setAttribute('data-group', 'preview'); },
+    'toggle':   el => { el.textContent = 'Toggle item'; },
+    'heading':  el => { el.textContent = 'Section heading'; },
+  },
+  'sherpa-metric': {
+    'default': el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric'); },
+    'compact': el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric'); },
+  },
+  'sherpa-toast': {
+    'default': el => { el.setAttribute('data-label', 'Notification'); el.setAttribute('data-value', 'Something happened.'); },
+    'minimal': el => { el.setAttribute('data-value', 'Minimal toast.'); },
+  },
+  'sherpa-input-select': {
+    'default': el => { el.setAttribute('data-label', 'Select'); el.setAttribute('data-placeholder', 'Choose…'); },
+    'tree':    el => { el.setAttribute('data-label', 'Tree select'); },
+  },
+  'sherpa-stepper': {
+    'default':   el => { el.setAttribute('data-steps', JSON.stringify(['Step 1','Step 2','Step 3'])); el.setAttribute('data-current', '1'); },
+    'timeline':  el => { el.setAttribute('data-steps', JSON.stringify(['Event 1','Event 2','Event 3'])); el.setAttribute('data-current', '2'); },
+  },
+  'sherpa-panel': {
+    'default': el => { el.setAttribute('data-label', 'Panel title'); },
+    'ai':      el => { el.setAttribute('data-label', 'AI Panel'); },
+  },
 };
 
-async function renderComponentPreview(name, variantAttrs) {
+// Component-level fallback defaults (used when no template-specific entry exists)
+const COMPONENT_DEFAULTS = {
+  'sherpa-button':         el => { el.setAttribute('data-label', 'Button'); },
+  'sherpa-input-text':     el => { el.setAttribute('data-label', 'Label'); el.setAttribute('data-placeholder', 'Enter text…'); },
+  'sherpa-input-select':   el => { el.setAttribute('data-label', 'Select'); el.setAttribute('data-placeholder', 'Choose…'); },
+  'sherpa-input-checkbox': el => { el.setAttribute('data-label', 'Checkbox label'); },
+  'sherpa-input-radio':    el => { el.setAttribute('data-label', 'Radio label'); },
+  'sherpa-tag':            el => { el.textContent = 'Tag label'; },
+  'sherpa-switch':         el => { el.setAttribute('data-label', 'Toggle'); },
+  'sherpa-progress-bar':   el => { el.setAttribute('data-value', '60'); el.setAttribute('data-label', 'Progress'); },
+  'sherpa-metric':         el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric'); },
+  'sherpa-breadcrumbs':    el => { el.setAttribute('data-items', JSON.stringify([{label:'Home'},{label:'Section'},{label:'Page'}])); },
+  'sherpa-nav-item':       el => { el.setAttribute('data-label', 'Nav item'); el.setAttribute('data-icon-start', 'fa-solid fa-home'); },
+  'sherpa-menu-item':      el => { el.textContent = 'Menu item'; },
+};
+
+// How to activate a non-default template on an element.
+// Most components use data-type="<templateId>"; exceptions listed here.
+const TEMPLATE_ACTIVATORS = {
+  'sherpa-input-text': {
+    'default':   el => el.removeAttribute('data-multiline'),
+    'multiline': el => el.setAttribute('data-multiline', ''),
+  },
+  'sherpa-nav-item': {
+    // nav-item uses data-type but maps differently
+    'item':    el => el.removeAttribute('data-type'),
+    'divider': el => el.setAttribute('data-type', 'divider'),
+    'promo':   el => el.setAttribute('data-type', 'promo'),
+  },
+  'sherpa-menu-item': {
+    'default':  el => el.removeAttribute('data-type'),
+    'checkbox': el => el.setAttribute('data-type', 'checkbox'),
+    'radio':    el => el.setAttribute('data-type', 'radio'),
+    'toggle':   el => el.setAttribute('data-type', 'toggle'),
+    'heading':  el => el.setAttribute('data-type', 'heading'),
+  },
+};
+
+async function renderComponentPreview(name, variantAttrs, templateId = 'default') {
   const preview = document.getElementById('comp-preview');
   const note    = document.getElementById('comp-preview-note');
 
-  // Remove previous rendered element
+  // Remove previous rendered element (re-create so template selection takes effect)
   if (previewElement) { previewElement.remove(); previewElement = null; }
   note.textContent = '';
 
-  // Dynamically import the component JS (idempotent — re-import is a no-op once registered)
   try {
     await import(`/sherpa/components/${name}/${name}.js`);
   } catch {
@@ -1281,16 +1354,28 @@ async function renderComponentPreview(name, variantAttrs) {
 
   const el = document.createElement(name);
 
-  // Apply variant/attribute filters currently selected
+  // Activate the selected template before connecting to DOM
+  const activator = TEMPLATE_ACTIVATORS[name]?.[templateId];
+  if (activator) {
+    activator(el);
+  } else if (templateId && templateId !== 'default') {
+    el.setAttribute('data-type', templateId);
+  }
+
+  // Apply variant attribute filters
   for (const [attr, val] of variantAttrs) {
     el.setAttribute(`data-${attr}`, val);
   }
 
-  // Apply sensible content defaults
-  (COMPONENT_DEFAULTS[name] || (() => {}))(el);
+  // Apply template-specific content defaults, then component-level fallback
+  const templateDefault = TEMPLATE_DEFAULTS[name]?.[templateId];
+  if (templateDefault) {
+    templateDefault(el);
+  } else {
+    (COMPONENT_DEFAULTS[name] || (() => {}))(el);
+  }
 
   previewElement = el;
-  // Insert before the note span so it appears centred in the preview area
   preview.insertBefore(el, note);
 }
 
@@ -1308,6 +1393,7 @@ document.getElementById('sel-component').addEventListener('change', async e => {
   document.getElementById('comp-header').classList.remove('visible');
   document.getElementById('comp-empty').style.display = name ? 'none' : '';
   // Reset filters
+  document.getElementById('sel-comp-template').innerHTML = '<option value="default">default</option>';
   document.getElementById('sel-comp-variant').innerHTML  = '<option value="">All variants</option>';
   document.getElementById('sel-comp-selector').innerHTML = '<option value="">All selectors</option>';
   if (!name) {
@@ -1317,9 +1403,21 @@ document.getElementById('sel-component').addEventListener('change', async e => {
   await loadComponentTokens(name);
 });
 
+document.getElementById('sel-comp-template').addEventListener('change', () => {
+  const name = document.getElementById('sel-component').value;
+  if (!name) return;
+  const templateId   = document.getElementById('sel-comp-template').value;
+  const variantAttrs = parseVariantAttrs(document.getElementById('sel-comp-variant').value);
+  renderComponentPreview(name, variantAttrs, templateId);
+});
+
 document.getElementById('sel-comp-variant').addEventListener('change', () => {
   const name = document.getElementById('sel-component').value;
-  if (name) renderComponentPreview(name, parseVariantAttrs(document.getElementById('sel-comp-variant').value));
+  if (name) {
+    const templateId   = document.getElementById('sel-comp-template').value;
+    const variantAttrs = parseVariantAttrs(document.getElementById('sel-comp-variant').value);
+    renderComponentPreview(name, variantAttrs, templateId);
+  }
   if (componentData) renderComponentList(componentData);
 });
 
@@ -1357,8 +1455,27 @@ async function loadComponentTokens(name) {
     `${data.selectors.length} selectors · ${totalTokens} token references`;
   document.getElementById('comp-header').classList.add('visible');
 
-  // Render the live component preview with the currently selected variant attrs
-  await renderComponentPreview(name, parseVariantAttrs(document.getElementById('sel-comp-variant').value));
+  // ── Template dropdown ──────────────────────────────────────────────
+  const templateSel = document.getElementById('sel-comp-template');
+  const prevTemplate = templateSel.value;
+  const { templates } = await api('GET', `/api/component-templates?name=${encodeURIComponent(name)}`);
+  templateSel.innerHTML = '';
+  for (const id of templates) {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = id;
+    templateSel.appendChild(opt);
+  }
+  // Restore previous selection if still valid, else reset to first
+  templateSel.value = templates.includes(prevTemplate) ? prevTemplate : templates[0];
+  // Hide the dropdown if only one template (no choice to make)
+  templateSel.closest('.comp-filter-row').querySelector('.comp-filter-label').style.display =
+    templates.length <= 1 ? 'none' : '';
+  templateSel.style.display = templates.length <= 1 ? 'none' : '';
+
+  // Render the live component preview
+  const templateId   = templateSel.value;
+  const variantAttrs = parseVariantAttrs(document.getElementById('sel-comp-variant').value);
+  await renderComponentPreview(name, variantAttrs, templateId);
 
   // ── Variant filter ─────────────────────────────────────────────────
   const variantSel = document.getElementById('sel-comp-variant');

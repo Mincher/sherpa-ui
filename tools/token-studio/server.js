@@ -264,6 +264,27 @@ function handleResolve(url, res) {
   json(res, { prop, theme, mode, chain });
 }
 
+function handleComponentTemplates(url, res) {
+  const name = new URL(url, 'http://x').searchParams.get('name');
+  if (!name) { err(res, 'Missing ?name=', 400); return; }
+
+  const htmlPath = path.join(PATHS.components, name, `${name}.html`);
+  if (!fs.existsSync(htmlPath)) { json(res, { templates: ['default'] }); return; }
+
+  const html = fs.readFileSync(htmlPath, 'utf8');
+  // Match <template id="..."> — skip class-only prototypes and placeholder IDs
+  const ids = [...html.matchAll(/<template\s+id="([^"]+)"/g)]
+    .map(m => m[1])
+    .filter(id => id && id !== '...' && id !== 'my-layout');
+  // Deduplicate, keep insertion order, put 'default' first
+  const seen = new Set();
+  const templates = [];
+  for (const id of ['default', ...ids]) {
+    if (ids.includes(id) && !seen.has(id)) { seen.add(id); templates.push(id); }
+  }
+  json(res, { templates: templates.length ? templates : ['default'] });
+}
+
 function handleComponents(res) {
   try {
     const dirs = fs.readdirSync(PATHS.components).sort();
@@ -374,7 +395,8 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/css-files'        && method === 'GET') { handleCssFiles(res);                  return; }
   if (pathname === '/api/css-file'         && method === 'GET') { handleCssFile(req.url, res);          return; }
   if (pathname === '/api/resolve'          && method === 'GET') { handleResolve(req.url, res);          return; }
-  if (pathname === '/api/components'       && method === 'GET') { handleComponents(res);                return; }
+  if (pathname === '/api/components'           && method === 'GET') { handleComponents(res);                    return; }
+  if (pathname === '/api/component-templates'  && method === 'GET') { handleComponentTemplates(req.url, res); return; }
   if (pathname === '/api/component-tokens' && method === 'GET') { handleComponentTokens(req.url, res); return; }
 
   err(res, 'Not found', 404);
