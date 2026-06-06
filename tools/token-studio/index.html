@@ -412,6 +412,47 @@
       flex-shrink: 0;
     }
     .comp-chain-indent { color: var(--sherpa-content-inactive-default, #8c8c99); }
+
+    /* ── Component header (shown above the token list) ── */
+    .comp-header {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: var(--sherpa-space-sm, 12px);
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      background: var(--sherpa-surface-container-default, #fff);
+      flex-shrink: 0;
+    }
+    .comp-header.visible { display: flex; }
+    .comp-name-row {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sherpa-space-xs, 8px);
+    }
+    .comp-name {
+      font-size: var(--sherpa-fonts-scale-lg, 16px);
+      font-weight: 700;
+      color: var(--sherpa-content-default-heading, #18191a);
+      font-family: 'Courier New', monospace;
+    }
+    .comp-stats {
+      font-size: 12px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+    }
+    .comp-filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .comp-filter-label {
+      font-size: 11px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
     .chain-select {
       height: 32px;
       padding: 0 10px;
@@ -631,12 +672,26 @@
         </select>
       </div>
 
-      <!-- Component mode selectors (hidden initially) -->
-      <div id="component-controls" style="display:none;align-items:center;gap:8px;flex:1;flex-wrap:wrap;">
-        <select class="chain-select" id="sel-component" style="min-width:200px;">
+      <!-- Component mode: just the component picker in the toolbar -->
+      <div id="component-controls" style="display:none;align-items:center;gap:8px;flex:1;">
+        <select class="chain-select" id="sel-component" style="min-width:220px;">
           <option value="">Select component…</option>
         </select>
-        <select class="chain-select" id="sel-comp-selector" style="min-width:180px;">
+      </div>
+    </div>
+
+    <!-- Component header: name, stats, variant + selector filters -->
+    <div class="comp-header" id="comp-header">
+      <div class="comp-name-row">
+        <span class="comp-name" id="comp-name-display"></span>
+        <span class="comp-stats" id="comp-stats-display"></span>
+      </div>
+      <div class="comp-filter-row">
+        <span class="comp-filter-label">Filter</span>
+        <select class="chain-select" id="sel-comp-variant" style="min-width:180px;">
+          <option value="">All variants</option>
+        </select>
+        <select class="chain-select" id="sel-comp-selector" style="min-width:200px;">
           <option value="">All selectors</option>
         </select>
       </div>
@@ -701,7 +756,7 @@ document.getElementById('mode-select').addEventListener('change', e => {
 function refreshComponentIfActive() {
   if (panelMode !== 'component') return;
   const name = document.getElementById('sel-component').value;
-  if (name) loadComponentTokens(name);
+  if (name) loadComponentTokens(name); // re-resolves chains under new theme/mode
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
@@ -1147,20 +1202,38 @@ async function loadComponentList() {
   }
 }
 
+// Cached component data for re-filtering without a round-trip
+let componentData = null;
+
 document.getElementById('sel-component').addEventListener('change', async e => {
   const name = e.target.value;
-  const selectorSel = document.getElementById('sel-comp-selector');
-  selectorSel.innerHTML = '<option value="">All selectors</option>';
+  componentData = null;
   document.getElementById('comp-list').innerHTML = '';
+  document.getElementById('comp-header').classList.remove('visible');
   document.getElementById('comp-empty').style.display = name ? 'none' : '';
   if (!name) return;
   await loadComponentTokens(name);
 });
 
-document.getElementById('sel-comp-selector').addEventListener('change', async () => {
-  const name = document.getElementById('sel-component').value;
-  if (name) await loadComponentTokens(name);
+document.getElementById('sel-comp-variant').addEventListener('change', () => {
+  if (componentData) renderComponentList(componentData);
 });
+
+document.getElementById('sel-comp-selector').addEventListener('change', () => {
+  if (componentData) renderComponentList(componentData);
+});
+
+/** Extract all unique data-*="value" pairs from selectors, grouped by attribute. */
+function extractVariants(selectors) {
+  const groups = new Map(); // attr → Set<value>
+  for (const block of selectors) {
+    for (const [, attr, val] of block.selector.matchAll(/\[data-([\w-]+)="([^"]+)"\]/g)) {
+      if (!groups.has(attr)) groups.set(attr, new Set());
+      groups.get(attr).add(val);
+    }
+  }
+  return groups;
+}
 
 async function loadComponentTokens(name) {
   const theme = document.getElementById('theme-select').value || null;
@@ -1171,10 +1244,36 @@ async function loadComponentTokens(name) {
 
   const data = await api('GET', `/api/component-tokens?${params}`);
   if (data.error) return;
+  componentData = data;
 
-  // Populate selector filter
+  // ── Component header ──────────────────────────────────────────────
+  const totalTokens = data.selectors.reduce((n, b) => n + b.tokens.length, 0);
+  document.getElementById('comp-name-display').textContent = name;
+  document.getElementById('comp-stats-display').textContent =
+    `${data.selectors.length} selectors · ${totalTokens} token references`;
+  document.getElementById('comp-header').classList.add('visible');
+
+  // ── Variant filter ─────────────────────────────────────────────────
+  const variantSel = document.getElementById('sel-comp-variant');
+  const prevVariant = variantSel.value;
+  variantSel.innerHTML = '<option value="">All variants</option>';
+  const variantGroups = extractVariants(data.selectors);
+  for (const [attr, values] of variantGroups) {
+    const og = document.createElement('optgroup');
+    og.label = `data-${attr}`;
+    for (const val of [...values].sort()) {
+      const opt = document.createElement('option');
+      opt.value = `[data-${attr}="${val}"]`;
+      opt.textContent = val;
+      og.appendChild(opt);
+    }
+    variantSel.appendChild(og);
+  }
+  if (prevVariant) variantSel.value = prevVariant;
+
+  // ── Selector filter ────────────────────────────────────────────────
   const selectorSel = document.getElementById('sel-comp-selector');
-  const currentFilter = selectorSel.value;
+  const prevSelector = selectorSel.value;
   selectorSel.innerHTML = '<option value="">All selectors</option>';
   for (const block of data.selectors) {
     const opt = document.createElement('option');
@@ -1182,26 +1281,22 @@ async function loadComponentTokens(name) {
     opt.textContent = block.selector;
     selectorSel.appendChild(opt);
   }
-  if (currentFilter) selectorSel.value = currentFilter;
+  if (prevSelector) selectorSel.value = prevSelector;
 
-  const filter = selectorSel.value;
+  renderComponentList(data);
+}
 
-  // Update panel label
-  const totalTokens = data.selectors.reduce((n, b) => n + b.tokens.length, 0);
-  document.getElementById('comp-panel-label').textContent =
-    `${name} — ${totalTokens} token references across ${data.selectors.length} selectors`;
+function renderComponentList(data) {
+  const variantFilter  = document.getElementById('sel-comp-variant').value;  // e.g. '[data-variant="primary"]'
+  const selectorFilter = document.getElementById('sel-comp-selector').value; // exact selector string
 
-  // Render
+  let visibleBlocks = data.selectors;
+  if (variantFilter)  visibleBlocks = visibleBlocks.filter(b => b.selector.includes(variantFilter));
+  if (selectorFilter) visibleBlocks = visibleBlocks.filter(b => b.selector === selectorFilter);
+
   const list = document.getElementById('comp-list');
   list.innerHTML = '';
-
-  const visibleBlocks = filter
-    ? data.selectors.filter(b => b.selector === filter)
-    : data.selectors;
-
-  for (const block of visibleBlocks) {
-    renderComponentBlock(list, block);
-  }
+  for (const block of visibleBlocks) renderComponentBlock(list, block);
 }
 
 function renderComponentBlock(container, block) {
