@@ -150,6 +150,15 @@ function lintFile(absPath, raw) {
       `\`${m[1]}\` uses a removed namespace. Replace with the equivalent \`--sherpa-content-*\` token (e.g. --sherpa-text-default-body → --sherpa-content-default-body).`);
   }
 
+  // R9: bare --focus-ring() call with no plain-CSS fallback.
+  // The CSS @function spec is Chromium 139+ only. `outline: --focus-ring(…)` silently
+  // resolves to `outline: none` in Firefox/Safari, removing focus indicators (WCAG 2.4.11).
+  // Replace with `outline: none; box-shadow: 0 0 0 2px var(…, <hex>);` instead.
+  for (const m of code.matchAll(/outline\s*:\s*--focus-ring\(/g)) {
+    push("error", lineOf(raw, m.index), "focus-ring-no-fallback",
+      "`outline: --focus-ring(…)` has no cross-browser fallback — focus rings are invisible in Firefox/Safari (WCAG 2.4.11). Use `outline: none; box-shadow: 0 0 0 2px var(…, <hex>);` instead.");
+  }
+
   // R7: off-grid pixel literals.
   const gridSeverity = STRICT ? "error" : "warn";
   for (const m of code.matchAll(/(?<![\w.-])(\d+)px\b/g)) {

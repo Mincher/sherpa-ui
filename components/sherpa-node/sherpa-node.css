@@ -87,7 +87,7 @@
   z-index: 10;
 
   & .node {
-    outline: --focus-ring(var(--_node-accent));
+    outline: 2px solid var(--_node-accent);
     outline-offset: 1px;
   }
 }
