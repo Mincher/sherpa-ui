@@ -21,10 +21,16 @@
   "files": [
     "dist/",
     "components/**/*.ts",
+    "components/**/*.html",
+    "components/**/*.css",
     "css/",
     "schemas/",
     "patterns/",
-    "mcp-server/"
+    "mcp-server/",
+    "docs/COMPONENT-API-STANDARD.md",
+    "docs/COMPONENT-TEMPLATE.md",
+    "docs/CSS-FILE-TEMPLATE.md",
+    ".github/instructions/copilot-instructions.md"
   ],
   "scripts": {
     "clean": "rm -rf dist node_modules/.cache/tsbuildinfo",
@@ -35,7 +41,6 @@
     "ts:suppressions:write": "node scripts/count-suppressions.js --write",
     "ts:check-regression": "node scripts/check-suppression-regression.cjs",
     "assets:copy": "node scripts/copy-component-assets.js",
-    "component-docs": "node scripts/generate-component-docs.js",
     "schemas": "node scripts/extract-component-schemas.js",
     "patterns": "node scripts/extract-pattern-index.js",
     "mcp": "node mcp-server/index.js",
@@ -52,7 +57,7 @@
     "format": "prettier --write 'components/**/*.css'",
     "format:check": "prettier --check 'components/**/*.css'",
     "prebuild": "npm run clean",
-    "build": "npm run build:ts && npm run assets:copy && npm run tokens:generate && npm run schemas && npm run patterns && npm run component-docs",
+    "build": "npm run build:ts && npm run assets:copy && npm run tokens:generate && npm run schemas && npm run patterns",
     "test:a11y": "node scripts/test-a11y.js",
     "test:a11y:verbose": "node scripts/test-a11y.js --verbose",
     "audit": "node scripts/audit-components.js",
