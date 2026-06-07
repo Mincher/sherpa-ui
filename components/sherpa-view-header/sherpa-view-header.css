@@ -278,4 +278,13 @@
   margin-inline-start: auto;
 }
 
+/* ---- view-selection picker sizing ---- */
+
+/* Trigger button and popover menu get a fixed width without inline styles. */
+.view-selection-slot::slotted([data-view-picker]) {
+  inline-size: 240px;
+  max-inline-size: 240px;
+  min-inline-size: 0;
+}
+
 /* Native [hidden] support */

@@ -57,7 +57,7 @@ export type PopoverPosition = 'top' | 'bottom' | 'left' | 'right' | 'auto';
 /**
  * Component composition tiers (from component-categories.js)
  */
-export type ComponentTier = 'atom' | 'molecule' | 'organism' | 'container';
+export type ComponentTier = 'atom' | 'molecule' | 'organism' | 'structure';
 
 /**
  * Component roles within the design system

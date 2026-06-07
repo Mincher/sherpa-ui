@@ -130,7 +130,7 @@ async function testPage(filePath) {
 async function getAllDemoPages() {
   const demoFiles = await glob('demo/*.html', {
     cwd: ROOT,
-    ignore: ['demo/component-doc/**', 'demo/fixtures/**'],
+    ignore: ['demo/fixtures/**'],
   });
   return demoFiles;
 }
@@ -197,7 +197,7 @@ async function main() {
 
   const reportPath = path.join(ROOT, 'test', 'a11y', 'report.json');
   const report = {
-    timestamp: new Date().toISOString(),
+    timestamp: Temporal.Now.instant().toString(),
     standard: WCAG_STANDARD,
     summary: {
       pagesTestcasted: results.length,

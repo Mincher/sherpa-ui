@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Build (clean → compile TS → copy HTML/CSS assets → generate tokens/schemas/patterns)
+# Build (clean → compile TS → copy HTML/CSS assets → generate tokens/patterns)
 npm run build
 
 # TypeScript only (fast iteration)
@@ -33,15 +33,12 @@ npm run test:coverage
 # Accessibility audit
 npm run test:a11y
 
-# Schema / pattern regeneration (run after changing @attr JSDoc or pattern HTML)
-npm run schemas
+# Pattern regeneration (run after changing pattern HTML)
 npm run patterns
 
 # MCP server
 npm run mcp               # stdio transport — connect from Claude Desktop / Cursor
 ```
-
-> **After modifying `@attr` annotations in a `.ts` file**, run `npm run schemas` so `schemas/components/*.json` stays in sync with the MCP server.
 
 ---
 
@@ -184,7 +181,7 @@ See `patterns/flows/add|edit|delete.html` for canonical HTML structure.
 
 ### MCP server (`mcp-server/`)
 
-23 tools + 250+ `sherpa://` resources + 4 guided prompts. Data loaded at startup from `schemas/components/*.json`, `css/styles/` (tokens), `patterns/index.json`, and `components/utilities/`. Run with `npm run mcp`.
+23 tools + 250+ `sherpa://` resources + 4 guided prompts. Component schemas are parsed lazily from JSDoc; tokens scanned from `css/styles/`; patterns from `patterns/index.json`. Run with `npm run mcp`.
 
 ### Disabled state
 

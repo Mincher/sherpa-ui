@@ -55,3 +55,9 @@
   </button>
 </template>
 
+<!-- Cloning prototypes for programmatic overlay building (setMenuItems). -->
+<!-- No id — prevents SherpaElement's multi-template parser selecting them. -->
+<template class="menu-list-tpl"><ul></ul></template>
+<template class="menu-item-tpl"><li><sherpa-overlay-item></sherpa-overlay-item></li></template>
+<template class="menu-heading-tpl"><sherpa-overlay-item data-type="heading"></sherpa-overlay-item></template>
+

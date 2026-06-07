@@ -229,10 +229,14 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
     // Sort by time — parse labels as dates
     indices.sort((a, b) => {
-      const tA = new Date(labels[a]!).getTime() || 0;
-      const tB = new Date(labels[b]!).getTime() || 0;
-      const diff = tA - tB;
-      return dir === 'desc' ? -diff : diff;
+      let cmp = 0;
+      try {
+        cmp = Temporal.PlainDate.compare(
+          Temporal.PlainDate.from(labels[a]!),
+          Temporal.PlainDate.from(labels[b]!),
+        );
+      } catch { cmp = 0; }
+      return dir === 'desc' ? -cmp : cmp;
     });
 
     return {

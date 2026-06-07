@@ -79,15 +79,38 @@
   </div>
 </div>
 
-<!-- Cloning prototype used by #buildPickerRow() -->
+<!-- Cloning prototypes for the inline view-selection picker.
+     No id — prevents SherpaElement's multi-template parser selecting them. -->
+
+<template class="picker-trigger-tpl">
+  <sherpa-button
+    data-view-picker
+    slot="view-selection"
+    data-variant="secondary"
+    data-size="small"
+    data-icon-end="&#xf078;"
+    data-label-truncate
+    aria-haspopup="menu"></sherpa-button>
+</template>
+
+<template class="picker-badge-tpl">
+  <sherpa-tag data-view-picker slot="view-selection" data-variant="secondary"></sherpa-tag>
+</template>
+
+<template class="picker-menu-tpl">
+  <sherpa-container-overlay data-variant="menu" data-view-picker slot="view-selection">
+    <ul></ul>
+  </sherpa-container-overlay>
+</template>
+
 <template class="picker-row-tpl">
   <li>
-    <sherpa-menu-item role="menuitemradio">
+    <sherpa-overlay-item role="menuitemradio">
       <span class="picker-row">
         <span class="picker-label"></span>
         <sherpa-tag class="picker-badge" data-variant="secondary" hidden></sherpa-tag>
       </span>
-    </sherpa-menu-item>
+    </sherpa-overlay-item>
   </li>
 </template>
 </template>

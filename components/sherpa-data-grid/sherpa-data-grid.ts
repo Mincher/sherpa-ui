@@ -2001,7 +2001,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
   #onMenuPopulate: EventHandler<CustomEvent> = (e: CustomEvent) => {
     const menu = e.detail?.menu;
     if (!menu) return;
-    const item = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
+    const item = menu.querySelector('sherpa-overlay-item[data-event="toggle-filters"]');
     if (item) {
       item.toggleAttribute("checked", this.hasAttribute("data-filters"));
     }

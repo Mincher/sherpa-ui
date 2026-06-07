@@ -402,7 +402,7 @@ async function main() {
 
   const reportPath = path.join(ROOT, 'COMPONENT-AUDIT-REPORT.json');
   const report = {
-    timestamp: new Date().toISOString(),
+    timestamp: Temporal.Now.instant().toString(),
     summary: {
       componentsAudited: allResults.length,
       totalErrors,

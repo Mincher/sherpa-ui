@@ -454,8 +454,8 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
         ? presetFilters.map((f: any) => {
             if (f.field !== '_timerange' || !f.range) return f;
             return [
-              { field: dateField, operator: '>=', value: f.range.start instanceof Date ? f.range.start.toISOString() : String(f.range.start) },
-              { field: dateField, operator: '<=', value: f.range.end instanceof Date ? f.range.end.toISOString() : String(f.range.end) },
+              { field: dateField, operator: '>=', value: String(f.range.start) },
+              { field: dateField, operator: '<=', value: String(f.range.end) },
             ];
           }).flat()
         : presetFilters;

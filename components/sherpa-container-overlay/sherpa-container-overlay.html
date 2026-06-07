@@ -1,0 +1,111 @@
+<!--
+  sherpa-container-overlay.html — Shadow templates + light-DOM content templates.
+
+  Shadow templates (selected via templateId):
+    • default  — Popover variant: optional header + body slot
+    • paged    — Paged popover variant: header (with back button) + body slot + footer
+    • menu     — Menu variant: role="menu" surface + loading spinner + slot
+
+  Light-DOM content templates (returned by SherpaContainerOverlay.getOverlayTemplate(id)):
+    • filter   — Value filter picker (heading + Select all/Clear all + values group)
+
+  Host attributes:
+    data-variant      — popover (default) | menu
+    data-open         — Boolean visibility (declarative)
+    data-anchor       — CSS anchor name for declarative positioning
+    data-placement    — bottom-start | bottom-end | top-start | top-end | bottom | top | …
+    data-heading      — Header title text (popover variant)
+    data-loading      — Boolean; shows spinner instead of slot (menu variant)
+    data-loading-text — Loading caption
+    data-layout       — default | actions (menu variant)
+    data-animation    — slide
+    data-template     — paged (switches to paged template)
+    data-page         — 0-based current page (paged)
+    data-pages        — Total page count (paged)
+
+  Slots:
+    default     — Body content / menu items
+    icon        — Header leading icon (popover variant)
+    header-end  — Header trailing content (popover variant)
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     DEFAULT — Popover variant: optional header + body slot
+     ═══════════════════════════════════════════════════════════════════ -->
+<template id="default">
+  <header class="overlay-header">
+    <slot name="icon"></slot>
+    <span class="overlay-heading"></span>
+    <slot name="header-end"></slot>
+    <button class="close-btn" type="button" aria-label="Close">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </header>
+  <div class="overlay-body">
+    <slot></slot>
+  </div>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PAGED — Wizard-style multi-page popover.
+     Consumers project <section data-page="0">…</section> blocks; the
+     component shows the section matching the host's data-page attribute.
+     ═══════════════════════════════════════════════════════════════════ -->
+<template id="paged">
+  <header class="overlay-header">
+    <button class="page-back" type="button" aria-label="Previous page">
+      <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <slot name="icon"></slot>
+    <span class="overlay-heading"></span>
+    <slot name="header-end"></slot>
+    <button class="close-btn" type="button" aria-label="Close">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </header>
+  <div class="overlay-body overlay-body-paged">
+    <slot></slot>
+  </div>
+  <footer class="overlay-footer">
+    <span class="page-indicator" aria-live="polite"></span>
+    <button class="page-next sherpa-btn" type="button">Next</button>
+  </footer>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MENU — Menu variant: role="menu" surface with loader + slot
+     ═══════════════════════════════════════════════════════════════════ -->
+<template id="menu">
+  <div class="menu-surface text-body-sm" role="menu" part="surface">
+    <div class="overlay-loader" part="loader" role="status" aria-live="polite">
+      <span class="overlay-loader-spinner" aria-hidden="true"></span>
+      <span class="overlay-loader-text"></span>
+    </div>
+    <slot></slot>
+  </div>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     FILTER (light-DOM content template)
+     Returned by SherpaContainerOverlay.getOverlayTemplate('filter').
+     Stamped into the overlay's light DOM by sherpa-button when
+     data-menu-template="filter" is set.
+     ═══════════════════════════════════════════════════════════════════ -->
+<template id="filter">
+  <sherpa-overlay-item data-type="heading"></sherpa-overlay-item>
+  <ul data-group="actions">
+    <li>
+      <sherpa-overlay-item data-role="select-all" data-action="select-all" value=""
+        >Select all</sherpa-overlay-item
+      >
+    </li>
+    <li>
+      <sherpa-overlay-item data-role="clear-all" data-action="clear-all" value=""
+        >Clear all</sherpa-overlay-item
+      >
+    </li>
+  </ul>
+  <ul data-group="values">
+    <!-- Populated by JS with checkbox overlay items for each unique value -->
+  </ul>
+</template>

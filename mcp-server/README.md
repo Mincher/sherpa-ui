@@ -15,7 +15,7 @@ components work, it queries the server and gets the real API.
 4. [Resources & Prompts](#4-resources--prompts)
 5. [Walkthrough: Building a Dashboard](#5-walkthrough-building-a-dashboard)
 6. [Component Categories](#6-component-categories)
-7. [Keeping Schemas Up to Date](#7-keeping-schemas-up-to-date)
+7. [Keeping Patterns Up to Date](#7-keeping-patterns-up-to-date)
 8. [Architecture](#8-architecture)
 9. [Troubleshooting](#9-troubleshooting)
 
@@ -663,20 +663,20 @@ attribute names, no wrong token values, no invalid HTML.
 
 ---
 
-## 7. Keeping Schemas & Patterns Up to Date
+## 7. Keeping Patterns Up to Date
 
-The MCP server reads component schemas from `schemas/components/` and
-pattern indexes from `patterns/index.json`. If you change a component's
-JSDoc header or add/modify pattern HTML files, regenerate:
+Component schemas are parsed directly from JSDoc at query time — no
+generation step needed. If you add or rename a component, restart the MCP
+server and it will find it automatically.
+
+If you add or modify pattern HTML files, regenerate the pattern index:
 
 ```bash
-npm run schemas          # Rebuild JSON schemas only
-npm run patterns         # Rebuild pattern index only
-npm run build            # Full build: tokens + docs + schemas + patterns
+npm run patterns         # Rebuild pattern index
+npm run build            # Full build: tokens + patterns
 ```
 
-Then restart the MCP server (or restart your AI client) so it picks up the
-new data.
+Then restart the MCP server so it picks up the new patterns.
 
 ---
 
@@ -688,7 +688,8 @@ sherpa-ui/
 │   ├── index.js              ← Entry point (stdio transport)
 │   ├── server.js             ← Server factory: loads data, registers everything
 │   ├── lib/
-│   │   ├── loader.js         ← Data loading (schemas, tokens+values, patterns, utils)
+│   │   ├── loader.js         ← Data loading (tokens+values, patterns, css-utilities, utils)
+│   │   ├── schema-parser.js  ← Lazy JSDoc→schema parser + SchemaRegistry
 │   │   ├── validation.js     ← HTML audit (unknown attrs, enum values, self-closing)
 │   │   ├── generators.js     ← HTML/flow/pattern generation
 │   │   ├── icons.js          ← Font Awesome icon→entity map
@@ -705,12 +706,6 @@ sherpa-ui/
 │   │   └── index.js          ← All sherpa:// resource registrations
 │   └── prompts/
 │       └── index.js          ← build_ui, review_component_usage, create_component, debug_component
-├── schemas/
-│   ├── component-schema.json ← JSON Schema definition
-│   └── components/
-│       ├── index.json        ← List of all component tag names
-│       ├── sherpa-button.json
-│       └── ...               ← One JSON file per component
 ├── patterns/
 │   ├── index.json            ← Pattern catalog (generated)
 │   ├── layouts/              ← View layout patterns (HTML)
@@ -723,9 +718,9 @@ sherpa-ui/
     └── copilot-instructions.md
 ```
 
-The server loads all schemas and scans all design tokens at startup. Every
-tool call reads from this in-memory data — no network requests, no external
-dependencies.
+Component schemas are parsed lazily from JSDoc on first access and cached
+for the session. Design tokens are scanned at startup. Every tool call reads
+from in-memory data — no network requests, no external dependencies.
 
 ---
 
@@ -736,21 +731,17 @@ dependencies.
 - Make sure Node.js 18+ is installed (`node --version`)
 - Verify the path in your config file points to the correct `index.js`
 - Restart the AI client after changing the config
-- Check that `schemas/components/index.json` exists — run `npm run schemas`
-  if it doesn't
+- Check that Node.js can find the `components/` directory relative to the server
 
 ### "The server starts but the AI can't find my component"
 
-- The component may not have a JSON schema yet. Run `npm run schemas` to
-  regenerate
-- Check that the component's `.js` file has a `@element` JSDoc tag — the
-  schema extractor looks for this
+- Check that the component directory is named `sherpa-<name>` under `components/`
+- Check that the component's `.ts` or `.js` file has a `@element` JSDoc tag
 
 ### "Attributes I added aren't appearing"
 
-- Add `@attr {type} data-my-attr — Description` to the component's JSDoc
-- Run `npm run schemas` to regenerate
-- Restart the MCP server
+- Add `@attr {type} data-my-attr — Description` to the component's JSDoc header
+- Restart the MCP server (schemas are parsed at first query, not on file change)
 
 ### "Token search returns no results"
 

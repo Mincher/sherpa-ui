@@ -17,7 +17,7 @@ layout-oriented (where it sits in a sidebar). It is intentionally small.
 | `shell`     | 1 | Top-level page scaffolding.                                       | `sherpa-app-shell`, `sherpa-view-header`, `sherpa-product-bar-v2`, `sherpa-nav`, `sherpa-layout-grid` |
 | `nav`       | 1 | Navigation chrome children, only inside the `shell` nav rail.     | `sherpa-nav-item`, `sherpa-nav-section` |
 | `container` | 2 | Surfaces that hold other components.                              | `sherpa-container`, `sherpa-container-header`, `sherpa-accordion`, `sherpa-panel`, `sherpa-container-footer` |
-| `overlay`   | 2 | Floating UI surfaces.                                             | `sherpa-dialog`, `sherpa-popover`, `sherpa-tooltip`, `sherpa-menu`, `sherpa-menu-item` |
+| `overlay`   | 2 | Floating UI surfaces.                                             | `sherpa-dialog`, `sherpa-container-overlay`, `sherpa-overlay-item`, `sherpa-tooltip` |
 | `content`   | 3 | Structural sub-elements (headings, toolbars, tabs, lists).        | `sherpa-section-header`, `sherpa-toolbar`, `sherpa-list`, `sherpa-list-item`, `sherpa-key-value-list`, `sherpa-tabs`, `sherpa-stepper`, `sherpa-progress-tracker` |
 | `control`   | 4 | Actionable / clickable controls.                                  | `sherpa-button`, `sherpa-switch`, `sherpa-tag`, `sherpa-slider`, `sherpa-pagination`, `sherpa-breadcrumbs` |
 | `input`     | 4 | Form fields capturing user data.                                  | `sherpa-input-text`, `sherpa-input-number`, `sherpa-input-select`, `sherpa-input-date`, `sherpa-input-checkbox`, `sherpa-file-upload` |
@@ -150,9 +150,8 @@ slot with `data-accepts="...,html"`.
 
 1. Pick the single best-fitting role from §1.
 2. Add `@category <role>` to the JSDoc header.
-3. Re-run `npm run schemas` to regenerate `schemas/components/<tag>.json`.
-4. The component is now offered automatically in any matching slot picker
-   (playground, MCP `recommend_components_for_slot`).
+3. The component is now offered automatically in any matching slot picker
+   (MCP `recommend_components_for_slot`).
 
 If no existing role fits, propose a new one **before** adding it — the
 taxonomy is intentionally small.

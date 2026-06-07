@@ -2,7 +2,7 @@
   sherpa-scheduler.html — Recurrence picker (frequency + time + weekdays).
 
   Composes: sherpa-input-select, sherpa-input-time, sherpa-input-date,
-            sherpa-input-checkbox-group (weekdays template),
+            sherpa-select-group (weekdays template),
             sherpa-input-number.
 
   Templates:
@@ -40,11 +40,11 @@
 
   <!-- Weekly: weekdays -->
   <div class="row row-weekly">
-    <sherpa-input-checkbox-group
+    <sherpa-select-group
       class="weekday-group"
       data-template="weekdays"
       data-label="Days of week"
-    ></sherpa-input-checkbox-group>
+    ></sherpa-select-group>
   </div>
 
   <!-- Monthly: day-of-month -->

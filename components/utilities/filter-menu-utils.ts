@@ -56,8 +56,8 @@ export function toggleLegend(host: Element): void {
 export function syncFilterMenuItems(e: CustomEvent, host: Element): void {
   const menu = e.detail?.menu;
   if (!menu) return;
-  const filterItem = menu.querySelector('sherpa-menu-item[data-event="toggle-filters"]');
+  const filterItem = menu.querySelector('sherpa-overlay-item[data-event="toggle-filters"]');
   if (filterItem) filterItem.toggleAttribute('checked', host.hasAttribute('data-filters'));
-  const legendItem = menu.querySelector('sherpa-menu-item[data-event="toggle-legend"]');
+  const legendItem = menu.querySelector('sherpa-overlay-item[data-event="toggle-legend"]');
   if (legendItem) legendItem.toggleAttribute('checked', !host.hasAttribute('data-hide-legend'));
 }

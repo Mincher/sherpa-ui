@@ -5,8 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sherpa Token Studio</title>
 
+  <!-- Web fonts (Open Sans referenced by --sherpa-fonts-context-default) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome (Sherpa icon system; SherpaElement loads into shadow DOM, mirror in light DOM) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <!-- Sherpa token cascade -->
   <link rel="stylesheet" href="/sherpa/css/index.css">
+
+  <!-- Sherpa shared utilities (SherpaElement injects these into shadow roots; mirror in light DOM) -->
+  <link rel="stylesheet" href="/sherpa/css/sherpa-text-classes.css">
+  <link rel="stylesheet" href="/sherpa/css/sherpa-icon-classes.css">
+  <link rel="stylesheet" href="/sherpa/css/sherpa-motion-classes.css">
+  <link rel="stylesheet" href="/sherpa/css/tokens/sherpa-functions.css">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1282,7 +1296,7 @@ const TEMPLATE_DEFAULTS = {
     'divider': el => {},
     'promo':   el => { el.setAttribute('data-label', 'Promo item'); el.setAttribute('data-description', 'Promo description'); },
   },
-  'sherpa-menu-item': {
+  'sherpa-overlay-item': {
     'default':  el => { el.textContent = 'Menu item'; },
     'checkbox': el => { el.textContent = 'Checkbox item'; },
     'radio':    el => { el.textContent = 'Radio item'; el.setAttribute('data-group', 'preview'); },
@@ -1324,7 +1338,7 @@ const COMPONENT_DEFAULTS = {
   'sherpa-metric':         el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric'); },
   'sherpa-breadcrumbs':    el => { el.setAttribute('data-items', JSON.stringify([{label:'Home'},{label:'Section'},{label:'Page'}])); },
   'sherpa-nav-item':       el => { el.setAttribute('data-label', 'Nav item'); el.setAttribute('data-icon-start', 'fa-solid fa-home'); },
-  'sherpa-menu-item':      el => { el.textContent = 'Menu item'; },
+  'sherpa-overlay-item':      el => { el.textContent = 'Menu item'; },
 };
 
 // How to activate a non-default template on an element.
@@ -1340,7 +1354,7 @@ const TEMPLATE_ACTIVATORS = {
     'divider': el => el.setAttribute('data-type', 'divider'),
     'promo':   el => el.setAttribute('data-type', 'promo'),
   },
-  'sherpa-menu-item': {
+  'sherpa-overlay-item': {
     'default':  el => el.removeAttribute('data-type'),
     'checkbox': el => el.setAttribute('data-type', 'checkbox'),
     'radio':    el => el.setAttribute('data-type', 'radio'),

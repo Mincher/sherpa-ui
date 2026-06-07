@@ -4,7 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { log } from "./lib/logger.js";
 import {
-  loadSchemas, loadTokens, buildTokenMap, loadPatterns,
+  SchemaRegistry, loadTokens, buildTokenMap, loadPatterns,
   loadCssUtilities, loadUtilities, parseTemplateIds,
 } from "./lib/loader.js";
 
@@ -20,8 +20,7 @@ import { register as registerPrompts }         from "./prompts/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT            = path.resolve(__dirname, "..");
-const SCHEMAS_DIR     = path.join(ROOT, "schemas", "components");
-const CSS_UTIL_DIR    = path.join(ROOT, "schemas", "css-utilities");
+const CSS_UTIL_DIR    = path.join(__dirname, "data", "css-utilities");
 const COMPONENTS_DIR  = path.join(ROOT, "components");
 const PATTERNS_DIR    = path.join(ROOT, "patterns");
 const DOCS_DIR        = path.join(ROOT, "docs");
@@ -31,7 +30,6 @@ const COPILOT_PATH    = path.join(ROOT, ".github", "instructions", "copilot-inst
 
 const PATHS = {
   rootDir:       ROOT,
-  schemasDir:    SCHEMAS_DIR,
   componentsDir: COMPONENTS_DIR,
   patternsDir:   PATTERNS_DIR,
   docsDir:       DOCS_DIR,
@@ -40,11 +38,11 @@ const PATHS = {
 };
 
 export async function createServer() {
-  const startTime = Date.now();
+  const startTime = Temporal.Now.instant().epochMilliseconds;
   log.info("Starting Sherpa UI MCP server…");
 
-  // Load all data at startup
-  const schemas      = loadSchemas(SCHEMAS_DIR);
+  // schemas are loaded lazily on first access, cached for the session
+  const schemas      = new SchemaRegistry(COMPONENTS_DIR);
   const tokens       = loadTokens(CSS_STYLES_DIR, ROOT);
   const tokenMap     = buildTokenMap(tokens);
   const patterns     = loadPatterns(PATTERNS_DIR);
@@ -52,8 +50,8 @@ export async function createServer() {
   const utilities    = loadUtilities(COMPONENTS_DIR);
 
   log.info(
-    `Data loaded — ${schemas.size} schemas, ${tokens.length} tokens, ` +
-    `${patterns.size} patterns, ${utilities.size} utilities in ${Date.now() - startTime}ms`
+    `Data loaded — ${schemas.size} components (lazy), ${tokens.length} tokens, ` +
+    `${patterns.size} patterns, ${utilities.size} utilities in ${Temporal.Now.instant().epochMilliseconds - startTime}ms`
   );
 
   const server = new McpServer(
@@ -79,6 +77,6 @@ export async function createServer() {
   // Prompts
   registerPrompts(server, data, PATHS);
 
-  log.info(`Server ready — ${Date.now() - startTime}ms startup`);
+  log.info(`Server ready — ${Temporal.Now.instant().epochMilliseconds - startTime}ms startup`);
   return server;
 }

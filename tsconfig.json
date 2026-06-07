@@ -3,7 +3,7 @@
     // Target & Module
     "target": "ES2022",
     "module": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "ESNext.Temporal", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
     "types": ["@web/test-runner"],
 

@@ -1,6 +1,6 @@
 // @ts-nocheck
 const TIME_SERIES = Array.from({ length: 12 }, (_, i) => ({
-  date:  new Date(2026, 0, i + 1).toISOString(),
+  date:  new Temporal.PlainDate(2026, 1, i + 1).toString(),
   value: Math.round(40 + Math.sin(i / 2) * 25 + i * 2),
 }));
 

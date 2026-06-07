@@ -325,7 +325,7 @@ async function main() {
   output.meta = {
     file: FILE_KEY,
     name: config.file.name,
-    date: new Date().toISOString(),
+    date: Temporal.Now.instant().toString(),
   };
 
   // 2. Themes metadata — refresh mode IDs from API while preserving hand-authored slugs/folders

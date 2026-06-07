@@ -39,38 +39,23 @@
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
-import '../sherpa-menu/sherpa-menu.js';
+import '../sherpa-container-overlay/sherpa-container-overlay.js';
 import '../sherpa-tag/sherpa-tag.js';
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { ThemeManager } from '../utilities/theme-manager.js';
 
-/**
- * Light-DOM utility class published by this component.
- *
- * .sherpa-view-header-group — A flex-column wrapper that groups a
- * <sherpa-view-header> with an adjacent <sherpa-filter-bar> (or other
- * peers) into a single shrink-protected block at the top of a view.
- *
- * Adopted onto document.adoptedStyleSheets exactly once on module
- * import so consumers can use the class anywhere in the document
- * without a separate global stylesheet.
- */
-const viewHeaderGroupSheet = new CSSStyleSheet();
-viewHeaderGroupSheet.replaceSync(`
-  .sherpa-view-header-group {
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-  }
-  .sherpa-view-header-group > sherpa-filter-bar {
-    padding-inline: var(--sherpa-space-xs, 8px);
-  }
-`);
-if (!document.adoptedStyleSheets.includes(viewHeaderGroupSheet)) {
-  document.adoptedStyleSheets = [...document.adoptedStyleSheets, viewHeaderGroupSheet];
-}
+// Link the .sherpa-view-header-group utility styles into the document once.
+(function ensureViewHeaderGroupStyles() {
+  const id = 'sherpa-view-header-group-styles';
+  if (document.getElementById(id)) return;
+  const link = document.createElement('link');
+  link.id = id;
+  link.rel = 'stylesheet';
+  link.href = new URL('./sherpa-view-header-group.css', import.meta.url).href;
+  document.head.appendChild(link);
+}());
 
 /** A selectable view-picker entry. */
 interface PickerItem {
@@ -95,6 +80,9 @@ export class SherpaViewHeader extends SherpaElement {
   #pickerValue: string | null = null;
   #optionSlotObserver: MutationObserver | null = null;
   #pickerRowTpl: HTMLTemplateElement | null = null;
+  #pickerTriggerTpl: HTMLTemplateElement | null = null;
+  #pickerBadgeTpl: HTMLTemplateElement | null = null;
+  #pickerMenuTpl: HTMLTemplateElement | null = null;
 
   override onAttributeChanged(name: string, _oldValue: string | null, newValue: string | null): void {
     switch (name) {
@@ -180,7 +168,10 @@ export class SherpaViewHeader extends SherpaElement {
   // ============ Private Methods ============
 
   override onRender(): void {
-    this.#pickerRowTpl = this.$<HTMLTemplateElement>('template.picker-row-tpl');
+    this.#pickerRowTpl     = this.$<HTMLTemplateElement>('template.picker-row-tpl');
+    this.#pickerTriggerTpl = this.$<HTMLTemplateElement>('template.picker-trigger-tpl');
+    this.#pickerBadgeTpl   = this.$<HTMLTemplateElement>('template.picker-badge-tpl');
+    this.#pickerMenuTpl    = this.$<HTMLTemplateElement>('template.picker-menu-tpl');
     this.#setupSelectors();
     this.#setupExport();
     this.#setupFavorite();
@@ -362,41 +353,27 @@ export class SherpaViewHeader extends SherpaElement {
     const currentEntry = items.find((it) => it.value === resolvedValue);
     this.#pickerValue = resolvedValue ?? null;
 
-    const trigger = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<unknown> };
-    trigger.dataset["viewPicker"] = '';
-    trigger.setAttribute('slot', 'view-selection');
-    trigger.setAttribute('data-variant', 'secondary');
-    trigger.setAttribute('data-size', 'small');
-    trigger.setAttribute('data-icon-end', '\uf078'); // fa-chevron-down
-    trigger.setAttribute('aria-haspopup', 'menu');
+    // Clone trigger from template, set dynamic attributes.
+    const trigger = this.#pickerTriggerTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement & {
+      rendered?: Promise<unknown>;
+    };
     trigger.setAttribute('aria-label', ariaLabel);
     trigger.setAttribute('data-label', currentEntry?.label || placeholder);
-    trigger.style.inlineSize = '240px';
-    trigger.style.maxInlineSize = '240px';
 
-    let triggerBadge = null;
+    // Clone badge from template (only when the current entry has one).
+    let triggerBadge: HTMLElement | null = null;
     if (currentEntry?.badge) {
-      triggerBadge = document.createElement('sherpa-tag');
-      triggerBadge.dataset["viewPicker"] = '';
-      triggerBadge.setAttribute('slot', 'view-selection');
-      triggerBadge.setAttribute('data-variant', 'secondary');
-      if (currentEntry.badgeStatus) {
-        triggerBadge.setAttribute('data-status', currentEntry.badgeStatus);
-      }
+      triggerBadge = this.#pickerBadgeTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      if (currentEntry.badgeStatus) triggerBadge.setAttribute('data-status', currentEntry.badgeStatus);
       triggerBadge.textContent = currentEntry.badge;
     }
 
-    const menu = document.createElement('sherpa-menu') as HTMLElement & {
+    // Clone menu from template; populate its existing <ul> with option rows.
+    const menu = this.#pickerMenuTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement & {
       show?(anchor?: HTMLElement): void;
       hide?(): void;
     };
-    menu.dataset["viewPicker"] = '';
-    menu.setAttribute('slot', 'view-selection');
-    menu.setAttribute('popover', 'auto');
-    menu.style.inlineSize = '240px';
-    menu.style.minInlineSize = '240px';
-
-    const ul = document.createElement('ul');
+    const ul = menu.querySelector('ul')!;
     for (const it of items) {
       ul.appendChild(this.#buildPickerRow({
         value: it.value,
@@ -406,7 +383,6 @@ export class SherpaViewHeader extends SherpaElement {
         checked: it.value === resolvedValue,
       }));
     }
-    menu.appendChild(ul);
 
     this.appendChild(trigger);
     if (triggerBadge) this.appendChild(triggerBadge);
@@ -414,40 +390,13 @@ export class SherpaViewHeader extends SherpaElement {
 
     this.#viewPickerEls = triggerBadge ? [trigger, triggerBadge, menu] : [trigger, menu];
 
-    // Wait for sherpa-button's shadow DOM, then patch its trigger
-    // layout so the label can ellipsis-truncate at a fixed width with
-    // the chevron locked to the right.
-    const applyTruncation = () => {
-      const sr = trigger.shadowRoot;
-      if (!sr || !sr.querySelector('.trigger')) return false;
-      if (sr.querySelector('style[data-view-picker-truncate]')) return true;
-      const style = document.createElement('style');
-      style.dataset["viewPickerTruncate"] = '';
-      style.textContent = `
-        .trigger { inline-size: 100%; display: inline-flex; align-items: center; justify-content: flex-start; gap: var(--sherpa-space-xs, 12px); }
-        .label { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: start; }
-        .icon-end { flex: 0 0 auto; margin-inline-start: auto; }
-      `;
-      sr.appendChild(style);
-      return true;
-    };
-    const waitForRender = (attempts = 30) => {
-      if (applyTruncation()) return;
-      if (attempts <= 0) return;
-      requestAnimationFrame(() => waitForRender(attempts - 1));
-    };
-    waitForRender();
-    if (trigger.rendered && typeof trigger.rendered.then === 'function') {
-      trigger.rendered.then(applyTruncation);
-    }
-
     trigger.addEventListener('button-click', (e) => {
       e.stopPropagation();
       if (menu.hasAttribute('open')) menu.hide?.();
       else menu.show?.(trigger);
     });
 
-    menu.addEventListener('menu-select', (e) => {
+    menu.addEventListener('overlay-select', (e) => {
       const value = (e as CustomEvent).detail?.value;
       menu.hide?.();
       if (!value) return;
@@ -462,17 +411,14 @@ export class SherpaViewHeader extends SherpaElement {
         this.#viewPickerEls.splice(1, 1);
       }
       if (picked.badge) {
-        const tag = document.createElement('sherpa-tag');
-        tag.dataset["viewPicker"] = '';
-        tag.setAttribute('slot', 'view-selection');
-        tag.setAttribute('data-variant', 'secondary');
+        const tag = this.#pickerBadgeTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
         if (picked.badgeStatus) tag.setAttribute('data-status', picked.badgeStatus);
         tag.textContent = picked.badge;
         trigger.after(tag);
         this.#viewPickerEls.splice(1, 0, tag);
       }
       // Update the radio-style indicators in the menu.
-      menu.querySelectorAll('sherpa-menu-item').forEach((it) => {
+      menu.querySelectorAll('sherpa-overlay-item').forEach((it) => {
         const v = it.getAttribute('value');
         it.setAttribute('aria-checked', v === picked.value ? 'true' : 'false');
         if (v === picked.value) it.setAttribute('data-state', 'selected');
@@ -484,7 +430,7 @@ export class SherpaViewHeader extends SherpaElement {
 
   #buildPickerRow({ value, label, badge, badgeStatus, checked }: PickerItem): HTMLElement {
     const node = this.#pickerRowTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
-    const item = node.querySelector('sherpa-menu-item');
+    const item = node.querySelector('sherpa-overlay-item');
     if (item) {
       item.setAttribute('value', value);
       item.setAttribute('aria-checked', checked ? 'true' : 'false');

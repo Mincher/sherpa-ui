@@ -15,18 +15,18 @@
  * @slot search      — Search control; falls back to a default sherpa-input-search
  * @slot actions     — Right-aligned icon buttons + Ask N-zo entry point
  * @slot system-menu — Organisation / scope picker shown when the system-name
- *                     trigger is activated. Pass a single <sherpa-menu> with
- *                     a flat list of <sherpa-menu-item> children — do NOT
+ *                     trigger is activated. Pass a single <sherpa-container-overlay data-variant="menu">
+ *                     with a flat list of <sherpa-overlay-item> children — do NOT
  *                     wrap items in <ul data-group="…"> groups. The org
  *                     picker is a single, non-grouped list.
  *
  *   @example
  *     <sherpa-product-bar-v2 data-product-name="Acme Corp">
- *       <sherpa-menu slot="system-menu">
- *         <sherpa-menu-item value="acme">Acme Corp</sherpa-menu-item>
- *         <sherpa-menu-item value="globex">Globex</sherpa-menu-item>
- *         <sherpa-menu-item value="initech">Initech</sherpa-menu-item>
- *       </sherpa-menu>
+ *       <sherpa-container-overlay data-variant="menu" slot="system-menu">
+ *         <sherpa-overlay-item value="acme">Acme Corp</sherpa-overlay-item>
+ *         <sherpa-overlay-item value="globex">Globex</sherpa-overlay-item>
+ *         <sherpa-overlay-item value="initech">Initech</sherpa-overlay-item>
+ *       </sherpa-container-overlay>
  *     </sherpa-product-bar-v2>
  *
  * @fires system-trigger-click
@@ -37,10 +37,10 @@
  */
 
 import "../sherpa-input-search/sherpa-input-search.js";
-import "../sherpa-menu/sherpa-menu.js";
+import "../sherpa-container-overlay/sherpa-container-overlay.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 
-/** Structural type for the slotted <sherpa-menu> overlay element. */
+/** Structural type for the slotted <sherpa-container-overlay> element. */
 interface SystemMenuElement extends HTMLElement {
   show?(anchor?: HTMLElement | null): void;
   hide?(): void;
@@ -85,7 +85,7 @@ class SherpaProductBarV2 extends SherpaElement {
     if (!this.#bound) {
       if (this.dataset["showSystemMenu"] !== "false") {
         this.els.trigger?.addEventListener("click", this.#onTriggerClick);
-        this.addEventListener("menu-close", this.#onMenuClose);
+        this.addEventListener("overlay-close", this.#onMenuClose);
       } else {
         this.els.trigger?.removeAttribute("aria-haspopup");
         this.els.trigger?.removeAttribute("aria-expanded");
@@ -142,11 +142,11 @@ class SherpaProductBarV2 extends SherpaElement {
     );
   };
 
-  /** Resolve the slotted <sherpa-menu> in the system-menu slot, if any. */
+  /** Resolve the slotted <sherpa-container-overlay> in the system-menu slot, if any. */
   #getSystemMenu(): SystemMenuElement | null {
     const slot = this.shadowRoot?.querySelector<HTMLSlotElement>('slot[name="system-menu"]');
     const nodes = slot?.assignedElements?.({ flatten: true }) || [];
-    return (nodes.find((n) => n.tagName?.toLowerCase() === "sherpa-menu") as SystemMenuElement | undefined) || null;
+    return (nodes.find((n) => n.tagName?.toLowerCase() === "sherpa-container-overlay") as SystemMenuElement | undefined) || null;
   }
 
   #onMenuClose = () => {

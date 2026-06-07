@@ -111,14 +111,17 @@ export function formatValue(value: unknown, type: string | null | undefined): st
   switch (type) {
     case 'datetime':
     case 'date': {
-      const d = new Date(value as string | number | Date);
-      if (isNaN(d.getTime())) return escapeHtml(String(value));
-      const fmt = new Intl.DateTimeFormat(_currencyConfig.locale, {
+      let d: Temporal.PlainDate | Temporal.PlainDateTime | null = null;
+      try {
+        const s = String(value);
+        d = s.includes('T') ? Temporal.PlainDateTime.from(s) : Temporal.PlainDate.from(s);
+      } catch { return escapeHtml(String(value)); }
+      const fmt: Intl.DateTimeFormatOptions = {
         weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
-      });
-      const p = Object.fromEntries(fmt.formatToParts(d).map(({ type, value: v }) => [type, v]));
-      return `${p['weekday']} ${p['day']} ${p['month']} ${p['year']}, ${p['hour']}:${p['minute']}:${p['second']}`;
+      };
+      const parts = d.toLocaleString(_currencyConfig.locale, fmt);
+      return parts;
     }
     case 'currency':
       return new Intl.NumberFormat(_currencyConfig.locale, {

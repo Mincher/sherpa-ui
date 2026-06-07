@@ -258,9 +258,8 @@ Never repurpose them.
 
 ## 4 Machine-Readable Schema
 
-The JSDoc format defined above is the **source of truth**. The extraction
-pipeline (`scripts/extract-component-schemas.js`) parses these annotations
-and produces JSON files conforming to `schemas/component-schema.json`.
+The JSDoc format defined above is the **source of truth**. The MCP server
+parses these annotations lazily at query time via `mcp-server/lib/schema-parser.js`.
 
 ### Extraction rules
 

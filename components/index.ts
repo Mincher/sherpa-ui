@@ -21,8 +21,8 @@ export * from "./sherpa-container-header/sherpa-container-header.js";
 // UI components
 export * from "./sherpa-button/sherpa-button.js";
 export * from "./sherpa-container-footer/sherpa-container-footer.js";
-export * from "./sherpa-menu/sherpa-menu.js";
-export * from "./sherpa-menu-item/sherpa-menu-item.js";
+export * from "./sherpa-container-overlay/sherpa-container-overlay.js";
+export * from "./sherpa-overlay-item/sherpa-overlay-item.js";
 
 export * from "./sherpa-switch/sherpa-switch.js";
 export * from "./sherpa-tag/sherpa-tag.js";
@@ -50,7 +50,7 @@ export * from "./sherpa-breadcrumbs/sherpa-breadcrumbs.js";
 export * from "./sherpa-list-item/sherpa-list-item.js";
 export * from "./sherpa-loader/sherpa-loader.js";
 export * from "./sherpa-panel/sherpa-panel.js";
-export * from "./sherpa-popover/sherpa-popover.js";
+// sherpa-popover and sherpa-menu merged into sherpa-container-overlay
 // @deprecated sherpa-product-bar (v1) — use sherpa-product-bar-v2 instead.
 export * from "./sherpa-product-bar/sherpa-product-bar.js";
 export * from "./sherpa-product-bar-v2/sherpa-product-bar-v2.js";
@@ -81,13 +81,11 @@ export * from "./sherpa-input-search/sherpa-input-search.js";
 export * from "./sherpa-input-date/sherpa-input-date.js";
 export * from "./sherpa-input-date-range/sherpa-input-date-range.js";
 export * from "./sherpa-input-time/sherpa-input-time.js";
-export * from "./sherpa-date-time-picker/sherpa-date-time-picker.js";
 export * from "./sherpa-calendar/sherpa-calendar.js";
 export * from "./sherpa-input-password/sherpa-input-password.js";
-export * from "./sherpa-input-checkbox/sherpa-input-checkbox.js";
-export * from "./sherpa-input-checkbox-group/sherpa-input-checkbox-group.js";
-export * from "./sherpa-input-radio/sherpa-input-radio.js";
-export * from "./sherpa-input-radio-group/sherpa-input-radio-group.js";
+export * from "./sherpa-select-checkbox/sherpa-select-checkbox.js";
+export * from "./sherpa-select-radio/sherpa-select-radio.js";
+export * from "./sherpa-select-group/sherpa-select-group.js";
 export * from "./sherpa-input-tag/sherpa-input-tag.js";
 
 // Utility components

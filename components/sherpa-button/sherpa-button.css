@@ -129,6 +129,28 @@
   color: var(--sherpa-content-default-body, #2e2e33);
 }
 
+/* ── Label truncation — enabled via data-label-truncate ───────────────────── */
+/* Consumers that constrain the button to a fixed width (e.g. the view-header
+   picker) set this attribute so the label ellipsis-truncates and the trailing
+   icon stays pinned to the right instead of being centered. */
+
+:host([data-label-truncate]) .trigger {
+  inline-size: 100%;
+  justify-content: flex-start;
+}
+:host([data-label-truncate]) .label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: start;
+}
+:host([data-label-truncate]) .icon-end {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+}
+
 /* ==========================================================================
    Host attribute selectors — ALL as standalone :host([...]) functional form.
    CSS nesting & inside :host{} desugars to :host[attr] (chained), which is
@@ -147,6 +169,14 @@
 }
 :host([data-icon-end]) .icon-end {
   display: inline-flex;
+}
+
+/* ── Legacy unicode glyph icons (font-family applied via attribute) ────────── */
+
+.icon-start[data-unicode-icon],
+.icon-end[data-unicode-icon] {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
 }
 
 /* ── Badge visibility ─────────────────────────────────────────────────────── */
