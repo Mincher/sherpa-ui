@@ -1,0 +1,102 @@
+/* sherpa-menu-item.css — flex row: input? label description? chevron? */
+
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--_gap);
+  inline-size: 100%;
+  padding: var(--_padding-y) var(--_padding-x);
+  border-radius: var(--_rounding);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: --transition-fast(background-color);
+  /* Private aliases */
+  --_gap: var(--sherpa-space-xs, 12px);
+  --_padding-y: var(--sherpa-space-2xs, 8px);
+  --_padding-x: var(--sherpa-space-sm, 16px);
+  --_rounding: var(--sherpa-border-rounding-sm, 2px);
+  --_text-secondary: var(--sherpa-content-default-secondary, #5c5c66);
+  --_font-sm: var(--sherpa-fonts-scale-sm, 12px);
+}
+:host(:hover),
+:host(:focus-visible) {
+  background-color: var(--sherpa-surface-control-hover, #fafafa);
+}
+:host([disabled]) {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+  cursor: default;
+  pointer-events: none;
+}
+:host .input {
+  flex: 0 0 auto;
+  margin: 0;
+  cursor: pointer;
+  pointer-events: none;
+  accent-color: var(--sherpa-surface-control-primary-default, currentColor);
+}
+:host .label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:host .description {
+  display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(var(--_font-sm) * 0.9);
+  color: var(--_text-secondary);
+}
+:host([data-description]) .description {
+  display: block;
+}
+:host .chevron {
+  display: none;
+  font-size: var(--_font-sm);
+}
+:host([data-has-submenu="true"]) .chevron {
+  display: inline-flex;
+}
+:host sherpa-switch {
+  pointer-events: none;
+}
+:host([data-type="heading"]) {
+  font-size: var(--sherpa-font-xs-size, 10px);
+  font-weight: 600;
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--_text-secondary);
+  padding: var(--_gap);
+  cursor: default;
+  pointer-events: none;
+}
+:host mark.text-highlight-match {
+  background-color: var(--sherpa-surface-search-highlight, rgba(255, 216, 64, 0.35));
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  padding: 0 2px;
+}
+:host .menu-item-icon {
+  display: none;
+  flex: 0 0 auto;
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  width: var(--sherpa-size-md, 20px);
+  text-align: center;
+}
+:host([data-icon]) .menu-item-icon {
+  display: inline-flex;
+}
+:host([data-variant="danger"]) {
+  color: var(--sherpa-content-context-error-default, #c41337);
+}
+:host([data-variant="danger"]:hover),
+:host([data-variant="danger"]:focus-visible) {
+  background-color: var(--sherpa-surface-context-error-subtle-default, #fbeaee);
+  color: var(--sherpa-content-context-error-default, #c41337);
+}
+:host([data-variant="danger"][disabled]) {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+}
