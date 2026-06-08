@@ -4,6 +4,7 @@ node_modules/
 .vscode/
 .mcp.json
 *.code-search
+.env
 
 # TypeScript compiled output
 dist/
