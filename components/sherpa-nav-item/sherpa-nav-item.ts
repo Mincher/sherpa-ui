@@ -5,16 +5,16 @@
  *   via data-icon, rest is declarative. Selection and interaction managed by
  *   parent sherpa-nav. Chevron rotation via CSS ::part(chevron).
  *
- * @attr {string}  [data-icon]      — FontAwesome icon class (e.g. "fa-home")
- * @attr {string}  [data-icon-svg]  — Inline SVG markup string. Takes precedence over data-icon.
+ * @attr {string}  data-icon      — FontAwesome icon class (e.g. "fa-home")
+ * @attr {string}  data-icon-svg  — Inline SVG markup string. Takes precedence over data-icon.
  *                                    Use fill="currentColor" inside the SVG to inherit nav color.
- * @attr {string}  [data-svg-icon]  — Key into window.__sherpaNavIcons registry; resolved to data-icon-svg.
- * @attr {string}  [data-badge]     — Badge text rendered via internal sherpa-tag
- * @attr {enum}    [data-badge-status] — Badge status (critical | info | success | warning | urgent | brand). Defaults to "success".
- * @attr {enum}    [data-variant]  — section | subsection | child
- * @attr {enum}    [data-state]    — selected
- * @attr {enum}    [data-type]     — promo — renders a large CTA-style row
- * @attr {string}  [data-description] — Promo description text (data-type="promo" only)
+ * @attr {string}  data-svg-icon  — Key into window.__sherpaNavIcons registry; resolved to data-icon-svg.
+ * @attr {string}  data-badge     — Badge text rendered via internal sherpa-tag
+ * @attr {enum}    data-badge-status — Badge status (critical | info | success | warning | urgent | brand). Defaults to "success".
+ * @attr {enum}    data-variant  — section | subsection | child
+ * @attr {enum}    data-state    — selected
+ * @attr {enum}    data-type     — promo — renders a large CTA-style row
+ * @attr {string}  data-description — Promo description text (data-type="promo" only)
  *
  * @slot (default) — Label text content
  *

@@ -8,7 +8,7 @@
  *   CSS owns all conditional row visibility via :host([data-frequency]).
  *   JS only translates between the inner inputs and the host's `value`.
  *
- * @attr {enum}   [data-frequency=weekly] once | hourly | daily | weekly | monthly
+ * @attr {enum}   data-frequency=weekly once | hourly | daily | weekly | monthly
  *
  * @fires schedule-change
  *   bubbles: true, composed: true

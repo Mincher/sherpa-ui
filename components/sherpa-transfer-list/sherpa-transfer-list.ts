@@ -5,9 +5,9 @@
  *   sherpa-list, sherpa-list-item, sherpa-select-checkbox,
  *   sherpa-input-search, sherpa-button.
  *
- * @attr {string}  [data-source-heading=Available] — Available pane heading
- * @attr {string}  [data-target-heading=Selected]  — Selected pane heading
- * @attr {boolean} [data-search]                   — Show search inputs
+ * @attr {string}  data-source-heading=Available — Available pane heading
+ * @attr {string}  data-target-heading=Selected  — Selected pane heading
+ * @attr {boolean} data-search                   — Show search inputs
  *
  * @fires transfer-change
  *   bubbles: true, composed: true

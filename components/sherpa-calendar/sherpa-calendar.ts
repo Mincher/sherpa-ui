@@ -5,13 +5,13 @@
  *   Renders month navigation with day/month/year drill-down. The active
  *   sections are controlled by data-mode.
  *
- * @attr {enum}    [data-mode]      — date-time (default) | date | range | time
- * @attr {string}  [value]          — Date-time value (YYYY-MM-DDTHH:mm) — date/date-time/time modes
- * @attr {string}  [data-value]     — Range start date (YYYY-MM-DD) — range mode
- * @attr {string}  [data-value-end] — Range end date (YYYY-MM-DD) — range mode
- * @attr {boolean} [disabled]       — Disabled state
- * @attr {string}  [min]            — Minimum selectable date-time (YYYY-MM-DDTHH:mm)
- * @attr {string}  [max]            — Maximum selectable date-time (YYYY-MM-DDTHH:mm)
+ * @attr {enum}    data-mode      — date-time (default) | date | range | time
+ * @attr {string}  value          — Date-time value (YYYY-MM-DDTHH:mm) — date/date-time/time modes
+ * @attr {string}  data-value     — Range start date (YYYY-MM-DD) — range mode
+ * @attr {string}  data-value-end — Range end date (YYYY-MM-DD) — range mode
+ * @attr {boolean} disabled       — Disabled state
+ * @attr {string}  min            — Minimum selectable date-time (YYYY-MM-DDTHH:mm)
+ * @attr {string}  max            — Maximum selectable date-time (YYYY-MM-DDTHH:mm)
  *
  * @fires datetime-change  — Date or time changed (date/date-time/time modes)
  *   bubbles: true, composed: true
@@ -62,7 +62,6 @@ export class SherpaCalendar extends SherpaElement {
   #modeBtnEl: HTMLElement | null      = null;
   #prevBtnEl: HTMLElement | null      = null;
   #nextBtnEl: HTMLElement | null      = null;
-  #weekdaysEl: HTMLElement | null     = null;
   #dayTpl: HTMLTemplateElement | null = null;
   #hourInputEl: HTMLInputElement | null = null;
   #hiddenInput: HTMLInputElement | null = null;
@@ -85,7 +84,6 @@ export class SherpaCalendar extends SherpaElement {
     this.#calDaysEl   = this.$<HTMLElement>('.cal-days');
     this.#calMonthsEl = this.$<HTMLElement>('.cal-months');
     this.#calYearsEl  = this.$<HTMLElement>('.cal-years');
-    this.#weekdaysEl  = this.$<HTMLElement>('.cal-weekdays');
     this.#modeBtnEl   = this.$<HTMLElement>('.cal-mode');
     this.#prevBtnEl   = this.$<HTMLElement>('.cal-prev');
     this.#nextBtnEl   = this.$<HTMLElement>('.cal-next');
@@ -224,12 +222,8 @@ export class SherpaCalendar extends SherpaElement {
   #renderCalendar() {
     const isDay   = this.#viewMode === 'day';
     const isMonth = this.#viewMode === 'month';
-    const isYear  = this.#viewMode === 'year';
 
-    if (this.#weekdaysEl)  this.#weekdaysEl.hidden  = !isDay;
-    if (this.#calDaysEl)   this.#calDaysEl.hidden   = !isDay;
-    if (this.#calMonthsEl) this.#calMonthsEl.hidden = !isMonth;
-    if (this.#calYearsEl)  this.#calYearsEl.hidden  = !isYear;
+    this.dataset['view'] = this.#viewMode;
 
     const modeBtn = this.#modeBtnEl;
     const year = this.#viewDate.year;

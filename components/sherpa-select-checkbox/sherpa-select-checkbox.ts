@@ -8,15 +8,15 @@
  * @element sherpa-select-checkbox
  * @category input
  *
- * @attr {string}  [name]             — Form field name
- * @attr {string}  [value]            — Submitted value when checked (default "on")
- * @attr {boolean} [checked]          — Initial / current checked state
- * @attr {boolean} [indeterminate]    — Mixed state (overrides checked visually)
- * @attr {boolean} [disabled]         — Disabled state
- * @attr {boolean} [required]         — Required constraint
- * @attr {string}  [data-label]       — Inline label text
- * @attr {string}  [data-description] — Helper line below the label
- * @attr {enum}    [data-status]      — critical | warning | success | info | urgent
+ * @attr {string}  name             — Form field name
+ * @attr {string}  value            — Submitted value when checked (default "on")
+ * @attr {boolean} checked          — Initial / current checked state
+ * @attr {boolean} indeterminate    — Mixed state (overrides checked visually)
+ * @attr {boolean} disabled         — Disabled state
+ * @attr {boolean} required         — Required constraint
+ * @attr {string}  data-label       — Inline label text
+ * @attr {string}  data-description — Helper line below the label
+ * @attr {enum}    data-status      — critical | warning | success | info | urgent
  *
  * @fires change — User toggled the checkbox.
  *   bubbles: true, composed: true

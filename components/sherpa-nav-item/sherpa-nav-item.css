@@ -199,10 +199,8 @@
   --_dot-color: var(--sherpa-border-context-urgent-default, #b95608);
 }
 :host([data-badge-status="brand"]) {
-  --_dot-color: light-dark(
-    var(--sherpa-color-brand-400, #d485ff),
-    var(--sherpa-color-brand-700, #8500cc)
-  );
+  --_dot-color: var(--sherpa-border-context-brand-default, #d485ff);
+  /* Dark mode value is overridden via --sherpa-border-context-brand-default in sherpa-brand-status.css */
 }
 :host([data-type="promo"]) {
   display: flex;

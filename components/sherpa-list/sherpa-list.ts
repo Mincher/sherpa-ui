@@ -5,10 +5,10 @@
  *   variant + density styling, an optional heading row with actions slot,
  *   and an automatic empty-state.
  *
- * @attr {enum}   [data-variant=default]   default | bordered | divided
- * @attr {enum}   [data-density=default]   compact | default | comfortable
- * @attr {string} [data-heading]           Optional list heading text
- * @attr {string} [data-empty]             Empty-state message (shown when no
+ * @attr {enum}   data-variant=default   default | bordered | divided
+ * @attr {enum}   data-density=default   compact | default | comfortable
+ * @attr {string} data-heading           Optional list heading text
+ * @attr {string} data-empty             Empty-state message (shown when no
  *                                         sherpa-list-item children present)
  *
  * @slot (default) — sherpa-list-item children

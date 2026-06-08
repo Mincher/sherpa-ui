@@ -4,15 +4,15 @@
  * @description Horizontal filter bar with zoned layout. Supports global and
  *   local (container-scoped) modes. Template variants: default (global) | local.
  *
- * @attr {enum}    [data-density]          — Display density variant
- * @attr {boolean} [data-active]           — Whether filters are active
- * @attr {string}  [data-src-json]              — URL of a JSON file describing the filter bar
+ * @attr {enum}    data-density          — Display density variant
+ * @attr {boolean} data-active           — Whether filters are active
+ * @attr {string}  data-src-json              — URL of a JSON file describing the filter bar
  *                                            (and optionally the parent data grid).
  *                                            Shape: { fields: [...], presetFilters: [...] }
  *                                            Fetched on connect and whenever the attribute changes;
  *                                            populates data-available-fields and data-preset-filters.
- * @attr {json}    [data-preset-filters]   — Preset filter configuration JSON
- * @attr {json}    [data-available-fields] — Field definitions: [{ field, name, type }]
+ * @attr {json}    data-preset-filters   — Preset filter configuration JSON
+ * @attr {json}    data-available-fields — Field definitions: [{ field, name, type }]
  *
  * @slot toggle   — Filter on/off toggle
  * @slot group    — Segment/group chip

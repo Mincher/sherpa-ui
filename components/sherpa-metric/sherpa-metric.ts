@@ -5,12 +5,12 @@
  *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
  *   Trend-derived colouring via data-status on internal .metric-card.
  *
- * @attr {string}  [data-metric-id] — Unique identifier for the metric
- * @attr {enum}    [data-status]     — success | warning | critical | info | urgent
- * @attr {enum}    [data-trend]      — up | down | flat — trend direction
- * @attr {string}  [data-label]      — Metric heading/label
- * @attr {string}  [value]           — Formatted metric value
- * @attr {string}  [data-delta]      — Change amount (e.g. "+12.5%")
+ * @attr {string}  data-metric-id — Unique identifier for the metric
+ * @attr {enum}    data-status     — success | warning | critical | info | urgent
+ * @attr {enum}    data-trend      — up | down | flat — trend direction
+ * @attr {string}  data-label      — Metric heading/label
+ * @attr {string}  value           — Formatted metric value
+ * @attr {string}  data-delta      — Change amount (e.g. "+12.5%")
  *
  * @method setVisible(visible)                  — Set data-visible to "true"/"false"
  * @method isVisible()                          — Returns boolean

@@ -16,9 +16,9 @@
  *
  *   JS only delegates clicks and emits a normalized event.
  *
- * @attr {string} [data-src-html] — URL of an HTML template file to replace the shadow DOM
- * @attr {string} [data-src-json] — URL of a JSON file: [{label: string, href?: string}]
- * @attr {json}   [data-items]    — Inline JSON array: [{label: string, href?: string}]
+ * @attr {string} data-src-html — URL of an HTML template file to replace the shadow DOM
+ * @attr {string} data-src-json — URL of a JSON file: [{label: string, href?: string}]
+ * @attr {json}   data-items    — Inline JSON array: [{label: string, href?: string}]
  *
  * @fires breadcrumb-click
  *   bubbles: true, composed: true

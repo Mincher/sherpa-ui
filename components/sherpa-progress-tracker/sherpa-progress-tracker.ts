@@ -9,8 +9,8 @@
  *
  * @see sherpa-stepper data-template="timeline"
  *
- * @attr {string}  [data-heading]    — Tracker heading text
- * @attr {string}  [data-percentage] — Completion text (e.g. "60% Complete")
+ * @attr {string}  data-heading    — Tracker heading text
+ * @attr {string}  data-percentage — Completion text (e.g. "60% Complete")
  *
  * @method setMilestones(milestones) — Set milestones: [{ label, status, description?, timestamp? }]
  *

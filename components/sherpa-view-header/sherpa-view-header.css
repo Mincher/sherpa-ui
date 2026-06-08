@@ -276,6 +276,11 @@
 
 .picker-badge {
   margin-inline-start: auto;
+  display: none;
+}
+
+li[data-has-badge] .picker-badge {
+  display: revert;
 }
 
 /* ---- view-selection picker sizing ---- */

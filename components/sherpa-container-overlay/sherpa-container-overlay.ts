@@ -8,19 +8,19 @@
  * @element sherpa-container-overlay
  * @category overlay
  *
- * @attr {enum}    [data-variant]      — popover (default) | menu
- * @attr {boolean} [data-open]         — Declarative open/close
- * @attr {string}  [data-anchor]       — CSS anchor name for declarative positioning
- * @attr {enum}    [data-placement]    — bottom-start (default for menu) | bottom (default for popover) |
+ * @attr {enum}    data-variant      — popover (default) | menu
+ * @attr {boolean} data-open         — Declarative open/close
+ * @attr {string}  data-anchor       — CSS anchor name for declarative positioning
+ * @attr {enum}    data-placement    — bottom-start (default for menu) | bottom (default for popover) |
  *                                       bottom-end | top-start | top-end | top | inline-start | inline-end
- * @attr {string}  [data-heading]      — Header title text (popover variant)
- * @attr {boolean} [data-loading]      — Show loading spinner (menu variant)
- * @attr {string}  [data-loading-text] — Loading caption
- * @attr {enum}    [data-layout]       — default | actions (menu variant horizontal mode)
- * @attr {enum}    [data-animation]    — none | slide
- * @attr {enum}    [data-template]     — paged (override: switches to paged popover template)
- * @attr {number}  [data-page]         — Active 0-based page index (paged mode)
- * @attr {number}  [data-pages]        — Total page count (paged mode)
+ * @attr {string}  data-heading      — Header title text (popover variant)
+ * @attr {boolean} data-loading      — Show loading spinner (menu variant)
+ * @attr {string}  data-loading-text — Loading caption
+ * @attr {enum}    data-layout       — default | actions (menu variant horizontal mode)
+ * @attr {enum}    data-animation    — none | slide
+ * @attr {enum}    data-template     — paged (override: switches to paged popover template)
+ * @attr {number}  data-page         — Active 0-based page index (paged mode)
+ * @attr {number}  data-pages        — Total page count (paged mode)
  *
  * @slot           — Body content / menu items
  * @slot icon      — Header leading icon (popover variant)

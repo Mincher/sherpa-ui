@@ -4,11 +4,11 @@
  * @description Inline contextual callout with status variants and
  *   expandable/dismissible body.
  *
- * @attr {enum}    [data-status]      — info | warning | critical | success
- * @attr {string}  [data-heading]     — Heading text
- * @attr {boolean} [data-expanded]    — Body visible
- * @attr {boolean} [data-dismissible] — Show toggle button
- * @attr {string}  [data-icon]        — Override status icon (FA class)
+ * @attr {enum}    data-status      — info | warning | critical | success
+ * @attr {string}  data-heading     — Heading text
+ * @attr {boolean} data-expanded    — Body visible
+ * @attr {boolean} data-dismissible — Show toggle button
+ * @attr {string}  data-icon        — Override status icon (FA class)
  *
  * @slot heading   — Override heading text
  * @slot (default) — Body content

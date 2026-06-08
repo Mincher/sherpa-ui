@@ -5,20 +5,20 @@
  *   Used as the item element inside sherpa-container-overlay (menu variant).
  *   Templates: default, checkbox, radio, toggle, heading.
  *
- * @attr {enum}    [data-type]        — checkbox | radio | toggle | heading (default: action)
- * @attr {enum}    [data-variant]     — null | "danger" (red destructive treatment)
- * @attr {string}  [data-icon]        — Font Awesome icon name (e.g. "trash")
- * @attr {enum}    [data-icon-weight] — solid (default) | regular | light | thin | brands
- * @attr {string}  [data-action]      — Action identifier dispatched in overlay-select
- * @attr {string}  [value]            — Value associated with this item
- * @attr {enum}    [data-selection]   — checkbox | radio | toggle
- * @attr {boolean} [checked]          — Whether checkbox/radio/toggle is checked
- * @attr {boolean} [disabled]         — Whether the item is disabled
- * @attr {string}  [data-description] — Secondary description text
- * @attr {string}  [data-group]       — Group identifier for radio grouping
- * @attr {boolean} [data-keep-open]   — Keep overlay open after selection
- * @attr {boolean} [data-has-submenu] — Whether the item opens a submenu
- * @attr {string}  [name]             — Form-compatible name for radio/checkbox
+ * @attr {enum}    data-type        — checkbox | radio | toggle | heading (default: action)
+ * @attr {enum}    data-variant     — null | "danger" (red destructive treatment)
+ * @attr {string}  data-icon        — Font Awesome icon name (e.g. "trash")
+ * @attr {enum}    data-icon-weight — solid (default) | regular | light | thin | brands
+ * @attr {string}  data-action      — Action identifier dispatched in overlay-select
+ * @attr {string}  value            — Value associated with this item
+ * @attr {enum}    data-selection   — checkbox | radio | toggle
+ * @attr {boolean} checked          — Whether checkbox/radio/toggle is checked
+ * @attr {boolean} disabled         — Whether the item is disabled
+ * @attr {string}  data-description — Secondary description text
+ * @attr {string}  data-group       — Group identifier for radio grouping
+ * @attr {boolean} data-keep-open   — Keep overlay open after selection
+ * @attr {boolean} data-has-submenu — Whether the item opens a submenu
+ * @attr {string}  name             — Form-compatible name for radio/checkbox
  *
  * @slot (default) — Label text content
  *

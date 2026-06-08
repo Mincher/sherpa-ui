@@ -5,15 +5,15 @@
  *   Supports declarative query loading via ContentAttributesMixin
  *   or programmatic setData().
  *
- * @attr {string}  [data-title]          — Chart heading text
- * @attr {string}  [data-inner-label]    — Centre big text
- * @attr {string}  [data-inner-sublabel] — Centre small text
- * @attr {boolean} [data-loading]        — Show loading state
- * @attr {enum}    [data-variant]         — donut | pie
- * @attr {string}  [data-segment-field]  — Field for segment grouping
- * @attr {enum}    [data-segment-mode]    — Segment display mode
- * @attr {string}  [data-sort-field]     — Sort field
- * @attr {enum}    [data-sort-direction] — asc | desc
+ * @attr {string}  data-title          — Chart heading text
+ * @attr {string}  data-inner-label    — Centre big text
+ * @attr {string}  data-inner-sublabel — Centre small text
+ * @attr {boolean} data-loading        — Show loading state
+ * @attr {enum}    data-variant         — donut | pie
+ * @attr {string}  data-segment-field  — Field for segment grouping
+ * @attr {enum}    data-segment-mode    — Segment display mode
+ * @attr {string}  data-sort-field     — Sort field
+ * @attr {enum}    data-sort-direction — asc | desc
  *
  * @method setData(data) — Set chart data: Array<{ label, value, color? }> or config
  *

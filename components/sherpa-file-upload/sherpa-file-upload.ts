@@ -5,13 +5,13 @@
  *   and per-file progress/status tracking. Consumer handles actual upload;
  *   call setFileState/setFileProgress to update UI.
  *
- * @attr {string}  [data-label]     — Label text above the drop zone
- * @attr {string}  [data-accept]    — Accepted file types (e.g. ".jpg,.png,image/*")
- * @attr {boolean} [data-multiple]  — Allow multiple file selection
- * @attr {string}  [data-max-size]  — Maximum file size in bytes
- * @attr {string}  [data-max-files] — Maximum number of files
- * @attr {string}  [data-helper]    — Constraint / helper text
- * @attr {boolean} [disabled]       — Disabled state
+ * @attr {string}  data-label     — Label text above the drop zone
+ * @attr {string}  data-accept    — Accepted file types (e.g. ".jpg,.png,image/*")
+ * @attr {boolean} data-multiple  — Allow multiple file selection
+ * @attr {string}  data-max-size  — Maximum file size in bytes
+ * @attr {string}  data-max-files — Maximum number of files
+ * @attr {string}  data-helper    — Constraint / helper text
+ * @attr {boolean} disabled       — Disabled state
  *
  * @fires file-add
  *   bubbles: true, composed: true

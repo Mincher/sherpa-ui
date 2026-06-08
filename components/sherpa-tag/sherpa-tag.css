@@ -108,18 +108,10 @@
 
 /* ── Status: brand only (others come from global sherpa-overrides.css) ─── */
 :host([data-status="brand"]) {
-  --_status-surface-subtle: light-dark(
-    var(--sherpa-color-brand-100, #f8ebff),
-    var(--sherpa-color-brand-900, #300561)
-  );
-  --_status-border: light-dark(
-    var(--sherpa-color-brand-400, #d485ff),
-    var(--sherpa-color-brand-700, #8500cc)
-  );
-  --_status-text: light-dark(
-    var(--sherpa-color-brand-700, #8500cc),
-    var(--sherpa-color-brand-200, #f2d6ff)
-  );
+  --_status-surface-subtle: var(--sherpa-color-brand-100, #f8ebff);
+  --_status-border:         var(--sherpa-color-brand-400, #d485ff);
+  --_status-text:           var(--sherpa-color-brand-700, #8500cc);
+  /* Dark mode values are overridden via [data-status="brand"] in sherpa-brand-status.css */
 }
 
 /* ── Wrapper ───────────────────────────────────────────────────────────── */

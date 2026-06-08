@@ -44,11 +44,11 @@
  * @element sherpa-container-group
  * @category container
  *
- * @attr {enum} [data-col-span] — 2 | 3 | 4 | 6 | 8 | 9 | 12 — span across
+ * @attr {enum} data-col-span — 2 | 3 | 4 | 6 | 8 | 9 | 12 — span across
  *   the parent <sherpa-layout-grid>'s columns. Defaults to a full row
  *   (1 / -1) when omitted.
  *
- * @attr {number} [data-row-span] — Number of outer-grid rows this group
+ * @attr {number} data-row-span — Number of outer-grid rows this group
  *   should span. Set this just as you would on a plain
  *   <sherpa-container> tile; the CSS `:host([data-row-span="N"])` rules
  *   emit `grid-row: span N` to claim the appropriate tracks.

@@ -9,14 +9,14 @@
  * @element sherpa-select-radio
  * @category input
  *
- * @attr {string}  [name]             — Form field name (radios sharing a name group together)
- * @attr {string}  [value]            — Value submitted when selected
- * @attr {boolean} [checked]          — Initial / current selected state
- * @attr {boolean} [disabled]         — Disabled state
- * @attr {boolean} [required]         — Required constraint
- * @attr {string}  [data-label]       — Inline label text
- * @attr {string}  [data-description] — Helper line below the label
- * @attr {enum}    [data-status]      — critical | warning | success | info | urgent
+ * @attr {string}  name             — Form field name (radios sharing a name group together)
+ * @attr {string}  value            — Value submitted when selected
+ * @attr {boolean} checked          — Initial / current selected state
+ * @attr {boolean} disabled         — Disabled state
+ * @attr {boolean} required         — Required constraint
+ * @attr {string}  data-label       — Inline label text
+ * @attr {string}  data-description — Helper line below the label
+ * @attr {enum}    data-status      — critical | warning | success | info | urgent
  *
  * @fires change — User selected this radio.
  *   bubbles: true, composed: true

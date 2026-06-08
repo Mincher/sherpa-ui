@@ -5,21 +5,21 @@
  * @description Basic text input. Inherits label, description, helper, layout,
  *   validation, and value management from SherpaInputBase.
  *
- * @attr {string}  [data-label]       — Label text (inherited)
- * @attr {string}  [data-description]  — Description / error text (inherited)
- * @attr {string}  [data-helper]       — Helper text (inherited)
- * @attr {enum}    [data-layout]       — stacked | horizontal (inherited)
- * @attr {boolean} [disabled]          — Disabled state (inherited)
- * @attr {boolean} [readonly]          — Read-only state (inherited)
- * @attr {boolean} [required]          — Required constraint (inherited)
- * @attr {string}  [name]              — Form field name (inherited)
- * @attr {string}  [value]             — Current value (inherited)
- * @attr {string}  [placeholder]       — Placeholder text (inherited)
- * @attr {string}  [pattern]           — Validation regex (inherited)
- * @attr {number}  [minlength]         — Minimum character length (inherited)
- * @attr {number}  [maxlength]         — Maximum character length (inherited)
- * @attr {boolean} [novalidate]        — Disable built-in validation (inherited)
- * @attr {boolean} [data-multiline]    — Render as an auto-growing textarea
+ * @attr {string}  data-label       — Label text (inherited)
+ * @attr {string}  data-description  — Description / error text (inherited)
+ * @attr {string}  data-helper       — Helper text (inherited)
+ * @attr {enum}    data-layout       — stacked | horizontal (inherited)
+ * @attr {boolean} disabled          — Disabled state (inherited)
+ * @attr {boolean} readonly          — Read-only state (inherited)
+ * @attr {boolean} required          — Required constraint (inherited)
+ * @attr {string}  name              — Form field name (inherited)
+ * @attr {string}  value             — Current value (inherited)
+ * @attr {string}  placeholder       — Placeholder text (inherited)
+ * @attr {string}  pattern           — Validation regex (inherited)
+ * @attr {number}  minlength         — Minimum character length (inherited)
+ * @attr {number}  maxlength         — Maximum character length (inherited)
+ * @attr {boolean} novalidate        — Disable built-in validation (inherited)
+ * @attr {boolean} data-multiline    — Render as an auto-growing textarea
  *                                       that expands in height to fit its
  *                                       content. Newlines are preserved.
  *

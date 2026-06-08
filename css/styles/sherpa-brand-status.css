@@ -1,0 +1,60 @@
+/**
+ * Sherpa Brand Status — Hand-maintained token definitions
+ *
+ * Defines [data-status="brand"] cascade tokens and the --sherpa-border-context-brand-default
+ * semantic token used by sherpa-nav-item's badge.
+ *
+ * These tokens are NOT generated from Figma Variables because the "brand"
+ * status/badge colour doesn't have context-semantic counterparts in the token
+ * system yet. Add to Figma and regenerate when those tokens are available.
+ *
+ * Light mode values are the defaults. Dark mode overrides follow below.
+ *
+ * @layer overrides — sits after sherpa-overrides.css in the same layer so it
+ * has equal specificity but later source order (wins on conflict).
+ */
+
+/* ── Brand semantic border token ──────────────────────────────────────────── */
+/* Used by sherpa-nav-item [data-badge-status="brand"] → --_dot-color          */
+
+:root {
+  --sherpa-border-context-brand-default: var(--sherpa-color-brand-400, #d485ff);
+}
+
+/* ── Brand status cascade tokens ([data-status="brand"]) ─────────────────── */
+
+@layer overrides {
+  :where([data-status="brand"]) {
+    --_status-surface-subtle: var(--sherpa-color-brand-100, #f8ebff);
+    --_status-border:         var(--sherpa-color-brand-400, #d485ff);
+    --_status-text:           var(--sherpa-color-brand-700, #8500cc);
+  }
+}
+
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+
+:where(:root[data-mode="dark"], :root[data-theme="apex-2-core"][data-mode="dark"]) {
+  --sherpa-border-context-brand-default: var(--sherpa-color-brand-700, #8500cc);
+}
+@layer overrides {
+  :where(:root[data-mode="dark"], :root[data-theme="apex-2-core"][data-mode="dark"]) :where([data-status="brand"]) {
+    --_status-surface-subtle: var(--sherpa-color-brand-900, #300561);
+    --_status-border:         var(--sherpa-color-brand-700, #8500cc);
+    --_status-text:           var(--sherpa-color-brand-200, #f2d6ff);
+  }
+}
+
+/* ── Auto (prefers-color-scheme) ─────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :where(:root:not([data-mode="light"]):not([data-mode="hc"]), :root[data-theme="apex-2-core"]:not([data-mode="light"]):not([data-mode="hc"])) {
+    --sherpa-border-context-brand-default: var(--sherpa-color-brand-700, #8500cc);
+  }
+  @layer overrides {
+    :where(:root:not([data-mode="light"]):not([data-mode="hc"]), :root[data-theme="apex-2-core"]:not([data-mode="light"]):not([data-mode="hc"])) :where([data-status="brand"]) {
+      --_status-surface-subtle: var(--sherpa-color-brand-900, #300561);
+      --_status-border:         var(--sherpa-color-brand-700, #8500cc);
+      --_status-text:           var(--sherpa-color-brand-200, #f2d6ff);
+    }
+  }
+}

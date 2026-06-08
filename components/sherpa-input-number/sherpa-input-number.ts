@@ -5,9 +5,9 @@
  * @description Numerical input with stepper buttons. Inherits label, description,
  *   helper, layout, validation, and value management from SherpaInputBase.
  *
- * @attr {number}  [min]   — Minimum allowed value
- * @attr {number}  [max]   — Maximum allowed value
- * @attr {number}  [step]  — Step increment (default: 1)
+ * @attr {number}  min   — Minimum allowed value
+ * @attr {number}  max   — Maximum allowed value
+ * @attr {number}  step  — Step increment (default: 1)
  *
  * @fires input
  *   bubbles: true, composed: true

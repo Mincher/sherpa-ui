@@ -127,12 +127,17 @@ sherpa-container.panel-card[data-variant="fit"] {
   grid-template-columns: repeat(7, 1fr);
 }
 
-.cal-days[hidden],
-.cal-months[hidden],
-.cal-years[hidden],
-.cal-weekdays[hidden] {
-  display: none;
-}
+/* View mode — driven by data-view on host; day-view is the default */
+.cal-months,
+.cal-years { display: none; }
+
+:host([data-view="month"]) .cal-days,
+:host([data-view="month"]) .cal-weekdays { display: none; }
+:host([data-view="month"]) .cal-months   { display: grid; }
+
+:host([data-view="year"]) .cal-days,
+:host([data-view="year"]) .cal-weekdays  { display: none; }
+:host([data-view="year"]) .cal-years     { display: grid; }
 
 .cal-day {
   aspect-ratio: 1;

@@ -3,13 +3,13 @@
  * @category feedback
  * @description Banner / inline message with status variants.
  *
- * @attr {enum}    [data-status]        — success | critical | warning | info | urgent
- * @attr {string}  [data-label]         — Message text
- * @attr {string}  [data-action-label]  — Inline action link text
- * @attr {string}  [data-action-href]   — Inline action link href
- * @attr {string}  [data-action-icon]   — FA classes for trailing link icon
+ * @attr {enum}    data-status        — success | critical | warning | info | urgent
+ * @attr {string}  data-label         — Message text
+ * @attr {string}  data-action-label  — Inline action link text
+ * @attr {string}  data-action-href   — Inline action link href
+ * @attr {string}  data-action-icon   — FA classes for trailing link icon
  *                                        (default: fa-solid fa-arrow-up-right-from-square)
- * @attr {boolean} [data-dismissible]   — Show close button
+ * @attr {boolean} data-dismissible   — Show close button
  *
  * @fires close
  *   bubbles: true, composed: true

@@ -4,13 +4,13 @@
  * @description View header toolbar with toggles and settings.
  *   Manages heading, favorites, feedback popover, and export intent.
  *
- * @attr {string}  [data-label]              — View heading text
- * @attr {boolean} [data-show-debug-toggles] — Show debug toggle controls
- * @attr {boolean} [data-favorite]           — Favorite state
- * @attr {boolean} [data-edit-mode]          — Edit mode active
- * @attr {boolean} [data-back-button]        — Show built-in back button
- * @attr {string}  [data-export-title]       — Title for PDF export
- * @attr {json}    [data-breadcrumbs]        — Breadcrumb trail. JSON array
+ * @attr {string}  data-label              — View heading text
+ * @attr {boolean} data-show-debug-toggles — Show debug toggle controls
+ * @attr {boolean} data-favorite           — Favorite state
+ * @attr {boolean} data-edit-mode          — Edit mode active
+ * @attr {boolean} data-back-button        — Show built-in back button
+ * @attr {string}  data-export-title       — Title for PDF export
+ * @attr {json}    data-breadcrumbs        — Breadcrumb trail. JSON array
  *   of `{label, href?}` objects. Renders the inline breadcrumb row when
  *   present; hidden otherwise.
  *
@@ -440,11 +440,11 @@ export class SherpaViewHeader extends SherpaElement {
     const labelEl = node.querySelector('.picker-label');
     if (labelEl) labelEl.textContent = label ?? '';
 
-    const tag = node.querySelector<HTMLElement & { hidden: boolean }>('.picker-badge');
+    const tag = node.querySelector<HTMLElement>('.picker-badge');
     if (badge && tag) {
       if (badgeStatus) tag.setAttribute('data-status', badgeStatus);
       tag.textContent = badge;
-      tag.hidden = false;
+      node.setAttribute('data-has-badge', '');
     }
     return node;
   }

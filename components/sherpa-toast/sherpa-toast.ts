@@ -4,13 +4,13 @@
  * @description Toast notification with auto-dismiss, status variants,
  *   and static factory methods for programmatic creation.
  *
- * @attr {enum}    [data-status=info]          — info | success | warning | critical | urgent
- * @attr {string}  [data-label]                — Toast heading text
- * @attr {string}  [data-value]                — Toast message content
- * @attr {number}  [data-duration=5000]         — Auto-dismiss duration in ms
- * @attr {boolean} [data-timer-dismiss]         — Enable auto-dismiss
- * @attr {boolean} [data-show-close=true]       — Show close button
- * @attr {enum}    [data-position]              — top-right | top-left | bottom-right | bottom-left | top-center | bottom-center
+ * @attr {enum}    data-status=info          — info | success | warning | critical | urgent
+ * @attr {string}  data-label                — Toast heading text
+ * @attr {string}  data-value                — Toast message content
+ * @attr {number}  data-duration=5000         — Auto-dismiss duration in ms
+ * @attr {boolean} data-timer-dismiss         — Enable auto-dismiss
+ * @attr {boolean} data-show-close=true       — Show close button
+ * @attr {enum}    data-position              — top-right | top-left | bottom-right | bottom-left | top-center | bottom-center
  *
  * @fires close
  *   bubbles: true, composed: true

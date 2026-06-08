@@ -5,17 +5,17 @@
  *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
  *   Uses native <table> for sticky headers and full-width row backgrounds.
  *
- * @attr {boolean} [data-loading]               — Show loading state
- * @attr {string}  [data-segment-field]          — Field used for row grouping
- * @attr {enum}    [data-segment-mode]            — Segment display mode
- * @attr {string}  [data-sort-field]             — Currently sorted column field
- * @attr {enum}    [data-sort-direction]          — asc | desc
- * @attr {number}  [data-page]                   — Current page (1-based)
- * @attr {number}  [data-page-size]              — Rows per page
- * @attr {boolean} [data-selectable]             — Enable row selection
- * @attr {boolean} [data-show-actions]           — Show row action column
- * @attr {boolean} [data-show-secondary-headers] — Show secondary column headers
- * @attr {boolean} [data-show-pagination]        — Show pagination bar
+ * @attr {boolean} data-loading               — Show loading state
+ * @attr {string}  data-segment-field          — Field used for row grouping
+ * @attr {enum}    data-segment-mode            — Segment display mode
+ * @attr {string}  data-sort-field             — Currently sorted column field
+ * @attr {enum}    data-sort-direction          — asc | desc
+ * @attr {number}  data-page                   — Current page (1-based)
+ * @attr {number}  data-page-size              — Rows per page
+ * @attr {boolean} data-selectable             — Enable row selection
+ * @attr {boolean} data-show-actions           — Show row action column
+ * @attr {boolean} data-show-secondary-headers — Show secondary column headers
+ * @attr {boolean} data-show-pagination        — Show pagination bar
  *
  * @slot toolbar-leading — Consumer-provided primary action for toolbar
  *

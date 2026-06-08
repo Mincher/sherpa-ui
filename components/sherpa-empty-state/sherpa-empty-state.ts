@@ -4,9 +4,9 @@
  * @description Empty-state placeholder with illustration, heading, description,
  *   and action slots.
  *
- * @attr {string}  [data-label]        — Heading text
- * @attr {string}  [data-description]  — Description text
- * @attr {string}  [data-illustration]  — Built-in illustration name
+ * @attr {string}  data-label        — Heading text
+ * @attr {string}  data-description  — Description text
+ * @attr {string}  data-illustration  — Built-in illustration name
  *
  * @slot illustration — Custom illustration content
  * @slot heading      — Custom heading

@@ -23,10 +23,10 @@
  *       disabled?:    boolean,
  *   }>}
  *
- * @attr {string}  [data-heading]       — Panel heading text
- * @attr {string}  [data-show-back]     — "true" reveals the back button
- * @attr {string}  [data-active-id]     — Currently active item id
- * @attr {string}  [data-sections]      — JSON-encoded sections array
+ * @attr {string}  data-heading       — Panel heading text
+ * @attr {string}  data-show-back     — "true" reveals the back button
+ * @attr {string}  data-active-id     — Currently active item id
+ * @attr {string}  data-sections      — JSON-encoded sections array
  *
  * @slot header-end — Trailing slot in the header (e.g. icon button)
  *

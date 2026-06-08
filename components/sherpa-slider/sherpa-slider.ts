@@ -4,17 +4,17 @@
  * @description Single or dual-handle range slider with optional numeric inputs.
  *   Pointer event drag with setPointerCapture. Keyboard arrows with step.
  *
- * @attr {string}  [data-label]       — Label text above the slider
- * @attr {enum}    [data-type=single] — single | range
- * @attr {number}  [data-min=0]       — Minimum value
- * @attr {number}  [data-max=100]     — Maximum value
- * @attr {number}  [data-step=1]      — Step increment
- * @attr {string}  [data-value]       — Current value (single mode)
- * @attr {string}  [data-value-low]   — Low handle value (range mode)
- * @attr {string}  [data-value-high]  — High handle value (range mode)
- * @attr {boolean} [data-show-inputs] — Show numeric input fields beside track
- * @attr {boolean} [data-show-labels] — Show min/max increment labels
- * @attr {boolean} [disabled]         — Disabled state
+ * @attr {string}  data-label       — Label text above the slider
+ * @attr {enum}    data-type=single — single | range
+ * @attr {number}  data-min=0       — Minimum value
+ * @attr {number}  data-max=100     — Maximum value
+ * @attr {number}  data-step=1      — Step increment
+ * @attr {string}  data-value       — Current value (single mode)
+ * @attr {string}  data-value-low   — Low handle value (range mode)
+ * @attr {string}  data-value-high  — High handle value (range mode)
+ * @attr {boolean} data-show-inputs — Show numeric input fields beside track
+ * @attr {boolean} data-show-labels — Show min/max increment labels
+ * @attr {boolean} disabled         — Disabled state
  *
  * @fires input
  *   bubbles: true, composed: true

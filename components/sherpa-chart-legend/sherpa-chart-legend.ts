@@ -3,8 +3,8 @@
  * @category media
  * @description Standalone chart legend with optional interactive link items.
  *
- * @attr {enum}    [data-orientation] — horizontal | vertical (default: horizontal)
- * @attr {boolean} [data-loading]     — Show loading state
+ * @attr {enum}    data-orientation — horizontal | vertical (default: horizontal)
+ * @attr {boolean} data-loading     — Show loading state
  *
  * @fires legend-item-click
  *   bubbles: true, composed: true

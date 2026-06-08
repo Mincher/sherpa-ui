@@ -4,13 +4,13 @@
  * @description Reusable footer with multiple template variants.
  *   Template selected via data-type attribute.
  *
- * @attr {enum}    [data-type]          — action-bar | slot | card-select (default: slot)
- * @attr {string}  [data-cancel-label]  — Cancel button text (action-bar)
- * @attr {string}  [data-apply-label]   — Apply button text (action-bar)
- * @attr {boolean} [data-show-cancel]   — Show cancel button (default: true)
- * @attr {boolean} [data-show-apply]    — Show apply button (default: true)
- * @attr {boolean} [data-apply-closes]  — Apply auto-closes parent (default: true)
- * @attr {boolean} [data-selected]      — Drives radio checked state (card-select)
+ * @attr {enum}    data-type          — action-bar | slot | card-select (default: slot)
+ * @attr {string}  data-cancel-label  — Cancel button text (action-bar)
+ * @attr {string}  data-apply-label   — Apply button text (action-bar)
+ * @attr {boolean} data-show-cancel   — Show cancel button (default: true)
+ * @attr {boolean} data-show-apply    — Show apply button (default: true)
+ * @attr {boolean} data-apply-closes  — Apply auto-closes parent (default: true)
+ * @attr {boolean} data-selected      — Drives radio checked state (card-select)
  *
  * @slot start     — Content aligned to the left (action-bar)
  * @slot (default) — Passthrough content (slot variant)

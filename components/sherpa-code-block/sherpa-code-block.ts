@@ -6,15 +6,15 @@
  *   Uses Prism.js (v1.29+) for syntax highlighting. Supports auto-language detection
  *   from content inspection. Emits code-copied event on clipboard success.
  *
- * @attr {enum}    [data-language]              — auto | html | css | js | jsx | tsx | json | yaml | bash | python | java | go | rust | sql
- * @attr {boolean} [data-line-numbers]          — Show line numbers (Prism plugin)
- * @attr {number}  [data-line-start=1]          — Starting line number for snippet context
- * @attr {string}  [data-max-height]            — Max height before scrollable (e.g., "300px")
- * @attr {string}  [data-copy-button-label]    — Button text (default: "Copy code")
- * @attr {string}  [data-copy-toast-message]   — Toast message (default: "Copied to clipboard!")
- * @attr {enum}    [data-theme=auto]            — light | dark | auto (inherits from page mode)
- * @attr {string}  [data-supported-languages]   — Read-only: comma-separated supported langs
- * @attr {string}  [data-highlight-error]      — Read-only: error message if highlighting failed
+ * @attr {enum}    data-language              — auto | html | css | js | jsx | tsx | json | yaml | bash | python | java | go | rust | sql
+ * @attr {boolean} data-line-numbers          — Show line numbers (Prism plugin)
+ * @attr {number}  data-line-start=1          — Starting line number for snippet context
+ * @attr {string}  data-max-height            — Max height before scrollable (e.g., "300px")
+ * @attr {string}  data-copy-button-label    — Button text (default: "Copy code")
+ * @attr {string}  data-copy-toast-message   — Toast message (default: "Copied to clipboard!")
+ * @attr {enum}    data-theme=auto            — light | dark | auto (inherits from page mode)
+ * @attr {string}  data-supported-languages   — Read-only: comma-separated supported langs
+ * @attr {string}  data-highlight-error      — Read-only: error message if highlighting failed
  *
  * @fires code-copied
  *   bubbles: true, composed: true
@@ -90,6 +90,10 @@ export class SherpaCodeBlock extends SherpaElement {
 
   // Prism.js CDN config
   static PRISM_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
+  static readonly #PRISM_SRI: Record<string, string> = {
+    'prism.min.js': 'sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==',
+    'plugins/line-numbers/prism-line-numbers.min.js': 'sha512-BttltKXFyWnGZQcRWj6osIg7lbizJchuAMotOkdLxHxwt/Hyo+cl47bZU0QADg+Qt5DJwni3SbYGXeGMB5cBcw==',
+  };
 
   els = this.cacheElements({
     code: 'code',
@@ -341,6 +345,15 @@ export class SherpaCodeBlock extends SherpaElement {
       const script = document.createElement('script');
       script.src = src;
       script.async = true;
+      script.crossOrigin = 'anonymous';
+
+      // Apply SRI integrity hash if we have one for this path
+      const cdnBase = SherpaCodeBlock.PRISM_CDN + '/';
+      if (src.startsWith(cdnBase)) {
+        const path = src.slice(cdnBase.length);
+        const hash = SherpaCodeBlock.#PRISM_SRI[path];
+        if (hash) script.integrity = hash;
+      }
 
       const timer = setTimeout(() => {
         reject(new Error(`Script load timeout: ${src}`));

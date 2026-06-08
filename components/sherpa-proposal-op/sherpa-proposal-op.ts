@@ -5,7 +5,7 @@
  * @element sherpa-proposal-op
  * @category ai
  *
- * @attr {enum}   [data-op]  add | remove | update | add-edge | remove-edge
+ * @attr {enum}   data-op  add | remove | update | add-edge | remove-edge
  *
  * @slot — Label text describing the change
  */

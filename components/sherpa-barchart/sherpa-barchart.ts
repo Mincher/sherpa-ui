@@ -5,14 +5,14 @@
  *   Supports stacked bars, category limiting, and responsive legend.
  *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
  *
- * @attr {boolean} [data-loading]        — Show loading state
- * @attr {boolean} [data-stacked]        — Stack bars by segment
- * @attr {string}  [data-title]          — Chart heading text
- * @attr {enum}    [data-orientation]     — horizontal | vertical (auto-selected)
- * @attr {string}  [data-segment-field]  — Field for bar grouping
- * @attr {enum}    [data-segment-mode]    — Segment display mode
- * @attr {string}  [data-sort-field]     — Sort field
- * @attr {enum}    [data-sort-direction] — asc | desc
+ * @attr {boolean} data-loading        — Show loading state
+ * @attr {boolean} data-stacked        — Stack bars by segment
+ * @attr {string}  data-title          — Chart heading text
+ * @attr {enum}    data-orientation     — horizontal | vertical (auto-selected)
+ * @attr {string}  data-segment-field  — Field for bar grouping
+ * @attr {enum}    data-segment-mode    — Segment display mode
+ * @attr {string}  data-sort-field     — Sort field
+ * @attr {enum}    data-sort-direction — asc | desc
  *
  * @fires sort-change
  *   bubbles: true, composed: true

@@ -7,21 +7,21 @@
  * @element sherpa-container
  * @category container
  *
- * @attr {enum}    [data-variant=fit]   — fit | resizable | fill | worksheet
- * @attr {number}  [data-col-span]      — Column span: 3 | 6 | 9 | 12 (resizable)
- * @attr {number}  [data-row-span]      — Row span: 1–24 (resizable). Recommended
+ * @attr {enum}    data-variant=fit   — fit | resizable | fill | worksheet
+ * @attr {number}  data-col-span      — Column span: 3 | 6 | 9 | 12 (resizable)
+ * @attr {number}  data-row-span      — Row span: 1–24 (resizable). Recommended
  *                                          stops are 4, 8, 12, 16, 20, 24 to
  *                                          match the 4-row-track minimum at
  *                                          the default 64px row height.
- * @attr {boolean} [data-editable]      — Edit mode (e.g. allows menu-driven resize)
- * @attr {enum}    [data-resize-mode]    — Experimental: "drag" enables a pointer-driven snap-resize grip (default mode uses the header overflow menu only)
- * @attr {boolean} [data-menu-open]     — Reflected while a descendant menu is open
- * @attr {enum}    [data-state]         — ready | loading | empty | error
+ * @attr {boolean} data-editable      — Edit mode (e.g. allows menu-driven resize)
+ * @attr {enum}    data-resize-mode    — Experimental: "drag" enables a pointer-driven snap-resize grip (default mode uses the header overflow menu only)
+ * @attr {boolean} data-menu-open     — Reflected while a descendant menu is open
+ * @attr {enum}    data-state         — ready | loading | empty | error
  * @attr {boolean} data-interactive     — Makes the container a clickable surface
  * @attr {boolean} data-selectable      — Makes the container a selectable radio option
  * @attr {boolean} data-selected        — Selected / active state
  * @attr {enum}    data-elevation       — none | sm | md | lg
- * @attr {enum}    [data-group-position] — Managed by an enclosing <sherpa-container-group>: "first" | "follow". The first tile in a group renders its header normally (and serves as the group title); follower tiles have header content visually muted while the header band preserves height for cross-tile content alignment. Consumers should not set this manually.
+ * @attr {enum}    data-group-position — Managed by an enclosing <sherpa-container-group>: "first" | "follow". The first tile in a group renders its header normally (and serves as the group title); follower tiles have header content visually muted while the header band preserves height for cross-tile content alignment. Consumers should not set this manually.
  * @attr {boolean} disabled             — Native disabled state
  *
  * @slot (default) — Main content. Rendered inside a scrollable flex-column area with 16px padding.

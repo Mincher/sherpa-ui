@@ -9,8 +9,8 @@
  *   for visual date selection. Typed values are validated against optional
  *   min / max via setCustomValidity().
  *
- * @attr {string}  [min] — Minimum selectable date (YYYY-MM-DD)
- * @attr {string}  [max] — Maximum selectable date (YYYY-MM-DD)
+ * @attr {string}  min — Minimum selectable date (YYYY-MM-DD)
+ * @attr {string}  max — Maximum selectable date (YYYY-MM-DD)
  *
  * @fires input
  *   bubbles: true, composed: true

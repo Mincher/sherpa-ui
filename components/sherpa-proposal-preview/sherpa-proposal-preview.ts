@@ -5,7 +5,7 @@
  * @element sherpa-proposal-preview
  * @category ai
  *
- * @attr {string} [data-rationale]  Italic rationale shown above the ops.
+ * @attr {string} data-rationale  Italic rationale shown above the ops.
  *
  * @slot ops      — One <sherpa-proposal-op> per change.
  * @slot raw      — Raw proposal payload (typically a <pre>).

@@ -5,9 +5,9 @@
  *   properties; CSS handles normalisation via calc() and visual rendering
  *   (clip-path polygons per segment).
  *
- * @attr {string}  [data-values]  — Comma-separated or JSON array (e.g. "10,25,15,30")
- * @attr {enum}    [data-variant] — bar (default: line)
- * @attr {string}  [data-unit]    — Unit label for tooltip display
+ * @attr {string}  data-values  — Comma-separated or JSON array (e.g. "10,25,15,30")
+ * @attr {enum}    data-variant — bar (default: line)
+ * @attr {string}  data-unit    — Unit label for tooltip display
  *
  * @method setValues(values) — Set sparkline data points
  */

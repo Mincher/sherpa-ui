@@ -4,11 +4,11 @@
  * @description Horizontal/vertical step progress indicator.
  *   Steps populated from data; CSS handles all visual states.
  *
- * @attr {number}  [data-current-step=1]      — Active step (1-based)
- * @attr {enum}    [data-linear]               — true | false — steps must complete in order
- * @attr {enum}    [data-show-step-numbers]     — true | false (default: true)
- * @attr {string}  [data-src-json]                  — URL to load steps JSON
- * @attr {enum}    [data-template]             — default | timeline (vertical timeline layout)
+ * @attr {number}  data-current-step=1      — Active step (1-based)
+ * @attr {enum}    data-linear               — true | false — steps must complete in order
+ * @attr {enum}    data-show-step-numbers     — true | false (default: true)
+ * @attr {string}  data-src-json                  — URL to load steps JSON
+ * @attr {enum}    data-template             — default | timeline (vertical timeline layout)
  *
  * @fires step-change
  *   bubbles: true, composed: true

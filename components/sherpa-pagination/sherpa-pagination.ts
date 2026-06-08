@@ -3,11 +3,11 @@
  * @category control
  * @description Standalone pagination bar with page navigation and page-size selector.
  *
- * @attr {number}  [data-page=1]          — Current 1-based page
- * @attr {number}  [data-page-size=25]    — Rows per page
- * @attr {number}  [data-total-rows]      — Total row count (required)
- * @attr {string}  [data-allowed-sizes]   — Comma-separated page-size options (default: "10,25,50,100")
- * @attr {enum}    [data-density]          — Display density
+ * @attr {number}  data-page=1          — Current 1-based page
+ * @attr {number}  data-page-size=25    — Rows per page
+ * @attr {number}  data-total-rows      — Total row count (required)
+ * @attr {string}  data-allowed-sizes   — Comma-separated page-size options (default: "10,25,50,100")
+ * @attr {enum}    data-density          — Display density
  *
  * @fires page-change
  *   bubbles: true

@@ -3,9 +3,9 @@
  * @category content
  * @description Section heading with slots for badge, description, and actions.
  *
- * @attr {string}  [data-label]         — Section title text
- * @attr {enum}    [data-heading-level] — primary | secondary | tertiary
- * @attr {boolean} [data-divider]       — Show bottom divider
+ * @attr {string}  data-label         — Section title text
+ * @attr {enum}    data-heading-level — primary | secondary | tertiary
+ * @attr {boolean} data-divider       — Show bottom divider
  *
  * @slot heading     — Custom heading element (replaces default)
  * @slot badge       — Badge/tag next to heading

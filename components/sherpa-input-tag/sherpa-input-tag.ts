@@ -12,19 +12,19 @@
  * @element sherpa-input-tag
  * @category input
  *
- * @attr {string}  [data-label]
- * @attr {string}  [data-description]
- * @attr {string}  [data-helper]
- * @attr {enum}    [data-layout]            — vertical (default) | horizontal
- * @attr {string}  [name]
- * @attr {string}  [placeholder]
- * @attr {boolean} [disabled]
- * @attr {boolean} [readonly]
- * @attr {boolean} [required]               — Empty array fails validation
- * @attr {json}    [data-value]             — Array of current tag strings
- * @attr {string}  [data-separator=","]     — Extra character that commits a chip
- * @attr {boolean} [data-allow-duplicates]  — Allow repeated values
- * @attr {number}  [data-max-tags]          — Hard cap on tag count
+ * @attr {string}  data-label
+ * @attr {string}  data-description
+ * @attr {string}  data-helper
+ * @attr {enum}    data-layout            — vertical (default) | horizontal
+ * @attr {string}  name
+ * @attr {string}  placeholder
+ * @attr {boolean} disabled
+ * @attr {boolean} readonly
+ * @attr {boolean} required               — Empty array fails validation
+ * @attr {json}    data-value             — Array of current tag strings
+ * @attr {string}  data-separator=","     — Extra character that commits a chip
+ * @attr {boolean} data-allow-duplicates  — Allow repeated values
+ * @attr {number}  data-max-tags          — Hard cap on tag count
  *
  * @fires change — Tag list changed (add or remove).
  *   bubbles: true, composed: true

@@ -3,13 +3,13 @@
  * @category media
  * @description Semicircle gauge using CSS conic-gradient.
  *
- * @attr {string}  [data-title]   — Chart heading text
- * @attr {number}  [data-value]   — Numeric value 0–100
- * @attr {string}  [data-min]     — Min range label (default: "0%")
- * @attr {string}  [data-max]     — Max range label (default: "100%")
- * @attr {string}  [data-label]   — Descriptive text below value
- * @attr {boolean} [data-loading] — Show loading state
- * @attr {enum}    [data-variant]  — solid | series
+ * @attr {string}  data-title   — Chart heading text
+ * @attr {number}  data-value   — Numeric value 0–100
+ * @attr {string}  data-min     — Min range label (default: "0%")
+ * @attr {string}  data-max     — Max range label (default: "100%")
+ * @attr {string}  data-label   — Descriptive text below value
+ * @attr {boolean} data-loading — Show loading state
+ * @attr {enum}    data-variant  — solid | series
  *
  * @method setSegments(segments) — Series variant: set arc segments [{ value, color? }]
  */

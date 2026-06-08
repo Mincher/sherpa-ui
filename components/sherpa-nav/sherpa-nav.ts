@@ -5,12 +5,12 @@
  *   Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html,
  *   override via data-src-html). CSS Highlight API for search (::highlight(nav-search-match)).
  *
- * @attr {string}  [data-src-html]            — URL for the nav template HTML (default: sherpa-nav.html)
- * @attr {string}  [data-active-target]  — Selector or ID of the currently active nav item
- * @attr {string}  [data-promo-title]    — Footer promo heading text (shows the promo when set)
- * @attr {string}  [data-promo-message]  — Footer promo body message
- * @attr {string}  [data-promo-link-text]— Footer promo CTA link label
- * @attr {string}  [data-promo-link-url] — Footer promo CTA link URL
+ * @attr {string}  data-src-html            — URL for the nav template HTML (default: sherpa-nav.html)
+ * @attr {string}  data-active-target  — Selector or ID of the currently active nav item
+ * @attr {string}  data-promo-title    — Footer promo heading text (shows the promo when set)
+ * @attr {string}  data-promo-message  — Footer promo body message
+ * @attr {string}  data-promo-link-text— Footer promo CTA link label
+ * @attr {string}  data-promo-link-url — Footer promo CTA link URL
  *
  * @fires navhome
  *   bubbles: true, composed: true
@@ -1099,7 +1099,7 @@ export class SherpaNav extends SherpaElement {
       d.removeAttribute('data-search-hidden');
     });
     groups.forEach((g) => g.removeAttribute('data-search-hidden'));
-    CSS.highlights.delete("nav-search-match");
+    if ('highlights' in CSS) CSS.highlights.delete("nav-search-match");
 
     if (!filter) {
       details.forEach((d) => {
@@ -1141,7 +1141,7 @@ export class SherpaNav extends SherpaElement {
       }
     });
 
-    if (ranges.length)
+    if (ranges.length && 'highlights' in CSS)
       CSS.highlights.set("nav-search-match", new Highlight(...ranges));
   }
 }

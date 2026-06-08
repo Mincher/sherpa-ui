@@ -5,13 +5,13 @@
  *   JS sets raw data as CSS custom properties; CSS normalises via calc()
  *   and renders clip-path polygons. Zero polygon computation in JS.
  *
- * @attr {string}  [data-title]          — Chart heading text
- * @attr {boolean} [data-loading]        — Show loading state
- * @attr {enum}    [data-variant]         — line | area
- * @attr {string}  [data-segment-field]  — Field for series grouping
- * @attr {enum}    [data-segment-mode]    — Segment display mode
- * @attr {string}  [data-sort-field]     — Sort field
- * @attr {enum}    [data-sort-direction] — asc | desc
+ * @attr {string}  data-title          — Chart heading text
+ * @attr {boolean} data-loading        — Show loading state
+ * @attr {enum}    data-variant         — line | area
+ * @attr {string}  data-segment-field  — Field for series grouping
+ * @attr {enum}    data-segment-mode    — Segment display mode
+ * @attr {string}  data-sort-field     — Sort field
+ * @attr {enum}    data-sort-direction — asc | desc
  *
  * @method setData(data) — Set chart data: { labels, series: [{ name, values }] } or config
  */

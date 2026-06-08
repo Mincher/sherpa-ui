@@ -7,10 +7,10 @@
  *   Start ≤ end constraint soft-enforced via min/max on native inputs.
  *   Range highlight shown on days between selected start and end.
  *
- * @attr {string}  [data-value-start] — Start date (YYYY-MM-DD)
- * @attr {string}  [data-value-end]   — End date (YYYY-MM-DD)
- * @attr {string}  [min]              — Minimum selectable date (YYYY-MM-DD)
- * @attr {string}  [max]              — Maximum selectable date (YYYY-MM-DD)
+ * @attr {string}  data-value-start — Start date (YYYY-MM-DD)
+ * @attr {string}  data-value-end   — End date (YYYY-MM-DD)
+ * @attr {string}  min              — Minimum selectable date (YYYY-MM-DD)
+ * @attr {string}  max              — Maximum selectable date (YYYY-MM-DD)
  *
  * @fires change
  *   bubbles: true, composed: true

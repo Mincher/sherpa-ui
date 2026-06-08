@@ -4,11 +4,11 @@
  * @description Light-themed product bar (Apr 2026 redesign). System name
  *   trigger + time, optional tabs, central search, right-aligned actions.
  *
- * @attr {string}  [data-product-name]       — System / product display name
- * @attr {string}  [data-time]               — Time string ("09:00")
- * @attr {string}  [data-show-system]        — "false" hides the brand stack
- * @attr {string}  [data-show-time]          — "false" hides the time line
- * @attr {string}  [data-show-system-menu]   — "false" hides the dropdown caret
+ * @attr {string}  data-product-name       — System / product display name
+ * @attr {string}  data-time               — Time string ("09:00")
+ * @attr {string}  data-show-system        — "false" hides the brand stack
+ * @attr {string}  data-show-time          — "false" hides the time line
+ * @attr {string}  data-show-system-menu   — "false" hides the dropdown caret
  *                                             and disables the trigger menu
  *
  * @slot tabs        — Optional product sub-nav (sets data-has-tabs when populated)

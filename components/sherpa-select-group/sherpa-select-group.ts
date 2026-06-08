@@ -8,20 +8,20 @@
  * @element sherpa-select-group
  * @category input
  *
- * @attr {enum}    [data-type=checkbox]  — checkbox | radio
- * @attr {string}  [name]               — Field name; auto-generated for radio if omitted
- * @attr {string}  [data-label]         — Group legend
- * @attr {string}  [data-description]   — Sub-label below legend
- * @attr {string}  [data-helper]        — Helper text below options
- * @attr {enum}    [data-orientation]   — vertical (default) | horizontal
- * @attr {json}    [data-options]       — [{value,label,description?,disabled?}]
- * @attr {json}    [data-value]         — Selected values as JSON string array
- * @attr {number}  [data-max]           — Max selections (checkbox only; omit = unlimited)
- * @attr {boolean} [data-select-all]    — Show "Select all" header checkbox (checkbox only)
- * @attr {string}  [data-template]      — default | weekdays (weekdays: checkbox only)
- * @attr {enum}    [data-status]        — critical | warning | success | info | urgent
- * @attr {boolean} [disabled]           — Disable all children
- * @attr {boolean} [required]           — Required constraint
+ * @attr {enum}    data-type=checkbox  — checkbox | radio
+ * @attr {string}  name               — Field name; auto-generated for radio if omitted
+ * @attr {string}  data-label         — Group legend
+ * @attr {string}  data-description   — Sub-label below legend
+ * @attr {string}  data-helper        — Helper text below options
+ * @attr {enum}    data-orientation   — vertical (default) | horizontal
+ * @attr {json}    data-options       — [{value,label,description?,disabled?}]
+ * @attr {json}    data-value         — Selected values as JSON string array
+ * @attr {number}  data-max           — Max selections (checkbox only; omit = unlimited)
+ * @attr {boolean} data-select-all    — Show "Select all" header checkbox (checkbox only)
+ * @attr {string}  data-template      — default | weekdays (weekdays: checkbox only)
+ * @attr {enum}    data-status        — critical | warning | success | info | urgent
+ * @attr {boolean} disabled           — Disable all children
+ * @attr {boolean} required           — Required constraint
  *
  * @fires change — Selection changed.
  *   bubbles: true, composed: true

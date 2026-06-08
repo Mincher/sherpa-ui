@@ -43,6 +43,9 @@
 /* Theme corrections & Overrides — all attribute-driven token modifications */
 @import "sherpa-overrides.css";
 
+/* Hand-maintained brand status tokens (pending Figma tokenisation) */
+@import "sherpa-brand-status.css";
+
 /* Utilities — class-based helpers (sub-layered for cascade control) */
 @import "sherpa-icon-classes.css"       layer(utilities.icons);
 @import "sherpa-motion-classes.css"     layer(utilities.motion);

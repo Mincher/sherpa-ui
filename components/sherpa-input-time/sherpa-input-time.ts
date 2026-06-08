@@ -8,9 +8,9 @@
  *   value, constraint validation (min / max / required / step), and focus
  *   management all delegate to the browser.
  *
- * @attr {string}  [min]  — Minimum selectable time (HH:MM)
- * @attr {string}  [max]  — Maximum selectable time (HH:MM)
- * @attr {number}  [step] — Step increment in seconds (default 60)
+ * @attr {string}  min  — Minimum selectable time (HH:MM)
+ * @attr {string}  max  — Maximum selectable time (HH:MM)
+ * @attr {number}  step — Step increment in seconds (default 60)
  *
  * @fires input
  *   bubbles: true, composed: true

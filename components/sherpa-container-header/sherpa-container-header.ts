@@ -13,11 +13,11 @@
  * @element sherpa-container-header
  * @category container
  *
- * @attr {string}  [data-title]          — Heading text
- * @attr {string}  [data-description]    — Secondary text (hidden when empty)
- * @attr {boolean} [data-open-external]  — Show the open-external button
- * @attr {boolean} [data-menu-button]    — Show the overflow menu button
- * @attr {boolean} [data-drag-handle]    — Show the drag handle
+ * @attr {string}  data-title          — Heading text
+ * @attr {string}  data-description    — Secondary text (hidden when empty)
+ * @attr {boolean} data-open-external  — Show the open-external button
+ * @attr {boolean} data-menu-button    — Show the overflow menu button
+ * @attr {boolean} data-drag-handle    — Show the drag handle
  *
  * @csspart header-row — Outer header element
  */

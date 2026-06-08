@@ -10,12 +10,12 @@
  *   web component so the grid setup, breakpoints, and span rules are
  *   shadow-scoped and don't leak into consumer CSS.
  *
- * @attr {string}  [data-row-height] — CSS length for grid-auto-rows (default: 64px)
- * @attr {enum}    [data-content]    — "static" — stacks children vertically instead of using the CSS grid
- * @attr {enum}    [data-fill]       — "viewport" — clamps the layout to the viewport height
- * @attr {boolean} [data-pad]        — Adds padding inside the content surface
- * @attr {enum}    [data-gap]        — sm | base | lg — gap between stacked children in static mode
- * @attr {boolean} [data-editable]   — Enables drag-to-reposition for slotted containers
+ * @attr {string}  data-row-height — CSS length for grid-auto-rows (default: 64px)
+ * @attr {enum}    data-content    — "static" — stacks children vertically instead of using the CSS grid
+ * @attr {enum}    data-fill       — "viewport" — clamps the layout to the viewport height
+ * @attr {boolean} data-pad        — Adds padding inside the content surface
+ * @attr {enum}    data-gap        — sm | base | lg — gap between stacked children in static mode
+ * @attr {boolean} data-editable   — Enables drag-to-reposition for slotted containers
  *
  * @slot view-header      — Optional sherpa-view-header; grouped with tab-row into a seamless header band
  * @slot tab-row          — Optional sherpa-tabs row displayed below the view-header in the same grouped band

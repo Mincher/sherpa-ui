@@ -6,8 +6,8 @@
  *   via light DOM <option> elements or programmatically via setOptions().
  *   Inherits label, description, helper, layout, validation from SherpaInputBase.
  *
- * @attr {enum}   [data-template] — default | tree (hierarchical picker)
- * @attr {json}   [data-tree]     — (tree) Node forest [{value,label,children?,disabled?}]
+ * @attr {enum}   data-template — default | tree (hierarchical picker)
+ * @attr {json}   data-tree     — (tree) Node forest [{value,label,children?,disabled?}]
  *
  * @fires change
  *   bubbles: true, composed: true
