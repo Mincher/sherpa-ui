@@ -3,7 +3,7 @@
  * @category data
  * @description Recurrence/schedule picker. Composes sherpa-input-select
  *   (frequency), sherpa-input-date, sherpa-input-time,
- *   sherpa-input-checkbox-group (weekdays template), sherpa-input-number.
+ *   sherpa-select-group (weekdays template), sherpa-input-number.
  *
  *   CSS owns all conditional row visibility via :host([data-frequency]).
  *   JS only translates between the inner inputs and the host's `value`.
@@ -43,7 +43,7 @@ type ValueEl = Element & { value?: string | string[] };
 import '../sherpa-input-date/sherpa-input-date.js';
 import '../sherpa-input-time/sherpa-input-time.js';
 import '../sherpa-input-number/sherpa-input-number.js';
-import '../sherpa-input-checkbox-group/sherpa-input-checkbox-group.js';
+import '../sherpa-select-group/sherpa-select-group.js';
 
 export class SherpaScheduler extends SherpaElement {
   static override get cssUrl(): string  { return new URL('./sherpa-scheduler.css', import.meta.url).href; }

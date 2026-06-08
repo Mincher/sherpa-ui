@@ -230,8 +230,8 @@
     background-color: var(--sherpa-surface-container-hover, #fafafa);
   }
   &:focus-visible {
-    outline: --focus-ring(var(--sherpa-border-control-active-default));
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--sherpa-border-control-active-default, #8500cc);
   }
 }
 
@@ -276,6 +276,15 @@
 
 .picker-badge {
   margin-inline-start: auto;
+}
+
+/* ---- view-selection picker sizing ---- */
+
+/* Trigger button and popover menu get a fixed width without inline styles. */
+.view-selection-slot::slotted([data-view-picker]) {
+  inline-size: 240px;
+  max-inline-size: 240px;
+  min-inline-size: 0;
 }
 
 /* Native [hidden] support */

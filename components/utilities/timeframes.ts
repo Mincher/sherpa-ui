@@ -119,13 +119,11 @@ export function buildDateId(year: number, month: number, day: number): string {
 }
 
 /**
- * Convert a date string or YYYYMMDD integer into a JS Date.
- * @param {string|number} dateStr
- * @returns {Date}
+ * Convert a date string or YYYYMMDD integer into a Temporal.PlainDate.
  */
-export function dateIdToDate(dateStr: string | number): Date {
+export function dateIdToDate(dateStr: string | number): Temporal.PlainDate {
   const { year, month, day } = parseDateId(dateStr);
-  return new Date(year, month - 1, day);
+  return new Temporal.PlainDate(year, month, day);
 }
 
 /**
@@ -176,7 +174,7 @@ export function computeTimeRange(records: Record<string, unknown>[], dateField?:
 
   const minDate = dateIdToDate(min);
   const maxDate = dateIdToDate(max);
-  const span = maxDate.getTime() - minDate.getTime();
+  const span = minDate.until(maxDate).total('days');
   const granularity = inferGranularity(minDate, maxDate);
   const label = formatTimeRangeLabel(min, max, granularity);
 
@@ -219,20 +217,13 @@ export function autoDetectDateField(record: Record<string, unknown> | null | und
   return null;
 }
 
-/**
- * Infer the most appropriate display granularity from the range span.
- * @param {Date} minDate
- * @param {Date} maxDate
- * @returns {string} A TimeUnit value
- */
-function inferGranularity(minDate: Date, maxDate: Date): string {
-  const diffMs = maxDate.getTime() - minDate.getTime();
-  const days = diffMs / (1000 * 60 * 60 * 24);
+function inferGranularity(minDate: Temporal.PlainDate, maxDate: Temporal.PlainDate): string {
+  const days = minDate.until(maxDate).total('days');
 
-  if (days <= 1)   return TimeUnit.HOUR;
-  if (days <= 14)  return TimeUnit.DAY;
-  if (days <= 90)  return TimeUnit.WEEK;
-  if (days <= 730) return TimeUnit.MONTH;
+  if (days <= 1)    return TimeUnit.HOUR;
+  if (days <= 14)   return TimeUnit.DAY;
+  if (days <= 90)   return TimeUnit.WEEK;
+  if (days <= 730)  return TimeUnit.MONTH;
   if (days <= 1460) return TimeUnit.QUARTER;
   return TimeUnit.YEAR;
 }

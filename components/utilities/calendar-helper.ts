@@ -1,5 +1,5 @@
 /**
- * calendar-helper.js
+ * calendar-helper.ts
  * Shared calendar-rendering utilities for sherpa-input-date,
  * sherpa-input-date-range, and any other component that needs a
  * month-grid calendar popup.
@@ -16,44 +16,29 @@ export const MONTH_NAMES = [
 export const WEEKDAY_SHORT = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
 /**
- * Parse an ISO date string (YYYY-MM-DD) to a local-time Date, or null.
- * @param {string|null|undefined} s
- * @returns {Date|null}
+ * Parse an ISO date string (YYYY-MM-DD) to a Temporal.PlainDate, or null.
  */
-export function isoToDate(s: string | null | undefined): Date | null {
+export function isoToDate(s: string | null | undefined): Temporal.PlainDate | null {
   if (!s) return null;
-  const [y, m, d] = s.split('-').map(Number);
-  if (y == null || m == null || d == null || isNaN(y)) return null;
-  return new Date(y, m - 1, d);
+  try { return Temporal.PlainDate.from(s); }
+  catch { return null; }
 }
 
 /**
- * Format a Date to an ISO string (YYYY-MM-DD) in local time.
- * @param {Date|null} d
- * @returns {string}
+ * Format a Temporal.PlainDate to an ISO string (YYYY-MM-DD).
  */
-export function dateToIso(d: Date | null | undefined): string {
-  if (!d) return '';
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+export function dateToIso(d: Temporal.PlainDate | null | undefined): string {
+  return d?.toString() ?? '';
 }
 
 /**
  * Format an ISO date string to a human-readable display string.
  * e.g. "2024-05-27" → "May 27, 2024"
- * @param {string} isoStr
- * @returns {string}
  */
 export function formatDateDisplay(isoStr: string | null | undefined): string {
   const d = isoToDate(isoStr);
   if (!d) return '';
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(d);
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 /**
@@ -68,33 +53,31 @@ export function formatDateDisplay(isoStr: string | null | undefined): string {
  *   data-other-month="true" — padding day from prev/next month
  *   disabled               — before minDate or after maxDate
  *
- * @param {HTMLElement}           container      - The .cal-days grid element
- * @param {HTMLTemplateElement}   tpl            - Template with a single .cal-day button
- * @param {Date}                  viewDate       - Month / year to display
- * @param {string|null}           selectedIso    - Selected (or range-start) ISO date
- * @param {string|null}           selectedEndIso - Range-end ISO date (range pickers only)
- * @param {string|null}           minIso         - Minimum selectable date ISO
- * @param {string|null}           maxIso         - Maximum selectable date ISO
- * @param {(iso: string) => void} onSelect       - Called when a non-disabled day is clicked
+ * @param container      - The .cal-days grid element
+ * @param tpl            - Template with a single .cal-day button
+ * @param viewDate       - Month / year to display (any day in the month works)
+ * @param selectedIso    - Selected (or range-start) ISO date
+ * @param selectedEndIso - Range-end ISO date (range pickers only)
+ * @param minIso         - Minimum selectable date ISO
+ * @param maxIso         - Maximum selectable date ISO
+ * @param onSelect       - Called when a non-disabled day is clicked
  */
 export function renderCalendarGrid(
   container: HTMLElement,
   tpl: HTMLTemplateElement,
-  viewDate: Date,
+  viewDate: Temporal.PlainDate,
   selectedIso: string | null,
   selectedEndIso: string | null,
   minIso: string | null,
   maxIso: string | null,
   onSelect: (iso: string) => void,
 ) {
-  const year  = viewDate.getFullYear();
-  const month = viewDate.getMonth();
+  const firstDay     = viewDate.with({ day: 1 });
+  const lastDayNum   = viewDate.daysInMonth;
+  const lastDay      = viewDate.with({ day: lastDayNum });
+  const prevLastDay  = viewDate.subtract({ months: 1 }).daysInMonth;
 
-  const firstDay    = new Date(year, month, 1);
-  const lastDay     = new Date(year, month + 1, 0);
-  const prevLastDay = new Date(year, month, 0);
-
-  const todayIso = dateToIso(new Date());
+  const today    = Temporal.Now.plainDateISO();
   const minDate  = isoToDate(minIso);
   const maxDate  = isoToDate(maxIso);
   const selStart = isoToDate(selectedIso);
@@ -102,37 +85,33 @@ export function renderCalendarGrid(
 
   container.innerHTML = '';
 
-  /** Clone one day cell from the prototype template. */
   const makeCell = (
-    dayNum: number,
-    cellYear: number,
-    cellMonth: number,
+    date: Temporal.PlainDate,
     flags: { otherMonth?: boolean } = {},
   ): DocumentFragment => {
-    const thisDate = new Date(cellYear, cellMonth, dayNum);
-    const iso      = dateToIso(thisDate);
-    const frag     = tpl.content.cloneNode(true) as DocumentFragment;
-    const btn      = frag.querySelector<HTMLButtonElement>('.cal-day');
+    const iso  = date.toString();
+    const frag = tpl.content.cloneNode(true) as DocumentFragment;
+    const btn  = frag.querySelector<HTMLButtonElement>('.cal-day');
     if (!btn) return frag;
 
-    btn.textContent = String(dayNum);
+    btn.textContent = String(date.day);
 
     if (flags.otherMonth) {
       btn.dataset["otherMonth"] = 'true';
       btn.disabled = true;
     } else {
-      // Accessibility
       btn.setAttribute(
         'aria-label',
-        new Intl.DateTimeFormat('en-US', {
-          month: 'long', day: 'numeric', year: 'numeric',
-        }).format(thisDate),
+        date.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
       );
 
-      const isDisabled = (minDate && thisDate < minDate) || (maxDate && thisDate > maxDate);
+      const isDisabled = (minDate !== null && Temporal.PlainDate.compare(date, minDate) < 0) ||
+                         (maxDate !== null && Temporal.PlainDate.compare(date, maxDate) > 0);
       const isSelected = iso === selectedIso || iso === selectedEndIso;
-      const isInRange  = selStart && selEnd && thisDate > selStart && thisDate < selEnd;
-      const isToday    = iso === todayIso;
+      const isInRange  = selStart !== null && selEnd !== null &&
+                         Temporal.PlainDate.compare(date, selStart) > 0 &&
+                         Temporal.PlainDate.compare(date, selEnd) < 0;
+      const isToday    = today.equals(date);
 
       if (isDisabled) {
         btn.disabled = true;
@@ -155,24 +134,26 @@ export function renderCalendarGrid(
     return frag;
   };
 
+  // Temporal.dayOfWeek: 1=Mon … 7=Sun → convert to Sun=0 … Sat=6 for grid alignment
+  const startDow  = firstDay.dayOfWeek % 7;
+  const prevMonth = firstDay.subtract({ months: 1 });
+
   // Trailing days from previous month (padding)
-  const startDow = firstDay.getDay();
   for (let i = startDow - 1; i >= 0; i--) {
     container.appendChild(
-      makeCell(prevLastDay.getDate() - i, year, month - 1, { otherMonth: true }),
+      makeCell(prevMonth.with({ day: prevLastDay - i }), { otherMonth: true }),
     );
   }
 
   // Current month days
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    container.appendChild(makeCell(d, year, month));
+  for (let day = 1; day <= lastDayNum; day++) {
+    container.appendChild(makeCell(viewDate.with({ day })));
   }
 
   // Leading days for next month (padding)
-  const endDow = lastDay.getDay();
-  for (let d = 1; d <= 6 - endDow; d++) {
-    container.appendChild(
-      makeCell(d, year, month + 1, { otherMonth: true }),
-    );
+  const endDow    = lastDay.dayOfWeek % 7;
+  const nextMonth = firstDay.add({ months: 1 });
+  for (let day = 1; day <= 6 - endDow; day++) {
+    container.appendChild(makeCell(nextMonth.with({ day }), { otherMonth: true }));
   }
 }

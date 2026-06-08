@@ -2,7 +2,7 @@
  * @element sherpa-transfer-list
  * @category data
  * @description Two-pane shuttle (available <-> selected). Composes
- *   sherpa-list, sherpa-list-item, sherpa-input-checkbox,
+ *   sherpa-list, sherpa-list-item, sherpa-select-checkbox,
  *   sherpa-input-search, sherpa-button.
  *
  * @attr {string}  [data-source-heading=Available] — Available pane heading
@@ -20,7 +20,7 @@
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import '../sherpa-list/sherpa-list.js';
 import '../sherpa-list-item/sherpa-list-item.js';
-import '../sherpa-input-checkbox/sherpa-input-checkbox.js';
+import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-input-search/sherpa-input-search.js';
 import '../sherpa-button/sherpa-button.js';
 

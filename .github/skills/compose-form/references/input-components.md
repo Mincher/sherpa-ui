@@ -166,46 +166,43 @@ Value is a comma-separated string of all entered tags.
 
 ---
 
-### `sherpa-input-checkbox`
-Single checkbox. Use inside `sherpa-input-checkbox-group` for grouped selections.
+### `sherpa-select-checkbox`
+Single checkbox. Use inside `sherpa-select-group` for grouped selections.
 
 ```html
 <!-- Standalone -->
-<sherpa-input-checkbox
+<sherpa-select-checkbox
   data-label="Send notifications"
   name="notify"
-  checked></sherpa-input-checkbox>
+  checked></sherpa-select-checkbox>
 ```
 
 Extra: `checked`, `indeterminate`
 
 ---
 
-### `sherpa-input-checkbox-group`
-Grouped multi-select checkboxes. `name` on the group — individual items have `value`.
+### `sherpa-select-group`
+Unified selection group. Default is multi-select checkboxes; set `data-type="radio"` for
+single-select. `name` on the group — individual items have `value`.
 
 ```html
-<sherpa-input-checkbox-group data-label="Platforms" name="platforms">
-  <sherpa-input-checkbox value="windows" data-label="Windows"></sherpa-input-checkbox>
-  <sherpa-input-checkbox value="macos"   data-label="macOS"></sherpa-input-checkbox>
-  <sherpa-input-checkbox value="linux"   data-label="Linux"></sherpa-input-checkbox>
-</sherpa-input-checkbox-group>
+<!-- Checkbox group (multi-select) -->
+<sherpa-select-group data-label="Platforms" name="platforms">
+  <sherpa-select-checkbox value="windows" data-label="Windows"></sherpa-select-checkbox>
+  <sherpa-select-checkbox value="macos"   data-label="macOS"></sherpa-select-checkbox>
+  <sherpa-select-checkbox value="linux"   data-label="Linux"></sherpa-select-checkbox>
+</sherpa-select-group>
+
+<!-- Radio group (single-select) -->
+<sherpa-select-group data-type="radio" data-label="Priority" name="priority">
+  <sherpa-select-radio value="high"   data-label="High"></sherpa-select-radio>
+  <sherpa-select-radio value="medium" data-label="Medium" checked></sherpa-select-radio>
+  <sherpa-select-radio value="low"    data-label="Low"></sherpa-select-radio>
+</sherpa-select-group>
 ```
 
-Group value is a comma-separated string of checked item values.
-
----
-
-### `sherpa-input-radio-group`
-Radio group for single-select from a fixed list. `name` on the group — items have `value`.
-
-```html
-<sherpa-input-radio-group data-label="Priority" name="priority">
-  <sherpa-input-radio value="high"   data-label="High"></sherpa-input-radio>
-  <sherpa-input-radio value="medium" data-label="Medium" checked></sherpa-input-radio>
-  <sherpa-input-radio value="low"    data-label="Low"></sherpa-input-radio>
-</sherpa-input-radio-group>
-```
+Group value is always a `string[]`. Use `data-select-all` to show a "Select all" header
+checkbox. Use `data-max="N"` to cap selections (checkbox mode only).
 
 ---
 

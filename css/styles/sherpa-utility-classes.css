@@ -6,10 +6,11 @@
  * elements / page-level structure only.
  *
  * Sections:
- *   1. Grouped Component — composes adjacent controls into a seamless row or column.
- *   2. Slot Rejection    — hides rejected slot content in light DOM.
- *   3. Layout            — page/section grid + container utilities.
- *   4. Flex Truncate     — progressively hides trailing flex children when container narrows.
+ *   1. Grouped Component    — composes adjacent controls into a seamless row or column.
+ *   2. Layout Grid Outlet   — display:contents wrapper for sherpa-layout-grid content injection.
+ *   3. Slot Rejection       — hides rejected slot content in light DOM.
+ *   4. Layout               — page/section grid + container utilities.
+ *   5. Flex Truncate        — progressively hides trailing flex children when container narrows.
  * ───────────────────────────────────────────────────────────────────────
  */
 
@@ -104,7 +105,18 @@
   --_cg-separator-color: var(--sherpa-border-control-active-default, #8500cc);
 }
 
-/* ─── 2. Slot Rejection ────────────────────────────────────────────── */
+/* ─── 2. Layout Grid Outlet ─────────────────────────────────────────── */
+
+/**
+ * .layout-grid-outlet — marks a div as the content injection target inside
+ * a <sherpa-layout-grid>. display:contents makes its children direct grid
+ * items of the layout-grid's 12-column surface, as if the wrapper wasn't there.
+ */
+.layout-grid-outlet {
+  display: contents;
+}
+
+/* ─── 4. Slot Rejection ────────────────────────────────────────────── */
 
 /**
  * Components that use SherpaElement's slot validation set
@@ -115,7 +127,7 @@
 [data-slot-rejected="true"] { display: none; }
 
 
-/* ─── 3. Layout ────────────────────────────────────────────────────── */
+/* ─── 5. Layout ────────────────────────────────────────────────────── */
 
 /**
  * App shell layout and scroll-under utility.
@@ -256,7 +268,7 @@
 }
 
 
-/* ─── 4. Flex Truncate ─────────────────────────────────────────────── */
+/* ─── 6. Flex Truncate ─────────────────────────────────────────────── */
 
 /**
  * Flex Truncate — progressively hides trailing flex children when the
@@ -360,5 +372,6 @@
     else:
       calc(sibling-index() * (var(--flex-truncate-min-width)  + var(--flex-truncate-gap)) - var(--flex-truncate-gap) - 100cqw)
   );
-  display: if(style(--_ft-threshold > 0px): none; else: flex);
+  --_ft-hidden: if(style(--_ft-threshold > 0px): 1; else: 0);
+  display: if(style(--_ft-hidden: 1): none; else: flex);
 }

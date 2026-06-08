@@ -41,10 +41,10 @@
           <option>Dark</option>
           <option>Auto</option>
         </sherpa-input-select>
-        <sherpa-input-checkbox-group data-label="Notifications">
-          <sherpa-input-checkbox data-label="Email updates"></sherpa-input-checkbox>
-          <sherpa-input-checkbox data-label="SMS alerts"></sherpa-input-checkbox>
-        </sherpa-input-checkbox-group>
+        <sherpa-select-group data-label="Notifications">
+          <sherpa-select-checkbox data-label="Email updates"></sherpa-select-checkbox>
+          <sherpa-select-checkbox data-label="SMS alerts"></sherpa-select-checkbox>
+        </sherpa-select-group>
       </form>
     </section>
 
@@ -95,11 +95,11 @@
 
     <section data-page="1" hidden>
       <h2>Choose Device Type</h2>
-      <sherpa-input-radio-group data-label="Device Category">
-        <sherpa-input-radio data-label="Server"></sherpa-input-radio>
-        <sherpa-input-radio data-label="Workstation"></sherpa-input-radio>
-        <sherpa-input-radio data-label="Network Device"></sherpa-input-radio>
-      </sherpa-input-radio-group>
+      <sherpa-select-group data-type="radio" data-label="Device Category">
+        <sherpa-select-radio data-label="Server"></sherpa-select-radio>
+        <sherpa-select-radio data-label="Workstation"></sherpa-select-radio>
+        <sherpa-select-radio data-label="Network Device"></sherpa-select-radio>
+      </sherpa-select-group>
     </section>
 
     <section data-page="2" hidden>

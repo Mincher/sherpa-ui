@@ -57,7 +57,7 @@ Or with an import map:
 npm run type-check      # Validate TS across repo (no emit)
 npm run build:ts        # Compile components TS -> dist/components
 npm run assets:copy     # Copy non-TS component assets needed at runtime
-npm run build           # Full build (TS + assets + tokens + schemas + patterns + docs)
+npm run build           # Full build (TS + assets + tokens + patterns)
 ```
 
 Primary build outputs:
@@ -107,7 +107,7 @@ Components dispatch these events (bubble + composed) for app-level integration:
 | --- | --- | --- |
 | `containerfilterchange` | `sherpa-filter-bar` | `{ filters }` |
 | `globalfilterchange` | `sherpa-filter-bar` | `{ filters }` (on `document`) |
-| `container-export` | `sherpa-menu-item` | `{ value }` (bubbles from menu) |
+| `container-export` | `sherpa-overlay-item` | `{ value }` (bubbles from overlay) |
 | `viewexport` | `sherpa-view-header` | `{ title }` |
 
 ## MCP Server
@@ -133,9 +133,9 @@ Add to your VS Code `.vscode/mcp.json`:
 }
 ```
 
-5 tools (`query_component`, `list_components`, `generate_component`,  
-`browse_tokens`, `validate_usage`), 59 resources (6 guideline docs + 53  
-component schemas), and a `build_ui` prompt. See  
+23 tools, 250+ resources, and 4 prompts (`build_ui`, `review_component_usage`,
+`create_component`, `debug_component`). Component schemas are parsed lazily
+from JSDoc at query time — no pre-generation step required. See
 [mcp-server/README.md](mcp-server/README.md) for full details.
 
 ## Scripts
@@ -146,11 +146,9 @@ npm run type-check         # Type-check all TS without emitting files
 npm run build:ts           # Compile component TS to dist/components
 npm run build:ts:watch     # Rebuild TS on file changes
 npm run assets:copy        # Copy component HTML/CSS and related runtime assets
-npm run build              # Full build (TS + assets + tokens + schemas + patterns + docs)
+npm run build              # Full build (TS + assets + tokens + patterns)
 npm run tokens:extract     # Fetch variables from Figma REST API
 npm run tokens:generate    # Generate CSS from figma-variables.json
-npm run schemas            # Generate component JSON schemas
 npm run patterns           # Generate pattern index data
-npm run component-docs     # Generate per-component README.md files
 npm run mcp                # Start the MCP server
 ```

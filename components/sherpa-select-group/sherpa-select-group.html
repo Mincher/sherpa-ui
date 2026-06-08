@@ -1,0 +1,71 @@
+<!--
+  sherpa-select-group.html — Templates for sherpa-select-group.
+
+  Templates:
+    • default  — Slotted group. Stamps sherpa-select-checkbox or
+                 sherpa-select-radio children from data-options, or
+                 accepts projected children via the default slot.
+    • weekdays — Pre-stamped Su–Sa toggle buttons (checkbox type only;
+                 used by sherpa-scheduler for cron building).
+
+  Host attributes:
+    data-type         — checkbox (default) | radio
+    name              — Form field name; cascaded to all children
+    data-label        — Group legend
+    data-description  — Sub-label below legend
+    data-helper       — Helper text below options
+    data-orientation  — vertical (default) | horizontal
+    data-options      — JSON [{value,label,description?,disabled?}]
+    data-value        — JSON array of selected values
+    data-max          — Max selections (checkbox only)
+    data-select-all   — Show "Select all" header checkbox (checkbox only)
+    data-template     — default | weekdays
+    data-status       — critical | warning | success | info | urgent
+    disabled          — Disable all children
+    required          — At least one selection required
+
+  Weekday values follow the Quartz convention (Sunday="1" … Saturday="7").
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — slotted / stamped option list
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="default">
+<fieldset class="group-wrapper" part="wrapper">
+  <legend class="group-legend">
+    <span class="group-label text-label"></span>
+    <span class="group-required" aria-hidden="true"> *</span>
+  </legend>
+  <p class="group-description text-body-sm"></p>
+  <div class="group-select-all">
+    <sherpa-select-checkbox class="select-all-checkbox" data-label="Select all"></sherpa-select-checkbox>
+  </div>
+  <div class="group-options" part="options">
+    <slot></slot>
+  </div>
+  <p class="group-helper text-body-sm"></p>
+</fieldset>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     WEEKDAYS — Su–Sa pill row (checkbox type only)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="weekdays">
+<fieldset class="group-wrapper group-weekdays" part="wrapper">
+  <legend class="group-legend">
+    <span class="group-label text-label"></span>
+    <span class="group-required" aria-hidden="true"> *</span>
+  </legend>
+  <p class="group-description text-body-sm"></p>
+  <div class="group-options group-options-weekdays" part="options" role="group">
+    <label class="weekday" data-value="1"><input type="checkbox" value="1" class="weekday-input" /><span>Su</span></label>
+    <label class="weekday" data-value="2"><input type="checkbox" value="2" class="weekday-input" /><span>Mo</span></label>
+    <label class="weekday" data-value="3"><input type="checkbox" value="3" class="weekday-input" /><span>Tu</span></label>
+    <label class="weekday" data-value="4"><input type="checkbox" value="4" class="weekday-input" /><span>We</span></label>
+    <label class="weekday" data-value="5"><input type="checkbox" value="5" class="weekday-input" /><span>Th</span></label>
+    <label class="weekday" data-value="6"><input type="checkbox" value="6" class="weekday-input" /><span>Fr</span></label>
+    <label class="weekday" data-value="7"><input type="checkbox" value="7" class="weekday-input" /><span>Sa</span></label>
+  </div>
+  <p class="group-helper text-body-sm"></p>
+</fieldset>
+</template>

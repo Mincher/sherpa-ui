@@ -44,18 +44,21 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 const SRC_CSS = path.join(ROOT, 'css', 'styles');
 const OUT_CSS = path.join(ROOT, 'css', 'styles');
-const DATA_FILE = path.join(ROOT, 'figma-tokens', 'figma-variables.json');
+const DATA_FILE      = path.join(ROOT, 'figma-tokens', 'figma-variables.json');
+const OVERRIDES_FILE = path.join(ROOT, 'figma-tokens', 'token-overrides.json');
 
 // ─── Data loading ────────────────────────────────────────────────────
 
-const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+const data      = JSON.parse(fs.readFileSync(DATA_FILE,      'utf8'));
+const overrides = JSON.parse(fs.readFileSync(OVERRIDES_FILE, 'utf8'));
+
 const primitives = data.Primitives;
 const themesMeta = data.themes;
 
-const SNAPSHOT_FILE = path.join(ROOT, 'figma-tokens', 'alias-snapshot.json');
-const snapshotAlias = fs.existsSync(SNAPSHOT_FILE)
-  ? JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8')).Alias || { vars: [] }
-  : { vars: [] };
+// Merge alias snapshot (base) + live Alias (overrides).
+// The snapshot covers the pre-May-2026 Figma refactor period when the live
+// Alias collection is incomplete. Live entries with a non-null Value win.
+const snapshotAlias = overrides.aliasSnapshot || { vars: [] };
 const liveAlias = data.Alias || { vars: [] };
 const aliasMap = new Map();
 for (const v of snapshotAlias.vars) aliasMap.set(v.n, v);
@@ -151,20 +154,19 @@ const primToAlias = (() => {
  * Overlay (alpha) ramp gets its own `color/overlay/<step>` namespace since
  * `transparent/*` carries alpha and doesn't belong with the opaque palette.
  */
-const EFFECTS_OPACITY_STEPS = [0, 100, 200, 300, 400, 500];
-const EFFECTS_OFFSET_STEPS = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+const {
+  effectsOpacitySteps: EFFECTS_OPACITY_STEPS = [0, 100, 200, 300, 400, 500],
+  effectsOffsetSteps:  EFFECTS_OFFSET_STEPS  = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900],
+  explicit:            explicitAliases        = [],
+} = overrides.extraAliases || {};
 
 const EXTRA_ALIASES = [
   // Effects — opacity scale (used in color-mix alpha)
-  ...EFFECTS_OPACITY_STEPS.map((n) => ({
-    name: `opacity/${n}`,
-    primitive: `effects/opacity/${n}`,
-  })),
+  ...EFFECTS_OPACITY_STEPS.map((n) => ({ name: `opacity/${n}`,       primitive: `effects/opacity/${n}` })),
   // Effects — shadow offset scale
-  ...EFFECTS_OFFSET_STEPS.map((n) => ({
-    name: `shadow/offset/${n}`,
-    primitive: `effects/offset/${n}`,
-  })),
+  ...EFFECTS_OFFSET_STEPS.map( (n) => ({ name: `shadow/offset/${n}`, primitive: `effects/offset/${n}`  })),
+  // One-off extras from token-overrides.json
+  ...explicitAliases,
 ];
 
 // Auto-sweep every basic|extended colour primitive and coin a palette/<family>
@@ -935,31 +937,21 @@ function emitOverrides() {
     ),
   );
 
-  // ── Theme corrections ──
-  // The Figma-generated alias for surface/context/<x>/subtle/default resolves
-  // to color/<x>/100, which is near-white on most themes. Bump to -200 so
-  // status callouts/banners have enough chroma to register as a status colour.
-  // Only the `default` step is shifted; hover/down are left so the ramp is intact.
-  lines.push('\n/* ─── Theme corrections ─────────────────────────────────────────────── */\n\n');
-  lines.push('@layer theme {\n\n');
-  lines.push('  :where(:root) {\n');
-  lines.push(
-    '    --sherpa-surface-context-info-subtle-default:    var(--sherpa-color-info-200);\n',
-  );
-  lines.push(
-    '    --sherpa-surface-context-warning-subtle-default: var(--sherpa-color-warning-200);\n',
-  );
-  lines.push(
-    '    --sherpa-surface-context-error-subtle-default:   var(--sherpa-color-critical-200);\n',
-  );
-  lines.push(
-    '    --sherpa-surface-context-success-subtle-default: var(--sherpa-color-success-200);\n',
-  );
-  lines.push(
-    '    --sherpa-surface-context-default-subtle-default: var(--sherpa-color-neutral-200);\n',
-  );
-  lines.push('  }\n\n');
-  lines.push('} /* @layer theme */\n\n');
+  // ── Theme corrections (from token-overrides.json) ──
+  // Previously hard-coded in this script. Edit figma-tokens/token-overrides.json
+  // → themeCorrections.entries to add, remove, or annotate corrections.
+  const corrections = overrides.themeCorrections?.entries || [];
+  if (corrections.length > 0) {
+    lines.push('\n/* ─── Theme corrections ─────────────────────────────────────────────── */\n\n');
+    lines.push('@layer theme {\n\n');
+    lines.push('  :where(:root) {\n');
+    for (const { property, value } of corrections) {
+      const pad = ' '.repeat(Math.max(1, 52 - property.length));
+      lines.push(`    ${property}:${pad}${value};\n`);
+    }
+    lines.push('  }\n\n');
+    lines.push('} /* @layer theme */\n\n');
+  }
 
   // ── Overrides (Density + Status) ──
   lines.push('\n/* ─── Overrides (Density + Status) ────────────────────────────── */\n\n');
@@ -1006,23 +998,8 @@ function emitOverrides() {
 
 // ─── Emit: status/status.css ─────────────────────────────────────────
 
-const STATUS_PROP_MAP = {
-  'border/default': '--_status-border',
-  'surface/default': '--_status-surface',
-  'surface/hover': '--_status-surface-hover',
-  'surface/down': '--_status-surface-down',
-  'surface/color/default': '--_status-surface-strong',
-  'surface/color/hover': '--_status-surface-strong-hover',
-  'surface/color/down': '--_status-surface-strong-down',
-  'surface/subtle/default': '--_status-surface-subtle',
-  'surface/subtle/hover': '--_status-surface-subtle-hover',
-  'surface/subtle/down': '--_status-surface-subtle-down',
-  'text/default': '--_status-text',
-  'text/on-color': '--_status-text-on-color',
-  'icon/default': '--_status-icon',
-  'icon/on-color': '--_status-icon-on-color',
-  'shadow/status': '--_status-shadow',
-};
+// Read from token-overrides.json — previously a hard-coded constant.
+const STATUS_PROP_MAP = overrides.statusPropMap || {};
 
 function emitStatus() {
   // Deprecated: status is now emitted by emitOverrides() into sherpa-overrides.css

@@ -50,7 +50,7 @@ function extractJSDoc(filePath) {
 
 /**
  * Split a JSDoc block into an array of cleaned lines
- * (Same approach as extract-component-schemas.js)
+ * (Same parsing approach as mcp-server/lib/schema-parser.js)
  */
 /**
  * Parse JSDoc tags from cleaned lines

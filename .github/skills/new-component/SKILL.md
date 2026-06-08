@@ -290,7 +290,7 @@ Web components compose. Inside one component's template, prefer nesting existing
 - **Footer / action buttons** → `<sherpa-button>` (not raw `<button>` + manual variant styling)
 - **Iconography (chevrons, status, action icons)** → `<sherpa-icon>` (not raw `<i class="fa-*">`)
 - **Form fields inside composite controls** → `<sherpa-input-text>`, `<sherpa-input-select>`, etc.
-- **Popover / dialog overlays** → `<sherpa-popover>`, `<sherpa-dialog>` (don't re-implement positioning)
+- **Popover / dialog overlays** → `<sherpa-container-overlay>`, `<sherpa-dialog>` (don't re-implement positioning)
 
 ### When NOT to nest
 

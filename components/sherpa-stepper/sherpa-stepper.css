@@ -73,8 +73,8 @@
   }
 
   &:focus-visible {
-    outline: --focus-ring(var(--sherpa-border-control-active-default));
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #8500cc);
   }
 
   &[disabled] {

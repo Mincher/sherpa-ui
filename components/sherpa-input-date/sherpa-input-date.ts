@@ -19,9 +19,9 @@
  *   bubbles: true, composed: true
  *   detail: { value: string }
  *
- * @prop {string}    min         — Getter/setter for min attribute
- * @prop {string}    max         — Getter/setter for max attribute
- * @prop {Date|null} valueAsDate — Current value as Date object (getter-only)
+ * @prop {string}                  min         — Getter/setter for min attribute
+ * @prop {string}                  max         — Getter/setter for max attribute
+ * @prop {Temporal.PlainDate|null} valueAsDate — Current value as PlainDate (getter-only)
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
@@ -36,11 +36,7 @@ const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 /** Returns true when `iso` is a real calendar date in YYYY-MM-DD form. */
 function isValidIso(iso: string): boolean {
   if (!ISO_RE.test(iso)) return false;
-  const d = isoToDate(iso);
-  if (!d) return false;
-  const [y, m, day] = iso.split('-').map(Number);
-  if (y == null || m == null || day == null) return false;
-  return d.getFullYear() === y && d.getMonth() === m - 1 && d.getDate() === day;
+  return isoToDate(iso) !== null;
 }
 
 export class SherpaInputDate extends SherpaInputBase {
@@ -63,7 +59,7 @@ export class SherpaInputDate extends SherpaInputBase {
   });
 
   /** Month / year currently displayed in the calendar. */
-  #viewDate = new Date();
+  #viewDate = Temporal.Now.plainDateISO().with({ day: 1 });
 
   protected override _popupClose() { this.#close(); }
   protected override _popupOpen()  { this.#open(); }
@@ -71,13 +67,11 @@ export class SherpaInputDate extends SherpaInputBase {
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
   override onInputRender(): void {
-    // Element refs are resolved lazily via the cached `els` getters.
-
     // Initialise view month from current value (or today)
     const inputEl = this.getInputElement();
     const val = inputEl?.value || '';
-    const d   = isoToDate(val) || new Date();
-    this.#viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
+    const d = isoToDate(val);
+    this.#viewDate = (d || Temporal.Now.plainDateISO()).with({ day: 1 });
 
     this.#syncHasValue();
     this.#applyCustomValidity();
@@ -92,7 +86,7 @@ export class SherpaInputDate extends SherpaInputBase {
         if (isValidIso(typed)) {
           const td = isoToDate(typed);
           if (td) {
-            this.#viewDate = new Date(td.getFullYear(), td.getMonth(), 1);
+            this.#viewDate = td.with({ day: 1 });
             if (this.hasAttribute('data-open')) this.#renderCalendar();
           }
         }
@@ -102,21 +96,13 @@ export class SherpaInputDate extends SherpaInputBase {
     // Month navigation
     this.$('.cal-prev')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.#viewDate = new Date(
-        this.#viewDate.getFullYear(),
-        this.#viewDate.getMonth() - 1,
-        1,
-      );
+      this.#viewDate = this.#viewDate.subtract({ months: 1 });
       this.#renderCalendar();
     });
 
     this.$('.cal-next')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.#viewDate = new Date(
-        this.#viewDate.getFullYear(),
-        this.#viewDate.getMonth() + 1,
-        1,
-      );
+      this.#viewDate = this.#viewDate.add({ months: 1 });
       this.#renderCalendar();
     });
 
@@ -139,7 +125,7 @@ export class SherpaInputDate extends SherpaInputBase {
       this.#syncHasValue();
       this.#applyCustomValidity();
       const d = isoToDate(newValue);
-      if (d) this.#viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
+      if (d) this.#viewDate = d.with({ day: 1 });
       if (this.els.daysGrid) this.#renderCalendar();
     }
   }
@@ -151,7 +137,7 @@ export class SherpaInputDate extends SherpaInputBase {
     const val = this.getInputElement()?.value;
     if (val) {
       const d = isoToDate(val);
-      if (d) this.#viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
+      if (d) this.#viewDate = d.with({ day: 1 });
     }
     this.#renderCalendar();
     this.setAttribute('data-open', '');
@@ -169,7 +155,7 @@ export class SherpaInputDate extends SherpaInputBase {
     if (!this.els.monthYear || !this.els.daysGrid || !this.els.dayTpl) return;
 
     this.els.monthYear.textContent =
-      `${MONTH_NAMES[this.#viewDate.getMonth()]} ${this.#viewDate.getFullYear()}`;
+      `${MONTH_NAMES[this.#viewDate.month - 1]} ${this.#viewDate.year}`;
 
     const current = this.getInputElement()?.value || '';
     const selected = isValidIso(current) ? current : null;
@@ -243,12 +229,11 @@ export class SherpaInputDate extends SherpaInputBase {
   get max() { return this.getAttribute('max'); }
   set max(v) { v != null ? this.setAttribute('max', v) : this.removeAttribute('max'); }
 
-  /** Returns the current value as a Date object, or null. */
-  get valueAsDate() {
+  /** Returns the current value as a Temporal.PlainDate, or null. */
+  get valueAsDate(): Temporal.PlainDate | null {
     const v = this.value;
     if (!v || !isValidIso(v)) return null;
-    const d = new Date(v + 'T00:00:00');
-    return isNaN(d.getTime()) ? null : d;
+    return isoToDate(v);
   }
 }
 

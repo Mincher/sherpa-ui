@@ -27,8 +27,8 @@ description: 'Build a form using Sherpa input components. Use when: creating a f
 | Date range | `sherpa-input-date-range` | — |
 | Dropdown (single) | `sherpa-input-select` | `<option>` children |
 | Single checkbox | `sherpa-input-checkbox` | `checked`, `indeterminate` |
-| Checkbox group (multi-select) | `sherpa-input-checkbox-group` | child `sherpa-input-checkbox` |
-| Radio group (single-select) | `sherpa-input-radio-group` | child `sherpa-input-radio` |
+| Checkbox group (multi-select) | `sherpa-select-group` | child `sherpa-select-checkbox` |
+| Radio group (single-select) | `sherpa-select-group` + `data-type="radio"` | child `sherpa-select-radio` |
 | Boolean toggle | `sherpa-switch` | — (not a full form input) |
 | File upload | `sherpa-file-upload` | `accept`, `multiple`, `data-max-size` |
 
@@ -91,11 +91,11 @@ description: 'Build a form using Sherpa input components. Use when: creating a f
 <!-- ── Section 3 ── -->
 <sherpa-section-header data-label="Appearance"></sherpa-section-header>
 <sherpa-container>
-  <sherpa-input-radio-group data-label="Theme" name="theme">
-    <sherpa-input-radio value="auto"  data-label="Auto (system)"></sherpa-input-radio>
-    <sherpa-input-radio value="light" data-label="Light"></sherpa-input-radio>
-    <sherpa-input-radio value="dark"  data-label="Dark"  checked></sherpa-input-radio>
-  </sherpa-input-radio-group>
+  <sherpa-select-group data-type="radio" data-label="Theme" name="theme">
+    <sherpa-select-radio value="auto"  data-label="Auto (system)"></sherpa-select-radio>
+    <sherpa-select-radio value="light" data-label="Light"></sherpa-select-radio>
+    <sherpa-select-radio value="dark"  data-label="Dark"  checked></sherpa-select-radio>
+  </sherpa-select-group>
 </sherpa-container>
 
 <!-- ── Save/Cancel ── -->
@@ -148,19 +148,19 @@ Set `data-layout` on individual inputs, or on a parent container to apply to all
 ## Checkbox and Radio Patterns
 
 ```html
-<!-- Checkbox group: multi-select. Value is a comma-separated list -->
-<sherpa-input-checkbox-group data-label="Platforms" name="platforms">
-  <sherpa-input-checkbox value="windows" data-label="Windows"></sherpa-input-checkbox>
-  <sherpa-input-checkbox value="macos"   data-label="macOS"></sherpa-input-checkbox>
-  <sherpa-input-checkbox value="linux"   data-label="Linux"></sherpa-input-checkbox>
-</sherpa-input-checkbox-group>
+<!-- Checkbox group: multi-select. value is string[] -->
+<sherpa-select-group data-label="Platforms" name="platforms">
+  <sherpa-select-checkbox value="windows" data-label="Windows"></sherpa-select-checkbox>
+  <sherpa-select-checkbox value="macos"   data-label="macOS"></sherpa-select-checkbox>
+  <sherpa-select-checkbox value="linux"   data-label="Linux"></sherpa-select-checkbox>
+</sherpa-select-group>
 
-<!-- Radio group: single-select. Value is the checked item's value -->
-<sherpa-input-radio-group data-label="Priority" name="priority">
-  <sherpa-input-radio value="high"   data-label="High"></sherpa-input-radio>
-  <sherpa-input-radio value="medium" data-label="Medium" checked></sherpa-input-radio>
-  <sherpa-input-radio value="low"    data-label="Low"></sherpa-input-radio>
-</sherpa-input-radio-group>
+<!-- Radio group: single-select. value is string[] with one element -->
+<sherpa-select-group data-type="radio" data-label="Priority" name="priority">
+  <sherpa-select-radio value="high"   data-label="High"></sherpa-select-radio>
+  <sherpa-select-radio value="medium" data-label="Medium" checked></sherpa-select-radio>
+  <sherpa-select-radio value="low"    data-label="Low"></sherpa-select-radio>
+</sherpa-select-group>
 ```
 
 ---

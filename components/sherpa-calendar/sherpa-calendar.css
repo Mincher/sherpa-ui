@@ -1,147 +1,295 @@
-/* ── Sherpa Calendar ──────────────────────────────────────────────── */
+/* sherpa-calendar.css
+   Calendar panel — date, date-range, and date+time selection.
 
-/* ── Base Layout ────────────────────────────────────────────────── */
+   Layout:
+     .panel            row: .cal-section (280px) | .time-panel (flex 0)
+     .cal-section      column: .cal-header / .cal-weekdays / .cal-days
+     .time-panel       column: .time-spinners
+     .panel-footer     row: Today | Cancel · Apply
 
-.cal-container {
-  display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  gap: var(--sherpa-spacing-sm, 8px);
-  min-width: 280px;
-  font-size: var(--sherpa-font-size-body-sm, 14px);
+   data-mode:
+     date-time (default) — calendar + time panel visible
+     date                — calendar only (time-panel hidden)
+     range               — calendar only, range selection (time-panel hidden)
+     time                — time panel only (cal-section hidden)
+*/
+
+/* ── Host base ──────────────────────────────────────────────────── */
+
+:host {
+  display: inline-block;
+  font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  color: var(--sherpa-content-default-body, #1a1a1f);
+  box-sizing: border-box;
 }
 
-/* ── Header ─────────────────────────────────────────────────────── */
-
-.cal-header {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--sherpa-spacing-xs, 4px);
+/* Override sherpa-container's [data-variant="fit"] { width: 100% } and its
+   container-type so the card hugs its intrinsic content width. */
+sherpa-container.panel-card[data-variant="fit"] {
+  width: max-content;
+  container-type: normal;
 }
 
-.cal-prev,
-.cal-next,
-.cal-month-label {
-  all: unset;
+:host([hidden]) { display: none; }
+
+/* ── Mode visibility ─────────────────────────────────────────────
+   data-mode hides whole panels so they don't reserve layout space. */
+:host([data-mode="date"])  .time-panel  { display: none; }
+:host([data-mode="range"]) .time-panel  { display: none; }
+:host([data-mode="time"])  .cal-section { display: none; }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Zero out sherpa-container's default body padding — cal-section supplies its own. */
+.panel-card::part(content) {
+  padding: 0;
+}
+
+/* ── Panel body ─────────────────────────────────────────────────── */
+
+.panel {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sherpa-spacing-xs, 4px) var(--sherpa-spacing-sm, 8px);
-  border-radius: var(--sherpa-border-radius-sm, 4px);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+  flex-direction: row;
+  align-items: stretch;
 }
 
-.cal-prev:hover,
-.cal-next:hover,
-.cal-month-label:hover {
-  background-color: var(--sherpa-color-surface-hover, rgba(0, 0, 0, 0.04));
+/* ─── Calendar section ─── */
+
+.cal-section {
+  width: 280px;
+  padding: var(--sherpa-space-md, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xs, 8px);
 }
 
-.cal-prev:focus-visible,
-.cal-next:focus-visible,
-.cal-month-label:focus-visible {
-  outline: 2px solid var(--sherpa-color-focus, #0078d4);
-  outline-offset: 2px;
+/* Month nav header — three sherpa-buttons as a grouped segmented control.
+   .grouped-component utility rules are inlined here since the global sheet
+   cannot reach into the shadow root. */
+.cal-header.grouped-component {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 0;
+  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  overflow: hidden;
+  --_cg-border-width: 0;
+  --_cg-border-radius: 0;
+  --_cg-separator-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
+  --_cg-sep-inline: var(--sherpa-border-width-xs, 1px);
+  --_cg-sep-block: 0px;
 }
 
-.cal-month-label {
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  font-size: var(--sherpa-font-size-body, 16px);
+.cal-header.grouped-component:focus-within {
+  border-color: var(--sherpa-border-control-active-default, #0060df);
 }
 
-/* ── Weekday Headers ────────────────────────────────────────────── */
+.cal-header.grouped-component > * {
+  --_grouped-spacing-offset: -1px;
+}
+.cal-header.grouped-component > :not([hidden]) {
+  --_grouped-rounding-start: var(--sherpa-border-rounding-base, 4px);
+  --_grouped-rounding-end:   var(--sherpa-border-rounding-base, 4px);
+}
+.cal-header.grouped-component > :not([hidden]) ~ :not([hidden]) {
+  --_grouped-rounding-start: var(--sherpa-border-rounding-none, 0);
+}
+.cal-header.grouped-component > :not([hidden]):has(~ :not([hidden])) {
+  --_grouped-rounding-end: var(--sherpa-border-rounding-none, 0);
+}
 
+.cal-mode {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Weekday header row */
 .cal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  padding-block-end: var(--sherpa-spacing-xs, 4px);
-  border-block-end: 1px solid var(--sherpa-color-border, #e0e0e0);
+  padding-bottom: var(--sherpa-space-xs, 8px);
 }
 
-.cal-weekday {
+.cal-weekdays span {
   text-align: center;
-  font-size: var(--sherpa-font-size-body-xs, 12px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-color-text-muted, #757575);
-  padding: var(--sherpa-spacing-xs, 4px);
+  font-size: var(--sherpa-fonts-scale-xs, 11px);
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  letter-spacing: 0.04em;
+  color: var(--sherpa-content-default-body, #1a1a1f);
+  padding: var(--sherpa-space-2xs, 4px) 0;
 }
 
-/* ── Days Grid ──────────────────────────────────────────────────── */
-
+/* Day grid */
 .cal-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+}
+
+.cal-days[hidden],
+.cal-months[hidden],
+.cal-years[hidden],
+.cal-weekdays[hidden] {
+  display: none;
 }
 
 .cal-day {
-  all: unset;
+  aspect-ratio: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1;
-  min-block-size: 32px;
-  border-radius: var(--sherpa-border-radius-sm, 4px);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   cursor: pointer;
-  font-size: var(--sherpa-font-size-body-sm, 14px);
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+  color: var(--sherpa-content-default-body, #1a1a1f);
+  padding: 0;
+  font-family: inherit;
 }
 
-.cal-day:hover {
-  background-color: var(--sherpa-color-surface-hover, rgba(0, 0, 0, 0.04));
+.cal-day:hover:not([disabled]) {
+  background: var(--sherpa-surface-control-hover, #e8e9ec);
 }
 
-.cal-day:focus-visible {
-  outline: 2px solid var(--sherpa-color-focus, #0078d4);
-  outline-offset: -2px;
-}
-
-/* ── Day States ─────────────────────────────────────────────────── */
-
-.cal-day[data-selected] {
-  background-color: var(--sherpa-color-primary, #0078d4);
-  color: var(--sherpa-color-text-on-primary, #ffffff);
+.cal-day[data-selected="true"] {
+  background: var(--sherpa-surface-control-primary-default, #2855ef);
+  color: var(--sherpa-content-on-color-body, #fff);
+  border-color: transparent;
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
-.cal-day[data-selected]:hover {
-  background-color: var(--sherpa-color-primary-hover, #106ebe);
+.cal-day[data-today="true"]:not([data-selected="true"]) {
+  border-color: var(--sherpa-border-control-active-default, #0060df);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
-.cal-day[data-today] {
-  outline: 1px solid var(--sherpa-color-primary, #0078d4);
-  outline-offset: -1px;
+.cal-day[data-other-month="true"] {
+  color: var(--sherpa-content-inactive-default, #9a9caa);
 }
 
-.cal-day[data-in-range] {
-  background-color: var(--sherpa-color-primary-bg, rgba(0, 120, 212, 0.1));
-}
-
-.cal-day[data-other-month] {
-  color: var(--sherpa-color-text-muted, #757575);
-}
-
-.cal-day:disabled {
-  color: var(--sherpa-color-text-disabled, #c0c0c0);
+.cal-day[disabled] {
+  color: var(--sherpa-content-inactive-default, #9a9caa);
   cursor: not-allowed;
 }
 
-.cal-day:disabled:hover {
-  background-color: transparent;
+/* Range highlight — strip radius on in-between days so the band reads as continuous */
+.cal-day[data-in-range="true"] {
+  background: var(--sherpa-surface-control-primary-subtle, rgba(40, 85, 239, 0.12));
+  border-radius: 0;
+  color: var(--sherpa-content-default-body, #1a1a1f);
 }
 
-/* ── Footer ─────────────────────────────────────────────────────── */
+/* ─── Month / Year alt-view grids ─── */
 
-.cal-footer {
-  display: none;
-  padding-block-start: var(--sherpa-spacing-sm, 8px);
-  border-block-start: 1px solid var(--sherpa-color-border, #e0e0e0);
+.cal-months,
+.cal-years {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sherpa-space-2xs, 4px);
 }
 
-.cal-footer[data-has-content] {
-  display: block;
+.cal-cell {
+  min-width: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  cursor: pointer;
+  color: var(--sherpa-content-default-body, #1a1a1f);
+  padding: 0;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-cell:hover:not([disabled]) {
+  background: var(--sherpa-surface-control-hover, #e8e9ec);
+}
+
+.cal-cell[data-selected] {
+  background: var(--sherpa-surface-control-primary-default, #2855ef);
+  color: var(--sherpa-content-on-color-body, #fff);
+  border-color: transparent;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+.cal-cell[data-today]:not([data-selected]) {
+  border-color: var(--sherpa-border-control-active-default, #0060df);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* ─── Time panel ─── */
+
+.time-panel {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sherpa-space-md, 16px) var(--sherpa-space-lg, 24px);
+}
+
+.time-spinners {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+.hour-input,
+.minute-input {
+  width: 112px;
+  flex: 0 0 auto;
+}
+
+.time-sep {
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-body, #1a1a1f);
+  line-height: 1;
+}
+
+/* ─── Footer ─── */
+
+sherpa-container-footer::part(footer) {
+  border-top: 0;
+}
+
+.btn-today {
+  margin-right: auto;
+}
+
+/* ── Disabled state ─────────────────────────────────────────────── */
+
+:host([disabled]) {
+  pointer-events: none;
+}
+
+:host([disabled]) .cal-day,
+:host([disabled]) .cal-nav,
+:host([disabled]) .cal-month-year {
+  color: var(--sherpa-content-inactive-default, #9a9caa);
+}
+
+:host([disabled]) .cal-header {
+  border-color: var(--sherpa-border-control-inactive, #e0e1e6);
+}
+
+/* ── Motion / forced-colors ─────────────────────────────────────── */
+
+@media (forced-colors: active) {
+  :host { border: 1px solid ButtonText; }
+  .cal-day[data-selected="true"] { border-color: Highlight; color: HighlightText; background: Highlight; }
+  .cal-header { border-color: ButtonText; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cal-day { transition: none; }
 }

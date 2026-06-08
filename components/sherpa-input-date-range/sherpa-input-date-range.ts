@@ -19,10 +19,10 @@
  *   bubbles: true, composed: true
  *   detail: { start: string|null, end: string|null }
  *
- * @prop {string}    valueStart  — Getter/setter for data-value-start
- * @prop {string}    valueEnd    — Getter/setter for data-value-end
- * @prop {Date|null} startAsDate — Start value as Date (getter-only)
- * @prop {Date|null} endAsDate   — End value as Date (getter-only)
+ * @prop {string}                  valueStart  — Getter/setter for data-value-start
+ * @prop {string}                  valueEnd    — Getter/setter for data-value-end
+ * @prop {Temporal.PlainDate|null} startAsDate — Start value as PlainDate (getter-only)
+ * @prop {Temporal.PlainDate|null} endAsDate   — End value as PlainDate (getter-only)
  */
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
@@ -59,9 +59,9 @@ export class SherpaInputDateRange extends SherpaInputBase {
   #endEl: HTMLInputElement | null         = null;
   #dayTpl: HTMLTemplateElement | null     = null;
   /** Current month displayed in the start calendar. */
-  #startViewDate = new Date();
+  #startViewDate = Temporal.Now.plainDateISO().with({ day: 1 });
   /** Current month displayed in the end calendar. */
-  #endViewDate   = new Date();
+  #endViewDate   = Temporal.Now.plainDateISO().add({ months: 1 }).with({ day: 1 });
 
   protected override _popupClose() { this.#closeAll(); }
 
@@ -73,16 +73,12 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#dayTpl  = this.$<HTMLTemplateElement>(".cal-day-tpl");
 
     // Initialise view months from current values (or today / today + 1 month)
-    const today = new Date();
+    const today  = Temporal.Now.plainDateISO();
     const startD = isoToDate(this.dataset["valueStart"]);
     const endD   = isoToDate(this.dataset["valueEnd"]);
 
-    this.#startViewDate = startD
-      ? new Date(startD.getFullYear(), startD.getMonth(), 1)
-      : new Date(today.getFullYear(), today.getMonth(), 1);
-    this.#endViewDate = endD
-      ? new Date(endD.getFullYear(), endD.getMonth(), 1)
-      : new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    this.#startViewDate = (startD || today).with({ day: 1 });
+    this.#endViewDate   = (endD   || today.add({ months: 1 })).with({ day: 1 });
 
     // Initial value sync
     this.#syncValues();
@@ -134,20 +130,18 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /** Wire prev/next month nav buttons for one calendar panel. */
   #wireMonthNav(
     prevSel: string, nextSel: string,
-    getDate: () => Date,
-    setDate: (d: Date) => void,
+    getDate: () => Temporal.PlainDate,
+    setDate: (d: Temporal.PlainDate) => void,
     render: () => void,
   ): void {
     this.$(prevSel)?.addEventListener("click", (e: Event) => {
       e.stopPropagation();
-      const d = getDate();
-      setDate(new Date(d.getFullYear(), d.getMonth() - 1, 1));
+      setDate(getDate().subtract({ months: 1 }));
       render();
     });
     this.$(nextSel)?.addEventListener("click", (e: Event) => {
       e.stopPropagation();
-      const d = getDate();
-      setDate(new Date(d.getFullYear(), d.getMonth() + 1, 1));
+      setDate(getDate().add({ months: 1 }));
       render();
     });
   }
@@ -184,7 +178,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     const val = this.#startEl?.value;
     if (val) {
       const d = isoToDate(val);
-      if (d) this.#startViewDate = new Date(d.getFullYear(), d.getMonth(), 1);
+      if (d) this.#startViewDate = d.with({ day: 1 });
     }
     this.#renderStartCalendar();
     this.setAttribute("data-open-start", "");
@@ -200,7 +194,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     const val = this.#endEl?.value;
     if (val) {
       const d = isoToDate(val);
-      if (d) this.#endViewDate = new Date(d.getFullYear(), d.getMonth(), 1);
+      if (d) this.#endViewDate = d.with({ day: 1 });
     }
     this.#renderEndCalendar();
     this.setAttribute("data-open-end", "");
@@ -225,7 +219,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     if (!monthYearEl || !daysEl || !this.#dayTpl) return;
 
     monthYearEl.textContent =
-      `${MONTH_NAMES[this.#startViewDate.getMonth()]} ${this.#startViewDate.getFullYear()}`;
+      `${MONTH_NAMES[this.#startViewDate.month - 1]} ${this.#startViewDate.year}`;
 
     // End value constrains start max; global max constrains further
     const startMax = this.#endEl?.value || this.getAttribute("max");
@@ -248,7 +242,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     if (!monthYearEl || !daysEl || !this.#dayTpl) return;
 
     monthYearEl.textContent =
-      `${MONTH_NAMES[this.#endViewDate.getMonth()]} ${this.#endViewDate.getFullYear()}`;
+      `${MONTH_NAMES[this.#endViewDate.month - 1]} ${this.#endViewDate.year}`;
 
     // Start value constrains end min; global min constrains further
     const endMin = this.#startEl?.value || this.getAttribute("min");
@@ -396,22 +390,15 @@ export class SherpaInputDateRange extends SherpaInputBase {
   get valueEnd() { return this.dataset["valueEnd"] || ""; }
   set valueEnd(v) { this.dataset["valueEnd"] = v || ""; }
 
-  /** Start date as a Date object, or null. */
-  get startAsDate() {
-    const v = this.dataset["valueStart"];
-    if (!v) return null;
-    const d = new Date(v + "T00:00:00");
-    return isNaN(d.getTime()) ? null : d;
+  /** Start date as a Temporal.PlainDate, or null. */
+  get startAsDate(): Temporal.PlainDate | null {
+    return isoToDate(this.dataset["valueStart"]);
   }
 
-  /** End date as a Date object, or null. */
-  get endAsDate() {
-    const v = this.dataset["valueEnd"];
-    if (!v) return null;
-    const d = new Date(v + "T00:00:00");
-    return isNaN(d.getTime()) ? null : d;
+  /** End date as a Temporal.PlainDate, or null. */
+  get endAsDate(): Temporal.PlainDate | null {
+    return isoToDate(this.dataset["valueEnd"]);
   }
 }
 
 customElements.define("sherpa-input-date-range", SherpaInputDateRange);
-

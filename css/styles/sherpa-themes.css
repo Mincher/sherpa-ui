@@ -8,7 +8,7 @@
  * :where() — zero specificity, components always win without `!important`.
  *
  * Default theme (apex-2-core): no data-theme attribute required.
- * Extended themes: set <html data-theme="apex-2-blue|apex-2-purple|apex-2-teal|classic">.
+ * Extended themes: set <html data-theme="apex-2-blue|apex-2-purple|apex-2-purple-hairline|apex-2-teal|classic">.
  */
 
 
@@ -855,6 +855,79 @@
 
 @media (prefers-contrast: more) {
   :where(:root[data-theme="apex-2-purple"]:not([data-mode="light"]):not([data-mode="dark"])) {
+    --sherpa-surface-control-primary-default: rgba(51,51,51,1);
+    --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
+    --sherpa-surface-control-primary-down: rgba(51,51,51,1);
+    --sherpa-content-primary-default: var(--sherpa-color-primary-new-300);
+    --sherpa-content-primary-on-color: var(--sherpa-color-primary-new-200);
+    --sherpa-border-control-primary-default: var(--sherpa-color-primary-new-base);
+    --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+    --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
+  }
+}
+
+
+/* ─── Apex 2.0 (Purple Hairline) — Activate: <html data-theme="apex-2-purple-hairline"> ─ */
+/* Purple theme + all border widths halved via sherpa primitive tokens.                    */
+
+/* ── Light overrides ─────────────────────────── */
+:where(:root[data-theme="apex-2-purple-hairline"]) {
+  --sherpa-surface-control-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-surface-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-surface-control-primary-down: var(--sherpa-color-brand-900);
+  --sherpa-content-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-content-primary-on-color: var(--sherpa-color-brand-200);
+  --sherpa-border-control-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-border-control-primary-down: var(--sherpa-color-brand-900);
+  --sherpa-border-width-xs:   var(--core-border-stroke-0);    /* 0.25px → 0px   */
+  --sherpa-border-width-sm:   var(--core-border-stroke-100);  /* 0.5px  → 0.25px */
+  --sherpa-border-width-base: var(--core-border-stroke-200);  /* 1px    → 0.5px  */
+  --sherpa-border-width-lg:   var(--core-border-stroke-300);  /* 2px    → 1px    */
+  --sherpa-border-width-xl:   var(--core-border-stroke-400);  /* 4px    → 2px    */
+  --sherpa-border-width-2xl:  var(--core-border-stroke-500);  /* 8px    → 4px    */
+  --sherpa-border-width-3xl:  var(--core-border-stroke-600);  /* 12px   → 8px    */
+}
+
+/* ── Dark ──────────────────────────────────────────────────── */
+:where(:root[data-theme="apex-2-purple-hairline"][data-mode="dark"]) {
+  --sherpa-surface-control-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-surface-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-surface-control-primary-down: var(--sherpa-color-brand-900);
+  --sherpa-content-primary-default: var(--sherpa-color-brand-200);
+  --sherpa-content-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-border-control-primary-default: var(--sherpa-color-brand-700);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-brand-800);
+  --sherpa-border-control-primary-down: var(--sherpa-color-brand-900);
+}
+
+@media (prefers-color-scheme: dark) {
+  :where(:root[data-theme="apex-2-purple-hairline"]:not([data-mode="light"]):not([data-mode="hc"])) {
+    --sherpa-surface-control-primary-default: var(--sherpa-color-brand-700);
+    --sherpa-surface-control-primary-hover: var(--sherpa-color-brand-800);
+    --sherpa-surface-control-primary-down: var(--sherpa-color-brand-900);
+    --sherpa-content-primary-default: var(--sherpa-color-brand-200);
+    --sherpa-content-primary-on-color: var(--sherpa-color-primary-new-200);
+    --sherpa-border-control-primary-default: var(--sherpa-color-brand-700);
+    --sherpa-border-control-primary-hover: var(--sherpa-color-brand-800);
+    --sherpa-border-control-primary-down: var(--sherpa-color-brand-900);
+  }
+}
+
+/* ── High Contrast ─────────────────────────────────────────── */
+:where(:root[data-theme="apex-2-purple-hairline"][data-mode="hc"]) {
+  --sherpa-surface-control-primary-default: rgba(51,51,51,1);
+  --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
+  --sherpa-surface-control-primary-down: rgba(51,51,51,1);
+  --sherpa-content-primary-default: var(--sherpa-color-primary-new-300);
+  --sherpa-content-primary-on-color: var(--sherpa-color-primary-new-200);
+  --sherpa-border-control-primary-default: var(--sherpa-color-primary-new-base);
+  --sherpa-border-control-primary-hover: var(--sherpa-color-primary-new-700);
+  --sherpa-border-control-primary-down: var(--sherpa-color-primary-new-800);
+}
+
+@media (prefers-contrast: more) {
+  :where(:root[data-theme="apex-2-purple-hairline"]:not([data-mode="light"]):not([data-mode="dark"])) {
     --sherpa-surface-control-primary-default: rgba(51,51,51,1);
     --sherpa-surface-control-primary-hover: rgba(204,204,204,1);
     --sherpa-surface-control-primary-down: rgba(51,51,51,1);

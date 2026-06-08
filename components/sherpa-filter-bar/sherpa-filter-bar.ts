@@ -1000,7 +1000,7 @@ export class SherpaFilterBar extends SherpaElement {
       const scope = this.#getFilteredRowsExcluding(field);
       const counts = this.#countValuesIn(field, scope);
       const menuBtn = this.#getChipMenuButton(chip);
-      const items = menuBtn.menuElement?.querySelectorAll<HTMLElement>("sherpa-menu-item") ?? [];
+      const items = menuBtn.menuElement?.querySelectorAll<HTMLElement>("sherpa-overlay-item") ?? [];
       for (const item of items) {
         const base = item.dataset["baseText"];
         if (base === undefined) continue;
@@ -1022,7 +1022,7 @@ export class SherpaFilterBar extends SherpaElement {
   #populateFilterChip(chip: HTMLElement) {
     const menuBtn = this.#getChipMenuButton(chip);
     // Guard: if menu already has items, don't re-populate (preserves checked state)
-    if (menuBtn.menuElement?.querySelector("sherpa-menu-item")) return;
+    if (menuBtn.menuElement?.querySelector("sherpa-overlay-item")) return;
 
     const field = chip.getAttribute("data-filter-field");
     const filterType = chip.getAttribute("data-filter-type") || "text";
@@ -1037,7 +1037,7 @@ export class SherpaFilterBar extends SherpaElement {
           menuBtn.setMenuItems?.(items, { selection: "checkbox", group: "values" });
           // Stash the raw label so #refreshOptionCounts can re-append the
           // "(N)" suffix without losing the original text.
-          for (const el of menuBtn.menuElement?.querySelectorAll<HTMLElement>("sherpa-menu-item") ?? []) {
+          for (const el of menuBtn.menuElement?.querySelectorAll<HTMLElement>("sherpa-overlay-item") ?? []) {
             el.dataset["baseText"] = el.textContent.trim();
           }
           this.#refreshOptionCounts();
@@ -1070,8 +1070,8 @@ export class SherpaFilterBar extends SherpaElement {
   #syncFilterChipLabel(chip: HTMLElement, count: number) {
     const defaultLabel = chip.dataset["defaultLabel"] || chip.dataset["label"] || "";
     if (count === 1) {
-      const menuEl = this.#getChipMenuButton(chip)?.menuElement ?? chip.querySelector("sherpa-menu");
-      const checked = menuEl?.querySelector<HTMLElement>("sherpa-menu-item[checked]");
+      const menuEl = this.#getChipMenuButton(chip)?.menuElement ?? chip.querySelector("sherpa-container-overlay");
+      const checked = menuEl?.querySelector<HTMLElement>("sherpa-overlay-item[checked]");
       // Prefer the stashed base text (without the "(N)" count suffix that
       // #refreshOptionCounts appends) so the chip label stays clean.
       const value = checked?.dataset["baseText"] ?? checked?.textContent?.trim();
@@ -1151,35 +1151,42 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /**
-   * Compute a time range { start, end } from a TIME_RANGE_PRESETS key.
-   * @param {string} rangeKey — e.g. "last-7d", "last-30d", "ytd"
-   * @returns {{ start: Date, end: Date } | null}
+   * Compute a time range { start, end } as ISO date strings from a TIME_RANGE_PRESETS key.
+   * @param rangeKey — e.g. "last-7d", "last-30d", "ytd"
    */
-  #computeTimeRange(rangeKey: string): { start: Date; end: Date } | null {
+  #computeTimeRange(rangeKey: string): { start: string; end: string } | null {
     if (!rangeKey) return null;
     const preset = TIME_RANGE_PRESETS.find((p) => p.key === rangeKey);
     if (!preset) return null;
-    if (preset.key === "all") return { start: new Date(0), end: new Date() };
 
-    const now = new Date();
-    const start = new Date(now);
+    const today = Temporal.Now.plainDateISO();
+
+    if (preset.key === "all") {
+      return { start: '1970-01-01', end: today.toString() };
+    }
 
     if (preset.key === "ytd") {
-      start.setMonth(0, 1);
-      start.setHours(0, 0, 0, 0);
-      return { start, end: now };
+      return { start: today.with({ month: 1, day: 1 }).toString(), end: today.toString() };
     }
 
+    let start: Temporal.PlainDate | Temporal.PlainDateTime;
     switch (preset.unit) {
-      case "minute":  start.setTime(now.getTime() - preset.count * 60000);    break;
-      case "hour":    start.setHours(now.getHours() - preset.count);     break;
-      case "day":     start.setDate(now.getDate() - preset.count);       break;
-      case "month":   start.setMonth(now.getMonth() - preset.count);     break;
-      case "quarter": start.setMonth(now.getMonth() - preset.count * 3); break;
-      case "year":    start.setFullYear(now.getFullYear() - preset.count); break;
+      case "minute":
+      case "hour": {
+        // Minute/hour precision — use PlainDateTime
+        const nowDt = Temporal.Now.plainDateTimeISO();
+        start = preset.unit === "minute"
+          ? nowDt.subtract({ minutes: preset.count })
+          : nowDt.subtract({ hours: preset.count });
+        return { start: start.toString().substring(0, 10), end: today.toString() };
+      }
+      case "day":     start = today.subtract({ days: preset.count });            break;
+      case "month":   start = today.subtract({ months: preset.count });          break;
+      case "quarter": start = today.subtract({ months: preset.count * 3 });      break;
+      case "year":    start = today.subtract({ years: preset.count });            break;
       default: return null;
     }
-    return { start, end: now };
+    return { start: start.toString(), end: today.toString() };
   }
 
   /**

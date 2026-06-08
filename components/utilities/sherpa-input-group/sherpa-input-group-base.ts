@@ -2,7 +2,7 @@
  * SherpaInputGroupBase — Shared base for checkbox-group and radio-group.
  *
  * Handles legend/description/helper syncing and the common onAttributeChanged
- * dispatch pattern shared by SherpaInputCheckboxGroup and SherpaInputRadioGroup.
+ * dispatch pattern shared by SherpaSelectGroup (and its predecessors).
  *
  * Subclasses implement:
  *   _stampOptions() — stamp child elements from JSON options

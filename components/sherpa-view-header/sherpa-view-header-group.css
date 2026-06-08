@@ -1,0 +1,20 @@
+/**
+ * sherpa-view-header-group.css
+ * Light-DOM utility class published by sherpa-view-header.
+ *
+ * .sherpa-view-header-group — Flex-column wrapper that groups a
+ * <sherpa-view-header> with an adjacent <sherpa-filter-bar> (or other
+ * peers) into a single shrink-protected block at the top of a view.
+ *
+ * Loaded once per document by sherpa-view-header.ts via a <link> element.
+ */
+
+.sherpa-view-header-group {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sherpa-view-header-group > sherpa-filter-bar {
+  padding-inline: var(--sherpa-space-xs, 8px);
+}

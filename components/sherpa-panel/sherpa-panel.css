@@ -370,8 +370,8 @@
   color: var(--sherpa-content-default-body, #2e2e33);
 }
 .ai-btn:focus-visible {
-  outline: --focus-ring();
-  outline-offset: 1px;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--sherpa-border-control-primary-default, #3c5edd);
 }
 .ai-btn:disabled {
   color: var(--sherpa-content-inactive-default, #b0b0b8);

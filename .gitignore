@@ -8,11 +8,13 @@ node_modules/
 # TypeScript compiled output
 dist/
 
-# Figma extract output (large; regenerate with `npm run tokens:extract`).
-# alias-snapshot.json IS tracked — it is the canonical Alias source until
-# the design team rebuilds the Figma Alias collection.
+# Figma extract output (large; regenerate with `npm run tokens:refresh`).
+# figma-config.json IS tracked — bootstrap config (file key + theme IDs).
+# token-overrides.json IS tracked — alias snapshot + hand-authored corrections.
+# alias-snapshot.json IS tracked — legacy; superseded by token-overrides.json.
 figma-tokens/figma-variables.json
 figma-tokens/figma-variables.prev.json
+figma-tokens/figma-variables.staged.json
 figma-tokens/Apex*/
 figma-tokens/Classic/
 

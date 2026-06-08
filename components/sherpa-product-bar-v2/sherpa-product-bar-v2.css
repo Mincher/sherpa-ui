@@ -63,8 +63,8 @@
   border-radius: var(--sherpa-border-rounding-base, 4px);
 
   &:focus-visible {
-    outline: --focus-ring();
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
   }
 }
 :host .system-caret {

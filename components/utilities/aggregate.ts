@@ -49,7 +49,7 @@ export interface FilterSpec {
   operator?: string;
   value?: unknown;
   values?: unknown[];
-  range?: { start: Date | string | number; end: Date | string | number };
+  range?: { start: string; end: string };
   /** Optional filter classification used by filter-bar (sort/segment/value) */
   type?: string | null;
   /** Mode flag used by some filter producers */
@@ -176,8 +176,8 @@ export function applyLocalFilters(
         if (!f.range) return true;
         const df = autoDetectDateField(rec);
         if (!df) return true;
-        const d = new Date(rec[df] as string | number);
-        return d >= new Date(f.range.start) && d <= new Date(f.range.end);
+        const d = String(rec[df] as string | number).substring(0, 10);
+        return d >= f.range.start && d <= f.range.end;
       }
       const val = rec[f.field];
       const op = f.operator || '=';
@@ -198,8 +198,8 @@ export function applyLocalFilters(
         }
         case 'between': {
           if (f.range?.start && f.range?.end) {
-            const d = new Date(val as string | number);
-            return d >= new Date(f.range.start) && d <= new Date(f.range.end);
+            const d = String(val as string | number).substring(0, 10);
+            return d >= f.range.start && d <= f.range.end;
           }
           return true;
         }
@@ -296,9 +296,9 @@ export function computeMetricSummary(
   }
 
   // Choose segment count based on time range
-  const startMs = new Date(rangeStart).getTime();
-  const endMs   = new Date(rangeEnd).getTime();
-  const diffDays = (endMs - startMs) / (1000 * 60 * 60 * 24);
+  const startDate = Temporal.PlainDate.from(String(rangeStart).substring(0, 10));
+  const endDate   = Temporal.PlainDate.from(String(rangeEnd).substring(0, 10));
+  const diffDays  = startDate.until(endDate).total('days');
 
   let segmentCount: number;
   if (diffDays <= 1)        segmentCount = 12;
@@ -307,12 +307,19 @@ export function computeMetricSummary(
   else if (diffDays <= 90)  segmentCount = 3;
   else                      segmentCount = 12;
 
-  const rangeMs = endMs - startMs;
-  if (rangeMs <= 0) {
+  if (diffDays <= 0) {
     return { total, delta: 0, deltaPercent: 0, values: [total], count: 1 };
   }
 
-  const bucketWidth = rangeMs / segmentCount;
+  const bucketDays = diffDays / segmentCount;
+
+  const bucketIndex = (v: unknown): number => {
+    const dayOffset = startDate.until(
+      Temporal.PlainDate.from(String(v as string | number).substring(0, 10)),
+    ).total('days');
+    const idx = Math.floor(dayOffset / bucketDays);
+    return Math.min(Math.max(idx, 0), segmentCount - 1);
+  };
 
   // Collect per-bucket values (array of arrays) when using a value field,
   // otherwise simple counts.
@@ -322,11 +329,7 @@ export function computeMetricSummary(
     for (const r of records) {
       const v = r[field];
       if (v == null) continue;
-      const t = new Date(v as string | number).getTime();
-      let idx = Math.floor((t - startMs) / bucketWidth);
-      if (idx >= segmentCount) idx = segmentCount - 1;
-      if (idx < 0) idx = 0;
-      bucketArrays[idx]!.push(r[valField]);
+      bucketArrays[bucketIndex(v)]!.push(r[valField]);
     }
     bucketValues = bucketArrays.map((vals) => agg(vals, aggFn));
   } else {
@@ -334,11 +337,7 @@ export function computeMetricSummary(
     for (const r of records) {
       const v = r[field];
       if (v == null) continue;
-      const t = new Date(v as string | number).getTime();
-      let idx = Math.floor((t - startMs) / bucketWidth);
-      if (idx >= segmentCount) idx = segmentCount - 1;
-      if (idx < 0) idx = 0;
-      bucketValues[idx]!++;
+      bucketValues[bucketIndex(v)]!++;
     }
   }
 

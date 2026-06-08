@@ -1,46 +1,80 @@
+<!--
+  sherpa-calendar.html
+  Calendar panel — date, date-range, and date+time selection.
+
+  Composes:
+    sherpa-container        — card surface (border, radius, elevation)
+    sherpa-container-footer — footer band for action buttons
+    sherpa-button           — Today / Cancel / Apply
+    sherpa-input-number     — hour and minute spinners
+
+  data-mode:
+    date-time (default) — calendar + time spinners
+    date                — calendar only
+    range               — calendar only, two-click range selection
+    time                — time spinners only
+-->
+
 <template id="default">
-  <div class="cal-container">
-    <!-- Header -->
-    <div class="cal-header" part="header">
-      <slot name="header">
-        <button class="cal-prev" part="prev-button" type="button" aria-label="Previous month">
-          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
-        </button>
-        <button class="cal-month-label" part="month-label" type="button">
-          <!-- Month Year -->
-        </button>
-        <button class="cal-next" part="next-button" type="button" aria-label="Next month">
-          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-        </button>
-      </slot>
+  <sherpa-container class="panel-card" data-variant="fit" data-elevation="md">
+
+    <div class="panel">
+
+      <!-- ── Calendar ─────────────────────────────────────────── -->
+      <div class="cal-section">
+        <div class="cal-header grouped-component" role="group" aria-label="Calendar navigation">
+          <sherpa-button class="cal-prev"
+                         data-variant="secondary"
+                         data-type="icon" data-icon-start="fa-solid fa-chevron-left"
+                         aria-label="Previous"></sherpa-button>
+          <sherpa-button class="cal-mode"
+                         data-variant="secondary"
+                         data-label="—"
+                         aria-label="Change calendar view"></sherpa-button>
+          <sherpa-button class="cal-next"
+                         data-variant="secondary"
+                         data-type="icon" data-icon-start="fa-solid fa-chevron-right"
+                         aria-label="Next"></sherpa-button>
+        </div>
+
+        <div class="cal-weekdays" aria-hidden="true">
+          <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span>
+          <span>THU</span><span>FRI</span><span>SAT</span>
+        </div>
+
+        <div class="cal-days" role="grid"></div>
+        <div class="cal-months" role="grid" hidden></div>
+        <div class="cal-years" role="grid" hidden></div>
+      </div>
+
+      <!-- ── Time spinners ───────────────────────────────────── -->
+      <div class="time-panel">
+        <div class="time-spinners" role="group" aria-label="Time">
+          <sherpa-input-number class="time-input hour-input"
+                               min="0" max="23" value="0"
+                               aria-label="Hour"></sherpa-input-number>
+          <span class="time-sep" aria-hidden="true">:</span>
+          <sherpa-input-number class="time-input minute-input"
+                               min="0" max="59" value="0"
+                               aria-label="Minute"></sherpa-input-number>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Weekday headers -->
-    <div class="cal-weekdays" part="weekdays">
-      <span class="cal-weekday">Su</span>
-      <span class="cal-weekday">Mo</span>
-      <span class="cal-weekday">Tu</span>
-      <span class="cal-weekday">We</span>
-      <span class="cal-weekday">Th</span>
-      <span class="cal-weekday">Fr</span>
-      <span class="cal-weekday">Sa</span>
-    </div>
+    <!-- ── Footer ──────────────────────────────────────────────── -->
+    <sherpa-container-footer slot="footer" class="panel-footer" data-type="slot">
+      <sherpa-button class="btn-today"  data-variant="secondary" data-size="base" data-label="Today"></sherpa-button>
+      <sherpa-button class="btn-cancel" data-variant="secondary" data-size="base" data-label="Cancel"></sherpa-button>
+      <sherpa-button class="btn-apply"  data-variant="primary"   data-size="base" data-label="Apply"></sherpa-button>
+    </sherpa-container-footer>
 
-    <!-- Days grid (populated by JS) -->
-    <div class="cal-days" part="days-grid" role="grid">
-      <!-- Populated by renderCalendarGrid() -->
-    </div>
+  </sherpa-container>
 
-    <!-- Day button template (prototype for cloning) -->
-    <template class="cal-day-tpl">
-      <button class="cal-day" type="button" role="gridcell">
-        <!-- Day number -->
-      </button>
-    </template>
+  <input type="hidden" class="hidden-input" />
 
-    <!-- Footer -->
-    <div class="cal-footer" part="footer" data-has-content>
-      <slot name="footer"></slot>
-    </div>
-  </div>
+  <!-- Day button prototype — cloned by JS, never rendered directly -->
+  <template class="cal-day-tpl">
+    <button type="button" class="cal-day" role="gridcell"></button>
+  </template>
 </template>

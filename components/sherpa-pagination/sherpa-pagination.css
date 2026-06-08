@@ -59,8 +59,8 @@
   min-width: 56px;
 
   &:focus-visible {
-    outline: --focus-ring();
-    outline-offset: -1px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
   }
 }
 :host .pagination-info {
@@ -97,8 +97,8 @@
   }
 
   &:focus-visible {
-    outline: --focus-ring();
-    outline-offset: -1px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
   }
 
   &:disabled {

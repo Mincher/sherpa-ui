@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="apex-2-core" data-mode="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sherpa Token Studio</title>
+
+  <!-- Web fonts (Open Sans referenced by --sherpa-fonts-context-default) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome (Sherpa icon system; SherpaElement loads into shadow DOM, mirror in light DOM) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Sherpa token cascade -->
+  <link rel="stylesheet" href="/sherpa/css/index.css">
+
+  <!-- Sherpa shared utilities (SherpaElement injects these into shadow roots; mirror in light DOM) -->
+  <link rel="stylesheet" href="/sherpa/css/sherpa-text-classes.css">
+  <link rel="stylesheet" href="/sherpa/css/sherpa-icon-classes.css">
+  <link rel="stylesheet" href="/sherpa/css/sherpa-motion-classes.css">
+  <link rel="stylesheet" href="/sherpa/css/tokens/sherpa-functions.css">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sherpa-fonts-context-default, 'Open Sans', sans-serif);
+      font-size: var(--sherpa-fonts-scale-base, 14px);
+      background: var(--sherpa-surface-app-background-default, #f5f5f7);
+      color: var(--sherpa-content-default-body, #2e2e33);
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .studio-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      background: var(--sherpa-surface-app-product-bar-bg, #18191a);
+      color: var(--sherpa-content-default-on-color-body, #f0f0f2);
+      gap: var(--sherpa-space-sm, 12px);
+      flex-shrink: 0;
+    }
+    .studio-wordmark {
+      display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-xs, 8px);
+      font-weight: 600;
+      font-size: var(--sherpa-fonts-scale-base, 14px);
+      color: inherit;
+    }
+    .studio-wordmark-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--sherpa-color-brand-base, #8500cc);
+    }
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-xs, 8px);
+    }
+    .header-select {
+      height: 28px;
+      padding: 0 var(--sherpa-space-xs, 8px);
+      border-radius: var(--sherpa-border-rounding-base, 4px);
+      border: 1px solid var(--sherpa-border-control-secondary-default, rgba(255,255,255,0.2));
+      background: rgba(255,255,255,0.08);
+      color: inherit;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* ── Workflow bar ── */
+    .workflow-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-sm, 12px);
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      background: var(--sherpa-surface-container-default, #fff);
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      flex-shrink: 0;
+    }
+    .workflow-steps {
+      display: flex;
+      align-items: center;
+      gap: var(--sherpa-space-xs, 8px);
+      flex: 1;
+    }
+    .workflow-step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+    }
+    .workflow-step.active {
+      color: var(--sherpa-content-default-body, #2e2e33);
+      font-weight: 600;
+    }
+    .workflow-step.done {
+      color: var(--sherpa-content-context-success-on-color-subtle, #1a7a3a);
+    }
+    .workflow-step-num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: currentColor;
+      color: #fff;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      opacity: 0.6;
+    }
+    .workflow-step.active .workflow-step-num { opacity: 1; }
+    .workflow-arrow { color: var(--sherpa-content-inactive-default, #8c8c99); }
+
+    .workflow-summary { display: flex; align-items: center; gap: 6px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--sherpa-surface-container-hover, #f4f4f6);
+    }
+    .badge-changed { background: var(--sherpa-surface-context-info-subtle-default, #e0f0ff); color: var(--sherpa-content-context-info-on-color-subtle, #0b6dd6); }
+    .badge-added   { background: var(--sherpa-surface-context-success-subtle-default, #e0f8ea); color: var(--sherpa-content-context-success-on-color-subtle, #1a7a3a); }
+    .badge-removed { background: var(--sherpa-surface-context-error-subtle-default, #fde8e8); color: var(--sherpa-content-context-error-on-color-subtle, #b91c1c); }
+
+    .workflow-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+    /* ── Main panels ── */
+    .panels {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      overflow: hidden;
+    }
+
+    /* ── Left: Changes panel ── */
+    .panel-changes {
+      border-right: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-label {
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      background: var(--sherpa-surface-container-default, #fff);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .changes-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      font-size: 13px;
+      text-align: center;
+      padding: 24px;
+    }
+    .collection-section { border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6); }
+    .collection-header {
+      padding: 6px var(--sherpa-space-sm, 12px);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      background: var(--sherpa-surface-container-hover, #f4f4f6);
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .collection-header:hover { background: var(--sherpa-surface-control-secondary-hover, #ebebf0); }
+    .token-entry {
+      padding: 8px var(--sherpa-space-sm, 12px);
+      border-bottom: 1px solid var(--sherpa-border-container-subtle, rgba(0,0,0,0.06));
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .token-name {
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      color: var(--sherpa-content-default-body, #2e2e33);
+    }
+    .token-values { display: flex; flex-direction: column; gap: 3px; }
+    .token-mode-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+    }
+    .mode-label {
+      width: 40px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      flex-shrink: 0;
+    }
+    .swatch {
+      width: 14px; height: 14px;
+      border-radius: 2px;
+      border: 1px solid rgba(0,0,0,0.12);
+      flex-shrink: 0;
+    }
+    .swatch-arrow {
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      font-size: 10px;
+    }
+    .token-value-text {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--sherpa-content-default-secondary, #5c5c66);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .entry-added .token-name::before { content: '+'; color: var(--sherpa-content-context-success-on-color-subtle, #1a7a3a); margin-right: 4px; }
+    .entry-removed .token-name::before { content: '−'; color: var(--sherpa-content-context-error-on-color-subtle, #b91c1c); margin-right: 4px; }
+
+    /* ── Log overlay ── */
+    #log-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    #log-panel.visible { display: flex; }
+    .log-box {
+      background: #1a1a1f;
+      color: #d0d0d8;
+      border-radius: 8px;
+      padding: 16px;
+      width: min(640px, 90vw);
+      max-height: 70vh;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      color: #fff;
+      font-family: inherit;
+    }
+
+    /* ── Right: Chain explorer ── */
+    .panel-chain {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Mode toggle */
+    .panel-mode-toggle {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--sherpa-border-control-secondary-default, #d5d5d5);
+      border-radius: var(--sherpa-border-rounding-base, 4px);
+      overflow: hidden;
+    }
+    .mode-tab {
+      height: 28px;
+      padding: 0 12px;
+      border: none;
+      background: var(--sherpa-surface-container-default, #fff);
+      color: var(--sherpa-content-default-secondary, #5c5c66);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .mode-tab + .mode-tab { border-left: 1px solid var(--sherpa-border-control-secondary-default, #d5d5d5); }
+    .mode-tab.active {
+      background: var(--sherpa-surface-control-primary-default, #8500cc);
+      color: #fff;
+      font-weight: 600;
+    }
+    .mode-tab:not(.active):hover { background: var(--sherpa-surface-control-secondary-hover, #f0f0f4); }
+
+    .chain-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      background: var(--sherpa-surface-container-default, #fff);
+      flex-wrap: wrap;
+    }
+
+    /* Component view */
+    .component-controls {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      background: var(--sherpa-surface-container-default, #fff);
+    }
+    .component-controls.visible { display: flex; }
+
+    .comp-selector-group {
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+    }
+    .comp-selector-header {
+      padding: 6px var(--sherpa-space-sm, 12px);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      background: var(--sherpa-surface-container-hover, #f4f4f6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    .comp-selector-header:hover { background: var(--sherpa-surface-control-secondary-hover, #ebebf0); }
+    .comp-selector-count {
+      font-weight: 400;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+    }
+    .comp-token-row {
+      padding: 7px var(--sherpa-space-sm, 12px);
+      border-bottom: 1px solid var(--sherpa-border-container-subtle, rgba(0,0,0,0.06));
+      cursor: pointer;
+    }
+    .comp-token-row:hover { background: var(--sherpa-surface-container-hover, #f8f8fb); }
+    .comp-token-row.expanded { background: var(--sherpa-surface-context-default-subtle-default, #f4f0ff); }
+    .comp-token-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .comp-token-css-prop {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--sherpa-content-default-secondary, #5c5c66);
+      flex-shrink: 0;
+      min-width: 140px;
+    }
+    .comp-token-arrow { color: var(--sherpa-content-inactive-default, #8c8c99); font-size: 11px; }
+    .comp-token-primary {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--sherpa-content-default-body, #2e2e33);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .comp-token-terminal {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .comp-token-swatch {
+      width: 14px; height: 14px;
+      border-radius: 2px;
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+    .comp-token-val {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .comp-token-chain {
+      display: none;
+      padding: 8px 0 4px 16px;
+      border-top: 1px solid var(--sherpa-border-container-subtle, rgba(0,0,0,0.06));
+      margin-top: 6px;
+    }
+    .comp-token-row.expanded .comp-token-chain { display: block; }
+    .comp-chain-step {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 11px;
+      padding: 2px 0;
+      font-family: 'Courier New', monospace;
+    }
+    .comp-chain-prop { color: var(--sherpa-content-default-body, #2e2e33); }
+    .comp-chain-file {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--sherpa-surface-container-hover, #f4f4f6);
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      font-family: inherit;
+    }
+    .comp-chain-val { color: var(--sherpa-content-default-secondary, #5c5c66); }
+    .comp-chain-swatch {
+      width: 10px; height: 10px;
+      border-radius: 1px;
+      border: 1px solid rgba(0,0,0,0.12);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .comp-chain-indent { color: var(--sherpa-content-inactive-default, #8c8c99); }
+
+    /* ── Component header (shown above the token list) ── */
+    .comp-header {
+      display: none;
+      flex-direction: column;
+      gap: 0;
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      background: var(--sherpa-surface-container-default, #fff);
+      flex-shrink: 0;
+    }
+    .comp-header.visible { display: flex; }
+
+    /* Live component preview */
+    .comp-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
+      padding: 24px;
+      background-image:
+        linear-gradient(45deg, var(--sherpa-border-container-subtle, rgba(0,0,0,0.05)) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--sherpa-border-container-subtle, rgba(0,0,0,0.05)) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--sherpa-border-container-subtle, rgba(0,0,0,0.05)) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--sherpa-border-container-subtle, rgba(0,0,0,0.05)) 75%);
+      background-size: 12px 12px;
+      background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+      border-bottom: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .comp-preview-note {
+      font-size: 11px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* Meta row: name + stats */
+    .comp-meta {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sherpa-space-xs, 8px);
+      padding: 8px var(--sherpa-space-sm, 12px) 6px;
+    }
+    .comp-name-row {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sherpa-space-xs, 8px);
+    }
+    .comp-name {
+      font-size: var(--sherpa-fonts-scale-base, 14px);
+      font-weight: 700;
+      color: var(--sherpa-content-default-heading, #18191a);
+      font-family: 'Courier New', monospace;
+    }
+    .comp-stats {
+      font-size: 12px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+    }
+    .comp-filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 0 var(--sherpa-space-sm, 12px) 8px;
+    }
+    .comp-filter-label {
+      font-size: 11px;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .chain-select {
+      height: 32px;
+      padding: 0 10px;
+      border-radius: var(--sherpa-border-rounding-base, 4px);
+      border: 1px solid var(--sherpa-border-control-secondary-default, #d5d5d5);
+      background: var(--sherpa-surface-container-default, #fff);
+      color: var(--sherpa-content-default-body, #2e2e33);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      min-width: 160px;
+    }
+    .chain-select:hover { border-color: var(--sherpa-border-control-active-default, #8500cc); }
+    .chain-select:focus {
+      outline: none;
+      border-color: var(--sherpa-border-control-active-default, #8500cc);
+      box-shadow: 0 0 0 2px var(--sherpa-effects-focus-ring, rgba(133,0,204,0.2));
+    }
+    .chain-separator { color: var(--sherpa-content-inactive-default, #8c8c99); }
+
+    .chain-content {
+      flex: 1;
+      padding: var(--sherpa-space-sm, 12px);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .chain-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      font-size: 13px;
+      text-align: center;
+      padding: 24px;
+    }
+
+    /* Chain step */
+    .chain-step {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 8px 10px;
+      background: var(--sherpa-surface-container-default, #fff);
+      border: 1px solid var(--sherpa-border-container-default, #e0e0e6);
+      border-radius: var(--sherpa-border-rounding-base, 4px);
+    }
+    .chain-step.terminal {
+      border-color: var(--sherpa-border-control-active-default, #8500cc);
+      background: var(--sherpa-surface-context-default-subtle-default, #f4f0ff);
+    }
+    .chain-step-prop {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--sherpa-content-default-body, #2e2e33);
+    }
+    .chain-step-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .chain-file-badge {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: var(--sherpa-surface-container-hover, #f4f4f6);
+      color: var(--sherpa-content-default-secondary, #5c5c66);
+      font-family: 'Courier New', monospace;
+    }
+    .chain-step-value {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--sherpa-content-default-secondary, #5c5c66);
+      word-break: break-all;
+    }
+    .chain-step-terminal-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chain-color-swatch {
+      width: 20px; height: 20px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+    .chain-arrow {
+      text-align: center;
+      color: var(--sherpa-content-inactive-default, #8c8c99);
+      font-size: 16px;
+      line-height: 1;
+      margin: -2px 0;
+    }
+
+    /* Buttons */
+    .btn {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--sherpa-border-rounding-base, 4px);
+      border: 1px solid transparent;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--sherpa-effects-focus-ring, rgba(133,0,204,0.2));
+    }
+    .btn-primary {
+      background: var(--sherpa-surface-control-primary-default, #8500cc);
+      color: var(--sherpa-content-default-on-color-body, #fff);
+    }
+    .btn-primary:hover { background: var(--sherpa-surface-control-primary-hover, #50007a); }
+    .btn-primary:disabled { background: var(--sherpa-surface-container-inactive, #c8c8d0); cursor: not-allowed; }
+    .btn-secondary {
+      background: var(--sherpa-surface-control-secondary-default, #fff);
+      color: var(--sherpa-content-default-body, #2e2e33);
+      border-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
+    }
+    .btn-secondary:hover { background: var(--sherpa-surface-control-secondary-hover, #f0f0f4); }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────── -->
+<header class="studio-header">
+  <div class="studio-wordmark">
+    <div class="studio-wordmark-dot"></div>
+    Sherpa Token Studio
+  </div>
+  <div class="header-controls">
+    <select class="header-select" id="theme-select">
+      <option value="">Default theme</option>
+      <option value="apex-2-purple">Purple</option>
+      <option value="apex-2-teal">Teal</option>
+      <option value="apex-2-blue">Blue</option>
+      <option value="classic">Classic</option>
+    </select>
+    <select class="header-select" id="mode-select">
+      <option value="auto">Auto mode</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="hc">High Contrast</option>
+    </select>
+  </div>
+</header>
+
+<!-- ── Workflow bar ─────────────────────────────────────────────────── -->
+<div class="workflow-bar">
+  <div class="workflow-steps">
+    <div class="workflow-step active" id="step-pull">
+      <div class="workflow-step-num">1</div>
+      Pull from Figma
+    </div>
+    <div class="workflow-arrow">›</div>
+    <div class="workflow-step" id="step-review">
+      <div class="workflow-step-num">2</div>
+      Review
+      <div class="workflow-summary" id="diff-summary" style="display:none"></div>
+    </div>
+    <div class="workflow-arrow">›</div>
+    <div class="workflow-step" id="step-apply">
+      <div class="workflow-step-num">3</div>
+      Apply
+    </div>
+  </div>
+  <div class="workflow-actions">
+    <button class="btn btn-secondary" id="btn-cancel" style="display:none">Cancel</button>
+    <button class="btn btn-primary"   id="btn-pull">Pull ▶</button>
+    <button class="btn btn-primary"   id="btn-apply" style="display:none">Apply CSS ✓</button>
+  </div>
+</div>
+
+<!-- ── Main panels ──────────────────────────────────────────────────── -->
+<div class="panels">
+
+  <!-- Left: changes -->
+  <div class="panel-changes">
+    <div class="panel-label">Variable Changes</div>
+    <div class="changes-empty" id="changes-empty">
+      Pull from Figma to see what changed.
+    </div>
+    <div id="changes-list"></div>
+  </div>
+
+  <!-- Right: chain explorer -->
+  <div class="panel-chain">
+
+    <!-- Mode toggle + controls row -->
+    <div class="chain-controls">
+      <div class="panel-mode-toggle">
+        <button class="mode-tab active" id="tab-property">Property</button>
+        <button class="mode-tab"        id="tab-component">Component</button>
+      </div>
+
+      <!-- Property mode selectors -->
+      <div id="property-controls" style="display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap;">
+        <select class="chain-select" id="sel-file">
+          <option value="">Select file…</option>
+        </select>
+        <span class="chain-separator">›</span>
+        <select class="chain-select" id="sel-selector" disabled>
+          <option value="">Select selector…</option>
+        </select>
+        <span class="chain-separator">›</span>
+        <select class="chain-select" id="sel-prop" disabled>
+          <option value="">Select property…</option>
+        </select>
+      </div>
+
+      <!-- Component mode: just the component picker in the toolbar -->
+      <div id="component-controls" style="display:none;align-items:center;gap:8px;flex:1;">
+        <select class="chain-select" id="sel-component" style="min-width:220px;">
+          <option value="">Select component…</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Component header: live preview + name/stats + filters -->
+    <div class="comp-header" id="comp-header">
+      <!-- Live rendered component -->
+      <div class="comp-preview" id="comp-preview">
+        <span class="comp-preview-note" id="comp-preview-note"></span>
+      </div>
+      <!-- Name + stats -->
+      <div class="comp-meta">
+        <span class="comp-name" id="comp-name-display"></span>
+        <span class="comp-stats" id="comp-stats-display"></span>
+      </div>
+      <!-- Filters -->
+      <div class="comp-filter-row">
+        <span class="comp-filter-label">Template</span>
+        <select class="chain-select" id="sel-comp-template" style="min-width:130px;">
+          <option value="default">default</option>
+        </select>
+
+        <span class="comp-filter-label" id="lbl-variant" style="margin-left:8px;">Variant</span>
+        <select class="chain-select" id="sel-comp-variant" style="min-width:130px;">
+          <option value="">—</option>
+        </select>
+
+        <span class="comp-filter-label" id="lbl-size" style="margin-left:4px;">Size</span>
+        <select class="chain-select" id="sel-comp-size" style="min-width:100px;">
+          <option value="">—</option>
+        </select>
+
+        <span class="comp-filter-label" id="lbl-status" style="margin-left:4px;">Status</span>
+        <select class="chain-select" id="sel-comp-status" style="min-width:110px;">
+          <option value="">—</option>
+        </select>
+
+        <select class="chain-select" id="sel-comp-selector" style="min-width:200px;margin-left:4px;">
+          <option value="">All selectors</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Property mode content -->
+    <div id="property-panel">
+      <div class="panel-label">Token Chain</div>
+      <div class="chain-content">
+        <div class="chain-empty" id="chain-empty">
+          Select a file, selector, and property to see its token chain.
+        </div>
+        <div id="chain-steps"></div>
+      </div>
+    </div>
+
+    <!-- Component mode content -->
+    <div id="component-panel" style="display:none;overflow-y:auto;flex:1;">
+      <div class="panel-label" id="comp-panel-label">Component Tokens</div>
+      <div class="chain-empty" id="comp-empty">
+        Select a component to see all tokens it uses.
+      </div>
+      <div id="comp-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Log overlay ──────────────────────────────────────────────────── -->
+<div id="log-panel">
+  <div style="width:min(640px,90vw)">
+    <div class="log-header">
+      <strong id="log-title">Extracting…</strong>
+      <button class="btn btn-secondary" id="log-close" style="display:none">Close</button>
+    </div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+</div>
+
+<script type="module">
+// ── State ─────────────────────────────────────────────────────────────
+let state = 'idle';     // idle | extracting | reviewing | applying
+let panelMode = 'property'; // 'property' | 'component'
+let cssFiles = [];
+let parsedFile = null;
+
+// ── Theme/mode controls ───────────────────────────────────────────────
+const html = document.documentElement;
+
+document.getElementById('theme-select').addEventListener('change', e => {
+  if (e.target.value) html.setAttribute('data-theme', e.target.value);
+  else html.removeAttribute('data-theme');
+  refreshChain();
+  refreshComponentIfActive();
+});
+document.getElementById('mode-select').addEventListener('change', e => {
+  html.setAttribute('data-mode', e.target.value || 'auto');
+  refreshChain();
+  refreshComponentIfActive();
+});
+
+function refreshComponentIfActive() {
+  if (panelMode !== 'component') return;
+  const name = document.getElementById('sel-component').value;
+  if (name) loadComponentTokens(name); // re-resolves chains under new theme/mode
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method };
+  if (body !== undefined) {
+    opts.headers = { 'Content-Type': 'application/json' };
+    opts.body = JSON.stringify(body);
+  }
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+function setState(s) {
+  state = s;
+  const el = id => document.getElementById(id);
+  el('btn-pull').style.display   = (s === 'idle' || s === 'reviewing') ? '' : 'none';
+  el('btn-apply').style.display  = s === 'reviewing' ? '' : 'none';
+  el('btn-cancel').style.display = s === 'reviewing' ? '' : 'none';
+  el('btn-pull').textContent = s === 'reviewing' ? 'Re-pull ▶' : 'Pull ▶';
+  setStepActive(s);
+}
+
+function setStepActive(s) {
+  ['step-pull','step-review','step-apply'].forEach(id =>
+    document.getElementById(id).classList.remove('active','done')
+  );
+  if (s === 'idle')      document.getElementById('step-pull').classList.add('active');
+  if (s === 'reviewing') { document.getElementById('step-pull').classList.add('done'); document.getElementById('step-review').classList.add('active'); }
+  if (s === 'applying')  { document.getElementById('step-pull').classList.add('done'); document.getElementById('step-review').classList.add('done'); document.getElementById('step-apply').classList.add('active'); }
+}
+
+// ── Status check on load ──────────────────────────────────────────────
+async function init() {
+  const status = await api('GET', '/api/status');
+
+  if (!status.hasToken) {
+    document.getElementById('btn-pull').disabled = true;
+    document.getElementById('btn-pull').title = 'FIGMA_ACCESS_TOKEN not set';
+  }
+
+  if (status.stagedExists) {
+    await loadDiff();
+    setState('reviewing');
+  }
+
+  await loadCssFiles();
+}
+
+// ── SSE for log streaming ─────────────────────────────────────────────
+let es = null;
+function startSSE(title, onDone) {
+  document.getElementById('log-title').textContent = title;
+  document.getElementById('log-box').textContent = '';
+  document.getElementById('log-close').style.display = 'none';
+  document.getElementById('log-panel').classList.add('visible');
+
+  if (es) es.close();
+  es = new EventSource('/api/events');
+
+  es.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if (d.type === 'log') {
+      document.getElementById('log-box').textContent += d.text;
+      document.getElementById('log-box').scrollTop = 9999;
+    }
+    if (d.type === 'done') {
+      es.close();
+      document.getElementById('log-close').style.display = '';
+      onDone(d.code);
+    }
+  };
+}
+
+document.getElementById('log-close').addEventListener('click', () => {
+  document.getElementById('log-panel').classList.remove('visible');
+});
+
+// ── Pull ──────────────────────────────────────────────────────────────
+document.getElementById('btn-pull').addEventListener('click', async () => {
+  setState('extracting');
+  startSSE('Pulling from Figma…', async code => {
+    if (code === 0) {
+      await loadDiff();
+      setState('reviewing');
+    } else {
+      setState('idle');
+    }
+  });
+  await api('POST', '/api/extract');
+});
+
+// ── Diff display ──────────────────────────────────────────────────────
+async function loadDiff() {
+  const diff = await api('GET', '/api/diff');
+  if (diff.error) return;
+
+  const { summary, byCollection } = diff;
+
+  // Summary badges
+  const summaryEl = document.getElementById('diff-summary');
+  summaryEl.style.display = '';
+  summaryEl.innerHTML = '';
+  if (summary.changed) summaryEl.innerHTML += `<span class="badge badge-changed">${summary.changed}↑</span>`;
+  if (summary.added)   summaryEl.innerHTML += `<span class="badge badge-added">${summary.added}+</span>`;
+  if (summary.removed) summaryEl.innerHTML += `<span class="badge badge-removed">${summary.removed}−</span>`;
+
+  // Changes list
+  const list = document.getElementById('changes-list');
+  list.innerHTML = '';
+  document.getElementById('changes-empty').style.display =
+    Object.keys(byCollection).length ? 'none' : '';
+
+  for (const [colName, colDiff] of Object.entries(byCollection)) {
+    const section = document.createElement('div');
+    section.className = 'collection-section';
+
+    const header = document.createElement('div');
+    header.className = 'collection-header';
+    const counts = [
+      colDiff.changed.length && `${colDiff.changed.length} changed`,
+      colDiff.added.length   && `${colDiff.added.length} added`,
+      colDiff.removed.length && `${colDiff.removed.length} removed`,
+    ].filter(Boolean).join(', ');
+    header.textContent = `${colName}  (${counts})`;
+    section.appendChild(header);
+
+    const entries = document.createElement('div');
+    let collapsed = false;
+    header.addEventListener('click', () => {
+      collapsed = !collapsed;
+      entries.style.display = collapsed ? 'none' : '';
+    });
+
+    for (const t of colDiff.changed) renderEntry(entries, t, 'changed');
+    for (const t of colDiff.added)   renderEntry(entries, t, 'added');
+    for (const t of colDiff.removed) renderEntry(entries, t, 'removed');
+
+    section.appendChild(entries);
+    list.appendChild(section);
+  }
+}
+
+function renderEntry(container, token, kind) {
+  const el = document.createElement('div');
+  el.className = `token-entry entry-${kind}`;
+
+  const name = document.createElement('div');
+  name.className = 'token-name';
+  name.textContent = token.n;
+  el.appendChild(name);
+
+  if (kind === 'changed') {
+    const vals = document.createElement('div');
+    vals.className = 'token-values';
+    const modes = new Set([...Object.keys(token.oldValues || {}), ...Object.keys(token.newValues || {})]);
+    for (const mode of modes) {
+      const oldV = token.oldValues?.[mode];
+      const newV = token.newValues?.[mode];
+      if (oldV === newV) continue;
+      const row = document.createElement('div');
+      row.className = 'token-mode-row';
+      const modeLabel = document.createElement('span');
+      modeLabel.className = 'mode-label';
+      modeLabel.textContent = mode;
+      row.appendChild(modeLabel);
+
+      if (token.isColor) {
+        const swOld = document.createElement('span');
+        swOld.className = 'swatch';
+        if (oldV) swOld.style.background = oldV;
+        const arrow = document.createElement('span');
+        arrow.className = 'swatch-arrow';
+        arrow.textContent = '→';
+        const swNew = document.createElement('span');
+        swNew.className = 'swatch';
+        swNew.style.background = newV;
+        row.append(swOld, arrow, swNew);
+      }
+
+      const textOld = document.createElement('span');
+      textOld.className = 'token-value-text';
+      textOld.style.textDecoration = 'line-through';
+      textOld.textContent = String(oldV ?? '—');
+      const arrow2 = document.createElement('span');
+      arrow2.className = 'swatch-arrow';
+      arrow2.textContent = '→';
+      const textNew = document.createElement('span');
+      textNew.className = 'token-value-text';
+      textNew.textContent = String(newV ?? '—');
+      row.append(textOld, arrow2, textNew);
+      vals.appendChild(row);
+    }
+    el.appendChild(vals);
+  } else {
+    // Added or removed: show mode values
+    const values = kind === 'added' ? token.newValues : token.oldValues;
+    const vals = document.createElement('div');
+    vals.className = 'token-values';
+    for (const [mode, v] of Object.entries(values || {})) {
+      const row = document.createElement('div');
+      row.className = 'token-mode-row';
+      const modeLabel = document.createElement('span');
+      modeLabel.className = 'mode-label';
+      modeLabel.textContent = mode;
+      if (token.t === 'COLOR' && v && typeof v === 'string') {
+        const sw = document.createElement('span');
+        sw.className = 'swatch';
+        sw.style.background = v;
+        row.appendChild(modeLabel);
+        row.appendChild(sw);
+      } else {
+        row.appendChild(modeLabel);
+      }
+      const text = document.createElement('span');
+      text.className = 'token-value-text';
+      text.textContent = String(v ?? '—');
+      row.appendChild(text);
+      vals.appendChild(row);
+    }
+    el.appendChild(vals);
+  }
+
+  container.appendChild(el);
+}
+
+// ── Apply ─────────────────────────────────────────────────────────────
+document.getElementById('btn-apply').addEventListener('click', async () => {
+  setState('applying');
+  startSSE('Generating CSS…', async code => {
+    if (code === 0) {
+      setState('idle');
+      document.getElementById('changes-empty').style.display = '';
+      document.getElementById('changes-list').innerHTML = '';
+      document.getElementById('diff-summary').style.display = 'none';
+    } else {
+      setState('reviewing');
+    }
+  });
+  await api('POST', '/api/apply');
+});
+
+// ── Cancel ────────────────────────────────────────────────────────────
+document.getElementById('btn-cancel').addEventListener('click', async () => {
+  await api('DELETE', '/api/staged');
+  setState('idle');
+  document.getElementById('changes-empty').style.display = '';
+  document.getElementById('changes-list').innerHTML = '';
+  document.getElementById('diff-summary').style.display = 'none';
+});
+
+// ── Chain explorer ────────────────────────────────────────────────────
+async function loadCssFiles() {
+  cssFiles = await api('GET', '/api/css-files');
+  const sel = document.getElementById('sel-file');
+  sel.innerHTML = '<option value="">Select file…</option>';
+
+  // Group by group field
+  const groups = {};
+  for (const f of cssFiles) {
+    (groups[f.group] ||= []).push(f);
+  }
+  for (const [groupName, files] of Object.entries(groups)) {
+    const og = document.createElement('optgroup');
+    og.label = groupName;
+    for (const f of files) {
+      const opt = document.createElement('option');
+      opt.value = f.path;
+      opt.textContent = f.label;
+      og.appendChild(opt);
+    }
+    sel.appendChild(og);
+  }
+}
+
+document.getElementById('sel-file').addEventListener('change', async e => {
+  const filePath = e.target.value;
+  const selSel = document.getElementById('sel-selector');
+  const propSel = document.getElementById('sel-prop');
+  selSel.innerHTML = '<option value="">Select selector…</option>';
+  propSel.innerHTML = '<option value="">Select property…</option>';
+  selSel.disabled = true;
+  propSel.disabled = true;
+  clearChain();
+  if (!filePath) return;
+
+  const data = await api('GET', `/api/css-file?path=${encodeURIComponent(filePath)}`);
+  parsedFile = data;
+
+  // Populate selectors (deduplicate, show only those with custom properties)
+  const seen = new Set();
+  for (const block of (data.selectors || [])) {
+    const hasCustom = block.properties.some(p => p.name.startsWith('--') || p.name.startsWith('background') || p.name.startsWith('color') || p.name.startsWith('border') || p.name.startsWith('padding') || p.name.startsWith('margin'));
+    if (!hasCustom) continue;
+    if (seen.has(block.selector)) continue;
+    seen.add(block.selector);
+    const opt = document.createElement('option');
+    opt.value = block.selector;
+    opt.textContent = block.selector;
+    selSel.appendChild(opt);
+  }
+  selSel.disabled = false;
+});
+
+document.getElementById('sel-selector').addEventListener('change', e => {
+  const selector = e.target.value;
+  const propSel = document.getElementById('sel-prop');
+  propSel.innerHTML = '<option value="">Select property…</option>';
+  propSel.disabled = true;
+  clearChain();
+  if (!selector || !parsedFile) return;
+
+  const blocks = (parsedFile.selectors || []).filter(b => b.selector === selector);
+  const props = new Map();
+  for (const block of blocks) {
+    for (const p of block.properties) {
+      props.set(p.name, p);
+    }
+  }
+  for (const [name] of props) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    propSel.appendChild(opt);
+  }
+  propSel.disabled = false;
+});
+
+document.getElementById('sel-prop').addEventListener('change', async e => {
+  const prop = e.target.value;
+  if (!prop) { clearChain(); return; }
+  await refreshChain();
+});
+
+async function refreshChain() {
+  const prop = document.getElementById('sel-prop').value;
+  if (!prop) return;
+
+  const theme = document.getElementById('theme-select').value || null;
+  const mode  = document.getElementById('mode-select').value  || null;
+
+  const params = new URLSearchParams({ prop });
+  if (theme) params.set('theme', theme);
+  if (mode && mode !== 'auto') params.set('mode', mode);
+
+  const data = await api('GET', `/api/resolve?${params}`);
+  renderChain(prop, data.chain || []);
+}
+
+function clearChain() {
+  document.getElementById('chain-steps').innerHTML = '';
+  document.getElementById('chain-empty').style.display = '';
+}
+
+function renderChain(rootProp, chain) {
+  const container = document.getElementById('chain-steps');
+  container.innerHTML = '';
+  document.getElementById('chain-empty').style.display = chain.length ? 'none' : '';
+
+  chain.forEach((step, i) => {
+    if (i > 0) {
+      const arrow = document.createElement('div');
+      arrow.className = 'chain-arrow';
+      arrow.textContent = '↓';
+      container.appendChild(arrow);
+    }
+
+    const el = document.createElement('div');
+    el.className = 'chain-step' + (step.isTerminal ? ' terminal' : '');
+
+    const propEl = document.createElement('div');
+    propEl.className = 'chain-step-prop';
+    propEl.textContent = step.property;
+    el.appendChild(propEl);
+
+    if (step.file || step.selector) {
+      const meta = document.createElement('div');
+      meta.className = 'chain-step-meta';
+      if (step.file) {
+        const badge = document.createElement('span');
+        badge.className = 'chain-file-badge';
+        badge.textContent = step.file.split('/').pop();
+        meta.appendChild(badge);
+      }
+      if (step.selector && step.selector !== '(fallback)') {
+        const sBadge = document.createElement('span');
+        sBadge.className = 'chain-file-badge';
+        sBadge.textContent = step.selector;
+        meta.appendChild(sBadge);
+      }
+      el.appendChild(meta);
+    }
+
+    if (step.isTerminal && step.displayValue) {
+      const row = document.createElement('div');
+      row.className = 'chain-step-terminal-row';
+      if (step.isColor) {
+        const sw = document.createElement('span');
+        sw.className = 'chain-color-swatch';
+        sw.style.background = step.displayValue;
+        row.appendChild(sw);
+      }
+      const val = document.createElement('span');
+      val.className = 'chain-step-value';
+      val.textContent = step.displayValue;
+      row.appendChild(val);
+      el.appendChild(row);
+    } else if (!step.isTerminal) {
+      const val = document.createElement('div');
+      val.className = 'chain-step-value';
+      val.textContent = step.rawValue;
+      el.appendChild(val);
+    }
+
+    container.appendChild(el);
+  });
+}
+
+// ── Panel mode toggle ─────────────────────────────────────────────────
+
+document.getElementById('tab-property').addEventListener('click', () => setPanelMode('property'));
+document.getElementById('tab-component').addEventListener('click', () => setPanelMode('component'));
+
+function setPanelMode(mode) {
+  panelMode = mode;
+  document.getElementById('tab-property').classList.toggle('active', mode === 'property');
+  document.getElementById('tab-component').classList.toggle('active', mode === 'component');
+  document.getElementById('property-controls').style.display  = mode === 'property'  ? 'flex' : 'none';
+  document.getElementById('component-controls').style.display = mode === 'component' ? 'flex' : 'none';
+  document.getElementById('property-panel').style.display     = mode === 'property'  ? ''     : 'none';
+  document.getElementById('component-panel').style.display    = mode === 'component' ? ''     : 'none';
+}
+
+// ── Component mode ────────────────────────────────────────────────────
+async function loadComponentList() {
+  const components = await api('GET', '/api/components');
+  const sel = document.getElementById('sel-component');
+  for (const name of components) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  }
+}
+
+// Cached component data for re-filtering without a round-trip
+let componentData   = null;
+let previewElement  = null; // the live rendered component element
+
+// ── Template defaults ─────────────────────────────────────────────────
+// Per-component, per-template: what content/attrs to set so the preview
+// renders usefully. Falls back to component-level defaults if not listed.
+const TEMPLATE_DEFAULTS = {
+  'sherpa-button': {
+    'default': el => { el.setAttribute('data-label', 'Button'); },
+    'icon':    el => { el.setAttribute('data-icon-start', 'fa-solid fa-star'); },
+  },
+  'sherpa-input-text': {
+    'default':   el => { el.setAttribute('data-label', 'Label'); el.setAttribute('data-placeholder', 'Enter text…'); },
+    'multiline': el => { el.setAttribute('data-label', 'Label'); el.setAttribute('data-placeholder', 'Enter text…'); },
+  },
+  'sherpa-tag': {
+    'default':   el => { el.textContent = 'Tag label'; },
+    'removable': el => { el.textContent = 'Removable'; },
+  },
+  'sherpa-nav-item': {
+    'item':    el => { el.setAttribute('data-label', 'Nav item'); el.setAttribute('data-icon-start', 'fa-solid fa-home'); },
+    'divider': el => {},
+    'promo':   el => { el.setAttribute('data-label', 'Promo item'); el.setAttribute('data-description', 'Promo description'); },
+  },
+  'sherpa-overlay-item': {
+    'default':  el => { el.textContent = 'Menu item'; },
+    'checkbox': el => { el.textContent = 'Checkbox item'; },
+    'radio':    el => { el.textContent = 'Radio item'; el.setAttribute('data-group', 'preview'); },
+    'toggle':   el => { el.textContent = 'Toggle item'; },
+    'heading':  el => { el.textContent = 'Section heading'; },
+  },
+  'sherpa-metric': {
+    'default': el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric'); },
+    'compact': el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric'); },
+  },
+  'sherpa-toast': {
+    'default': el => { el.setAttribute('data-label', 'Notification'); el.setAttribute('data-value', 'Something happened.'); },
+    'minimal': el => { el.setAttribute('data-value', 'Minimal toast.'); },
+  },
+  'sherpa-input-select': {
+    'default': el => { el.setAttribute('data-label', 'Select'); el.setAttribute('data-placeholder', 'Choose…'); },
+    'tree':    el => { el.setAttribute('data-label', 'Tree select'); },
+  },
+  'sherpa-stepper': {
+    'default':   el => { el.setAttribute('data-steps', JSON.stringify(['Step 1','Step 2','Step 3'])); el.setAttribute('data-current', '1'); },
+    'timeline':  el => { el.setAttribute('data-steps', JSON.stringify(['Event 1','Event 2','Event 3'])); el.setAttribute('data-current', '2'); },
+  },
+  'sherpa-panel': {
+    'default': el => { el.setAttribute('data-label', 'Panel title'); },
+    'ai':      el => { el.setAttribute('data-label', 'AI Panel'); },
+  },
+};
+
+// Component-level fallback defaults (used when no template-specific entry exists)
+const COMPONENT_DEFAULTS = {
+  'sherpa-button':         el => { el.setAttribute('data-label', 'Button'); },
+  'sherpa-input-text':     el => { el.setAttribute('data-label', 'Label'); el.setAttribute('data-placeholder', 'Enter text…'); },
+  'sherpa-input-select':   el => { el.setAttribute('data-label', 'Select'); el.setAttribute('data-placeholder', 'Choose…'); },
+  'sherpa-input-checkbox': el => { el.setAttribute('data-label', 'Checkbox label'); },
+  'sherpa-input-radio':    el => { el.setAttribute('data-label', 'Radio label'); },
+  'sherpa-tag':            el => { el.textContent = 'Tag label'; },
+  'sherpa-switch':         el => { el.setAttribute('data-label', 'Toggle'); },
+  'sherpa-progress-bar':   el => { el.setAttribute('data-value', '60'); el.setAttribute('data-label', 'Progress'); },
+  'sherpa-metric':         el => { el.setAttribute('data-value', '42'); el.setAttribute('data-label', 'Metric'); },
+  'sherpa-breadcrumbs':    el => { el.setAttribute('data-items', JSON.stringify([{label:'Home'},{label:'Section'},{label:'Page'}])); },
+  'sherpa-nav-item':       el => { el.setAttribute('data-label', 'Nav item'); el.setAttribute('data-icon-start', 'fa-solid fa-home'); },
+  'sherpa-overlay-item':      el => { el.textContent = 'Menu item'; },
+};
+
+// How to activate a non-default template on an element.
+// Most components use data-type="<templateId>"; exceptions listed here.
+const TEMPLATE_ACTIVATORS = {
+  'sherpa-input-text': {
+    'default':   el => el.removeAttribute('data-multiline'),
+    'multiline': el => el.setAttribute('data-multiline', ''),
+  },
+  'sherpa-nav-item': {
+    // nav-item uses data-type but maps differently
+    'item':    el => el.removeAttribute('data-type'),
+    'divider': el => el.setAttribute('data-type', 'divider'),
+    'promo':   el => el.setAttribute('data-type', 'promo'),
+  },
+  'sherpa-overlay-item': {
+    'default':  el => el.removeAttribute('data-type'),
+    'checkbox': el => el.setAttribute('data-type', 'checkbox'),
+    'radio':    el => el.setAttribute('data-type', 'radio'),
+    'toggle':   el => el.setAttribute('data-type', 'toggle'),
+    'heading':  el => el.setAttribute('data-type', 'heading'),
+  },
+};
+
+async function renderComponentPreview(name, variantAttrs, templateId = 'default') {
+  const preview = document.getElementById('comp-preview');
+  const note    = document.getElementById('comp-preview-note');
+
+  // Remove previous rendered element (re-create so template selection takes effect)
+  if (previewElement) { previewElement.remove(); previewElement = null; }
+  note.textContent = '';
+
+  try {
+    await import(`/sherpa/components/${name}/${name}.js`);
+  } catch {
+    note.textContent = 'No JS module for this component.';
+    return;
+  }
+
+  const el = document.createElement(name);
+
+  // Activate the selected template before connecting to DOM
+  const activator = TEMPLATE_ACTIVATORS[name]?.[templateId];
+  if (activator) {
+    activator(el);
+  } else if (templateId && templateId !== 'default') {
+    el.setAttribute('data-type', templateId);
+  }
+
+  // Apply variant attribute filters
+  for (const [attr, val] of variantAttrs) {
+    el.setAttribute(`data-${attr}`, val);
+  }
+
+  // Apply template-specific content defaults, then component-level fallback
+  const templateDefault = TEMPLATE_DEFAULTS[name]?.[templateId];
+  if (templateDefault) {
+    templateDefault(el);
+  } else {
+    (COMPONENT_DEFAULTS[name] || (() => {}))(el);
+  }
+
+  previewElement = el;
+  preview.insertBefore(el, note);
+}
+
+/** Read the three attribute filter dropdowns and return [[attr, val], …] pairs. */
+function readVariantAttrs() {
+  const attrs = [];
+  const v = document.getElementById('sel-comp-variant').value;
+  const s = document.getElementById('sel-comp-size').value;
+  const t = document.getElementById('sel-comp-status').value;
+  if (v) attrs.push(['variant', v]);
+  if (s) attrs.push(['size', s]);
+  if (t) attrs.push(['status', t]);
+  return attrs;
+}
+
+document.getElementById('sel-component').addEventListener('change', async e => {
+  const name = e.target.value;
+  componentData = null;
+  document.getElementById('comp-list').innerHTML = '';
+  document.getElementById('comp-header').classList.remove('visible');
+  document.getElementById('comp-empty').style.display = name ? 'none' : '';
+  // Reset filters
+  document.getElementById('sel-comp-template').innerHTML = '<option value="default">default</option>';
+  document.getElementById('sel-comp-variant').innerHTML  = '<option value="">—</option>';
+  document.getElementById('sel-comp-size').innerHTML     = '<option value="">—</option>';
+  document.getElementById('sel-comp-status').innerHTML   = '<option value="">—</option>';
+  document.getElementById('sel-comp-selector').innerHTML = '<option value="">All selectors</option>';
+  if (!name) {
+    if (previewElement) { previewElement.remove(); previewElement = null; }
+    return;
+  }
+  await loadComponentTokens(name);
+});
+
+function onAttrFilterChange() {
+  const name = document.getElementById('sel-component').value;
+  if (name) {
+    const templateId = document.getElementById('sel-comp-template').value;
+    renderComponentPreview(name, readVariantAttrs(), templateId);
+  }
+  if (componentData) renderComponentList(componentData);
+}
+
+document.getElementById('sel-comp-template').addEventListener('change', onAttrFilterChange);
+document.getElementById('sel-comp-variant').addEventListener('change', onAttrFilterChange);
+document.getElementById('sel-comp-size').addEventListener('change', onAttrFilterChange);
+document.getElementById('sel-comp-status').addEventListener('change', onAttrFilterChange);
+document.getElementById('sel-comp-selector').addEventListener('change', () => {
+  if (componentData) renderComponentList(componentData);
+});
+
+/** Extract all unique data-*="value" pairs from selectors, grouped by attribute. */
+function extractVariants(selectors) {
+  const groups = new Map(); // attr → Set<value>
+  for (const block of selectors) {
+    for (const [, attr, val] of block.selector.matchAll(/\[data-([\w-]+)="([^"]+)"\]/g)) {
+      if (!groups.has(attr)) groups.set(attr, new Set());
+      groups.get(attr).add(val);
+    }
+  }
+  return groups;
+}
+
+async function loadComponentTokens(name) {
+  const theme = document.getElementById('theme-select').value || null;
+  const mode  = document.getElementById('mode-select').value  || null;
+  const params = new URLSearchParams({ name });
+  if (theme) params.set('theme', theme);
+  if (mode && mode !== 'auto') params.set('mode', mode);
+
+  const data = await api('GET', `/api/component-tokens?${params}`);
+  if (data.error) return;
+  componentData = data;
+
+  // ── Component header ──────────────────────────────────────────────
+  const totalTokens = data.selectors.reduce((n, b) => n + b.tokens.length, 0);
+  document.getElementById('comp-name-display').textContent = name;
+  document.getElementById('comp-stats-display').textContent =
+    `${data.selectors.length} selectors · ${totalTokens} token references`;
+  document.getElementById('comp-header').classList.add('visible');
+
+  // ── Template dropdown ──────────────────────────────────────────────
+  const templateSel = document.getElementById('sel-comp-template');
+  const prevTemplate = templateSel.value;
+  const { templates } = await api('GET', `/api/component-templates?name=${encodeURIComponent(name)}`);
+  templateSel.innerHTML = '';
+  for (const id of templates) {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = id;
+    templateSel.appendChild(opt);
+  }
+  // Restore previous selection if still valid, else reset to first
+  templateSel.value = templates.includes(prevTemplate) ? prevTemplate : templates[0];
+  // Hide the dropdown if only one template (no choice to make)
+  templateSel.closest('.comp-filter-row').querySelector('.comp-filter-label').style.display =
+    templates.length <= 1 ? 'none' : '';
+  templateSel.style.display = templates.length <= 1 ? 'none' : '';
+
+  // ── Attribute filter dropdowns ────────────────────────────────────
+  // Populate variant/size/status dropdowns from values found in selectors;
+  // hide each label+select when the component has no values for that attribute.
+  const attrGroups = extractVariants(data.selectors);
+
+  function populateAttrSel(selId, lblId, attr) {
+    const sel  = document.getElementById(selId);
+    const lbl  = document.getElementById(lblId);
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">—</option>';
+    const values = attrGroups.get(attr);
+    const hasValues = values && values.size > 0;
+    sel.style.display = lbl.style.display = hasValues ? '' : 'none';
+    if (hasValues) {
+      for (const val of [...values].sort()) {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        sel.appendChild(opt);
+      }
+      if (prev && values.has(prev)) sel.value = prev;
+    }
+  }
+
+  populateAttrSel('sel-comp-variant', 'lbl-variant', 'variant');
+  populateAttrSel('sel-comp-size',    'lbl-size',    'size');
+  populateAttrSel('sel-comp-status',  'lbl-status',  'status');
+
+  // Render the live component preview with current filter state
+  const templateId = templateSel.value;
+  await renderComponentPreview(name, readVariantAttrs(), templateId);
+
+  // ── Selector filter ────────────────────────────────────────────────
+  const selectorSel = document.getElementById('sel-comp-selector');
+  const prevSelector = selectorSel.value;
+  selectorSel.innerHTML = '<option value="">All selectors</option>';
+  for (const block of data.selectors) {
+    const opt = document.createElement('option');
+    opt.value = block.selector;
+    opt.textContent = block.selector;
+    selectorSel.appendChild(opt);
+  }
+  if (prevSelector) selectorSel.value = prevSelector;
+
+  renderComponentList(data);
+}
+
+function renderComponentList(data) {
+  const variant        = document.getElementById('sel-comp-variant').value;
+  const size           = document.getElementById('sel-comp-size').value;
+  const status         = document.getElementById('sel-comp-status').value;
+  const selectorFilter = document.getElementById('sel-comp-selector').value;
+
+  let visibleBlocks = data.selectors;
+  if (variant)        visibleBlocks = visibleBlocks.filter(b => b.selector.includes(`[data-variant="${variant}"]`));
+  if (size)           visibleBlocks = visibleBlocks.filter(b => b.selector.includes(`[data-size="${size}"]`));
+  if (status)         visibleBlocks = visibleBlocks.filter(b => b.selector.includes(`[data-status="${status}"]`));
+  if (selectorFilter) visibleBlocks = visibleBlocks.filter(b => b.selector === selectorFilter);
+
+  const list = document.getElementById('comp-list');
+  list.innerHTML = '';
+  for (const block of visibleBlocks) renderComponentBlock(list, block);
+}
+
+function renderComponentBlock(container, block) {
+  const section = document.createElement('div');
+  section.className = 'comp-selector-group';
+
+  const header = document.createElement('div');
+  header.className = 'comp-selector-header';
+  const selectorText = document.createElement('span');
+  selectorText.textContent = block.selector;
+  const count = document.createElement('span');
+  count.className = 'comp-selector-count';
+  count.textContent = `${block.tokens.length} token${block.tokens.length !== 1 ? 's' : ''}`;
+  header.appendChild(selectorText);
+  header.appendChild(count);
+  section.appendChild(header);
+
+  const rows = document.createElement('div');
+  let collapsed = false;
+  header.addEventListener('click', () => {
+    collapsed = !collapsed;
+    rows.style.display = collapsed ? 'none' : '';
+  });
+
+  for (const token of block.tokens) {
+    rows.appendChild(renderTokenRow(token));
+  }
+
+  section.appendChild(rows);
+  container.appendChild(section);
+}
+
+function renderTokenRow(token) {
+  const row = document.createElement('div');
+  row.className = 'comp-token-row';
+
+  const header = document.createElement('div');
+  header.className = 'comp-token-header';
+
+  const cssProp = document.createElement('span');
+  cssProp.className = 'comp-token-css-prop';
+  cssProp.textContent = token.cssProperty;
+  header.appendChild(cssProp);
+
+  const arrow = document.createElement('span');
+  arrow.className = 'comp-token-arrow';
+  arrow.textContent = '›';
+  header.appendChild(arrow);
+
+  const primaryVar = document.createElement('span');
+  primaryVar.className = 'comp-token-primary';
+  primaryVar.textContent = token.primaryVar;
+  header.appendChild(primaryVar);
+
+  if (token.terminal?.value) {
+    const terminalGroup = document.createElement('span');
+    terminalGroup.className = 'comp-token-terminal';
+
+    if (token.terminal.isColor) {
+      const swatch = document.createElement('span');
+      swatch.className = 'comp-token-swatch';
+      swatch.style.background = token.terminal.value;
+      terminalGroup.appendChild(swatch);
+    }
+
+    const val = document.createElement('span');
+    val.className = 'comp-token-val';
+    val.textContent = token.terminal.value;
+    terminalGroup.appendChild(val);
+    header.appendChild(terminalGroup);
+  }
+
+  row.appendChild(header);
+
+  // Expandable chain detail
+  const chainEl = document.createElement('div');
+  chainEl.className = 'comp-token-chain';
+  renderMiniChain(chainEl, token.chain);
+  row.appendChild(chainEl);
+
+  row.addEventListener('click', () => row.classList.toggle('expanded'));
+
+  return row;
+}
+
+function renderMiniChain(container, chain) {
+  chain.forEach((step, i) => {
+    const line = document.createElement('div');
+    line.className = 'comp-chain-step';
+
+    const indent = document.createElement('span');
+    indent.className = 'comp-chain-indent';
+    indent.textContent = '  '.repeat(i) + (i > 0 ? '↳ ' : '');
+
+    const prop = document.createElement('span');
+    prop.className = 'comp-chain-prop';
+    prop.textContent = step.property;
+
+    line.appendChild(indent);
+    line.appendChild(prop);
+
+    if (step.file) {
+      const fileBadge = document.createElement('span');
+      fileBadge.className = 'comp-chain-file';
+      fileBadge.textContent = step.file.split('/').pop();
+      line.appendChild(fileBadge);
+    }
+
+    if (step.isTerminal && step.displayValue) {
+      if (step.isColor) {
+        const sw = document.createElement('span');
+        sw.className = 'comp-chain-swatch';
+        sw.style.background = step.displayValue;
+        line.appendChild(sw);
+      }
+      const val = document.createElement('span');
+      val.className = 'comp-chain-val';
+      val.textContent = step.displayValue;
+      line.appendChild(val);
+    }
+
+    container.appendChild(line);
+  });
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────
+init();
+loadComponentList();
+</script>
+
+</body>
+</html>

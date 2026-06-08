@@ -2,28 +2,7 @@ import fs from "fs";
 import path from "path";
 import { log } from "./logger.js";
 
-/** Load all component schemas from schemas/components/. Returns Map<tagName, schema>. */
-export function loadSchemas(schemasDir) {
-  const indexPath = path.join(schemasDir, "index.json");
-  if (!fs.existsSync(indexPath)) {
-    log.warn(`Schema index not found at ${indexPath} — run npm run schemas`);
-    return new Map();
-  }
-  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
-  const schemas = new Map();
-  for (const tag of index) {
-    const filePath = path.join(schemasDir, `${tag}.json`);
-    if (fs.existsSync(filePath)) {
-      try {
-        schemas.set(tag, JSON.parse(fs.readFileSync(filePath, "utf8")));
-      } catch (e) {
-        log.warn(`Failed to parse schema for ${tag}: ${e.message}`);
-      }
-    }
-  }
-  log.info(`Loaded ${schemas.size} component schemas`);
-  return schemas;
-}
+export { SchemaRegistry } from "./schema-parser.js";
 
 /**
  * Load design tokens from css/styles/ tree.
@@ -112,7 +91,7 @@ export function loadPatterns(patternsDir) {
   return patterns;
 }
 
-/** Load CSS utility class schemas from schemas/css-utilities/. */
+/** Load CSS utility class schemas from mcp-server/data/css-utilities/. */
 export function loadCssUtilities(cssUtilDir) {
   const indexPath = path.join(cssUtilDir, "index.json");
   if (!fs.existsSync(indexPath)) return new Map();

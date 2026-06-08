@@ -90,8 +90,8 @@
   }
 
   &:focus {
-    outline: --focus-ring();
-    outline-offset: -1px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
     border-color: transparent;
   }
 }
@@ -184,8 +184,8 @@
   }
 
   &:focus-visible {
-    outline: --focus-ring();
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
   }
 }
 :host .handle-low {

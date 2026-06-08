@@ -2,7 +2,7 @@
  * ResizeBehavior — Mixin for grid-resizable containers.
  *
  * Provides column/row span adjustment via menu events dispatched by
- * the `data-event` mechanism on `sherpa-menu-item` elements.
+ * the `data-event` mechanism on `sherpa-overlay-item` elements.
  *
  * On connect, the mixin injects a `<template data-menu>` into the
  * host's light DOM containing Width and Height menu groups.
@@ -39,15 +39,15 @@ export interface ResizeBehaviorInterface {
 /* ── Menu template (inlined) ────────────────────────────────────── */
 
 const RESIZE_MENU_HTML = `
-  <sherpa-menu-item data-type="heading">Width</sherpa-menu-item>
+  <sherpa-overlay-item data-type="heading">Width</sherpa-overlay-item>
   <ul data-group="width">
-    <li><sherpa-menu-item data-event="container-decrease-cols" data-icon="fa-solid fa-minus">Decrease</sherpa-menu-item></li>
-    <li><sherpa-menu-item data-event="container-increase-cols" data-icon="fa-solid fa-plus">Increase</sherpa-menu-item></li>
+    <li><sherpa-overlay-item data-event="container-decrease-cols" data-icon="fa-solid fa-minus">Decrease</sherpa-overlay-item></li>
+    <li><sherpa-overlay-item data-event="container-increase-cols" data-icon="fa-solid fa-plus">Increase</sherpa-overlay-item></li>
   </ul>
-  <sherpa-menu-item data-type="heading">Height</sherpa-menu-item>
+  <sherpa-overlay-item data-type="heading">Height</sherpa-overlay-item>
   <ul data-group="height">
-    <li><sherpa-menu-item data-event="container-decrease-rows" data-icon="fa-solid fa-minus">Decrease</sherpa-menu-item></li>
-    <li><sherpa-menu-item data-event="container-increase-rows" data-icon="fa-solid fa-plus">Increase</sherpa-menu-item></li>
+    <li><sherpa-overlay-item data-event="container-decrease-rows" data-icon="fa-solid fa-minus">Decrease</sherpa-overlay-item></li>
+    <li><sherpa-overlay-item data-event="container-increase-rows" data-icon="fa-solid fa-plus">Increase</sherpa-overlay-item></li>
   </ul>
 `;
 
