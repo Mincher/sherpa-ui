@@ -55,18 +55,11 @@ const overrides = JSON.parse(fs.readFileSync(OVERRIDES_FILE, 'utf8'));
 const primitives = data.Primitives;
 const themesMeta = data.themes;
 
-// Merge alias snapshot (base) + live Alias (overrides).
-// The snapshot covers the pre-May-2026 Figma refactor period when the live
-// Alias collection is incomplete. Live entries with a non-null Value win.
-const snapshotAlias = overrides.aliasSnapshot || { vars: [] };
-const liveAlias = data.Alias || { vars: [] };
-const aliasMap = new Map();
-for (const v of snapshotAlias.vars) aliasMap.set(v.n, v);
-for (const v of liveAlias.vars) {
-  if (v.v?.Value == null) continue;
-  aliasMap.set(v.n, v);
-}
-const aliases = { ...liveAlias, vars: [...aliasMap.values()] };
+// Live Alias collection only. The pre-May-2026 snapshot has been retired.
+// If the Alias collection ever appears shallow after extraction, the
+// minVarCount guard in figma-config.json will emit a warning before this
+// script runs — see extract-figma-vars.js ~L377.
+const aliases = data.Alias || { vars: [] };
 
 const baseThemeName = themesMeta?.base?.name || 'Apex 2.0';
 const baseThemeSlug = themesMeta?.base?.slug || 'apex-2-core';
@@ -190,13 +183,33 @@ for (const { name, primitive } of EXTRA_ALIASES) {
 
 // ─── Utilities ───────────────────────────────────────────────────────
 
+/**
+ * Canonical token renames applied to every generated CSS property name.
+ * Keys and values are post-sanitize (kebab-case) substrings.
+ *
+ * Adding an entry here renames the token in all output layers (primitives,
+ * alias, themes, overrides) in one pass. For breaking renames, add a
+ * backwards-compat alias in emitAlias() to keep existing consumers working.
+ */
+const RENAME_MAP = new Map([
+  ['adlumin-blue-test', 'adlumin-blue'],       // Figma renamed the collection
+  ['fonts-context-monospaced', 'fonts-context-mono'], // Match new Figma path
+]);
+
+function applyRenames(cssName) {
+  let out = cssName;
+  for (const [from, to] of RENAME_MAP) out = out.replaceAll(from, to);
+  return out;
+}
+
 function sanitize(name) {
-  return name
+  const s = name
     .replace(/ -> /g, '-')
     .replace(/\//g, '-')
     .replace(/ /g, '-')
     .replace(/[\[\]]/g, '')
     .toLowerCase();
+  return applyRenames(s);
 }
 
 /** Figma "critical" → CSS "error" everywhere it appears in a token name. */
@@ -397,12 +410,113 @@ function header(title, description) {
 }
 
 // ─── Emit: tokens/primitives.css ─────────────────────────────────────
-// Primitives are hand-maintained (oklch values). Copy the existing file.
+// Generated from the Figma Primitives collection. Do not edit the output
+// file manually — edit token-overrides.json or Figma instead.
+
+/**
+ * Section grouping for primitives output. Mirrors the structure of the
+ * former hand-maintained file so diffs remain readable. Each entry is
+ * [prefix, title] — a var whose path starts with `prefix/` goes into
+ * that section. Vars not matching any prefix fall into "Other".
+ */
+const PRIMITIVE_SECTIONS = [
+  ['border/dash',     'Border — Dash'],
+  ['border/radius',   'Border — Radius'],
+  ['border/stroke',   'Border — Stroke'],
+  ['effects/blur',    'Effects — Blur'],
+  ['effects/offset',  'Effects — Offset'],
+  ['effects/opacity', 'Effects — Opacity'],
+  ['effects/spread',  'Effects — Spread'],
+  ['motion',          'Motion'],
+  ['scale',           'Scale'],
+  ['typeface',        'Typeface'],
+  ['color/basic/monochrome',   'Color — Basic: Monochrome'],
+  ['color/basic/greyscale',    'Color — Basic: Greyscale'],
+  ['color/basic/adlumin-blue', 'Color — Basic: Adlumin Blue'],
+  ['color/basic/blue-green',   'Color — Basic: Blue-Green'],
+  ['color/basic/blue',         'Color — Basic: Blue'],
+  ['color/basic/green',        'Color — Basic: Green'],
+  ['color/basic/orange',       'Color — Basic: Orange'],
+  ['color/basic/pink',         'Color — Basic: Pink'],
+  ['color/basic/purple',       'Color — Basic: Purple'],
+  ['color/basic/red',          'Color — Basic: Red'],
+  ['color/basic/yellow',       'Color — Basic: Yellow'],
+  ['color/basic',              'Color — Basic (other)'],
+  ['color/extended/chrome-orange',   'Color — Extended: Chrome Orange'],
+  ['color/extended/cool-green',      'Color — Extended: Cool Green'],
+  ['color/extended/cool-red',        'Color — Extended: Cool Red'],
+  ['color/extended/deep-purple',     'Color — Extended: Deep Purple'],
+  ['color/extended/electric-indigo', 'Color — Extended: Electric Indigo'],
+  ['color/extended/neon-blue',       'Color — Extended: Neon Blue'],
+  ['color/extended/phlox',           'Color — Extended: Phlox'],
+  ['color/extended/razamatazz',      'Color — Extended: Razamatazz'],
+  ['color/extended/raven',           'Color — Extended: Raven'],
+  ['color/extended/slate',           'Color — Extended: Slate'],
+  ['color/extended/turquoise',       'Color — Extended: Turquoise'],
+  ['color/extended/warm-green',      'Color — Extended: Warm Green'],
+  ['color/extended/warm-yellow',     'Color — Extended: Warm Yellow'],
+  ['color/extended',                 'Color — Extended (other)'],
+  ['color/brand',    'Color — Brand'],
+  ['color',          'Color (other)'],
+];
+
+function formatPrimitive(val, type) {
+  if (val == null) return null;
+  if (typeof val === 'string' && val.startsWith('rgba(')) {
+    return val.replace(/(\d+\.\d{2})\d+/g, '$1').replace(/\.0+\)/g, ')');
+  }
+  if (typeof val === 'string') return `"${val}"`;
+  if (typeof val === 'number') return formatNumber(val);
+  return String(val);
+}
 
 function emitPrimitives() {
-  // Hand-maintained file lives in the canonical location and is not regenerated.
-  // No-op kept for symmetry with the other emitters.
-  console.log(`  ✓ tokens/primitives.css (hand-maintained, not overwritten)`);
+  const lines = [
+    header(
+      'Core Primitives',
+      'Raw Figma Primitives collection — do not use directly in component CSS.\n' +
+        ' * Always consume via --sherpa-* alias tokens with a hardcoded fallback.',
+    ),
+    ':root {\n',
+  ];
+
+  // Assign each var to its first matching section prefix
+  const buckets = new Map(); // section title → vars[]
+  const matched = new Set();
+
+  for (const [prefix, title] of PRIMITIVE_SECTIONS) {
+    buckets.set(title, []);
+  }
+  buckets.set('Other', []);
+
+  for (const v of primitives.vars) {
+    let placed = false;
+    for (const [prefix, title] of PRIMITIVE_SECTIONS) {
+      if (v.n.startsWith(prefix + '/') || v.n === prefix) {
+        buckets.get(title).push(v);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) buckets.get('Other').push(v);
+  }
+
+  let first = true;
+  for (const [title, vars] of buckets) {
+    if (vars.length === 0) continue;
+    if (!first) lines.push('\n');
+    first = false;
+    lines.push(`  /* ── ${title} ${'─'.repeat(Math.max(1, 52 - title.length))} */\n`);
+    const sorted = [...vars].sort((a, b) => a.n.localeCompare(b.n));
+    for (const v of sorted) {
+      const val = formatPrimitive(v.v?.Value, v.t);
+      if (val == null) continue;
+      lines.push(`  --core-${sanitize(v.n)}: ${val};\n`);
+    }
+  }
+
+  lines.push('}\n');
+  write('tokens/primitives.css', lines.join(''));
 }
 
 // ─── Emit: tokens/alias.css ──────────────────────────────────────────
@@ -489,6 +603,14 @@ function emitAlias() {
   }
   lines.push('}\n\n');
 
+  // ── Backwards-compat aliases for renamed tokens ──
+  // Remove each entry once all component CSS references are updated.
+  lines.push('/* ── Backwards-compat aliases (renamed tokens) ─────────────────── */\n\n');
+  lines.push(':where(:root) {\n');
+  lines.push('  /* fonts-context-monospaced renamed to fonts-context-mono (match Figma path) */\n');
+  lines.push('  --sherpa-fonts-context-monospaced: var(--sherpa-fonts-context-mono);\n');
+  lines.push('}\n\n');
+
   // ── Font composite tokens ──
   // These are sourced from the base theme's font/* vars (unmoded — same in
   // every theme) so they live in the alias layer.
@@ -529,6 +651,22 @@ function emitFontsBlock() {
 // ─── Emit: tokens/platform.css ───────────────────────────────────────
 // True platform constants ONLY. No compat aliases (Phase 3 codemod removes
 // every legacy name from component CSS so this file stays clean).
+
+/**
+ * Breakpoint block for platform.css. Values sourced from token-overrides.json
+ * `breakpoints` key so they can be updated without touching the script.
+ * NOTE: CSS custom properties cannot be used in @media query conditions —
+ * these tokens are for JS consumption and documentation only.
+ */
+function emitBreakpoints() {
+  const bp = overrides.breakpoints;
+  if (!bp || Object.keys(bp).length === 0) return '';
+  const lines = ['\n  /* Breakpoints — JS consumption only; cannot be used in @media conditions */\n'];
+  for (const [name, val] of Object.entries(bp)) {
+    lines.push(`  --sherpa-breakpoint-${name}: ${val};\n`);
+  }
+  return lines.join('');
+}
 
 function emitPlatform() {
   const css = `${header(
@@ -583,7 +721,7 @@ function emitPlatform() {
      gridlines, and the node-canvas grid. No Figma source: lighter than
      border-container-default by intent. */
   --sherpa-border-container-subtle: rgba(0, 0, 0, 0.08);
-}
+${emitBreakpoints()}}
 
 /* ── Color-scheme contract ─────────────────────────────────────────── */
 /* JS sets data-mode on :root; the cascade does the rest.              */
