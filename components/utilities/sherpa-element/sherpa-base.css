@@ -99,6 +99,11 @@ i.sherpa-icon {
 :host([data-row-span="23"]) { grid-row: span 23; }
 :host([data-row-span="24"]) { grid-row: span 24; }
 
+:host([data-row-span="auto"]) {
+  grid-row: span var(--_auto-row-span, 1);
+  align-self: start;
+}
+
 /* ── Reduced motion ────────────────────────────────────────────────────── */
 /*
  * Honour the OS-level "reduce motion" preference across all components.

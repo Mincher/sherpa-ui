@@ -1,0 +1,33 @@
+<!--
+  sherpa-button.examples.html
+  Correct usage: all buttons set their label via the data-label attribute.
+  Text placed between <sherpa-button> tags is NEVER rendered.
+-->
+
+<template id="basic-variants" data-label="Basic variants" data-description="Primary, secondary, and tertiary variants using data-label. No text content between tags.">
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+    <sherpa-button data-variant="primary"   data-label="Save changes"></sherpa-button>
+    <sherpa-button data-variant="secondary" data-label="Cancel"></sherpa-button>
+    <sherpa-button data-variant="tertiary"  data-label="Learn more"></sherpa-button>
+    <sherpa-button data-variant="danger"    data-label="Delete"></sherpa-button>
+  </div>
+</template>
+
+<template id="with-icons" data-label="With icons" data-description="Icon-start, icon-end, and icon-only — all still require data-label (icon-only is visually icon-only but data-label provides accessible text).">
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+    <sherpa-button data-variant="primary"   data-label="Add item"   data-icon-start="&#xf067;"></sherpa-button>
+    <sherpa-button data-variant="secondary" data-label="Export"     data-icon-end="&#xf019;"></sherpa-button>
+    <sherpa-button data-variant="tertiary"  data-label="Settings"   data-icon-start="&#xf013;" data-size="icon"></sherpa-button>
+    <sherpa-button data-variant="secondary" data-label="Filter"     data-icon-start="&#xf0b0;" data-icon-end="&#xf078;"></sherpa-button>
+  </div>
+</template>
+
+<template id="sizes" data-label="All sizes" data-description="Five size steps: xs, sm, md (default), lg, xl — each set via data-size, each with a data-label.">
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+    <sherpa-button data-variant="primary" data-size="xs"  data-label="Extra small"></sherpa-button>
+    <sherpa-button data-variant="primary" data-size="sm"  data-label="Small"></sherpa-button>
+    <sherpa-button data-variant="primary" data-size="md"  data-label="Medium"></sherpa-button>
+    <sherpa-button data-variant="primary" data-size="lg"  data-label="Large"></sherpa-button>
+    <sherpa-button data-variant="primary" data-size="xl"  data-label="Extra large"></sherpa-button>
+  </div>
+</template>

@@ -604,10 +604,96 @@ annotations (e.g., `data-variant {enum} — primary | secondary`) and note which
 | Hand-rolled `box-shadow` shorthand for default shadows    | `--shadow-sm/md/lg/sunken(--tint)` functions               |
 | Hand-rolled `outline: 2px solid var(--sherpa-border-control-*)` for focus | `--focus-ring()` / `--focus-ring(--color)` function |
 | `<prop> var(--sherpa-motion-transition-fast, 0.15s ease-out)` boilerplate | `--transition-fast/base/slow(<prop>)` function |
+| `<sherpa-button>` as an internal input-action control (clear, step, toggle) | Native `<button>` + `<i class="fa-solid fa-...">` styled directly in the component CSS |
+
+The last rule is important: **`<sherpa-button>` must not be nested inside another component's shadow DOM template for constrained utility controls** (input actions, icon-only steppers, clear buttons). Sherpa-button loads its own shadow DOM asynchronously and carries its own internal sizing — inside a 32 px input row it fights the constraint and renders icons unreliably. Use a native `<button>` with a Font Awesome `<i>` element instead, styled exactly as `sherpa-input-date` and `sherpa-input-time` do for their trigger and navigation buttons.
+
+`<sherpa-button>` **is** appropriate inside other component templates when it renders at its natural size as a first-class action (e.g. dialog close, wizard Back/Next, nav edit/confirm, chart overflow menu).
 
 ---
 
-## 12 Exemplar Component: `sherpa-button`
+## 12 Attribute Quick Reference — Common Gotchas
+
+These components have attribute names that differ from HTML conventions or from each other.
+Agents consistently generate the wrong names — check this table before writing any markup.
+
+| Component | ❌ Wrong (silent failure) | ✅ Correct | Notes |
+|---|---|---|---|
+| `sherpa-button` | text content between tags | `data-label="..."` | Inner text is never rendered |
+| `sherpa-progress-bar` | `value`, `max` | `data-value` | Native attrs silently ignored; `data-value` is 0–100 % |
+| `sherpa-callout` | `data-description` | `data-heading` + default slot | Heading = summary row; body text in default slot |
+| `sherpa-message` | `data-title`, `data-description` | `data-label` only | Single-line; no body slot |
+| `sherpa-switch` | `checked`, `data-label` | `data-state="on"` | No label attr; wrap in `<label>` for a11y |
+| `sherpa-dialog` | native `open` | `data-open` | Component observes `data-open` only |
+| `sherpa-tabs` | `<button role="tab">` children | children with `data-tab-label="..."` | Component discovers tabs by this attr |
+| `sherpa-nav-item` | `data-active` | `data-state="selected"` | Enum: `selected` \| `active` \| `inactive` |
+| `sherpa-slider` | `min`, `max`, `value` | `data-min`, `data-max`, `data-value` | Range mode: `data-value-low` / `data-value-high` |
+| `sherpa-container-header` | `data-label` | `data-title` | Panel/container heading text |
+| `sherpa-empty-state` | `data-title` | `data-label` | |
+| `sherpa-accordion` | `<span slot="label">` child | `data-label="..."` on host | No slot named "label" exists |
+| `sherpa-pagination` | `data-total`, `data-current-page` | `data-total-rows`, `data-page` | |
+
+---
+
+## 13 Composition Requirements
+
+### sherpa-donut-chart — parent must provide both width AND height
+
+The ring renders via `min(100cqw, 100cqh)` container query units. A parent with only
+`container-type: inline-size` (or none at all) produces a zero-height ring.
+
+```html
+<!-- ✅ Correct -->
+<div style="container-type:size; width:300px; height:300px;">
+  <sherpa-donut-chart></sherpa-donut-chart>
+</div>
+
+<!-- ✅ Also correct — explicit dimensions on the element itself -->
+<sherpa-donut-chart style="width:300px; height:300px;"></sherpa-donut-chart>
+
+<!-- ❌ Wrong — inline-size only, ring collapses to 0 height -->
+<div style="container-type:inline-size; width:300px;">
+  <sherpa-donut-chart></sherpa-donut-chart>
+</div>
+```
+
+### sherpa-metric — sparklines require setValues() after render
+
+`data-trend` and `data-delta` set the trend arrow and delta text only. To render the sparkline:
+
+```js
+await metricEl.rendered;
+metricEl.setValues([38, 45, 41, 52, 49, 60, 55, 68]);
+```
+
+Or pass full summary data via `setData({ summary: { values, total, delta, deltaPercent } })`.
+
+### sherpa-nav — nav-items are direct children, no slot attribute
+
+```html
+<!-- ✅ Correct -->
+<sherpa-nav>
+  <sherpa-nav-item data-label="Home"></sherpa-nav-item>
+</sherpa-nav>
+
+<!-- ❌ Wrong — slot attribute causes item to be ignored -->
+<sherpa-nav>
+  <sherpa-nav-item slot="item" data-label="Home"></sherpa-nav-item>
+</sherpa-nav>
+```
+
+### sherpa-dialog — always use data-open, never native open
+
+```js
+el.setAttribute('data-open', '');   // open
+el.removeAttribute('data-open');    // close
+```
+
+The component wraps a native `<dialog>` internally but exposes only `data-open` as its public API.
+
+---
+
+## 14 Exemplar Component: `sherpa-button`
 
 **HTML** — static template with icon + label elements always present:
 
@@ -645,7 +731,7 @@ data** — is the canonical model for all components.
 
 ---
 
-## 13 Flow Patterns (CRUD)
+## 15 Flow Patterns (CRUD)
 
 CRUD flows (Add, Edit, Delete) are **composed from existing components** — no
 special flow component exists. Each flow follows a shared lifecycle model
@@ -759,7 +845,7 @@ No custom overlay elements or shim divs.
 
 ---
 
-## 14 For Designers — Figma Mapping
+## 16 For Designers — Figma Mapping
 
 | Figma Concept                                 | Code Equivalent                          |
 | --------------------------------------------- | ---------------------------------------- |
@@ -780,7 +866,7 @@ This maps directly to CSS `:host([data-attribute="value"])` rules. No JS needed.
 
 ---
 
-## 15 Quick Checklist
+## 17 Quick Checklist
 
 Before submitting any component change:
 

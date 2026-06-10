@@ -11,6 +11,7 @@
  *
  * @attr {string}  data-heading    — Tracker heading text
  * @attr {string}  data-percentage — Completion text (e.g. "60% Complete")
+ * @attr {string}  data-src-json  — URL to JSON: { milestones: [{label, status, description?, timestamp?}] }
  *
  * @method setMilestones(milestones) — Set milestones: [{ label, status, description?, timestamp? }]
  *
@@ -75,6 +76,13 @@ export class SherpaProgressTracker extends SherpaElement {
   setMilestones(milestones: Milestone[]) {
     this.#milestones = milestones || [];
     this.#renderMilestones();
+  }
+
+  override onJsonData(data: unknown): void {
+    const milestones = Array.isArray(data)
+      ? data
+      : (data as { milestones?: Milestone[] } | null)?.milestones;
+    if (Array.isArray(milestones)) this.setMilestones(milestones as Milestone[]);
   }
 
   /** Get the current milestones array. */

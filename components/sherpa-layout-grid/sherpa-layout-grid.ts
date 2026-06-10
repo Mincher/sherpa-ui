@@ -57,10 +57,12 @@ export class SherpaLayoutGrid extends SherpaElement {
   }
 
   #dragSource: Element | null = null;
+  #autoSpanObserver: ResizeObserver | null = null;
 
   override onRender(): void {
     this.#syncRowHeight();
     this.#syncEditable();
+    this.#initAutoSpan();
   }
 
   override onAttributeChanged(name: string, _old: string | null, _new: string | null): void {
@@ -74,6 +76,40 @@ export class SherpaLayoutGrid extends SherpaElement {
     this.removeEventListener('dragleave', this.#onDragLeave);
     this.removeEventListener('drop', this.#onDrop);
     this.removeEventListener('dragend', this.#onDragEnd);
+    this.#autoSpanObserver?.disconnect();
+    this.#autoSpanObserver = null;
+  }
+
+  #initAutoSpan() {
+    this.#autoSpanObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        this.#updateAutoSpan(entry.target as HTMLElement);
+      }
+    });
+    const slot = this.$<HTMLSlotElement>('slot:not([name])');
+    slot?.addEventListener('slotchange', () => this.#syncAutoSpanTargets());
+    requestAnimationFrame(() => this.#syncAutoSpanTargets());
+  }
+
+  #syncAutoSpanTargets() {
+    const slot = this.$<HTMLSlotElement>('slot:not([name])');
+    for (const el of slot?.assignedElements() ?? []) {
+      if (el instanceof HTMLElement && el.dataset['rowSpan'] === 'auto') {
+        this.#autoSpanObserver?.observe(el);
+      }
+    }
+  }
+
+  #updateAutoSpan(el: HTMLElement) {
+    const surface = this.$<HTMLElement>('.grid-surface');
+    if (!surface) return;
+    const style = getComputedStyle(surface);
+    const rowHeight = parseFloat(style.getPropertyValue('--row-height')) || 64;
+    const rowGap = parseFloat(style.rowGap) || 16;
+    const rowUnit = rowHeight + rowGap;
+    const contentH = el.getBoundingClientRect().height;
+    const spans = Math.max(1, Math.ceil((contentH + rowGap) / rowUnit));
+    el.style.setProperty('--_auto-row-span', String(spans));
   }
 
   #syncRowHeight() {

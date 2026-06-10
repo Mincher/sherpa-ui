@@ -4,8 +4,9 @@
  * @description Bar chart for comparing values across discrete categories. Use for categorical
  *   comparisons: revenue by region, tickets by status, users by role. Supports stacked bars
  *   (data-stacked) for part-to-whole breakdowns. Automatically switches between horizontal and
- *   vertical orientation based on the container aspect ratio. Feed via setData(config) or the
- *   ContentAttributesMixin data pipeline.
+ *   vertical orientation based on the container aspect ratio. Feed via setData(config),
+ *   data-src-json (standalone/static pages), or the ContentAttributesMixin data pipeline
+ *   (app-shell integration — last writer wins on datasetfiltered).
  *
  * @attr {boolean} data-loading        — Show loading state
  * @attr {boolean} data-stacked        — Stack bars by segment
@@ -15,6 +16,7 @@
  * @attr {enum}    data-segment-mode    — Segment display mode
  * @attr {string}  data-sort-field     — Sort field
  * @attr {enum}    data-sort-direction — asc | desc
+ * @attr {string}  data-src-json       — URL to JSON: { columns, rows } content config
  *
  * @fires sort-change
  *   bubbles: true, composed: true
@@ -272,6 +274,10 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       config.originalSegmentBy = this.#originalSegmentBy;
 
     return config;
+  }
+
+  override async onJsonData(data: BarContentData): Promise<void> {
+    await this.setData(data);
   }
 
   async setData(data: BarContentData) {

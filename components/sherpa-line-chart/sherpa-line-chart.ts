@@ -3,9 +3,11 @@
  * @category media
  * @description Line or area chart for visualising trends over a continuous dimension such as
  *   time. Use for time-series data (daily active users, weekly revenue, monthly error rates).
- *   Built with CSS clip-path — no canvas or SVG. Feed via setData({ labels, series }). Use
- *   the area variant (data-variant="area") for cumulative totals or filled ranges. Supports
- *   multi-series with up to 8 colour-coded lines.
+ *   Built with CSS clip-path — no canvas or SVG. Feed via setData({ labels, series }),
+ *   data-src-json (standalone/static pages), or the ContentAttributesMixin data pipeline
+ *   (app-shell integration — last writer wins on datasetfiltered). Use the area variant
+ *   (data-variant="area") for cumulative totals or filled ranges. Supports multi-series with
+ *   up to 8 colour-coded lines.
  *
  * @attr {string}  data-title          — Chart heading text
  * @attr {boolean} data-loading        — Show loading state
@@ -14,6 +16,7 @@
  * @attr {enum}    data-segment-mode    — Segment display mode
  * @attr {string}  data-sort-field     — Sort field
  * @attr {enum}    data-sort-direction — asc | desc
+ * @attr {string}  data-src-json       — URL to JSON: { columns, rows } or { labels, series }
  *
  * @method setData(data) — Set chart data: { labels, series: [{ name, values }] } or config
  */
@@ -168,6 +171,10 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   /* ── Public API ───────────────────────────────────────────────── */
+
+  override async onJsonData(data: LineData | LineContentData): Promise<void> {
+    await this.setData(data);
+  }
 
   /**
    * Set chart data and render.

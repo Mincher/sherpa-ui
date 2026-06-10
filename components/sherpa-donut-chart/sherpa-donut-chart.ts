@@ -4,7 +4,12 @@
  * @description Donut or pie chart for showing proportional part-to-whole relationships. Use
  *   when a total is divided into a small number of named segments (≤8 for legibility). Use
  *   the donut variant (default) over pie when you want a summary value in the centre hole
- *   via data-inner-label. Feed via setData([ {label, value, color?} ]) or the data pipeline.
+ *   via data-inner-label. Feed via setData([ {label, value, color?} ]), data-src-json
+ *   (standalone/static pages), or the ContentAttributesMixin data pipeline (app-shell
+ *   integration — last writer wins on datasetfiltered).
+ *   NOTE: The ring uses container query units (cqw/cqh). The host must have explicit dimensions,
+ *   or be placed inside a parent with `container-type: size` and fixed width+height. A parent
+ *   with only `container-type: inline-size` produces a zero-height chart.
  *
  * @attr {string}  data-title          — Chart heading text
  * @attr {string}  data-inner-label    — Centre big text
@@ -15,6 +20,7 @@
  * @attr {enum}    data-segment-mode    — Segment display mode
  * @attr {string}  data-sort-field     — Sort field
  * @attr {enum}    data-sort-direction — asc | desc
+ * @attr {string}  data-src-json       — URL to JSON: { columns, rows } or [{ label, value }]
  *
  * @method setData(data) — Set chart data: Array<{ label, value, color? }> or config
  *
@@ -151,6 +157,10 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   /* ── Public API ───────────────────────────────────────────────── */
+
+  override async onJsonData(data: DonutDatum[] | ContentData): Promise<void> {
+    await this.setData(data);
+  }
 
   /**
    * Set chart data and render.

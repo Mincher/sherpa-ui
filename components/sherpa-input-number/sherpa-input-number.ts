@@ -29,7 +29,6 @@
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
-import '../sherpa-button/sherpa-button.js';
 
 export class SherpaInputNumber extends SherpaInputBase {
 

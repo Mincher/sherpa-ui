@@ -1,0 +1,18 @@
+<!--
+  sherpa-donut-chart.examples.html
+  Critical: the chart ring uses cqw/cqh units — the parent MUST provide both width AND height.
+  A parent with only container-type:inline-size produces a zero-height ring.
+  Use container-type:size with explicit width+height, or set dimensions on the element itself.
+-->
+
+<template id="traffic-sources" data-label="Traffic sources" data-description="Donut chart inside a container-type:size parent. The setup key matches the export in sherpa-donut-chart.examples.ts." data-setup="traffic-sources">
+  <div style="container-type:size; width:320px; height:300px;">
+    <sherpa-donut-chart data-title="Traffic sources"></sherpa-donut-chart>
+  </div>
+</template>
+
+<template id="alerts-by-severity" data-label="Alerts by severity" data-description="Donut with an inner summary label. setup feeds the chart via the examples.ts handler." data-setup="alerts-by-severity">
+  <div style="container-type:size; width:320px; height:300px;">
+    <sherpa-donut-chart data-title="Alerts by severity" data-inner-sublabel="open alerts"></sherpa-donut-chart>
+  </div>
+</template>

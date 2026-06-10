@@ -1,0 +1,11 @@
+{
+  "columns": [
+    { "field": "category", "name": "Severity", "type": "string" },
+    { "field": "value",    "name": "Count",    "type": "number" }
+  ],
+  "rows": [
+    { "category": "Critical", "value": 4 },
+    { "category": "Warning",  "value": 12 },
+    { "category": "Info",     "value": 22 }
+  ]
+}

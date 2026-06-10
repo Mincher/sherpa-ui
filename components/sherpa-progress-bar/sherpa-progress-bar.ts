@@ -5,6 +5,8 @@
  *   Use during file uploads, data imports, or any async operation where percentage completion
  *   can be reported. Set data-variant="indeterminate" when the duration is unknown. Always set
  *   data-label to describe what is in progress for screen reader users.
+ *   NOTE: The native `value` and `max` HTML attributes are silently ignored — use
+ *   `data-value` (0–100 percentage) instead.
  *
  * @attr {string}  data-label                  — Task label above the bar
  * @attr {number}  data-value                  — 0–100 percentage (determinate)

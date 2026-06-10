@@ -183,6 +183,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#renderStartCalendar();
     this.setAttribute("data-open-start", "");
     this.$(".trigger-start")?.setAttribute("aria-expanded", "true");
+    this.#positionPopup('.popup-start', '.trigger-start');
   }
 
   #closeStart() {
@@ -199,6 +200,22 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#renderEndCalendar();
     this.setAttribute("data-open-end", "");
     this.$(".trigger-end")?.setAttribute("aria-expanded", "true");
+    this.#positionPopup('.popup-end', '.trigger-end');
+  }
+
+  #positionPopup(popupSel: string, triggerSel: string) {
+    const popup = this.$<HTMLElement>(popupSel);
+    const trigger = this.$<HTMLElement>(triggerSel);
+    if (!popup || !trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const popupH = popup.offsetHeight || 320;
+    if (spaceBelow < popupH + 4 && rect.top > popupH + 4) {
+      popup.style.top = `${rect.top - popupH - 4}px`;
+    } else {
+      popup.style.top = `${rect.bottom + 4}px`;
+    }
+    popup.style.left = `${Math.min(rect.left, window.innerWidth - (popup.offsetWidth || 280) - 8)}px`;
   }
 
   #closeEnd() {

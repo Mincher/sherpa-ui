@@ -6,6 +6,8 @@
  *   with context. Feed via setData() from the data pipeline, or set value, data-trend, and
  *   data-delta attributes directly. Trend colouring (success for up, critical for down) is
  *   applied automatically but can be overridden globally via setTrendStatusMap().
+ *   NOTE: Sparklines require a JS call after render — `await el.rendered; el.setValues([...])`.
+ *   The `data-trend` and `data-delta` attributes control the trend arrow and delta text only.
  *
  * @attr {string}  data-metric-id — Unique identifier for the metric
  * @attr {enum}    data-status     — success | warning | critical | info | urgent

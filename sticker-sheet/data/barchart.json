@@ -1,0 +1,15 @@
+{
+  "columns": [
+    { "field": "category", "name": "Day",      "type": "string" },
+    { "field": "value",    "name": "Sessions", "type": "number" }
+  ],
+  "rows": [
+    { "category": "Mon", "value": 1240 },
+    { "category": "Tue", "value": 1380 },
+    { "category": "Wed", "value": 1510 },
+    { "category": "Thu", "value": 1420 },
+    { "category": "Fri", "value": 1680 },
+    { "category": "Sat", "value": 980 },
+    { "category": "Sun", "value": 820 }
+  ]
+}

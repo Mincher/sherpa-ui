@@ -17,7 +17,6 @@
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
-import '../sherpa-button/sherpa-button.js';
 
 export class SherpaInputPassword extends SherpaInputBase {
 
@@ -25,7 +24,9 @@ export class SherpaInputPassword extends SherpaInputBase {
   static override get htmlUrl(): string { return new URL('./sherpa-input-password.html', import.meta.url).href; }
 
   els = this.cacheElements({
-    toggleBtn: { selector: '.toggle-visibility', type: HTMLButtonElement }
+    toggleBtn:   { selector: '.toggle-visibility', type: HTMLButtonElement },
+    toggleIcon:  { selector: '.toggle-icon',       type: HTMLElement },
+    toggleLabel: { selector: '.toggle-label',      type: HTMLElement },
   });
 
   #visible = false;
@@ -60,11 +61,13 @@ export class SherpaInputPassword extends SherpaInputBase {
   #updateVisibility() {
     const el = this.getInputElement();
     if (el instanceof HTMLInputElement) el.type = this.#visible ? 'text' : 'password';
-    if (this.els.toggleBtn) {
-      this.els.toggleBtn.setAttribute('data-icon-start',
-        this.#visible ? '\uf070' : '\uf06e'
-      );
-      this.els.toggleBtn.dataset["label"] = this.#visible ? 'Hide' : 'Show';
+    if (this.els.toggleIcon) {
+      this.els.toggleIcon.className = this.#visible
+        ? 'fa-regular fa-eye-slash toggle-icon'
+        : 'fa-regular fa-eye toggle-icon';
+    }
+    if (this.els.toggleLabel) {
+      this.els.toggleLabel.textContent = this.#visible ? 'Hide' : 'Show';
     }
   }
 }

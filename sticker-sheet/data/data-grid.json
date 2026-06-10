@@ -1,0 +1,15 @@
+{
+  "columns": [
+    { "field": "name",   "name": "Name",   "type": "string" },
+    { "field": "status", "name": "Status", "type": "string" },
+    { "field": "role",   "name": "Role",   "type": "string" },
+    { "field": "joined", "name": "Joined", "type": "string" }
+  ],
+  "rows": [
+    { "name": "Alice Martin",  "status": "Active",   "role": "Admin",  "joined": "Jan 2024" },
+    { "name": "Bob Chen",      "status": "Active",   "role": "Editor", "joined": "Mar 2024" },
+    { "name": "Carol Rivera",  "status": "Inactive", "role": "Viewer", "joined": "Jul 2023" },
+    { "name": "Dan Okafor",    "status": "Pending",  "role": "Editor", "joined": "May 2024" },
+    { "name": "Eve Nakamura",  "status": "Active",   "role": "Admin",  "joined": "Feb 2025" }
+  ]
+}

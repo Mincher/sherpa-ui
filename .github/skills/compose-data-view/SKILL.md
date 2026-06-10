@@ -154,6 +154,47 @@ grid.setData({
 | Single KPI with threshold gauge | `sherpa-gauge-chart` | `{ value, min, max, thresholds }` |
 | Inline mini-trend in a metric card | `sherpa-sparkline` | `{ rows: [{timestamp, value}] }` |
 
+## Chart Composition Constraints
+
+### sherpa-donut-chart — the host needs both width AND height
+
+The ring renders via `min(100cqw, 100cqh)`. A parent with only `container-type: inline-size` produces a zero-height ring.
+
+```html
+<!-- ✅ Wrapper with both axes -->
+<div style="container-type:size; width:320px; height:300px;">
+  <sherpa-donut-chart data-title="Distribution"></sherpa-donut-chart>
+</div>
+
+<!-- ✅ Inside sherpa-container with col/row span — sizing is automatic -->
+<sherpa-container data-col-span="6" data-row-span="2">
+  <sherpa-donut-chart></sherpa-donut-chart>
+</sherpa-container>
+
+<!-- ❌ Wrong — ring collapses to 0 height -->
+<div style="container-type:inline-size; width:300px;">
+  <sherpa-donut-chart></sherpa-donut-chart>
+</div>
+```
+
+### sherpa-metric — sparklines require setValues() after render
+
+`data-trend` / `data-delta` control the arrow and delta text only. To render the sparkline:
+
+```js
+// Preferred: full payload via setData
+metric.setData({
+  name: 'Active Devices',
+  summary: { total: 60, delta: 22, deltaPercent: 58, values: [38, 45, 41, 52, 49, 60] },
+});
+
+// Or set sparkline data independently after render:
+await metric.rendered;
+metric.setValues([38, 45, 41, 52, 49, 60]);
+```
+
+---
+
 ### Bar Chart Example
 ```js
 const chart = document.querySelector('sherpa-barchart');

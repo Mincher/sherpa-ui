@@ -23,7 +23,6 @@
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
 import type { ChangeEventDetail } from "../utilities/types.js";
-import "../sherpa-button/sherpa-button.js";
 
 export class SherpaInputSearch extends SherpaInputBase {
 

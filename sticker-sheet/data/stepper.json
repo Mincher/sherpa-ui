@@ -1,0 +1,7 @@
+{
+  "steps": [
+    { "label": "Details",  "completed": true },
+    { "label": "Review" },
+    { "label": "Confirm" }
+  ]
+}

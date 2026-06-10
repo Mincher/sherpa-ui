@@ -88,10 +88,8 @@
 
 .picker-popup {
   display: none;
-  position: absolute;
-  top: calc(100% + var(--sherpa-space-2xs, 4px));
-  left: 0;
-  z-index: 200;
+  position: fixed;
+  z-index: 9000;
   min-width: 280px;
   background: var(--sherpa-surface-container-default, #f4f4f6);
   border: 1px solid var(--sherpa-border-control-secondary-default, #9a9aad);

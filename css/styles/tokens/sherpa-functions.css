@@ -125,4 +125,17 @@
     result: var(--prop) var(--sherpa-motion-duration-slow, 0.4s)
       var(--sherpa-motion-easing-default, ease-out);
   }
+
+  /* ── Grid row snapping ──────────────────────────────────────────────── */
+
+  @function --snap-rows(
+    --content-h <length>,
+    --row-h     <length>: var(--row-height, 64px),
+    --row-gap   <length>: var(--sherpa-space-default, 16px)
+  ) returns <length> {
+    result: calc(
+      round(up, calc(var(--content-h) + var(--row-gap)), calc(var(--row-h) + var(--row-gap)))
+      - var(--row-gap)
+    );
+  }
 }

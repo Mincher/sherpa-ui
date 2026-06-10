@@ -14,6 +14,8 @@
  *   back/next/finish navigation. Always slot cancel and primary actions into the footer slot.
  *   Use data-size="small" for simple confirmations (1–2 actions); "medium" for forms; "large"
  *   or "full" for complex or rich content.
+ *   NOTE: Use `data-open` (not the native `open` attribute) to show/hide the dialog.
+ *   JS: `el.setAttribute('data-open', '')` to open; `el.removeAttribute('data-open')` to close.
  *
  * @attr {string}  data-label       — Dialog title text
  * @attr {string}  data-subtitle    — Dialog subtitle text

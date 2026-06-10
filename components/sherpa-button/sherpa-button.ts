@@ -25,6 +25,8 @@
  *   low-emphasis inline actions. Set data-type="icon" for toolbar icon-only buttons. Add
  *   data-menu="true" to any button type to turn it into an integrated dropdown menu trigger —
  *   no separate overlay element is needed for simple menus.
+ *   NOTE: Button text is set via the `data-label` attribute only — text placed between the
+ *   component's opening and closing tags is never rendered.
  *
  * @attr {enum}    data-type            — default | icon
  * @attr {string}  data-label           — Button text label

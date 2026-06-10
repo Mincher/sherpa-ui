@@ -17,13 +17,11 @@
 <template id="default">
 <div class="grouped">
   <input type="number" class="input-field" placeholder="0" />
-  <sherpa-button class="step-down input-action"
-              data-variant="tertiary"
-              data-icon-start="&#xf068;"
-              aria-label="Decrease value"></sherpa-button>
-  <sherpa-button class="step-up input-action"
-              data-variant="tertiary"
-              data-icon-start="&#xf067;"
-              aria-label="Increase value"></sherpa-button>
+  <button type="button" class="step-down input-action stepper-btn" aria-label="Decrease value">
+    <i class="fa-solid fa-minus stepper-icon" aria-hidden="true"></i>
+  </button>
+  <button type="button" class="step-up input-action stepper-btn" aria-label="Increase value">
+    <i class="fa-solid fa-plus stepper-icon" aria-hidden="true"></i>
+  </button>
 </div>
 </template>

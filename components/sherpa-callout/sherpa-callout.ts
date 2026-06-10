@@ -6,6 +6,8 @@
  *   piece of information — a constraint, a gotcha, a helpful tip. Unlike sherpa-message (which
  *   is for action-response feedback), callouts are editorial and informational. The body is
  *   expandable/collapsible. Use sparingly — too many callouts defeat their purpose.
+ *   NOTE: There is no `data-description` attribute. Use `data-heading` for the summary row
+ *   and place body text in the default slot between the component's opening and closing tags.
  *
  * @attr {enum}    data-status      — info | warning | critical | success
  * @attr {string}  data-heading     — Heading text

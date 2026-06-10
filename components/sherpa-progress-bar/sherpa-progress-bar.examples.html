@@ -1,0 +1,19 @@
+<!--
+  sherpa-progress-bar.examples.html
+  Correct usage: data-value (0–100) is the only way to set progress.
+  The native `value` and `max` attributes are silently ignored.
+-->
+
+<template id="determinate" data-label="Determinate" data-description="Three bars at 30%, 65%, and 100% using data-value. No native value or max attributes.">
+  <div style="display:flex;flex-direction:column;gap:16px;max-width:480px;">
+    <sherpa-progress-bar data-label="Uploading files"   data-value="30"></sherpa-progress-bar>
+    <sherpa-progress-bar data-label="Processing data"   data-value="65"></sherpa-progress-bar>
+    <sherpa-progress-bar data-label="Import complete"   data-value="100" data-status="success"></sherpa-progress-bar>
+  </div>
+</template>
+
+<template id="indeterminate" data-label="Indeterminate" data-description="When duration is unknown, set data-variant=indeterminate. data-value is ignored in this mode.">
+  <div style="max-width:480px;">
+    <sherpa-progress-bar data-label="Loading…" data-variant="indeterminate"></sherpa-progress-bar>
+  </div>
+</template>

@@ -39,7 +39,7 @@
   font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
   font-size: var(--_text-font-size);
   line-height: var(--sherpa-font-base-line-height, 20px);
-  color: var(--sherpa-content-default-body, #2e2e33);
+  color: var(--_status-text, var(--sherpa-content-default-on-color-subtle-body, #2e2e33));
   transition: --transition-fast(opacity);
 }
 :host([data-density="compact"]) {
@@ -62,7 +62,7 @@
   width: var(--sherpa-size-lg, 20px);
   height: var(--sherpa-size-lg, 20px);
   color: var(
-    --_status-surface-strong,
+    --_status-icon,
     var(--sherpa-surface-context-default-strong-default, #6f7174)
   );
 
@@ -90,13 +90,13 @@
   gap: var(--sherpa-space-2xs, 4px);
 }
 :host .message-label {
-  color: var(--sherpa-content-default-body, #2e2e33);
+  color: var(--_status-text, var(--sherpa-content-default-on-color-subtle-body, #2e2e33));
 }
 :host .message-action {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-space-3xs, 2px);
-  color: var(--sherpa-content-primary-default, #8500cc);
+  color: var(--sherpa-content-primary-on-color-subtle, #8500cc);
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;

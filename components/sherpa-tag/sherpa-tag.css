@@ -137,6 +137,14 @@
   white-space: nowrap;
 }
 
+/* ── Variant: primary (default) — solid colored pill ─────────────────── */
+:host([data-variant="primary"]:not([data-status])) .tag-wrapper,
+:host(:not([data-variant]):not([data-status])) .tag-wrapper {
+  background: var(--_tag-fill-solid);
+  color: var(--_tag-text);
+  border-color: var(--_tag-border);
+}
+
 /* ── Variant: secondary (slightly stronger neutral fallback) ──────────── */
 :host([data-variant="secondary"]) .tag-wrapper {
   background: var(--_status-surface-subtle, var(--sherpa-surface-container-default, #e5e5e5));

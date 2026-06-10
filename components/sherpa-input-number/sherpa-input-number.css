@@ -14,9 +14,37 @@
 }
 
 /* -- Stepper buttons ---------------------------------------------- */
-:host .step-down,
-:host .step-up {
-  height: var(--sherpa-size-2xl, 32px);
-  width: var(--sherpa-size-2xl, 32px);
+.stepper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: var(--sherpa-size-2xl, 32px);
+  height: var(--sherpa-size-2xl, 32px);
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
+  cursor: pointer;
+}
+
+.stepper-btn:hover:not(:disabled) {
+  background: var(--sherpa-surface-control-hover, #e8e9ec);
+  color: var(--sherpa-content-default-body, #333);
+}
+
+.stepper-btn:focus-visible {
+  outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+  outline-offset: -2px;
+}
+
+:host([disabled]) .stepper-btn {
+  color: var(--sherpa-content-inactive-default, #7e7e8f);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.stepper-icon {
+  font-size: var(--sherpa-fonts-scale-base, 14px);
 }

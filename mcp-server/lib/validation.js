@@ -74,6 +74,38 @@ export function validateUsage(html, schemas) {
 
   issues.push(...auditTagAttributes(html, schemas));
 
+  // sherpa-button: text content between tags is never rendered
+  for (const m of html.matchAll(/<sherpa-button\b[^>]*>([\s\S]*?)<\/sherpa-button>/g)) {
+    const inner = m[1].trim();
+    if (inner && !inner.startsWith("<")) {
+      issues.push({ severity: "warning",
+        message: `<sherpa-button> has text content "${inner.slice(0, 40)}" — use data-label attribute instead; inner text is never rendered.` });
+    }
+  }
+
+  // sherpa-progress-bar: native value/max attributes are silently ignored
+  for (const m of html.matchAll(/<sherpa-progress-bar\b([^>]*?)>/g)) {
+    if (/\bvalue\s*=/.test(m[1]))
+      issues.push({ severity: "warning", message: '<sherpa-progress-bar> uses native "value" — use "data-value" instead (0–100 percentage; native attr is silently ignored).' });
+    if (/\bmax\s*=/.test(m[1]))
+      issues.push({ severity: "warning", message: '<sherpa-progress-bar> uses native "max" — not observed; data-value is the 0–100 percentage.' });
+  }
+
+  // sherpa-container-header: data-label should be data-title
+  for (const m of html.matchAll(/<sherpa-container-header\b([^>]*?)>/g)) {
+    if (/\bdata-label\s*=/.test(m[1]))
+      issues.push({ severity: "warning", message: '<sherpa-container-header> uses "data-label" — the correct attribute is "data-title".' });
+  }
+
+  // sherpa-button used as an input-action control inside a component shadow DOM
+  // (search-clear, stepper, password toggle). Use a native <button> + <i> instead.
+  for (const m of html.matchAll(/<sherpa-button\b([^>]*?)>/g)) {
+    if (/\binput-action\b/.test(m[1])) {
+      issues.push({ severity: "warning",
+        message: '<sherpa-button class="input-action"> — use a native <button> with <i class="fa-solid fa-..."> instead. Nested sherpa-button in constrained input rows causes sizing and icon rendering issues.' });
+    }
+  }
+
   // Self-closing custom elements
   for (const m of html.matchAll(/<(sherpa-[a-z-]+)\s[^>]*\/>/g)) {
     issues.push({

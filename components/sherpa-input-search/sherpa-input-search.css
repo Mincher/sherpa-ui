@@ -37,20 +37,36 @@
 
 .search-clear {
   display: none;
-  height: var(--sherpa-size-2xl, 32px);
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: var(--sherpa-size-2xl, 32px);
+  height: var(--sherpa-size-2xl, 32px);
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--sherpa-content-default-secondary, #6a6a7a);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  cursor: pointer;
 }
 
-:host {
-  /* ── With value state ────────────────────────
-       Show clear button + grouped layout when input has value */
-  /* ── Hidden state ────────────────────────── */
+.search-clear:hover:not(:disabled) {
+  background: var(--sherpa-surface-control-hover, #e8e9ec);
+  color: var(--sherpa-content-default-body, #333);
 }
-:host([data-has-value]) {
-  & .search-clear {
-    display: inline-flex;
-  }
-  & .search-wrapper {
-    display: flex;
-  }
+
+.search-clear:focus-visible {
+  outline: 2px solid var(--sherpa-border-control-active-default, #0060df);
+  outline-offset: -2px;
+}
+
+:host([disabled]) .search-clear {
+  color: var(--sherpa-content-inactive-default, #7e7e8f);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+:host([data-has-value]) .search-clear {
+  display: inline-flex;
 }

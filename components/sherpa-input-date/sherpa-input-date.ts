@@ -141,6 +141,22 @@ export class SherpaInputDate extends SherpaInputBase {
     this.#renderCalendar();
     this.setAttribute('data-open', '');
     this.els.trigger?.setAttribute('aria-expanded', 'true');
+    this.#positionPopup();
+  }
+
+  #positionPopup() {
+    const popup = this.$<HTMLElement>('.picker-popup');
+    const trigger = this.els.trigger;
+    if (!popup || !trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const popupH = popup.offsetHeight || 320;
+    if (spaceBelow < popupH + 4 && rect.top > popupH + 4) {
+      popup.style.top = `${rect.top - popupH - 4}px`;
+    } else {
+      popup.style.top = `${rect.bottom + 4}px`;
+    }
+    popup.style.left = `${Math.min(rect.left, window.innerWidth - (popup.offsetWidth || 280) - 8)}px`;
   }
 
   #close() {

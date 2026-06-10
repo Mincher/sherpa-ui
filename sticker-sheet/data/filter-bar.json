@@ -1,0 +1,8 @@
+{
+  "fields": [
+    { "field": "status", "name": "Status", "type": "string", "values": ["Active", "Inactive", "Pending"] },
+    { "field": "role",   "name": "Role",   "type": "string", "values": ["Admin", "Editor", "Viewer"] },
+    { "field": "joined", "name": "Joined", "type": "date" }
+  ],
+  "presetFilters": ["status", "role"]
+}
