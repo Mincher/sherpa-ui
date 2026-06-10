@@ -43,7 +43,8 @@
 /* Theme corrections & Overrides — all attribute-driven token modifications */
 @import "sherpa-overrides.css";
 
-/* Hand-maintained brand status tokens (pending Figma tokenisation) */
+/* Brand status — hand-maintained [data-status="brand"] token definitions;
+ * appended after overrides so its @layer overrides rules take precedence */
 @import "sherpa-brand-status.css";
 
 /* Utilities — class-based helpers (sub-layered for cascade control) */

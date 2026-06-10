@@ -1,0 +1,117 @@
+{
+  "className": "sherpa-utility-classes",
+  "description": "Light-DOM utility classes for application shell structure. Loaded via index.css under @layer utilities.layout. Apply to host elements and page-level structure — NOT inside component shadow roots. Covers: .grouped-component (fused control rows/columns), .sherpa-app-layout (full-page shell grid), .sherpa-main-content / .sherpa-view-header-group / .sherpa-main-content-slot (main area structure), .sherpa-scroll-under (sticky header with scroll shadow), .layout-grid-outlet (grid injection helper).",
+  "category": "layout",
+  "file": "css/styles/sherpa-utility-classes.css",
+  "classes": [
+    {
+      "name": "grouped-component",
+      "description": "Fuses adjacent controls (buttons, inputs, custom elements) into a seamless inline row or column with a shared outer border. The wrapper owns border, border-radius, and overflow:hidden. Sets --_cg-border-width:0 and --_cg-border-radius:0 which inherit into child shadow DOMs — children become borderless and radiusless automatically. For grouping dashboard tiles use <sherpa-container-group> instead.",
+      "usage": "<div class=\"grouped-component\"><!-- direct children: inputs, sherpa-buttons, etc. --></div>",
+      "attributes": [
+        {
+          "name": "data-direction",
+          "type": "enum",
+          "values": ["vertical"],
+          "description": "Omit for horizontal row (default). Set to 'vertical' for a stacked column. Children get align-items:stretch."
+        }
+      ],
+      "cssProperties": [
+        {
+          "name": "--_cg-separator-color",
+          "type": "<color>",
+          "default": "var(--sherpa-border-control-secondary-default)",
+          "description": "Color of the divider lines between children. Automatically set to active color when a sherpa-button[data-active] child is present."
+        }
+      ],
+      "notes": [
+        "The wrapper's :focus-within activates the border color automatically — no JS needed.",
+        "When a sherpa-button[data-active] child exists, the entire group border lifts to the active/brand color.",
+        "Children's border-radius and border-width are zeroed out via inherited custom properties — do not set them on children.",
+        "For input+button search rows use: <div class=\"grouped-component\"><sherpa-input-text …/><sherpa-button …/></div>"
+      ],
+      "examples": [
+        {
+          "label": "Horizontal button group",
+          "code": "<div class=\"grouped-component\">\n  <sherpa-button data-variant=\"tertiary\">Left</sherpa-button>\n  <sherpa-button data-variant=\"tertiary\">Middle</sherpa-button>\n  <sherpa-button data-variant=\"tertiary\">Right</sherpa-button>\n</div>"
+        },
+        {
+          "label": "Input + search button",
+          "code": "<div class=\"grouped-component\">\n  <sherpa-input-text placeholder=\"Search…\"></sherpa-input-text>\n  <sherpa-button data-variant=\"secondary\" data-icon-start=\"fa-solid fa-magnifying-glass\" aria-label=\"Search\"></sherpa-button>\n</div>"
+        },
+        {
+          "label": "Vertical stack",
+          "code": "<div class=\"grouped-component\" data-direction=\"vertical\">\n  <sherpa-button data-variant=\"tertiary\">Option A</sherpa-button>\n  <sherpa-button data-variant=\"tertiary\">Option B</sherpa-button>\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-scroll-under",
+      "description": "Sticky header that gains a background and shadow when content scrolls beneath it. Works with CSS scroll-state() (Chrome/Edge/Safari 133+) automatically. Falls back to JS: set [data-scrolled] on the element via IntersectionObserver or scroll listener. The element must sit inside a container with container-type:scroll-state (or overflow-y:auto with that container wrapping it).",
+      "usage": "<header class=\"sherpa-view-header-group sherpa-scroll-under\">…</header>",
+      "attributes": [
+        {
+          "name": "data-scrolled",
+          "type": "boolean",
+          "description": "JS fallback. Set this attribute when the scroll container has scrolled past 0. Remove when back at top. Only needed for Firefox (no scroll-state() support)."
+        }
+      ],
+      "notes": [
+        "Uses position:sticky + top:0 + z-index:20. Ensure parent has overflow-y:auto.",
+        "CSS-native activation: wrap content in a container with container-type:scroll-state; container-name:main-scroller.",
+        "The sherpa-app-shell component handles this automatically for its internal scroll area — only apply manually to custom shells."
+      ],
+      "examples": [
+        {
+          "label": "With sherpa-view-header-group",
+          "code": "<div style=\"overflow-y:auto; container-type:scroll-state;\">\n  <header class=\"sherpa-view-header-group sherpa-scroll-under\">\n    <sherpa-view-header data-label=\"Page Title\"></sherpa-view-header>\n  </header>\n  <!-- scrollable content -->\n</div>"
+        }
+      ]
+    },
+    {
+      "name": "sherpa-app-layout",
+      "description": "Full-page CSS grid shell: fixed-width sidebar nav column + main content area. Use ONLY when NOT using the <sherpa-app-shell> web component — this class is the manual alternative for custom shells. <sherpa-app-shell> is strongly preferred.",
+      "usage": "<div class=\"sherpa-app-layout\">\n  <sherpa-nav>…</sherpa-nav>\n  <div class=\"sherpa-main-content\">…</div>\n</div>",
+      "notes": [
+        "grid-template-columns: var(--nav-column-width, collapsed) 1fr. Nav column expands to 320px when sherpa-nav[data-pinned='true'] is present.",
+        "min-height:100vh; height:100vh — requires body to be flex with flex-direction:column (reset.css handles this).",
+        "Always prefer <sherpa-app-shell> over this class — the component manages nav pin state, product-bar slot, and keyboard navigation automatically."
+      ]
+    },
+    {
+      "name": "sherpa-main-content",
+      "description": "Main content column inside .sherpa-app-layout. Flex column, overflow:hidden, fills remaining height. Pair with .sherpa-view-header-group and .sherpa-main-content-slot for the canonical structure.",
+      "usage": "<div class=\"sherpa-main-content\">\n  <header class=\"sherpa-view-header-group sherpa-scroll-under\">…</header>\n  <div class=\"sherpa-main-content-slot\">…</div>\n</div>"
+    },
+    {
+      "name": "sherpa-view-header-group",
+      "description": "Wrapper for sherpa-view-header + optional global sherpa-filter-bar at the top of .sherpa-main-content. Flex column, flex-shrink:0. Apply .sherpa-scroll-under alongside for sticky behaviour.",
+      "usage": "<header class=\"sherpa-view-header-group sherpa-scroll-under\">\n  <sherpa-view-header data-label=\"Title\"></sherpa-view-header>\n  <sherpa-filter-bar data-global>…</sherpa-filter-bar>\n</header>"
+    },
+    {
+      "name": "sherpa-main-content-slot",
+      "description": "Scrollable main content viewport. flex:1, overflow:auto, container-type:scroll-state. Place sherpa-layout-grid directly inside — it receives width:100% and min-height:100% automatically.",
+      "usage": "<div class=\"sherpa-main-content-slot\">\n  <sherpa-layout-grid>…</sherpa-layout-grid>\n</div>"
+    },
+    {
+      "name": "layout-grid-outlet",
+      "description": "display:contents wrapper for injecting children as direct grid items into a <sherpa-layout-grid>. Apply to a div that holds grid children so they participate in the 12-column grid as if the wrapper wasn't there.",
+      "usage": "<sherpa-layout-grid>\n  <div class=\"layout-grid-outlet\">\n    <div style=\"grid-column:span 6\">…</div>\n    <div style=\"grid-column:span 6\">…</div>\n  </div>\n</sherpa-layout-grid>"
+    }
+  ],
+  "notes": [
+    "All classes live in @layer utilities.layout — they have low specificity and components always override them.",
+    "sherpa-app-layout, sherpa-main-content, sherpa-view-header-group, sherpa-main-content-slot, and sherpa-scroll-under are ONLY needed if you are building a manual shell without <sherpa-app-shell>.",
+    "In most cases use <sherpa-app-shell> with the nav, product-bar, and default slot — it handles all shell structure internally."
+  ],
+  "examples": [
+    {
+      "label": "Full manual shell (no sherpa-app-shell)",
+      "code": "<div class=\"sherpa-app-layout\">\n  <sherpa-nav>…</sherpa-nav>\n  <div class=\"sherpa-main-content\">\n    <header class=\"sherpa-view-header-group sherpa-scroll-under\">\n      <sherpa-view-header data-label=\"Dashboard\"></sherpa-view-header>\n    </header>\n    <div class=\"sherpa-main-content-slot\">\n      <sherpa-layout-grid data-fill=\"viewport\" data-pad>\n        <!-- grid content -->\n      </sherpa-layout-grid>\n    </div>\n  </div>\n</div>"
+    },
+    {
+      "label": "Preferred: use sherpa-app-shell instead",
+      "code": "<sherpa-app-shell>\n  <sherpa-nav slot=\"nav\">…</sherpa-nav>\n  <sherpa-product-bar-v2 slot=\"product-bar\">…</sherpa-product-bar-v2>\n  <sherpa-layout-grid data-fill=\"viewport\" data-pad>\n    <!-- grid content -->\n  </sherpa-layout-grid>\n</sherpa-app-shell>"
+    }
+  ]
+}

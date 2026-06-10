@@ -46,11 +46,18 @@ const SRC_CSS = path.join(ROOT, 'css', 'styles');
 const OUT_CSS = path.join(ROOT, 'css', 'styles');
 const DATA_FILE      = path.join(ROOT, 'figma-tokens', 'figma-variables.json');
 const OVERRIDES_FILE = path.join(ROOT, 'figma-tokens', 'token-overrides.json');
+const CONFIG_FILE    = path.join(ROOT, 'figma-tokens', 'figma-config.json');
 
 // ─── Data loading ────────────────────────────────────────────────────
 
 const data      = JSON.parse(fs.readFileSync(DATA_FILE,      'utf8'));
 const overrides = JSON.parse(fs.readFileSync(OVERRIDES_FILE, 'utf8'));
+
+// Read figma-config.json for shared validation thresholds (same values as
+// used by extract-figma-vars.js) so both scripts agree on what counts as valid.
+let figmaConfig = {};
+try { figmaConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')); } catch { /* optional */ }
+const MIN_ALIAS_VARS = figmaConfig.aliasValidation?.minVarCount ?? 150;
 
 const primitives = data.Primitives;
 const themesMeta = data.themes;
@@ -516,6 +523,19 @@ function emitPrimitives() {
   }
 
   lines.push('}\n');
+
+  // Safety guard: primitives.css is effectively hand-maintained.
+  // The Figma Variables API for the Primitives collection often returns only
+  // a handful of variables (not the full color palette). If we have fewer than
+  // 50 primitive vars, skip the write to avoid overwriting the good file.
+  const MIN_PRIMITIVES = 50;
+  if (primitives.vars.length < MIN_PRIMITIVES) {
+    console.warn(
+      `  ⚠ Skipping tokens/primitives.css — Figma returned only ${primitives.vars.length} primitive var(s) ` +
+        `(expected ≥ ${MIN_PRIMITIVES}). Keeping existing file.`,
+    );
+    return;
+  }
   write('tokens/primitives.css', lines.join(''));
 }
 
@@ -616,6 +636,18 @@ function emitAlias() {
   // every theme) so they live in the alias layer.
   lines.push(emitFontsBlock());
 
+  // Safety guard: sherpa-alias.css contains hundreds of semantic tokens.
+  // If the Figma Alias collection returned fewer vars than the configured minimum
+  // (figma-config.json aliasValidation.minVarCount), the API response is truncated
+  // — skip the write to protect the existing file. The extract script should have
+  // already aborted before we got here, but this is a second line of defence.
+  if (aliases.vars.length < MIN_ALIAS_VARS) {
+    console.warn(
+      `  ⚠ Skipping tokens/sherpa-alias.css — Figma returned only ${aliases.vars.length} alias var(s) ` +
+        `(expected ≥ ${MIN_ALIAS_VARS}). Keeping existing file.`,
+    );
+    return;
+  }
   write('tokens/sherpa-alias.css', lines.join(''));
 }
 

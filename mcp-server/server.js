@@ -38,7 +38,7 @@ const PATHS = {
 };
 
 export async function createServer() {
-  const startTime = Temporal.Now.instant().epochMilliseconds;
+  const startTime = Date.now();
   log.info("Starting Sherpa UI MCP server…");
 
   // schemas are loaded lazily on first access, cached for the session
@@ -51,7 +51,7 @@ export async function createServer() {
 
   log.info(
     `Data loaded — ${schemas.size} components (lazy), ${tokens.length} tokens, ` +
-    `${patterns.size} patterns, ${utilities.size} utilities in ${Temporal.Now.instant().epochMilliseconds - startTime}ms`
+    `${patterns.size} patterns, ${utilities.size} utilities in ${Date.now() - startTime}ms`
   );
 
   const server = new McpServer(
@@ -77,6 +77,6 @@ export async function createServer() {
   // Prompts
   registerPrompts(server, data, PATHS);
 
-  log.info(`Server ready — ${Temporal.Now.instant().epochMilliseconds - startTime}ms startup`);
+  log.info(`Server ready — ${Date.now() - startTime}ms startup`);
   return server;
 }

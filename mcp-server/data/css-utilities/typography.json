@@ -1,0 +1,281 @@
+{
+  "className": "typography",
+  "description": "Global typography utility classes from sherpa-text-classes.css. Apply to any HTML element. Always add index.css to the page — these classes live in layer(utilities.text). Use these instead of writing font-size/weight/line-height inline or in custom CSS.",
+  "category": "typography",
+  "file": "css/styles/sherpa-text-classes.css",
+  "usage": "<h2 class=\"text-h2\">Page title</h2>\n<p class=\"text-body\">Body copy</p>\n<span class=\"text-label\">Form label</span>",
+  "attributes": [],
+  "cssProperties": [],
+  "classes": [
+    {
+      "name": "text-h1",
+      "figmaStyle": "headings/h1",
+      "description": "Largest heading. Bold 700, 42px / 64px. Use for page-level titles.",
+      "example": "<h1 class=\"text-h1\">Page Title</h1>"
+    },
+    {
+      "name": "text-h2",
+      "figmaStyle": "headings/h2",
+      "description": "Section heading. Bold 700, 36px / 52px.",
+      "example": "<h2 class=\"text-h2\">Section</h2>"
+    },
+    {
+      "name": "text-h3",
+      "figmaStyle": "headings/h3",
+      "description": "Sub-section heading. Bold 700, 30px / 44px.",
+      "example": "<h3 class=\"text-h3\">Sub-section</h3>"
+    },
+    {
+      "name": "text-h4",
+      "figmaStyle": "headings/h4",
+      "description": "Card / panel heading. SemiBold 600, 24px / 32px.",
+      "example": "<h4 class=\"text-h4\">Card Title</h4>"
+    },
+    {
+      "name": "text-h5",
+      "figmaStyle": "headings/h5",
+      "description": "Small heading. SemiBold 600, 20px / 28px.",
+      "example": "<h5 class=\"text-h5\">Sub-heading</h5>"
+    },
+    {
+      "name": "text-body-lg",
+      "figmaStyle": "body/default/lg",
+      "description": "Large body text. Regular 400, 16px / 24px.",
+      "example": "<p class=\"text-body-lg\">Introductory paragraph.</p>"
+    },
+    {
+      "name": "text-body",
+      "aliases": ["text-body-base"],
+      "figmaStyle": "body/default/base",
+      "description": "Default body text. Regular 400, 14px / 20px. Most common class for paragraphs and descriptions.",
+      "example": "<p class=\"text-body\">Standard body copy.</p>"
+    },
+    {
+      "name": "text-body-sm",
+      "figmaStyle": "body/default/sm",
+      "description": "Small body text. Regular 400, 12px / 16px. Use for secondary detail, captions.",
+      "example": "<p class=\"text-body-sm\">Secondary detail text.</p>"
+    },
+    {
+      "name": "text-body-xs",
+      "figmaStyle": "body/default/xs",
+      "description": "Extra-small body text. Regular 400, 10px / 16px. Use sparingly — very small.",
+      "example": "<span class=\"text-body-xs\">Fine print.</span>"
+    },
+    {
+      "name": "text-emphasis-lg",
+      "aliases": ["text-heading-lg"],
+      "figmaStyle": "body/emphasised/lg",
+      "description": "Large emphasised body. SemiBold 600, 16px / 24px.",
+      "example": "<p class=\"text-emphasis-lg\">Key insight.</p>"
+    },
+    {
+      "name": "text-emphasis",
+      "aliases": ["text-emphasis-base", "text-heading-md"],
+      "figmaStyle": "body/emphasised/base",
+      "description": "Default emphasised body. SemiBold 600, 14px / 20px. Use for callouts, highlights, or list item titles.",
+      "example": "<span class=\"text-emphasis\">Important note.</span>"
+    },
+    {
+      "name": "text-emphasis-sm",
+      "aliases": ["text-heading-sm"],
+      "figmaStyle": "body/emphasised/sm",
+      "description": "Small emphasised body. SemiBold 600, 12px / 16px.",
+      "example": "<span class=\"text-emphasis-sm\">Small callout.</span>"
+    },
+    {
+      "name": "text-emphasis-xs",
+      "figmaStyle": "body/emphasised/xs",
+      "description": "Extra-small emphasised body. SemiBold 600, 10px / 16px.",
+      "example": "<span class=\"text-emphasis-xs\">XS callout.</span>"
+    },
+    {
+      "name": "text-mono-xl",
+      "figmaStyle": "body/monospaced/xl",
+      "description": "XL monospaced text. Source Code Pro, 20px / 28px.",
+      "example": "<code class=\"text-mono-xl\">XL code</code>"
+    },
+    {
+      "name": "text-mono-lg",
+      "figmaStyle": "body/monospaced/lg",
+      "description": "Large monospaced text. Source Code Pro, 16px / 24px.",
+      "example": "<code class=\"text-mono-lg\">lg code</code>"
+    },
+    {
+      "name": "text-mono",
+      "aliases": ["text-mono-base"],
+      "figmaStyle": "body/monospaced/base",
+      "description": "Default monospaced text. Source Code Pro, 14px / 20px. Use for code, tokens, IDs.",
+      "example": "<code class=\"text-mono\">some-token-name</code>"
+    },
+    {
+      "name": "text-mono-sm",
+      "figmaStyle": "body/monospaced/sm",
+      "description": "Small monospaced text. Source Code Pro, 12px / 16px.",
+      "example": "<code class=\"text-mono-sm\">12px code</code>"
+    },
+    {
+      "name": "text-mono-xs",
+      "figmaStyle": "body/monospaced/xs",
+      "description": "Extra-small monospaced text. Source Code Pro, 10px / 16px.",
+      "example": "<code class=\"text-mono-xs\">10px code</code>"
+    },
+    {
+      "name": "text-label",
+      "figmaStyle": "labels/label",
+      "description": "Form field label. SemiBold 600, 12px / 16px. Use on <label> elements above inputs.",
+      "example": "<label class=\"text-label\" for=\"my-input\">Field label</label>"
+    },
+    {
+      "name": "text-label-subheader",
+      "figmaStyle": "labels/subheader",
+      "description": "Uppercase section subheader. SemiBold 600, 12px / 16px, uppercase. Use for group headings inside forms or panels.",
+      "example": "<p class=\"text-label-subheader\">Section Name</p>"
+    },
+    {
+      "name": "text-label-group",
+      "description": "Uppercase group label. SemiBold 600, 12px / 16px, uppercase, letter-spacing 0.5px, secondary color. Use for sidebar group headers or nav section dividers.",
+      "example": "<p class=\"text-label-group\">Group</p>"
+    },
+    {
+      "name": "text-nav-item",
+      "description": "Nav item text. Medium 500, 14px / 20px. Applied automatically inside sherpa-nav-item — use directly only for custom nav patterns.",
+      "example": "<span class=\"text-nav-item\">Nav label</span>"
+    },
+    {
+      "name": "text-title-component",
+      "description": "Component section title. SemiBold 600, 12px / 16px, uppercase, letter-spacing 1px, secondary color. Use for card/panel internal section headings.",
+      "example": "<p class=\"text-title-component\">Metadata</p>"
+    },
+    {
+      "name": "text-display-3xl",
+      "description": "Display metric — brand font (Manrope), 28px, letter-spacing 1px. Use for hero numbers, large KPIs.",
+      "example": "<span class=\"text-display-3xl\">99.9%</span>"
+    },
+    {
+      "name": "text-display-2xl",
+      "description": "Display metric — brand font (Manrope), 24px, letter-spacing 0.5px.",
+      "example": "<span class=\"text-display-2xl\">1,234</span>"
+    },
+    {
+      "name": "text-metric-delta",
+      "description": "Delta / change indicator. SemiBold 600, 12px / 16px. Pair with a status color for up/down arrows.",
+      "example": "<span class=\"text-metric-delta\" data-status=\"success\">+12%</span>"
+    },
+    {
+      "name": "text-product-bar",
+      "description": "Product bar heading. Brand font (Manrope), SemiBold 600, 20px, uppercase. Reserved for sherpa-product-bar — avoid on general text.",
+      "example": "<span class=\"text-product-bar\">Product Name</span>"
+    },
+    {
+      "name": "text-highlight-match",
+      "description": "Search result highlight. SemiBold 600, yellow tinted background. Wrap the matching substring inside a search result.",
+      "example": "<span>some<span class=\"text-highlight-match\">query</span>text</span>"
+    },
+    {
+      "name": "font-default",
+      "description": "Set font family to Open Sans (default body font).",
+      "example": "<div class=\"font-default\">…</div>"
+    },
+    {
+      "name": "font-brand",
+      "description": "Set font family to Manrope (brand / display font).",
+      "example": "<div class=\"font-brand\">…</div>"
+    },
+    {
+      "name": "font-mono",
+      "description": "Set font family to Source Code Pro (monospaced).",
+      "example": "<div class=\"font-mono\">…</div>"
+    },
+    {
+      "name": "font-light",
+      "description": "font-weight: 300",
+      "example": "<span class=\"font-light\">Light text</span>"
+    },
+    {
+      "name": "font-normal",
+      "description": "font-weight: 400",
+      "example": "<span class=\"font-normal\">Normal text</span>"
+    },
+    {
+      "name": "font-medium",
+      "description": "font-weight: 500",
+      "example": "<span class=\"font-medium\">Medium text</span>"
+    },
+    {
+      "name": "font-semibold",
+      "description": "font-weight: 600",
+      "example": "<span class=\"font-semibold\">Semibold text</span>"
+    },
+    {
+      "name": "font-bold",
+      "description": "font-weight: 700",
+      "example": "<span class=\"font-bold\">Bold text</span>"
+    },
+    {
+      "name": "uppercase",
+      "description": "text-transform: uppercase",
+      "example": "<span class=\"uppercase\">label</span>"
+    },
+    {
+      "name": "lowercase",
+      "description": "text-transform: lowercase"
+    },
+    {
+      "name": "capitalize",
+      "description": "text-transform: capitalize — capitalises first letter of each word"
+    },
+    {
+      "name": "normal-case",
+      "description": "text-transform: none — resets any inherited transform"
+    },
+    {
+      "name": "truncate",
+      "description": "Single-line text truncation with ellipsis. The element must have a width constraint.",
+      "example": "<p class=\"truncate\" style=\"max-width:200px\">Long text that will be cut off…</p>"
+    },
+    {
+      "name": "text-wrap",
+      "description": "white-space: normal — enables wrapping (undoes text-nowrap)"
+    },
+    {
+      "name": "text-nowrap",
+      "description": "white-space: nowrap — prevents line breaks"
+    }
+  ],
+  "notes": [
+    "Requires index.css on the page: <link rel=\"stylesheet\" href=\"css/styles/index.css\">. Classes live in @layer utilities.text.",
+    "Use text-h1–text-h5 for headings, text-body for paragraphs, text-label for form labels — never write font-size/weight inline.",
+    "text-body (14px) is the default for most UI text. Use text-body-sm (12px) for secondary/metadata. Use text-body-lg (16px) for introductory paragraphs.",
+    "Monospaced classes (text-mono-*) are for code, tokens, IDs, timestamps — anything needing fixed-width characters.",
+    "text-label-group and text-title-component include secondary color automatically. Do not override their color.",
+    "font-* weight utilities are modifiers — combine with a text-* class to change weight without changing scale: <span class=\"text-body font-bold\">",
+    "All classes consume --sherpa-font-* tokens which resolve through the alias layer — they adapt to density changes automatically."
+  ],
+  "examples": [
+    {
+      "label": "Page heading + body paragraph",
+      "code": "<h1 class=\"text-h1\">Dashboard</h1>\n<p class=\"text-body\">Overview of your system metrics and recent activity.</p>"
+    },
+    {
+      "label": "Form label above input",
+      "code": "<label class=\"text-label\" for=\"name\">Full name</label>\n<sherpa-input-text id=\"name\"></sherpa-input-text>"
+    },
+    {
+      "label": "Section subheader",
+      "code": "<p class=\"text-label-subheader\">Advanced Settings</p>"
+    },
+    {
+      "label": "Metric display",
+      "code": "<span class=\"text-display-3xl\">99.9%</span>\n<span class=\"text-metric-delta\" data-status=\"success\">↑ 2.1%</span>"
+    },
+    {
+      "label": "Code token",
+      "code": "<code class=\"text-mono\">--sherpa-color-brand-700</code>"
+    },
+    {
+      "label": "Truncated list item title",
+      "code": "<p class=\"text-emphasis truncate\">Very long item title that overflows</p>"
+    }
+  ]
+}

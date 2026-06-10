@@ -1,0 +1,57 @@
+{
+  "className": "sherpa-brand-status",
+  "description": "Adds [data-status=\"brand\"] cascade support: purple brand-colored status tokens that work identically to the standard status values (critical, warning, success, info, urgent) but use the design system's primary brand/accent color. Also defines --sherpa-border-context-brand-default for sherpa-nav-item badge dots. Applied via data-status attribute on any element — descendant components pick up --_status-* tokens automatically through shadow DOM inheritance.",
+  "category": "status",
+  "file": "css/styles/sherpa-brand-status.css",
+  "usage": "<div data-status=\"brand\"><!-- children inherit brand status tokens --></div>",
+  "attributes": [
+    {
+      "name": "data-status",
+      "type": "enum",
+      "values": ["brand"],
+      "description": "Set on any ancestor element. Descendants consume --_status-* custom properties. Works identically to data-status=\"critical|warning|success|info|urgent\" but uses the brand (purple) accent color."
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--_status-surface-subtle",
+      "description": "Light brand tint background. Light: var(--sherpa-color-brand-100). Dark: var(--sherpa-color-brand-900)."
+    },
+    {
+      "name": "--_status-border",
+      "description": "Brand-colored border. Light: var(--sherpa-color-brand-400). Dark: var(--sherpa-color-brand-700)."
+    },
+    {
+      "name": "--_status-text",
+      "description": "Brand-colored text. Light: var(--sherpa-color-brand-700). Dark: var(--sherpa-color-brand-200)."
+    },
+    {
+      "name": "--sherpa-border-context-brand-default",
+      "description": "Semantic token for sherpa-nav-item badge dot color. Set globally on :root. Light: var(--sherpa-color-brand-400). Dark: var(--sherpa-color-brand-700)."
+    }
+  ],
+  "notes": [
+    "data-status=\"brand\" is NOT generated from Figma Variables — it is hand-maintained in sherpa-brand-status.css because the brand status has no semantic counterparts in the token system yet.",
+    "Supports light, dark, and prefers-color-scheme:dark automatically. HC mode falls back to standard contrast values.",
+    "The standard status values (critical, warning, success, info, urgent) are defined in sherpa-overrides.css (generated). brand extends that set.",
+    "Common use: sherpa-tag data-status=\"brand\", sherpa-message data-status=\"brand\", sherpa-nav-item data-badge-status=\"brand\"."
+  ],
+  "examples": [
+    {
+      "label": "Brand tag",
+      "code": "<sherpa-tag data-status=\"brand\">Brand</sherpa-tag>"
+    },
+    {
+      "label": "Brand message",
+      "code": "<sherpa-message data-status=\"brand\" data-title=\"New feature\">A brand-new capability is available.</sherpa-message>"
+    },
+    {
+      "label": "Brand callout",
+      "code": "<sherpa-callout data-status=\"brand\">Tip: use the brand status for feature announcements.</sherpa-callout>"
+    },
+    {
+      "label": "Nav item with brand badge",
+      "code": "<sherpa-nav-item data-badge-status=\"brand\" data-badge-count=\"3\">Inbox</sherpa-nav-item>"
+    }
+  ]
+}

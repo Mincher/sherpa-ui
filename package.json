@@ -46,6 +46,8 @@
     "tokens:generate": "node scripts/generate-css-tokens.js",
     "tokens:diff": "node scripts/diff-tokens.js",
     "tokens:refresh": "npm run tokens:extract && npm run tokens:diff && npm run tokens:generate",
+    "tokens:update": "npm run tokens:refresh",
+    "preview": "npx --yes serve . --listen 4000 --no-clipboard",
     "tokens:codemod": "node scripts/codemod-compat-aliases.js",
     "css:fallbacks": "node scripts/inject-css-fallbacks.js",
     "css:fallbacks:check": "node scripts/inject-css-fallbacks.js --dry",

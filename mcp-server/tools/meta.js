@@ -29,7 +29,7 @@ export function register(server, { schemas, tokens, patterns, utilities, cssUtil
     },
     async () => {
       try {
-        const uptime = Temporal.Now.instant().epochMilliseconds - startTime;
+        const uptime = Date.now() - startTime;
         const info = {
           server:     "sherpa-ui",
           version:    SERVER_VERSION,

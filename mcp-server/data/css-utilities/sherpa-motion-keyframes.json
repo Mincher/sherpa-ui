@@ -1,0 +1,47 @@
+{
+  "className": "sherpa-motion-keyframes",
+  "description": "Global @keyframes animations defined in sherpa-motion-classes.css. These are injected into every component shadow root by SherpaElement (via sharedStyles) so they are available inside shadow DOM. Do NOT reference them from light-DOM custom CSS — use the motion token custom properties (--sherpa-motion-duration-*, --sherpa-motion-easing-default) from sherpa-platform.css for durations. These keyframes are primarily consumed by specific Sherpa components and should not be applied to arbitrary elements.",
+  "category": "motion",
+  "file": "css/styles/sherpa-motion-classes.css",
+  "keyframes": [
+    {
+      "name": "sherpa-grow-horizontal",
+      "description": "Grows an element's width from 0 to its natural width. Used by sherpa-barchart for bar enter animation.",
+      "cssUsage": "animation: sherpa-grow-horizontal var(--sherpa-motion-duration-base, 0.25s) var(--sherpa-motion-easing-default, ease-out) both;",
+      "usedBy": ["sherpa-barchart"]
+    },
+    {
+      "name": "sherpa-grow-vertical",
+      "description": "Grows an element's height from 0 to its natural height.",
+      "cssUsage": "animation: sherpa-grow-vertical var(--sherpa-motion-duration-base, 0.25s) var(--sherpa-motion-easing-default, ease-out) both;",
+      "usedBy": []
+    },
+    {
+      "name": "sherpa-ripple-in",
+      "description": "Staggered opacity + slight horizontal slide reveal. Used by sherpa-nav-item for ripple-cascade entry of nav items. Combine with --_ripple-i index for staggered delay: animation-delay: calc(var(--_ripple-i, 0) * 30ms).",
+      "cssUsage": "animation: sherpa-ripple-in 0.25s ease-out calc(var(--_ripple-i, 0) * 30ms) both;",
+      "usedBy": ["sherpa-nav-item"]
+    },
+    {
+      "name": "sherpa-fade-in",
+      "description": "Simple opacity 0→1 fade. Used by sherpa-nav for content reveal on mount.",
+      "cssUsage": "animation: sherpa-fade-in var(--sherpa-motion-duration-fast, 0.15s) var(--sherpa-motion-easing-default, ease-out) both;",
+      "usedBy": ["sherpa-nav"]
+    }
+  ],
+  "motionTokens": {
+    "description": "Motion duration and easing tokens are defined in tokens/sherpa-platform.css",
+    "tokens": [
+      { "name": "--sherpa-motion-duration-fast", "value": "0.15s", "use": "Quick micro-interactions (hovers, focus rings)" },
+      { "name": "--sherpa-motion-duration-base", "value": "0.25s", "use": "Standard transitions (panels, dropdowns, chart bars)" },
+      { "name": "--sherpa-motion-duration-slow", "value": "0.4s", "use": "Large element entries (dialogs, page transitions)" },
+      { "name": "--sherpa-motion-easing-default", "value": "ease-out", "use": "Default easing for all transitions" }
+    ]
+  },
+  "notes": [
+    "Do not add custom keyframes to page CSS that conflict with these names.",
+    "Prefer CSS transitions over animations for interactive state changes (hover, focus, active).",
+    "All motion respects prefers-reduced-motion: both reset.css (light DOM) and SherpaElement (shadow DOM) set transition-duration and animation-duration to 0.01ms when reduced motion is preferred.",
+    "To disable animation for a specific element: use animation:none or set transition-duration:0."
+  ]
+}

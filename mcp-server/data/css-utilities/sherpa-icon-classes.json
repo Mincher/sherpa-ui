@@ -1,0 +1,67 @@
+{
+  "className": "sherpa-icon",
+  "description": "Apply to any inline icon element (i, span, svg wrapper) to get square, color-inheriting icon sizing. Size is controlled by data-size attribute or the --icon-size custom property. All icons are square (equal width and height). Color is always currentColor — set it on the parent. Font Awesome icons, SVGs, and any inline icon font all work.",
+  "category": "icon",
+  "file": "css/styles/sherpa-icon-classes.css",
+  "usage": "<i class=\"sherpa-icon fa-solid fa-house\"></i>\n<span class=\"sherpa-icon\" data-size=\"lg\"><svg>…</svg></span>",
+  "attributes": [
+    {
+      "name": "data-size",
+      "type": "enum",
+      "values": ["3xs", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "6xl"],
+      "default": "md",
+      "description": "Controls icon size via --sherpa-size-* tokens. md = 20px (default). See size token mapping below."
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--icon-size",
+      "type": "<length>",
+      "default": "var(--sherpa-size-md, 20px)",
+      "description": "Override icon size directly. Takes precedence over data-size. Set via inline style or a parent rule."
+    }
+  ],
+  "sizeTokenMapping": {
+    "3xs": "--sherpa-size-3xs (8px)",
+    "2xs": "--sherpa-size-2xs (12px)",
+    "xs":  "--sherpa-size-xs  (16px)",
+    "sm":  "--sherpa-size-sm  (18px)",
+    "md":  "--sherpa-size-md  (20px) ← default",
+    "lg":  "--sherpa-size-lg  (24px)",
+    "xl":  "--sherpa-size-xl  (28px)",
+    "2xl": "--sherpa-size-2xl (32px)",
+    "3xl": "--sherpa-size-3xl (40px)",
+    "4xl": "--sherpa-size-4xl (48px)",
+    "5xl": "--sherpa-size-5xl (56px)",
+    "6xl": "--sherpa-size-6xl (64px)"
+  },
+  "notes": [
+    "display:inline-flex with align-items:center; justify-content:center — icons are always vertically and horizontally centred.",
+    "flex-shrink:0 — icon never collapses inside a flex row.",
+    "color:inherit — set color on the parent element or via data-status on an ancestor.",
+    "SVG children receive width:1em; height:1em; fill:currentColor automatically.",
+    "Components (sherpa-button, sherpa-nav-item, etc.) apply this class internally — only use it directly for standalone icons in light DOM."
+  ],
+  "examples": [
+    {
+      "label": "Default size (md, 20px)",
+      "code": "<i class=\"sherpa-icon fa-solid fa-house\"></i>"
+    },
+    {
+      "label": "Large icon (lg, 24px)",
+      "code": "<i class=\"sherpa-icon fa-solid fa-gear\" data-size=\"lg\"></i>"
+    },
+    {
+      "label": "XL icon with color",
+      "code": "<i class=\"sherpa-icon fa-solid fa-circle-check\" data-size=\"xl\" style=\"color: var(--sherpa-content-success-primary, #1a7a3c)\"></i>"
+    },
+    {
+      "label": "Full size scale strip",
+      "code": "<i class=\"sherpa-icon fa-solid fa-star\" data-size=\"xs\"></i>\n<i class=\"sherpa-icon fa-solid fa-star\" data-size=\"sm\"></i>\n<i class=\"sherpa-icon fa-solid fa-star\" data-size=\"md\"></i>\n<i class=\"sherpa-icon fa-solid fa-star\" data-size=\"lg\"></i>\n<i class=\"sherpa-icon fa-solid fa-star\" data-size=\"xl\"></i>\n<i class=\"sherpa-icon fa-solid fa-star\" data-size=\"2xl\"></i>"
+    },
+    {
+      "label": "SVG icon",
+      "code": "<span class=\"sherpa-icon\" data-size=\"lg\">\n  <svg viewBox=\"0 0 24 24\"><path d=\"…\"/></svg>\n</span>"
+    }
+  ]
+}

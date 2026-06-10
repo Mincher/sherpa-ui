@@ -32,6 +32,34 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT_FILE    = process.env.FIGMA_VARIABLES_OUT || path.join(ROOT, 'figma-tokens', 'figma-variables.json');
 const CONFIG_FILE = path.join(ROOT, 'figma-tokens', 'figma-config.json');
 
+function loadDotEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+
+  const raw = fs.readFileSync(filePath, 'utf8');
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex <= 0) continue;
+
+    const key = trimmed.slice(0, eqIndex).trim();
+    if (!key || process.env[key] !== undefined) continue;
+
+    let value = trimmed.slice(eqIndex + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    process.env[key] = value;
+  }
+}
+
+loadDotEnvFile(path.join(ROOT, '.env'));
+
 const TOKEN = process.env.FIGMA_ACCESS_TOKEN;
 if (!TOKEN) {
   console.error('Error: FIGMA_ACCESS_TOKEN environment variable is required.');
@@ -87,44 +115,60 @@ async function figmaGet(endpoint, { maxRetries = 4, baseDelayMs = 1000 } = {}) {
 // ─── Collection / Theme Identification ──────────────────────────────
 
 /**
- * Identify which collections are "theme" collections.
- * The base collection and all its extensions are themes.
- * Everything else (Primitives, Alias, Status, Density, component collections)
- * is a non-theme collection.
+ * Resolve theme collection IDs against the live API response.
  *
- * Primary identification is by stored collection ID (from figma-config.json).
- * Secondary fallback uses collection name — tolerates cases where a collection
- * was recreated in Figma (new ID, same name). Warns when a name-match fires so
- * the operator knows to update the collectionId in figma-config.json.
+ * Collection IDs change whenever a collection is recreated in Figma. This
+ * function treats the IDs stored in figma-config.json as a cache: if a stored
+ * ID is no longer present in the API, it falls back to name-matching and
+ * automatically writes the updated ID back to figma-config.json so the next
+ * run is silent. No manual maintenance required.
  */
-function identifyThemeCollections(collections, themes) {
-  const baseId = themes.base.collectionId;
-  const themeIds = new Set([baseId]);
-
-  // Extended collections — match by collectionId from config
-  for (const ext of themes.extended) {
-    themeIds.add(ext.collectionId);
+function resolveAndHealCollectionIds(themes, collections, configFilePath) {
+  const nameToId = {};
+  for (const [id, col] of Object.entries(collections)) {
+    // Keep the first match per name (Figma may surface duplicates)
+    if (!nameToId[col.name]) nameToId[col.name] = id;
   }
 
-  // Also add any API-reported extensions of the base (isExtension flag)
-  for (const [id, col] of Object.entries(collections)) {
-    if (col.isExtension && (col.rootVariableCollectionId === baseId || col.parentVariableCollectionId === baseId)) {
-      themeIds.add(id);
+  let healed = false;
+
+  function resolveEntry(entry) {
+    if (collections[entry.collectionId]) return; // ID still valid
+    const resolvedId = nameToId[entry.name];
+    if (resolvedId) {
+      entry.collectionId = resolvedId;
+      healed = true;
+    } else {
+      console.warn(`  ⚠ Collection "${entry.name}" not found in API — theme may be incomplete`);
     }
   }
 
-  // Name-based fallback: if a config ID isn't present in the API response but a
-  // collection with the same name exists, use it and warn the operator.
+  resolveEntry(themes.base);
+  for (const ext of themes.extended) resolveEntry(ext);
+
+  if (healed) {
+    const configObj = JSON.parse(fs.readFileSync(configFilePath, 'utf8'));
+    configObj.themes.base.collectionId = themes.base.collectionId;
+    for (const ext of themes.extended) {
+      const stored = configObj.themes.extended.find(e => e.name === ext.name);
+      if (stored) stored.collectionId = ext.collectionId;
+    }
+    fs.writeFileSync(configFilePath, JSON.stringify(configObj, null, 2) + '\n', 'utf8');
+    console.log(`  ✓ figma-config.json collection IDs auto-updated\n`);
+  }
+}
+
+/**
+ * Build the set of collection IDs that are "theme" collections.
+ * Call resolveAndHealCollectionIds first to ensure IDs are current.
+ */
+function identifyThemeCollections(collections, themes) {
+  const baseId = themes.base.collectionId;
+  const themeIds = new Set([baseId, ...themes.extended.map(e => e.collectionId)]);
+
+  // Also include any API-reported extensions of the base (isExtension flag)
   for (const [id, col] of Object.entries(collections)) {
-    if (themeIds.has(id)) continue;
-    const matchesTheme =
-      col.name === themes.base.name ||
-      themes.extended.some(ext => ext.name === col.name);
-    if (matchesTheme) {
-      console.warn(
-        `  ⚠ Collection "${col.name}" matched by name (ID mismatch). ` +
-        `Update figma-config.json collectionId to "${id}".`
-      );
+    if (col.isExtension && (col.rootVariableCollectionId === baseId || col.parentVariableCollectionId === baseId)) {
       themeIds.add(id);
     }
   }
@@ -315,6 +359,7 @@ async function main() {
 
   const varIdMap = buildVarIdMap(variables, collections);
   const themes = config.themes;
+  resolveAndHealCollectionIds(themes, collections, CONFIG_FILE);
   const themeCollectionIds = identifyThemeCollections(collections, themes);
 
   // ── Build output ──
@@ -325,7 +370,7 @@ async function main() {
   output.meta = {
     file: FILE_KEY,
     name: config.file.name,
-    date: Temporal.Now.instant().toString(),
+    date: new Date().toISOString(),
   };
 
   // 2. Themes metadata — refresh mode IDs from API while preserving hand-authored slugs/folders
@@ -421,6 +466,49 @@ async function main() {
     console.log(`  ${row.name}${pad}${row.count} vars`);
   }
   console.log('  ─────────────────────────────────────────────────\n');
+
+  // ── Validate before writing ──
+  // If any collection required by the generate script comes back too shallow,
+  // abort NOW before overwriting figma-variables.json (and thus before the
+  // generate step runs with corrupted data).
+  //
+  // Thresholds are sourced from figma-config.json so operators can tune them
+  // without touching the script. The generate script also has per-file guards
+  // but those only protect the CSS output — this guard protects the JSON source.
+
+  const hardFailures = [];
+
+  // Alias collection — the largest semantically important collection.
+  const minAlias = config.aliasValidation?.minVarCount ?? 150;
+  const liveAlias = (nonTheme['Alias']?.vars || []).filter(v => !v.n.startsWith('properties/'));
+  if (liveAlias.length < minAlias) {
+    hardFailures.push(
+      `Alias collection has ${liveAlias.length} vars (minimum: ${minAlias}). ` +
+      `The Figma API response is too shallow to generate valid CSS — aborting to protect existing files.`
+    );
+  }
+
+  // Per-collection minimums from config (optional; only evaluated if present).
+  const collectionMins = config.collectionValidation ?? {};
+  for (const [colName, min] of Object.entries(collectionMins)) {
+    const count = (nonTheme[colName]?.vars || []).length;
+    if (count < min) {
+      hardFailures.push(
+        `Collection "${colName}" has ${count} vars (minimum: ${min}). ` +
+        `Aborting to protect existing files.`
+      );
+    }
+  }
+
+  if (hardFailures.length > 0) {
+    console.error('\n  ✖ EXTRACTION ABORTED — sparse data detected:\n');
+    for (const msg of hardFailures) {
+      console.error(`    • ${msg}`);
+    }
+    console.error('\n  Existing figma-variables.json has NOT been modified.');
+    console.error('  Fix the Figma API response or lower the thresholds in figma-config.json.\n');
+    process.exit(2);
+  }
 
   // ── Write output ──
 
