@@ -1,8 +1,10 @@
 /**
  * @element sherpa-slider
  * @category control
- * @description Single or dual-handle range slider with optional numeric inputs.
- *   Pointer event drag with setPointerCapture. Keyboard arrows with step.
+ * @description Continuous numeric range selector using pointer drag and keyboard arrow keys. Use
+ *   when the user selects a value along a range where imprecision is acceptable — volume,
+ *   opacity, price filter. Set data-type="range" for a two-handle low/high picker. Add
+ *   data-show-inputs to let users also type exact values alongside the visual track.
  *
  * @attr {string}  data-label       — Label text above the slider
  * @attr {enum}    data-type=single — single | range

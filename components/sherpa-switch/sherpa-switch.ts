@@ -4,6 +4,10 @@
  *
  * @element sherpa-switch
  * @category control
+ * @description Immediate binary toggle for settings and preferences. Use instead of a checkbox
+ *   when the change takes effect without a submit step — enabling notifications, activating
+ *   dark mode, toggling a feature flag. The checked and state properties reflect the current
+ *   value. Emits a change event with { checked, state } on every toggle.
  *
  * @attr {enum}    data-state — on | off
  * @attr {boolean} disabled   — Native disabled state

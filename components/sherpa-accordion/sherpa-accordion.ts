@@ -7,6 +7,10 @@
  *
  * @element sherpa-accordion
  * @category container
+ * @description Collapsible content section using the native <details>/<summary> element. Use to
+ *   progressively reveal secondary content without navigating away or opening a dialog. Multiple
+ *   stacked accordions form a standard disclosure list (FAQ, settings groups). The browser
+ *   handles expand/collapse natively; JS only syncs the heading text and icon into the shadow DOM.
  *
  * @attr {string}  data-label  — Heading text for the summary row
  * @attr {string}  data-icon   — FontAwesome unicode for optional leading icon

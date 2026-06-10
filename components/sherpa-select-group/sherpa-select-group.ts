@@ -7,6 +7,11 @@
  *
  * @element sherpa-select-group
  * @category input
+ * @description Unified checkbox or radio group with shared label, description, helper, and
+ *   validation. Replaces sherpa-input-checkbox-group and sherpa-input-radio-group. Set
+ *   data-type="checkbox" for multi-select, "radio" for single-select. Populate options via
+ *   the data-options JSON attribute or dynamically via setValue(). The weekdays template
+ *   renders a pre-styled day-of-week picker for scheduling forms.
  *
  * @attr {enum}    data-type=checkbox  — checkbox | radio
  * @attr {string}  name               — Field name; auto-generated for radio if omitted

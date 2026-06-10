@@ -8,6 +8,11 @@
  *
  * @element sherpa-tabs
  * @category content
+ * @description Tabbed panel switcher for organising mutually exclusive views within one surface.
+ *   Each direct child with a data-tab-label attribute becomes a tab panel. Use
+ *   data-load-mode="lazy" when tab content is expensive to fetch or render, so panels are only
+ *   populated on first activation via the tab-load event. Prefer tabs over accordions when the
+ *   user switches frequently between views at the same scroll position.
  *
  * @attr {number}  data-active-tab — Zero-based index of the selected tab
  * @attr {enum}    data-load-mode  — eager (default, all panels rendered) | lazy (panels populated on first activation)

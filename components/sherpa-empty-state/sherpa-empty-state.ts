@@ -1,8 +1,11 @@
 /**
  * @element sherpa-empty-state
  * @category feedback
- * @description Empty-state placeholder with illustration, heading, description,
- *   and action slots.
+ * @description Placeholder shown when a list, grid, or content region has no data. Use inside
+ *   a container's empty slot or directly inside any region that can be blank. Choose a built-in
+ *   illustration that matches the context (empty, search, folder, data, error, success) or slot
+ *   a custom one. Always include a clear call-to-action in the actions slot so users know how
+ *   to populate the area.
  *
  * @attr {string}  data-label        — Heading text
  * @attr {string}  data-description  — Description text

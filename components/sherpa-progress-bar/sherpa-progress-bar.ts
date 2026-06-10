@@ -1,8 +1,10 @@
 /**
  * @element sherpa-progress-bar
  * @category display
- * @description Horizontal progress indicator — determinate or indeterminate.
- *   Sets role="progressbar" with appropriate ARIA values.
+ * @description Horizontal progress bar for communicating the status of a single ongoing task.
+ *   Use during file uploads, data imports, or any async operation where percentage completion
+ *   can be reported. Set data-variant="indeterminate" when the duration is unknown. Always set
+ *   data-label to describe what is in progress for screen reader users.
  *
  * @attr {string}  data-label                  — Task label above the bar
  * @attr {number}  data-value                  — 0–100 percentage (determinate)

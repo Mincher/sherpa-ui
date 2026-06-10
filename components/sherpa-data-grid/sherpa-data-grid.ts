@@ -1,9 +1,11 @@
 /**
  * @element sherpa-data-grid
  * @category data
- * @description Advanced data grid with grouping, selection, sorting, and pagination.
- *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
- *   Uses native <table> for sticky headers and full-width row backgrounds.
+ * @description Full-featured data table with column sorting, row grouping, multi-row selection,
+ *   and integrated pagination. The primary component for tabular datasets. Feed all data and
+ *   column configuration through setData(config). Wire sort-change and page-change events to
+ *   re-fetch from server-side sources. Use data-selectable to enable bulk-action row selection;
+ *   use data-show-actions for per-row action menus.
  *
  * @attr {boolean} data-loading               — Show loading state
  * @attr {string}  data-segment-field          — Field used for row grouping

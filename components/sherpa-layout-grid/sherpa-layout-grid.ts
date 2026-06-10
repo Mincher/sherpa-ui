@@ -1,14 +1,11 @@
 /**
  * @element sherpa-layout-grid
  * @category shell
- * @description Main page content grid. Use it inside an app shell to hold
- *   the page header, optional side rails, and the primary content area.
- *   Slotted <sherpa-container data-variant="resizable"> children take grid
- *   spans from their data-col-span / data-row-span attributes.
- *
- *   Replaces the legacy `.sherpa-content-area` CSS class with a real
- *   web component so the grid setup, breakpoints, and span rules are
- *   shadow-scoped and don't leak into consumer CSS.
+ * @description The main 12-column CSS grid that orchestrates a dashboard page layout. Place
+ *   inside an app shell's default slot. Slotted sherpa-container tiles declare their span via
+ *   data-col-span and data-row-span. Use data-content="static" for non-grid stacked layouts
+ *   (forms, settings pages) and data-fill="viewport" to clamp the grid to viewport height.
+ *   Dedicated slots for a view header, tab row, side panels, and a full-width banner strip.
  *
  * @attr {string}  data-row-height — CSS length for grid-auto-rows (default: 64px)
  * @attr {enum}    data-content    — "static" — stacks children vertically instead of using the CSS grid

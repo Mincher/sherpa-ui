@@ -1,7 +1,11 @@
 /**
  * @element sherpa-chart-legend
  * @category media
- * @description Standalone chart legend with optional interactive link items.
+ * @description Standalone colour-coded legend component, decoupled from any chart. Use when
+ *   the legend must render separately from the chart (different grid column, below the chart
+ *   in a stacked layout). Call setItems() with the same series data used to render the chart.
+ *   Make items interactive (link: true) to enable filter/highlight behaviour driven by
+ *   legend-item-click events.
  *
  * @attr {enum}    data-orientation — horizontal | vertical (default: horizontal)
  * @attr {boolean} data-loading     — Show loading state

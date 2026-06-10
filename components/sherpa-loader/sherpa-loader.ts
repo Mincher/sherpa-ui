@@ -7,6 +7,10 @@
  *
  * @element sherpa-loader
  * @category feedback
+ * @description Animated spinner for indicating that async content is loading. Use inside a
+ *   container's loading slot, or overlay any region that is fetching data. Add data-panel to
+ *   render a solid background surface for full-area loading states. Sets role="status" and
+ *   aria-live="polite" so assistive technology announces when the spinner appears.
  *
  * @attr {enum}    data-orientation  — horizontal | vertical
  * @attr {enum}    data-size         — small | default | large

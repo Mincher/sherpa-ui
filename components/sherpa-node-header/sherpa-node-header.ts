@@ -21,6 +21,9 @@
  *
  * @element sherpa-node-header
  * @category content
+ * @description Deprecated header row for sherpa-node. Use sherpa-node-row with
+ *   data-variant="header" for all new nodes. This component is retained for backwards
+ *   compatibility only and will be removed in v3.0.0.
  *
  * @attr {string}  data-icon        — FontAwesome class (e.g. "fa-solid fa-cube")
  * @attr {boolean} data-drill-down  — Show built-in drill-down button

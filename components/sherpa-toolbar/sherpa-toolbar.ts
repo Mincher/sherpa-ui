@@ -1,8 +1,11 @@
 /**
  * @element sherpa-toolbar
  * @category content
- * @description Generic horizontal toolbar with leading/center/trailing content
- *   zones and an optional filters row. Pure layout component — no data logic.
+ * @description Horizontal layout strip with leading, center, and trailing zones plus an
+ *   optional filters row. Use inside containers or panels to hold a title or CTA in the
+ *   leading zone, a search field in the center, and icon buttons in the trailing zone. The
+ *   filters slot adds a row below the strip for filter chips or a filter bar. Pure layout
+ *   component — adds no data logic.
  *
  * @attr {enum} data-density — Display density variant
  * @attr {enum} data-template — Layout variant: default | actions (default: default)

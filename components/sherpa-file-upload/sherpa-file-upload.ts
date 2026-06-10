@@ -1,9 +1,11 @@
 /**
  * @element sherpa-file-upload
  * @category input
- * @description File upload drop zone with drag-and-drop, file list,
- *   and per-file progress/status tracking. Consumer handles actual upload;
- *   call setFileState/setFileProgress to update UI.
+ * @description Drag-and-drop file upload zone with a file list and per-file progress tracking.
+ *   The component manages the selection UI; the host is responsible for the actual upload. After
+ *   receiving file-add, upload the files and call setFileProgress(index, percent) and
+ *   setFileState(index, state) to update each row's progress bar and status. Use data-multiple
+ *   for bulk uploads and data-accept to restrict MIME types or file extensions.
  *
  * @attr {string}  data-label     — Label text above the drop zone
  * @attr {string}  data-accept    — Accepted file types (e.g. ".jpg,.png,image/*")

@@ -12,6 +12,11 @@
  *
  * @element sherpa-container-header
  * @category container
+ * @description Standard header row for a sherpa-container card. Provides title, optional
+ *   description, and configurable action buttons (overflow menu, external-link, drag handle).
+ *   Always slot it as slot="header" inside a container. Add data-menu-button to inject an
+ *   overflow menu; the menu-select event bubbles through the header's shadow root into the
+ *   container's ancestors without re-dispatching.
  *
  * @attr {string}  data-title          — Heading text
  * @attr {string}  data-description    — Secondary text (hidden when empty)

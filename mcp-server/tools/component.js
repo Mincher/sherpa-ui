@@ -10,7 +10,7 @@ export function register(server, { schemas }, { parseTemplateIds, componentsDir 
     "query_component",
     {
       title: "Query Component",
-      description: "Look up a Sherpa UI component's full API: attributes, slots, events, methods, properties. Returns schema JSON plus links to source resources.",
+      description: "Look up a Sherpa UI component's full API: attributes, slots, events, methods, properties. The returned JSON includes a `description` field with usage guidance — what the component is for, when to use it, key constraints, and what it composes with. Always read this field before writing component markup.",
       inputSchema: {
         tagName: z.string().describe("Component tag name (e.g. sherpa-button)"),
       },
@@ -48,7 +48,7 @@ export function register(server, { schemas }, { parseTemplateIds, componentsDir 
     "list_components",
     {
       title: "List Components",
-      description: "List all Sherpa UI components with summary info (tag, description, category, attribute/slot/event counts). Optionally filter by category.",
+      description: "List all Sherpa UI components with their usage descriptions, category, and API counts. The `description` field for each entry explains what the component is, when to use it, and key constraints — use it to identify the right component before calling query_component for the full API. Optionally filter by category.",
       inputSchema: {
         category: z.string().optional().describe(
           "Filter by category: core, layout, navigation, form, data-display, data-viz, feedback, page-level"

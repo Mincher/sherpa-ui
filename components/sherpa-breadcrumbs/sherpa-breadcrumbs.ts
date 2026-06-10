@@ -1,20 +1,11 @@
 /**
  * @element sherpa-breadcrumbs
  * @category control
- * @description Navigation breadcrumb trail rendered as a flat flex row of
- *   crumb links and separator spans.
- *
- *   Three authoring modes (no slots — HTML-first):
- *     1. Defaults: drop in <sherpa-breadcrumbs></sherpa-breadcrumbs> and use
- *        the example crumbs from the default template.
- *     2. Template override: point data-src-html at an HTML file containing a
- *        <template id="default"> — the entire shadow DOM is replaced.
- *     3. Dynamic data: set data-src-json to a URL pointing to a JSON file that
- *        exports an array of {label, href?} objects, OR set data-items to an
- *        inline JSON array of the same shape. The last entry is rendered as
- *        the current page (aria-current="page", no link, no separator).
- *
- *   JS only delegates clicks and emits a normalized event.
+ * @description Navigation trail showing the user's current position in a hierarchy. Place in the
+ *   view header or page-level layout. Supply items as a JSON array via data-items, as a remote
+ *   JSON URL via data-src-json, or as a full custom HTML template via data-src-html. The last
+ *   item is always rendered as the current page — no link, aria-current="page". JS only
+ *   delegates clicks and emits a normalised breadcrumb-click event.
  *
  * @attr {string} data-src-html — URL of an HTML template file to replace the shadow DOM
  * @attr {string} data-src-json — URL of a JSON file: [{label: string, href?: string}]

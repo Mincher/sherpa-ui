@@ -1,15 +1,11 @@
 /**
  * @element sherpa-app-shell
  * @category shell
- * @description Full-page application shell. Composes sherpa-nav,
- *   sherpa-product-bar-v2, and a default content slot (typically
- *   sherpa-layout-grid) into the standard nav-rail | product-bar /
- *   content layout.
- *
- *   CSS applies the main-column offset from a mirrored data-nav-pinned
- *   host attribute. JS only syncs the nav pin state onto the shell.
- *   Put the page body inside a <sherpa-layout-grid> in the default slot,
- *   usually with data-content="static" and data-fill="viewport".
+ * @description Top-level full-page application chrome that composes the nav sidebar, product bar,
+ *   and main content area. Slot a sherpa-nav into "nav", a sherpa-product-bar-v2 into
+ *   "product-bar", and a sherpa-layout-grid into the default slot. The shell automatically
+ *   offsets the content column when the nav is pinned vs. collapsed. Use data-content="static"
+ *   and data-fill="viewport" on the inner layout grid for a full-height scrollable app layout.
  *
  * @slot nav          — sherpa-nav element (absolutely positioned)
  * @slot product-bar  — sherpa-product-bar-v2 (flex: 0 0 auto, 48px)

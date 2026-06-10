@@ -1,8 +1,11 @@
 /**
  * @element sherpa-filter-bar
  * @category data
- * @description Horizontal filter bar with zoned layout. Supports global and
- *   local (container-scoped) modes. Template variants: default (global) | local.
+ * @description Structured filter bar for adding, editing, and removing field-level filters.
+ *   Use above a data grid or list where users need dynamic per-field filtering. Point
+ *   data-src-json at a descriptor file to automatically populate available fields and preset
+ *   filter configurations. Wire filter-change to update the data source query. Supports global
+ *   mode (page-level) and local mode (scoped to a single container).
  *
  * @attr {enum}    data-density          — Display density variant
  * @attr {boolean} data-active           — Whether filters are active

@@ -20,6 +20,11 @@
  *
  * @element sherpa-node-canvas
  * @category data
+ * @description Pan-and-zoom canvas that hosts a visual node graph. Use when building a
+ *   node-graph editor or visual pipeline tool (workflow editor, process mapper, decision tree
+ *   builder). Manages viewport transforms, node dragging, bezier edge drawing, and
+ *   drag-to-connect interactions. Child sherpa-node elements declare their positions via
+ *   data-x/data-y attributes.
  *
  * @attr {enum} data-grid — "crosshair" (default) | "none"
  * @attr {string}  data-heading       — Root-level heading shown by the canvas header

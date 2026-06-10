@@ -1,8 +1,11 @@
 /**
  * @element sherpa-product-bar-v2
  * @category shell
- * @description Light-themed product bar (Apr 2026 redesign). System name
- *   trigger + time, optional tabs, central search, right-aligned actions.
+ * @description Top product branding bar (2026 redesign). Place once per app inside the
+ *   sherpa-app-shell "product-bar" slot. Provides a clickable system-name trigger (which can
+ *   open an org/scope picker via the system-menu slot), optional product sub-navigation tabs,
+ *   a central search field, and right-aligned action buttons. Set data-show-system-menu="false"
+ *   to disable the system-name dropdown in single-org applications.
  *
  * @attr {string}  data-product-name       — System / product display name
  * @attr {string}  data-time               — Time string ("09:00")

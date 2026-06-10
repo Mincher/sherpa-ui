@@ -6,6 +6,10 @@
  *
  * @element sherpa-node-socket
  * @category content
+ * @description Connection point on a sherpa-node for drag-to-connect edge creation. Pure
+ *   presentational element — the canvas drives all interaction based on the
+ *   sherpa-socket-pointerdown event. Set data-direction="in" for input sockets and "out" for
+ *   output sockets. Place inside a sherpa-node-row; not used standalone.
  *
  * @attr {enum}    data-direction        — "in" | "out"
  * @attr {enum}    data-location         — "header" | "row" (auto-detected from DOM context)

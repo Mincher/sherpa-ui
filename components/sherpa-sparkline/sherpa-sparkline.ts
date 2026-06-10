@@ -1,9 +1,10 @@
 /**
  * @element sherpa-sparkline
  * @category media
- * @description CSS-driven sparkline. JS sets raw data values as CSS custom
- *   properties; CSS handles normalisation via calc() and visual rendering
- *   (clip-path polygons per segment).
+ * @description Compact inline trend indicator, typically embedded in a metric card, table cell,
+ *   or list item. Use to show trend direction without axes or labels. Pass values via
+ *   data-values (comma-separated) or setValues(). Use the bar variant for discrete category
+ *   comparisons; the default line variant for continuous time series.
  *
  * @attr {string}  data-values  — Comma-separated or JSON array (e.g. "10,25,15,30")
  * @attr {enum}    data-variant — bar (default: line)

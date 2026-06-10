@@ -1,9 +1,11 @@
 /**
  * @element sherpa-key-value-list
  * @category content
- * @description Semantic description list built on the native <dl> element.
- *   Content authored as <dt>/<dd> pairs. Layout, density, striping and borders
- *   controlled via host attributes and CSS.
+ * @description Semantic definition list (<dl>) for displaying label/value pairs — metadata
+ *   panels, record details, configuration summaries. Author content as <dt>/<dd> pairs in
+ *   the light DOM. Use the horizontal layout for side-by-side key/value pairs and vertical
+ *   for stacked. The striped and bordered variants provide a table-like appearance without
+ *   the complexity of a full data grid.
  *
  * @attr {enum}    data-layout    — horizontal | vertical (default: horizontal)
  * @attr {enum}    data-density   — compact | base | comfortable (default: base)

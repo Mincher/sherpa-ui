@@ -1,9 +1,11 @@
 /**
  * @element sherpa-list
  * @category content
- * @description Grouping container for sherpa-list-item children. Provides
- *   variant + density styling, an optional heading row with actions slot,
- *   and an automatic empty-state.
+ * @description Vertical container for a homogeneous list of sherpa-list-item children. Provides
+ *   variant styling (default, bordered, divided), density control, an optional heading with
+ *   actions, and an automatic empty-state when no items are present. Use when displaying a
+ *   structured list where consistent row spacing and optional dividers are needed. For
+ *   searchable lists inside a panel, enable the panel's built-in data-search flag.
  *
  * @attr {enum}   data-variant=default   default | bordered | divided
  * @attr {enum}   data-density=default   compact | default | comfortable

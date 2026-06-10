@@ -2,10 +2,10 @@
  * @element sherpa-input-date-range
  * @category input
  * @extends SherpaInputBase
- * @description Date range picker with calendar popups for start and end dates.
- *   Inherits label, description, helper, layout, validation from SherpaInputBase.
- *   Start ≤ end constraint soft-enforced via min/max on native inputs.
- *   Range highlight shown on days between selected start and end.
+ * @description Two-field date range picker with calendar popups for start and end dates. Use
+ *   for filtering or date-bounded form fields (report periods, booking windows, audit spans).
+ *   The component soft-enforces start ≤ end via browser min/max constraints. The change event
+ *   emits both values together as { start, end } — always in YYYY-MM-DD format.
  *
  * @attr {string}  data-value-start — Start date (YYYY-MM-DD)
  * @attr {string}  data-value-end   — End date (YYYY-MM-DD)

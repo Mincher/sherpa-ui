@@ -1,7 +1,10 @@
 /**
  * @element sherpa-gauge-chart
  * @category media
- * @description Semicircle gauge using CSS conic-gradient.
+ * @description Semicircular gauge dial for displaying a single numeric value within a defined
+ *   range. Use on dashboards for KPIs with a clear upper bound (SLA compliance %, storage
+ *   usage, score out of 100). The series variant (data-variant="series") divides the arc into
+ *   coloured threshold segments — use it to show red/amber/green performance zones.
  *
  * @attr {string}  data-title   — Chart heading text
  * @attr {number}  data-value   — Numeric value 0–100

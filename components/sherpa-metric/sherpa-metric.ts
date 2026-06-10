@@ -1,9 +1,11 @@
 /**
  * @element sherpa-metric
  * @category display
- * @description KPI card with value, trend, and sparkline.
- *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
- *   Trend-derived colouring via data-status on internal .metric-card.
+ * @description KPI card showing a formatted value, optional trend indicator, delta, and
+ *   sparkline. Use inside a sherpa-container on a dashboard to surface a single key number
+ *   with context. Feed via setData() from the data pipeline, or set value, data-trend, and
+ *   data-delta attributes directly. Trend colouring (success for up, critical for down) is
+ *   applied automatically but can be overridden globally via setTrendStatusMap().
  *
  * @attr {string}  data-metric-id — Unique identifier for the metric
  * @attr {enum}    data-status     — success | warning | critical | info | urgent

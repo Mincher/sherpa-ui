@@ -1,9 +1,11 @@
 /**
  * @element sherpa-transfer-list
  * @category data
- * @description Two-pane shuttle (available <-> selected). Composes
- *   sherpa-list, sherpa-list-item, sherpa-select-checkbox,
- *   sherpa-input-search, sherpa-button.
+ * @description Two-pane shuttle control for moving items between "available" and "selected"
+ *   lists. Use for configuration UIs where users explicitly choose a subset from a pool —
+ *   column selection, permission assignment, notification recipients. Supply the full pool
+ *   via setOptions([ {value, label, selected?} ]); read the result via getSelectedValues().
+ *   Add data-search to show search inputs above each pane.
  *
  * @attr {string}  data-source-heading=Available — Available pane heading
  * @attr {string}  data-target-heading=Selected  — Selected pane heading

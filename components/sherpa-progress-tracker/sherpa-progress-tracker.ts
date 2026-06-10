@@ -1,11 +1,11 @@
 /**
  * @element sherpa-progress-tracker
  * @category content
- * @description Vertical timeline with status-coloured milestone nodes plus a
- *   header row (title + percentage). For a simpler atomic timeline without
- *   header chrome, use {@link SherpaStepper} with `data-template="timeline"`
- *   directly. This component composes that primitive's visual model and adds
- *   the tracker header.
+ * @description Vertical milestone timeline showing the completion state of a multi-step process.
+ *   Use in side panels or detail views to visualise where an entity sits in a workflow (order
+ *   fulfilment, approval chain, deployment pipeline). Feed milestones via setMilestones([ {label,
+ *   status, description?, timestamp?} ]). For an in-flow step indicator inside a wizard or form,
+ *   use sherpa-stepper instead.
  *
  * @see sherpa-stepper data-template="timeline"
  *

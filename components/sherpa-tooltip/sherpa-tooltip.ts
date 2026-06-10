@@ -7,6 +7,11 @@
  *
  * @element sherpa-tooltip
  * @category overlay
+ * @description Singleton hover tooltip for supplemental text on any element. One shared instance
+ *   exists per page — do not create multiple instances. Activate declaratively via a data-tooltip
+ *   attribute on any element, or programmatically via Tooltip.showFor(anchor, text). Use for
+ *   icon-only buttons and abbreviated labels that need clarification on hover. Avoid placing
+ *   required information in tooltips as they are not accessible to all keyboard users.
  *
  * @attr {boolean} data-visible   — Whether the tooltip is currently shown
  * @attr {enum}    data-position  — top | bottom | left | right

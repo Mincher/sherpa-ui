@@ -2,8 +2,11 @@
  * @element sherpa-input-text
  * @category input
  * @extends SherpaInputBase
- * @description Basic text input. Inherits label, description, helper, layout,
- *   validation, and value management from SherpaInputBase.
+ * @description Standard text input with Sherpa label, description, helper, and validation chrome.
+ *   Use for any single-line free-text field in a form (names, identifiers, custom values). Add
+ *   data-multiline to switch to an auto-growing textarea for longer content like notes, comments,
+ *   or descriptions. All label, placeholder, required, readonly, pattern, minlength, and maxlength
+ *   attributes are inherited from SherpaInputBase.
  *
  * @attr {string}  data-label       — Label text (inherited)
  * @attr {string}  data-description  — Description / error text (inherited)

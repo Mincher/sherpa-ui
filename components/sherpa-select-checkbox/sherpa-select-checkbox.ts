@@ -7,6 +7,11 @@
  *
  * @element sherpa-select-checkbox
  * @category input
+ * @description Atomic single checkbox with a right-aligned label. Use standalone for consent
+ *   acknowledgements ("I accept the terms") or as a child of sherpa-select-group for
+ *   coordinated multi-select lists. Supports indeterminate state for "select all" header
+ *   checkboxes. In groups, sherpa-select-group manages the name, value aggregation, and
+ *   validation — prefer it over composing individual checkboxes manually.
  *
  * @attr {string}  name             — Form field name
  * @attr {string}  value            — Submitted value when checked (default "on")

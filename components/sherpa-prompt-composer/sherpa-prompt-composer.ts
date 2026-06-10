@@ -5,6 +5,10 @@
  *
  * @element sherpa-prompt-composer
  * @category ai
+ * @description Auto-growing textarea with a circular send button for AI prompt entry. Use at
+ *   the bottom of a chat panel or AI interaction surface. Does not auto-clear on submit — call
+ *   clear() from the host once the prompt has been accepted, so the prompt remains visible
+ *   while a response streams in. Call setBusy(true) to disable input while the model responds.
  *
  * @attr {string}  data-placeholder — Placeholder text.
  * @attr {boolean} data-disabled    — Disables input + send.

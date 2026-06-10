@@ -44,6 +44,11 @@
  *
  * @element sherpa-node
  * @category content
+ * @description A draggable node in a sherpa-node-canvas graph. Represents a single entity in
+ *   a visual workflow or data-flow diagram. Contains sherpa-node-row children (header and body
+ *   rows) and sherpa-node-socket elements as connection points. Position is declared via
+ *   data-x/data-y and mirrored to CSS custom properties so the canvas can read layout state
+ *   from the DOM. Use data-kind to set the node type; use data-subtypes for a sub-type picker.
  *
  * @attr {enum}    data-kind     — One of: source | group | variable | math |
  *                                 logic | time | collection | util | output |

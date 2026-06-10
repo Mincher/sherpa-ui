@@ -11,6 +11,11 @@
  *
  * @element sherpa-input-tag
  * @category input
+ * @description Multi-value chip input for entering a variable-length list of free-text values.
+ *   Use for keyword tagging, email recipients, topic labels, or any field where the user
+ *   provides an open-ended set of strings. Press Enter or the configured separator character
+ *   to commit a chip. The current set is exposed as a JSON array via data-value and the value
+ *   property.
  *
  * @attr {string}  data-label
  * @attr {string}  data-description

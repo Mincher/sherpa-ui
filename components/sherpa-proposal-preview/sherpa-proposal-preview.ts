@@ -4,6 +4,10 @@
  *
  * @element sherpa-proposal-preview
  * @category ai
+ * @description Displays an AI agent's proposed changes as a structured diff view. Use inside a
+ *   sherpa-chat-message or a dedicated panel when an agent needs to present what it is about
+ *   to do before executing. Slot one sherpa-proposal-op per change into the ops slot, and slot
+ *   decision buttons (Approve / Reject / Edit) into the decision slot.
  *
  * @attr {string} data-rationale  Italic rationale shown above the ops.
  *

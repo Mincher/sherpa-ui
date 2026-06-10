@@ -1,8 +1,11 @@
 /**
  * @element sherpa-stepper
  * @category content
- * @description Horizontal/vertical step progress indicator.
- *   Steps populated from data; CSS handles all visual states.
+ * @description Step progress indicator for guided multi-step flows. Use inside a dialog, panel,
+ *   or dedicated page for wizards, onboarding sequences, or multi-phase forms. Drive navigation
+ *   with nextStep(), previousStep(), and goToStep(). Set data-linear="true" to prevent jumping
+ *   ahead before completing earlier steps. The timeline template renders as a vertical milestone
+ *   list; for a version with header chrome see sherpa-progress-tracker.
  *
  * @attr {number}  data-current-step=1      — Active step (1-based)
  * @attr {enum}    data-linear               — true | false — steps must complete in order

@@ -2,11 +2,10 @@
  * @element sherpa-input-time
  * @category input
  * @extends SherpaInputBase
- * @description Time input with hour / minute spinner popup.
- *   Inherits label, description, helper, layout, validation from SherpaInputBase.
- *   The native <input type="time"> remains in the DOM (hidden) so that form
- *   value, constraint validation (min / max / required / step), and focus
- *   management all delegate to the browser.
+ * @description Time entry field backed by a native <input type="time">. Use in scheduling,
+ *   event, or appointment forms. A custom hour/minute spinner popup provides a visual alternative
+ *   to typing. Form submission, constraint validation (min/max/required/step), and focus
+ *   management all delegate to the native input. Value format is always HH:MM.
  *
  * @attr {string}  min  — Minimum selectable time (HH:MM)
  * @attr {string}  max  — Maximum selectable time (HH:MM)

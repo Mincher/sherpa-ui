@@ -1,9 +1,11 @@
 /**
  * @element sherpa-nav-item
  * @category nav
- * @description Attribute-driven navigation item. Minimal JS — icon synced
- *   via data-icon, rest is declarative. Selection and interaction managed by
- *   parent sherpa-nav. Chevron rotation via CSS ::part(chevron).
+ * @description A single item inside sherpa-nav. Not used standalone — the parent nav reads these
+ *   from its HTML template and manages their interaction and selection state. Supports three
+ *   variants: section (top-level), subsection (collapsible group header), and child (leaf link).
+ *   Add data-badge for notification counts and data-icon-svg for custom SVG icons registered in
+ *   window.__sherpaNavIcons.
  *
  * @attr {string}  data-icon      — FontAwesome icon class (e.g. "fa-home")
  * @attr {string}  data-icon-svg  — Inline SVG markup string. Takes precedence over data-icon.

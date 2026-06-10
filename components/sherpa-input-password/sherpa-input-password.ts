@@ -2,8 +2,9 @@
  * @element sherpa-input-password
  * @category input
  * @extends SherpaInputBase
- * @description Password input with show/hide toggle button. Inherits label,
- *   description, helper, layout, validation from SherpaInputBase.
+ * @description Password entry field with a show/hide visibility toggle. Use for any secret or
+ *   credential input. The toggle button switches the underlying input between masked and plain
+ *   text. Inherits all label, helper, validation, and layout chrome from SherpaInputBase.
  *
  * @fires input
  *   bubbles: true, composed: true

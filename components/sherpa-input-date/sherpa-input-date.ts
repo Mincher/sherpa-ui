@@ -2,12 +2,11 @@
  * @element sherpa-input-date
  * @category input
  * @extends SherpaInputBase
- * @description Typeable date input with an accessible calendar picker popup.
- *   The visible <input type="text"> owns the form value (YYYY-MM-DD) and
- *   inherits all label/description/helper/validation chrome from
- *   SherpaInputBase. A trailing calendar-icon button opens a custom popup
- *   for visual date selection. Typed values are validated against optional
- *   min / max via setCustomValidity().
+ * @description Date field with a typeable text input and a calendar picker popup. Use for
+ *   single-date form fields; the value format is always YYYY-MM-DD. The calendar popup opens
+ *   via the trailing icon button and validates against optional min/max constraints. For date
+ *   ranges use sherpa-input-date-range. For a standalone calendar panel not embedded in a
+ *   form field, use sherpa-calendar.
  *
  * @attr {string}  min — Minimum selectable date (YYYY-MM-DD)
  * @attr {string}  max — Maximum selectable date (YYYY-MM-DD)

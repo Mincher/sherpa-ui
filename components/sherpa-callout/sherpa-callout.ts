@@ -1,8 +1,11 @@
 /**
  * @element sherpa-callout
  * @category feedback
- * @description Inline contextual callout with status variants and
- *   expandable/dismissible body.
+ * @description Inline highlight block for important contextual guidance or warnings. Use inside
+ *   forms, settings panels, or instructional content to draw focused attention to a specific
+ *   piece of information — a constraint, a gotcha, a helpful tip. Unlike sherpa-message (which
+ *   is for action-response feedback), callouts are editorial and informational. The body is
+ *   expandable/collapsible. Use sparingly — too many callouts defeat their purpose.
  *
  * @attr {enum}    data-status      — info | warning | critical | success
  * @attr {string}  data-heading     — Heading text

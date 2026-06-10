@@ -1,7 +1,9 @@
 /**
  * @element sherpa-product-bar
  * @category shell
- * @description **DEPRECATED — use `sherpa-product-bar-v2` instead.** Top-level product branding bar with icon, name, navigation, and actions.
+ * @description Deprecated v1 product branding bar retained for backwards compatibility.
+ *   Use sherpa-product-bar-v2 for all new implementations. This component will be removed
+ *   in a future major release.
  *
  * @deprecated Use sherpa-product-bar-v2 instead. This v1 component is kept for
  * backwards compatibility and will be removed in a future major release.

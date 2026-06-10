@@ -1,7 +1,11 @@
 /**
  * @element sherpa-message
  * @category feedback
- * @description Banner / inline message with status variants.
+ * @description Page-level or section-level status banner (success, warning, critical, info,
+ *   urgent). Use for persistent feedback the user should see before continuing — validation
+ *   results, server errors, access restrictions. Not for transient notifications (use
+ *   sherpa-toast). Supports an inline action link and a dismiss button. Slot into the banner
+ *   slot of sherpa-layout-grid for full-width page alerts, or place inline within a form section.
  *
  * @attr {enum}    data-status        — success | critical | warning | info | urgent
  * @attr {string}  data-label         — Message text

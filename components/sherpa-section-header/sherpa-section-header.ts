@@ -1,7 +1,10 @@
 /**
  * @element sherpa-section-header
  * @category content
- * @description Section heading with slots for badge, description, and actions.
+ * @description Semantic heading row for a content section within a page or panel. Use above any
+ *   logically distinct content group that needs a title, optional badge, description, and
+ *   trailing action buttons. Three heading levels (primary, secondary, tertiary) control
+ *   typographic weight. Add data-divider for a separator line beneath the heading.
  *
  * @attr {string}  data-label         — Section title text
  * @attr {enum}    data-heading-level — primary | secondary | tertiary

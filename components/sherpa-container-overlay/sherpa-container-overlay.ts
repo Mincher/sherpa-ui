@@ -7,6 +7,12 @@
  *
  * @element sherpa-container-overlay
  * @category overlay
+ * @description Floating overlay surface that unifies contextual menus and richer popover content.
+ *   Use the menu variant for contextual action lists — attach it to a sherpa-button via
+ *   data-menu="true", or call show(anchor) programmatically. Use the popover variant for richer
+ *   content such as paged multi-step flows or detailed tooltip bodies. Populate with
+ *   sherpa-overlay-item children. Listen to overlay-open and overlay-close to react to
+ *   visibility changes.
  *
  * @attr {enum}    data-variant      — popover (default) | menu
  * @attr {boolean} data-open         — Declarative open/close

@@ -1,7 +1,11 @@
 /**
  * @element sherpa-pagination
  * @category control
- * @description Standalone pagination bar with page navigation and page-size selector.
+ * @description Standalone pagination controls for navigating multi-page datasets. Place below
+ *   a list, grid, or table. Always set data-total-rows so the component can compute the total
+ *   page count and disable forward navigation at the boundary. Bind the page-change event to
+ *   re-fetch or re-slice your data. The page-size selector is built in; control the available
+ *   sizes via data-allowed-sizes.
  *
  * @attr {number}  data-page=1          — Current 1-based page
  * @attr {number}  data-page-size=25    — Rows per page

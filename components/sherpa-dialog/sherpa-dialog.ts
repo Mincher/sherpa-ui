@@ -8,6 +8,12 @@
  *
  * @element sherpa-dialog
  * @category overlay
+ * @description Modal dialog built on the native HTML <dialog> element for focused tasks requiring
+ *   user attention before returning to the page — confirmations, add/edit forms, multi-step
+ *   wizards. Use the wizard template (data-template="wizard") for multi-step flows with built-in
+ *   back/next/finish navigation. Always slot cancel and primary actions into the footer slot.
+ *   Use data-size="small" for simple confirmations (1–2 actions); "medium" for forms; "large"
+ *   or "full" for complex or rich content.
  *
  * @attr {string}  data-label       — Dialog title text
  * @attr {string}  data-subtitle    — Dialog subtitle text

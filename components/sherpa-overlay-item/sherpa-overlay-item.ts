@@ -1,9 +1,11 @@
 /**
  * @element sherpa-overlay-item
  * @category overlay
- * @description Attribute-driven overlay item with multiple template variants.
- *   Used as the item element inside sherpa-container-overlay (menu variant).
- *   Templates: default, checkbox, radio, toggle, heading.
+ * @description An individual action item inside a sherpa-container-overlay menu. Use data-type
+ *   to set the interaction model: plain action (default), checkbox, radio, toggle, or
+ *   non-interactive heading. Always nest inside a sherpa-container-overlay with
+ *   data-variant="menu" — do not use standalone. Items with data-selection="radio" and the
+ *   same data-group form a mutually exclusive radio group within the menu.
  *
  * @attr {enum}    data-type        — checkbox | radio | toggle | heading (default: action)
  * @attr {enum}    data-variant     — null | "danger" (red destructive treatment)

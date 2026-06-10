@@ -2,8 +2,11 @@
  * @element sherpa-input-number
  * @category input
  * @extends SherpaInputBase
- * @description Numerical input with stepper buttons. Inherits label, description,
- *   helper, layout, validation, and value management from SherpaInputBase.
+ * @description Numeric input with ± stepper buttons. Use when the user must enter a specific
+ *   integer or decimal value and the increment/decrement affordance adds meaning (quantity, age,
+ *   port number, cooldown duration). For selecting a value along a continuous range, prefer
+ *   sherpa-slider. Supports min, max, and step constraints, and exposes stepUp(n)/stepDown(n)
+ *   for programmatic control.
  *
  * @attr {number}  min   — Minimum allowed value
  * @attr {number}  max   — Maximum allowed value

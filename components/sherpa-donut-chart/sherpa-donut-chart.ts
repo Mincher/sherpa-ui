@@ -1,9 +1,10 @@
 /**
  * @element sherpa-donut-chart
  * @category media
- * @description Donut / pie chart using CSS conic-gradient.
- *   Supports declarative query loading via ContentAttributesMixin
- *   or programmatic setData().
+ * @description Donut or pie chart for showing proportional part-to-whole relationships. Use
+ *   when a total is divided into a small number of named segments (≤8 for legibility). Use
+ *   the donut variant (default) over pie when you want a summary value in the centre hole
+ *   via data-inner-label. Feed via setData([ {label, value, color?} ]) or the data pipeline.
  *
  * @attr {string}  data-title          — Chart heading text
  * @attr {string}  data-inner-label    — Centre big text

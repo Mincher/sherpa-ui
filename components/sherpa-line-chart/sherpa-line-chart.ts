@@ -1,9 +1,11 @@
 /**
  * @element sherpa-line-chart
  * @category media
- * @description Line / area chart using CSS clip-path segments.
- *   JS sets raw data as CSS custom properties; CSS normalises via calc()
- *   and renders clip-path polygons. Zero polygon computation in JS.
+ * @description Line or area chart for visualising trends over a continuous dimension such as
+ *   time. Use for time-series data (daily active users, weekly revenue, monthly error rates).
+ *   Built with CSS clip-path — no canvas or SVG. Feed via setData({ labels, series }). Use
+ *   the area variant (data-variant="area") for cumulative totals or filled ranges. Supports
+ *   multi-series with up to 8 colour-coded lines.
  *
  * @attr {string}  data-title          — Chart heading text
  * @attr {boolean} data-loading        — Show loading state

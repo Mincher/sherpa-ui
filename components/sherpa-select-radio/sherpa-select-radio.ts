@@ -8,6 +8,9 @@
  *
  * @element sherpa-select-radio
  * @category input
+ * @description Atomic single radio button. Use multiple instances sharing the same name
+ *   attribute to form a radio group, or wrap all options in sherpa-select-group which manages
+ *   the shared name, value coordination, and fieldset label/validation chrome.
  *
  * @attr {string}  name             — Form field name (radios sharing a name group together)
  * @attr {string}  value            — Value submitted when selected

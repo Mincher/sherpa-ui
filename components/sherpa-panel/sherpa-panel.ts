@@ -9,6 +9,11 @@
  *
  * @element sherpa-panel
  * @category container
+ * @description Resizable inline column or slide-in overlay drawer with header, optional toolbar,
+ *   built-in search, scrollable content, and action footer. Use for persistent side content:
+ *   settings, record details, history logs, or AI conversation threads. Inline panels collapse
+ *   to a narrow strip with a chevron toggle; overlay panels slide in from the edge. The ai
+ *   variant adds a prompt-composer slot and archive/new-chat controls for full chat panel layouts.
  *
  * @attr {enum}    data-variant       — inline | overlay | ai
  * @attr {enum}    data-position      — left | right | both

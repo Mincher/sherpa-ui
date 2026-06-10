@@ -29,7 +29,7 @@ export function register(server, { schemas, patterns, cssUtilities }, paths) {
         const summary = [...schemas.values()]
           .map((s) => `- **${s.tagName}** (${s.category}): ${s.description}`)
           .join("\n");
-        componentContext = `\n### Available Components\n${summary}\n`;
+        componentContext = `\n### Available Components\nEach entry below lists the component tag, its category, and its usage description — what it is, when to use it, and key constraints. Use this to select the right component, then call query_component for the full attribute/slot/event API.\n\n${summary}\n`;
       }
 
       let layoutContext = "";

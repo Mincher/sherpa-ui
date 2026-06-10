@@ -1,8 +1,11 @@
 /**
  * @element sherpa-toast
  * @category feedback
- * @description Toast notification with auto-dismiss, status variants,
- *   and static factory methods for programmatic creation.
+ * @description Transient popup notification that auto-dismisses. Use for operation feedback
+ *   that does not require user action: "Saved successfully", "Export complete", "Connection
+ *   lost". Prefer the static factory methods (SherpaToast.success(), .critical(), .warning(),
+ *   .info()) for programmatic creation. Do not use for errors that require remediation — use
+ *   sherpa-message or sherpa-dialog instead.
  *
  * @attr {enum}    data-status=info          — info | success | warning | critical | urgent
  * @attr {string}  data-label                — Toast heading text

@@ -6,6 +6,12 @@
  *
  * @element sherpa-container
  * @category container
+ * @description The standard card and widget container for dashboard tiles and content regions.
+ *   Use it for every panel or tile inside a sherpa-layout-grid. It owns loading, empty, and
+ *   error state overlays via named slots — no conditional HTML needed in the page. Choose
+ *   data-variant="resizable" for user-resizable dashboard tiles, "fit" for content-sized
+ *   standalone cards. Add data-interactive or data-selectable to make the container a clickable
+ *   or radio-selectable surface.
  *
  * @attr {enum}    data-variant=fit   — fit | resizable | fill | worksheet
  * @attr {number}  data-col-span      — Column span: 3 | 6 | 9 | 12 (resizable)

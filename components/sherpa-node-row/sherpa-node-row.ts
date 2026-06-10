@@ -8,6 +8,10 @@
  *
  * @element sherpa-node-row
  * @category content
+ * @description Unified row inside a sherpa-node, handling both header rows (data-variant="header")
+ *   and body rows (data-variant="body"). Header rows show an icon, title, and optional drill-down
+ *   button. Body rows provide slots for a field label, an input control, and an optional socket.
+ *   Always a child of sherpa-node; not used standalone.
  *
  * @attr {enum}    data-variant   — "header" | "body" (default: "body")
  * @attr {boolean} data-multi     — Visually expand for multi-input rows

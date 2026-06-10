@@ -1,8 +1,11 @@
 /**
  * @element sherpa-container-footer
  * @category container
- * @description Reusable footer with multiple template variants.
- *   Template selected via data-type attribute.
+ * @description Standardised footer for dialogs, popovers, and containers. Use the action-bar
+ *   variant (Cancel/Apply) inside dialogs and panels — it fires footer-cancel and footer-apply
+ *   events automatically. The slot variant is a transparent pass-through for custom footer
+ *   content. The card-select variant renders a radio button for selectable card patterns.
+ *   Slot as slot="footer" inside a container or dialog.
  *
  * @attr {enum}    data-type          — action-bar | slot | card-select (default: slot)
  * @attr {string}  data-cancel-label  — Cancel button text (action-bar)

@@ -2,9 +2,11 @@
  * @element sherpa-code-block
  * @category utility
  * @extends SherpaElement
- * @description Syntax-highlighted, copyable code display with optional line numbers.
- *   Uses Prism.js (v1.29+) for syntax highlighting. Supports auto-language detection
- *   from content inspection. Emits code-copied event on clipboard success.
+ * @description Syntax-highlighted, copyable code snippet display. Use in documentation panels,
+ *   AI chat responses, or developer-facing UIs where formatted code needs to be displayed and
+ *   copied. Prism.js is loaded lazily on first render. Specify data-language or let the
+ *   component auto-detect from content. Add data-line-numbers for snippets where line
+ *   references matter. The code-copied event fires on clipboard success.
  *
  * @attr {enum}    data-language              — auto | html | css | js | jsx | tsx | json | yaml | bash | python | java | go | rust | sql
  * @attr {boolean} data-line-numbers          — Show line numbers (Prism plugin)

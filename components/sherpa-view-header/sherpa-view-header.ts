@@ -1,8 +1,11 @@
 /**
  * @element sherpa-view-header
  * @category shell
- * @description View header toolbar with toggles and settings.
- *   Manages heading, favorites, feedback popover, and export intent.
+ * @description Heading bar for a full page or named view. Contains the page title, optional
+ *   breadcrumbs, favourite toggle, export button, and a view-selection slot for scoped view
+ *   switching. Use once per page, slotted into the view-header slot of sherpa-layout-grid.
+ *   Wire view-export to trigger PDF or CSV generation; wire favorite-toggle to persist user
+ *   bookmark preferences.
  *
  * @attr {string}  data-label              — View heading text
  * @attr {boolean} data-show-debug-toggles — Show debug toggle controls

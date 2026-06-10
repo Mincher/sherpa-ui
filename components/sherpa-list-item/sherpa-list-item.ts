@@ -1,8 +1,10 @@
 /**
  * @element sherpa-list-item
  * @category content
- * @description Versatile list item with leading, content, and trailing areas.
- *   Supports labels, descriptions, icons, drag handles, and slotted trailing actions.
+ * @description An individual row inside a sherpa-list with leading (icon/avatar), content
+ *   (label and description), and trailing (action buttons) areas. Add data-interactive to
+ *   enable hover styling and a list-item-click event. Use data-draggable to show a drag handle
+ *   for reorderable lists. For navigation items inside sherpa-nav, use sherpa-nav-item instead.
  *
  * @attr {string}  data-label       — Primary text
  * @attr {string}  data-description — Secondary helper text

@@ -2,8 +2,11 @@
  * @element sherpa-input-search
  * @category input
  * @extends SherpaInputBase
- * @description Search input with magnifying glass icon and clear button.
- *   Inherits label, description, helper, layout, validation from SherpaInputBase.
+ * @description Search field with a leading magnifying glass icon and a trailing clear button.
+ *   Use in toolbars, panel headers, or filter rows where the user needs to filter a visible
+ *   list. Emits both input (live) and search (committed via Enter or button) events. When
+ *   filtering content inside a sherpa-panel, prefer the panel's built-in data-search flag
+ *   which handles item visibility automatically without extra wiring.
  *
  * @fires input
  *   bubbles: true, composed: true

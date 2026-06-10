@@ -2,9 +2,11 @@
  * @element sherpa-input-select
  * @category input
  * @extends SherpaInputBase
- * @description Dropdown select input using native <select>. Options provided
- *   via light DOM <option> elements or programmatically via setOptions().
- *   Inherits label, description, helper, layout, validation from SherpaInputBase.
+ * @description Dropdown select backed by a native <select> element. Use for choosing from a
+ *   predefined list when there are more than ~6 options or the list is dynamic. Supply options
+ *   via light DOM <option> elements or programmatically via setOptions(). For hierarchical
+ *   category/subcategory selection use the tree template (data-template="tree"). The change
+ *   event includes the selected value and, in tree mode, the full ancestry path.
  *
  * @attr {enum}   data-template — default | tree (hierarchical picker)
  * @attr {json}   data-tree     — (tree) Node forest [{value,label,children?,disabled?}]

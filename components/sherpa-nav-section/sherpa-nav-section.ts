@@ -1,10 +1,11 @@
 /**
  * @element sherpa-nav-section
  * @category nav
- * @description Secondary navigation panel: a heading with optional back
- *   button, followed by a vertical list of grouped, selectable items.
- *   Designed for Settings-style layouts where the panel sits beside a
- *   content area and switches what is rendered there.
+ * @description Secondary navigation panel for Settings-style layouts where selecting an item
+ *   switches the main content area. Populate item groups via setSections([{ label, items }])
+ *   or the data-sections JSON attribute. Use setActive(id) to highlight the current selection
+ *   programmatically. Listen to nav-section-select to know which item was clicked and update
+ *   the adjacent content area accordingly.
  *
  * Items can be supplied in two ways:
  *   1. Programmatically via `setSections([{ label, items }])` (preferred).

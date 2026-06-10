@@ -43,6 +43,11 @@
  *
  * @element sherpa-container-group
  * @category container
+ * @description A grouped cluster of related sherpa-container tiles that share a single outer
+ *   border within a sherpa-layout-grid. Use when several KPI cards or metric widgets are
+ *   logically related and should appear as one bordered region. The first slotted container's
+ *   header acts as the group title; subsequent containers' headers are visually hidden while
+ *   preserving height for cross-tile content alignment.
  *
  * @attr {enum} data-col-span — 2 | 3 | 4 | 6 | 8 | 9 | 12 — span across
  *   the parent <sherpa-layout-grid>'s columns. Defaults to a full row

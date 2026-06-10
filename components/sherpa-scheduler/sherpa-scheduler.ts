@@ -1,12 +1,11 @@
 /**
  * @element sherpa-scheduler
  * @category data
- * @description Recurrence/schedule picker. Composes sherpa-input-select
- *   (frequency), sherpa-input-date, sherpa-input-time,
- *   sherpa-select-group (weekdays template), sherpa-input-number.
- *
- *   CSS owns all conditional row visibility via :host([data-frequency]).
- *   JS only translates between the inner inputs and the host's `value`.
+ * @description Recurrence and schedule configuration picker. Use in forms where the user defines
+ *   when and how often something runs (report delivery, task execution, notification timing).
+ *   Composes frequency, date, time, weekday, and interval inputs; CSS owns all conditional row
+ *   visibility so only the relevant inputs appear for the selected frequency. Read the complete
+ *   schedule via the value property as a SchedulePayload object.
  *
  * @attr {enum}   data-frequency=weekly once | hourly | daily | weekly | monthly
  *

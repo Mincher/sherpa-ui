@@ -1,9 +1,11 @@
 /**
  * @element sherpa-barchart
  * @category media
- * @description Adaptive bar chart with automatic orientation.
- *   Supports stacked bars, category limiting, and responsive legend.
- *   Extends ContentAttributesMixin(SherpaElement) for data pipeline.
+ * @description Bar chart for comparing values across discrete categories. Use for categorical
+ *   comparisons: revenue by region, tickets by status, users by role. Supports stacked bars
+ *   (data-stacked) for part-to-whole breakdowns. Automatically switches between horizontal and
+ *   vertical orientation based on the container aspect ratio. Feed via setData(config) or the
+ *   ContentAttributesMixin data pipeline.
  *
  * @attr {boolean} data-loading        — Show loading state
  * @attr {boolean} data-stacked        — Stack bars by segment

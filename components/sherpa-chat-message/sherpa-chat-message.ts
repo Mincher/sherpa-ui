@@ -4,6 +4,10 @@
  *
  * @element sherpa-chat-message
  * @category ai
+ * @description A single message bubble in an AI or human messaging thread. Set data-role="user"
+ *   for human messages and "ai" for assistant responses. Slot any content into the default
+ *   slot — text, code blocks (sherpa-code-block), proposal previews (sherpa-proposal-preview).
+ *   Pair with sherpa-prompt-composer and a sherpa-panel (ai variant) to compose a full chat UI.
  *
  * @attr {enum}   data-role         "user" | "ai" (default "ai").
  * @attr {string} data-avatar-icon  Font Awesome class for the

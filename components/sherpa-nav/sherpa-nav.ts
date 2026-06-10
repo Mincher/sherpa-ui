@@ -1,9 +1,13 @@
 /**
  * @element sherpa-nav
  * @category shell
- * @description Collapsible navigation sidebar with search and edit modes.
- *   Loads an HTML nav template via renderFromUrl() (default: sherpa-nav.html,
- *   override via data-src-html). CSS Highlight API for search (::highlight(nav-search-match)).
+ * @description Collapsible left-rail navigation sidebar. Loads its item structure from a
+ *   server-rendered HTML template (data-src-html), keeping navigation declarative and
+ *   SSR-friendly. Supports search mode (CSS Highlight API), an edit mode for favourites
+ *   and section reordering, pinned and collapsed states, and an optional promotional footer
+ *   strip. Use at the app-shell level only — do not nest inside content areas. Items in the
+ *   HTML template are standard anchor elements; the component adds interaction, icons, and
+ *   badges declaratively via data attributes.
  *
  * @attr {string}  data-src-html            — URL for the nav template HTML (default: sherpa-nav.html)
  * @attr {string}  data-active-target  — Selector or ID of the currently active nav item

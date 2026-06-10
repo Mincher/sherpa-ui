@@ -19,6 +19,12 @@
  *
  * @element sherpa-button
  * @category control
+ * @description The primary interactive trigger for any user action. Use for form submissions,
+ *   opening dialogs, triggering navigation, and executing commands. Choose data-variant="primary"
+ *   for the main action on a surface, "secondary" for supporting actions, and "tertiary" for
+ *   low-emphasis inline actions. Set data-type="icon" for toolbar icon-only buttons. Add
+ *   data-menu="true" to any button type to turn it into an integrated dropdown menu trigger —
+ *   no separate overlay element is needed for simple menus.
  *
  * @attr {enum}    data-type            — default | icon
  * @attr {string}  data-label           — Button text label

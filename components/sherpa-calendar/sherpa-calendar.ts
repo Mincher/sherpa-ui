@@ -1,9 +1,11 @@
 /**
  * @element sherpa-calendar
  * @category input
- * @description Calendar panel for date, date-range, and date+time selection.
- *   Renders month navigation with day/month/year drill-down. The active
- *   sections are controlled by data-mode.
+ * @description Standalone calendar panel for date, date-range, and date+time selection. Use
+ *   when you need a full calendar surface embedded in a popover, panel, or inline section —
+ *   not as a form field. For form date fields use sherpa-input-date (single) or
+ *   sherpa-input-date-range (range) instead; both compose this calendar internally. The
+ *   data-mode attribute switches between date, range, date-time, and time-only modes.
  *
  * @attr {enum}    data-mode      — date-time (default) | date | range | time
  * @attr {string}  value          — Date-time value (YYYY-MM-DDTHH:mm) — date/date-time/time modes
