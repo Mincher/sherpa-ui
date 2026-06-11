@@ -56,7 +56,7 @@ export class SherpaPagination extends SherpaElement {
      Computed Properties
      ══════════════════════════════════════════════════════════════ */
 
-  get page() {
+  get page(): number {
     return Math.max(1, parseInt(this.getAttribute("data-page") || "", 10) || 1);
   }
 
@@ -64,7 +64,7 @@ export class SherpaPagination extends SherpaElement {
     this.setAttribute("data-page", String(Math.max(1, parseInt(String(v), 10) || 1)));
   }
 
-  get pageSize() {
+  get pageSize(): number {
     return Math.max(1, parseInt(this.getAttribute("data-page-size") || "", 10) || 25);
   }
 
@@ -75,7 +75,7 @@ export class SherpaPagination extends SherpaElement {
     );
   }
 
-  get totalRows() {
+  get totalRows(): number {
     return Math.max(0, parseInt(this.getAttribute("data-total-rows") || "", 10) || 0);
   }
 
@@ -86,11 +86,11 @@ export class SherpaPagination extends SherpaElement {
     );
   }
 
-  get totalPages() {
+  get totalPages(): number {
     return Math.max(1, Math.ceil(this.totalRows / this.pageSize));
   }
 
-  get allowedSizes() {
+  get allowedSizes(): number[] {
     const raw = this.getAttribute("data-allowed-sizes");
     if (!raw) return [10, 25, 50, 100];
     return raw
@@ -116,7 +116,7 @@ export class SherpaPagination extends SherpaElement {
     this.#update();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) return;
     if (name === "data-allowed-sizes") {
       this.#populateSizeOptions();
@@ -129,7 +129,7 @@ export class SherpaPagination extends SherpaElement {
      ══════════════════════════════════════════════════════════════ */
 
   /** Populate the page-size <select> with allowed values. */
-  #populateSizeOptions() {
+  #populateSizeOptions(): void {
     const select = this.$(".page-size-select");
     if (!select) return;
 
@@ -164,7 +164,7 @@ export class SherpaPagination extends SherpaElement {
   }
 
   /** Sync all display elements to current state. */
-  #update() {
+  #update(): void {
     const page = Math.min(this.page, this.totalPages);
     const totalPages = this.totalPages;
     const totalRows = this.totalRows;
@@ -256,7 +256,7 @@ export class SherpaPagination extends SherpaElement {
      Events
      ══════════════════════════════════════════════════════════════ */
 
-  #emitChange() {
+  #emitChange(): void {
     this.dispatchEvent(
       new CustomEvent("page-change", {
         bubbles: true,
@@ -274,7 +274,7 @@ export class SherpaPagination extends SherpaElement {
      ══════════════════════════════════════════════════════════════ */
 
   /** Go to a specific page (clamped to valid range). */
-  goToPage(n: number) {
+  goToPage(n: number): void {
     const clamped = Math.max(
       1,
       Math.min(Math.trunc(n) || 1, this.totalPages),
@@ -285,7 +285,7 @@ export class SherpaPagination extends SherpaElement {
   }
 
   /** Update total rows (e.g. after filtering). */
-  setTotalRows(count: number) {
+  setTotalRows(count: number): void {
     this.setAttribute(
       "data-total-rows",
       String(Math.max(0, Math.trunc(count) || 0)),

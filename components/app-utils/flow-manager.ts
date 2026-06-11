@@ -112,7 +112,7 @@ export class FlowManager {
   /* ── Public API ──────────────────────────────────────────────── */
 
   /** Open the add/edit dialog in "add" mode with an empty form. */
-  startAdd() {
+  startAdd(): void {
     if (!this.#addEditDialog) return;
     this.#editingRecord = null;
     this.#addEditDialog.setAttribute('data-label', this.#labels.addTitle);
@@ -125,7 +125,7 @@ export class FlowManager {
    * Open the add/edit dialog in "edit" mode, pre-populated.
    * @param {Object} record — The existing record to edit
    */
-  startEdit(record: unknown) {
+  startEdit(record: unknown): void {
     if (!this.#addEditDialog) return;
     this.#editingRecord = record;
     this.#addEditDialog.setAttribute('data-label', this.#labels.editTitle);
@@ -139,7 +139,7 @@ export class FlowManager {
    * @param {Array} ids — Record identifiers to delete
    * @param {string} [message] — Override the confirmation message
    */
-  startDelete(ids: unknown[], message?: string) {
+  startDelete(ids: unknown[], message?: string): void {
     if (!this.#deleteDialog || !ids.length) return;
     this.#deleteTargetIds = ids;
 
@@ -156,17 +156,17 @@ export class FlowManager {
   }
 
   /** @returns {'add'|'edit'} Current flow type based on editing state. */
-  get flowType() {
+  get flowType(): 'add' | 'edit' {
     return this.#editingRecord ? 'edit' : 'add';
   }
 
   /** @returns {Object|null} The record currently being edited, or null for add. */
-  get editingRecord() {
+  get editingRecord(): unknown {
     return this.#editingRecord;
   }
 
   /** Clean up event listeners. */
-  destroy() {
+  destroy(): void {
     // Listeners are on child elements of dialogs we were given,
     // so they'll be GC'd when dialogs are removed. No manual cleanup needed
     // unless we add document-level listeners in the future.
@@ -174,7 +174,7 @@ export class FlowManager {
 
   /* ── Private — wiring ────────────────────────────────────────── */
 
-  #wireAddEditDialog() {
+  #wireAddEditDialog(): void {
     if (!this.#addEditDialog) return;
 
     this.#saveBtnEl = this.#addEditDialog.querySelector<HTMLElement>('[slot="footer"][data-variant="primary"]');
@@ -184,7 +184,7 @@ export class FlowManager {
     this.#cancelBtnEl?.addEventListener('button-click', () => this.#onCancelAddEdit());
   }
 
-  #wireDeleteDialog() {
+  #wireDeleteDialog(): void {
     if (!this.#deleteDialog) return;
 
     this.#confirmDeleteBtnEl = this.#deleteDialog.querySelector<HTMLElement>('[slot="footer"][data-variant="primary"]');
@@ -196,7 +196,7 @@ export class FlowManager {
 
   /* ── Private — handlers ──────────────────────────────────────── */
 
-  async #onSave() {
+  async #onSave(): Promise<void> {
     if (!this.#saveCallback) {
       this.#addEditDialog?.hide();
       return;
@@ -225,12 +225,12 @@ export class FlowManager {
     }
   }
 
-  #onCancelAddEdit() {
+  #onCancelAddEdit(): void {
     this.#dispatch('flow-cancel', { flow: this.flowType, entity: this.#entity });
     this.#addEditDialog?.hide();
   }
 
-  async #onConfirmDelete() {
+  async #onConfirmDelete(): Promise<void> {
     if (!this.#deleteCallback) {
       this.#deleteDialog?.hide();
       return;
@@ -255,14 +255,14 @@ export class FlowManager {
     }
   }
 
-  #onCancelDelete() {
+  #onCancelDelete(): void {
     this.#dispatch('flow-cancel', { flow: 'delete', entity: this.#entity });
     this.#deleteDialog?.hide();
   }
 
   /* ── Private — helpers ───────────────────────────────────────── */
 
-  #dispatch(name: string, detail: unknown) {
+  #dispatch(name: string, detail: unknown): void {
     this.#contentArea?.dispatchEvent(
       new CustomEvent(name, { bubbles: true, composed: true, detail })
     );

@@ -60,7 +60,7 @@ export class FormManager {
    * Only sets values for fields that exist in the container.
    * @param {Object} data — key-value map of field name → value
    */
-  populate(data: Record<string, unknown> | null | undefined) {
+  populate(data: Record<string, unknown> | null | undefined): void {
     if (!data) return;
     for (const [name, value] of Object.entries(data)) {
       const el = this.#field(name);
@@ -71,7 +71,7 @@ export class FormManager {
   /**
    * Clear all named fields to empty strings.
    */
-  clear() {
+  clear(): void {
     for (const el of this.#fields()) {
       el.value = '';
     }

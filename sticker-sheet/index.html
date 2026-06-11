@@ -197,6 +197,31 @@
       <sherpa-pagination data-total-rows="120" data-page-size="10" data-page="3"></sherpa-pagination>
     </sherpa-container>
 
+    <sherpa-container data-variant="fill" data-row-span="auto" id="tooltip" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-tooltip"></sherpa-container-header>
+      <sherpa-section-header data-label="Declarative (data-tooltip + data-tooltip-position)" data-heading-level="tertiary"></sherpa-section-header>
+      <div class="ss-strip">
+        <div class="ss-chip"><span class="ss-chip-label">top (default)</span>
+          <sherpa-button data-variant="secondary" data-label="Hover me" data-tooltip="Default tooltip positioned above the trigger"></sherpa-button>
+        </div>
+        <div class="ss-chip"><span class="ss-chip-label">bottom</span>
+          <sherpa-button data-variant="secondary" data-label="Hover me" data-tooltip="Positioned below the trigger" data-tooltip-position="bottom"></sherpa-button>
+        </div>
+        <div class="ss-chip"><span class="ss-chip-label">left</span>
+          <sherpa-button data-variant="secondary" data-label="Hover me" data-tooltip="Positioned to the left" data-tooltip-position="left"></sherpa-button>
+        </div>
+        <div class="ss-chip"><span class="ss-chip-label">right</span>
+          <sherpa-button data-variant="secondary" data-label="Hover me" data-tooltip="Positioned to the right" data-tooltip-position="right"></sherpa-button>
+        </div>
+        <div class="ss-chip"><span class="ss-chip-label">icon button</span>
+          <sherpa-button data-variant="tertiary" data-type="icon" data-icon-start="fa-solid fa-trash" data-tooltip="Delete this record" aria-label="Delete"></sherpa-button>
+        </div>
+        <div class="ss-chip"><span class="ss-chip-label">tag</span>
+          <sherpa-tag data-status="warning" data-tooltip="Approval is pending — awaiting 2 reviews">Pending</sherpa-tag>
+        </div>
+      </div>
+    </sherpa-container>
+
     <!-- ════ INPUTS ════ -->
     <div class="ss-section" id="input-text">
       <sherpa-section-header data-label="Inputs" data-heading-level="primary" data-divider></sherpa-section-header>
@@ -285,6 +310,24 @@
       </div>
     </sherpa-container>
 
+    <sherpa-container data-variant="fill" data-row-span="auto" id="calendar" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-calendar"></sherpa-container-header>
+      <div class="ss-strip" style="align-items:flex-start;flex-wrap:wrap;gap:var(--sherpa-space-default,16px)">
+        <div class="ss-chip">
+          <span class="ss-chip-label">date mode</span>
+          <sherpa-calendar data-mode="date" value="2026-06-10"></sherpa-calendar>
+        </div>
+        <div class="ss-chip">
+          <span class="ss-chip-label">range mode</span>
+          <sherpa-calendar data-mode="range" data-value="2026-06-08" data-value-end="2026-06-15"></sherpa-calendar>
+        </div>
+        <div class="ss-chip">
+          <span class="ss-chip-label">date-time mode</span>
+          <sherpa-calendar data-mode="date-time" value="2026-06-10T14:30"></sherpa-calendar>
+        </div>
+      </div>
+    </sherpa-container>
+
     <sherpa-container data-variant="fill" data-row-span="auto" id="input-time" class="ss-section">
       <sherpa-container-header slot="header" data-title="sherpa-input-time"></sherpa-container-header>
       <div class="ss-strip">
@@ -316,6 +359,47 @@
         <div class="ss-chip"><span class="ss-chip-label">unselected</span><sherpa-select-radio data-label="Option A" name="demo-radio"></sherpa-select-radio></div>
         <div class="ss-chip"><span class="ss-chip-label">selected</span><sherpa-select-radio data-label="Option B" name="demo-radio" checked></sherpa-select-radio></div>
         <div class="ss-chip"><span class="ss-chip-label">disabled</span><sherpa-select-radio data-label="Option C" name="demo-radio" disabled></sherpa-select-radio></div>
+      </div>
+    </sherpa-container>
+
+    <sherpa-container data-variant="fill" data-row-span="auto" id="select-group" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-select-group"></sherpa-container-header>
+      <div class="ss-strip" style="align-items:flex-start;flex-wrap:wrap">
+        <div class="ss-chip" style="min-width:220px">
+          <span class="ss-chip-label">checkbox group (select-all)</span>
+          <sherpa-select-group data-type="checkbox" data-label="Notification channels" data-select-all>
+            <sherpa-select-checkbox data-label="Email alerts" checked></sherpa-select-checkbox>
+            <sherpa-select-checkbox data-label="SMS notifications"></sherpa-select-checkbox>
+            <sherpa-select-checkbox data-label="In-app updates" checked></sherpa-select-checkbox>
+            <sherpa-select-checkbox data-label="Weekly digest" disabled></sherpa-select-checkbox>
+          </sherpa-select-group>
+        </div>
+        <div class="ss-chip" style="min-width:200px">
+          <span class="ss-chip-label">radio group</span>
+          <sherpa-select-group data-type="radio" data-label="Priority level">
+            <sherpa-select-radio data-label="Low" name="sg-priority"></sherpa-select-radio>
+            <sherpa-select-radio data-label="Medium" name="sg-priority" checked></sherpa-select-radio>
+            <sherpa-select-radio data-label="High" name="sg-priority"></sherpa-select-radio>
+            <sherpa-select-radio data-label="Critical" name="sg-priority"></sherpa-select-radio>
+          </sherpa-select-group>
+        </div>
+        <div class="ss-chip" style="min-width:280px">
+          <span class="ss-chip-label">horizontal orientation</span>
+          <sherpa-select-group data-type="checkbox" data-label="Active days" data-orientation="horizontal">
+            <sherpa-select-checkbox data-label="Mon" checked></sherpa-select-checkbox>
+            <sherpa-select-checkbox data-label="Tue" checked></sherpa-select-checkbox>
+            <sherpa-select-checkbox data-label="Wed"></sherpa-select-checkbox>
+            <sherpa-select-checkbox data-label="Thu" checked></sherpa-select-checkbox>
+            <sherpa-select-checkbox data-label="Fri" checked></sherpa-select-checkbox>
+          </sherpa-select-group>
+        </div>
+        <div class="ss-chip" style="min-width:220px" data-status="critical">
+          <span class="ss-chip-label">validation (critical)</span>
+          <sherpa-select-group data-type="checkbox" data-label="Required agreements" data-helper="You must accept all terms to continue">
+            <sherpa-select-checkbox data-label="Terms of service"></sherpa-select-checkbox>
+            <sherpa-select-checkbox data-label="Privacy policy"></sherpa-select-checkbox>
+          </sherpa-select-group>
+        </div>
       </div>
     </sherpa-container>
 
@@ -478,8 +562,8 @@
     </sherpa-container>
 
     <sherpa-container data-variant="fill" data-row-span="auto" id="progress-tracker" class="ss-section">
-      <sherpa-container-header slot="header" data-title="sherpa-progress-tracker"></sherpa-container-header>
-      <sherpa-progress-tracker data-heading="Release 2.1" data-percentage="25% Complete" data-src-json="/sticker-sheet/data/progress-tracker.json"></sherpa-progress-tracker>
+      <sherpa-container-header slot="header" data-title="sherpa-progress-step-tracker"></sherpa-container-header>
+      <sherpa-progress-step-tracker data-heading="Release 2.1" data-percentage="50% Complete" data-src-json="/sticker-sheet/data/progress-tracker.json"></sherpa-progress-step-tracker>
     </sherpa-container>
 
     <sherpa-container data-variant="fill" data-row-span="auto" id="sparkline" class="ss-section">
@@ -546,8 +630,32 @@
     </sherpa-container>
 
     <sherpa-container data-variant="fill" data-row-span="auto" id="stepper" class="ss-section">
-      <sherpa-container-header slot="header" data-title="sherpa-stepper"></sherpa-container-header>
-      <sherpa-stepper data-current-step="2" data-src-json="/sticker-sheet/data/stepper.json"></sherpa-stepper>
+      <sherpa-container-header slot="header" data-title="sherpa-progress-step-tracker (vertical / stepper)"></sherpa-container-header>
+      <sherpa-progress-step-tracker data-current-step="2" data-orientation="vertical" data-src-json="/sticker-sheet/data/stepper.json"></sherpa-progress-step-tracker>
+    </sherpa-container>
+
+    <sherpa-container data-variant="fill" data-row-span="auto" id="code-block" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-code-block"></sherpa-container-header>
+      <sherpa-section-header data-label="JavaScript (with line numbers)" data-heading-level="tertiary"></sherpa-section-header>
+      <sherpa-code-block data-language="js" data-line-numbers>const greeting = (name) => `Hello, ${name}!`;
+
+async function fetchUser(id) {
+  const res = await fetch(`/api/users/${id}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}</sherpa-code-block>
+
+      <sherpa-section-header data-label="HTML" data-heading-level="tertiary" style="margin-top:var(--sherpa-space-default,16px)"></sherpa-section-header>
+      <sherpa-code-block data-language="html">&lt;sherpa-button data-variant=&quot;primary&quot; data-icon-start=&quot;fa-solid fa-plus&quot; data-label=&quot;Add item&quot;&gt;&lt;/sherpa-button&gt;</sherpa-code-block>
+
+      <sherpa-section-header data-label="Bash (max-height scrollable)" data-heading-level="tertiary" style="margin-top:var(--sherpa-space-default,16px)"></sherpa-section-header>
+      <sherpa-code-block data-language="bash" data-max-height="120px">npm install
+npm run build
+npm run lint
+npm test
+npm run patterns
+# Build completed in 3.4s
+# 42 components compiled</sherpa-code-block>
     </sherpa-container>
 
     <!-- ════ CONTAINERS ════ -->
@@ -644,6 +752,62 @@
       </sherpa-dialog>
     </sherpa-container>
 
+    <sherpa-container data-variant="fill" data-row-span="auto" id="container-footer" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-container-footer"></sherpa-container-header>
+      <div style="display:flex;flex-direction:column;gap:var(--sherpa-space-sm,12px)">
+        <div class="ss-chip">
+          <span class="ss-chip-label">action-bar (cancel + apply)</span>
+          <sherpa-container-footer data-type="action-bar" data-cancel-label="Discard" data-apply-label="Save changes"></sherpa-container-footer>
+        </div>
+        <div class="ss-chip">
+          <span class="ss-chip-label">action-bar (apply only)</span>
+          <sherpa-container-footer data-type="action-bar" data-apply-label="Publish" data-show-cancel="false"></sherpa-container-footer>
+        </div>
+        <div class="ss-chip">
+          <span class="ss-chip-label">action-bar (critical apply)</span>
+          <sherpa-container-footer data-type="action-bar" data-cancel-label="Cancel" data-apply-label="Delete" data-status="critical"></sherpa-container-footer>
+        </div>
+        <div class="ss-chip">
+          <span class="ss-chip-label">slot (custom content)</span>
+          <sherpa-container-footer>
+            <sherpa-button slot="start" data-variant="tertiary" data-icon-start="fa-solid fa-circle-info" data-label="Learn more"></sherpa-button>
+            <sherpa-tag>Draft</sherpa-tag>
+            <sherpa-button data-variant="primary" data-label="Continue"></sherpa-button>
+          </sherpa-container-footer>
+        </div>
+      </div>
+    </sherpa-container>
+
+    <sherpa-container data-variant="fill" data-row-span="auto" id="container-overlay" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-container-overlay"></sherpa-container-header>
+      <sherpa-section-header data-label="Menu variant" data-heading-level="tertiary"></sherpa-section-header>
+      <div class="ss-strip">
+        <div style="position:relative">
+          <sherpa-button id="open-menu-overlay" data-variant="secondary" data-icon-end="fa-solid fa-chevron-down" data-label="Actions"></sherpa-button>
+          <sherpa-container-overlay id="menu-overlay-demo" data-variant="menu">
+            <sherpa-overlay-item data-icon="fa-solid fa-pencil" data-action="edit">Edit</sherpa-overlay-item>
+            <sherpa-overlay-item data-icon="fa-solid fa-copy" data-action="duplicate">Duplicate</sherpa-overlay-item>
+            <sherpa-overlay-item data-icon="fa-solid fa-arrow-right" data-action="move">Move to…</sherpa-overlay-item>
+            <sherpa-overlay-item data-type="heading">Danger zone</sherpa-overlay-item>
+            <sherpa-overlay-item data-icon="fa-solid fa-trash" data-variant="danger" data-action="delete">Delete</sherpa-overlay-item>
+          </sherpa-container-overlay>
+        </div>
+      </div>
+      <sherpa-section-header data-label="Popover variant" data-heading-level="tertiary" style="margin-top:var(--sherpa-space-default,16px)"></sherpa-section-header>
+      <div class="ss-strip">
+        <div style="position:relative">
+          <sherpa-button id="open-popover-overlay" data-variant="tertiary" data-icon-start="fa-solid fa-circle-info" data-label="More details"></sherpa-button>
+          <sherpa-container-overlay id="popover-overlay-demo" data-variant="popover" data-heading="Connection info" style="width:280px">
+            <sherpa-key-value-list>
+              <dt>Host</dt><dd>prod-db-01.internal</dd>
+              <dt>Port</dt><dd>5432</dd>
+              <dt>Status</dt><dd><sherpa-tag data-status="success">Connected</sherpa-tag></dd>
+            </sherpa-key-value-list>
+          </sherpa-container-overlay>
+        </div>
+      </div>
+    </sherpa-container>
+
     <!-- ════ CHARTS ════ -->
     <div class="ss-section" id="barchart">
       <sherpa-section-header data-label="Charts" data-heading-level="primary" data-divider></sherpa-section-header>
@@ -671,6 +835,14 @@
       <sherpa-gauge-chart data-title="SLA compliance" data-value="72" data-min="0%" data-max="100%" data-label="Target: 99%" style="width:240px;height:200px"></sherpa-gauge-chart>
     </sherpa-container>
 
+    <sherpa-container data-variant="fill" data-row-span="auto" id="chart-legend" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-chart-legend"></sherpa-container-header>
+      <sherpa-section-header data-label="Horizontal (default)" data-heading-level="tertiary"></sherpa-section-header>
+      <sherpa-chart-legend data-legend-id="horizontal"></sherpa-chart-legend>
+      <sherpa-section-header data-label="Vertical" data-heading-level="tertiary" style="margin-top:var(--sherpa-space-default,16px)"></sherpa-section-header>
+      <sherpa-chart-legend data-legend-id="vertical" data-orientation="vertical"></sherpa-chart-legend>
+    </sherpa-container>
+
     <!-- ════ DATA ════ -->
     <div class="ss-section" id="data-grid">
       <sherpa-section-header data-label="Data" data-heading-level="primary" data-divider></sherpa-section-header>
@@ -684,6 +856,38 @@
     <sherpa-container data-variant="fill" data-row-span="auto" id="filter-bar" class="ss-section">
       <sherpa-container-header slot="header" data-title="sherpa-filter-bar"></sherpa-container-header>
       <sherpa-filter-bar data-src-json="/sticker-sheet/data/filter-bar.json"></sherpa-filter-bar>
+    </sherpa-container>
+
+    <sherpa-container data-variant="fill" data-row-span="auto" id="transfer-list" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-transfer-list"></sherpa-container-header>
+      <sherpa-section-header data-label="Default" data-heading-level="tertiary"></sherpa-section-header>
+      <sherpa-transfer-list id="transfer-list-demo" style="max-width:640px"></sherpa-transfer-list>
+      <sherpa-section-header data-label="With search" data-heading-level="tertiary" style="margin-top:var(--sherpa-space-default,16px)"></sherpa-section-header>
+      <sherpa-transfer-list id="transfer-list-search" data-search data-source-heading="Available services" data-target-heading="Active services" style="max-width:640px"></sherpa-transfer-list>
+    </sherpa-container>
+
+    <!-- ════ AI / MESSAGING ════ -->
+    <div class="ss-section" id="chat-message">
+      <sherpa-section-header data-label="AI / Messaging" data-heading-level="primary" data-divider></sherpa-section-header>
+    </div>
+
+    <sherpa-container data-variant="fill" data-row-span="auto">
+      <sherpa-container-header slot="header" data-title="sherpa-chat-message"></sherpa-container-header>
+      <sherpa-section-header data-label="Roles" data-heading-level="tertiary"></sherpa-section-header>
+      <div style="display:flex;flex-direction:column;gap:var(--sherpa-space-xs,8px);max-width:640px">
+        <sherpa-chat-message data-role="user">How do I show a button with a loading state?</sherpa-chat-message>
+        <sherpa-chat-message data-role="ai">Add the <code>data-loading</code> attribute to <code>sherpa-button</code>. The button shows a spinner and suppresses the label until loading is removed.</sherpa-chat-message>
+        <sherpa-chat-message data-role="user">Can you show me an example?</sherpa-chat-message>
+        <sherpa-chat-message data-role="ai">
+          Here's a minimal example:
+          <sherpa-code-block data-language="html" style="margin-top:var(--sherpa-space-xs,8px)">&lt;sherpa-button data-variant=&quot;primary&quot; data-loading data-label=&quot;Save&quot;&gt;&lt;/sherpa-button&gt;</sherpa-code-block>
+        </sherpa-chat-message>
+      </div>
+      <sherpa-section-header data-label="Custom avatar" data-heading-level="tertiary" style="margin-top:var(--sherpa-space-default,16px)"></sherpa-section-header>
+      <div style="display:flex;flex-direction:column;gap:var(--sherpa-space-xs,8px);max-width:640px">
+        <sherpa-chat-message data-role="ai" data-avatar-icon="fa-solid fa-robot">Response from a custom AI avatar.</sherpa-chat-message>
+        <sherpa-chat-message data-role="user">Reply from the user side.</sherpa-chat-message>
+      </div>
     </sherpa-container>
 
     <!-- ════ NAVIGATION ════ -->

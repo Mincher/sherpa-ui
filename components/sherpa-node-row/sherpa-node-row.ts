@@ -40,7 +40,7 @@ export class SherpaNodeRow extends SherpaElement {
 
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
-  static override get sharedStyles() {
+  static override get sharedStyles(): string[] {
     return [
       ...super.sharedStyles,
       new URL("../sherpa-node/sherpa-node-tokens.css", import.meta.url).href,
@@ -57,7 +57,7 @@ export class SherpaNodeRow extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     iconBuiltIn: '.icon-built-in',
     iconWrap: '.icon',
     drillBtn: '.drill-down'
@@ -74,13 +74,13 @@ export class SherpaNodeRow extends SherpaElement {
     this.#syncIcon();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === "data-icon") this.#syncIcon();
   }
 
   /* ── Internals ─────────────────────────────────────────────────── */
 
-  #syncIcon() {
+  #syncIcon(): void {
     if (!this.els.iconBuiltIn || !this.els.iconWrap) return;
     const cls = this.dataset["icon"];
     if (cls) {
@@ -92,7 +92,7 @@ export class SherpaNodeRow extends SherpaElement {
     }
   }
 
-  #onDrillClick = (e: Event) => {
+  #onDrillClick = (e: Event): void => {
     e.stopPropagation();
     const node = this.closest<HTMLElement>("sherpa-node");
     this.emit("sherpa-node-drilldown", { nodeId: node?.dataset?.["nodeId"] || null });

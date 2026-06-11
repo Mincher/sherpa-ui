@@ -104,7 +104,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   #xLabelTpl: HTMLTemplateElement | null = null;
   #filterMenuTpl: ReturnType<typeof injectFilterMenu> = null;
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     title: '.chart-title',
     yLabels: { selector: '.y-label', all: true },
     chartArea: { selector: '.chart-area', type: HTMLElement },
@@ -146,7 +146,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     this.#filterMenuTpl = null;
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'data-title') {
@@ -182,7 +182,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
    *   - A content config object (from ContentAttributesMixin.load())
    *   - A direct { labels, series } object
    */
-  async setData(data: LineData | LineContentData) {
+  async setData(data: LineData | LineContentData): Promise<void> {
     await this.rendered;
     const d = data as LineData & LineContentData;
 
@@ -241,18 +241,18 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       let cmp = 0;
       try {
         cmp = Temporal.PlainDate.compare(
-          Temporal.PlainDate.from(labels[a]!),
-          Temporal.PlainDate.from(labels[b]!),
+          Temporal.PlainDate.from(labels[a] ?? ''),
+          Temporal.PlainDate.from(labels[b] ?? ''),
         );
       } catch { cmp = 0; }
       return dir === 'desc' ? -cmp : cmp;
     });
 
     return {
-      labels: indices.map((i) => labels[i]!),
+      labels: indices.map((i) => labels[i] ?? ''),
       series: series.map((s) => ({
         ...s,
-        values: indices.map((i) => s.values[i]!),
+        values: indices.map((i) => s.values[i] ?? 0),
       })),
     };
   }
@@ -265,7 +265,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
    * When data-segment-field is active, uses the segment field as the series
    * field, producing one line per unique segment value.
    */
-  #transformContentData() {
+  #transformContentData(): void {
     if (!this.#contentData) { this.#data = null; return; }
 
     const { columns = [], rows = [] } = this.#contentData;
@@ -282,20 +282,20 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     // Determine effective grouping field: explicit segment, or implicit series column
     const effectiveSegmentField = segmentField
       || (columns.length > 2
-        ? columns.find((c: any) => c.field !== labelField && c.field !== valueField)?.field
+        ? columns.find((c: ChartColumn) => c.field !== labelField && c.field !== valueField)?.field
         : null);
 
     if (effectiveSegmentField && effectiveSegmentField !== labelField && effectiveSegmentField !== valueField) {
       // Multi-series: one line per unique segment/group value
-      const seriesNames = [...new Set(rows.map((r: any) => String(r[effectiveSegmentField] ?? '')))].sort();
-      const labels = [...new Set(rows.map((r: any) => String(r[labelField] ?? '')))];
+      const seriesNames = [...new Set(rows.map((r: Record<string, unknown>) => String(r[effectiveSegmentField] ?? '')))].sort();
+      const labels = [...new Set(rows.map((r: Record<string, unknown>) => String(r[labelField] ?? '')))];
 
-      const series = seriesNames.map((name: any) => {
-        const values = labels.map((label: any) => {
-          const matching = rows.filter((r: any) =>
+      const series = seriesNames.map((name: string) => {
+        const values = labels.map((label: string) => {
+          const matching = rows.filter((r: Record<string, unknown>) =>
             String(r[effectiveSegmentField]) === name && String(r[labelField]) === label
           );
-          return matching.reduce((sum: any, r: any) => sum + (Number(r[valueField]) || 0), 0);
+          return matching.reduce((sum: number, r: Record<string, unknown>) => sum + (Number(r[valueField]) || 0), 0);
         });
         return { name, values };
       });
@@ -303,17 +303,17 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
       this.#data = { labels, series };
     } else {
       // Single series — aggregate by label
-      const labelOrder = [];
-      const agg = new Map();
+      const labelOrder: string[] = [];
+      const agg = new Map<string, number>();
       for (const row of rows) {
         const l = String(row[labelField] ?? '');
         if (!agg.has(l)) { labelOrder.push(l); agg.set(l, 0); }
-        agg.set(l, agg.get(l) + (Number(row[valueField]) || 0));
+        agg.set(l, (agg.get(l) ?? 0) + (Number(row[valueField]) || 0));
       }
-      const valueName = columns.find((c: any) => c.field === valueField)?.name || valueField || 'Value';
+      const valueName = columns.find((c: ChartColumn) => c.field === valueField)?.name || valueField || 'Value';
       this.#data = {
         labels: labelOrder,
-        series: [{ name: valueName, values: labelOrder.map((l: any) => agg.get(l)) }],
+        series: [{ name: valueName, values: labelOrder.map((l: string) => agg.get(l) ?? 0) }],
       };
     }
 
@@ -324,7 +324,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     if (this.#data && this.#data.labels.length > 12) {
       this.#data = {
         labels: this.#data.labels.slice(-12),
-        series: this.#data.series.map((s: any) => ({
+        series: this.#data.series.map((s: LineSeries) => ({
           ...s,
           values: s.values.slice(-12),
         })),
@@ -360,7 +360,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: sync ────────────────────────────────────────────── */
 
-  #syncTitle() { syncChartTitle(this.els.title ?? null, this); }
+  #syncTitle(): void { syncChartTitle(this.els.title ?? null, this); }
 
   /* ── Private: cap series ──────────────────────────────────────── */
 
@@ -385,7 +385,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: render ──────────────────────────────────────────── */
 
-  #render() {
+  #render(): void {
     const seriesLayer = this.els.seriesLayer;
     if (!seriesLayer || !this.#data) return;
 
@@ -409,7 +409,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     // Add 5% padding and round to include 0 if close
     const range = globalMax - globalMin;
     let yMin = globalMin - range * 0.05;
-    let yMax = globalMax + range * 0.05;
+    const yMax = globalMax + range * 0.05;
     if (yMin > 0 && yMin < range * 0.3) yMin = 0;
 
     // Set range on host — CSS normalises values from these
@@ -525,7 +525,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
-  #updateAriaLabel(labels: string[], series: { name: string }[]) {
+  #updateAriaLabel(labels: string[], series: { name: string }[]): void {
     const title = this.getAttribute('data-title') || 'Line chart';
     const layout = this.$<HTMLElement>('.chart-layout');
     const summary = this.$<HTMLElement>('.chart-sr-summary');
@@ -540,7 +540,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: format ──────────────────────────────────────────── */
 
-  #formatAxisValue(val: number) {
+  #formatAxisValue(val: number): string {
     const abs = Math.abs(val);
     if (abs >= 1e6) return `${(val / 1e6).toFixed(1)}M`;
     if (abs >= 1e3) return `${(val / 1e3).toFixed(1)}K`;
@@ -550,9 +550,9 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Filter menu ─────────────────────────────────────────────────────── */
 
-  #onToggleFilters = () => toggleFilters(this);
-  #onToggleLegend  = () => toggleLegend(this);
-  #onMenuPopulate  = (e: CustomEvent) => syncFilterMenuItems(e, this);
+  #onToggleFilters = (): void => { toggleFilters(this); };
+  #onToggleLegend  = (): void => { toggleLegend(this); };
+  #onMenuPopulate  = (e: CustomEvent): void => { syncFilterMenuItems(e, this); };
 }
 
 customElements.define('sherpa-line-chart', SherpaLineChart);

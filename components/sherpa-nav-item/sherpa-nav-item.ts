@@ -59,7 +59,7 @@ export class SherpaNavItem extends SherpaElement {
     this.#syncDescription();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-type') {
       this.renderTemplate(this.templateId).then(() => {
         this.#syncIcon();
@@ -73,7 +73,7 @@ export class SherpaNavItem extends SherpaElement {
     if (name === 'data-description') this.#syncDescription();
   }
 
-  #syncIcon() {
+  #syncIcon(): void {
     // Promo template: simple icon swap, no SVG/inner-wrapper logic.
     if (this.dataset["type"] === 'promo') {
       const promoIconEl = this.$('.nav-promo-icon .sherpa-icon');
@@ -120,7 +120,7 @@ export class SherpaNavItem extends SherpaElement {
     iconEl.className = icon ? `${icon} sherpa-icon` : 'sherpa-icon';
   }
 
-  #syncBadge() {
+  #syncBadge(): void {
     const tagEl = this.$<HTMLElement>('.nav-item-tag');
     if (!tagEl) return;
     const badge = this.dataset["badge"];
@@ -129,7 +129,7 @@ export class SherpaNavItem extends SherpaElement {
     this.toggleAttribute('data-has-badge', !!badge);
   }
 
-  #syncDescription() {
+  #syncDescription(): void {
     const descEl = this.$('.nav-promo-description');
     if (!descEl) return;
     descEl.textContent = this.dataset["description"] || '';

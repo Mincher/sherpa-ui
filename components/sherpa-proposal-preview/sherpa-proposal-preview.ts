@@ -35,17 +35,17 @@ class SherpaProposalPreview extends SherpaElement {
     this.#syncRationale();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === "data-rationale") this.#syncRationale();
   }
 
-  #syncRationale() {
+  #syncRationale(): void {
     if (this.#rationaleEl) this.#rationaleEl.textContent = this.dataset["rationale"] || "";
   }
 
   /* ── public API ──────────────────────────────────────────── */
-  get rationale()  { return this.dataset["rationale"] || ""; }
-  set rationale(v) { if (v == null) this.removeAttribute("data-rationale"); else this.dataset["rationale"] = String(v); }
+  get rationale(): string  { return this.dataset["rationale"] || ""; }
+  set rationale(v: string) { if (v == null) { this.removeAttribute("data-rationale"); } else { this.dataset["rationale"] = String(v); } }
 }
 
 customElements.define("sherpa-proposal-preview", SherpaProposalPreview);

@@ -26,7 +26,7 @@ interface DatasetResult {
 export async function refreshDataset(
   contentArea: HTMLElement | null,
   loader: (() => Promise<DatasetResult | null | undefined>) | null,
-) {
+): Promise<void> {
   if (!contentArea || !loader) return;
   const ds = await loader();
   if (!ds) return;

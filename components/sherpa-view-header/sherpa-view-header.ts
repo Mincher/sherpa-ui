@@ -106,7 +106,7 @@ export class SherpaViewHeader extends SherpaElement {
     }
   }
 
-  #applyEditMode(on: boolean) {
+  #applyEditMode(on: boolean): void {
     // Sync toggle state
     const toggle = this.$<HTMLElement>('#edit-mode-toggle');
     if (toggle) toggle.dataset["state"] = on ? 'on' : 'off';
@@ -116,19 +116,19 @@ export class SherpaViewHeader extends SherpaElement {
 
   // ============ Public API ============
 
-  setHeading(name: string) { this.dataset["label"] = name; }
-  getHeading() { return this.dataset["label"] || ''; }
-  setViewId(id: string | null) {
+  setHeading(name: string): void { this.dataset["label"] = name; }
+  getHeading(): string { return this.dataset["label"] || ''; }
+  setViewId(id: string | null): void {
     this.#viewId = id;
     if (id) this.dataset["viewId"] = id;
     else delete this.dataset["viewId"];
   }
-  getViewId() { return this.#viewId; }
-  setFavorite(on: boolean) {
+  getViewId(): string | null { return this.#viewId; }
+  setFavorite(on: boolean): void {
     this.dataset["favorite"] = on ? 'true' : 'false';
     this.#syncFavoriteButton(on);
   }
-  isFavorite() { return this.dataset["favorite"] === 'true'; }
+  isFavorite(): boolean { return this.dataset["favorite"] === 'true'; }
 
   /**
    * Render an inline view-selection picker into the `view-selection`
@@ -147,15 +147,15 @@ export class SherpaViewHeader extends SherpaElement {
     items: PickerItem[],
     currentValue?: string | null,
     opts: { ariaLabel?: string; placeholder?: string } = {},
-  ) {
+  ): void {
     this.#renderViewPicker(Array.isArray(items) ? items : [], currentValue, opts);
   }
 
   /** @returns {string|null} */
-  getSelectedViewValue() { return this.#pickerValue; }
+  getSelectedViewValue(): string | null { return this.#pickerValue; }
 
   /** Remove any picker chrome and clear stored options. */
-  clearViewOptions() {
+  clearViewOptions(): void {
     this.#viewPickerEls.forEach((el) => el.remove());
     this.#viewPickerEls = [];
     this.#pickerItems = [];
@@ -192,7 +192,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#syncFavoriteButton(this.dataset["favorite"] === 'true');
   }
 
-  #setupSelectors() {
+  #setupSelectors(): void {
     // Initialise ThemeManager with CSS base URL resolved from this module
     ThemeManager.init({
       cssBaseUrl: new URL('../../css/styles/', import.meta.url).href,
@@ -227,7 +227,7 @@ export class SherpaViewHeader extends SherpaElement {
     }
   }
 
-  #setupExport() {
+  #setupExport(): void {
     const btn = this.$('#export-all-btn');
     if (!btn) return;
     
@@ -237,7 +237,7 @@ export class SherpaViewHeader extends SherpaElement {
     });
   }
 
-  #setupEditMode() {
+  #setupEditMode(): void {
     const toggle = this.$('#edit-mode-toggle');
     if (!toggle) return;
     toggle.addEventListener('change', (e) => {
@@ -246,7 +246,7 @@ export class SherpaViewHeader extends SherpaElement {
     });
   }
 
-  #syncFavoriteButton(on: boolean) {
+  #syncFavoriteButton(on: boolean): void {
     const btn = this.$<HTMLElement>('#favorite-btn');
     if (!btn) return;
     btn.dataset["favorite"] = on.toString();
@@ -254,7 +254,7 @@ export class SherpaViewHeader extends SherpaElement {
     btn.setAttribute('data-icon-start', on ? 'fa-solid fa-star' : 'fa-regular fa-star');
   }
 
-  #setupFavorite() {
+  #setupFavorite(): void {
     const btn = this.$('#favorite-btn');
     if (!btn) return;
     btn.addEventListener('click', () => {
@@ -264,7 +264,7 @@ export class SherpaViewHeader extends SherpaElement {
     });
   }
 
-  #setupBackButton() {
+  #setupBackButton(): void {
     const btn = this.$('#back-btn');
     if (!btn) return;
     btn.addEventListener('click', () => {
@@ -278,7 +278,7 @@ export class SherpaViewHeader extends SherpaElement {
    * the attribute is missing/invalid, the row is hidden via
    * `data-has-breadcrumbs`.
    */
-  #syncBreadcrumbs(raw: string | null | undefined) {
+  #syncBreadcrumbs(raw: string | null | undefined): void {
     const crumbsEl = this.$<HTMLElement>('#view-breadcrumbs');
     if (!crumbsEl) return;
     let items: { label: string; href?: string }[] = [];
@@ -312,9 +312,9 @@ export class SherpaViewHeader extends SherpaElement {
   // can drive it either programmatically (setViewOptions) or
   // declaratively by adding <option> children with slot="view-selection".
 
-  #setupOptionSlotWatcher() {
+  #setupOptionSlotWatcher(): void {
     if (this.#optionSlotObserver) return;
-    const harvest = () => {
+    const harvest = (): void => {
       const opts = [...this.querySelectorAll<HTMLOptionElement>(':scope > option[slot="view-selection"]')];
       if (!opts.length) return;
       const items = opts.map((o) => ({
@@ -344,7 +344,7 @@ export class SherpaViewHeader extends SherpaElement {
     this.#optionSlotObserver.observe(this, { childList: true });
   }
 
-  #renderViewPicker(items: PickerItem[], currentValue: string | null | undefined, { ariaLabel = 'Select view', placeholder = 'Select…' } = {}) {
+  #renderViewPicker(items: PickerItem[], currentValue: string | null | undefined, { ariaLabel = 'Select view', placeholder = 'Select…' } = {}): void {
     // Strip any chrome from a previous render.
     this.#viewPickerEls.forEach((el) => el.remove());
     this.#viewPickerEls = [];
@@ -357,7 +357,9 @@ export class SherpaViewHeader extends SherpaElement {
     this.#pickerValue = resolvedValue ?? null;
 
     // Clone trigger from template, set dynamic attributes.
-    const trigger = this.#pickerTriggerTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement & {
+    const triggerTpl = this.#pickerTriggerTpl;
+    if (!triggerTpl) return;
+    const trigger = (triggerTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement & {
       rendered?: Promise<unknown>;
     };
     trigger.setAttribute('aria-label', ariaLabel);
@@ -366,17 +368,23 @@ export class SherpaViewHeader extends SherpaElement {
     // Clone badge from template (only when the current entry has one).
     let triggerBadge: HTMLElement | null = null;
     if (currentEntry?.badge) {
-      triggerBadge = this.#pickerBadgeTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      if (currentEntry.badgeStatus) triggerBadge.setAttribute('data-status', currentEntry.badgeStatus);
-      triggerBadge.textContent = currentEntry.badge;
+      const badgeTpl = this.#pickerBadgeTpl;
+      if (badgeTpl) {
+        triggerBadge = (badgeTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
+        if (currentEntry.badgeStatus) triggerBadge.setAttribute('data-status', currentEntry.badgeStatus);
+        triggerBadge.textContent = currentEntry.badge;
+      }
     }
 
     // Clone menu from template; populate its existing <ul> with option rows.
-    const menu = this.#pickerMenuTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement & {
+    const menuTpl = this.#pickerMenuTpl;
+    if (!menuTpl) return;
+    const menu = (menuTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement & {
       show?(anchor?: HTMLElement): void;
       hide?(): void;
     };
-    const ul = menu.querySelector('ul')!;
+    const ul = menu.querySelector('ul');
+    if (!ul) return;
     for (const it of items) {
       ul.appendChild(this.#buildPickerRow({
         value: it.value,
@@ -414,11 +422,14 @@ export class SherpaViewHeader extends SherpaElement {
         this.#viewPickerEls.splice(1, 1);
       }
       if (picked.badge) {
-        const tag = this.#pickerBadgeTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
-        if (picked.badgeStatus) tag.setAttribute('data-status', picked.badgeStatus);
-        tag.textContent = picked.badge;
-        trigger.after(tag);
-        this.#viewPickerEls.splice(1, 0, tag);
+        const badgeTpl2 = this.#pickerBadgeTpl;
+        if (badgeTpl2) {
+          const tag = (badgeTpl2.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
+          if (picked.badgeStatus) tag.setAttribute('data-status', picked.badgeStatus);
+          tag.textContent = picked.badge;
+          trigger.after(tag);
+          this.#viewPickerEls.splice(1, 0, tag);
+        }
       }
       // Update the radio-style indicators in the menu.
       menu.querySelectorAll('sherpa-overlay-item').forEach((it) => {
@@ -432,7 +443,8 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #buildPickerRow({ value, label, badge, badgeStatus, checked }: PickerItem): HTMLElement {
-    const node = this.#pickerRowTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const rowTpl = this.#pickerRowTpl;
+    const node = rowTpl ? (rowTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement : document.createElement('li');
     const item = node.querySelector('sherpa-overlay-item');
     if (item) {
       item.setAttribute('value', value);

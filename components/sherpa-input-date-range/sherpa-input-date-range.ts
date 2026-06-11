@@ -63,7 +63,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /** Current month displayed in the end calendar. */
   #endViewDate   = Temporal.Now.plainDateISO().add({ months: 1 }).with({ day: 1 });
 
-  protected override _popupClose() { this.#closeAll(); }
+  protected override _popupClose(): void { this.#closeAll(); }
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
@@ -146,7 +146,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     });
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
       case "data-value-start":
@@ -168,13 +168,13 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /* ── Overrides ──────────────────────────────────────────────── */
 
   /** The primary input for base-class focus handling. */
-  override getInputElement() {
+  override getInputElement(): HTMLInputElement | null {
     return this.#startEl || this.$(".input-start");
   }
 
   /* ── Open / Close ───────────────────────────────────────────── */
 
-  #openStart() {
+  #openStart(): void {
     const val = this.#startEl?.value;
     if (val) {
       const d = isoToDate(val);
@@ -186,12 +186,12 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#positionPopup('.popup-start', '.trigger-start');
   }
 
-  #closeStart() {
+  #closeStart(): void {
     this.removeAttribute("data-open-start");
     this.$(".trigger-start")?.setAttribute("aria-expanded", "false");
   }
 
-  #openEnd() {
+  #openEnd(): void {
     const val = this.#endEl?.value;
     if (val) {
       const d = isoToDate(val);
@@ -203,7 +203,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#positionPopup('.popup-end', '.trigger-end');
   }
 
-  #positionPopup(popupSel: string, triggerSel: string) {
+  #positionPopup(popupSel: string, triggerSel: string): void {
     const popup = this.$<HTMLElement>(popupSel);
     const trigger = this.$<HTMLElement>(triggerSel);
     if (!popup || !trigger) return;
@@ -218,19 +218,19 @@ export class SherpaInputDateRange extends SherpaInputBase {
     popup.style.left = `${Math.min(rect.left, window.innerWidth - (popup.offsetWidth || 280) - 8)}px`;
   }
 
-  #closeEnd() {
+  #closeEnd(): void {
     this.removeAttribute("data-open-end");
     this.$(".trigger-end")?.setAttribute("aria-expanded", "false");
   }
 
-  #closeAll() {
+  #closeAll(): void {
     this.#closeStart();
     this.#closeEnd();
   }
 
   /* ── Calendar rendering ─────────────────────────────────────── */
 
-  #renderStartCalendar() {
+  #renderStartCalendar(): void {
     const monthYearEl = this.$(".month-year-start");
     const daysEl      = this.$<HTMLElement>(".days-start");
     if (!monthYearEl || !daysEl || !this.#dayTpl) return;
@@ -253,7 +253,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     );
   }
 
-  #renderEndCalendar() {
+  #renderEndCalendar(): void {
     const monthYearEl = this.$(".month-year-end");
     const daysEl      = this.$<HTMLElement>(".days-end");
     if (!monthYearEl || !daysEl || !this.#dayTpl) return;
@@ -278,7 +278,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   /* ── Date selection ─────────────────────────────────────────── */
 
-  #selectStart(iso: string) {
+  #selectStart(iso: string): void {
     if (!this.#startEl) return;
     this.#startEl.value = iso;
     this.dataset["valueStart"] = iso;
@@ -288,7 +288,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#closeStart();
   }
 
-  #selectEnd(iso: string) {
+  #selectEnd(iso: string): void {
     if (!this.#endEl) return;
     this.#endEl.value = iso;
     this.dataset["valueEnd"] = iso;
@@ -300,7 +300,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   /* ── Sync helpers ───────────────────────────────────────────── */
 
-  #syncValues() {
+  #syncValues(): void {
     if (this.#startEl) {
       this.#startEl.value = this.dataset["valueStart"] || "";
     }
@@ -310,17 +310,17 @@ export class SherpaInputDateRange extends SherpaInputBase {
     this.#updateCrossConstraints();
   }
 
-  #syncMinMax() {
+  #syncMinMax(): void {
     const min = this.getAttribute("min");
     const max = this.getAttribute("max");
 
     if (this.#startEl) {
-      min ? this.#startEl.setAttribute("min", min) : this.#startEl.removeAttribute("min");
-      max ? this.#startEl.setAttribute("max", max) : this.#startEl.removeAttribute("max");
+      if (min) { this.#startEl.setAttribute("min", min); } else { this.#startEl.removeAttribute("min"); }
+      if (max) { this.#startEl.setAttribute("max", max); } else { this.#startEl.removeAttribute("max"); }
     }
     if (this.#endEl) {
-      min ? this.#endEl.setAttribute("min", min) : this.#endEl.removeAttribute("min");
-      max ? this.#endEl.setAttribute("max", max) : this.#endEl.removeAttribute("max");
+      if (min) { this.#endEl.setAttribute("min", min); } else { this.#endEl.removeAttribute("min"); }
+      if (max) { this.#endEl.setAttribute("max", max); } else { this.#endEl.removeAttribute("max"); }
     }
     this.#updateCrossConstraints();
   }
@@ -329,7 +329,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
    * Enforce start ≤ end by dynamically setting the start input's max to
    * end's value, and end input's min to start's value.
    */
-  #updateCrossConstraints() {
+  #updateCrossConstraints(): void {
     if (!this.#startEl || !this.#endEl) return;
 
     const startVal = this.#startEl.value;
@@ -340,9 +340,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
       this.#endEl.min = startVal;
     } else {
       const globalMin = this.getAttribute("min");
-      globalMin
-        ? this.#endEl.setAttribute("min", globalMin)
-        : this.#endEl.removeAttribute("min");
+      if (globalMin) { this.#endEl.setAttribute("min", globalMin); } else { this.#endEl.removeAttribute("min"); }
     }
 
     // Start can't be after end
@@ -350,14 +348,12 @@ export class SherpaInputDateRange extends SherpaInputBase {
       this.#startEl.max = endVal;
     } else {
       const globalMax = this.getAttribute("max");
-      globalMax
-        ? this.#startEl.setAttribute("max", globalMax)
-        : this.#startEl.removeAttribute("max");
+      if (globalMax) { this.#startEl.setAttribute("max", globalMax); } else { this.#startEl.removeAttribute("max"); }
     }
   }
 
   /** Update the start trigger display and slot data-has-value. */
-  #syncStartTrigger() {
+  #syncStartTrigger(): void {
     const val    = this.#startEl?.value || "";
     const textEl = this.$(".start-text");
     if (textEl) textEl.textContent = formatDateDisplay(val);
@@ -370,7 +366,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
   }
 
   /** Update the end trigger display and slot data-has-value. */
-  #syncEndTrigger() {
+  #syncEndTrigger(): void {
     const val    = this.#endEl?.value || "";
     const textEl = this.$(".end-text");
     if (textEl) textEl.textContent = formatDateDisplay(val);
@@ -384,7 +380,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
 
   /* ── Event dispatching ──────────────────────────────────────── */
 
-  #onDateChange() {
+  #onDateChange(): void {
     this.dispatchEvent(
       new CustomEvent("change", {
         bubbles: true,
@@ -400,12 +396,12 @@ export class SherpaInputDateRange extends SherpaInputBase {
   /* ── Public API ─────────────────────────────────────────────── */
 
   /** Start date as a string (YYYY-MM-DD). */
-  get valueStart() { return this.dataset["valueStart"] || ""; }
-  set valueStart(v) { this.dataset["valueStart"] = v || ""; }
+  public get valueStart(): string { return this.dataset["valueStart"] || ""; }
+  public set valueStart(v: string) { this.dataset["valueStart"] = v || ""; }
 
   /** End date as a string (YYYY-MM-DD). */
-  get valueEnd() { return this.dataset["valueEnd"] || ""; }
-  set valueEnd(v) { this.dataset["valueEnd"] = v || ""; }
+  public get valueEnd(): string { return this.dataset["valueEnd"] || ""; }
+  public set valueEnd(v: string) { this.dataset["valueEnd"] = v || ""; }
 
   /** Start date as a Temporal.PlainDate, or null. */
   get startAsDate(): Temporal.PlainDate | null {

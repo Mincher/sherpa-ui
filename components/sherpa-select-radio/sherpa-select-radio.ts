@@ -40,16 +40,16 @@ export class SherpaSelectRadio extends SherpaInputChoiceBase {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get value()  { return this.getAttribute('value') ?? ''; }
-  set value(v) { v == null ? this.removeAttribute('value') : this.setAttribute('value', String(v)); }
+  get value(): string  { return this.getAttribute('value') ?? ''; }
+  set value(v: string) { if (v == null) { this.removeAttribute('value'); } else { this.setAttribute('value', String(v)); } }
 
   /* ── Protected ─────────────────────────────────────────────────── */
 
-  protected override _syncNative() {
+  protected override _syncNative(): void {
     this._syncNativeBase();
   }
 
-  protected override _handleChange() {
+  protected override _handleChange(): void {
     const input = this._input;
     if (!input) return;
     this._mirrorChecked();

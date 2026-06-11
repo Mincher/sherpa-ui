@@ -64,7 +64,7 @@ export function ResizeBehavior<T extends Constructor<HTMLElement>>(
 ): T & Constructor<ResizeBehaviorInterface> {
   class ResizeBehaviorClass extends Base implements ResizeBehaviorInterface {
     /** Injected resize menu template */
-    _resizeMenuTpl: HTMLTemplateElement | null = null;
+    public _resizeMenuTpl: HTMLTemplateElement | null = null;
 
     /* ── Lifecycle ──────────────────────────────────────────────── */
 
@@ -97,39 +97,43 @@ export function ResizeBehavior<T extends Constructor<HTMLElement>>(
 
     /* ── Resize handlers ────────────────────────────────────────── */
 
-    _onIncreaseCols = (): void => {
-      const current = parseInt((this as any).dataset['colSpan'], 10) || COL_STOPS[0]!;
+    public _onIncreaseCols = (): void => {
+      const el = this as unknown as HTMLElement;
+      const current = parseInt(el.dataset['colSpan'] ?? '', 10) || (COL_STOPS[0] ?? 3);
       const idx = COL_STOPS.indexOf(current);
       if (idx !== -1 && idx < COL_STOPS.length - 1) {
         const nextValue = COL_STOPS[idx + 1];
         if (nextValue !== undefined) {
-          (this as any).dataset['colSpan'] = String(nextValue);
+          el.dataset['colSpan'] = String(nextValue);
         }
       }
     };
 
-    _onDecreaseCols = (): void => {
-      const current = parseInt((this as any).dataset['colSpan'], 10) || COL_STOPS[0]!;
+    public _onDecreaseCols = (): void => {
+      const el = this as unknown as HTMLElement;
+      const current = parseInt(el.dataset['colSpan'] ?? '', 10) || (COL_STOPS[0] ?? 3);
       const idx = COL_STOPS.indexOf(current);
       if (idx !== -1 && idx > 0) {
         const prevValue = COL_STOPS[idx - 1];
         if (prevValue !== undefined) {
-          (this as any).dataset['colSpan'] = String(prevValue);
+          el.dataset['colSpan'] = String(prevValue);
         }
       }
     };
 
-    _onIncreaseRows = (): void => {
-      const current = parseInt((this as any).dataset['rowSpan'], 10) || MIN_ROW_SPAN;
+    public _onIncreaseRows = (): void => {
+      const el = this as unknown as HTMLElement;
+      const current = parseInt(el.dataset['rowSpan'] ?? '', 10) || MIN_ROW_SPAN;
       if (current < MAX_ROW_SPAN) {
-        (this as any).dataset['rowSpan'] = String(current + 1);
+        el.dataset['rowSpan'] = String(current + 1);
       }
     };
 
-    _onDecreaseRows = (): void => {
-      const current = parseInt((this as any).dataset['rowSpan'], 10) || MIN_ROW_SPAN;
+    public _onDecreaseRows = (): void => {
+      const el = this as unknown as HTMLElement;
+      const current = parseInt(el.dataset['rowSpan'] ?? '', 10) || MIN_ROW_SPAN;
       if (current > MIN_ROW_SPAN) {
-        (this as any).dataset['rowSpan'] = String(current - 1);
+        el.dataset['rowSpan'] = String(current - 1);
       }
     };
   }

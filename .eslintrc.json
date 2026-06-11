@@ -65,8 +65,7 @@
     "dist",
     "node_modules",
     "coverage",
-    "**/*.d.ts",
-    "*.examples.ts"
+    "**/*.d.ts"
   ],
   "overrides": [
     {
@@ -88,6 +87,16 @@
         "**/*.test.ts"
       ],
       "rules": {
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": [
+        "**/*.examples.ts"
+      ],
+      "rules": {
+        "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/no-explicit-any": "off"
       }

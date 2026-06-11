@@ -46,7 +46,7 @@ export class SherpaSparkline extends SherpaElement {
   #shapeSlots = 0;
   #pointSlots = 0;
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     tip: { selector: '.tip', type: HTMLElement },
     tipText: '.tip-text'
   });
@@ -78,7 +78,7 @@ export class SherpaSparkline extends SherpaElement {
     if (name === 'data-values') this.#updateFromAttribute();
   }
 
-  #onPointEnter = (e: Event) => {
+  #onPointEnter = (e: Event): void => {
     const point = e.target;
     if (!this.els.tip || !(point instanceof HTMLElement)) return;
 
@@ -90,7 +90,7 @@ export class SherpaSparkline extends SherpaElement {
     this.els.tip.showPopover();
   };
 
-  #onPointLeave = (e: Event) => {
+  #onPointLeave = (e: Event): void => {
     this.els.tip?.hidePopover();
     if (e.target instanceof HTMLElement) e.target.style.removeProperty('anchor-name');
   };
@@ -102,12 +102,12 @@ export class SherpaSparkline extends SherpaElement {
    * before the template loads are picked up by onRender().
    * @param {number[]} values - Array of numeric values (any range, will be normalized)
    */
-  setValues(values: number[]) {
+  setValues(values: number[]): void {
     if (!Array.isArray(values) || values.length === 0) return;
     this.dataset["values"] = JSON.stringify(values);
   }
 
-  #updateFromAttribute() {
+  #updateFromAttribute(): void {
     const attr = this.dataset["values"];
     if (!attr) return;
     let parsed: unknown;
@@ -123,7 +123,7 @@ export class SherpaSparkline extends SherpaElement {
     }
   }
 
-  #applyPoints() {
+  #applyPoints(): void {
     const values = this.#values;
     if (!this.#shapeSlots) return;
 

@@ -80,7 +80,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     this.#autoSpanObserver = null;
   }
 
-  #initAutoSpan() {
+  #initAutoSpan(): void {
     this.#autoSpanObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         this.#updateAutoSpan(entry.target as HTMLElement);
@@ -91,7 +91,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     requestAnimationFrame(() => this.#syncAutoSpanTargets());
   }
 
-  #syncAutoSpanTargets() {
+  #syncAutoSpanTargets(): void {
     const slot = this.$<HTMLSlotElement>('slot:not([name])');
     for (const el of slot?.assignedElements() ?? []) {
       if (el instanceof HTMLElement && el.dataset['rowSpan'] === 'auto') {
@@ -100,7 +100,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     }
   }
 
-  #updateAutoSpan(el: HTMLElement) {
+  #updateAutoSpan(el: HTMLElement): void {
     const surface = this.$<HTMLElement>('.grid-surface');
     if (!surface) return;
     const style = getComputedStyle(surface);
@@ -112,7 +112,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     el.style.setProperty('--_auto-row-span', String(spans));
   }
 
-  #syncRowHeight() {
+  #syncRowHeight(): void {
     const surface = this.$<HTMLElement>(".grid-surface");
     if (!surface) return;
     const value = this.dataset["rowHeight"];
@@ -123,7 +123,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     }
   }
 
-  #syncEditable() {
+  #syncEditable(): void {
     const editable = this.hasAttribute('data-editable');
     for (const child of this.children) {
       if (child.tagName?.toLowerCase() === 'sherpa-container') {
@@ -150,7 +150,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     return (target as Element | null)?.closest?.('sherpa-container') ?? null;
   }
 
-  #onDragStart = (e: DragEvent) => {
+  #onDragStart = (e: DragEvent): void => {
     const src = this.#containerFor(e.target);
     if (!src || src.parentElement !== this) return;
     this.#dragSource = src;
@@ -161,7 +161,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     }
   };
 
-  #onDragOver = (e: DragEvent) => {
+  #onDragOver = (e: DragEvent): void => {
     if (!this.#dragSource) return;
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
@@ -170,12 +170,12 @@ export class SherpaLayoutGrid extends SherpaElement {
     if (target && target !== this.#dragSource) target.setAttribute('data-drop-target', '');
   };
 
-  #onDragLeave = (e: DragEvent) => {
+  #onDragLeave = (e: DragEvent): void => {
     const target = this.#containerFor(e.target);
     if (target) target.removeAttribute('data-drop-target');
   };
 
-  #onDrop = (e: DragEvent) => {
+  #onDrop = (e: DragEvent): void => {
     if (!this.#dragSource) return;
     e.preventDefault();
     const target = this.#containerFor(e.target);
@@ -193,7 +193,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     this.emit('layout-reorder', { from: fromIdx, to: toIdx, order });
   };
 
-  #onDragEnd = () => {
+  #onDragEnd = (): void => {
     for (const c of this.children) {
       c.removeAttribute('data-dragging');
       c.removeAttribute('data-drop-target');

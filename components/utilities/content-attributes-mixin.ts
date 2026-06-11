@@ -30,6 +30,9 @@ import {
   buildColumns,
   computeMetricSummary,
   type FilterSpec,
+  type OrderBySpec,
+  type Measure,
+  type AggFn,
 } from "./aggregate.js";
 import type { SherpaElement } from "./sherpa-element/sherpa-element.js";
 
@@ -39,7 +42,7 @@ import type { SherpaElement } from "./sherpa-element/sherpa-element.js";
  * mixin touches, avoiding a hard dependency on those component classes.
  */
 
-interface FilterChipLike extends HTMLElement {}
+type FilterChipLike = HTMLElement;
 
 interface FilterBarLike extends HTMLElement {
   segmentChip?: FilterChipLike | null;
@@ -81,7 +84,41 @@ export function getDateFieldProvider(): DateFieldProvider {
   return _dateFieldProvider;
 }
 
-type Constructor<T = {}> = new (...args: any[]) => T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor<T = object> = new (...args: any[]) => T;
+
+/** Serialisable configuration object returned by getConfig(). */
+export interface ContentConfig {
+  name: string;
+  datasetName: string;
+  dataset: string;
+  category: string | null;
+  series: string | null;
+  valueField: string;
+  value: string;
+  agg: string;
+  measures: Measure[];
+  orderBy: OrderBySpec[];
+  segmentField: string | null;
+  dateGroupBy: string | null;
+  showStatus: boolean;
+  unit: string;
+  sortField: string | null;
+  sortDirection: string;
+  limit: number | null;
+  filters: FilterSpec[];
+  visible: boolean;
+  showHeader: boolean;
+  showHeaderControls: boolean;
+  showViewMenu: boolean;
+  presentationType: string | null;
+  fields: unknown[] | null;
+  timerange: string | null;
+  // Legacy aliases kept for consumer compatibility
+  categoryField?: string | null;
+  valueField2?: string;
+  segmentBy?: string | null;
+}
 
 /* ── Mixin interface ─────────────────────────────────────────────── *
  * Describes the members ContentAttributesMixin adds to the base class.
@@ -95,8 +132,8 @@ export interface ContentAttributesMixinInterface {
   series: string | null;
   valueField: string;
   agg: string;
-  measures: any[];
-  orderBy: any[];
+  measures: Measure[];
+  orderBy: OrderBySpec[];
   segmentField: string | null;
   dateGroupBy: string | null;
   showStatus: boolean;
@@ -104,47 +141,47 @@ export interface ContentAttributesMixinInterface {
   sortField: string | null;
   sortDirection: string;
   limit: number | null;
-  filters: any[];
+  filters: FilterSpec[];
   visible: boolean;
   showHeader: boolean;
   showHeaderControls: boolean;
   showViewMenu: boolean;
   presentationType: string | null;
-  fields: any[] | null;
-  setName(v: any): this;
-  setDatasetName(v: any): this;
-  setCategory(v: any): this;
-  setSeries(v: any): this;
-  setValueField(v: any): this;
-  setAgg(v: any): this;
-  setMeasures(v: any): this;
-  setOrderBy(v: any): this;
-  setSegmentField(v: any): this;
-  setDateGroupBy(v: any): this;
-  setShowStatus(v: any): this;
-  setUnit(v: any): this;
-  setSortField(v: any): this;
-  setSortDirection(v: any): this;
-  setLimit(v: any): this;
-  setFilters(v: any): this;
-  setVisible(v: any): this;
-  setShowHeader(v: any): this;
-  setShowHeaderControls(v: any): this;
-  setShowViewMenu(v: any): this;
-  setPresentationType(v: any): this;
-  setFields(v: any): this;
-  getConfig(): Record<string, any>;
-  setConfig(config: Record<string, any>): this;
+  fields: unknown[] | null;
+  setName(v: unknown): this;
+  setDatasetName(v: unknown): this;
+  setCategory(v: unknown): this;
+  setSeries(v: unknown): this;
+  setValueField(v: unknown): this;
+  setAgg(v: unknown): this;
+  setMeasures(v: unknown): this;
+  setOrderBy(v: unknown): this;
+  setSegmentField(v: unknown): this;
+  setDateGroupBy(v: unknown): this;
+  setShowStatus(v: unknown): this;
+  setUnit(v: unknown): this;
+  setSortField(v: unknown): this;
+  setSortDirection(v: unknown): this;
+  setLimit(v: unknown): this;
+  setFilters(v: unknown): this;
+  setVisible(v: unknown): this;
+  setShowHeader(v: unknown): this;
+  setShowHeaderControls(v: unknown): this;
+  setShowViewMenu(v: unknown): this;
+  setPresentationType(v: unknown): this;
+  setFields(v: unknown): this;
+  getConfig(): ContentConfig;
+  setConfig(config: Partial<ContentConfig>): this;
   getDataset(): string;
   setFactTable(): this;
-  setDimensions(dims: any[]): this;
+  setDimensions(dims: unknown[]): this;
   reAggregate(): void;
   readonly isAttrReactionSuppressed: boolean;
   suppressAttrReaction(): void;
   resumeAttrReaction(): void;
-  getViewOptions(opts: { activeType?: string; canShowChart?: boolean }): any[];
-  configureHeader(opts?: { title?: string; viewOptions?: any[] }): void;
-  wireContentMenu(root: any, activeType?: string): Promise<void> | void;
+  getViewOptions(opts: { activeType?: string; canShowChart?: boolean }): ViewOption[];
+  configureHeader(opts?: { title?: string; viewOptions?: ViewOption[] }): void;
+  wireContentMenu(root: unknown, activeType?: string): Promise<void> | void;
 }
 
 export const CONTENT_ATTRIBUTES = [
@@ -159,7 +196,7 @@ export const CONTENT_ATTRIBUTES = [
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
-function parseJsonSafe(raw: string | null, fallback: any): any {
+function parseJsonSafe(raw: string | null, fallback: unknown): unknown {
   if (!raw) return fallback;
   try {
     return JSON.parse(raw);
@@ -170,9 +207,9 @@ function parseJsonSafe(raw: string | null, fallback: any): any {
 
 /* ── Measure normalisation ──────────────────────────────────────── */
 
-function normalizeMeasures(config: any): any[] {
-  if (Array.isArray(config.measures) && config.measures.length) return config.measures;
-  if (config.valueField) return [{ field: config.valueField, agg: config.agg || 'sum' }];
+function normalizeMeasures(config: { measures?: unknown; valueField?: string; agg?: string }): Measure[] {
+  if (Array.isArray(config.measures) && config.measures.length) return config.measures as Measure[];
+  if (config.valueField) return [{ field: config.valueField, agg: (config.agg || 'sum') as AggFn }];
   return [];
 }
 
@@ -189,74 +226,74 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     /* ── Content attribute getters ───────────────────────────────── */
 
     get name(): string { return this.getAttribute('data-label') || ''; }
-    setName(v: any): this { this.setAttribute('data-label', v); return this; }
+    setName(v: unknown): this { this.setAttribute('data-label', String(v ?? '')); return this; }
 
     get datasetName(): string { return this.getAttribute('data-dataset') || ''; }
-    setDatasetName(v: any): this { this.setAttribute('data-dataset', v); return this; }
+    setDatasetName(v: unknown): this { this.setAttribute('data-dataset', String(v ?? '')); return this; }
 
     get category(): string | null { return this.getAttribute('data-category') || null; }
-    setCategory(v: any): this { v ? this.setAttribute('data-category', v) : this.removeAttribute('data-category'); return this; }
+    setCategory(v: unknown): this { if (v) { this.setAttribute('data-category', String(v)); } else { this.removeAttribute('data-category'); } return this; }
 
     get series(): string | null { return this.getAttribute('data-series') || null; }
-    setSeries(v: any): this { v ? this.setAttribute('data-series', v) : this.removeAttribute('data-series'); return this; }
+    setSeries(v: unknown): this { if (v) { this.setAttribute('data-series', String(v)); } else { this.removeAttribute('data-series'); } return this; }
 
     get valueField(): string { return this.getAttribute('data-value-field') || ''; }
-    setValueField(v: any): this { this.setAttribute('data-value-field', v); return this; }
+    setValueField(v: unknown): this { this.setAttribute('data-value-field', String(v ?? '')); return this; }
 
     get agg(): string { return this.getAttribute('data-agg') || 'sum'; }
-    setAgg(v: any): this { this.setAttribute('data-agg', v); return this; }
+    setAgg(v: unknown): this { this.setAttribute('data-agg', String(v ?? '')); return this; }
 
-    get measures(): any[] { return parseJsonSafe(this.getAttribute('data-measures'), []); }
-    setMeasures(v: any): this { this.setAttribute('data-measures', JSON.stringify(v || [])); return this; }
+    get measures(): Measure[] { return parseJsonSafe(this.getAttribute('data-measures'), []) as Measure[]; }
+    setMeasures(v: unknown): this { this.setAttribute('data-measures', JSON.stringify(v || [])); return this; }
 
-    get orderBy(): any[] { return parseJsonSafe(this.getAttribute('data-order-by'), []); }
-    setOrderBy(v: any): this { this.setAttribute('data-order-by', JSON.stringify(v || [])); return this; }
+    get orderBy(): OrderBySpec[] { return parseJsonSafe(this.getAttribute('data-order-by'), []) as OrderBySpec[]; }
+    setOrderBy(v: unknown): this { this.setAttribute('data-order-by', JSON.stringify(v || [])); return this; }
 
     get segmentField(): string | null { return this.getAttribute('data-segment-field') || null; }
-    setSegmentField(v: any): this { v ? this.setAttribute('data-segment-field', v) : this.removeAttribute('data-segment-field'); return this; }
+    setSegmentField(v: unknown): this { if (v) { this.setAttribute('data-segment-field', String(v)); } else { this.removeAttribute('data-segment-field'); } return this; }
 
     get dateGroupBy(): string | null { return this.getAttribute('data-date-group-by') || null; }
-    setDateGroupBy(v: any): this { v ? this.setAttribute('data-date-group-by', v) : this.removeAttribute('data-date-group-by'); return this; }
+    setDateGroupBy(v: unknown): this { if (v) { this.setAttribute('data-date-group-by', String(v)); } else { this.removeAttribute('data-date-group-by'); } return this; }
 
     get showStatus(): boolean { return this.getAttribute('data-show-status') !== 'false'; }
-    setShowStatus(v: any): this { v == null ? this.removeAttribute('data-show-status') : this.setAttribute('data-show-status', String(Boolean(v))); return this; }
+    setShowStatus(v: unknown): this { if (v == null) { this.removeAttribute('data-show-status'); } else { this.setAttribute('data-show-status', String(Boolean(v))); } return this; }
 
     get unit(): string { return this.getAttribute('data-unit') ?? ''; }
-    setUnit(v: any): this { v ? this.setAttribute('data-unit', v) : this.removeAttribute('data-unit'); return this; }
+    setUnit(v: unknown): this { if (v) { this.setAttribute('data-unit', String(v)); } else { this.removeAttribute('data-unit'); } return this; }
 
     get sortField(): string | null { return this.getAttribute('data-sort-field') || null; }
-    setSortField(v: any): this { v ? this.setAttribute('data-sort-field', v) : this.removeAttribute('data-sort-field'); return this; }
+    setSortField(v: unknown): this { if (v) { this.setAttribute('data-sort-field', String(v)); } else { this.removeAttribute('data-sort-field'); } return this; }
 
     get sortDirection(): string { return this.getAttribute('data-sort-direction') || 'asc'; }
-    setSortDirection(v: any): this { this.setAttribute('data-sort-direction', v); return this; }
+    setSortDirection(v: unknown): this { this.setAttribute('data-sort-direction', String(v ?? '')); return this; }
 
     get limit(): number | null { const v = this.getAttribute('data-limit'); return v ? parseInt(v, 10) : null; }
-    setLimit(v: any): this { v != null ? this.setAttribute('data-limit', String(v)) : this.removeAttribute('data-limit'); return this; }
+    setLimit(v: unknown): this { if (v != null) { this.setAttribute('data-limit', String(v)); } else { this.removeAttribute('data-limit'); } return this; }
 
-    get filters(): FilterSpec[] { return parseJsonSafe(this.getAttribute('data-filters'), []); }
-    setFilters(v: any): this { this.setAttribute('data-filters', JSON.stringify(v || [])); return this; }
+    get filters(): FilterSpec[] { return parseJsonSafe(this.getAttribute('data-filters'), []) as FilterSpec[]; }
+    setFilters(v: unknown): this { this.setAttribute('data-filters', JSON.stringify(v || [])); return this; }
 
     get visible(): boolean { return this.getAttribute('data-visible') !== 'false'; }
-    setVisible(v: any): this { v == null ? this.removeAttribute('data-visible') : this.setAttribute('data-visible', String(Boolean(v))); return this; }
+    setVisible(v: unknown): this { if (v == null) { this.removeAttribute('data-visible'); } else { this.setAttribute('data-visible', String(Boolean(v))); } return this; }
 
     get showHeader(): boolean { return this.getAttribute('data-show-header') !== 'false'; }
-    setShowHeader(v: any): this { v == null ? this.removeAttribute('data-show-header') : this.setAttribute('data-show-header', String(Boolean(v))); return this; }
+    setShowHeader(v: unknown): this { if (v == null) { this.removeAttribute('data-show-header'); } else { this.setAttribute('data-show-header', String(Boolean(v))); } return this; }
 
     get showHeaderControls(): boolean { return this.getAttribute('data-show-header-controls') !== 'false'; }
-    setShowHeaderControls(v: any): this { v == null ? this.removeAttribute('data-show-header-controls') : this.setAttribute('data-show-header-controls', String(Boolean(v))); return this; }
+    setShowHeaderControls(v: unknown): this { if (v == null) { this.removeAttribute('data-show-header-controls'); } else { this.setAttribute('data-show-header-controls', String(Boolean(v))); } return this; }
 
     get showViewMenu(): boolean { return this.getAttribute('data-show-view-menu') !== 'false'; }
-    setShowViewMenu(v: any): this { v == null ? this.removeAttribute('data-show-view-menu') : this.setAttribute('data-show-view-menu', String(Boolean(v))); return this; }
+    setShowViewMenu(v: unknown): this { if (v == null) { this.removeAttribute('data-show-view-menu'); } else { this.setAttribute('data-show-view-menu', String(Boolean(v))); } return this; }
 
     get presentationType(): string | null { return this.getAttribute('data-presentation-type') || null; }
-    setPresentationType(v: any): this { v ? this.setAttribute('data-presentation-type', v) : this.removeAttribute('data-presentation-type'); return this; }
+    setPresentationType(v: unknown): this { if (v) { this.setAttribute('data-presentation-type', String(v)); } else { this.removeAttribute('data-presentation-type'); } return this; }
 
-    get fields(): any[] | null { return parseJsonSafe(this.getAttribute('data-fields'), null); }
-    setFields(v: any): this { Array.isArray(v) ? this.setAttribute('data-fields', JSON.stringify(v)) : this.removeAttribute('data-fields'); return this; }
+    get fields(): unknown[] | null { return parseJsonSafe(this.getAttribute('data-fields'), null) as unknown[] | null; }
+    setFields(v: unknown): this { if (Array.isArray(v)) { this.setAttribute('data-fields', JSON.stringify(v)); } else { this.removeAttribute('data-fields'); } return this; }
 
     /* ── Host-component contract (implemented by the concrete element) ── */
-    declare setData: (data: any) => void;
-    declare getData?: () => any;
+    declare public setData: (data: unknown) => void;
+    declare public getData?: () => unknown;
 
     /** Counter-based re-entrance-safe reaction suppression. */
     #suppressCount = 0;
@@ -287,7 +324,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     setFactTable(): this {
       return this;
     }
-    setDimensions(dims: any[]): this {
+    setDimensions(dims: unknown[]): this {
       if (Array.isArray(dims) && dims.length > 0) this.setCategory(dims[0]);
       if (Array.isArray(dims) && dims.length > 1) this.setSeries(dims[1]);
       return this;
@@ -296,7 +333,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
 
     /* ── Config serialisation ───────────────────────────────── */
 
-    getConfig(): Record<string, any> {
+    getConfig(): ContentConfig {
       return {
         name: this.name, datasetName: this.datasetName, category: this.category,
         series: this.series, valueField: this.valueField, agg: this.agg,
@@ -312,7 +349,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       };
     }
 
-    setConfig(config: Record<string, any>): this {
+    setConfig(config: Partial<ContentConfig>): this {
       const {
         name, datasetName, dataset, category, series, valueField, value,
         agg, measures, orderBy, segmentField, dateGroupBy, showStatus, unit,
@@ -355,7 +392,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
      * Aggregate raw records using host attribute config and call setData().
      * This is the single path from records → rendered component.
      */
-    #aggregate() {
+    #aggregate(): void {
       if (!this.#records || typeof this.setData !== "function") return;
 
       const isMetric = this.presentationType === "kpi-metric" ||
@@ -376,9 +413,9 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     }
 
     /** Data Grid: pass raw records (grid does its own filter/sort/group) */
-    #aggregateGrid(records: Record<string, unknown>[], presetFilters: FilterSpec[]) {
-      const fieldNames = Array.isArray(this.fields) && this.fields.length
-        ? this.fields
+    #aggregateGrid(records: Record<string, unknown>[], presetFilters: FilterSpec[]): void {
+      const fieldNames: string[] = Array.isArray(this.fields) && this.fields.length
+        ? (this.fields as string[])
         : this.#fields.map((f) => f.name);
       const columns = buildColumns(this.#fields, fieldNames);
 
@@ -425,7 +462,8 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     #resolveUnit(measures: Array<{ field: string; agg: string }>): string | null {
       let unit: string | null = this.unit || null;
       if (!unit && measures.length) {
-        const fm = this.#fields.find((f) => f.name === measures[0]!.field);
+        const firstMeasure = measures[0];
+        const fm = firstMeasure ? this.#fields.find((f) => f.name === firstMeasure.field) : undefined;
         if (fm?.type === 'currency') unit = getCurrencyCode();
         else if (fm?.type === 'percent') unit = '%';
       }
@@ -433,7 +471,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     }
 
     /** Metric: count records, compute sparkline */
-    #aggregateMetric(records: Record<string, unknown>[], presetFilters: FilterSpec[]) {
+    #aggregateMetric(records: Record<string, unknown>[], presetFilters: FilterSpec[]): void {
       let dateField = _dateFieldProvider
         ? _dateFieldProvider(this.datasetName)
         : null;
@@ -451,7 +489,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       // Resolve _timerange sentinel entries to the actual date field
       // so computeMetricSummary can derive sparkline range bounds.
       const resolvedFilters = dateField
-        ? presetFilters.map((f: any) => {
+        ? presetFilters.map((f: FilterSpec) => {
             if (f.field !== '_timerange' || !f.range) return f;
             return [
               { field: dateField, operator: '>=', value: String(f.range.start) },
@@ -486,7 +524,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     }
 
     /** Charts: group, aggregate, sort */
-    #aggregateChart(records: Record<string, unknown>[], presetFilters: FilterSpec[]) {
+    #aggregateChart(records: Record<string, unknown>[], presetFilters: FilterSpec[]): void {
       const measures = normalizeMeasures(this);
       if (!measures.length) {
         measures.push({ field: '_count', agg: 'count' });
@@ -582,7 +620,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     /**
      * Handle incoming datasetfiltered event from ancestor.
      */
-    #onDatasetFiltered(e: { detail?: { records?: unknown; fields?: unknown } }) {
+    #onDatasetFiltered(e: { detail?: { records?: unknown; fields?: unknown } }): void {
       const { records, fields } = e.detail || {};
       if (!Array.isArray(records)) return;
 
@@ -613,7 +651,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     /**
      * Sync the embedded filter bar's available-fields from dataset fields.
      */
-    #syncFilterBarFields() {
+    #syncFilterBarFields(): void {
       const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-filter-bar");
       if (!bar || !this.#fields.length) return;
 
@@ -629,7 +667,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
      * Sync the embedded filter bar's segment and sort chips to match
      * the host's current data-segment-field / data-sort-field attributes.
      */
-    _syncFilterBarState() {
+    _syncFilterBarState(): void {
       const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-filter-bar");
       if (!bar) return;
 
@@ -643,7 +681,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
           }
         }
       } catch { /* ignore malformed JSON */ }
-      const displayName = (f: string) => fieldNames.get(f) || formatFieldName(f);
+      const displayName = (f: string): string => fieldNames.get(f) || formatFieldName(f);
 
       bar.dataset["syncing"] = "";
 
@@ -741,9 +779,9 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     /* ── View-switching ─────────────────────────────────────── */
 
     #pendingMenuData: { showViewMenu: boolean; viewOptions: ViewOption[] } | null = null;
-    _menuButton: ViewMenuButtonLike | null = null;
-    _menuBound = false;
-    _menuCurrentType = "";
+    public _menuButton: ViewMenuButtonLike | null = null;
+    public _menuBound = false;
+    public _menuCurrentType = "";
 
     getViewOptions({ activeType, canShowChart = true }: { activeType?: string; canShowChart?: boolean }): ViewOption[] {
       return [
@@ -772,7 +810,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       ];
     }
 
-    configureHeader({ title = "", viewOptions = [] }: { title?: string; viewOptions?: ViewOption[] } = {}) {
+    configureHeader({ title = "", viewOptions = [] }: { title?: string; viewOptions?: ViewOption[] } = {}): void {
       const titleEl = this.$(".header-title");
 
       const showHeader =
@@ -798,7 +836,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       }
     }
 
-    async wireContentMenu(root: ViewMenuButtonLike & { $?: (sel: string) => Element | null }, activeType?: string) {
+    async wireContentMenu(root: ViewMenuButtonLike & { $?: (sel: string) => Element | null }, activeType?: string): Promise<void> {
       if (!this.#pendingMenuData) return;
 
       const menuButton = (
@@ -826,7 +864,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       }
     }
 
-    #bindContentMenu(menuButton: ViewMenuButtonLike, activeType?: string) {
+    #bindContentMenu(menuButton: ViewMenuButtonLike, activeType?: string): void {
       menuButton.addEventListener("menu-select", (event: Event) => {
         const detail = (event as CustomEvent).detail ?? {};
         if (detail.disabled) return;
@@ -858,7 +896,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       });
     }
 
-    #populateViewMenu(activeType: string) {
+    #populateViewMenu(activeType: string): void {
       const config = this.#pendingMenuData;
       if (!config?.showViewMenu || !config.viewOptions?.length) return;
       if (!this._menuButton) return;
@@ -883,7 +921,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     #containerFilterHandler: ((e: Event) => void) | null = null;
     #scopeEl: HTMLElement | null = null;
 
-    #wireFilterListeners() {
+    #wireFilterListeners(): void {
       this.#scopeEl = this;
 
       this.#containerFilterHandler = (e: Event) =>
@@ -894,7 +932,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       );
     }
 
-    #unwireFilterListeners() {
+    #unwireFilterListeners(): void {
       if (this.#scopeEl && this.#containerFilterHandler) {
         this.#scopeEl.removeEventListener(
           "container-filter-change",
@@ -914,7 +952,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
      * redundant heavy processing.  The single #aggregate() call at the
      * end is the authoritative render path.
      */
-    #onContainerFilter(e: CustomEvent) {
+    #onContainerFilter(e: CustomEvent): void {
       const filters: FilterSpec[] = e.detail?.filters || [];
       let sortFilter: FilterSpec | null = null;
       let segmentFilter: FilterSpec | null = null;
@@ -1011,7 +1049,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
      * the datasetfiltered event. If the ancestor already has data
      * cached (._filtered), use it immediately.
      */
-    #wireDatasetListener() {
+    #wireDatasetListener(): void {
       // Walk up from host to find nearest [data-dataset] content area
       let el: Element | null = this.closest("[data-dataset]");
       if (!el) {
@@ -1043,7 +1081,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       }
     }
 
-    #unwireDatasetListener() {
+    #unwireDatasetListener(): void {
       if (this.#datasetAncestor && this.#datasetFilteredHandler) {
         this.#datasetAncestor.removeEventListener(
           "dataset-filtered",
@@ -1058,10 +1096,10 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
      * Re-aggregate from raw records. Called when segment changes.
      * Public so components can force a re-aggregate if needed.
      */
-    reAggregate() {
+    reAggregate(): void {
       this.#aggregate();
     }
-  };
+  }
 
 
   return CAMClass as unknown as T & Constructor<ContentAttributesMixinInterface>;

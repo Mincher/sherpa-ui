@@ -108,7 +108,7 @@ export class SherpaElement extends HTMLElement {
    * (`data-placement`), offset (`data-offset`) and flip fallbacks
    * (`data-flip`). See sherpa-anchor.css for the contract.
    */
-  static useAnchor = false;
+  public static useAnchor = false;
 
   /**
    * When `true`, slot allowlists declared via `<slot data-accepts="...">`
@@ -119,7 +119,7 @@ export class SherpaElement extends HTMLElement {
    * Default `false` for back-compat — Phase 3 of the slot taxonomy roll-out
    * flips this on after a soak period observing console warnings.
    */
-  static strictSlots = false;
+  public static strictSlots = false;
 
   /* ── Observed attributes ──────────────────────────────────────── */
 
@@ -202,12 +202,12 @@ export class SherpaElement extends HTMLElement {
     if (oldValue === newValue) return;
 
     // Handle decorator-based property sync
-    const metadata = (this.constructor as any)._propertyMetadata;
+    const metadata = (this.constructor as unknown as Record<string, unknown>)["_propertyMetadata"] as Map<string, { attribute: string; converter: { fromAttribute: (v: string | null) => unknown } }> | undefined;
     if (metadata) {
       for (const [propKey, meta] of metadata.entries()) {
         if (meta.attribute === name) {
           const propValue = meta.converter.fromAttribute(newValue);
-          (this as any)[propKey] = propValue;
+          (this as unknown as Record<string, unknown>)[propKey] = propValue;
           return; // Property setter handles updates
         }
       }
@@ -281,7 +281,8 @@ export class SherpaElement extends HTMLElement {
           : Promise.resolve([]),
       );
     }
-    this.#shadow.adoptedStyleSheets = await _classSheets.get(Ctor)!;
+    const sheets = await _classSheets.get(Ctor);
+    if (sheets) this.#shadow.adoptedStyleSheets = sheets;
   }
 
   /* ── Template resolution ──────────────────────────────────────── */

@@ -71,7 +71,7 @@ export function syncChartTitle(titleEl: Element | null, host: HTMLElement): void
   const segMode    = host.getAttribute('data-segment-mode');
   const groupField = host.getAttribute('data-segment-field') || host.getAttribute('data-category');
   const hasActiveGroup = segMode !== 'off' && !!groupField;
-  titleEl.textContent = hasActiveGroup
-    ? `${entity} by ${formatFieldName(groupField!)}`
+  titleEl.textContent = hasActiveGroup && groupField
+    ? `${entity} by ${formatFieldName(groupField)}`
     : `All ${entity}`;
 }

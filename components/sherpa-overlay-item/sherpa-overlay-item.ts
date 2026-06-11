@@ -51,7 +51,7 @@ export class SherpaOverlayItem extends SherpaElement {
   }
 
   /** @returns {HTMLInputElement|null} The native checkbox or radio input, if present. */
-  get inputElement() {
+  get inputElement(): Element | null {
     return this.$('.input');
   }
 
@@ -74,7 +74,7 @@ export class SherpaOverlayItem extends SherpaElement {
     this.#sync();
   }
 
-  #sync() {
+  #sync(): void {
     if (this.dataset["type"] === 'heading') {
       this.setAttribute('role', 'presentation');
       this.removeAttribute('tabindex');

@@ -38,7 +38,7 @@ export function injectFilterMenu(host: FilterMenuHost): HTMLTemplateElement | nu
  *
  * @param {HTMLTemplateElement|null} tpl - The template ref returned by injectFilterMenu
  */
-export function removeFilterMenu(tpl: HTMLTemplateElement | null) {
+export function removeFilterMenu(tpl: HTMLTemplateElement | null): void {
   tpl?.remove();
 }
 

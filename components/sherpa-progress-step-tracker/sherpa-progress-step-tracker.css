@@ -1,0 +1,329 @@
+/**
+ * @component sherpa-progress-step-tracker
+ *
+ * Unified step progress indicator. Horizontal by default; add
+ * data-orientation="vertical" for a vertical timeline layout.
+ *
+ * ── Host attributes ───────────────────────────────────────────
+ * @attr data-orientation   — horizontal (default) | vertical
+ * @attr data-current-step  — Active step (1-based)
+ * @attr data-linear        — "true" | "false"
+ * @attr data-show-step-numbers — "true" | "false" (default: true)
+ * @attr data-density       — compact | comfortable
+ * @attr data-labels        — "none" hides all step labels
+ * @attr data-heading       — Heading text (vertical mode header)
+ * @attr data-percentage    — Completion text (vertical mode header)
+ *
+ * ── Step item data-status (set by JS) ─────────────────────────
+ * default | active | completed | in-progress | warning | error
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+
+  --_indicator-size: 32px;
+  --_indicator-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_label-font-size: var(--sherpa-fonts-scale-base, 14px);
+  --_sublabel-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 15px);
+  --_duration: var(--sherpa-motion-duration-fast, 120ms);
+  --_easing: var(--sherpa-motion-easing-default, ease-in-out);
+}
+
+/* ── Container ──────────────────────────────────────────────── */
+
+:host .tracker-container {
+  width: 100%;
+}
+
+:host .tracker-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--sherpa-space-base, 16px);
+}
+
+:host([data-heading]) .tracker-header {
+  display: flex;
+}
+
+:host .heading-text {
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-heading, #18191a);
+}
+
+:host .percentage-text {
+  display: none;
+  font-size: var(--sherpa-fonts-scale-xs, 13px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+}
+
+:host([data-percentage]) .percentage-text {
+  display: inline;
+}
+
+/* ── Steps row ──────────────────────────────────────────────── */
+
+:host .tracker-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0;
+}
+
+/* ── Step item ──────────────────────────────────────────────── */
+
+:host .step-item {
+  --_indicator-border-color: var(--sherpa-border-container-default, #d5d5dc);
+  --_indicator-bg:           var(--sherpa-surface-container-default, #ffffff);
+  --_indicator-color:        var(--sherpa-content-default-secondary, #6a6a75);
+  --_label-color:            var(--sherpa-content-default-secondary, #6a6a75);
+  --_label-weight:           500;
+
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-2xs, 4px);
+  cursor: pointer;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  transition: background-color var(--_duration) var(--_easing);
+  flex-shrink: 0;
+}
+
+:host .step-item:hover:not([disabled]) {
+  background-color: var(--sherpa-surface-container-hover, #f0f0f5);
+}
+
+:host .step-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #8500cc);
+}
+
+:host .step-item[disabled] {
+  cursor: not-allowed;
+  --_indicator-border-color: var(--sherpa-border-control-inactive, #8d8d99);
+  --_indicator-bg:           var(--sherpa-surface-control-inactive, #f2f2f2);
+  --_indicator-color:        var(--sherpa-content-inactive-default, #5c5c66);
+  --_label-color:            var(--sherpa-content-inactive-default, #5c5c66);
+}
+
+/* ── Status variants ────────────────────────────────────────── */
+
+:host .step-item[data-status="active"] {
+  --_indicator-border-color: var(--sherpa-content-context-info-default, #006db6);
+  --_indicator-bg:           var(--sherpa-content-context-info-default, #006db6);
+  --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color:            var(--sherpa-content-default-body, #1b1b21);
+  --_label-weight:           600;
+}
+
+:host .step-item[data-status="completed"] {
+  --_indicator-border-color: var(--sherpa-content-context-success-default, #0f7b6c);
+  --_indicator-bg:           var(--sherpa-content-context-success-default, #0f7b6c);
+  --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color:            var(--sherpa-content-default-body, #1b1b21);
+}
+
+:host .step-item[data-status="completed"] .indicator-completed { display: inline; }
+:host .step-item[data-status="completed"] .step-number { display: none; }
+
+:host .step-item[data-status="error"] {
+  --_indicator-border-color: var(--sherpa-content-context-error-default, #d13438);
+  --_indicator-bg:           var(--sherpa-content-context-error-default, #d13438);
+  --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color:            var(--sherpa-content-context-error-default, #d13438);
+}
+
+:host .step-item[data-status="error"] .indicator-error { display: inline; }
+:host .step-item[data-status="error"] .step-number { display: none; }
+
+:host .step-item[data-status="warning"] {
+  --_indicator-border-color: var(--sherpa-surface-context-warning-strong-default, #c47e00);
+  --_indicator-bg:           var(--sherpa-surface-context-warning-strong-default, #c47e00);
+  --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color:            var(--sherpa-content-default-body, #1b1b21);
+}
+
+:host .step-item[data-status="warning"] .indicator-warning { display: inline; }
+:host .step-item[data-status="warning"] .step-number { display: none; }
+
+:host .step-item[data-status="in-progress"] {
+  --_indicator-border-color: var(--sherpa-content-context-info-default, #006db6);
+  --_indicator-bg:           var(--sherpa-content-context-info-default, #006db6);
+  --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color:            var(--sherpa-content-default-body, #1b1b21);
+  --_label-weight:           600;
+}
+
+:host .step-item[data-status="in-progress"] .indicator-progress { display: inline; }
+:host .step-item[data-status="in-progress"] .step-number { display: none; }
+
+/* ── Visited (previously navigated, now inactive) ───────────── */
+
+:host .step-item[data-visited]:not([data-status="active"]):not([data-status="completed"]) {
+  --_label-color: var(--sherpa-content-default-body, #2e2e33);
+}
+
+/* ── Indicator circle ───────────────────────────────────────── */
+
+:host .step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--_indicator-size);
+  height: var(--_indicator-size);
+  border-radius: 50%;
+  border: var(--sherpa-border-width-lg, 2px) solid var(--_indicator-border-color);
+  background-color: var(--_indicator-bg);
+  font-size: var(--_indicator-font-size);
+  font-weight: 600;
+  color: var(--_indicator-color);
+  transition:
+    border-color var(--_duration) var(--_easing),
+    background-color var(--_duration) var(--_easing),
+    color var(--_duration) var(--_easing);
+  flex-shrink: 0;
+}
+
+/* All icons hidden by default; status variants reveal the right one */
+:host .indicator-completed,
+:host .indicator-error,
+:host .indicator-warning,
+:host .indicator-progress {
+  display: none;
+}
+
+/* ── Labels ─────────────────────────────────────────────────── */
+
+:host .step-label-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+
+:host .step-label {
+  font-size: var(--_label-font-size);
+  font-weight: var(--_label-weight);
+  line-height: var(--sherpa-font-base-line-height, 20px);
+  color: var(--_label-color);
+  transition: color var(--_duration) var(--_easing);
+}
+
+:host .step-sublabel {
+  font-size: var(--_sublabel-font-size);
+  line-height: var(--sherpa-fonts-scale-lg, 16px);
+  color: var(--sherpa-content-default-secondary, #6a6a75);
+}
+
+:host .step-sublabel:empty {
+  display: none;
+}
+
+:host .step-timestamp {
+  font-size: var(--_sublabel-font-size);
+  color: var(--sherpa-content-default-secondary, #6a6a75);
+}
+
+:host .step-timestamp:empty {
+  display: none;
+}
+
+/* ── Connector ──────────────────────────────────────────────── */
+
+:host .step-connector {
+  --_connector-color: var(--sherpa-border-container-default, #d5d5dc);
+
+  flex: 1;
+  height: 2px;
+  min-width: 40px;
+  margin: 0 var(--sherpa-space-2xs, 4px);
+  background-color: var(--_connector-color);
+  align-self: center;
+  margin-top: var(--_connector-offset);
+  transition: background-color var(--_duration) var(--_easing);
+}
+
+:host .step-connector[data-completed] {
+  --_connector-color: var(--sherpa-content-context-success-default, #0f7b6c);
+}
+
+/* ── Density: compact ───────────────────────────────────────── */
+
+:host([data-density="compact"]) {
+  --_indicator-size: 24px;
+  --_indicator-font-size: var(--sherpa-fonts-scale-xs, 10px);
+  --_label-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_sublabel-font-size: var(--sherpa-fonts-scale-xs, 10px);
+  --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 11px);
+}
+
+/* ── Density: comfortable ───────────────────────────────────── */
+
+:host([data-density="comfortable"]) {
+  --_indicator-size: 40px;
+  --_indicator-font-size: var(--sherpa-fonts-scale-base, 14px);
+  --_label-font-size: var(--sherpa-fonts-scale-lg, 16px);
+  --_connector-offset: calc(var(--sherpa-space-xs, 8px) + 19px);
+}
+
+/* ── Labels: none ───────────────────────────────────────────── */
+
+:host([data-labels="none"]) .step-label-container {
+  display: none;
+}
+
+/* ── Orientation: vertical ──────────────────────────────────── */
+
+:host([data-orientation="vertical"]) .tracker-steps {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+:host([data-orientation="vertical"]) .step-item {
+  width: 100%;
+  align-items: flex-start;
+}
+
+:host([data-orientation="vertical"]) .step-connector {
+  width: 2px;
+  height: 32px;
+  min-width: 2px;
+  flex: none;
+  margin: var(--sherpa-space-2xs, 4px) 0;
+  margin-inline-start: calc(var(--sherpa-space-2xs, 4px) + 15px);
+  margin-top: 0;
+}
+
+:host([data-orientation="vertical"][data-density="compact"]) .step-connector {
+  margin-inline-start: calc(var(--sherpa-space-2xs, 4px) + 11px);
+}
+
+:host([data-orientation="vertical"][data-density="comfortable"]) .step-connector {
+  margin-inline-start: calc(var(--sherpa-space-2xs, 4px) + 19px);
+}
+
+/* ── Forced-colors (accessibility) ─────────────────────────── */
+
+@media (forced-colors: active) {
+  :host .step-indicator {
+    border: 2px solid ButtonText;
+  }
+
+  :host .step-item[data-status="active"] .step-indicator,
+  :host .step-item[data-status="completed"] .step-indicator,
+  :host .step-item[data-status="error"] .step-indicator,
+  :host .step-item[data-status="warning"] .step-indicator,
+  :host .step-item[data-status="in-progress"] .step-indicator {
+    background-color: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  :host .step-connector {
+    background-color: ButtonText;
+  }
+}

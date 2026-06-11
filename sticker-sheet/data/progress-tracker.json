@@ -1,8 +1,8 @@
 {
-  "milestones": [
-    { "label": "Submitted", "status": "success",     "timestamp": "Jun 2, 2026" },
-    { "label": "In review", "status": "in-progress", "description": "Awaiting two approvals" },
-    { "label": "Approved",  "status": "default" },
-    { "label": "Published", "status": "default" }
+  "steps": [
+    { "label": "Submitted",  "completed": true },
+    { "label": "In review",  "completed": true },
+    { "label": "Approved",   "completed": false },
+    { "label": "Published",  "completed": false }
   ]
 }

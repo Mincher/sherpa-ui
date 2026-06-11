@@ -76,7 +76,7 @@ export class SherpaScheduler extends SherpaElement {
     this.#readFromInputs();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-frequency') {
       this.#value.frequency = this.dataset["frequency"] || 'weekly';
       this.#readFromInputs();
@@ -85,7 +85,7 @@ export class SherpaScheduler extends SherpaElement {
 
   /* ── public api ────────────────────────────────────────── */
 
-  get value() { return { ...this.#value }; }
+  get value(): SchedulePayload { return { ...this.#value }; }
   set value(v: SchedulePayload) {
     if (!v || typeof v !== 'object') return;
     this.#value = { ...v };
@@ -95,19 +95,19 @@ export class SherpaScheduler extends SherpaElement {
 
   /* ── handlers ──────────────────────────────────────────── */
 
-  #onFrequencyChange = (e: Event) => {
+  #onFrequencyChange = (e: Event): void => {
     const next = (e.target as HTMLSelectElement | null)?.value || 'weekly';
     this.dataset["frequency"] = next;
   };
 
-  #onInputChange = () => {
+  #onInputChange = (): void => {
     this.#readFromInputs();
     this.emit('schedule-change', { value: this.value });
   };
 
   /* ── sync helpers ──────────────────────────────────────── */
 
-  #readFromInputs() {
+  #readFromInputs(): void {
     const freq = this.dataset["frequency"] || 'weekly';
     const value: SchedulePayload = { frequency: freq };
 
@@ -135,9 +135,9 @@ export class SherpaScheduler extends SherpaElement {
     this.#value = value;
   }
 
-  #writeToInputs() {
+  #writeToInputs(): void {
     const v = this.#value;
-    const set = (sel: string, val: string | string[]) => {
+    const set = (sel: string, val: string | string[]): void => {
       const el = this.$(sel) as ValueEl | null;
       if (el && val != null) el.value = val;
     };

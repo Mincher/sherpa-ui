@@ -56,7 +56,7 @@ class SherpaSlider extends SherpaElement {
   /* ── cached refs ─────────────────────────────────────────── */
 
   // Cached shadow DOM elements (typed for better autocomplete)
-  els = this.cacheElements({
+  public els = this.cacheElements({
     label: { selector: '.label', type: HTMLSpanElement },
     trackArea: { selector: '.track-area', type: HTMLDivElement },
     fill: { selector: '.fill', type: HTMLDivElement },
@@ -155,30 +155,30 @@ class SherpaSlider extends SherpaElement {
 
   /* ── getters ─────────────────────────────────────────────── */
 
-  get #isRange() {
+  get #isRange(): boolean {
     return this.dataset["type"] === "range";
   }
 
-  get #min() {
+  get #min(): number {
     return parseFloat(this.dataset["min"] || "") || 0;
   }
 
-  get #max() {
+  get #max(): number {
     const v = parseFloat(this.dataset["max"] || "");
     return Number.isFinite(v) ? v : 100;
   }
 
-  get #step() {
+  get #step(): number {
     const v = parseFloat(this.dataset["step"] || "");
     return v > 0 ? v : 1;
   }
 
-  get #valueLow() {
+  get #valueLow(): number {
     const v = parseFloat(this.dataset["valueLow"] || "");
     return Number.isFinite(v) ? this.#clamp(v) : this.#min;
   }
 
-  get #valueHigh() {
+  get #valueHigh(): number {
     if (this.#isRange) {
         const v = parseFloat(this.dataset["valueHigh"] || "");
       return Number.isFinite(v) ? this.#clamp(v) : this.#max;
@@ -189,7 +189,7 @@ class SherpaSlider extends SherpaElement {
 
   /* ── sync helpers ────────────────────────────────────────── */
 
-  #syncAll() {
+  #syncAll(): void {
     this.#syncLabel();
     this.#syncTrack();
     this.#syncInputAttrs();
@@ -199,13 +199,13 @@ class SherpaSlider extends SherpaElement {
     this.#syncDisabled();
   }
 
-  #syncLabel() {
+  #syncLabel(): void {
     if (this.els.label) {
       this.els.label.textContent = this.dataset["label"] || "";
     }
   }
 
-  #syncTrack() {
+  #syncTrack(): void {
     const range = this.#max - this.#min;
     if (range <= 0) return;
 
@@ -216,7 +216,7 @@ class SherpaSlider extends SherpaElement {
     this.style.setProperty("--_high-pct", `${highPct}%`);
   }
 
-  #syncInputAttrs() {
+  #syncInputAttrs(): void {
     if (this.els.inputLow) {
       this.els.inputLow.min = String(this.#min);
       this.els.inputLow.max = String(this.#max);
@@ -229,7 +229,7 @@ class SherpaSlider extends SherpaElement {
     }
   }
 
-  #syncInputValues() {
+  #syncInputValues(): void {
     if (this.els.inputLow) {
       this.els.inputLow.value = String(this.#valueLow);
     }
@@ -238,7 +238,7 @@ class SherpaSlider extends SherpaElement {
     }
   }
 
-  #syncLabels() {
+  #syncLabels(): void {
     if (this.els.incrementMin) {
       this.els.incrementMin.textContent = String(this.#min);
     }
@@ -247,7 +247,7 @@ class SherpaSlider extends SherpaElement {
     }
   }
 
-  #syncAria() {
+  #syncAria(): void {
     if (this.#isRange) {
       // Low handle
       if (this.els.lowHandle) {
@@ -286,7 +286,7 @@ class SherpaSlider extends SherpaElement {
     }
   }
 
-  #syncDisabled() {
+  #syncDisabled(): void {
     const dis = this.hasAttribute("disabled");
     if (this.els.lowHandle)
       this.els.lowHandle.tabIndex = dis ? -1 : 0;
@@ -298,21 +298,21 @@ class SherpaSlider extends SherpaElement {
 
   /* ── value helpers ───────────────────────────────────────── */
 
-  #clamp(v: number) {
+  #clamp(v: number): number {
     return Math.min(this.#max, Math.max(this.#min, v));
   }
 
-  #snap(v: number) {
+  #snap(v: number): number {
     const step = this.#step;
     const min = this.#min;
     return Math.round((v - min) / step) * step + min;
   }
 
-  #pctToValue(pct: number) {
+  #pctToValue(pct: number): number {
     return this.#snap(this.#min + pct * (this.#max - this.#min));
   }
 
-  #getPctFromPointer(e: PointerEvent) {
+  #getPctFromPointer(e: PointerEvent): number {
     const rect = (this.els.trackArea ?? this).getBoundingClientRect();
     const x = e.clientX - rect.left;
     return Math.min(1, Math.max(0, x / rect.width));
@@ -320,7 +320,7 @@ class SherpaSlider extends SherpaElement {
 
   /* ── pointer events ──────────────────────────────────────── */
 
-  #onPointerDown(e: PointerEvent) {
+  #onPointerDown(e: PointerEvent): void {
     if (this.hasAttribute("disabled")) return;
     if (e.button !== 0) return;
 
@@ -348,13 +348,13 @@ class SherpaSlider extends SherpaElement {
     activeEl.setAttribute("data-dragging", "");
     activeEl.setPointerCapture(e.pointerId);
 
-    const onMove = (ev: PointerEvent) => {
+    const onMove = (ev: PointerEvent): void => {
       const p = this.#getPctFromPointer(ev);
       this.#setHandleValue(handle, this.#pctToValue(p));
       this.#emitInput();
     };
 
-    const onUp = (ev: PointerEvent) => {
+    const onUp = (ev: PointerEvent): void => {
       activeEl.removeAttribute("data-dragging");
       activeEl.releasePointerCapture(ev.pointerId);
       activeEl.removeEventListener("pointermove", onMove);
@@ -369,7 +369,7 @@ class SherpaSlider extends SherpaElement {
     activeEl.addEventListener("pointercancel", onUp);
   }
 
-  #setHandleValue(handle: 'low' | 'high', value: number) {
+  #setHandleValue(handle: 'low' | 'high', value: number): void {
     const clamped = this.#clamp(value);
     if (handle === "low") {
       // Collision avoidance: low can't exceed high
@@ -388,7 +388,7 @@ class SherpaSlider extends SherpaElement {
 
   /* ── keyboard events ─────────────────────────────────────── */
 
-  #onKeyDown(e: KeyboardEvent, handle: 'low' | 'high') {
+  #onKeyDown(e: KeyboardEvent, handle: 'low' | 'high'): void {
     if (this.hasAttribute("disabled")) return;
 
     const step = this.#step;
@@ -423,7 +423,7 @@ class SherpaSlider extends SherpaElement {
 
   /* ── input field events ──────────────────────────────────── */
 
-  #onInputChange(e: Event, handle: 'low' | 'high') {
+  #onInputChange(e: Event, handle: 'low' | 'high'): void {
     const raw = parseFloat((e.target as HTMLInputElement).value);
     if (!Number.isFinite(raw)) return;
     this.#setHandleValue(handle, this.#snap(raw));
@@ -432,14 +432,14 @@ class SherpaSlider extends SherpaElement {
 
   /* ── event emission ──────────────────────────────────────── */
 
-  #getDetail() {
+  #getDetail(): { value: number } | { low: number; high: number } {
     if (this.#isRange) {
       return { low: this.#valueLow, high: this.#valueHigh };
     }
     return { value: this.#valueHigh };
   }
 
-  #emitInput() {
+  #emitInput(): void {
     this.dispatchEvent(
       new CustomEvent("input", {
         bubbles: true,
@@ -449,7 +449,7 @@ class SherpaSlider extends SherpaElement {
     );
   }
 
-  #emitChange() {
+  #emitChange(): void {
     this.dispatchEvent(
       new CustomEvent("change", {
         bubbles: true,

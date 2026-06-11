@@ -55,7 +55,7 @@ export * from "./sherpa-panel/sherpa-panel.js";
 export * from "./sherpa-product-bar/sherpa-product-bar.js";
 export * from "./sherpa-product-bar-v2/sherpa-product-bar-v2.js";
 export * from "./sherpa-progress-bar/sherpa-progress-bar.js";
-export * from "./sherpa-progress-tracker/sherpa-progress-tracker.js";
+export * from "./sherpa-progress-step-tracker/sherpa-progress-step-tracker.js";
 export * from "./sherpa-slider/sherpa-slider.js";
 export * from "./sherpa-tabs/sherpa-tabs.js";
 export * from "./sherpa-callout/sherpa-callout.js";
@@ -70,7 +70,6 @@ export * from "./sherpa-proposal-preview/sherpa-proposal-preview.js";
 export * from "./sherpa-proposal-op/sherpa-proposal-op.js";
 export * from "./sherpa-section-header/sherpa-section-header.js";
 export * from "./sherpa-nav-section/sherpa-nav-section.js";
-export * from "./sherpa-stepper/sherpa-stepper.js";
 export * from "./sherpa-toast/sherpa-toast.js";
 
 // Form input components

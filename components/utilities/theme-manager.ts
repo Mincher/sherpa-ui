@@ -52,14 +52,14 @@ const _config = {
   persist: true,
 };
 
-const _root = () => document.documentElement;
+const _root = (): HTMLElement => document.documentElement;
 
 function _read<T extends string | null>(key: string, fallback: T): string | T {
   if (!_config.persist) return fallback;
   try { return localStorage.getItem(key) ?? fallback; }
   catch { return fallback; }
 }
-function _write(key: string, value: string | null) {
+function _write(key: string, value: string | null): void {
   if (!_config.persist) return;
   try {
     if (value == null) localStorage.removeItem(key);

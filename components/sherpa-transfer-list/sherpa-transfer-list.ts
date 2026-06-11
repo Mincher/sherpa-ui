@@ -61,13 +61,13 @@ export class SherpaTransferList extends SherpaElement {
     this.#renderPanes();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-source-heading' || name === 'data-target-heading') this.#syncHeadings();
   }
 
   /* ── public api ────────────────────────────────────────── */
 
-  setOptions(options: Array<{ value: unknown; label?: unknown; selected?: unknown }> = []) {
+  setOptions(options: Array<{ value: unknown; label?: unknown; selected?: unknown }> = []): void {
     this.#options = options.map((o) => ({
       value: String(o.value),
       label: String(o.label ?? o.value),
@@ -77,16 +77,16 @@ export class SherpaTransferList extends SherpaElement {
     this.#renderPanes();
   }
 
-  getSelectedValues() {
+  getSelectedValues(): string[] {
     return this.#options.filter((o) => o.selected).map((o) => o.value);
   }
 
   /* ── handlers ──────────────────────────────────────────── */
 
-  #onSourceSearch = (e: Event) => { this.#sourceFilter = ((e.target as HTMLInputElement).value || '').toLowerCase(); this.#renderPanes(); };
-  #onTargetSearch = (e: Event) => { this.#targetFilter = ((e.target as HTMLInputElement).value || '').toLowerCase(); this.#renderPanes(); };
+  #onSourceSearch = (e: Event): void => { this.#sourceFilter = ((e.target as HTMLInputElement).value || '').toLowerCase(); this.#renderPanes(); };
+  #onTargetSearch = (e: Event): void => { this.#targetFilter = ((e.target as HTMLInputElement).value || '').toLowerCase(); this.#renderPanes(); };
 
-  #onAddSelected = () => {
+  #onAddSelected = (): void => {
     const moved = [];
     for (const value of this.#checked) {
       const opt = this.#options.find((o) => o.value === value);
@@ -97,7 +97,7 @@ export class SherpaTransferList extends SherpaElement {
     this.#renderPanes();
   };
 
-  #onAddAll = () => {
+  #onAddAll = (): void => {
     const moved = [];
     for (const opt of this.#options) {
       if (!opt.selected && this.#matches(opt.label, this.#sourceFilter)) {
@@ -109,7 +109,7 @@ export class SherpaTransferList extends SherpaElement {
     this.#renderPanes();
   };
 
-  #onRemoveSelected = () => {
+  #onRemoveSelected = (): void => {
     const moved = [];
     for (const value of this.#checked) {
       const opt = this.#options.find((o) => o.value === value);
@@ -120,7 +120,7 @@ export class SherpaTransferList extends SherpaElement {
     this.#renderPanes();
   };
 
-  #onRemoveAll = () => {
+  #onRemoveAll = (): void => {
     const moved = [];
     for (const opt of this.#options) {
       if (opt.selected && this.#matches(opt.label, this.#targetFilter)) {
@@ -134,18 +134,18 @@ export class SherpaTransferList extends SherpaElement {
 
   /* ── helpers ───────────────────────────────────────────── */
 
-  #matches(label: string, filter: string) {
+  #matches(label: string, filter: string): boolean {
     return !filter || label.toLowerCase().includes(filter);
   }
 
-  #syncHeadings() {
+  #syncHeadings(): void {
     const src = this.$<HTMLElement>('.source-list');
     const tgt = this.$<HTMLElement>('.target-list');
     if (src) src.dataset["heading"] = this.dataset["sourceHeading"] || 'Available';
     if (tgt) tgt.dataset["heading"] = this.dataset["targetHeading"] || 'Selected';
   }
 
-  #renderPanes() {
+  #renderPanes(): void {
     const sourceList = this.$('.source-list');
     const targetList = this.$('.target-list');
     const tpl = this.$<HTMLTemplateElement>('template.option-tpl');
@@ -179,7 +179,7 @@ export class SherpaTransferList extends SherpaElement {
     }
   }
 
-  #fire(moved: string[], direction: 'add' | 'remove') {
+  #fire(moved: string[], direction: 'add' | 'remove'): void {
     this.emit('transfer-change', { values: this.getSelectedValues(), moved, direction });
   }
 }

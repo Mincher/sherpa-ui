@@ -80,3 +80,45 @@ document.getElementById('close-dialog-medium')?.addEventListener('click', () => 
 document.getElementById('open-dialog-critical')?.addEventListener('click',  () => document.getElementById('dialog-critical')?.setAttribute('data-open', ''));
 document.getElementById('close-dialog-critical')?.addEventListener('click', () => document.getElementById('dialog-critical')?.removeAttribute('data-open'));
 document.addEventListener('dialog-cancel', e => e.target.removeAttribute('data-open'));
+
+// Transfer list
+customElements.whenDefined('sherpa-transfer-list').then(() => {
+  const items = [
+    { value: 'alpha',   label: 'Alpha Service' },
+    { value: 'beta',    label: 'Beta Service' },
+    { value: 'gamma',   label: 'Gamma Cache',   selected: true },
+    { value: 'delta',   label: 'Delta Queue',   selected: true },
+    { value: 'epsilon', label: 'Epsilon Worker' },
+    { value: 'zeta',    label: 'Zeta Proxy' },
+  ];
+  document.getElementById('transfer-list-demo')?.setOptions?.(items);
+  document.getElementById('transfer-list-search')?.setOptions?.(structuredClone(items));
+});
+
+// Chart legend
+customElements.whenDefined('sherpa-chart-legend').then(() => {
+  const legendData = {
+    horizontal: [
+      { label: 'Web',    value: '12,480', color: 'var(--sherpa-data-vis-categorical-1, #6d2ae2)' },
+      { label: 'Mobile', value: '8,320',  color: 'var(--sherpa-data-vis-categorical-2, #3c5edd)' },
+      { label: 'API',    value: '3,910',  color: 'var(--sherpa-data-vis-categorical-3, #00b4a6)' },
+    ],
+    vertical: [
+      { label: 'Critical', value: '12', color: 'var(--sherpa-content-critical-primary, #b51111)' },
+      { label: 'Warning',  value: '34', color: 'var(--sherpa-content-warning-primary, #8a5200)' },
+      { label: 'Info',     value: '89', color: 'var(--sherpa-content-info-primary, #0055a4)' },
+    ],
+  };
+  document.querySelectorAll('sherpa-chart-legend[data-legend-id]').forEach(el => {
+    const items = legendData[el.dataset.legendId];
+    if (items) el.setItems?.(items);
+  });
+});
+
+// Container overlay
+document.getElementById('open-menu-overlay')?.addEventListener('click', e => {
+  document.getElementById('menu-overlay-demo')?.show(e.currentTarget);
+});
+document.getElementById('open-popover-overlay')?.addEventListener('click', e => {
+  document.getElementById('popover-overlay-demo')?.show(e.currentTarget);
+});

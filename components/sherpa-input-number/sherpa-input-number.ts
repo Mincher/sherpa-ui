@@ -39,7 +39,7 @@ export class SherpaInputNumber extends SherpaInputBase {
     return [...super.observedAttributes, 'min', 'max', 'step'];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     stepDownBtn: { selector: '.step-down', type: HTMLButtonElement },
     stepUpBtn: { selector: '.step-up', type: HTMLButtonElement }
   });
@@ -71,7 +71,7 @@ export class SherpaInputNumber extends SherpaInputBase {
     this.getInputElement()?.removeEventListener('keydown', this.#onKeyDown as EventListener);
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     if (['min', 'max', 'step'].includes(name)) {
       this._syncAttributeToNative(name, newValue);
@@ -80,26 +80,26 @@ export class SherpaInputNumber extends SherpaInputBase {
 
   /* ── Public API ─────────────────────────────────────────────── */
 
-  get min() { return this.getAttribute('min'); }
-  set min(v) { v != null ? this.setAttribute('min', v) : this.removeAttribute('min'); }
+  get min(): string | null { return this.getAttribute('min'); }
+  set min(v: string | null) { if (v != null) { this.setAttribute('min', v); } else { this.removeAttribute('min'); } }
 
-  get max() { return this.getAttribute('max'); }
-  set max(v) { v != null ? this.setAttribute('max', v) : this.removeAttribute('max'); }
+  get max(): string | null { return this.getAttribute('max'); }
+  set max(v: string | null) { if (v != null) { this.setAttribute('max', v); } else { this.removeAttribute('max'); } }
 
-  get step() { return this.getAttribute('step') || '1'; }
-  set step(v) { this.setAttribute('step', v); }
+  get step(): string { return this.getAttribute('step') || '1'; }
+  set step(v: string) { this.setAttribute('step', v); }
 
-  get valueAsNumber() {
+  get valueAsNumber(): number {
     const v = parseFloat(this.value);
     return isNaN(v) ? 0 : v;
   }
 
-  stepUp(n = 1) { this.#step(n); }
-  stepDown(n = 1) { this.#step(-n); }
+  public stepUp(n = 1): void { this.#step(n); }
+  public stepDown(n = 1): void { this.#step(-n); }
 
   /* ── Internal ───────────────────────────────────────────────── */
 
-  #step(direction: number) {
+  #step(direction: number): void {
     if (this.disabled || this.readOnly) return;
     const el = this.getInputElement();
     if (!el) return;
@@ -125,13 +125,13 @@ export class SherpaInputNumber extends SherpaInputBase {
     this.#fireEvents();
   }
 
-  #fireEvents() {
+  #fireEvents(): void {
     this.emit('input', { value: this.value });
     this.emit('change', { value: this.value });
   }
 
-  #onStepDown = () => this.stepDown();
-  #onStepUp = () => this.stepUp();
+  #onStepDown = (): void => { this.stepDown(); };
+  #onStepUp = (): void => { this.stepUp(); };
 
   /**
    * When `step` is an integer (e.g. "1", "5"), block keystrokes that
@@ -139,7 +139,7 @@ export class SherpaInputNumber extends SherpaInputBase {
    * (`.`, `,`, `e`, `E`). Other keys (digits, sign, navigation,
    * shortcuts) are passed through unchanged.
    */
-  #onKeyDown = (e: KeyboardEvent) => {
+  #onKeyDown = (e: KeyboardEvent): void => {
     const step = parseFloat(this.step);
     if (!isFinite(step) || step % 1 !== 0) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;

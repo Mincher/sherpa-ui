@@ -33,7 +33,7 @@ export class SherpaAccordion extends SherpaElement {
     return [...super.observedAttributes, 'data-label', 'data-icon', 'disabled'];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     label: '.trigger-label',
     icon: { selector: '.trigger-icon', type: HTMLElement },
     chevronBtn: '.chevron-btn',
@@ -54,7 +54,7 @@ export class SherpaAccordion extends SherpaElement {
     this.#syncDisabled();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case 'data-label': this.#syncLabel(); break;
       case 'data-icon':  this.#syncIcon(); break;
@@ -64,16 +64,16 @@ export class SherpaAccordion extends SherpaElement {
 
   /* ── Sync ─────────────────────────────────────────────────────── */
 
-  #syncLabel() {
+  #syncLabel(): void {
     if (this.els.label) this.els.label.textContent = this.dataset["label"] || '';
   }
 
-  #syncDisabled() {
+  #syncDisabled(): void {
     if (!this.els.chevronBtn) return;
     this.els.chevronBtn.toggleAttribute('disabled', this.hasAttribute('disabled'));
   }
 
-  #syncIcon() {
+  #syncIcon(): void {
     if (!this.els.icon) return;
     // data-icon accepts either a Font Awesome class string
     // (e.g. "fa-solid fa-star") or a single FA unicode codepoint.
@@ -91,14 +91,14 @@ export class SherpaAccordion extends SherpaElement {
   }
 
   /** Mirror the host `open` attribute to the inner <details>. */
-  #syncOpen() {
+  #syncOpen(): void {
     if (this.els.details) this.els.details.open = this.hasAttribute('open');
   }
 
   /* ── Events ───────────────────────────────────────────────────── */
 
   /** Keep the host `open` attribute in sync with the native toggle. */
-  #onToggle = () => {
+  #onToggle = (): void => {
     if (this.els.details) this.toggleAttribute('open', this.els.details.open);
   };
 }

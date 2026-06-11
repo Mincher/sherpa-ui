@@ -94,12 +94,12 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Public accessor for the shadow DOM sort chip (for external syncing). */
-  get sortChip() {
+  get sortChip(): HTMLElement | null {
     return this.$<HTMLElement>("sherpa-button[data-behavior='sort']");
   }
 
   /** Public accessor for the shadow DOM segment/group chip (for external syncing). */
-  get segmentChip() {
+  get segmentChip(): HTMLElement | null {
     return this.$<HTMLElement>("sherpa-button[data-behavior='segment']");
   }
 
@@ -270,7 +270,7 @@ export class SherpaFilterBar extends SherpaElement {
         const prefix = behavior === "sort" ? "Sort" : "Group";
         if (field) {
           labelBtn.dataset["field"] = field;
-          const col = this.#columns.find((c: any) => c.field === field);
+          const col = this.#columns.find((c) => c.field === field);
           const valueLabel = col?.name || formatFieldName(field);
           labelBtn.dataset["label"] = `${prefix}: ${valueLabel}`;
           // Reset to default mode for a newly-picked field
@@ -332,7 +332,7 @@ export class SherpaFilterBar extends SherpaElement {
     this.#scope = null;
   }
 
-  override onAttributeChanged(name: string, _old: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, _old: string | null, newValue: string | null): void {
     if (name === "data-preset-filters" && newValue) {
       this.#initPresetChips(newValue);
     }
@@ -345,7 +345,7 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Propagate host data-sort-type to the shadow DOM sort chip. */
-  #syncSortType() {
+  #syncSortType(): void {
     const sortBtn = this.sortChip;
     if (!sortBtn) return;
     const type = this.dataset["sortType"];
@@ -368,12 +368,12 @@ export class SherpaFilterBar extends SherpaElement {
    *
    * @param {object} data
    */
-  override onJsonData(data: any) {
-    if (Array.isArray(data?.fields)) {
-      this.setAttribute("data-available-fields", JSON.stringify(data.fields));
+  override onJsonData(data: Record<string, unknown>): void {
+    if (Array.isArray(data?.['fields'])) {
+      this.setAttribute("data-available-fields", JSON.stringify(data['fields']));
     }
-    if (Array.isArray(data?.presetFilters)) {
-      this.setAttribute("data-preset-filters", data.presetFilters.join(","));
+    if (Array.isArray(data?.['presetFilters'])) {
+      this.setAttribute("data-preset-filters", (data['presetFilters'] as string[]).join(","));
     }
   }
 
@@ -381,7 +381,7 @@ export class SherpaFilterBar extends SherpaElement {
    * Parse the data-available-fields JSON attribute and populate all menus.
    * Called on connect and whenever the attribute changes.
    */
-  #syncAvailableFields() {
+  #syncAvailableFields(): void {
     const raw = this.getAttribute("data-available-fields");
     if (!raw) return;
     try {
@@ -421,7 +421,7 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Toggle data-has-user-filters when ad-hoc filter chips appear in the default slot. */
-  #syncUserFiltersFlag() {
+  #syncUserFiltersFlag(): void {
     const has = !!(
       this.querySelector(":scope > sherpa-button[data-filter-field]:not([slot])") ||
       this.querySelector(":scope > .grouped-component:not([slot]) sherpa-button[data-filter-field]")
@@ -435,7 +435,7 @@ export class SherpaFilterBar extends SherpaElement {
    * items (e.g. the data-grid's "Show / hide filters" toggle) from leaking
    * into individual chip menus when the bar is rendered inside a viz host.
    */
-  #sealChipMenus() {
+  #sealChipMenus(): void {
     // Shadow DOM behavior chips already have data-menu-scope="none" in the
     // template. Only seal light DOM filter-field chips and their menu buttons.
     const chips = this.querySelectorAll(
@@ -455,7 +455,7 @@ export class SherpaFilterBar extends SherpaElement {
    * buttons. Consumers can still override per-button by setting
    * `data-size` explicitly in markup.
    */
-  #applyDefaultSizing() {
+  #applyDefaultSizing(): void {
     const buttons = this.querySelectorAll("sherpa-button");
     for (const btn of buttons) {
       // Treat missing OR the global default ("base") as "no explicit choice"
@@ -471,14 +471,14 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Check if any slotted filter chip has an active filter and update host attribute. */
-  #syncActiveState() {
+  #syncActiveState(): void {
     const chips = this.#getFilterChips();
     const anyActive = chips.some((chip) => chip.hasAttribute("data-active"));
     this.toggleAttribute("data-active", anyActive);
   }
 
   /** Clear all slotted filter chips and remove dynamic ones. */
-  #clearAll() {
+  #clearAll(): void {
     for (const chip of this.#getFilterChips()) {
       if (chip.hasAttribute("data-filter-field")) {
         if (chip.hasAttribute("data-user-filter")) {
@@ -548,7 +548,7 @@ export class SherpaFilterBar extends SherpaElement {
     label: string;
     slot?: string;
     dismissable?: boolean;
-  }) {
+  }): { container: HTMLElement; chip: HTMLElement } {
     const chip = document.createElement("sherpa-button");
     chip.setAttribute("data-filter-field", filterField);
     chip.setAttribute("data-filter-type", filterType);
@@ -597,8 +597,8 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Get fields already used by active filter chips (presets + user-added). */
-  #getUsedFilterFields() {
-    const fields = new Set();
+  #getUsedFilterFields(): Set<string> {
+    const fields = new Set<string>();
     for (const chip of this.#getFilterChips()) {
       const ff = chip.getAttribute("data-filter-field");
       if (ff) fields.add(ff);
@@ -615,7 +615,7 @@ export class SherpaFilterBar extends SherpaElement {
    * Uses the sentinel field `_timerange` so consuming apps can map it
    * to each dataset's actual date field via the `range` property.
    */
-  #initDefaultTimeRangeChip() {
+  #initDefaultTimeRangeChip(): void {
     // Don't duplicate if already present
     if (this.querySelector('sherpa-button[data-filter-field="_timerange"]')) return;
 
@@ -639,7 +639,7 @@ export class SherpaFilterBar extends SherpaElement {
    * Called when data-preset-filters attribute is set.
    * @param {string} fields — comma-separated field names (e.g. "severity,status")
    */
-  #initPresetChips(fields: string) {
+  #initPresetChips(fields: string): void {
     // Remove existing preset filter chips (preserve built-in _timerange chip)
     for (const chip of this.querySelectorAll(
       'sherpa-button[data-filter-field][slot="presets"], .grouped-component[slot="presets"] sherpa-button[data-filter-field]',
@@ -674,7 +674,7 @@ export class SherpaFilterBar extends SherpaElement {
      ══════════════════════════════════════════════════════════════ */
 
   /** Populate the "Add filter" button menu with available (unused) columns. */
-  #populateAddMenu() {
+  #populateAddMenu(): void {
     if (!this.#addButton) return;
 
     const usedFields = this.#getUsedFilterFields();
@@ -729,7 +729,7 @@ export class SherpaFilterBar extends SherpaElement {
   };
 
   /** Dispatch filterchange + containerfilterchange, and globalfilterchange when data-global. */
-  #emitFilterChange() {
+  #emitFilterChange(): void {
     const filters = this.getFilters();
     this.dispatchEvent(
       new CustomEvent("filter-change", {
@@ -757,7 +757,7 @@ export class SherpaFilterBar extends SherpaElement {
      ══════════════════════════════════════════════════════════════ */
 
   /** Get current filter state from all chips. Returns [] when toggle is off. */
-  getFilters() {
+  public getFilters(): FilterSpec[] {
     if (!this.#applied) return [];
 
     return this.#getFilterChips()
@@ -822,14 +822,14 @@ export class SherpaFilterBar extends SherpaElement {
    * @param {Array} columns — { field, name, type }
    * @param {Array} [rows] — full dataset rows for unique value extraction
    */
-  setAvailableColumns(columns: FieldDef[], rows?: Record<string, unknown>[]) {
+  public setAvailableColumns(columns: FieldDef[], rows?: Record<string, unknown>[]): void {
     if (!Array.isArray(columns) || !columns.length) return;
     if (Array.isArray(rows)) this.#rows = rows;
     this.setAttribute("data-available-fields", JSON.stringify(columns));
   }
 
   /** Remove filter chip for a specific field. */
-  removeFilterChip(field: string) {
+  public removeFilterChip(field: string): boolean {
     for (const chip of this.#getFilterChips()) {
       if (chip.getAttribute("data-filter-field") === field) {
         (chip.closest(".grouped-component") ?? chip).remove();
@@ -844,7 +844,7 @@ export class SherpaFilterBar extends SherpaElement {
   /**
    * Handle sortchange from a viz child — sync the sort chip to match.
    */
-  #onSortChange(e: CustomEvent) {
+  #onSortChange(e: CustomEvent): void {
     const sortChip = this.$<HTMLElement>('sherpa-button[data-behavior="sort"]');
     if (!sortChip) return;
 
@@ -878,7 +878,7 @@ export class SherpaFilterBar extends SherpaElement {
    * Bubbles up through the DOM so any ancestor (e.g. a container) and
    * its descendants that listen on that ancestor will receive it.
    */
-  #dispatchContainerFilterChange(filters: unknown[]) {
+  #dispatchContainerFilterChange(filters: unknown[]): void {
     this.dispatchEvent(
       new CustomEvent("container-filter-change", {
         bubbles: true,
@@ -892,7 +892,7 @@ export class SherpaFilterBar extends SherpaElement {
    * When `data-global` is set, dispatch globalfilterchange on document so
    * all viz children that listen for global filters receive the update.
    */
-  #dispatchGlobalFilterChange(filters: unknown[]) {
+  #dispatchGlobalFilterChange(filters: unknown[]): void {
     if (!this.hasAttribute("data-global")) return;
     document.dispatchEvent(
       new CustomEvent("global-filter-change", {
@@ -991,7 +991,7 @@ export class SherpaFilterBar extends SherpaElement {
    * combination with the chip's other active filters. Touches only
    * textContent so existing checked / aria-checked state is preserved.
    */
-  #refreshOptionCounts() {
+  #refreshOptionCounts(): void {
     if (!this.#rows.length) return;
     for (const chip of this.#getFilterChips()) {
       if (!chip.hasAttribute("data-filter-field")) continue;
@@ -1022,7 +1022,7 @@ export class SherpaFilterBar extends SherpaElement {
    * wipes checked state.
    * @param {HTMLElement} chip — sherpa-button with data-filter-field
    */
-  #populateFilterChip(chip: HTMLElement) {
+  #populateFilterChip(chip: HTMLElement): void {
     const menuBtn = this.#getChipMenuButton(chip);
     // Guard: if menu already has items, don't re-populate (preserves checked state)
     if (menuBtn.menuElement?.querySelector("sherpa-overlay-item")) return;
@@ -1070,7 +1070,7 @@ export class SherpaFilterBar extends SherpaElement {
    *   >1 selected → "Label:" + numeric badge (count).
    *   0 selected  → "Label" (default), no badge.
    */
-  #syncFilterChipLabel(chip: HTMLElement, count: number) {
+  #syncFilterChipLabel(chip: HTMLElement, count: number): void {
     const defaultLabel = chip.dataset["defaultLabel"] || chip.dataset["label"] || "";
     if (count === 1) {
       const menuEl = this.#getChipMenuButton(chip)?.menuElement ?? chip.querySelector("sherpa-container-overlay");
@@ -1090,7 +1090,7 @@ export class SherpaFilterBar extends SherpaElement {
   }
 
   /** Populate a sort/segment chip's menu with column choices. */
-  #populateColumnsMenu(chip: HTMLElement) {
+  #populateColumnsMenu(chip: HTMLElement): void {
     // Segment (group) chips only show string-type columns
     const isSegment = chip.getAttribute("data-behavior") === "segment";
     const cols = isSegment
@@ -1205,7 +1205,7 @@ export class SherpaFilterBar extends SherpaElement {
    * To clear the chosen field entirely, the user must pick "None"
    * from the menu — handled in the menu-select listener.
    */
-  #cycleSortMode(chip: HTMLElement) {
+  #cycleSortMode(chip: HTMLElement): void {
     const current = chip.dataset["mode"];
     const sortType = chip.dataset["sortType"];
 
@@ -1272,7 +1272,7 @@ export class SherpaFilterBar extends SherpaElement {
    * the off state — the user must pick "None" from the menu to fully
    * clear it.
    */
-  #cycleSegmentMode(chip: HTMLElement) {
+  #cycleSegmentMode(chip: HTMLElement): void {
     // No field selected yet — user must pick from the dropdown first
     if (!chip.hasAttribute("data-field")) return;
     if (chip.hasAttribute("data-active")) {
@@ -1290,7 +1290,7 @@ export class SherpaFilterBar extends SherpaElement {
    * Populate a timeframe chip's menu with TIME_RANGE_PRESETS.
    * @param {HTMLElement} chip — sherpa-button with datetime-range type
    */
-  #populateTimeframeMenu(chip: MenuButtonLike) {
+  #populateTimeframeMenu(chip: MenuButtonLike): void {
     const items = TIME_RANGE_PRESETS.map((p) => ({
       value: p.key,
       text: p.label,

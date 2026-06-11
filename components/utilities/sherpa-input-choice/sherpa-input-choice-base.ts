@@ -28,11 +28,11 @@ export abstract class SherpaInputChoiceBase extends StatusMixin(SherpaElement) {
   protected _bound = false;
 
   // Stable bound reference for add/removeEventListener
-  protected readonly _onChange = () => this._handleChange();
+  protected readonly _onChange = (): void => { this._handleChange(); };
 
   /* ── Lifecycle ─────────────────────────────────────────────────── */
 
-  override onRender() {
+  override onRender(): void {
     if (!this._bound) {
       const input = this._input;
       if (input) input.addEventListener('change', this._onChange);
@@ -43,7 +43,7 @@ export abstract class SherpaInputChoiceBase extends StatusMixin(SherpaElement) {
     this._syncNative();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
       case 'data-label':       this._syncLabel(); break;
@@ -54,16 +54,16 @@ export abstract class SherpaInputChoiceBase extends StatusMixin(SherpaElement) {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get checked()  { return this.hasAttribute('checked'); }
-  set checked(v) { v ? this.setAttribute('checked', '') : this.removeAttribute('checked'); }
+  get checked(): boolean  { return this.hasAttribute('checked'); }
+  set checked(v: boolean) { if (v) { this.setAttribute('checked', ''); } else { this.removeAttribute('checked'); } }
 
-  get disabled()  { return this.hasAttribute('disabled'); }
-  set disabled(v) { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
+  get disabled(): boolean  { return this.hasAttribute('disabled'); }
+  set disabled(v: boolean) { if (v) { this.setAttribute('disabled', ''); } else { this.removeAttribute('disabled'); } }
 
-  get required()  { return this.hasAttribute('required'); }
-  set required(v) { v ? this.setAttribute('required', '') : this.removeAttribute('required'); }
+  get required(): boolean  { return this.hasAttribute('required'); }
+  set required(v: boolean) { if (v) { this.setAttribute('required', ''); } else { this.removeAttribute('required'); } }
 
-  override focus(opts?: FocusOptions) { this._input?.focus(opts); }
+  override focus(opts?: FocusOptions): void { this._input?.focus(opts); }
 
   /* ── Protected helpers ─────────────────────────────────────────── */
 
@@ -71,12 +71,12 @@ export abstract class SherpaInputChoiceBase extends StatusMixin(SherpaElement) {
     return this.$<HTMLInputElement>('.check-input');
   }
 
-  protected _syncLabel() {
+  protected _syncLabel(): void {
     const el = this.$('.check-text');
     if (el) el.textContent = this.dataset['label'] || '';
   }
 
-  protected _syncDescription() {
+  protected _syncDescription(): void {
     const el = this.$('.check-description');
     if (el) el.textContent = this.dataset['description'] || '';
   }
@@ -89,7 +89,7 @@ export abstract class SherpaInputChoiceBase extends StatusMixin(SherpaElement) {
     input.disabled = this.disabled;
     input.required = this.required;
     const name = this.getAttribute('name');
-    name != null ? input.setAttribute('name', name) : input.removeAttribute('name');
+    if (name != null) { input.setAttribute('name', name); } else { input.removeAttribute('name'); }
     input.value = this.value;
   }
 
@@ -97,9 +97,7 @@ export abstract class SherpaInputChoiceBase extends StatusMixin(SherpaElement) {
   protected _mirrorChecked(): void {
     const input = this._input;
     if (!input) return;
-    input.checked
-      ? this.setAttribute('checked', '')
-      : this.removeAttribute('checked');
+    if (input.checked) { this.setAttribute('checked', ''); } else { this.removeAttribute('checked'); }
   }
 
   protected abstract get value(): string;

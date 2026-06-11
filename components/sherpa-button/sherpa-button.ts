@@ -131,7 +131,7 @@ export class SherpaButton extends SherpaElement {
   /* ── Private refs ─────────────────────────────────────────────── */
 
   // Cached shadow DOM elements
-  els = this.cacheElements({
+  public els = this.cacheElements({
     trigger: { selector: '.trigger', type: HTMLElement },
     label: '.label',
     iconStart: { selector: '.icon-start', type: HTMLElement },
@@ -141,19 +141,19 @@ export class SherpaButton extends SherpaElement {
 
   // Menu state (not cached - initialized later via setMenuItems)
   #menuEl: SherpaContainerOverlay | null = null;
-  #menuClosedAt: number = 0;
+  #menuClosedAt = 0;
 
   // Cloning prototypes for programmatic menu building
-  #menuListTpl: HTMLTemplateElement | null = null;
-  #menuItemTpl: HTMLTemplateElement | null = null;
-  #menuHeadingTpl: HTMLTemplateElement | null = null;
+  #menuListTpl!: HTMLTemplateElement;
+  #menuItemTpl!: HTMLTemplateElement;
+  #menuHeadingTpl!: HTMLTemplateElement;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#menuListTpl    = this.$<HTMLTemplateElement>('template.menu-list-tpl');
-    this.#menuItemTpl    = this.$<HTMLTemplateElement>('template.menu-item-tpl');
-    this.#menuHeadingTpl = this.$<HTMLTemplateElement>('template.menu-heading-tpl');
+    this.#menuListTpl    = this.$<HTMLTemplateElement>('template.menu-list-tpl') as HTMLTemplateElement;
+    this.#menuItemTpl    = this.$<HTMLTemplateElement>('template.menu-item-tpl') as HTMLTemplateElement;
+    this.#menuHeadingTpl = this.$<HTMLTemplateElement>('template.menu-heading-tpl') as HTMLTemplateElement;
 
     // Default variant for standard buttons
     const type = this.dataset["type"];
@@ -197,7 +197,7 @@ export class SherpaButton extends SherpaElement {
 
   /* ── Label sync ───────────────────────────────────────────────── */
 
-  #syncLabel() {
+  #syncLabel(): void {
     if (!this.els.label) return;
     this.els.label.textContent = this.dataset["label"] ?? "";
   }
@@ -409,7 +409,7 @@ export class SherpaButton extends SherpaElement {
     return this.hasAttribute("disabled");
   }
   set disabled(v: boolean) {
-    v ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
+    if (v) { this.setAttribute("disabled", ""); } else { this.removeAttribute("disabled"); }
   }
 
   get active(): boolean {
@@ -476,7 +476,8 @@ export class SherpaButton extends SherpaElement {
 
   /** Build a flat list of overlay items inside a single <ul>. */
   #buildFlatList(menu: SherpaContainerOverlay, items: MenuItem[], opts: Partial<MenuOptions> = {}): void {
-    const ul = this.#menuListTpl!.content.firstElementChild!.cloneNode(true) as HTMLUListElement;
+    const ul = this.#menuListTpl.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
+    if (!ul) return;
     if (opts.group) ul.dataset['group'] = opts.group;
 
     for (const item of items) {
@@ -491,7 +492,8 @@ export class SherpaButton extends SherpaElement {
     for (const section of sections) {
       // Heading
       if (section.heading) {
-        const heading = this.#menuHeadingTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        const heading = this.#menuHeadingTpl.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+        if (!heading) continue;
         heading.textContent = section.heading;
         if (section.style) heading.setAttribute("style", section.style);
         menu.appendChild(heading);
@@ -499,7 +501,8 @@ export class SherpaButton extends SherpaElement {
 
       // Items
       if (section.items?.length) {
-        const ul = this.#menuListTpl!.content.firstElementChild!.cloneNode(true) as HTMLUListElement;
+        const ul = this.#menuListTpl.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
+        if (!ul) continue;
         if (section.group) ul.dataset['group'] = section.group;
         if (section.style) ul.setAttribute("style", section.style);
 
@@ -519,8 +522,9 @@ export class SherpaButton extends SherpaElement {
 
   /** Clone a <li><sherpa-overlay-item> prototype and populate it from item data. */
   #buildMenuItem(item: MenuItem, opts: Partial<MenuOptions> = {}): HTMLLIElement {
-    const li = this.#menuItemTpl!.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
-    const menuItem = li.querySelector('sherpa-overlay-item')!;
+    const li = this.#menuItemTpl.content.firstElementChild?.cloneNode(true) as HTMLLIElement | undefined ?? document.createElement('li');
+    const menuItem = li.querySelector('sherpa-overlay-item');
+    if (!menuItem) return li;
     menuItem.setAttribute("value", item.value ?? "");
     menuItem.textContent = item.text ?? item.value ?? "";
 

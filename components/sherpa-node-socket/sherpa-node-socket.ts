@@ -34,7 +34,7 @@ export class SherpaNodeSocket extends SherpaElement {
 
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
-  static override get sharedStyles() {
+  static override get sharedStyles(): string[] {
     return [
       ...super.sharedStyles,
       new URL("../sherpa-node/sherpa-node-tokens.css", import.meta.url).href,
@@ -56,7 +56,7 @@ export class SherpaNodeSocket extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     btn: { selector: '.socket', type: HTMLButtonElement },
     connectors: '.connectors',
     connectorTpl: { selector: '.connector-tpl', type: HTMLTemplateElement }
@@ -76,7 +76,7 @@ export class SherpaNodeSocket extends SherpaElement {
     this.#syncCount();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === "data-variant") {
       this.#syncVariantToMulti();
       this.#syncCount();
@@ -94,12 +94,12 @@ export class SherpaNodeSocket extends SherpaElement {
    * Auto-detect location from DOM context instead of relying on parent tagging.
    * Checks if socket is within a [slot="header"] ancestor to determine header vs row.
    */
-  #autoDetectLocation() {
+  #autoDetectLocation(): void {
     // Skip if already explicitly set
     if (this.dataset["location"]) return;
 
     // Walk up the DOM to find if we're inside a header slot
-    let el: Element | null = this;
+    let el: Element | null = this.parentElement;
     while (el && el !== document.body) {
       if (el.getAttribute("slot") === "header") {
         this.dataset["location"] = "header";
@@ -122,7 +122,7 @@ export class SherpaNodeSocket extends SherpaElement {
    * - step-single → data-multi absent (step variant for header/control-flow)
    * - step-multiple → data-multi present (step variant for header/control-flow)
    */
-  #syncVariantToMulti() {
+  #syncVariantToMulti(): void {
     const variant = this.dataset["variant"];
     if (!variant) return;
 
@@ -134,7 +134,7 @@ export class SherpaNodeSocket extends SherpaElement {
     }
   }
 
-  #syncCount() {
+  #syncCount(): void {
     const n = parseInt(this.dataset["connectionCount"] || "0", 10);
     const count = Number.isFinite(n) && n > 0 ? n : 0;
 
@@ -159,17 +159,17 @@ export class SherpaNodeSocket extends SherpaElement {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get portName() { return this.dataset["portName"] || ""; }
-  get direction() { return this.dataset["direction"] || "in"; }
-  get connected() { return this.hasAttribute("data-connected"); }
-  set connected(v) {
+  get portName(): string { return this.dataset["portName"] || ""; }
+  get direction(): string { return this.dataset["direction"] || "in"; }
+  get connected(): boolean { return this.hasAttribute("data-connected"); }
+  set connected(v: boolean) {
     if (v) this.setAttribute("data-connected", "");
     else this.removeAttribute("data-connected");
   }
 
   /* ── Events ────────────────────────────────────────────────────── */
 
-  #onPointerDown = (e: PointerEvent) => {
+  #onPointerDown = (e: PointerEvent): void => {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();

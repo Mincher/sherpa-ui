@@ -1706,7 +1706,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const hasFilters = this.hasAttribute("data-filters");
     const filterBarHidden =
       this.getAttribute("data-hide-filter-bar") === "true";
-    const viewItems = [
+    const viewItems: Array<{ value: string; text: string; selected?: boolean; data: Record<string, unknown> }> = [
       {
         value: "toggle-column-search",
         text: showSecondary ? "Hide column search" : "Show column search",
@@ -1732,7 +1732,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         text: d.label,
         selected: (density || "") === (d.value || ""),
         data: { action: "set-density", densityValue: d.value },
-      } as any);
+      });
     }
     sections.push({ heading: "View", items: viewItems });
 
@@ -1808,7 +1808,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const btn = this.$<HTMLElement & { setMenuItems?: (sections: unknown[]) => void }>(".column-select-btn");
     if (!btn) return;
 
-    const items = [
+    const items: Array<{ value: string; text: string; selection: string; checked: boolean; keepOpen: boolean; data: Record<string, unknown> }> = [
       {
         value: "select-all-columns",
         text: "Select all",
@@ -1827,7 +1827,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         checked: !this.#hiddenColumns.has(col.field),
         keepOpen: true,
         data: { action: "toggle-column", field: col.field },
-      } as any);
+      });
     }
 
     btn.setMenuItems?.([{ heading: "Columns", items }]);

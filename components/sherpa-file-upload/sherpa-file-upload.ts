@@ -60,7 +60,7 @@ class SherpaFileUpload extends SherpaElement {
 
   /* ── cached refs ─────────────────────────────────────────── */
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     label: '.label',
     dropZone: { selector: '.drop-zone', type: HTMLElement },
     fileInput: { selector: '.file-input', type: HTMLInputElement },
@@ -121,7 +121,7 @@ class SherpaFileUpload extends SherpaElement {
     this.#syncFileInput();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case "data-label":
         this.#syncLabel();
@@ -138,19 +138,19 @@ class SherpaFileUpload extends SherpaElement {
 
   /* ── sync helpers ────────────────────────────────────────── */
 
-  #syncLabel() {
+  #syncLabel(): void {
     if (this.els.label) {
       this.els.label.textContent = this.dataset["label"] || "";
     }
   }
 
-  #syncHelper() {
+  #syncHelper(): void {
     if (this.els.constraintsText) {
       this.els.constraintsText.textContent = this.dataset["helper"] || "";
     }
   }
 
-  #syncFileInput() {
+  #syncFileInput(): void {
     if (!this.els.fileInput) return;
     if (this.dataset["accept"]) {
       this.els.fileInput.setAttribute("accept", this.dataset["accept"]);
@@ -164,26 +164,26 @@ class SherpaFileUpload extends SherpaElement {
     }
   }
 
-  #updateHasFiles() {
+  #updateHasFiles(): void {
     this.toggleAttribute("data-has-files", this.#files.length > 0);
   }
 
   /* ── drag & drop ─────────────────────────────────────────── */
 
-  #onDragEnter(e: DragEvent) {
+  #onDragEnter(e: DragEvent): void {
     e.preventDefault();
     if (this.hasAttribute("disabled")) return;
     this.#dragCounter++;
     this.toggleAttribute("data-drag-over", true);
   }
 
-  #onDragOver(e: DragEvent) {
+  #onDragOver(e: DragEvent): void {
     e.preventDefault();
     if (this.hasAttribute("disabled")) return;
     if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
   }
 
-  #onDragLeave(e: DragEvent) {
+  #onDragLeave(e: DragEvent): void {
     e.preventDefault();
     this.#dragCounter--;
     if (this.#dragCounter <= 0) {
@@ -192,7 +192,7 @@ class SherpaFileUpload extends SherpaElement {
     }
   }
 
-  #onDrop(e: DragEvent) {
+  #onDrop(e: DragEvent): void {
     e.preventDefault();
     this.#dragCounter = 0;
     this.removeAttribute("data-drag-over");
@@ -204,7 +204,7 @@ class SherpaFileUpload extends SherpaElement {
 
   /* ── file management ─────────────────────────────────────── */
 
-  #addFiles(files: File[]) {
+  #addFiles(files: File[]): void {
     if (!files.length) return;
 
     const maxFiles = parseInt(this.dataset["maxFiles"] || "") || Infinity;
@@ -246,7 +246,7 @@ class SherpaFileUpload extends SherpaElement {
     );
   }
 
-  #matchesAccept(file: File, accepted: string[]) {
+  #matchesAccept(file: File, accepted: string[]): boolean {
     const fileName = file.name.toLowerCase();
     const fileType = file.type.toLowerCase();
 
@@ -262,8 +262,11 @@ class SherpaFileUpload extends SherpaElement {
   }
 
   #createFileItem(file: File): HTMLElement {
-    const clone = this.els.fileItemTpl!.content.cloneNode(true) as DocumentFragment;
-    const item = clone.querySelector<HTMLElement>(".file-item")!;
+    const tplEl = this.els.fileItemTpl;
+    if (!tplEl) throw new Error('file-item-tpl not found');
+    const clone = tplEl.content.cloneNode(true) as DocumentFragment;
+    const item = clone.querySelector<HTMLElement>(".file-item");
+    if (!item) throw new Error('.file-item not found in template');
 
     const nameEl = item.querySelector(".file-name");
     if (nameEl) nameEl.textContent = file.name;
@@ -277,7 +280,8 @@ class SherpaFileUpload extends SherpaElement {
     item.querySelector(".file-remove-btn")?.addEventListener("click", () => {
       const idx = this.#files.findIndex((f) => f.el === item);
       if (idx !== -1) {
-        const removed = this.#files.splice(idx, 1)[0]!;
+        const removed = this.#files.splice(idx, 1)[0];
+        if (!removed) return;
         item.remove();
         this.#updateHasFiles();
         this.dispatchEvent(
@@ -303,7 +307,7 @@ class SherpaFileUpload extends SherpaElement {
     return item;
   }
 
-  #clearAll() {
+  #clearAll(): void {
     this.#files = [];
     if (this.els.fileList) this.els.fileList.textContent = "";
     this.#updateHasFiles();
@@ -315,7 +319,7 @@ class SherpaFileUpload extends SherpaElement {
     );
   }
 
-  #formatSize(bytes: number) {
+  #formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -329,7 +333,7 @@ class SherpaFileUpload extends SherpaElement {
    * @param {'ready'|'uploading'|'uploaded'|'failed'} state
    * @param {string} [statusText] — optional override for status label
    */
-  setFileState(index: number, state: string, statusText?: string) {
+  public setFileState(index: number, state: string, statusText?: string): void {
     const entry = this.#files[index];
     if (!entry) return;
     entry.el.dataset["state"] = state;
@@ -349,7 +353,7 @@ class SherpaFileUpload extends SherpaElement {
    * @param {number} index
    * @param {number} percent
    */
-  setFileProgress(index: number, percent: number) {
+  public setFileProgress(index: number, percent: number): void {
     const entry = this.#files[index];
     if (!entry) return;
     entry.el.dataset["state"] = "uploading";
@@ -364,7 +368,7 @@ class SherpaFileUpload extends SherpaElement {
    * Get the current list of File objects.
    * @returns {File[]}
    */
-  get files() {
+  public get files(): File[] {
     return this.#files.map((f) => f.file);
   }
 }

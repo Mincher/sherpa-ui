@@ -93,7 +93,7 @@ function loadWrapperTemplate(): Promise<HTMLTemplateElement> {
         return tpl;
       });
   }
-  return wrapperTplPromise!;
+  return wrapperTplPromise as Promise<HTMLTemplateElement>;
 }
 
 /* ── Component ──────────────────────────────────────────────────── */
@@ -243,14 +243,14 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
     trigger?.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.hasAttribute('disabled') || this.hasAttribute('readonly')) return;
-      this.hasAttribute('data-open') ? this._popupClose() : this._popupOpen();
+      if (this.hasAttribute('data-open')) { this._popupClose(); } else { this._popupOpen(); }
     });
   }
 
-  readonly #_popupClick = (e: Event) => {
+  readonly #_popupClick = (e: Event): void => {
     if (!e.composedPath().includes(this)) this._popupClose();
   };
-  readonly #_popupKey = (e: KeyboardEvent) => {
+  readonly #_popupKey = (e: KeyboardEvent): void => {
     if (e.key === 'Escape') this._popupClose();
   };
 
@@ -333,27 +333,27 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
     return this.hasAttribute("disabled");
   }
   set disabled(v: boolean) {
-    v ? this.setAttribute("disabled", "") : this.removeAttribute("disabled");
+    if (v) { this.setAttribute("disabled", ""); } else { this.removeAttribute("disabled"); }
   }
 
   get readOnly(): boolean {
     return this.hasAttribute("readonly");
   }
   set readOnly(v: boolean) {
-    v ? this.setAttribute("readonly", "") : this.removeAttribute("readonly");
+    if (v) { this.setAttribute("readonly", ""); } else { this.removeAttribute("readonly"); }
   }
 
   get required(): boolean {
     return this.hasAttribute("required");
   }
   set required(v: boolean) {
-    v ? this.setAttribute("required", "") : this.removeAttribute("required");
+    if (v) { this.setAttribute("required", ""); } else { this.removeAttribute("required"); }
   }
 
   /** Focus the internal native control. */
   override focus(opts?: FocusOptions): void {
     const el = this.getInputElement();
-    el ? el.focus(opts) : super.focus(opts);
+    if (el) { el.focus(opts); } else { super.focus(opts); }
   }
 
   /* ── Constraint Validation API (delegates to native input) ──── */
@@ -445,7 +445,7 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
   #syncStatusIndicator(): void {
     if (!this.#statusIndicatorIconEl) return;
     const status = this.status;
-    const iconCls = status ? (this.constructor as any).statusIcons?.[status] || "" : "";
+    const iconCls = status ? ((this.constructor as unknown as Record<string, Record<string, string>>)["statusIcons"]?.[status] ?? "") : "";
     if (iconCls) {
       this.#statusIndicatorIconEl.className = `status-indicator-icon ${iconCls}`;
     } else {
@@ -459,9 +459,7 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
 
     // Boolean attributes
     for (const attr of ["disabled", "readonly", "required"]) {
-      this.hasAttribute(attr)
-        ? el.setAttribute(attr, "")
-        : el.removeAttribute(attr);
+      if (this.hasAttribute(attr)) { el.setAttribute(attr, ""); } else { el.removeAttribute(attr); }
     }
     // Value attributes
     for (const attr of [
@@ -472,7 +470,7 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
       "maxlength",
     ]) {
       const val = this.getAttribute(attr);
-      val !== null ? el.setAttribute(attr, val) : el.removeAttribute(attr);
+      if (val !== null) { el.setAttribute(attr, val); } else { el.removeAttribute(attr); }
     }
   }
 
@@ -480,7 +478,7 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
   protected _syncAttributeToNative(name: string, newValue: string | null): void {
     const el = this.getInputElement();
     if (el) {
-      newValue !== null ? el.setAttribute(name, newValue) : el.removeAttribute(name);
+      if (newValue !== null) { el.setAttribute(name, newValue); } else { el.removeAttribute(name); }
     }
   }
 
@@ -534,9 +532,10 @@ export class SherpaInputBase<TValue = string> extends StatusMixin(SherpaElement)
 
     // For native validation (no explicit status), show/hide the critical icon
     if (!this.dataset['status'] && this.#statusIndicatorIconEl) {
+      const statusIcons = (this.constructor as unknown as Record<string, Record<string, string>>)["statusIcons"];
       const errorIconCls =
-        (this.constructor as any).statusIcons?.critical ||
-        (this.constructor as any).statusIcons?.error ||
+        statusIcons?.["critical"] ||
+        statusIcons?.["error"] ||
         "fa-solid fa-circle-exclamation";
       if (!el.validity.valid) {
         this.#statusIndicatorIconEl.className = `status-indicator-icon ${errorIconCls}`;

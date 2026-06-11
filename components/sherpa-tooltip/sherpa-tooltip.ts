@@ -72,21 +72,21 @@ class SherpaTooltip extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  setText(text: string) {
+  setText(text: string): void {
     this.#text = text;
     const content = this.$('.tooltip-content');
     if (content) content.textContent = text;
   }
 
-  getText() { return this.#text; }
+  getText(): string { return this.#text; }
 
-  setPosition(pos: string) { this.dataset["position"] = pos || 'top'; }
-  getPosition()    { return this.dataset["position"] || 'top'; }
+  setPosition(pos: string): void { this.dataset["position"] = pos || 'top'; }
+  getPosition(): string    { return this.dataset["position"] || 'top'; }
 
-  setVisible(visible: boolean) { this.dataset["visible"] = visible ? 'true' : 'false'; }
-  isVisible()         { return this.dataset["visible"] === 'true'; }
+  setVisible(visible: boolean): void { this.dataset["visible"] = visible ? 'true' : 'false'; }
+  isVisible(): boolean         { return this.dataset["visible"] === 'true'; }
 
-  async showFor(anchor: AnchorEl, text: string, { position = 'top' }: { position?: string } = {}) {
+  async showFor(anchor: AnchorEl, text: string, { position = 'top' }: { position?: string } = {}): Promise<void> {
     if (!anchor) return;
 
     // Ensure rendered
@@ -129,7 +129,7 @@ class SherpaTooltip extends SherpaElement {
     this.setVisible(true);
   }
 
-  hide() {
+  hide(): void {
     this.setVisible(false);
     if (currentAnchor) {
       if (currentAnchor._tooltipTempAnchor) {
@@ -155,11 +155,11 @@ function getInstance(): SherpaTooltip {
 }
 
 export const Tooltip = {
-  show(anchor: AnchorEl, text: string, options: { position?: string } = {}) {
+  show(anchor: AnchorEl, text: string, options: { position?: string } = {}): Promise<void> {
     return getInstance().showFor(anchor, text, options);
   },
-  hide() { instance?.hide(); },
-  destroy() {
+  hide(): void { instance?.hide(); },
+  destroy(): void {
     if (instance) {
       instance.remove();
       instance = null;
@@ -170,7 +170,7 @@ export const Tooltip = {
 
 /* ── Declarative data-tooltip support ───────────────────────────── */
 
-function initDeclarative() {
+function initDeclarative(): void {
   document.addEventListener('mouseenter', (e) => {
     const target = (e.target as Element | null)?.closest?.('[data-tooltip]');
     if (target instanceof HTMLElement) {
@@ -185,6 +185,8 @@ function initDeclarative() {
   }, true);
 }
 
-document.readyState === 'loading'
-  ? document.addEventListener('DOMContentLoaded', initDeclarative)
-  : initDeclarative();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDeclarative);
+} else {
+  initDeclarative();
+}

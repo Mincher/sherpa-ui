@@ -108,7 +108,7 @@ export class SherpaContainerOverlay extends PageNavigationMixin(SherpaElement) {
   static override get htmlUrl(): string {
     return OVERLAY_HTML_URL;
   }
-  static override useAnchor = true;
+  public static override useAnchor = true;
 
   static override get observedAttributes(): string[] {
     return [
@@ -154,13 +154,13 @@ export class SherpaContainerOverlay extends PageNavigationMixin(SherpaElement) {
     return this.hasAttribute('open');
   }
 
-  source: HTMLElement | null = null;
+  public source: HTMLElement | null = null;
   #hiding = false;
   #bound = false;
 
   /* ── Cached elements ─────────────────────────────────────────── */
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     heading: '.overlay-heading',
     closeBtn: { selector: '.close-btn', type: HTMLButtonElement },
     loadingText: '.overlay-loader-text',

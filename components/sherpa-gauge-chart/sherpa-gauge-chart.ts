@@ -79,7 +79,7 @@ export class SherpaGaugeChart extends SherpaElement {
     this.#syncValue();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case 'data-title': this.#syncTitle(); break;
       case 'data-value': this.#syncValue(); break;
@@ -97,26 +97,26 @@ export class SherpaGaugeChart extends SherpaElement {
    * Values should sum to ≤ 100.
    * @param {Array<{value: number, color?: string}>} segments
    */
-  setSegments(segments: GaugeSegment[]) {
+  public setSegments(segments: GaugeSegment[]): void {
     this.#segments = segments || [];
     this.#renderSeries();
   }
 
   /* ── Private: sync ────────────────────────────────────────────── */
 
-  #syncTitle() {
+  #syncTitle(): void {
     if (this.#titleEl) {
       this.#titleEl.textContent = this.dataset["title"] || '';
     }
   }
 
-  #syncLabel() {
+  #syncLabel(): void {
     if (this.#labelEl) {
       this.#labelEl.textContent = this.dataset["label"] || '';
     }
   }
 
-  #syncRange() {
+  #syncRange(): void {
     if (this.#rangeMinEl) {
       this.#rangeMinEl.textContent = this.dataset["min"] ?? '0%';
     }
@@ -130,7 +130,7 @@ export class SherpaGaugeChart extends SherpaElement {
    * Needle rotates from -90deg (left, 0%) through 0deg (top, 50%) to +90deg (right, 100%).
    * CSS transform-origin is bottom-centre of the needle.
    */
-  #syncValue() {
+  #syncValue(): void {
     const raw = parseFloat(this.dataset["value"] || "");
     const pct = Number.isFinite(raw) ? Math.max(0, Math.min(100, raw)) : 0;
 
@@ -162,7 +162,7 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /* ── Private: series rendering ────────────────────────────────── */
 
-  #renderSeries() {
+  #renderSeries(): void {
     if (!this.#fillEl) return;
 
     const total = this.#segments.reduce((s, seg) => s + (seg.value || 0), 0);

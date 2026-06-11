@@ -72,7 +72,7 @@ const KIND_SUBTYPE_LABELS: Record<string, string> = {
   logic: "Operation",
 };
 
-async function loadDoc() {
+async function loadDoc(): Promise<Document> {
   if (!_docPromise) {
     _docPromise = fetch(TEMPLATES_URL)
       .then((r) => r.text())
@@ -86,7 +86,7 @@ async function loadDoc() {
  * catalogue into nodeEl as light-DOM children. Idempotent — duplicates
  * are skipped if already present.
  */
-export async function attachAllTemplatesForKind(nodeEl: HTMLElement, kind: string) {
+export async function attachAllTemplatesForKind(nodeEl: HTMLElement, kind: string): Promise<void> {
   const doc = await loadDoc();
   const templates = doc.querySelectorAll<HTMLTemplateElement>(
     `template.rows-tpl[data-kind="${CSS.escape(kind)}"]`
@@ -132,7 +132,7 @@ export async function getSubtypesForKind(kind: string): Promise<SubtypeOption[]>
  * @param {Array<{value:string,label:string,disabled?:boolean}>} [customOptions]
  * @returns {Promise<Array<{label:string, options:Array}>>}
  */
-export async function getGroupedSubtypesForKind(kind: string, customOptions: SubtypeOption[] = []) {
+export async function getGroupedSubtypesForKind(kind: string, customOptions: SubtypeOption[] = []): Promise<Array<{ label: string; options: SubtypeOption[] }>> {
   const presets = await getSubtypesForKind(kind);
   const groups = [{ label: "Preset", options: presets }];
   if (customOptions && customOptions.length) {
@@ -145,7 +145,7 @@ export async function getGroupedSubtypesForKind(kind: string, customOptions: Sub
  * Convenience: attach templates AND set data-subtypes / data-subtype.
  * If subtype is omitted, the first subtype is selected.
  */
-export async function configureNode(nodeEl: HTMLElement, kind: string, subtype?: string) {
+export async function configureNode(nodeEl: HTMLElement, kind: string, subtype?: string): Promise<void> {
   nodeEl.setAttribute("data-kind", kind);
   await attachAllTemplatesForKind(nodeEl, kind);
   const subtypes = await getSubtypesForKind(kind);

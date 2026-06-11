@@ -96,7 +96,7 @@ class SherpaPanel extends SherpaElement {
   }
 
   // Cached shadow DOM elements (typed for better autocomplete)
-  els = this.cacheElements({
+  public els = this.cacheElements({
     heading: { selector: '.header-title', type: HTMLSpanElement },
     restoreLabel: { selector: '.collapse-label', type: HTMLSpanElement },
     closeBtn: { selector: '.close-btn', type: HTMLButtonElement },
@@ -150,7 +150,7 @@ class SherpaPanel extends SherpaElement {
     this.#clearHighlights();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case "data-heading":
         this.#syncHeading();
@@ -182,17 +182,17 @@ class SherpaPanel extends SherpaElement {
 
   /* ── public api ──────────────────────────────────────────── */
 
-  get expanded() { return this.hasAttribute("data-expanded"); }
-  set expanded(v) {
+  get expanded(): boolean { return this.hasAttribute("data-expanded"); }
+  set expanded(v: boolean) {
     if (v) this.setAttribute("data-expanded", "");
     else   this.removeAttribute("data-expanded");
   }
 
-  open()   { this.expanded = true; }
-  close()  { this.#onClose(); }
-  toggle() { this.expanded = !this.expanded; }
+  open(): void   { this.expanded = true; }
+  close(): void  { this.#onClose(); }
+  toggle(): void { this.expanded = !this.expanded; }
 
-  clearSearch() {
+  clearSearch(): void {
     const search = this.els.search as (HTMLElement & { clear?: () => void }) | null;
     if (search && typeof search.clear === "function") {
       search.clear();
@@ -203,31 +203,31 @@ class SherpaPanel extends SherpaElement {
 
   /* ── handlers ────────────────────────────────────────────── */
 
-  #onClose = () => {
+  #onClose = (): void => {
     delete this.dataset["expanded"];
     this.dispatchEvent(
       new CustomEvent("panel-close", { bubbles: true, composed: true })
     );
   };
 
-  #onExpand = () => {
+  #onExpand = (): void => {
     this.dataset["expanded"] = "";
   };
 
-  #onSearchChange = (e: Event) => {
+  #onSearchChange = (e: Event): void => {
     const detail = (e as CustomEvent).detail;
     const value = (detail?.value ?? (e.target as HTMLInputElement | null)?.value ?? "").toString();
     this.#applyFilter(value);
   };
 
-  #onNewChat = () => {
+  #onNewChat = (): void => {
     if (this.hasAttribute("data-busy")) return;
     this.dispatchEvent(
       new CustomEvent("ai-panel-new-chat", { bubbles: true, composed: true })
     );
   };
 
-  #onArchive = () => {
+  #onArchive = (): void => {
     if (this.hasAttribute("data-busy")) return;
     if (!this.hasAttribute("data-can-archive")) return;
     this.dispatchEvent(
@@ -237,20 +237,20 @@ class SherpaPanel extends SherpaElement {
 
   /* ── sync helpers ────────────────────────────────────────── */
 
-  #syncHeading() {
+  #syncHeading(): void {
     if (this.els.heading) {
       this.els.heading.textContent = this.dataset["heading"] || "";
     }
   }
 
-  #syncRestoreLabel() {
+  #syncRestoreLabel(): void {
     if (this.els.restoreLabel) {
       this.els.restoreLabel.textContent =
         this.dataset["restoreLabel"] || this.dataset["heading"] || "";
     }
   }
 
-  #syncToggle() {
+  #syncToggle(): void {
     const expanded = this.hasAttribute("data-expanded");
     this.dispatchEvent(
       new CustomEvent("panel-toggle", {
@@ -261,7 +261,7 @@ class SherpaPanel extends SherpaElement {
     );
   }
 
-  #syncWidth() {
+  #syncWidth(): void {
     if (this.dataset["width"]) {
       this.style.setProperty("--_panel-width", this.dataset["width"]);
     } else {
@@ -269,19 +269,19 @@ class SherpaPanel extends SherpaElement {
     }
   }
 
-  #syncEmptyMessage() {
+  #syncEmptyMessage(): void {
     if (this.els.empty) {
       this.els.empty.textContent = this.dataset["empty"] || "No results";
     }
   }
 
-  #syncArchive() {
+  #syncArchive(): void {
     if (!this.els.archiveBtn) return;
     this.els.archiveBtn.disabled =
       !this.hasAttribute("data-can-archive") || this.hasAttribute("data-busy");
   }
 
-  #syncBusy() {
+  #syncBusy(): void {
     if (this.els.newChatBtn) {
       this.els.newChatBtn.disabled = this.hasAttribute("data-busy");
     }
@@ -290,11 +290,11 @@ class SherpaPanel extends SherpaElement {
 
   /* ── search filter logic ─────────────────────────────────── */
 
-  #getMatchSelector() {
+  #getMatchSelector(): string {
     return this.dataset["searchMatch"] || "sherpa-list-item";
   }
 
-  #applyFilter(rawValue: string) {
+  #applyFilter(rawValue: string): void {
     const filter = (rawValue || "").trim().toLowerCase();
     this.#currentFilter = filter;
 
@@ -356,7 +356,7 @@ class SherpaPanel extends SherpaElement {
     );
   }
 
-  #clearHighlights() {
+  #clearHighlights(): void {
     if (typeof CSS !== "undefined" && CSS.highlights) {
       CSS.highlights.delete(HIGHLIGHT_NAME);
     }
@@ -368,7 +368,7 @@ class SherpaPanel extends SherpaElement {
    * shadow DOM, so the host's light-DOM textContent is empty. Fall back to
    * common text-bearing attributes so the panel can still match those rows.
    */
-  #getMatchText(item: Element) {
+  #getMatchText(item: Element): string {
     return [
       item.textContent || "",
       item.getAttribute("data-label") || "",
@@ -380,7 +380,7 @@ class SherpaPanel extends SherpaElement {
   }
 
   /** Build a Range for the first occurrence of `filter` in the item's text descendants. */
-  #createMatchRange(item: Element, filter: string) {
+  #createMatchRange(item: Element, filter: string): Range | null {
     const walker = document.createTreeWalker(item, NodeFilter.SHOW_TEXT, {
       acceptNode: (n) =>
         n.textContent && n.textContent.trim()

@@ -58,7 +58,7 @@ export class SherpaContainerFooter extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     radio: '.card-radio'
   });
 
@@ -76,7 +76,7 @@ export class SherpaContainerFooter extends SherpaElement {
     this.#syncRadio();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case "data-cancel-label":
       case "data-apply-label":
@@ -93,58 +93,60 @@ export class SherpaContainerFooter extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get type() {
+  get type(): string {
     return this.dataset["type"] || "slot";
   }
-  set type(v) {
+  set type(v: string) {
     this.dataset["type"] = v;
   }
 
-  get cancelLabel() {
+  get cancelLabel(): string {
     return this.dataset["cancelLabel"] || "Cancel";
   }
-  set cancelLabel(v) {
-    v ? (this.dataset["cancelLabel"] = v) : delete this.dataset["cancelLabel"];
+  set cancelLabel(v: string) {
+    if (v) { this.dataset["cancelLabel"] = v; } else { delete this.dataset["cancelLabel"]; }
   }
 
-  get applyLabel() {
+  get applyLabel(): string {
     return this.dataset["applyLabel"] || "Apply";
   }
-  set applyLabel(v) {
-    v ? (this.dataset["applyLabel"] = v) : delete this.dataset["applyLabel"];
+  set applyLabel(v: string) {
+    if (v) { this.dataset["applyLabel"] = v; } else { delete this.dataset["applyLabel"]; }
   }
 
-  get showCancel() {
+  get showCancel(): boolean {
     return this.dataset["showCancel"] !== "false";
   }
-  set showCancel(v) {
+  set showCancel(v: boolean) {
     this.dataset["showCancel"] = v ? "true" : "false";
   }
 
-  get showApply() {
+  get showApply(): boolean {
     return this.dataset["showApply"] !== "false";
   }
-  set showApply(v) {
+  set showApply(v: boolean) {
     this.dataset["showApply"] = v ? "true" : "false";
   }
 
-  get applyCloses() {
+  get applyCloses(): boolean {
     return this.dataset["applyCloses"] !== "false";
   }
-  set applyCloses(v) {
+  set applyCloses(v: boolean) {
     this.dataset["applyCloses"] = v ? "true" : "false";
   }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
-  #syncRadio() {
+  #syncRadio(): void {
     if (!this.els.radio) return;
-    this.dataset["selected"] === "true"
-      ? this.els.radio.setAttribute("checked", "")
-      : this.els.radio.removeAttribute("checked");
+    if (this.dataset["selected"] === "true") {
+      this.els.radio.setAttribute("checked", "");
+    } else {
+      this.els.radio.removeAttribute("checked");
+    }
   }
 
-  #syncLabels() {
+  #syncLabels(): void {
     const cancelBtn = this.$(".cancel-button");
     if (cancelBtn) cancelBtn.textContent = this.cancelLabel;
 
@@ -152,7 +154,7 @@ export class SherpaContainerFooter extends SherpaElement {
     if (applyBtn) applyBtn.textContent = this.applyLabel;
   }
 
-  #wireEvents() {
+  #wireEvents(): void {
     const cancelBtn = this.$(".cancel-button");
     if (cancelBtn) {
       cancelBtn.addEventListener("click", () => {

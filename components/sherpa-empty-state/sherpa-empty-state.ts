@@ -79,7 +79,7 @@ export class SherpaEmptyState extends SherpaElement {
 
   /* ── Cached element refs ────────────────────────────────────────── */
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     title: '.sherpa-empty-state__title',
     description: '.sherpa-empty-state__description',
     illustrationDefault: '.sherpa-empty-state__illustration-default',
@@ -92,7 +92,7 @@ export class SherpaEmptyState extends SherpaElement {
     this.#syncAll();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case "data-label":
         this.#updateHeading();
@@ -111,29 +111,29 @@ export class SherpaEmptyState extends SherpaElement {
 
   /* ── Sync helpers ─────────────────────────────────────────────── */
 
-  #syncAll() {
+  #syncAll(): void {
     this.#updateHeading();
     this.#updateDescription();
     this.#updateIllustration();
     this.#updateSmallPrint();
   }
 
-  #updateHeading() {
+  #updateHeading(): void {
     if (this.els.title) this.els.title.textContent = this.dataset["label"] || "";
   }
 
-  #updateDescription() {
+  #updateDescription(): void {
     if (this.els.description) this.els.description.textContent = this.dataset["description"] || "";
   }
 
-  #updateIllustration() {
+  #updateIllustration(): void {
     if (this.els.illustrationDefault) {
       this.els.illustrationDefault.innerHTML =
         ILLUSTRATIONS[this.dataset["illustration"] as keyof typeof ILLUSTRATIONS] || "";
     }
   }
 
-  #updateSmallPrint() {
+  #updateSmallPrint(): void {
     if (this.els.smallPrintText)
       this.els.smallPrintText.textContent = this.dataset["smallPrint"] || "";
   }

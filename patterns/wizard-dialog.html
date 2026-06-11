@@ -128,7 +128,7 @@
   </sherpa-dialog>
 </template>
 
-<template data-label="Wizard with Stepper" data-description="Visual stepper for step progress indication">
+<template data-label="Wizard with Step Tracker" data-description="Step progress indicator for wizard dialogs">
   <sherpa-dialog
     data-label="Project Setup"
     data-template="wizard"
@@ -137,11 +137,10 @@
     data-open
     data-size="large">
 
-    <!-- Optional: Add sherpa-stepper in header slot -->
-    <sherpa-stepper
+    <sherpa-progress-step-tracker
       slot="stepper"
       data-current-step="1">
-    </sherpa-stepper>
+    </sherpa-progress-step-tracker>
 
     <section data-page="0">
       <h3>Project Details</h3>
@@ -152,13 +151,11 @@
     <section data-page="1" hidden>
       <h3>Team Members</h3>
       <p>Add team members to this project.</p>
-      <!-- Team member list UI -->
     </section>
 
     <section data-page="2" hidden>
       <h3>Permissions</h3>
       <p>Configure project permissions.</p>
-      <!-- Permission configuration UI -->
     </section>
 
     <section data-page="3" hidden>
@@ -169,21 +166,18 @@
 
   <script>
     const dialog = document.querySelector('sherpa-dialog[data-template="wizard"]');
-    const stepper = dialog.querySelector('sherpa-stepper');
+    const tracker = dialog.querySelector('sherpa-progress-step-tracker');
 
-    // Sync stepper with wizard pages
-    if (stepper) {
-      // Initialize stepper steps
-      stepper.setSteps([
+    if (tracker) {
+      tracker.setSteps([
         { label: 'Details' },
         { label: 'Team' },
         { label: 'Permissions' },
         { label: 'Confirm' }
       ]);
 
-      // Update stepper on page change
       dialog.addEventListener('dialog-page-change', (e) => {
-        stepper.goToStep(e.detail.page + 1); // stepper is 1-based
+        tracker.goToStep(e.detail.page + 1);
       });
     }
   </script>

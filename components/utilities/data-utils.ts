@@ -38,7 +38,24 @@ interface TransferableSource {
 export function getTransferableConfig(
   data: TransferableSource | null | undefined,
   presentationType: string,
-) {
+): {
+  name: string;
+  dataset: unknown;
+  category: unknown;
+  series: unknown;
+  value: unknown;
+  agg: unknown;
+  measures: unknown;
+  orderBy: unknown;
+  segmentBy: unknown;
+  limit: unknown;
+  filters: unknown;
+  showStatus: boolean | undefined;
+  unit: string | undefined;
+  presentationType: string;
+  valueField: unknown;
+  categoryField: unknown;
+} {
   const meta = data?.metadata || {};
   return {
     name: data?.name || '',

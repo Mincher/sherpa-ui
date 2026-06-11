@@ -47,23 +47,23 @@ export class SherpaSelectCheckbox extends SherpaInputChoiceBase {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get indeterminate()  { return this.hasAttribute('indeterminate'); }
-  set indeterminate(v) {
-    v ? this.setAttribute('indeterminate', '') : this.removeAttribute('indeterminate');
+  get indeterminate(): boolean  { return this.hasAttribute('indeterminate'); }
+  set indeterminate(v: boolean) {
+    if (v) { this.setAttribute('indeterminate', ''); } else { this.removeAttribute('indeterminate'); }
   }
 
-  get value()  { return this.getAttribute('value') ?? 'on'; }
-  set value(v) { v == null ? this.removeAttribute('value') : this.setAttribute('value', String(v)); }
+  get value(): string  { return this.getAttribute('value') ?? 'on'; }
+  set value(v: string) { if (v == null) { this.removeAttribute('value'); } else { this.setAttribute('value', String(v)); } }
 
   /* ── Protected ─────────────────────────────────────────────────── */
 
-  protected override _syncNative() {
+  protected override _syncNative(): void {
     this._syncNativeBase();
     const input = this._input;
     if (input) input.indeterminate = this.indeterminate;
   }
 
-  protected override _handleChange() {
+  protected override _handleChange(): void {
     const input = this._input;
     if (!input) return;
     this._mirrorChecked();

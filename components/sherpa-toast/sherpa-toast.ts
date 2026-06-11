@@ -59,7 +59,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
   }
 
   /** Toast uses circle-xmark for critical instead of circle-exclamation. */
-  static override get statusIcons() {
+  static override get statusIcons(): Record<string, string | null> {
     return {
       ...super.statusIcons,
       critical: 'fa-solid fa-circle-xmark',
@@ -100,11 +100,11 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     if (this.#timeoutId) clearTimeout(this.#timeoutId);
   }
 
-  onStatusChanged() {
+  onStatusChanged(): void {
     this.#syncStatusIcon();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case 'data-label':
         this.#syncHeading();
@@ -117,7 +117,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   /* ── Public methods ───────────────────────────────────────────── */
 
-  show() {
+  show(): void {
     const toast = this.$<HTMLElement>('.toast');
     if (toast) {
       toast.dataset["state"] = 'visible';
@@ -125,7 +125,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     }
   }
 
-  hide() {
+  hide(): void {
     const toast = this.$<HTMLElement>('.toast');
     if (!toast) return;
     toast.dataset["state"] = 'hiding';
@@ -136,13 +136,13 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
       this.remove();
       if (container?.childElementCount === 0) {
         const pos = container.dataset["position"];
-        if (pos) delete SherpaToast.#containers[pos];
+        if (pos) Reflect.deleteProperty(SherpaToast.#containers, pos);
         container.remove();
       }
     }, 300);
   }
 
-  setAction(text: string, callback: (() => void) | null) {
+  setAction(text: string, callback: (() => void) | null): void {
     this.#actionCallback = callback;
     const btn = this.$('.toast-action');
     if (btn) {
@@ -153,24 +153,24 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
 
   /* ── Private ──────────────────────────────────────────────────── */
 
-  #syncStatusIcon() {
+  #syncStatusIcon(): void {
     const iconEl = this.$('.default-icon');
     if (!iconEl) return;
     const iconClass = this.statusIcon || (this.constructor as typeof SherpaToast).statusIcons["info"];
     iconEl.className = `${iconClass} sherpa-icon default-icon`;
   }
 
-  #syncHeading() {
+  #syncHeading(): void {
     const el = this.$('.toast-heading');
     if (el) el.textContent = this.dataset["label"] || '';
   }
 
-  #syncValue() {
+  #syncValue(): void {
     const el = this.$('.toast-value');
     if (el) el.textContent = this.dataset["value"] || '';
   }
 
-  #startAutoHide() {
+  #startAutoHide(): void {
     if (this.dataset["timerDismiss"] !== 'true') return;
     const duration = parseInt(this.dataset["duration"] || "") || 5000;
     if (duration <= 0) return;
@@ -183,7 +183,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
   static #containerStylesLinked = false;
 
   /** Link the fixed-position container stylesheet once per document. */
-  static #ensureContainerStyles() {
+  static #ensureContainerStyles(): void {
     if (SherpaToast.#containerStylesLinked) return;
     if (document.getElementById('sherpa-toast-container-styles')) {
       SherpaToast.#containerStylesLinked = true;
@@ -209,7 +209,7 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
       document.body.appendChild(el);
       SherpaToast.#containers[position] = el;
     }
-    return SherpaToast.#containers[position]!;
+    return SherpaToast.#containers[position] as HTMLElement;
   }
 
   /**
@@ -246,10 +246,10 @@ export class SherpaToast extends StatusMixin(SherpaElement) {
     return toast;
   }
 
-  static success(value: string, options: ToastOptions = {})  { return SherpaToast.show({ ...options, status: 'success', value }); }
-  static critical(value: string, options: ToastOptions = {}) { return SherpaToast.show({ ...options, status: 'critical', value }); }
-  static warning(value: string, options: ToastOptions = {})  { return SherpaToast.show({ ...options, status: 'warning', value }); }
-  static info(value: string, options: ToastOptions = {})     { return SherpaToast.show({ ...options, status: 'info', value }); }
+  static success(value: string, options: ToastOptions = {}): SherpaToast  { return SherpaToast.show({ ...options, status: 'success', value }); }
+  static critical(value: string, options: ToastOptions = {}): SherpaToast { return SherpaToast.show({ ...options, status: 'critical', value }); }
+  static warning(value: string, options: ToastOptions = {}): SherpaToast  { return SherpaToast.show({ ...options, status: 'warning', value }); }
+  static info(value: string, options: ToastOptions = {}): SherpaToast     { return SherpaToast.show({ ...options, status: 'info', value }); }
 }
 
 customElements.define('sherpa-toast', SherpaToast);

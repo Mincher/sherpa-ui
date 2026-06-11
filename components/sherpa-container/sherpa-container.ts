@@ -114,7 +114,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     this.addEventListener('click',   this.#onClick);
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-interactive' || name === 'data-selectable') {
       this.#updateInteractive();
       this.#syncAria();
@@ -126,32 +126,32 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
 
   /* ── Public API ───────────────────────────────────────────── */
 
-  get selected()     { return this.hasAttribute('data-selected')    && this.dataset["selected"]    !== 'false'; }
-  set selected(v)    { this.dataset["selected"]    = v ? 'true' : 'false'; }
+  get selected(): boolean      { return this.hasAttribute('data-selected')    && this.dataset["selected"]    !== 'false'; }
+  set selected(v: boolean)     { this.dataset["selected"]    = v ? 'true' : 'false'; }
 
-  get interactive()  { return this.hasAttribute('data-interactive') && this.dataset["interactive"] !== 'false'; }
-  set interactive(v) { this.dataset["interactive"] = v ? 'true' : 'false'; }
+  get interactive(): boolean   { return this.hasAttribute('data-interactive') && this.dataset["interactive"] !== 'false'; }
+  set interactive(v: boolean)  { this.dataset["interactive"] = v ? 'true' : 'false'; }
 
-  get selectable()   { return this.hasAttribute('data-selectable')  && this.dataset["selectable"]  !== 'false'; }
-  set selectable(v)  { v ? this.dataset["selectable"] = 'true' : delete this.dataset["selectable"]; }
+  get selectable(): boolean    { return this.hasAttribute('data-selectable')  && this.dataset["selectable"]  !== 'false'; }
+  set selectable(v: boolean)   { if (v) { this.dataset["selectable"] = 'true'; } else { delete this.dataset["selectable"]; } }
 
-  get disabled()     { return this.hasAttribute('disabled'); }
-  set disabled(v)    { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
+  get disabled(): boolean      { return this.hasAttribute('disabled'); }
+  set disabled(v: boolean)     { if (v) { this.setAttribute('disabled', ''); } else { this.removeAttribute('disabled'); } }
 
-  get elevation()    { return this.dataset["elevation"] || 'none'; }
-  set elevation(v)   { v ? this.dataset["elevation"] = v : delete this.dataset["elevation"]; }
+  get elevation(): string      { return this.dataset["elevation"] || 'none'; }
+  set elevation(v: string)     { if (v) { this.dataset["elevation"] = v; } else { delete this.dataset["elevation"]; } }
 
   /* ── Private ──────────────────────────────────────────────── */
 
-  #onMenuOpen = () => {
+  #onMenuOpen = (): void => {
     this.dataset["menuOpen"] = "true";
   };
 
-  #onMenuClose = () => {
+  #onMenuClose = (): void => {
     delete this.dataset["menuOpen"];
   };
 
-  #updateInteractive() {
+  #updateInteractive(): void {
     const focusable = this.interactive || this.selectable;
     if (focusable) {
       if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
@@ -160,7 +160,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     }
   }
 
-  #syncAria() {
+  #syncAria(): void {
     if (this.selectable) {
       this.setAttribute('role', 'radio');
       this.setAttribute('aria-checked', this.selected ? 'true' : 'false');
@@ -170,12 +170,12 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     }
   }
 
-  #syncFooterSelected() {
+  #syncFooterSelected(): void {
     const footer = this.querySelector<HTMLElement>('sherpa-container-footer[data-type="card-select"]');
     if (footer) footer.dataset["selected"] = this.selected ? 'true' : 'false';
   }
 
-  #onClick = () => {
+  #onClick = (): void => {
     if (this.disabled) return;
     if (this.selectable) {
       const next = !this.selected;
@@ -187,7 +187,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     }
   };
 
-  #onKeyDown = (e: KeyboardEvent) => {
+  #onKeyDown = (e: KeyboardEvent): void => {
     if (this.disabled) return;
     if (!(this.interactive || this.selectable)) return;
     if (e.key === 'Enter' || e.key === ' ') {
@@ -210,7 +210,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
   static #MAX_ROW = 24;
   #resizeState: ResizeState | null = null;
 
-  #initResizeGrip() {
+  #initResizeGrip(): void {
     const grip = this.$<HTMLElement>('.resize-grip');
     if (!grip) return;
     grip.addEventListener('pointerdown', this.#onGripPointerDown);
@@ -219,7 +219,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     grip.addEventListener('pointercancel', this.#onGripPointerEnd);
   }
 
-  #onGripPointerDown = (e: PointerEvent) => {
+  #onGripPointerDown = (e: PointerEvent): void => {
     if (this.disabled) return;
     if (e.button !== 0) return;
     const grip = e.currentTarget as HTMLElement;
@@ -242,7 +242,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     };
   };
 
-  #onGripPointerMove = (e: PointerEvent) => {
+  #onGripPointerMove = (e: PointerEvent): void => {
     const s = this.#resizeState;
     if (!s || e.pointerId !== s.pointerId) return;
     const dx = e.clientX - s.startX;
@@ -264,7 +264,7 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     }
   };
 
-  #onGripPointerEnd = (e: PointerEvent) => {
+  #onGripPointerEnd = (e: PointerEvent): void => {
     const s = this.#resizeState;
     if (!s || e.pointerId !== s.pointerId) return;
     const grip = e.currentTarget as HTMLElement;
@@ -272,20 +272,20 @@ export class SherpaContainer extends ResizeBehavior(SherpaElement) {
     this.#resizeState = null;
   };
 
-  #currentColSpan() {
+  #currentColSpan(): number {
     const v = parseInt(this.dataset["colSpan"] || "", 10);
-    return Number.isFinite(v) ? v : SherpaContainer.#COL_STOPS[0]!;
+    return Number.isFinite(v) ? v : (SherpaContainer.#COL_STOPS[0] ?? 3);
   }
-  #currentRowSpan() {
+  #currentRowSpan(): number {
     const v = parseInt(this.dataset["rowSpan"] || "", 10);
     return Number.isFinite(v) ? v : 1;
   }
   static #nearestColStop(value: number): number {
     const stops = SherpaContainer.#COL_STOPS;
-    let best = stops[0]!;
+    let best = stops[0] ?? 3;
     let bestDist = Math.abs(value - best);
     for (let i = 1; i < stops.length; i++) {
-      const stop = stops[i]!;
+      const stop = stops[i] ?? 3;
       const d = Math.abs(value - stop);
       if (d < bestDist) { best = stop; bestDist = d; }
     }

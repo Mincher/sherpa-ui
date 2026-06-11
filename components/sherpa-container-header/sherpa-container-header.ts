@@ -46,7 +46,7 @@ export class SherpaContainerHeader extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     title: '.header-title',
     description: '.header-description'
   });
@@ -58,18 +58,18 @@ export class SherpaContainerHeader extends SherpaElement {
     this.#syncDescription();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === "data-title") this.#syncTitle();
     if (name === "data-description") this.#syncDescription();
   }
 
   /* ── Private sync ──────────────────────────────────────────── */
 
-  #syncTitle() {
+  #syncTitle(): void {
     if (this.els.title) this.els.title.textContent = this.dataset["title"] || "";
   }
 
-  #syncDescription() {
+  #syncDescription(): void {
     if (this.els.description)
       this.els.description.textContent = this.dataset["description"] || "";
   }

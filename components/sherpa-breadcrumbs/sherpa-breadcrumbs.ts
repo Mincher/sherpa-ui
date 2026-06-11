@@ -56,7 +56,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
 
   /* ── Dynamic items ───────────────────────────────────────────── */
 
-  #syncItems(items: unknown[]) {
+  #syncItems(items: unknown[]): void {
     const trail = this.$('.breadcrumb-trail');
     if (!trail) return;
 
@@ -92,7 +92,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
 
   /* ── Click delegation ────────────────────────────────────────── */
 
-  #onClick = (e: Event) => {
+  #onClick = (e: Event): void => {
     const text = e.composedPath().find(
       (n): n is HTMLElement => n instanceof HTMLElement && n.classList?.contains('crumb-text'),
     );

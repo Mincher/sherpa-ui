@@ -135,18 +135,22 @@ export function groupAndAggregate(
   for (const rec of records) {
     const key = groupByFields.map((f) => {
       const v = rec[f] ?? '';
-      return dateGroupMap?.[f] ? truncateDate(v, dateGroupMap[f]!) : v;
+      const grain = dateGroupMap?.[f];
+      return grain ? truncateDate(v, grain) : v;
     }).join('\x00');
     if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(rec);
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(rec);
   }
 
   const rows: DataRecord[] = [];
   for (const [, groupRecs] of groups) {
     const row: DataRecord = {};
     for (const f of groupByFields) {
-      const raw = groupRecs[0]![f];
-      row[f] = dateGroupMap?.[f] ? truncateDate(raw, dateGroupMap[f]!) : raw;
+      const firstRec = groupRecs[0];
+      const raw = firstRec ? firstRec[f] : undefined;
+      const grain = dateGroupMap?.[f];
+      row[f] = grain ? truncateDate(raw, grain) : raw;
     }
     for (const m of measures) {
       row[m.field] = agg(groupRecs.map((r) => r[m.field]), m.agg);
@@ -329,15 +333,18 @@ export function computeMetricSummary(
     for (const r of records) {
       const v = r[field];
       if (v == null) continue;
-      bucketArrays[bucketIndex(v)]!.push(r[valField]);
+      const idx = bucketIndex(v);
+      const arr = bucketArrays[idx];
+      if (arr) arr.push(r[valField]);
     }
     bucketValues = bucketArrays.map((vals) => agg(vals, aggFn));
   } else {
-    bucketValues = new Array(segmentCount).fill(0);
+    bucketValues = new Array<number>(segmentCount).fill(0);
     for (const r of records) {
       const v = r[field];
       if (v == null) continue;
-      bucketValues[bucketIndex(v)]!++;
+      const idx = bucketIndex(v);
+      if (idx < bucketValues.length) bucketValues[idx] = (bucketValues[idx] ?? 0) + 1;
     }
   }
 

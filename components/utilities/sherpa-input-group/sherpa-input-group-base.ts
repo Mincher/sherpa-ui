@@ -26,7 +26,7 @@ export abstract class SherpaInputGroupBase extends StatusMixin(SherpaElement) {
 
   protected _bound = false;
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
       case 'data-label':       this._syncLegend(); break;

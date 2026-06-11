@@ -35,7 +35,7 @@ class SherpaProgressBar extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     label: { selector: '.label', type: HTMLSpanElement },
     fill: { selector: '.fill', type: HTMLDivElement },
     status: { selector: '.status', type: HTMLSpanElement }
@@ -71,13 +71,13 @@ class SherpaProgressBar extends SherpaElement {
 
   /* ── sync helpers ────────────────────────────────────────── */
 
-  #syncLabel() {
+  #syncLabel(): void {
     if (this.els.label) {
       this.els.label.textContent = this.dataset["label"] || "";
     }
   }
 
-  #syncValue() {
+  #syncValue(): void {
     const isIndeterminate = this.dataset["variant"] === "indeterminate";
     const raw = parseFloat(this.dataset["value"] || "");
     const value = Number.isFinite(raw) ? Math.min(100, Math.max(0, raw)) : 0;

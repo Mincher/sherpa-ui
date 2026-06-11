@@ -53,7 +53,7 @@ export class SherpaCallout extends SherpaElement {
 
   /* ── Element refs ─────────────────────────────────────────────── */
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     heading: '.heading-text',
     statusIcon: '.status-icon',
     actionBtn: { selector: '.action-btn', type: HTMLElement }
@@ -75,7 +75,7 @@ export class SherpaCallout extends SherpaElement {
     this.els.actionBtn?.addEventListener('button-click', () => this.toggle());
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case 'data-heading':  this.#syncHeading(); break;
       case 'data-expanded': this.#syncToggleIcon(); break;
@@ -85,36 +85,36 @@ export class SherpaCallout extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get expanded() { return this.hasAttribute('data-expanded'); }
-  set expanded(v) { this.toggleAttribute('data-expanded', Boolean(v)); }
+  get expanded(): boolean { return this.hasAttribute('data-expanded'); }
+  set expanded(v: boolean) { this.toggleAttribute('data-expanded', Boolean(v)); }
 
-  toggle() {
+  toggle(): void {
     this.expanded = !this.expanded;
     this.emit('callout-toggle', { expanded: this.expanded });
   }
 
-  dismiss() {
+  dismiss(): void {
     this.emit('callout-dismiss');
     this.remove();
   }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
-  #syncHeading() {
+  #syncHeading(): void {
     if (this.els.heading) {
       this.els.heading.textContent = this.dataset["heading"] || '';
     }
   }
 
   /** CSS handles default icons via ::after + data-status. JS only applies an override FA class. */
-  #syncIconOverride() {
+  #syncIconOverride(): void {
     const el = this.els.statusIcon;
     if (!el) return;
     const override = this.dataset["icon"];
     el.className = override ? `${override} status-icon` : 'status-icon';
   }
 
-  #syncToggleIcon() {
+  #syncToggleIcon(): void {
     if (!this.els.actionBtn) return;
     // chevron-up when expanded, chevron-down when collapsed
     this.els.actionBtn.dataset["iconStart"] = this.expanded ? '\uf077' : '\uf078';

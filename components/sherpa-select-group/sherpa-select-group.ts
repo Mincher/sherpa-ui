@@ -68,8 +68,8 @@ export class SherpaSelectGroup extends SherpaInputGroupBase {
     return this.dataset['type'] === 'radio' ? 'radio' : 'checkbox';
   }
 
-  #childTag()      { return this.type === 'radio' ? 'sherpa-select-radio' : 'sherpa-select-checkbox'; }
-  #childTagUpper() { return this.type === 'radio' ? 'SHERPA-SELECT-RADIO' : 'SHERPA-SELECT-CHECKBOX'; }
+  #childTag(): string      { return this.type === 'radio' ? 'sherpa-select-radio' : 'sherpa-select-checkbox'; }
+  #childTagUpper(): string { return this.type === 'radio' ? 'SHERPA-SELECT-RADIO' : 'SHERPA-SELECT-CHECKBOX'; }
 
   /* ── Template ──────────────────────────────────────────────────── */
 
@@ -102,9 +102,9 @@ export class SherpaSelectGroup extends SherpaInputGroupBase {
   get value(): string[]          { return this.#readValue(); }
   set value(arr: string[])       { this.setValue(arr); }
 
-  getValue(): string[]           { return this.#readValue(); }
+  public getValue(): string[]           { return this.#readValue(); }
 
-  setValue(arr: string[]): void {
+  public setValue(arr: string[]): void {
     let list = Array.isArray(arr) ? arr.map(String) : [];
     if (this.type === 'radio') list = list.slice(0, 1);
     this.dataset['value'] = JSON.stringify(list);
@@ -167,7 +167,7 @@ export class SherpaSelectGroup extends SherpaInputGroupBase {
   protected override _syncDisabled(): void {
     const disable = this.hasAttribute('disabled');
     for (const el of this.querySelectorAll(this.#childTag())) {
-      disable ? el.setAttribute('disabled', '') : el.removeAttribute('disabled');
+      if (disable) { el.setAttribute('disabled', ''); } else { el.removeAttribute('disabled'); }
     }
     for (const input of this.$$<HTMLInputElement>('.weekday-input')) {
       input.disabled = disable;
@@ -190,7 +190,7 @@ export class SherpaSelectGroup extends SherpaInputGroupBase {
   #cascadeName(): void {
     const name = this.getAttribute('name');
     for (const el of this.querySelectorAll(this.#childTag())) {
-      name ? el.setAttribute('name', name) : el.removeAttribute('name');
+      if (name) { el.setAttribute('name', name); } else { el.removeAttribute('name'); }
     }
   }
 
@@ -251,7 +251,7 @@ export class SherpaSelectGroup extends SherpaInputGroupBase {
     if (allEl.indeterminate !== undefined) allEl.indeterminate = !isAll && !isNone;
   }
 
-  #onShadowChange = (e: Event) => {
+  #onShadowChange = (e: Event): void => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
 
@@ -270,7 +270,7 @@ export class SherpaSelectGroup extends SherpaInputGroupBase {
     }
   };
 
-  #onLightChange = (e: Event) => {
+  #onLightChange = (e: Event): void => {
     if (e.target === this) return;
     const target = e.target as HTMLElement | null;
     if (target?.tagName !== this.#childTagUpper()) return;

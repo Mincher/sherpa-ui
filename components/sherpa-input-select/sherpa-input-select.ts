@@ -55,8 +55,8 @@ export class SherpaInputSelect extends SherpaInputBase {
     return new URL("./sherpa-input-select.html", import.meta.url).href;
   }
 
-  els = this.cacheElements({
-    select: { selector: '.input-field', type: HTMLSelectElement }
+  public els = this.cacheElements({
+    select: { selector: '.input-field', type: HTMLSelectElement },
   });
 
   #pendingOptions: OptionDef[] | null = null;
@@ -67,11 +67,11 @@ export class SherpaInputSelect extends SherpaInputBase {
     return [...super.observedAttributes, 'data-template', 'data-tree'];
   }
 
-  override get templateId() {
+  override get templateId(): string {
     return this.dataset["template"] === 'tree' ? 'tree' : 'default';
   }
 
-  override getInputElement() {
+  override getInputElement(): HTMLSelectElement | null {
     return this.$<HTMLSelectElement>(".input-field");
   }
 
@@ -110,7 +110,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     }
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === "placeholder") {
       this.#ensurePlaceholder();
@@ -138,7 +138,7 @@ export class SherpaInputSelect extends SherpaInputBase {
    * rendered as a native <optgroup>.
    * @param {Array<{value: string, label: string, disabled?: boolean} | {label: string, options: Array}>} options
    */
-  setOptions(options: OptionDef[]) {
+  public setOptions(options: OptionDef[]): void {
     const select = this.els.select;
     if (!select) {
       // Component hasn't finished rendering yet — queue the call so
@@ -181,7 +181,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     return el;
   }
 
-  #adoptOptions() {
+  #adoptOptions(): void {
     if (!this.els.select) return;
     // Move <option> and <optgroup> children from the host light DOM into the shadow <select>
     const nodes = this.querySelectorAll(':scope > option, :scope > optgroup');
@@ -190,7 +190,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     }
   }
 
-  #ensurePlaceholder() {
+  #ensurePlaceholder(): void {
     const select = this.els.select;
     if (!select) return;
     const ph = this.getAttribute("placeholder");
@@ -213,15 +213,15 @@ export class SherpaInputSelect extends SherpaInputBase {
 
   /* ── Tree template ─────────────────────────────────────── */
 
-  setTree(nodes: TreeNode[]) {
+  public setTree(nodes: TreeNode[]): void {
     this.dataset["tree"] = JSON.stringify(Array.isArray(nodes) ? nodes : []);
   }
 
-  #renderTree() {
+  #renderTree(): void {
     const panel = this.$('.tree-panel');
     if (!panel) return;
     let nodes: TreeNode[] = [];
-    try { nodes = JSON.parse(this.dataset["tree"] || '[]'); } catch {}
+    try { nodes = JSON.parse(this.dataset["tree"] || '[]'); } catch { /* intentional */ }
     this.#pathByValue.clear();
     panel.replaceChildren();
     panel.appendChild(this.#buildTree(nodes, []));
@@ -261,7 +261,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     return list;
   }
 
-  #wireTree() {
+  #wireTree(): void {
     const button = this.$('.tree-button');
     const panel  = this.$('.tree-panel');
     if (!button || !panel) return;
@@ -295,9 +295,9 @@ export class SherpaInputSelect extends SherpaInputBase {
     });
   }
 
-  #bindOutside() {
+  #bindOutside(): void {
     if (this.#outsideHandler) return;
-    const handler = (e: Event) => {
+    const handler = (e: Event): void => {
       if (!this.contains(e.target as Node) && !e.composedPath().includes(this)) {
         this.removeAttribute('data-expanded');
         const button = this.$('.tree-button');
@@ -314,7 +314,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     }, 0);
   }
 
-  #selectTreeValue(v: string) {
+  #selectTreeValue(v: string): void {
     const meta = this.#pathByValue.get(String(v));
     const hidden = this.$<HTMLInputElement>('.tree-value');
     if (hidden) hidden.value = v;
@@ -326,7 +326,7 @@ export class SherpaInputSelect extends SherpaInputBase {
     this.emit('change', { value: String(v), path: meta?.path ?? [String(v)] });
   }
 
-  #syncTreeDisplay() {
+  #syncTreeDisplay(): void {
     const display = this.$<HTMLElement>('.tree-display');
     if (!display) return;
     display.dataset["placeholder"] = this.getAttribute('placeholder') || '';

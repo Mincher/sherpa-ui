@@ -29,7 +29,7 @@ export class SherpaList extends SherpaElement {
     return [...super.observedAttributes, 'data-heading', 'data-empty'];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     heading: '.list-heading',
     empty: '.list-empty'
   });
@@ -37,10 +37,12 @@ export class SherpaList extends SherpaElement {
   #observer: MutationObserver | null = null;
   #bound = false;
 
-  #onItemClick = (e: Event) => {
+  #onItemClick = (e: Event): void => {
     const clicked = (e.target as HTMLElement | null)?.closest('sherpa-list-item');
     if (!clicked) return;
-    this.items.forEach((item: any) => { if (item !== clicked) item.active = false; });
+    this.items.forEach((item: Element) => {
+      if (item !== clicked) (item as HTMLElement & { active?: boolean }).active = false;
+    });
   };
 
   override onRender(): void {
@@ -56,20 +58,20 @@ export class SherpaList extends SherpaElement {
     this.#syncEmpty();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-heading') this.#syncHeading();
     if (name === 'data-empty')   this.#syncEmpty();
   }
 
-  get items() {
+  get items(): Element[] {
     return Array.from(this.querySelectorAll(':scope > sherpa-list-item'));
   }
 
-  #syncHeading() {
+  #syncHeading(): void {
     if (this.els.heading) this.els.heading.textContent = this.dataset["heading"] || '';
   }
 
-  #syncEmpty() {
+  #syncEmpty(): void {
     const message = this.dataset["empty"] || '';
     if (this.els.empty) this.els.empty.textContent = message;
     const hasItems = this.items.length > 0;

@@ -68,7 +68,7 @@ export class SherpaCalendar extends SherpaElement {
   #hourInputEl: HTMLInputElement | null = null;
   #hiddenInput: HTMLInputElement | null = null;
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     minuteInput: { selector: '.minute-input', type: HTMLInputElement },
   });
 
@@ -116,7 +116,7 @@ export class SherpaCalendar extends SherpaElement {
     this.#wireEvents();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     if (oldValue === newValue) return;
 
@@ -137,14 +137,14 @@ export class SherpaCalendar extends SherpaElement {
 
   /* ── Public API ─────────────────────────────────────────── */
 
-  get value() {
+  get value(): string {
     if (!this.#selectedDate) return '';
     const hh = String(this.#hours24).padStart(2, '0');
     const mm = String(this.#minutes).padStart(2, '0');
     return `${this.#selectedDate.toString()}T${hh}:${mm}`;
   }
 
-  set value(v) {
+  set value(v: string) {
     this.#parseValue(v || '');
     if (this.#calDaysEl) {
       this.#renderCalendar();
@@ -154,7 +154,7 @@ export class SherpaCalendar extends SherpaElement {
 
   /* ── Private: event wiring ──────────────────────────────── */
 
-  #wireEvents() {
+  #wireEvents(): void {
     this.#prevBtnEl?.addEventListener('button-click', () => this.#step(-1));
     this.#nextBtnEl?.addEventListener('button-click', () => this.#step(+1));
 
@@ -205,12 +205,12 @@ export class SherpaCalendar extends SherpaElement {
 
   /* ── Private: rendering ─────────────────────────────────── */
 
-  #setViewMode(mode: 'day' | 'month' | 'year') {
+  #setViewMode(mode: 'day' | 'month' | 'year'): void {
     this.#viewMode = mode;
     this.#renderCalendar();
   }
 
-  #step(direction: number) {
+  #step(direction: number): void {
     if (this.#viewMode === 'day') {
       this.#viewDate = this.#viewDate.add({ months: direction });
     } else if (this.#viewMode === 'month') {
@@ -221,7 +221,7 @@ export class SherpaCalendar extends SherpaElement {
     this.#renderCalendar();
   }
 
-  #renderCalendar() {
+  #renderCalendar(): void {
     const isDay   = this.#viewMode === 'day';
     const isMonth = this.#viewMode === 'month';
 
@@ -246,7 +246,7 @@ export class SherpaCalendar extends SherpaElement {
     else              this.#renderYearGrid();
   }
 
-  #renderDayGrid() {
+  #renderDayGrid(): void {
     if (!this.#calDaysEl || !this.#dayTpl) return;
     const minAttr = this.getAttribute('min');
     const maxAttr = this.getAttribute('max');
@@ -282,7 +282,7 @@ export class SherpaCalendar extends SherpaElement {
     }
   }
 
-  #handleRangeClick(iso: string) {
+  #handleRangeClick(iso: string): void {
     const clicked       = isoToDate(iso);
     const existingStart = isoToDate(this.dataset['value'] || null);
     const existingEnd   = isoToDate(this.dataset['valueEnd'] || null);
@@ -297,7 +297,7 @@ export class SherpaCalendar extends SherpaElement {
     }
 
     // Second click — complete the range
-    const startIso = this.dataset['value']!;
+    const startIso = this.dataset['value'] ?? '';
     this.dataset['valueEnd'] = iso;
     this.#renderCalendar();
 
@@ -313,7 +313,7 @@ export class SherpaCalendar extends SherpaElement {
     }));
   }
 
-  #renderMonthGrid() {
+  #renderMonthGrid(): void {
     const year     = this.#viewDate.year;
     const today    = Temporal.Now.plainDateISO();
     // month is 1-indexed in Temporal; loop uses 0-indexed m
@@ -337,7 +337,7 @@ export class SherpaCalendar extends SherpaElement {
     }
   }
 
-  #renderYearGrid() {
+  #renderYearGrid(): void {
     const year      = this.#viewDate.year;
     const { start } = SherpaCalendar.#yearRange(year);
     const selYear   = this.#selectedDate?.year ?? -1;
@@ -361,7 +361,7 @@ export class SherpaCalendar extends SherpaElement {
     }
   }
 
-  #syncSpinners() {
+  #syncSpinners(): void {
     if (this.#hourInputEl)    this.#hourInputEl.value    = String(this.#hours24).padStart(2, '0');
     if (this.els.minuteInput) this.els.minuteInput.value = String(this.#minutes).padStart(2, '0');
   }
@@ -374,7 +374,7 @@ export class SherpaCalendar extends SherpaElement {
   #convertToTextInput(
     wrap: (HTMLElement & { getInputElement?: () => HTMLInputElement | null }) | null,
     attempts = 10,
-  ) {
+  ): void {
     if (!wrap) return;
     const inner = wrap.getInputElement?.();
     if (inner) {
@@ -392,7 +392,7 @@ export class SherpaCalendar extends SherpaElement {
 
   /* ── Private: value helpers ─────────────────────────────── */
 
-  #parseValue(isoString: string | null | undefined) {
+  #parseValue(isoString: string | null | undefined): void {
     if (!isoString) return;
     const [datePart, timePart = '00:00'] = isoString.split('T');
     const d = isoToDate(datePart);
@@ -404,7 +404,7 @@ export class SherpaCalendar extends SherpaElement {
     this.#minutes = Math.min(59, Math.max(0, parseInt(mStr, 10) || 0));
   }
 
-  #emitChange() {
+  #emitChange(): void {
     const val = this.value;
     if (this.#hiddenInput) this.#hiddenInput.value = val;
     this.emit('datetime-change', { value: val });
@@ -413,7 +413,7 @@ export class SherpaCalendar extends SherpaElement {
   /* ── Static helpers ─────────────────────────────────────── */
 
   /** 12-year page anchored to a multiple of 12 (e.g. 2016–2027). */
-  static #yearRange(year: number) {
+  static #yearRange(year: number): { start: number; end: number } {
     const start = year - (((year % 12) + 12) % 12);
     return { start, end: start + 11 };
   }

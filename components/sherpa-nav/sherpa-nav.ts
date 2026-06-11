@@ -89,9 +89,9 @@ function setupDragSort(container: HTMLElement, {
   itemSelector,
   handleSelector,
   idAttribute = 'id',
-  isEnabled = () => true,
-  onReorder = () => {},
-}: DragSortOptions) {
+  isEnabled = (): boolean => true,
+  onReorder = (): void => {},
+}: DragSortOptions): void {
   container.addEventListener('mousedown', (e) => {
     if (!isEnabled()) return;
     const isHandle = e.composedPath().some(
@@ -103,7 +103,7 @@ function setupDragSort(container: HTMLElement, {
     );
     if (!item) return;
     item.draggable = true;
-    const reset = () => { item.draggable = false; document.removeEventListener('mouseup', reset, true); };
+    const reset = (): void => { item.draggable = false; document.removeEventListener('mouseup', reset, true); };
     document.addEventListener('mouseup', reset, true);
   });
 
@@ -170,7 +170,7 @@ interface NavItemData {
 }
 
 export class SherpaNav extends SherpaElement {
-  static MODES = { DEFAULT: "default", SEARCH: "search", EDIT: "edit" };
+  public static MODES = { DEFAULT: "default", SEARCH: "search", EDIT: "edit" };
 
   static override get cssUrl(): string {
     return new URL("./sherpa-nav.css", import.meta.url).href;
@@ -291,7 +291,7 @@ export class SherpaNav extends SherpaElement {
 
   // ═══════════════════════════ Public API ═══════════════════════════
 
-  get isPinned() {
+  get isPinned(): boolean {
     return this.#root?.dataset["pinned"] === "true";
   }
   set isPinned(v: boolean) {
@@ -304,14 +304,14 @@ export class SherpaNav extends SherpaElement {
     this.#onPinnedChange(pinned);
   }
 
-  get isSearching() {
+  get isSearching(): boolean {
     return this.mode === SherpaNav.MODES.SEARCH;
   }
-  get isEditing() {
+  get isEditing(): boolean {
     return this.mode === SherpaNav.MODES.EDIT;
   }
 
-  get mode() {
+  get mode(): string {
     return this.#root?.dataset["mode"] || SherpaNav.MODES.DEFAULT;
   }
   set mode(v: string) {
@@ -327,12 +327,12 @@ export class SherpaNav extends SherpaElement {
     this.#onModeChange(root.dataset["mode"], oldMode);
   }
 
-  startSearch() {
+  startSearch(): void {
     this.mode = SherpaNav.MODES.SEARCH;
     this.#searchField?.focus();
   }
 
-  endSearch() {
+  endSearch(): void {
     // Guard against infinite recursion (clear() fires search event which calls endSearch again)
     if (this.#endingSearch) return;
     this.#endingSearch = true;
@@ -526,10 +526,10 @@ export class SherpaNav extends SherpaElement {
    * scope storage per-template (e.g. when item ids collide) set
    * `data-recent-storage-key` / `data-favorites-storage-key` on the host.
    */
-  get #recentStorageKey() {
+  get #recentStorageKey(): string {
     return this.dataset["recentStorageKey"] || 'sherpa-nav-recent';
   }
-  get #favoritesStorageKey() {
+  get #favoritesStorageKey(): string {
     return this.dataset["favoritesStorageKey"] || 'sherpa-nav-favorites';
   }
 
@@ -926,7 +926,7 @@ export class SherpaNav extends SherpaElement {
     this.#captureDefaultOrders();
     this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
       const gi = parseInt(container.dataset["groupIndex"] || "", 10);
-      const tagSortKeys = () => {
+      const tagSortKeys = (): void => {
         container
           .querySelectorAll<HTMLElement>(':scope > .nav-section, :scope > sherpa-nav-item')
           .forEach((el) => {
@@ -958,7 +958,7 @@ export class SherpaNav extends SherpaElement {
   // ═══════════════════ Order persistence ═══════════════════
 
   /** localStorage key for the user-applied group order, scoped by template src. */
-  get #orderStorageKey() {
+  get #orderStorageKey(): string {
     const scope = this.dataset["orderStorageKey"]
       || (this.dataset["srcHtml"] ? `sherpa-nav-order::${this.dataset["srcHtml"]}` : 'sherpa-nav-order');
     return scope;
@@ -972,7 +972,7 @@ export class SherpaNav extends SherpaElement {
       const order = [...container.querySelectorAll<HTMLElement>(':scope > .nav-section, :scope > sherpa-nav-item')]
         .map((el) => el.dataset["sectionId"] || el.dataset["itemId"] || '')
         .filter((key): key is string => Boolean(key));
-      this.#defaultOrders!.set(gi, order);
+      this.#defaultOrders?.set(gi, order);
     });
   }
 
@@ -1031,7 +1031,7 @@ export class SherpaNav extends SherpaElement {
     if (!this.#defaultOrders) return;
     this.$$<HTMLElement>('.nav-group[data-draggable="true"]').forEach((container) => {
       const gi = parseInt(container.dataset["groupIndex"] || "", 10);
-      const order = this.#defaultOrders!.get(gi);
+      const order = this.#defaultOrders?.get(gi);
       if (order && order.length) this.#applyOrderToContainer(container, order);
     });
     try { localStorage.removeItem(this.#orderStorageKey); } catch {

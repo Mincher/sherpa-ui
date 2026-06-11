@@ -23,7 +23,7 @@ export class SherpaInputPassword extends SherpaInputBase {
   static override get cssUrl(): string { return new URL('./sherpa-input-password.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-input-password.html', import.meta.url).href; }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     toggleBtn:   { selector: '.toggle-visibility', type: HTMLButtonElement },
     toggleIcon:  { selector: '.toggle-icon',       type: HTMLElement },
     toggleLabel: { selector: '.toggle-label',      type: HTMLElement },
@@ -31,34 +31,34 @@ export class SherpaInputPassword extends SherpaInputBase {
 
   #visible = false;
 
-  override async onInputRender() {
+  override async onInputRender(): Promise<void> {
   }
 
-  override onInputConnect() {
+  override onInputConnect(): void {
     this.els.toggleBtn?.addEventListener('click', this.#onToggle);
   }
 
-  override onInputDisconnect() {
+  override onInputDisconnect(): void {
     this.els.toggleBtn?.removeEventListener('click', this.#onToggle);
   }
 
   /* ── Public API ─────────────────────────────────────────────── */
 
   /** Whether the password is currently visible in plain text. */
-  get visible() { return this.#visible; }
-  set visible(v) {
+  get visible(): boolean { return this.#visible; }
+  set visible(v: boolean) {
     this.#visible = !!v;
     this.#updateVisibility();
   }
 
   /* ── Internal ───────────────────────────────────────────────── */
 
-  #onToggle = () => {
+  #onToggle = (): void => {
     this.#visible = !this.#visible;
     this.#updateVisibility();
   };
 
-  #updateVisibility() {
+  #updateVisibility(): void {
     const el = this.getInputElement();
     if (el instanceof HTMLInputElement) el.type = this.#visible ? 'text' : 'password';
     if (this.els.toggleIcon) {

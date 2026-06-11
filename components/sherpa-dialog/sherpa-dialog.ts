@@ -68,7 +68,7 @@ export class SherpaDialog extends PageNavigationMixin(SherpaElement) {
     return [...super.observedAttributes, 'data-label', 'data-subtitle', 'data-size', 'data-open', 'data-dismissible', 'data-template', 'data-page', 'data-pages'];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     title: '.header-title',
     description: '.header-description'
   });
@@ -123,10 +123,10 @@ export class SherpaDialog extends PageNavigationMixin(SherpaElement) {
     }
   }
 
-  override onAttributeChanged(name: string, _oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, _oldValue: string | null, newValue: string | null): void {
     switch (name) {
       case 'data-open':
-        newValue !== null ? this.#openDialog() : this.#closeDialog();
+        if (newValue !== null) { this.#openDialog(); } else { this.#closeDialog(); }
         break;
       case 'data-label':
         this.#syncHeading();
@@ -149,36 +149,36 @@ export class SherpaDialog extends PageNavigationMixin(SherpaElement) {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get heading()    { return this.dataset["label"] || ''; }
-  set heading(v)   { v ? this.dataset["label"] = v : delete this.dataset["label"]; }
+  get heading(): string    { return this.dataset["label"] || ''; }
+  set heading(v: string)   { if (v) { this.dataset["label"] = v; } else { delete this.dataset["label"]; } }
 
-  get subtitle()   { return this.dataset["subtitle"] || ''; }
-  set subtitle(v)  { v ? this.dataset["subtitle"] = v : delete this.dataset["subtitle"]; }
+  get subtitle(): string   { return this.dataset["subtitle"] || ''; }
+  set subtitle(v: string)  { if (v) { this.dataset["subtitle"] = v; } else { delete this.dataset["subtitle"]; } }
 
-  get size()       { return this.dataset["size"] || 'medium'; }
-  set size(v)      { this.dataset["size"] = v; }
+  get size(): string       { return this.dataset["size"] || 'medium'; }
+  set size(v: string)      { this.dataset["size"] = v; }
 
-  get open()       { return this.dataset["open"] === 'true'; }
-  set open(v)      { v ? this.dataset["open"] = 'true' : delete this.dataset["open"]; }
+  get open(): boolean       { return this.dataset["open"] === 'true'; }
+  set open(v: boolean)      { if (v) { this.dataset["open"] = 'true'; } else { delete this.dataset["open"]; } }
 
-  get dismissible()  { return this.dataset["dismissible"] !== 'false'; }
-  set dismissible(v) { this.dataset["dismissible"] = v ? 'true' : 'false'; }
+  get dismissible(): boolean  { return this.dataset["dismissible"] !== 'false'; }
+  set dismissible(v: boolean) { this.dataset["dismissible"] = v ? 'true' : 'false'; }
 
-  show()   { this.dataset["open"] = 'true'; }
-  hide()   { delete this.dataset["open"]; }
-  toggle() { this.open ? this.hide() : this.show(); }
+  public show(): void   { this.dataset["open"] = 'true'; }
+  public hide(): void   { delete this.dataset["open"]; }
+  public toggle(): void { if (this.open) { this.hide(); } else { this.show(); } }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
-  #syncHeading() {
+  #syncHeading(): void {
     if (this.els.title) this.els.title.textContent = this.heading;
   }
 
-  #syncSubtitle() {
+  #syncSubtitle(): void {
     if (this.els.description) this.els.description.textContent = this.subtitle;
   }
 
-  #openDialog() {
+  #openDialog(): void {
     const dialog = this.$<HTMLDialogElement>('.dialog');
     if (dialog && !dialog.open) {
       dialog.showModal();
@@ -186,12 +186,12 @@ export class SherpaDialog extends PageNavigationMixin(SherpaElement) {
     }
   }
 
-  #closeDialog() {
+  #closeDialog(): void {
     const dialog = this.$<HTMLDialogElement>('.dialog');
     if (dialog?.open) dialog.close();
   }
 
-  #syncWizard() {
+  #syncWizard(): void {
     if (this.templateId !== 'wizard') return;
     const ind = this.$('.wizard-step-indicator');
     if (ind) ind.textContent = `Step ${this.page + 1} of ${this.pages}`;

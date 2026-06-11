@@ -38,7 +38,7 @@ export class SherpaSwitch extends SherpaElement {
 
   /* ── Lifecycle hooks ──────────────────────────────────────────── */
 
-  override onRender(): void {
+  public override onRender(): void {
     if (!this.#bound) {
       this.addEventListener('click', this.#onClick);
       this.#bound = true;
@@ -50,7 +50,7 @@ export class SherpaSwitch extends SherpaElement {
     this.#updateDisplay();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-state') {
       this.#updateDisplay();
     }
@@ -58,24 +58,24 @@ export class SherpaSwitch extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get state()     { return this.dataset["state"] || 'off'; }
-  set state(v)    { this.dataset["state"] = v === 'on' ? 'on' : 'off'; }
+  get state(): string     { return this.dataset["state"] || 'off'; }
+  set state(v: string)    { this.dataset["state"] = v === 'on' ? 'on' : 'off'; }
 
-  get checked()   { return this.state === 'on'; }
-  set checked(v)  { this.state = v ? 'on' : 'off'; }
+  get checked(): boolean   { return this.state === 'on'; }
+  set checked(v: boolean)  { this.state = v ? 'on' : 'off'; }
 
-  get disabled()  { return this.hasAttribute('disabled'); }
-  set disabled(v) { v ? this.setAttribute('disabled', '') : this.removeAttribute('disabled'); }
+  get disabled(): boolean  { return this.hasAttribute('disabled'); }
+  set disabled(v: boolean) { if (v) { this.setAttribute('disabled', ''); } else { this.removeAttribute('disabled'); } }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
-  #onClick = () => {
+  #onClick = (): void => {
     if (this.disabled) return;
     this.state = this.state === 'on' ? 'off' : 'on';
     this.emit('change', { checked: this.checked, state: this.state });
   };
 
-  #updateDisplay() {
+  #updateDisplay(): void {
     this.$('.switch-track')?.setAttribute('aria-checked', String(this.checked));
   }
 }

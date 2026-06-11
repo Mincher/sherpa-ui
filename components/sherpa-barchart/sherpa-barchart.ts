@@ -197,7 +197,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
 
@@ -242,7 +242,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   // ============ Public API ============
 
   /** Get the transferable config for switching presentation types */
-  getData() {
+  getData(): (ReturnType<typeof getTransferableConfig> & { segmentField?: string | null; seriesField?: string | null; originalOrderBy?: { field?: string; direction?: string }; originalSegmentBy?: string | null }) | null {
     if (!this.#contentData) return null;
     const config = getTransferableConfig(this.#contentData, "barchart") as ReturnType<typeof getTransferableConfig> & {
       segmentField?: string | null;
@@ -280,7 +280,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     await this.setData(data);
   }
 
-  async setData(data: BarContentData) {
+  async setData(data: BarContentData): Promise<void> {
     this.setAttribute("data-loading", "");
     const explicitSegmentBy =
       data && Object.prototype.hasOwnProperty.call(data, "segmentBy");
@@ -324,7 +324,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     await this.#finalizeDataSetup();
   }
 
-  #validateFieldsAgainstColumns() {
+  #validateFieldsAgainstColumns(): void {
     const columns = this.#contentData?.columns || [];
     const segmentField = getSegmentField(this);
 
@@ -336,11 +336,11 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
 
   // ============ Private Methods ============
 
-  #updateDisplayData() {
+  #updateDisplayData(): void {
     this.#data = this.#computeDisplayData();
   }
 
-  #computeDisplayData() {
+  #computeDisplayData(): BarData {
     if (!this.#contentData) {
       return { categories: [], series: [], stacked: false };
     }
@@ -449,7 +449,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const indices = categories.map((_, index) => index);
 
     if (field === measureField || normalizedField === measureField) {
-      indices.sort((a: any, b: any) => {
+      indices.sort((a, b) => {
         const diff =
           this.#getCategoryTotal(series, a) - this.#getCategoryTotal(series, b);
         return (diff !== 0 ? diff : a - b) * dir;
@@ -459,7 +459,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       normalizedField === categoryField ||
       String(field).includes("dim_")
     ) {
-      indices.sort((a: any, b: any) => {
+      indices.sort((a, b) => {
         const diff = String(categories[a]).localeCompare(String(categories[b]));
         return (diff !== 0 ? diff : a - b) * dir;
       });
@@ -509,7 +509,8 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       const catLabel = ensureCategory(row[categoryField]);
       const segLabel = this.#formatLabel(row[field]);
       const value = measureField ? Number(row[measureField]) || 0 : 1;
-      const bucket = categoryBuckets.get(catLabel)!;
+      const bucket = categoryBuckets.get(catLabel);
+      if (!bucket) continue;
       bucket.set(segLabel, (bucket.get(segLabel) || 0) + value);
       segmentKeys.add(segLabel);
     }
@@ -518,7 +519,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       return null;
     }
 
-    const orderedSegments = [...segmentKeys].sort((a: any, b: any) => a.localeCompare(b));
+    const orderedSegments = [...segmentKeys].sort((a, b) => a.localeCompare(b));
 
     const series = orderedSegments.map((segLabel) => ({
       name: segLabel,
@@ -579,7 +580,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return fallback?.field ?? null;
   }
 
-  #onResize({ contentRect: { width, height } }: ResizeObserverEntry) {
+  #onResize({ contentRect: { width, height } }: ResizeObserverEntry): void {
     if (!width || !height) return;
 
     const isHorizontal = width / height > CONFIG.aspectThreshold;
@@ -591,7 +592,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
-  #prepareChartData() {
+  #prepareChartData(): { categories: string[]; series: BarSeries[]; niceMax: number; isStacked: boolean } | null {
     const data = this.#data;
     if (!data?.categories?.length || !data?.series?.length) return null;
 
@@ -610,7 +611,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return { categories, series, niceMax, isStacked };
   }
 
-  async #finalizeDataSetup() {
+  async #finalizeDataSetup(): Promise<void> {
     this.removeAttribute("data-loading");
     await this.rendered;
 
@@ -627,7 +628,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     this.#render();
   }
 
-  #getChartRenderContext() {
+  #getChartRenderContext(): { rows: HTMLElement; axisValues: HTMLElement | null; legend: HTMLElement | null; categories: string[]; series: BarSeries[]; niceMax: number; isStacked: boolean } | null {
     const rows = this.$<HTMLElement>(".chart-rows");
     const axisValues = this.$<HTMLElement>(".chart-axis-values");
     const legend = this.$<HTMLElement>(".chart-legend");
@@ -645,7 +646,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return { rows, axisValues, legend, ...prepared };
   }
 
-  #render() {
+  #render(): void {
     const ctx = this.#getChartRenderContext();
     if (!ctx) return;
     const { rows, axisValues, legend, categories, series, niceMax, isStacked } = ctx;
@@ -655,7 +656,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     this.#updateAriaLabel(categories, series);
   }
 
-  #updateAriaLabel(categories: string[], series: BarSeries[]) {
+  #updateAriaLabel(categories: string[], series: BarSeries[]): void {
     const title = this.getAttribute('data-title') || 'Bar chart';
     const layout = this.$<HTMLElement>('.chart-layout');
     const summary = this.$<HTMLElement>('.chart-sr-summary');
@@ -667,7 +668,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
-  #updateChart() {
+  #updateChart(): void {
     const ctx = this.#getChartRenderContext();
     if (!ctx) return;
     const { rows, axisValues, legend, categories, series, niceMax, isStacked } = ctx;
@@ -716,14 +717,14 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     if (categories.length <= CONFIG.maxCategories) return data;
 
     const totals = categories.map((_, i) =>
-      series.reduce((sum: any, s: any) => sum + (s.values[i] || 0), 0)
+      series.reduce((sum: number, s: BarSeries) => sum + (s.values?.[i] || 0), 0)
     );
     const indices = totals
       .map((t, i) => ({ t, i }))
-      .sort((a: any, b: any) => b.t - a.t)
+      .sort((a, b) => b.t - a.t)
       .slice(0, CONFIG.maxCategories)
       .map((e) => e.i)
-      .sort((a: any, b: any) => a - b);
+      .sort((a, b) => a - b);
 
     return {
       ...data,
@@ -752,7 +753,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return kept.map(({ _total: _, ...s }) => s);
   }
 
-  #renderControls() {
+  #renderControls(): void {
     const viewOptions = this.getViewOptions({
       activeType: "barchart",
       canShowChart: true,
@@ -788,7 +789,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const dir = activeSort.dir || "asc";
 
     // Sort by total bar value across all series
-    indices.sort((a: any, b: any) => {
+    indices.sort((a, b) => {
       const totalA = this.#getCategoryTotal(series, a);
       const totalB = this.#getCategoryTotal(series, b);
       const diff = totalA - totalB;
@@ -878,9 +879,10 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       : niceInterval * magnitude * (intervals + 1);
   }
 
-  #renderChart(el: HTMLElement, categories: string[], series: BarSeries[], niceMax: number, isStacked: boolean) {
+  #renderChart(el: HTMLElement, categories: string[], series: BarSeries[], niceMax: number, isStacked: boolean): void {
     const rows = categories.map((cat, catIdx) => {
-      const row = this.#chartRowTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const row = this.#chartRowTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+      if (!row) return null;
       row.style.setProperty("--_i", String(catIdx));
       const label = row.querySelector<HTMLElement>(".chart-label");
       if (label) {
@@ -891,18 +893,19 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       bar?.append(...this.#createSegmentNodes(series, catIdx, niceMax, isStacked));
       return row;
     });
-    el.replaceChildren(...rows);
+    el.replaceChildren(...rows.filter((r): r is HTMLElement => r !== null));
   }
 
-  #renderAxis(el: Element | null, niceMax: number) {
+  #renderAxis(el: Element | null, niceMax: number): void {
     if (!el) return;
     const step = niceMax / (CONFIG.maxGridLines - 1);
     const nodes = Array.from({ length: CONFIG.maxGridLines }, (_, i) => {
-      const node = this.#axisValueTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const node = this.#axisValueTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+      if (!node) return null;
       node.textContent = formatCompact(Math.round(step * i));
       return node;
     });
-    el.replaceChildren(...nodes);
+    el.replaceChildren(...nodes.filter((n): n is HTMLElement => n !== null));
   }
 
   #calculateSegmentSizes(series: BarSeries[], catIdx: number, niceMax: number, isStacked: boolean): { segments: Array<{ percent: number; tooltip: string }> } {
@@ -950,16 +953,18 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #buildSegment(name: string, value: number, percent: number, colorIdx: number): HTMLElement {
-    const node = this.#segmentTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const node = this.#segmentTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+    if (!node) return document.createElement('span');
     node.dataset["colorIndex"] = String((colorIdx % CONFIG.numColors) + 1);
     node.style.setProperty("--_segment-size", `${percent}%`);
     node.dataset["tooltip"] = `${name}: ${formatCompact(value)}`;
     return node;
   }
 
-  #renderLegend(el: HTMLElement, series: BarSeries[]) {
+  #renderLegend(el: HTMLElement, series: BarSeries[]): void {
     const items = series.map((s, i) => {
-      const node = this.#legendItemTpl!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const node = this.#legendItemTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+      if (!node) return null;
       const hasData = (s.values ?? []).some((v) => v > 0);
       if (!hasData) node.dataset["disabled"] = "";
       const key = node.querySelector<HTMLElement>(".chart-legend-key");
@@ -968,7 +973,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       if (lbl) lbl.textContent = s.name ?? "";
       return node;
     });
-    el.replaceChildren(...items);
+    el.replaceChildren(...items.filter((n): n is HTMLElement => n !== null));
   }
 
   #resolveFieldAlias(field: string | null): string | null {
@@ -980,7 +985,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return field;
   }
 
-  #getCategoryField() {
+  #getCategoryField(): string | null {
     const meta: ChartMetadata = this.#contentData?.metadata || {};
     if (meta.primaryField) return meta.primaryField;
 
@@ -996,7 +1001,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return meta.categoryField || null;
   }
 
-  #getValueField() {
+  #getValueField(): string | null {
     const meta: ChartMetadata = this.#contentData?.metadata || {};
     if (meta.valueField) return meta.valueField;
     if (meta.field) return meta.field;
@@ -1019,7 +1024,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   // ============ External Filters (FilterCoordinator integration) ============
 
   /** @override Apply external filters and re-render chart. */
-  setExternalFilters(externalFilters: Array<{ field: string; values: string[] }>) {
+  setExternalFilters(externalFilters: Array<{ field: string; values: string[] }>): void {
     this.#externalFilters = Array.isArray(externalFilters)
       ? externalFilters
       : [];
@@ -1032,15 +1037,15 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   // ============ Public Data Accessors ============
 
   /** Public accessor for resolved category field name. */
-  getCategoryField() {
+  getCategoryField(): string | null {
     return this.#getCategoryField();
   }
 
   /* ── Filter menu ─────────────────────────────────────────────── */
 
-  #onToggleFilters = () => toggleFilters(this);
-  #onToggleLegend  = () => toggleLegend(this);
-  #onMenuPopulate  = (e: CustomEvent) => syncFilterMenuItems(e, this);
+  #onToggleFilters = (): void => { toggleFilters(this); };
+  #onToggleLegend  = (): void => { toggleLegend(this); };
+  #onMenuPopulate  = (e: CustomEvent): void => { syncFilterMenuItems(e, this); };
 }
 
 customElements.define("sherpa-barchart", SherpaBarChart);

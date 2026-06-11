@@ -327,12 +327,14 @@ export type PropertiesOfType<T, V> = {
 /**
  * Constructor type for mixins
  */
-export type Constructor<T = {}> = new (...args: any[]) => T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Constructor<T = object> = new (...args: any[]) => T;
 
 /**
  * Abstract constructor type
  */
-export type AbstractConstructor<T = {}> = abstract new (...args: any[]) => T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AbstractConstructor<T = object> = abstract new (...args: any[]) => T;
 
 /* ── Component Public API Interfaces ─────────────────────────────── */
 

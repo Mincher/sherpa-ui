@@ -91,7 +91,7 @@ export class SherpaNavSection extends SherpaElement {
 
   #sections: NavSectionGroup[] = [];
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     heading: '.heading',
     back: { selector: '.back', type: HTMLButtonElement },
     sections: { selector: '.sections', type: HTMLElement },
@@ -118,7 +118,7 @@ export class SherpaNavSection extends SherpaElement {
     }
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case "data-heading":
         this.#syncHeading();
@@ -142,37 +142,37 @@ export class SherpaNavSection extends SherpaElement {
    * Replace the rendered groups + items.
    * @param {Array<{label: string, items: Array<object>}>} sections
    */
-  setSections(sections: NavSectionGroup[]) {
+  setSections(sections: NavSectionGroup[]): void {
     this.#sections = Array.isArray(sections) ? sections : [];
     this.#renderSections();
   }
 
   /** Mark the item with the given id as active. */
-  setActive(id: string | null) {
+  setActive(id: string | null): void {
     if (id) this.setAttribute("data-active-id", id);
     else this.removeAttribute("data-active-id");
   }
 
   /** @returns {string|null} The currently active item id. */
-  getActiveId() {
+  getActiveId(): string | null {
     return this.getAttribute("data-active-id");
   }
 
   /* ── internal: rendering ─────────────────────────────────── */
 
-  #syncHeading() {
+  #syncHeading(): void {
     if (this.els.heading) {
       this.els.heading.textContent = this.dataset["heading"] || "";
     }
   }
 
-  #syncBack() {
+  #syncBack(): void {
     /* Visibility owned by CSS via :host([data-show-back="true"]) and
        :host([data-show-back-default]) selectors. No-op kept for symmetry
        with other #sync* methods. */
   }
 
-  #syncFromAttribute() {
+  #syncFromAttribute(): void {
     const raw = this.getAttribute("data-sections");
     if (!raw) return;
     try {
@@ -183,7 +183,7 @@ export class SherpaNavSection extends SherpaElement {
     }
   }
 
-  #renderSections() {
+  #renderSections(): void {
     if (!this.els.sections) return;
     const activeId = this.getAttribute("data-active-id");
     const groups = this.#sections
@@ -249,7 +249,7 @@ export class SherpaNavSection extends SherpaElement {
     return node;
   }
 
-  #syncActiveState() {
+  #syncActiveState(): void {
     if (!this.els.sections) return;
     const activeId = this.getAttribute("data-active-id");
     for (const btn of this.els.sections.querySelectorAll<HTMLElement>(".item")) {
@@ -266,7 +266,7 @@ export class SherpaNavSection extends SherpaElement {
 
   /* ── internal: events ────────────────────────────────────── */
 
-  #onBack = () => {
+  #onBack = (): void => {
     this.dispatchEvent(
       new CustomEvent("nav-section-back", {
         bubbles: true,
@@ -275,13 +275,13 @@ export class SherpaNavSection extends SherpaElement {
     );
   };
 
-  #onClick = (e: Event) => {
+  #onClick = (e: Event): void => {
     const btn = (e.target as HTMLElement | null)?.closest?.<HTMLElement>(".item");
     if (!btn || btn.hasAttribute("disabled")) return;
     this.#dispatchSelect(btn);
   };
 
-  #onKeyDown = (e: KeyboardEvent) => {
+  #onKeyDown = (e: KeyboardEvent): void => {
     if (e.key !== "Enter" && e.key !== " ") return;
     const btn = (e.target as HTMLElement | null)?.closest?.<HTMLElement>(".item");
     if (!btn || btn.hasAttribute("disabled")) return;
@@ -289,7 +289,7 @@ export class SherpaNavSection extends SherpaElement {
     this.#dispatchSelect(btn);
   };
 
-  #dispatchSelect(btn: HTMLElement) {
+  #dispatchSelect(btn: HTMLElement): void {
     const id = btn.dataset["id"] || "";
     const action = btn.dataset["action"] || undefined;
     const item = this.#findItem(id);
@@ -303,7 +303,7 @@ export class SherpaNavSection extends SherpaElement {
     );
   }
 
-  #findItem(id: string) {
+  #findItem(id: string): NavSectionItem | null {
     for (const g of this.#sections) {
       const found = (g.items || []).find((it) => it.id === id);
       if (found) return found;

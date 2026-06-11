@@ -29,7 +29,8 @@ export type Status =
   | 'default'
   | 'none';
 
-type Constructor<T = {}> = new (...args: any[]) => T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor<T = object> = new (...args: any[]) => T;
 
 export interface StatusMixinInterface {
   status: Status | null;
@@ -47,7 +48,7 @@ export function StatusMixin<T extends Constructor<HTMLElement>>(
 ): T & Constructor<StatusMixinInterface> & StatusMixinStatics {
   class StatusMixinClass extends Base implements StatusMixinInterface {
     static get observedAttributes(): string[] {
-      const baseAttrs = (Base as any).observedAttributes || [];
+      const baseAttrs = (Base as unknown as { observedAttributes?: string[] }).observedAttributes || [];
       return [...baseAttrs, 'data-status'];
     }
 
@@ -74,7 +75,7 @@ export function StatusMixin<T extends Constructor<HTMLElement>>(
       return (this.getAttribute('data-status') as Status) || null;
     }
     set status(v: Status | null) {
-      v ? this.setAttribute('data-status', v) : this.removeAttribute('data-status');
+      if (v) { this.setAttribute('data-status', v); } else { this.removeAttribute('data-status'); }
     }
 
     /** Font Awesome class for the current status icon, or null. */

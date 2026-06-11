@@ -66,7 +66,7 @@ class SherpaProductBarV2 extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     name: { selector: '.system-name', type: HTMLSpanElement },
     time: { selector: '.system-time-value', type: HTMLSpanElement },
     trigger: { selector: '.system-trigger', type: HTMLButtonElement }
@@ -97,7 +97,7 @@ class SherpaProductBarV2 extends SherpaElement {
     }
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case "data-product-name":
         this.#syncName();
@@ -110,19 +110,19 @@ class SherpaProductBarV2 extends SherpaElement {
 
   /* ── sync helpers ────────────────────────────────────────── */
 
-  #syncName() {
+  #syncName(): void {
     if (this.els.name) {
       this.els.name.textContent = this.dataset["productName"] || "";
     }
   }
 
-  #syncTime() {
+  #syncTime(): void {
     if (this.els.time) {
       this.els.time.textContent = this.dataset["time"] || "--:--";
     }
   }
 
-  #onTriggerClick = () => {
+  #onTriggerClick = (): void => {
     const expanded = this.els.trigger?.getAttribute("aria-expanded") === "true";
     const next = !expanded;
     this.els.trigger?.setAttribute("aria-expanded", next ? "true" : "false");
@@ -152,7 +152,7 @@ class SherpaProductBarV2 extends SherpaElement {
     return (nodes.find((n) => n.tagName?.toLowerCase() === "sherpa-container-overlay") as SystemMenuElement | undefined) || null;
   }
 
-  #onMenuClose = () => {
+  #onMenuClose = (): void => {
     this.els.trigger?.setAttribute("aria-expanded", "false");
   };
 
@@ -161,11 +161,11 @@ class SherpaProductBarV2 extends SherpaElement {
    * host attributes (`data-has-tabs` / `data-has-actions`) so the
    * component CSS can collapse the corresponding regions.
    */
-  #syncSlotState() {
+  #syncSlotState(): void {
     const root = this.shadowRoot;
     if (!root) return;
 
-    const update = (slotName: string, attr: string) => {
+    const update = (slotName: string, attr: string): void => {
       const slot = root.querySelector<HTMLSlotElement>(`slot[name="${slotName}"]`);
       if (!slot) return;
       const has = slot.assignedNodes({ flatten: true }).some((n) => {

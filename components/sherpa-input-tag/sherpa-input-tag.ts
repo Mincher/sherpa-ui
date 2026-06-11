@@ -79,7 +79,7 @@ export class SherpaInputTag extends SherpaInputBase<string[]> {
     input.removeEventListener('keydown', this.#onKeyDown);
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
     if (name === 'data-value') this.#renderChips();
   }
@@ -95,7 +95,7 @@ export class SherpaInputTag extends SherpaInputBase<string[]> {
     this.#emit('set');
   }
 
-  add(tag: string) {
+  public add(tag: string): boolean {
     const v = String(tag ?? '').trim();
     if (!v) return false;
     const current = this.#readValue();
@@ -123,21 +123,21 @@ export class SherpaInputTag extends SherpaInputBase<string[]> {
     return true;
   }
 
-  clear() {
+  public clear(): void {
     this.dataset["value"] = '[]';
     this.#emit('set');
   }
 
   /* ── Private ───────────────────────────────────────────────────── */
 
-  #readValue() {
+  #readValue(): string[] {
     try {
       const v = JSON.parse(this.dataset["value"] || '[]');
       return Array.isArray(v) ? v.map(String) : [];
     } catch { return []; }
   }
 
-  #renderChips() {
+  #renderChips(): void {
     const wrapper = this.$('.tag-wrapper');
     const input = this.getInputElement();
     if (!wrapper || !input) return;
@@ -167,7 +167,7 @@ export class SherpaInputTag extends SherpaInputBase<string[]> {
     wrapper.insertBefore(frag, input);
   }
 
-  #onKeyDown = (e: KeyboardEvent) => {
+  #onKeyDown = (e: KeyboardEvent): void => {
     const input = this.getInputElement();
     if (!input) return;
     const sep = (this.dataset["separator"] ?? ',').slice(0, 1);
@@ -193,7 +193,7 @@ export class SherpaInputTag extends SherpaInputBase<string[]> {
     }
   };
 
-  #emit(action: string, tag?: string) {
+  #emit(action: string, tag?: string): void {
     this.emit('change', { value: this.#readValue(), action, tag });
   }
 }

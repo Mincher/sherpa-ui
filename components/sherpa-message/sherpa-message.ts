@@ -63,7 +63,7 @@ export class SherpaMessage extends SherpaElement {
     });
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-label') this.#syncLabel();
     else if (name === 'data-action-label' || name === 'data-action-href' || name === 'data-action-icon') this.#syncAction();
   }
@@ -72,24 +72,24 @@ export class SherpaMessage extends SherpaElement {
   /* ── Public API ───────────────────────────────────────────────── */
 
   get status(): Status | null { return (this.dataset["status"] as Status) || null; }
-  set status(v: Status | null) { v ? (this.dataset["status"] = v) : delete this.dataset["status"]; }
+  set status(v: Status | null) { if (v) { this.dataset["status"] = v; } else { delete this.dataset["status"]; } }
 
-  get dismissible() { return this.hasAttribute('data-dismissible') && this.dataset["dismissible"] !== 'false'; }
-  set dismissible(v){ v ? (this.dataset["dismissible"] = 'true') : this.removeAttribute('data-dismissible'); }
+  get dismissible(): boolean { return this.hasAttribute('data-dismissible') && this.dataset["dismissible"] !== 'false'; }
+  set dismissible(v: boolean){ if (v) { this.dataset["dismissible"] = 'true'; } else { this.removeAttribute('data-dismissible'); } }
 
-  dismiss() {
+  dismiss(): void {
     this.emit('close');
     this.remove();
   }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
-  #syncLabel() {
+  #syncLabel(): void {
     const el = this.$('.message-label');
     if (el) el.textContent = this.dataset["label"] || '';
   }
 
-  #syncAction() {
+  #syncAction(): void {
     const link = this.$('.message-action');
     const labelEl = this.$('.message-action-label');
     const iconEl = this.$<HTMLElement>('.message-action-icon');

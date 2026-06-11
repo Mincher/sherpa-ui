@@ -36,11 +36,11 @@ export class SherpaInputTime extends SherpaInputBase {
 
   /* ── Private state ──────────────────────────────────────────── */
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     trigger: { selector: '.picker-trigger', type: HTMLButtonElement },
     popup: '.picker-popup',
     hourVal: '.hour-val',
-    minuteVal: '.minute-val'
+    minuteVal: '.minute-val',
   });
 
   /** Current hours value (0–23). -1 means no selection. */
@@ -48,8 +48,8 @@ export class SherpaInputTime extends SherpaInputBase {
   /** Current minutes value (0–59). -1 means no selection. */
   #minutes = -1;
 
-  protected override _popupClose() { this.#close(); }
-  protected override _popupOpen()  { this.#open(); }
+  protected override _popupClose(): void { this.#close(); }
+  protected override _popupOpen(): void  { this.#open(); }
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
@@ -86,7 +86,7 @@ export class SherpaInputTime extends SherpaInputBase {
   override onInputConnect(): void    { this._attachPopupListeners(); }
   override onInputDisconnect(): void { this._detachPopupListeners(); }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
 
     if (['min', 'max', 'step'].includes(name)) {
@@ -102,7 +102,7 @@ export class SherpaInputTime extends SherpaInputBase {
 
   /* ── Open / Close ───────────────────────────────────────────── */
 
-  #open() {
+  #open(): void {
     this.#parseNativeValue();
     this.#syncSpinners();
     this.setAttribute('data-open', '');
@@ -110,7 +110,7 @@ export class SherpaInputTime extends SherpaInputBase {
     this.#positionPopup();
   }
 
-  #positionPopup() {
+  #positionPopup(): void {
     const popup = this.$<HTMLElement>('.picker-popup');
     const trigger = this.els.trigger;
     if (!popup || !trigger) return;
@@ -125,21 +125,21 @@ export class SherpaInputTime extends SherpaInputBase {
     popup.style.left = `${Math.min(rect.left, window.innerWidth - (popup.offsetWidth || 200) - 8)}px`;
   }
 
-  #close() {
+  #close(): void {
     this.removeAttribute('data-open');
     this.els.trigger?.setAttribute('aria-expanded', 'false');
   }
 
   /* ── Spinner adjustments ────────────────────────────────────── */
 
-  #adjustHour(delta: number) {
+  #adjustHour(delta: number): void {
     const current = this.#hours < 0 ? 0 : this.#hours;
     this.#hours   = ((current + delta) + 24) % 24;
     if (this.#minutes < 0) this.#minutes = 0;
     this.#commitTime();
   }
 
-  #adjustMinute(delta: number) {
+  #adjustMinute(delta: number): void {
     const step    = this.#minuteStepSize;
     const current = this.#minutes < 0 ? 0 : this.#minutes;
     this.#minutes = ((current + delta * step) + 60) % 60;
@@ -148,7 +148,7 @@ export class SherpaInputTime extends SherpaInputBase {
   }
 
   /** Minute increment derived from the step attribute (seconds → minutes, min 1). */
-  get #minuteStepSize() {
+  get #minuteStepSize(): number {
     const stepSec = parseInt(this.getAttribute('step') || '60', 10);
     return Math.max(1, Math.floor(stepSec / 60));
   }
@@ -156,7 +156,7 @@ export class SherpaInputTime extends SherpaInputBase {
   /* ── Value sync ─────────────────────────────────────────────── */
 
   /** Parse current native input value into #hours / #minutes. */
-  #parseNativeValue() {
+  #parseNativeValue(): void {
     const val = this.getInputElement()?.value || '';
     if (!val) {
       this.#hours   = -1;
@@ -169,7 +169,7 @@ export class SherpaInputTime extends SherpaInputBase {
   }
 
   /** Write #hours / #minutes to the native input and fire events. */
-  #commitTime() {
+  #commitTime(): void {
     const h = String(this.#hours  ).padStart(2, '0');
     const m = String(this.#minutes).padStart(2, '0');
     const timeStr = `${h}:${m}`;
@@ -185,7 +185,7 @@ export class SherpaInputTime extends SherpaInputBase {
   }
 
   /** Update the spinner display spans from #hours / #minutes. */
-  #syncSpinners() {
+  #syncSpinners(): void {
     if (this.els.hourVal) {
       this.els.hourVal.textContent =
         this.#hours >= 0 ? String(this.#hours).padStart(2, '0') : '--';
@@ -197,7 +197,7 @@ export class SherpaInputTime extends SherpaInputBase {
   }
 
   /** Update trigger display text and data-has-value attribute. */
-  #syncTrigger() {
+  #syncTrigger(): void {
     const val    = this.getInputElement()?.value || '';
     const textEl = this.$('.trigger-text');
     if (textEl) textEl.textContent = SherpaInputTime.#formatTime(val);
@@ -215,23 +215,23 @@ export class SherpaInputTime extends SherpaInputBase {
    * @param {string} timeStr
    * @returns {string}
    */
-  static #formatTime(timeStr: string | null | undefined) {
+  static #formatTime(timeStr: string | null | undefined): string {
     if (!timeStr) return '';
     const parts = timeStr.split(':');
     if (parts.length < 2) return timeStr;
-    return `${parts[0]!.padStart(2, '0')}:${parts[1]!.padStart(2, '0')}`;
+    return `${(parts[0] ?? '').padStart(2, '0')}:${(parts[1] ?? '').padStart(2, '0')}`;
   }
 
   /* ── Public API ─────────────────────────────────────────────── */
 
-  get min()  { return this.getAttribute('min');  }
-  set min(v) { v != null ? this.setAttribute('min',  v) : this.removeAttribute('min');  }
+  get min(): string | null  { return this.getAttribute('min');  }
+  set min(v: string | null) { if (v != null) { this.setAttribute('min',  v); } else { this.removeAttribute('min'); } }
 
-  get max()  { return this.getAttribute('max');  }
-  set max(v) { v != null ? this.setAttribute('max',  v) : this.removeAttribute('max');  }
+  get max(): string | null  { return this.getAttribute('max');  }
+  set max(v: string | null) { if (v != null) { this.setAttribute('max',  v); } else { this.removeAttribute('max'); } }
 
-  get step() { return this.getAttribute('step'); }
-  set step(v) { v != null ? this.setAttribute('step', v) : this.removeAttribute('step'); }
+  get step(): string | null { return this.getAttribute('step'); }
+  set step(v: string | null) { if (v != null) { this.setAttribute('step', v); } else { this.removeAttribute('step'); } }
 }
 
 customElements.define('sherpa-input-time', SherpaInputTime);

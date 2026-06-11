@@ -97,7 +97,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   #legendItemTpl: HTMLTemplateElement | null = null;
   #bound = false;
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     title: '.chart-title',
     ring: { selector: '.donut-ring', type: HTMLElement },
     centreValue: '.centre-value',
@@ -125,7 +125,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     this.#syncCentreLabel();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
@@ -168,7 +168,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
    *   - A content config object (from ContentAttributesMixin.load())
    *   - A direct array of { label, value, color? }
    */
-  async setData(data: DonutDatum[] | ContentData) {
+  async setData(data: DonutDatum[] | ContentData): Promise<void> {
     await this.rendered;
 
     // Direct array — original programmatic API
@@ -193,7 +193,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   /** Get current data. */
-  get data() {
+  get data(): DonutDatum[] {
     return [...this.#data];
   }
 
@@ -226,7 +226,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
    * When data-segment-field is active, re-aggregates by the segment field
    * so each unique segment value becomes one donut slice.
    */
-  #transformContentData() {
+  #transformContentData(): void {
     if (!this.#contentData) { this.#data = []; return; }
 
     const { columns = [], rows = [] } = this.#contentData;
@@ -240,7 +240,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     // When grouping is explicitly off, collapse to a single total segment
     const segMode = this.getAttribute('data-segment-mode');
     if (segMode === 'off') {
-      const total = rows.reduce((s: any, r: any) => s + (Number(r[valueField]) || 0), 0);
+      const total = rows.reduce((s: number, r: Record<string, unknown>) => s + (Number(r[valueField]) || 0), 0);
       this.#data = [{ label: 'Total', value: total }];
       this.dataset["innerLabel"] = formatCompact(total);
       return;
@@ -266,7 +266,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       }
       this.#data = [...agg.entries()].map(([label, value]) => ({ label, value }));
     } else {
-      this.#data = rows.map((row: any) => ({
+      this.#data = rows.map((row: Record<string, unknown>) => ({
         label: String(row[labelField] ?? ''),
         value: Number(row[valueField]) || 0,
       }));
@@ -276,15 +276,15 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     this.#data = this.#applyLocalSort(this.#data);
 
     // Auto-set centre label to total + sublabel to chart name
-    const total = this.#data.reduce((s: any, d: any) => s + d.value, 0);
+    const total = this.#data.reduce((s: number, d: DonutDatum) => s + d.value, 0);
     this.dataset["innerLabel"] = formatCompact(total);
   }
 
   /* ── Private: sync ────────────────────────────────────────────── */
 
-  #syncTitle() { syncChartTitle(this.els.title ?? null, this); }
+  #syncTitle(): void { syncChartTitle(this.els.title ?? null, this); }
 
-  #syncCentreLabel() {
+  #syncCentreLabel(): void {
     if (this.els.centreValue) {
       this.els.centreValue.textContent = this.dataset["innerLabel"] || '';
     }
@@ -307,7 +307,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Private: render ──────────────────────────────────────────── */
 
-  #render() {
+  #render(): void {
     const ring = this.els.ring;
     const legend = this.els.legend;
     if (!ring || !legend) return;
@@ -358,7 +358,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     this.#updateAriaLabel(displayData, total);
   }
 
-  #updateAriaLabel(segments: DonutDatum[], total: number) {
+  #updateAriaLabel(segments: DonutDatum[], total: number): void {
     const title = this.getAttribute('data-title') || 'Donut chart';
     const layout = this.$<HTMLElement>('.chart-layout');
     const summary = this.$<HTMLElement>('.chart-sr-summary');
@@ -373,9 +373,9 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Filter menu ─────────────────────────────────────────────────────── */
 
-  #onToggleFilters = () => toggleFilters(this);
-  #onToggleLegend  = () => toggleLegend(this);
-  #onMenuPopulate  = (e: CustomEvent) => syncFilterMenuItems(e, this);
+  #onToggleFilters = (): void => { toggleFilters(this); };
+  #onToggleLegend  = (): void => { toggleLegend(this); };
+  #onMenuPopulate  = (e: CustomEvent): void => { syncFilterMenuItems(e, this); };
 }
 
 customElements.define('sherpa-donut-chart', SherpaDonutChart);

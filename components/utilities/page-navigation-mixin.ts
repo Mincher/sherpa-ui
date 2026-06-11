@@ -13,9 +13,16 @@
  *   class SherpaDialog extends PageNavigationMixin(StatusMixin(SherpaElement)) { ... }
  */
 
-type Constructor<T = {}> = new (...args: any[]) => T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor<T = object> = new (...args: any[]) => T;
 
-export function PageNavigationMixin<T extends Constructor<HTMLElement>>(Base: T) {
+export function PageNavigationMixin<T extends Constructor<HTMLElement>>(Base: T): T & Constructor<{
+  readonly page: number;
+  readonly pages: number;
+  setPage(index: number): void;
+  nextPage(): void;
+  prevPage(): void;
+}> {
   return class PageNavigationMixinClass extends Base {
     get page(): number {
       return parseInt(this.dataset['page'] || '0', 10) || 0;

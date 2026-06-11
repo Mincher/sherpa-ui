@@ -71,7 +71,7 @@ export function renderCalendarGrid(
   minIso: string | null,
   maxIso: string | null,
   onSelect: (iso: string) => void,
-) {
+): void {
   const firstDay     = viewDate.with({ day: 1 });
   const lastDayNum   = viewDate.daysInMonth;
   const lastDay      = viewDate.with({ day: lastDayNum });

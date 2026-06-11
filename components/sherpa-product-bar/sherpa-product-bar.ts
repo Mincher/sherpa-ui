@@ -35,7 +35,7 @@ class SherpaProductBar extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     name: '.product-name',
     icon: '.product-icon'
   });
@@ -52,7 +52,7 @@ class SherpaProductBar extends SherpaElement {
     this.#syncSlotState();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     switch (name) {
       case "data-product-name":
         this.#syncName();
@@ -65,13 +65,13 @@ class SherpaProductBar extends SherpaElement {
 
   /* ── sync helpers ────────────────────────────────────────── */
 
-  #syncName() {
+  #syncName(): void {
     if (this.els.name) {
       this.els.name.textContent = this.dataset["productName"] || "";
     }
   }
 
-  #syncIcon() {
+  #syncIcon(): void {
     if (!this.els.icon) return;
 
     const iconClass = this.dataset["productIcon"];
@@ -88,11 +88,11 @@ class SherpaProductBar extends SherpaElement {
    * nodes onto host attributes (`data-has-default` / `data-has-actions`),
    * which the component CSS uses to collapse the divider/actions area.
    */
-  #syncSlotState() {
+  #syncSlotState(): void {
     const root = this.shadowRoot;
     if (!root) return;
 
-    const update = (slotName: string | null, attr: string) => {
+    const update = (slotName: string | null, attr: string): void => {
       const slot = slotName
         ? root.querySelector<HTMLSlotElement>(`slot[name="${slotName}"]`)
         : root.querySelector<HTMLSlotElement>("slot:not([name])");

@@ -74,7 +74,7 @@ export class SherpaTabs extends SherpaElement {
     this.#buildTabs();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-active-tab') {
       this.#syncActiveTab();
     }
@@ -90,11 +90,11 @@ export class SherpaTabs extends SherpaElement {
   /* ── Public API ───────────────────────────────────────────────── */
 
   /** The currently active tab index. */
-  get activeTab() { return parseInt(this.dataset["activeTab"] || "", 10) || 0; }
+  get activeTab(): number { return parseInt(this.dataset["activeTab"] || "", 10) || 0; }
   set activeTab(v: number) { this.dataset["activeTab"] = String(v); }
 
   /** Select a tab by index. */
-  selectTab(index: number) {
+  selectTab(index: number): void {
     const prev = this.activeTab;
     if (index === prev) return;
     if (index < 0 || index >= this.#panels.length) return;
@@ -107,7 +107,7 @@ export class SherpaTabs extends SherpaElement {
 
   /* ── Private — build tabs from slotted children ───────────────── */
 
-  #buildTabs() {
+  #buildTabs(): void {
     if (!this.#stripEl || !this.#tabTpl) return;
 
     // Collect panel children (those with data-tab-label)
@@ -148,7 +148,7 @@ export class SherpaTabs extends SherpaElement {
     this.#syncActiveTab();
   }
 
-  #syncActiveTab() {
+  #syncActiveTab(): void {
     const index = this.activeTab;
 
     // Update tab buttons
@@ -224,7 +224,7 @@ export class SherpaTabs extends SherpaElement {
     return from; // no available tab found
   }
 
-  #emitTabChange(index: number, previousIndex: number) {
+  #emitTabChange(index: number, previousIndex: number): void {
     this.emit('tab-change', {
       index,
       label: this.#panels[index]?.dataset["tabLabel"] || '',

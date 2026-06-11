@@ -38,7 +38,7 @@ export class SherpaSectionHeader extends SherpaElement {
     this.#syncHeading();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === 'data-label') {
       this.#syncHeading();
     }
@@ -60,15 +60,15 @@ export class SherpaSectionHeader extends SherpaElement {
   /* ── Public API ───────────────────────────────────────────────── */
 
 
-  get headingType() { return this.dataset["headingLevel"] || 'primary'; }
-  set headingType(v){ this.dataset["headingLevel"] = v; }
+  get headingType(): string { return this.dataset["headingLevel"] || 'primary'; }
+  set headingType(v: string){ this.dataset["headingLevel"] = v; }
 
-  get hasDivider()  { return this.dataset["divider"] === 'true'; }
-  set hasDivider(v) { this.dataset["divider"] = v ? 'true' : 'false'; }
+  get hasDivider(): boolean  { return this.dataset["divider"] === 'true'; }
+  set hasDivider(v: boolean) { this.dataset["divider"] = v ? 'true' : 'false'; }
 
   /* ── Private ──────────────────────────────────────────────────── */
 
-  #syncHeading() {
+  #syncHeading(): void {
     const el = this.$('.default-heading');
     if (el) el.textContent = this.dataset["label"] || '';
   }

@@ -28,7 +28,7 @@ export class SherpaAppShell extends SherpaElement {
     const navSlot = this.$<HTMLSlotElement>('slot[name="nav"]');
     if (!navSlot) return;
 
-    const syncNavState = () => {
+    const syncNavState = (): void => {
       const nav = navSlot
         .assignedElements({ flatten: true })
         .find((el): el is HTMLElement => el instanceof HTMLElement && el.tagName === 'SHERPA-NAV');

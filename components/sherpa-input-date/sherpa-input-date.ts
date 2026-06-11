@@ -49,7 +49,7 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Private state ──────────────────────────────────────────── */
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     trigger: { selector: '.picker-trigger', type: HTMLButtonElement },
     popup: '.picker-popup',
     monthYear: '.cal-month-year',
@@ -60,8 +60,8 @@ export class SherpaInputDate extends SherpaInputBase {
   /** Month / year currently displayed in the calendar. */
   #viewDate = Temporal.Now.plainDateISO().with({ day: 1 });
 
-  protected override _popupClose() { this.#close(); }
-  protected override _popupOpen()  { this.#open(); }
+  protected override _popupClose(): void { this.#close(); }
+  protected override _popupOpen(): void  { this.#open(); }
 
   /* ── Lifecycle ──────────────────────────────────────────────── */
 
@@ -111,7 +111,7 @@ export class SherpaInputDate extends SherpaInputBase {
   override onInputConnect(): void    { this._attachPopupListeners(); }
   override onInputDisconnect(): void { this._detachPopupListeners(); }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
 
     if (name === 'min' || name === 'max') {
@@ -131,7 +131,7 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Open / Close ───────────────────────────────────────────── */
 
-  #open() {
+  #open(): void {
     // Snap view to selected date's month before opening
     const val = this.getInputElement()?.value;
     if (val) {
@@ -144,7 +144,7 @@ export class SherpaInputDate extends SherpaInputBase {
     this.#positionPopup();
   }
 
-  #positionPopup() {
+  #positionPopup(): void {
     const popup = this.$<HTMLElement>('.picker-popup');
     const trigger = this.els.trigger;
     if (!popup || !trigger) return;
@@ -159,14 +159,14 @@ export class SherpaInputDate extends SherpaInputBase {
     popup.style.left = `${Math.min(rect.left, window.innerWidth - (popup.offsetWidth || 280) - 8)}px`;
   }
 
-  #close() {
+  #close(): void {
     this.removeAttribute('data-open');
     this.els.trigger?.setAttribute('aria-expanded', 'false');
   }
 
   /* ── Calendar rendering ─────────────────────────────────────── */
 
-  #renderCalendar() {
+  #renderCalendar(): void {
     if (!this.els.monthYear || !this.els.daysGrid || !this.els.dayTpl) return;
 
     this.els.monthYear.textContent =
@@ -189,7 +189,7 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Date selection ─────────────────────────────────────────── */
 
-  #selectDate(iso: string) {
+  #selectDate(iso: string): void {
     const inputEl = this.getInputElement();
     if (!inputEl) return;
 
@@ -204,14 +204,14 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Helpers ────────────────────────────────────────────────── */
 
-  #syncHasValue() {
+  #syncHasValue(): void {
     const v = this.getInputElement()?.value || '';
     if (v) this.dataset["hasValue"] = '';
     else   delete this.dataset["hasValue"];
   }
 
   /** Validates typed value against ISO format + min / max, via setCustomValidity. */
-  #applyCustomValidity() {
+  #applyCustomValidity(): void {
     const el = this.getInputElement();
     if (!el || typeof el.setCustomValidity !== 'function') return;
 
@@ -238,11 +238,11 @@ export class SherpaInputDate extends SherpaInputBase {
 
   /* ── Public API ─────────────────────────────────────────────── */
 
-  get min() { return this.getAttribute('min'); }
-  set min(v) { v != null ? this.setAttribute('min', v) : this.removeAttribute('min'); }
+  get min(): string | null { return this.getAttribute('min'); }
+  set min(v: string | null) { if (v != null) { this.setAttribute('min', v); } else { this.removeAttribute('min'); } }
 
-  get max() { return this.getAttribute('max'); }
-  set max(v) { v != null ? this.setAttribute('max', v) : this.removeAttribute('max'); }
+  get max(): string | null { return this.getAttribute('max'); }
+  set max(v: string | null) { if (v != null) { this.setAttribute('max', v); } else { this.removeAttribute('max'); } }
 
   /** Returns the current value as a Temporal.PlainDate, or null. */
   get valueAsDate(): Temporal.PlainDate | null {

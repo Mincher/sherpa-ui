@@ -47,7 +47,7 @@ const counters = new Map<string, number>();
 /**
  * Generate a unique ID with a given prefix (e.g., "menu-1", "table-2").
  */
-export function generateUniqueId(prefix: string = 'id'): string {
+export function generateUniqueId(prefix = 'id'): string {
   const current = counters.get(prefix) || 0;
   const next = current + 1;
   counters.set(prefix, next);

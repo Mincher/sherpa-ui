@@ -35,7 +35,7 @@ let _trendStatusMap: { up: string; down: string; flat: string; [k: string]: stri
 /**
  * Override the default mapping from trend direction to status.
  */
-export function setTrendStatusMap(map: { up?: string; down?: string; flat?: string }) {
+export function setTrendStatusMap(map: { up?: string; down?: string; flat?: string }): void {
   _trendStatusMap = { ..._trendStatusMap, ...map };
 }
 
@@ -88,11 +88,11 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     this.dataset["visible"] = visible === false ? "false" : "true";
     return this;
   }
-  isVisible() {
+  isVisible(): boolean {
     return this.dataset["visible"] !== "false";
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) return;
 
     switch (name) {
@@ -122,7 +122,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   /**
    * Get configuration for switching to another presentation type
    */
-  getTransferableConfig(presentationType: string) {
+  getTransferableConfig(presentationType: string): ReturnType<typeof getTransferableConfig> | null {
     return this.#contentData
       ? getTransferableConfig(this.#contentData, presentationType)
       : null;
@@ -132,14 +132,14 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
    * Override getData() to return metric configuration for component switching
    * (base class looks for #data which is not populated in metric)
    */
-  getData() {
+  getData(): ReturnType<typeof getTransferableConfig> | null {
     if (!this.#contentData) return null;
     // For metric transitions, use the full config with all necessary fields
     const config = getTransferableConfig(this.#contentData, "table");
     return config;
   }
 
-  async setData(data: MetricData & { _fromCascade?: boolean }) {
+  async setData(data: MetricData & { _fromCascade?: boolean }): Promise<void> {
     await this.rendered;
 
     // Pre-aggregated data from dataset cascade
@@ -157,7 +157,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
   // ============ Private Methods ============
 
-  #initialize() {
+  #initialize(): void {
     if (!this.#contentData) {
       console.error("[SherpaMetric] #initialize called but missing data");
       return;
@@ -178,7 +178,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     this.wireContentMenu(this, "kpi-metric");
   }
 
-  #populate() {
+  #populate(): void {
     const data = this.#contentData;
     if (!data) {
       console.error("[SherpaMetric] No content data available");
@@ -288,7 +288,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
   #updateSparkline(
     { unitText, values, forceHidden }: { status?: string; unitText?: string; values?: number[]; forceHidden?: boolean } = {},
-  ) {
+  ): void {
     if (forceHidden !== undefined) {
       this.#suppressSparkline = !!forceHidden;
     }
@@ -319,7 +319,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     sparkline.setValues?.(Array.isArray(values) ? values : []);
   }
 
-  #formatNumber(num: number, unit: string) {
+  #formatNumber(num: number, unit: string): string {
     const isCurrency = unit === getCurrencyCode();
     const isPercent = unit === "percent" || unit === "%";
     const abs = Math.abs(num);
@@ -333,7 +333,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
   }
 
   /** Strip unnecessary trailing zeros: "1.50" → "1.5", "2.00" → "2" */
-  #trimDecimals(str: string) {
+  #trimDecimals(str: string): string {
     return str.replace(/(\.[0-9]*?)0+$/, "$1").replace(/\.$/, "");
   }
 }

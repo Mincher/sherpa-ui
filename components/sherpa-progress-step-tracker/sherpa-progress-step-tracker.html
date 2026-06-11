@@ -1,0 +1,55 @@
+<!--
+  sherpa-progress-step-tracker.html
+
+  Templates:
+    • default          — Container with optional header and steps list
+
+  Host attributes:
+    data-orientation   — horizontal (default) | vertical
+    data-current-step  — Active step, 1-based
+    data-linear        — "true" | "false"
+    data-show-step-numbers — "true" | "false"
+    data-density       — compact | comfortable
+    data-labels        — "none" hides step labels
+    data-heading       — Heading text (shown when attribute is present)
+    data-percentage    — Completion text (shown when attribute is present)
+
+  Step item data-status values (set by JS):
+    default | active | completed | in-progress | warning | error
+
+  Methods:
+    setSteps([{ label, sublabel, timestamp, status, completed, error, disabled }])
+    nextStep(), previousStep(), goToStep(n), completeStep(n), setStepError(n, bool)
+-->
+<template id="default">
+  <div class="tracker-container" role="navigation" aria-label="Progress">
+    <div class="tracker-header">
+      <span class="heading-text"></span>
+      <span class="percentage-text"></span>
+    </div>
+    <div class="tracker-steps" role="tablist"></div>
+  </div>
+
+  <!-- Cloning prototype: step item -->
+  <template class="step-item-tpl">
+    <div class="step-item" role="tab">
+      <div class="step-indicator">
+        <span class="step-number"></span>
+        <i class="sherpa-icon indicator-completed fa-solid fa-check"               aria-hidden="true"></i>
+        <i class="sherpa-icon indicator-error     fa-solid fa-xmark"               aria-hidden="true"></i>
+        <i class="sherpa-icon indicator-warning   fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <i class="sherpa-icon indicator-progress  fa-solid fa-spinner"             aria-hidden="true"></i>
+      </div>
+      <div class="step-label-container">
+        <span class="step-label text-label"></span>
+        <span class="step-sublabel text-body-xs"></span>
+        <span class="step-timestamp text-body-xs"></span>
+      </div>
+    </div>
+  </template>
+
+  <!-- Cloning prototype: connector between steps -->
+  <template class="step-connector-tpl">
+    <div class="step-connector"></div>
+  </template>
+</template>

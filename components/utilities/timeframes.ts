@@ -154,7 +154,11 @@ export function formatDateId(dateStr: string | number): string {
  * @param {string} [dateField] — field name to read dates from (defaults to auto-detect)
  * @returns {Object|null}  null when no valid date values exist
  */
-export function computeTimeRange(records: Record<string, unknown>[], dateField?: string) {
+export function computeTimeRange(records: Record<string, unknown>[], dateField?: string): {
+  min: string; max: string;
+  minDate: Temporal.PlainDate; maxDate: Temporal.PlainDate;
+  span: number; granularity: string; label: string;
+} | null {
   if (!records?.length) return null;
 
   // Auto-detect date field if not provided
@@ -193,7 +197,7 @@ let _dateFieldDetector: DateFieldDetector | null = null;
  * (string) to use as the date/time column, or null.
  * @param {(record: Object) => string|null} fn
  */
-export function setDateFieldDetector(fn: DateFieldDetector) {
+export function setDateFieldDetector(fn: DateFieldDetector): void {
   _dateFieldDetector = fn;
 }
 

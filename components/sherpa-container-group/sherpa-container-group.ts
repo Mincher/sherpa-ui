@@ -104,12 +104,12 @@ export class SherpaContainerGroup extends SherpaElement {
    * columns to determine how many outer rows the group needs to span.
    * Uses only data-col-span / data-row-span attributes — no pixel measurement.
    */
-  #computeRequiredRows() {
+  #computeRequiredRows(): number {
     const COLS = 12;
     /** Row index → 12-bit occupied-column bitmask. */
     const rowBits = new Map<number, number>();
 
-    const canFit = (r: number, c: number, rs: number, cs: number) => {
+    const canFit = (r: number, c: number, rs: number, cs: number): boolean => {
       if (c + cs > COLS) return false;
       const mask = ((1 << cs) - 1) << c;
       for (let ri = r; ri < r + rs; ri++) {
@@ -118,7 +118,7 @@ export class SherpaContainerGroup extends SherpaElement {
       return true;
     };
 
-    const occupy = (r: number, c: number, rs: number, cs: number) => {
+    const occupy = (r: number, c: number, rs: number, cs: number): void => {
       const mask = ((1 << cs) - 1) << c;
       for (let ri = r; ri < r + rs; ri++) {
         rowBits.set(ri, (rowBits.get(ri) ?? 0) | mask);
@@ -151,7 +151,7 @@ export class SherpaContainerGroup extends SherpaElement {
     return maxRow;
   }
 
-  #updateRowSpan() {
+  #updateRowSpan(): void {
     const required = this.#computeRequiredRows();
     if (required > 0) this.dataset["rowSpan"] = String(required);
   }
@@ -172,7 +172,7 @@ export class SherpaContainerGroup extends SherpaElement {
    * baselines align across rows. The first tile's header serves as the
    * group title.
    */
-  #syncGroupPositions() {
+  #syncGroupPositions(): void {
     const current = new Set<HTMLElement>();
     let isFirst = true;
     for (const child of this.children) {

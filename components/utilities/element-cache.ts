@@ -32,7 +32,7 @@ export type ElementCacheEntry<T extends Element = Element> =
   | ElementCacheConfig<T>;
 
 /** Map of element names to their cache configurations */
-export type ElementCacheMap = Record<string, ElementCacheEntry<any>>;
+export type ElementCacheMap = Record<string, ElementCacheEntry<Element>>;
 
 /** Inferred return type for cached element getters */
 export type CachedElementType<T> =
@@ -59,11 +59,12 @@ interface CacheStorage {
   [selector: string]: Element | NodeListOf<Element> | null;
 }
 
-function getCache(target: any): CacheStorage {
-  if (!target[CACHE_KEY]) {
-    target[CACHE_KEY] = Object.create(null);
+function getCache(target: object): CacheStorage {
+  const t = target as Record<symbol, CacheStorage | undefined>;
+  if (!t[CACHE_KEY]) {
+    t[CACHE_KEY] = Object.create(null) as CacheStorage;
   }
-  return target[CACHE_KEY];
+  return t[CACHE_KEY] as CacheStorage;
 }
 
 
@@ -96,11 +97,11 @@ function getCache(target: any): CacheStorage {
  * @returns Frozen object with typed getters for each element
  */
 export function defineCachedElements<M extends ElementCacheMap>(
-  target: any,
+  target: object & { $(s: string): Element | null; $$(s: string): NodeListOf<Element> },
   map: M
 ): CachedElements<M> {
   const cache = getCache(target);
-  const result: any = {};
+  const result: Record<string, unknown> = {};
 
   for (const [key, entry] of Object.entries(map)) {
     const config: ElementCacheConfig =
@@ -146,8 +147,9 @@ export function defineCachedElements<M extends ElementCacheMap>(
  *
  * @param target - Component instance
  */
-export function clearElementCache(target: any): void {
-  if (target[CACHE_KEY]) {
-    target[CACHE_KEY] = Object.create(null);
+export function clearElementCache(target: object): void {
+  const t = target as Record<symbol, CacheStorage | undefined>;
+  if (t[CACHE_KEY]) {
+    t[CACHE_KEY] = Object.create(null) as CacheStorage;
   }
 }

@@ -99,7 +99,7 @@ export class SherpaNode extends SherpaElement {
 
 
   /** Adopt the sherpa-node family tokens into every shadow root. */
-  static override get sharedStyles() {
+  static override get sharedStyles(): string[] {
     return [
       ...super.sharedStyles,
       new URL("../sherpa-node/sherpa-node-tokens.css", import.meta.url).href,
@@ -121,7 +121,7 @@ export class SherpaNode extends SherpaElement {
     ];
   }
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     node: '.node'
   });
 
@@ -152,7 +152,7 @@ export class SherpaNode extends SherpaElement {
     this.#applyTemplate();
   }
 
-  override onAttributeChanged(name: string) {
+  override onAttributeChanged(name: string): void {
     if (name === "data-x" || name === "data-y") this.#syncPosition();
     else if (name === "data-w") this.#syncWidth();
     else if (name === "data-subtypes") this.#syncSubtypeOptions();
@@ -168,7 +168,7 @@ export class SherpaNode extends SherpaElement {
 
   /* ── Public API ────────────────────────────────────────────────── */
 
-  get nodeId() { return this.dataset["nodeId"] || ""; }
+  get nodeId(): string { return this.dataset["nodeId"] || ""; }
 
   /**
    * Get all available template kinds and subtypes registered on this node.
@@ -183,7 +183,7 @@ export class SherpaNode extends SherpaElement {
       const subtype = tpl.dataset["subtype"];
       if (!kind || !subtype) continue;
       if (!map.has(kind)) map.set(kind, []);
-      map.get(kind)!.push(subtype);
+      map.get(kind)?.push(subtype);
     }
     return map;
   }
@@ -215,7 +215,7 @@ export class SherpaNode extends SherpaElement {
    * dividing by its own zoom when converting to world space. This keeps
    * the node free of canvas-transform knowledge.
    */
-  getPortPositions() {
+  getPortPositions(): Map<string, { x: number; y: number; side: string; multi: boolean; count: number; height: number; status: string }> {
     const map = new Map<string, { x: number; y: number; side: string; multi: boolean; count: number; height: number; status: string }>();
     const hostRect = this.getBoundingClientRect();
     const sockets = this.querySelectorAll<HTMLElement>("sherpa-node-socket[data-port-name]");
@@ -266,7 +266,7 @@ export class SherpaNode extends SherpaElement {
    * and lock the control so the user can't override the driven value.
    * No-op if the node has no row-level input socket for that port.
    */
-  setInputValue(portName: string, value: unknown) {
+  setInputValue(portName: string, value: unknown): void {
     const ctrl = this.#getControlForInputPort(portName);
     if (!ctrl) return;
     const v = nodeValueToString(value as NodeOutputValue);
@@ -280,7 +280,7 @@ export class SherpaNode extends SherpaElement {
   }
 
   /** Restore an input control to user-editable state and clear value. */
-  clearInputValue(portName: string) {
+  clearInputValue(portName: string): void {
     const ctrl = this.#getControlForInputPort(portName);
     if (!ctrl) return;
     if (ctrl.hasAttribute("data-driven")) {
@@ -314,7 +314,7 @@ export class SherpaNode extends SherpaElement {
       matches `portName`. The control's `name` must equal `portName` so
       that cross-port rows (e.g. an `agent` socket sitting in the `Type`
       row of ai.chat) don't accidentally write to the wrong control. */
-  #getControlForInputPort(portName: string) {
+  #getControlForInputPort(portName: string): Element | null {
     const socket = this.querySelector(
       `sherpa-node-row > sherpa-node-socket[data-direction="in"][data-port-name="${CSS.escape(portName)}"]`,
     );
@@ -323,7 +323,7 @@ export class SherpaNode extends SherpaElement {
     return ctrl ?? null;
   }
 
-  #onControlChange = (e: Event) => {
+  #onControlChange = (e: Event): void => {
     // Ignore our own subtype dropdown — that has its own event path.
     const subtypeSelect = this.#subtypeSelect;
     if (subtypeSelect && e.composedPath().includes(subtypeSelect)) return;
@@ -338,14 +338,14 @@ export class SherpaNode extends SherpaElement {
 
   /* ── Internals ─────────────────────────────────────────────────── */
 
-  #syncPosition() {
+  #syncPosition(): void {
     const x = parseFloat(this.dataset["x"] || "0") || 0;
     const y = parseFloat(this.dataset["y"] || "0") || 0;
     this.style.setProperty("--sherpa-node-x", `${x}px`);
     this.style.setProperty("--sherpa-node-y", `${y}px`);
   }
 
-  #syncWidth() {
+  #syncWidth(): void {
     const w = parseFloat(this.dataset["w"] || "");
     if (Number.isFinite(w) && w > 0) {
       this.style.setProperty("--sherpa-node-w", `${w}px`);
@@ -354,7 +354,7 @@ export class SherpaNode extends SherpaElement {
     }
   }
 
-  #syncSubtypeOptions() {
+  #syncSubtypeOptions(): void {
     const select = this.#subtypeSelect;
     if (!select) return;
     const raw = this.dataset["subtypes"];
@@ -403,7 +403,7 @@ export class SherpaNode extends SherpaElement {
     if (select.getAttribute("data-label") !== label) {
       select.setAttribute("data-label", label);
     }
-    const apply = () => {
+    const apply = (): void => {
       if (typeof select.setOptions !== "function") return;
       select.setOptions(normalised);
       const firstValue = isGrouped
@@ -428,7 +428,7 @@ export class SherpaNode extends SherpaElement {
    * Per the Template Completeness Rule: NO createElement here for
    * structural rows — JS only clones what HTML declares.
    */
-  #applyTemplate() {
+  #applyTemplate(): void {
     const kind = this.dataset["kind"] || "";
     const subtype = this.dataset["subtype"] || "";
     if (!subtype) return;
@@ -525,7 +525,7 @@ export class SherpaNode extends SherpaElement {
    * sibling `[slot="control"]` within the same node. Subtype select
    * is also addressable via the special name "subtype".
    */
-  #applyShowIf() {
+  #applyShowIf(): void {
     const rows = this.querySelectorAll(":scope > [data-template-row][data-show-if]");
     if (!rows.length) return;
     const readVal = (name: string): string => {
@@ -551,7 +551,7 @@ export class SherpaNode extends SherpaElement {
     }
   }
 
-  #onSubtypeChange = (e: Event) => {
+  #onSubtypeChange = (e: Event): void => {
     // sherpa-input-select fires a `change` CustomEvent with detail.value.
     // Fall back to reading value off the element for safety.
     const value = (e as CustomEvent)?.detail?.value ?? this.#subtypeSelect?.getAttribute("value") ?? "";
@@ -559,9 +559,9 @@ export class SherpaNode extends SherpaElement {
     this.emit("sherpa-node-subtype-change", { nodeId: this.nodeId, subtype: value });
   };
 
-  #stopPointer = (e: Event) => { e.stopPropagation(); };
+  #stopPointer = (e: Event): void => { e.stopPropagation(); };
 
-  #onPointerDown = (e: Event) => {
+  #onPointerDown = (e: Event): void => {
     // Sockets stop propagation themselves; everything else here is body.
     this.emit("sherpa-node-pointerdown", { nodeId: this.nodeId, originalEvent: e });
   };

@@ -45,10 +45,19 @@
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
+interface PrismLanguages { [key: string]: unknown; text: unknown; }
+interface PrismPlugins { lineNumbers?: { highlightLines: (el: HTMLElement) => void }; }
+interface PrismStatic {
+  highlightElement?: (el: Element) => void;
+  highlight?: (code: string | null, grammar: unknown, language: string | null) => string;
+  languages: PrismLanguages;
+  plugins: PrismPlugins;
+}
+
 declare global {
   interface Window {
-    /** PrismJS — loaded dynamically; typed loosely as it ships no types here. */
-    Prism?: any;
+    /** PrismJS — loaded dynamically. */
+    Prism?: PrismStatic;
     /** Global SherpaToast factory, when the toast component is registered. */
     SherpaToast?: { success?: (message: string) => void };
   }
@@ -64,7 +73,7 @@ export class SherpaCodeBlock extends SherpaElement {
   }
 
   // Supported languages
-  static SUPPORTED_LANGUAGES = [
+  public static SUPPORTED_LANGUAGES = [
     'html',
     'css',
     'js',
@@ -91,13 +100,13 @@ export class SherpaCodeBlock extends SherpaElement {
   ];
 
   // Prism.js CDN config
-  static PRISM_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
+  public static PRISM_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
   static readonly #PRISM_SRI: Record<string, string> = {
     'prism.min.js': 'sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==',
     'plugins/line-numbers/prism-line-numbers.min.js': 'sha512-BttltKXFyWnGZQcRWj6osIg7lbizJchuAMotOkdLxHxwt/Hyo+cl47bZU0QADg+Qt5DJwni3SbYGXeGMB5cBcw==',
   };
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     code: 'code',
     pre: { selector: 'pre', type: HTMLElement },
     copyBtn: '.copy-btn',
@@ -120,15 +129,15 @@ export class SherpaCodeBlock extends SherpaElement {
     ];
   }
 
-  get supportedLanguages() {
+  get supportedLanguages(): string {
     return SherpaCodeBlock.SUPPORTED_LANGUAGES.join(',');
   }
 
-  get highlightError() {
+  get highlightError(): string | null {
     return this.#highlightError;
   }
 
-  get detectedLanguage() {
+  get detectedLanguage(): string | null {
     return this.#detectedLanguage;
   }
 
@@ -151,11 +160,11 @@ export class SherpaCodeBlock extends SherpaElement {
     this.setAttribute('data-supported-languages', this.supportedLanguages);
   }
 
-  override async onConnect() {
+  override async onConnect(): Promise<void> {
     await this.#loadAndHighlightCode();
   }
 
-  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null) {
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     super.onAttributeChanged(name, oldValue, newValue);
 
     if (name === 'data-max-height' && this.els.pre) {
@@ -177,7 +186,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Manually highlight code with specific language.
    */
-  async highlightCode(code: string, language: string) {
+  async highlightCode(code: string, language: string): Promise<void> {
     if (!code) return;
 
     if (this.els.code) {
@@ -194,7 +203,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Reload Prism.js from CDN if it failed to load.
    */
-  async reloadHighlighter() {
+  async reloadHighlighter(): Promise<void> {
     this.#prismLoaded = false;
     this.#highlightError = null;
     this.dataset["highlightError"] = '';
@@ -203,7 +212,7 @@ export class SherpaCodeBlock extends SherpaElement {
 
   // ============ Private Methods ============
 
-  async #loadAndHighlightCode() {
+  async #loadAndHighlightCode(): Promise<void> {
     const codeContent = this.textContent?.trim() || '';
 
     if (!codeContent) {
@@ -293,7 +302,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Ensure Prism.js is loaded from CDN.
    */
-  async #ensurePrismLoaded() {
+  async #ensurePrismLoaded(): Promise<void> {
     if (this.#prismLoaded && window.Prism) {
       return;
     }
@@ -378,7 +387,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Highlight code element using Prism.
    */
-  async #highlightElement() {
+  async #highlightElement(): Promise<void> {
     if (!window.Prism || !this.els.code) return;
 
     // Set language class
@@ -401,7 +410,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Apply line numbers via Prism plugin.
    */
-  #applyLineNumbers() {
+  #applyLineNumbers(): void {
     if (!this.els.pre) return;
 
     this.els.pre.dataset["lineNumbers"] = 'true';
@@ -421,7 +430,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Update language label display.
    */
-  #updateLanguageLabel() {
+  #updateLanguageLabel(): void {
     if (!this.els.languageLabel) return;
 
     const lang = this.#detectedLanguage || 'plaintext';
@@ -432,7 +441,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Apply theme CSS (light/dark).
    */
-  #applyThemeCSS() {
+  #applyThemeCSS(): void {
     if (this.els.pre) {
       const theme = this.dataset["theme"] || 'auto';
       const isDark =
@@ -445,7 +454,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Get current page mode (light/dark).
    */
-  #getPageMode() {
+  #getPageMode(): string {
     const root = document.documentElement;
     return root.getAttribute('data-mode') || 'light';
   }
@@ -453,7 +462,7 @@ export class SherpaCodeBlock extends SherpaElement {
   /**
    * Handle copy button click.
    */
-  async #onCopyClick() {
+  async #onCopyClick(): Promise<void> {
     const code = this.els.code?.textContent || '';
     if (!code) return;
 
@@ -484,30 +493,27 @@ export class SherpaCodeBlock extends SherpaElement {
 
       // Show toast message
       this.#showToast();
-    } catch (err) {
-      console.error('Failed to copy code:', err);
+    } catch {
+      // Copy failed silently — no action needed
     }
   }
 
   /**
    * Show copy feedback toast.
    */
-  #showToast() {
+  #showToast(): void {
     const message = this.dataset["copyToastMessage"] || 'Copied to clipboard!';
 
     // Try to use SherpaToast if available
     if (window.SherpaToast) {
       window.SherpaToast.success?.(message);
-    } else {
-      // Fallback: simple alert (can be improved)
-      console.log(message);
     }
   }
 
   /**
    * Emit custom event.
    */
-  #emit(name: string, detail: unknown) {
+  #emit(name: string, detail: unknown): void {
     this.dispatchEvent(
       new CustomEvent(name, {
         bubbles: true,

@@ -54,7 +54,7 @@ export class SherpaChartLegend extends SherpaElement {
 
   #items: LegendItem[] = [];
 
-  els = this.cacheElements({
+  public els = this.cacheElements({
     list: '.legend-list',
     itemTpl: { selector: 'template.item-tpl', type: HTMLTemplateElement }
   });
@@ -71,19 +71,19 @@ export class SherpaChartLegend extends SherpaElement {
    * Set legend items.
    * @param {Array<{label: string, value?: string, color?: string, active?: boolean, link?: boolean}>} items
    */
-  setItems(items: LegendItem[]) {
+  setItems(items: LegendItem[]): void {
     this.#items = items || [];
     this.#render();
   }
 
   /** Get current items. */
-  get items() {
+  get items(): LegendItem[] {
     return [...this.#items];
   }
 
   /* ── Private: render ──────────────────────────────────────────── */
 
-  #render() {
+  #render(): void {
     if (!this.els.list || !this.els.itemTpl) return;
 
     this.els.list.replaceChildren();
