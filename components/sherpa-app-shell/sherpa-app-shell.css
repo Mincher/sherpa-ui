@@ -31,7 +31,7 @@
   overflow: hidden;
 }
 
-:host([data-nav-pinned="true"]),
+:host([data-nav-pinned]),
 :host:has([slot="nav"][data-pinned="true"]) {
   --_nav-rail-width: 320px;
 }
