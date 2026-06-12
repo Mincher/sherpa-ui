@@ -188,7 +188,7 @@
   color: inherit;
 }
 :host .metric-delta {
-  color: var(--sherpa-content-default-on-color-subtle-body, #333);
+  color: var(--sherpa-content-default-body, #333);
 }
 :host .metric-sparkline {
   flex: 1 1 0%;
