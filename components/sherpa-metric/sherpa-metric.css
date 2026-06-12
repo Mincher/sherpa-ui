@@ -206,6 +206,25 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   Dark mode — explicit overrides so shadow-internal elements receive correct
+   colour values. The @property registrations in sherpa-alias.css are
+   tree-scoped (document tree only) so shadow-internal var() chains that
+   reference those typed properties can fall back to initial-value instead of
+   the dark-mode token value. Binding colours at :host-context level resolves
+   in the light-DOM context where @property applies correctly.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host-context([data-mode="dark"]) .metric-value {
+  color: var(--sherpa-content-default-heading, #fafafa);
+}
+:host-context([data-mode="dark"]) .metric-card[data-status] .metric-value {
+  color: var(--sherpa-content-default-heading, #fafafa);
+}
+:host-context([data-mode="dark"]) .metric-delta {
+  color: var(--sherpa-content-default-body, #f2f2f2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    Container Queries
    ═══════════════════════════════════════════════════════════════════════════ */
 
