@@ -150,10 +150,25 @@
   font-weight: 400;
   line-height: 1em;
   letter-spacing: 1px;
-  color: var(--_text-color, var(--sherpa-content-default-on-color-subtle-heading, #18191a));
+  color: var(--sherpa-content-default-heading, #18191a);
   margin: 0;
   max-width: 100%;
   min-width: 0;
+}
+:host .metric-card[data-status="info"] .metric-value {
+  color: var(--sherpa-content-context-info-on-color-subtle, #06526f);
+}
+:host .metric-card[data-status="success"] .metric-value {
+  color: var(--sherpa-content-context-success-on-color-subtle, #048142);
+}
+:host .metric-card[data-status="warning"] .metric-value {
+  color: var(--sherpa-content-context-warning-on-color-subtle, #a77205);
+}
+:host .metric-card[data-status="critical"] .metric-value {
+  color: var(--sherpa-content-context-error-on-color-subtle, #bf2c09);
+}
+:host .metric-card[data-status="urgent"] .metric-value {
+  color: var(--sherpa-content-context-urgent-on-color-subtle, #b95608);
 }
 :host .metric-trend {
   display: flex;
