@@ -74,30 +74,14 @@ i.sherpa-icon {
 :host([data-col-span="9"])  { grid-column: span 9; }
 :host([data-col-span="12"]) { grid-column: span 12; }
 
-:host([data-row-span="1"])  { grid-row: span 1; }
-:host([data-row-span="2"])  { grid-row: span 2; }
-:host([data-row-span="3"])  { grid-row: span 3; }
-:host([data-row-span="4"])  { grid-row: span 4; }
-:host([data-row-span="5"])  { grid-row: span 5; }
-:host([data-row-span="6"])  { grid-row: span 6; }
-:host([data-row-span="7"])  { grid-row: span 7; }
-:host([data-row-span="8"])  { grid-row: span 8; }
-:host([data-row-span="9"])  { grid-row: span 9; }
-:host([data-row-span="10"]) { grid-row: span 10; }
-:host([data-row-span="11"]) { grid-row: span 11; }
-:host([data-row-span="12"]) { grid-row: span 12; }
-:host([data-row-span="13"]) { grid-row: span 13; }
-:host([data-row-span="14"]) { grid-row: span 14; }
-:host([data-row-span="15"]) { grid-row: span 15; }
-:host([data-row-span="16"]) { grid-row: span 16; }
-:host([data-row-span="17"]) { grid-row: span 17; }
-:host([data-row-span="18"]) { grid-row: span 18; }
-:host([data-row-span="19"]) { grid-row: span 19; }
-:host([data-row-span="20"]) { grid-row: span 20; }
-:host([data-row-span="21"]) { grid-row: span 21; }
-:host([data-row-span="22"]) { grid-row: span 22; }
-:host([data-row-span="23"]) { grid-row: span 23; }
-:host([data-row-span="24"]) { grid-row: span 24; }
+:host([data-row-span="1"]) { grid-row: span 1; }
+:host([data-row-span="2"]) { grid-row: span 2; }
+:host([data-row-span="3"]) { grid-row: span 3; }
+:host([data-row-span="4"]) { grid-row: span 4; }
+:host([data-row-span="5"]) { grid-row: span 5; }
+:host([data-row-span="6"]) { grid-row: span 6; }
+:host([data-row-span="7"]) { grid-row: span 7; }
+:host([data-row-span="8"]) { grid-row: span 8; }
 
 :host([data-row-span="auto"]) {
   grid-row: span var(--_auto-row-span, 1);

@@ -89,6 +89,41 @@ export class SherpaLayoutGrid extends SherpaElement {
     const slot = this.$<HTMLSlotElement>('slot:not([name])');
     slot?.addEventListener('slotchange', () => this.#syncAutoSpanTargets());
     requestAnimationFrame(() => this.#syncAutoSpanTargets());
+
+    // Re-measure after data loads. dataset-filtered is dispatched on this
+    // element (it carries data-dataset) with bubbles:false.
+    this.addEventListener('dataset-filtered', () => {
+      this.#waitAndRemeasure();
+    });
+    // dataset-filtered often fires before components finish bootstrapping.
+    // dispatchDataset() always caches records on ._filtered before the event,
+    // so if it's already set we missed the event.  Await the data grid's
+    // `rendered` promise so rows are painted before we measure scrollHeight.
+    if ((this as unknown as Record<string, unknown>)['_filtered']) {
+      this.#waitAndRemeasure();
+    }
+  }
+
+  /**
+   * Wait for each auto-span container's key components (data grid, header)
+   * to finish bootstrapping before measuring.  `tc.scrollHeight` is 0 until
+   * the data grid's shadow DOM is set up and `onConnect` has called `setData`.
+   */
+  async #waitAndRemeasure(): Promise<void> {
+    interface WithRendered { rendered?: Promise<void> }
+    const slot = this.$<HTMLSlotElement>('slot:not([name])');
+    for (const el of slot?.assignedElements() ?? []) {
+      if (!(el instanceof HTMLElement) || el.dataset['rowSpan'] !== 'auto') continue;
+      // Await any data grid and header in the container so their shadow DOMs
+      // (and row data via ContentAttributesMixin.onConnect) are ready.
+      const waits: Promise<void>[] = [];
+      for (const child of el.querySelectorAll('sherpa-data-grid, [slot="header"]')) {
+        const r = (child as unknown as WithRendered).rendered;
+        if (r) waits.push(r);
+      }
+      if (waits.length) await Promise.all(waits);
+      this.#updateAutoSpan(el);
+    }
   }
 
   #syncAutoSpanTargets(): void {
@@ -107,9 +142,46 @@ export class SherpaLayoutGrid extends SherpaElement {
     const rowHeight = parseFloat(style.getPropertyValue('--row-height')) || 64;
     const rowGap = parseFloat(style.rowGap) || 16;
     const rowUnit = rowHeight + rowGap;
-    const contentH = el.getBoundingClientRect().height;
-    const spans = Math.max(1, Math.ceil((contentH + rowGap) / rowUnit));
+
+    // Measure the element's natural content height.  getBoundingClientRect()
+    // reflects the constrained grid span, not the content.  height:max-content
+    // doesn't cross scroll-container boundaries — overflow:auto/clip on the
+    // card-content or data-grid stops the intrinsic-size walk.  Instead we
+    // sum the heights of the non-scrollable chrome (container header) and the
+    // scrollHeight of the innermost scroll container (table-container inside
+    // sherpa-data-grid), which always reflects the full unclipped row height.
+    const contentH = this.#measureNaturalHeight(el);
+    const spans = Math.min(8, Math.max(1, Math.ceil((contentH + rowGap) / rowUnit)));
     el.style.setProperty('--_auto-row-span', String(spans));
+  }
+
+  #measureNaturalHeight(el: HTMLElement): number {
+    // 1. Non-scrollable header chrome (slotted container-header in light DOM).
+    const headerSlot = el.querySelector<HTMLElement>('[slot="header"]');
+    const headerH = headerSlot?.getBoundingClientRect().height ?? 0;
+
+    // 2. Scrollable body: look for a data grid inside the container's
+    //    default slot.  The innermost scroll container (.table-container) holds
+    //    all rendered rows and its scrollHeight gives the true content height
+    //    even when the element is visually clipped to a small grid span.
+    const dataGrid = el.querySelector<HTMLElement>('sherpa-data-grid');
+    if (dataGrid?.shadowRoot) {
+      const sr = dataGrid.shadowRoot;
+      const dgHeader = sr.querySelector<HTMLElement>('.grid-header, .grid-toolbar');
+      const tableContainer = sr.querySelector<HTMLElement>('.table-container');
+      const pagination = sr.querySelector<HTMLElement>('sherpa-pagination');
+      const dgHeaderH = dgHeader?.getBoundingClientRect().height ?? 0;
+      const bodyH = tableContainer?.scrollHeight ?? 0;
+      const paginationH = pagination?.getBoundingClientRect().height ?? 0;
+      return headerH + dgHeaderH + bodyH + paginationH;
+    }
+
+    // 3. Fallback for non-data-grid content: height:max-content works for
+    //    content without scroll containers (charts, metrics, etc.).
+    el.style.setProperty('height', 'max-content', 'important');
+    const h = el.getBoundingClientRect().height;
+    el.style.removeProperty('height');
+    return h;
   }
 
   #syncRowHeight(): void {

@@ -144,9 +144,12 @@ export class SherpaButton extends SherpaElement {
   #menuClosedAt = 0;
 
   // Cloning prototypes for programmatic menu building
-  #menuListTpl!: HTMLTemplateElement;
-  #menuItemTpl!: HTMLTemplateElement;
-  #menuHeadingTpl!: HTMLTemplateElement;
+  #menuListTpl: HTMLTemplateElement | null = null;
+  #menuItemTpl: HTMLTemplateElement | null = null;
+  #menuHeadingTpl: HTMLTemplateElement | null = null;
+
+  // setMenuItems() called before onRender — replayed once templates are ready
+  #pendingMenuItems: [MenuItems, Partial<MenuOptions>] | null = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
@@ -172,6 +175,12 @@ export class SherpaButton extends SherpaElement {
     this.#syncIcons();
     this.#syncBadge();
     this.els.trigger?.addEventListener("click", this.#onTriggerClick);
+
+    if (this.#pendingMenuItems) {
+      const [items, opts] = this.#pendingMenuItems;
+      this.#pendingMenuItems = null;
+      this.setMenuItems(items, opts);
+    }
   }
 
   override onAttributeChanged(name: string, _old: string | null, newValue: string | null): void {
@@ -275,15 +284,20 @@ export class SherpaButton extends SherpaElement {
 
   /**
    * Lazily create and wire up the per-button overlay instance.
-   * Inserted as a sibling so CSS anchor positioning resolves
-   * in the same tree scope.
+   * Inserted after the nearest light-DOM ancestor so that CSS anchor
+   * positioning can resolve the anchor-name from the top layer.
+   * anchor-name values are shadow-tree-scoped: if the button lives inside
+   * a shadow root the overlay must be in the light DOM for the browser to
+   * see the anchor once the popover is promoted to the top layer.
    */
   #ensureMenu(): SherpaContainerOverlay {
     if (this.#menuEl) return this.#menuEl;
 
     const menu = document.createElement("sherpa-container-overlay") as unknown as SherpaContainerOverlay;
     menu.dataset['variant'] = 'menu';
-    this.after(menu);
+    const root = this.getRootNode();
+    const insertAfter: Element = root instanceof ShadowRoot ? root.host : this;
+    insertAfter.after(menu);
 
     menu.addEventListener("overlay-select", (e: Event) => {
       e.stopPropagation();
@@ -357,7 +371,18 @@ export class SherpaButton extends SherpaElement {
       ));
     }
 
-    menu.show(this);
+    // Anchor to the shadow host when the button is inside a shadow DOM so
+    // that anchor-name is set on a light-DOM element and CSS anchor
+    // positioning can resolve it from the top layer.
+    const root = this.getRootNode();
+    const anchorEl: HTMLElement = root instanceof ShadowRoot
+      ? (root.host as HTMLElement)
+      : this;
+    // show() reads data-menu-position from the anchor element; since anchorEl
+    // may be the shadow host (not this button), forward the placement manually.
+    const menuPosition = this.dataset["menuPosition"];
+    if (menuPosition) menu.dataset['placement'] = menuPosition;
+    menu.show(anchorEl);
   }
 
   /**
@@ -444,6 +469,10 @@ export class SherpaButton extends SherpaElement {
    *   marker  — tag new elements for scoped cleanup on re-call; implies append
    */
   setMenuItems(items: MenuItems, opts: Partial<MenuOptions> = {}): void {
+    if (!this.#menuListTpl) {
+      this.#pendingMenuItems = [items, opts];
+      return;
+    }
     const menu = this.#ensureMenu();
     const { marker } = opts;
 
@@ -476,7 +505,7 @@ export class SherpaButton extends SherpaElement {
 
   /** Build a flat list of overlay items inside a single <ul>. */
   #buildFlatList(menu: SherpaContainerOverlay, items: MenuItem[], opts: Partial<MenuOptions> = {}): void {
-    const ul = this.#menuListTpl.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
+    const ul = this.#menuListTpl!.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
     if (!ul) return;
     if (opts.group) ul.dataset['group'] = opts.group;
 
@@ -492,7 +521,7 @@ export class SherpaButton extends SherpaElement {
     for (const section of sections) {
       // Heading
       if (section.heading) {
-        const heading = this.#menuHeadingTpl.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+        const heading = this.#menuHeadingTpl!.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
         if (!heading) continue;
         heading.textContent = section.heading;
         if (section.style) heading.setAttribute("style", section.style);
@@ -501,7 +530,7 @@ export class SherpaButton extends SherpaElement {
 
       // Items
       if (section.items?.length) {
-        const ul = this.#menuListTpl.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
+        const ul = this.#menuListTpl!.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
         if (!ul) continue;
         if (section.group) ul.dataset['group'] = section.group;
         if (section.style) ul.setAttribute("style", section.style);
@@ -522,7 +551,7 @@ export class SherpaButton extends SherpaElement {
 
   /** Clone a <li><sherpa-overlay-item> prototype and populate it from item data. */
   #buildMenuItem(item: MenuItem, opts: Partial<MenuOptions> = {}): HTMLLIElement {
-    const li = this.#menuItemTpl.content.firstElementChild?.cloneNode(true) as HTMLLIElement | undefined ?? document.createElement('li');
+    const li = this.#menuItemTpl!.content.firstElementChild?.cloneNode(true) as HTMLLIElement | undefined ?? document.createElement('li');
     const menuItem = li.querySelector('sherpa-overlay-item');
     if (!menuItem) return li;
     menuItem.setAttribute("value", item.value ?? "");

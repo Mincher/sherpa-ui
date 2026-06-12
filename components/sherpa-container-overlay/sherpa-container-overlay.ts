@@ -440,7 +440,13 @@ export class SherpaContainerOverlay extends PageNavigationMixin(SherpaElement) {
   /* ── Positioning ─────────────────────────────────────────────── */
 
   #positionRelativeTo(anchor: HTMLElement): void {
-    const sameTreeScope = anchor.getRootNode() === this.getRootNode();
+    const anchorRoot = anchor.getRootNode();
+    // CSS anchor-name values are scoped to the shadow tree they're defined in.
+    // Once this overlay is promoted to the top layer via showPopover(), the browser
+    // cannot resolve an anchor-name set inside a shadow root.  Use the
+    // getBoundingClientRect fallback whenever the trigger lives in a shadow tree.
+    const sameTreeScope = anchorRoot === this.getRootNode()
+      && !(anchorRoot instanceof ShadowRoot);
 
     if (supportsAnchor && sameTreeScope) {
       let anchorName = anchor.style.getPropertyValue('anchor-name');

@@ -31,8 +31,11 @@
  *   data-flip      {boolean} — when present, enables flip fallbacks
  *
  * ─ Notes ─────────────────────────────────────────────────────────────────
- * • Uses logical properties (inline-start / inline-end) throughout so
- *   RTL works automatically.
+ * • Uses physical `left`/`right` instead of logical `inset-inline-*` to
+ *   work around a Chromium bug where `anchor(inline-start/end)` resolves
+ *   to 0 for popovers whose anchor is in the same document scope but
+ *   rendered as a slotted child of a web component. Physical `anchor(left)`
+ *   and `anchor(right)` resolve correctly in the same scenario.
  * • All rules guarded by `@supports (anchor-name: --x)`. Components are
  *   responsible for their own pre-anchor fallback (typically a fixed
  *   position pinned to the viewport, plus a JS-measured rectangle).
@@ -75,10 +78,10 @@
     justify-self: anchor-center;
   }
   :host([data-placement="bottom-start"]) {
-    inset-inline-start: anchor(inline-start);
+    left: anchor(left);
   }
   :host([data-placement="bottom-end"]) {
-    inset-inline-end: anchor(inline-end);
+    right: anchor(right);
   }
 
   /* ── Placement: top ────────────────────────────────────────────────── */
@@ -91,20 +94,20 @@
     justify-self: anchor-center;
   }
   :host([data-placement="top-start"]) {
-    inset-inline-start: anchor(inline-start);
+    left: anchor(left);
   }
   :host([data-placement="top-end"]) {
-    inset-inline-end: anchor(inline-end);
+    right: anchor(right);
   }
 
   /* ── Placement: inline-start / inline-end ──────────────────────────── */
   :host([data-placement="inline-start"]),
   :host([data-placement="inline-start-top"]) {
-    inset-inline-end: calc(anchor(inline-start) + var(--_anchor-offset));
+    right: calc(anchor(left) + var(--_anchor-offset));
   }
   :host([data-placement="inline-end"]),
   :host([data-placement="inline-end-top"]) {
-    inset-inline-start: calc(anchor(inline-end) + var(--_anchor-offset));
+    left: calc(anchor(right) + var(--_anchor-offset));
   }
   :host([data-placement="inline-start"]),
   :host([data-placement="inline-end"]) {
