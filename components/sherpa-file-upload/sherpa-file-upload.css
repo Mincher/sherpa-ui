@@ -55,8 +55,9 @@
   min-height: 80px;
   padding: var(--sherpa-space-lg, 20px) var(--sherpa-space-base, 16px);
   background: var(--sherpa-surface-control-default, #ffffff);
-  border: 2px dashed var(--sherpa-border-control-default, #c6c6cc);
-  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  border: var(--sherpa-border-width-lg, 2px) dashed
+    var(--sherpa-border-control-secondary-default, #8d8d99);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   cursor: pointer;
   transition: --transition-fast(background), --transition-fast(border-color);
   outline: none;

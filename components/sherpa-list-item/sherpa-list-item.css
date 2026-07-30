@@ -24,8 +24,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px) var(--sherpa-space-xs, 8px)
-    var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px);
   background: var(--sherpa-surface-container-default, #ffffff);
   border-radius: var(--sherpa-border-rounding-sm, 2px);
   transition: --transition-fast(background);
@@ -115,12 +114,12 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-2xs, 4px);
+  gap: var(--sherpa-space-3xs, 2px);
 }
 :host .content-text {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-2xs, 4px);
+  gap: var(--sherpa-space-3xs, 2px);
 }
 :host .label {
   color: var(--sherpa-content-default-body, #2e2e33);

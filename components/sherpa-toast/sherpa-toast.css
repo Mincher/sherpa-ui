@@ -140,7 +140,7 @@
   height: var(--sherpa-size-xl, 28px);
   padding: var(--sherpa-space-3xs, 2px);
   border: none;
-  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   background: transparent;
   color: var(--_status-text, var(--sherpa-content-default-body, #0f172a));
   font-size: var(--sherpa-fonts-scale-sm, 12px);

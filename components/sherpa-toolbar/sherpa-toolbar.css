@@ -43,6 +43,9 @@
   gap: var(--_toolbar-gap);
   padding-block: var(--_toolbar-py);
   padding-inline: 0px;
+  /* Figma Toolbar has a 1px bottom rule separating it from content below. */
+  border-block-end: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d5d5dc);
 }
 :host .leading,
 :host .trailing {
