@@ -510,9 +510,10 @@ td .bool-icon {
   }
 }
 
-/* Link cells */
+/* Link / primary cells (Figma Grid Cell Type=Primary: accent-blue Semi Bold). */
 td a {
   color: var(--sherpa-content-primary-default, #3c5edd);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   text-decoration: none;
 
   &:hover {
