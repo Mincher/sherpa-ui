@@ -26,7 +26,7 @@
   --_surface: var(--sherpa-surface-container-default, #ffffff);
   --_border-color: var(--sherpa-border-container-default, #d5d5d5);
   --_border-width: var(--sherpa-border-width-base, 1px);
-  --_rounding: var(--sherpa-border-rounding-lg, 8px);
+  --_rounding: var(--sherpa-border-rounding-base, 4px);
   --_shadow: var(
     --sherpa-shadow-default-lg,
     var(--sherpa-elevation-offset-x-large, 8px) var(--sherpa-elevation-offset-y-large, 8px)
@@ -140,9 +140,9 @@
 }
 :host .header-title {
   margin: 0;
-  font-size: var(--sherpa-fonts-scale-base, 14px);
+  font-size: var(--sherpa-fonts-scale-lg, 16px);
   font-weight: 600;
-  line-height: var(--sherpa-font-base-line-height, 20px);
+  line-height: var(--sherpa-font-lg-line-height, 24px);
   color: var(--sherpa-content-default-heading, #1a1a1f);
   overflow: clip;
   white-space: nowrap;
@@ -150,8 +150,8 @@
 }
 :host .header-description {
   margin: 0;
-  font-size: var(--sherpa-font-sm-size, 12px);
-  line-height: var(--sherpa-font-sm-line-height, 16px);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  line-height: var(--sherpa-font-base-line-height, 20px);
   color: var(--sherpa-content-default-secondary, #6a6a75);
   overflow: clip;
   white-space: nowrap;

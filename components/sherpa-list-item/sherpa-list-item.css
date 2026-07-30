@@ -80,7 +80,7 @@
 }
 :host([data-interactive]:focus-visible) .list-item-container {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #0066cc);
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
 }
 :host .leading {
   display: flex;
