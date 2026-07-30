@@ -22,8 +22,6 @@
   --_easing: var(--sherpa-motion-easing-default, ease-in-out);
   --_transform-x: 100%;
   --_transform-y: -20px;
-  --_toast-border-thickness-left: var(--sherpa-border-width-2xl, 6px);
-
 }
 :host .toast {
   position: relative;
@@ -37,6 +35,7 @@
     --_status-surface,
     var(--sherpa-surface-context-info-subtle-default, #eaf4fe)
   );
+  /* Figma Toast: uniform 1px status border, 8px radius (no thick left accent). */
   border: var(--sherpa-border-width-base, 1px) solid
     var(--_status-border, var(--sherpa-border-context-info-default, #66afe9));
   border-radius: var(--sherpa-border-rounding-lg, 8px);
@@ -47,7 +46,6 @@
       var(--sherpa-elevation-tint-default, rgba(55, 47, 79, 0.2)),
     0 4px 4px 0 rgba(0, 0, 0, 0.25)
   );
-  border-left-width: var(--_toast-border-thickness-left);
   translate: var(--_transform-x) 0;
   opacity: 0;
   transition:
