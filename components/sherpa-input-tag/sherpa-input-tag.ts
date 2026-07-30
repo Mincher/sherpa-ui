@@ -147,22 +147,14 @@ export class SherpaInputTag extends SherpaInputBase<string[]> {
 
     const frag = document.createDocumentFragment();
     for (const v of this.#readValue()) {
-      const chip = document.createElement('span');
-      chip.className = 'tag-chip';
-      chip.dataset["value"] = v;
-      chip.innerHTML = `
-        <span class="tag-chip-label"></span>
-        <button type="button" class="tag-chip-remove" tabindex="-1" aria-label="Remove tag">
-          <i class="fa-solid fa-xmark sherpa-icon" data-size="2xs" aria-hidden="true"></i>
-        </button>`;
-      const labelEl = chip.querySelector('.tag-chip-label');
-      if (labelEl) labelEl.textContent = v;
-      chip.querySelector('.tag-chip-remove')?.addEventListener('click', (e) => {
+      // Bind chip value via the Sherpa template binder; wire remove in JS.
+      const chipFrag = this.renderFragment('.chip-tpl', { value: v });
+      chipFrag.querySelector('.tag-chip-remove')?.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         this.remove(v);
       });
-      frag.appendChild(chip);
+      frag.appendChild(chipFrag);
     }
     wrapper.insertBefore(frag, input);
   }

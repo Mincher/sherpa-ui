@@ -20,4 +20,15 @@
 <div class="tag-wrapper">
   <input type="text" class="input-field tag-typeahead" autocomplete="off" />
 </div>
+
+<!-- Chip cloning prototype (bound by #renderChips via the Sherpa binder;
+     the remove-button listener is wired in JS). -->
+<template class="chip-tpl">
+  <span class="tag-chip" data-bind-attr="data-value:value">
+    <span class="tag-chip-label" data-bind="value"></span>
+    <button type="button" class="tag-chip-remove" tabindex="-1" aria-label="Remove tag">
+      <i class="fa-solid fa-xmark sherpa-icon" data-size="2xs" aria-hidden="true"></i>
+    </button>
+  </span>
+</template>
 </template>

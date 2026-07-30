@@ -37,20 +37,20 @@
   <div class="file-list" role="list"></div>
 
   <template class="file-item-tpl">
-    <div class="file-item" role="listitem">
+    <div class="file-item" role="listitem" data-bind-attr="data-state:state">
       <div class="file-icon" aria-hidden="true">
         <i class="file-type-icon">&#xf15b;</i>
       </div>
       <div class="file-info">
         <div class="file-name-row">
-          <span class="file-name"></span>
-          <span class="file-size"></span>
+          <span class="file-name" data-bind="name"></span>
+          <span class="file-size" data-bind="size"></span>
         </div>
         <div class="file-status-row">
           <div class="file-progress-track">
             <div class="file-progress-fill"></div>
           </div>
-          <span class="file-status-text"></span>
+          <span class="file-status-text" data-bind="status"></span>
         </div>
       </div>
       <div class="file-actions">

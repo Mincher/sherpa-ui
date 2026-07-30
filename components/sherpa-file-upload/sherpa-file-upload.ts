@@ -262,19 +262,15 @@ class SherpaFileUpload extends SherpaElement {
   }
 
   #createFileItem(file: File): HTMLElement {
-    const tplEl = this.els.fileItemTpl;
-    if (!tplEl) throw new Error('file-item-tpl not found');
-    const clone = tplEl.content.cloneNode(true) as DocumentFragment;
+    // Bind name/size/status/state via the Sherpa template binder.
+    const clone = this.renderFragment('.file-item-tpl', {
+      name: file.name,
+      size: this.#formatSize(file.size),
+      status: "Ready to upload",
+      state: "ready",
+    });
     const item = clone.querySelector<HTMLElement>(".file-item");
     if (!item) throw new Error('.file-item not found in template');
-
-    const nameEl = item.querySelector(".file-name");
-    if (nameEl) nameEl.textContent = file.name;
-    const sizeEl = item.querySelector(".file-size");
-    if (sizeEl) sizeEl.textContent = this.#formatSize(file.size);
-    const statusEl = item.querySelector(".file-status-text");
-    if (statusEl) statusEl.textContent = "Ready to upload";
-    item.dataset["state"] = "ready";
 
     // Remove button
     item.querySelector(".file-remove-btn")?.addEventListener("click", () => {
