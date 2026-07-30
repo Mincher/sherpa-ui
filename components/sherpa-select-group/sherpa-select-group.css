@@ -93,7 +93,7 @@
 :host .group-select-all {
   display: none;
   padding-block-end: var(--sherpa-space-2xs, 4px);
-  border-block-end: var(--sherpa-border-width-xs, 1px) solid
+  border-block-end: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-container-default, #e0e0e8);
   margin-block-end: var(--sherpa-space-2xs, 4px);
 }
@@ -124,7 +124,7 @@
   min-width: var(--sherpa-size-3xl, 36px);
   height: var(--sherpa-size-3xl, 36px);
   padding-inline: var(--sherpa-space-xs, 8px);
-  border: var(--sherpa-border-width-xs, 1px) solid
+  border: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-control-secondary-default, #9a9aad);
   border-radius: var(--sherpa-border-rounding-full, 999px);
   background: var(--sherpa-surface-control-default, #ffffff);

@@ -48,7 +48,7 @@
   grid-template-columns: subgrid;
   grid-template-rows: subgrid;
   background: var(--sherpa-surface-container-default, #ffffff);
-  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d5d5d5);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   overflow: hidden;
   --_cg-border-width: 0;

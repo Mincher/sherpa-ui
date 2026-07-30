@@ -53,15 +53,15 @@
   );
   --_border-hover: var(--_status-border, transparent);
 
-  border: var(--sherpa-border-width-xs, 1px) solid var(--_status-border, transparent);
-  border-width: var(--_cg-border-width, var(--sherpa-border-width-xs, 1px));
+  border: var(--sherpa-border-width-base, 1px) solid var(--_status-border, transparent);
+  border-width: var(--_cg-border-width, var(--sherpa-border-width-base, 1px));
   border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
   transition: --transition-fast(border-color);
 }
 
 /* Separator — visible divider when inside a .grouped-component wrapper */
 :host([data-separator]) {
-  border-inline-start-width: var(--_cg-sep-inline, var(--sherpa-border-width-xs, 1px));
+  border-inline-start-width: var(--_cg-sep-inline, var(--sherpa-border-width-base, 1px));
   border-inline-start-color: var(
     --_cg-separator-color,
     var(--sherpa-border-control-secondary-default, #d5d5d5)

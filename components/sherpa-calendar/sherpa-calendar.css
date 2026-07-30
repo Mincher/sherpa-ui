@@ -70,13 +70,13 @@ sherpa-container.panel-card[data-variant="fit"] {
   flex-direction: row;
   width: 100%;
   gap: 0;
-  border: var(--sherpa-border-width-xs, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #9a9aad);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   overflow: hidden;
   --_cg-border-width: 0;
   --_cg-border-radius: 0;
   --_cg-separator-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
-  --_cg-sep-inline: var(--sherpa-border-width-xs, 1px);
+  --_cg-sep-inline: var(--sherpa-border-width-base, 1px);
   --_cg-sep-block: 0px;
 }
 
