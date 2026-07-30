@@ -1,16 +1,22 @@
 /**
  * sherpa-quick-filter.css — Quick Filter chip.
  *
- * Matches the Figma "Quick Filter" component set exactly (App Shell v2):
+ * Matches the Figma "Quick Filter" component set exactly (App Shell v2,
+ * component set 26938:43351, on-canvas documented):
  *   - 24px tall, 4px corner radius (a rounded rectangle — NOT a pill)
- *   - Default: white surface + 0.5px neutral border, default body text
- *   - Active (Default type): light-purple surface + purple 0.5px border,
- *     text stays default colour
- *   - AI type: 1px brand-purple border, purple (text/active) label + wand icon
- *   - Populated type: purple (content/active/base) semibold label
+ *   - Border is ALWAYS purple 0.5px (border-control-active) — constant across
+ *     every Type × State. Only the fill + label colour toggle.
+ *   - Label is ALWAYS Semi Bold (600).
+ *   - "Off" mode  → white surface,      default body text.
+ *   - "Active" mode → light-purple surface (#f8ebff), purple text (#8500cc).
+ *   - AI type: same 0.5px purple border (NOT 1px) + wand icon.
  *
- * Type (data-type): default | ai | populated
- * State: [data-active], [data-thinking] (ai), [disabled]
+ * Axes (matching Figma Type × State):
+ *   Type  (data-type):  default | ai | populated
+ *   State: the fill/text toggle is driven by [data-active] (present = Active
+ *          mode). Figma's Populated/Active-On is the un-active white treatment;
+ *          Populated/Active-Off + Default/Active + AI/Suggested are all the
+ *          purple-filled "active" treatment. [data-thinking] adds the AI pulse.
  * The dismiss × shows only for user-added chips ([data-dismissible]).
  */
 
@@ -18,13 +24,14 @@
   display: inline-flex;
   vertical-align: middle;
 
-  /* Per-state custom props (overridden below). Defaults = Default/Neutral. */
+  /* Constant chip identity — border is always purple 0.5px, label semibold.
+     Only --_chip-bg / --_chip-fg / --_chip-icon toggle per state below. */
   --_chip-bg: var(--sherpa-surface-container-default, #ffffff);
-  --_chip-border-color: var(--sherpa-border-container-default, #d5d5d5);
+  --_chip-border-color: var(--sherpa-border-control-active-default, #c046ff);
   --_chip-border-width: var(--sherpa-border-width-sm, 0.5px);
   --_chip-fg: var(--sherpa-content-default-body, #2e2e33);
   --_chip-icon: var(--sherpa-content-default-body, #2e2e33);
-  --_chip-weight: var(--sherpa-font-weight-regular, 400);
+  --_chip-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
 .chip {
@@ -85,7 +92,7 @@
   background: var(--sherpa-surface-container-default, #ffffff);
   color: var(--sherpa-content-default-body, #2e2e33);
   font-family: var(--sherpa-fonts-context-monospaced, "JetBrains Mono", ui-monospace, monospace);
-  font-size: var(--sherpa-fonts-scale-2xs, 8px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   line-height: 16px;
 }
 :host([data-count]) .chip-count { display: inline-flex; }
@@ -130,28 +137,21 @@
 :host([data-dismissible]) .chip-dismiss { display: inline-flex; }
 :host([data-dismissible]) .chip-menu { display: none; }
 
-/* ── State: Active (Default type) — light-purple surface, purple border,
-      but DEFAULT text colour (per design) ────────────────────────── */
+/* ── Active mode — light-purple surface + purple text (border unchanged) ──
+      Figma: Default/Active, Populated/Active-Off, AI/Suggested all share this
+      purple-filled treatment. The "off"/"active-on" states keep the white base
+      above (Populated/Active-On is white). Fill toggles purely on [data-active]. ── */
 :host([data-active]) {
   --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
-  --_chip-border-color: var(--sherpa-border-control-active-default, #c046ff);
-}
-
-/* ── Type: populated (a value is applied) — purple semibold label ── */
-:host([data-type="populated"]) {
-  --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
-  --_chip-border-color: var(--sherpa-border-control-active-default, #c046ff);
   --_chip-fg: var(--sherpa-content-active-base, #8500cc);
-  --_chip-weight: var(--sherpa-font-weight-semibold, 600);
+  --_chip-icon: var(--sherpa-content-active-base, #8500cc);
 }
 
-/* ── Type: ai — 1px brand border, purple label + wand icon ───────── */
+/* ── Type: ai — same 0.5px purple border, purple label + wand icon ── */
 :host([data-type="ai"]) {
   --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
-  --_chip-border-color: var(--sherpa-color-brand-base, #c046ff);
-  --_chip-border-width: var(--sherpa-border-width-base, 1px);
   --_chip-fg: var(--sherpa-content-active-base, #8500cc);
-  --_chip-icon: var(--sherpa-color-brand-base, #c046ff);
+  --_chip-icon: var(--sherpa-content-active-base, #8500cc);
 }
 :host([data-type="ai"]) .chip-icon::before { content: "\f890"; } /* fa-wand-magic-sparkles */
 

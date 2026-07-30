@@ -69,6 +69,11 @@
         "_reason": "Same chroma bump for neutral/default context.",
         "property": "--sherpa-surface-context-default-subtle-default",
         "value": "var(--sherpa-color-neutral-200)"
+      },
+      {
+        "_reason": "Stale extract: Figma aliases border/control/active/default -> color/brand/base (#c046ff, verified via plugin API), but the committed figma-variables.json has it -> color/brand/700 (#8500cc, too dark). Surfaces on the Quick Filter chip border. Remove once REST extraction is fixed.",
+        "property": "--sherpa-border-control-active-default",
+        "value": "var(--sherpa-color-brand-base)"
       }
     ]
   },

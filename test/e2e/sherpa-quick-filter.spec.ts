@@ -14,28 +14,44 @@ test('chip renders "Label: Value" when a value is set', async ({ page }) => {
   expect(label).toBe('Owner: Me');
 });
 
-test('chip matches design: 4px radius (not a pill), populated is purple + semibold', async ({ page }) => {
+test('chip matches Figma: 4px radius, constant purple border, always-semibold, active toggles fill+text', async ({ page }) => {
   await mount(page, `
     <sherpa-quick-filter data-label="Region" id="def"></sherpa-quick-filter>
-    <sherpa-quick-filter data-label="Owner" data-value="Me" data-type="populated" id="pop"></sherpa-quick-filter>`,
+    <sherpa-quick-filter data-label="Owner" data-value="Me" data-active id="act"></sherpa-quick-filter>`,
     'sherpa-quick-filter');
   const r = await page.evaluate(() => {
     const def = document.getElementById('def')!;
-    const pop = document.getElementById('pop')!;
+    const act = document.getElementById('act')!;
     const defChip = def.shadowRoot!.querySelector('.chip')!;
-    const popChip = pop.shadowRoot!.querySelector('.chip')!;
-    const popLabel = pop.shadowRoot!.querySelector('.chip-label')!;
+    const defLabel = def.shadowRoot!.querySelector('.chip-label')!;
+    const actChip = act.shadowRoot!.querySelector('.chip')!;
+    const actLabel = act.shadowRoot!.querySelector('.chip-label')!;
     return {
       radius: getComputedStyle(defChip).borderTopLeftRadius,
-      popWeight: getComputedStyle(popLabel).fontWeight,
-      popColor: getComputedStyle(popChip).color,
+      defBorder: getComputedStyle(defChip).borderTopColor,
+      defBg: getComputedStyle(defChip).backgroundColor,
+      defWeight: getComputedStyle(defLabel).fontWeight,
+      defColor: getComputedStyle(defLabel).color,
+      actBorder: getComputedStyle(actChip).borderTopColor,
+      actBg: getComputedStyle(actChip).backgroundColor,
+      actWeight: getComputedStyle(actLabel).fontWeight,
+      actColor: getComputedStyle(actLabel).color,
     };
   });
   // Design: 4px rounded rectangle — NOT a pill (999px / half-height).
   expect(r.radius).toBe('4px');
-  // Populated label is semibold (600) and purple (content/active/base #8500cc).
-  expect(r.popWeight).toBe('600');
-  expect(r.popColor).toBe('rgb(133, 0, 204)');
+  // Border is ALWAYS purple #c046ff (border-control-active) — every state.
+  expect(r.defBorder).toBe('rgb(192, 70, 255)');
+  expect(r.actBorder).toBe('rgb(192, 70, 255)');
+  // Label is ALWAYS semibold (600).
+  expect(r.defWeight).toBe('600');
+  expect(r.actWeight).toBe('600');
+  // Off (neutral): white surface, default body text.
+  expect(r.defBg).toBe('rgb(255, 255, 255)');
+  expect(r.defColor).toBe('rgb(46, 46, 51)');
+  // Active: light-purple surface (#f8ebff), purple text (#8500cc).
+  expect(r.actBg).toBe('rgb(248, 235, 255)');
+  expect(r.actColor).toBe('rgb(133, 0, 204)');
 });
 
 test('AI chip body click emits quick-filter-ai-accept', async ({ page }) => {

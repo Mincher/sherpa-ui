@@ -39,6 +39,7 @@
     --sherpa-surface-context-error-subtle-default:       var(--sherpa-color-critical-200);
     --sherpa-surface-context-success-subtle-default:     var(--sherpa-color-success-200);
     --sherpa-surface-context-default-subtle-default:     var(--sherpa-color-neutral-200);
+    --sherpa-border-control-active-default:              var(--sherpa-color-brand-base);
   }
 
 } /* @layer theme */

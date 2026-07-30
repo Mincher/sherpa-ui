@@ -11,11 +11,16 @@
  *
  * @element sherpa-quick-filter
  * @category control
- * @description An interactive filter chip. data-type sets the treatment
- *   (default | ai | populated); data-label is the field name, data-value the applied value(s).
- *   When a value is set the label reads "Label: Value" (or "Label" + a count badge for multiple).
- *   The chevron opens the option menu (fires quick-filter-menu-open); dismissible chips show an ×.
- *   AI chips (data-type="ai") support a data-thinking pulse and accept/dismiss for AI-suggested filters.
+ * @description An interactive filter chip. Matches Figma's "Quick Filter" set
+ *   (Type × State). The border is always purple 0.5px and the label always
+ *   semibold — only the fill + text colour toggle: [data-active] gives the
+ *   purple-filled "active" treatment, its absence the white "off" treatment.
+ *   data-type sets the treatment family (default | ai | populated); data-label
+ *   is the field name, data-value the applied value(s). When a value is set the
+ *   label reads "Label: Value" (or "Label" + a count badge for multiple). The
+ *   chevron opens the option menu (fires quick-filter-menu-open); dismissible
+ *   chips show an ×. AI chips (data-type="ai") support a data-thinking pulse and
+ *   accept/dismiss for AI-suggested filters.
  *
  * @attr {string}  data-label       — Field/label text
  * @attr {string}  data-value       — Applied value display (comma-joined for multiple)
