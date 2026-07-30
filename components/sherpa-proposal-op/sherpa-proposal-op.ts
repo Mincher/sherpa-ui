@@ -9,7 +9,12 @@
  *   type for the appropriate colour-coded icon; slot the human-readable change description as
  *   the default text content. Not used standalone.
  *
- * @attr {enum}   data-op  add | remove | update | add-edge | remove-edge
+ * @attr {enum}   data-op       add | remove | update | add-edge | remove-edge
+ * @attr {string} data-target   Machine-readable target this op applies to (e.g. a node id,
+ *                              edge id, or field key) — lets hosts apply/undo the op
+ *                              programmatically rather than parsing the slotted text.
+ * @attr {string} data-field    Optional field/property key the op changes (for update/filter ops)
+ * @attr {string} data-value    Optional new value the op sets (for add/update ops)
  *
  * @slot — Label text describing the change
  */
