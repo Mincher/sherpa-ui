@@ -1,27 +1,35 @@
 <!--
   sherpa-breadcrumbs.html — Navigation breadcrumb trail.
 
-  Authoring model:
-    The template below is the entire rendered structure. Consumers who need
-    different crumbs override it by pointing data-src-json at their own HTML file
-    that exports a <template id="default"> with the same shape.
+  Data-driven via the Sherpa template binder (data-bind* attributes). Populate
+  with either a data array or precompiled HTML:
 
-  Markup contract:
-    • <div class="breadcrumb-trail" role="navigation" aria-label="Breadcrumb"> is the flex row container.
-    • Historic crumbs:  <a class="crumb-text" href="…">Label</a><span class="separator" aria-hidden="true">/</span>
-    • Current crumb:    <span class="crumb-text" aria-current="page">Label</span>
-    • The current crumb has no separator; CSS keys off [aria-current="page"].
+    el.populate([{ label: 'Home', href: '#' }, { label: 'Current' }]);
+    el.populate('<a class="crumb-text" href="#">Home</a>…');   // precompiled HTML
+
+  Anatomy:
+    .breadcrumb-trail          flex row container (populated per crumb)
+    <template.crumb-tpl>       per-crumb prototype (no id → survives in shadow DOM,
+                               cloned once per item by renderInto):
+      a.crumb-text             historic crumb (has href)   — data-bind-if="link"
+      span.crumb-text          current crumb (aria-current)— data-bind-if="current"
+      span.separator "/"       between crumbs              — data-bind-if="separator"
 
   Host attributes:
     data-src-json — URL of a JSON file: [{label, href?}]
+    data-items    — inline JSON array (same shape)
 -->
 
 <template id="default">
 <div class="breadcrumb-trail" role="navigation" aria-label="Breadcrumb">
-  <a class="crumb-text" href="#">Home</a>
-  <span class="separator" aria-hidden="true">/</span>
-  <a class="crumb-text" href="#">Section</a>
-  <span class="separator" aria-hidden="true">/</span>
-  <span class="crumb-text" aria-current="page">Current page</span>
+  <!-- Static default shown until populate() runs -->
+  <span class="crumb-text" aria-current="page">Breadcrumbs</span>
 </div>
+
+<!-- Per-crumb cloning prototype (bound by populate() via renderInto) -->
+<template class="crumb-tpl">
+  <a class="crumb-text" data-bind="label" data-bind-attr="href:href" data-bind-if="link"></a>
+  <span class="crumb-text" aria-current="page" data-bind="label" data-bind-if="current"></span>
+  <span class="separator" aria-hidden="true" data-bind-if="separator">/</span>
+</template>
 </template>

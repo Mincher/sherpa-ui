@@ -11,12 +11,19 @@
  * @attr {string} data-src-json — URL of a JSON file: [{label: string, href?: string}]
  * @attr {json}   data-items    — Inline JSON array: [{label: string, href?: string}]
  *
+ * @method populate(source) — Render from a crumb array [{label, href?}] OR a
+ *   precompiled HTML string. The single data → HTML entry point (see the
+ *   Sherpa template binder). The last crumb becomes the current page.
+ *
  * @fires breadcrumb-click
  *   bubbles: true, composed: true
  *   detail: { index: number, href: string, label: string, current: boolean }
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { isHtmlString } from '../utilities/sherpa-template/sherpa-template.js';
+
+interface CrumbInput { label?: unknown; href?: unknown; }
 
 export class SherpaBreadcrumbs extends SherpaElement {
 
@@ -40,7 +47,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
   }
 
   override onJsonData(items: unknown): void {
-    if (Array.isArray(items)) this.#syncItems(items);
+    if (Array.isArray(items)) this.populate(items as CrumbInput[]);
   }
 
   #applyDataItems(): void {
@@ -48,46 +55,42 @@ export class SherpaBreadcrumbs extends SherpaElement {
     if (!raw) return;
     try {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) this.#syncItems(parsed);
+      if (Array.isArray(parsed)) this.populate(parsed);
     } catch {
       /* ignore malformed JSON; keep static default */
     }
   }
 
-  /* ── Dynamic items ───────────────────────────────────────────── */
+  /* ── Data → HTML population (via the template binder) ─────────── */
 
-  #syncItems(items: unknown[]): void {
-    const trail = this.$('.breadcrumb-trail');
-    if (!trail) return;
+  /**
+   * Populate the trail from a crumb array or precompiled HTML. Each crumb
+   * object is expanded into the render-flags the template's data-bind-if
+   * branches consume (link / current / separator), then rendered per-item from
+   * the surviving `.crumb-tpl` prototype into the trail.
+   */
+  public populate(source: CrumbInput[] | string): void {
+    // Precompiled HTML fast-path: inject straight into the trail.
+    if (isHtmlString(source)) {
+      const trail = this.$('.breadcrumb-trail');
+      if (trail) trail.innerHTML = source;
+      return;
+    }
 
-    const objects = items.filter(
-      (item): item is { label?: unknown; href?: unknown } =>
-        item != null && typeof item === 'object',
-    );
-    const crumbs = objects
-      .map((item, i, arr) => {
-        const label = String(item.label ?? '').trim();
-        if (!label) return null;
-        const isCurrent = i === arr.length - 1;
-        const el = document.createElement(isCurrent ? 'span' : 'a');
-        el.className = 'crumb-text';
-        el.textContent = label;
-        if (isCurrent) el.setAttribute('aria-current', 'page');
-        else el.setAttribute('href', item.href ? String(item.href) : '#');
-        return el;
-      })
-      .filter((el): el is HTMLElement => el !== null);
-
+    const crumbs = source
+      .filter((c): c is CrumbInput => c != null && typeof c === 'object')
+      .map((c) => ({ label: String(c.label ?? '').trim(), href: c.href ? String(c.href) : '#' }))
+      .filter((c) => c.label);
     if (!crumbs.length) return;
 
-    trail.replaceChildren(...crumbs.flatMap((el, i, arr) => {
-      if (i === arr.length - 1) return [el];
-      const sep = document.createElement('span');
-      sep.className = 'separator';
-      sep.setAttribute('aria-hidden', 'true');
-      sep.textContent = '/';
-      return [el, sep];
-    }));
+    const items = crumbs.map((c, i) => {
+      const current = i === crumbs.length - 1;
+      return { label: c.label, href: c.href, link: !current, current, separator: !current };
+    });
+
+    // renderInto clones the `.crumb-tpl` prototype once per item and places the
+    // results into the trail — the single data → HTML path.
+    this.renderInto('.breadcrumb-trail', '.crumb-tpl', items);
   }
 
   /* ── Click delegation ────────────────────────────────────────── */

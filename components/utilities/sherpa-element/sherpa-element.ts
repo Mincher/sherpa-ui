@@ -47,6 +47,12 @@ import {
   type ElementCacheMap,
   type CachedElements,
 } from '../element-cache.js';
+import {
+  renderTemplate,
+  bindHtml,
+  isHtmlString,
+  type TemplateData,
+} from '../sherpa-template/sherpa-template.js';
 
 // ── Class-level caches ─────────────────────────────────────────────
 const _htmlCache = new Map<typeof SherpaElement, string>();
@@ -151,6 +157,54 @@ export class SherpaElement extends HTMLElement {
   }
   $$<E extends Element = Element>(sel: string): NodeListOf<E> {
     return this.#shadow.querySelectorAll<E>(sel);
+  }
+
+  /* ── Declarative templating (data → HTML) ─────────────────────────
+   * The single, consistent way to populate a component from data. A source
+   * can be EITHER a data object (bound at runtime to a `data-bind*` template)
+   * OR a precompiled HTML string (injected as-is). See sherpa-template.ts.
+   */
+
+  /**
+   * Render a data object (or precompiled HTML) into a document fragment using
+   * the named `<template>` prototype in this component's shadow root.
+   *
+   *   const frag = this.renderFragment('.item-tpl', item);
+   *
+   * @param templateSelector CSS selector for the `<template>` in the shadow root
+   * @param source           data object bound to the template, or an HTML string
+   */
+  protected renderFragment(templateSelector: string, source: TemplateData): DocumentFragment {
+    if (isHtmlString(source)) return bindHtml(source);
+    const tpl = this.$<HTMLTemplateElement>(templateSelector);
+    if (!tpl) throw new Error(`renderFragment: template "${templateSelector}" not found`);
+    return renderTemplate(tpl, source);
+  }
+
+  /**
+   * Bind data (or an array of data) to a template and replace the target's
+   * children with the result. The common "populate this list/region" call.
+   *
+   *   this.renderInto('.list', '.item-tpl', items);   // array → one clone each
+   *   this.renderInto('.head', '.head-tpl', headData); // object → single bind
+   *
+   * @param targetSelector   where to place the rendered nodes (shadow root)
+   * @param templateSelector the `<template>` prototype to bind
+   * @param source           data object, array of data objects, or HTML string
+   */
+  protected renderInto(
+    targetSelector: string,
+    templateSelector: string,
+    source: TemplateData | readonly TemplateData[],
+  ): void {
+    const target = this.$(targetSelector);
+    if (!target) throw new Error(`renderInto: target "${targetSelector}" not found`);
+    const frag = document.createDocumentFragment();
+    const items: readonly TemplateData[] = Array.isArray(source)
+      ? (source as readonly TemplateData[])
+      : [source as TemplateData];
+    for (const item of items) frag.appendChild(this.renderFragment(templateSelector, item));
+    target.replaceChildren(frag);
   }
 
   /**
