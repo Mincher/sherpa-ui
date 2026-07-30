@@ -32,18 +32,18 @@
 
   <!-- Cloning prototype: step item -->
   <template class="step-item-tpl">
-    <div class="step-item" role="tab">
+    <div class="step-item" role="tab" data-bind-attr="data-status:status; data-step:step; data-visited:visited; disabled:disabled; aria-disabled:ariaDisabled; aria-selected:ariaSelected">
       <div class="step-indicator">
-        <span class="step-number"></span>
+        <span class="step-number" data-bind="number"></span>
         <i class="sherpa-icon indicator-completed fa-solid fa-check"               aria-hidden="true"></i>
         <i class="sherpa-icon indicator-error     fa-solid fa-xmark"               aria-hidden="true"></i>
         <i class="sherpa-icon indicator-warning   fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
         <i class="sherpa-icon indicator-progress  fa-solid fa-spinner"             aria-hidden="true"></i>
       </div>
       <div class="step-label-container">
-        <span class="step-label text-label"></span>
-        <span class="step-sublabel text-body-xs"></span>
-        <span class="step-timestamp text-body-xs"></span>
+        <span class="step-label text-label" data-bind="label"></span>
+        <span class="step-sublabel text-body-xs" data-bind="sublabel"></span>
+        <span class="step-timestamp text-body-xs" data-bind="timestamp"></span>
       </div>
     </div>
   </template>

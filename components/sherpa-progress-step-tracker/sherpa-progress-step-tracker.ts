@@ -163,37 +163,22 @@ export class SherpaProgressStepTracker extends SherpaElement {
     this.#steps.forEach((step, i) => {
       const num = i + 1;
 
-      const frag = itemTpl.content.cloneNode(true) as DocumentFragment;
+      const status = this.#effectiveStatus(step, num);
+      // Bind all step fields via the Sherpa template binder.
+      const frag = this.renderFragment('.step-item-tpl', {
+        status,
+        step: String(num),
+        visited: this.#visited.has(num) ? true : null,
+        disabled: step.disabled ? true : null,
+        ariaDisabled: step.disabled ? 'true' : 'false',
+        ariaSelected: status === 'active' ? 'true' : 'false',
+        number: showNumbers ? String(num) : '',
+        label: step.label ?? `Step ${num}`,
+        sublabel: step.sublabel ?? '',
+        timestamp: step.timestamp ?? '',
+      });
       const item = frag.querySelector<HTMLElement>('.step-item');
       if (!item) return;
-
-      // Effective status
-      const status = this.#effectiveStatus(step, num);
-      item.dataset['status'] = status;
-      item.dataset['step']   = String(num);
-
-      if (this.#visited.has(num)) item.dataset['visited'] = '';
-      if (step.disabled) {
-        item.setAttribute('disabled', '');
-        item.setAttribute('aria-disabled', 'true');
-      } else {
-        item.setAttribute('aria-disabled', 'false');
-      }
-      item.setAttribute('aria-selected', status === 'active' ? 'true' : 'false');
-
-      // Step number
-      const numberEl = frag.querySelector('.step-number');
-      if (showNumbers && numberEl) numberEl.textContent = String(num);
-
-      // Labels
-      const labelEl = frag.querySelector('.step-label');
-      if (labelEl) labelEl.textContent = step.label ?? `Step ${num}`;
-
-      const sublabelEl = frag.querySelector('.step-sublabel');
-      if (sublabelEl) sublabelEl.textContent = step.sublabel ?? '';
-
-      const tsEl = frag.querySelector('.step-timestamp');
-      if (tsEl) tsEl.textContent = step.timestamp ?? '';
 
       if (!step.disabled) {
         item.addEventListener('click', () => { this.#onStepClick(num); });
