@@ -54,7 +54,7 @@
     --transition-fast(border-color), --transition-fast(transform);
 }
 :host([data-menu-open="true"]) {
-  border-color: var(--sherpa-border-control-primary-default, #8500cc);
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
   overflow: visible;
   z-index: 10;
 }
@@ -131,7 +131,7 @@
   height: var(--sherpa-size-xl, 28px);
   border-radius: 50%;
   border: 3px solid var(--sherpa-border-control-secondary-default, #d7d7dc);
-  border-top-color: var(--sherpa-border-control-primary-default, #4a90e2);
+  border-top-color: var(--sherpa-border-control-primary-default, #3c5edd);
   animation: sherpa-container-spin 700ms linear infinite;
 }
 :host(:is([data-state="loading"], [data-state="empty"], [data-state="error"])) {
@@ -308,9 +308,9 @@
   background: linear-gradient(
     135deg,
     transparent 0 55%,
-    var(--sherpa-border-control-primary-default, #8500cc) 55% 65%,
+    var(--sherpa-border-control-primary-default, #3c5edd) 55% 65%,
     transparent 65% 75%,
-    var(--sherpa-border-control-primary-default, #8500cc) 75% 85%,
+    var(--sherpa-border-control-primary-default, #3c5edd) 75% 85%,
     transparent 85% 100%
   );
   outline: none;

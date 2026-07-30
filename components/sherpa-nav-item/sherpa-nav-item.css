@@ -43,13 +43,13 @@
 }
 :host(:is([data-state="active"], [data-state="selected"])) {
   background: var(--sherpa-surface-control-active-down, #e2adff);
-  color: var(--sherpa-border-control-active-default, #8500cc);
+  color: var(--sherpa-border-control-active-default, #c046ff);
 
   .nav-item-indicator {
-    background: var(--sherpa-border-control-active-default, #8500cc);
+    background: var(--sherpa-border-control-active-default, #c046ff);
   }
   .nav-item-icon {
-    color: var(--sherpa-border-control-active-default, #8500cc);
+    color: var(--sherpa-border-control-active-default, #c046ff);
   }
 }
 :host([data-variant="child"]) {

@@ -96,7 +96,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-space-3xs, 2px);
-  color: var(--sherpa-content-primary-on-color-subtle, #8500cc);
+  color: var(--sherpa-content-primary-on-color-subtle, #3c5edd);
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;

@@ -93,8 +93,8 @@
 
 .sherpa-check[type="checkbox"]:checked:hover:not(:disabled),
 .sherpa-check[type="checkbox"]:indeterminate:hover:not(:disabled) {
-  background: var(--sherpa-border-control-primary-default, #004fc4);
-  border-color: var(--sherpa-border-control-primary-default, #004fc4);
+  background: var(--sherpa-border-control-primary-default, #3c5edd);
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
 }
 
 /* ── Active (pressed) ───────────────────────────────────────────── */
@@ -107,14 +107,14 @@
 
 .sherpa-check:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #8500cc);
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #c046ff);
 }
 
 /* ── Checked state (checkbox only — radios keep white face) ─────── */
 
 .sherpa-check[type="checkbox"]:checked {
-  background: var(--sherpa-surface-control-primary-default, #0060df);
-  border-color: var(--sherpa-surface-control-primary-default, #0060df);
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
+  border-color: var(--sherpa-surface-control-primary-default, #3c5edd);
 }
 
 /* Checkbox checkmark — SVG mask */
@@ -151,8 +151,8 @@
 /* ── Indeterminate state (checkbox only) ────────────────────────── */
 
 .sherpa-check[type="checkbox"]:indeterminate {
-  background: var(--sherpa-surface-control-primary-default, #0060df);
-  border-color: var(--sherpa-surface-control-primary-default, #0060df);
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
+  border-color: var(--sherpa-surface-control-primary-default, #3c5edd);
 }
 
 .sherpa-check[type="checkbox"]:indeterminate::after {

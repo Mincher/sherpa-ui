@@ -99,7 +99,7 @@
 
 :host .step-item:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #8500cc);
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #c046ff);
 }
 
 :host .step-item[disabled] {

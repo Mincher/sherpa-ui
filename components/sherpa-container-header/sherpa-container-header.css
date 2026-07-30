@@ -120,7 +120,7 @@
 
   &:active {
     cursor: grabbing;
-    color: var(--sherpa-border-control-primary-default, #8500cc);
+    color: var(--sherpa-border-control-primary-default, #3c5edd);
   }
 }
 :host([data-drag-handle="true"]) .drag-handle {

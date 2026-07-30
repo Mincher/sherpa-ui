@@ -161,7 +161,7 @@ dd a {
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #8500cc);
+    box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #c046ff);
     border-radius: var(--sherpa-border-rounding-sm, 2px);
   }
 }

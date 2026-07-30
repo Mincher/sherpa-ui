@@ -201,7 +201,7 @@
   }
 
   &[data-selected="true"] {
-    background: var(--sherpa-surface-control-primary-default, #2855ef);
+    background: var(--sherpa-surface-control-primary-default, #3c5edd);
     color: var(--sherpa-content-on-color-body, #fff);
     border-color: transparent;
   }

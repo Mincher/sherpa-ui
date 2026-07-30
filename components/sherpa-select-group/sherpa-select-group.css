@@ -139,14 +139,14 @@
   }
 
   &:has(.weekday-input:checked) {
-    background: var(--sherpa-surface-control-primary-default, #0060df);
-    border-color: var(--sherpa-surface-control-primary-default, #0060df);
+    background: var(--sherpa-surface-control-primary-default, #3c5edd);
+    border-color: var(--sherpa-surface-control-primary-default, #3c5edd);
     color: var(--sherpa-content-default-on-color-body, #ffffff);
   }
 
   &:has(.weekday-input:focus-visible) {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #8500cc);
+    box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #c046ff);
   }
 
   &:has(.weekday-input:disabled) {

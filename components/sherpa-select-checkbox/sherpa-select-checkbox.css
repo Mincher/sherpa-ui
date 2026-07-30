@@ -47,11 +47,11 @@
   & .sherpa-check:indeterminate {
     background: var(
       --_status-surface-strong,
-      var(--sherpa-surface-control-primary-default, #0060df)
+      var(--sherpa-surface-control-primary-default, #3c5edd)
     );
     border-color: var(
       --_status-surface-strong,
-      var(--sherpa-surface-control-primary-default, #0060df)
+      var(--sherpa-surface-control-primary-default, #3c5edd)
     );
   }
 

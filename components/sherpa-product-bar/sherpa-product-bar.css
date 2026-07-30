@@ -45,7 +45,7 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: var(--sherpa-surface-control-primary-default, #c046ff);
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
   color: var(--sherpa-content-default-on-color-body, #ffffff);
   font-size: 20px;
   flex-shrink: 0;

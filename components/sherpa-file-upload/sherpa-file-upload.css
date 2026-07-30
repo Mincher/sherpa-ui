@@ -74,7 +74,7 @@
 }
 :host([data-drag-over]) .drop-zone {
   background: var(--sherpa-surface-context-default-subtle-default, #f8ebff);
-  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #c046ff));
+  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
   border-style: solid;
 }
 :host([disabled]) .drop-zone {

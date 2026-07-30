@@ -196,7 +196,7 @@
 }
 
 .primary-headers th.header-cell[data-sorted] {
-  color: var(--sherpa-content-primary-default, #8500cc);
+  color: var(--sherpa-content-primary-default, #3c5edd);
 }
 
 /* Flexbox inside the th for label + sort icon */
@@ -232,7 +232,7 @@
 }
 
 .header-cell[data-sorted] .sort-icon {
-  color: var(--sherpa-content-primary-default, #8500cc);
+  color: var(--sherpa-content-primary-default, #3c5edd);
 }
 
 /* Numeric columns — right-aligned */
@@ -512,7 +512,7 @@ td .bool-icon {
 
 /* Link cells */
 td a {
-  color: var(--sherpa-content-primary-default, #8500cc);
+  color: var(--sherpa-content-primary-default, #3c5edd);
   text-decoration: none;
 
   &:hover {

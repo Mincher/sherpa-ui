@@ -250,7 +250,7 @@ summary {
   background: var(--sherpa-surface-control-active-down, #e2adff);
 
   &::part(indicator) {
-    background: var(--sherpa-border-control-active-default, #8500cc);
+    background: var(--sherpa-border-control-active-default, #c046ff);
   }
 }
 
