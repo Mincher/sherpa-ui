@@ -101,5 +101,30 @@ Pulled all **20 Figma collections + their mode structure** and mapped every mode
 
 **Root-cause note for future refreshes:** the Figma REST Variables API returns sparse/truncated data for this file's large collections. `npm run tokens:refresh` currently **cannot** fully refresh — it aborts (correctly) to protect the good hand-preserved `primitives.css`/`sherpa-alias.css`. Reliable full extraction needs the **plugin API** (`figma_execute`), which returns complete resolved values. Migrating the extractor from REST to plugin transport is the real long-term fix.
 
+## Fourth pass — construction, variants, modes vs on-canvas documentation
+
+**Trigger:** audit each component's **construction, variants, and modes** against the App Shell v2 file's on-canvas per-component documentation. Branch: `design-audit-components`. Method: pull each Figma component set's `variantGroupProperties` + `componentPropertyDefinitions` (the real construction) via the plugin API, read the `.Docs Header` narrative, measure variant specs, diff vs the Sherpa build, fix, verify numerically, guard.
+
+### Components audited (fixes in bold)
+| Component | Figma construction | Outcome |
+|---|---|---|
+| **Quick Filter chip** | Type(Default/AI/Populated) × State(7) + has Menu/Icon/Content/Badge | Constant purple 0.5px border + always-semibold; [data-active] drives fill/text; dropped invented AI 1px border; badge 8→**10px** |
+| **Quick Filter toolbar** | Type(View/Data) + Slot-Content/Right-Actions | Order-zone Group/Sort chips → purple border + semibold + active purple; dividers 0.5→**1px** |
+| **Button** | Type(primary/secondary/tertiary/tertiary-on-color) × State(5) + size collection | Construction correct; **restored the accent (blue) ramp** — see below |
+| **Tab** | Type(Default/Active) × State(3) + style collection | Active 2px **purple** indicator + purple label (was blue fallback); labels **semibold** all states; per-tab 1px rule |
+| Switch | State(False/True) × Type(Active/Inactive) + default/simple collection | ✅ Faithful — radius-4 track / pill-simple, green on, #5c5c66 off, 16px thumb |
+| Accordion | Type(Collapsed/Expanded) × State(2) | ✅ Construction matches; label emphasis fixed via dead-class fix |
+| **Checkbox** | State(3) + is Selected/is Partial | Rest border grey → **accent blue** (Figma binds border/control/primary) |
+| Radio | State(3) + has Description/Icon | ✅ Already accent border + dot |
+| Badge | Type(Value/Collection/Dot/Notification) | Value type verified (16px/4px/0.5px grey/10px mono = the chip count badge); Notification pill pending |
+
+### 🔧 Systemic fixes (high impact)
+- **Accent (blue) ramp was entirely missing.** `color/accent/*` (blue, base = neon-blue/550 #3c5edd) was never emitted into `sherpa-alias.css` — the REST Alias extract (169 vars) sits below the 530-var write guard, so the hand-preserved file stayed frozen without it. Every primary button, link, and primary focus ring fell back to a hardcoded **#8500cc purple**. Figma separates **accent (blue → primary actions)** from **brand (purple → AI/quick-filter)**. Restored the ramp; guarded with a token-modes test (accent≠brand, primary→accent). See the [[sherpa-accent-vs-brand]] memory.
+- **`border-control-active-default`** aliased `color/brand/700` (#8500cc, stale) → corrected to `color/brand/base` (#c046ff) via themeCorrections. Surfaces on the quick-filter chip + tab active indicator.
+- **Dead text class `text-body-emphasised-*`** (doesn't exist; real class is `text-emphasis-*`) was used by **accordion, tabs, list-item** — their labels never got semibold. Fixed all three.
+
+### Token-chain sweep
+Diffed 43 key control/surface/content/border theme tokens against Figma plugin-API ground truth. After the accent + border-active fixes, only `component/product-nav/item-rounding` remains (unused). All 9 Figma color ramps (accent/brand/critical/info/neutral/success/tones/urgent/warning) confirmed present.
+
 ## Guard against recurrence
-`test/e2e/sherpa-quick-filter.spec.ts` asserts the chip's 4px radius + populated purple/semibold; `test/e2e/token-modes.spec.ts` asserts the density/status/theme mode swaps. Both regressions are now caught in CI.
+`test/e2e/sherpa-quick-filter.spec.ts` asserts the chip's Type×State matrix (4px radius, constant purple border, semibold, active fill/text). `test/e2e/token-modes.spec.ts` asserts the density/status/theme mode swaps **and** accent≠brand / primary→accent. All caught in CI (148 tests).
