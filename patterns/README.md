@@ -76,9 +76,9 @@ Find a pattern that matches your use case in the categories above.
 <sherpa-layout-grid data-content="static">
   <sherpa-view-header data-label="Users"></sherpa-view-header>
   
-  <sherpa-filter-bar>
+  <sherpa-quick-filter-toolbar>
     <!-- Filters -->
-  </sherpa-filter-bar>
+  </sherpa-quick-filter-toolbar>
   
   <sherpa-data-grid>
     <!-- Grid configuration -->

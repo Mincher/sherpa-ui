@@ -85,8 +85,8 @@
     },
     {
       "name": "sherpa-view-header-group",
-      "description": "Wrapper for sherpa-view-header + optional global sherpa-filter-bar at the top of .sherpa-main-content. Flex column, flex-shrink:0. Apply .sherpa-scroll-under alongside for sticky behaviour.",
-      "usage": "<header class=\"sherpa-view-header-group sherpa-scroll-under\">\n  <sherpa-view-header data-label=\"Title\"></sherpa-view-header>\n  <sherpa-filter-bar data-global>…</sherpa-filter-bar>\n</header>"
+      "description": "Legacy wrapper for sherpa-view-header + optional global sherpa-quick-filter-toolbar at the top of .sherpa-main-content. Flex column, flex-shrink:0. Apply .sherpa-scroll-under alongside for sticky behaviour. (App Shell v2 uses sherpa-app-header instead — see the app-shell-v2 pattern.)",
+      "usage": "<header class=\"sherpa-view-header-group sherpa-scroll-under\">\n  <sherpa-view-header data-label=\"Title\"></sherpa-view-header>\n  <sherpa-quick-filter-toolbar data-global>…</sherpa-quick-filter-toolbar>\n</header>"
     },
     {
       "name": "sherpa-main-content-slot",

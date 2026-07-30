@@ -40,7 +40,7 @@ Layout patterns provide the foundational structure for application views. They d
 
 **Structure:**
 - `<sherpa-view-header>` — Page title and actions
-- `<sherpa-filter-bar>` — Search and filter controls
+- `<sherpa-quick-filter-toolbar>` — Search and filter controls
 - `<sherpa-data-grid>` — Tabular data display
 - `<sherpa-pagination>` — Page navigation
 

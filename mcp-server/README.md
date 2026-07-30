@@ -298,8 +298,8 @@ components it uses, making it easy to customise the pattern.
 **Input:**
 ```json
 {
-  "layoutPattern": "app-shell",
-  "components": ["sherpa-nav", "sherpa-view-header", "sherpa-filter-bar"],
+  "layoutPattern": "app-shell-v2",
+  "components": ["sherpa-nav", "sherpa-app-header", "sherpa-quick-filter-toolbar"],
   "description": "Admin dashboard with navigation and global filters"
 }
 ```
@@ -584,8 +584,8 @@ page header.
 ### Step 2 — It looks up the APIs it needs
 
 It calls `query_component` for `sherpa-data-grid`, `sherpa-metric`,
-`sherpa-view-header`, and `sherpa-filter-bar` to learn every attribute,
-slot, and event.
+`sherpa-app-header`, and `sherpa-quick-filter-toolbar` to learn every
+attribute, slot, and event.
 
 ### Step 3 — It generates the markup
 
@@ -604,8 +604,8 @@ Multiple `generate_component` calls produce validated HTML:
 <sherpa-metric data-label="Avg Response" data-value="4.2h" data-trend="down"></sherpa-metric>
 <sherpa-metric data-label="Resolved Today" data-value="38"></sherpa-metric>
 
-<!-- Filter bar and data grid -->
-<sherpa-filter-bar data-label="Filter tickets"></sherpa-filter-bar>
+<!-- Quick-filter toolbar and data grid -->
+<sherpa-quick-filter-toolbar data-preset-filters="status,priority"></sherpa-quick-filter-toolbar>
 
 <sherpa-data-grid
   data-label="Support Tickets"

@@ -1,0 +1,57 @@
+<!--
+  app-shell-v2 — App Shell v2 application layout (the current baseline).
+
+  The modern full-page frame, composed from the App Shell v2 components:
+    • Sidebar navigation (sherpa-nav) in the shell's `nav` slot
+    • App header (sherpa-app-header) in the shell's `app-header` slot —
+      merges the old product-bar app-actions + view-header (title,
+      breadcrumbs, favourite) and hosts the Quick Filter Toolbar
+    • Main content (sherpa-layout-grid) in the default slot
+
+  Unlike the legacy `app-shell` pattern (which hand-rolled the grid and used
+  a separate product-bar-v2 + view-header), this uses sherpa-app-shell to own
+  the nav-rail + header + content composition.
+
+  Components: sherpa-app-shell, sherpa-nav, sherpa-app-header,
+              sherpa-quick-filter-toolbar, sherpa-layout-grid
+
+  Customisation:
+    • Nav: set data-src-html on sherpa-nav, or add light-DOM nav items.
+    • Header title: data-label on sherpa-app-header; feed breadcrumbs via
+      setBreadcrumbs([{label,href?}]) or data-breadcrumbs JSON.
+    • App-level actions (AI, notifications, help, user) → app-header's
+      `app-actions` slot.
+    • Filtering: put a sherpa-quick-filter-toolbar in the header's `filters`
+      slot; set data-preset-filters and call setAvailableColumns(cols, rows).
+    • View-level actions (save, refresh) → app-header's `view-actions` slot.
+    • Page body → the default slot (typically a sherpa-layout-grid).
+-->
+
+<template id="app-shell-v2"
+  data-pattern-category="layouts"
+  data-pattern-status="stable"
+  data-pattern-components="sherpa-app-shell, sherpa-nav, sherpa-app-header, sherpa-quick-filter-toolbar, sherpa-layout-grid">
+
+  <sherpa-app-shell>
+    <!-- Left rail -->
+    <sherpa-nav slot="nav" data-editable data-searchable></sherpa-nav>
+
+    <!-- App Shell v2 header (breadcrumbs + title + filters + actions) -->
+    <sherpa-app-header slot="app-header" data-label="" data-back-button data-show-favorite>
+      <div slot="app-actions">
+        <!-- AI trigger, notifications, help, user avatar, etc. -->
+      </div>
+      <sherpa-quick-filter-toolbar slot="filters" data-type="view">
+        <!-- preset chips populated via setAvailableColumns() + data-preset-filters -->
+      </sherpa-quick-filter-toolbar>
+      <div slot="view-actions">
+        <!-- save, refresh, settings, etc. -->
+      </div>
+    </sherpa-app-header>
+
+    <!-- Main content -->
+    <sherpa-layout-grid data-content="static" data-fill="viewport" data-pad data-gap="base">
+      <!-- Page body goes here -->
+    </sherpa-layout-grid>
+  </sherpa-app-shell>
+</template>

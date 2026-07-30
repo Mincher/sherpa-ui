@@ -53,7 +53,8 @@ export const GROUP_MAP = {
   "sherpa-section-header":     "page-level",
   "sherpa-toolbar":            "page-level",
   "sherpa-container-footer":   "page-level",
-  "sherpa-filter-bar":         "page-level",
+  "sherpa-quick-filter-toolbar": "page-level",
+  "sherpa-app-header":         "page-level",
   "sherpa-container-pdf":      "page-level",
 };
 

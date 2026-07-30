@@ -91,6 +91,21 @@
     ]
   },
   {
+    "id": "app-shell-v2",
+    "name": "App Shell v2 application layout (the current baseline)",
+    "category": "layouts",
+    "file": "patterns/layouts/app-shell-v2.html",
+    "description": "The modern full-page frame, composed from the App Shell v2 components",
+    "status": "stable",
+    "components": [
+      "sherpa-app-shell",
+      "sherpa-nav",
+      "sherpa-app-header",
+      "sherpa-quick-filter-toolbar",
+      "sherpa-layout-grid"
+    ]
+  },
+  {
     "id": "dashboard-grid",
     "name": "Data dashboard with metric cards and visualization panels",
     "category": "layouts",
