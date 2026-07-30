@@ -80,8 +80,8 @@
   display: none;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-2xl, 24px);
-  block-size: var(--sherpa-size-2xl, 24px);
+  inline-size: var(--sherpa-size-lg, 24px);
+  block-size: var(--sherpa-size-lg, 24px);
   border: none;
   background: transparent;
   color: var(--sherpa-content-default-secondary, #5c5c66);
@@ -126,8 +126,8 @@
   display: none;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-2xl, 24px);
-  block-size: var(--sherpa-size-2xl, 24px);
+  inline-size: var(--sherpa-size-lg, 24px);
+  block-size: var(--sherpa-size-lg, 24px);
   border: none;
   background: transparent;
   color: var(--sherpa-content-default-secondary, #5c5c66);

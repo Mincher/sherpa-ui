@@ -81,7 +81,7 @@ slot[name="presets"] {
   align-self: center;
   /* Figma Data toolbar dividers are 1px × 16px, border-container-default grey. */
   inline-size: var(--sherpa-border-width-base, 1px);
-  block-size: var(--sherpa-size-md, 16px);
+  block-size: var(--sherpa-size-sm, 16px);
   background: var(--sherpa-border-container-default, #d5d5d5);
 }
 
@@ -188,7 +188,7 @@ slot[name="presets"] {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-space-2xs, 4px);
-  block-size: var(--sherpa-size-2xl, 24px);
+  block-size: var(--sherpa-size-lg, 24px);
   padding-inline: var(--sherpa-space-xs, 8px);
   border: var(--sherpa-border-width-sm, 0.5px) dashed
     var(--sherpa-border-control-secondary-default, #9a9aad);

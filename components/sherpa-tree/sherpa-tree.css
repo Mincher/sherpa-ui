@@ -14,7 +14,7 @@
 :host {
   --_row-height: var(--sherpa-size-2xl, 32px);
   --_indent: var(--sherpa-space-base, 16px);
-  --_toggle-size: var(--sherpa-size-md, 16px);
+  --_toggle-size: var(--sherpa-size-sm, 16px);
 
   display: block;
   inline-size: 100%;

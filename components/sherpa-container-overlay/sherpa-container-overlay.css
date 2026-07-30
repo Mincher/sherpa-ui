@@ -237,8 +237,8 @@
 }
 :host .overlay-loader-spinner {
   display: inline-block;
-  width: var(--sherpa-size-md, 16px);
-  height: var(--sherpa-size-md, 16px);
+  width: var(--sherpa-size-sm, 16px);
+  height: var(--sherpa-size-sm, 16px);
   border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
   border-top-color: var(--sherpa-border-control-active-default, #0060df);
   border-radius: 50%;

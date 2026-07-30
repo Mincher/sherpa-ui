@@ -79,7 +79,7 @@
 .tag-typeahead {
   flex: 1 1 100px;
   min-width: 60px;
-  height: var(--sherpa-size-xl, 24px);
+  height: var(--sherpa-size-lg, 24px);
   padding-inline: var(--sherpa-space-2xs, 4px);
 }
 

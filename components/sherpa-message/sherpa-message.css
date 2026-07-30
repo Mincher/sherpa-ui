@@ -60,8 +60,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--sherpa-size-lg, 20px);
-  height: var(--sherpa-size-lg, 20px);
+  width: var(--sherpa-size-md, 20px);
+  height: var(--sherpa-size-md, 20px);
   color: var(
     --_status-icon,
     var(--sherpa-surface-context-default-strong-default, #6f7174)
@@ -116,7 +116,7 @@
   display: none;
   flex-shrink: 0;
   margin-inline-start: auto;
-  margin-block: calc((var(--sherpa-font-base-line-height, 20px) - var(--sherpa-size-xl, 24px)) / 2);
+  margin-block: calc((var(--sherpa-font-base-line-height, 20px) - var(--sherpa-size-lg, 24px)) / 2);
 }
 :host([data-dismissible]:not([data-dismissible="false"])) .message-close {
   display: inline-flex;

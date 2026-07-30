@@ -153,10 +153,10 @@
 
 /* ── Collapsed indicator ───────────────────────────────────────────────── */
 :host([data-collapsed="true"]) .tag-wrapper {
-  width: var(--sherpa-size-3xs, 8px);
-  height: var(--sherpa-size-3xs, 8px);
-  min-width: var(--sherpa-size-3xs, 8px);
-  min-height: var(--sherpa-size-3xs, 8px);
+  width: var(--sherpa-size-2xs, 8px);
+  height: var(--sherpa-size-2xs, 8px);
+  min-width: var(--sherpa-size-2xs, 8px);
+  min-height: var(--sherpa-size-2xs, 8px);
   padding: 0;
   border-radius: 50%;
   font-size: 0;
