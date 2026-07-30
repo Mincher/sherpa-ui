@@ -51,7 +51,8 @@
 :host .fill {
   height: 100%;
   width: var(--_progress, 0%);
-  background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
+  /* Figma binds the fill to border/container/active -> brand/700 (#8500cc). */
+  background: var(--_status-surface-strong, var(--sherpa-border-container-active, #8500cc));
   border-radius: var(--sherpa-border-rounding-full, 8px);
   transition: --transition-base(width);
 }
@@ -62,7 +63,7 @@
   background: linear-gradient(
     90deg,
     var(--sherpa-surface-container-default, #fafafa) 0%,
-    var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd)) 50%,
+    var(--_status-surface-strong, var(--sherpa-border-container-active, #8500cc)) 50%,
     var(--sherpa-surface-container-default, #fafafa) 100%
   );
   background-size: 200% 100%;
