@@ -648,7 +648,9 @@ export class SherpaNav extends SherpaElement {
   // ═══════════════════════ Private — Helpers ══════════════════════
 
   #emit(name: string, detail: Record<string, unknown> = {}): void {
-    this.dispatchEvent(new CustomEvent(name, { bubbles: true, detail }));
+    // composed:true so nav events cross the shadow boundary (sherpa-nav is
+    // slotted into sherpa-app-shell; app code listens on the light-DOM host).
+    this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail }));
   }
 
   #clearAllActiveStates(): void {
