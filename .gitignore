@@ -40,3 +40,7 @@ coverage/
 
 # Fallow analysis cache
 .fallow/
+
+# Playwright HTML report + cache
+playwright-report/
+playwright/.cache/

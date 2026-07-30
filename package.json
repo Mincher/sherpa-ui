@@ -63,9 +63,11 @@
     "test:a11y:verbose": "node scripts/test-a11y.js --verbose",
     "audit": "node scripts/audit-components.js",
     "audit:verbose": "node scripts/audit-components.js --verbose",
-    "test": "npm run build:ts && web-test-runner",
-    "test:watch": "npm run build:ts && web-test-runner --watch",
-    "test:coverage": "npm run build:ts && web-test-runner --coverage"
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report",
+    "test:legacy:wtr": "npm run build:ts && web-test-runner"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"
