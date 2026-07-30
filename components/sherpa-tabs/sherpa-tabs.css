@@ -32,8 +32,8 @@
   display: flex;
   overflow-x: auto;
   scrollbar-width: none;
-  border-bottom: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default, #d5d5d5);
+  /* Each tab carries its own 1px bottom rule (Figma); the active tab overrides
+     its own segment with the 2px purple indicator. No strip-level border. */
 
   &::-webkit-scrollbar {
     display: none;
@@ -56,11 +56,15 @@
   padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
   background: var(--sherpa-surface-container-default, #ffffff);
   border: none;
-  border-bottom: 2px solid transparent;
+  /* Figma: 1px grey rule under each tab; active swaps to a 2px purple indicator. */
+  border-bottom: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d5d5d5);
   cursor: pointer;
   white-space: nowrap;
   font: inherit;
-  color: var(--sherpa-content-default-body, #2e2e33);
+  /* Figma: tab labels are Semi Bold in every state (default text #404047). */
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-secondary, #404047);
   transition: --transition-fast(background), --transition-fast(border-color);
 
   &:hover {
@@ -72,11 +76,11 @@
     box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
   }
 
-  /* ── Active state ───────────────────────────────────– */
+  /* ── Active state — 2px purple (brand) indicator + purple label ─────– */
   &[aria-selected="true"] {
-    border-bottom-color: var(--sherpa-border-control-active-default, #3c5edd);
-    color: var(--sherpa-content-active-base, #3c5edd);
-    font-weight: var(--sherpa-font-weight-semibold, 600);
+    border-bottom-width: var(--sherpa-border-width-lg, 2px);
+    border-bottom-color: var(--sherpa-border-control-active-default, #c046ff);
+    color: var(--sherpa-content-active-base, #8500cc);
   }
 
   /* ── Inactive/disabled state ────────────────────────– */
