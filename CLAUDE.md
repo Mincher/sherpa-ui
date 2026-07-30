@@ -91,6 +91,16 @@ Components expose their entire public API through `data-*` attributes. CSS selec
 
 Standard names: `data-variant`, `data-size`, `data-status`, `data-type`, `data-layout`, `data-active`, `data-selected`, `data-elevation`, `data-label`, `data-description`, `data-icon-start`, `data-icon-end`.
 
+### Naming contract (ratified — Phase 0.5)
+
+Applies to **all** components, existing and new:
+
+- **Element names:** every Sherpa-UI custom element is `sherpa-*`. No exceptions.
+- **Attributes:** `data-*` for the public API; native attributes (`disabled`, `name`, `value`, `hidden`, `required`, `readonly`) stay un-prefixed. Reuse the standard-name enums above verbatim — don't invent a synonym for an existing concept. Component-private state is `--_*` CSS custom properties, never a public `data-*`.
+- **Events:** **unprefixed `noun-verb`** names (`button-click`, `page-change`, `tree-select`, `quick-filter-change`). Do **not** prefix event strings with `sherpa-`. The node-graph family currently uses a `sherpa-*` event prefix — that is legacy and migrates to unprefixed in Phase 5 (the *element* names stay `sherpa-*`; only the event strings normalise). Standard shared events: `change`/`input` (re-dispatched native), `*-click`, `*-change`, `*-select`, `*-open`/`*-close`.
+- **Standard data attrs for data components:** `data-sort-field`/`data-sort-direction` (`asc|desc`), `data-segment-field`/`data-segment-mode` — reuse across all chart/grid components.
+- **Slots:** every content-bearing slot declares a `data-accepts` category allowlist (see `docs/SLOT-CONTRACTS.md`).
+
 ### CSS owns all visibility
 
 **JS never toggles `.hidden`, `display`, or `visibility` on shadow DOM internals.** JS sets `data-*` attributes on the host; CSS selects them:
@@ -168,6 +178,7 @@ Always `bubbles: true`. Add `composed: true` for events that must cross shadow D
 ```ts
 this.dispatchEvent(new CustomEvent('card-click', { bubbles: true, composed: true, detail: {} }));
 ```
+Prefer the base-class `this.emit(name, detail)` helper (sets `bubbles`+`composed`). Event **names** follow the ratified naming contract above: unprefixed `noun-verb`, no `sherpa-` prefix. Every dispatched event must have a matching `@fires` tag in the component's JSDoc (the MCP parses these into the component schema — keep them in sync). Document-level broadcasts via `document.dispatchEvent` are the one case where `bubbles` is moot.
 
 ### CRUD flows
 
