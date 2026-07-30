@@ -47,7 +47,7 @@
   min-height: 0;
   overflow: clip;
   width: 100%;
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-font-base-size, 14px);
   font-weight: 400;
   line-height: var(--sherpa-font-base-line-height, 20px);

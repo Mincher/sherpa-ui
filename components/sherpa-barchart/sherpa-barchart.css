@@ -181,7 +181,7 @@ sherpa-filter-bar {
   align-self: center;
   display: block;
   padding-inline-end: var(--sherpa-space-xs, 8px);
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-content-default-heading, #18191a);
   text-align: right;
@@ -250,7 +250,7 @@ sherpa-filter-bar {
 
 .chart-value {
   flex: 1 1 0;
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-content-default-heading, #18191a);
   text-align: center;
@@ -336,7 +336,7 @@ sherpa-filter-bar {
 }
 
 .chart-legend-label {
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-content-default-secondary, #5c5c66);
   white-space: nowrap;
@@ -352,7 +352,7 @@ sherpa-filter-bar {
   justify-content: center;
   width: 100%;
   height: 100%;
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-content-default-secondary, #5c5c66);
 }

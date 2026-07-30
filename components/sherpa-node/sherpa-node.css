@@ -34,7 +34,7 @@
   flex-direction: column;
   width: max-content;
   min-width: var(--sherpa-node-w, 0);
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-base-size, 14px);
   color: var(--sherpa-content-default-body, #2e2e33);
   user-select: none;

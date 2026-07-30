@@ -37,7 +37,7 @@
   border: var(--sherpa-border-width-base, 1px) solid
     var(--_status-border, var(--sherpa-border-container-default, #c5c5c8));
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--_text-font-size);
   line-height: var(--sherpa-font-base-line-height, 20px);
   color: var(--_status-text, var(--sherpa-content-default-on-color-subtle-body, #2e2e33));

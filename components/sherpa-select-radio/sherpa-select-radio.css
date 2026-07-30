@@ -14,7 +14,7 @@
 
 :host {
   display: inline-flex;
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
   /* ── Hidden state ────────────────────────────── */
   /* ── Disabled state ──────────────────────────– */

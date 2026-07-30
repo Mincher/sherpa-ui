@@ -31,7 +31,7 @@
 
 :host {
   display: block;
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
   color: var(--sherpa-content-default-body, #333);
 }

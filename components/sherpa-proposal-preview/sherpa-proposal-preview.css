@@ -22,7 +22,7 @@
 
 :host {
   display: block;
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", system-ui, sans-serif);
   color: var(--sherpa-content-default-body, #2e2e33);
 }
 :host .rationale {

@@ -19,7 +19,7 @@
      4/8 padding, light label. */
   background-color: var(--sherpa-content-default-body, #2e2e33);
   color: var(--sherpa-content-default-on-color-heading, #fafafa);
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-fonts-scale-lg, 16px);

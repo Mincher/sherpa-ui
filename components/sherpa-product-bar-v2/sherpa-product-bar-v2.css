@@ -32,7 +32,7 @@
   background: var(--sherpa-surface-container-default, #ffffff);
   border-block-end: 1px solid var(--sherpa-border-container-default, #d5d5d5);
   color: var(--sherpa-content-default-body, #111111);
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", system-ui, sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", system-ui, sans-serif);
 }
 :host .brand-stack {
   display: flex;
