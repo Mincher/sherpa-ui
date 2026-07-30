@@ -1,6 +1,14 @@
 /**
  * sherpa-quick-filter.css — Quick Filter chip.
  *
+ * Matches the Figma "Quick Filter" component set exactly (App Shell v2):
+ *   - 24px tall, 4px corner radius (a rounded rectangle — NOT a pill)
+ *   - Default: white surface + 0.5px neutral border, default body text
+ *   - Active (Default type): light-purple surface + purple 0.5px border,
+ *     text stays default colour
+ *   - AI type: 1px brand-purple border, purple (text/active) label + wand icon
+ *   - Populated type: purple (content/active/base) semibold label
+ *
  * Type (data-type): default | ai | populated
  * State: [data-active], [data-thinking] (ai), [disabled]
  * The dismiss × shows only for user-added chips ([data-dismissible]).
@@ -9,32 +17,42 @@
 :host {
   display: inline-flex;
   vertical-align: middle;
-  --_chip-bg: var(--sherpa-surface-control-secondary-default, #f2f2f7);
-  --_chip-border: var(--sherpa-border-container-default, #d7d7dc);
+
+  /* Per-state custom props (overridden below). Defaults = Default/Neutral. */
+  --_chip-bg: var(--sherpa-surface-container-default, #ffffff);
+  --_chip-border-color: var(--sherpa-border-container-default, #d5d5d5);
+  --_chip-border-width: var(--sherpa-border-width-sm, 0.5px);
   --_chip-fg: var(--sherpa-content-default-body, #2e2e33);
+  --_chip-icon: var(--sherpa-content-default-body, #2e2e33);
+  --_chip-weight: var(--sherpa-font-weight-regular, 400);
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
   block-size: var(--sherpa-size-2xl, 24px);
-  border: var(--sherpa-border-width-base, 1px) solid var(--_chip-border);
-  border-radius: var(--sherpa-border-rounding-full, 999px);
+  padding-inline: var(--sherpa-space-3xs, 2px);
+  border: var(--_chip-border-width) solid var(--_chip-border-color);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--_chip-bg);
   color: var(--_chip-fg);
   overflow: hidden;
 }
 
+/* Left group: icon + label + optional count badge */
 .chip-main {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-3xs, 2px);
-  padding-inline: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-space-2xs, 4px);
+  padding-inline: var(--sherpa-space-2xs, 4px);
   block-size: 100%;
   border: none;
   background: transparent;
   color: inherit;
-  font-size: var(--sherpa-fonts-scale-sm, 13px);
+  font-family: var(--sherpa-fonts-context-brand, "Inter", system-ui, sans-serif);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  line-height: 20px;
+  letter-spacing: 0.1px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -42,27 +60,35 @@
 .chip-icon {
   display: inline-flex;
   align-items: center;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  justify-content: center;
+  inline-size: var(--sherpa-size-md, 16px);
+  block-size: var(--sherpa-size-md, 16px);
+  color: var(--_chip-icon);
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   font-weight: 900;
   font-size: 0.85em;
 }
 .chip-icon::before { content: "\f0b0"; } /* fa-filter (funnel) */
 
-.chip-label { font-weight: var(--sherpa-font-weight-medium, 500); }
+.chip-label { font-weight: var(--_chip-weight); }
 
-/* Count badge for multi-value filters */
+/* Count badge (multi-value) — mono font, 16px square, neutral surface */
 .chip-count {
   display: none;
   min-inline-size: var(--sherpa-size-md, 16px);
-  padding-inline: var(--sherpa-space-3xs, 2px);
-  border-radius: var(--sherpa-border-rounding-full, 999px);
-  background: var(--sherpa-surface-control-primary-default, #3c5edd);
-  color: var(--sherpa-content-primary-on-color, #ffffff);
-  font-size: var(--sherpa-fonts-scale-2xs, 11px);
-  text-align: center;
+  block-size: var(--sherpa-size-md, 16px);
+  padding-inline: var(--sherpa-space-2xs, 4px);
+  align-items: center;
+  justify-content: center;
+  border: var(--sherpa-border-width-sm, 0.5px) solid var(--sherpa-border-control-default, #b2b2bf);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  color: var(--sherpa-content-default-body, #2e2e33);
+  font-family: var(--sherpa-fonts-context-monospaced, "JetBrains Mono", ui-monospace, monospace);
+  font-size: var(--sherpa-fonts-scale-2xs, 10px);
+  line-height: 16px;
 }
-:host([data-count]) .chip-count { display: inline-block; }
+:host([data-count]) .chip-count { display: inline-flex; }
 
 /* ── Menu (chevron) ──────────────────────────────────────────────── */
 
@@ -71,15 +97,16 @@
   align-items: center;
   justify-content: center;
   inline-size: var(--sherpa-size-xl, 20px);
-  block-size: 100%;
-  padding: 0;
+  block-size: var(--sherpa-size-xl, 20px);
+  padding: var(--sherpa-space-3xs, 2px);
   border: none;
-  border-inline-start: var(--sherpa-border-width-base, 1px) solid var(--_chip-border);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--_chip-icon);
   font-size: 0.7em;
   cursor: pointer;
 }
+.chip-menu:hover { background: var(--sherpa-surface-control-tertiary-hover, rgba(0, 0, 0, 0.04)); }
 /* Chips with no menu (e.g. boolean toggles) hide the chevron */
 :host([data-no-menu]) .chip-menu { display: none; }
 
@@ -90,40 +117,42 @@
   align-items: center;
   justify-content: center;
   inline-size: var(--sherpa-size-xl, 20px);
-  block-size: 100%;
-  padding: 0;
+  block-size: var(--sherpa-size-xl, 20px);
+  padding: var(--sherpa-space-3xs, 2px);
   border: none;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--_chip-icon);
   font-size: 0.7em;
   cursor: pointer;
 }
+.chip-dismiss:hover { background: var(--sherpa-surface-control-tertiary-hover, rgba(0, 0, 0, 0.04)); }
 :host([data-dismissible]) .chip-dismiss { display: inline-flex; }
 :host([data-dismissible]) .chip-menu { display: none; }
 
-/* ── Type: default (neutral) ─────────────────────────────────────── */
-/* base styles above cover default/neutral */
-
-/* ── State: active ───────────────────────────────────────────────── */
+/* ── State: Active (Default type) — light-purple surface, purple border,
+      but DEFAULT text colour (per design) ────────────────────────── */
 :host([data-active]) {
-  --_chip-bg: var(--sherpa-surface-control-active-default, #e9edff);
-  --_chip-border: var(--sherpa-border-control-primary-default, #3c5edd);
-  --_chip-fg: var(--sherpa-content-primary-default, #3c5edd);
+  --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
+  --_chip-border-color: var(--sherpa-border-control-active-default, #c046ff);
 }
-:host([data-active]) .chip-icon { color: var(--sherpa-content-primary-default, #3c5edd); }
 
-/* ── Type: populated (a value is applied) ────────────────────────── */
+/* ── Type: populated (a value is applied) — purple semibold label ── */
 :host([data-type="populated"]) {
-  --_chip-fg: var(--sherpa-content-primary-default, #3c5edd);
+  --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
+  --_chip-border-color: var(--sherpa-border-control-active-default, #c046ff);
+  --_chip-fg: var(--sherpa-content-active-base, #8500cc);
+  --_chip-weight: var(--sherpa-font-weight-semibold, 600);
 }
-:host([data-type="populated"]) .chip-label { font-weight: var(--sherpa-font-weight-semibold, 600); }
 
-/* ── Type: ai ────────────────────────────────────────────────────── */
+/* ── Type: ai — 1px brand border, purple label + wand icon ───────── */
 :host([data-type="ai"]) {
-  --_chip-border: var(--sherpa-color-brand-base, #c046ff);
-  --_chip-fg: var(--sherpa-color-brand-base, #c046ff);
+  --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
+  --_chip-border-color: var(--sherpa-color-brand-base, #c046ff);
+  --_chip-border-width: var(--sherpa-border-width-base, 1px);
+  --_chip-fg: var(--sherpa-content-active-base, #8500cc);
+  --_chip-icon: var(--sherpa-color-brand-base, #c046ff);
 }
-:host([data-type="ai"]) .chip-icon { color: var(--sherpa-color-brand-base, #c046ff); }
 :host([data-type="ai"]) .chip-icon::before { content: "\f890"; } /* fa-wand-magic-sparkles */
 
 /* AI thinking — pulsing border */
@@ -136,14 +165,13 @@
 }
 
 /* ── Disabled / inactive ─────────────────────────────────────────── */
-:host([disabled]) {
-  pointer-events: none;
-}
+:host([disabled]) { pointer-events: none; }
 :host([disabled]) .chip {
   color: var(--sherpa-content-inactive-default, #a0a0a8);
   background: var(--sherpa-surface-container-inactive, #f5f5f7);
   border-color: var(--sherpa-border-container-inactive, #e0e0e6);
 }
+:host([disabled]) .chip-icon { color: var(--sherpa-content-inactive-default, #a0a0a8); }
 
 /* ── Focus rings ─────────────────────────────────────────────────── */
 .chip-main:focus-visible,

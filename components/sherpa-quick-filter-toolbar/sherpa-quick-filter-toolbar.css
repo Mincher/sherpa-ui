@@ -17,14 +17,10 @@
  */
 
 :host {
-  --_qft-py: var(--sherpa-space-xs, 8px);
-  --_qft-gap: var(--sherpa-space-2xs, 4px);
-  --_qft-chip-bg: var(--sherpa-surface-control-secondary-default, #f2f2f7);
-  --_qft-chip-border: var(--sherpa-border-container-default, #d7d7dc);
-  --_qft-chip-fg: var(--sherpa-content-default-body, #2e2e33);
-  --_qft-active-bg: var(--sherpa-surface-control-active-default, #e9edff);
-  --_qft-active-border: var(--sherpa-border-control-primary-default, #3c5edd);
-  --_qft-active-fg: var(--sherpa-content-primary-default, #3c5edd);
+  /* Toolbar is 32px tall in the design (8px block padding around 24px chips);
+     8px gap between chip groups (chips within a group are the chip's own width). */
+  --_qft-py: var(--sherpa-space-2xs, 4px);
+  --_qft-gap: var(--sherpa-space-xs, 8px);
   display: block;
 }
 
@@ -85,9 +81,9 @@ slot[name="presets"] {
   display: none;
   flex-shrink: 0;
   align-self: center;
-  inline-size: var(--sherpa-border-width-base, 1px);
-  block-size: 16px;
-  background: var(--sherpa-border-container-default, #e0e0e5);
+  inline-size: var(--sherpa-border-width-sm, 0.5px);
+  block-size: var(--sherpa-size-md, 16px);
+  background: var(--sherpa-border-container-default, #d5d5d5);
 }
 
 :host([data-has-presets]) .zone-divider[data-divider="before-presets"] {
@@ -105,28 +101,27 @@ slot[name="presets"] {
 }
 
 /* ── Built-in behavior chips (group / sort) ─────────────────────── */
+/* Built-in behavior chips (Group / Sort) — match the sherpa-quick-filter
+   design exactly: 24px tall, 4px radius, white surface + 0.5px neutral border,
+   default text; Active = light-purple surface + purple border, default text. */
 .chip-group {
   display: inline-flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center;
   gap: 0;
   block-size: var(--sherpa-size-2xl, 24px);
-  border: var(--sherpa-border-width-base, 1px) solid var(--_qft-chip-border);
-  border-radius: var(--sherpa-border-rounding-full, 999px);
-  background: var(--_qft-chip-bg);
-  color: var(--_qft-chip-fg);
+  padding-inline: var(--sherpa-space-3xs, 2px);
+  border: var(--sherpa-border-width-sm, 0.5px) solid var(--sherpa-border-container-default, #d5d5d5);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  color: var(--sherpa-content-default-body, #2e2e33);
   overflow: hidden;
   flex-shrink: 0;
 }
 
-.chip-group:focus-within {
-  border-color: var(--_qft-active-border);
-}
-
 .chip-group[data-active] {
-  background: var(--_qft-active-bg);
-  border-color: var(--_qft-active-border);
-  color: var(--_qft-active-fg);
+  background: var(--sherpa-surface-control-active-default, #f8ebff);
+  border-color: var(--sherpa-border-control-active-default, #c046ff);
 }
 
 :host([data-hide-group]) .group-chip {
@@ -140,51 +135,60 @@ slot[name="presets"] {
 .chip-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-3xs, 2px);
-  padding-inline: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-space-2xs, 4px);
+  padding-inline: var(--sherpa-space-2xs, 4px);
+  block-size: 100%;
   border: none;
   background: transparent;
   color: inherit;
-  font-size: var(--sherpa-fonts-scale-sm, 13px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
+  font-family: var(--sherpa-fonts-context-brand, "Inter", system-ui, sans-serif);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  line-height: 20px;
+  letter-spacing: 0.1px;
   white-space: nowrap;
   cursor: pointer;
 }
 
 .chip-group .menu-btn {
-  padding-inline: var(--sherpa-space-2xs, 4px);
-  border-inline-start: var(--sherpa-border-width-base, 1px) solid var(--_qft-chip-border);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-xl, 20px);
+  block-size: var(--sherpa-size-xl, 20px);
+  padding: var(--sherpa-space-3xs, 2px);
+  border: none;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: transparent;
+  color: var(--sherpa-content-default-body, #2e2e33);
   font-size: 0.7em;
+  cursor: pointer;
 }
-
-.chip-group[data-active] .menu-btn {
-  border-inline-start-color: var(--_qft-active-border);
+.chip-group .menu-btn:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, rgba(0, 0, 0, 0.04));
 }
 
 .chip-icon {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-md, 16px);
+  block-size: var(--sherpa-size-md, 16px);
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   font-weight: 900;
   font-size: 0.85em;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
-}
-
-.chip-group[data-active] .chip-icon {
-  color: var(--_qft-active-fg);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 
 /* ── Add filter button ──────────────────────────────────────────── */
 .add-filter-button {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-3xs, 2px);
+  gap: var(--sherpa-space-2xs, 4px);
   block-size: var(--sherpa-size-2xl, 24px);
   padding-inline: var(--sherpa-space-xs, 8px);
-  border: var(--sherpa-border-width-base, 1px) dashed
+  border: var(--sherpa-border-width-sm, 0.5px) dashed
     var(--sherpa-border-control-secondary-default, #9a9aad);
-  border-radius: var(--sherpa-border-rounding-full, 999px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-content-default-secondary, #5c5c66);
   font-size: var(--sherpa-fonts-scale-sm, 13px);
@@ -206,8 +210,8 @@ slot[name="presets"] {
 }
 
 .add-filter-button:hover:not([disabled]) {
-  border-color: var(--_qft-active-border);
-  color: var(--_qft-active-fg);
+  border-color: var(--sherpa-border-control-active-default, #c046ff);
+  color: var(--sherpa-content-active-base, #8500cc);
 }
 
 /* ── Focus rings (box-shadow, never --focus-ring()) ─────────────── */
