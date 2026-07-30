@@ -1,0 +1,112 @@
+<!--
+  sherpa-quick-filter-toolbar.html — Templates for sherpa-quick-filter-toolbar.
+
+  A horizontal strip of sherpa-quick-filter chips plus a trailing actions area.
+  Drop-in replacement for sherpa-filter-bar — it preserves the same data
+  contract (see the .ts JSDoc) but composes sherpa-quick-filter chips (via the
+  .qf-tpl cloning prototype) instead of createElement'd sherpa-button groups.
+
+  Templates:
+    • default — Full toolbar: chip strip + Add + actions (page/global use)
+    • local   — Minimal toolbar: chip strip only (scoped to a container)
+
+  Layout (default template, left → right):
+    Slot - Content       — toggle | group chip | sort chip | preset chips
+                           (slot="presets") | user chips (default slot) | Add
+    Slot - Right Actions — reset / settings / save (slot="actions")
+
+  Host attributes: see the JSDoc header in sherpa-quick-filter-toolbar.ts.
+
+  Cloning prototypes (no id — kept out of SherpaElement's multi-template parser):
+    .qf-tpl  — a sherpa-quick-filter chip for value / preset / user filters.
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DEFAULT — Full toolbar (page / global): toggle, chips, Add, actions.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="default">
+  <div class="toolbar-surface" part="surface">
+    <div class="content-zone" part="content">
+      <slot name="toggle" data-accepts="control,html"></slot>
+
+      <div class="chip-group group-chip" data-behavior-chip="segment">
+        <button type="button" class="chip-btn behavior-btn" data-behavior="segment">
+          <span class="chip-icon" aria-hidden="true">&#xf5fd;</span>
+          <span class="chip-label">Group</span>
+        </button>
+        <button type="button" class="chip-btn menu-btn" data-behavior="segment" aria-haspopup="menu" aria-expanded="false" aria-label="Choose group field">
+          <span class="chip-icon" aria-hidden="true">&#xf078;</span>
+        </button>
+      </div>
+
+      <div class="chip-group sort-chip" data-behavior-chip="sort">
+        <button type="button" class="chip-btn behavior-btn" data-behavior="sort">
+          <span class="chip-icon sort-icon" aria-hidden="true">&#xf0dc;</span>
+          <span class="chip-label">Sort</span>
+        </button>
+        <button type="button" class="chip-btn menu-btn" data-behavior="sort" aria-haspopup="menu" aria-expanded="false" aria-label="Sort menu">
+          <span class="chip-icon" aria-hidden="true">&#xf078;</span>
+        </button>
+      </div>
+
+      <span class="zone-divider" data-divider="before-presets" aria-hidden="true"></span>
+      <slot name="presets" data-accepts="control,html"></slot>
+      <span class="zone-divider" data-divider="before-custom" aria-hidden="true"></span>
+      <slot data-accepts="control,html"></slot>
+
+      <button type="button" class="add-filter-button" aria-haspopup="menu" aria-expanded="false" hidden>
+        <span class="chip-icon" aria-hidden="true">&#xf067;</span>
+        <span class="chip-label">Add filter</span>
+      </button>
+    </div>
+
+    <slot name="actions" class="actions-zone" part="actions" data-accepts="control,html"></slot>
+  </div>
+
+  <!-- Cloning prototype: a filter chip -->
+  <template class="qf-tpl">
+    <sherpa-quick-filter data-menu-scope="none"></sherpa-quick-filter>
+  </template>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LOCAL — Minimal toolbar (container-scoped): group + sort + presets.
+     No toggle, no Add button. Selected by data-type="local".
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="local">
+  <div class="toolbar-surface" part="surface">
+    <div class="content-zone" part="content">
+      <div class="chip-group group-chip" data-behavior-chip="segment">
+        <button type="button" class="chip-btn behavior-btn" data-behavior="segment">
+          <span class="chip-icon" aria-hidden="true">&#xf5fd;</span>
+          <span class="chip-label">Group</span>
+        </button>
+        <button type="button" class="chip-btn menu-btn" data-behavior="segment" aria-haspopup="menu" aria-expanded="false" aria-label="Choose group field">
+          <span class="chip-icon" aria-hidden="true">&#xf078;</span>
+        </button>
+      </div>
+
+      <div class="chip-group sort-chip" data-behavior-chip="sort">
+        <button type="button" class="chip-btn behavior-btn" data-behavior="sort">
+          <span class="chip-icon sort-icon" aria-hidden="true">&#xf0dc;</span>
+          <span class="chip-label">Sort</span>
+        </button>
+        <button type="button" class="chip-btn menu-btn" data-behavior="sort" aria-haspopup="menu" aria-expanded="false" aria-label="Sort menu">
+          <span class="chip-icon" aria-hidden="true">&#xf078;</span>
+        </button>
+      </div>
+
+      <span class="zone-divider" data-divider="before-presets" aria-hidden="true"></span>
+      <slot name="presets" data-accepts="control,html"></slot>
+    </div>
+
+    <slot name="actions" class="actions-zone" part="actions" data-accepts="control,html"></slot>
+  </div>
+
+  <slot></slot>
+
+  <!-- Cloning prototype: a filter chip -->
+  <template class="qf-tpl">
+    <sherpa-quick-filter data-menu-scope="none"></sherpa-quick-filter>
+  </template>
+</template>

@@ -1,0 +1,29 @@
+<!--
+  sherpa-quick-filter.html — Shadow DOM template for a Quick Filter chip.
+
+  Structure (per Figma "Quick Filter"):
+    .chip
+      .chip-main   — the label region (funnel icon + label/value + count badge)
+      .chip-menu   — chevron button that opens the filter's option menu
+      .chip-dismiss— optional × to remove a user-added chip
+
+  Type (data-type): default | ai | populated  → colour/border treatment
+  State via data-active / data-thinking / disabled.
+  All visibility is attribute-driven; JS only sets attributes + label text.
+-->
+
+<template id="default">
+  <div class="chip" part="chip">
+    <button type="button" class="chip-main" part="main">
+      <span class="chip-icon" part="icon" aria-hidden="true"></span>
+      <span class="chip-label" part="label"></span>
+      <span class="chip-count" part="count" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="chip-menu" part="menu" aria-haspopup="menu" aria-expanded="false" aria-label="Filter options">
+      <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="chip-dismiss" part="dismiss" aria-label="Remove filter">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+</template>

@@ -1,0 +1,229 @@
+/**
+ * sherpa-quick-filter-toolbar.css — Quick-filter toolbar.
+ *
+ * A horizontal chip strip (content zone) + a trailing right-actions zone.
+ * All visibility is data-* / attribute-driven — JS never toggles display.
+ *
+ * Host attributes:
+ *   data-type=view|data — treatment (saved-view vs data-scoped); "local" selects the minimal template
+ *   data-density=compact — reduce vertical padding
+ *   data-embedded        — remove padding/border (parent provides the frame)
+ *   data-active          — any filter active (auto-reflected)
+ *   data-hide-group / data-hide-sort — hide the built-in behavior chips
+ *
+ * Private properties:
+ *   --_qft-py  — block padding
+ *   --_qft-gap — gap between items
+ */
+
+:host {
+  --_qft-py: var(--sherpa-space-xs, 8px);
+  --_qft-gap: var(--sherpa-space-2xs, 4px);
+  --_qft-chip-bg: var(--sherpa-surface-control-secondary-default, #f2f2f7);
+  --_qft-chip-border: var(--sherpa-border-container-default, #d7d7dc);
+  --_qft-chip-fg: var(--sherpa-content-default-body, #2e2e33);
+  --_qft-active-bg: var(--sherpa-surface-control-active-default, #e9edff);
+  --_qft-active-border: var(--sherpa-border-control-primary-default, #3c5edd);
+  --_qft-active-fg: var(--sherpa-content-primary-default, #3c5edd);
+  display: block;
+}
+
+:host([data-density="compact"]) {
+  --_qft-py: var(--sherpa-space-3xs, 2px);
+}
+
+/* ── Treatment: View vs Data ────────────────────────────────────── */
+/* View filters read as saved-view scoped (brand tint on the surface). */
+:host([data-type="view"]) .toolbar-surface {
+  background: var(--sherpa-surface-container-subtle, #fafaff);
+}
+
+/* ── Surface / layout ───────────────────────────────────────────── */
+.toolbar-surface {
+  display: flex;
+  align-items: center;
+  gap: var(--_qft-gap);
+  inline-size: 100%;
+  padding-block: var(--_qft-py);
+}
+
+:host([data-embedded]) .toolbar-surface {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.content-zone {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--_qft-gap);
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+
+/* ── Slot zones ─────────────────────────────────────────────────── */
+slot[name="toggle"],
+slot[name="presets"] {
+  display: contents;
+}
+
+.actions-zone {
+  display: flex;
+  align-items: center;
+  gap: var(--_qft-gap);
+  flex-shrink: 0;
+  margin-inline-start: auto;
+}
+
+:host(:not([data-has-actions])) .actions-zone {
+  display: none;
+}
+
+/* ── Zone dividers ──────────────────────────────────────────────── */
+.zone-divider {
+  display: none;
+  flex-shrink: 0;
+  align-self: center;
+  inline-size: var(--sherpa-border-width-base, 1px);
+  block-size: 16px;
+  background: var(--sherpa-border-container-default, #e0e0e5);
+}
+
+:host([data-has-presets]) .zone-divider[data-divider="before-presets"] {
+  display: block;
+}
+
+:host([data-has-user-filters]) .zone-divider[data-divider="before-custom"],
+:host([data-has-add]) .zone-divider[data-divider="before-custom"] {
+  display: block;
+}
+
+/* Suppress the before-presets divider when both behavior chips are hidden. */
+:host([data-hide-group][data-hide-sort]) .zone-divider[data-divider="before-presets"] {
+  display: none;
+}
+
+/* ── Built-in behavior chips (group / sort) ─────────────────────── */
+.chip-group {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  block-size: var(--sherpa-size-2xl, 24px);
+  border: var(--sherpa-border-width-base, 1px) solid var(--_qft-chip-border);
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  background: var(--_qft-chip-bg);
+  color: var(--_qft-chip-fg);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.chip-group:focus-within {
+  border-color: var(--_qft-active-border);
+}
+
+.chip-group[data-active] {
+  background: var(--_qft-active-bg);
+  border-color: var(--_qft-active-border);
+  color: var(--_qft-active-fg);
+}
+
+:host([data-hide-group]) .group-chip {
+  display: none;
+}
+
+:host([data-hide-sort]) .sort-chip {
+  display: none;
+}
+
+.chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+  padding-inline: var(--sherpa-space-xs, 8px);
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: var(--sherpa-fonts-scale-sm, 13px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chip-group .menu-btn {
+  padding-inline: var(--sherpa-space-2xs, 4px);
+  border-inline-start: var(--sherpa-border-width-base, 1px) solid var(--_qft-chip-border);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  font-size: 0.7em;
+}
+
+.chip-group[data-active] .menu-btn {
+  border-inline-start-color: var(--_qft-active-border);
+}
+
+.chip-icon {
+  display: inline-flex;
+  align-items: center;
+  font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.85em;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+}
+
+.chip-group[data-active] .chip-icon {
+  color: var(--_qft-active-fg);
+}
+
+/* ── Add filter button ──────────────────────────────────────────── */
+.add-filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+  block-size: var(--sherpa-size-2xl, 24px);
+  padding-inline: var(--sherpa-space-xs, 8px);
+  border: var(--sherpa-border-width-base, 1px) dashed
+    var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  font-size: var(--sherpa-fonts-scale-sm, 13px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.add-filter-button[hidden] {
+  display: none;
+}
+
+.add-filter-button[disabled] {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-content-inactive-default, #a0a0a8);
+  border-color: var(--sherpa-border-container-inactive, #e0e0e6);
+}
+
+.add-filter-button:hover:not([disabled]) {
+  border-color: var(--_qft-active-border);
+  color: var(--_qft-active-fg);
+}
+
+/* ── Focus rings (box-shadow, never --focus-ring()) ─────────────── */
+.chip-btn:focus-visible,
+.add-filter-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Forced-colors (OS high-contrast) ───────────────────────────── */
+@media (forced-colors: active) {
+  .chip-group,
+  .add-filter-button {
+    border-color: ButtonBorder;
+  }
+  .chip-group[data-active] {
+    border-color: Highlight;
+  }
+}
