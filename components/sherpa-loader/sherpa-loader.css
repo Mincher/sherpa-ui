@@ -62,8 +62,9 @@
     position: absolute;
     inset: calc(var(--_spinner-weight) * -1);
     border-radius: 50%;
+    /* Figma spinner arc binds to border/container/active -> brand/700 (#8500cc). */
     border: var(--_spinner-weight) solid
-      var(--_status-border, var(--sherpa-border-control-active-default, #c046ff));
+      var(--_status-border, var(--sherpa-border-container-active, #8500cc));
     border-block-start-color: transparent;
     animation: sherpa-spin 0.8s linear infinite;
   }
