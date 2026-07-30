@@ -105,26 +105,64 @@ Pulled all **20 Figma collections + their mode structure** and mapped every mode
 
 **Trigger:** audit each component's **construction, variants, and modes** against the App Shell v2 file's on-canvas per-component documentation. Branch: `design-audit-components`. Method: pull each Figma component set's `variantGroupProperties` + `componentPropertyDefinitions` (the real construction) via the plugin API, read the `.Docs Header` narrative, measure variant specs, diff vs the Sherpa build, fix, verify numerically, guard.
 
-### Components audited (fixes in bold)
+### Components audited — 34 across the full library (fixes in bold)
 | Component | Figma construction | Outcome |
 |---|---|---|
 | **Quick Filter chip** | Type(Default/AI/Populated) × State(7) + has Menu/Icon/Content/Badge | Constant purple 0.5px border + always-semibold; [data-active] drives fill/text; dropped invented AI 1px border; badge 8→**10px** |
 | **Quick Filter toolbar** | Type(View/Data) + Slot-Content/Right-Actions | Order-zone Group/Sort chips → purple border + semibold + active purple; dividers 0.5→**1px** |
 | **Button** | Type(primary/secondary/tertiary/tertiary-on-color) × State(5) + size collection | Construction correct; **restored the accent (blue) ramp** — see below |
-| **Tab** | Type(Default/Active) × State(3) + style collection | Active 2px **purple** indicator + purple label (was blue fallback); labels **semibold** all states; per-tab 1px rule |
+| **Tab** | Type(Default/Active) × State(3) + style collection | Active 2px **purple** indicator + purple label; labels **semibold** all states; per-tab 1px rule |
 | Switch | State(False/True) × Type(Active/Inactive) + default/simple collection | ✅ Faithful — radius-4 track / pill-simple, green on, #5c5c66 off, 16px thumb |
 | Accordion | Type(Collapsed/Expanded) × State(2) | ✅ Construction matches; label emphasis fixed via dead-class fix |
 | **Checkbox** | State(3) + is Selected/is Partial | Rest border grey → **accent blue** (Figma binds border/control/primary) |
 | Radio | State(3) + has Description/Icon | ✅ Already accent border + dot |
-| Badge | Type(Value/Collection/Dot/Notification) | Value type verified (16px/4px/0.5px grey/10px mono = the chip count badge); Notification pill pending |
+| Badge | Type(Value/Collection/Dot/Notification) | Value type verified (16px/4px/0.5px grey/10px mono = the chip count badge) |
+| **Callout** | single status-driven component | Full 1px border → **4px leading status accent bar** (top/right/bottom 0) |
+| **Toast** | single status-driven, 520px | Removed 6px left accent → **uniform 1px** status border (8px radius) |
+| **Tooltip** | dark #2e2e33, 4px, 12px Semi Bold | radius 2→**4px**, added **semibold**, opaque #2e2e33 bg |
+| Card | State(Default/Hover/Active) | ✅ = sherpa-container (4px, 1px #d5d5d5, white) |
+| Tag | Type(primary/secondary) + has Icon | ✅ Faithful (16px pill, 2/8, 10px semibold) |
+| **Chip / input-tag** | Type(Outline/Solid) + has Icon/Button | Added **semibold** label (2px radius) |
+| **Banner / message** | single status-driven | Inline padding 12→**16px** (8/16, 4px, 1px status border) |
+| **Menu / overlay-item** | State(Default/Hover/Active/Destructive/Inactive/Modified) | Added missing **Active/selected** state (purple) |
+| **Input** | State(Default/Read-only/Inactive/Validation) | **Semibold label**; focus border brand-purple → **accent blue** |
+| Popover | single + Popover Header | ✅ = container-overlay (4px, md shadow) |
+| Dialog | single, 4px, 16px/600 title | ✅ Verified (fixed prior pass) |
+| **List item** | State(4), 14px **Regular** label, Active purple | **Reverted** earlier over-reach — label is Regular not semibold; active = purple Regular |
+| **Progress Bar** | Determinate/Indeterminate, fill = border/container/active | Fill accent-blue → **brand-purple #8500cc** (Figma binding) |
+| Slider | Type(Dual/Single) × State(2) | ✅ Faithful — fill correctly accent-blue, pill track, white thumb |
+| **Loader** | spinner arc = border/container/active | Arc #c046ff → **brand-700 #8500cc** |
+| Empty State | single | ✅ Faithful — title 16px/600, desc 14 Regular, 20px gap |
+| File Upload | .File uploader | ✅ Left as-is (Figma border was a tool-placeholder, not a token) |
+| Breadcrumbs | .Breadcrumb set | ✅ Faithful — links 12px/600 accent-blue, current Regular |
+| **Progress Steps** | Step State(Current/Inactive/Complete) | active/completed info-blue/success-green → **accent blue** (Figma binds control/primary) |
+| **Key-Value** | key 14px **Regular** secondary, value Regular body | Key label semibold → **Regular** (colour carries the distinction) |
+| Footer | Footer (Generic) | ✅ Faithful — 48px, 8/12, 1px #d5d5d5 top border |
+| **View Header** | title 16px **Bold** | heading-lg semibold → **700 Bold** on the view title |
+| **Product Nav v2 / Nav Item** | State(default/hover/selected) | selected bg #e2adff→**#f8ebff**, text #c046ff→**#8500cc** (host + child) |
+| App Header | composite (product-bar 32 + view-header 68 + loading 2) | ✅ Slot-based composition of audited parts |
+| **Data Grid** | Grid Cell(Primary/Default/Numerical/Selection), Column Header(align) | cell 32 / header 40 semibold / link cells accent-blue **+ semibold** |
 
 ### 🔧 Systemic fixes (high impact)
 - **Accent (blue) ramp was entirely missing.** `color/accent/*` (blue, base = neon-blue/550 #3c5edd) was never emitted into `sherpa-alias.css` — the REST Alias extract (169 vars) sits below the 530-var write guard, so the hand-preserved file stayed frozen without it. Every primary button, link, and primary focus ring fell back to a hardcoded **#8500cc purple**. Figma separates **accent (blue → primary actions)** from **brand (purple → AI/quick-filter)**. Restored the ramp; guarded with a token-modes test (accent≠brand, primary→accent). See the [[sherpa-accent-vs-brand]] memory.
 - **`border-control-active-default`** aliased `color/brand/700` (#8500cc, stale) → corrected to `color/brand/base` (#c046ff) via themeCorrections. Surfaces on the quick-filter chip + tab active indicator.
-- **Dead text class `text-body-emphasised-*`** (doesn't exist; real class is `text-emphasis-*`) was used by **accordion, tabs, list-item** — their labels never got semibold. Fixed all three.
+- **Dead text class `text-body-emphasised-*`** (doesn't exist; real class is `text-emphasis-*`) was used by **accordion, tabs, list-item** — their labels never got semibold. Fixed accordion + tabs; list-item was later reverted to Regular (its Figma label *is* Regular).
+- **Fallback-literal consistency sweep.** After the accent fix, ~25 fallback literals no longer matched their token's resolved value. Corrected every `*-control-primary-default` fallback → **#3c5edd** (accent blue) and every `*-control-active-default` fallback → **#c046ff** (brand purple) across ~15 components. Cosmetic (fallbacks only apply on token-load failure) but keeps them truthful.
+
+### Accent (blue) vs brand (purple) — the per-component split
+The audit pinned down which token each component's accent actually binds to in Figma:
+- **Accent blue (#3c5edd)** — primary buttons, links, input focus, checkbox/radio borders, **slider** fill, **progress-step** current/complete, data-grid link cells, breadcrumbs.
+- **Brand purple (#8500cc / #c046ff)** — quick-filter chip, tab active indicator, **progress-bar** fill, **loader** arc, menu/list/nav **selected** states.
+
+This distinction was invisible before because the accent ramp was missing and everything fell back to purple. Each component now points at the correct family. See [[sherpa-accent-vs-brand]].
 
 ### Token-chain sweep
 Diffed 43 key control/surface/content/border theme tokens against Figma plugin-API ground truth. After the accent + border-active fixes, only `component/product-nav/item-rounding` remains (unused). All 9 Figma color ramps (accent/brand/critical/info/neutral/success/tones/urgent/warning) confirmed present.
+
+### Recurring construction findings
+- **Semibold labels**: accordion, tabs, input, chip, tag, breadcrumbs, data-grid headers, view-header title (Bold) are all semibold+ in Figma. List item + key-value keys are **Regular** — colour, not weight, carries their hierarchy.
+- **Status components** (callout, toast, banner) share the subtle-fill + status-border pattern, but differ in border shape: callout = 4px leading bar, toast/banner = uniform 1px.
+- **Selected/active states** across menu, list, nav all use the light-purple #f8ebff + #8500cc brand treatment.
 
 ## Guard against recurrence
 `test/e2e/sherpa-quick-filter.spec.ts` asserts the chip's Type×State matrix (4px radius, constant purple border, semibold, active fill/text). `test/e2e/token-modes.spec.ts` asserts the density/status/theme mode swaps **and** accent≠brand / primary→accent. All caught in CI (148 tests).
