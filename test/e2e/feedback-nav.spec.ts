@@ -191,3 +191,54 @@ test('sherpa-toast static show() creates a toast with status/heading/value', asy
   expect(r.inContainer).toBe(true);
   expect(r.state).toBe('visible'); // onConnect auto-shows when data-value is set
 });
+
+test('sherpa-nav settings mode swaps the secondary list in and back out', async ({ page }) => {
+  await mount(
+    page,
+    `<sherpa-nav style="height:400px">
+       <sherpa-nav-item slot="settings" data-icon="fa-solid fa-palette">Appearance</sherpa-nav-item>
+     </sherpa-nav>`,
+    'sherpa-nav',
+  );
+  // Wait for the nav to finish its async template render.
+  await page.waitForFunction(() => {
+    const n = document.querySelector('sherpa-nav') as HTMLElement | null;
+    return !!n?.shadowRoot?.querySelector('.nav-settings');
+  }, { timeout: 5000 });
+
+  const r = await page.evaluate(async () => {
+    const nav = document.querySelector('sherpa-nav') as HTMLElement & {
+      enterSettings?: () => void;
+      exitSettings?: () => void;
+      isSettings?: boolean;
+    };
+    const sr = nav.shadowRoot!;
+    const read = () => ({
+      mode: nav.dataset.mode,
+      sections: getComputedStyle(sr.querySelector('.nav-sections')!).display,
+      settings: getComputedStyle(sr.querySelector('.nav-settings')!).display,
+    });
+    const before = read();
+    nav.enterSettings!();
+    await new Promise((res) => setTimeout(res, 50));
+    const during = { ...read(), isSettings: nav.isSettings, slotted: nav.querySelectorAll('[slot="settings"]').length };
+    nav.exitSettings!();
+    await new Promise((res) => setTimeout(res, 50));
+    const after = read();
+    return { before, during, after };
+  });
+
+  // Default: primary list shown, settings hidden.
+  expect(r.before.settings).toBe('none');
+  expect(r.before.sections).not.toBe('none');
+  // Settings mode: primary hidden, settings shown, host content slotted in.
+  expect(r.during.mode).toBe('settings');
+  expect(r.during.isSettings).toBe(true);
+  expect(r.during.sections).toBe('none');
+  expect(r.during.settings).not.toBe('none');
+  expect(r.during.slotted).toBe(1);
+  // Exit returns to the primary list.
+  expect(r.after.mode).toBe('default');
+  expect(r.after.settings).toBe('none');
+  expect(r.after.sections).not.toBe('none');
+});

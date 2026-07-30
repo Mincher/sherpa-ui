@@ -287,6 +287,26 @@
     </div>
   </div>
 
+  <!-- Secondary Settings navigation list (shown only in data-mode="settings").
+       Per the Navigation v2 spec, this swaps in over the primary list when the
+       Settings button is pressed. Host provides items via slot="settings". -->
+  <div class="nav-settings" role="tree" aria-label="Settings navigation">
+    <div class="nav-settings-header">
+      <sherpa-button
+        class="nav-settings-back"
+        data-type="icon"
+        data-variant="tertiary"
+        data-size="small"
+        data-icon-start="fa-solid fa-arrow-left"
+        aria-label="Leave settings"
+      ></sherpa-button>
+      <span class="nav-settings-title text-label-group">SETTINGS</span>
+    </div>
+    <div class="nav-settings-list">
+      <slot name="settings" data-accepts="nav,control,html"></slot>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="nav-footer">
     <!-- Promo (hidden by default — populated via host data-promo-* attrs or setPromoConfig()) -->

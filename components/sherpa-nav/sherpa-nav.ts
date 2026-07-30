@@ -19,7 +19,7 @@
  * @fires navhome
  *   bubbles: true, composed: true
  *   detail: none
- * @fires navsettings
+ * @fires navsettings — Settings button toggled · detail: { active: boolean }
  *   bubbles: true, composed: true
  *   detail: none
  * @fires navitemclick
@@ -58,6 +58,9 @@
  *
  * @method startSearch           — Enter search mode
  * @method endSearch             — Exit search mode
+ * @method enterSettings         — Swap in the secondary Settings navigation list
+ * @method exitSettings          — Return to the primary navigation list
+ * @method toggleSettings        — Toggle Settings mode on/off
  * @method setActiveLink(href)   — Highlight the link matching href
  * @method setActiveItem(itemId) — Highlight the item matching itemId
  * @method isFavorite(itemId)    — Returns boolean
@@ -65,10 +68,11 @@
  * @method addToRecent(route, label, icon) — Push item to recent list
  * @method setPromoConfig(config) — Populate footer promo: { title, message, link: { text, url } }; pass null to clear
  *
- * @prop {boolean} isPinned   — Whether the sidebar is pinned open
+ * @prop {boolean} isPinned    — Whether the sidebar is pinned open
  * @prop {boolean} isSearching — Whether search mode is active
- * @prop {boolean} isEditing  — Whether edit mode is active
- * @prop {string}  mode       — Current mode: "default" | "search" | "edit"
+ * @prop {boolean} isEditing   — Whether edit mode is active
+ * @prop {boolean} isSettings  — Whether the secondary Settings list is active
+ * @prop {string}  mode        — Current mode: "default" | "search" | "edit" | "settings"
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
@@ -170,7 +174,7 @@ interface NavItemData {
 }
 
 export class SherpaNav extends SherpaElement {
-  public static MODES = { DEFAULT: "default", SEARCH: "search", EDIT: "edit" };
+  public static MODES = { DEFAULT: "default", SEARCH: "search", EDIT: "edit", SETTINGS: "settings" };
 
   static override get cssUrl(): string {
     return new URL("./sherpa-nav.css", import.meta.url).href;
@@ -347,6 +351,34 @@ export class SherpaNav extends SherpaElement {
     } finally {
       this.#endingSearch = false;
     }
+  }
+
+  /** Whether the secondary Settings navigation list is active. */
+  get isSettings(): boolean {
+    return this.mode === SherpaNav.MODES.SETTINGS;
+  }
+
+  /**
+   * Enter Settings mode — swap the primary navigation content for the secondary
+   * Settings list (per the Navigation v2 spec). Search still filters the visible
+   * (Settings) list. Leave via exitSettings(), the Settings button, or a
+   * breadcrumb back to a primary view.
+   */
+  enterSettings(): void {
+    if (this.isSearching) this.endSearch();
+    this.mode = SherpaNav.MODES.SETTINGS;
+  }
+
+  /** Leave Settings mode and return to the primary navigation list. */
+  exitSettings(): void {
+    if (this.isSearching) this.endSearch();
+    if (this.isSettings) this.mode = SherpaNav.MODES.DEFAULT;
+  }
+
+  /** Toggle between primary and Settings navigation lists. */
+  toggleSettings(): void {
+    if (this.isSettings) this.exitSettings();
+    else this.enterSettings();
   }
 
   setActiveLink(target: string): void {
@@ -661,6 +693,17 @@ export class SherpaNav extends SherpaElement {
 
   /** Wire delegated toggle listener for <details> → emit section-expand events. */
   #wireToggleListeners(): void {
+    // Settings "back" button leaves the secondary Settings list.
+    const settingsBack = this.$<HTMLElement>(".nav-settings-back");
+    if (settingsBack && !settingsBack.dataset["wired"]) {
+      settingsBack.dataset["wired"] = "true";
+      settingsBack.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.exitSettings();
+        this.#emit("navsettings", { active: false });
+      });
+    }
+
     const sections = this.$(".nav-sections");
     if (!sections) return;
     sections.addEventListener(
@@ -783,6 +826,13 @@ export class SherpaNav extends SherpaElement {
     if (navItem.dataset["navTarget"]) {
       if (navItem.dataset["navTarget"] === "search") {
         this.startSearch();
+        return;
+      }
+      if (navItem.dataset["navTarget"] === "settings") {
+        // Toggle the secondary Settings navigation list (spec: the Settings
+        // button swaps primary content for the Settings list and back).
+        this.toggleSettings();
+        this.#emit("navsettings", { active: this.isSettings });
         return;
       }
       this.#clearAllActiveStates();
