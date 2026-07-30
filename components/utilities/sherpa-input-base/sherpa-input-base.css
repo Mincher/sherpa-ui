@@ -94,6 +94,8 @@
   display: block;
   margin: 0;
   padding: 0;
+  /* Figma input label is Semi Bold. */
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-content-default-label, #1a1a1f);
 }
 
@@ -134,7 +136,8 @@
 }
 
 .input-body:focus-within {
-  border-color: var(--sherpa-border-control-active-default, #0060df);
+  /* Focus uses the primary (accent) blue, per the design-system focus convention. */
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
 }
 
 .input-body:has(.input-field:disabled) {

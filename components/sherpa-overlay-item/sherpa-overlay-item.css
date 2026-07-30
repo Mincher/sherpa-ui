@@ -23,6 +23,13 @@
 :host(:focus-visible) {
   background-color: var(--sherpa-surface-control-hover, #fafafa);
 }
+/* Active/selected menu item (Figma "Active"): light-purple surface, purple
+   label. Applies to the current-selection marker on plain items. */
+:host([aria-selected="true"]),
+:host([data-active]) {
+  background-color: var(--sherpa-surface-control-active-default, #f8ebff);
+  color: var(--sherpa-content-active-base, #8500cc);
+}
 :host([disabled]) {
   color: var(--sherpa-content-inactive-default, #5c5c66);
   cursor: default;
