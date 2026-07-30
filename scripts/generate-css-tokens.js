@@ -1230,6 +1230,10 @@ function emitIndex() {
 /* Theme corrections & Overrides — all attribute-driven token modifications */
 @import "sherpa-overrides.css";
 
+/* Brand status — hand-maintained [data-status="brand"] token definitions;
+ * appended after overrides so its @layer overrides rules take precedence */
+@import "sherpa-brand-status.css";
+
 /* Utilities — class-based helpers (sub-layered for cascade control) */
 @import "sherpa-icon-classes.css"       layer(utilities.icons);
 @import "sherpa-motion-classes.css"     layer(utilities.motion);
