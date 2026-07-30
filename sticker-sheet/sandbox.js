@@ -74,6 +74,19 @@ customElements.whenDefined('sherpa-data-grid').then(async () => {
   Promise.resolve(grid.rendered).then(() => grid.setData?.(config));
 });
 
+// ── Key/value list (data-driven via populate) ──────────────────────────────
+customElements.whenDefined('sherpa-key-value-list').then(() => {
+  const kv = document.getElementById('kv-demo');
+  Promise.resolve(kv?.rendered).then(() =>
+    kv?.populate?.([
+      { key: 'Environment', value: 'Production' },
+      { key: 'Region', value: 'EMEA' },
+      { key: 'Status', value: '<sherpa-tag data-color="green" data-label="Healthy"></sherpa-tag>', html: true },
+      { key: 'Owner', value: 'platform-team', type: 'monospace' },
+    ]),
+  );
+});
+
 // ── Input tag seed ────────────────────────────────────────────────────────
 customElements.whenDefined('sherpa-input-tag').then(() => {
   const el = document.getElementById('input-tag-demo');

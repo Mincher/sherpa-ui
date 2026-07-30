@@ -11,6 +11,13 @@
 
   Child components (sherpa-tag, links) are placed directly in <dd>.
 
+  Populate from data (or precompiled HTML) via the Sherpa binder:
+    el.populate([{ key: 'Name', value: 'John Doe' },
+                 { key: 'Email', value: 'a@b.com', type: 'monospace' },
+                 { key: 'Status', value: 'Active', status: 'success' },
+                 { key: 'Site', value: '<a href="#">link</a>', html: true }]);
+    el.populate('<dt>Key</dt><dd>Value</dd>…');   // precompiled HTML
+
   Host attributes:
     data-type      — Template selection (default: "default")
     data-layout    — "horizontal" | "vertical"
@@ -56,4 +63,13 @@
     <dd><sherpa-tag data-variant="secondary">Production</sherpa-tag></dd>
 
   </dl>
+
+  <!-- Per-pair cloning prototype (bound by populate() via renderInto).
+       Two <dd> branches: plain text (data-bind) vs. rich HTML (data-bind-html),
+       switched per item by the `html` flag. -->
+  <template class="pair-tpl">
+    <dt data-bind="key"></dt>
+    <dd data-bind="value" data-bind-attr="data-type:type; data-status:status; data-status-apply:statusApply" data-bind-if="text"></dd>
+    <dd data-bind-html="value" data-bind-attr="data-type:type; data-status:status" data-bind-if="html"></dd>
+  </template>
 </template>
