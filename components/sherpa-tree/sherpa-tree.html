@@ -18,7 +18,9 @@
 
 <template id="default">
   <div class="tree" role="tree" part="tree" tabindex="0" aria-label="Tree">
-    <div class="tree-empty" role="status" aria-live="polite" part="empty"></div>
+    <div class="tree-empty" role="status" aria-live="polite" part="empty">
+      <slot name="empty" data-accepts="content,display,html"></slot>
+    </div>
   </div>
 
   <!-- Node prototype — cloned recursively per data node -->

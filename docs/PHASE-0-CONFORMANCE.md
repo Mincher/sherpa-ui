@@ -35,7 +35,7 @@ Ranked, **annotated with phase overlap** so we don't refactor code that's about 
 
 | Component | Violations | Lines | Recommendation |
 |---|---|---|---|
-| **sherpa-input-select** | 5 | tree build L231/237/244/254 + innerHTML L248 | ⏭️ **Defer to Phase 2.** The tree template is being replaced by the shared `sherpa-tree` primitive — build *that* correctly (template-cloned) rather than refactor code slated for removal. Native `<option>`/`<optgroup>` uses here are LEGIT. |
+| **sherpa-input-select** | ~~5~~ **0** | ~~tree build L231/237/244/254 + innerHTML L248~~ | ✅ **RESOLVED (Phase 2.4).** The tree template now delegates to the `sherpa-tree` primitive (template-cloned, no createElement/innerHTML). Remaining 3 createElement are the LEGIT native `<option>`/`<optgroup>` builders. |
 | **sherpa-filter-bar** | 4 | chip group L552/565/572/585 | ⏭️ **Defer to Phase 4.** `sherpa-filter-bar` is replaced by `sherpa-quick-filter-toolbar`; build the new chip with a cloning template from the start. |
 | **sherpa-data-grid** | 5 | header/selection cells L674/677/700/732/752 | 🔧 **Fix opportunistically (Phase 6).** Borderline — fixed single header/selection/action `<th>`s (rows & cells already clone templates correctly). Add `.sel-header-tpl`/`.action-header-tpl` prototypes when the grid is next touched. Low urgency. |
 | **sherpa-breadcrumbs** | 2 | crumb + separator L72/85 | ✅ **Fix now.** Small, unambiguous repeating-list violation. Add a `.crumb-tpl` cloning prototype. Reused by node-canvas (below). |
