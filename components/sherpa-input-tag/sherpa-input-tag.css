@@ -39,6 +39,8 @@
   background: var(--sherpa-surface-context-info-subtle-default, #e6f0ff);
   color: var(--sherpa-content-context-info-default, #0060df);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
+  /* Figma Chip label is Semi Bold. */
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-font-sm-line-height, 16px);
   max-width: 100%;
 }

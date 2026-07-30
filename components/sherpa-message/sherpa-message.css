@@ -21,8 +21,9 @@
 
 :host {
   --_gap: var(--sherpa-space-xs, 8px);
+  /* Figma Banner: 8px block / 16px inline padding, 4px radius, 1px status border. */
   --_padding-block: var(--sherpa-space-xs, 8px);
-  --_padding-inline: var(--sherpa-space-sm, 12px);
+  --_padding-inline: var(--sherpa-space-base, 16px);
   --_text-font-size: var(--sherpa-fonts-scale-base, 14px);
   display: flex;
   align-items: center;
