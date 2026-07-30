@@ -11,19 +11,24 @@
 
   Slots:
     nav          — sherpa-nav element
-    product-bar  — sherpa-product-bar-v2 element
-    (default)    — sherpa-layout-grid
+    product-bar  — sherpa-product-bar-v2 element (optional; App Shell v2 folds
+                   its actions into app-header)
+    app-header   — sherpa-app-header element (App Shell v2 baseline header)
+    (default)    — sherpa-layout-grid / main content
 -->
 <template id="default">
   <div class="nav-slot">
-    <slot name="nav"></slot>
+    <slot name="nav" data-accepts="nav,html"></slot>
   </div>
   <div class="app-main">
     <div class="product-bar-row">
-      <slot name="product-bar"></slot>
+      <slot name="product-bar" data-accepts="shell,nav,html"></slot>
+    </div>
+    <div class="app-header-row">
+      <slot name="app-header" data-accepts="shell,html"></slot>
     </div>
     <div class="content-row">
-      <slot></slot>
+      <slot data-accepts="any,html"></slot>
     </div>
   </div>
 </template>

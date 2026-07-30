@@ -70,6 +70,16 @@
   display: none;
 }
 
+/* ── App header row (App Shell v2) ─────────────────────────────── */
+
+.app-header-row {
+  flex: 0 0 auto;
+}
+
+:host(:not([data-has-app-header])) .app-header-row {
+  display: none;
+}
+
 /* ── Content row ───────────────────────────────────────────────── */
 
 .content-row {
