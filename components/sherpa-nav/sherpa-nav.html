@@ -357,11 +357,16 @@
   </footer>
 
   <!-- Cloning templates -->
+  <!-- Cloning prototype bound by #createNavItem via the Sherpa template binder.
+       data-bind fills the label; data-bind-attr maps the flat item fields. The
+       badge (a nested sherpa-tag) is appended separately after binding. -->
   <template class="nav-item-tpl">
     <sherpa-nav-item
       data-variant="child"
       tabindex="0"
       role="button"
+      data-bind="label"
+      data-bind-attr="data-item-id:id; data-icon:icon; data-route:route; data-state:state; data-editable:editable"
     ></sherpa-nav-item>
   </template>
   <template class="badge-tpl">

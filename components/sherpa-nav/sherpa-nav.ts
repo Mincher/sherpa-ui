@@ -76,6 +76,7 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { renderTemplate } from "../utilities/sherpa-template/sherpa-template.js";
 import "../sherpa-button/sherpa-button.js";
 import "../sherpa-nav-item/sherpa-nav-item.js";
 
@@ -945,18 +946,22 @@ export class SherpaNav extends SherpaElement {
   }
 
   #createNavItem(item: NavItemData, editable = false): HTMLElement {
-    const navItemTpl = this.#navItemTpl;
-    if (!navItemTpl) throw new Error("Missing nav item template");
-    const el = (navItemTpl.content.cloneNode(true) as DocumentFragment)
-      .querySelector<HTMLElement>("sherpa-nav-item");
+    if (!this.#navItemTpl) throw new Error("Missing nav item template");
+    // Bind the flat fields via the Sherpa template binder (data-bind* on
+    // .nav-item-tpl). renderTemplate returns a bound clone; the binder maps
+    // label + id/icon/route/state/editable and drops empty attributes.
+    const frag = renderTemplate(this.#navItemTpl, {
+      label: item.label ?? "",
+      id: item.id ?? null,
+      icon: item.icon ?? null,
+      route: item.route ?? null,
+      state: item.active ? "selected" : null,
+      editable: editable ? "true" : null,
+    });
+    const el = frag.querySelector<HTMLElement>("sherpa-nav-item");
     if (!el) throw new Error("Missing nav item element in template");
-    el.textContent = item.label ?? "";
-    if (item.id) el.dataset["itemId"] = item.id;
-    if (item.icon) el.dataset["icon"] = item.icon;
+    // The badge is a nested sherpa-tag component appended after binding.
     if (item.badge) el.appendChild(this.#createBadgeElement(item.badge));
-    if (item.route) el.dataset["route"] = item.route;
-    if (editable) el.dataset["editable"] = "true";
-    if (item.active) el.dataset["state"] = "selected";
     return el;
   }
 
