@@ -1,53 +1,53 @@
 /**
  * sherpa-quick-filter.css — Quick Filter chip.
  *
- * Matches the Figma "Quick Filter" component set exactly (App Shell v2,
- * component set 26938:43351, on-canvas documented):
- *   - 24px tall, 4px corner radius (a rounded rectangle — NOT a pill)
- *   - Border is ALWAYS purple 0.5px (border-control-active) — constant across
- *     every Type × State. Only the fill + label colour toggle.
- *   - Label is ALWAYS Semi Bold (600).
- *   - "Off" mode  → white surface,      default body text.
- *   - "Active" mode → light-purple surface (#f8ebff), purple text (#8500cc).
- *   - AI type: same 0.5px purple border (NOT 1px) + wand icon.
+ * Built to the Figma "Quick Filter" component set (App Shell v2, 26938:43351).
  *
- * Axes (matching Figma Type × State):
- *   Type  (data-type):  default | ai | populated
- *   State: the fill/text toggle is driven by [data-active] (present = Active
- *          mode). Figma's Populated/Active-On is the un-active white treatment;
- *          Populated/Active-Off + Default/Active + AI/Suggested are all the
- *          purple-filled "active" treatment. [data-thinking] adds the AI pulse.
- * The dismiss × shows only for user-added chips ([data-dismissible]).
+ * Anatomy: [ .chip-left (badge? · icon · label) ] [ .chip-menu ]
+ *   .chip        24px tall · 4px radius · pad 0/2 · gap 0
+ *   .chip-left   pad 0/4 · gap 4 · the interactive filter body
+ *   .chip-menu   20×20 · 4px radius · surface-container-secondary (#fafaff) · chevron
+ *
+ * State matrix (Type × State):
+ *   Default/Neutral  white · grey 0.5px border · body text · Regular
+ *   Default/Active   #f8ebff · purple 0.5px border · body text · Regular
+ *   AI (any)         NO border · #f8ebff (thinking) / white (suggested) · purple text · Regular
+ *   Populated/on     #f8ebff · purple border · purple text · Semi Bold
+ *   Populated/off    white · purple border · body text · Semi Bold
+ *   Inactive         #f2f2f2 · grey border · inactive text
+ *
+ * Type (data-type):  default | ai | populated | utility
+ * State: [data-active] (filter on), [data-thinking] (ai pulse), [disabled] (inactive)
  */
 
 :host {
   display: inline-flex;
   vertical-align: middle;
 
-  /* Constant chip identity — border is always purple 0.5px, label semibold.
-     Only --_chip-bg / --_chip-fg / --_chip-icon toggle per state below. */
+  /* Per-state custom props. Defaults = Default/Neutral. */
   --_chip-bg: var(--sherpa-surface-container-default, #ffffff);
-  --_chip-border-color: var(--sherpa-border-control-active-default, #c046ff);
+  --_chip-border-color: var(--sherpa-border-container-default, #d5d5dc);
   --_chip-border-width: var(--sherpa-border-width-sm, 0.5px);
   --_chip-fg: var(--sherpa-content-default-body, #2e2e33);
   --_chip-icon: var(--sherpa-content-default-body, #2e2e33);
-  --_chip-weight: var(--sherpa-font-weight-semibold, 600);
+  --_chip-weight: var(--sherpa-font-weight-regular, 400);
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  block-size: var(--sherpa-size-2xl, 24px);
+  gap: 0;
+  block-size: var(--sherpa-size-lg, 24px);
+  box-sizing: border-box;
   padding-inline: var(--sherpa-space-3xs, 2px);
   border: var(--_chip-border-width) solid var(--_chip-border-color);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--_chip-bg);
   color: var(--_chip-fg);
-  overflow: hidden;
 }
 
-/* Left group: icon + label + optional count badge */
-.chip-main {
+/* ── Left group — badge · icon · label ─────────────────────────────── */
+.chip-left {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-space-2xs, 4px);
@@ -58,8 +58,7 @@
   color: inherit;
   font-family: var(--sherpa-fonts-context-brand, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
-  line-height: 20px;
-  letter-spacing: 0.1px;
+  line-height: var(--sherpa-font-base-line-height, 20px);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -68,113 +67,142 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-md, 16px);
-  block-size: var(--sherpa-size-md, 16px);
+  inline-size: var(--sherpa-size-sm, 16px);
+  block-size: var(--sherpa-size-sm, 16px);
   color: var(--_chip-icon);
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   font-weight: 900;
-  font-size: 0.85em;
+  font-size: 0.75em;
 }
 .chip-icon::before { content: "\f0b0"; } /* fa-filter (funnel) */
 
 .chip-label { font-weight: var(--_chip-weight); }
 
-/* Count badge (multi-value) — mono font, 16px square, neutral surface */
-.chip-count {
+/* Count badge (multi-value) — 16×16, 0.5px grey border, mono 10px count */
+.chip-badge {
   display: none;
-  min-inline-size: var(--sherpa-size-md, 16px);
-  block-size: var(--sherpa-size-md, 16px);
-  padding-inline: var(--sherpa-space-2xs, 4px);
   align-items: center;
   justify-content: center;
+  min-inline-size: var(--sherpa-size-sm, 16px);
+  block-size: var(--sherpa-size-sm, 16px);
+  padding-inline: var(--sherpa-space-2xs, 4px);
   border: var(--sherpa-border-width-sm, 0.5px) solid var(--sherpa-border-control-default, #b2b2bf);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-container-default, #ffffff);
   color: var(--sherpa-content-default-body, #2e2e33);
   font-family: var(--sherpa-fonts-context-monospaced, "JetBrains Mono", ui-monospace, monospace);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  line-height: 16px;
+  line-height: var(--sherpa-size-sm, 16px);
 }
-:host([data-count]) .chip-count { display: inline-flex; }
+:host([data-count]) .chip-badge { display: inline-flex; }
 
-/* ── Menu (chevron) ──────────────────────────────────────────────── */
-
+/* ── Menu button (20×20, tertiary surface, chevron) ────────────────── */
 .chip-menu {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-xl, 20px);
-  block-size: var(--sherpa-size-xl, 20px);
+  inline-size: var(--sherpa-size-md, 20px);
+  block-size: var(--sherpa-size-md, 20px);
   padding: var(--sherpa-space-3xs, 2px);
   border: none;
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: transparent;
+  background: var(--sherpa-surface-container-secondary-default, #fafaff);
   color: var(--_chip-icon);
-  font-size: 0.7em;
   cursor: pointer;
 }
-.chip-menu:hover { background: var(--sherpa-surface-control-tertiary-hover, rgba(0, 0, 0, 0.04)); }
-/* Chips with no menu (e.g. boolean toggles) hide the chevron */
-:host([data-no-menu]) .chip-menu { display: none; }
+.chip-menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-sm, 16px);
+  block-size: var(--sherpa-size-sm, 16px);
+  font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.6em;
+}
+.chip-menu-icon::before { content: "\f078"; } /* fa-chevron-down */
+.chip-menu:hover { background: var(--sherpa-surface-container-secondary-hover, #f0f0f5); }
+/* Boolean / Utility chips have no menu. */
+:host([data-no-menu]) .chip-menu,
+:host([data-type="utility"]) .chip-menu { display: none; }
 
-/* ── Dismiss ─────────────────────────────────────────────────────── */
-
+/* ── Dismiss (× for user-added chips) — replaces the menu ──────────── */
 .chip-dismiss {
   display: none;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-xl, 20px);
-  block-size: var(--sherpa-size-xl, 20px);
+  inline-size: var(--sherpa-size-md, 20px);
+  block-size: var(--sherpa-size-md, 20px);
   padding: var(--sherpa-space-3xs, 2px);
   border: none;
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: transparent;
+  background: var(--sherpa-surface-container-secondary-default, #fafaff);
   color: var(--_chip-icon);
-  font-size: 0.7em;
   cursor: pointer;
 }
-.chip-dismiss:hover { background: var(--sherpa-surface-control-tertiary-hover, rgba(0, 0, 0, 0.04)); }
+.chip-dismiss-icon {
+  display: inline-flex;
+  font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.6em;
+}
+.chip-dismiss-icon::before { content: "\f00d"; } /* fa-xmark */
+.chip-dismiss:hover { background: var(--sherpa-surface-container-secondary-hover, #f0f0f5); }
 :host([data-dismissible]) .chip-dismiss { display: inline-flex; }
 :host([data-dismissible]) .chip-menu { display: none; }
 
-/* ── Active mode — light-purple surface + purple text (border unchanged) ──
-      Figma: Default/Active, Populated/Active-Off, AI/Suggested all share this
-      purple-filled treatment. The "off"/"active-on" states keep the white base
-      above (Populated/Active-On is white). Fill toggles purely on [data-active]. ── */
+/* ═══ State matrix ═══════════════════════════════════════════════════ */
+
+/* Active (Default type): light-purple fill + purple border, body text stays. */
 :host([data-active]) {
   --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
+  --_chip-border-color: var(--sherpa-border-control-active-default, #c046ff);
+}
+
+/* Populated: purple border always; semibold label. Fill toggles on active. */
+:host([data-type="populated"]) {
+  --_chip-border-color: var(--sherpa-border-control-active-default, #c046ff);
+  --_chip-weight: var(--sherpa-font-weight-semibold, 600);
+}
+:host([data-type="populated"][data-active]) {
+  --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
+  --_chip-fg: var(--sherpa-content-active-base, #8500cc);
+}
+
+/* AI: NO border; purple text + wand icon. Thinking = filled, suggested = white. */
+:host([data-type="ai"]) {
+  --_chip-border-width: 0;
+  --_chip-border-color: transparent;
   --_chip-fg: var(--sherpa-content-active-base, #8500cc);
   --_chip-icon: var(--sherpa-content-active-base, #8500cc);
 }
-
-/* ── Type: ai — same 0.5px purple border, purple label + wand icon ── */
-:host([data-type="ai"]) {
+:host([data-type="ai"][data-thinking]) {
   --_chip-bg: var(--sherpa-surface-control-active-default, #f8ebff);
-  --_chip-fg: var(--sherpa-content-active-base, #8500cc);
-  --_chip-icon: var(--sherpa-content-active-base, #8500cc);
 }
 :host([data-type="ai"]) .chip-icon::before { content: "\f890"; } /* fa-wand-magic-sparkles */
 
-/* AI thinking — pulsing border */
+/* AI thinking — pulsing purple glow (no border, so animate box-shadow). */
 :host([data-type="ai"][data-thinking]) .chip {
   animation: qf-thinking 1.2s ease-in-out infinite;
 }
 @keyframes qf-thinking {
-  0%, 100% { border-color: var(--sherpa-color-brand-base, #c046ff); }
-  50%      { border-color: var(--sherpa-color-brand-300, #e0a6ff); }
+  0%, 100% { box-shadow: 0 0 0 1px var(--sherpa-color-brand-base, #c046ff); }
+  50%      { box-shadow: 0 0 0 1px var(--sherpa-color-brand-300, #e0a6ff); }
 }
 
-/* ── Disabled / inactive ─────────────────────────────────────────── */
+/* ── Inactive / disabled ─────────────────────────────────────────────
+   Figma: #f2f2f2 fill · grey border · #5c5c66 text (borderless for AI). */
 :host([disabled]) { pointer-events: none; }
-:host([disabled]) .chip {
-  color: var(--sherpa-content-inactive-default, #a0a0a8);
-  background: var(--sherpa-surface-container-inactive, #f5f5f7);
-  border-color: var(--sherpa-border-container-inactive, #e0e0e6);
+:host([disabled]) {
+  --_chip-bg: var(--sherpa-surface-control-inactive, #f2f2f2);
+  --_chip-border-color: var(--sherpa-border-control-inactive, #8d8d99);
+  --_chip-fg: var(--sherpa-content-inactive-default, #5c5c66);
+  --_chip-icon: var(--sherpa-content-inactive-default, #5c5c66);
 }
-:host([disabled]) .chip-icon { color: var(--sherpa-content-inactive-default, #a0a0a8); }
+:host([data-type="ai"][disabled]) { --_chip-border-width: 0; }
 
-/* ── Focus rings ─────────────────────────────────────────────────── */
-.chip-main:focus-visible,
+/* ── Focus rings ─────────────────────────────────────────────────────── */
+.chip-left:focus-visible,
 .chip-menu:focus-visible,
 .chip-dismiss:focus-visible {
   outline: none;

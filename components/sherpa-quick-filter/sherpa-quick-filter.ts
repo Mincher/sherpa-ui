@@ -52,9 +52,9 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   public els = this.cacheElements({
-    main: { selector: ".chip-main", type: HTMLButtonElement },
+    left: { selector: ".chip-left", type: HTMLButtonElement },
     label: { selector: ".chip-label", type: HTMLElement },
-    count: { selector: ".chip-count", type: HTMLElement },
+    badge: { selector: ".chip-badge", type: HTMLElement },
     menu: { selector: ".chip-menu", type: HTMLButtonElement },
     dismiss: { selector: ".chip-dismiss", type: HTMLButtonElement },
   });
@@ -63,7 +63,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   override onRender(): void {
     if (!this.#bound) {
-      this.els.main?.addEventListener("click", this.#onMain);
+      this.els.left?.addEventListener("click", this.#onMain);
       this.els.menu?.addEventListener("click", this.#onMenu);
       this.els.dismiss?.addEventListener("click", this.#onDismiss);
       this.#bound = true;
@@ -98,12 +98,15 @@ export class SherpaQuickFilter extends SherpaElement {
     const label = this.dataset["label"] || "";
     const value = this.dataset["value"] || "";
     const count = this.dataset["count"];
+    // Multi-value chips keep the Field label + a count badge (per the Figma
+    // guidance: "the Chip isn't populated with Value labels"). Single value
+    // shows "Field: Value".
     if (value && !count) {
       this.els.label.textContent = `${label}: ${value}`;
     } else {
       this.els.label.textContent = label;
     }
-    if (this.els.count && count) this.els.count.textContent = count;
+    if (this.els.badge && count) this.els.badge.textContent = count;
   }
 
   /* ── Interaction ───────────────────────────────────────────────── */

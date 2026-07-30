@@ -1,29 +1,32 @@
 <!--
   sherpa-quick-filter.html — Shadow DOM template for a Quick Filter chip.
 
-  Structure (per Figma "Quick Filter"):
-    .chip
-      .chip-main   — the label region (funnel icon + label/value + count badge)
-      .chip-menu   — chevron button that opens the filter's option menu
-      .chip-dismiss— optional × to remove a user-added chip
+  Anatomy (per Figma "Quick Filter" component set, App Shell v2):
+    .chip                        24px tall · 4px radius · pad 0/2 · gap 0
+      .chip-left                 pad 0/4 · gap 4  (the interactive filter body)
+        .chip-badge              16×16 · 4px radius · count for multi-value (hidden by default)
+        .chip-icon               16×16 · funnel (default) / wand (ai)
+        .chip-label              14px label / "Label: Value"
+      .chip-menu                 20×20 · 4px radius · #fafaff surface · chevron
+                                 (Boolean/Utility chips hide this)
+      .chip-dismiss              20×20 · × for user-added chips (replaces menu)
 
-  Type (data-type): default | ai | populated  → colour/border treatment
-  State via data-active / data-thinking / disabled.
-  All visibility is attribute-driven; JS only sets attributes + label text.
+  Type  (data-type):  default | ai | populated | utility
+  State: [data-active] (on), [data-thinking] (ai pulse), [disabled] (inactive)
+  All visibility is attribute-driven; JS only sets attributes + text.
 -->
-
 <template id="default">
   <div class="chip" part="chip">
-    <button type="button" class="chip-main" part="main">
+    <button type="button" class="chip-left" part="left">
+      <span class="chip-badge" part="badge" aria-hidden="true"></span>
       <span class="chip-icon" part="icon" aria-hidden="true"></span>
       <span class="chip-label" part="label"></span>
-      <span class="chip-count" part="count" aria-hidden="true"></span>
     </button>
     <button type="button" class="chip-menu" part="menu" aria-haspopup="menu" aria-expanded="false" aria-label="Filter options">
-      <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+      <span class="chip-menu-icon" aria-hidden="true"></span>
     </button>
     <button type="button" class="chip-dismiss" part="dismiss" aria-label="Remove filter">
-      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      <span class="chip-dismiss-icon" aria-hidden="true"></span>
     </button>
   </div>
 </template>

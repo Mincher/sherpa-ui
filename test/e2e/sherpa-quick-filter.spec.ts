@@ -14,44 +14,51 @@ test('chip renders "Label: Value" when a value is set', async ({ page }) => {
   expect(label).toBe('Owner: Me');
 });
 
-test('chip matches Figma: 4px radius, constant purple border, always-semibold, active toggles fill+text', async ({ page }) => {
+test('chip matches Figma Type×State matrix (24px, state-dependent border/weight, anatomy)', async ({ page }) => {
   await mount(page, `
-    <sherpa-quick-filter data-label="Region" id="def"></sherpa-quick-filter>
-    <sherpa-quick-filter data-label="Owner" data-value="Me" data-active id="act"></sherpa-quick-filter>`,
+    <sherpa-quick-filter data-label="Region" id="neutral"></sherpa-quick-filter>
+    <sherpa-quick-filter data-label="Owner" data-active id="active"></sherpa-quick-filter>
+    <sherpa-quick-filter data-type="ai" data-label="Suggested" id="ai"></sherpa-quick-filter>
+    <sherpa-quick-filter data-type="populated" data-label="Field" data-value="V" data-active id="pop"></sherpa-quick-filter>`,
     'sherpa-quick-filter');
   const r = await page.evaluate(() => {
-    const def = document.getElementById('def')!;
-    const act = document.getElementById('act')!;
-    const defChip = def.shadowRoot!.querySelector('.chip')!;
-    const defLabel = def.shadowRoot!.querySelector('.chip-label')!;
-    const actChip = act.shadowRoot!.querySelector('.chip')!;
-    const actLabel = act.shadowRoot!.querySelector('.chip-label')!;
-    return {
-      radius: getComputedStyle(defChip).borderTopLeftRadius,
-      defBorder: getComputedStyle(defChip).borderTopColor,
-      defBg: getComputedStyle(defChip).backgroundColor,
-      defWeight: getComputedStyle(defLabel).fontWeight,
-      defColor: getComputedStyle(defLabel).color,
-      actBorder: getComputedStyle(actChip).borderTopColor,
-      actBg: getComputedStyle(actChip).backgroundColor,
-      actWeight: getComputedStyle(actLabel).fontWeight,
-      actColor: getComputedStyle(actLabel).color,
+    const read = (id: string) => {
+      const el = document.getElementById(id)!;
+      const chip = el.shadowRoot!.querySelector('.chip')!;
+      const label = el.shadowRoot!.querySelector('.chip-label')!;
+      const menu = el.shadowRoot!.querySelector('.chip-menu')!;
+      return {
+        h: getComputedStyle(chip).height,
+        radius: getComputedStyle(chip).borderTopLeftRadius,
+        border: getComputedStyle(chip).borderTopWidth + ' ' + getComputedStyle(chip).borderTopColor,
+        bg: getComputedStyle(chip).backgroundColor,
+        weight: getComputedStyle(label).fontWeight,
+        color: getComputedStyle(label).color,
+        menuW: getComputedStyle(menu).width,
+      };
     };
+    return { neutral: read('neutral'), active: read('active'), ai: read('ai'), pop: read('pop') };
   });
-  // Design: 4px rounded rectangle — NOT a pill (999px / half-height).
-  expect(r.radius).toBe('4px');
-  // Border is ALWAYS purple #c046ff (border-control-active) — every state.
-  expect(r.defBorder).toBe('rgb(192, 70, 255)');
-  expect(r.actBorder).toBe('rgb(192, 70, 255)');
-  // Label is ALWAYS semibold (600).
-  expect(r.defWeight).toBe('600');
-  expect(r.actWeight).toBe('600');
-  // Off (neutral): white surface, default body text.
-  expect(r.defBg).toBe('rgb(255, 255, 255)');
-  expect(r.defColor).toBe('rgb(46, 46, 51)');
-  // Active: light-purple surface (#f8ebff), purple text (#8500cc).
-  expect(r.actBg).toBe('rgb(248, 235, 255)');
-  expect(r.actColor).toBe('rgb(133, 0, 204)');
+  // Anatomy: 24px chip, 4px radius, 20px menu button.
+  expect(r.neutral.h).toBe('24px');
+  expect(r.neutral.radius).toBe('4px');
+  expect(r.neutral.menuW).toBe('20px');
+  // Default/Neutral: white, GREY border, body text, Regular.
+  expect(r.neutral.border).toBe('1px rgb(213, 213, 213)');
+  expect(r.neutral.bg).toBe('rgb(255, 255, 255)');
+  expect(r.neutral.weight).toBe('400');
+  expect(r.neutral.color).toBe('rgb(46, 46, 51)');
+  // Default/Active: light-purple fill + purple border, body text, Regular.
+  expect(r.active.border).toBe('1px rgb(192, 70, 255)');
+  expect(r.active.bg).toBe('rgb(248, 235, 255)');
+  expect(r.active.weight).toBe('400');
+  // AI: NO border, purple text.
+  expect(r.ai.border.startsWith('0px')).toBe(true);
+  expect(r.ai.color).toBe('rgb(133, 0, 204)');
+  // Populated/Active-On: purple fill + purple border + purple SEMIBOLD text.
+  expect(r.pop.border).toBe('1px rgb(192, 70, 255)');
+  expect(r.pop.weight).toBe('600');
+  expect(r.pop.color).toBe('rgb(133, 0, 204)');
 });
 
 test('AI chip body click emits quick-filter-ai-accept', async ({ page }) => {
@@ -60,7 +67,7 @@ test('AI chip body click emits quick-filter-ai-accept', async ({ page }) => {
     const c = document.querySelector('sherpa-quick-filter')!;
     let d: any = null;
     c.addEventListener('quick-filter-ai-accept', (e: any) => (d = e.detail));
-    (c.shadowRoot!.querySelector('.chip-main') as HTMLElement).click();
+    (c.shadowRoot!.querySelector('.chip-left') as HTMLElement).click();
     return d;
   });
   expect(detail).not.toBeNull();

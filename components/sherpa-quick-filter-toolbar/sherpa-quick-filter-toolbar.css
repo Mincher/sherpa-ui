@@ -99,28 +99,29 @@ slot[name="presets"] {
   display: none;
 }
 
-/* ── Built-in behavior chips (group / sort) ─────────────────────── */
-/* The Order-zone Group/Sort chips ARE Quick Filter chips in Figma — match
-   sherpa-quick-filter exactly: 24px tall, 4px radius, constant purple 0.5px
-   border, semibold label. Off = white surface + default text; Active =
-   light-purple surface + purple text. */
+/* ── Built-in behavior chips (Order zone: Group / Sort) ───────────────
+   These ARE Quick Filter chips in Figma. Mirror sherpa-quick-filter's
+   Default-type anatomy exactly: 24px tall, 4px radius, 0.5px GREY border,
+   Regular label, [ .behavior-btn (icon+label) ] [ .menu-btn (20px #fafaff) ].
+   Active swaps to light-purple fill + purple border + purple text. */
 .chip-group {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
   gap: 0;
-  block-size: var(--sherpa-size-2xl, 24px);
+  block-size: var(--sherpa-size-lg, 24px);
+  box-sizing: border-box;
   padding-inline: var(--sherpa-space-3xs, 2px);
   border: var(--sherpa-border-width-sm, 0.5px) solid
-    var(--sherpa-border-control-active-default, #c046ff);
+    var(--sherpa-border-container-default, #d5d5dc);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-container-default, #ffffff);
   color: var(--sherpa-content-default-body, #2e2e33);
-  overflow: hidden;
   flex-shrink: 0;
 }
 
 .chip-group[data-active] {
+  border-color: var(--sherpa-border-control-active-default, #c046ff);
   background: var(--sherpa-surface-control-active-default, #f8ebff);
   color: var(--sherpa-content-active-base, #8500cc);
 }
@@ -133,7 +134,8 @@ slot[name="presets"] {
   display: none;
 }
 
-.chip-btn {
+/* Left group (behavior button): icon + label, pad 0/4, gap 4. */
+.chip-btn.behavior-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-space-2xs, 4px);
@@ -144,40 +146,40 @@ slot[name="presets"] {
   color: inherit;
   font-family: var(--sherpa-fonts-context-brand, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-fonts-scale-base, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: 20px;
-  letter-spacing: 0.1px;
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-font-base-line-height, 20px);
   white-space: nowrap;
   cursor: pointer;
 }
 
+/* Menu button: 20×20, 4px radius, #fafaff tertiary surface, chevron. */
 .chip-group .menu-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-xl, 20px);
-  block-size: var(--sherpa-size-xl, 20px);
+  inline-size: var(--sherpa-size-md, 20px);
+  block-size: var(--sherpa-size-md, 20px);
   padding: var(--sherpa-space-3xs, 2px);
   border: none;
   border-radius: var(--sherpa-border-rounding-base, 4px);
-  background: transparent;
+  background: var(--sherpa-surface-container-secondary-default, #fafaff);
   color: inherit;
-  font-size: 0.7em;
+  font-size: 0.6em;
   cursor: pointer;
 }
 .chip-group .menu-btn:hover {
-  background: var(--sherpa-surface-control-tertiary-hover, rgba(0, 0, 0, 0.04));
+  background: var(--sherpa-surface-container-secondary-hover, #f0f0f5);
 }
 
 .chip-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-md, 16px);
-  block-size: var(--sherpa-size-md, 16px);
+  inline-size: var(--sherpa-size-sm, 16px);
+  block-size: var(--sherpa-size-sm, 16px);
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   font-weight: 900;
-  font-size: 0.85em;
+  font-size: 0.75em;
   color: inherit;
 }
 
