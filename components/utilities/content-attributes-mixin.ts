@@ -37,7 +37,7 @@ import {
 import type { SherpaElement } from "./sherpa-element/sherpa-element.js";
 
 /* ── Host-surface helper types ──────────────────────────────────── *
- * The mixin queries an embedded <sherpa-filter-bar> and view-menu
+ * The mixin queries an embedded <sherpa-quick-filter-toolbar> and view-menu
  * button. These minimal structural types capture just the members the
  * mixin touches, avoiding a hard dependency on those component classes.
  */
@@ -630,7 +630,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
       // Set the syncing guard BEFORE field sync so the filter bar's
       // MutationObserver doesn't fire containerfilterchange while
       // chips are being populated — that would strip segment attrs.
-      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-filter-bar");
+      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-quick-filter-toolbar");
       if (bar) bar.dataset["syncing"] = "";
 
       // Sync chip state BEFORE populating menus so that
@@ -652,7 +652,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
      * Sync the embedded filter bar's available-fields from dataset fields.
      */
     #syncFilterBarFields(): void {
-      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-filter-bar");
+      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-quick-filter-toolbar");
       if (!bar || !this.#fields.length) return;
 
       const fields = this.#fields.map((f) => ({
@@ -668,7 +668,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
      * the host's current data-segment-field / data-sort-field attributes.
      */
     _syncFilterBarState(): void {
-      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-filter-bar");
+      const bar = this.shadowRoot?.querySelector<FilterBarLike>("sherpa-quick-filter-toolbar");
       if (!bar) return;
 
       // Build a field→displayName map from column metadata

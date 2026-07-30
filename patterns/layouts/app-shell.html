@@ -7,7 +7,7 @@
     • Main content area composed with sherpa-layout-grid
 
   Components: sherpa-app-shell, sherpa-nav, sherpa-product-bar-v2,
-              sherpa-layout-grid, sherpa-view-header, sherpa-filter-bar
+              sherpa-layout-grid, sherpa-view-header, sherpa-quick-filter-toolbar
 
   Customisation:
     • Add nav items to sherpa-nav (via data-src-html or light-DOM children)
@@ -16,8 +16,8 @@
     • Put the view header in the grid's slot="view-header"
     • Put side rails in slot="side-panel-start" and slot="side-panel-end"
     • Put the page body in the grid's default slot
-    • Add data-global to sherpa-filter-bar for global filtering
-    • Set data-preset-filters on sherpa-filter-bar for auto-created presets
+    • Add data-global to sherpa-quick-filter-toolbar for global filtering
+    • Set data-preset-filters on sherpa-quick-filter-toolbar for auto-created presets
 
   Layout classes:
     .sherpa-app-layout        — Grid shell: sidebar nav + main area
@@ -31,7 +31,7 @@
 <template id="app-shell"
   data-pattern-category="layouts"
   data-pattern-status="stable"
-  data-pattern-components="sherpa-nav, sherpa-view-header, sherpa-filter-bar">
+  data-pattern-components="sherpa-nav, sherpa-view-header, sherpa-quick-filter-toolbar">
 
   <style>
     /* Scaffolding scoped to this template — only stamped once per page. */

@@ -7,12 +7,12 @@
     • Data grid or list items
     • Pagination controls
 
-  Components: sherpa-view-header, sherpa-filter-bar, sherpa-data-grid,
+  Components: sherpa-view-header, sherpa-quick-filter-toolbar, sherpa-data-grid,
               sherpa-pagination, sherpa-toolbar
 
   Customisation:
     • Set data-label on sherpa-view-header for the page title
-    • Configure sherpa-filter-bar with preset filters
+    • Configure sherpa-quick-filter-toolbar with preset filters
     • Set column definitions on sherpa-data-grid via data-columns
     • Add action buttons to the toolbar (add, export, etc.)
 
@@ -25,7 +25,7 @@
 <template id="list-view"
   data-pattern-category="layouts"
   data-pattern-status="stable"
-  data-pattern-components="sherpa-view-header, sherpa-filter-bar, sherpa-data-grid, sherpa-pagination, sherpa-toolbar">
+  data-pattern-components="sherpa-view-header, sherpa-quick-filter-toolbar, sherpa-data-grid, sherpa-pagination, sherpa-toolbar">
 
   <div class="sherpa-list-layout">
     <header class="sherpa-view-header-group">
@@ -34,7 +34,7 @@
           <sherpa-button data-label="Add" data-variant="primary" data-icon-start="&#xf067;"></sherpa-button>
         </sherpa-toolbar>
       </sherpa-view-header>
-      <sherpa-filter-bar></sherpa-filter-bar>
+      <sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>
     </header>
 
     <div class="sherpa-list-content">

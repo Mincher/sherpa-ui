@@ -87,7 +87,7 @@
     "components": [
       "sherpa-nav",
       "sherpa-view-header",
-      "sherpa-filter-bar"
+      "sherpa-quick-filter-toolbar"
     ]
   },
   {
@@ -142,7 +142,7 @@
     "status": "stable",
     "components": [
       "sherpa-view-header",
-      "sherpa-filter-bar",
+      "sherpa-quick-filter-toolbar",
       "sherpa-data-grid",
       "sherpa-pagination",
       "sherpa-toolbar"

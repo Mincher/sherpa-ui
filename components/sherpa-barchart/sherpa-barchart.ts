@@ -33,7 +33,7 @@ import { getTransferableConfig } from "../utilities/data-utils.js";
 import { ContentAttributesMixin } from "../utilities/content-attributes-mixin.js";
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import "../sherpa-button/sherpa-button.js";
-import "../sherpa-filter-bar/sherpa-filter-bar.js";
+import "../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js";
 import {
   escapeHtml,
   formatFieldName,

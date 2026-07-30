@@ -961,7 +961,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#menu) return this.#menu;
     const menu = document.createElement("sherpa-container-overlay") as OverlayMenu;
     menu.setAttribute("data-variant", "menu");
-    menu.classList.add("qf-toolbar-menu");
+    // Identifying hook for the singleton option menu (not a visual-state toggle).
+    menu.setAttribute("data-qf-toolbar-menu", "");
     menu.addEventListener("overlay-select", this.#onOverlaySelect as EventListener);
     document.body.appendChild(menu);
     this.#menu = menu;

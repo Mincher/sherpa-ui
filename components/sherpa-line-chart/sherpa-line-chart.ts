@@ -26,7 +26,7 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 import { getSegmentField, isSegmentEnabled, getActiveSort, syncChartTitle } from '../utilities/chart-utils.js';
 import { injectFilterMenu, removeFilterMenu, toggleFilters, toggleLegend, syncFilterMenuItems } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
-import '../sherpa-filter-bar/sherpa-filter-bar.js';
+import '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 
 const MAX_SEGMENTS = 8;
 const OTHER_COLOR = '#9e9ea8';

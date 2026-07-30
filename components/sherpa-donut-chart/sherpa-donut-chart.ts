@@ -33,7 +33,7 @@ import { formatCompact } from '../utilities/format-utils.js';
 import { getSegmentField, isSegmentEnabled, getActiveSort, applySegmentBy, syncChartTitle } from '../utilities/chart-utils.js';
 import { injectFilterMenu, toggleFilters, toggleLegend, syncFilterMenuItems } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
-import '../sherpa-filter-bar/sherpa-filter-bar.js';
+import '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 
 /** Default palette — falls back to CSS token values, but also needed for
  *  inline conic-gradient stops where tokens can't be used directly. */

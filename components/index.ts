@@ -45,7 +45,6 @@ export * from "./sherpa-chart-legend/sherpa-chart-legend.js";
 export * from "./sherpa-toolbar/sherpa-toolbar.js";
 export * from "./sherpa-quick-filter/sherpa-quick-filter.js";
 export * from "./sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js";
-export * from "./sherpa-filter-bar/sherpa-filter-bar.js";
 
 // New components
 export * from "./sherpa-accordion/sherpa-accordion.js";

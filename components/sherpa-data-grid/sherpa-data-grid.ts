@@ -74,7 +74,7 @@ import "../sherpa-input-search/sherpa-input-search.js";
 import "../sherpa-empty-state/sherpa-empty-state.js";
 import "../sherpa-pagination/sherpa-pagination.js";
 import "../sherpa-toolbar/sherpa-toolbar.js";
-import "../sherpa-filter-bar/sherpa-filter-bar.js";
+import "../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js";
 import { formatValue } from "../utilities/format-utils.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
 import { injectFilterMenu } from "../utilities/filter-menu-utils.js";
@@ -416,7 +416,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       return;
     }
     if (name === "data-preset-filters") {
-      const bar = this.$("sherpa-filter-bar");
+      const bar = this.$("sherpa-quick-filter-toolbar");
       if (bar) {
         if (newValue == null) bar.removeAttribute("data-preset-filters");
         else bar.setAttribute("data-preset-filters", newValue);
@@ -549,7 +549,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     // Propagate columns + rows to the embedded filter-bar so its
     // Group / Sort / Add filter menus populate from the live dataset.
-    const bar = this.$<HTMLElement & { setAvailableColumns?: (columns: GridColumn[], rows: GridRow[]) => void }>("sherpa-filter-bar");
+    const bar = this.$<HTMLElement & { setAvailableColumns?: (columns: GridColumn[], rows: GridRow[]) => void }>("sherpa-quick-filter-toolbar");
     bar?.setAvailableColumns?.(this.#columns, this.#allRows);
     // Forward declared preset filters to the bar
     const presets = this.getAttribute("data-preset-filters");

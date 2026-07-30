@@ -76,15 +76,15 @@
 :host .global-search {
   width: 200px;
 }
-:host sherpa-filter-bar {
+:host sherpa-quick-filter-toolbar {
   display: none;
   flex-shrink: 0;
 }
-:host([data-filters]) sherpa-filter-bar {
+:host([data-filters]) sherpa-quick-filter-toolbar {
   display: flex;
   padding-bottom: var(--sherpa-space-xs, 8px);
 }
-:host([data-filters][data-hide-filter-bar="true"]) sherpa-filter-bar {
+:host([data-filters][data-hide-filter-bar="true"]) sherpa-quick-filter-toolbar {
   display: none;
 }
 :host .table-container {
