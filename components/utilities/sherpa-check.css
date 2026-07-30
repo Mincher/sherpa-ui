@@ -50,10 +50,10 @@
 
 /* Checkbox = rounded rect, Radio = circle */
 .sherpa-check[type="checkbox"] {
-  /* Figma Checkbox: 2px radius, 1px brand border at rest (not 4px / 2px grey). */
+  /* Figma Checkbox: 16px, 2px radius, 1px accent (primary/blue) border at rest. */
   border-radius: var(--sherpa-border-rounding-sm, 2px);
   border-width: var(--sherpa-border-width-base, 1px);
-  border-color: var(--sherpa-border-control-default, #3c5edd);
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
 }
 
 .sherpa-check[type="radio"] {
