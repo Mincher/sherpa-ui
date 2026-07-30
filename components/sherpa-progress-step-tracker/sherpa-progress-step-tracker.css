@@ -112,17 +112,20 @@
 
 /* ── Status variants ────────────────────────────────────────── */
 
+/* Figma Progress Steps: Current = white fill + accent-blue border/number;
+   Complete = accent-blue fill + white check. Both use the accent (primary) blue,
+   not info/success — matching surface|border/control/primary. */
 :host .step-item[data-status="active"] {
-  --_indicator-border-color: var(--sherpa-content-context-info-default, #006db6);
-  --_indicator-bg:           var(--sherpa-content-context-info-default, #006db6);
-  --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
+  --_indicator-border-color: var(--sherpa-border-control-primary-default, #3c5edd);
+  --_indicator-bg:           var(--sherpa-surface-control-default, #ffffff);
+  --_indicator-color:        var(--sherpa-content-primary-default, #3c5edd);
   --_label-color:            var(--sherpa-content-default-body, #1b1b21);
   --_label-weight:           600;
 }
 
 :host .step-item[data-status="completed"] {
-  --_indicator-border-color: var(--sherpa-content-context-success-default, #0f7b6c);
-  --_indicator-bg:           var(--sherpa-content-context-success-default, #0f7b6c);
+  --_indicator-border-color: var(--sherpa-border-control-primary-default, #3c5edd);
+  --_indicator-bg:           var(--sherpa-surface-control-primary-default, #3c5edd);
   --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
   --_label-color:            var(--sherpa-content-default-body, #1b1b21);
 }

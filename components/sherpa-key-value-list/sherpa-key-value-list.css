@@ -45,8 +45,10 @@ dt {
   gap: var(--sherpa-space-xs, 8px);
   margin: 0;
   padding-block-start: var(--_padding-block);
-  font-weight: 600;
-  color: var(--sherpa-content-default-secondary, #6a6a75);
+  /* Figma Key label: 14px Regular, secondary colour (the key/value distinction
+     is carried by colour — key #404047 secondary vs value #2e2e33 body). */
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
