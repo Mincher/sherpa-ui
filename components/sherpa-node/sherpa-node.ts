@@ -75,6 +75,10 @@
  *   bubbles: true, composed: true
  *   detail: { nodeId, subtype }
  *
+ * @fires sherpa-node-value-change
+ *   bubbles: true, composed: true
+ *   detail: { nodeId, reason? }
+ *
  * @slot header  — A <sherpa-node-row data-variant="header">
  * @slot         — Default: zero or more <sherpa-node-row>s (body variant) plus optional
  *                 <template class="rows-tpl"…> prototypes

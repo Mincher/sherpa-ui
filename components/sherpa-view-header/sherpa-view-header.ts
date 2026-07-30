@@ -32,6 +32,9 @@
  * @fires view-header-back
  *   bubbles: true, composed: true
  *   detail: {}
+ * @fires view-selection-change
+ *   bubbles: true, composed: true
+ *   detail: { value: string, item: object }
  *
  * @method setHeading(name)     — Set heading text
  * @method getHeading()         — Get heading text

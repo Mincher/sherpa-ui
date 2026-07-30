@@ -38,6 +38,12 @@
  * @fires close — Fired when dialog is closed
  *   bubbles: true, composed: true
  *   detail: { }
+ * @fires dialog-finish — Fired when the final page of a wizard dialog is confirmed
+ *   bubbles: true, composed: true
+ *   detail: { page: number, total: number }
+ * @fires dialog-page-change — Fired when the active page of a paged/wizard dialog changes
+ *   bubbles: true, composed: true
+ *   detail: { page: number, total: number }
  *
  * @method show() — Programmatically open the dialog
  *   @returns {void}

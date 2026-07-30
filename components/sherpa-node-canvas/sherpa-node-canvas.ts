@@ -43,6 +43,12 @@
  * @fires sherpa-edge-select
  *   bubbles: true, composed: true
  *   detail: { edgeIdx | null }
+ * @fires sherpa-node-select
+ *   bubbles: true, composed: true
+ *   detail: { nodeId: string | null }
+ * @fires sherpa-node-delete
+ *   bubbles: true, composed: true
+ *   detail: { nodeId }
  * @fires sherpa-viewport-change
  *   bubbles: true, composed: true
  *   detail: { x, y, zoom }
