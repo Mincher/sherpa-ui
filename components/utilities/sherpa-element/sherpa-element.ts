@@ -290,10 +290,17 @@ export class SherpaElement extends HTMLElement {
 
   /**
    * Called after `data-src-json` is fetched and parsed.
-   * Override in subclasses to process the loaded data.
-   * @param _data — parsed JSON value
+   *
+   * Default behaviour makes `data-src-json` a thin wrapper over `populate()`:
+   * if the subclass defines a `populate` method, the fetched data is handed to
+   * it — so the remote-descriptor path routes through the same binder as
+   * everything else. Subclasses may still override for custom handling.
+   * @param data — parsed JSON value
    */
-  onJsonData(_data: unknown): void {}
+  onJsonData(data: unknown): void {
+    const self = this as unknown as { populate?: (d: unknown) => void };
+    if (typeof self.populate === 'function') self.populate(data);
+  }
 
   /**
    * Called when a `data-src-json` fetch fails (network error, non-OK
