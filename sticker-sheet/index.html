@@ -289,6 +289,28 @@
       </div>
     </sherpa-container>
 
+    <sherpa-container data-variant="fill" data-row-span="auto" id="tree" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-tree"></sherpa-container-header>
+      <sherpa-section-header data-label="Treeview — single select (drop the primitive in a container)" data-heading-level="tertiary"></sherpa-section-header>
+      <div class="ss-strip">
+        <div class="ss-chip" style="min-width:280px">
+          <span class="ss-chip-label">single</span>
+          <sherpa-tree class="ss-tree-single"></sherpa-tree>
+        </div>
+        <div class="ss-chip" style="min-width:280px">
+          <span class="ss-chip-label">multi (checkboxes + indeterminate)</span>
+          <sherpa-tree class="ss-tree-multi" data-selection="multi"></sherpa-tree>
+        </div>
+      </div>
+      <sherpa-section-header data-label="Advanced SelectBox — same primitive in a dropdown" data-heading-level="tertiary"></sherpa-section-header>
+      <div class="ss-strip">
+        <div class="ss-chip" style="min-width:280px">
+          <span class="ss-chip-label">data-template=&quot;tree&quot;</span>
+          <sherpa-input-select data-label="Location" data-template="tree" class="ss-tree-select"></sherpa-input-select>
+        </div>
+      </div>
+    </sherpa-container>
+
     <sherpa-container data-variant="fill" data-row-span="auto" id="input-search" class="ss-section">
       <sherpa-container-header slot="header" data-title="sherpa-input-search"></sherpa-container-header>
       <div class="ss-strip">

@@ -505,6 +505,8 @@ export class SherpaElement extends HTMLElement {
           .filter(Boolean)
       : null;
     const allowHtml = accepts ? accepts.includes('html') : true;
+    // `any` accepts every sherpa category (still requires `html` for plain elements).
+    const allowAny = accepts ? accepts.includes('any') : false;
 
     for (const node of slotEl.assignedElements()) {
       const tag = node.localName;
@@ -524,7 +526,8 @@ export class SherpaElement extends HTMLElement {
       // 2. Allowlist rule — only when data-accepts present.
       if (!rejected && accepts) {
         const allowed =
-          (isSherpa && category && accepts.includes(category)) || (!isSherpa && allowHtml);
+          (isSherpa && (allowAny || (category && accepts.includes(category)))) ||
+          (!isSherpa && (allowHtml || allowAny));
         if (!allowed) {
           rejected = true;
           reason =

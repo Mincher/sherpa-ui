@@ -115,6 +115,41 @@ customElements.whenDefined('sherpa-chart-legend').then(() => {
   });
 });
 
+// Tree (standalone treeview + Advanced SelectBox)
+customElements.whenDefined('sherpa-tree').then(() => {
+  const forest = [
+    { value: 'emea', label: 'EMEA', expanded: true, children: [
+      { value: 'uk',  label: 'United Kingdom', children: [
+        { value: 'lon', label: 'London' },
+        { value: 'man', label: 'Manchester' },
+      ]},
+      { value: 'de',  label: 'Germany', children: [
+        { value: 'ber', label: 'Berlin' },
+        { value: 'mun', label: 'Munich' },
+      ]},
+    ]},
+    { value: 'amer', label: 'Americas', children: [
+      { value: 'us', label: 'United States', children: [
+        { value: 'nyc', label: 'New York' },
+        { value: 'sfo', label: 'San Francisco' },
+      ]},
+      { value: 'ca', label: 'Canada' },
+    ]},
+    { value: 'apac', label: 'APAC', children: [
+      { value: 'au', label: 'Australia', children: [
+        { value: 'syd', label: 'Sydney' },
+        { value: 'mel', label: 'Melbourne', disabled: true },
+      ]},
+      { value: 'jp', label: 'Japan' },
+    ]},
+  ];
+  document.querySelector('.ss-tree-single')?.setNodes?.(structuredClone(forest));
+  document.querySelector('.ss-tree-multi')?.setNodes?.(structuredClone(forest));
+  // Advanced SelectBox consumes the same forest via setTree()
+  const advSelect = document.querySelector('.ss-tree-select');
+  if (advSelect) Promise.resolve(advSelect.rendered).then(() => advSelect.setTree?.(structuredClone(forest)));
+});
+
 // Container overlay
 document.getElementById('open-menu-overlay')?.addEventListener('click', e => {
   document.getElementById('menu-overlay-demo')?.show(e.currentTarget);

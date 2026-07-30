@@ -30,11 +30,11 @@
     <slot name="tab-row"></slot>
   </div>
   <div class="grid-body">
-    <slot name="side-panel-start" class="side-panel-start" data-accepts="container,content,control,input,display,html"></slot>
+    <slot name="side-panel-start" class="side-panel-start" data-accepts="any,html"></slot>
     <div class="grid-surface" part="surface">
       <slot name="banner" class="banner-slot" data-accepts="display,content,html"></slot>
-      <slot data-accepts="container,content,data,html"></slot>
+      <slot data-accepts="any,html"></slot>
     </div>
-    <slot name="side-panel-end" class="side-panel-end" data-accepts="container,content,control,input,display,html"></slot>
+    <slot name="side-panel-end" class="side-panel-end" data-accepts="any,html"></slot>
   </div>
 </template>
