@@ -36,13 +36,13 @@
 
 <template id="default">
   <div class="card-header" part="header">
-    <slot name="header"></slot>
+    <slot name="header" data-accepts="container,content,control,html"></slot>
   </div>
   <div class="card-content" part="content">
-    <slot></slot>
+    <slot data-accepts="container,content,control,input,display,data,html"></slot>
   </div>
   <div class="card-footer" part="footer">
-    <slot name="footer"></slot>
+    <slot name="footer" data-accepts="container,content,control,html"></slot>
   </div>
   <div class="state-overlay" role="status" aria-live="polite">
     <slot name="loading" class="state-slot state-loading">

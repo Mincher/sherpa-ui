@@ -24,9 +24,9 @@
     <sherpa-button class="action-btn" data-variant="tertiary" data-size="small" data-type="icon" data-icon-start="&#xf078;" aria-label="Toggle callout"></sherpa-button>
   </div>
   <div class="body text-body">
-    <slot></slot>
+    <slot data-accepts="content,control,input,display,html"></slot>
     <div class="action-area">
-      <slot name="action"></slot>
+      <slot name="action" data-accepts="control"></slot>
     </div>
   </div>
 </template>

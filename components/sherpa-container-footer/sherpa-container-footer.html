@@ -27,7 +27,7 @@
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="action-bar">
   <footer class="footer action-bar-footer" part="footer">
-    <slot name="start"></slot>
+    <slot name="start" data-accepts="control,input,display,content,html"></slot>
     <div class="action-buttons">
       <sherpa-button class="cancel-button" data-variant="secondary" data-size="medium" data-label="Cancel"></sherpa-button>
       <sherpa-button class="apply-button" data-variant="primary" data-size="medium" data-label="Apply"></sherpa-button>

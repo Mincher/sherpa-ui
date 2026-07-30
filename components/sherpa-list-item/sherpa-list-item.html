@@ -36,10 +36,10 @@
       <span class="label text-body-emphasised-sm"></span>
       <span class="description text-body-sm"></span>
     </div>
-    <slot></slot>
+    <slot data-accepts="content,control,input,display,html"></slot>
   </div>
   <div class="trailing" part="trailing">
-    <slot name="trailing"></slot>
+    <slot name="trailing" data-accepts="control,display,html"></slot>
   </div>
 </div>
 </template>
