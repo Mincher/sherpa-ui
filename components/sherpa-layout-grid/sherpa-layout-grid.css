@@ -39,21 +39,26 @@
   flex: 1;
   width: 100%;
   min-width: 0;
+  /* min-height:0 lets the grid shrink below its content so the grid-surface can
+     own the scroll when the host is height-constrained (e.g. inside an
+     app-shell's clipped content row). Without this the grid grows past the
+     viewport and nothing scrolls. */
+  min-height: 0;
   margin: 0;
   background-color: transparent;
 }
-:host([data-fill="viewport"]) {
+/* The scrollable surface — scrolls whenever the host is height-constrained.
+   (Not gated behind data-fill: any constrained parent should get scrolling.) */
+:host(:not([data-content="static"])) .grid-body {
   min-height: 0;
+}
+:host(:not([data-content="static"])) .grid-surface {
+  overflow: auto;
+  min-height: 0;
+}
+:host([data-fill="viewport"]) {
   max-height: 100dvh;
   overflow: hidden;
-
-  & .grid-body {
-    min-height: 0;
-  }
-  & .grid-surface {
-    overflow: auto;
-    min-height: 0;
-  }
 }
 :host .grid-header {
   flex: 0 0 auto;
