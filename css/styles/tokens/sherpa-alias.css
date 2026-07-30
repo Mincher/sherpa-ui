@@ -160,6 +160,21 @@
   --sherpa-border-width-xs: var(--core-border-stroke-100);
 
   /* ── Color ─────────────────────────────────────────────────── */
+  /* Accent — the primary/action ramp (blue). Drives primary buttons, links,
+     and primary focus rings. Figma: color/accent/* → basic-blue / neon-blue.
+     Kept distinct from brand (purple) which drives AI / quick-filter accents.
+     (Hand-added: the live REST Alias extract is below the write guard, so the
+     generator can't refresh this file — see token-extraction memory.) */
+  --sherpa-color-accent-100: var(--core-color-basic-blue-0);
+  --sherpa-color-accent-200: var(--core-color-basic-blue-100);
+  --sherpa-color-accent-300: var(--core-color-basic-blue-200);
+  --sherpa-color-accent-400: var(--core-color-basic-blue-300);
+  --sherpa-color-accent-500: var(--core-color-extended-neon-blue-500);
+  --sherpa-color-accent-base: var(--core-color-extended-neon-blue-550);
+  --sherpa-color-accent-700: var(--core-color-extended-neon-blue-600);
+  --sherpa-color-accent-800: var(--core-color-extended-neon-blue-650);
+  --sherpa-color-accent-900: var(--core-color-extended-neon-blue-700);
+  --sherpa-color-accent-1000: var(--core-color-extended-neon-blue-750);
   --sherpa-color-brand-100: var(--core-color-extended-phlox-250);
   --sherpa-color-brand-1000: var(--core-color-extended-deep-purple-600);
   --sherpa-color-brand-200: var(--core-color-extended-phlox-300);

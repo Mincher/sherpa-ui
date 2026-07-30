@@ -98,4 +98,26 @@ test.describe('token mode axes', () => {
       light['--sherpa-surface-app-background-default'],
     );
   });
+
+  test('Accent (blue) and Brand (purple) are distinct ramps', async ({ page }) => {
+    // Figma: color/accent/base -> neon-blue/550 (#3c5edd) drives primary actions;
+    // color/brand/base -> phlox/500 (#c046ff) drives AI / quick-filter accents.
+    // Regression guard: accent must NOT collapse onto brand (was aliased purple).
+    const v = await page.evaluate(() => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      const cs = getComputedStyle(el);
+      const accent = cs.getPropertyValue('--sherpa-color-accent-base').trim();
+      const brand = cs.getPropertyValue('--sherpa-color-brand-base').trim();
+      const primary = cs.getPropertyValue('--sherpa-surface-control-primary-default').trim();
+      el.remove();
+      return { accent, brand, primary };
+    });
+    expect(v.accent).not.toBe('');
+    expect(v.brand).not.toBe('');
+    // Accent is blue, brand is purple — they must differ.
+    expect(v.accent).not.toBe(v.brand);
+    // Primary control surface resolves through accent (blue), not brand.
+    expect(v.primary).toBe(v.accent);
+  });
 });
