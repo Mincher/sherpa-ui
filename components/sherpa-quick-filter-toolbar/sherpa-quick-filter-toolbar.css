@@ -30,23 +30,21 @@
 
 /* ── Treatment: View vs Data ────────────────────────────────────── */
 /* View filters read as saved-view scoped (brand tint on the surface). */
-:host([data-type="view"]) .toolbar-surface {
-  background: var(--sherpa-surface-container-subtle, #fafaff);
-}
-
 /* ── Surface / layout ───────────────────────────────────────────── */
+/* The toolbar is transparent — it inherits its parent container's fill
+   (app-header, a card, etc.) so it themes correctly in light + dark. */
 .toolbar-surface {
   display: flex;
   align-items: center;
   gap: var(--_qft-gap);
   inline-size: 100%;
   padding-block: var(--_qft-py);
+  background: transparent;
 }
 
 :host([data-embedded]) .toolbar-surface {
   padding: 0;
   border: none;
-  background: transparent;
 }
 
 .content-zone {
