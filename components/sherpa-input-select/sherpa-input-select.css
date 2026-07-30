@@ -105,7 +105,7 @@
   overflow: auto;
   background: var(--sherpa-surface-container-default, #ffffff);
   border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d7d7dc);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   box-shadow: var(--sherpa-shadow-default-md, 0 4px 12px rgba(0, 0, 0, 0.12));
   z-index: var(--sherpa-z-popover, 10000);
   padding: var(--sherpa-space-2xs, 4px);

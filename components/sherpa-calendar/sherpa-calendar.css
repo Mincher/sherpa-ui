@@ -112,7 +112,7 @@ sherpa-container.panel-card[data-variant="fit"] {
 
 .cal-weekdays span {
   text-align: center;
-  font-size: var(--sherpa-fonts-scale-xs, 11px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-weight: var(--sherpa-font-weight-bold, 700);
   letter-spacing: 0.04em;
   color: var(--sherpa-content-default-body, #1a1a1f);
@@ -237,7 +237,7 @@ sherpa-container.panel-card[data-variant="fit"] {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--sherpa-space-md, 16px) var(--sherpa-space-lg, 24px);
+  padding: var(--sherpa-space-md, 16px) var(--sherpa-space-lg, 20px);
 }
 
 .time-spinners {

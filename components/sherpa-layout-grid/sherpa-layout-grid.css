@@ -128,7 +128,7 @@
   gap: var(--sherpa-space-base, 16px);
 }
 :host([data-gap="lg"]) .grid-surface {
-  gap: var(--sherpa-space-lg, 24px);
+  gap: var(--sherpa-space-lg, 20px);
 }
 /* Banner slot — full-width above containers, hidden when empty */
 slot[name="banner"] {

@@ -96,7 +96,7 @@
 }
 :host .empty-state {
   display: none;
-  padding: var(--sherpa-space-2xl, 48px) var(--sherpa-space-lg, 24px);
+  padding: var(--sherpa-space-2xl, 48px) var(--sherpa-space-lg, 20px);
   text-align: center;
 }
 :host([data-empty]) .empty-state {
@@ -684,7 +684,7 @@ tr[data-group-child] td.selection-cell {
 
 .empty-state {
   display: none;
-  padding: var(--sherpa-space-2xl, 48px) var(--sherpa-space-lg, 24px);
+  padding: var(--sherpa-space-2xl, 48px) var(--sherpa-space-lg, 20px);
   text-align: center;
 }
 
@@ -740,7 +740,7 @@ tr[data-group-child] td.selection-cell {
 @container data-grid (max-width: 350px) {
   thead th,
   tr.grid-row td {
-    --_cell-px: var(--sherpa-space-2xs, 2px);
+    --_cell-px: var(--sherpa-space-2xs, 4px);
     --_cell-min-w: 48px;
   }
 }

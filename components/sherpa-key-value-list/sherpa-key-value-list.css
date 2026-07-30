@@ -70,7 +70,7 @@ dd {
 :host(:not([data-layout="vertical"])) dl {
   display: grid;
   grid-template-columns: var(--_key-width, auto) 1fr;
-  gap: 0 var(--sherpa-space-lg, 24px);
+  gap: 0 var(--sherpa-space-lg, 20px);
 }
 
 :host(:not([data-layout="vertical"])) dt {
@@ -185,12 +185,12 @@ dd[data-type="monospace"] {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :host([data-density="compact"]) {
-  --_padding-block: var(--sherpa-space-2xs, 6px);
+  --_padding-block: var(--sherpa-space-2xs, 4px);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
 }
 
 :host([data-density="comfortable"]) {
-  --_padding-block: var(--sherpa-space-lg, 24px);
+  --_padding-block: var(--sherpa-space-lg, 20px);
   font-size: var(--sherpa-fonts-scale-base, 14px);
 }
 

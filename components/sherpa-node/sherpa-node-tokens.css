@@ -53,7 +53,7 @@
   /* ── Socket dot geometry (intrinsic, not tied to layout scale) ── */
   --sherpa-node-socket-size: 16px;
   --sherpa-node-socket-stroke-w: 2px;
-  --sherpa-node-socket-gutter: var(--sherpa-space-sm, 8px);
+  --sherpa-node-socket-gutter: var(--sherpa-space-sm, 12px);
 
   /* ── Socket palette (semantic, themeable) ─────────────────────── */
   --sherpa-node-socket-stroke: var(--sherpa-color-brand-base, #c046ff);

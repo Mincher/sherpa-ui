@@ -157,7 +157,7 @@
   display: flex;
   flex-direction: var(--_chart-legend-direction, row);
   flex-wrap: var(--_chart-legend-wrap, wrap);
-  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-base, 16px);
+  gap: var(--sherpa-space-sm, 12px) var(--sherpa-space-base, 16px);
   justify-content: var(--_chart-legend-justify, center);
   align-self: var(--_chart-legend-align, auto);
   width: var(--_chart-legend-width, auto);
@@ -171,7 +171,7 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-space-2xs, 4px);
-  font-size: var(--sherpa-fonts-scale-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   color: var(--sherpa-content-default-body, #18191a);
   cursor: default;
 }

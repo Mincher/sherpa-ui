@@ -41,7 +41,7 @@
 :host .header-row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 4px);
+  gap: var(--sherpa-space-xs, 8px);
   visibility: var(--_cg-header-vis, visible);
 }
 :host .header-labels {
@@ -110,7 +110,7 @@
   color: var(--sherpa-content-default-secondary, #6a6a75);
   cursor: grab;
   flex-shrink: 0;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   transition: --transition-fast(color), --transition-fast(background-color);
 
   &:hover {
@@ -129,7 +129,7 @@
 
 @container sherpa-container-header (max-width: 200px) {
   :host .header-row {
-    gap: var(--sherpa-space-2xs, 2px);
+    gap: var(--sherpa-space-2xs, 4px);
   }
   :host .header-description {
     display: none;

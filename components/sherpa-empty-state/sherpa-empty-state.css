@@ -24,10 +24,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-space-lg, 24px);
+  gap: var(--sherpa-space-lg, 20px);
   height: 100%;
   max-height: 100%;
-  padding: var(--sherpa-space-xl, 28px);
+  padding: var(--sherpa-space-xl, 24px);
   overflow: auto;
 }
 :host .sherpa-empty-state__illustration {
@@ -58,7 +58,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: var(--sherpa-space-sm, 16px);
+  gap: var(--sherpa-space-sm, 12px);
   max-width: 400px;
   width: 100%;
 }
@@ -98,7 +98,7 @@
   display: none;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
 }
 :host([data-has-actions]) .sherpa-empty-state__buttons {
   display: flex;

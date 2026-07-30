@@ -57,7 +57,7 @@
   align-items: center;
   flex-direction: row-reverse;
   gap: var(--sherpa-space-2xs, 4px);
-  padding: var(--sherpa-space-3xs, 4px) var(--sherpa-space-2xs, 4px);
+  padding: var(--sherpa-space-3xs, 2px) var(--sherpa-space-2xs, 4px);
   border: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-control-secondary-default, #9a9aad);
   border-radius: var(--_switch-border-outer);

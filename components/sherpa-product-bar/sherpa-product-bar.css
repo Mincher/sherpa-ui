@@ -54,7 +54,7 @@
   display: none;
 }
 :host .product-name {
-  font-size: var(--sherpa-fonts-scale-lg, 20px);
+  font-size: var(--sherpa-fonts-scale-lg, 16px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1;
   letter-spacing: 0.02em;

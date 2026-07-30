@@ -151,13 +151,13 @@
       --sherpa-node-socket-gutter,
       16px
     );
-  row-gap: var(--sherpa-space-3xs, 4px);
-  padding: var(--sherpa-space-xs, 12px) 0;
+  row-gap: var(--sherpa-space-3xs, 2px);
+  padding: var(--sherpa-space-xs, 8px) 0;
 }
 :host .row-label,
 :host .row-helper {
   grid-column: 1 / -1;
-  padding: 0 var(--sherpa-space-sm, 16px);
+  padding: 0 var(--sherpa-space-sm, 12px);
 }
 :host .row-label {
   font-size: var(--sherpa-font-sm-size, 12px);
@@ -181,9 +181,9 @@
 :host .row-control {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
   min-height: var(--sherpa-size-md, 20px);
-  padding: 0 var(--sherpa-space-2xs, 8px);
+  padding: 0 var(--sherpa-space-2xs, 4px);
   color: var(--sherpa-content-default-body, #2e2e33);
   min-width: 0;
 

@@ -73,7 +73,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--sherpa-space-xs, 4px);
+  gap: var(--sherpa-space-xs, 8px);
 
   &:not(:has(*)) {
     display: none;

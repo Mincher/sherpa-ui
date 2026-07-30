@@ -33,7 +33,7 @@
   /* ── Hidden state ───────────────────────────────────────– */
 }
 :host .label {
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   line-height: var(--sherpa-line-height-default, 1.4);
   color: var(--sherpa-content-default-body, #18191a);
 }
@@ -69,7 +69,7 @@
   animation: sherpa-progress-slide 1.5s ease-in-out infinite;
 }
 :host .status {
-  font-size: var(--sherpa-fonts-scale-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   line-height: var(--sherpa-line-height-default, 1.4);
   color: var(--sherpa-content-default-secondary, #5c5c66);
 }

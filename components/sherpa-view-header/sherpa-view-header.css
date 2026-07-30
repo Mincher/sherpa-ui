@@ -18,8 +18,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sherpa-space-sm, 16px);
-  padding: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 8px);
   min-height: fit-content;
 }
 
@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  gap: var(--sherpa-space-sm, 16px);
+  gap: var(--sherpa-space-sm, 12px);
 }
 
 .heading-label {
@@ -68,10 +68,10 @@
 .view-selection-slot {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
 }
 .view-selection-slot::slotted(*) {
-  margin-inline-start: var(--sherpa-space-xs, 12px);
+  margin-inline-start: var(--sherpa-space-xs, 8px);
 }
 
 /* ---- favorite button ---- */
@@ -116,7 +116,7 @@
 .toolbar-toggle {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
 }
 
 .toolbar-toggle-label,
@@ -129,12 +129,12 @@
 .toolbar-dropdown {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
 }
 
 .toolbar-select {
   height: var(--sherpa-size-2xl, 32px);
-  padding: 0 var(--sherpa-space-xs, 12px);
+  padding: 0 var(--sherpa-space-xs, 8px);
   font-size: var(--sherpa-fonts-scale-base, 14px);
   border: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-control-secondary-default, #d5d5d5);
@@ -219,7 +219,7 @@
 .feedback-close {
   background: none;
   border: none;
-  padding: var(--sherpa-space-xs, 12px);
+  padding: var(--sherpa-space-xs, 8px);
   cursor: pointer;
   color: var(--sherpa-content-default-secondary, #5c5c66);
   --icon-size: var(--sherpa-size-sm, 16px);

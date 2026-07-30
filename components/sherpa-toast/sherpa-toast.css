@@ -30,7 +30,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 16px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
   min-width: 300px;
   max-width: 520px;
   background-color: var(
@@ -39,7 +39,7 @@
   );
   border: var(--sherpa-border-width-base, 1px) solid
     var(--_status-border, var(--sherpa-border-context-info-default, #66afe9));
-  border-radius: var(--sherpa-border-rounding-lg, 12px);
+  border-radius: var(--sherpa-border-rounding-lg, 8px);
   box-shadow: var(
     --sherpa-shadow-default-md,
     var(--sherpa-elevation-offset-x-default, 4px) var(--sherpa-elevation-offset-y-default, 4px)
@@ -76,7 +76,7 @@
     height: var(--sherpa-border-width-lg, 3px);
     background-color: currentColor;
     opacity: 0.3;
-    border-radius: 0 0 0 var(--sherpa-border-rounding-lg, 12px);
+    border-radius: 0 0 0 var(--sherpa-border-rounding-lg, 8px);
   }
 
   &[data-state="visible"].with-progress::after {
@@ -101,7 +101,7 @@
 }
 :host .toast-heading {
   color: var(--_status-text, var(--sherpa-content-default-body, #0f172a));
-  margin-bottom: var(--sherpa-space-3xs, 4px);
+  margin-bottom: var(--sherpa-space-3xs, 2px);
 
   &:empty {
     display: none;
@@ -117,7 +117,7 @@
 :host .toast-action {
   display: none;
   margin-top: var(--sherpa-space-xs, 8px);
-  padding: var(--sherpa-space-3xs, 4px) var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-3xs, 2px) var(--sherpa-space-xs, 8px);
   background: transparent;
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 2px);
@@ -138,7 +138,7 @@
   margin-inline-start: auto;
   width: var(--sherpa-size-xl, 28px);
   height: var(--sherpa-size-xl, 28px);
-  padding: var(--sherpa-space-3xs, 6px);
+  padding: var(--sherpa-space-3xs, 2px);
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 2px);
   background: transparent;

@@ -49,14 +49,14 @@
 }
 
 :host .heading-text {
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-content-default-heading, #18191a);
 }
 
 :host .percentage-text {
   display: none;
-  font-size: var(--sherpa-fonts-scale-xs, 13px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   color: var(--sherpa-content-default-secondary, #5c5c66);
 }

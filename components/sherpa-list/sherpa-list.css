@@ -75,7 +75,7 @@
   padding: var(--sherpa-space-base, 16px);
   text-align: center;
   color: var(--sherpa-content-default-secondary, #6a6a75);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 :host([data-empty-visible]) .list-empty {
   display: block;

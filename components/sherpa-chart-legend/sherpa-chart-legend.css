@@ -38,7 +38,7 @@
 :host .legend-list {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sherpa-space-sm, 8px) var(--sherpa-space-lg, 24px);
+  gap: var(--sherpa-space-sm, 12px) var(--sherpa-space-lg, 20px);
   align-items: center;
 }
 :host([data-orientation="vertical"]) .legend-list {
@@ -49,7 +49,7 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-space-xs, 8px);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-content-default-body, #18191a);
   cursor: default;
   transition: --transition-fast(color);
@@ -76,7 +76,7 @@
 :host .legend-key {
   width: 20px;
   height: 20px;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   flex-shrink: 0;
 }
 :host .legend-label {

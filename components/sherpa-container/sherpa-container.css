@@ -45,7 +45,7 @@
   background: var(--sherpa-surface-container-default, #ffffff);
   border: var(--_cg-border-width, var(--sherpa-border-width-base, 1px)) solid
     var(--_status-border, var(--sherpa-border-control-secondary-default, #d5d5d5));
-  border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 6px));
+  border-radius: var(--_cg-border-radius, var(--sherpa-border-rounding-base, 4px));
   overflow: clip;
   position: relative;
   container: sherpa-container / inline-size;
@@ -79,7 +79,7 @@
   min-height: 0;
   width: 100%;
   overflow: clip;
-  border-radius: var(--sherpa-border-rounding-base, 6px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
 }
 :host([data-variant="resizable"][data-editable][data-resize-mode="drag"]) {
   /* Experimental: enable the pointer-driven snap-resize grip. Opt-in via

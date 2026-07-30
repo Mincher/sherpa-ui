@@ -23,7 +23,7 @@
 :host {
   --_w-collapsed: calc(var(--sherpa-space-default, 20px) * 3);
   --_w-expanded: 320px;
-  --_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 16px) * 2));
+  --_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 12px) * 2));
   --_label-weight: 500;
   --_indent: var(--sherpa-space-default, 20px);
 
@@ -95,7 +95,7 @@ summary {
   min-height: 0;
   overflow: hidden auto;
   overscroll-behavior: contain;
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
   scrollbar-width: thin;
   scrollbar-color: var(--sherpa-content-default-secondary, #6a6a75) transparent;
   container-type: scroll-state;
@@ -107,7 +107,7 @@ summary {
   flex-direction: column;
 
   &.nav-group {
-    gap: var(--sherpa-space-xs, 12px);
+    gap: var(--sherpa-space-xs, 8px);
   }
 }
 
@@ -200,10 +200,10 @@ summary {
 .nav-divider {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 12px);
-  padding: var(--sherpa-space-xs, 12px) var(--sherpa-space-default, 20px);
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-default, 20px);
   flex-shrink: 0;
-  height: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-xs, 12px) * 2));
+  height: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-xs, 8px) * 2));
 }
 
 .nav-divider-label {
@@ -324,14 +324,14 @@ summary {
 .nav-toolbar {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 12px);
-  padding: var(--sherpa-space-xs, 12px) var(--sherpa-space-default, 20px);
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-default, 20px);
   height: var(--sherpa-size-3xl, 40px);
   flex-shrink: 0;
 }
 
 .nav-header {
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
   padding: 0px;
   background: var(--sherpa-surface-container-secondary-default, #ffffff);
   position: sticky;
@@ -358,7 +358,7 @@ summary {
 
 .nav-toolbar-actions {
   display: flex;
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
   flex-shrink: 0;
 }
 
@@ -373,8 +373,8 @@ summary {
 
 .nav-edit-controls {
   display: none;
-  gap: var(--sherpa-space-xs, 12px);
-  padding: var(--sherpa-space-xs, 12px) var(--sherpa-space-default, 20px);
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-default, 20px);
   justify-content: flex-end;
   .sherpa-nav-root[data-mode="edit"] & {
     display: flex;
@@ -382,7 +382,7 @@ summary {
 }
 
 .nav-footer {
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
   background: var(--sherpa-surface-container-secondary-default, #ffffff);
   position: sticky;
   bottom: 0;
@@ -425,7 +425,7 @@ summary {
     }
     & .nav-search-input {
       display: block;
-      padding-inline: var(--sherpa-space-sm, 16px);
+      padding-inline: var(--sherpa-space-sm, 12px);
     }
   }
 }
@@ -525,9 +525,9 @@ summary {
 .nav-promo {
   display: flex;
   align-items: start;
-  gap: var(--sherpa-space-xs, 12px);
-  padding: var(--sherpa-space-xs, 12px) var(--sherpa-space-default, 20px);
-  margin: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-default, 20px);
+  margin: var(--sherpa-space-xs, 8px);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(
     --sherpa-surface-app-product-nav-promo-bg,
@@ -548,7 +548,7 @@ summary {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--sherpa-space-xs, 12px);
+  gap: var(--sherpa-space-xs, 8px);
 }
 .nav-promo .promo-title {
   font-weight: 600;

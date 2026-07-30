@@ -20,7 +20,7 @@
   inline-size: 100%;
   container: sherpa-tree / inline-size;
   color: var(--sherpa-content-default-body, #2e2e33);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 
 .tree {
@@ -41,7 +41,7 @@
 .tree:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
 }
 
 /* ── Row ─────────────────────────────────────────────────────────── */
@@ -53,7 +53,7 @@
   min-height: var(--_row-height);
   padding-inline: var(--sherpa-space-2xs, 4px);
   padding-inline-start: calc(var(--_indent) * var(--_level, 0) + var(--sherpa-space-2xs, 4px));
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   color: var(--sherpa-content-default-body, #2e2e33);
   cursor: pointer;
   user-select: none;
@@ -134,7 +134,7 @@
   justify-content: center;
   border: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-container-default, #c0c0cc);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   color: var(--sherpa-content-primary-on-color, #ffffff);
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   font-weight: 900;
@@ -186,7 +186,7 @@
   display: none;
   padding: var(--sherpa-space-sm, 12px);
   color: var(--sherpa-content-default-placeholder, #8a8a94);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 :host([data-empty]) .tree-empty {
   display: block;

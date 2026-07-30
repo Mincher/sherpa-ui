@@ -10,8 +10,8 @@
 :host {
   display: block;
   /* Private aliases — override on :host for theming */
-  --_gap: var(--sherpa-space-xs, 4px);
-  --_padding-sm: var(--sherpa-space-sm, 8px);
+  --_gap: var(--sherpa-space-xs, 8px);
+  --_padding-sm: var(--sherpa-space-sm, 12px);
   --_padding: var(--sherpa-space-default, 16px);
   --_border-width: var(--sherpa-border-width-base, 1px);
 }

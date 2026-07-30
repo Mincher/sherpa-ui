@@ -14,10 +14,10 @@
 :host {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-sm, 8px);
+  gap: var(--sherpa-space-sm, 12px);
   padding: var(--sherpa-space-base, 16px);
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-content-default-body, #2e2e38);
   /* ──────────────────────────────────────────────────────────
              PANEL VARIANT (background surface)
@@ -36,7 +36,7 @@
 }
 :host([data-panel]) {
   background: var(--sherpa-surface-container-default, #ffffff);
-  border-radius: var(--sherpa-border-rounding-base, 8px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
 }
 :host([data-orientation="vertical"]) {
   flex-direction: column;

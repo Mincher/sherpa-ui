@@ -189,7 +189,7 @@ slot[name="presets"] {
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-content-default-secondary, #5c5c66);
-  font-size: var(--sherpa-fonts-scale-sm, 13px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   white-space: nowrap;
   cursor: pointer;

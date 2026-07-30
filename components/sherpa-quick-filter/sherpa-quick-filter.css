@@ -85,7 +85,7 @@
   background: var(--sherpa-surface-container-default, #ffffff);
   color: var(--sherpa-content-default-body, #2e2e33);
   font-family: var(--sherpa-fonts-context-monospaced, "JetBrains Mono", ui-monospace, monospace);
-  font-size: var(--sherpa-fonts-scale-2xs, 10px);
+  font-size: var(--sherpa-fonts-scale-2xs, 8px);
   line-height: 16px;
 }
 :host([data-count]) .chip-count { display: inline-flex; }

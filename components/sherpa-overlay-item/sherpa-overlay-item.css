@@ -12,9 +12,9 @@
   user-select: none;
   transition: --transition-fast(background-color);
   /* Private aliases */
-  --_gap: var(--sherpa-space-xs, 12px);
-  --_padding-y: var(--sherpa-space-2xs, 8px);
-  --_padding-x: var(--sherpa-space-sm, 16px);
+  --_gap: var(--sherpa-space-xs, 8px);
+  --_padding-y: var(--sherpa-space-2xs, 4px);
+  --_padding-x: var(--sherpa-space-sm, 12px);
   --_rounding: var(--sherpa-border-rounding-sm, 2px);
   --_text-secondary: var(--sherpa-content-default-secondary, #5c5c66);
   --_font-sm: var(--sherpa-fonts-scale-sm, 12px);

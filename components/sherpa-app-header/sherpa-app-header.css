@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-space-2xs, 4px);
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   min-width: 0;
   overflow: hidden;
 }
@@ -85,7 +85,7 @@
   border: none;
   background: transparent;
   color: var(--sherpa-content-default-secondary, #5c5c66);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   cursor: pointer;
 }
 :host([data-back-button]) .back-button { display: inline-flex; }
@@ -131,7 +131,7 @@
   border: none;
   background: transparent;
   color: var(--sherpa-content-default-secondary, #5c5c66);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   cursor: pointer;
 }
 :host([data-show-favorite]) .favorite-button { display: inline-flex; }
@@ -204,7 +204,7 @@
 .crumb:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
 }
 
 /* ── Narrow container: drop breadcrumbs to save room ─────────────── */

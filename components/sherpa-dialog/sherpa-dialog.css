@@ -121,8 +121,8 @@
 :host .header-row {
   display: flex;
   align-items: flex-start;
-  gap: var(--sherpa-space-xs, 4px);
-  padding: var(--sherpa-space-xs, 4px) var(--sherpa-space-sm, 8px);
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
   background-color: var(--sherpa-surface-container-default, #ffffff);
   border-bottom: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-container-default, #d5d5d5);
@@ -177,7 +177,7 @@
 :host .dialog-content {
   flex: 1;
   min-height: 1px;
-  padding: var(--sherpa-space-sm, 16px);
+  padding: var(--sherpa-space-sm, 12px);
   overflow-y: auto;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;

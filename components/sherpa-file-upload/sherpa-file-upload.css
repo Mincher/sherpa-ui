@@ -34,12 +34,12 @@
 :host {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-sm, 8px);
+  gap: var(--sherpa-space-sm, 12px);
   width: 100%;
   font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
 }
 :host .label {
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   line-height: var(--sherpa-line-height-default, 1.4);
   color: var(--sherpa-content-default-body, #18191a);
   font-weight: var(--sherpa-font-weight-medium, 500);
@@ -51,12 +51,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-space-sm, 8px);
+  gap: var(--sherpa-space-sm, 12px);
   min-height: 80px;
-  padding: var(--sherpa-space-lg, 24px) var(--sherpa-space-base, 16px);
+  padding: var(--sherpa-space-lg, 20px) var(--sherpa-space-base, 16px);
   background: var(--sherpa-surface-control-default, #ffffff);
   border: 2px dashed var(--sherpa-border-control-default, #c6c6cc);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   cursor: pointer;
   transition: --transition-fast(background), --transition-fast(border-color);
   outline: none;
@@ -95,7 +95,7 @@
   flex-shrink: 0;
 }
 :host .drop-text {
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-content-default-body, #18191a);
 }
 :host .browse-link {
@@ -114,14 +114,14 @@
   display: block;
 }
 :host .constraints-text {
-  font-size: var(--sherpa-fonts-scale-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   line-height: var(--sherpa-line-height-default, 1.4);
   color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host .file-list {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-xs, 6px);
+  gap: var(--sherpa-space-xs, 8px);
 }
 :host(:not([data-has-files])) .file-list {
   display: none;
@@ -130,7 +130,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-xs, 6px) 0;
+  padding: var(--sherpa-space-xs, 8px) 0;
 }
 :host .file-icon {
   display: flex;
@@ -138,7 +138,7 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   background: var(--sherpa-surface-container-secondary-default, #f5f5f7);
   flex-shrink: 0;
 }
@@ -159,10 +159,10 @@
 :host .file-name-row {
   display: flex;
   align-items: baseline;
-  gap: var(--sherpa-space-sm, 8px);
+  gap: var(--sherpa-space-sm, 12px);
 }
 :host .file-name {
-  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
   color: var(--sherpa-content-default-body, #18191a);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -171,7 +171,7 @@
   min-width: 0;
 }
 :host .file-size {
-  font-size: var(--sherpa-fonts-scale-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   color: var(--sherpa-content-default-secondary, #5c5c66);
   white-space: nowrap;
   flex-shrink: 0;
@@ -205,7 +205,7 @@
   transition: width 0.2s ease;
 }
 :host .file-status-text {
-  font-size: var(--sherpa-fonts-scale-xs, 12px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 :host .file-item[data-state="ready"] .file-status-text {
@@ -235,7 +235,7 @@
   height: 32px;
   border: none;
   background: var(--sherpa-surface-container-secondary-default, #fafaff);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   cursor: pointer;
   color: var(--sherpa-content-default-body, #2e2e33);
   font-family: "Font Awesome 6 Free", "FontAwesome", sans-serif;
@@ -257,7 +257,7 @@
 :host .action-bar {
   display: none;
   gap: var(--sherpa-space-base, 16px);
-  padding-top: var(--sherpa-space-sm, 8px);
+  padding-top: var(--sherpa-space-sm, 12px);
 }
 :host([data-has-files]) .action-bar {
   display: flex;
@@ -266,11 +266,11 @@
 :host .remove-all-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-sm, 8px);
-  padding: var(--sherpa-space-sm, 8px);
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px);
   border: none;
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
-  font-size: var(--sherpa-fonts-scale-xs, 13px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-family: inherit;
   cursor: pointer;
   font-weight: var(--sherpa-font-weight-medium, 500);

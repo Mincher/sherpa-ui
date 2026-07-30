@@ -77,7 +77,7 @@
   align-items: stretch;
   gap: var(--sherpa-space-sm, 12px);
   padding: var(--sherpa-space-sm, 12px);
-  border-radius: var(--sherpa-border-rounding-base, 6px);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
   flex: 0 0 auto;
   min-width: 0;
   height: var(--sherpa-size-6xl, 64px);

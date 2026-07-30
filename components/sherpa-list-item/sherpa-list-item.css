@@ -27,7 +27,7 @@
   padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px) var(--sherpa-space-xs, 8px)
     var(--sherpa-space-xs, 8px);
   background: var(--sherpa-surface-container-default, #ffffff);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
   transition: --transition-fast(background);
 }
 :host([data-interactive]) .list-item-container {
