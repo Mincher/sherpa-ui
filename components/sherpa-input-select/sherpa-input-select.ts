@@ -23,6 +23,7 @@
  */
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
+import "../sherpa-tree/sherpa-tree.js";
 
 /** A flat option or an <optgroup> with nested options. */
 interface OptionDef {
@@ -217,54 +218,32 @@ export class SherpaInputSelect extends SherpaInputBase {
     this.dataset["tree"] = JSON.stringify(Array.isArray(nodes) ? nodes : []);
   }
 
+  /** Feed the node forest to the child sherpa-tree and rebuild the path map. */
   #renderTree(): void {
-    const panel = this.$('.tree-panel');
-    if (!panel) return;
+    const tree = this.$<HTMLElement & { setNodes?: (n: TreeNode[]) => void }>('.tree-widget');
+    if (!tree) return;
     let nodes: TreeNode[] = [];
     try { nodes = JSON.parse(this.dataset["tree"] || '[]'); } catch { /* intentional */ }
     this.#pathByValue.clear();
-    panel.replaceChildren();
-    panel.appendChild(this.#buildTree(nodes, []));
+    this.#indexPaths(nodes, []);
+    // Delegate all node rendering + keyboard a11y to sherpa-tree.
+    if (tree.setNodes) tree.setNodes(nodes);
+    else tree.setAttribute('data-nodes', JSON.stringify(nodes));
   }
 
-  #buildTree(nodes: TreeNode[], parentPath: string[]): HTMLElement {
-    const list = document.createElement('div');
-    list.className = 'tree-list';
-    list.setAttribute('role', 'group');
+  /** Walk the forest once to cache label + ancestry per value (for display + path). */
+  #indexPaths(nodes: TreeNode[], parentPath: string[]): void {
     for (const node of nodes || []) {
       const path = [...parentPath, String(node.value)];
       this.#pathByValue.set(String(node.value), { label: node.label || String(node.value), path });
-      const wrapper = document.createElement('div');
-      wrapper.className = 'tree-node';
-      wrapper.setAttribute('role', 'treeitem');
-      wrapper.dataset["value"] = String(node.value);
-      const hasChildren = Array.isArray(node.children) && node.children.length > 0;
-      if (hasChildren) wrapper.dataset["hasChildren"] = '';
-
-      const row = document.createElement('div');
-      row.className = 'tree-row';
-      if (node.disabled) row.setAttribute('aria-disabled', 'true');
-      row.dataset["value"] = String(node.value);
-      row.innerHTML = `<span class="tree-toggle" aria-hidden="true"></span><span class="tree-label"></span>`;
-      const labelEl = row.querySelector('.tree-label');
-      if (labelEl) labelEl.textContent = node.label || String(node.value);
-      wrapper.appendChild(row);
-
-      if (hasChildren) {
-        const childWrap = document.createElement('div');
-        childWrap.className = 'tree-children';
-        childWrap.appendChild(this.#buildTree(node.children ?? [], path));
-        wrapper.appendChild(childWrap);
-      }
-      list.appendChild(wrapper);
+      if (node.children?.length) this.#indexPaths(node.children, path);
     }
-    return list;
   }
 
   #wireTree(): void {
     const button = this.$('.tree-button');
-    const panel  = this.$('.tree-panel');
-    if (!button || !panel) return;
+    const tree   = this.$('.tree-widget');
+    if (!button || !tree) return;
 
     button.addEventListener('click', (e) => {
       e.preventDefault();
@@ -273,25 +252,10 @@ export class SherpaInputSelect extends SherpaInputBase {
       this.#bindOutside();
     });
 
-    panel.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement | null;
-      const toggle = target?.closest<HTMLElement>('.tree-toggle');
-      if (toggle) {
-        const node = toggle.closest<HTMLElement>('.tree-node');
-        if (node?.dataset["hasChildren"] !== undefined && node) {
-          node.dataset["expanded"] = node.dataset["expanded"] === 'true' ? 'false' : 'true';
-        }
-        e.stopPropagation();
-        return;
-      }
-      const row = target?.closest<HTMLElement>('.tree-row');
-      if (!row || row.getAttribute('aria-disabled') === 'true') return;
-      const node = row.closest<HTMLElement>('.tree-node');
-      if (node?.dataset["hasChildren"] !== undefined && node) {
-        node.dataset["expanded"] = node.dataset["expanded"] === 'true' ? 'false' : 'true';
-        return;
-      }
-      this.#selectTreeValue(row.dataset["value"] ?? '');
+    // sherpa-tree owns node interaction + keyboard nav; we react to its selection.
+    tree.addEventListener('tree-select', (e) => {
+      const detail = (e as CustomEvent<{ value: string }>).detail;
+      this.#selectTreeValue(detail?.value ?? '');
     });
   }
 
@@ -331,13 +295,10 @@ export class SherpaInputSelect extends SherpaInputBase {
     if (!display) return;
     display.dataset["placeholder"] = this.getAttribute('placeholder') || '';
     const v = this.getAttribute('value') || '';
-    if (!v) { display.textContent = ''; return; }
-    const meta = this.#pathByValue.get(v);
-    display.textContent = meta?.label || v;
-    // Mark selected row
-    for (const row of this.$$<HTMLElement>('.tree-row')) {
-      row.setAttribute('aria-selected', row.dataset["value"] === v ? 'true' : 'false');
-    }
+    display.textContent = v ? (this.#pathByValue.get(v)?.label || v) : '';
+    // Reflect selection into the child sherpa-tree (marks aria-selected there).
+    const tree = this.$<HTMLElement & { setValue?: (val: string) => void }>('.tree-widget');
+    tree?.setValue?.(v);
   }
 }
 

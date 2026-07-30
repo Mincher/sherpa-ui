@@ -113,61 +113,11 @@
 :host([data-expanded]) .tree-panel {
   display: block;
 }
-:host .tree-node {
+
+/* The node structure, expand/collapse, keyboard nav and selection styling
+   all live inside <sherpa-tree> (.tree-widget). Here we only size it to the
+   dropdown panel. */
+:host .tree-widget {
   display: block;
-  margin: 0;
-  padding: 0;
-}
-:host .tree-node:not([data-has-children]) .tree-toggle {
-  visibility: hidden;
-}
-:host .tree-children {
-  display: none;
-  margin-inline-start: var(--sherpa-space-base, 16px);
-}
-:host .tree-node[data-expanded="true"] > .tree-children {
-  display: block;
-}
-:host .tree-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-space-2xs, 4px);
-  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
-  border-radius: var(--sherpa-border-rounding-sm, 4px);
-  cursor: pointer;
-  user-select: none;
-
-  &:hover {
-    background: var(--sherpa-surface-control-hover, #f5f5f8);
-  }
-
-  &[aria-selected="true"] {
-    background: var(--sherpa-surface-control-active-default, #f8ebff);
-    color: var(--sherpa-content-default-body, #18191a);
-  }
-
-  &[aria-disabled="true"] {
-    color: var(--sherpa-content-inactive-default, #7e7e8f);
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-}
-:host .tree-node[data-expanded="true"] > .tree-row > .tree-toggle::before {
-  content: "\f078"; /* fa-chevron-down */
-}
-:host .tree-node:not([data-expanded="true"]) > .tree-row > .tree-toggle::before {
-  content: "\f054"; /* fa-chevron-right */
-}
-:host .tree-toggle {
-  width: var(--sherpa-size-md, 16px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--sherpa-fonts-scale-sm, 12px);
-  color: var(--sherpa-content-default-secondary, #6a6a7a);
-
-  &::before {
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-  }
+  max-height: 300px;
 }
