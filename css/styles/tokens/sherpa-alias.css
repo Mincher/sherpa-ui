@@ -303,9 +303,13 @@
   --sherpa-effects-shadow-100: var(--core-color-extended-slate-200);
   --sherpa-effects-shadow-200: rgba(55,47,79,0.2);
 
-  /* ── Fonts ─────────────────────────────────────────────────── */
-  --sherpa-fonts-context-brand: var(--core-typeface-manrope-style-name);
-  --sherpa-fonts-context-monospaced: var(--core-typeface-source-code-pro-style-name);
+  /* ── Fonts ─────────────────────────────────────────────────────
+     Figma Apex 2.0: brand/default = Inter, mono/data = JetBrains Mono.
+     (The typeface/* style-name primitives are stale in primitives.css — the
+     REST extract is below the write guard — so we author the family stacks
+     directly here. Keep in sync with fonts/context/* in Figma.) */
+  --sherpa-fonts-context-brand: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sherpa-fonts-context-monospaced: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", monospace;
   --sherpa-fonts-scale-0: 0;
   --sherpa-fonts-scale-10xl: 48px;
   --sherpa-fonts-scale-11xl: 52px;
@@ -326,7 +330,9 @@
   --sherpa-fonts-scale-sm: 12px;
   --sherpa-fonts-scale-xl: 20px;
   --sherpa-fonts-scale-xs: 10px;
-  --sherpa-fonts-context-default: var(--core-typeface-open-sans-style-name);
+  /* Default/body text is Inter in Apex 2.0 (same as brand). */
+  --sherpa-fonts-context-default: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sherpa-fonts-context-data: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
 
   /* ── Size ──────────────────────────────────────────────────── */
   --sherpa-size-2xl: var(--core-scale-400);
