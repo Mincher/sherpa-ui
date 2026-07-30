@@ -144,26 +144,23 @@
   border-color: var(--sherpa-border-control-primary-default, #3c5edd);
 }
 
+/* Inactive/disabled — Figma: #f2f2f2 fill, grey #d5d5d5 border (light, not dark). */
 .input-body:has(.input-field:disabled) {
-  background: var(--sherpa-surface-control-inactive, #dddde6);
-  border-color: var(--sherpa-border-control-inactive, #7e7e8f);
+  background: var(--sherpa-surface-control-inactive, #f2f2f2);
+  border-color: var(--sherpa-border-container-default, #d5d5dc);
 }
 
+/* Read-only — Figma: #fafafa fill, solid grey border (not dashed). */
 .input-body:has(.input-field[readonly]) {
-  background: light-dark(
-    var(--sherpa-surface-control-inactive, #dddde6),
-    color-mix(in oklab, var(--sherpa-content-default-body, #fff) 12%, transparent)
-  );
-  border-style: dashed;
+  background: var(--sherpa-surface-container-secondary-default, #fafafa);
+  border-color: var(--sherpa-border-container-default, #d5d5dc);
 }
 
 /* Dim adornment icons (chevron, search glyph, etc.) in readonly state */
 .input-body:has(.input-field[readonly]) i,
 .input-body:has(.input-field[readonly]) .input-field {
-  color: light-dark(
-    var(--sherpa-content-default-body, #333),
-    color-mix(in oklab, var(--sherpa-content-default-body, #fff) 55%, transparent)
-  );
+  /* Read-only text reads as secondary (theme owns light/dark, no light-dark()). */
+  color: var(--sherpa-content-default-secondary, #5c5c66);
 }
 
 /* Dim native date/time picker indicator in readonly state */
