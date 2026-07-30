@@ -158,15 +158,14 @@ export class SherpaTransferList extends SherpaElement {
       const visibleFilter = opt.selected ? this.#targetFilter : this.#sourceFilter;
       if (!this.#matches(opt.label, visibleFilter)) continue;
 
-      const frag  = tpl.content.cloneNode(true) as DocumentFragment;
-      const item  = frag.querySelector<HTMLElement>('sherpa-list-item');
+      // Bind label/value/checked via the Sherpa template binder.
+      const frag  = this.renderFragment('.option-tpl', {
+        label: opt.label,
+        value: opt.value,
+        checked: this.#checked.has(opt.value) ? true : null,
+      });
       const check = frag.querySelector<HTMLElement & { checked?: boolean }>('.option-check');
-      if (item) {
-        item.dataset["label"] = opt.label;
-        item.dataset["value"] = opt.value;
-      }
       if (check) {
-        if (this.#checked.has(opt.value)) check.setAttribute('data-checked', '');
         check.addEventListener('change', (e) => {
           const t = e.target as HTMLElement & { checked?: boolean };
           const isChecked = t.hasAttribute('data-checked') || !!t.checked;

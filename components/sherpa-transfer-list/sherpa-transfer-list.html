@@ -36,10 +36,11 @@
     <sherpa-list class="pane-list target-list" data-variant="bordered" data-empty="Nothing selected"></sherpa-list>
   </div>
 
-  <!-- Cloning prototype: option row -->
+  <!-- Cloning prototype: option row (bound via the Sherpa template binder;
+       the checkbox `checked` flag + change listener are wired in JS). -->
   <template class="option-tpl">
-    <sherpa-list-item data-interactive>
-      <sherpa-select-checkbox slot="leading" class="option-check"></sherpa-select-checkbox>
+    <sherpa-list-item data-interactive data-bind-attr="data-label:label; data-value:value">
+      <sherpa-select-checkbox slot="leading" class="option-check" data-bind-attr="data-checked:checked"></sherpa-select-checkbox>
     </sherpa-list-item>
   </template>
 </template>

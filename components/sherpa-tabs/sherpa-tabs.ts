@@ -121,22 +121,18 @@ export class SherpaTabs extends SherpaElement {
     this.#tabs = [];
 
     const strip = this.#stripEl;
-    const tabTpl = this.#tabTpl;
+    if (!strip) return;
 
-    // Clone prototype for each panel
+    // Bind a tab button per panel via the Sherpa template binder.
     this.#panels.forEach((panel, i) => {
-      const tpl = tabTpl.content.cloneNode(true) as DocumentFragment;
+      const inactive = panel.hasAttribute('data-tab-inactive');
+      const tpl = this.renderFragment('.tab-tpl', {
+        label: panel.dataset["tabLabel"] || `Tab ${i + 1}`,
+        index: String(i),
+        inactive: inactive ? true : null,
+      });
       const btn = tpl.querySelector<HTMLElement>('.tab');
       if (!btn) return;
-      const label = btn.querySelector('.tab-label');
-
-      if (label) label.textContent = panel.dataset["tabLabel"] || `Tab ${i + 1}`;
-      btn.dataset["index"] = String(i);
-
-      if (panel.hasAttribute('data-tab-inactive')) {
-        btn.setAttribute('data-inactive', '');
-        btn.setAttribute('aria-disabled', 'true');
-      }
 
       btn.addEventListener('click', this.#onTabClick);
       btn.addEventListener('keydown', this.#onTabKeyDown);

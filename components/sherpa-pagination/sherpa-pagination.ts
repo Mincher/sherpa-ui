@@ -138,16 +138,15 @@ export class SherpaPagination extends SherpaElement {
       this.setAttribute("data-page-size", String(sizes[0]));
     }
     const currentSize = this.pageSize;
-    const optTpl = this.$<HTMLTemplateElement>("template.option-tpl");
 
     const makeOption = (size: number, selected: boolean): HTMLOptionElement | null => {
-      const opt = (optTpl?.content.cloneNode(true) as DocumentFragment | undefined)
-        ?.querySelector<HTMLOptionElement>("option");
-      if (!opt) return null;
-      opt.value = String(size);
-      opt.textContent = String(size);
-      if (selected) opt.selected = true;
-      return opt;
+      // Bind value/label/selected via the Sherpa template binder.
+      const frag = this.renderFragment('.option-tpl', {
+        value: String(size),
+        label: String(size),
+        selected: selected ? true : null,
+      });
+      return frag.querySelector<HTMLOptionElement>("option");
     };
 
     select.replaceChildren();

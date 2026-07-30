@@ -89,39 +89,24 @@ export class SherpaChartLegend extends SherpaElement {
     this.els.list.replaceChildren();
 
     this.#items.forEach((item, i) => {
-      const el = this.els.itemTpl?.content.firstElementChild?.cloneNode(true);
-      if (!(el instanceof HTMLElement)) return;
       const color = item.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
-
-      // Key swatch
-      const key = el.querySelector<HTMLElement>('.legend-key');
-      if (key) key.style.backgroundColor = color || '';
-
-      // Label
-      const label = el.querySelector('.legend-label');
-      if (label) label.textContent = item.label || '';
-
-      // Value (optional)
-      if (item.value != null && item.value !== '') {
-        el.toggleAttribute('data-has-value', true);
-        const valueEl = el.querySelector('.legend-value');
-        if (valueEl) valueEl.textContent = String(item.value);
-      }
-
-      // Active state (default true)
-      if (item.active === false) {
-        el.toggleAttribute('data-inactive', true);
-      }
-
-      // Link state
-      if (item.link) {
-        el.toggleAttribute('data-link', true);
+      const hasValue = item.value != null && item.value !== '';
+      // Bind label/value/flags/swatch via the Sherpa template binder.
+      const frag = this.renderFragment('.item-tpl', {
+        label: item.label || '',
+        value: hasValue ? String(item.value) : '',
+        hasValue: hasValue ? true : null,
+        inactive: item.active === false ? true : null,
+        link: item.link ? true : null,
+        swatchStyle: color ? `background-color: ${color}` : null,
+      });
+      const el = frag.firstElementChild;
+      if (item.link && el instanceof HTMLElement) {
         el.addEventListener('click', () => {
           this.emit('legend-item-click', { index: i, label: item.label });
         });
       }
-
-      this.els.list?.appendChild(el);
+      this.els.list?.appendChild(frag);
     });
   }
 }

@@ -18,8 +18,8 @@
 <template id="default">
 <div class="tab-strip" role="tablist" part="tablist">
   <template class="tab-tpl">
-    <button class="tab" role="tab" tabindex="-1" type="button">
-      <span class="tab-label text-emphasis-base"></span>
+    <button class="tab" role="tab" tabindex="-1" type="button" data-bind-attr="data-index:index; data-inactive:inactive; aria-disabled:inactive">
+      <span class="tab-label text-emphasis-base" data-bind="label"></span>
     </button>
   </template>
   <span class="tab-detail"><slot name="detail"></slot></span>
