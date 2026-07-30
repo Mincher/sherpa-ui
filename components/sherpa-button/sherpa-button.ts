@@ -505,7 +505,7 @@ export class SherpaButton extends SherpaElement {
 
   /** Build a flat list of overlay items inside a single <ul>. */
   #buildFlatList(menu: SherpaContainerOverlay, items: MenuItem[], opts: Partial<MenuOptions> = {}): void {
-    const ul = this.#menuListTpl!.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
+    const ul = this.#menuListTpl?.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
     if (!ul) return;
     if (opts.group) ul.dataset['group'] = opts.group;
 
@@ -521,7 +521,7 @@ export class SherpaButton extends SherpaElement {
     for (const section of sections) {
       // Heading
       if (section.heading) {
-        const heading = this.#menuHeadingTpl!.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+        const heading = this.#menuHeadingTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
         if (!heading) continue;
         heading.textContent = section.heading;
         if (section.style) heading.setAttribute("style", section.style);
@@ -530,7 +530,7 @@ export class SherpaButton extends SherpaElement {
 
       // Items
       if (section.items?.length) {
-        const ul = this.#menuListTpl!.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
+        const ul = this.#menuListTpl?.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
         if (!ul) continue;
         if (section.group) ul.dataset['group'] = section.group;
         if (section.style) ul.setAttribute("style", section.style);
@@ -551,7 +551,7 @@ export class SherpaButton extends SherpaElement {
 
   /** Clone a <li><sherpa-overlay-item> prototype and populate it from item data. */
   #buildMenuItem(item: MenuItem, opts: Partial<MenuOptions> = {}): HTMLLIElement {
-    const li = this.#menuItemTpl!.content.firstElementChild?.cloneNode(true) as HTMLLIElement | undefined ?? document.createElement('li');
+    const li = this.#menuItemTpl?.content.firstElementChild?.cloneNode(true) as HTMLLIElement | undefined ?? document.createElement('li');
     const menuItem = li.querySelector('sherpa-overlay-item');
     if (!menuItem) return li;
     menuItem.setAttribute("value", item.value ?? "");

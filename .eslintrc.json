@@ -59,6 +59,17 @@
           "error"
         ]
       }
+    ],
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "AssignmentExpression > MemberExpression[property.name='hidden']",
+        "message": "CSS owns visibility — never set `.hidden` on shadow internals. Toggle a data-* attribute on the host and select it in CSS (`:host([data-*]) .el { display: … }`)."
+      },
+      {
+        "selector": "AssignmentExpression > MemberExpression[object.property.name='style'][property.name=/^(display|visibility)$/]",
+        "message": "CSS owns visibility — never set `.style.display`/`.style.visibility` in JS. Toggle a data-* attribute on the host and select it in CSS."
+      }
     ]
   },
   "ignorePatterns": [
@@ -98,7 +109,8 @@
       "rules": {
         "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-restricted-syntax": "off"
       }
     }
   ]

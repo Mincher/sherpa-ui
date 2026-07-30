@@ -184,8 +184,8 @@ export class SherpaTree extends SherpaElement {
     this.#byValue.set(value, { node, path, el: item, branch });
     mount.appendChild(item);
 
-    if (branch) {
-      for (const child of node.children!) this.#buildNode(child, path, level + 1, tpl, children);
+    if (branch && node.children) {
+      for (const child of node.children) this.#buildNode(child, path, level + 1, tpl, children);
     }
   }
 
@@ -297,10 +297,11 @@ export class SherpaTree extends SherpaElement {
 
   #onKeyDown: EventHandler<KeyboardEvent> = (e: KeyboardEvent) => {
     const rows = this.#visibleRows();
-    if (!rows.length) return;
+    const first = rows[0];
+    if (!first) return;
     const currentEl = (e.target as HTMLElement).closest<HTMLElement>(".tree-node")
       ?? (this.shadow.activeElement as HTMLElement)?.closest?.(".tree-node")
-      ?? rows[0]!.el;
+      ?? first.el;
     let idx = rows.findIndex((r) => r.el === currentEl);
     if (idx < 0) idx = 0;
     const m = rows[idx];
@@ -339,7 +340,7 @@ export class SherpaTree extends SherpaElement {
   /** Flat list of currently-visible rows (respecting collapsed branches), in DOM order. */
   #visibleRows(): NodeMeta[] {
     const out: NodeMeta[] = [];
-    const walk = (items: NodeListOf<HTMLElement> | HTMLElement[]) => {
+    const walk = (items: NodeListOf<HTMLElement> | HTMLElement[]): void => {
       for (const el of items) {
         const value = el.dataset["value"];
         const m = value ? this.#byValue.get(value) : undefined;
@@ -380,7 +381,7 @@ export class SherpaTree extends SherpaElement {
     if (this.#typeTimer) clearTimeout(this.#typeTimer);
     this.#typeBuffer += char.toLowerCase();
     this.#typeTimer = window.setTimeout(() => { this.#typeBuffer = ""; }, 500);
-    const match = (m: NodeMeta) => (m.node.label ?? m.node.value).toLowerCase().startsWith(this.#typeBuffer);
+    const match = (m: NodeMeta): boolean => (m.node.label ?? m.node.value).toLowerCase().startsWith(this.#typeBuffer);
     // search after current, then wrap
     const ordered = [...rows.slice(from + 1), ...rows.slice(0, from + 1)];
     const hit = ordered.find(match);
