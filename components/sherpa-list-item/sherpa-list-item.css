@@ -43,11 +43,11 @@
     background: var(--_selected-surface, var(--sherpa-surface-container-active-default, #f8ebff));
   }
   .label {
+    /* Figma List item Active: purple label, but weight stays Regular. */
     color: var(
       --_selected-text,
       var(--sherpa-content-active-base, var(--sherpa-content-default-heading, #18191a))
     );
-    font-weight: var(--sherpa-font-weight-semibold, 600);
   }
   .description {
     color: var(
