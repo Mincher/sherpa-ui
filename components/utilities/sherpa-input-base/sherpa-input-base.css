@@ -127,8 +127,12 @@
 .input-body {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  /* Figma Input Field: 32px box (incl. border), 4px radius, 1px border/default
+     grey (#d5d5d5), 2px/8px padding. */
+  min-block-size: var(--sherpa-size-2xl, 32px);
   border: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-control-secondary-default, #9a9aad);
+    var(--sherpa-border-container-default, #d5d5dc);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-control-default, #ffffff);
   overflow: hidden;
@@ -182,7 +186,9 @@
 .input-field {
   flex: 1;
   min-width: 0;
-  height: var(--sherpa-size-2xl, 32px);
+  /* Value row is 20px within the 32px box (2px vertical padding each side). */
+  min-height: var(--sherpa-size-md, 20px);
+  padding-block: var(--sherpa-space-3xs, 2px);
   padding-inline: var(--sherpa-space-xs, 8px);
   border: none;
   border-radius: 0;
