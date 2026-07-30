@@ -21,7 +21,7 @@
  *
  * Token mapping from Figma:
  *   control size   = 16px (--sherpa-size-sm)
- *   checkbox round = 4px  (--sherpa-border-rounding-base)
+ *   checkbox round = 2px  (--sherpa-border-rounding-sm)
  *   radio round    = 50%  (circle)
  *   checked fill   = --sherpa-surface-control-primary-default
  *   inactive fill  = --sherpa-surface-control-inactive
@@ -50,7 +50,10 @@
 
 /* Checkbox = rounded rect, Radio = circle */
 .sherpa-check[type="checkbox"] {
-  border-radius: var(--sherpa-border-rounding-base, 4px);
+  /* Figma Checkbox: 2px radius, 1px brand border at rest (not 4px / 2px grey). */
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  border-width: var(--sherpa-border-width-base, 1px);
+  border-color: var(--sherpa-border-control-default, #3c5edd);
 }
 
 .sherpa-check[type="radio"] {
