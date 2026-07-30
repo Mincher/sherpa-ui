@@ -701,29 +701,32 @@ function emitBreakpoints() {
 }
 
 function emitPlatform() {
+  const fw = overrides.fontWeights || {};
+  const mo = overrides.motion || {};
   const css = `${header(
     'Platform Tokens — system constants',
-    'Tokens with no Figma source: font weights, z-index scale, focus rings,\n' +
-      ' * backdrops, content widths. Drop any entry here as soon as Figma adds the\n' +
-      ' * canonical equivalent.',
+    'System constants without a direct Figma alias: z-index, focus ring,\n' +
+      ' * backdrop, content widths, color-scheme contract. Font weights, motion,\n' +
+      ' * and breakpoints ARE defined in Figma but are sourced from\n' +
+      ' * token-overrides.json (font weights: Figma stores style NAMES not CSS\n' +
+      ' * numbers; motion: Sherpa values are a deliberate hand-tune).',
   )}\n:where(:root) {
-  /* Font weights */
-  --sherpa-font-weight-regular:  400;
-  --sherpa-font-weight-medium:   500;
-  --sherpa-font-weight-semibold: 600;
-  --sherpa-font-weight-bold:     700;
+  /* Font weights — CSS numbers from token-overrides.json (Figma stores names) */
+  --sherpa-font-weight-regular:  ${fw.regular ?? 400};
+  --sherpa-font-weight-medium:   ${fw.medium ?? 500};
+  --sherpa-font-weight-semibold: ${fw.semibold ?? 600};
+  --sherpa-font-weight-bold:     ${fw.bold ?? 700};
 
   /* Default body line-height */
   --sherpa-line-height-default: 1.5;
 
-  /* Motion — durations and easing (platform constants; no Figma source).
-     Hand-tuned values map to the equivalent --core-motion-* primitives
-     but stay independently authored so transitions can be tuned without
-     re-extracting Figma. */
-  --sherpa-motion-duration-fast: 0.15s;
-  --sherpa-motion-duration-base: 0.25s;
-  --sherpa-motion-duration-slow: 0.4s;
-  --sherpa-motion-easing-default: ease-out;
+  /* Motion — durations + easing from token-overrides.json.
+     Deliberate hand-tune (Figma has motion/duration/* but design keeps
+     these independently authored so transitions can be adjusted freely). */
+  --sherpa-motion-duration-fast: ${mo.durationFast ?? '0.15s'};
+  --sherpa-motion-duration-base: ${mo.durationBase ?? '0.25s'};
+  --sherpa-motion-duration-slow: ${mo.durationSlow ?? '0.4s'};
+  --sherpa-motion-easing-default: ${mo.easingDefault ?? 'ease-out'};
 
   /* Z-index scale */
   --sherpa-z-panel:   100;

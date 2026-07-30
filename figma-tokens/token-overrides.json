@@ -77,5 +77,19 @@
     "md": "768px",
     "lg": "992px",
     "xl": "1200px"
+  },
+  "fontWeights": {
+    "_doc": "CSS font-weight numbers for --sherpa-font-weight-*. Figma DOES define weights (typeface/*/weight/100-400 + fonts/context/*/weight/*), but stores them as STYLE NAMES ('Light'/'Regular'/'Semibold'/'Bold') on a positional 100-400 scale, not CSS numbers. These are the canonical CSS-number mapping; keep in sync with Figma's semantic fonts/context weights.",
+    "regular": 400,
+    "medium": 500,
+    "semibold": 600,
+    "bold": 700
+  },
+  "motion": {
+    "_doc": "Motion durations + default easing for --sherpa-motion-*. Figma defines motion/duration/0-500 (150/225/300/425/600ms). These Sherpa values are a DELIBERATE hand-tune (not 'no source') so transitions can be adjusted without re-extracting Figma. Reconcile with Figma only if design wants exact parity.",
+    "durationFast": "0.15s",
+    "durationBase": "0.25s",
+    "durationSlow": "0.4s",
+    "easingDefault": "ease-out"
   }
 }

@@ -3,14 +3,16 @@
  * Auto-generated from Figma Variables — do not edit manually.
  * Regenerate: node scripts/generate-css-tokens.js
  *
- * Tokens with no Figma source: font weights, z-index scale, focus rings,
- * backdrops, content widths. Drop any entry here as soon as Figma adds the
- * canonical equivalent.
+ * System constants without a direct Figma alias: z-index, focus ring,
+ * backdrop, content widths, color-scheme contract. Font weights, motion,
+ * and breakpoints ARE defined in Figma but are sourced from
+ * token-overrides.json (font weights: Figma stores style NAMES not CSS
+ * numbers; motion: Sherpa values are a deliberate hand-tune).
  */
 
 
 :where(:root) {
-  /* Font weights */
+  /* Font weights — CSS numbers from token-overrides.json (Figma stores names) */
   --sherpa-font-weight-regular:  400;
   --sherpa-font-weight-medium:   500;
   --sherpa-font-weight-semibold: 600;
@@ -19,10 +21,9 @@
   /* Default body line-height */
   --sherpa-line-height-default: 1.5;
 
-  /* Motion — durations and easing (platform constants; no Figma source).
-     Hand-tuned values map to the equivalent --core-motion-* primitives
-     but stay independently authored so transitions can be tuned without
-     re-extracting Figma. */
+  /* Motion — durations + easing from token-overrides.json.
+     Deliberate hand-tune (Figma has motion/duration/* but design keeps
+     these independently authored so transitions can be adjusted freely). */
   --sherpa-motion-duration-fast: 0.15s;
   --sherpa-motion-duration-base: 0.25s;
   --sherpa-motion-duration-slow: 0.4s;
