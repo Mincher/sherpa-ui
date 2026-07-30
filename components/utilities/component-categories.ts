@@ -29,6 +29,7 @@ export const COMPONENT_CATEGORIES: Record<string, ComponentCategory> = Object.fr
   'sherpa-barchart': 'media',
   'sherpa-breadcrumbs': 'control',
   'sherpa-app-shell': 'shell',
+  'sherpa-app-header': 'shell',
   'sherpa-button': 'control',
   'sherpa-calendar': 'input',
   'sherpa-callout': 'feedback',
@@ -120,6 +121,7 @@ export const ROLE_TIERS: Record<ComponentCategory, number> = Object.freeze({
 
 export const COMPONENT_TIERS: Record<string, number> = Object.freeze({
   'sherpa-app-shell': 1,
+  'sherpa-app-header': 1,
   'sherpa-accordion': 2,
   'sherpa-barchart': 4,
   'sherpa-breadcrumbs': 4,
@@ -212,6 +214,7 @@ export function getTier(tagName: string | null | undefined): number | null {
 export const COMPONENT_STRING_TIERS: Record<string, ComponentTier> = Object.freeze({
   // structure — layout/surface wrappers with no domain logic
   'sherpa-app-shell':        'structure',
+  'sherpa-app-header':       'structure',
   'sherpa-layout-grid':      'structure',
   'sherpa-container':        'structure',
   'sherpa-container-group':  'structure',

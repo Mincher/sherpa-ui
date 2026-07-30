@@ -1,0 +1,213 @@
+/**
+ * sherpa-app-header.css — App Shell v2 header (breadcrumbs + title + filters).
+ *
+ * Three stacked rows: top (breadcrumbs/app-actions), view (title + quick
+ * filters + view-actions), and a 2px loading strip. All visibility is
+ * attribute-driven (data-loading, data-favorite, data-back-button, slot
+ * presence via data-has-*).
+ */
+
+:host {
+  display: block;
+  container: sherpa-app-header / inline-size;
+  background: var(--sherpa-surface-app-background-default, #ffffff);
+  border-block-end: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #e0e0e6);
+  color: var(--sherpa-content-default-body, #2e2e33);
+}
+
+.app-header {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-inline: var(--sherpa-space-base, 16px);
+}
+
+/* ── Top row ─────────────────────────────────────────────────────── */
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm, 12px);
+  min-height: 40px;
+  padding-block: var(--sherpa-space-2xs, 4px);
+}
+
+.crumbs-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  min-width: 0;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.crumb {
+  color: var(--sherpa-content-primary-default, #3c5edd);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.crumb:hover { text-decoration: underline; }
+.crumb[aria-current="page"] {
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  cursor: default;
+}
+.crumb[aria-current="page"]:hover { text-decoration: none; }
+
+.crumb-sep {
+  color: var(--sherpa-content-default-placeholder, #8a8a94);
+}
+
+.app-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex: 0 0 auto;
+}
+
+/* ── Back button ─────────────────────────────────────────────────── */
+
+.back-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-2xl, 24px);
+  block-size: var(--sherpa-size-2xl, 24px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  cursor: pointer;
+}
+:host([data-back-button]) .back-button { display: inline-flex; }
+.back-button:hover { background: var(--sherpa-surface-control-hover, #f2f2f7); }
+
+/* ── View row ────────────────────────────────────────────────────── */
+
+.header-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  padding-block-end: var(--sherpa-space-xs, 8px);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  min-height: 28px;
+}
+
+.title-icon,
+.title-info {
+  display: inline-flex;
+  align-items: center;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+}
+.title-info { display: none; }
+:host([data-info]) .title-info { display: inline-flex; }
+
+.view-title {
+  margin: 0;
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  color: var(--sherpa-content-default-heading, #1a1a2e);
+}
+
+.favorite-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-2xl, 24px);
+  block-size: var(--sherpa-size-2xl, 24px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  cursor: pointer;
+}
+:host([data-show-favorite]) .favorite-button { display: inline-flex; }
+.favorite-button:hover { background: var(--sherpa-surface-control-hover, #f2f2f7); }
+:host([data-favorite]) .favorite-button {
+  color: var(--sherpa-content-status-warning-default, #b8860b);
+}
+:host([data-favorite]) .favorite-button i {
+  font-weight: 900; /* filled star */
+}
+
+/* ── Filters row ─────────────────────────────────────────────────── */
+
+.filters-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm, 12px);
+  min-height: 32px;
+}
+/* Hide the whole filters row when neither slot has content */
+:host(:not([data-has-filters]):not([data-has-view-actions])) .filters-row {
+  display: none;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.view-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  flex: 0 0 auto;
+}
+
+/* ── Loading strip ───────────────────────────────────────────────── */
+
+.header-loading {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  overflow: hidden;
+  display: none;
+}
+:host([data-loading]) .header-loading { display: block; }
+.header-loading::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inline-size: 40%;
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
+  animation: app-header-loading 1.2s ease-in-out infinite;
+}
+
+@keyframes app-header-loading {
+  0%   { inset-inline-start: -40%; }
+  100% { inset-inline-start: 100%; }
+}
+
+/* ── Focus rings ─────────────────────────────────────────────────── */
+
+.back-button:focus-visible,
+.favorite-button:focus-visible,
+.crumb:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+}
+
+/* ── Narrow container: drop breadcrumbs to save room ─────────────── */
+@container sherpa-app-header (max-width: 640px) {
+  .breadcrumbs { display: none; }
+}

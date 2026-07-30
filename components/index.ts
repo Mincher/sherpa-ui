@@ -10,6 +10,7 @@ export { SherpaElement } from "./utilities/sherpa-element/sherpa-element.js";
 
 // Core layout components
 export * from "./sherpa-app-shell/sherpa-app-shell.js";
+export * from "./sherpa-app-header/sherpa-app-header.js";
 export * from "./sherpa-nav/sherpa-nav.js";
 export * from "./sherpa-nav-item/sherpa-nav-item.js";
 export * from "./sherpa-view-header/sherpa-view-header.js";

@@ -1,0 +1,66 @@
+<!--
+  sherpa-app-header.html — Shadow DOM template for sherpa-app-header.
+
+  The new App Shell v2 header, merging the old product-bar app-actions with
+  the view-header (title / breadcrumbs / favourite / save). Three stacked
+  regions (per Figma "App Header"):
+
+    .header-top     — "App History & Actions"
+        breadcrumbs (data-driven from data-breadcrumbs) + back button
+        slot="app-actions"  — right-side app-level actions (AI, notifications, help…)
+    .header-view    — "View Details"
+        title row (icon + view title + info)
+        slot="filters"      — the Quick Filter Toolbar (Phase 4) lives here
+        slot="view-actions" — right-side view actions (Save n Fave, refresh…)
+    .header-loading — a 2px progress strip (shown via data-loading)
+
+  Backwards-compatible with view-header's event surface where sensible.
+-->
+
+<template id="default">
+  <header class="app-header" part="header" role="banner">
+
+    <!-- ── Top row: breadcrumbs + app actions ─────────────────────── -->
+    <div class="header-top" part="top">
+      <div class="crumbs-row">
+        <button type="button" class="back-button" part="back" aria-label="Back">
+          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        </button>
+        <nav class="breadcrumbs" part="breadcrumbs" aria-label="Breadcrumb"></nav>
+      </div>
+      <div class="app-actions" part="app-actions">
+        <slot name="app-actions"></slot>
+      </div>
+    </div>
+
+    <!-- ── View row: title + quick filters + view actions ─────────── -->
+    <div class="header-view" part="view">
+      <div class="title-row" part="title-row">
+        <span class="title-icon" part="title-icon" aria-hidden="true">
+          <slot name="title-icon"><i class="fa-solid fa-table-cells-large"></i></slot>
+        </span>
+        <h1 class="view-title text-h4" part="title"></h1>
+        <span class="title-info" part="title-info" aria-hidden="true"></span>
+        <button type="button" class="favorite-button" part="favorite" aria-label="Favourite" aria-pressed="false">
+          <i class="fa-regular fa-star" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="filters-row" part="filters-row">
+        <div class="filters" part="filters"><slot name="filters"></slot></div>
+        <div class="view-actions" part="view-actions"><slot name="view-actions"></slot></div>
+      </div>
+    </div>
+
+    <!-- ── Loading strip ──────────────────────────────────────────── -->
+    <div class="header-loading" part="loading" role="progressbar" aria-hidden="true"></div>
+  </header>
+
+  <!-- Breadcrumb prototype — cloned per crumb -->
+  <template class="crumb-tpl">
+    <a class="crumb" part="crumb"></a>
+  </template>
+  <template class="crumb-sep-tpl">
+    <span class="crumb-sep" part="crumb-sep" aria-hidden="true">/</span>
+  </template>
+</template>
