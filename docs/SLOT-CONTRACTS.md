@@ -24,6 +24,7 @@ Warnings are advisory unless the component sets `static strictSlots = true`.
 | `display` | Display/feedback | sherpa-tag, message, loader, progress-bar, tooltip |
 | `data` | Data-heavy | sherpa-data-grid, charts |
 | `overlay` | Overlay items | sherpa-overlay-item |
+| `any` | **Allow every sherpa category** — for generic content slots (card body, accordion body, layout-grid main) that legitimately hold anything. Still list `html` alongside for plain markup. | `data-accepts="any,html"` |
 | `html` | **Allow non-sherpa light-DOM** (plain elements/text) | any `<div>`, `<span>`, text |
 
 **Rule of thumb:** list every category the slot legitimately holds, and add `html` when authors may pass plain markup/text (most content/action slots should). Omit `html` for slots that must contain only specific sherpa components (e.g. a toolbar `actions` slot = `control` only).
