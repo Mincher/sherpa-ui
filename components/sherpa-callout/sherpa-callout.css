@@ -23,8 +23,11 @@
   width: 100%;
   gap: var(--sherpa-space-xs, 8px);
   padding: var(--sherpa-space-sm, 12px);
-  border: var(--sherpa-border-width-base, 1px) solid
+  /* Figma Callout: a 4px status-coloured accent bar on the leading edge only
+     (top/right/bottom = 0), over a subtle status fill. Not a full-bordered box. */
+  border: 0 solid
     var(--_status-border, var(--sherpa-border-context-info-default, #07526f));
+  border-inline-start-width: var(--sherpa-border-width-xl, 4px);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(
     --_status-surface-subtle,
