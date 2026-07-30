@@ -1,0 +1,36 @@
+<!--
+  sherpa-tree.html — Shadow DOM template for sherpa-tree.
+
+  Structure:
+    .tree           role="tree"      — the scroll container / focus owner
+      (rows cloned from .node-tpl at runtime, one per data node)
+
+  Cloning prototype (.node-tpl — class, NO id, so SherpaElement's
+  multi-template parser skips it):
+    .tree-node      role="treeitem"  — wraps one node's row + its children
+      .tree-row                      — the focusable line (icon + toggle + label + check)
+      .tree-children  role="group"   — nested rows (recursion appends here)
+
+  Data enters via the `data-nodes` JSON attribute or setNodes(). All
+  visibility (expand/collapse, selection, checkboxes) is CSS-driven off
+  data-* attributes — JS only sets attributes and clones prototypes.
+-->
+
+<template id="default">
+  <div class="tree" role="tree" part="tree" tabindex="0" aria-label="Tree">
+    <div class="tree-empty" role="status" aria-live="polite" part="empty"></div>
+  </div>
+
+  <!-- Node prototype — cloned recursively per data node -->
+  <template class="node-tpl">
+    <div class="tree-node" role="treeitem" part="node">
+      <div class="tree-row" part="row">
+        <span class="tree-toggle" part="toggle" aria-hidden="true"></span>
+        <span class="tree-check" part="check" aria-hidden="true"></span>
+        <span class="tree-icon" part="icon" aria-hidden="true"></span>
+        <span class="tree-label" part="label"></span>
+      </div>
+      <div class="tree-children" role="group" part="children"></div>
+    </div>
+  </template>
+</template>

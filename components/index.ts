@@ -93,6 +93,7 @@ export * from "./sherpa-code-block/sherpa-code-block.js";
 // Composite components
 export * from "./sherpa-list/sherpa-list.js";
 export * from "./sherpa-transfer-list/sherpa-transfer-list.js";
+export * from "./sherpa-tree/sherpa-tree.js";
 export * from "./sherpa-scheduler/sherpa-scheduler.js";
 
 // Node-graph components (sherpa-node family)

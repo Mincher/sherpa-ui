@@ -1,0 +1,178 @@
+/**
+ * sherpa-tree.css — Presentation for the hierarchical tree primitive.
+ *
+ * Private tokens:
+ *   --_row-height   — line height of a tree row (from --sherpa-size-*)
+ *   --_indent       — per-level indentation step
+ *   --_toggle-size  — chevron / checkbox box size
+ *
+ * All visibility is attribute-driven: branch rows show a chevron; children
+ * are hidden until [data-expanded="true"]; selection / checkbox state come
+ * from data-selected / data-checked / data-indeterminate on the treeitem.
+ */
+
+:host {
+  --_row-height: var(--sherpa-size-2xl, 32px);
+  --_indent: var(--sherpa-space-base, 16px);
+  --_toggle-size: var(--sherpa-size-md, 16px);
+
+  display: block;
+  container: sherpa-tree / inline-size;
+  color: var(--sherpa-content-default-body, #1a1a2e);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Keyboard focus lands on the .tree container (roving tabindex on rows) */
+.tree:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+}
+
+/* ── Row ─────────────────────────────────────────────────────────── */
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  min-height: var(--_row-height);
+  padding-inline: var(--sherpa-space-2xs, 4px);
+  padding-inline-start: calc(var(--_indent) * var(--_level, 0) + var(--sherpa-space-2xs, 4px));
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-fast, background-color 0.15s ease-out);
+}
+
+.tree-row:hover {
+  background: var(--sherpa-surface-control-hover, #f2f2f7);
+}
+
+/* Roving-tabindex focus target is the row */
+.tree-row:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* Selected leaf (single-select mode) */
+:host(:not([data-selection="multi"])) .tree-node[data-selected="true"] > .tree-row {
+  background: var(--sherpa-surface-control-active-default, #e5ecff);
+  color: var(--sherpa-content-primary-default, #3c5edd);
+}
+
+/* ── Toggle (expand/collapse chevron) ────────────────────────────── */
+
+.tree-toggle {
+  flex: 0 0 auto;
+  inline-size: var(--_toggle-size);
+  block-size: var(--_toggle-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.75em;
+}
+
+/* Leaf rows: no chevron, but keep the space so labels align */
+.tree-node:not([data-branch]) > .tree-row > .tree-toggle {
+  visibility: hidden;
+}
+
+/* Chevron glyph — right when collapsed, down when expanded */
+.tree-node[data-branch] > .tree-row > .tree-toggle::before {
+  content: "\f105"; /* fa-angle-right */
+}
+.tree-node[data-branch][data-expanded="true"] > .tree-row > .tree-toggle::before {
+  content: "\f107"; /* fa-angle-down */
+}
+
+/* ── Children (nested group) ─────────────────────────────────────── */
+
+.tree-children {
+  display: none;
+}
+.tree-node[data-expanded="true"] > .tree-children {
+  display: block;
+}
+
+/* ── Checkbox (multi-select mode only) ───────────────────────────── */
+
+.tree-check {
+  display: none;
+}
+:host([data-selection="multi"]) .tree-check {
+  flex: 0 0 auto;
+  inline-size: var(--_toggle-size);
+  block-size: var(--_toggle-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #c0c0cc);
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  color: var(--sherpa-content-primary-on-color, #ffffff);
+  font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.625em;
+}
+
+:host([data-selection="multi"]) .tree-node[data-checked="true"] > .tree-row > .tree-check {
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
+}
+:host([data-selection="multi"]) .tree-node[data-checked="true"] > .tree-row > .tree-check::before {
+  content: "\f00c"; /* fa-check */
+}
+:host([data-selection="multi"]) .tree-node[data-indeterminate="true"] > .tree-row > .tree-check {
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
+}
+:host([data-selection="multi"]) .tree-node[data-indeterminate="true"] > .tree-row > .tree-check::before {
+  content: "\f068"; /* fa-minus */
+}
+
+/* ── Icon (optional per-node leading icon) ───────────────────────── */
+
+.tree-icon {
+  display: none;
+}
+.tree-node[data-icon] > .tree-row > .tree-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_toggle-size);
+  block-size: var(--_toggle-size);
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
+  font-weight: 900;
+}
+
+/* ── Disabled node ───────────────────────────────────────────────── */
+
+.tree-node[aria-disabled="true"] > .tree-row {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+
+.tree-empty {
+  display: none;
+  padding: var(--sherpa-space-sm, 12px);
+  color: var(--sherpa-content-default-placeholder, #8a8a94);
+  font-size: var(--sherpa-fonts-scale-sm, 14px);
+}
+:host([data-empty]) .tree-empty {
+  display: block;
+}
