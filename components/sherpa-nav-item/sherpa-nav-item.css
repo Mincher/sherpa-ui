@@ -42,14 +42,16 @@
   display: none;
 }
 :host(:is([data-state="active"], [data-state="selected"])) {
-  background: var(--sherpa-surface-control-active-down, #e2adff);
-  color: var(--sherpa-border-control-active-default, #c046ff);
+  /* Figma Nav Item v2 selected: light-purple surface (product-nav/active =
+     #f8ebff) + #8500cc (content/active/base) Semi Bold label. */
+  background: var(--sherpa-surface-app-product-nav-active, #f8ebff);
+  color: var(--sherpa-content-active-base, #8500cc);
 
   .nav-item-indicator {
-    background: var(--sherpa-border-control-active-default, #c046ff);
+    background: var(--sherpa-content-active-base, #8500cc);
   }
   .nav-item-icon {
-    color: var(--sherpa-border-control-active-default, #c046ff);
+    color: var(--sherpa-content-active-base, #8500cc);
   }
 }
 :host([data-variant="child"]) {
@@ -63,7 +65,7 @@
   );
 }
 :host([data-variant="child"]:is([data-state="active"], [data-state="selected"])) {
-  background: var(--sherpa-surface-control-active-down, #e2adff);
+  background: var(--sherpa-surface-app-product-nav-sub-active, var(--sherpa-surface-app-product-nav-active, #f8ebff));
 }
 :host .nav-item-indicator {
   width: 4px;

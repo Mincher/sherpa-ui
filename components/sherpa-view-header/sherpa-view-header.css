@@ -34,6 +34,9 @@
 }
 
 .heading-label {
+  /* Figma View Header title is 16px Bold (heavier than the shared heading-lg
+     utility's semibold). */
+  font-weight: var(--sherpa-font-weight-bold, 700);
   color: var(--sherpa-content-default-heading, #18191a);
   white-space: nowrap;
 }
