@@ -326,11 +326,27 @@
           <sherpa-button data-type="icon" data-variant="tertiary" data-size="small" data-icon-start="fa-regular fa-circle-question"></sherpa-button>
           <sherpa-button data-type="icon" data-variant="tertiary" data-size="small" data-icon-start="fa-regular fa-user"></sherpa-button>
         </div>
+        <sherpa-quick-filter-toolbar slot="filters" class="ss-app-filters" data-type="view"></sherpa-quick-filter-toolbar>
         <div slot="view-actions" style="display:flex; gap:4px; align-items:center;">
           <sherpa-button data-type="icon" data-variant="tertiary" data-size="small" data-icon-start="fa-solid fa-rotate-right"></sherpa-button>
           <sherpa-button data-variant="secondary" data-size="small" data-icon-start="fa-regular fa-floppy-disk">Save</sherpa-button>
         </div>
       </sherpa-app-header>
+    </sherpa-container>
+
+    <sherpa-container data-variant="fill" data-row-span="auto" id="quick-filter" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-quick-filter / sherpa-quick-filter-toolbar"></sherpa-container-header>
+      <sherpa-section-header data-label="Chips — types &amp; states" data-heading-level="tertiary"></sherpa-section-header>
+      <div class="ss-strip" style="gap:8px">
+        <sherpa-quick-filter data-label="Region"></sherpa-quick-filter>
+        <sherpa-quick-filter data-label="Status" data-active></sherpa-quick-filter>
+        <sherpa-quick-filter data-label="Owner" data-value="Me" data-type="populated"></sherpa-quick-filter>
+        <sherpa-quick-filter data-label="AI Suggest" data-type="ai"></sherpa-quick-filter>
+        <sherpa-quick-filter data-label="Thinking" data-type="ai" data-thinking></sherpa-quick-filter>
+        <sherpa-quick-filter data-label="Disabled" disabled></sherpa-quick-filter>
+      </div>
+      <sherpa-section-header data-label="Toolbar (data-src-json)" data-heading-level="tertiary"></sherpa-section-header>
+      <sherpa-quick-filter-toolbar class="ss-qf-toolbar" data-src-json="/sticker-sheet/data/filter-bar.json"></sherpa-quick-filter-toolbar>
     </sherpa-container>
 
     <sherpa-container data-variant="fill" data-row-span="auto" id="input-search" class="ss-section">

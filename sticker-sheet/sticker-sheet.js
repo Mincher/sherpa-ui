@@ -159,6 +159,25 @@ customElements.whenDefined('sherpa-app-header').then(() => {
   ]);
 });
 
+// Quick filter toolbars — populate fields
+customElements.whenDefined('sherpa-quick-filter-toolbar').then(() => {
+  const columns = [
+    { field: 'status', name: 'Status', type: 'string', values: ['Active', 'Inactive', 'Pending'] },
+    { field: 'region', name: 'Region', type: 'string', values: ['EMEA', 'APAC', 'Americas'] },
+    { field: 'owner',  name: 'Owner',  type: 'string', values: ['Me', 'Team', 'Unassigned'] },
+    { field: 'joined', name: 'Joined', type: 'date' },
+  ];
+  const rows = [
+    { status: 'Active', region: 'EMEA', owner: 'Me' },
+    { status: 'Pending', region: 'APAC', owner: 'Team' },
+  ];
+  const appFilters = document.querySelector('.ss-app-filters');
+  if (appFilters) {
+    appFilters.setAttribute('data-preset-filters', 'status,region,owner');
+    Promise.resolve(appFilters.rendered).then(() => appFilters.setAvailableColumns?.(columns, rows));
+  }
+});
+
 // Container overlay
 document.getElementById('open-menu-overlay')?.addEventListener('click', e => {
   document.getElementById('menu-overlay-demo')?.show(e.currentTarget);
