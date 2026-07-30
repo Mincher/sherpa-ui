@@ -36,7 +36,7 @@
  *     ]);
  *
  *   When the user picks a "Custom" entry, the consumer should listen
- *   for sherpa-node-subtype-change, and — if the value matches a saved
+ *   for node-subtype-change, and — if the value matches a saved
  *   group — replace the source node with a `group`-kind node at the
  *   same position/id, then push the saved subgraph into it via
  *   canvas.pushSubgraph(). sherpa-ui ships only the picker mechanism;
@@ -67,15 +67,15 @@
  *                                  sub-type picker trigger (falls back to the
  *                                  matching option's label when omitted)
  *
- * @fires sherpa-node-pointerdown
+ * @fires node-pointerdown
  *   bubbles: true, composed: true
  *   detail: { nodeId, originalEvent }
  *
- * @fires sherpa-node-subtype-change
+ * @fires node-subtype-change
  *   bubbles: true, composed: true
  *   detail: { nodeId, subtype }
  *
- * @fires sherpa-node-value-change
+ * @fires node-value-change
  *   bubbles: true, composed: true
  *   detail: { nodeId, reason? }
  *
@@ -337,7 +337,7 @@ export class SherpaNode extends SherpaElement {
     // the canvas; suppress those to avoid an event loop.
     const tgt = e.composedPath().find((n) => n instanceof Element && n.hasAttribute("data-driven"));
     if (tgt) return;
-    this.emit("sherpa-node-value-change", { nodeId: this.nodeId });
+    this.emit("node-value-change", { nodeId: this.nodeId });
   };
 
   /* ── Internals ─────────────────────────────────────────────────── */
@@ -511,7 +511,7 @@ export class SherpaNode extends SherpaElement {
     // controls / sockets; defer so the new elements have time to
     // upgrade before the propagation pass reads their values.
     queueMicrotask(() => {
-      this.emit("sherpa-node-value-change", { nodeId: this.nodeId, reason: "template" });
+      this.emit("node-value-change", { nodeId: this.nodeId, reason: "template" });
     });
   }
 
@@ -560,14 +560,14 @@ export class SherpaNode extends SherpaElement {
     // Fall back to reading value off the element for safety.
     const value = (e as CustomEvent)?.detail?.value ?? this.#subtypeSelect?.getAttribute("value") ?? "";
     this.setAttribute("data-subtype", value);
-    this.emit("sherpa-node-subtype-change", { nodeId: this.nodeId, subtype: value });
+    this.emit("node-subtype-change", { nodeId: this.nodeId, subtype: value });
   };
 
   #stopPointer = (e: Event): void => { e.stopPropagation(); };
 
   #onPointerDown = (e: Event): void => {
     // Sockets stop propagation themselves; everything else here is body.
-    this.emit("sherpa-node-pointerdown", { nodeId: this.nodeId, originalEvent: e });
+    this.emit("node-pointerdown", { nodeId: this.nodeId, originalEvent: e });
   };
 }
 

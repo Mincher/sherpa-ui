@@ -8,7 +8,7 @@
  * @category content
  * @description Connection point on a sherpa-node for drag-to-connect edge creation. Pure
  *   presentational element — the canvas drives all interaction based on the
- *   sherpa-socket-pointerdown event. Set data-direction="in" for input sockets and "out" for
+ *   socket-pointerdown event. Set data-direction="in" for input sockets and "out" for
  *   output sockets. Place inside a sherpa-node-row; not used standalone.
  *
  * @attr {enum}    data-direction        — "in" | "out"
@@ -21,7 +21,7 @@
  * @attr {number}  data-connection-count — Set by canvas; drives the count of stacked dots inside input sockets
  * @attr {boolean} data-flow-active       — Group input sockets only: subgraph has a source→output flow; renders larger filled dot
  *
- * @fires sherpa-socket-pointerdown
+ * @fires socket-pointerdown
  *   bubbles: true, composed: true
  *   detail: { direction, portName, status, originalEvent }
  */
@@ -173,7 +173,7 @@ export class SherpaNodeSocket extends SherpaElement {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();
-    this.emit("sherpa-socket-pointerdown", {
+    this.emit("socket-pointerdown", {
       direction: this.direction,
       portName: this.portName,
       status: this.dataset["status"] || "default",

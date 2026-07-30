@@ -31,25 +31,25 @@
  * @attr {boolean} data-show-header   — Reveals the built-in canvas header strip
  * @attr {string}  data-export-title  — Title used when exporting the canvas (PDF / image)
  *
- * @fires sherpa-edge-create
+ * @fires edge-create
  *   bubbles: true, composed: true
  *   detail: { from:{nodeId,portName}, to:{nodeId,portName}, control:boolean }
- * @fires sherpa-edge-update
+ * @fires edge-update
  *   bubbles: true, composed: true
  *   detail: { edgeIdx, edge }
- * @fires sherpa-edge-delete
+ * @fires edge-delete
  *   bubbles: true, composed: true
  *   detail: { edgeIdx }
- * @fires sherpa-edge-select
+ * @fires edge-select
  *   bubbles: true, composed: true
  *   detail: { edgeIdx | null }
- * @fires sherpa-node-select
+ * @fires node-select
  *   bubbles: true, composed: true
  *   detail: { nodeId: string | null }
- * @fires sherpa-node-delete
+ * @fires node-delete
  *   bubbles: true, composed: true
  *   detail: { nodeId }
- * @fires sherpa-viewport-change
+ * @fires viewport-change
  *   bubbles: true, composed: true
  *   detail: { x, y, zoom }
  *
@@ -258,10 +258,10 @@ export class SherpaNodeCanvas extends SherpaElement {
     window.addEventListener("keydown", this.#onKeyDown);
     window.addEventListener("keyup",   this.#onKeyUp);
 
-    this.addEventListener("sherpa-socket-pointerdown", this.#onSocketPointerDown);
-    this.addEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
-    this.addEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
-    this.addEventListener("sherpa-node-drilldown",     this.#onNodeDrillDown);
+    this.addEventListener("socket-pointerdown", this.#onSocketPointerDown);
+    this.addEventListener("node-pointerdown",   this.#onNodePointerDown);
+    this.addEventListener("node-value-change",  this.#onNodeValueChange);
+    this.addEventListener("node-drilldown",     this.#onNodeDrillDown);
     this.els.viewHeader?.addEventListener("view-header-back", this.#onViewHeaderBack);
 
     this.els.slot?.addEventListener("slotchange", this.#onSlotChange);
@@ -282,10 +282,10 @@ export class SherpaNodeCanvas extends SherpaElement {
     window.removeEventListener("pointerup",   this.#onPointerUp);
     window.removeEventListener("keydown", this.#onKeyDown);
     window.removeEventListener("keyup",   this.#onKeyUp);
-    this.removeEventListener("sherpa-socket-pointerdown", this.#onSocketPointerDown);
-    this.removeEventListener("sherpa-node-pointerdown",   this.#onNodePointerDown);
-    this.removeEventListener("sherpa-node-value-change",  this.#onNodeValueChange);
-    this.removeEventListener("sherpa-node-drilldown",     this.#onNodeDrillDown);
+    this.removeEventListener("socket-pointerdown", this.#onSocketPointerDown);
+    this.removeEventListener("node-pointerdown",   this.#onNodePointerDown);
+    this.removeEventListener("node-value-change",  this.#onNodeValueChange);
+    this.removeEventListener("node-drilldown",     this.#onNodeDrillDown);
     this.els.viewHeader?.removeEventListener("view-header-back", this.#onViewHeaderBack);
     this.els.slot?.removeEventListener("slotchange", this.#onSlotChange);
     this.#ro?.disconnect();
@@ -357,12 +357,12 @@ export class SherpaNodeCanvas extends SherpaElement {
       this.setSelectedEdge(null);
       this.#nodeById(next)?.setAttribute("data-selected", "");
     }
-    this.emit("sherpa-node-select", { nodeId: next });
+    this.emit("node-select", { nodeId: next });
   }
 
   /**
    * Remove a node and any edges that reference it. Fires
-   * `sherpa-edge-delete` for each removed edge and `sherpa-node-delete`
+   * `edge-delete` for each removed edge and `node-delete`
    * for the node itself.
    */
   removeNode(nodeId: string): void {
@@ -377,7 +377,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     for (let i = this.#edges.length - 1; i >= 0; i--) {
       const e = this.#edges[i];
       if (e && (e.from?.nodeId === nodeId || e.to?.nodeId === nodeId)) {
-        this.emit("sherpa-edge-delete", { edgeIdx: i });
+        this.emit("edge-delete", { edgeIdx: i });
         this.#edges.splice(i, 1);
         if (this.#selectedEdgeIdx === i) this.#selectedEdgeIdx = -1;
         else if (this.#selectedEdgeIdx > i) this.#selectedEdgeIdx--;
@@ -388,7 +388,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     if (this.#selectedNodeId === nodeId) this.#selectedNodeId = null;
     this.#hoverEdgeIdx = -1;
     this.#invalidatePortCache(nodeId);
-    this.emit("sherpa-node-delete", { nodeId });
+    this.emit("node-delete", { nodeId });
     this.#schedulePropagate();
     this.#scheduleDraw();
   }
@@ -400,9 +400,9 @@ export class SherpaNodeCanvas extends SherpaElement {
       // Edge selection clears node selection (mutually exclusive).
       this.#nodeById(this.#selectedNodeId)?.removeAttribute("data-selected");
       this.#selectedNodeId = null;
-      this.emit("sherpa-node-select", { nodeId: null });
+      this.emit("node-select", { nodeId: null });
     }
-    this.emit("sherpa-edge-select", { edgeIdx: next === -1 ? null : next });
+    this.emit("edge-select", { edgeIdx: next === -1 ? null : next });
     this.#scheduleDraw();
   }
 
@@ -696,7 +696,7 @@ export class SherpaNodeCanvas extends SherpaElement {
         // Re-attach mode.
         if (!drop) {
           // Dropped on empty canvas → delete the edge.
-          this.emit("sherpa-edge-delete", { edgeIdx: redirectIdx });
+          this.emit("edge-delete", { edgeIdx: redirectIdx });
           this.#edges.splice(redirectIdx, 1);
           if (this.#selectedEdgeIdx === redirectIdx) this.#selectedEdgeIdx = -1;
         } else if (drop.side === drag.fromSide && drop.nodeId !== fixedEnd?.nodeId) {
@@ -717,7 +717,7 @@ export class SherpaNodeCanvas extends SherpaElement {
             return;
           }
           this.#edges[redirectIdx] = edge;
-          this.emit("sherpa-edge-update", { edgeIdx: redirectIdx, edge });
+          this.emit("edge-update", { edgeIdx: redirectIdx, edge });
         }
         // Otherwise: invalid drop → snap back (no-op).
       } else {
@@ -740,7 +740,7 @@ export class SherpaNodeCanvas extends SherpaElement {
             to:   { nodeId: inn.nodeId, portName: inn.portName },
             control: false,
           };
-          this.emit("sherpa-edge-create", edge);
+          this.emit("edge-create", edge);
         }
       }
       this.#scheduleDraw();
@@ -756,7 +756,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     if ((e.code === "Delete" || e.code === "Backspace") && this.#selectedEdgeIdx >= 0) {
       if (this.#focusInsideEditableControl()) return;
       const idx = this.#selectedEdgeIdx;
-      this.emit("sherpa-edge-delete", { edgeIdx: idx });
+      this.emit("edge-delete", { edgeIdx: idx });
       this.#edges.splice(idx, 1);
       this.#selectedEdgeIdx = -1;
       this.#hoverEdgeIdx = -1;
@@ -1405,11 +1405,11 @@ export class SherpaNodeCanvas extends SherpaElement {
    * node. The header label, back-button visibility, and breadcrumb
    * trail update automatically.
    *
-   * Consumers should listen for `sherpa-canvas-subgraph-enter` and
+   * Consumers should listen for `canvas-subgraph-enter` and
    * populate the canvas with the sub-graph contents (or a starter
    * graph if no cached snapshot exists).
    *
-   * @fires sherpa-canvas-subgraph-enter
+   * @fires canvas-subgraph-enter
    *   bubbles: true, composed: true
    *   detail: { parentId, label, depth, cached:boolean }
    */
@@ -1422,7 +1422,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     const cached = this.#subgraphs.get(parentId);
     if (cached) this.#restore(cached as CanvasSnapshot);
     this.#syncHeader();
-    this.emit("sherpa-canvas-subgraph-enter", { parentId, label: resolvedLabel, depth: this.#drillStack.length, cached: !!cached });
+    this.emit("canvas-subgraph-enter", { parentId, label: resolvedLabel, depth: this.#drillStack.length, cached: !!cached });
   }
 
   /**
@@ -1430,7 +1430,7 @@ export class SherpaNodeCanvas extends SherpaElement {
    * Returns the popped frame ({ parentId, label, snapshot }) or null
    * if the stack is empty.
    *
-   * @fires sherpa-canvas-subgraph-exit
+   * @fires canvas-subgraph-exit
    *   bubbles: true, composed: true
    *   detail: { parentId, label, depth }
    */
@@ -1444,7 +1444,7 @@ export class SherpaNodeCanvas extends SherpaElement {
     this.#clearFrame();
     this.#restore(frame.snapshot as CanvasSnapshot);
     this.#syncHeader();
-    this.emit("sherpa-canvas-subgraph-exit", { parentId: frame.parentId, label: frame.label, depth: this.#drillStack.length });
+    this.emit("canvas-subgraph-exit", { parentId: frame.parentId, label: frame.label, depth: this.#drillStack.length });
     return frame;
   }
 
@@ -1668,7 +1668,7 @@ export class SherpaNodeCanvas extends SherpaElement {
   }
 
   #emitViewport(): void {
-    this.emit("sherpa-viewport-change", this.getViewport());
+    this.emit("viewport-change", this.getViewport());
   }
 }
 

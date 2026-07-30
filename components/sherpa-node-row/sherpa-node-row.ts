@@ -14,11 +14,10 @@
  *   Always a child of sherpa-node; not used standalone.
  *
  * @attr {enum}    data-variant   — "header" | "body" (default: "body")
- * @attr {boolean} data-multi     — Visually expand for multi-input rows
  * @attr {string}  data-icon      — FontAwesome class for built-in icon (header variant only)
  * @attr {boolean} data-drill-down — Show drill-down button (header variant only)
  *
- * @fires sherpa-node-drilldown (header variant only)
+ * @fires node-drilldown (header variant only)
  *   bubbles: true, composed: true
  *   detail: { nodeId | null }
  *
@@ -51,7 +50,6 @@ export class SherpaNodeRow extends SherpaElement {
     return [
       ...super.observedAttributes,
       "data-variant",
-      "data-multi",
       "data-icon",
       "data-drill-down",
     ];
@@ -95,7 +93,7 @@ export class SherpaNodeRow extends SherpaElement {
   #onDrillClick = (e: Event): void => {
     e.stopPropagation();
     const node = this.closest<HTMLElement>("sherpa-node");
-    this.emit("sherpa-node-drilldown", { nodeId: node?.dataset?.["nodeId"] || null });
+    this.emit("node-drilldown", { nodeId: node?.dataset?.["nodeId"] || null });
   };
 }
 

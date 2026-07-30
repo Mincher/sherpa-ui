@@ -469,28 +469,28 @@ export interface SherpaEventMap {
   // Prompt composer
   'prompt-submit': CustomEvent<{ value: string }>;
   // Node-canvas: edge lifecycle
-  'sherpa-edge-create': CustomEvent<Edge>;
-  'sherpa-edge-update': CustomEvent<{ edgeIdx: number; edge: Edge }>;
-  'sherpa-edge-delete': CustomEvent<{ edgeIdx: number }>;
-  'sherpa-edge-select': CustomEvent<{ edgeIdx: number | null }>;
+  'edge-create': CustomEvent<Edge>;
+  'edge-update': CustomEvent<{ edgeIdx: number; edge: Edge }>;
+  'edge-delete': CustomEvent<{ edgeIdx: number }>;
+  'edge-select': CustomEvent<{ edgeIdx: number | null }>;
   // Node-canvas: node lifecycle
-  'sherpa-node-select': CustomEvent<{ nodeId: string | null }>;
-  'sherpa-node-delete': CustomEvent<{ nodeId: string }>;
-  'sherpa-node-value-change': CustomEvent<{ nodeId: string }>;
-  'sherpa-node-subtype-change': CustomEvent<{ nodeId: string; subtype: string }>;
+  'node-select': CustomEvent<{ nodeId: string | null }>;
+  'node-delete': CustomEvent<{ nodeId: string }>;
+  'node-value-change': CustomEvent<{ nodeId: string }>;
+  'node-subtype-change': CustomEvent<{ nodeId: string; subtype: string }>;
   // Node-canvas: canvas state
-  'sherpa-viewport-change': CustomEvent<Viewport>;
-  'sherpa-canvas-subgraph-enter': CustomEvent<{ parentId: string; label: string; depth: number; cached: boolean }>;
-  'sherpa-canvas-subgraph-exit': CustomEvent<{ parentId: string; label: string; depth: number }>;
+  'viewport-change': CustomEvent<Viewport>;
+  'canvas-subgraph-enter': CustomEvent<{ parentId: string; label: string; depth: number; cached: boolean }>;
+  'canvas-subgraph-exit': CustomEvent<{ parentId: string; label: string; depth: number }>;
   // Node-graph socket/node pointer events
-  'sherpa-socket-pointerdown': CustomEvent<{
+  'socket-pointerdown': CustomEvent<{
     nodeId?: string;
     portName?: string;
     direction?: string;
     originalEvent: PointerEvent;
   }>;
-  'sherpa-node-pointerdown': CustomEvent<{ nodeId: string; originalEvent: Event }>;
-  'sherpa-node-drilldown': CustomEvent<{ nodeId: string; label?: string }>;
+  'node-pointerdown': CustomEvent<{ nodeId: string; originalEvent: Event }>;
+  'node-drilldown': CustomEvent<{ nodeId: string; label?: string }>;
 }
 
 declare global {

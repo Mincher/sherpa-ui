@@ -101,6 +101,5 @@ export * from "./sherpa-scheduler/sherpa-scheduler.js";
 // Node-graph components (sherpa-node family)
 export * from "./sherpa-node-socket/sherpa-node-socket.js";
 export * from "./sherpa-node-row/sherpa-node-row.js";
-export * from "./sherpa-node-header/sherpa-node-header.js";
 export * from "./sherpa-node/sherpa-node.js";
 export * from "./sherpa-node-canvas/sherpa-node-canvas.js";

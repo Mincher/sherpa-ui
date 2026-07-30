@@ -77,7 +77,6 @@ export const COMPONENT_CATEGORIES: Record<string, ComponentCategory> = Object.fr
   'sherpa-nav-section': 'nav',
   'sherpa-node': 'content',
   'sherpa-node-canvas': 'data',
-  'sherpa-node-header': 'content',
   'sherpa-node-row': 'content',
   'sherpa-node-socket': 'content',
   'sherpa-pagination': 'control',
@@ -173,7 +172,6 @@ export const COMPONENT_TIERS: Record<string, number> = Object.freeze({
   'sherpa-nav-section': 1,
   'sherpa-node': 3,
   'sherpa-node-canvas': 3,
-  'sherpa-node-header': 3,
   'sherpa-node-row': 3,
   'sherpa-node-socket': 3,
   'sherpa-pagination': 4,
@@ -293,7 +291,6 @@ export const COMPONENT_STRING_TIERS: Record<string, ComponentTier> = Object.free
   'sherpa-toast':           'atom',
   'sherpa-select-checkbox': 'atom',
   'sherpa-select-radio':    'atom',
-  'sherpa-node-header':     'atom',
   'sherpa-node-socket':     'atom',
 });
 
