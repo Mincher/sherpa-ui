@@ -59,10 +59,10 @@
   --sherpa-border-container-subtle: rgba(0, 0, 0, 0.08);
 
   /* Breakpoints — JS consumption only; cannot be used in @media conditions */
-  --sherpa-breakpoint-sm: 576px;
+  --sherpa-breakpoint-sm: 375px;
   --sherpa-breakpoint-md: 768px;
-  --sherpa-breakpoint-lg: 992px;
-  --sherpa-breakpoint-xl: 1200px;
+  --sherpa-breakpoint-lg: 1280px;
+  --sherpa-breakpoint-xl: 1920px;
 }
 
 /* ── Color-scheme contract ─────────────────────────────────────────── */

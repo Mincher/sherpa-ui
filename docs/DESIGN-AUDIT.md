@@ -66,5 +66,40 @@ Skipped (no clean counterpart): list (icon-only node), section-header (Figma nod
 
 **Recurring pattern confirmed:** radius `sm`(2px) used where Figma binds `base`(4px) — now fixed in overlay-item, file-upload, toast-close (same family as the quick-filter pill and dialog/checkbox drifts from pass 1).
 
+## Third pass — variable collections, modes, aliasing & scoping (mode-axis replication)
+
+**Trigger:** "The figma variable collections, modes, and how they are aliased and scoped needs to be checked over again … Modes in variable collections change the assigned variable, similar to how CSS classes would."
+
+Pulled all **20 Figma collections + their mode structure** and mapped every mode axis to its CSS mechanism, then verified each swap **numerically in a real browser** (`getComputedStyle` on `:root` with mode attributes toggled).
+
+### Mode-axis → CSS map (the "modes = CSS classes" contract)
+| Figma collection | Modes | CSS mechanism | Status |
+|---|---|---|---|
+| Primitives | Value | `:root` `--core-*` | ✅ |
+| Alias | Value | `:root` `--sherpa-*` | ✅ |
+| Apex 2.0 (+ Purple/Teal/Blue/Classic) | Light / Dark | `[data-theme]` + `[data-mode]` (+ `prefers-*`) | ✅ verified swap |
+| **Density (Alias)** | Base / Compact / Comfortable | `[data-density]` | 🔧 **was fully broken — fixed** |
+| Status | default/info/critical/warning/urgent/success | `[data-status]` → `--_status-*` inherited props | ✅ verified swap (+1 fix) |
+| Layout | Desktop / Tablet / Mobile | *(none — unused)* | ⏭️ unreplicated but 0 consumers |
+| 11 component-scoped (`-> tag (colors)`, `-> button (size)`, `-> tab (style)`, …) | per-component | per-component `[data-color]` / `[data-size]` / `[data-variant]` CSS | ✅ correct architecture (spot-checked tag → 11 `[data-color]` selectors) |
+
+### 🔧 Fixes
+- **Density axis was a no-op.** `--sherpa-space-base` returned 16px in *every* density mode. Two stacked failures:
+  1. **Stale/sparse extract** — the committed `figma-variables.json` had only 3 Density vars, all `null`, so the generator emitted literal `--sherpa-space-*: null;` (invalid CSS, dropped by the parser). Root cause: the REST `/variables/local` endpoint returns **truncated data** for large collections (Alias=1 var, Primitives=1, Density=14-but-null), and the extractor's abort-guard (correctly) blocks the whole atomic write — so Density never refreshed either.
+  2. **Name divergence** — Figma's Density collection names the mid step `space/default`; 18 component files consume `space/base` (an Alias synonym for the same value). Even with good data, `space/base` would never rescale.
+  Fixed by (a) patching the live Density values (13 `space/*` vars aliasing `@scale/N`, pulled via the plugin API which returns complete data) into the committed JSON, and (b) making the generator mirror `space/default` → `space/base` inside each `[data-density]` block. Verified: base 16 / compact 12 / comfortable 20px, both synonyms tracking.
+- **`--_status-border-strong` never existed.** `sherpa-dialog` consumed it for the status header rule, but the Status collection has no strong-border token, so it always fell through to the neutral fallback and the header border ignored `[data-status]`. Repointed to `--_status-border` (the single status-border swap). Verified it now resolves per status.
+- **Breakpoint tokens didn't match Figma.** `token-overrides.json` carried Bootstrap values (576/768/992/1200); Figma's Layout collection is 375/768/1280/1920. Aligned to Figma (JS-consumption-only tokens, 0 CSS consumers). Guarded the generator against the new `_doc` meta key.
+
+### Systemic guards added
+- **Extractor all-null guard** (`extract-figma-vars.js`) — rejects any validated collection that returns the right var *count* but entirely `null` values (the exact failure that silently disabled density). Driven by a new `collectionValidation` block in `figma-config.json` (`Density (Alias)` ≥13, `Status` ≥20).
+- **`test/e2e/token-modes.spec.ts`** — asserts the Density, Status, and Theme/mode swaps actually happen on `:root`, so a regressed generator can't silently ship a dead mode axis again. 3 tests, all green (147 total).
+
+### Intentional divergences from Figma (confirmed with Will — not gaps)
+- **Status is an override model, not literal per-token application.** Sherpa treats `[data-status]` as a CSS override layer for **fills, borders, and content colours (text + icons)** via the inherited `--_status-*` props. Figma instead reassigns every control token per mode (the 19 unmapped `border/control/*`, `text/control/*`, `icon/control/*`, `surface/control/*` vars). Sherpa deliberately does **not** map those — the override layer is sufficient and DRY. This is by design; do not treat the 19 unmapped vars as a gap.
+- **Layout collection is kept for future use.** Hero/data type scales, `nav-width`, `device-width`, and breakpoints have zero consumers today but are intentionally retained — responsive work will use them later. Sherpa uses container queries (not viewport media) inside components, so the eventual CSS mechanism for Desktop/Tablet/Mobile modes is TBD (likely app-shell level).
+
+**Root-cause note for future refreshes:** the Figma REST Variables API returns sparse/truncated data for this file's large collections. `npm run tokens:refresh` currently **cannot** fully refresh — it aborts (correctly) to protect the good hand-preserved `primitives.css`/`sherpa-alias.css`. Reliable full extraction needs the **plugin API** (`figma_execute`), which returns complete resolved values. Migrating the extractor from REST to plugin transport is the real long-term fix.
+
 ## Guard against recurrence
-`test/e2e/sherpa-quick-filter.spec.ts` asserts the chip's 4px radius + populated purple/semibold, so the pill regression can't silently return. Consider adding similar radius/font guards for tag, checkbox, and dialog if these prove regression-prone.
+`test/e2e/sherpa-quick-filter.spec.ts` asserts the chip's 4px radius + populated purple/semibold; `test/e2e/token-modes.spec.ts` asserts the density/status/theme mode swaps. Both regressions are now caught in CI.

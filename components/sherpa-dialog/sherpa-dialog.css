@@ -93,8 +93,10 @@
   height: 90vh;
 }
 :host([data-status]) .header-row {
+  /* Figma's Status collection has no "strong border" token — the status border
+     is the single --_status-border swap. */
   border-bottom-color: var(
-    --_status-border-strong,
+    --_status-border,
     var(--sherpa-border-container-default, #d5d5d5)
   );
 }

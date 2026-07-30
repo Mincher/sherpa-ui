@@ -500,6 +500,25 @@ async function main() {
     }
   }
 
+  // All-null guard. The REST API sometimes returns a collection with the right
+  // variable *count* but every mode value null (observed on the Density (Alias)
+  // collection — its space/* vars all resolved null, silently disabling the
+  // density axis). Reject any validated collection whose values are entirely
+  // null so the stale-but-good JSON is preserved instead.
+  for (const colName of Object.keys(collectionMins)) {
+    const vars = nonTheme[colName]?.vars || [];
+    if (vars.length === 0) continue;
+    const anyRealValue = vars.some((v) =>
+      Object.values(v.v || {}).some((val) => val !== null && val !== undefined),
+    );
+    if (!anyRealValue) {
+      hardFailures.push(
+        `Collection "${colName}" returned ${vars.length} vars but every mode value is null ` +
+        `(the REST API response is incomplete for this collection). Aborting to protect existing files.`,
+      );
+    }
+  }
+
   if (hardFailures.length > 0) {
     console.error('\n  ✖ EXTRACTION ABORTED — sparse data detected:\n');
     for (const msg of hardFailures) {

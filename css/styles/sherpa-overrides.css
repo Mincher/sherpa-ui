@@ -51,15 +51,37 @@
   /* Density ─────────────────────────────────────────────────── */
 
   :where([data-density="compact"]) {
-    --sherpa-space-2xs:      null;
-    --sherpa-space-3xs:      null;
-    --sherpa-space-none:     null;
+    --sherpa-space-2xl:      var(--core-scale-350);
+    --sherpa-space-2xs:      var(--core-scale-25);
+    --sherpa-space-3xl:      var(--core-scale-450);
+    --sherpa-space-3xs:      var(--core-scale-25);
+    --sherpa-space-4xl:      var(--core-scale-500);
+    --sherpa-space-5xl:      var(--core-scale-600);
+    --sherpa-space-6xl:      var(--core-scale-700);
+    --sherpa-space-default:  var(--core-scale-150);
+    --sherpa-space-base:   var(--core-scale-150);
+    --sherpa-space-lg:       var(--core-scale-200);
+    --sherpa-space-none:     var(--core-scale-0);
+    --sherpa-space-sm:       var(--core-scale-100);
+    --sherpa-space-xl:       var(--core-scale-250);
+    --sherpa-space-xs:       var(--core-scale-50);
   }
 
   :where([data-density="comfortable"]) {
-    --sherpa-space-2xs:      null;
-    --sherpa-space-3xs:      null;
-    --sherpa-space-none:     null;
+    --sherpa-space-2xl:      var(--core-scale-450);
+    --sherpa-space-2xs:      var(--core-scale-100);
+    --sherpa-space-3xl:      var(--core-scale-600);
+    --sherpa-space-3xs:      var(--core-scale-50);
+    --sherpa-space-4xl:      var(--core-scale-700);
+    --sherpa-space-5xl:      var(--core-scale-800);
+    --sherpa-space-6xl:      var(--core-scale-800);
+    --sherpa-space-default:  var(--core-scale-250);
+    --sherpa-space-base:   var(--core-scale-250);
+    --sherpa-space-lg:       var(--core-scale-300);
+    --sherpa-space-none:     var(--core-scale-0);
+    --sherpa-space-sm:       var(--core-scale-200);
+    --sherpa-space-xl:       var(--core-scale-350);
+    --sherpa-space-xs:       var(--core-scale-150);
   }
 
   /* Status ──────────────────────────────────────────────────── */

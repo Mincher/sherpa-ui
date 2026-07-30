@@ -73,10 +73,11 @@
     ]
   },
   "breakpoints": {
-    "sm": "576px",
+    "_doc": "Aligned to the Figma Layout collection (Desktop mode): breakpoint/sm=375, md=768, lg=1280, xl=1920. JS-consumption only — CSS custom properties cannot be used in @media conditions.",
+    "sm": "375px",
     "md": "768px",
-    "lg": "992px",
-    "xl": "1200px"
+    "lg": "1280px",
+    "xl": "1920px"
   },
   "fontWeights": {
     "_doc": "CSS font-weight numbers for --sherpa-font-weight-*. Figma DOES define weights (typeface/*/weight/100-400 + fonts/context/*/weight/*), but stores them as STYLE NAMES ('Light'/'Regular'/'Semibold'/'Bold') on a positional 100-400 scale, not CSS numbers. These are the canonical CSS-number mapping; keep in sync with Figma's semantic fonts/context weights.",

@@ -695,6 +695,7 @@ function emitBreakpoints() {
   if (!bp || Object.keys(bp).length === 0) return '';
   const lines = ['\n  /* Breakpoints — JS consumption only; cannot be used in @media conditions */\n'];
   for (const [name, val] of Object.entries(bp)) {
+    if (name.startsWith('_')) continue; // skip _doc and other meta keys
     lines.push(`  --sherpa-breakpoint-${name}: ${val};\n`);
   }
   return lines.join('');
@@ -1143,6 +1144,12 @@ function emitOverrides() {
       const prop = `--sherpa-${sanitize(v.n)}`;
       const pad = ' '.repeat(Math.max(1, 24 - prop.length));
       lines.push(`    ${prop}:${pad}${val};\n`);
+      // Figma's Density collection names the mid step `space/default`, but the
+      // Alias collection (and 18 component files) also expose `space/base` as a
+      // synonym for the same value. Mirror it so both consumers rescale.
+      if (v.n === 'space/default') {
+        lines.push(`    --sherpa-space-base:${' '.repeat(3)}${val};\n`);
+      }
     }
     lines.push('  }\n\n');
   }
