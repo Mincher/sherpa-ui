@@ -311,6 +311,28 @@
       </div>
     </sherpa-container>
 
+    <sherpa-container data-variant="fill" data-row-span="auto" id="app-header" class="ss-section">
+      <sherpa-container-header slot="header" data-title="sherpa-app-header"></sherpa-container-header>
+      <sherpa-section-header data-label="App Shell v2 header (breadcrumbs + title + filters + actions)" data-heading-level="tertiary"></sherpa-section-header>
+      <sherpa-app-header
+        class="ss-app-header"
+        data-label="Dashboard"
+        data-back-button
+        data-show-favorite
+        data-info>
+        <div slot="app-actions" style="display:flex; gap:4px; align-items:center;">
+          <sherpa-button data-variant="tertiary" data-size="small" data-icon-start="fa-solid fa-wand-magic-sparkles">Ask N-zo</sherpa-button>
+          <sherpa-button data-type="icon" data-variant="tertiary" data-size="small" data-icon-start="fa-regular fa-bell"></sherpa-button>
+          <sherpa-button data-type="icon" data-variant="tertiary" data-size="small" data-icon-start="fa-regular fa-circle-question"></sherpa-button>
+          <sherpa-button data-type="icon" data-variant="tertiary" data-size="small" data-icon-start="fa-regular fa-user"></sherpa-button>
+        </div>
+        <div slot="view-actions" style="display:flex; gap:4px; align-items:center;">
+          <sherpa-button data-type="icon" data-variant="tertiary" data-size="small" data-icon-start="fa-solid fa-rotate-right"></sherpa-button>
+          <sherpa-button data-variant="secondary" data-size="small" data-icon-start="fa-regular fa-floppy-disk">Save</sherpa-button>
+        </div>
+      </sherpa-app-header>
+    </sherpa-container>
+
     <sherpa-container data-variant="fill" data-row-span="auto" id="input-search" class="ss-section">
       <sherpa-container-header slot="header" data-title="sherpa-input-search"></sherpa-container-header>
       <div class="ss-strip">

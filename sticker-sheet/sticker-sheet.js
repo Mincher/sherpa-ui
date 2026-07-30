@@ -150,6 +150,15 @@ customElements.whenDefined('sherpa-tree').then(() => {
   if (advSelect) Promise.resolve(advSelect.rendered).then(() => advSelect.setTree?.(structuredClone(forest)));
 });
 
+// App header — breadcrumbs
+customElements.whenDefined('sherpa-app-header').then(() => {
+  document.querySelector('.ss-app-header')?.setBreadcrumbs?.([
+    { label: 'Home', href: '#' },
+    { label: 'Analytics', href: '#' },
+    { label: 'Dashboard' },
+  ]);
+});
+
 // Container overlay
 document.getElementById('open-menu-overlay')?.addEventListener('click', e => {
   document.getElementById('menu-overlay-demo')?.show(e.currentTarget);
