@@ -53,9 +53,9 @@
   gap: var(--sherpa-space-xs, 8px);
   cursor: pointer;
   font-family: inherit;
-  font-size: var(--sherpa-font-base-size, 14px);
+  font-size: var(--sherpa-fonts-scale-lg, 16px);
   font-weight: 600;
-  line-height: var(--sherpa-font-base-line-height, 20px);
+  line-height: var(--sherpa-font-lg-line-height, 24px);
   letter-spacing: 0.1px;
   color: var(--sherpa-content-default-heading, #111111);
   text-transform: uppercase;

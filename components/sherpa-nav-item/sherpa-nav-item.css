@@ -23,8 +23,8 @@
   container: nav-item / inline-size;
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-sm, 16px);
-  padding-inline: calc(var(--_indent, 0px) * var(--_depth, 0)) var(--sherpa-space-sm, 16px);
+  gap: var(--sherpa-space-xs, 8px);
+  padding-inline: calc(var(--_indent, 0px) * var(--_depth, 0)) var(--sherpa-space-xs, 8px);
   height: var(--_item-h);
   cursor: pointer;
   transition: --transition-fast(background-color);
