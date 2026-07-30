@@ -32,7 +32,7 @@
 }
 
 :host([data-nav-pinned]),
-:host:has([slot="nav"][data-pinned="true"]) {
+:host(:has([slot="nav"][data-pinned="true"])) {
   --_nav-rail-width: 320px;
 }
 

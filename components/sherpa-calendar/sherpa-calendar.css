@@ -31,8 +31,6 @@ sherpa-container.panel-card[data-variant="fit"] {
   container-type: normal;
 }
 
-:host([hidden]) { display: none; }
-
 /* ── Mode visibility ─────────────────────────────────────────────
    data-mode hides whole panels so they don't reserve layout space. */
 :host([data-mode="date"])  .time-panel  { display: none; }
