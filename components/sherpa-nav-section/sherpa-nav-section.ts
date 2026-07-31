@@ -104,8 +104,10 @@ export class SherpaNavSection extends SherpaElement {
 
   override onRender(): void {
     this.#syncHeading();
-    this.#syncFromAttribute();
-    this.#renderSections();
+    // Populate from the attribute if present; otherwise render whatever
+    // sections were set programmatically (or nothing).
+    if (this.hasAttribute("data-sections")) this.#syncFromAttribute();
+    else this.#renderSections();
 
     if (!this.#bound) {
       this.els.back?.addEventListener("click", this.#onBack);
@@ -125,7 +127,6 @@ export class SherpaNavSection extends SherpaElement {
         break;
       case "data-sections":
         this.#syncFromAttribute();
-        this.#renderSections();
         break;
     }
   }
@@ -170,12 +171,13 @@ export class SherpaNavSection extends SherpaElement {
   }
 
 
+  /** Parse the data-sections JSON attribute and populate from it. */
   #syncFromAttribute(): void {
     const raw = this.getAttribute("data-sections");
     if (!raw) return;
     try {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) this.#sections = parsed;
+      if (Array.isArray(parsed)) this.populate(parsed);
     } catch {
       /* ignore malformed JSON */
     }
