@@ -92,3 +92,11 @@ A and F are the highest-value (functional + theme-breaking); do them first.
 - **nav event-name rename** (breaking).
 - **product-bar-v2 Layout=Small** responsive.
 - breadcrumbs brand-icon slot; gauge 25/50/75 level presets; unused typeface primitives.
+
+### Final batches shipped (backlog cleared)
+- ✅ **Tail** — `63f9312`: grid Primary/dropdown/edit cell types, breadcrumbs brand-icon slot, dead typeface primitives removed. (gauge "levels" = no code; data-value covers it.)
+- ✅ **nav event rename** (breaking) — `a94af40`: 13 concatenated events → noun-verb.
+
+**ALL audit items resolved.** Nothing outstanding beyond the intentionally-scoped
+node-graph family (its own future hardening phase) and product-bar-v2 Layout=Small
+(a minor responsive nicety, low value).
