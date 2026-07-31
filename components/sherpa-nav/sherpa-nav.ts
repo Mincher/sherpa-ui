@@ -363,13 +363,42 @@ export class SherpaNav extends SherpaElement {
   enterSettings(): void {
     if (this.isSearching) this.endSearch();
     this.mode = SherpaNav.MODES.SETTINGS;
+    this.#applySettingsLabels(true);
   }
 
   /** Leave Settings mode and return to the primary navigation list. */
   exitSettings(): void {
     if (this.isSearching) this.endSearch();
     if (this.isSettings) this.mode = SherpaNav.MODES.DEFAULT;
+    this.#applySettingsLabels(false);
   }
+
+  /** Figma navigation_v2 Settings mode: header label → "Settings", search
+   *  placeholder → "Search settings items…". Restores the originals on exit. */
+  #applySettingsLabels(on: boolean): void {
+    const name = this.$<HTMLElement>('.nav-product-name');
+    if (name) {
+      if (on) {
+        if (this.#savedProductName == null) this.#savedProductName = name.textContent ?? '';
+        name.textContent = 'Settings';
+      } else if (this.#savedProductName != null) {
+        name.textContent = this.#savedProductName;
+        this.#savedProductName = null;
+      }
+    }
+    const search = this.$<HTMLInputElement>('.nav-search input, .nav-search sherpa-input-search');
+    if (search) {
+      if (on) {
+        if (this.#savedPlaceholder == null) this.#savedPlaceholder = search.getAttribute('placeholder') ?? '';
+        search.setAttribute('placeholder', 'Search settings items…');
+      } else if (this.#savedPlaceholder != null) {
+        search.setAttribute('placeholder', this.#savedPlaceholder);
+        this.#savedPlaceholder = null;
+      }
+    }
+  }
+  #savedProductName: string | null = null;
+  #savedPlaceholder: string | null = null;
 
   /** Toggle between primary and Settings navigation lists. */
   toggleSettings(): void {

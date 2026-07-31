@@ -21,7 +21,8 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 :host {
-  --_w-collapsed: calc(var(--sherpa-space-default, 20px) * 3);
+  /* Figma navigation_v2: Collapsed 40 / Expanded 320. */
+  --_w-collapsed: var(--sherpa-size-3xl, 40px);
   --_w-expanded: 320px;
   --_item-h: calc(var(--sherpa-size-sm, 16px) + (var(--sherpa-space-sm, 12px) * 2));
   --_label-weight: 500;
@@ -33,7 +34,8 @@
   height: 100%;
   overflow: clip;
   width: var(--_w-collapsed);
-  background: var(--sherpa-surface-container-secondary-default, #ffffff);
+  /* Dedicated product-nav surface token (Figma surface/app/product-nav/bg). */
+  background: var(--sherpa-surface-app-product-nav-bg, #fafafa);
   color: var(--sherpa-content-default-heading, #18191a);
   font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
@@ -44,10 +46,27 @@
 /* Width states — host carries mirrored data-pinned / data-mode */
 :host(:not([data-pinned="true"]):is(:hover, :focus-within)) {
   width: var(--_w-expanded);
+  --_brand-rounding: var(--sherpa-border-rounding-xl, 16px);
 }
 
 :host(:is([data-pinned="true"], [data-mode="search"], [data-mode="edit"], [data-mode="settings"])) {
   width: var(--_w-expanded);
+  --_brand-rounding: var(--sherpa-border-rounding-xl, 16px);
+}
+
+/* Expanded/hover panel elevation (Figma Hover: x12 y12 blur32 spread-4).
+   Only the transient hover-expand carries the shadow; pinned/settings sit flush. */
+:host(:not([data-pinned="true"]):is(:hover, :focus-within)) {
+  box-shadow: 12px 12px 32px -4px var(--sherpa-elevation-tint-default, #372f4f33);
+}
+
+/* Settings (secondary) mode uses the sub-bg fill (Figma #f2f2f2). */
+:host([data-mode="settings"]) {
+  background: var(--sherpa-surface-app-product-nav-sub-bg, #f2f2f2);
+}
+:host([data-mode="settings"]) .nav-header,
+:host([data-mode="settings"]) .nav-footer {
+  background: var(--sherpa-surface-app-product-nav-sub-bg, #f2f2f2);
 }
 
 :host([data-pinned="true"]) {
@@ -370,7 +389,7 @@ summary {
 .nav-header {
   gap: var(--sherpa-space-xs, 8px);
   padding: 0px;
-  background: var(--sherpa-surface-container-secondary-default, #ffffff);
+  background: var(--sherpa-surface-app-product-nav-bg, #fafafa);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -381,9 +400,16 @@ summary {
   width: var(--sherpa-size-sm, 16px);
   height: var(--sherpa-size-sm, 16px);
   flex-shrink: 0;
+  /* Figma brand-rounding: 0 collapsed → 16 (xl) expanded/pinned/settings. */
+  border-radius: var(--_brand-rounding, 0);
+  transition: --transition-base(border-radius);
   & svg {
     width: 100%;
     height: 100%;
+  }
+  /* Brand accent path themes via the brand token (was a bare #C046FF). */
+  & .nav-logo-brand {
+    fill: var(--sherpa-color-brand-base, #c046ff);
   }
 }
 
@@ -420,7 +446,7 @@ summary {
 
 .nav-footer {
   gap: var(--sherpa-space-xs, 8px);
-  background: var(--sherpa-surface-container-secondary-default, #ffffff);
+  background: var(--sherpa-surface-app-product-nav-bg, #fafafa);
   position: sticky;
   bottom: 0;
   transition: box-shadow var(--sherpa-motion-duration-fast, 150ms) ease;

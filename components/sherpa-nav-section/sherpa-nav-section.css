@@ -118,7 +118,7 @@
   &[aria-current="page"],
   &[data-active="true"] {
     background: var(--sherpa-surface-control-active-default, #f8ebff);
-    color: var(--sherpa-border-control-active-default, #c046ff);
+    color: var(--sherpa-content-active-base, #8500cc);
   }
 }
 :host .item-label {
@@ -134,7 +134,7 @@
 }
 :host .item[aria-current="page"] .item-icon,
 :host .item[data-active="true"] .item-icon {
-  color: var(--sherpa-border-control-active-default, #c046ff);
+  color: var(--sherpa-content-active-base, #8500cc);
 }
 :host .header-item {
   display: flex;
