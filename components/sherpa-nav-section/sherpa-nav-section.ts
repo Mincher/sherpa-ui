@@ -96,9 +96,6 @@ export class SherpaNavSection extends SherpaElement {
     heading: '.heading',
     back: { selector: '.back', type: HTMLButtonElement },
     sections: { selector: '.sections', type: HTMLElement },
-    groupTpl: { selector: 'template.group-tpl', type: HTMLTemplateElement },
-    headerItemTpl: { selector: 'template.header-item-tpl', type: HTMLTemplateElement },
-    itemTpl: { selector: 'template.item-tpl', type: HTMLTemplateElement }
   });
 
   #bound = false;
@@ -187,67 +184,41 @@ export class SherpaNavSection extends SherpaElement {
   #renderSections(): void {
     if (!this.els.sections) return;
     const activeId = this.getAttribute("data-active-id");
-    const groups = this.#sections
-      .map((group) => this.#buildGroup(group, activeId))
-      .filter((g): g is HTMLElement => g !== null);
-    this.els.sections.replaceChildren(...groups);
+    // Flatten each group + item into a view-model the .group-tpl binder consumes.
+    const groups = this.#sections.map((group) => ({
+      label: group?.label || '',
+      hasLabel: group?.label ? true : null,
+      items: (group?.items || []).map((it) => this.#itemViewModel(it, activeId)),
+    }));
+    this.renderInto('.sections', '.group-tpl', groups);
   }
 
-  #buildGroup(group: NavSectionGroup, activeId: string | null): HTMLElement | null {
-    const node = this.els.groupTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
-    if (!node) return null;
-    const labelEl = node.querySelector<HTMLElement>(".group-label");
-    const listEl = node.querySelector(".group-list");
-    if (group?.label && labelEl) {
-      labelEl.textContent = group.label;
-      node.toggleAttribute('data-has-label', true);
+  /** Precompute the per-item flags the template's data-bind-if/attr branches need. */
+  #itemViewModel(item: NavSectionItem, activeId: string | null): Record<string, unknown> {
+    const isHeader = item?.type === "header";
+    if (isHeader) {
+      return {
+        isHeader: true,
+        isItem: null,
+        label: item.label || '',
+        description: item.description || '',
+        noDescription: item.description ? null : true,
+      };
     }
-    for (const it of group?.items || []) {
-      const itemNode = this.#buildItem(it, activeId);
-      if (itemNode) listEl?.appendChild(itemNode);
-    }
-    return node;
-  }
-
-  #buildItem(item: NavSectionItem, activeId: string | null): HTMLElement | null {
-    if (!item) return null;
-
-    if (item.type === "header") {
-      const node = this.els.headerItemTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
-      if (!node) return null;
-      const nameEl = node.querySelector(".header-item-name");
-      if (nameEl) nameEl.textContent = item.label || "";
-      const desc = node.querySelector(".header-item-description");
-      if (item.description && desc) {
-        desc.textContent = item.description;
-        desc.removeAttribute('hidden');
-      }
-      return node;
-    }
-
-    const node = this.els.itemTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
-    if (!node) return null;
-    const btn = node.querySelector<HTMLElement>(".item");
-    if (!btn) return node;
-    const id = item.id || "";
-    const isActive = id && id === activeId;
-
-    btn.dataset["id"] = id;
-    if (item.action) btn.dataset["action"] = item.action;
-    if (isActive) {
-      btn.dataset["active"] = "true";
-      btn.setAttribute("aria-current", "page");
-    }
-    if (item.disabled) btn.setAttribute("disabled", "");
-
-    const itemLabel = btn.querySelector(".item-label");
-    if (itemLabel) itemLabel.textContent = item.label || "";
-    const iconEl = btn.querySelector(".item-icon");
-    if (item.icon && iconEl) {
-      iconEl.className = `item-icon ${item.icon}`;
-      iconEl.removeAttribute('hidden');
-    }
-    return node;
+    const id = item?.id || '';
+    const active = id && id === activeId ? true : null;
+    return {
+      isHeader: null,
+      isItem: true,
+      id,
+      action: item?.action || null,
+      active,
+      ariaCurrent: active ? 'page' : null,
+      disabled: item?.disabled ? true : null,
+      label: item?.label || '',
+      iconClass: item?.icon || '',
+      noIcon: item?.icon ? null : true,
+    };
   }
 
   #syncActiveState(): void {

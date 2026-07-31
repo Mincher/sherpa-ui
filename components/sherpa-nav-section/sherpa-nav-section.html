@@ -26,27 +26,30 @@
 
   <slot></slot>
 
-  <!-- Cloning prototypes used by #renderSections() -->
+  <!-- Cloning prototype used by #renderSections() (bound via renderInto + the
+       template binder). Group → items, with header vs. item branches. The
+       view-model precomputes per-item flags (isHeader/isItem/active/…). -->
   <template class="group-tpl">
-    <section class="group">
-      <h3 class="group-label text-label-group"></h3>
-      <ul class="group-list"></ul>
+    <section class="group" data-bind-attr="data-has-label:hasLabel">
+      <h3 class="group-label text-label-group" data-bind="label"></h3>
+      <ul class="group-list" data-bind-each="items">
+        <template>
+          <li class="header-item" data-bind-if="isHeader">
+            <span class="header-item-name text-body" data-bind="label"></span>
+            <span class="header-item-description text-body-sm" data-bind="description"
+                  data-bind-attr="hidden:noDescription"></span>
+          </li>
+          <li data-bind-if="isItem">
+            <button type="button" class="item text-body"
+                    data-bind-attr="data-id:id; data-action:action; data-active:active;
+                                    aria-current:ariaCurrent; disabled:disabled">
+              <span class="item-label" data-bind="label"></span>
+              <i class="item-icon" aria-hidden="true" data-bind-class="iconClass"
+                 data-bind-attr="hidden:noIcon"></i>
+            </button>
+          </li>
+        </template>
+      </ul>
     </section>
-  </template>
-
-  <template class="header-item-tpl">
-    <li class="header-item">
-      <span class="header-item-name text-body"></span>
-      <span class="header-item-description text-body-sm" hidden></span>
-    </li>
-  </template>
-
-  <template class="item-tpl">
-    <li>
-      <button type="button" class="item text-body">
-        <span class="item-label"></span>
-        <i class="item-icon" aria-hidden="true" hidden></i>
-      </button>
-    </li>
   </template>
 </template>

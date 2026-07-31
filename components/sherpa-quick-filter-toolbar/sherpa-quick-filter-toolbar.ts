@@ -50,6 +50,7 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import { renderElement } from "../utilities/render-element.js";
 import type { EventHandler } from "../utilities/types.js";
 import "../sherpa-quick-filter/sherpa-quick-filter.js";
 import "../sherpa-container-overlay/sherpa-container-overlay.js";
@@ -998,13 +999,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     checked?: boolean;
     keepOpen?: boolean;
   }): HTMLElement {
-    const item = document.createElement("sherpa-overlay-item");
-    item.setAttribute("value", opts.value);
+    // Build the overlay item from a JSON element node (props → attributes,
+    // false/null omitted), then set its text.
+    const item = renderElement({
+      type: "sherpa-overlay-item",
+      props: {
+        value: opts.value,
+        "data-selection": opts.selection ?? null,
+        "data-group": opts.group ?? null,
+        checked: opts.checked ?? false,
+        "data-keep-open": opts.keepOpen ?? false,
+      },
+    });
     item.textContent = opts.text;
-    if (opts.selection) item.dataset["selection"] = opts.selection;
-    if (opts.group) item.dataset["group"] = opts.group;
-    if (opts.checked) item.setAttribute("checked", "");
-    if (opts.keepOpen) item.setAttribute("data-keep-open", "");
     return item;
   }
 

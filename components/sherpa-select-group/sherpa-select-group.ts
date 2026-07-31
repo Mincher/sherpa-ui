@@ -40,6 +40,7 @@
  */
 
 import { SherpaInputGroupBase } from '../utilities/sherpa-input-group/sherpa-input-group-base.js';
+import { renderElement } from '../utilities/render-element.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 
@@ -123,17 +124,22 @@ export class SherpaSelectGroup extends SherpaInputGroupBase {
     const tag = this.#childTag();
     [...this.querySelectorAll(`${tag}[data-stamped]`)].forEach(n => n.remove());
 
-    const frag = document.createDocumentFragment();
     const name = this.getAttribute('name');
+    const frag = document.createDocumentFragment();
     for (const opt of opts) {
-      const el = document.createElement(tag);
-      el.dataset['stamped'] = '';
-      el.setAttribute('value', opt.value);
-      if (opt.label)       el.dataset['label']       = opt.label;
-      if (opt.description) el.dataset['description'] = opt.description;
-      if (opt.disabled)    el.setAttribute('disabled', '');
-      if (name)            el.setAttribute('name', name);
-      frag.appendChild(el);
+      // Build each option child from a JSON element node (props → attributes;
+      // false/null omitted). data-stamped marks it for opposite-type cleanup.
+      frag.appendChild(renderElement({
+        type: tag,
+        props: {
+          'data-stamped': true,
+          value: opt.value,
+          'data-label': opt.label || null,
+          'data-description': opt.description || null,
+          disabled: opt.disabled ?? false,
+          name: name || null,
+        },
+      }));
     }
     this.appendChild(frag);
   }
