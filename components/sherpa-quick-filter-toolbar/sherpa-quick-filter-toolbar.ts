@@ -17,7 +17,9 @@
  *   data-type="view|data" switches the treatment (saved-view vs data-scoped); data-type="local"
  *   selects the minimal container-scoped template. Supports global mode (page-level broadcast).
  *
- * @attr {enum}    data-type             — view | data (treatment) · "local" selects the minimal template
+ * @attr {enum}    data-type             — view | data | local · "view" is the App-Header View-scope toolbar
+ *                                         (leading view-selector chip + common-actions cluster);
+ *                                         "local" is the minimal container-scoped template
  * @attr {enum}    data-density          — compact | comfortable
  * @attr {boolean} data-active           — Present when any filter is active (auto-reflected)
  * @attr {boolean} data-embedded         — No border/padding (for nesting inside other components)
@@ -38,8 +40,20 @@
  * @fires filter-clear             — bubbles, composed · detail: none
  * @fires container-filter-change  — bubbles, composed · detail: { filters: FilterSpec[] }
  * @fires global-filter-change     — document broadcast (no bubbles) when data-global · detail: { filters }
+ * @fires view-menu-open           — (view scope) leading view chip clicked · detail: { views, activeViewId }
+ * @fires view-change              — (view scope) active view changed · detail: { viewId, view }
+ * @fires view-save                — (view scope) Save clicked · detail: { viewId }
+ * @fires view-save-menu           — (view scope) Save dropdown clicked · detail: { viewId }
+ * @fires view-favorite            — (view scope) Favorite toggled · detail: { viewId, favorite }
+ * @fires view-overflow            — (view scope) Overflow clicked · detail: { viewId }
+ * @fires filter-reset             — (view scope) Reset clicked · detail: none
+ * @fires filter-settings          — (view scope) Settings clicked · detail: none
+ * @fires ai-filter-request        — (view scope) AI recommend clicked · detail: { viewId }
+ * @fires data-refresh             — (view scope) Refresh clicked · detail: none
  *
  * @method getFilters()                       — Returns the current FilterSpec[] (empty when the toggle is off)
+ * @method setViews(views, activeId?)         — (view scope) Set selectable views: [{ id, label, badge? }]
+ * @method setActiveView(id)                  — (view scope) Mark a view active
  * @data {object} { columns: [FieldDef], rows?: [Record] } — Field defs + row data for chip menus
  * @method populate(data) — Canonical data entry: { columns, rows? } (needs both, hence a wrapper)
  * @method setAvailableColumns(columns, rows) — Set field defs + row data and populate chip menus
@@ -67,6 +81,14 @@ interface FieldDef {
   name?: string;
   type?: string;
   values?: string[];
+}
+
+/** A selectable saved view for the view-scope leading chip. */
+interface ViewOption {
+  id: string;
+  label: string;
+  /** Optional count badge (e.g. number of active filters in the view). */
+  badge?: string | number;
 }
 
 /** The sherpa-quick-filter chip surface consumed here. */
@@ -97,7 +119,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /* ── Template selection ───────────────────────────────────────── */
 
   override get templateId(): string {
-    return this.dataset["type"] === "local" ? "local" : "default";
+    const type = this.dataset["type"];
+    if (type === "local") return "local";
+    if (type === "view") return "view";
+    return "default";
   }
 
   static override get observedAttributes(): string[] {
@@ -140,6 +165,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #menu: OverlayMenu | null = null;            // shared option-menu overlay
   #activeMenuChip: HTMLElement | null = null;  // chip whose menu is open
 
+  // View-scope (data-type="view") state: the selectable saved views + active id.
+  #views: ViewOption[] = [];
+  #activeViewId: string | null = null;
+
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
@@ -166,6 +195,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
       // Reset action button (slotted in actions).
       this.addEventListener("click", this.#onActionClick);
+
+      // View-scope common-actions cluster (built into the view template).
+      for (const btn of this.$$<HTMLElement>(".actions-zone .action-btn, .actions-zone .save-btn")) {
+        btn.addEventListener("click", this.#onViewActionClick);
+      }
+      // The leading view chip's dropdown opens the view menu.
+      this.$(".view-chip")?.addEventListener("quick-filter-click", this.#onViewChipClick as EventListener);
+      this.#syncViewChip();
 
       // Track chip additions / removals in the light DOM slots.
       for (const slot of this.$$("slot")) {
@@ -851,6 +888,86 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     ) as HTMLElement | undefined;
     if (btn) this.#clearAll();
   };
+
+  /* ── View scope: common-actions cluster + view selector ──────────── */
+
+  /** Delegated click for the view-scope action buttons (shadow DOM). */
+  #onViewActionClick = (e: Event): void => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-action]");
+    const action = btn?.dataset["action"];
+    if (!btn || !action) return;
+    switch (action) {
+      case "reset":
+        this.#clearAll();
+        this.emit("filter-reset", {});
+        break;
+      case "favorite": {
+        const on = btn.getAttribute("aria-pressed") !== "true";
+        btn.setAttribute("aria-pressed", String(on));
+        this.emit("view-favorite", { viewId: this.#activeViewId, favorite: on });
+        break;
+      }
+      case "ai":
+        this.emit("ai-filter-request", { viewId: this.#activeViewId });
+        break;
+      case "save":
+        this.emit("view-save", { viewId: this.#activeViewId });
+        break;
+      case "save-menu":
+        this.emit("view-save-menu", { viewId: this.#activeViewId });
+        break;
+      case "settings":
+        this.emit("filter-settings", {});
+        break;
+      case "refresh":
+        this.emit("data-refresh", {});
+        break;
+      case "overflow":
+        this.emit("view-overflow", { viewId: this.#activeViewId });
+        break;
+    }
+  };
+
+  /** The leading view chip was clicked — request the view picker menu. */
+  #onViewChipClick = (): void => {
+    this.emit("view-menu-open", { views: this.#views, activeViewId: this.#activeViewId });
+  };
+
+  /** Reflect the active view onto the leading chip (label + badge + active state). */
+  #syncViewChip(): void {
+    const chip = this.$<HTMLElement>(".view-chip");
+    if (!chip) return;
+    const active = this.#views.find((v) => v.id === this.#activeViewId) ?? this.#views[0];
+    chip.dataset["label"] = active?.label ?? "Select view";
+    if (active?.badge != null) chip.dataset["count"] = String(active.badge);
+    else delete chip.dataset["count"];
+    // data-active drives the populated/purple treatment.
+    chip.toggleAttribute("data-active", !!active);
+  }
+
+  /**
+   * Set the selectable views for the view-scope leading chip.
+   * @param views [{ id, label, badge? }]
+   * @param activeId optional id to mark active (defaults to the first)
+   */
+  public setViews(views: ViewOption[], activeId?: string): void {
+    this.#views = Array.isArray(views) ? views : [];
+    this.#activeViewId = activeId ?? this.#views[0]?.id ?? null;
+    this.#syncViewChip();
+  }
+
+  /** Mark a view active and reflect it on the leading chip. */
+  public setActiveView(id: string): void {
+    if (!this.#views.some((v) => v.id === id)) return;
+    this.#activeViewId = id;
+    this.#syncViewChip();
+    this.emit("view-change", { viewId: id, view: this.#views.find((v) => v.id === id) });
+  }
+
+  /** The currently active view id (or null). */
+  public get activeViewId(): string | null {
+    return this.#activeViewId;
+  }
 
   #clearAll(): void {
     for (const chip of this.#getValueChips()) {

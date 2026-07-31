@@ -2,10 +2,13 @@
  * @element sherpa-view-header
  * @category shell
  * @description Heading bar for a full page or named view. Contains the page title, optional
- *   breadcrumbs, favourite toggle, export button, and a view-selection slot for scoped view
- *   switching. Use once per page, slotted into the view-header slot of sherpa-layout-grid.
- *   Wire view-export to trigger PDF or CSV generation; wire favorite-toggle to persist user
- *   bookmark preferences.
+ *   breadcrumbs, favourite toggle, and export button. Use once per page, slotted into the
+ *   view-header slot of sherpa-layout-grid. Wire view-export to trigger PDF or CSV generation;
+ *   wire favorite-toggle to persist user bookmark preferences.
+ *
+ *   View **selection** is not owned here — it lives in the View-scope Quick Filter Toolbar
+ *   (`sherpa-quick-filter-toolbar[data-type="view"]`, in the app-header filters slot), whose
+ *   leading view chip is the selector. See its setViews()/view-change API.
  *
  * @attr {string}  data-label              — View heading text
  * @attr {boolean} data-show-debug-toggles — Show debug toggle controls
@@ -18,7 +21,6 @@
  *   present; hidden otherwise.
  *
  * @slot title-icon  — Optional icon shown to the left of the heading label
- * @slot view-selection — Optional <sherpa-input-select> for scoped views
  *
  * @fires edit-mode-change
  *   bubbles: true, composed: true
@@ -32,9 +34,6 @@
  * @fires view-header-back
  *   bubbles: true, composed: true
  *   detail: {}
- * @fires view-selection-change
- *   bubbles: true, composed: true
- *   detail: { value: string, item: object }
  *
  * @method setHeading(name)     — Set heading text
  * @method getHeading()         — Get heading text
@@ -45,8 +44,6 @@
  */
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-button/sherpa-button.js';
-import '../sherpa-container-overlay/sherpa-container-overlay.js';
-import '../sherpa-tag/sherpa-tag.js';
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
@@ -63,15 +60,6 @@ import { ThemeManager } from '../utilities/theme-manager.js';
   document.head.appendChild(link);
 }());
 
-/** A selectable view-picker entry. */
-interface PickerItem {
-  value: string;
-  label?: string;
-  badge?: string;
-  badgeStatus?: string;
-  checked?: boolean;
-}
-
 export class SherpaViewHeader extends SherpaElement {
   static override get cssUrl(): string  { return new URL('./sherpa-view-header.css', import.meta.url).href; }
   static override get htmlUrl(): string { return new URL('./sherpa-view-header.html', import.meta.url).href; }
@@ -81,14 +69,6 @@ export class SherpaViewHeader extends SherpaElement {
   }
 
   #viewId: string | null = null;
-  #viewPickerEls: HTMLElement[] = [];
-  #pickerItems: PickerItem[] = [];
-  #pickerValue: string | null = null;
-  #optionSlotObserver: MutationObserver | null = null;
-  #pickerRowTpl: HTMLTemplateElement | null = null;
-  #pickerTriggerTpl: HTMLTemplateElement | null = null;
-  #pickerBadgeTpl: HTMLTemplateElement | null = null;
-  #pickerMenuTpl: HTMLTemplateElement | null = null;
 
   override onAttributeChanged(name: string, _oldValue: string | null, newValue: string | null): void {
     switch (name) {
@@ -133,57 +113,14 @@ export class SherpaViewHeader extends SherpaElement {
   }
   isFavorite(): boolean { return this.dataset["favorite"] === 'true'; }
 
-  /**
-   * Render an inline view-selection picker into the `view-selection`
-   * slot. Replaces any picker chrome from a previous call.
-   *
-   * @param {Array<{value:string,label:string,badge?:string,badgeStatus?:string}>} items
-   * @param {string} [currentValue]  Falsy → first item
-   * @param {object} [opts]
-   * @param {string} [opts.ariaLabel]
-   * @param {string} [opts.placeholder]  Trigger label when no current entry
-   *
-   * Fires `viewselectionchange` (bubbles, composed) with detail
-   * `{ value, item }` when the user picks an option.
-   */
-  setViewOptions(
-    items: PickerItem[],
-    currentValue?: string | null,
-    opts: { ariaLabel?: string; placeholder?: string } = {},
-  ): void {
-    this.#renderViewPicker(Array.isArray(items) ? items : [], currentValue, opts);
-  }
-
-  /** @returns {string|null} */
-  getSelectedViewValue(): string | null { return this.#pickerValue; }
-
-  /** Remove any picker chrome and clear stored options. */
-  clearViewOptions(): void {
-    this.#viewPickerEls.forEach((el) => el.remove());
-    this.#viewPickerEls = [];
-    this.#pickerItems = [];
-    this.#pickerValue = null;
-  }
-  override onDisconnect(): void {
-    if (this.#optionSlotObserver) {
-      this.#optionSlotObserver.disconnect();
-      this.#optionSlotObserver = null;
-    }
-  }
-
   // ============ Private Methods ============
 
   override onRender(): void {
-    this.#pickerRowTpl     = this.$<HTMLTemplateElement>('template.picker-row-tpl');
-    this.#pickerTriggerTpl = this.$<HTMLTemplateElement>('template.picker-trigger-tpl');
-    this.#pickerBadgeTpl   = this.$<HTMLTemplateElement>('template.picker-badge-tpl');
-    this.#pickerMenuTpl    = this.$<HTMLTemplateElement>('template.picker-menu-tpl');
     this.#setupSelectors();
     this.#setupExport();
     this.#setupFavorite();
     this.#setupBackButton();
     this.#setupEditMode();
-    this.#setupOptionSlotWatcher();
     this.#syncBreadcrumbs(this.dataset["breadcrumbs"]);
 
     // Apply any attributes that were set before render completed
@@ -310,162 +247,6 @@ export class SherpaViewHeader extends SherpaElement {
     this.toggleAttribute('data-has-breadcrumbs', items.length > 0);
   }
 
-  // ============ View-selection Picker ============
-  // Built-in picker rendered into the `view-selection` slot. Consumers
-  // can drive it either programmatically (setViewOptions) or
-  // declaratively by adding <option> children with slot="view-selection".
-
-  #setupOptionSlotWatcher(): void {
-    if (this.#optionSlotObserver) return;
-    const harvest = (): void => {
-      const opts = [...this.querySelectorAll<HTMLOptionElement>(':scope > option[slot="view-selection"]')];
-      if (!opts.length) return;
-      const items = opts.map((o) => ({
-        value: o.value || o.getAttribute('value') || o.textContent?.trim() || '',
-        label: o.textContent?.trim() || '',
-        badge: o.dataset["badge"] || o.getAttribute('data-badge') || undefined,
-        badgeStatus: o.dataset["badgeStatus"] || o.getAttribute('data-badge-status') || undefined,
-      }));
-      const selected =
-        opts.find((o) => o.hasAttribute('selected'))?.value ||
-        opts.find((o) => o.hasAttribute('selected'))?.textContent?.trim() ||
-        items[0]?.value;
-      const ariaLabel = this.dataset["viewSelectionLabel"] || 'Select view';
-      // Remove the originals so they don't leak into layout.
-      opts.forEach((o) => o.remove());
-      this.setViewOptions(items, selected, { ariaLabel });
-    };
-    harvest();
-    this.#optionSlotObserver = new MutationObserver((records) => {
-      const sawOption = records.some((r) =>
-        [...r.addedNodes].some(
-          (n) => n.nodeType === 1 && (n as Element).tagName === 'OPTION' && (n as Element).getAttribute('slot') === 'view-selection',
-        ),
-      );
-      if (sawOption) harvest();
-    });
-    this.#optionSlotObserver.observe(this, { childList: true });
-  }
-
-  #renderViewPicker(items: PickerItem[], currentValue: string | null | undefined, { ariaLabel = 'Select view', placeholder = 'Select…' } = {}): void {
-    // Strip any chrome from a previous render.
-    this.#viewPickerEls.forEach((el) => el.remove());
-    this.#viewPickerEls = [];
-    this.#pickerItems = items;
-    if (!items.length) { this.#pickerValue = null; return; }
-
-    const resolvedValue =
-      items.find((it) => it.value === currentValue)?.value || items[0]?.value;
-    const currentEntry = items.find((it) => it.value === resolvedValue);
-    this.#pickerValue = resolvedValue ?? null;
-
-    // Clone trigger from template, set dynamic attributes.
-    const triggerTpl = this.#pickerTriggerTpl;
-    if (!triggerTpl) return;
-    const trigger = (triggerTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement & {
-      rendered?: Promise<unknown>;
-    };
-    trigger.setAttribute('aria-label', ariaLabel);
-    trigger.setAttribute('data-label', currentEntry?.label || placeholder);
-
-    // Clone badge from template (only when the current entry has one).
-    let triggerBadge: HTMLElement | null = null;
-    if (currentEntry?.badge) {
-      const badgeTpl = this.#pickerBadgeTpl;
-      if (badgeTpl) {
-        triggerBadge = (badgeTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
-        if (currentEntry.badgeStatus) triggerBadge.setAttribute('data-status', currentEntry.badgeStatus);
-        triggerBadge.textContent = currentEntry.badge;
-      }
-    }
-
-    // Clone menu from template; populate its existing <ul> with option rows.
-    const menuTpl = this.#pickerMenuTpl;
-    if (!menuTpl) return;
-    const menu = (menuTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement & {
-      show?(anchor?: HTMLElement): void;
-      hide?(): void;
-    };
-    const ul = menu.querySelector('ul');
-    if (!ul) return;
-    for (const it of items) {
-      ul.appendChild(this.#buildPickerRow({
-        value: it.value,
-        label: it.label,
-        badge: it.badge,
-        badgeStatus: it.badgeStatus,
-        checked: it.value === resolvedValue,
-      }));
-    }
-
-    this.appendChild(trigger);
-    if (triggerBadge) this.appendChild(triggerBadge);
-    this.appendChild(menu);
-
-    this.#viewPickerEls = triggerBadge ? [trigger, triggerBadge, menu] : [trigger, menu];
-
-    trigger.addEventListener('button-click', (e) => {
-      e.stopPropagation();
-      if (menu.hasAttribute('open')) menu.hide?.();
-      else menu.show?.(trigger);
-    });
-
-    menu.addEventListener('overlay-select', (e) => {
-      const value = (e as CustomEvent).detail?.value;
-      menu.hide?.();
-      if (!value) return;
-      const picked = this.#pickerItems.find((it) => it.value === value);
-      if (!picked) return;
-      this.#pickerValue = picked.value;
-      // Update trigger label + badge in place so the picker reflects
-      // the new selection without a full re-render.
-      trigger.setAttribute('data-label', picked.label || '');
-      if (this.#viewPickerEls[1]?.tagName === 'SHERPA-TAG') {
-        this.#viewPickerEls[1].remove();
-        this.#viewPickerEls.splice(1, 1);
-      }
-      if (picked.badge) {
-        const badgeTpl2 = this.#pickerBadgeTpl;
-        if (badgeTpl2) {
-          const tag = (badgeTpl2.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement;
-          if (picked.badgeStatus) tag.setAttribute('data-status', picked.badgeStatus);
-          tag.textContent = picked.badge;
-          trigger.after(tag);
-          this.#viewPickerEls.splice(1, 0, tag);
-        }
-      }
-      // Update the radio-style indicators in the menu.
-      menu.querySelectorAll('sherpa-overlay-item').forEach((it) => {
-        const v = it.getAttribute('value');
-        it.setAttribute('aria-checked', v === picked.value ? 'true' : 'false');
-        if (v === picked.value) it.setAttribute('data-state', 'selected');
-        else it.removeAttribute('data-state');
-      });
-      this.emit('view-selection-change', { value: picked.value, item: picked });
-    });
-  }
-
-  #buildPickerRow({ value, label, badge, badgeStatus, checked }: PickerItem): HTMLElement {
-    const rowTpl = this.#pickerRowTpl;
-    const node = rowTpl ? (rowTpl.content.firstElementChild as HTMLElement).cloneNode(true) as HTMLElement : document.createElement('li');
-    const item = node.querySelector('sherpa-overlay-item');
-    if (item) {
-      item.setAttribute('value', value);
-      item.setAttribute('aria-checked', checked ? 'true' : 'false');
-      if (checked) item.setAttribute('data-state', 'selected');
-    }
-
-    const labelEl = node.querySelector('.picker-label');
-    if (labelEl) labelEl.textContent = label ?? '';
-
-    const tag = node.querySelector<HTMLElement>('.picker-badge');
-    if (badge && tag) {
-      if (badgeStatus) tag.setAttribute('data-status', badgeStatus);
-      tag.textContent = badge;
-      node.setAttribute('data-has-badge', '');
-    }
-    return node;
-  }
 
 }
 

@@ -235,3 +235,109 @@ slot[name="presets"] {
     border-color: Highlight;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   VIEW SCOPE — the View-level toolbar's common-actions cluster.
+   Per Figma "App Shell v2" → Quick Filter Toolbar (Type=View).
+   ══════════════════════════════════════════════════════════════════ */
+
+/* The view template's actions are built-in (not slotted), so the zone
+   always shows regardless of data-has-actions. */
+.toolbar-surface[data-scope="view"] .actions-zone {
+  display: flex;
+}
+
+/* 24px icon action buttons (AI, Reset, Settings, Refresh, Overflow, Favorite). */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-lg, 24px);
+  block-size: var(--sherpa-size-lg, 24px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  font-size: var(--sherpa-fonts-scale-base, 14px);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.action-btn:hover {
+  background: var(--sherpa-surface-container-secondary-default, #fafaff);
+  color: var(--sherpa-content-default-base, #2e2e33);
+}
+
+.action-btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* AI button uses the brand (purple) treatment. */
+.action-btn.ai-btn {
+  color: var(--sherpa-content-active-base, #8500cc);
+}
+
+/* Favorite = filled star when pressed. */
+.action-btn.fave-btn[aria-pressed="true"] {
+  color: var(--sherpa-content-status-warning-base, #f5a623);
+}
+
+/* Save-n-Fave cluster: favorite · Save · dropdown · timestamp. */
+.save-fave {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+  flex-shrink: 0;
+}
+
+.save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  block-size: var(--sherpa-size-lg, 24px);
+  padding-inline: var(--sherpa-space-xs, 8px);
+  border: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d5d5dc);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-secondary-default, #fff);
+  color: var(--sherpa-content-default-base, #2e2e33);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  border-color: var(--sherpa-border-control-active-default, #c046ff);
+  color: var(--sherpa-content-active-base, #8500cc);
+}
+
+.save-btn:focus-visible,
+.save-menu-btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+.save-timestamp {
+  font-size: var(--sherpa-fonts-scale-xs, 10px);
+  color: var(--sherpa-content-default-secondary, #6a6a75);
+  white-space: nowrap;
+  margin-inline-start: var(--sherpa-space-2xs, 4px);
+}
+
+.save-timestamp[hidden] {
+  display: none;
+}
+
+/* The leading view chip carries the active/brand treatment via data-type="ai"
+   on the sherpa-quick-filter, so no extra fill is needed here — just spacing. */
+.view-chip {
+  flex-shrink: 0;
+}
+
+/* Show the after-view divider only in the view scope. */
+.zone-divider[data-divider="after-view"] {
+  display: block;
+}

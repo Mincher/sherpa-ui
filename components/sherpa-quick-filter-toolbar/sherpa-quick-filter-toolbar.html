@@ -70,6 +70,80 @@
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
+     VIEW — View-Scope toolbar (App Header level). Per Figma "App Shell v2" →
+     Quick Filter Toolbar, Type=View. Leads with the view-selector chip, then
+     filter chips, then the full common-actions cluster on the right.
+     Selected by data-type="view".
+     ═══════════════════════════════════════════════════════════════════════ -->
+<template id="view">
+  <div class="toolbar-surface" part="surface" data-scope="view">
+    <div class="content-zone" part="content">
+      <!-- View selector — the leading chip that owns view selection. -->
+      <sherpa-quick-filter
+        class="view-chip"
+        data-type="ai"
+        data-icon-start="fa-solid fa-desktop"
+        data-menu-scope="none"
+        aria-label="Select view"
+      ></sherpa-quick-filter>
+
+      <span class="zone-divider" data-divider="after-view" aria-hidden="true"></span>
+
+      <slot name="presets" data-accepts="control,html"></slot>
+      <slot data-accepts="control,html"></slot>
+
+      <button type="button" class="add-filter-button" aria-haspopup="menu" aria-expanded="false" hidden>
+        <span class="chip-icon" aria-hidden="true">&#xf067;</span>
+        <span class="chip-label">Add filter</span>
+      </button>
+    </div>
+
+    <!-- Common actions (right): AI · Reset · Settings │ Save-n-Fave · Refresh · Overflow -->
+    <div class="actions-zone" part="actions">
+      <slot name="actions" data-accepts="control,html"></slot>
+
+      <button type="button" class="action-btn ai-btn" data-action="ai" aria-label="AI recommended filters" title="AI recommended filters">
+        <span class="chip-icon" aria-hidden="true">&#xf890;</span>
+      </button>
+      <button type="button" class="action-btn reset-btn" data-action="reset" aria-label="Reset filters" title="Reset filters">
+        <span class="chip-icon" aria-hidden="true">&#xf2ea;</span>
+      </button>
+      <button type="button" class="action-btn settings-btn" data-action="settings" aria-label="Filter settings" title="Filter settings">
+        <span class="chip-icon" aria-hidden="true">&#xf1de;</span>
+      </button>
+
+      <span class="zone-divider" data-divider="before-save" aria-hidden="true"></span>
+
+      <div class="save-fave" part="save-fave">
+        <button type="button" class="action-btn fave-btn" data-action="favorite" aria-pressed="false" aria-label="Favorite this view" title="Favorite">
+          <span class="chip-icon" aria-hidden="true">&#xf005;</span>
+        </button>
+        <button type="button" class="save-btn" data-action="save">
+          <span class="chip-icon" aria-hidden="true">&#xf0c7;</span>
+          <span class="chip-label">Save</span>
+        </button>
+        <button type="button" class="action-btn save-menu-btn" data-action="save-menu" aria-haspopup="menu" aria-expanded="false" aria-label="Save options">
+          <span class="chip-icon" aria-hidden="true">&#xf078;</span>
+        </button>
+        <span class="save-timestamp" part="save-timestamp" hidden></span>
+      </div>
+
+      <button type="button" class="action-btn refresh-btn" data-action="refresh" aria-label="Refresh data" title="Refresh data">
+        <span class="chip-icon" aria-hidden="true">&#xf021;</span>
+      </button>
+      <button type="button" class="action-btn overflow-btn" data-action="overflow" aria-haspopup="menu" aria-expanded="false" aria-label="More options" title="More">
+        <span class="chip-icon" aria-hidden="true">&#xf142;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Cloning prototype: a filter chip -->
+  <template class="qf-tpl">
+    <sherpa-quick-filter data-menu-scope="none"></sherpa-quick-filter>
+  </template>
+</template>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
      LOCAL — Minimal toolbar (container-scoped): group + sort + presets.
      No toggle, no Add button. Selected by data-type="local".
      ═══════════════════════════════════════════════════════════════════════ -->

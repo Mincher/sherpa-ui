@@ -100,3 +100,62 @@ test('toolbar builds preset chips and getFilters returns FilterSpec after menu s
   expect(r.filters).toHaveLength(1);
   expect(r.filters[0]).toMatchObject({ field: 'status', operator: 'in', values: ['Active'] });
 });
+
+test('view-scope toolbar: leading view chip + common-actions cluster (Figma Type=View)', async ({ page }) => {
+  await openHarness(page);
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<sherpa-quick-filter-toolbar data-type="view"></sherpa-quick-filter-toolbar>';
+    const t = document.querySelector('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      setViews?: (v: unknown[], id?: string) => void;
+      setActiveView?: (id: string) => void;
+    };
+    await t.rendered;
+    t.setViews!([{ id: 'v1', label: 'My view', badge: 3 }, { id: 'v2', label: 'Other' }]);
+    await new Promise((res) => setTimeout(res, 40));
+    const sr = t.shadowRoot!;
+
+    // Leading view chip reflects the active view.
+    const chip = sr.querySelector('.view-chip');
+    const viewChip = {
+      label: chip?.getAttribute('data-label'),
+      count: chip?.getAttribute('data-count'),
+      active: chip?.hasAttribute('data-active'),
+    };
+
+    // The full right-actions cluster is present.
+    const actions = [...sr.querySelectorAll('.actions-zone .action-btn')].map(
+      (b) => (b as HTMLElement).dataset['action'],
+    );
+    const hasSave = !!sr.querySelector('.save-fave .save-btn');
+
+    // Actions emit their events.
+    const fired: string[] = [];
+    ['filter-reset', 'ai-filter-request', 'data-refresh', 'view-save', 'view-menu-open', 'view-favorite'].forEach(
+      (ev) => t.addEventListener(ev, () => fired.push(ev)),
+    );
+    (sr.querySelector('[data-action="reset"]') as HTMLElement)?.click();
+    (sr.querySelector('[data-action="ai"]') as HTMLElement)?.click();
+    (sr.querySelector('[data-action="refresh"]') as HTMLElement)?.click();
+    (sr.querySelector('[data-action="save"]') as HTMLElement)?.click();
+    (sr.querySelector('[data-action="favorite"]') as HTMLElement)?.click();
+
+    // Switching the active view updates the chip + fires view-change.
+    let viewChanged: string | null = null;
+    t.addEventListener('view-change', (e) => { viewChanged = (e as CustomEvent).detail?.viewId; });
+    t.setActiveView!('v2');
+    await new Promise((res) => setTimeout(res, 20));
+
+    return { viewChip, actions, hasSave, fired, chipAfter: chip?.getAttribute('data-label'), viewChanged };
+  });
+
+  expect(r.viewChip).toMatchObject({ label: 'My view', count: '3', active: true });
+  expect(r.actions).toEqual(['ai', 'reset', 'settings', 'favorite', 'save-menu', 'refresh', 'overflow']);
+  expect(r.hasSave).toBe(true);
+  expect(r.fired).toEqual(
+    expect.arrayContaining(['filter-reset', 'ai-filter-request', 'data-refresh', 'view-save', 'view-favorite']),
+  );
+  expect(r.chipAfter).toBe('Other');
+  expect(r.viewChanged).toBe('v2');
+});
