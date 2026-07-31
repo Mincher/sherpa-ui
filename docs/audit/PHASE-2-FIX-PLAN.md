@@ -61,3 +61,23 @@ A and F are the highest-value (functional + theme-breaking); do them first.
 - nav event-name migration to ratified `noun-verb` contract (navitemclick → nav-item-click) — breaks consumers + tests.
 - product-bar-v2 Layout=Small responsive variant.
 - Unused typeface primitives cleanup (from Phase 0).
+
+---
+
+## EXECUTION STATUS (updated)
+- ✅ **Batch A** (P0 functional + hygiene) — `cc82534`: input-date grid, switch pill, .orig/.rej.
+- ✅ **Batch F** (P0 viz theme-safety) — `706593d`: line/donut/gauge/legend → tokens; new data-viz-colors.ts.
+- ✅ **Batch B** (nav v2 spec) — `2c75c6b`: 40px, settings fill, product-nav token, shadow, rounding, SVG hex, label/placeholder swaps, nav-section active colour + product-nav token drift.
+- ✅ **Batch C** (foundation P1) — `69e4b26`: slider glow→token, tabs 3 styles, checkbox/radio Minimal+Card, tag hex drift.
+- ✅ **Batch G** (data variant gaps) — `196e47b`: grid per-column alignment, pagination numbered pages.
+
+**All P0s fixed. All P1s except the deferred items below.**
+
+### Deferred (larger / breaking — separate focused tasks)
+- **barchart grouped + full-stacked** (V5) — multi-series side-by-side rendering; needs visual verification.
+- **line-chart stacked/full-stacked area** (V6).
+- **data-grid "Primary" cell type** (DG2) + dropdown/edit cell variants (DG3).
+- **nav event-name rename** to noun-verb contract — breaking; updates consumers/tests.
+- **product-bar-v2 Layout=Small** responsive variant.
+- Remaining P2 polish (D/E batches): callout urgent, progress-steps info/urgent nodes, overlay-item
+  "Modified" state, minimal input variant, misc docstring/fallback reconciliations, unused typeface primitives.
