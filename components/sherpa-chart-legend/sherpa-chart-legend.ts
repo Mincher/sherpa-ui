@@ -22,6 +22,7 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
+import { categoricalIndex } from '../utilities/data-viz-colors.js';
 
 /** A single legend entry. */
 interface LegendItem {
@@ -31,11 +32,6 @@ interface LegendItem {
   active?: boolean;
   link?: boolean;
 }
-
-const DEFAULT_COLORS = [
-  '#7b1ce6', '#16abe2', '#2bd1c1',
-  '#ffaa00', '#f3699d', '#c046ff',
-];
 
 export class SherpaChartLegend extends SherpaElement {
 
@@ -100,16 +96,17 @@ export class SherpaChartLegend extends SherpaElement {
     this.els.list.replaceChildren();
 
     this.#items.forEach((item, i) => {
-      const color = item.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
       const hasValue = item.value != null && item.value !== '';
-      // Bind label/value/flags/swatch via the Sherpa template binder.
+      // Theme-safe colour: use the categorical token INDEX (so it re-themes);
+      // an explicit item.color opts out via an inline background.
       const frag = this.renderFragment('.item-tpl', {
         label: item.label || '',
         value: hasValue ? String(item.value) : '',
         hasValue: hasValue ? true : null,
         inactive: item.active === false ? true : null,
         link: item.link ? true : null,
-        swatchStyle: color ? `background-color: ${color}` : null,
+        colorIndex: item.color ? null : String(categoricalIndex(i)),
+        swatchStyle: item.color ? `background-color: ${item.color}` : null,
       });
       const el = frag.firstElementChild;
       if (item.link && el instanceof HTMLElement) {

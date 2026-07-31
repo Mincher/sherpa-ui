@@ -157,6 +157,24 @@
   position: absolute;
   inset: 0;
 }
+
+/* Categorical palette by index (theme-safe). The series' `color` drives the
+   line/points/area (all `background: currentColor`); the legend swatch mirrors
+   it. An explicit inline colour (series.color) still wins. */
+.series[data-color-index="1"],  .legend-key[data-color-index="1"]  { color: var(--sherpa-data-viz-categorical-color-1,  #7b1ce6); }
+.series[data-color-index="2"],  .legend-key[data-color-index="2"]  { color: var(--sherpa-data-viz-categorical-color-2,  #c046ff); }
+.series[data-color-index="3"],  .legend-key[data-color-index="3"]  { color: var(--sherpa-data-viz-categorical-color-3,  #2bd1c1); }
+.series[data-color-index="4"],  .legend-key[data-color-index="4"]  { color: var(--sherpa-data-viz-categorical-color-4,  #16abe2); }
+.series[data-color-index="5"],  .legend-key[data-color-index="5"]  { color: var(--sherpa-data-viz-categorical-color-5,  #4141ef); }
+.series[data-color-index="6"],  .legend-key[data-color-index="6"]  { color: var(--sherpa-data-viz-categorical-color-6,  #8197f1); }
+.series[data-color-index="7"],  .legend-key[data-color-index="7"]  { color: var(--sherpa-data-viz-categorical-color-7,  #ffaa00); }
+.series[data-color-index="8"],  .legend-key[data-color-index="8"]  { color: var(--sherpa-data-viz-categorical-color-8,  #f3699d); }
+.series[data-color-index="9"],  .legend-key[data-color-index="9"]  { color: var(--sherpa-data-viz-categorical-color-9,  #d1105a); }
+.series[data-color-index="10"], .legend-key[data-color-index="10"] { color: var(--sherpa-data-viz-categorical-color-10, #20c173); }
+.series[data-color-index="11"], .legend-key[data-color-index="11"] { color: var(--sherpa-data-viz-categorical-color-11, #b2b2bf); }
+/* The legend swatch fills with its own colour. */
+.legend-key[data-color-index] { background-color: currentColor; }
+
 :host .series {
   position: absolute;
   inset: 0;

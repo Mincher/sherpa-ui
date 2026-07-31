@@ -29,20 +29,11 @@ import { getSegmentField, isSegmentEnabled, getActiveSort, syncChartTitle } from
 import { injectFilterMenu, removeFilterMenu, toggleFilters, toggleLegend, syncFilterMenuItems } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
+import { categoricalIndex } from '../utilities/data-viz-colors.js';
 
 const MAX_SEGMENTS = 8;
-const OTHER_COLOR = '#9e9ea8';
-
-const DEFAULT_COLORS = [
-  '#7b1ce6', // purple
-  '#16abe2', // blue
-  '#2bd1c1', // teal
-  '#ffaa00', // amber
-  '#f3699d', // pink
-  '#c046ff', // violet
-  '#e67c1c', // orange
-  '#e6416e', // raspberry
-];
+// "Other" aggregate uses the neutral greyscale data-viz token (theme-safe).
+const OTHER_COLOR = 'var(--sherpa-data-viz-categorical-color-11, #b2b2bf)';
 
 /** A column descriptor from the content payload. */
 interface ChartColumn {
@@ -454,7 +445,6 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     const shapeTpl = this.#shapeTpl;
 
     series.forEach((s, si) => {
-      const color = s.color || DEFAULT_COLORS[si % DEFAULT_COLORS.length];
       const prev = prevSeries?.[si];
 
       // Reuse existing .series element or create a new one
@@ -464,7 +454,15 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
         if (!seriesEl) return;
         seriesLayer.appendChild(seriesEl);
       }
-      seriesEl.style.color = color ?? '';
+      // Theme-safe colour: an explicit s.color opts out via inline; otherwise the
+      // categorical token INDEX drives `color` in CSS (line uses currentColor).
+      if (s.color) {
+        seriesEl.style.color = s.color;
+        delete seriesEl.dataset['colorIndex'];
+      } else {
+        seriesEl.style.removeProperty('color');
+        seriesEl.dataset['colorIndex'] = String(categoricalIndex(si));
+      }
 
       const segmentCount = Math.max(s.values.length - 1, 0);
 
@@ -520,11 +518,13 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     if (legend) {
       legend.replaceChildren();
       series.forEach((s, si) => {
-        const color = s.color || DEFAULT_COLORS[si % DEFAULT_COLORS.length];
         const item = legendItemTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
         if (!item) return;
         const key = item.querySelector<HTMLElement>('.legend-key');
-        if (key) key.style.backgroundColor = color ?? '';
+        if (key) {
+          if (s.color) key.style.backgroundColor = s.color;
+          else key.dataset['colorIndex'] = String(categoricalIndex(si));
+        }
         const lbl = item.querySelector('.legend-label');
         if (lbl) lbl.textContent = s.name || '';
         legend.appendChild(item);

@@ -25,12 +25,15 @@ interface GaugeSegment {
   color?: string;
 }
 
-const DEFAULT_COLORS = [
-  '#058142', // green
-  '#ffaa00', // amber
-  '#ff6b35', // orange
-  '#e84c3d', // red
+/** Default gauge ramp = a status semantic (good → bad). Reference the status
+ *  surface tokens (theme-safe) rather than hardcoded green/amber/orange/red. */
+const STATUS_RAMP = [
+  '--sherpa-surface-status-success-strong-default',
+  '--sherpa-surface-status-warning-strong-default',
+  '--sherpa-surface-status-urgent-strong-default',
+  '--sherpa-surface-status-critical-strong-default',
 ];
+const STATUS_RAMP_FALLBACK = ['#058142', '#fcb72d', '#d66304', '#dd2c01'];
 
 export class SherpaGaugeChart extends SherpaElement {
 
@@ -176,8 +179,12 @@ export class SherpaGaugeChart extends SherpaElement {
     const stops: string[] = [];
     let cumulative = 0;
 
+    const cs = getComputedStyle(this);
     this.#segments.forEach((seg, i) => {
-      const color = seg.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+      // Explicit seg.color wins; else the status-ramp token resolved live.
+      const idx = i % STATUS_RAMP.length;
+      const token = cs.getPropertyValue(STATUS_RAMP[idx] ?? '').trim();
+      const color = seg.color || token || STATUS_RAMP_FALLBACK[idx];
       const segPct = (seg.value / 100) * 50; // map 0–100 → 0–50%
       const start = cumulative;
       cumulative += segPct;

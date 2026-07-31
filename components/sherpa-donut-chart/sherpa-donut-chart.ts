@@ -36,22 +36,13 @@ import { getSegmentField, isSegmentEnabled, getActiveSort, applySegmentBy, syncC
 import { injectFilterMenu, toggleFilters, toggleLegend, syncFilterMenuItems } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
+import { resolveCategoricalColor } from '../utilities/data-viz-colors.js';
 
 /** Default palette — falls back to CSS token values, but also needed for
  *  inline conic-gradient stops where tokens can't be used directly. */
 const MAX_SEGMENTS = 8;
-const OTHER_COLOR = '#9e9ea8';
-
-const DEFAULT_COLORS = [
-  '#7b1ce6', // purple
-  '#16abe2', // blue
-  '#2bd1c1', // teal
-  '#ffaa00', // amber
-  '#f3699d', // pink
-  '#c046ff', // violet
-  '#e67c1c', // orange
-  '#e6416e', // raspberry
-];
+// "Other" aggregate uses the neutral greyscale data-viz token (theme-safe).
+const OTHER_COLOR = 'var(--sherpa-data-viz-categorical-color-11, #b2b2bf)';
 
 /** A donut slice. */
 interface DonutDatum {
@@ -321,23 +312,32 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
     const total = this.#data.reduce((sum, d) => sum + (d.value || 0), 0);
     if (!total) {
-      ring.style.setProperty('--_conic', 'conic-gradient(#e0e0e0 0% 100%)');
+      ring.style.setProperty(
+        '--_conic',
+        'conic-gradient(var(--sherpa-surface-container-inactive, #f2f2f2) 0% 100%)',
+      );
       legend.replaceChildren();
       return;
     }
 
     const displayData = this.#capSegments(this.#data);
 
+    // Theme-safe colour per segment: explicit d.color wins, else the categorical
+    // token resolved live from computed style (so it follows theme switches).
+    // Conic-gradient stops are built in JS, so CSS index classes can't be used —
+    // we read the resolved token value instead.
+    const colorFor = (d: DonutDatum, i: number): string =>
+      resolveCategoricalColor(this, i, d.color);
+
     // Build conic-gradient stops
     const stops: string[] = [];
     let cumulative = 0;
 
     displayData.forEach((d: DonutDatum, i: number) => {
-      const color = d.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
       const pct = (d.value / total) * 100;
       const start = cumulative;
       cumulative += pct;
-      stops.push(`${color} ${start}% ${cumulative}%`);
+      stops.push(`${colorFor(d, i)} ${start}% ${cumulative}%`);
     });
 
     ring.style.setProperty(
@@ -350,11 +350,10 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
     const tpl = this.#legendItemTpl;
     displayData.forEach((d: DonutDatum, i: number) => {
-      const color = d.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
       const item = tpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
       if (!item) return;
       const key = item.querySelector<HTMLElement>('.legend-key');
-      if (key) key.style.backgroundColor = color ?? '';
+      if (key) key.style.backgroundColor = colorFor(d, i);
       const lbl = item.querySelector('.legend-label');
       if (lbl) lbl.textContent = d.label || '';
       const val = item.querySelector('.legend-value');

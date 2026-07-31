@@ -29,7 +29,7 @@
        swatchStyle carries the series colour; hasValue/inactive/link are flags. -->
   <template class="item-tpl">
     <div class="legend-item" data-bind-attr="data-has-value:hasValue; data-inactive:inactive; data-link:link">
-      <span class="legend-key" data-bind-attr="style:swatchStyle"></span>
+      <span class="legend-key" data-bind-attr="data-color-index:colorIndex; style:swatchStyle"></span>
       <span class="legend-label" data-bind="label"></span>
       <span class="legend-value" data-bind="value"></span>
     </div>

@@ -223,3 +223,33 @@ test('sherpa-metric renders label/value/delta and drives inner sparkline via set
   expect(r.trend).toBe('up');
   expect(r.sparkVisibleShapes).toBe(3); // 4 points → 3 segments
 });
+
+test('viz charts consume data-viz tokens (re-theme on mode change, not hardcoded)', async ({ page }) => {
+  await openHarness(page);
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    async function measure(mode: string): Promise<{ legend: string; line: string }> {
+      document.documentElement.setAttribute('data-theme', 'apex-2-core');
+      document.documentElement.setAttribute('data-mode', mode);
+      root.innerHTML = '';
+      const lg = document.createElement('sherpa-chart-legend') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+      root.appendChild(lg); await lg.rendered;
+      lg.populate!([{ label: 'A' }, { label: 'B' }]);
+      const ln = document.createElement('sherpa-line-chart') as HTMLElement & { rendered?: Promise<void>; setData?: (d: unknown) => Promise<void> };
+      root.appendChild(ln); await ln.rendered;
+      await ln.setData!({ labels: ['x', 'y'], series: [{ name: 'S1', values: [1, 2] }] });
+      await new Promise((res) => setTimeout(res, 70));
+      return {
+        legend: getComputedStyle(lg.shadowRoot!.querySelector('.legend-key')!).backgroundColor,
+        line: getComputedStyle(ln.shadowRoot!.querySelector('.series[data-color-index="1"]')!).color,
+      };
+    }
+    const light = await measure('light');
+    const dark = await measure('dark');
+    return { light, dark };
+  });
+  // Series colours must come from tokens → they shift between light and dark mode.
+  expect(r.light.legend).not.toBe(r.dark.legend);
+  expect(r.light.line).not.toBe(r.dark.line);
+  expect(r.light.legend).toBe(r.light.line); // legend swatch mirrors the line colour
+});
