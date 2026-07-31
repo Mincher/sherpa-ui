@@ -81,3 +81,14 @@ A and F are the highest-value (functional + theme-breaking); do them first.
 - **product-bar-v2 Layout=Small** responsive variant.
 - Remaining P2 polish (D/E batches): callout urgent, progress-steps info/urgent nodes, overlay-item
   "Modified" state, minimal input variant, misc docstring/fallback reconciliations, unused typeface primitives.
+
+### Additional batches shipped (churn continued)
+- ✅ **Batch D/E** (feedback/overlay/input P2) — `3e509e9`: callout urgent, progress-steps info/urgent nodes + focus ring, overlay-item "Modified", minimal input variant, key-value/toast fallback+docstring fixes.
+- ✅ **V5 barchart** grouped + full-stacked — `703b09b`.
+
+### Remaining (small tail)
+- **V6** line-chart stacked/full-stacked area — cumulative path geometry (next increment).
+- **DG2/DG3** data-grid "Primary" cell type + dropdown/edit cell variants.
+- **nav event-name rename** (breaking).
+- **product-bar-v2 Layout=Small** responsive.
+- breadcrumbs brand-icon slot; gauge 25/50/75 level presets; unused typeface primitives.
