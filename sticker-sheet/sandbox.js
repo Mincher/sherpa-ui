@@ -45,11 +45,11 @@ document.getElementById('header-settings')?.addEventListener('button-click', () 
 });
 
 // ── Nav item → scroll to tile ──────────────────────────────────────────────
-nav?.addEventListener('navitemclick', (e) => {
+nav?.addEventListener('nav-item-click', (e) => {
   const route = e.detail?.route;
   if (route?.startsWith('#')) document.querySelector(route)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
-nav?.addEventListener('navhome', () => document.querySelector('#tile-buttons')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+nav?.addEventListener('nav-home', () => document.querySelector('#tile-buttons')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
 // ── Data grid ───────────────────────────────────────────────────────────────
 customElements.whenDefined('sherpa-data-grid').then(async () => {

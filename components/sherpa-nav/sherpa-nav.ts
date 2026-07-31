@@ -16,43 +16,43 @@
  * @attr {string}  data-promo-link-text— Footer promo CTA link label
  * @attr {string}  data-promo-link-url — Footer promo CTA link URL
  *
- * @fires navhome
+ * @fires nav-home
  *   bubbles: true, composed: true
  *   detail: none
- * @fires navsettings — Settings button toggled · detail: { active: boolean }
+ * @fires nav-settings — Settings button toggled · detail: { active: boolean }
  *   bubbles: true, composed: true
  *   detail: none
- * @fires navitemclick
+ * @fires nav-item-click
  *   bubbles: true, composed: true
  *   detail: { itemId: string, sectionId: string, route: string, label: string }
- * @fires navitemdelete
+ * @fires nav-item-delete
  *   bubbles: true, composed: true
  *   detail: { itemId: string, sectionId: string }
- * @fires navpinchange
+ * @fires nav-pin-change
  *   bubbles: true, composed: true
  *   detail: { pinned: boolean }
- * @fires navmodechange
+ * @fires nav-mode-change
  *   bubbles: true, composed: true
  *   detail: { mode: string, previousMode: string }
- * @fires navsectionexpand
+ * @fires nav-section-expand
  *   bubbles: true, composed: true
  *   detail: { sectionId: string }
- * @fires navsectionreorder
+ * @fires nav-section-reorder
  *   bubbles: true, composed: true
  *   detail: { groupIndex: number, sectionOrder: Array }
- * @fires navfavoritechange
+ * @fires nav-favorite-change
  *   bubbles: true, composed: true
  *   detail: { itemId: string, label: string, favorite: boolean }
- * @fires naveditconfirm
+ * @fires nav-edit-confirm
  *   bubbles: true, composed: true
  *   detail: none
- * @fires naveditcancel
+ * @fires nav-edit-cancel
  *   bubbles: true, composed: true
  *   detail: none
- * @fires naveditreset
+ * @fires nav-edit-reset
  *   bubbles: true, composed: true
  *   detail: none
- * @fires navpromodismiss
+ * @fires nav-promo-dismiss
  *   bubbles: true, composed: true
  *   detail: none
  *
@@ -476,7 +476,7 @@ export class SherpaNav extends SherpaElement {
     }
     this.#persistQuickAccess('favorites');
     this.#syncSectionBadges();
-    this.#emit("navfavoritechange", { itemId, label, favorite: on });
+    this.#emit("nav-favorite-change", { itemId, label, favorite: on });
   }
 
   async addToRecent(itemId: string, label?: string, route?: string): Promise<void> {
@@ -540,7 +540,7 @@ export class SherpaNav extends SherpaElement {
     close.addEventListener("click", () => {
       const promo = this.$<HTMLElement>(".nav-promo");
       if (promo) promo.dataset["dismissed"] = "";
-      this.#emit("navpromodismiss", {});
+      this.#emit("nav-promo-dismiss", {});
     });
   }
 
@@ -725,7 +725,7 @@ export class SherpaNav extends SherpaElement {
       settingsBack.addEventListener("click", (e) => {
         e.stopPropagation();
         this.exitSettings();
-        this.#emit("navsettings", { active: false });
+        this.#emit("nav-settings", { active: false });
       });
     }
 
@@ -737,7 +737,7 @@ export class SherpaNav extends SherpaElement {
         const details = e.target as HTMLElement | null;
         if (!details || !details.matches(".nav-section, .nav-subsection")) return;
         if ((details as HTMLDetailsElement).open && details.matches(".nav-section")) {
-          this.#emit("navsectionexpand", {
+          this.#emit("nav-section-expand", {
             sectionId: details.dataset["sectionId"],
           });
         }
@@ -802,11 +802,11 @@ export class SherpaNav extends SherpaElement {
     });
     // Legacy buttons still wire up if a consumer template hasn't migrated yet.
     this.$(".nav-edit-confirm")?.addEventListener("click", () => {
-      this.#emit("naveditconfirm");
+      this.#emit("nav-edit-confirm");
       this.mode = SherpaNav.MODES.DEFAULT;
     });
     this.$(".nav-edit-cancel")?.addEventListener("click", () => {
-      this.#emit("naveditcancel");
+      this.#emit("nav-edit-cancel");
       this.mode = SherpaNav.MODES.DEFAULT;
     });
   }
@@ -832,7 +832,7 @@ export class SherpaNav extends SherpaElement {
       e.stopPropagation();
       const sec = navItem.closest<HTMLElement>(".nav-section");
       if (navItem.dataset["itemId"]) {
-        this.#emit("navitemdelete", {
+        this.#emit("nav-item-delete", {
           itemId: navItem.dataset["itemId"],
           sectionId: sec?.dataset["sectionId"] || null,
         });
@@ -857,7 +857,7 @@ export class SherpaNav extends SherpaElement {
         // Toggle the secondary Settings navigation list (spec: the Settings
         // button swaps primary content for the Settings list and back).
         this.toggleSettings();
-        this.#emit("navsettings", { active: this.isSettings });
+        this.#emit("nav-settings", { active: this.isSettings });
         return;
       }
       this.#clearAllActiveStates();
@@ -891,7 +891,7 @@ export class SherpaNav extends SherpaElement {
         details?.dataset["sectionId"] ||
         details?.closest<HTMLElement>(".nav-section")?.dataset["sectionId"] ||
         null;
-      this.#emit("navitemclick", {
+      this.#emit("nav-item-click", {
         itemId: navItem.dataset["itemId"],
         sectionId: headerSectionId,
         route: navItem.dataset["route"],
@@ -905,7 +905,7 @@ export class SherpaNav extends SherpaElement {
     if (this.isSearching) this.endSearch();
     const leafSectionId =
       navItem.closest<HTMLElement>(".nav-section")?.dataset["sectionId"] || null;
-    this.#emit("navitemclick", {
+    this.#emit("nav-item-click", {
       itemId: navItem.dataset["itemId"],
       sectionId: leafSectionId,
       route: navItem.dataset["route"],
@@ -940,7 +940,7 @@ export class SherpaNav extends SherpaElement {
   #onPinnedChange(pinned: boolean): void {
     const pinBtn = this.$<HTMLElement>(".nav-pin-btn") as HTMLElement & { active?: boolean } | null;
     if (pinBtn) pinBtn.active = pinned;
-    this.#emit("navpinchange", { pinned });
+    this.#emit("nav-pin-change", { pinned });
   }
 
   #onModeChange(newMode: string, oldMode: string): void {
@@ -951,7 +951,7 @@ export class SherpaNav extends SherpaElement {
       this.#applySearchFilter("");
     const editBtn = this.$<HTMLElement>(".nav-edit-btn") as HTMLElement & { active?: boolean } | null;
     if (editBtn) editBtn.active = newMode === SherpaNav.MODES.EDIT;
-    this.#emit("navmodechange", { mode: newMode, previousMode: oldMode });
+    this.#emit("nav-mode-change", { mode: newMode, previousMode: oldMode });
   }
 
   // ═══════════════════ Private — Item Creation ══════════════════
@@ -1016,7 +1016,7 @@ export class SherpaNav extends SherpaElement {
         onReorder: (order) => {
           const filteredOrder = order.filter((id): id is string => id !== undefined);
           this.#persistGroupOrder(gi, filteredOrder);
-          this.#emit("navsectionreorder", {
+          this.#emit("nav-section-reorder", {
             groupIndex: gi,
             sectionOrder: filteredOrder,
           });
@@ -1097,7 +1097,7 @@ export class SherpaNav extends SherpaElement {
   /**
    * Public API — revert any user reordering of draggable nav groups back
    * to the template-declared defaults, clear persisted order, and notify
-   * listeners via `naveditreset`.
+   * listeners via `nav-edit-reset`.
    */
   resetOrder(): void {
     if (!this.#defaultOrders) return;
@@ -1109,7 +1109,7 @@ export class SherpaNav extends SherpaElement {
     try { localStorage.removeItem(this.#orderStorageKey); } catch {
       /* noop */
     }
-    this.#emit('naveditreset');
+    this.#emit('nav-edit-reset');
   }
 
   // ═══════════════════ Private — Search Filter ══════════════════

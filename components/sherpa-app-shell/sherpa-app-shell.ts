@@ -37,7 +37,7 @@ export class SherpaAppShell extends SherpaElement {
 
     if (!this.#wired) {
       navSlot.addEventListener('slotchange', syncNavState);
-      this.addEventListener('navpinchange', syncNavState as EventListener);
+      this.addEventListener('nav-pin-change', syncNavState as EventListener);
       this.#wired = true;
     }
 

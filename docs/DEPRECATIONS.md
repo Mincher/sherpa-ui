@@ -22,6 +22,19 @@ The node-graph family's `sherpa-*`-prefixed event **strings** were migrated to u
 
 **Consumer action:** update any `addEventListener("sherpa-node-…")` to the unprefixed name.
 
+## sherpa-nav event renames (breaking)
+The nav family's concatenated event **strings** were migrated to the ratified `noun-verb`
+form (per the App-Shell-v2 audit). 13 events renamed at their dispatch sites, the `@fires`
+JSDoc, and the two consumers (`sherpa-app-shell`, sandbox):
+
+`navitemclick → nav-item-click`, `navitemdelete → nav-item-delete`, `navpinchange → nav-pin-change`,
+`navmodechange → nav-mode-change`, `navsettings → nav-settings`, `navsectionexpand → nav-section-expand`,
+`navsectionreorder → nav-section-reorder`, `navfavoritechange → nav-favorite-change`,
+`navpromodismiss → nav-promo-dismiss`, `naveditcancel → nav-edit-cancel`, `naveditconfirm → nav-edit-confirm`,
+`naveditreset → nav-edit-reset`, `navhome → nav-home`.
+
+**Consumer action:** update any `addEventListener("navitemclick" | "navpinchange" | …)` to the hyphenated name.
+
 ## Notes
 - **Why not remove the orphaned components now?** `sherpa-product-bar` (v1) is safe to delete today but is the *first domino* of App Shell v2; keeping it until its full removal keeps that migration self-contained. `sherpa-node-header` was removed in Phase 5.
 - **Do not re-add these to any new work.** New components/patterns must target the replacements (`sherpa-product-bar-v2`/App Header, `sherpa-node-row`, `data-variant`).
