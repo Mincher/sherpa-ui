@@ -84,14 +84,10 @@ export class SherpaNavItem extends SherpaElement {
       }
       return;
     }
-    const container = this.$('.nav-item-icon');
-    if (!container) return;
-    let inner = container.querySelector('.nav-item-icon-inner');
-    if (!inner) {
-      inner = document.createElement('span');
-      inner.className = 'nav-item-icon-inner';
-      container.prepend(inner);
-    }
+    // The .nav-item-icon-inner scaffold (and its <i>) is declared in the
+    // template, so we only ever update it here — never build it.
+    const inner = this.$('.nav-item-icon-inner');
+    if (!inner) return;
     // Resolve registry key (data-svg-icon) → data-icon-svg if present.
     const svgKey = this.dataset["svgIcon"];
     const registry = (typeof window !== 'undefined') ? window.__sherpaNavIcons : null;

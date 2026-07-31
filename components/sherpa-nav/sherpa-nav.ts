@@ -205,7 +205,6 @@ export class SherpaNav extends SherpaElement {
   #hostClickWired = false;
   #defaultUrl = new URL("./sherpa-nav.html", import.meta.url).href;
   #navItemTpl: HTMLTemplateElement | null = null; // Cached <template class="nav-item-tpl">
-  #badgeTpl: HTMLTemplateElement | null = null; // Cached <template class="badge-tpl">
   #defaultOrders: Map<number, string[]> | null = null; // captured at render
   // Last selection requested by the host. Persisted on the instance so we
   // can re-apply the active-state styling after the nav template is
@@ -250,10 +249,6 @@ export class SherpaNav extends SherpaElement {
     this.#navItemTpl = this.$<HTMLTemplateElement>("template.nav-item-tpl") || this.#injectFallbackTemplate(
       "nav-item-tpl",
       '<sherpa-nav-item data-variant="child" tabindex="0" role="button"></sherpa-nav-item>',
-    );
-    this.#badgeTpl = this.$<HTMLTemplateElement>("template.badge-tpl") || this.#injectFallbackTemplate(
-      "badge-tpl",
-      '<sherpa-tag slot="badge" data-status="success"></sherpa-tag>',
     );
     this.#attachContentEvents();
     this.#wireToggleListeners();
@@ -950,6 +945,8 @@ export class SherpaNav extends SherpaElement {
     // Bind the flat fields via the Sherpa template binder (data-bind* on
     // .nav-item-tpl). renderTemplate returns a bound clone; the binder maps
     // label + id/icon/route/state/editable and drops empty attributes.
+    // sherpa-nav-item renders its own badge from data-badge, so it's just
+    // another bound field — no separate sherpa-tag construction needed.
     const frag = renderTemplate(this.#navItemTpl, {
       label: item.label ?? "",
       id: item.id ?? null,
@@ -957,22 +954,11 @@ export class SherpaNav extends SherpaElement {
       route: item.route ?? null,
       state: item.active ? "selected" : null,
       editable: editable ? "true" : null,
+      badge: item.badge ?? null,
     });
     const el = frag.querySelector<HTMLElement>("sherpa-nav-item");
     if (!el) throw new Error("Missing nav item element in template");
-    // The badge is a nested sherpa-tag component appended after binding.
-    if (item.badge) el.appendChild(this.#createBadgeElement(item.badge));
     return el;
-  }
-
-  #createBadgeElement(text: string): HTMLElement {
-    const badgeTpl = this.#badgeTpl;
-    if (!badgeTpl) throw new Error("Missing badge template");
-    const tag = (badgeTpl.content.cloneNode(true) as DocumentFragment)
-      .querySelector<HTMLElement>("sherpa-tag");
-    if (!tag) throw new Error("Missing badge element in template");
-    tag.textContent = text;
-    return tag;
   }
 
   // ═════════════════════ Private — Drag & Drop ══════════════════
