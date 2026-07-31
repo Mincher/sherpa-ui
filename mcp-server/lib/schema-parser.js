@@ -124,6 +124,24 @@ function parseAttr(line) {
   return attr;
 }
 
+/**
+ * Parse a @data tag: the machine-readable populate() contract.
+ *   @data {array}  [{ key, value, type?, html? }]  — Pairs to render
+ *   @data {object} { rows: [...], columns: [...] } — Grid pipeline config
+ * `kind` is the populate kind (array | object | string). `shape` is the
+ * literal payload sketch. `description` is the trailing prose (after — / –).
+ */
+function parseData(line) {
+  const m = line.match(/^@data\s+\{(\w+)\}\s+(.*)$/);
+  if (!m) return { kind: "object", shape: line.replace("@data ", "").trim(), description: "" };
+  const rest = (m[2] || "").trim();
+  // Split shape from trailing prose on an em/en dash.
+  const dash = rest.search(/\s[—–]\s/);
+  const shape = dash === -1 ? rest : rest.slice(0, dash).trim();
+  const description = dash === -1 ? "" : rest.slice(dash).replace(/^\s*[—–]\s*/, "").trim();
+  return { kind: m[1].trim(), shape, description };
+}
+
 function parseSlot(line) {
   const stripped = line.replace(/^@slot\s*/, "");
 
@@ -248,7 +266,7 @@ function parseJSDoc(lines) {
     tagName: null, category: null, description: "", extendedDescription: "",
     baseClass: "SherpaElement",
     attributes: [], slots: [], events: [], methods: [], properties: [],
-    cssParts: [], cssProperties: [],
+    cssParts: [], cssProperties: [], data: null,
   };
 
   let i = 0;
@@ -282,6 +300,8 @@ function parseJSDoc(lines) {
       result.description = desc;
     } else if (line.startsWith("@attr ")) {
       result.attributes.push(parseAttr(line));
+    } else if (line.startsWith("@data ")) {
+      result.data = parseData(line);
     } else if (line.startsWith("@slot ") || line === "@slot" || line.startsWith("@slot —") || line.startsWith("@slot –")) {
       result.slots.push(parseSlot(line));
     } else if (line.startsWith("@fires ")) {
@@ -462,6 +482,7 @@ export function parseComponentSchema(tagName, componentsDir) {
   output.attributes = api.attributes;
   output.slots = api.slots;
   output.events = api.events;
+  if (api.data) output.data = api.data;
   if (api.methods.length) output.methods = api.methods;
   if (api.properties.length) output.properties = api.properties;
   if (api.cssParts.length) output.cssParts = api.cssParts;

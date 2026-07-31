@@ -47,7 +47,9 @@
  *   detail: { action: string, data: object, selectedRows: object[] }
  *
  * @method setColumnConfig(config) — Set column type/status map config
- * @method setData(config)         — Main data pipeline entry
+ * @data {object} { rows: [...], columns: [...], metadata?, orderBy?, segmentBy? } — Grid pipeline config
+ * @method populate(config)        — Canonical data entry: { rows, columns, … } (drives the pipeline)
+ * @method setData(config)         — Main data pipeline entry (called by populate())
  * @method expandAllGroups()       — Expand all group rows
  * @method collapseAllGroups()     — Collapse all group rows
  * @method getSelectedRows()       — Returns selected row IDs
@@ -93,8 +95,6 @@ const NUMERIC_TYPES = new Set([
   "double",
   "decimal",
 ]);
-
-const BOOLEAN_FIELDS = new Set();
 
 /** Return a reasonable default column flex-basis (px) by data type. */
 function columnWidth(type: string | null | undefined): number {
@@ -573,8 +573,6 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       // Consumer-provided type override takes precedence
       if (cfg?.type) {
         col.type = cfg.type;
-      } else if (BOOLEAN_FIELDS.has(col.field) && col.type === "string") {
-        col.type = "boolean";
       }
       // Merge consumer-provided statusMap into the column
       if (cfg?.statusMap) {
@@ -1620,9 +1618,13 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
   }
 
-  /** Fetch `{ columns, rows }` JSON from the given URL and load it. */
-  override async onJsonData(data: DataPipelineConfig | null | undefined): Promise<void> {
-    await this.setData(data);
+  /**
+   * Render grid data. Dispatched from the unified `populate()` —
+   * call `el.populate({ rows, columns, … })`. Delegates to the async `setData`
+   * pipeline (sort / segment / aggregate), so populate() drives the full pipeline.
+   */
+  protected override renderData(source: unknown): void {
+    void this.setData(source as DataPipelineConfig | null | undefined);
   }
 
   override onJsonError(_url: string, _e: unknown): void {

@@ -11,6 +11,8 @@
  * @attr {string} data-src-json — URL of a JSON file: [{label: string, href?: string}]
  * @attr {json}   data-items    — Inline JSON array: [{label: string, href?: string}]
  *
+ * @data {array} [{ label, href? }] — Crumbs; the last becomes the current page. Also accepts a
+ *   precompiled HTML string.
  * @method populate(source) — Render from a crumb array [{label, href?}] OR a
  *   precompiled HTML string. The single data → HTML entry point (see the
  *   Sherpa template binder). The last crumb becomes the current page.
@@ -21,7 +23,6 @@
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
-import { isHtmlString } from '../utilities/sherpa-template/sherpa-template.js';
 
 interface CrumbInput { label?: unknown; href?: unknown; }
 
@@ -46,9 +47,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
     }
   }
 
-  override onJsonData(items: unknown): void {
-    if (Array.isArray(items)) this.populate(items as CrumbInput[]);
-  }
+  // data-src-json → populate() is handled by the base class (onJsonData default).
 
   #applyDataItems(): void {
     const raw = this.dataset["items"];
@@ -61,23 +60,20 @@ export class SherpaBreadcrumbs extends SherpaElement {
     }
   }
 
-  /* ── Data → HTML population (via the template binder) ─────────── */
+  /* ── Data → HTML population (via the unified populate() dispatcher) ───────
+   * Populate the trail with `el.populate([{label, href?}])` or
+   * `el.populate('<ol>…</ol>')`. The base-class dispatcher sniffs the kind and
+   * routes arrays here (renderData) and HTML strings to renderTemplateSource.
+   */
 
   /**
-   * Populate the trail from a crumb array or precompiled HTML. Each crumb
-   * object is expanded into the render-flags the template's data-bind-if
-   * branches consume (link / current / separator), then rendered per-item from
-   * the surviving `.crumb-tpl` prototype into the trail.
+   * Render the crumb array. Each crumb object is expanded into the render-flags
+   * the template's data-bind-if branches consume (link / current / separator),
+   * then rendered per-item from the `.crumb-tpl` prototype into the trail.
    */
-  public populate(source: CrumbInput[] | string): void {
-    // Precompiled HTML fast-path: inject straight into the trail.
-    if (isHtmlString(source)) {
-      const trail = this.$('.breadcrumb-trail');
-      if (trail) trail.innerHTML = source;
-      return;
-    }
-
-    const crumbs = source
+  protected override renderData(source: unknown): void {
+    const list = Array.isArray(source) ? source : [];
+    const crumbs = list
       .filter((c): c is CrumbInput => c != null && typeof c === 'object')
       .map((c) => ({ label: String(c.label ?? '').trim(), href: c.href ? String(c.href) : '#' }))
       .filter((c) => c.label);
@@ -91,6 +87,12 @@ export class SherpaBreadcrumbs extends SherpaElement {
     // renderInto clones the `.crumb-tpl` prototype once per item and places the
     // results into the trail — the single data → HTML path.
     this.renderInto('.breadcrumb-trail', '.crumb-tpl', items);
+  }
+
+  /** Precompiled HTML fast-path: inject straight into the trail. */
+  protected override renderTemplateSource(html: string): void {
+    const trail = this.$('.breadcrumb-trail');
+    if (trail) trail.innerHTML = html;
   }
 
   /* ── Click delegation ────────────────────────────────────────── */

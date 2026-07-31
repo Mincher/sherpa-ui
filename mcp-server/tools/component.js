@@ -1,6 +1,5 @@
 import { z } from "zod/v3";
-import { generateComponentHTML } from "../lib/generators.js";
-import { validateUsage } from "../lib/validation.js";
+import { generateComponentJSON } from "../lib/generators.js";
 
 function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }
@@ -82,20 +81,33 @@ export function register(server, { schemas }, { parseTemplateIds, componentsDir 
     "generate_component",
     {
       title: "Generate Component",
-      description: "Generate valid HTML markup for a Sherpa UI component. Only known attributes are emitted; boolean attributes render without values; icon names are converted to unicode entities.",
+      description:
+        "Generate an element JSON node (an ElementNode) for a Sherpa UI component. " +
+        "Return shape: { type, props?, data?, slots?, children? }. Hand this to renderElement(node) " +
+        "(components/utilities/render-element.ts) or el.populate(node.data) to render. `props` are " +
+        "literal attributes (only known attrs are kept; booleans become true/omitted); `data` is the " +
+        "component's populate() payload (see the component's `data` field from query_component for its " +
+        "shape); `slots`/`children` hold nested ElementNodes. Values are carried raw (icon tokens are " +
+        "NOT entity-encoded). This tool emits JSON, not HTML.",
       inputSchema: {
         tagName: z.string().describe("Component tag name (e.g. sherpa-button)"),
         attributes: z.record(z.union([z.string(), z.boolean(), z.number()]))
           .optional()
-          .describe('Attribute key-value pairs, e.g. {"data-label": "Save", "data-variant": "primary"}'),
-        slots: z.record(z.string())
+          .describe('Attribute key-value pairs → props, e.g. {"data-label": "Save", "data-variant": "primary"}'),
+        data: z.any()
           .optional()
-          .describe('Slot content map. Use "" or "default" for the default slot.'),
+          .describe("populate() payload: an array (1-D collection), a keyed object ({rows,columns}/{steps}), or an HTML string. See the component's `data` shape from query_component."),
+        slots: z.record(z.any())
+          .optional()
+          .describe('Named-slot fills: slot name → an ElementNode (or array of nodes).'),
+        children: z.array(z.any())
+          .optional()
+          .describe("Default-slot content: an array of ElementNodes."),
         templateId: z.string().optional()
           .describe('Template variant (e.g. "icon", "button-menu"). Omit for the default template.'),
       },
     },
-    async ({ tagName, attributes, slots, templateId }) => {
+    async ({ tagName, attributes, data, slots, children, templateId }) => {
       try {
         const schema = schemas.get(tagName);
         if (!schema) return ok(`Unknown component: ${tagName}`);
@@ -107,19 +119,17 @@ export function register(server, { schemas }, { parseTemplateIds, componentsDir 
           }
         }
 
-        const html = generateComponentHTML(schema, attributes || {}, slots || {});
-        const issues = validateUsage(html, schemas);
+        const node = generateComponentJSON(schema, attributes || {}, data, slots, children);
 
-        let response = templateId ? `<!-- template: ${templateId} -->\n` : "";
-        response += html;
-        if (issues.length) {
-          response += "\n\n<!-- Validation notes:\n";
-          for (const issue of issues) {
-            response += `  ${issue.severity}: ${issue.message}\n`;
-          }
-          response += "-->";
-        }
-        return ok(response);
+        // Surface unknown attributes as notes so callers can correct them.
+        const known = new Set((schema.attributes || []).map((a) => a.name));
+        const dropped = Object.keys(attributes || {}).filter((n) => !known.has(n));
+
+        const payload = { node };
+        if (dropped.length) payload.notes = [`Dropped unknown attributes: ${dropped.join(", ")}`];
+        if (templateId) payload.templateId = templateId;
+
+        return ok(JSON.stringify(payload, null, 2));
       } catch (e) {
         return err(`generate_component: ${e.message}`);
       }

@@ -3,7 +3,7 @@
  * @category media
  * @description Standalone colour-coded legend component, decoupled from any chart. Use when
  *   the legend must render separately from the chart (different grid column, below the chart
- *   in a stacked layout). Call setItems() with the same series data used to render the chart.
+ *   in a stacked layout). Call populate() with the same series data used to render the chart.
  *   Make items interactive (link: true) to enable filter/highlight behaviour driven by
  *   legend-item-click events.
  *
@@ -14,7 +14,9 @@
  *   bubbles: true, composed: true
  *   detail: { index: number, label: string }
  *
- * @method setItems(items) — Set legend items: [{ label, value?, color?, active?, link? }]
+ * @data {array} [{ label, value?, color?, active?, link? }] — Legend items to render
+ * @method populate(items) — Canonical data entry: [{ label, value?, color?, active?, link? }]
+ * @method setItems(items) — Deprecated alias for populate()
  *
  * @prop {Array} items — Current legend items (getter-only)
  */
@@ -71,9 +73,18 @@ export class SherpaChartLegend extends SherpaElement {
    * Set legend items.
    * @param {Array<{label: string, value?: string, color?: string, active?: boolean, link?: boolean}>} items
    */
-  setItems(items: LegendItem[]): void {
-    this.#items = items || [];
+  /**
+   * Render the legend items. Dispatched from the unified `populate()` —
+   * call `el.populate([{ label, value?, color?, active?, link? }])`.
+   */
+  protected override renderData(source: unknown): void {
+    this.#items = Array.isArray(source) ? (source as LegendItem[]) : [];
     this.#render();
+  }
+
+  /** @deprecated Use {@link populate} — retained for back-compat. */
+  setItems(items: LegendItem[]): void {
+    this.populate(items);
   }
 
   /** Get current items. */

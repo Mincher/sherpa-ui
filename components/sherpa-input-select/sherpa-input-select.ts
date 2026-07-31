@@ -15,10 +15,10 @@
  *   bubbles: true, composed: true
  *   detail: { value: string, path?: string[] }
  *
- * @method setOptions(options) — Set option list. Accepts either:
- *   • Flat:    Array<{ value, label, disabled? }>
- *   • Grouped: Array<{ label, options: Array<{ value, label, disabled? }> }>
- *   Grouped entries become native <optgroup> elements.
+ * @data {array} [{ value, label, disabled? }] — Options; grouped entries
+ *   [{ label, options: [...] }] become native <optgroup> elements.
+ * @method populate(options)   — Canonical data entry (flat or grouped)
+ * @method setOptions(options) — Set option list (flat or grouped). Called by populate().
  * @method setTree(nodes)      — (tree) Set the node forest
  */
 
@@ -139,6 +139,16 @@ export class SherpaInputSelect extends SherpaInputBase {
    * rendered as a native <optgroup>.
    * @param {Array<{value: string, label: string, disabled?: boolean} | {label: string, options: Array}>} options
    */
+  /**
+   * Render the option list. Dispatched from the unified `populate()` —
+   * call `el.populate([{ value, label }])` (flat) or with grouped entries
+   * `[{ label, options: [...] }]` for `<optgroup>`s. Delegates to the
+   * native-`<option>` builder (queued until the inner `<select>` exists).
+   */
+  protected override renderData(source: unknown): void {
+    this.setOptions(Array.isArray(source) ? (source as OptionDef[]) : []);
+  }
+
   public setOptions(options: OptionDef[]): void {
     const select = this.els.select;
     if (!select) {

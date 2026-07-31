@@ -51,7 +51,11 @@ import {
   renderTemplate,
   bindHtml,
   isHtmlString,
+  detectKind,
+  collectionShape,
   type TemplateData,
+  type PopulateKind,
+  type CollectionShape,
 } from '../sherpa-template/sherpa-template.js';
 
 // ── Class-level caches ─────────────────────────────────────────────
@@ -207,6 +211,69 @@ export class SherpaElement extends HTMLElement {
     target.replaceChildren(frag);
   }
 
+  /* ── Unified populate() dispatcher ────────────────────────────────
+   * The single public data-entry method for every collection component.
+   * Two call forms:
+   *
+   *   el.populate(data)          // kind sniffed from the value
+   *   el.populate(kind, data)    // kind forced ('template' | 'collection')
+   *
+   * There are two kinds. 'template' is a precompiled HTML string, injected
+   * as-is. 'collection' is structured data — a bare array (1-D), a keyed JSON
+   * definition ({rows, columns} / {steps}), or a single record. The base class
+   * resolves the kind and hands off to one override point, `renderData()`,
+   * which each component implements with its own binding. This is why grid,
+   * tree and metric are NOT exceptions — their `{rows, columns}` / `{nodes}`
+   * payloads are simply the keyed shape of a collection.
+   */
+
+  /**
+   * Populate the component from data or precompiled HTML.
+   * @param a   the data/HTML, or an explicit kind ('template' | 'collection')
+   * @param b   the data/HTML when the first argument is an explicit kind
+   */
+  populate(a: PopulateKind | TemplateData, b?: TemplateData): void {
+    let kind: PopulateKind;
+    let data: TemplateData;
+    if ((a === 'template' || a === 'collection') && arguments.length > 1) {
+      kind = a;
+      data = b as TemplateData;
+    } else {
+      data = a as TemplateData;
+      kind = detectKind(data);
+    }
+
+    if (kind === 'template') {
+      this.renderTemplateSource(typeof data === 'string' ? data : String(data ?? ''));
+      return;
+    }
+    this.renderData(data, { kind, shape: collectionShape(data) });
+  }
+
+  /**
+   * Render structured collection data. **Override this** in every collection
+   * component — it is the single hook the unified `populate()` dispatches to.
+   * `data` may be a bare array, a keyed definition, or a single record; `meta.shape`
+   * tells you which. Default is a no-op so non-data components inherit safely.
+   * @param _data collection payload (array | keyed object | record)
+   * @param _meta { kind, shape } — the resolved kind and detected collection shape
+   */
+  protected renderData(
+    _data: TemplateData,
+    _meta: { kind: PopulateKind; shape: CollectionShape },
+  ): void {}
+
+  /**
+   * Render a precompiled HTML string. Default delegates to `renderData` so a
+   * component that only implements the data path still degrades sensibly.
+   * Override when a component has a dedicated HTML-injection target (e.g. a list
+   * that sets `container.innerHTML` directly).
+   * @param html precompiled, trusted HTML string
+   */
+  protected renderTemplateSource(html: string): void {
+    this.renderData(html, { kind: 'template', shape: 'record' });
+  }
+
   /**
    * Create a typed, lazy element cache for this component.
    *
@@ -292,14 +359,14 @@ export class SherpaElement extends HTMLElement {
    * Called after `data-src-json` is fetched and parsed.
    *
    * Default behaviour makes `data-src-json` a thin wrapper over `populate()`:
-   * if the subclass defines a `populate` method, the fetched data is handed to
-   * it — so the remote-descriptor path routes through the same binder as
-   * everything else. Subclasses may still override for custom handling.
+   * the fetched value is handed to the unified dispatcher, which sniffs its
+   * kind and routes it to `renderData()` / `renderTemplateSource()`. So the
+   * remote-descriptor path shares one code path with every other data entry.
+   * Subclasses may still override for custom handling.
    * @param data — parsed JSON value
    */
   onJsonData(data: unknown): void {
-    const self = this as unknown as { populate?: (d: unknown) => void };
-    if (typeof self.populate === 'function') self.populate(data);
+    this.populate(data as TemplateData);
   }
 
   /**

@@ -59,7 +59,10 @@
  *   bubbles: true, composed: true
  *   detail: { menu: SherpaContainerOverlay }
  *
- * @method setMenuItems(items, opts) — Populate menu with items array
+ * @data {array} [{ value, text, selected?, disabled?, keepOpen? }] — Menu items (flat), or
+ *   sections [{ heading, items:[...] }], or a { items, options } wrapper to also pass MenuOptions.
+ * @method populate(data) — Canonical menu data entry (items, sections, or { items, options })
+ * @method setMenuItems(items, opts) — Populate menu with items array (called by populate())
  *   @param {Array} items — Flat array or sections format
  *   @param {object} [opts] — Options
  *   @returns {void}
@@ -77,12 +80,7 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { SherpaContainerOverlay } from "../sherpa-container-overlay/sherpa-container-overlay.js";
-import type {
-  MenuItem,
-  MenuSection,
-  MenuItems,
-  MenuOptions,
-} from "../utilities/types.js";
+import type { MenuItems, MenuOptions } from "../utilities/types.js";
 
 /* ── Type Definitions ─────────────────────────────────────────────── */
 
@@ -139,25 +137,13 @@ export class SherpaButton extends SherpaElement {
     badge: '.badge',
   });
 
-  // Menu state (not cached - initialized later via setMenuItems)
+  // Menu overlay — created lazily; owns its own item-building.
   #menuEl: SherpaContainerOverlay | null = null;
   #menuClosedAt = 0;
-
-  // Cloning prototypes for programmatic menu building
-  #menuListTpl: HTMLTemplateElement | null = null;
-  #menuItemTpl: HTMLTemplateElement | null = null;
-  #menuHeadingTpl: HTMLTemplateElement | null = null;
-
-  // setMenuItems() called before onRender — replayed once templates are ready
-  #pendingMenuItems: [MenuItems, Partial<MenuOptions>] | null = null;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
 
   override onRender(): void {
-    this.#menuListTpl    = this.$<HTMLTemplateElement>('template.menu-list-tpl') as HTMLTemplateElement;
-    this.#menuItemTpl    = this.$<HTMLTemplateElement>('template.menu-item-tpl') as HTMLTemplateElement;
-    this.#menuHeadingTpl = this.$<HTMLTemplateElement>('template.menu-heading-tpl') as HTMLTemplateElement;
-
     // Default variant for standard buttons
     const type = this.dataset["type"];
     if (!type && !this.dataset["variant"]) {
@@ -175,12 +161,6 @@ export class SherpaButton extends SherpaElement {
     this.#syncIcons();
     this.#syncBadge();
     this.els.trigger?.addEventListener("click", this.#onTriggerClick);
-
-    if (this.#pendingMenuItems) {
-      const [items, opts] = this.#pendingMenuItems;
-      this.#pendingMenuItems = null;
-      this.setMenuItems(items, opts);
-    }
   }
 
   override onAttributeChanged(name: string, _old: string | null, newValue: string | null): void {
@@ -468,114 +448,22 @@ export class SherpaButton extends SherpaElement {
    *   append  — if true, keep existing menu content (default: false)
    *   marker  — tag new elements for scoped cleanup on re-call; implies append
    */
+  /**
+   * Populate the button's menu. Dispatched from the unified `populate()` —
+   * call `el.populate([{ value, text }])` (flat or sections), or a
+   * `{ items, options }` wrapper. Item-building lives in the overlay; the
+   * button just ensures the menu exists and delegates.
+   */
+  protected override renderData(source: unknown): void {
+    this.#ensureMenu().populate(source as never);
+  }
+
+  /**
+   * Populate the menu with items. Thin delegate to the overlay's own
+   * `setMenuItems` — the single item-building implementation.
+   */
   setMenuItems(items: MenuItems, opts: Partial<MenuOptions> = {}): void {
-    if (!this.#menuListTpl) {
-      this.#pendingMenuItems = [items, opts];
-      return;
-    }
-    const menu = this.#ensureMenu();
-    const { marker } = opts;
-
-    if (marker) {
-      // Scoped replace: remove only previously-marked items, keep everything else
-      menu.querySelectorAll(`[data-menu-marker="${marker}"]`).forEach((el) => el.remove());
-    } else if (!opts.append) {
-      menu.replaceChildren();
-    }
-
-    if (!items?.length) return;
-
-    // Collect newly built elements so we can tag them with marker
-    const before = new Set(menu.children);
-
-    // Detect sections format: first element has a `heading` property
-    if ('heading' in (items[0] || {})) {
-      this.#buildSections(menu, items as MenuSection[]);
-    } else {
-      this.#buildFlatList(menu, items as MenuItem[], opts);
-    }
-
-    // Tag newly added top-level elements with the marker for scoped cleanup
-    if (marker) {
-      for (const child of menu.children) {
-        if (!before.has(child)) child.setAttribute("data-menu-marker", marker);
-      }
-    }
-  }
-
-  /** Build a flat list of overlay items inside a single <ul>. */
-  #buildFlatList(menu: SherpaContainerOverlay, items: MenuItem[], opts: Partial<MenuOptions> = {}): void {
-    const ul = this.#menuListTpl?.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
-    if (!ul) return;
-    if (opts.group) ul.dataset['group'] = opts.group;
-
-    for (const item of items) {
-      ul.appendChild(this.#buildMenuItem(item, opts));
-    }
-
-    menu.appendChild(ul);
-  }
-
-  /** Build grouped sections, each with an optional heading and <ul>. */
-  #buildSections(menu: SherpaContainerOverlay, sections: MenuSection[]): void {
-    for (const section of sections) {
-      // Heading
-      if (section.heading) {
-        const heading = this.#menuHeadingTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
-        if (!heading) continue;
-        heading.textContent = section.heading;
-        if (section.style) heading.setAttribute("style", section.style);
-        menu.appendChild(heading);
-      }
-
-      // Items
-      if (section.items?.length) {
-        const ul = this.#menuListTpl?.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
-        if (!ul) continue;
-        if (section.group) ul.dataset['group'] = section.group;
-        if (section.style) ul.setAttribute("style", section.style);
-
-        const sectionOpts = {
-          selection: section.selection,
-          group: section.group,
-        };
-
-        for (const item of section.items) {
-          ul.appendChild(this.#buildMenuItem(item, sectionOpts));
-        }
-
-        menu.appendChild(ul);
-      }
-    }
-  }
-
-  /** Clone a <li><sherpa-overlay-item> prototype and populate it from item data. */
-  #buildMenuItem(item: MenuItem, opts: Partial<MenuOptions> = {}): HTMLLIElement {
-    const li = this.#menuItemTpl?.content.firstElementChild?.cloneNode(true) as HTMLLIElement | undefined ?? document.createElement('li');
-    const menuItem = li.querySelector('sherpa-overlay-item');
-    if (!menuItem) return li;
-    menuItem.setAttribute("value", item.value ?? "");
-    menuItem.textContent = item.text ?? item.value ?? "";
-
-    const selection = item.selection || opts.selection;
-    if (selection) menuItem.setAttribute("data-selection", selection);
-    if (selection === "radio" && (item.group || opts.group)) {
-      menuItem.setAttribute("data-group", item.group || opts.group || '');
-    }
-    if (item.selected || item.checked) menuItem.setAttribute("checked", "");
-    if (item.disabled) menuItem.setAttribute("disabled", "");
-    if (item.description) menuItem.setAttribute("data-description", item.description);
-    if (item.keepOpen || selection === "checkbox") {
-      menuItem.setAttribute("data-keep-open", "");
-    }
-    // Forward custom data-* attributes
-    if (item.data) {
-      for (const [k, v] of Object.entries(item.data)) {
-        menuItem.setAttribute(`data-${k}`, v);
-      }
-    }
-
-    return li;
+    this.#ensureMenu().setMenuItems(items, opts);
   }
 
   /**

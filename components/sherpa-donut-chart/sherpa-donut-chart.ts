@@ -22,7 +22,9 @@
  * @attr {enum}    data-sort-direction — asc | desc
  * @attr {string}  data-src-json       — URL to JSON: { columns, rows } or [{ label, value }]
  *
- * @method setData(data) — Set chart data: Array<{ label, value, color? }> or config
+ * @data {array} [{ label, value, color? }] — Slices to render (or a content-config object)
+ * @method populate(data) — Canonical data entry: Array<{ label, value, color? }> or config
+ * @method setData(data) — Async render pipeline (called by populate())
  *
  * @prop {Array} data — Current chart data (getter-only)
  */
@@ -158,8 +160,13 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  override async onJsonData(data: DonutDatum[] | ContentData): Promise<void> {
-    await this.setData(data);
+  /**
+   * Render chart data. Dispatched from the unified `populate()` —
+   * call `el.populate([{ label, value, color? }])` (or a content-config object).
+   * Delegates to the async `setData` pipeline.
+   */
+  protected override renderData(source: unknown): void {
+    void this.setData(source as DonutDatum[] | ContentData);
   }
 
   /**

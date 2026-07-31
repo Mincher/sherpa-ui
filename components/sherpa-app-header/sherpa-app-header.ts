@@ -49,6 +49,7 @@
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
+import "../sherpa-breadcrumbs/sherpa-breadcrumbs.js";
 import type { EventHandler } from "../utilities/types.js";
 
 /** A breadcrumb entry. */
@@ -85,7 +86,8 @@ export class SherpaAppHeader extends SherpaElement {
     if (!this.#bound) {
       this.els.back?.addEventListener("click", this.#onBack);
       this.els.favorite?.addEventListener("click", this.#onFavorite);
-      this.els.crumbs?.addEventListener("click", this.#onCrumbClick);
+      // Re-emit the embedded breadcrumbs' own click event as our own.
+      this.els.crumbs?.addEventListener("breadcrumb-click", this.#onCrumbClick as EventListener);
       this.#bound = true;
     }
     this.#syncHeading();
@@ -126,35 +128,22 @@ export class SherpaAppHeader extends SherpaElement {
     if (icon) icon.className = on ? "fa-solid fa-star" : "fa-regular fa-star";
   }
 
-  /** Rebuild the breadcrumb trail from data-breadcrumbs using cloning prototypes. */
+  /** Forward the breadcrumb trail to the embedded sherpa-breadcrumbs. */
   #syncBreadcrumbs(): void {
-    const trail = this.els.crumbs;
-    const crumbTpl = this.$<HTMLTemplateElement>("template.crumb-tpl");
-    const sepTpl = this.$<HTMLTemplateElement>("template.crumb-sep-tpl");
-    if (!trail || !crumbTpl || !sepTpl) return;
+    const crumbs = this.els.crumbs as (HTMLElement & { populate?: (items: Breadcrumb[]) => void }) | null;
+    if (!crumbs) return;
 
     let items: Breadcrumb[] = [];
     const raw = this.dataset["breadcrumbs"];
     if (raw) { try { items = JSON.parse(raw); } catch { items = []; } }
 
-    trail.replaceChildren();
     this.toggleAttribute("data-has-breadcrumbs", items.length > 0);
-
-    items.forEach((item, i) => {
-      if (i > 0) {
-        const sep = sepTpl.content.cloneNode(true) as DocumentFragment;
-        trail.appendChild(sep);
-      }
-      const frag = crumbTpl.content.cloneNode(true) as DocumentFragment;
-      const a = frag.querySelector<HTMLAnchorElement>(".crumb");
-      if (!a) return;
-      a.textContent = item.label;
-      a.dataset["index"] = String(i);
-      const isLast = i === items.length - 1;
-      if (item.href && !isLast) a.href = item.href;
-      if (isLast) a.setAttribute("aria-current", "page");
-      trail.appendChild(frag);
-    });
+    const populate = crumbs.populate;
+    if (populate) {
+      void Promise.resolve((crumbs as { rendered?: Promise<void> }).rendered).then(() =>
+        populate.call(crumbs, items),
+      );
+    }
   }
 
   /* ── Interaction ───────────────────────────────────────────────── */
@@ -167,16 +156,10 @@ export class SherpaAppHeader extends SherpaElement {
     this.emit("favorite-toggle", { favorite: next });
   };
 
-  #onCrumbClick: EventHandler<MouseEvent> = (e: MouseEvent) => {
-    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>(".crumb");
-    if (!a || a.getAttribute("aria-current") === "page") return;
-    const index = Number(a.dataset["index"] ?? "-1");
-    const raw = this.dataset["breadcrumbs"];
-    let item: Breadcrumb | undefined;
-    if (raw) { try { item = JSON.parse(raw)[index]; } catch { /* ignore */ } }
-    // Let real hrefs navigate; only intercept when there's no href.
-    if (!item?.href) e.preventDefault();
-    this.emit("breadcrumb-click", { index, label: item?.label, href: item?.href });
+  // Re-emit the embedded breadcrumbs' click as our own (detail passthrough).
+  #onCrumbClick = (e: Event): void => {
+    const detail = (e as CustomEvent).detail;
+    this.emit("breadcrumb-click", detail);
   };
 }
 

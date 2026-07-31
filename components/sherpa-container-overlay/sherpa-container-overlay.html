@@ -83,6 +83,11 @@
     </div>
     <slot></slot>
   </div>
+  <!-- Cloning prototypes for populate() menu-item building (light-DOM output).
+       Class-only → not picked up as a shadow template; cloned by renderData(). -->
+  <template class="menu-list-tpl"><ul></ul></template>
+  <template class="menu-item-tpl"><li><sherpa-overlay-item></sherpa-overlay-item></li></template>
+  <template class="menu-heading-tpl"><sherpa-overlay-item data-type="heading"></sherpa-overlay-item></template>
 </template>
 
 <!-- ═══════════════════════════════════════════════════════════════════

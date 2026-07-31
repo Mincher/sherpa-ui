@@ -20,7 +20,9 @@
  * @method isVisible()                          — Returns boolean
  * @method getTransferableConfig(type)          — Config for switching presentation type
  * @method getData()                            — Returns metric config
- * @method setData(data)                        — Data pipeline entry
+ * @data {object} { name?, summary?, config? } — Metric content payload (aggregation-shaped)
+ * @method populate(data)                       — Canonical data entry: { name, summary, config }
+ * @method setData(data)                        — Data pipeline entry (called by populate())
  */
 import "../sherpa-sparkline/sherpa-sparkline.js";
 import { getTransferableConfig } from "../utilities/data-utils.js";
@@ -137,6 +139,15 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     // For metric transitions, use the full config with all necessary fields
     const config = getTransferableConfig(this.#contentData, "table");
     return config;
+  }
+
+  /**
+   * Render metric data. Dispatched from the unified `populate()` —
+   * call `el.populate({ name, summary, config })`. Delegates to the async
+   * `setData` cascade pipeline (which also feeds the nested sparkline).
+   */
+  protected override renderData(source: unknown): void {
+    void this.setData(source as MetricData & { _fromCascade?: boolean });
   }
 
   async setData(data: MetricData & { _fromCascade?: boolean }): Promise<void> {

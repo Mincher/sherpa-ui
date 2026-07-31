@@ -4,22 +4,30 @@ import { openHarness, mount, clearRoot } from './support';
 test.beforeEach(async ({ page }) => openHarness(page));
 test.afterEach(async ({ page }) => clearRoot(page));
 
-test('renders title and data-driven breadcrumbs (cloning prototype)', async ({ page }) => {
+test('renders title and delegates breadcrumbs to embedded sherpa-breadcrumbs', async ({ page }) => {
   await mount(page, `<sherpa-app-header data-label="Dashboard"></sherpa-app-header>`, 'sherpa-app-header');
-  const r = await page.evaluate(() => {
+  const r = await page.evaluate(async () => {
     const h = document.querySelector('sherpa-app-header') as HTMLElement & { setBreadcrumbs?: (b: unknown[]) => void };
     h.setBreadcrumbs!([{ label: 'Home', href: '#' }, { label: 'Analytics', href: '#' }, { label: 'Dashboard' }]);
     const sr = h.shadowRoot!;
+    const bc = sr.querySelector('sherpa-breadcrumbs') as (HTMLElement & { rendered?: Promise<void> }) | null;
+    await bc?.rendered;
+    await new Promise((res) => setTimeout(res, 50));
+    const crumbs = bc?.shadowRoot ? bc.shadowRoot.querySelectorAll('.crumb-text') : [];
     return {
       title: sr.querySelector('.view-title')!.textContent,
-      crumbs: sr.querySelectorAll('.crumb').length,
-      lastIsCurrent: sr.querySelectorAll('.crumb')[2]!.getAttribute('aria-current'),
+      hasBreadcrumbs: !!bc,
+      crumbs: crumbs.length,
+      lastIsCurrent: crumbs[2]?.getAttribute('aria-current') ?? null,
+      hasAttr: h.hasAttribute('data-has-breadcrumbs'),
       width: Math.round(h.getBoundingClientRect().width),
     };
   });
   expect(r.title).toBe('Dashboard');
+  expect(r.hasBreadcrumbs).toBe(true);
   expect(r.crumbs).toBe(3);
   expect(r.lastIsCurrent).toBe('page');
+  expect(r.hasAttr).toBe(true);
   expect(r.width).toBeGreaterThan(0);
 });
 

@@ -26,7 +26,9 @@
  *   detail: { type: string, data: object }
  *
  * @method getData()             — Returns transferable config
- * @method setData(data)         — Set chart data and render
+ * @data {object} { columns, segmentBy?, orderBy?, orderDirection?, … } — Bar chart content config
+ * @method populate(data)        — Canonical data entry: content config object
+ * @method setData(data)         — Async render pipeline (called by populate())
  * @method getCategoryField()    — Resolved category field name
  */
 import { getTransferableConfig } from "../utilities/data-utils.js";
@@ -276,8 +278,12 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return config;
   }
 
-  override async onJsonData(data: BarContentData): Promise<void> {
-    await this.setData(data);
+  /**
+   * Render chart data. Dispatched from the unified `populate()` —
+   * call `el.populate(config)`. Delegates to the async `setData` pipeline.
+   */
+  protected override renderData(source: unknown): void {
+    void this.setData(source as BarContentData);
   }
 
   async setData(data: BarContentData): Promise<void> {

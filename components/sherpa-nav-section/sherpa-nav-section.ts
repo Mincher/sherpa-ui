@@ -39,7 +39,9 @@
  *   bubbles: true, composed: true
  *   detail: { id: string, action?: string, item: object }
  *
- * @method setSections(sections)  — Replace the rendered groups + items
+ * @data {array} [{ label, items: [{ id?, label, type?, description? }] }] — Section groups
+ * @method populate(sections)     — Canonical data entry: [{ label, items }]
+ * @method setSections(sections)  — Deprecated alias for populate()
  * @method setActive(id)          — Mark the item with the given id active
  * @method getActiveId()          — Returns the currently active id
  *
@@ -83,7 +85,6 @@ export class SherpaNavSection extends SherpaElement {
     return [
       ...super.observedAttributes,
       "data-heading",
-      "data-show-back",
       "data-active-id",
       "data-sections",
     ];
@@ -106,7 +107,6 @@ export class SherpaNavSection extends SherpaElement {
 
   override onRender(): void {
     this.#syncHeading();
-    this.#syncBack();
     this.#syncFromAttribute();
     this.#renderSections();
 
@@ -122,9 +122,6 @@ export class SherpaNavSection extends SherpaElement {
     switch (name) {
       case "data-heading":
         this.#syncHeading();
-        break;
-      case "data-show-back":
-        this.#syncBack();
         break;
       case "data-active-id":
         this.#syncActiveState();
@@ -142,9 +139,18 @@ export class SherpaNavSection extends SherpaElement {
    * Replace the rendered groups + items.
    * @param {Array<{label: string, items: Array<object>}>} sections
    */
-  setSections(sections: NavSectionGroup[]): void {
-    this.#sections = Array.isArray(sections) ? sections : [];
+  /**
+   * Render section groups. Dispatched from the unified `populate()` —
+   * call `el.populate([{ label, items }])`.
+   */
+  protected override renderData(source: unknown): void {
+    this.#sections = Array.isArray(source) ? (source as NavSectionGroup[]) : [];
     this.#renderSections();
+  }
+
+  /** @deprecated Use {@link populate} — retained for back-compat. */
+  setSections(sections: NavSectionGroup[]): void {
+    this.populate(sections);
   }
 
   /** Mark the item with the given id as active. */
@@ -166,11 +172,6 @@ export class SherpaNavSection extends SherpaElement {
     }
   }
 
-  #syncBack(): void {
-    /* Visibility owned by CSS via :host([data-show-back="true"]) and
-       :host([data-show-back-default]) selectors. No-op kept for symmetry
-       with other #sync* methods. */
-  }
 
   #syncFromAttribute(): void {
     const raw = this.getAttribute("data-sections");

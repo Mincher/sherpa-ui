@@ -8,6 +8,9 @@
 // Base class
 export { SherpaElement } from "./utilities/sherpa-element/sherpa-element.js";
 
+// Declarative rendering — build live elements from element JSON nodes.
+export { renderElement, type ElementNode } from "./utilities/render-element.js";
+
 // Core layout components
 export * from "./sherpa-app-shell/sherpa-app-shell.js";
 export * from "./sherpa-app-header/sherpa-app-header.js";

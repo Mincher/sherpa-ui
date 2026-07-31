@@ -45,6 +45,13 @@
         <div class="cal-days" role="grid"></div>
         <div class="cal-months" role="grid"></div>
         <div class="cal-years" role="grid"></div>
+
+        <!-- Cloning prototypes for the month / year pickers (bound by renderInto). -->
+        <template class="cal-cell-tpl">
+          <button type="button" class="cal-cell" role="gridcell"
+                  data-bind="label"
+                  data-bind-attr="data-value:value; data-selected:selected; data-today:today"></button>
+        </template>
       </div>
 
       <!-- ── Time spinners ───────────────────────────────────── -->

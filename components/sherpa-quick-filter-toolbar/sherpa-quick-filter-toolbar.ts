@@ -40,6 +40,8 @@
  * @fires global-filter-change     — document broadcast (no bubbles) when data-global · detail: { filters }
  *
  * @method getFilters()                       — Returns the current FilterSpec[] (empty when the toggle is off)
+ * @data {object} { columns: [FieldDef], rows?: [Record] } — Field defs + row data for chip menus
+ * @method populate(data) — Canonical data entry: { columns, rows? } (needs both, hence a wrapper)
  * @method setAvailableColumns(columns, rows) — Set field defs + row data and populate chip menus
  * @method removeFilterChip(field)            — Remove a filter chip by field name
  *
@@ -293,6 +295,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * Set available fields and optional row data for chip menu population.
    * Writes columns to `data-available-fields` (triggers #syncAvailableFields()).
    */
+  /**
+   * Set the filterable field defs (and optional row data) that build the chip
+   * menus. Dispatched from the unified `populate()` — because this needs two
+   * inputs, JSON callers pass a `{ columns, rows? }` wrapper:
+   *   el.populate({ columns: [...], rows: [...] })
+   */
+  protected override renderData(source: unknown): void {
+    if (source == null || typeof source !== 'object' || Array.isArray(source)) return;
+    const { columns, rows } = source as {
+      columns?: FieldDef[];
+      rows?: Record<string, unknown>[];
+    };
+    if (Array.isArray(columns)) this.setAvailableColumns(columns, rows);
+  }
+
   public setAvailableColumns(columns: FieldDef[], rows?: Record<string, unknown>[]): void {
     if (!Array.isArray(columns) || !columns.length) return;
     if (Array.isArray(rows)) this.#rows = rows;

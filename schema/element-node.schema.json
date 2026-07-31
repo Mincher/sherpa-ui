@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sherpa-ui/schema/element-node.schema.json",
+  "title": "Sherpa UI Element Node",
+  "description": "A single, self-contained element description for dynamic/generative content. Children and named-slot fills are INLINE element nodes (no id registry — that is the view-definition's job). `type` is a literal custom-element tag and `props` are literal attribute names. `data` is the element's populate() payload. This is the composable unit consumed by renderElement().",
+  "$ref": "#/$defs/node",
+  "$defs": {
+    "node": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)+$",
+          "description": "The literal custom-element tag to create, e.g. 'sherpa-metric'. Custom elements always contain a hyphen."
+        },
+        "props": {
+          "type": "object",
+          "description": "Literal attributes. Keys are attribute names (data-* for the public API; native attrs un-prefixed). Values: string|number → setAttribute(String(v)); true → boolean (empty) attribute; false|null → attribute omitted.",
+          "additionalProperties": {
+            "type": ["string", "number", "boolean", "null"]
+          }
+        },
+        "data": {
+          "description": "The element's populate() payload. Passed to el.populate() once rendered. An array (1-D collection), a keyed collection object ({rows,columns} / {steps} / …), a precompiled HTML string, or a { src } remote reference (fetched then populated).",
+          "oneOf": [
+            { "type": "array" },
+            { "type": "string" },
+            { "$ref": "#/$defs/srcRef" },
+            {
+              "type": "object",
+              "not": { "required": ["src"] },
+              "description": "A keyed collection or single record bound by the component."
+            }
+          ]
+        },
+        "slots": {
+          "type": "object",
+          "description": "Named-slot fills: slot name → an inline element node (or an array of nodes for multi-fill). Regions this element exposes for a parent to fill — distinct from `children`, which is default-slot content.",
+          "additionalProperties": {
+            "oneOf": [
+              { "$ref": "#/$defs/node" },
+              { "type": "array", "items": { "$ref": "#/$defs/node" } }
+            ]
+          }
+        },
+        "children": {
+          "type": "array",
+          "description": "Ordered inline element nodes placed in this element's DEFAULT slot.",
+          "items": { "$ref": "#/$defs/node" }
+        }
+      }
+    },
+    "srcRef": {
+      "type": "object",
+      "required": ["src"],
+      "additionalProperties": false,
+      "properties": {
+        "src": {
+          "type": "string",
+          "description": "URL to fetch as JSON, then hand to el.populate(). Equivalent to authoring data-src-json."
+        }
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@
  * @description Two-pane shuttle control for moving items between "available" and "selected"
  *   lists. Use for configuration UIs where users explicitly choose a subset from a pool —
  *   column selection, permission assignment, notification recipients. Supply the full pool
- *   via setOptions([ {value, label, selected?} ]); read the result via getSelectedValues().
+ *   via populate([ {value, label, selected?} ]); read the result via getSelectedValues().
  *   Add data-search to show search inputs above each pane.
  *
  * @attr {string}  data-source-heading=Available — Available pane heading
@@ -15,7 +15,9 @@
  *   bubbles: true, composed: true
  *   detail: { values: string[], moved?: string[], direction?: 'add'|'remove' }
  *
- * @method setOptions(options)        — options: [{ value, label, selected? }]
+ * @data {array} [{ value, label, selected? }] — The full option pool for both panes
+ * @method populate(options)          — Canonical data entry: [{ value, label, selected? }]
+ * @method setOptions(options)        — Deprecated alias for populate()
  * @method getSelectedValues()        — Returns array of currently-selected values
  */
 
@@ -67,7 +69,14 @@ export class SherpaTransferList extends SherpaElement {
 
   /* ── public api ────────────────────────────────────────── */
 
-  setOptions(options: Array<{ value: unknown; label?: unknown; selected?: unknown }> = []): void {
+  /**
+   * Render the option pool into both panes. Dispatched from the unified
+   * `populate()` — call `el.populate([{ value, label?, selected? }])`.
+   */
+  protected override renderData(source: unknown): void {
+    const options = Array.isArray(source)
+      ? (source as Array<{ value: unknown; label?: unknown; selected?: unknown }>)
+      : [];
     this.#options = options.map((o) => ({
       value: String(o.value),
       label: String(o.label ?? o.value),
@@ -75,6 +84,11 @@ export class SherpaTransferList extends SherpaElement {
     }));
     this.#checked.clear();
     this.#renderPanes();
+  }
+
+  /** @deprecated Use {@link populate} — retained for back-compat. */
+  setOptions(options: Array<{ value: unknown; label?: unknown; selected?: unknown }> = []): void {
+    this.populate(options);
   }
 
   getSelectedValues(): string[] {

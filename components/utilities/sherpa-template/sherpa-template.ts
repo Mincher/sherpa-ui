@@ -159,3 +159,62 @@ export function bindHtml(html: string): DocumentFragment {
 export function isHtmlString(input: unknown): input is string {
   return typeof input === 'string' && /<[a-z][\s\S]*>/i.test(input);
 }
+
+/* ── Data-shape detection (drives the unified populate() dispatcher) ─────────
+ *
+ * A component is populated with one of two *kinds*:
+ *
+ *   'template'   — a precompiled HTML string, injected as-is.
+ *   'collection' — structured data. An array is the 1-D case; a keyed JSON
+ *                  definition ({rows, columns} / {steps} / {nodes}) is the
+ *                  structured case; a single object is the 1-item case. All
+ *                  three flow through the component's data renderer.
+ *
+ * A caller may declare the kind explicitly (`populate('collection', data)`)
+ * or omit it and let `detectKind()` sniff the value (`populate(data)`). Within
+ * a collection, `collectionShape()` reports whether the payload is a bare
+ * array, a keyed definition, or a single record — a hint the renderer can use.
+ */
+export type PopulateKind = 'template' | 'collection';
+export type CollectionShape = 'array' | 'keyed' | 'record';
+
+/**
+ * The property names that mark a plain object as a *keyed* collection — a JSON
+ * definition that structures data into key-values (rows/columns/nodes/steps/…)
+ * — rather than a single flat record to bind to one template.
+ */
+export const COLLECTION_KEYS: readonly string[] = [
+  'rows',
+  'columns',
+  'nodes',
+  'edges',
+  'steps',
+  'items',
+  'options',
+  'sections',
+  'series',
+  'data',
+];
+
+/** True when a plain object carries at least one recognised collection key. */
+export function isKeyedCollection(input: unknown): input is Record<string, unknown> {
+  if (input == null || typeof input !== 'object' || Array.isArray(input)) return false;
+  const obj = input as Record<string, unknown>;
+  return COLLECTION_KEYS.some((k) => k in obj);
+}
+
+/**
+ * Infer the populate kind from an untyped value. Total — always returns a kind.
+ * Everything that is not a precompiled HTML string is a collection (an array is
+ * a 1-D collection; an object is a keyed or single-record collection).
+ */
+export function detectKind(input: unknown): PopulateKind {
+  return isHtmlString(input) ? 'template' : 'collection';
+}
+
+/** Report the shape of a collection payload: bare array, keyed definition, or single record. */
+export function collectionShape(input: unknown): CollectionShape {
+  if (Array.isArray(input)) return 'array';
+  if (isKeyedCollection(input)) return 'keyed';
+  return 'record';
+}

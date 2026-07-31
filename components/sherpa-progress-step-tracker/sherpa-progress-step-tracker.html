@@ -18,7 +18,7 @@
     default | active | completed | in-progress | warning | error
 
   Methods:
-    setSteps([{ label, sublabel, timestamp, status, completed, error, disabled }])
+    populate([{ label, sublabel, timestamp, status, completed, error, disabled }])  (setSteps is a deprecated alias)
     nextStep(), previousStep(), goToStep(n), completeStep(n), setStepError(n, bool)
 -->
 <template id="default">

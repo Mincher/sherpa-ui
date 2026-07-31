@@ -7,6 +7,7 @@
  * - Seeds the data grid, input-tag, quick filters, toasts, and dialog.
  */
 import { ThemeManager } from '/dist/components/utilities/theme-manager.js';
+import { renderElement } from '/dist/components/utilities/render-element.js';
 
 // ── Appearance state (persisted by ThemeManager) ──────────────────────────
 ThemeManager.init({ defaultTheme: 'apex-2-core', defaultMode: 'light', defaultDensity: 'base' });
@@ -86,6 +87,33 @@ customElements.whenDefined('sherpa-key-value-list').then(() => {
     ]),
   );
 });
+
+// ── JSON-defined tile (proves renderElement end-to-end) ─────────────────────
+// The whole tile — container + header + key/value list + its data — is built
+// from a single element JSON node at runtime, then swapped in for the mount div.
+{
+  const mount = document.getElementById('tile-json-mount');
+  if (mount) {
+    const tile = renderElement({
+      type: 'sherpa-container',
+      props: { 'data-col-span': 6, 'data-row-span': 3 },
+      slots: {
+        header: { type: 'sherpa-container-header', props: { 'data-title': 'JSON-defined tile' } },
+      },
+      children: [
+        {
+          type: 'sherpa-key-value-list',
+          data: [
+            { key: 'Source', value: 'element JSON' },
+            { key: 'Rendered by', value: 'renderElement()', type: 'monospace' },
+            { key: 'Status', value: '<sherpa-tag data-color="purple" data-label="Live"></sherpa-tag>', html: true },
+          ],
+        },
+      ],
+    });
+    mount.replaceWith(tile);
+  }
+}
 
 // ── Input tag seed ────────────────────────────────────────────────────────
 customElements.whenDefined('sherpa-input-tag').then(() => {

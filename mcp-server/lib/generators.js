@@ -41,6 +41,45 @@ export function generateComponentHTML(schema, attrs = {}, slotContent = {}) {
   return parts.join("");
 }
 
+/**
+ * Generate an element JSON node (an "ElementNode") for a component from its
+ * schema + caller-supplied attrs / data / slots / children. This is the JSON
+ * counterpart to generateComponentHTML — the format an AI agent or the MCP
+ * hands to renderElement() / populate(). See schema/element-node.schema.json.
+ *
+ * Unlike the HTML generator, values are carried RAW (no entity encoding): icon
+ * tokens stay as "fa-solid fa-plus", data is passed through verbatim.
+ *
+ * @param {object} schema     parsed component schema (must have .tagName)
+ * @param {object} [attrs]    attribute name → value; only known attrs are kept
+ * @param {*}      [data]     populate() payload (array | object | HTML string)
+ * @param {object} [slots]    slot name → ElementNode | ElementNode[]
+ * @param {Array}  [children] default-slot ElementNode[]
+ * @returns {object} an ElementNode
+ */
+export function generateComponentJSON(schema, attrs = {}, data, slots, children) {
+  const node = { type: schema.tagName };
+
+  const props = {};
+  for (const [name, value] of Object.entries(attrs)) {
+    const attrDef = schema.attributes?.find((a) => a.name === name);
+    if (!attrDef) continue; // skip unknown attrs
+    if (attrDef.type === "boolean") {
+      // Only emit when truthy; booleans are true (present) or omitted.
+      if (value === true || value === "true") props[name] = true;
+    } else {
+      props[name] = value;
+    }
+  }
+  if (Object.keys(props).length) node.props = props;
+
+  if (data !== undefined) node.data = data;
+  if (slots && Object.keys(slots).length) node.slots = slots;
+  if (Array.isArray(children) && children.length) node.children = children;
+
+  return node;
+}
+
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** Generate HTML + JS for add/edit/delete CRUD flows. */

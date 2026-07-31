@@ -25,8 +25,10 @@
  *   bubbles: true, composed: true
  *   detail: { step: number, label: string }
  *
- * @method setSteps(steps)         — Set steps: [{ label, sublabel?, timestamp?, status?,
- *                                     completed?, error?, disabled? }]
+ * @data {array} [{ label, sublabel?, timestamp?, status?, completed?, error?, disabled? }] — Steps;
+ *   also accepts a { steps: [...] } wrapper object.
+ * @method populate(steps)        — Canonical data entry: StepData[] OR { steps: StepData[] }
+ * @method setSteps(steps)         — Deprecated alias for populate()
  * @method nextStep()              — Advance to the next step
  * @method previousStep()          — Go back one step
  * @method goToStep(n)             — Jump to step n (1-based)
@@ -85,7 +87,6 @@ export class SherpaProgressStepTracker extends SherpaElement {
   #currentStep = 1;
   #ready = false;
   #visited = new Set<number>();
-  #srcLoaded = '';
 
   public els = this.cacheElements({
     header:     '.tracker-header',
@@ -96,17 +97,9 @@ export class SherpaProgressStepTracker extends SherpaElement {
 
   /* ── Lifecycle ────────────────────────────────────────────── */
 
-  override async onRender(): Promise<void> {
-    const src = this.dataset['srcJson'];
-    if (src) {
-      try {
-        const data = await fetch(src).then(r => r.json()) as unknown;
-        this.#steps = (data as { steps?: StepData[] }).steps ?? [];
-        this.#srcLoaded = src;
-      } catch (e) {
-        console.warn('sherpa-progress-step-tracker: failed to load data-src-json', e);
-      }
-    }
+  override onRender(): void {
+    // data-src-json is fetched by the base class after onRender(); the parsed
+    // result flows to populate() via the default onJsonData() handler.
     this.#currentStep = parseInt(this.dataset['currentStep'] ?? '') || 1;
     if (this.#currentStep > 0) this.#visited.add(this.#currentStep);
     this.#syncHeader();
@@ -127,18 +120,11 @@ export class SherpaProgressStepTracker extends SherpaElement {
         this.#syncHeader();
         break;
       case 'data-src-json':
-        // Base class fetches the URL; onJsonData() re-renders.
+        // Base class fetches the URL and routes the result to populate().
         break;
       default:
         this.#renderSteps();
     }
-  }
-
-  override onJsonData(data: unknown): void {
-    const current = this.dataset['srcJson'];
-    if (current && current === this.#srcLoaded) { this.#srcLoaded = ''; return; }
-    this.#steps = (data as { steps?: StepData[] }).steps ?? [];
-    if (this.#ready) this.#renderSteps();
   }
 
   /* ── Private: sync ────────────────────────────────────────── */
@@ -251,7 +237,17 @@ export class SherpaProgressStepTracker extends SherpaElement {
 
   /* ── Public methods ───────────────────────────────────────── */
 
-  setSteps(steps: StepData[]): void {
+  /**
+   * Render the step list. Dispatched from the unified `populate()`. Accepts a
+   * bare StepData[] array (1-D collection) or a { steps: StepData[] } keyed
+   * definition — the same shape a data-src-json file uses — so all entry paths
+   * converge here. Call `el.populate([...])` or `el.populate({ steps: [...] })`.
+   * @param source StepData[] or { steps: StepData[] }
+   */
+  protected override renderData(source: unknown): void {
+    const steps = Array.isArray(source)
+      ? (source as StepData[])
+      : ((source as { steps?: StepData[] })?.steps ?? []);
     this.#steps = steps.map(s => ({
       label:     s.label,
       sublabel:  s.sublabel ?? '',
@@ -262,6 +258,11 @@ export class SherpaProgressStepTracker extends SherpaElement {
       disabled:  s.disabled ?? false,
     }));
     if (this.#ready) this.#renderSteps();
+  }
+
+  /** @deprecated Use {@link populate} — retained for back-compat. */
+  setSteps(steps: StepData[]): void {
+    this.populate(steps);
   }
 
   nextStep(): void {

@@ -10,7 +10,9 @@
  * @attr {enum}    data-variant — bar (default: line)
  * @attr {string}  data-unit    — Unit label for tooltip display
  *
- * @method setValues(values) — Set sparkline data points
+ * @data {array} [number, …] — Data points, e.g. [10, 25, 15, 30]
+ * @method populate(values) — Canonical data entry: number[]
+ * @method setValues(values) — Deprecated alias for populate()
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
@@ -102,9 +104,18 @@ export class SherpaSparkline extends SherpaElement {
    * before the template loads are picked up by onRender().
    * @param {number[]} values - Array of numeric values (any range, will be normalized)
    */
+  /**
+   * Render data points. Dispatched from the unified `populate()` —
+   * call `el.populate([10, 25, 15, 30])`. Serialises to `data-values`.
+   */
+  protected override renderData(source: unknown): void {
+    if (!Array.isArray(source) || source.length === 0) return;
+    this.dataset["values"] = JSON.stringify(source);
+  }
+
+  /** @deprecated Use {@link populate} — retained for back-compat. */
   setValues(values: number[]): void {
-    if (!Array.isArray(values) || values.length === 0) return;
-    this.dataset["values"] = JSON.stringify(values);
+    this.populate(values);
   }
 
   #updateFromAttribute(): void {

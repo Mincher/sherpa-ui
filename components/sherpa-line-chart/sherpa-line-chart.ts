@@ -18,7 +18,9 @@
  * @attr {enum}    data-sort-direction — asc | desc
  * @attr {string}  data-src-json       — URL to JSON: { columns, rows } or { labels, series }
  *
- * @method setData(data) — Set chart data: { labels, series: [{ name, values }] } or config
+ * @data {object} { labels: [...], series: [{ name, values }] } — Chart data (or a content-config object)
+ * @method populate(data) — Canonical data entry: { labels, series } or config
+ * @method setData(data) — Async render pipeline (called by populate())
  */
 
 import { ContentAttributesMixin } from '../utilities/content-attributes-mixin.js';
@@ -172,8 +174,13 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  override async onJsonData(data: LineData | LineContentData): Promise<void> {
-    await this.setData(data);
+  /**
+   * Render chart data. Dispatched from the unified `populate()` —
+   * call `el.populate({ labels, series })` (or a content-config object).
+   * Delegates to the async `setData` pipeline.
+   */
+  protected override renderData(source: unknown): void {
+    void this.setData(source as LineData | LineContentData);
   }
 
   /**

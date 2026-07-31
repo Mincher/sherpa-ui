@@ -86,6 +86,8 @@ export class SherpaCalendar extends SherpaElement {
     this.#calDaysEl   = this.$<HTMLElement>('.cal-days');
     this.#calMonthsEl = this.$<HTMLElement>('.cal-months');
     this.#calYearsEl  = this.$<HTMLElement>('.cal-years');
+    this.#calMonthsEl?.addEventListener('click', this.#onMonthGridClick);
+    this.#calYearsEl?.addEventListener('click', this.#onYearGridClick);
     this.#modeBtnEl   = this.$<HTMLElement>('.cal-mode');
     this.#prevBtnEl   = this.$<HTMLElement>('.cal-prev');
     this.#nextBtnEl   = this.$<HTMLElement>('.cal-next');
@@ -314,52 +316,56 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   #renderMonthGrid(): void {
-    const year     = this.#viewDate.year;
-    const today    = Temporal.Now.plainDateISO();
-    // month is 1-indexed in Temporal; loop uses 0-indexed m
+    const year       = this.#viewDate.year;
+    const today      = Temporal.Now.plainDateISO();
     const selMonth   = this.#selectedDate?.year === year ? this.#selectedDate.month - 1 : -1;
     const todayMonth = today.year === year ? today.month - 1 : -1;
 
-    this.#calMonthsEl?.replaceChildren();
-    for (let m = 0; m < 12; m++) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'cal-cell cal-month';
-      btn.setAttribute('role', 'gridcell');
-      btn.textContent = (MONTH_NAMES[m] ?? '').slice(0, 3);
-      if (m === selMonth)   btn.setAttribute('data-selected', '');
-      if (m === todayMonth) btn.setAttribute('data-today', '');
-      btn.addEventListener('click', () => {
-        this.#viewDate = this.#viewDate.with({ month: m + 1, day: 1 });
-        this.#setViewMode('day');
-      });
-      this.#calMonthsEl?.appendChild(btn);
-    }
+    // value = 0-indexed month; bound by the shared .cal-cell-tpl.
+    const cells = Array.from({ length: 12 }, (_unused, m) => ({
+      label: (MONTH_NAMES[m] ?? '').slice(0, 3),
+      value: String(m),
+      selected: m === selMonth ? true : null,
+      today: m === todayMonth ? true : null,
+    }));
+    this.renderInto('.cal-months', '.cal-cell-tpl', cells);
+    for (const el of this.$$('.cal-months .cal-cell')) el.classList.add('cal-month');
   }
 
   #renderYearGrid(): void {
-    const year      = this.#viewDate.year;
-    const { start } = SherpaCalendar.#yearRange(year);
+    const { start } = SherpaCalendar.#yearRange(this.#viewDate.year);
     const selYear   = this.#selectedDate?.year ?? -1;
     const todayYear = Temporal.Now.plainDateISO().year;
 
-    this.#calYearsEl?.replaceChildren();
-    for (let i = 0; i < 12; i++) {
+    // value = absolute year; bound by the shared .cal-cell-tpl.
+    const cells = Array.from({ length: 12 }, (_unused, i) => {
       const y = start + i;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'cal-cell cal-year';
-      btn.setAttribute('role', 'gridcell');
-      btn.textContent = String(y);
-      if (y === selYear)   btn.setAttribute('data-selected', '');
-      if (y === todayYear) btn.setAttribute('data-today', '');
-      btn.addEventListener('click', () => {
-        this.#viewDate = this.#viewDate.with({ year: y, day: 1 });
-        this.#setViewMode('month');
-      });
-      this.#calYearsEl?.appendChild(btn);
-    }
+      return {
+        label: String(y),
+        value: String(y),
+        selected: y === selYear ? true : null,
+        today: y === todayYear ? true : null,
+      };
+    });
+    this.renderInto('.cal-years', '.cal-cell-tpl', cells);
+    for (const el of this.$$('.cal-years .cal-cell')) el.classList.add('cal-year');
   }
+
+  /** Delegated click for the month picker — reads data-value (0-indexed month). */
+  #onMonthGridClick = (e: Event): void => {
+    const cell = (e.target as HTMLElement).closest<HTMLElement>('.cal-cell');
+    if (!cell) return;
+    this.#viewDate = this.#viewDate.with({ month: Number(cell.dataset['value']) + 1, day: 1 });
+    this.#setViewMode('day');
+  };
+
+  /** Delegated click for the year picker — reads data-value (absolute year). */
+  #onYearGridClick = (e: Event): void => {
+    const cell = (e.target as HTMLElement).closest<HTMLElement>('.cal-cell');
+    if (!cell) return;
+    this.#viewDate = this.#viewDate.with({ year: Number(cell.dataset['value']), day: 1 });
+    this.#setViewMode('month');
+  };
 
   #syncSpinners(): void {
     if (this.#hourInputEl)    this.#hourInputEl.value    = String(this.#hours24).padStart(2, '0');

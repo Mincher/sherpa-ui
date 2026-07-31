@@ -57,6 +57,10 @@
  * @method nextPage()          — (paged) Advance to next page
  * @method prevPage()          — (paged) Step back to previous page
  * @method setPage(index)      — (paged) Jump to specific 0-based page
+ * @data {array} [{ value, text, selected?, disabled?, keepOpen? }] — Menu items (flat), or
+ *   sections [{ heading, items:[...] }], or a { items, options } wrapper to also pass MenuOptions.
+ * @method populate(data)      — Canonical menu data entry (items, sections, or { items, options })
+ * @method setMenuItems(items, opts) — Build overlay items from a data array (called by populate())
  * @method getSelectedValues() — Get values of all checked items
  * @method clearSelection()    — Uncheck all items
  *
@@ -75,7 +79,13 @@ import {
 } from '../utilities/sherpa-element/sherpa-element.js';
 import { clearElementCache } from '../utilities/element-cache.js';
 import { PageNavigationMixin } from '../utilities/page-navigation-mixin.js';
-import type { EventHandler } from '../utilities/types.js';
+import type {
+  EventHandler,
+  MenuItem,
+  MenuItems,
+  MenuSection,
+  MenuOptions,
+} from '../utilities/types.js';
 
 const supportsAnchor = CSS.supports?.('anchor-name', '--test') ?? false;
 
@@ -493,6 +503,135 @@ export class SherpaContainerOverlay extends PageNavigationMixin(SherpaElement) {
       this.style.removeProperty('right');
       this.style.removeProperty('translate');
     }
+  }
+
+  /* ── Menu items from data (via the unified populate()) ───────────
+   * A menu overlay builds its own items from a data array. Call
+   * `el.populate([{ value, text }])` (flat), sections
+   * `[{ heading, items:[...] }]`, or a `{ items, options }` wrapper to also
+   * pass MenuOptions. Items are light-DOM <ul><li><sherpa-overlay-item>
+   * projected through the menu slot. This is the single item-building path —
+   * consumers (e.g. sherpa-button) delegate here rather than build items.
+   */
+  protected override renderData(source: unknown): void {
+    if (
+      source != null &&
+      typeof source === 'object' &&
+      !Array.isArray(source) &&
+      'items' in source
+    ) {
+      const { items, options } = source as { items: MenuItems; options?: Partial<MenuOptions> };
+      this.setMenuItems(items, options ?? {});
+      return;
+    }
+    this.setMenuItems(source as MenuItems);
+  }
+
+  /**
+   * Build the menu's overlay items from a data array or sections.
+   * @param items flat MenuItem[] or MenuSection[] (detected by a `heading` key)
+   * @param opts  selection / group / append / marker options
+   */
+  setMenuItems(items: MenuItems, opts: Partial<MenuOptions> = {}): void {
+    // The cloning prototypes live in the `menu` template's shadow. If not
+    // present yet, defer ONCE until first render; menu-item building requires
+    // data-variant="menu" (which selects that template).
+    if (!this.$('template.menu-item-tpl')) {
+      void Promise.resolve(this.rendered).then(() => {
+        if (this.$('template.menu-item-tpl')) {
+          this.#buildMenuItemsNow(items, opts);
+        } else {
+          console.warn(
+            'sherpa-container-overlay: setMenuItems() requires data-variant="menu"',
+          );
+        }
+      });
+      return;
+    }
+    this.#buildMenuItemsNow(items, opts);
+  }
+
+  /** Build items assuming the menu template's prototypes are available. */
+  #buildMenuItemsNow(items: MenuItems, opts: Partial<MenuOptions> = {}): void {
+    const { marker } = opts;
+    if (marker) {
+      this.querySelectorAll(`[data-menu-marker="${marker}"]`).forEach((el) => el.remove());
+    } else if (!opts.append) {
+      this.replaceChildren();
+    }
+    if (!items?.length) return;
+
+    const before = new Set(this.children);
+    if ('heading' in (items[0] || {})) {
+      this.#buildSections(items as MenuSection[]);
+    } else {
+      this.#buildFlatList(items as MenuItem[], opts);
+    }
+    if (marker) {
+      for (const child of this.children) {
+        if (!before.has(child)) child.setAttribute('data-menu-marker', marker);
+      }
+    }
+  }
+
+  /** Build a flat list of overlay items inside a single <ul>. */
+  #buildFlatList(items: MenuItem[], opts: Partial<MenuOptions> = {}): void {
+    const ul = this.$<HTMLTemplateElement>('template.menu-list-tpl')
+      ?.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
+    if (!ul) return;
+    if (opts.group) ul.dataset['group'] = opts.group;
+    for (const item of items) ul.appendChild(this.#buildMenuItem(item, opts));
+    this.appendChild(ul);
+  }
+
+  /** Build grouped sections, each with an optional heading and <ul>. */
+  #buildSections(sections: MenuSection[]): void {
+    for (const section of sections) {
+      if (section.heading) {
+        const heading = this.$<HTMLTemplateElement>('template.menu-heading-tpl')
+          ?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+        if (heading) {
+          heading.textContent = section.heading;
+          if (section.style) heading.setAttribute('style', section.style);
+          this.appendChild(heading);
+        }
+      }
+      if (section.items?.length) {
+        const ul = this.$<HTMLTemplateElement>('template.menu-list-tpl')
+          ?.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
+        if (!ul) continue;
+        if (section.group) ul.dataset['group'] = section.group;
+        if (section.style) ul.setAttribute('style', section.style);
+        const sectionOpts = { selection: section.selection, group: section.group };
+        for (const item of section.items) ul.appendChild(this.#buildMenuItem(item, sectionOpts));
+        this.appendChild(ul);
+      }
+    }
+  }
+
+  /** Clone a <li><sherpa-overlay-item> prototype and populate it from item data. */
+  #buildMenuItem(item: MenuItem, opts: Partial<MenuOptions> = {}): HTMLLIElement {
+    const li = (this.$<HTMLTemplateElement>('template.menu-item-tpl')
+      ?.content.firstElementChild?.cloneNode(true) as HTMLLIElement | undefined)
+      ?? document.createElement('li');
+    const menuItem = li.querySelector('sherpa-overlay-item');
+    if (!menuItem) return li;
+    menuItem.setAttribute('value', item.value ?? '');
+    menuItem.textContent = item.text ?? item.value ?? '';
+
+    const selection = item.selection || opts.selection;
+    if (selection) menuItem.setAttribute('data-selection', selection);
+    if (selection === 'radio' && (item.group || opts.group)) {
+      menuItem.setAttribute('data-group', item.group || opts.group || '');
+    }
+    if (item.selected || item.checked) menuItem.setAttribute('checked', '');
+    if (item.disabled) menuItem.setAttribute('disabled', '');
+    if (item.description) menuItem.setAttribute('data-description', item.description);
+    if (item.keepOpen || selection === 'checkbox') menuItem.setAttribute('data-keep-open', '');
+    if (item.data) {
+      for (const [k, v] of Object.entries(item.data)) menuItem.setAttribute(`data-${k}`, v);
+    }
+    return li;
   }
 
   /* ── Selection helpers ───────────────────────────────────────── */

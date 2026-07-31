@@ -33,7 +33,9 @@
  *   bubbles: true, composed: true
  *   detail: { value: string | string[], path?: string[] }
  *
- * @method setNodes(nodes) — Set the forest imperatively (JSON-serialised to data-nodes)
+ * @data {array} [{ value, label?, children?, disabled?, icon?, expanded? }] — Node forest
+ * @method populate(nodes) — Canonical data entry (JSON-serialised to data-nodes)
+ * @method setNodes(nodes) — Deprecated alias for populate()
  * @method getValue()      — Current selection (string for single, string[] for multi)
  * @method setValue(v)     — Set selection programmatically
  * @method expandAll()     — Expand every branch
@@ -109,8 +111,18 @@ export class SherpaTree extends SherpaElement {
     return m === "multi" || m === "none" ? m : "single";
   }
 
+  /**
+   * Render the node forest. Dispatched from the unified `populate()` —
+   * call `el.populate([{ value, label?, children?, … }])`. Serialises to the
+   * `data-nodes` attribute, which drives the render.
+   */
+  protected override renderData(source: unknown): void {
+    this.dataset["nodes"] = JSON.stringify(Array.isArray(source) ? source : []);
+  }
+
+  /** @deprecated Use {@link populate} — retained for back-compat. */
   public setNodes(nodes: TreeNode[]): void {
-    this.dataset["nodes"] = JSON.stringify(nodes ?? []);
+    this.populate(nodes ?? []);
   }
 
   public getValue(): string | string[] {

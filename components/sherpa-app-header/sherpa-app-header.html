@@ -26,7 +26,7 @@
         <button type="button" class="back-button" part="back" aria-label="Back">
           <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
         </button>
-        <nav class="breadcrumbs" part="breadcrumbs" aria-label="Breadcrumb"></nav>
+        <sherpa-breadcrumbs class="breadcrumbs" part="breadcrumbs"></sherpa-breadcrumbs>
       </div>
       <div class="app-actions" part="app-actions">
         <slot name="app-actions"></slot>
@@ -56,11 +56,4 @@
     <div class="header-loading" part="loading" role="progressbar" aria-hidden="true"></div>
   </header>
 
-  <!-- Breadcrumb prototype — cloned per crumb -->
-  <template class="crumb-tpl">
-    <a class="crumb" part="crumb"></a>
-  </template>
-  <template class="crumb-sep-tpl">
-    <span class="crumb-sep" part="crumb-sep" aria-hidden="true">/</span>
-  </template>
 </template>
