@@ -1,30 +1,22 @@
 <!--
   sherpa-switch.html — Templates for sherpa-switch.
 
-  Templates:
-    • default — Rectangular switch with ON/OFF text labels
-    • simple  — Pill-shaped switch without labels
-    • (custom) — Consumers can add additional <template id="..."> blocks here
-                  to define alternative switch layouts. Use the component's
-                  `get templateId()` override to select a template by id.
+  One template; the visual form is a CSS variant on data-style (no separate
+  template needed — the same track markup restyles).
 
   Host attributes:
     data-state — "on" | "off"
-    data-mode  — "default" | "simple"
+    data-style — "default" (rectangular, ON/OFF label, 16px control)
+               | "simple"  (pill, no label, 12px control)
     disabled   — Boolean
 
   Usage:
-    <sherpa-switch data-mode="default" data-state="on"></sherpa-switch>
-    <sherpa-switch data-mode="simple" data-state="off" disabled></sherpa-switch>
-
-  Custom templates:
-    To define a custom layout, add a new <template id="my-layout"> block
-    below the existing templates. Override `get templateId()` in a subclass
-    or set it dynamically to select the template at render time.
+    <sherpa-switch data-state="on"></sherpa-switch>
+    <sherpa-switch data-style="simple" data-state="off" disabled></sherpa-switch>
 -->
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     DEFAULT — Rectangular switch with ON/OFF text labels
+     Switch track — rectangular by default; data-style="simple" makes it a pill.
      ═══════════════════════════════════════════════════════════════════════ -->
 <template id="default">
 <button type="button" class="switch-track" role="switch" aria-checked="false">

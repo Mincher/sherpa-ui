@@ -165,3 +165,37 @@ test('sherpa-tag renders variant/status and shows slotted label', async ({ page 
   expect(r.hasWrapper).toBe(true);
   expect(r.assigned).toContain('Active');
 });
+
+test('sherpa-switch simple variant: pill radius, 12px control, no label', async ({ page }) => {
+  await openHarness(page);
+  const r = await page.evaluate(async () => {
+    const s = document.createElement('sherpa-switch') as HTMLElement & { rendered?: Promise<void> };
+    s.setAttribute('data-style', 'simple');
+    s.setAttribute('data-state', 'on');
+    document.getElementById('root')!.appendChild(s);
+    await s.rendered;
+    await new Promise((res) => setTimeout(res, 30));
+    const sr = s.shadowRoot!;
+    return {
+      knob: getComputedStyle(sr.querySelector('.switch-knob')!).width,
+      labelHidden: getComputedStyle(sr.querySelector('.switch-label')!).display === 'none',
+      radius: getComputedStyle(sr.querySelector('.switch-track')!).borderRadius,
+    };
+  });
+  expect(r.knob).toBe('12px');
+  expect(r.labelHidden).toBe(true);
+  expect(r.radius).toBe('9999px');
+});
+
+test('sherpa-input-date renders a day grid when opened', async ({ page }) => {
+  await openHarness(page);
+  const cells = await page.evaluate(async () => {
+    const d = document.createElement('sherpa-input-date') as HTMLElement & { rendered?: Promise<void>; value?: string };
+    document.getElementById('root')!.appendChild(d);
+    await d.rendered;
+    d.value = '2026-07-15';
+    await new Promise((res) => setTimeout(res, 50));
+    return d.shadowRoot!.querySelectorAll('.cal-days .cal-day, .cal-days button').length;
+  });
+  expect(cells).toBeGreaterThanOrEqual(28); // a month's day grid
+});

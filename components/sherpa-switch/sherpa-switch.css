@@ -1,9 +1,8 @@
 /**
- * sherpa-switch.css – Toggle switch (on/off) with disabled state (Phase 2 Modernization).
- * Uses CSS Nesting to organize compact variants and state selectors.
+ * sherpa-switch.css – Toggle switch (on/off) with disabled state.
  *
  * Attributes:
- *   data-style   — compact (rounded) | default (rectangular)
+ *   data-style   — default (rectangular, 16px control) | simple (pill, 12px control)
  *   data-state   — on | off | disabled
  */
 
@@ -16,7 +15,7 @@
   --_switch-border-outer: var(--sherpa-border-rounding-base, 4px);
   --_switch-border-control: var(--sherpa-border-rounding-sm, 2px);
   --_switch-fill-default: var(--sherpa-color-neutral-700, #5c5c66);
-  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default, #048142);
+  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default, #058142);
   --_switch-fill-inactive: var(--sherpa-surface-control-inactive, #f2f2f2);
   --_switch-control-size: var(--sherpa-size-sm, 16px);
   /* ── Compact style variant ──────────────────────────────────────── */
@@ -28,14 +27,16 @@
   /* ── OFF state (explicit) ───────────────────────────────────────── */
   /* ── Hidden state ───────────────────────────────────────────────── */
 }
-:host([data-style="compact"]) {
+:host([data-style="simple"]) {
   --_switch-border-outer: var(--sherpa-border-rounding-full, 999px);
   --_switch-border-control: var(--sherpa-border-rounding-full, 999px);
   --_switch-fill-default: var(--sherpa-color-neutral-700, #5c5c66);
-  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default, #048142);
+  --_switch-fill-active: var(--sherpa-surface-context-success-strong-default, #058142);
   --_switch-fill-inactive: var(--sherpa-surface-control-inactive, #f2f2f2);
   --_switch-control-size: var(--sherpa-size-xs, 12px);
 }
+/* Simple (pill) variant has no ON/OFF text label. */
+:host([data-style="simple"]) .switch-label { display: none; }
 :host([disabled]) {
   cursor: not-allowed;
   pointer-events: none;

@@ -10,6 +10,7 @@
  *   value. Emits a change event with { checked, state } on every toggle.
  *
  * @attr {enum}    data-state — on | off
+ * @attr {enum}    data-style — default (rectangular, 16px control) | simple (pill, 12px control)
  * @attr {boolean} disabled   — Native disabled state
  *
  * @fires change — Fired when toggle state changes

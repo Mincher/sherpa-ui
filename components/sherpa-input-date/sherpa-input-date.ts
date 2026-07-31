@@ -54,7 +54,7 @@ export class SherpaInputDate extends SherpaInputBase {
     popup: '.picker-popup',
     monthYear: '.cal-month-year',
     daysGrid: { selector: '.cal-days', type: HTMLElement },
-    dayTpl: { selector: '.day-tpl', type: HTMLTemplateElement }
+    dayTpl: { selector: '.cal-day-tpl', type: HTMLTemplateElement }
   });
 
   /** Month / year currently displayed in the calendar. */

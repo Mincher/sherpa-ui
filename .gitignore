@@ -44,3 +44,7 @@ coverage/
 # Playwright HTML report + cache
 playwright-report/
 playwright/.cache/
+
+# Failed-patch artifacts
+*.orig
+*.rej
