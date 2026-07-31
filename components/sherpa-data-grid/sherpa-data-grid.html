@@ -176,6 +176,17 @@
     <i class="fa-solid bool-icon" aria-hidden="true"></i>
   </template>
 
+  <!-- Fixed selection / action header cells — cloning prototypes (were built
+       with document.createElement in #initHeaders; now stamped from templates). -->
+  <template class="selection-header-tpl">
+    <th class="selection-col" scope="col">
+      <input type="checkbox" class="sherpa-check select-all" aria-label="Select all rows" />
+    </th>
+  </template>
+  <template class="action-header-tpl">
+    <th class="action-col" scope="col"></th>
+  </template>
+
   <!-- Header cell — cloning prototype -->
   <template class="header-cell-tpl">
     <th class="header-cell" scope="col" role="columnheader" aria-sort="none">

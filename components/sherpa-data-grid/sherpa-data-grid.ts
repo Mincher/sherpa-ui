@@ -668,16 +668,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     // Build primary header cells via template cloning
     primaryRow.replaceChildren();
 
-    // Selection header
-    const selTh = document.createElement("th");
-    selTh.className = "selection-col";
-    selTh.scope = "col";
-    const selCheck = document.createElement("input");
-    selCheck.type = "checkbox";
-    selCheck.className = "sherpa-check select-all";
-    selCheck.setAttribute("aria-label", "Select all rows");
-    selTh.appendChild(selCheck);
-    primaryRow.appendChild(selTh);
+    // Selection header (stamped from template)
+    const selTh = this.#stampTh("template.selection-header-tpl");
+    if (selTh) primaryRow.appendChild(selTh);
 
     for (const col of columns) {
       const isNum = NUMERIC_TYPES.has(col.type);
@@ -694,11 +687,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       primaryRow.appendChild(th);
     }
 
-    // Action header
-    const actTh = document.createElement("th");
-    actTh.className = "action-col";
-    actTh.scope = "col";
-    primaryRow.appendChild(actTh);
+    // Action header (stamped from template)
+    const actTh = this.#stampTh("template.action-header-tpl");
+    if (actTh) primaryRow.appendChild(actTh);
 
     // Set table min-width so columns fill when few, scroll when many
     const totalW = columns.reduce((sum, c) => sum + columnWidth(c.type), 0) + 48 + 48;
@@ -727,9 +718,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     if (secondaryRow) {
       secondaryRow.replaceChildren();
 
-      const secSelTh = document.createElement("th");
-      secSelTh.className = "selection-col";
-      secondaryRow.appendChild(secSelTh);
+      // Empty selection <th> (no checkbox in the search row).
+      const secSelTh = this.#stampTh("template.selection-header-tpl");
+      if (secSelTh) { secSelTh.replaceChildren(); secondaryRow.appendChild(secSelTh); }
 
       for (const col of columns) {
         const w = columnWidth(col.type);
@@ -747,9 +738,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
         secondaryRow.appendChild(th);
       }
 
-      const secActTh = document.createElement("th");
-      secActTh.className = "action-col";
-      secondaryRow.appendChild(secActTh);
+      const secActTh = this.#stampTh("template.action-header-tpl");
+      if (secActTh) secondaryRow.appendChild(secActTh);
 
       // Wire sherpa-input-search inputs with debounce
       for (const searchEl of secondaryRow.querySelectorAll<HTMLElement>(".col-search")) {
@@ -886,6 +876,13 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     if (!tpl) return document.createElement("td");
     const cloned = tpl.content.cloneNode(true) as DocumentFragment;
     return cloned.querySelector<HTMLElement>("td") ?? document.createElement("td");
+  }
+
+  /** Clone a fixed <th> prototype (selection / action header) from the template. */
+  #stampTh(selector: string): HTMLElement | null {
+    const tpl = this.$<HTMLTemplateElement>(selector);
+    const th = tpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+    return th ?? null;
   }
 
   #createCell(value: unknown, column: GridColumn): HTMLElement {
