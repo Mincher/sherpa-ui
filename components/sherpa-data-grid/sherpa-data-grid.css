@@ -507,6 +507,17 @@ th.header-cell[data-align="center"] .header-content { text-align: center; justif
 td[data-align="right"],
 th.header-cell[data-align="right"] .header-content { text-align: right; justify-content: flex-end; }
 
+/* Primary (identity) cell — emphasised (Figma Grid Cell "Primary"). */
+td[data-cell-type="primary"] {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-heading, #18191a);
+}
+/* Editable cells (dropdown / edit) shed the default cell padding so the control fills. */
+td[data-cell-type="dropdown"],
+td[data-cell-type="edit"] {
+  padding-block: var(--sherpa-space-3xs, 2px);
+}
+
 /* Boolean cell icons */
 td .bool-icon {
   font-size: var(--sherpa-fonts-scale-sm, 12px);

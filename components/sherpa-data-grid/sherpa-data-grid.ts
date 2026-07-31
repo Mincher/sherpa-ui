@@ -71,6 +71,8 @@ import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import type { EventHandler } from "../utilities/types.js";
 import "../sherpa-button/sherpa-button.js";
 import "../sherpa-tag/sherpa-tag.js";
+import "../sherpa-input-select/sherpa-input-select.js";
+import "../sherpa-input-text/sherpa-input-text.js";
 import "../sherpa-input-search/sherpa-input-search.js";
 
 import "../sherpa-empty-state/sherpa-empty-state.js";
@@ -913,6 +915,37 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
           a.dataset["field"] = column.field;
           a.textContent = value != null ? String(value) : "";
         }
+        break;
+      }
+
+      case "primary":
+        // Emphasised identity cell (Figma Grid Cell "Primary") — the key column.
+        cell = this.#cloneCell(this.#cellTpl);
+        cell.dataset["cellType"] = "primary";
+        cell.textContent = value != null ? String(value) : "";
+        break;
+
+      case "dropdown": {
+        // Editable dropdown cell (Figma table-cell "dropdown").
+        cell = this.#cloneCell(this.#cellTpl);
+        cell.dataset["cellType"] = "dropdown";
+        const sel = document.createElement("sherpa-input-select");
+        sel.setAttribute("data-embedded", "");
+        sel.setAttribute("value", value != null ? String(value) : "");
+        sel.dataset["field"] = column.field;
+        cell.append(sel);
+        break;
+      }
+
+      case "edit": {
+        // Inline-edit text cell (Figma table-cell "edit").
+        cell = this.#cloneCell(this.#cellTpl);
+        cell.dataset["cellType"] = "edit";
+        const input = document.createElement("sherpa-input-text");
+        input.setAttribute("data-embedded", "");
+        input.setAttribute("value", value != null ? String(value) : "");
+        input.dataset["field"] = column.field;
+        cell.append(input);
         break;
       }
 

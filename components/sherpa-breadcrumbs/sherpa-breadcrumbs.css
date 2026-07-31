@@ -20,6 +20,15 @@
   gap: var(--sherpa-space-xs, 8px);
 }
 
+/* Leading brand icon — hidden unless the brand-icon slot has content
+   (SherpaElement sets data-has-brand-icon on the host). */
+:host .brand-icon { display: none; }
+:host([data-has-brand-icon]) .brand-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--sherpa-content-active-base, #8500cc);
+}
+
 /* ── Crumb text ───────────────────────────────────────────── */
 
 :host .crumb-text {

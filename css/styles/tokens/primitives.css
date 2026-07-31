@@ -97,30 +97,9 @@
   --core-scale-700: 56px;
   --core-scale-800: 64px;
 
-  /* ═══════════════════════════════════════════════════════════════
-     TYPEFACE — font families and weights
-     ═══════════════════════════════════════════════════════════════ */
-
-  --core-typeface-manrope-style-name: Manrope;
-  --core-typeface-manrope-weight-100: Light;
-  --core-typeface-manrope-weight-200: Regular;
-  --core-typeface-manrope-weight-300: SemiBold;
-  --core-typeface-manrope-weight-400: Bold;
-  --core-typeface-open-sans-style-name: "Open Sans";
-  --core-typeface-open-sans-weight-100: Light;
-  --core-typeface-open-sans-weight-200: Regular;
-  --core-typeface-open-sans-weight-300: SemiBold;
-  --core-typeface-open-sans-weight-400: Bold;
-  --core-typeface-roboto-style-name: Roboto;
-  --core-typeface-roboto-weight-100: Light;
-  --core-typeface-roboto-weight-200: Regular;
-  --core-typeface-roboto-weight-300: SemiBold;
-  --core-typeface-roboto-weight-400: Bold;
-  --core-typeface-source-code-pro-style-name: "Source Code Pro";
-  --core-typeface-source-code-pro-weight-100: Light;
-  --core-typeface-source-code-pro-weight-200: Regular;
-  --core-typeface-source-code-pro-weight-300: SemiBold;
-  --core-typeface-source-code-pro-weight-400: Bold;
+  /* Typeface primitives (Manrope/Open Sans/Roboto/Source Code Pro) removed —
+     they were unreferenced dead tokens; fonts resolve to Inter / JetBrains Mono
+     via the alias layer. */
 
   /* ═══════════════════════════════════════════════════════════════
      COLORS — hex absolute values

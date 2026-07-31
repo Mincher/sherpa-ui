@@ -17,6 +17,8 @@
  *   precompiled HTML string. The single data → HTML entry point (see the
  *   Sherpa template binder). The last crumb becomes the current page.
  *
+ * @slot brand-icon — Optional leading brand icon (Figma Classic / Apex 2.0). Hidden when empty.
+ *
  * @fires breadcrumb-click
  *   bubbles: true, composed: true
  *   detail: { index: number, href: string, label: string, current: boolean }

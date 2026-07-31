@@ -22,6 +22,9 @@
 
 <template id="default">
 <div class="breadcrumb-trail" role="navigation" aria-label="Breadcrumb">
+  <!-- Optional leading brand icon (Figma .breadcrumb-icon Classic / Apex 2.0).
+       Shown only when the brand-icon slot has content. -->
+  <span class="brand-icon" part="brand-icon"><slot name="brand-icon"></slot></span>
   <!-- Static default shown until populate() runs -->
   <span class="crumb-text" aria-current="page">Breadcrumbs</span>
 </div>
