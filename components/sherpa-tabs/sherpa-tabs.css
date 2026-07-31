@@ -49,26 +49,53 @@
 :host([data-has-detail]) .tab-detail {
   display: inline-flex;
 }
+:host {
+  /* Figma -> tab (style): primary is the default. secondary + product-bar
+     override these private props below. */
+  --_tab-fill: var(--sherpa-surface-container-default, #ffffff);
+  --_tab-fill-hover: var(--sherpa-surface-container-hover, #fafafa);
+  --_tab-content: var(--sherpa-content-default-secondary, #404047);
+  --_tab-font-size: var(--sherpa-fonts-scale-base, 14px);
+  --_tab-line-height: 20px;
+  --_tab-pad-block: var(--sherpa-space-sm, 12px);
+}
+/* Secondary style: 32px tall, 12/16 text, subtle fill (Figma tab=secondary). */
+:host([data-style="secondary"]) {
+  --_tab-fill: var(--sherpa-surface-container-secondary-default, #fdfdfd);
+  --_tab-fill-hover: var(--sherpa-surface-container-secondary-hover, #e6e6e6);
+  --_tab-font-size: var(--sherpa-fonts-scale-sm, 12px);
+  --_tab-line-height: 16px;
+  --_tab-pad-block: var(--sherpa-space-xs, 8px);
+}
+/* Product-bar style: transparent fill, near-black default content (Figma product bar). */
+:host([data-style="product-bar"]) {
+  --_tab-fill: transparent;
+  --_tab-fill-hover: transparent;
+  --_tab-content: var(--sherpa-content-default-heading, #18191a);
+}
+
 :host .tab {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
-  background: var(--sherpa-surface-container-default, #ffffff);
+  padding: var(--_tab-pad-block) var(--sherpa-space-default, 16px);
+  background: var(--_tab-fill);
   border: none;
   /* Figma: 1px grey rule under each tab; active swaps to a 2px purple indicator. */
   border-bottom: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-container-default, #d5d5d5);
   cursor: pointer;
   white-space: nowrap;
-  font: inherit;
-  /* Figma: tab labels are Semi Bold in every state (default text #404047). */
+  font-family: inherit;
+  font-size: var(--_tab-font-size);
+  line-height: var(--_tab-line-height);
+  /* Figma: tab labels are Semi Bold in every state. */
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-content-default-secondary, #404047);
+  color: var(--_tab-content);
   transition: --transition-fast(background), --transition-fast(border-color);
 
   &:hover {
-    background: var(--sherpa-surface-container-hover, #fafafa);
+    background: var(--_tab-fill-hover);
   }
 
   &:focus-visible {

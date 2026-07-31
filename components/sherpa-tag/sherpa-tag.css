@@ -78,21 +78,21 @@
 :host([data-color="violet"]) {
   --_tag-border: var(--sherpa-data-viz-categorical-color-6, #8197f1);
   --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-6, #8197f1);
-  --_tag-fill-transparent: rgba(120, 146, 250, 0.4);
+  --_tag-fill-transparent: rgba(129, 151, 241, 0.4);
 }
 :host([data-color="orange"]) {
-  --_tag-border: var(--sherpa-data-viz-categorical-color-7, #ffaa01);
-  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-7, #ffaa01);
+  --_tag-border: var(--sherpa-data-viz-categorical-color-7, #ffaa00);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-7, #ffaa00);
   --_tag-fill-transparent: rgba(255, 170, 0, 0.4);
 }
 :host([data-color="pink"]) {
-  --_tag-border: var(--sherpa-data-viz-categorical-color-8, #f3689d);
-  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-8, #f3689d);
+  --_tag-border: var(--sherpa-data-viz-categorical-color-8, #f3699d);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-8, #f3699d);
   --_tag-fill-transparent: rgba(243, 105, 157, 0.4);
 }
 :host([data-color="rose"]) {
-  --_tag-border: var(--sherpa-data-viz-categorical-color-9, #d1115a);
-  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-9, #d1115a);
+  --_tag-border: var(--sherpa-data-viz-categorical-color-9, #d1105a);
+  --_tag-fill-solid: var(--sherpa-data-viz-categorical-color-9, #d1105a);
   --_tag-fill-transparent: rgba(209, 16, 90, 0.4);
 }
 :host([data-color="green"]) {

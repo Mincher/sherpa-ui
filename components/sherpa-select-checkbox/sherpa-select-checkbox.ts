@@ -20,6 +20,7 @@
  * @attr {boolean} disabled         — Disabled state
  * @attr {boolean} required         — Required constraint
  * @attr {string}  data-label       — Inline label text
+ * @attr {enum}    data-variant     — minimal (control only, no label/description)
  * @attr {string}  data-description — Helper line below the label
  * @attr {enum}    data-status      — critical | warning | success | info | urgent
  *

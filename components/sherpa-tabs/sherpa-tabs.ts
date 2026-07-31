@@ -15,6 +15,7 @@
  *   user switches frequently between views at the same scroll position.
  *
  * @attr {number}  data-active-tab — Zero-based index of the selected tab
+ * @attr {enum}    data-style      — primary (default, 40px/14px) | secondary (32px/12px) | product-bar (transparent)
  * @attr {enum}    data-load-mode  — eager (default, all panels rendered) | lazy (panels populated on first activation)
  *
  * @slot         — Default slot for tab panel children (each must have data-tab-label)

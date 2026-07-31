@@ -12,6 +12,29 @@
 
 @import "../utilities/sherpa-check.css";
 
+/* Minimal variant (Figma Radio "Minimal"): the control alone, no text. */
+:host([data-variant="minimal"]) .check-text-wrapper { display: none; }
+
+/* Radio Card variant (Figma "Radio Card"): the whole label is a bordered,
+   selectable card; the selected state raises a brand border + tint. */
+:host([data-variant="card"]) .check-label {
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-default, 16px);
+  border: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d5d5dc);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-control-default, #ffffff);
+  cursor: pointer;
+  transition: --transition-fast(border-color), --transition-fast(background);
+}
+:host([data-variant="card"]) .check-label:hover {
+  border-color: var(--sherpa-border-control-active-default, #c046ff);
+}
+:host([data-variant="card"]:has(.sherpa-check:checked)) .check-label {
+  border-color: var(--sherpa-border-container-active, #8500cc);
+  background: var(--sherpa-surface-control-active-default, #f8ebff);
+}
+
 :host {
   display: inline-flex;
   font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);

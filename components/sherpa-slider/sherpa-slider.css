@@ -164,9 +164,11 @@
     transition: --transition-fast(opacity);
   }
 
+  /* Focus glow tints from the primary (accent) token so it re-themes,
+     instead of a bare rgba(60,94,221,…) accent-blue literal. */
   &:hover {
     box-shadow:
-      0 0 0 6px rgba(60, 94, 221, 0.12),
+      0 0 0 6px color-mix(in srgb, var(--sherpa-surface-control-primary-default, #3c5edd) 12%, transparent),
       0 1px 3px rgba(0, 0, 0, 0.15);
   }
 
@@ -174,7 +176,7 @@
   &[data-dragging] {
     cursor: grabbing;
     box-shadow:
-      0 0 0 8px rgba(60, 94, 221, 0.18),
+      0 0 0 8px color-mix(in srgb, var(--sherpa-surface-control-primary-default, #3c5edd) 18%, transparent),
       0 1px 3px rgba(0, 0, 0, 0.15);
   }
 
