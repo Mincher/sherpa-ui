@@ -99,7 +99,9 @@
 
 :host .step-item:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #c046ff);
+  /* Accent (primary) focus ring — consistent with the tracker's active/current
+     visuals which use --sherpa-border-control-primary (accent-blue). */
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
 }
 
 :host .step-item[disabled] {
@@ -163,6 +165,24 @@
 
 :host .step-item[data-status="in-progress"] .indicator-progress { display: inline; }
 :host .step-item[data-status="in-progress"] .step-number { display: none; }
+
+:host .step-item[data-status="info"] {
+  --_indicator-border-color: var(--sherpa-surface-status-info-strong-default, #0079aa);
+  --_indicator-bg:           var(--sherpa-surface-status-info-strong-default, #0079aa);
+  --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color:            var(--sherpa-content-default-body, #2e2e33);
+}
+:host .step-item[data-status="info"] .indicator-info { display: inline; }
+:host .step-item[data-status="info"] .step-number { display: none; }
+
+:host .step-item[data-status="urgent"] {
+  --_indicator-border-color: var(--sherpa-surface-status-urgent-strong-default, #d66304);
+  --_indicator-bg:           var(--sherpa-surface-status-urgent-strong-default, #d66304);
+  --_indicator-color:        var(--sherpa-color-neutral-0, #ffffff);
+  --_label-color:            var(--sherpa-content-default-body, #2e2e33);
+}
+:host .step-item[data-status="urgent"] .indicator-urgent { display: inline; }
+:host .step-item[data-status="urgent"] .step-number { display: none; }
 
 /* ── Visited (previously navigated, now inactive) ───────────── */
 

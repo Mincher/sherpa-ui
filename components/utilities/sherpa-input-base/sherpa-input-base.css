@@ -139,6 +139,20 @@
   transition: --transition-fast(border-color);
 }
 
+/* Minimal variant (Figma "Input Field (minimal)"): no box border/fill; a single
+   bottom rule that highlights on focus. */
+:host([data-variant="minimal"]) .input-body {
+  border: none;
+  border-block-end: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d5d5dc);
+  border-radius: 0;
+  background: transparent;
+}
+:host([data-variant="minimal"]) .input-body:focus-within {
+  border-block-end-color: var(--sherpa-border-control-primary-default, #3c5edd);
+  box-shadow: none;
+}
+
 .input-body:focus-within {
   /* Focus uses the primary (accent) blue, per the design-system focus convention. */
   border-color: var(--sherpa-border-control-primary-default, #3c5edd);

@@ -107,3 +107,20 @@
 :host([data-variant="danger"][disabled]) {
   color: var(--sherpa-content-inactive-default, #5c5c66);
 }
+
+/* Modified state (Figma Menu Item "Modified"): the item's value has changed
+   from its default — emphasised label + a trailing brand dot. */
+:host([data-modified]) .label {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-active-base, #8500cc);
+}
+:host([data-modified]) .label::after {
+  content: "";
+  display: inline-block;
+  inline-size: var(--sherpa-size-3xs, 4px);
+  block-size: var(--sherpa-size-3xs, 4px);
+  margin-inline-start: var(--sherpa-space-2xs, 4px);
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+  background: var(--sherpa-content-active-base, #8500cc);
+  vertical-align: middle;
+}

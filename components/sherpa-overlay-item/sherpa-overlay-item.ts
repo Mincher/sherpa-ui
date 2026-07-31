@@ -9,6 +9,7 @@
  *
  * @attr {enum}    data-type        — checkbox | radio | toggle | heading (default: action)
  * @attr {enum}    data-variant     — null | "danger" (red destructive treatment)
+ * @attr {boolean} data-modified    — Value changed from default (brand emphasis + dot)
  * @attr {string}  data-icon        — Font Awesome icon name (e.g. "trash")
  * @attr {enum}    data-icon-weight — solid (default) | regular | light | thin | brands
  * @attr {string}  data-action      — Action identifier dispatched in overlay-select

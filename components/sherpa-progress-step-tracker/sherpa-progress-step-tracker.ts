@@ -5,7 +5,7 @@
  *   timelines. Horizontal by default; add data-orientation="vertical" for a
  *   vertical timeline. Drive navigation with nextStep(), previousStep(), and
  *   goToStep(). Mark steps with explicit status values for passive tracking
- *   (in-progress, warning, error) alongside positionally-derived active and
+ *   (in-progress, info, warning, urgent, critical) alongside positionally-derived active and
  *   completed states.
  *
  * @attr {number}  data-current-step=1       — Active step (1-based); 0 = no active step
@@ -47,7 +47,7 @@ import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
 
 /** Valid explicit step statuses. Positional states (active, completed) are
  *  derived automatically from currentStep unless overridden here. */
-export type StepStatus = 'default' | 'in-progress' | 'success' | 'warning' | 'critical';
+export type StepStatus = 'default' | 'in-progress' | 'info' | 'success' | 'warning' | 'urgent' | 'critical';
 
 /** A single step descriptor. */
 export interface StepData {
@@ -186,7 +186,9 @@ export class SherpaProgressStepTracker extends SherpaElement {
    *  precedence over positional active/completed logic. */
   #effectiveStatus(step: StepData, num: number): string {
     if (step.error   || step.status === 'critical')    return 'error';
+    if (step.status  === 'urgent')                     return 'urgent';
     if (step.status  === 'warning')                    return 'warning';
+    if (step.status  === 'info')                       return 'info';
     if (step.status  === 'in-progress')                return 'in-progress';
     if (step.completed || step.status === 'success')   return 'completed';
     // Positional (only when no explicit override and currentStep is set)

@@ -9,7 +9,7 @@
  *   NOTE: There is no `data-description` attribute. Use `data-heading` for the summary row
  *   and place body text in the default slot between the component's opening and closing tags.
  *
- * @attr {enum}    data-status      — info | warning | critical | success
+ * @attr {enum}    data-status      — info | success | warning | urgent | critical
  * @attr {string}  data-heading     — Heading text
  * @attr {boolean} data-expanded    — Body visible
  * @attr {boolean} data-dismissible — Show toggle button

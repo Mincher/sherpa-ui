@@ -3,7 +3,7 @@
  * Shadow DOM styles for the SherpaToast web component.
  *
  * Host attributes:
- *   data-status      — info (default) | success | warning | critical
+ *   data-status      — info (default) | success | warning | urgent | critical
  *   data-show-close  — true | false (show/hide close button)
  *   data-position    — top-left | top-center | top-right | bottom-left | bottom-center | bottom-right
  *   data-state       — visible | hiding (animation state)

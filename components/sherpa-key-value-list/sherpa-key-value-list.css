@@ -154,7 +154,7 @@ dd[data-status="urgent"] {
 /* ── Links ─────────────────────────────────────────────────────── */
 
 dd a {
-  color: var(--sherpa-content-primary-default, #0b6dd6);
+  color: var(--sherpa-content-primary-default, #3c5edd);
   text-decoration: none;
 
   &:hover {
@@ -163,7 +163,7 @@ dd a {
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-border-control-active-default, #c046ff);
+    box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
     border-radius: var(--sherpa-border-rounding-sm, 2px);
   }
 }
