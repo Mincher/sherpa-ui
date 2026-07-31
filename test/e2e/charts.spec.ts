@@ -291,3 +291,31 @@ test('sherpa-barchart grouped + full-stacked multi-series modes', async ({ page 
   expect(r.full.count).toBe(3);
   expect(r.full.sum).toBe(100); // normalised to 100%
 });
+
+test('sherpa-line-chart stacked + full-stacked accumulate series', async ({ page }) => {
+  await openHarness(page);
+  const r = await page.evaluate(async () => {
+    async function topVEnd(variant: string): Promise<number> {
+      const el = document.createElement('sherpa-line-chart') as HTMLElement & {
+        rendered?: Promise<void>; setData?: (d: unknown) => Promise<void>;
+      };
+      el.setAttribute('data-variant', variant);
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      await el.setData!({ labels: ['x', 'y'], series: [
+        { name: 'A', values: [10, 20] }, { name: 'B', values: [30, 30] }, { name: 'C', values: [60, 50] },
+      ] });
+      await new Promise((res) => setTimeout(res, 70));
+      const seriesEls = [...el.shadowRoot!.querySelectorAll('.series')];
+      const top = seriesEls[seriesEls.length - 1]!;
+      const last = top.querySelector<HTMLElement>('.shape:last-child')!;
+      const v = parseFloat(last.style.getPropertyValue('--_v-end'));
+      el.remove();
+      return v;
+    }
+    return { stacked: await topVEnd('stacked'), full: await topVEnd('full-stacked') };
+  });
+  // Point y totals 20+30+50 = 100 → top band ends at cumulative 100; full-stacked → 100%.
+  expect(r.stacked).toBe(100);
+  expect(r.full).toBe(100);
+});

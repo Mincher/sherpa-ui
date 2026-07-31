@@ -11,7 +11,8 @@
  *
  * @attr {string}  data-title          — Chart heading text
  * @attr {boolean} data-loading        — Show loading state
- * @attr {enum}    data-variant         — line | area
+ * @attr {enum}    data-variant         — line | area | stacked | full-stacked
+ *                                        (stacked variants accumulate series; full-stacked normalises to 100%)
  * @attr {string}  data-segment-field  — Field for series grouping
  * @attr {enum}    data-segment-mode    — Segment display mode
  * @attr {string}  data-sort-field     — Sort field
@@ -381,6 +382,43 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     return kept.map(({ _total, ...s }) => s);
   }
 
+  /** Resolve the chart variant. `stacked`/`full-stacked` imply an area chart. */
+  #lineVariant(): 'line' | 'area' | 'stacked' | 'full-stacked' {
+    const v = this.dataset['variant'];
+    if (v === 'stacked' || v === 'full-stacked' || v === 'area') return v;
+    return 'line';
+  }
+
+  /**
+   * For stacked / full-stacked variants, replace each series' values with the
+   * cumulative sum of itself plus all series below it (so the existing segment
+   * geometry draws stacked bands). full-stacked normalises each point to 100%.
+   * Non-stacked variants are returned unchanged.
+   */
+  #stackSeries(series: LineSeries[]): LineSeries[] {
+    const variant = this.#lineVariant();
+    if (variant !== 'stacked' && variant !== 'full-stacked') return series;
+    if (series.length <= 1) return series;
+
+    const len = series[0]?.values.length ?? 0;
+    // Per-point totals (for full-stacked normalisation).
+    const totals = Array.from({ length: len }, (_unused, i) =>
+      series.reduce((sum, s) => sum + (s.values[i] || 0), 0),
+    );
+    const running = new Array(len).fill(0);
+    return series.map((s) => ({
+      ...s,
+      values: s.values.map((v, i) => {
+        running[i] += v || 0;
+        if (variant === 'full-stacked') {
+          const t = totals[i] || 1;
+          return (running[i] / t) * 100;
+        }
+        return running[i];
+      }),
+    }));
+  }
+
   /* ── Private: render ──────────────────────────────────────────── */
 
   #render(): void {
@@ -390,6 +428,9 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
     const { labels = [] } = this.#data;
     let { series = [] } = this.#data;
     series = this.#capSeries(series);
+    // Stacked / full-stacked area: transform values to cumulative sums so the
+    // existing per-segment geometry renders stacked bands. (data-variant.)
+    series = this.#stackSeries(series);
     const pointCount = labels.length;
     if (!pointCount || !series.length) return;
 
