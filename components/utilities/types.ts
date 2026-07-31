@@ -5,21 +5,6 @@
  * Centralizing types ensures consistency and makes system-wide updates easier.
  */
 
-/* ── Component Size Scale ────────────────────────────────────────── */
-
-/**
- * Standard component size scale used across buttons, inputs, and other components.
- * Not all components support all sizes.
- */
-export type ComponentSize = '2x-small' | 'x-small' | 'small' | 'base' | 'large';
-
-/* ── Color Variants ──────────────────────────────────────────────── */
-
-/**
- * Standard color variant palette for buttons and interactive components
- */
-export type ColorVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'tertiary-on-color';
-
 /* ── Status Types ────────────────────────────────────────────────── */
 
 /**
@@ -36,21 +21,9 @@ export type { Status } from './status-mixin.js';
 export type Orientation = 'horizontal' | 'vertical';
 
 /**
- * Flex direction mapping (semantic aliases)
- */
-export type FlexDirection = 'row' | 'column' | 'row-reverse' | 'column-reverse';
-
-/* ── Selection & Interaction Modes ───────────────────────────────── */
-
-/**
- * Selection mode for menu items, list items, etc.
+ * Selection mode for menu items, list items, etc. (used by MenuItem/MenuSection)
  */
 export type SelectionMode = 'checkbox' | 'radio' | 'toggle';
-
-/**
- * Menu/popover positioning
- */
-export type PopoverPosition = 'top' | 'bottom' | 'left' | 'right' | 'auto';
 
 /* ── Component Tiers ─────────────────────────────────────────────── */
 
@@ -58,18 +31,6 @@ export type PopoverPosition = 'top' | 'bottom' | 'left' | 'right' | 'auto';
  * Component composition tiers (from component-categories.js)
  */
 export type ComponentTier = 'atom' | 'molecule' | 'organism' | 'structure';
-
-/**
- * Component roles within the design system
- */
-export type ComponentRole =
-  | 'control'      // Interactive controls (buttons, inputs)
-  | 'display'      // Display-only components (badges, icons)
-  | 'feedback'     // Feedback/notification (toast, callout)
-  | 'navigation'   // Navigation elements (nav, tabs)
-  | 'layout'       // Layout containers (grid, flex)
-  | 'data'         // Data visualization (charts, tables)
-  | 'utility';     // Utility components (modal, tooltip)
 
 /* ── Event Detail Types ──────────────────────────────────────────── */
 
@@ -261,146 +222,11 @@ export interface MenuOptions {
   marker?: string;
 }
 
-/* ── Form & Validation ───────────────────────────────────────────── */
-
-/**
- * Form field validation state
- */
-export type ValidationState = 'valid' | 'invalid' | 'pending' | 'untouched';
-
-/**
- * Input types supported across sherpa-input-* components
- */
-export type InputType =
-  | 'text'
-  | 'email'
-  | 'password'
-  | 'number'
-  | 'tel'
-  | 'url'
-  | 'search'
-  | 'date'
-  | 'time'
-  | 'datetime-local'
-  | 'checkbox'
-  | 'radio'
-  | 'select'
-  | 'textarea';
-
-/* ── Data Attribute Maps ─────────────────────────────────────────── */
-
-/**
- * Common data attributes used across components
- * Components can extend this with their specific attributes
- */
-export interface CommonDataAttributes extends DOMStringMap {
-  label?: string;
-  description?: string;
-  helper?: string;
-  status?: string;
-  variant?: string;
-  size?: string;
-  layout?: 'horizontal' | 'vertical';
-}
-
-/* ── Utility Types ───────────────────────────────────────────────── */
-
-/**
- * Make all properties of T optional recursively
- */
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
-/**
- * Make specific properties of T required
- */
-export type RequireProps<T, K extends keyof T> = T & Required<Pick<T, K>>;
-
-/**
- * Extract property names that are of a specific type
- */
-export type PropertiesOfType<T, V> = {
-  [K in keyof T]: T[K] extends V ? K : never;
-}[keyof T];
-
 /**
  * Constructor type for mixins
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<T = object> = new (...args: any[]) => T;
-
-/**
- * Abstract constructor type
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AbstractConstructor<T = object> = abstract new (...args: any[]) => T;
-
-/* ── Component Public API Interfaces ─────────────────────────────── */
-
-/**
- * Base interface all Sherpa components should implement
- */
-export interface ISherpaComponent extends HTMLElement {
-  /** Component has completed initial render */
-  readonly rendered: Promise<void>;
-}
-
-/**
- * Interface for components that support disabled state
- */
-export interface IDisableable {
-  disabled: boolean;
-}
-
-/**
- * Interface for components with label/description
- */
-export interface ILabeled {
-  label: string;
-  description?: string;
-}
-
-/**
- * Interface for form-associated components
- */
-export interface IFormField extends IDisableable, ILabeled {
-  name: string;
-  value: string;
-  required: boolean;
-  readonly: boolean;
-
-  // Validation API
-  readonly validity: ValidityState | undefined;
-  readonly validationMessage: string;
-  checkValidity(): boolean;
-  reportValidity(): boolean;
-}
-
-/* ── Non-null helpers ─────────────────────────────────────────────── */
-
-/**
- * Assert that a value is non-null/undefined. Returns the value typed
- * without the `null | undefined` part. Throws if the value is nullish.
- *
- * Useful when accessing required cached elements or values that the type
- * system cannot narrow (e.g. `noUncheckedIndexedAccess` array reads).
- *
- *   const ctx = nn(canvas.getContext('2d'), 'canvas context required');
- */
-export function nn<T>(value: T | null | undefined, message = 'expected non-null value'): T {
-  if (value == null) throw new Error(message);
-  return value;
-}
-
-/**
- * Type guard: narrows `value` to `NonNullable<T>` without throwing.
- *
- *   const items = list.filter(isNonNullable);
- */
-export function isNonNullable<T>(value: T | null | undefined): value is NonNullable<T> {
-  return value != null;
-}
 
 /* ── Node-canvas shared types ─────────────────────────────────────── */
 

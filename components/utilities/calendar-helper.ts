@@ -13,8 +13,6 @@ export const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-export const WEEKDAY_SHORT = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-
 /**
  * Parse an ISO date string (YYYY-MM-DD) to a Temporal.PlainDate, or null.
  */
