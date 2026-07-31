@@ -498,6 +498,15 @@ td[data-numeric] {
   text-align: right;
 }
 
+/* Explicit per-column alignment (Figma header: left / centralised / right).
+   Applies to both header cells and body cells; overrides the numeric default. */
+td[data-align="left"],
+th.header-cell[data-align="left"] .header-content { text-align: left; }
+td[data-align="center"],
+th.header-cell[data-align="center"] .header-content { text-align: center; justify-content: center; }
+td[data-align="right"],
+th.header-cell[data-align="right"] .header-content { text-align: right; justify-content: flex-end; }
+
 /* Boolean cell icons */
 td .bool-icon {
   font-size: var(--sherpa-fonts-scale-sm, 12px);

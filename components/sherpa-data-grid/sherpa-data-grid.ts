@@ -133,6 +133,9 @@ interface GridColumn {
   field: string;
   name: string;
   type: string;
+  /** Explicit header + cell alignment (Figma header: left / centralised / right).
+   *  Defaults to right for numeric columns, left otherwise. */
+  align?: 'left' | 'center' | 'right';
   _statusMap?: Record<string, string>;
 }
 
@@ -680,6 +683,9 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       const th = template.cloneNode(true) as HTMLElement;
       th.dataset["field"] = col.field;
       if (isNum) th.toggleAttribute("data-numeric", true);
+      // Explicit column alignment (defaults: numeric→right, else left).
+      const align = col.align ?? (isNum ? "right" : "left");
+      th.dataset["align"] = align;
       th.style.width = `${w}px`;
       th.style.minWidth = `${w}px`;
       const label = th.querySelector(".header-cell-label");
@@ -928,6 +934,8 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
 
     const isNum = NUMERIC_TYPES.has(column.type);
     if (isNum) cell.dataset["numeric"] = "";
+    // Explicit column alignment (defaults: numeric→right, else left).
+    cell.dataset["align"] = column.align ?? (isNum ? "right" : "left");
 
     return cell;
   }

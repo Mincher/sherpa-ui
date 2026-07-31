@@ -13,7 +13,7 @@
     hidden               — Hides the component entirely
 
   Events:
-    pagechange — { page, pageSize, totalPages }
+    page-change — { page, pageSize, totalPages }
 -->
 
 <template id="default">
@@ -38,6 +38,8 @@
       <span class="page-separator">of</span>
       <span class="page-total"></span>
     </span>
+    <!-- Numbered page buttons (windowed; shown when the container has width). -->
+    <span class="page-numbers" role="group" aria-label="Pages"></span>
     <button class="page-btn page-next" data-action="next" aria-label="Next page" type="button">
       <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
     </button>
@@ -49,5 +51,14 @@
   <!-- Cloning prototype: page-size option -->
   <template class="option-tpl">
     <option data-bind="label" data-bind-attr="value:value; selected:selected"></option>
+  </template>
+
+  <!-- Cloning prototypes: a numbered page button and an ellipsis gap. -->
+  <template class="page-num-tpl">
+    <button class="page-btn page-num" data-action="page" type="button"
+            data-bind="label" data-bind-attr="data-page:page; aria-current:current; disabled:isCurrent"></button>
+  </template>
+  <template class="page-gap-tpl">
+    <span class="page-gap" aria-hidden="true">…</span>
   </template>
 </template>

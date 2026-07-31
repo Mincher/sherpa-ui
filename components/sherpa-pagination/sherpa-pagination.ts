@@ -206,6 +206,36 @@ export class SherpaPagination extends SherpaElement {
     if (prevBtn) prevBtn.disabled = isFirst;
     if (nextBtn) nextBtn.disabled = isLast;
     if (lastBtn) lastBtn.disabled = isLast;
+
+    this.#renderPageNumbers(page, totalPages);
+  }
+
+  /** Build a windowed list of numbered page buttons: 1 … p-1 [p] p+1 … N. */
+  #renderPageNumbers(page: number, totalPages: number): void {
+    const host = this.$('.page-numbers');
+    if (!host) return;
+    host.replaceChildren();
+    if (totalPages <= 1) return;
+
+    // Window of pages to show around the current one, always incl. 1 and N.
+    const pages = new Set<number>([1, totalPages, page, page - 1, page + 1]);
+    const sorted = [...pages].filter((n) => n >= 1 && n <= totalPages).sort((a, b) => a - b);
+
+    let prev = 0;
+    for (const n of sorted) {
+      if (n - prev > 1) {
+        const gap = this.$<HTMLTemplateElement>('.page-gap-tpl')?.content.firstElementChild?.cloneNode(true);
+        if (gap) host.appendChild(gap);
+      }
+      const frag = this.renderFragment('.page-num-tpl', {
+        label: String(n),
+        page: String(n),
+        current: n === page ? 'page' : null,
+        isCurrent: n === page ? true : null,
+      });
+      host.appendChild(frag);
+      prev = n;
+    }
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -229,6 +259,11 @@ export class SherpaPagination extends SherpaElement {
       case "prev":  newPage = Math.max(1, page - 1); break;
       case "next":  newPage = Math.min(totalPages, page + 1); break;
       case "last":  newPage = totalPages; break;
+      case "page": {
+        const n = parseInt(btn.dataset["page"] ?? "", 10);
+        if (!Number.isNaN(n)) newPage = Math.min(totalPages, Math.max(1, n));
+        break;
+      }
     }
 
     if (newPage !== page) {

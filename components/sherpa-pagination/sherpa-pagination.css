@@ -116,6 +116,25 @@
 :host .page-current {
   font-weight: 600;
 }
+
+/* Numbered page buttons (windowed). Inherit .page-btn; the current page reads
+   as active (brand) and non-interactive. Hidden by default; the container is
+   opt-in for grids/toolbars with room to show numbers. */
+:host .page-numbers {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+:host .page-num[aria-current="page"] {
+  color: var(--sherpa-content-active-base, #8500cc);
+  background: var(--sherpa-surface-control-active-default, #f8ebff);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  cursor: default;
+}
+:host .page-gap {
+  padding-inline: var(--sherpa-space-2xs, 4px);
+  color: var(--sherpa-content-default-secondary, #6a6a75);
+}
 :host .page-separator {
   color: var(--sherpa-content-default-secondary, #555);
 }
