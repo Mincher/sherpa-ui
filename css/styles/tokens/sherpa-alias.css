@@ -150,6 +150,7 @@
   --sherpa-border-rounding-none: var(--core-border-radius-0);
   --sherpa-border-rounding-sm: var(--core-border-radius-100);
   --sherpa-border-rounding-xl: var(--core-border-radius-400);
+  --sherpa-border-rounding-2xl: var(--core-border-radius-450);
   --sherpa-border-width-2xl: var(--core-border-stroke-600);
   --sherpa-border-width-3xl: var(--core-border-stroke-700);
   --sherpa-border-width-base: var(--core-border-stroke-300);

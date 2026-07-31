@@ -162,11 +162,11 @@
   --core-color-basic-blue-green-100: #d9f2fa;
   --core-color-basic-blue-green-200: #b0e8fc;
   --core-color-basic-blue-green-300: #69d5fc;
-  --core-color-basic-blue-green-400: #3cc4f5;
+  --core-color-basic-blue-green-400: #3dc4f5;
   --core-color-basic-blue-green-500: #16abe2;
   --core-color-basic-blue-green-600: #0a96c9;
   --core-color-basic-blue-green-650: #1a8eb1;
-  --core-color-basic-blue-green-700: #0179aa;
+  --core-color-basic-blue-green-700: #0079aa;
   --core-color-basic-blue-green-725: #047598;
   --core-color-basic-blue-green-750: #006f9d;
   --core-color-basic-blue-green-800: #06526f;
@@ -182,10 +182,10 @@
   --core-color-basic-green-300: #74ddaa;
   --core-color-basic-green-400: #4bd391;
   --core-color-basic-green-500: #20c173;
-  --core-color-basic-green-600: #04a753;
+  --core-color-basic-green-600: #01a753;
   --core-color-basic-green-625: #01a753;
   --core-color-basic-green-650: #00954a;
-  --core-color-basic-green-700: #048142;
+  --core-color-basic-green-700: #058142;
   --core-color-basic-green-800: #006f38;
   --core-color-basic-green-900: #025f2d;
   --core-color-basic-green-1000: #004f26;
@@ -216,7 +216,7 @@
   --core-color-basic-orange-400: #fa8d34;
   --core-color-basic-orange-450: #e18d1b;
   --core-color-basic-orange-500: #ff7300;
-  --core-color-basic-orange-600: #ed6d02;
+  --core-color-basic-orange-600: #ed6d03;
   --core-color-basic-orange-700: #d66304;
   --core-color-basic-orange-800: #b95608;
   --core-color-basic-orange-900: #9a4909;
@@ -257,7 +257,7 @@
   --core-color-basic-red-100: #ffd7ca;
   --core-color-basic-red-200: #f79780;
   --core-color-basic-red-300: #f37253;
-  --core-color-basic-red-400: #f1441a;
+  --core-color-basic-red-400: #f0451c;
   --core-color-basic-red-500: #dd2c01;
   --core-color-basic-red-550: #c12603;
   --core-color-basic-red-600: #bf2c09;
@@ -284,7 +284,7 @@
 
   /* ── Monochrome ──────────────────────────────────────────────── */
   --core-color-basic-monochrome-0: #ffffff;
-  --core-color-basic-monochrome-25: #fafafa;
+  --core-color-basic-monochrome-25: #fdfdfd;
   --core-color-basic-monochrome-50: #fafafa;
   --core-color-basic-monochrome-75: #f8f8f8;
   --core-color-basic-monochrome-100: #f2f2f2;
@@ -398,8 +398,8 @@
   --core-color-extended-neon-blue-450: #5f80e8;
   --core-color-extended-neon-blue-500: #4c63e5;
   --core-color-extended-neon-blue-550: #3c5edd;
-  --core-color-extended-neon-blue-600: #163382;
-  --core-color-extended-neon-blue-650: #0e1057;
+  --core-color-extended-neon-blue-600: #173382;
+  --core-color-extended-neon-blue-650: #0f0f57;
   --core-color-extended-neon-blue-700: #0d0d4a;
   --core-color-extended-neon-blue-750: #0b0b3d;
   --core-color-extended-neon-blue-800: #080830;
@@ -412,7 +412,7 @@
   --core-color-extended-phlox-400: #d485ff;
   --core-color-extended-phlox-450: #cb71ff;
   --core-color-extended-phlox-500: #c046ff;
-  --core-color-extended-phlox-550: #a90cff;
+  --core-color-extended-phlox-550: #a90aff;
   --core-color-extended-phlox-600: #8500cc;
   --core-color-extended-phlox-650: #50007a;
   --core-color-extended-phlox-700: #350052;
@@ -485,8 +485,8 @@
   --core-color-extended-warm-yellow-300: #fdd37e;
   --core-color-extended-warm-yellow-400: #fcc558;
   --core-color-extended-warm-yellow-500: #ffc44c;
-  --core-color-extended-warm-yellow-600: #fcb72c;
-  --core-color-extended-warm-yellow-700: #ffae0c;
+  --core-color-extended-warm-yellow-600: #fcb72d;
+  --core-color-extended-warm-yellow-700: #ffae0b;
   --core-color-extended-warm-yellow-800: #e39b04;
   --core-color-extended-warm-yellow-900: #a77205;
   --core-color-extended-warm-yellow-1000: #805500;

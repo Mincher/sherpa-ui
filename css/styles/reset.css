@@ -57,7 +57,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family: var(--sherpa-fonts-context-default, "Open Sans"), Arial, Helvetica, sans-serif;
+  font-family: var(--sherpa-fonts-context-default, "Inter"), Arial, Helvetica, sans-serif;
   font-size: var(--sherpa-fonts-scale-base, 14px);
   color: var(--sherpa-content-default-body, #111);
   -webkit-font-smoothing: antialiased;

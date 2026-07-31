@@ -63,7 +63,7 @@
   .text-metric-delta,
   .text-title-component
 ) {
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
   color: var(--sherpa-content-default-body);
 }
 
@@ -96,13 +96,13 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .font-default {
-  font-family: var(--sherpa-fonts-context-default, "Open Sans", sans-serif);
+  font-family: var(--sherpa-fonts-context-default, "Inter", sans-serif);
 }
 .font-brand {
-  font-family: var(--sherpa-fonts-context-brand, "Manrope", sans-serif);
+  font-family: var(--sherpa-fonts-context-brand, "Inter", sans-serif);
 }
 .font-mono {
-  font-family: var(--sherpa-fonts-context-monospaced, "Source Code Pro", monospace);
+  font-family: var(--sherpa-fonts-context-monospaced, "JetBrains Mono", monospace);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -200,7 +200,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :is(.text-mono-xl, .text-mono-lg, .text-mono, .text-mono-base, .text-mono-sm, .text-mono-xs) {
-  font-family: var(--sherpa-fonts-context-monospaced, "Source Code Pro", monospace);
+  font-family: var(--sherpa-fonts-context-monospaced, "JetBrains Mono", monospace);
   font-weight: 400;
   letter-spacing: 0.1px;
 }
@@ -234,11 +234,11 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    PRODUCT BAR  —  Figma: product bar/product-bar
-   Brand font (Manrope), SemiBold (600), uppercase
+   Brand font (Inter), SemiBold (600), uppercase
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .text-product-bar {
-  font-family: var(--sherpa-fonts-context-brand, "Manrope", sans-serif);
+  font-family: var(--sherpa-fonts-context-brand, "Inter", sans-serif);
   font-size: var(--sherpa-font-h5-size, 20px);
   font-weight: 600;
   line-height: var(--sherpa-font-lg-line-height, 32px);
@@ -308,7 +308,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .text-display-3xl {
-  font-family: var(--sherpa-fonts-context-brand, "Manrope", sans-serif);
+  font-family: var(--sherpa-fonts-context-brand, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-3xl, 28px);
   font-weight: 400;
   line-height: 1em;
@@ -316,7 +316,7 @@
 }
 
 .text-display-2xl {
-  font-family: var(--sherpa-fonts-context-brand, "Manrope", sans-serif);
+  font-family: var(--sherpa-fonts-context-brand, "Inter", sans-serif);
   font-size: var(--sherpa-fonts-scale-2xl, 24px);
   font-weight: 400;
   line-height: 1em;
