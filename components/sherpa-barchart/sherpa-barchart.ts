@@ -9,7 +9,9 @@
  *   (app-shell integration — last writer wins on datasetfiltered).
  *
  * @attr {boolean} data-loading        — Show loading state
- * @attr {boolean} data-stacked        — Stack bars by segment
+ * @attr {boolean} data-stacked        — Stack bars by segment (legacy alias for data-mode="stacked")
+ * @attr {enum}    data-mode           — single | grouped | stacked | full-stacked (multi-series layout;
+ *                                       defaults to grouped for multi-series, single for one series)
  * @attr {string}  data-title          — Chart heading text
  * @attr {enum}    data-orientation     — horizontal | vertical (auto-selected)
  * @attr {string}  data-segment-field  — Field for bar grouping
@@ -121,6 +123,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       ...super.observedAttributes,
       "data-loading",
       "data-stacked",
+      "data-mode",
       "data-title",
       "data-orientation",
       "data-segment-field",
@@ -606,7 +609,10 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const { categories } = capped;
     let { series } = capped;
     series = this.#capSeries(series);
-    const isStacked = this.hasAttribute("data-stacked") || data.stacked;
+    // isStacked covers both stacked variants (they share vertical accumulation);
+    // #barMode() distinguishes stacked / full-stacked / grouped / single.
+    const mode = this.#barMode(series);
+    const isStacked = mode === "stacked" || mode === "full-stacked";
 
     const maxValue = this.#getMaxValue(series, isStacked);
     const niceMax = this.#niceNumber(maxValue);
@@ -914,17 +920,41 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     el.replaceChildren(...nodes.filter((n): n is HTMLElement => n !== null));
   }
 
+  /** Resolve the bar layout mode. data-mode wins; data-stacked is legacy for
+   *  "stacked". Single-series data always renders as "single". */
+  #barMode(series: BarSeries[]): "single" | "stacked" | "grouped" | "full-stacked" {
+    if (series.length <= 1) return "single";
+    const m = this.dataset["mode"];
+    if (m === "grouped" || m === "stacked" || m === "full-stacked") return m;
+    if (this.hasAttribute("data-stacked") || this.#data?.stacked) return "stacked";
+    return "grouped"; // multi-series default = side-by-side
+  }
+
+  /** Category total for full-stacked (100%) normalisation. */
+  #categoryTotal(series: BarSeries[], catIdx: number): number {
+    return series.reduce((sum, s) => sum + (s.values?.[catIdx] || 0), 0);
+  }
+
   #calculateSegmentSizes(series: BarSeries[], catIdx: number, niceMax: number, isStacked: boolean): { segments: Array<{ percent: number; tooltip: string }> } {
     const segments: Array<{ percent: number; tooltip: string }> = [];
-    if (isStacked) {
+    const mode = this.#barMode(series);
+
+    if (mode === "full-stacked") {
+      const total = this.#categoryTotal(series, catIdx) || 1;
+      series.forEach((s) => {
+        const value = s.values?.[catIdx] || 0;
+        if (value > 0) segments.push({ percent: (value / total) * 100, tooltip: `${s.name}: ${formatCompact(value)}` });
+      });
+      return { segments };
+    }
+    if (isStacked || mode === "grouped") {
+      // Both render one entry per series (grouped bars sit side-by-side; the
+      // percent is each series' own height relative to niceMax).
       series.forEach((s) => {
         const value = s.values?.[catIdx] || 0;
         if (value > 0) {
           const pct = niceMax > 0 ? (value / niceMax) * 100 : 0;
-          segments.push({
-            percent: pct,
-            tooltip: `${s.name}: ${formatCompact(value)}`,
-          });
+          segments.push({ percent: pct, tooltip: `${s.name}: ${formatCompact(value)}` });
         }
       });
       return { segments };
@@ -933,21 +963,30 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     const s0 = series[0];
     const value = s0?.values?.[catIdx] || 0;
     const pct = Math.max(1, (value / niceMax) * 100);
-    segments.push({
-      percent: pct,
-      tooltip: `${s0?.name ?? ""}: ${formatCompact(value)}`,
-    });
+    segments.push({ percent: pct, tooltip: `${s0?.name ?? ""}: ${formatCompact(value)}` });
     return { segments };
   }
 
   #createSegmentNodes(series: BarSeries[], catIdx: number, niceMax: number, isStacked: boolean): HTMLElement[] {
-    if (isStacked) {
+    const mode = this.#barMode(series);
+
+    if (mode === "full-stacked") {
+      const total = this.#categoryTotal(series, catIdx) || 1;
+      const nodes: HTMLElement[] = [];
+      series.forEach((s, i) => {
+        const value = s.values?.[catIdx] || 0;
+        if (value === 0) return;
+        nodes.push(this.#buildSegment(s.name ?? "", value, (value / total) * 100, i));
+      });
+      return nodes;
+    }
+    if (isStacked || mode === "grouped") {
       const nodes: HTMLElement[] = [];
       series.forEach((s, i) => {
         const value = s.values?.[catIdx] || 0;
         if (value === 0) return; // Don't render 0-value segments
         const pct = niceMax > 0 ? (value / niceMax) * 100 : 0;
-        nodes.push(this.#buildSegment(s.name ?? "", value, pct, i));
+        nodes.push(this.#buildSegment(s.name ?? "", value, pct, i, mode === "grouped"));
       });
       return nodes;
     }
@@ -958,11 +997,13 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return [this.#buildSegment(s0?.name ?? "", value, pct, 0)];
   }
 
-  #buildSegment(name: string, value: number, percent: number, colorIdx: number): HTMLElement {
+  #buildSegment(name: string, value: number, percent: number, colorIdx: number, grouped = false): HTMLElement {
     const node = this.#segmentTpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
     if (!node) return document.createElement('span');
     node.dataset["colorIndex"] = String((colorIdx % CONFIG.numColors) + 1);
     node.style.setProperty("--_segment-size", `${percent}%`);
+    // Grouped segments sit side-by-side (a bar each) rather than stacking.
+    if (grouped) node.dataset["grouped"] = "";
     node.dataset["tooltip"] = `${name}: ${formatCompact(value)}`;
     return node;
   }

@@ -253,3 +253,41 @@ test('viz charts consume data-viz tokens (re-theme on mode change, not hardcoded
   expect(r.light.line).not.toBe(r.dark.line);
   expect(r.light.legend).toBe(r.light.line); // legend swatch mirrors the line colour
 });
+
+test('sherpa-barchart grouped + full-stacked multi-series modes', async ({ page }) => {
+  await openHarness(page);
+  const r = await page.evaluate(async () => {
+    async function build(mode: string): Promise<{ count: number; grouped: boolean; sum: number }> {
+      const el = document.createElement('sherpa-barchart') as HTMLElement & {
+        rendered?: Promise<void>; setData?: (d: unknown) => Promise<void>;
+      };
+      el.setAttribute('data-segment-field', 'product');
+      el.setAttribute('data-mode', mode);
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      await el.setData!({
+        columns: [
+          { field: 'region', name: 'Region', type: 'string' },
+          { field: 'product', name: 'Product', type: 'string' },
+          { field: 'sales', name: 'Sales', type: 'number' },
+        ],
+        rows: [
+          { region: 'N', product: 'A', sales: 10 }, { region: 'N', product: 'B', sales: 30 }, { region: 'N', product: 'C', sales: 60 },
+          { region: 'S', product: 'A', sales: 20 }, { region: 'S', product: 'B', sales: 40 }, { region: 'S', product: 'C', sales: 40 },
+        ],
+      });
+      await new Promise((res) => setTimeout(res, 90));
+      const bar = el.shadowRoot!.querySelector('.chart-row .chart-bar')!;
+      const segs = [...bar.querySelectorAll<HTMLElement>('.chart-segment')];
+      const sum = segs.reduce((a, s) => a + Math.round(parseFloat(s.style.getPropertyValue('--_segment-size'))), 0);
+      const out = { count: segs.length, grouped: segs.every((s) => s.hasAttribute('data-grouped')), sum };
+      el.remove();
+      return out;
+    }
+    return { grouped: await build('grouped'), full: await build('full-stacked') };
+  });
+  expect(r.grouped.count).toBe(3);
+  expect(r.grouped.grouped).toBe(true); // side-by-side bars, not stacked
+  expect(r.full.count).toBe(3);
+  expect(r.full.sum).toBe(100); // normalised to 100%
+});

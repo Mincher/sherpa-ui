@@ -219,6 +219,19 @@ sherpa-filter-bar {
   }
 }
 
+/* Grouped mode: each series is its own thin bar stacked vertically within the
+   category slot (side-by-side across the value axis, not accumulated). */
+.chart-bar:has(.chart-segment[data-grouped]) {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+.chart-segment[data-grouped] {
+  height: auto;
+  flex: 1 1 0;
+  min-height: 2px;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Value axis — outside overflow region, never clipped
    ═══════════════════════════════════════════════════════════════════════════ */
