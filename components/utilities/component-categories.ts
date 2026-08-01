@@ -1,13 +1,10 @@
 /**
  * component-categories.ts
  *
- * Maps every sherpa-* custom element tag name to its role category,
- * numeric composition tier, and atomic-design string tier.
+ * Maps every sherpa-* custom element tag name to its role category and
+ * numeric composition tier.
  * Roles + tiers are defined in docs/COMPONENT-CATEGORIES.md.
- * String tiers are defined in docs/COMPONENT-TIER-MAPPING.md.
  */
-
-import type { ComponentTier } from './types.js';
 
 export type ComponentCategory =
   | 'shell'
@@ -200,90 +197,4 @@ export function getCategory(tagName: string | null | undefined): ComponentCatego
 export function getTier(tagName: string | null | undefined): number | null {
   if (!tagName) return null;
   return COMPONENT_TIERS[tagName.toLowerCase()] ?? null;
-}
-
-/** Atomic-design string tier for each component. See docs/COMPONENT-TIER-MAPPING.md. */
-export const COMPONENT_STRING_TIERS: Record<string, ComponentTier> = Object.freeze({
-  // structure — layout/surface wrappers with no domain logic
-  'sherpa-app-shell':        'structure',
-  'sherpa-app-header':       'structure',
-  'sherpa-layout-grid':      'structure',
-  'sherpa-container':        'structure',
-  'sherpa-container-group':  'structure',
-  'sherpa-panel':            'structure',
-  'sherpa-accordion':        'structure',
-  // organism — complex, self-contained sections
-  'sherpa-nav':              'organism',
-  'sherpa-product-bar':      'organism',
-  'sherpa-product-bar-v2':   'organism',
-  'sherpa-view-header':      'organism',
-  'sherpa-container-header': 'organism',
-  'sherpa-container-footer': 'organism',
-  'sherpa-dialog':           'organism',
-  'sherpa-data-grid':        'organism',
-  'sherpa-quick-filter':          'molecule',
-  'sherpa-quick-filter-toolbar':  'organism',
-  'sherpa-calendar':         'organism',
-  'sherpa-transfer-list':    'organism',
-  'sherpa-scheduler':        'organism',
-  'sherpa-list':             'organism',
-  'sherpa-tree':             'organism',
-  'sherpa-toolbar':          'organism',
-  'sherpa-pagination':       'organism',
-  'sherpa-metric':           'organism',
-  'sherpa-barchart':         'organism',
-  'sherpa-line-chart':       'organism',
-  'sherpa-donut-chart':      'organism',
-  'sherpa-gauge-chart':      'organism',
-  'sherpa-prompt-composer':  'organism',
-  'sherpa-proposal-op':      'organism',
-  'sherpa-proposal-preview': 'organism',
-  'sherpa-code-block':       'organism',
-  // molecule — composed of atoms; serves one workflow step
-  'sherpa-container-overlay':     'molecule',
-  'sherpa-overlay-item':          'molecule',
-  'sherpa-list-item':             'molecule',
-  'sherpa-key-value-list':        'molecule',
-  'sherpa-tabs':                  'molecule',
-  'sherpa-stepper':               'molecule',
-  'sherpa-progress-tracker':      'molecule',
-  'sherpa-breadcrumbs':           'molecule',
-  'sherpa-section-header':        'molecule',
-  'sherpa-nav-section':           'molecule',
-  'sherpa-nav-item':              'molecule',
-  'sherpa-chart-legend':          'molecule',
-  'sherpa-chat-message':          'molecule',
-  'sherpa-empty-state':           'molecule',
-  'sherpa-input-text':            'molecule',
-  'sherpa-input-number':          'molecule',
-  'sherpa-input-password':        'molecule',
-  'sherpa-input-search':          'molecule',
-  'sherpa-input-select':          'molecule',
-  'sherpa-input-time':            'molecule',
-  'sherpa-select-group':          'molecule',
-  'sherpa-input-date':            'molecule',
-  'sherpa-input-date-range':      'molecule',
-  'sherpa-input-tag':             'molecule',
-  'sherpa-file-upload':           'molecule',
-  // atom — single-purpose primitives
-  'sherpa-button':          'atom',
-  'sherpa-icon':            'atom',
-  'sherpa-tag':             'atom',
-  'sherpa-switch':          'atom',
-  'sherpa-slider':          'atom',
-  'sherpa-tooltip':         'atom',
-  'sherpa-loader':          'atom',
-  'sherpa-progress-bar':    'atom',
-  'sherpa-sparkline':       'atom',
-  'sherpa-message':         'atom',
-  'sherpa-callout':         'atom',
-  'sherpa-toast':           'atom',
-  'sherpa-select-checkbox': 'atom',
-  'sherpa-select-radio':    'atom',
-});
-
-/** Look up the atomic-design string tier for a given tag name. Null if unknown. */
-export function getStringTier(tagName: string | null | undefined): ComponentTier | null {
-  if (!tagName) return null;
-  return COMPONENT_STRING_TIERS[tagName.toLowerCase()] ?? null;
 }

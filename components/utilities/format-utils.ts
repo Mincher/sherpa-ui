@@ -138,33 +138,3 @@ export function formatValue(value: unknown, type: string | null | undefined): st
       return escapeHtml(String(value));
   }
 }
-
-export interface ContentTitleDetails {
-  dataset?: string;
-  name?: string;
-  groupField?: string;
-  segmentField?: string;
-}
-
-/**
- * Generate a concise content title: "$categoryName by $groupName".
- * Group portion is omitted when there is no secondary dimension.
- */
-export function generateContentTitle(details: ContentTitleDetails | string | null | undefined): string {
-  if (!details || typeof details !== 'object') {
-    return details ? formatFieldName(String(details)) : '';
-  }
-
-  // Primary label: dataset name (the JSON slug e.g. "detections" → "Detections")
-  const dataset = details.dataset ?? details.name ?? '';
-  const baseLabel = dataset ? formatFieldName(dataset) : '';
-
-  // Secondary dimension: group / segment field
-  const groupField = details.groupField ?? details.segmentField ?? null;
-  const groupLabel = groupField ? formatFieldName(groupField) : '';
-
-  if (baseLabel && groupLabel) return `${baseLabel} by ${groupLabel}`;
-  if (baseLabel) return baseLabel;
-
-  return '';
-}
