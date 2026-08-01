@@ -658,10 +658,6 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 `sherpa-callout`, `sherpa-toast`, `sherpa-message`, `sherpa-empty-state`, `sherpa-loader`, `sherpa-progress-tracker`.
 
-#### Node-graph (5)
-
-`sherpa-node`, `sherpa-node-canvas`, `sherpa-node-header`, `sherpa-node-row`, `sherpa-node-socket`.
-
 #### Other primitives & containers
 
 `sherpa-button`, `sherpa-dialog`, `sherpa-container-overlay`, `sherpa-overlay-item`, `sherpa-tooltip`, `sherpa-progress-bar`, `sherpa-stepper`, `sherpa-tag`, `sherpa-toolbar`, `sherpa-view-header`, `sherpa-container-footer`, `sherpa-filter-bar`, `sherpa-container-pdf`, `sherpa-data-viz-container`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-file-upload`, `sherpa-accordion`.

@@ -179,7 +179,7 @@ export interface ContentAttributesMixinInterface {
   readonly isAttrReactionSuppressed: boolean;
   suppressAttrReaction(): void;
   resumeAttrReaction(): void;
-  getViewOptions(opts: { activeType?: string; canShowChart?: boolean }): ViewOption[];
+  getViewOptions(activeType?: string): ViewOption[];
   configureHeader(opts?: { title?: string; viewOptions?: ViewOption[] }): void;
   wireContentMenu(root: unknown, activeType?: string): Promise<void> | void;
 }
@@ -783,7 +783,7 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
     public _menuBound = false;
     public _menuCurrentType = "";
 
-    getViewOptions({ activeType, canShowChart = true }: { activeType?: string; canShowChart?: boolean }): ViewOption[] {
+    getViewOptions(activeType?: string): ViewOption[] {
       return [
         {
           type: "table",
@@ -802,10 +802,6 @@ export function ContentAttributesMixin<T extends Constructor<SherpaElement>>(
           label: "Bar Chart",
           icon: "fa-chart-simple",
           active: activeType === "barchart",
-          disabled: !canShowChart,
-          disabledTitle: canShowChart
-            ? ""
-            : "No primary axis field for chart",
         },
       ];
     }

@@ -38,7 +38,6 @@ Pure layout/surface wrappers. They hold content but carry no domain logic.
 | `sherpa-container-group` | Groups containers; adds grouping semantics, not logic |
 | `sherpa-panel` | Collapsible/resizable surface pane |
 | `sherpa-accordion` | Expand/collapse wrapper; content is fully slotted |
-| `sherpa-node-canvas` | Structural canvas surface; sibling to layout-grid for presenting content |
 
 ---
 
@@ -94,8 +93,6 @@ Serves one focused workflow step but stays simpler than an organism.
 | `sherpa-section-header` | Heading + optional subtitle + optional action slot |
 | `sherpa-nav-section` | Section label + grouped `nav-item` atoms |
 | `sherpa-nav-item` | Icon + label + optional badge |
-| `sherpa-node` | `node-header` + sockets + rows — composed sub-elements |
-| `sherpa-node-row` | Single I/O row; contains molecules and atoms |
 | `sherpa-chart-legend` | Legend swatch + label rows (repeating atom group) |
 | `sherpa-chat-message` | Avatar + content + timestamp |
 | `sherpa-empty-state` | Contains multiple atoms (illustration, text, buttons) |
@@ -132,10 +129,8 @@ components; cannot be meaningfully split further.
 | `sherpa-message` | Inline alert/message |
 | `sherpa-callout` | Block-level callout with icon and text |
 | `sherpa-toast` | Timed notification |
-| `sherpa-input-checkbox` | Single checkbox + label |
-| `sherpa-input-radio` | Single radio + label |
-| `sherpa-node-header` | Icon + title; single-purpose header row |
-| `sherpa-node-socket` | Single connection point on a node |
+| `sherpa-select-checkbox` | Single checkbox + label |
+| `sherpa-select-radio` | Single radio + label |
 
 ---
 

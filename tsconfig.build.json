@@ -3,10 +3,6 @@
   "compilerOptions": {
     "rootDir": "./components",
     "outDir": "./dist/components",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "removeComments": false,
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo"
   },

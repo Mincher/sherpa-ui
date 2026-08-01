@@ -24,26 +24,6 @@ export const TimeUnit = Object.freeze({
   YEAR:    'year',
 });
 
-/** Human-readable labels (singular / plural). */
-export const TIME_UNIT_LABELS = Object.freeze({
-  [TimeUnit.HOUR]:    { singular: 'Hour',    plural: 'Hours' },
-  [TimeUnit.DAY]:     { singular: 'Day',     plural: 'Days' },
-  [TimeUnit.WEEK]:    { singular: 'Week',    plural: 'Weeks' },
-  [TimeUnit.MONTH]:   { singular: 'Month',   plural: 'Months' },
-  [TimeUnit.QUARTER]: { singular: 'Quarter', plural: 'Quarters' },
-  [TimeUnit.YEAR]:    { singular: 'Year',    plural: 'Years' },
-});
-
-/** Ordered list for iteration (finest → coarsest). */
-export const TIME_UNITS_ORDERED = Object.freeze([
-  TimeUnit.HOUR,
-  TimeUnit.DAY,
-  TimeUnit.WEEK,
-  TimeUnit.MONTH,
-  TimeUnit.QUARTER,
-  TimeUnit.YEAR,
-]);
-
 // ═══════════════════════════════════════════════════════════
 //  Preset time-range definitions
 // ═══════════════════════════════════════════════════════════
@@ -108,33 +88,11 @@ export function parseDateId(dateStr: string | number): DateParts {
 }
 
 /**
- * Build an ISO YYYY-MM-DD date string from components.
- * @param {number} year
- * @param {number} month  1-12
- * @param {number} day    1-31
- * @returns {string}
- */
-export function buildDateId(year: number, month: number, day: number): string {
-  return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-}
-
-/**
  * Convert a date string or YYYYMMDD integer into a Temporal.PlainDate.
  */
 export function dateIdToDate(dateStr: string | number): Temporal.PlainDate {
   const { year, month, day } = parseDateId(dateStr);
   return new Temporal.PlainDate(year, month, day);
-}
-
-/**
- * Format a date value as a short, human-readable string.
- *   "2023-02-06" → "Feb 2023"
- * @param {string|number} dateStr
- * @returns {string}
- */
-export function formatDateId(dateStr: string | number): string {
-  const { year, month } = parseDateId(dateStr);
-  return `${MONTH_ABBR[month - 1]} ${year}`;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -259,20 +217,4 @@ export function formatTimeRangeLabel(minVal: string | number, maxVal: string | n
     return `${aMonth} – ${bMonth} ${a.year}`;
   }
   return `${aMonth} ${a.year} – ${bMonth} ${b.year}`;
-}
-
-/**
- * Return a label suitable for a time-unit count.
- *   formatTimeUnitLabel('month', 1)  → "Month"
- *   formatTimeUnitLabel('month', 6)  → "Months"
- *   formatTimeUnitLabel('quarter', 4) → "Quarters"
- *
- * @param {string} unit   A TimeUnit value
- * @param {number} count
- * @returns {string}
- */
-export function formatTimeUnitLabel(unit: string, count = 1): string {
-  const entry = (TIME_UNIT_LABELS as Record<string, { singular: string; plural: string }>)[unit];
-  if (!entry) return unit;
-  return count === 1 ? entry.singular : entry.plural;
 }

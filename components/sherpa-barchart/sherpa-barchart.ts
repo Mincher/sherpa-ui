@@ -766,10 +766,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #renderControls(): void {
-    const viewOptions = this.getViewOptions({
-      activeType: "barchart",
-      canShowChart: true,
-    });
+    const viewOptions = this.getViewOptions("barchart");
 
     // Always clean the base name; layer the active group dynamically
     const entity = cleanTitleBase(this.#contentData?.name || "");

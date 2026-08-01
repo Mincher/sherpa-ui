@@ -329,7 +329,6 @@ export class SherpaCalendar extends SherpaElement {
       today: m === todayMonth ? true : null,
     }));
     this.renderInto('.cal-months', '.cal-cell-tpl', cells);
-    for (const el of this.$$('.cal-months .cal-cell')) el.classList.add('cal-month');
   }
 
   #renderYearGrid(): void {
@@ -348,7 +347,6 @@ export class SherpaCalendar extends SherpaElement {
       };
     });
     this.renderInto('.cal-years', '.cal-cell-tpl', cells);
-    for (const el of this.$$('.cal-years .cal-cell')) el.classList.add('cal-year');
   }
 
   /** Delegated click for the month picker — reads data-value (0-indexed month). */

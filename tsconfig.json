@@ -52,11 +52,7 @@
     "allowUnusedLabels": false
   },
   "include": [
-    "components/**/*.ts",
-    "demo/**/*.ts",
-    "playground/**/*.ts",
-    "scripts/**/*.ts",
-    "patterns/**/*.ts"
+    "components/**/*.ts"
   ],
   "exclude": [
     "node_modules",

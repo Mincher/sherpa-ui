@@ -25,13 +25,6 @@ export type Orientation = 'horizontal' | 'vertical';
  */
 export type SelectionMode = 'checkbox' | 'radio' | 'toggle';
 
-/* ── Component Tiers ─────────────────────────────────────────────── */
-
-/**
- * Component composition tiers (from component-categories.js)
- */
-export type ComponentTier = 'atom' | 'molecule' | 'organism' | 'structure';
-
 /* ── Event Detail Types ──────────────────────────────────────────── */
 
 /**
@@ -62,14 +55,6 @@ export interface SelectEventDetail {
   item: Element;
   value: string;
   index?: number;
-}
-
-/**
- * Click event detail (for buttons, clickable items)
- */
-export interface ClickEventDetail {
-  timestamp?: number;
-  source?: string;
 }
 
 /**

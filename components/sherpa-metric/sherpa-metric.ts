@@ -175,10 +175,7 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
     }
 
     // Configure the header using the parent class method
-    const viewOptions = this.getViewOptions({
-      activeType: "kpi-metric",
-      canShowChart: true,
-    });
+    const viewOptions = this.getViewOptions("kpi-metric");
 
     this.configureHeader({
       title: this.#contentData?.name || "",

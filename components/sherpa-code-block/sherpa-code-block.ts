@@ -233,7 +233,7 @@ export class SherpaCodeBlock extends SherpaElement {
     this.#emit('code-language-detected', {
       detected: this.#detectedLanguage,
       requested: requestedLanguage,
-      confidence: this.#getConfidence(codeContent, this.#detectedLanguage),
+      confidence: this.#detectionConfidence(this.#detectedLanguage),
     });
 
     // Load Prism if needed
@@ -290,10 +290,8 @@ export class SherpaCodeBlock extends SherpaElement {
     return 'text';
   }
 
-  /**
-   * Confidence score for language detection (0-1).
-   */
-  #getConfidence(_code: string, language: string | null): number {
+  /** Confidence score (0-1) for the detected language. */
+  #detectionConfidence(language: string | null): number {
     if (language === 'text') return 0.2; // Low confidence for plaintext fallback
     if (this.dataset["language"] && this.dataset["language"] !== 'auto') return 1.0; // Explicit match
     return 0.8; // Auto-detected with reasonable confidence

@@ -121,8 +121,8 @@ any of them uniformly.
 | quick-filter-toolbar | `{ columns, rows? }` wrapper | two-arg setter needs a wrapper object |
 | nav | `data-src-html` template | server-rendered HTML, not JSON — stays as-is |
 
-**Deferred:** the node-graph family (`sherpa-node-canvas`, `sherpa-node`) uses an imperative graph
-API + `data-bind` template slots — migrated in the node-graph hardening phase.
+**Removed:** the node-graph family has been deleted and will be rebuilt from scratch; its
+populate shape is out of scope until then. See `docs/DEPRECATIONS.md`.
 
 Each component's populate shape is documented in a machine-readable `@data` JSDoc tag, which the
 MCP parses into the component schema so generated JSON carries the right `data`.
