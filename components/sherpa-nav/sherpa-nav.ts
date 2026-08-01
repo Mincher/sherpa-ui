@@ -77,78 +77,10 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { renderTemplate } from "../utilities/sherpa-template/sherpa-template.js";
+import { setupDragSort } from "../utilities/drag-sort.js";
+import { readJSON, writeJSON, removeKey } from "../utilities/safe-storage.js";
 import "../sherpa-button/sherpa-button.js";
 import "../sherpa-nav-item/sherpa-nav-item.js";
-
-/* ── Drag-sort (inline — only used here) ────────────────────────── */
-
-interface DragSortOptions {
-  itemSelector: string;
-  handleSelector: string;
-  idAttribute?: string;
-  isEnabled?: () => boolean;
-  onReorder?: (orderedIds: (string | undefined)[]) => void;
-}
-
-function setupDragSort(container: HTMLElement, {
-  itemSelector,
-  handleSelector,
-  idAttribute = 'id',
-  isEnabled = (): boolean => true,
-  onReorder = (): void => {},
-}: DragSortOptions): void {
-  container.addEventListener('mousedown', (e) => {
-    if (!isEnabled()) return;
-    const isHandle = e.composedPath().some(
-      (n) => n instanceof HTMLElement && n.matches?.(handleSelector)
-    );
-    if (!isHandle) return;
-    const item = e.composedPath().find(
-      (n): n is HTMLElement => n instanceof HTMLElement && n.parentElement === container
-    );
-    if (!item) return;
-    item.draggable = true;
-    const reset = (): void => { item.draggable = false; document.removeEventListener('mouseup', reset, true); };
-    document.addEventListener('mouseup', reset, true);
-  });
-
-  container.querySelectorAll<HTMLElement>(itemSelector).forEach((item) => {
-    item.draggable = false;
-    item.addEventListener('dragstart', (e) => {
-      if (!isEnabled()) { e.preventDefault(); return; }
-      item.setAttribute('data-dragging', '');
-      if (e.dataTransfer) {
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', item.dataset[idAttribute] || '');
-      }
-    });
-    item.addEventListener('dragend', () => {
-      item.draggable = false;
-      item.removeAttribute('data-dragging');
-    });
-  });
-
-  container.addEventListener('dragover', (e) => {
-    if (!isEnabled()) return;
-    e.preventDefault();
-    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-    const dragging = container.querySelector('[data-dragging]');
-    if (!dragging) return;
-    const siblings = [...container.querySelectorAll(`${itemSelector}:not([data-dragging])`)];
-    const next = siblings.find((s) =>
-      e.clientY - s.getBoundingClientRect().top - s.getBoundingClientRect().height / 2 < 0
-    );
-    container.insertBefore(dragging, next ?? null);
-  });
-
-  container.addEventListener('drop', (e) => {
-    e.preventDefault();
-    const orderedIds = [...container.querySelectorAll<HTMLElement>(itemSelector)].map(
-      (el) => el.dataset[idAttribute]
-    );
-    onReorder(orderedIds);
-  });
-}
 
 /* ── Domain types ──────────────────────────────────────────────── */
 
@@ -591,19 +523,12 @@ export class SherpaNav extends SherpaElement {
   }
 
   #readStored(key: string): Array<{ id?: string; label?: string; route?: string }> {
-    try {
-      const raw = localStorage.getItem(key);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+    const parsed = readJSON<Array<{ id?: string; label?: string; route?: string }>>(key, []);
+    return Array.isArray(parsed) ? parsed : [];
   }
 
   #writeStored(key: string, items: Array<{ id?: string; label?: string; route?: string }>): void {
-    try { localStorage.setItem(key, JSON.stringify(items)); } catch {
-      /* noop */
-    }
+    writeJSON(key, items);
   }
 
   /** Snapshot the live items in a quick-access section to {id,label,route}. */
@@ -1049,17 +974,12 @@ export class SherpaNav extends SherpaElement {
   }
 
   #readOrderStore(): Record<string, unknown> {
-    try {
-      const raw = localStorage.getItem(this.#orderStorageKey);
-      const parsed = raw ? JSON.parse(raw) : {};
-      return parsed && typeof parsed === 'object' ? parsed : {};
-    } catch { return {}; }
+    const parsed = readJSON<Record<string, unknown>>(this.#orderStorageKey, {});
+    return parsed && typeof parsed === 'object' ? parsed : {};
   }
 
   #writeOrderStore(store: Record<string, unknown>): void {
-    try { localStorage.setItem(this.#orderStorageKey, JSON.stringify(store)); } catch {
-      /* noop */
-    }
+    writeJSON(this.#orderStorageKey, store);
   }
 
   #persistGroupOrder(groupIndex: number, order: string[]): void {
@@ -1106,9 +1026,7 @@ export class SherpaNav extends SherpaElement {
       const order = this.#defaultOrders?.get(gi);
       if (order && order.length) this.#applyOrderToContainer(container, order);
     });
-    try { localStorage.removeItem(this.#orderStorageKey); } catch {
-      /* noop */
-    }
+    removeKey(this.#orderStorageKey);
     this.#emit('nav-edit-reset');
   }
 
