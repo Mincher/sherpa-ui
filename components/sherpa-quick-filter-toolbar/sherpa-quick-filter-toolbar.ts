@@ -65,6 +65,7 @@
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
 import { renderElement } from "../utilities/render-element.js";
+import { parseStringArrayAttr } from "../utilities/data-utils.js";
 import type { EventHandler } from "../utilities/types.js";
 import "../sherpa-quick-filter/sherpa-quick-filter.js";
 import "../sherpa-container-overlay/sherpa-container-overlay.js";
@@ -401,14 +402,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Read a chip's remembered selected values (from data-selected-values JSON). */
   #getChipSelectedValues(chip: HTMLElement): string[] {
-    const raw = chip.dataset["selectedValues"];
-    if (!raw) return [];
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed.map(String) : [];
-    } catch {
-      return [];
-    }
+    return parseStringArrayAttr(chip.dataset["selectedValues"]);
   }
 
   /* ══════════════════════════════════════════════════════════════

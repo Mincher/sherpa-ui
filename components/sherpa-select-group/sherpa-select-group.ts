@@ -41,6 +41,7 @@
 
 import { SherpaInputGroupBase } from '../utilities/sherpa-input-group/sherpa-input-group-base.js';
 import { renderElement } from '../utilities/render-element.js';
+import { parseStringArrayAttr } from '../utilities/data-utils.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 
@@ -220,10 +221,7 @@ export class SherpaSelectGroup extends SherpaInputGroupBase {
   }
 
   #parseStoredValue(): string[] {
-    try {
-      const parsed = JSON.parse(this.dataset['value'] || '[]');
-      return Array.isArray(parsed) ? parsed.map(String) : [];
-    } catch { return []; }
+    return parseStringArrayAttr(this.dataset['value']);
   }
 
   /** Disable unchecked items when at max; restore when below max. */

@@ -26,6 +26,7 @@
  */
 
 import { SherpaInputBase } from "../utilities/sherpa-input-base/sherpa-input-base.js";
+import { positionPopup } from "../utilities/popup-position.js";
 import {
   MONTH_NAMES,
   isoToDate,
@@ -204,18 +205,7 @@ export class SherpaInputDateRange extends SherpaInputBase {
   }
 
   #positionPopup(popupSel: string, triggerSel: string): void {
-    const popup = this.$<HTMLElement>(popupSel);
-    const trigger = this.$<HTMLElement>(triggerSel);
-    if (!popup || !trigger) return;
-    const rect = trigger.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const popupH = popup.offsetHeight || 320;
-    if (spaceBelow < popupH + 4 && rect.top > popupH + 4) {
-      popup.style.top = `${rect.top - popupH - 4}px`;
-    } else {
-      popup.style.top = `${rect.bottom + 4}px`;
-    }
-    popup.style.left = `${Math.min(rect.left, window.innerWidth - (popup.offsetWidth || 280) - 8)}px`;
+    positionPopup(this.$<HTMLElement>(popupSel), this.$<HTMLElement>(triggerSel), { estHeight: 320, estWidth: 280 });
   }
 
   #closeEnd(): void {

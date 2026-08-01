@@ -6,6 +6,22 @@
  */
 
 /**
+ * Parse a JSON string array attribute into `string[]`, coercing members to
+ * strings and returning `[]` on missing/invalid/non-array input. Never throws.
+ * Consolidates the identical `#readValue`/`#parseStoredValue`/… pattern that
+ * lived in input-tag, select-group, and quick-filter-toolbar.
+ */
+export function parseStringArrayAttr(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Extract a transferable (serialisable) config from a data object.
  * Used by components when converting between presentation types
  * (e.g. table → chart) or exporting configuration.

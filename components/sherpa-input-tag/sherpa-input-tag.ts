@@ -43,6 +43,7 @@
  */
 
 import { SherpaInputBase } from '../utilities/sherpa-input-base/sherpa-input-base.js';
+import { parseStringArrayAttr } from '../utilities/data-utils.js';
 
 export class SherpaInputTag extends SherpaInputBase<string[]> {
 
@@ -131,10 +132,7 @@ export class SherpaInputTag extends SherpaInputBase<string[]> {
   /* ── Private ───────────────────────────────────────────────────── */
 
   #readValue(): string[] {
-    try {
-      const v = JSON.parse(this.dataset["value"] || '[]');
-      return Array.isArray(v) ? v.map(String) : [];
-    } catch { return []; }
+    return parseStringArrayAttr(this.dataset["value"]);
   }
 
   #renderChips(): void {
