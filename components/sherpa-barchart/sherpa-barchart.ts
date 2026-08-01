@@ -932,66 +932,58 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return series.reduce((sum, s) => sum + (s.values?.[catIdx] || 0), 0);
   }
 
-  #calculateSegmentSizes(series: BarSeries[], catIdx: number, niceMax: number, isStacked: boolean): { segments: Array<{ percent: number; tooltip: string }> } {
-    const segments: Array<{ percent: number; tooltip: string }> = [];
+  /**
+   * Single source of truth for a category's segments across all bar modes.
+   * Both the size-only diff path (#calculateSegmentSizes) and the DOM build
+   * path (#createSegmentNodes) derive from this so the 3-way mode branch —
+   * full-stacked (100% normalised) / stacked||grouped (per-series height) /
+   * single (one segment, min 1%) — lives in exactly one place.
+   */
+  #computeSegments(
+    series: BarSeries[],
+    catIdx: number,
+    niceMax: number,
+    isStacked: boolean,
+  ): Array<{ name: string; value: number; percent: number; colorIdx: number; grouped: boolean }> {
     const mode = this.#barMode(series);
 
     if (mode === "full-stacked") {
       const total = this.#categoryTotal(series, catIdx) || 1;
-      series.forEach((s) => {
+      return series.flatMap((s, i) => {
         const value = s.values?.[catIdx] || 0;
-        if (value > 0) segments.push({ percent: (value / total) * 100, tooltip: `${s.name}: ${formatCompact(value)}` });
+        return value > 0
+          ? [{ name: s.name ?? "", value, percent: (value / total) * 100, colorIdx: i, grouped: false }]
+          : [];
       });
-      return { segments };
     }
     if (isStacked || mode === "grouped") {
-      // Both render one entry per series (grouped bars sit side-by-side; the
-      // percent is each series' own height relative to niceMax).
-      series.forEach((s) => {
+      // One entry per series (grouped bars sit side-by-side; the percent is
+      // each series' own height relative to niceMax).
+      return series.flatMap((s, i) => {
         const value = s.values?.[catIdx] || 0;
-        if (value > 0) {
-          const pct = niceMax > 0 ? (value / niceMax) * 100 : 0;
-          segments.push({ percent: pct, tooltip: `${s.name}: ${formatCompact(value)}` });
-        }
+        if (value <= 0) return [];
+        const percent = niceMax > 0 ? (value / niceMax) * 100 : 0;
+        return [{ name: s.name ?? "", value, percent, colorIdx: i, grouped: mode === "grouped" }];
       });
-      return { segments };
     }
 
     const s0 = series[0];
     const value = s0?.values?.[catIdx] || 0;
-    const pct = Math.max(1, (value / niceMax) * 100);
-    segments.push({ percent: pct, tooltip: `${s0?.name ?? ""}: ${formatCompact(value)}` });
+    return [{ name: s0?.name ?? "", value, percent: Math.max(1, (value / niceMax) * 100), colorIdx: 0, grouped: false }];
+  }
+
+  #calculateSegmentSizes(series: BarSeries[], catIdx: number, niceMax: number, isStacked: boolean): { segments: Array<{ percent: number; tooltip: string }> } {
+    const segments = this.#computeSegments(series, catIdx, niceMax, isStacked).map((seg) => ({
+      percent: seg.percent,
+      tooltip: `${seg.name}: ${formatCompact(seg.value)}`,
+    }));
     return { segments };
   }
 
   #createSegmentNodes(series: BarSeries[], catIdx: number, niceMax: number, isStacked: boolean): HTMLElement[] {
-    const mode = this.#barMode(series);
-
-    if (mode === "full-stacked") {
-      const total = this.#categoryTotal(series, catIdx) || 1;
-      const nodes: HTMLElement[] = [];
-      series.forEach((s, i) => {
-        const value = s.values?.[catIdx] || 0;
-        if (value === 0) return;
-        nodes.push(this.#buildSegment(s.name ?? "", value, (value / total) * 100, i));
-      });
-      return nodes;
-    }
-    if (isStacked || mode === "grouped") {
-      const nodes: HTMLElement[] = [];
-      series.forEach((s, i) => {
-        const value = s.values?.[catIdx] || 0;
-        if (value === 0) return; // Don't render 0-value segments
-        const pct = niceMax > 0 ? (value / niceMax) * 100 : 0;
-        nodes.push(this.#buildSegment(s.name ?? "", value, pct, i, mode === "grouped"));
-      });
-      return nodes;
-    }
-
-    const s0 = series[0];
-    const value = s0?.values?.[catIdx] || 0;
-    const pct = Math.max(1, (value / niceMax) * 100);
-    return [this.#buildSegment(s0?.name ?? "", value, pct, 0)];
+    return this.#computeSegments(series, catIdx, niceMax, isStacked).map((seg) =>
+      this.#buildSegment(seg.name, seg.value, seg.percent, seg.colorIdx, seg.grouped),
+    );
   }
 
   #buildSegment(name: string, value: number, percent: number, colorIdx: number, grouped = false): HTMLElement {
