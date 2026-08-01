@@ -228,28 +228,6 @@ export interface MenuOptions {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<T = object> = new (...args: any[]) => T;
 
-/* ── Node-canvas shared types ─────────────────────────────────────── */
-
-/** Reference to a specific port on a specific node. */
-export interface EdgeEndpoint {
-  nodeId: string;
-  portName: string;
-}
-
-/** A directed connection between two ports. */
-export interface Edge {
-  from: EdgeEndpoint;
-  to: EdgeEndpoint;
-  control: boolean;
-}
-
-/** Canvas pan/zoom viewport state. */
-export interface Viewport {
-  x: number;
-  y: number;
-  zoom: number;
-}
-
 /* ── Sherpa custom event map ───────────────────────────────────────── */
 
 /**
@@ -294,29 +272,6 @@ export interface SherpaEventMap {
   'step-click': CustomEvent<{ step: number; label?: string }>;
   // Prompt composer
   'prompt-submit': CustomEvent<{ value: string }>;
-  // Node-canvas: edge lifecycle
-  'edge-create': CustomEvent<Edge>;
-  'edge-update': CustomEvent<{ edgeIdx: number; edge: Edge }>;
-  'edge-delete': CustomEvent<{ edgeIdx: number }>;
-  'edge-select': CustomEvent<{ edgeIdx: number | null }>;
-  // Node-canvas: node lifecycle
-  'node-select': CustomEvent<{ nodeId: string | null }>;
-  'node-delete': CustomEvent<{ nodeId: string }>;
-  'node-value-change': CustomEvent<{ nodeId: string }>;
-  'node-subtype-change': CustomEvent<{ nodeId: string; subtype: string }>;
-  // Node-canvas: canvas state
-  'viewport-change': CustomEvent<Viewport>;
-  'canvas-subgraph-enter': CustomEvent<{ parentId: string; label: string; depth: number; cached: boolean }>;
-  'canvas-subgraph-exit': CustomEvent<{ parentId: string; label: string; depth: number }>;
-  // Node-graph socket/node pointer events
-  'socket-pointerdown': CustomEvent<{
-    nodeId?: string;
-    portName?: string;
-    direction?: string;
-    originalEvent: PointerEvent;
-  }>;
-  'node-pointerdown': CustomEvent<{ nodeId: string; originalEvent: Event }>;
-  'node-drilldown': CustomEvent<{ nodeId: string; label?: string }>;
 }
 
 declare global {

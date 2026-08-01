@@ -97,7 +97,7 @@ Applies to **all** components, existing and new:
 
 - **Element names:** every Sherpa-UI custom element is `sherpa-*`. No exceptions.
 - **Attributes:** `data-*` for the public API; native attributes (`disabled`, `name`, `value`, `hidden`, `required`, `readonly`) stay un-prefixed. Reuse the standard-name enums above verbatim — don't invent a synonym for an existing concept. Component-private state is `--_*` CSS custom properties, never a public `data-*`.
-- **Events:** **unprefixed `noun-verb`** names (`button-click`, `page-change`, `tree-select`, `quick-filter-change`). Do **not** prefix event strings with `sherpa-`. The node-graph family currently uses a `sherpa-*` event prefix — that is legacy and migrates to unprefixed in Phase 5 (the *element* names stay `sherpa-*`; only the event strings normalise). Standard shared events: `change`/`input` (re-dispatched native), `*-click`, `*-change`, `*-select`, `*-open`/`*-close`.
+- **Events:** **unprefixed `noun-verb`** names (`button-click`, `page-change`, `tree-select`, `quick-filter-change`). Do **not** prefix event strings with `sherpa-`. Standard shared events: `change`/`input` (re-dispatched native), `*-click`, `*-change`, `*-select`, `*-open`/`*-close`.
 - **Standard data attrs for data components:** `data-sort-field`/`data-sort-direction` (`asc|desc`), `data-segment-field`/`data-segment-mode` — reuse across all chart/grid components.
 - **Slots:** every content-bearing slot declares a `data-accepts` category allowlist (see `docs/SLOT-CONTRACTS.md`).
 

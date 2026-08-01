@@ -75,10 +75,6 @@ export const COMPONENT_CATEGORIES: Record<string, ComponentCategory> = Object.fr
   'sherpa-nav': 'shell',
   'sherpa-nav-item': 'nav',
   'sherpa-nav-section': 'nav',
-  'sherpa-node': 'content',
-  'sherpa-node-canvas': 'data',
-  'sherpa-node-row': 'content',
-  'sherpa-node-socket': 'content',
   'sherpa-pagination': 'control',
   'sherpa-panel': 'container',
   'sherpa-product-bar': 'shell',
@@ -170,10 +166,6 @@ export const COMPONENT_TIERS: Record<string, number> = Object.freeze({
   'sherpa-nav': 1,
   'sherpa-nav-item': 1,
   'sherpa-nav-section': 1,
-  'sherpa-node': 3,
-  'sherpa-node-canvas': 3,
-  'sherpa-node-row': 3,
-  'sherpa-node-socket': 3,
   'sherpa-pagination': 4,
   'sherpa-panel': 2,
   'sherpa-product-bar': 1,
@@ -220,7 +212,6 @@ export const COMPONENT_STRING_TIERS: Record<string, ComponentTier> = Object.free
   'sherpa-container-group':  'structure',
   'sherpa-panel':            'structure',
   'sherpa-accordion':        'structure',
-  'sherpa-node-canvas':      'structure',
   // organism — complex, self-contained sections
   'sherpa-nav':              'organism',
   'sherpa-product-bar':      'organism',
@@ -260,8 +251,6 @@ export const COMPONENT_STRING_TIERS: Record<string, ComponentTier> = Object.free
   'sherpa-section-header':        'molecule',
   'sherpa-nav-section':           'molecule',
   'sherpa-nav-item':              'molecule',
-  'sherpa-node':                  'molecule',
-  'sherpa-node-row':              'molecule',
   'sherpa-chart-legend':          'molecule',
   'sherpa-chat-message':          'molecule',
   'sherpa-empty-state':           'molecule',
@@ -291,7 +280,6 @@ export const COMPONENT_STRING_TIERS: Record<string, ComponentTier> = Object.free
   'sherpa-toast':           'atom',
   'sherpa-select-checkbox': 'atom',
   'sherpa-select-radio':    'atom',
-  'sherpa-node-socket':     'atom',
 });
 
 /** Look up the atomic-design string tier for a given tag name. Null if unknown. */

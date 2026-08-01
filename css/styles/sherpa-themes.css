@@ -24,8 +24,8 @@
   --sherpa-surface-app-product-bar-bg: var(--sherpa-color-neutral-0);
   --sherpa-surface-app-product-bar-product-block: var(--sherpa-color-brand-700);
   --sherpa-surface-app-product-bar-product-text: var(--sherpa-color-neutral-1000);
-  --sherpa-surface-app-product-nav-bg: var(--sherpa-color-neutral-200);
-  --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-neutral-300);
+  --sherpa-surface-app-product-nav-bg: var(--sherpa-color-neutral-0);
+  --sherpa-surface-app-product-nav-sub-bg: var(--sherpa-color-neutral-0);
   --sherpa-surface-app-product-nav-hover: var(--sherpa-color-neutral-200);
   --sherpa-surface-app-product-nav-down: var(--sherpa-color-neutral-300);
   --sherpa-surface-app-product-nav-active: var(--sherpa-color-brand-100);
