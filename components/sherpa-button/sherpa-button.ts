@@ -352,18 +352,9 @@ export class SherpaButton extends SherpaElement {
       ));
     }
 
-    // Anchor to the shadow host when the button is inside a shadow DOM so
-    // that anchor-name is set on a light-DOM element and CSS anchor
-    // positioning can resolve it from the top layer.
-    const root = this.getRootNode();
-    const anchorEl: HTMLElement = root instanceof ShadowRoot
-      ? (root.host as HTMLElement)
-      : this;
-    // show() reads data-menu-position from the anchor element; since anchorEl
-    // may be the shadow host (not this button), forward the placement manually.
     const menuPosition = this.dataset["menuPosition"];
     if (menuPosition) menu.dataset['placement'] = menuPosition;
-    menu.show(anchorEl);
+    menu.show(this);
   }
 
   /**

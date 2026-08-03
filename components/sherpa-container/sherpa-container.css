@@ -351,7 +351,9 @@
 }
 
 :host([popover][open]) {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
 }
 
 /* ── Floating sizing defaults ──────────────────────────────────────── */

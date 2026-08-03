@@ -225,6 +225,7 @@ export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
         }
         this.style.setProperty('--_sherpa-anchor', anchorName);
         this.style.setProperty('position-anchor', anchorName);
+        this.style.removeProperty('position');
         this.style.removeProperty('top');
         this.style.removeProperty('left');
         this.style.removeProperty('right');
@@ -239,6 +240,9 @@ export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
       const gap  = 4;
       const placement = this.dataset['placement'] ?? 'bottom-start';
 
+      // Force fixed positioning — sherpa-anchor.css sets position:absolute when
+      // anchor-name is supported, which would misplace the menu.
+      this.style.setProperty('position', 'fixed');
       this.style.removeProperty('position-anchor');
 
       if (placement.startsWith('bottom')) {
