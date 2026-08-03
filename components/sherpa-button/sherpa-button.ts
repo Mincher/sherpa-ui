@@ -276,9 +276,7 @@ export class SherpaButton extends SherpaElement {
     const menu = document.createElement("sherpa-container") as unknown as SherpaContainer;
     menu.setAttribute('popover', 'auto');
     menu.dataset['layout'] = 'menu';
-    const root = this.getRootNode();
-    const insertAfter: Element = root instanceof ShadowRoot ? root.host : this;
-    insertAfter.after(menu);
+    document.body.appendChild(menu);
 
     menu.addEventListener("container-select", (e: Event) => {
       e.stopPropagation();

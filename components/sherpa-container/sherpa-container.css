@@ -590,6 +590,13 @@
   padding-bottom: 0;
   border-bottom: none;
 }
+/* Bare sherpa-overlay-item children (not wrapped in ul) */
+:host([popover]) ::slotted(sherpa-overlay-item) {
+  display: block;
+}
+:host([popover]) ::slotted(sherpa-overlay-item:last-child) {
+  border-bottom: none;
+}
 :host([popover]) ::slotted(hr) {
   height: 1px;
   border: none;

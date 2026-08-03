@@ -56,6 +56,7 @@ export interface FloatingBehaviorInterface {
   open: boolean;
   floatSource: HTMLElement | null;
   _initFloating(): void;
+  _doShow(anchor?: Element): void;
   _renderMenuData(source: unknown): void;
   _syncPageIndicator(): void;
   show(anchor?: Element): void;
@@ -163,6 +164,13 @@ export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
 
     show(anchor?: Element): void {
       if (!this.hasAttribute('popover')) return;
+      void this.rendered.then(() => this._doShow(anchor));
+    }
+
+    _doShow(anchor?: Element): void {
+      if (!this.hasAttribute('popover')) return;
+
+      this._initFloating();
 
       const anchorEl: HTMLElement | null =
         anchor as HTMLElement ??
