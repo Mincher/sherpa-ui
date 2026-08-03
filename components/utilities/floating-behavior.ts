@@ -48,6 +48,11 @@
 import { parseTemplates } from './sherpa-element/sherpa-element.js';
 import type { MenuItem, MenuItems, MenuSection, MenuOptions } from './types.js';
 
+const _escAttr = (s: string): string => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+const _escText = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const esc = (s: unknown): string => _escAttr(String(s ?? ''));
+const escText = (s: unknown): string => _escText(String(s ?? ''));
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
@@ -101,7 +106,7 @@ function _ensureTemplates(htmlUrl: string): Promise<void> {
       .catch(() => { _templatesByUrl.set(htmlUrl, new Map()); });
     _promisesByUrl.set(htmlUrl, p);
   }
-  return _promisesByUrl.get(htmlUrl)!;
+  return _promisesByUrl.get(htmlUrl) as Promise<void>;
 }
 
 export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
@@ -165,9 +170,9 @@ export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
     show(anchor?: Element): void {
       if (!this.hasAttribute('popover')) return;
       void this.rendered.then(async () => {
-        // Also wait for any slotted sherpa-overlay-item children to bootstrap
-        // their shadow DOMs — they render text via an internal slot so they
-        // appear empty until their own connectedCallback completes.
+        // Wait for any sherpa-overlay-item children to bootstrap their shadow
+        // DOMs — they render text via an internal slot and appear empty until
+        // their connectedCallback completes.
         interface HasRendered { readonly rendered: Promise<void>; }
         const items = [...this.querySelectorAll('sherpa-overlay-item')] as (Element & HasRendered)[];
         if (items.length) await Promise.all(items.map(i => i.rendered));
@@ -183,7 +188,7 @@ export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
       const anchorEl: HTMLElement | null =
         anchor as HTMLElement ??
         (this.getAttribute('anchor')
-          ? document.getElementById(this.getAttribute('anchor')!)
+          ? document.getElementById(this.getAttribute('anchor') ?? '')
           : null);
 
       if (anchorEl) {
@@ -423,16 +428,6 @@ export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
     }
 
     setMenuItems(items: MenuItems, opts: Partial<MenuOptions> = {}): void {
-      if (!this.$('template.menu-item-tpl')) {
-        void Promise.resolve(this.rendered).then(() => {
-          if (this.$('template.menu-item-tpl')) {
-            this.#buildMenuItemsNow(items, opts);
-          } else {
-            console.warn('sherpa-container: setMenuItems() requires data-layout="menu"');
-          }
-        });
-        return;
-      }
       this.#buildMenuItemsNow(items, opts);
     }
 
@@ -445,73 +440,54 @@ export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
       }
       if (!items?.length) return;
 
-      const before = new Set(this.children);
-      if ('heading' in (items[0] || {})) {
-        this.#buildSections(items as MenuSection[]);
-      } else {
-        this.#buildFlatList(items as MenuItem[], opts);
-      }
+      const frag = document.createRange().createContextualFragment(
+        'heading' in (items[0] || {})
+          ? this.#sectionsToHtml(items as MenuSection[])
+          : this.#flatListToHtml(items as MenuItem[], opts),
+      );
+
       if (marker) {
-        for (const child of this.children) {
-          if (!before.has(child)) child.setAttribute('data-menu-marker', marker);
-        }
+        for (const child of frag.children) child.setAttribute('data-menu-marker', marker);
       }
+      this.appendChild(frag);
     }
 
-    #buildFlatList(items: MenuItem[], opts: Partial<MenuOptions> = {}): void {
-      const ul = (this.$('template.menu-list-tpl') as HTMLTemplateElement | null)
-        ?.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
-      if (!ul) return;
-      if (opts.group) ul.dataset['group'] = opts.group;
-      for (const item of items) ul.appendChild(this.#buildMenuItem(item, opts));
-      this.appendChild(ul);
+    #flatListToHtml(items: MenuItem[], opts: Partial<MenuOptions> = {}): string {
+      const groupAttr = opts.group ? ` data-group="${esc(opts.group)}"` : '';
+      return `<ul${groupAttr}>${items.map(i => this.#itemToHtml(i, opts)).join('')}</ul>`;
     }
 
-    #buildSections(sections: MenuSection[]): void {
-      for (const section of sections) {
+    #sectionsToHtml(sections: MenuSection[]): string {
+      return sections.map(section => {
+        let html = '';
         if (section.heading) {
-          const heading = (this.$('template.menu-heading-tpl') as HTMLTemplateElement | null)
-            ?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
-          if (heading) {
-            heading.textContent = section.heading;
-            if (section.style) heading.setAttribute('style', section.style);
-            this.appendChild(heading);
-          }
+          const style = section.style ? ` style="${esc(section.style)}"` : '';
+          html += `<sherpa-overlay-item data-type="heading"${style}>${escText(section.heading)}</sherpa-overlay-item>`;
         }
         if (section.items?.length) {
-          const ul = (this.$('template.menu-list-tpl') as HTMLTemplateElement | null)
-            ?.content.firstElementChild?.cloneNode(true) as HTMLUListElement | undefined;
-          if (!ul) continue;
-          if (section.group) ul.dataset['group'] = section.group;
-          if (section.style) ul.setAttribute('style', section.style);
+          const groupAttr = section.group ? ` data-group="${esc(section.group)}"` : '';
+          const styleAttr = section.style ? ` style="${esc(section.style)}"` : '';
           const sectionOpts = { selection: section.selection, group: section.group };
-          for (const item of section.items) ul.appendChild(this.#buildMenuItem(item, sectionOpts));
-          this.appendChild(ul);
+          html += `<ul${groupAttr}${styleAttr}>${section.items.map(i => this.#itemToHtml(i, sectionOpts)).join('')}</ul>`;
         }
-      }
+        return html;
+      }).join('');
     }
 
-    #buildMenuItem(item: MenuItem, opts: Partial<MenuOptions> = {}): HTMLLIElement {
-      const li = ((this.$('template.menu-item-tpl') as HTMLTemplateElement | null)
-        ?.content.firstElementChild?.cloneNode(true) as HTMLLIElement | undefined)
-        ?? document.createElement('li');
-      const menuItem = li.querySelector('sherpa-overlay-item');
-      if (!menuItem) return li;
-      menuItem.setAttribute('value', item.value ?? '');
-      menuItem.textContent = item.text ?? item.value ?? '';
+    #itemToHtml(item: MenuItem, opts: Partial<MenuOptions> = {}): string {
       const selection = item.selection || opts.selection;
-      if (selection) menuItem.setAttribute('data-selection', selection);
-      if (selection === 'radio' && (item.group || opts.group)) {
-        menuItem.setAttribute('data-group', item.group || opts.group || '');
-      }
-      if (item.selected || item.checked) menuItem.setAttribute('checked', '');
-      if (item.disabled) menuItem.setAttribute('disabled', '');
-      if (item.description) menuItem.setAttribute('data-description', item.description);
-      if (item.keepOpen || selection === 'checkbox') menuItem.setAttribute('data-keep-open', '');
-      if (item.data) {
-        for (const [k, v] of Object.entries(item.data)) menuItem.setAttribute(`data-${k}`, v);
-      }
-      return li;
+      const group = (selection === 'radio' && (item.group || opts.group)) ? (item.group || opts.group || '') : null;
+      const attrs = [
+        item.value != null ? `value="${esc(item.value)}"` : '',
+        selection ? `data-selection="${esc(selection)}"` : '',
+        group ? `data-group="${esc(group)}"` : '',
+        (item.selected || item.checked) ? 'checked' : '',
+        item.disabled ? 'disabled' : '',
+        item.description ? `data-description="${esc(item.description)}"` : '',
+        (item.keepOpen || selection === 'checkbox') ? 'data-keep-open' : '',
+        ...(item.data ? Object.entries(item.data).map(([k, v]) => `data-${esc(k)}="${esc(v)}"`) : []),
+      ].filter(Boolean).join(' ');
+      return `<li><sherpa-overlay-item ${attrs}>${escText(item.text ?? item.value ?? '')}</sherpa-overlay-item></li>`;
     }
 
     getSelectedValues(): string[] {

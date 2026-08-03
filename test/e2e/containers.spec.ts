@@ -174,7 +174,11 @@ test('sherpa-container (floating) show(anchor) opens and container-select fires 
     let selectDetail: any = null;
     overlay.addEventListener('container-open', () => (openFired = true));
     overlay.addEventListener('container-select', (e: any) => (selectDetail = e.detail));
+    // show() is async-deferred (awaits rendered + overlay-item.rendered) so
+    // we wait for container-open before sampling state.
+    const openP = new Promise<void>(res => overlay.addEventListener('container-open', () => res(), { once: true }));
     overlay.show(anchor);
+    await openP;
     const openState = overlay.open;
     const item = overlay.querySelector('sherpa-overlay-item[value="b"]') as HTMLElement & { rendered?: Promise<void> };
     if (item.rendered) await item.rendered;

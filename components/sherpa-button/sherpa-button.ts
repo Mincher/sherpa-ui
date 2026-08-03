@@ -326,7 +326,9 @@ export class SherpaButton extends SherpaElement {
     // Collect <template data-menu> from ancestors (composed tree)
     this.#collectAncestorMenuTemplates(menu);
 
-    // Let consumers populate / modify the menu before showing
+    // Let consumers populate / modify the menu before showing.
+    // menu-open fires synchronously — handlers can call setMenuItems() here
+    // and items will be in the DOM before show() is called.
     this.dispatchEvent(
       new CustomEvent("menu-populate", {
         bubbles: true,
@@ -338,20 +340,9 @@ export class SherpaButton extends SherpaElement {
       new CustomEvent("menu-open", { bubbles: true, composed: true }),
     );
 
-    await menu.rendered;
-
-    // Ensure overlay items have rendered their shadow DOMs (including
-    // checkbox/radio inputs) before showing the menu.
-    const overlayItems = menu.querySelectorAll("sherpa-overlay-item");
-    if (overlayItems.length) {
-      interface HasRendered { readonly rendered: Promise<void>; }
-      await Promise.all([...overlayItems].map((item) =>
-        (item as Element & HasRendered).rendered
-      ));
-    }
-
     const menuPosition = this.dataset["menuPosition"];
     if (menuPosition) menu.dataset['placement'] = menuPosition;
+    // show() awaits container.rendered + all overlay-item.rendered internally
     menu.show(this);
   }
 

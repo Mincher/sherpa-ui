@@ -53,8 +53,8 @@
     var(--sherpa-color-primary-new-base, #5e3df5) 100%
   );
 
-  /* Hairline divider — used for card/footer/accordion separators, line-chart
-     gridlines, and the node-canvas grid. No Figma source: lighter than
+  /* Hairline divider — used for card/footer/accordion separators and
+     line-chart gridlines. No Figma source: lighter than
      border-container-default by intent. */
   --sherpa-border-container-subtle: rgba(0, 0, 0, 0.08);
 

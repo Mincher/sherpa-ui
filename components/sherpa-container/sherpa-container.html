@@ -107,8 +107,8 @@
 
 <!-- ════════════════════════════════════════════════════════════════════
      MENU — Floating menu surface: role="menu" + loader + slot.
-     Cloning prototypes (.menu-*-tpl) are class-only — not picked up by
-     SherpaElement's template parser — and cloned by setMenuItems().
+     Items are projected through the default slot as light DOM.
+     setMenuItems() generates HTML and stamps it via createContextualFragment.
      ════════════════════════════════════════════════════════════════════ -->
 <template id="menu">
   <div class="menu-surface text-body-sm" role="menu" part="surface">
@@ -118,9 +118,6 @@
     </div>
     <slot data-accepts="any,html"></slot>
   </div>
-  <template class="menu-list-tpl"><ul></ul></template>
-  <template class="menu-item-tpl"><li><sherpa-overlay-item></sherpa-overlay-item></li></template>
-  <template class="menu-heading-tpl"><sherpa-overlay-item data-type="heading"></sherpa-overlay-item></template>
 </template>
 
 <!-- ════════════════════════════════════════════════════════════════════
