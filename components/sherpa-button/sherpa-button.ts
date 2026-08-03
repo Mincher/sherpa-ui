@@ -57,7 +57,7 @@
  *   detail: { item: Element, action: string }
  * @fires menu-populate — Menu stamped and ready for dynamic items
  *   bubbles: true, composed: true
- *   detail: { menu: SherpaContainerOverlay }
+ *   detail: { menu: SherpaContainer }
  *
  * @data {array} [{ value, text, selected?, disabled?, keepOpen? }] — Menu items (flat), or
  *   sections [{ heading, items:[...] }], or a { items, options } wrapper to also pass MenuOptions.
@@ -75,11 +75,11 @@
  * @prop {boolean} active — Active/pressed state (read/write)
  * @prop {string} label — Button text label (read/write)
  * @prop {string} templateId — Active template id (read-only)
- * @prop {SherpaMenu} menuElement — The menu instance (read-only)
+ * @prop {SherpaContainer} menuElement — The floating container menu instance (read-only)
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
-import { SherpaContainerOverlay } from "../sherpa-container-overlay/sherpa-container-overlay.js";
+import { SherpaContainer } from "../sherpa-container/sherpa-container.js";
 import type { MenuItems, MenuOptions } from "../utilities/types.js";
 
 /* ── Type Definitions ─────────────────────────────────────────────── */
@@ -137,8 +137,8 @@ export class SherpaButton extends SherpaElement {
     badge: '.badge',
   });
 
-  // Menu overlay — created lazily; owns its own item-building.
-  #menuEl: SherpaContainerOverlay | null = null;
+  // Menu container — created lazily; owns its own item-building.
+  #menuEl: SherpaContainer | null = null;
   #menuClosedAt = 0;
 
   /* ── Lifecycle ────────────────────────────────────────────────── */
@@ -257,29 +257,30 @@ export class SherpaButton extends SherpaElement {
 
   /* ── Menu ─────────────────────────────────────────────────────── */
 
-  /** The button's own <sherpa-container-overlay> element (created lazily). */
-  get menuElement(): SherpaContainerOverlay {
+  /** The button's own floating <sherpa-container> menu element (created lazily). */
+  get menuElement(): SherpaContainer {
     return this.#ensureMenu();
   }
 
   /**
-   * Lazily create and wire up the per-button overlay instance.
+   * Lazily create and wire up the per-button floating container.
    * Inserted after the nearest light-DOM ancestor so that CSS anchor
    * positioning can resolve the anchor-name from the top layer.
    * anchor-name values are shadow-tree-scoped: if the button lives inside
-   * a shadow root the overlay must be in the light DOM for the browser to
+   * a shadow root the container must be in the light DOM for the browser to
    * see the anchor once the popover is promoted to the top layer.
    */
-  #ensureMenu(): SherpaContainerOverlay {
+  #ensureMenu(): SherpaContainer {
     if (this.#menuEl) return this.#menuEl;
 
-    const menu = document.createElement("sherpa-container-overlay") as unknown as SherpaContainerOverlay;
-    menu.dataset['variant'] = 'menu';
+    const menu = document.createElement("sherpa-container") as unknown as SherpaContainer;
+    menu.setAttribute('popover', 'auto');
+    menu.dataset['layout'] = 'menu';
     const root = this.getRootNode();
     const insertAfter: Element = root instanceof ShadowRoot ? root.host : this;
     insertAfter.after(menu);
 
-    menu.addEventListener("overlay-select", (e: Event) => {
+    menu.addEventListener("container-select", (e: Event) => {
       e.stopPropagation();
       this.dispatchEvent(
         new CustomEvent("menu-select", {
@@ -290,7 +291,7 @@ export class SherpaButton extends SherpaElement {
       );
     });
 
-    menu.addEventListener("overlay-close", (e: Event) => {
+    menu.addEventListener("container-close", (e: Event) => {
       e.stopPropagation();
       this.#menuClosedAt = Temporal.Now.instant().epochMilliseconds;
       this.dispatchEvent(
@@ -316,8 +317,8 @@ export class SherpaButton extends SherpaElement {
     const tplId = this.dataset["menuTemplate"];
     if (tplId) {
       menu.replaceChildren();
-      await SherpaContainerOverlay.ready;
-      const html = SherpaContainerOverlay.getOverlayTemplate(tplId);
+      await SherpaContainer.ready;
+      const html = SherpaContainer.getTemplate(tplId);
       if (html) {
         const frag = document.createRange().createContextualFragment(html);
         menu.append(frag);
@@ -375,7 +376,7 @@ export class SherpaButton extends SherpaElement {
    * host component are not included. This prevents viz children from
    * inheriting their container's menu items.
    */
-  #collectAncestorMenuTemplates(menu: SherpaContainerOverlay): void {
+  #collectAncestorMenuTemplates(menu: SherpaContainer): void {
     // Remove items stamped from a previous open to prevent accumulation
     menu.querySelectorAll("[data-from-ancestor-tpl]").forEach((el: Element) => el.remove());
 

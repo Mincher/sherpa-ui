@@ -660,7 +660,7 @@ Section 17.1 (embedded mini-plan) is intentionally omitted — system scope expe
 
 #### Other primitives & containers
 
-`sherpa-button`, `sherpa-dialog`, `sherpa-container-overlay`, `sherpa-overlay-item`, `sherpa-tooltip`, `sherpa-progress-bar`, `sherpa-stepper`, `sherpa-tag`, `sherpa-toolbar`, `sherpa-view-header`, `sherpa-container-footer`, `sherpa-filter-bar`, `sherpa-container-pdf`, `sherpa-data-viz-container`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-file-upload`, `sherpa-accordion`.
+`sherpa-button`, `sherpa-dialog`, `sherpa-container (floating)`, `sherpa-overlay-item`, `sherpa-tooltip`, `sherpa-progress-bar`, `sherpa-stepper`, `sherpa-tag`, `sherpa-toolbar`, `sherpa-view-header`, `sherpa-container-footer`, `sherpa-filter-bar`, `sherpa-container-pdf`, `sherpa-data-viz-container`, `sherpa-product-bar`, `sherpa-product-bar-v2`, `sherpa-file-upload`, `sherpa-accordion`.
 
 > Authoritative per-component documentation lives in `components/<tag>/README.md`.
 
@@ -741,7 +741,7 @@ For new contributors and AI agents extending the library:
 1.  **Tokens** — Figma export → `figma-tokens/` → `css/styles/tokens/primitives.css` → alias / theme layers.
 2.  **Base classes** — `components/utilities/sherpa-element/`, then `components/utilities/sherpa-input-base/`.
 3.  **Cross-cutting utilities** — `flow-manager`, `form-manager`, `theme-manager`, `status-mixin`, `stylesheet-cache`, formatters.
-4.  **Primitives** — `sherpa-button`, `sherpa-input-*`, `sherpa-dialog`, `sherpa-container-overlay`, `sherpa-tooltip`, `sherpa-tag`, `sherpa-loader`.
+4.  **Primitives** — `sherpa-button`, `sherpa-input-*`, `sherpa-dialog`, `sherpa-container (floating)`, `sherpa-tooltip`, `sherpa-tag`, `sherpa-loader`.
 5.  **Composites** — `sherpa-data-grid`, `sherpa-nav`, `sherpa-view-header`, `sherpa-filter-bar`, `sherpa-toolbar`, `sherpa-nav-section`.
 6.  **Visualisation** — chart family.
 7.  **Patterns** — `patterns/<category>/<id>.html`.

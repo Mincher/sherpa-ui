@@ -145,14 +145,14 @@ test('sherpa-button menu populate() builds items in the delegated overlay', asyn
   expect(r.wrapped.values).toEqual(['a', 'b']);
 });
 
-test('sherpa-container-overlay populate() builds its own menu items', async ({ page }) => {
-  // The overlay is now a first-class data-driven menu.
+test('sherpa-container (floating) populate() builds its own menu items', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-container-overlay') as HTMLElement & {
+    const el = document.createElement('sherpa-container') as HTMLElement & {
       rendered?: Promise<void>;
       populate?: (d: unknown) => void;
     };
-    el.setAttribute('data-variant', 'menu');
+    el.setAttribute('popover', 'auto');
+    el.setAttribute('data-layout', 'menu');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate?.([

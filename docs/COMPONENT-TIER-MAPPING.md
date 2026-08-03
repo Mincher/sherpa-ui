@@ -81,7 +81,6 @@ Serves one focused workflow step but stays simpler than an organism.
 
 | Component | Reasoning |
 | --- | --- |
-| `sherpa-container-overlay` | Unified non-modal overlay surface (popover + menu variants); anchor-positioned |
 | `sherpa-overlay-item` | Single option row inside an overlay; can contain button atoms |
 | `sherpa-list-item` | Single row within a list; can contain atoms |
 | `sherpa-key-value-list` | Structured label/value pair layout |

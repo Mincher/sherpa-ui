@@ -298,3 +298,310 @@
   );
   outline: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FLOATING SURFACE
+   Activates when the native `popover` attribute is present.
+   The host is promoted to the top layer by the browser; sherpa-anchor.css
+   (loaded via useAnchor = true) provides all data-placement/data-flip rules.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host([popover]) {
+  /* Private token aliases */
+  --_float-shadow: var(
+    --sherpa-shadow-default-md,
+    4px 4px 12px -2px rgba(55, 47, 79, 0.2),
+    0 4px 4px 0 rgba(0, 0, 0, 0.25)
+  );
+  --_float-surface:      var(--sherpa-surface-container-default, #ffffff);
+  --_float-border-color: var(--sherpa-border-control-secondary-default, #d5d5d5);
+  --_float-border-width: var(--sherpa-border-width-base, 1px);
+  --_float-rounding:     var(--sherpa-border-rounding-base, 4px);
+  --_float-text:         var(--sherpa-content-default-body, #2e2e33);
+  --_float-gap:          var(--sherpa-space-xs, 8px);
+  --_float-gap-sm:       var(--sherpa-space-2xs, 4px);
+  --_float-padding:      var(--sherpa-space-sm, 12px);
+
+  /* Reset in-flow card layout — floating surface is its own layout */
+  display: none;
+  position: fixed;
+  margin: 0;
+  inset: auto;
+  z-index: var(--sherpa-z-popover, 10000);
+  background-color: var(--_float-surface);
+  border: var(--_float-border-width) solid var(--_float-border-color);
+  border-radius: var(--_float-rounding);
+  box-shadow: var(--_float-shadow);
+  color: var(--_float-text);
+  font-family: var(--sherpa-fonts-context-default, system-ui, sans-serif);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+  outline: none;
+  overflow: visible;
+  /* Override in-flow card defaults */
+  width: auto;
+  height: auto;
+  container: none;
+}
+
+/* Wire CSS Anchor Positioning to the JS-set custom property */
+@supports (anchor-name: --x) {
+  :host([popover][open]) {
+    position-anchor: var(--_sherpa-anchor);
+  }
+}
+
+:host([popover][open]) {
+  display: block;
+}
+
+/* ── Floating sizing defaults ──────────────────────────────────────── */
+:host([popover]:not([data-layout="menu"])) {
+  min-width: 200px;
+  max-width: 400px;
+}
+:host([popover][data-layout="menu"]) {
+  min-width: 180px;
+  max-width: 320px;
+}
+
+/* ── Rounding overrides (edge panels, inline attachments) ─────────── */
+:host([popover][data-rounding-start="none"]) {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+:host([popover][data-rounding-end="none"]) {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+:host([popover][data-rounding-top="none"]) {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+:host([popover][data-rounding-bottom="none"]) {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+/* ── Elevation overrides for floating surface ─────────────────────── */
+:host([popover][data-elevation="sm"]) {
+  --_float-shadow: var(--sherpa-shadow-default-sm, 2px 2px 8px -4px rgba(55, 47, 79, 0.2));
+}
+:host([popover][data-elevation="lg"]) {
+  --_float-shadow: var(--sherpa-shadow-default-lg, 8px 8px 16px 2px rgba(55, 47, 79, 0.2));
+}
+:host([popover][data-elevation="none"]) {
+  --_float-shadow: none;
+}
+
+/* ── Slide animation ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  :host([popover][data-animation="slide"]) {
+    opacity: 0;
+    scale: 0.97;
+    transition:
+      --transition-fast(opacity),
+      --transition-fast(scale),
+      --transition-fast(display) allow-discrete,
+      --transition-fast(overlay) allow-discrete;
+  }
+  :host([popover][data-animation="slide"][open]) {
+    opacity: 1;
+    scale: 1;
+  }
+  @starting-style {
+    :host([popover][data-animation="slide"][open]) {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+}
+
+/* ── Floating header (floating + paged templates) ─────────────────── */
+:host([popover]) .overlay-header {
+  display: flex;
+  align-items: center;
+  gap: var(--_float-gap-sm);
+  padding: var(--_float-padding);
+  background: var(--_float-surface);
+  border-bottom: var(--_float-border-width) solid var(--_float-border-color);
+  border-radius: var(--_float-rounding) var(--_float-rounding) 0 0;
+}
+:host([popover]:not([data-heading]):not([data-has-icon]):not([data-has-header-end])) .overlay-header {
+  display: none;
+}
+:host([popover]) .overlay-heading {
+  flex: 1;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: var(--sherpa-line-height-default, 1.4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:host([popover]:not([data-heading])) .overlay-heading {
+  display: none;
+}
+
+/* ── Close button ─────────────────────────────────────────────────── */
+:host([popover]) .close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--_float-rounding);
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  flex-shrink: 0;
+}
+:host([popover]) .close-btn:hover {
+  background: var(--sherpa-surface-container-hover, #f0f0f5);
+  color: var(--_float-text);
+}
+
+/* ── Body (floating + paged templates) ───────────────────────────── */
+:host([popover]) .overlay-body {
+  padding: var(--sherpa-space-2xs, 4px) 0;
+  max-height: 400px;
+  overflow: auto;
+}
+:host([popover]) .overlay-body-paged {
+  padding: var(--_float-padding);
+}
+:host([popover]) .overlay-body-paged ::slotted(section[data-page]) {
+  display: none;
+}
+:host([popover][data-page="0"]) .overlay-body-paged ::slotted(section[data-page="0"]),
+:host([popover][data-page="1"]) .overlay-body-paged ::slotted(section[data-page="1"]),
+:host([popover][data-page="2"]) .overlay-body-paged ::slotted(section[data-page="2"]),
+:host([popover][data-page="3"]) .overlay-body-paged ::slotted(section[data-page="3"]),
+:host([popover][data-page="4"]) .overlay-body-paged ::slotted(section[data-page="4"]),
+:host([popover][data-page="5"]) .overlay-body-paged ::slotted(section[data-page="5"]) {
+  display: block;
+}
+
+/* ── Page navigation (paged template) ────────────────────────────── */
+:host([popover]) .page-back {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  cursor: pointer;
+  border-radius: var(--_float-rounding);
+}
+:host([popover]) .page-back:hover {
+  background: var(--sherpa-surface-container-hover, #f0f0f5);
+  color: var(--_float-text);
+}
+:host([popover][data-paged]) .page-back {
+  display: inline-flex;
+}
+:host([popover][data-paged][data-page="0"]) .page-back,
+:host([popover][data-paged]:not([data-page])) .page-back {
+  visibility: hidden;
+}
+:host([popover]) .overlay-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--_float-gap);
+  padding: var(--_float-padding);
+  border-top: var(--_float-border-width) solid var(--_float-border-color);
+}
+:host([popover]) .page-indicator {
+  color: var(--sherpa-content-default-secondary, #5c5c66);
+  font-size: var(--sherpa-fonts-scale-sm, 12px);
+}
+
+/* ── Menu surface (menu template) ────────────────────────────────── */
+:host([popover][data-layout="menu"]) .menu-surface {
+  display: flex;
+  flex-direction: column;
+  gap: var(--_float-gap);
+  padding: var(--_float-padding);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+:host([popover][data-layout="actions"]) {
+  min-width: auto;
+}
+:host([popover][data-layout="actions"]) .menu-surface {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--_float-gap-sm);
+  padding: var(--_float-gap-sm);
+}
+:host([popover][data-layout="actions"]) ::slotted(ul) {
+  flex-direction: row;
+  padding: 0;
+  border-bottom: none;
+  gap: var(--_float-gap-sm);
+}
+
+/* ── Loading state (menu layout) ─────────────────────────────────── */
+:host([popover]) .overlay-loader {
+  display: none;
+  align-items: center;
+  gap: var(--_float-gap-sm);
+  padding: var(--_float-gap-sm) var(--_float-padding);
+  color: var(--_float-text);
+  min-height: var(--sherpa-size-3xl, 36px);
+}
+:host([popover]) .overlay-loader-spinner {
+  display: inline-block;
+  width: var(--sherpa-size-sm, 16px);
+  height: var(--sherpa-size-sm, 16px);
+  border: 2px solid var(--sherpa-border-control-secondary-default, #9a9aad);
+  border-top-color: var(--sherpa-border-control-active-default, #0060df);
+  border-radius: 50%;
+  animation: sherpa-container-float-spin 700ms linear infinite;
+}
+:host([popover]) .overlay-loader-text:empty {
+  display: none;
+}
+:host([popover][data-loading]) .overlay-loader {
+  display: inline-flex;
+}
+:host([popover][data-loading]) ::slotted(*) {
+  display: none;
+}
+
+/* ── Slotted menu lists ───────────────────────────────────────────── */
+:host([popover]) ::slotted(ul) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--_float-gap-sm);
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--_float-gap-sm) 0;
+  border-bottom: var(--_float-border-width) solid var(--_float-border-color);
+}
+:host([popover]) ::slotted(ul:last-child) {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+:host([popover]) ::slotted(hr) {
+  height: 1px;
+  border: none;
+  background-color: var(--_float-border-color);
+  margin: var(--_float-gap-sm) 0;
+}
+/*
+ * !important required: ::slotted(ul:last-child) at (0,1,1) beats
+ * ::slotted([hidden]) at (0,1,0) without it.
+ */
+:host([popover]) ::slotted([hidden]) {
+  display: none !important;
+}
+
+@keyframes sherpa-container-float-spin {
+  to { transform: rotate(360deg); }
+}

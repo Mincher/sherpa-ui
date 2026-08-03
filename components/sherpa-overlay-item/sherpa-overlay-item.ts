@@ -1,9 +1,9 @@
 /**
  * @element sherpa-overlay-item
  * @category overlay
- * @description An individual action item inside a sherpa-container-overlay menu. Use data-type
+ * @description An individual action item inside a floating sherpa-container (data-layout="menu"). Use data-type
  *   to set the interaction model: plain action (default), checkbox, radio, toggle, or
- *   non-interactive heading. Always nest inside a sherpa-container-overlay with
+ *   non-interactive heading. Always nest inside a floating sherpa-container with
  *   data-variant="menu" — do not use standalone. Items with data-selection="radio" and the
  *   same data-group form a mutually exclusive radio group within the menu.
  *
@@ -12,7 +12,7 @@
  * @attr {boolean} data-modified    — Value changed from default (brand emphasis + dot)
  * @attr {string}  data-icon        — Font Awesome icon name (e.g. "trash")
  * @attr {enum}    data-icon-weight — solid (default) | regular | light | thin | brands
- * @attr {string}  data-action      — Action identifier dispatched in overlay-select
+ * @attr {string}  data-action      — Action identifier dispatched in container-select
  * @attr {string}  value            — Value associated with this item
  * @attr {enum}    data-selection   — checkbox | radio | toggle
  * @attr {boolean} checked          — Whether checkbox/radio/toggle is checked

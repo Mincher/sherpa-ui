@@ -7,7 +7,7 @@
  * public data contract (attributes, methods, events, FilterSpec shape) that
  * sherpa-data-grid depends on, but composes sherpa-quick-filter chips (via a
  * cloning prototype) instead of createElement'd sherpa-button groups, and opens
- * option menus with sherpa-container-overlay + sherpa-overlay-item.
+ * option menus with sherpa-container (floating) + sherpa-overlay-item.
  *
  * @element sherpa-quick-filter-toolbar
  * @category data
@@ -68,7 +68,7 @@ import { renderElement } from "../utilities/render-element.js";
 import { parseStringArrayAttr } from "../utilities/data-utils.js";
 import type { EventHandler } from "../utilities/types.js";
 import "../sherpa-quick-filter/sherpa-quick-filter.js";
-import "../sherpa-container-overlay/sherpa-container-overlay.js";
+import "../sherpa-container/sherpa-container.js";
 import "../sherpa-overlay-item/sherpa-overlay-item.js";
 import { formatFieldName } from "../utilities/format-utils.js";
 import { TIME_RANGE_PRESETS } from "../utilities/timeframes.js";
@@ -98,7 +98,7 @@ interface QuickFilterChip extends HTMLElement {
   readonly field?: string;
 }
 
-/** The sherpa-container-overlay surface consumed here. */
+/** The floating sherpa-container surface consumed here. */
 interface OverlayMenu extends HTMLElement {
   show(anchor?: Element): void;
   hide(): void;
@@ -1088,11 +1088,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   #ensureMenu(): OverlayMenu {
     if (this.#menu) return this.#menu;
-    const menu = document.createElement("sherpa-container-overlay") as OverlayMenu;
-    menu.setAttribute("data-variant", "menu");
+    const menu = document.createElement("sherpa-container") as OverlayMenu;
+    menu.setAttribute("popover", "auto");
+    menu.setAttribute("data-layout", "menu");
     // Identifying hook for the singleton option menu (not a visual-state toggle).
     menu.setAttribute("data-qf-toolbar-menu", "");
-    menu.addEventListener("overlay-select", this.#onOverlaySelect as EventListener);
+    menu.addEventListener("container-select", this.#onOverlaySelect as EventListener);
     document.body.appendChild(menu);
     this.#menu = menu;
     return menu;

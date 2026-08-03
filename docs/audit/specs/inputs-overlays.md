@@ -16,6 +16,6 @@ Label: text-emphasis 14px/600. → maps to input-text/number/password/search/sel
 
 ## Menu (`Menu Item` / `Menu Section`)
 Menu Item states: **Default / Hover / Active / Modified / Destructive / Destructive-Hover / Inactive**.
-Menu Section: heading + items. → maps to sherpa-container-overlay (menu variant) + sherpa-overlay-item.
+Menu Section: heading + items. → maps to sherpa-container (popover="auto" data-layout="menu") + sherpa-overlay-item.
 
 ## Popover / Tooltip — minimal (few variants). Overlay = popover/menu variants (already audited via QFT work).

@@ -89,7 +89,7 @@ test('toolbar builds preset chips and getFilters returns FilterSpec after menu s
     const chip = t.querySelector('sherpa-quick-filter[data-filter-field="status"]')!;
     (chip.shadowRoot!.querySelector('.chip-menu') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 200));
-    const overlay = document.querySelector('sherpa-container-overlay[data-qf-toolbar-menu]')!;
+    const overlay = document.querySelector('sherpa-container[data-qf-toolbar-menu]')!;
     const items = [...overlay.querySelectorAll('sherpa-overlay-item')];
     const active = items.find((i) => (i.getAttribute('data-value') || i.textContent || '').includes('Active'));
     (active as HTMLElement)?.click();

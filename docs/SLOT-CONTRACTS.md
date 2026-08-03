@@ -61,7 +61,7 @@ Baseline audit (`node scripts/slot-contract-audit.mjs .`): **35 components with 
 - App-shell / nav / product-bar-v2 / view-header → **Phase 3** (App Shell v2 rewrites these; annotate as built).
 - filter-bar → **Phase 4** (replaced by quick-filter-toolbar).
 - AI surface (panel, chat-message, prompt-composer, proposal-op, proposal-preview) + node family (node, node-canvas, node-row, node-header) → **Phase 5**.
-- data-grid, container-overlay, overlay-item → annotate when next touched (Phase 6 / overlay work).
+- data-grid, overlay-item → annotate when next touched (Phase 6 / overlay work).
 
 **Skip (deprecated):** `sherpa-product-bar` (v1), `sherpa-node-header` — being removed (see [DEPRECATIONS.md](DEPRECATIONS.md)).
 

@@ -155,28 +155,27 @@ test('sherpa-panel data-expanded toggle fires panel-toggle; close button fires p
   expect(r.expandedFinal).toBe(false);
 });
 
-/* ── sherpa-container-overlay ──────────────────────────────────── */
+/* ── sherpa-container floating surface ──────────────────────────── */
 
-test('sherpa-container-overlay show(anchor) opens and overlay-select fires on item click', async ({ page }) => {
+test('sherpa-container (floating) show(anchor) opens and container-select fires on item click', async ({ page }) => {
   await mount(page, `
     <button id="ov-anchor">Open</button>
-    <sherpa-container-overlay data-variant="menu">
+    <sherpa-container popover="auto" data-layout="menu">
       <ul>
         <li><sherpa-overlay-item value="a" data-action="alpha">Alpha</sherpa-overlay-item></li>
         <li><sherpa-overlay-item value="b" data-action="beta">Beta</sherpa-overlay-item></li>
       </ul>
-    </sherpa-container-overlay>`, 'sherpa-container-overlay');
+    </sherpa-container>`, 'sherpa-container');
   const r = await page.evaluate(async () => {
     const anchor = document.getElementById('ov-anchor')!;
-    const overlay = document.querySelector('sherpa-container-overlay') as HTMLElement & { show: (a: Element) => void; open: boolean };
+    const overlay = document.querySelector('sherpa-container[popover]') as HTMLElement & { show: (a: Element) => void; open: boolean };
     await (overlay as any).rendered;
     let openFired = false;
     let selectDetail: any = null;
-    overlay.addEventListener('overlay-open', () => (openFired = true));
-    overlay.addEventListener('overlay-select', (e: any) => (selectDetail = e.detail));
+    overlay.addEventListener('container-open', () => (openFired = true));
+    overlay.addEventListener('container-select', (e: any) => (selectDetail = e.detail));
     overlay.show(anchor);
     const openState = overlay.open;
-    // Ensure the overlay items have rendered before clicking.
     const item = overlay.querySelector('sherpa-overlay-item[value="b"]') as HTMLElement & { rendered?: Promise<void> };
     if (item.rendered) await item.rendered;
     item.click();

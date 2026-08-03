@@ -9,7 +9,6 @@ export const GROUP_MAP = {
   "sherpa-switch":             "core",
   "sherpa-loader":             "core",
   "sherpa-tooltip":            "core",
-  "sherpa-container-overlay":  "core",
 
   "sherpa-panel":              "layout",
   "sherpa-accordion":          "layout",

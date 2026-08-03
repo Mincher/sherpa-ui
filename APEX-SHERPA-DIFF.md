@@ -35,7 +35,7 @@ Legend: ✅ full equivalent · 🟡 partial / different scope · ❌ missing in 
 | Apex component | Sherpa equivalent | Status | Notes |
 |---|---|---|---|
 | Buttons / Standard Button | `sherpa-button` | ✅ | Sherpa adds `data-count`, menu/split-button (`menu-*` events), status variants |
-| Buttons / Dropdown Button | `sherpa-button` (`data-menu*`) + `sherpa-container-overlay` | 🟡 | Covered via button menu + overlay rather than a discrete component |
+| Buttons / Dropdown Button | `sherpa-button` (`data-menu*`) + `sherpa-container (popover="auto")` | 🟡 | Covered via button menu + overlay rather than a discrete component |
 | Buttons / Floating Action Button | — | ❌ | No dedicated FAB |
 | Buttons / Product Messaging Button | — | ❌ | No PM-specific button variant |
 | Accordion | `sherpa-accordion` | ✅ | Native `<details>` based |
@@ -64,15 +64,15 @@ Legend: ✅ full equivalent · 🟡 partial / different scope · ❌ missing in 
 | Key-Value List | `sherpa-key-value-list` | ✅ | Semantic `<dl>` |
 | Layout Grid (+ Item) | `sherpa-layout-grid` | ✅ | 12-col; adds editable/reorder |
 | List | `sherpa-list` + `sherpa-list-item` | ✅ | Drag-drop, types, key-value |
-| Loading / Load Panel | `sherpa-loader` (`data-panel`) + `sherpa-container-overlay` | 🟡 | Panel loader via attribute |
+| Loading / Load Panel | `sherpa-loader` (`data-panel`) + `sherpa-container (popover="auto")` | 🟡 | Panel loader via attribute |
 | Loading / Progress Bar | `sherpa-progress-bar` | ✅ | Determinate/indeterminate |
 | Loading / Spinner | `sherpa-loader` | ✅ | |
-| Menus / Context Menu | `sherpa-container-overlay` (`data-variant="menu"`) | 🟡 | Overlay covers menus; no right-click wiring |
-| Menus / Standard Menu | `sherpa-container-overlay` + `sherpa-overlay-item` | 🟡 | |
+| Menus / Context Menu | `sherpa-container (popover="auto")` (`data-variant="menu"`) | 🟡 | Overlay covers menus; no right-click wiring |
+| Menus / Standard Menu | `sherpa-container (popover="auto")` + `sherpa-overlay-item` | 🟡 | |
 | Message | `sherpa-message` | ✅ | Page/section banner |
 | Page Header | `sherpa-view-header` | 🟡 | Title/favorite/edit/breadcrumbs/export. **Missing:** Saved Views |
 | Page Title | `sherpa-view-header` / `sherpa-section-header` | ✅ | |
-| Popover | `sherpa-container-overlay` (`data-variant="popover"`) + `sherpa-tooltip` | ✅ | |
+| Popover | `sherpa-container (popover="auto")` (`data-variant="popover"`) + `sherpa-tooltip` | ✅ | |
 | Scheduler | `sherpa-scheduler` | ✅ | Recurrence picker |
 | Section Header | `sherpa-section-header` | ✅ | |
 | Selection / Checkbox | `sherpa-select-checkbox` (+ `sherpa-select-group`) | ✅ | Indeterminate supported |
@@ -115,7 +115,7 @@ Legend: ✅ full equivalent · 🟡 partial / different scope · ❌ missing in 
 | Patterns / Wizard | `patterns/wizard-dialog.html` + `sherpa-stepper` | ✅ |
 | Patterns / Worksheet (split/tabs/main) | — | ❌ — not needed (dumb wrapper) |
 | Patterns / Asset View | — | ❌ |
-| Patterns / Action Popup | `sherpa-container-overlay` | 🟡 |
+| Patterns / Action Popup | `sherpa-container (popover="auto")` | 🟡 |
 | — | flows: add / edit / delete (CRUD) | ➕ |
 | — | feedback: confirmation-dialog / loading-state | ➕ |
 | — | layouts: app-shell / list-view / detail-view / settings-form / flex-truncate-row | ➕ |

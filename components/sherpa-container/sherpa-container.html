@@ -1,39 +1,43 @@
 <!--
-  sherpa-container.html — Shadow DOM template for sherpa-container.
+  sherpa-container.html — Shadow DOM templates for sherpa-container.
 
-  Universal container for dashboard composition and standalone card layouts.
-  Exposes a named container query scope (`sherpa-container`) so descendant
-  viz components can adapt their layout via container queries.
+  Template selection (via get templateId()):
+    default   — In-flow card/tile (no popover attribute)
+    floating  — Floating popover surface with optional header + body slot
+    paged     — Floating wizard: header (with back button) + paged body + footer
+    menu      — Floating menu surface: role="menu" + loader + slot
 
-  Content may be provided via:
-    slot="header"  — Card-style header (use sherpa-container-header). Renders edge-to-edge
-                     with a bottom separator. Shown only when content is slotted.
-    (default slot) — Main content area. Receives 16px padding on all sides;
-                     top padding is suppressed when a header is present.
-    slot="footer"  — Card-style footer band (use sherpa-container-footer, sherpa-button,
-                     or a plain <div> with its own border-top + padding).
+  Light-DOM content templates (returned by SherpaContainer.getContentTemplate(id)):
+    filter    — Value filter picker (stamped by sherpa-button for data-menu-template="filter")
 
-  State overlay slots (visible when data-state matches):
-    slot="loading" — Replaces body while data-state="loading"
-    slot="empty"   — Replaces body while data-state="empty"
-    slot="error"   — Replaces body while data-state="error"
+  ── In-flow attributes ──────────────────────────────────────────────────────
+    data-variant   — "fit" | "resizable" | "fill" | "worksheet"
+    data-col-span  — "3" | "6" | "9" | "12" (resizable)
+    data-row-span  — "1"–"24" (resizable)
+    data-editable  — Edit mode
+    data-menu-open — Set while a descendant overflow menu is open
+    data-state     — ready | loading | empty | error
+    data-interactive / data-selectable / data-selected / data-elevation / disabled
 
-  Host attributes:
-    data-variant     — "fit" | "resizable" | "fill" | "worksheet" (default: fit)
-    data-col-span    — "3" | "6" | "9" | "12" (resizable variant only)
-    data-row-span    — "1"–"24" (resizable variant only; recommended stops
-                       are 4, 8, 12, 16, 20, 24 to match the 4-row-track
-                       minimum at the default 64px row height)
-    data-editable    — Edit mode (resizable variant only)
-    data-menu-open   — Set automatically while a descendant overflow menu is open
-    data-state       — ready | loading | empty | error — controls overlay
-    data-interactive — Makes the container a clickable surface
-    data-selectable  — Makes the container a selectable radio option
-    data-selected    — Selected/active state
-    data-elevation   — none | sm | md | lg — box-shadow depth
-    disabled         — Disabled state
+  ── Floating attributes (when popover is set) ──────────────────────────────
+    popover        — "auto" (light-dismiss) | "manual" (controlled)
+    anchor         — Id of anchor element (native HTML anchor attribute)
+    data-open      — Declarative open/close (maps to show()/hide())
+    data-placement — bottom-start | bottom-end | top | top-start | top-end |
+                     inline-start | inline-end (and -top variants)
+    data-flip      — Enable CSS position-try-fallbacks
+    data-layout    — menu — activates menu shadow template
+    data-paged     — Activates paged shadow template
+    data-heading   — Header title text
+    data-loading   — Show loading spinner (menu layout)
+    data-loading-text — Loading caption
+    data-animation — slide — entrance/exit animation
+    data-rounding-start | -end | -top | -bottom — "none" to zero edge radii
 -->
 
+<!-- ════════════════════════════════════════════════════════════════════
+     DEFAULT — In-flow card/tile
+     ════════════════════════════════════════════════════════════════════ -->
 <template id="default">
   <div class="card-header" part="header">
     <slot name="header" data-accepts="container,content,control,html"></slot>
@@ -56,4 +60,90 @@
     </slot>
   </div>
   <button class="resize-grip" part="resize-grip" type="button" tabindex="-1" aria-label="Resize"></button>
+</template>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     FLOATING — Popover surface: optional header + body slot
+     ════════════════════════════════════════════════════════════════════ -->
+<template id="floating">
+  <header class="overlay-header">
+    <slot name="icon"></slot>
+    <span class="overlay-heading"></span>
+    <slot name="header-end"></slot>
+    <button class="close-btn" type="button" aria-label="Close">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </header>
+  <div class="overlay-body">
+    <slot data-accepts="any,html"></slot>
+  </div>
+</template>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     PAGED — Floating wizard: paged sections + back/next navigation.
+     Consumers project <section data-page="0">…</section> blocks; CSS
+     shows only the section matching data-page on the host.
+     ════════════════════════════════════════════════════════════════════ -->
+<template id="paged">
+  <header class="overlay-header">
+    <button class="page-back" type="button" aria-label="Previous page">
+      <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <slot name="icon"></slot>
+    <span class="overlay-heading"></span>
+    <slot name="header-end"></slot>
+    <button class="close-btn" type="button" aria-label="Close">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </header>
+  <div class="overlay-body overlay-body-paged">
+    <slot data-accepts="any,html"></slot>
+  </div>
+  <footer class="overlay-footer">
+    <span class="page-indicator" aria-live="polite"></span>
+    <button class="page-next sherpa-btn" type="button">Next</button>
+  </footer>
+</template>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     MENU — Floating menu surface: role="menu" + loader + slot.
+     Cloning prototypes (.menu-*-tpl) are class-only — not picked up by
+     SherpaElement's template parser — and cloned by setMenuItems().
+     ════════════════════════════════════════════════════════════════════ -->
+<template id="menu">
+  <div class="menu-surface text-body-sm" role="menu" part="surface">
+    <div class="overlay-loader" part="loader" role="status" aria-live="polite">
+      <span class="overlay-loader-spinner" aria-hidden="true"></span>
+      <span class="overlay-loader-text"></span>
+    </div>
+    <slot data-accepts="any,html"></slot>
+  </div>
+  <template class="menu-list-tpl"><ul></ul></template>
+  <template class="menu-item-tpl"><li><sherpa-overlay-item></sherpa-overlay-item></li></template>
+  <template class="menu-heading-tpl"><sherpa-overlay-item data-type="heading"></sherpa-overlay-item></template>
+</template>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     FILTER (light-DOM content template)
+     Returned by SherpaContainer.getContentTemplate('filter').
+     Stamped into the container's light DOM by sherpa-button when
+     data-menu-template="filter" is set.
+     ════════════════════════════════════════════════════════════════════ -->
+<template id="filter">
+  <sherpa-overlay-item data-type="heading"></sherpa-overlay-item>
+  <ul data-group="actions">
+    <li>
+      <sherpa-overlay-item data-role="select-all" data-action="select-all" value=""
+        >Select all</sherpa-overlay-item
+      >
+    </li>
+    <li>
+      <sherpa-overlay-item data-role="clear-all" data-action="clear-all" value=""
+        >Clear all</sherpa-overlay-item
+      >
+    </li>
+  </ul>
+  <ul data-group="values">
+    <!-- Populated by JS with checkbox overlay items for each unique value -->
+  </ul>
 </template>

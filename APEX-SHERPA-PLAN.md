@@ -217,7 +217,7 @@ Recompose the shell to host Nav v2 (left rail) + App Header (top) + main content
 ### Design
 - **`sherpa-quick-filter` (chip — NEW)**: a toggle/menu chip.
   - `data-type="default|ai|populated"`, `data-state=…`, `data-active`, `data-label`, `data-count`/value display for populated, menu trigger.
-  - **Default**: toggle or opens a menu (options/tree) → `container-overlay`/`sherpa-tree`.
+  - **Default**: toggle or opens a menu (options/tree) → `sherpa-container (floating)`/`sherpa-tree`.
   - **Populated**: shows a selected value + on/off active states.
   - **AI**: `Thinking`/`Suggested` states — ties into the **AI Surface** (Phase 5). An AI-suggested filter the user can accept/dismiss.
   - Events: `quick-filter-change`, `quick-filter-toggle`, `quick-filter-menu-open`, `quick-filter-ai-accept/-dismiss`.

@@ -15,7 +15,7 @@ Funnel icon + label/value + optional count badge + chevron menu + optional dismi
 ### `sherpa-quick-filter-toolbar` — the strip
 A drop-in replacement for `sherpa-filter-bar`, composing `sherpa-quick-filter` chips via a cloning prototype (no `createElement` for structural chip DOM). `data-type="view|data"`.
 - **Preserved the entire filter-bar data contract** so consumers didn't change behaviour: `getFilters()` → `FilterSpec[]`, `setAvailableColumns(columns, rows)`, `data-src-json`, `data-preset-filters`, `data-embedded`, `data-global` (+ Time Range chip), `data-density`, sort/segment behaviour chips, operator inference, and the `filter-change` / `container-filter-change` / `global-filter-change` events.
-- Chip option menus open a shared `sherpa-container-overlay` with `sherpa-overlay-item` options + **live row counts** (e.g. `Active (1)`).
+- Chip option menus open a shared `sherpa-container (floating)` with `sherpa-overlay-item` options + **live row counts** (e.g. `Active (1)`).
 - Category `data` / organism.
 
 ## The filter-bar removal (bigger reach than planned)
@@ -48,6 +48,6 @@ It's a **drop-in**: rename the tag and the import. The public surface is identic
 - Demos added to the sticker sheet (`#quick-filter` chips + toolbar; `#app-header` shows the toolbar in the filters slot).
 
 ## Follow-ups (not blocking)
-- The toolbar's option **menu** uses `createElement` for the `sherpa-container-overlay` + `sherpa-overlay-item`s (2 sites). This matches how other components create overlays (button, product-bar-v2) and is data-driven menu content, not structural chip DOM — but converting to a cloning prototype is a possible future tidy-up.
+- The toolbar's option **menu** uses `createElement` for the `sherpa-container (floating)` + `sherpa-overlay-item`s (2 sites). This matches how other components create overlays (button, product-bar-v2) and is data-driven menu content, not structural chip DOM — but converting to a cloning prototype is a possible future tidy-up.
 - `global-filter-change` is a `document`-level broadcast with no `bubbles` (moot at document root) — same intentional exception the old filter-bar had (documented in PHASE-0-CONFORMANCE.md).
 - **AI chip integration** (Thinking/Suggested states → AI proposal model) is stubbed on the chip; wiring it to the AI surface is Phase 5.

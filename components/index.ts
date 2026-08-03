@@ -24,7 +24,6 @@ export * from "./sherpa-container-header/sherpa-container-header.js";
 // UI components
 export * from "./sherpa-button/sherpa-button.js";
 export * from "./sherpa-container-footer/sherpa-container-footer.js";
-export * from "./sherpa-container-overlay/sherpa-container-overlay.js";
 export * from "./sherpa-overlay-item/sherpa-overlay-item.js";
 
 export * from "./sherpa-switch/sherpa-switch.js";
@@ -54,7 +53,6 @@ export * from "./sherpa-breadcrumbs/sherpa-breadcrumbs.js";
 export * from "./sherpa-list-item/sherpa-list-item.js";
 export * from "./sherpa-loader/sherpa-loader.js";
 export * from "./sherpa-panel/sherpa-panel.js";
-// sherpa-popover and sherpa-menu merged into sherpa-container-overlay
 // @deprecated sherpa-product-bar (v1) — use sherpa-product-bar-v2 instead.
 export * from "./sherpa-product-bar/sherpa-product-bar.js";
 export * from "./sherpa-product-bar-v2/sherpa-product-bar-v2.js";
