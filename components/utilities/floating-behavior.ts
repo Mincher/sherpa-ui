@@ -164,7 +164,15 @@ export function FloatingBehavior<T extends Constructor<SherpaElementLike>>(
 
     show(anchor?: Element): void {
       if (!this.hasAttribute('popover')) return;
-      void this.rendered.then(() => this._doShow(anchor));
+      void this.rendered.then(async () => {
+        // Also wait for any slotted sherpa-overlay-item children to bootstrap
+        // their shadow DOMs — they render text via an internal slot so they
+        // appear empty until their own connectedCallback completes.
+        interface HasRendered { readonly rendered: Promise<void>; }
+        const items = [...this.querySelectorAll('sherpa-overlay-item')] as (Element & HasRendered)[];
+        if (items.length) await Promise.all(items.map(i => i.rendered));
+        this._doShow(anchor);
+      });
     }
 
     _doShow(anchor?: Element): void {

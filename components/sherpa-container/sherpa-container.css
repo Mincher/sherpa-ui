@@ -51,12 +51,10 @@
   container: sherpa-container / inline-size;
   transition:
     --transition-fast(box-shadow), --transition-fast(background-color),
-    --transition-fast(border-color), --transition-fast(transform);
+    --transition-fast(border-color);
 }
 :host([data-menu-open="true"]) {
   border-color: var(--sherpa-border-control-primary-default, #3c5edd);
-  overflow: visible;
-  z-index: 10;
 }
 :host([data-variant="fit"]) {
   /* "fit" fills its parent's inline size, capped by any inline max-width
