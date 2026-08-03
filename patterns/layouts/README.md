@@ -65,7 +65,6 @@ Layout patterns provide the foundational structure for application views. They d
 
 **Structure:**
 - `<sherpa-view-header>` — Item name and actions
-- `<sherpa-container-group>` — Grouped information sections
 - `<sherpa-key-value-list>` — Metadata display
 - `<sherpa-tabs>` — Tabbed sections for complex data
 

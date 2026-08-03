@@ -21,9 +21,7 @@
  * controls (inputs, buttons, custom elements) into a seamless flex row
  * or column.
  *
- * For grouping *dashboard tiles* into a bordered subgrid region, use the
- * dedicated <sherpa-container-group> web component instead — this class
- * is intentionally scoped to small, control-level groupings.
+ * Scoped to small, control-level groupings only — not for dashboard tile layout.
  *
  * The .grouped-component wrapper owns border, border-radius and
  * overflow:hidden. It sets --_cg-border-width: 0 and

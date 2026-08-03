@@ -7,7 +7,7 @@
                  margin-inline-start on .app-main reserves the collapsed/pinned rail width.
     .app-main  — flex: 1; sole flex item; flex column
       .product-bar-row — flex: 0 0 auto; 48px product bar
-      .content-row     — flex: 1; hosts sherpa-layout-grid
+      .content-area    — flex: 1; hosts sherpa-layout-grid
 
   Slots:
     nav          — sherpa-nav element
@@ -27,7 +27,7 @@
     <div class="app-header-row">
       <slot name="app-header" data-accepts="shell,html"></slot>
     </div>
-    <div class="content-row">
+    <div class="content-area">
       <slot data-accepts="any,html"></slot>
     </div>
   </div>

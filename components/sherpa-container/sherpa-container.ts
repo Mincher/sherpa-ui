@@ -24,7 +24,6 @@
  * @attr {boolean} data-selectable      — Makes the container a selectable radio option
  * @attr {boolean} data-selected        — Selected / active state
  * @attr {enum}    data-elevation       — none | sm | md | lg
- * @attr {enum}    data-group-position — Managed by an enclosing <sherpa-container-group>: "first" | "follow". The first tile in a group renders its header normally (and serves as the group title); follower tiles have header content visually muted while the header band preserves height for cross-tile content alignment. Consumers should not set this manually.
  * @attr {boolean} disabled             — Native disabled state
  *
  * @slot (default) — Main content. Rendered inside a scrollable flex-column area with 16px padding.

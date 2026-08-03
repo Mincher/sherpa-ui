@@ -35,7 +35,6 @@ Pure layout/surface wrappers. They hold content but carry no domain logic.
 | `sherpa-app-shell` | Top-level page scaffold; distributes named slots to regions |
 | `sherpa-layout-grid` | CSS grid wrapper only |
 | `sherpa-container` | Generic surface / card wrapper |
-| `sherpa-container-group` | Groups containers; adds grouping semantics, not logic |
 | `sherpa-panel` | Collapsible/resizable surface pane |
 | `sherpa-accordion` | Expand/collapse wrapper; content is fully slotted |
 

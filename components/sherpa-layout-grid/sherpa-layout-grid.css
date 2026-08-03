@@ -172,25 +172,6 @@ slot[name="banner"] {
   grid-column: span 3;
 }
 
-/* Grouped wrappers: a <sherpa-container-group> wrapper acts as a subgrid tile.
- * Its column span is set via data-col-span on the wrapper itself; default span
- * = full row when no value is provided. The wrapper auto-sizes height
- * (grid-auto-rows + height: max-content; see sherpa-container-group.css). */
-::slotted(sherpa-container-group) {
-  grid-column: 1 / -1;
-}
-::slotted(sherpa-container-group[data-col-span="3"]) {
-  grid-column: span 3;
-}
-::slotted(sherpa-container-group[data-col-span="6"]) {
-  grid-column: span 6;
-}
-::slotted(sherpa-container-group[data-col-span="9"]) {
-  grid-column: span 9;
-}
-::slotted(sherpa-container-group[data-col-span="12"]) {
-  grid-column: span 12;
-}
 
 @container sherpa-layout-grid (max-width: 1199px) {
   :host .grid-surface {
@@ -202,10 +183,6 @@ slot[name="banner"] {
   ::slotted(sherpa-container[data-col-span="9"]),
   ::slotted(sherpa-container[data-col-span="12"]) {
     grid-column: span 6 !important;
-  }
-  ::slotted(sherpa-container-group[data-col-span="9"]),
-  ::slotted(sherpa-container-group[data-col-span="12"]) {
-    grid-column: span 6;
   }
   ::slotted(sherpa-accordion[data-col-span="9"]),
   ::slotted(sherpa-accordion[data-col-span="12"]) {
@@ -222,9 +199,6 @@ slot[name="banner"] {
    * ::slotted() rules can be overridden by the slotted element's own light-DOM styles. */
   ::slotted(sherpa-container) {
     grid-column-end: span 3 !important;
-  }
-  ::slotted(sherpa-container-group) {
-    grid-column: 1 / -1 !important;
   }
   ::slotted(sherpa-accordion) {
     grid-column: 1 / -1 !important;

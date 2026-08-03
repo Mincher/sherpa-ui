@@ -16,7 +16,7 @@ const TAGS = [
   'sherpa-accordion', 'sherpa-app-header', 'sherpa-app-shell', 'sherpa-barchart',
   'sherpa-breadcrumbs', 'sherpa-button', 'sherpa-calendar', 'sherpa-callout',
   'sherpa-chart-legend', 'sherpa-chat-message', 'sherpa-code-block', 'sherpa-container-footer',
-  'sherpa-container-group', 'sherpa-container-header', 'sherpa-container-overlay', 'sherpa-container',
+  'sherpa-container-header','sherpa-container-overlay', 'sherpa-container',
   'sherpa-data-grid', 'sherpa-dialog', 'sherpa-donut-chart', 'sherpa-empty-state',
   'sherpa-file-upload', 'sherpa-gauge-chart', 'sherpa-input-date-range', 'sherpa-input-date',
   'sherpa-input-number', 'sherpa-input-password', 'sherpa-input-search', 'sherpa-input-select',

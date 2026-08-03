@@ -35,9 +35,6 @@ Warnings are advisory unless the component sets `static strictSlots = true`.
 <!-- holds list-item molecules + arbitrary markup -->
 <slot data-accepts="content,html"></slot>
 
-<!-- a container-group holds only container tiles -->
-<slot data-accepts="container,html"></slot>
-
 <!-- toolbar region: mixed interactive + display + markup -->
 <slot name="leading" data-accepts="control,input,display,content,html"></slot>
 
@@ -51,7 +48,6 @@ Baseline audit (`node scripts/slot-contract-audit.mjs .`): **35 components with 
 
 **Annotated in this pass (starter set — stable, high-value generative-UI targets):**
 - `sherpa-list` default slot → `content,html`
-- `sherpa-container-group` default → `container,html`
 - `sherpa-container-footer` `start` slot → `control,input,display,content,html`
 - `sherpa-toolbar` — completed the second template's `leading/center/trailing` slots (were unannotated) to match the first.
 

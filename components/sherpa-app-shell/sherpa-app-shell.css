@@ -8,7 +8,7 @@
  *   └── .app-main (flex: 1, flex column — sole flex item, fills width)
  *       ├── .product-bar-row (flex: 0 0 auto)
  *       │   └── <slot name="product-bar">
- *       └── .content-row (flex: 1 1 auto)
+ *       └── .content-area (flex: 1 1 auto)
  *           └── <slot> (default)
  *
  * Nav rail behaviour:
@@ -80,9 +80,9 @@
   display: none;
 }
 
-/* ── Content row ───────────────────────────────────────────────── */
+/* ── Content area ──────────────────────────────────────────────── */
 
-.content-row {
+.content-area {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;

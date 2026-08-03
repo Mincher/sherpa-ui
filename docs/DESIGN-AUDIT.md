@@ -49,7 +49,7 @@
 Pulled the real Apex 2.0 **Alias** variable collection (ground truth): radius sm=2/base=4/lg=8/xl=16/full=999; border-width **xs=0.25**/sm=0.5/base=1/lg=2; fonts 2xs=8/xs=10/sm=12/base=14/lg=16; space 3xs=2/2xs=4/xs=8/sm=12/base=16/lg=20/xl=24. This surfaced two **systemic** issues the visual pass missed:
 
 ### 🔧 Systemic fixes
-- **`border-width-xs` (0.25px) misuse — 12 uses across 7 components.** Every use carried a `1px` fallback, i.e. all intended a 1px hairline but bound the 0.25px token (too thin on hi-DPI). Confirmed against Figma (accordion binds `component/accordion/border-width`=1px, not `width/xs`). Repointed all → `border-width-base` (1px): accordion, button, calendar, callout, container-group, select-group, input-base.
+- **`border-width-xs` (0.25px) misuse — 12 uses across 7 components.** Every use carried a `1px` fallback, i.e. all intended a 1px hairline but bound the 0.25px token (too thin on hi-DPI). Confirmed against Figma (accordion binds `component/accordion/border-width`=1px, not `width/xs`). Repointed all → `border-width-base` (1px): accordion, button, calendar, callout, select-group, input-base.
 - **174 wrong token-fallback literals across 44 files.** Scanned every `var(--token, fallback)`; 174 fallbacks didn't match the token's true value (`rounding-base,6px`→4, `fonts-scale-sm,14px`→12, `space-xs,4px`→8, …). Rendered output unchanged (fallbacks only apply on token-load failure), but corrected for accuracy/robustness.
 
 ### Batch 4 (via `figma_execute` node lookup on Apex 2.0 Core)

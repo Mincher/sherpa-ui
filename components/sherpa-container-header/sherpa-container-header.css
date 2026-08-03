@@ -18,15 +18,6 @@
  *   data-menu-button   {boolean} — show overflow menu button
  *   data-drag-handle   {boolean} — show drag handle
  *
- * Cascaded custom properties consumed (set by an outer
- * sherpa-container-group on follower tiles via sherpa-container.css):
- *   --_cg-header-vis {visibility} — `hidden` mutes the entire header-row
- *     while preserving its natural height; defaults to `visible`. Lets a
- *     group reuse the first tile's header as its title while keeping every
-
-*     other tile's header band as a height spacer so content baselines
- *     align across rows.
- *
  * Container query:
  *   container-name: sherpa-container-header (inline-size)
  */
@@ -42,7 +33,6 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-space-xs, 8px);
-  visibility: var(--_cg-header-vis, visible);
 }
 :host .header-labels {
   display: flex;

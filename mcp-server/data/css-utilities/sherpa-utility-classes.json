@@ -6,7 +6,7 @@
   "classes": [
     {
       "name": "grouped-component",
-      "description": "Fuses adjacent controls (buttons, inputs, custom elements) into a seamless inline row or column with a shared outer border. The wrapper owns border, border-radius, and overflow:hidden. Sets --_cg-border-width:0 and --_cg-border-radius:0 which inherit into child shadow DOMs — children become borderless and radiusless automatically. For grouping dashboard tiles use <sherpa-container-group> instead.",
+      "description": "Fuses adjacent controls (buttons, inputs, custom elements) into a seamless inline row or column with a shared outer border. The wrapper owns border, border-radius, and overflow:hidden. Sets --_cg-border-width:0 and --_cg-border-radius:0 which inherit into child shadow DOMs — children become borderless and radiusless automatically. Scoped to control-level groupings only.",
       "usage": "<div class=\"grouped-component\"><!-- direct children: inputs, sherpa-buttons, etc. --></div>",
       "attributes": [
         {
