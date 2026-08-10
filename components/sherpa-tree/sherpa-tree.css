@@ -92,7 +92,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   font-weight: 900;
   font-size: 0.75em;
@@ -167,7 +167,7 @@
   justify-content: center;
   inline-size: var(--_toggle-size);
   block-size: var(--_toggle-size);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
   font-weight: 900;
 }

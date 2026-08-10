@@ -10,8 +10,8 @@
  *
  * @attr {number}  data-current-step=1       — Active step (1-based); 0 = no active step
  * @attr {enum}    data-orientation           — horizontal (default) | vertical
- * @attr {enum}    data-linear                — true | false — enforce sequential navigation
- * @attr {enum}    data-show-step-numbers     — true | false (default: true)
+ * @attr {boolean} data-linear                — boolean presence: enforce sequential navigation
+ * @attr {enum}    data-show-step-numbers     — "true" | "false" (default: true — inverted default, string encoding)
  * @attr {enum}    data-density               — compact | comfortable
  * @attr {enum}    data-labels                — none (hides all step labels)
  * @attr {string}  data-heading               — Header text (shows header when present)
@@ -219,8 +219,8 @@ export class SherpaProgressStepTracker extends SherpaElement {
   get currentStep(): number { return this.#currentStep; }
   set currentStep(v: number) { this.dataset['currentStep'] = String(v); }
 
-  get linear(): boolean { return this.dataset['linear'] === 'true'; }
-  set linear(v: boolean) { this.dataset['linear'] = v ? 'true' : 'false'; }
+  get linear(): boolean { return this.hasAttribute('data-linear'); }
+  set linear(v: boolean) { this.toggleAttribute('data-linear', v); }
 
   get showStepNumbers(): boolean { return this.dataset['showStepNumbers'] !== 'false'; }
   set showStepNumbers(v: boolean) { this.dataset['showStepNumbers'] = v ? 'true' : 'false'; }

@@ -124,7 +124,7 @@
 
 .toolbar-toggle-label,
 .toolbar-dropdown-label {
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 
 /* ---- dropdowns ---- */
@@ -224,7 +224,7 @@
   border: none;
   padding: var(--sherpa-space-xs, 8px);
   cursor: pointer;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   --icon-size: var(--sherpa-size-sm, 16px);
   line-height: 1;
   border-radius: var(--sherpa-border-rounding-base, 4px);

@@ -67,7 +67,7 @@ export function applySegmentBy(host: HTMLElement, data: object): void {
  */
 export function syncChartTitle(titleEl: Element | null, host: HTMLElement): void {
   if (!titleEl) return;
-  const entity = cleanTitleBase((host as HTMLElement & { dataset: DOMStringMap }).dataset['title'] || '');
+  const entity = cleanTitleBase((host as HTMLElement & { dataset: DOMStringMap }).dataset['label'] || '');
   const segMode    = host.getAttribute('data-segment-mode');
   const groupField = host.getAttribute('data-segment-field') || host.getAttribute('data-category');
   const hasActiveGroup = segMode !== 'off' && !!groupField;

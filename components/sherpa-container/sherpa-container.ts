@@ -272,14 +272,14 @@ export class SherpaContainer extends FloatingBehavior(ResizeBehavior(SherpaEleme
 
   /* ── Public card API ───────────────────────────────────────────── */
 
-  get selected(): boolean    { return this.hasAttribute('data-selected')    && this.dataset['selected']    !== 'false'; }
-  set selected(v: boolean)   { this.dataset['selected']    = v ? 'true' : 'false'; }
+  get selected(): boolean    { return this.hasAttribute('data-selected'); }
+  set selected(v: boolean)   { this.toggleAttribute('data-selected', v); }
 
-  get interactive(): boolean { return this.hasAttribute('data-interactive') && this.dataset['interactive'] !== 'false'; }
-  set interactive(v: boolean){ this.dataset['interactive'] = v ? 'true' : 'false'; }
+  get interactive(): boolean { return this.hasAttribute('data-interactive'); }
+  set interactive(v: boolean){ this.toggleAttribute('data-interactive', v); }
 
-  get selectable(): boolean  { return this.hasAttribute('data-selectable')  && this.dataset['selectable']  !== 'false'; }
-  set selectable(v: boolean) { if (v) { this.dataset['selectable'] = 'true'; } else { delete this.dataset['selectable']; } }
+  get selectable(): boolean  { return this.hasAttribute('data-selectable'); }
+  set selectable(v: boolean) { this.toggleAttribute('data-selectable', v); }
 
   get disabled(): boolean    { return this.hasAttribute('disabled'); }
   set disabled(v: boolean)   { if (v) { this.setAttribute('disabled', ''); } else { this.removeAttribute('disabled'); } }
@@ -289,8 +289,8 @@ export class SherpaContainer extends FloatingBehavior(ResizeBehavior(SherpaEleme
 
   /* ── Private card helpers ──────────────────────────────────────── */
 
-  #onMenuOpen  = (): void => { this.dataset['menuOpen'] = 'true'; };
-  #onMenuClose = (): void => { delete this.dataset['menuOpen']; };
+  #onMenuOpen  = (): void => { this.setAttribute('data-menu-open', ''); };
+  #onMenuClose = (): void => { this.removeAttribute('data-menu-open'); };
 
   #updateInteractive(): void {
     const focusable = this.interactive || this.selectable;

@@ -408,7 +408,7 @@ export class SherpaNav extends SherpaElement {
     }
     this.#persistQuickAccess('favorites');
     this.#syncSectionBadges();
-    this.#emit("nav-favorite-change", { itemId, label, favorite: on });
+    this.emit("nav-favorite-change", { itemId, label, favorite: on });
   }
 
   async addToRecent(itemId: string, label?: string, route?: string): Promise<void> {
@@ -472,7 +472,7 @@ export class SherpaNav extends SherpaElement {
     close.addEventListener("click", () => {
       const promo = this.$<HTMLElement>(".nav-promo");
       if (promo) promo.dataset["dismissed"] = "";
-      this.#emit("nav-promo-dismiss", {});
+      this.emit("nav-promo-dismiss", {});
     });
   }
 
@@ -629,12 +629,6 @@ export class SherpaNav extends SherpaElement {
 
   // ═══════════════════════ Private — Helpers ══════════════════════
 
-  #emit(name: string, detail: Record<string, unknown> = {}): void {
-    // composed:true so nav events cross the shadow boundary (sherpa-nav is
-    // slotted into sherpa-app-shell; app code listens on the light-DOM host).
-    this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail }));
-  }
-
   #clearAllActiveStates(): void {
     this.$$('[data-state="selected"]').forEach((el) => el.removeAttribute('data-state'));
   }
@@ -650,7 +644,7 @@ export class SherpaNav extends SherpaElement {
       settingsBack.addEventListener("click", (e) => {
         e.stopPropagation();
         this.exitSettings();
-        this.#emit("nav-settings", { active: false });
+        this.emit("nav-settings", { active: false });
       });
     }
 
@@ -662,7 +656,7 @@ export class SherpaNav extends SherpaElement {
         const details = e.target as HTMLElement | null;
         if (!details || !details.matches(".nav-section, .nav-subsection")) return;
         if ((details as HTMLDetailsElement).open && details.matches(".nav-section")) {
-          this.#emit("nav-section-expand", {
+          this.emit("nav-section-expand", {
             sectionId: details.dataset["sectionId"],
           });
         }
@@ -727,11 +721,11 @@ export class SherpaNav extends SherpaElement {
     });
     // Legacy buttons still wire up if a consumer template hasn't migrated yet.
     this.$(".nav-edit-confirm")?.addEventListener("click", () => {
-      this.#emit("nav-edit-confirm");
+      this.emit("nav-edit-confirm");
       this.mode = SherpaNav.MODES.DEFAULT;
     });
     this.$(".nav-edit-cancel")?.addEventListener("click", () => {
-      this.#emit("nav-edit-cancel");
+      this.emit("nav-edit-cancel");
       this.mode = SherpaNav.MODES.DEFAULT;
     });
   }
@@ -757,7 +751,7 @@ export class SherpaNav extends SherpaElement {
       e.stopPropagation();
       const sec = navItem.closest<HTMLElement>(".nav-section");
       if (navItem.dataset["itemId"]) {
-        this.#emit("nav-item-delete", {
+        this.emit("nav-item-delete", {
           itemId: navItem.dataset["itemId"],
           sectionId: sec?.dataset["sectionId"] || null,
         });
@@ -782,12 +776,12 @@ export class SherpaNav extends SherpaElement {
         // Toggle the secondary Settings navigation list (spec: the Settings
         // button swaps primary content for the Settings list and back).
         this.toggleSettings();
-        this.#emit("nav-settings", { active: this.isSettings });
+        this.emit("nav-settings", { active: this.isSettings });
         return;
       }
       this.#clearAllActiveStates();
       navItem.dataset["state"] = "selected";
-      this.#emit(`nav${navItem.dataset["navTarget"]}`);
+      this.emit(`nav${navItem.dataset["navTarget"]}`);
       return;
     }
 
@@ -816,7 +810,7 @@ export class SherpaNav extends SherpaElement {
         details?.dataset["sectionId"] ||
         details?.closest<HTMLElement>(".nav-section")?.dataset["sectionId"] ||
         null;
-      this.#emit("nav-item-click", {
+      this.emit("nav-item-click", {
         itemId: navItem.dataset["itemId"],
         sectionId: headerSectionId,
         route: navItem.dataset["route"],
@@ -830,7 +824,7 @@ export class SherpaNav extends SherpaElement {
     if (this.isSearching) this.endSearch();
     const leafSectionId =
       navItem.closest<HTMLElement>(".nav-section")?.dataset["sectionId"] || null;
-    this.#emit("nav-item-click", {
+    this.emit("nav-item-click", {
       itemId: navItem.dataset["itemId"],
       sectionId: leafSectionId,
       route: navItem.dataset["route"],
@@ -865,7 +859,7 @@ export class SherpaNav extends SherpaElement {
   #onPinnedChange(pinned: boolean): void {
     const pinBtn = this.$<HTMLElement>(".nav-pin-btn") as HTMLElement & { active?: boolean } | null;
     if (pinBtn) pinBtn.active = pinned;
-    this.#emit("nav-pin-change", { pinned });
+    this.emit("nav-pin-change", { pinned });
   }
 
   #onModeChange(newMode: string, oldMode: string): void {
@@ -876,7 +870,7 @@ export class SherpaNav extends SherpaElement {
       this.#applySearchFilter("");
     const editBtn = this.$<HTMLElement>(".nav-edit-btn") as HTMLElement & { active?: boolean } | null;
     if (editBtn) editBtn.active = newMode === SherpaNav.MODES.EDIT;
-    this.#emit("nav-mode-change", { mode: newMode, previousMode: oldMode });
+    this.emit("nav-mode-change", { mode: newMode, previousMode: oldMode });
   }
 
   // ═══════════════════ Private — Item Creation ══════════════════
@@ -941,7 +935,7 @@ export class SherpaNav extends SherpaElement {
         onReorder: (order) => {
           const filteredOrder = order.filter((id): id is string => id !== undefined);
           this.#persistGroupOrder(gi, filteredOrder);
-          this.#emit("nav-section-reorder", {
+          this.emit("nav-section-reorder", {
             groupIndex: gi,
             sectionOrder: filteredOrder,
           });
@@ -1027,7 +1021,7 @@ export class SherpaNav extends SherpaElement {
       if (order && order.length) this.#applyOrderToContainer(container, order);
     });
     removeKey(this.#orderStorageKey);
-    this.#emit('nav-edit-reset');
+    this.emit('nav-edit-reset');
   }
 
   // ═══════════════════ Private — Search Filter ══════════════════

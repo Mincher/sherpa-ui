@@ -36,7 +36,7 @@
   :where(:root) {
     --sherpa-surface-context-info-subtle-default:        var(--sherpa-color-info-200);
     --sherpa-surface-context-warning-subtle-default:     var(--sherpa-color-warning-200);
-    --sherpa-surface-context-error-subtle-default:       var(--sherpa-color-critical-200);
+    --sherpa-surface-context-critical-subtle-default:       var(--sherpa-color-critical-200);
     --sherpa-surface-context-success-subtle-default:     var(--sherpa-color-success-200);
     --sherpa-surface-context-default-subtle-default:     var(--sherpa-color-neutral-200);
     --sherpa-border-control-active-default:              var(--sherpa-color-brand-base);
@@ -88,21 +88,21 @@
   /* Status ──────────────────────────────────────────────────── */
 
   :where([data-status="critical"]) {
-    --_status-border:                      var(--sherpa-border-context-error-default);
+    --_status-border:                      var(--sherpa-border-context-critical-default);
     --_status-surface:                     var(--sherpa-surface-control-default);
     --_status-surface-hover:               var(--sherpa-surface-control-hover);
     --_status-surface-down:                var(--sherpa-surface-control-down);
-    --_status-surface-strong:              var(--sherpa-surface-context-error-strong-default);
-    --_status-surface-strong-hover:        var(--sherpa-surface-context-error-strong-hover);
-    --_status-surface-strong-down:         var(--sherpa-surface-context-error-strong-down);
-    --_status-surface-subtle:              var(--sherpa-surface-context-error-subtle-default);
-    --_status-surface-subtle-hover:        var(--sherpa-surface-context-error-subtle-hover);
-    --_status-surface-subtle-down:         var(--sherpa-surface-context-error-subtle-down);
-    --_status-text:                        var(--sherpa-content-context-error-on-color-subtle);
+    --_status-surface-strong:              var(--sherpa-surface-context-critical-strong-default);
+    --_status-surface-strong-hover:        var(--sherpa-surface-context-critical-strong-hover);
+    --_status-surface-strong-down:         var(--sherpa-surface-context-critical-strong-down);
+    --_status-surface-subtle:              var(--sherpa-surface-context-critical-subtle-default);
+    --_status-surface-subtle-hover:        var(--sherpa-surface-context-critical-subtle-hover);
+    --_status-surface-subtle-down:         var(--sherpa-surface-context-critical-subtle-down);
+    --_status-text:                        var(--sherpa-content-context-critical-on-color-subtle);
     --_status-text-on-color:               var(--sherpa-content-default-on-color-body);
-    --_status-icon:                        var(--sherpa-content-context-error-on-color-subtle);
+    --_status-icon:                        var(--sherpa-content-context-critical-on-color-subtle);
     --_status-icon-on-color:               var(--sherpa-content-default-on-color-body);
-    --_status-shadow:                      var(--sherpa-elevation-tint-error);
+    --_status-shadow:                      var(--sherpa-elevation-tint-critical);
   }
 
   :where([data-status="info"]) {

@@ -135,7 +135,7 @@ dd[data-status="success"] {
   color: var(--sherpa-content-context-success-default, #0f7b6c);
 }
 dd[data-status="critical"] {
-  color: var(--sherpa-content-context-error-default, #d13438);
+  color: var(--sherpa-content-context-critical-default, #d13438);
 }
 dd[data-status="warning"] {
   color: var(--sherpa-content-context-warning-default, #f78701);

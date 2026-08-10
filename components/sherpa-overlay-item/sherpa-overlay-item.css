@@ -16,7 +16,7 @@
   --_padding-y: var(--sherpa-space-xs, 8px);
   --_padding-x: var(--sherpa-space-xs, 8px);
   --_rounding: var(--sherpa-border-rounding-base, 4px);
-  --_text-secondary: var(--sherpa-content-default-secondary, #5c5c66);
+  --_text-secondary: var(--sherpa-content-default-secondary, #404047);
   --_font-sm: var(--sherpa-fonts-scale-sm, 12px);
 }
 :host(:hover),
@@ -97,12 +97,12 @@
   display: inline-flex;
 }
 :host([data-variant="danger"]) {
-  color: var(--sherpa-content-context-error-default, #c41337);
+  color: var(--sherpa-content-context-critical-default, #c41337);
 }
 :host([data-variant="danger"]:hover),
 :host([data-variant="danger"]:focus-visible) {
-  background-color: var(--sherpa-surface-context-error-subtle-default, #fbeaee);
-  color: var(--sherpa-content-context-error-default, #c41337);
+  background-color: var(--sherpa-surface-context-critical-subtle-default, #fbeaee);
+  color: var(--sherpa-content-context-critical-default, #c41337);
 }
 :host([data-variant="danger"][disabled]) {
   color: var(--sherpa-content-inactive-default, #5c5c66);

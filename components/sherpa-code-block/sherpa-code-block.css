@@ -109,7 +109,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--sherpa-content-default-secondary, #888);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 :host .copy-btn {
   flex-shrink: 0;
@@ -254,7 +254,7 @@
       display: block;
       counter-increment: linenumber;
       padding-inline-end: 0.8em;
-      color: var(--sherpa-content-default-secondary, #999);
+      color: var(--sherpa-content-default-secondary, #404047);
       font-size: 0.9em;
     }
   }

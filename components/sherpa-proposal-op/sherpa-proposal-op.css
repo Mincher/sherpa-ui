@@ -15,7 +15,7 @@
    Node ops use +/−/~; edge ops use arrow glyphs so they read as connections. */
 :host([data-op="add"])         .tag::after { content: "+"; color: var(--sherpa-content-context-success-default, #15803d); }
 :host([data-op="add-edge"])    .tag::after { content: "⇢"; color: var(--sherpa-content-context-success-default, #15803d); }
-:host([data-op="remove"])      .tag::after { content: "−"; color: var(--sherpa-content-context-error-default, #b91c1c); }
-:host([data-op="remove-edge"]) .tag::after { content: "⇥"; color: var(--sherpa-content-context-error-default, #b91c1c); }
+:host([data-op="remove"])      .tag::after { content: "−"; color: var(--sherpa-content-context-critical-default, #b91c1c); }
+:host([data-op="remove-edge"]) .tag::after { content: "⇥"; color: var(--sherpa-content-context-critical-default, #b91c1c); }
 :host([data-op="update"])      .tag::after { content: "~"; color: var(--sherpa-content-context-warning-default, #92400e); }
 :host .tag::after                          { content: "·"; } /* fallback */

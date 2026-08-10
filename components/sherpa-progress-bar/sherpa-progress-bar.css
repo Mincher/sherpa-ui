@@ -72,7 +72,7 @@
 :host .status {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   line-height: var(--sherpa-line-height-default, 1.4);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 :host([data-variant="indeterminate"]) .status {
   display: none;

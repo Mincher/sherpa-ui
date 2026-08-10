@@ -16,7 +16,7 @@
  * @slot avatar   — Custom avatar content. Suppresses the default icon.
  * @slot (default) — Bubble body content.
  *
- * @prop {string} role        — Getter/setter for data-role.
+ * @prop {string} chatRole    — Getter/setter for data-role ("user" | "ai").
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";
@@ -55,8 +55,8 @@ class SherpaChatMessage extends SherpaElement {
 
   /* ── public API ──────────────────────────────────────────── */
 
-  override get role(): string  { return this.dataset["role"] || "ai"; }
-  override set role(v: string) { this.dataset["role"] = v === "user" ? "user" : "ai"; }
+  get chatRole(): string  { return this.dataset["role"] || "ai"; }
+  set chatRole(v: string) { this.dataset["role"] = v === "user" ? "user" : "ai"; }
 }
 
 customElements.define("sherpa-chat-message", SherpaChatMessage);

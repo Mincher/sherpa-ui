@@ -116,7 +116,7 @@ summary {
   overscroll-behavior: contain;
   gap: var(--sherpa-space-xs, 8px);
   scrollbar-width: thin;
-  scrollbar-color: var(--sherpa-content-default-secondary, #6a6a75) transparent;
+  scrollbar-color: var(--sherpa-content-default-secondary, #404047) transparent;
   container-type: scroll-state;
   container-name: nav-scroller;
 }
@@ -132,7 +132,7 @@ summary {
   overscroll-behavior: contain;
   gap: var(--sherpa-space-xs, 8px);
   scrollbar-width: thin;
-  scrollbar-color: var(--sherpa-content-default-secondary, #6a6a75) transparent;
+  scrollbar-color: var(--sherpa-content-default-secondary, #404047) transparent;
 }
 .nav-settings-header {
   display: flex;
@@ -141,7 +141,7 @@ summary {
   padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
 }
 .nav-settings-title {
-  color: var(--sherpa-content-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #404047);
   letter-spacing: 0.06em;
 }
 .nav-settings-list {
@@ -266,7 +266,7 @@ summary {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: var(--sherpa-content-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #404047);
   white-space: nowrap;
   flex-shrink: 0;
 }

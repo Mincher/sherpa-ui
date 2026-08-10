@@ -15,8 +15,8 @@
  * @slot description — Description text below heading
  * @slot actions     — Action buttons on the right side
  *
- * @prop {string}  headingType — Getter/setter for data-heading-level
- * @prop {boolean} hasDivider  — Getter/setter for data-divider
+ * @prop {string}  headingLevel — Getter/setter for data-heading-level
+ * @prop {boolean} divider      — Getter/setter for data-divider (boolean presence)
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
@@ -60,11 +60,11 @@ export class SherpaSectionHeader extends SherpaElement {
   /* ── Public API ───────────────────────────────────────────────── */
 
 
-  get headingType(): string { return this.dataset["headingLevel"] || 'primary'; }
-  set headingType(v: string){ this.dataset["headingLevel"] = v; }
+  get headingLevel(): string { return this.dataset["headingLevel"] || 'primary'; }
+  set headingLevel(v: string){ this.dataset["headingLevel"] = v; }
 
-  get hasDivider(): boolean  { return this.dataset["divider"] === 'true'; }
-  set hasDivider(v: boolean) { this.dataset["divider"] = v ? 'true' : 'false'; }
+  get divider(): boolean  { return this.hasAttribute('data-divider'); }
+  set divider(v: boolean) { this.toggleAttribute('data-divider', v); }
 
   /* ── Private ──────────────────────────────────────────────────── */
 

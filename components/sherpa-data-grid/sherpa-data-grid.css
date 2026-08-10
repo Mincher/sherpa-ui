@@ -223,7 +223,7 @@
   height: var(--sherpa-size-2xl, 32px);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   transition: --transition-fast(background-color);
 }
 
@@ -260,7 +260,7 @@ th.header-cell[data-numeric] .header-content {
     padding-inline: var(--_cell-px);
     font-size: var(--sherpa-font-xs-size, 10px);
     line-height: var(--sherpa-font-xs-line-height, 16px);
-    color: var(--sherpa-content-default-secondary, #555);
+    color: var(--sherpa-content-default-secondary, #404047);
     font-weight: 400;
     text-align: start;
     vertical-align: middle;
@@ -526,7 +526,7 @@ td .bool-icon {
     color: var(--sherpa-content-context-success-default, #048142);
   }
   &[data-bool="false"] {
-    color: var(--sherpa-content-default-secondary, #5c5c66);
+    color: var(--sherpa-content-default-secondary, #404047);
   }
 }
 
@@ -613,7 +613,7 @@ tr.group-parent-row {
 
 .toggle-icon {
   font-size: 8px;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   transition: --transition-base(rotate);
 }
 
@@ -655,7 +655,7 @@ tr.group-parent-row[data-expanded] .toggle-icon {
   font-size: var(--sherpa-font-xs-size, 10px);
   font-weight: 400;
   line-height: var(--sherpa-fonts-scale-lg, 16px);
-  color: var(--sherpa-content-default-secondary, #464646);
+  color: var(--sherpa-content-default-secondary, #404047);
 
   &:not(:empty) {
     display: flex;

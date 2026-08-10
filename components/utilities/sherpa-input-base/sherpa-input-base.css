@@ -109,7 +109,7 @@
 
 .input-required {
   display: none;
-  color: var(--sherpa-content-context-error-default, #c41337);
+  color: var(--sherpa-content-context-critical-default, #c41337);
   margin-inline-start: 2px;
 }
 
@@ -174,7 +174,7 @@
 .input-body:has(.input-field[readonly]) i,
 .input-body:has(.input-field[readonly]) .input-field {
   /* Read-only text reads as secondary (theme owns light/dark, no light-dark()). */
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 
 /* Dim native date/time picker indicator in readonly state */
@@ -264,7 +264,7 @@
   display: block;
   margin: 0;
   padding: 0;
-  color: var(--sherpa-content-default-secondary, #6a6a7a);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 
 .input-description:has(.input-description-text:empty) {
@@ -297,7 +297,7 @@
   .input-control:has(.input-field:user-invalid)
   .status-indicator {
   display: flex;
-  color: var(--sherpa-content-context-error-default, #c41337);
+  color: var(--sherpa-content-context-critical-default, #c41337);
 }
 
 /* ── Status variants ────────────────────────────────────────────── */
@@ -346,7 +346,7 @@
  */
 
 :host(:not([novalidate])) .input-body:has(.input-field:user-invalid) {
-  border-color: var(--sherpa-border-context-error-default, #c41337);
+  border-color: var(--sherpa-border-context-critical-default, #c41337);
 }
 
 /* ── Validation message (status-coloured bar below input) ───────── */
@@ -384,7 +384,7 @@
   display: block;
   background: var(
     --_status-surface-strong,
-    var(--sherpa-surface-context-error-strong-default, #c41337)
+    var(--sherpa-surface-context-critical-strong-default, #c41337)
   );
 }
 
@@ -394,7 +394,7 @@
   display: block;
   margin: 0;
   padding: 0;
-  color: var(--sherpa-content-default-secondary, #6a6a7a);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 
 .input-helper:has(.input-helper-text:empty) {

@@ -48,7 +48,7 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   overflow: clip;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -61,7 +61,7 @@
   margin: 0;
   font-size: var(--sherpa-font-sm-size, 12px);
   line-height: var(--sherpa-font-sm-line-height, 16px);
-  color: var(--sherpa-content-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #404047);
   overflow: clip;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -112,10 +112,10 @@
     --_icon-color: var(--sherpa-content-context-warning-on-color-subtle, #a77205);
   }
   &[data-status="critical"] {
-    --_background-color: var(--sherpa-surface-context-error-subtle-default, #fff7f5);
-    --_border-color: var(--sherpa-border-context-error-default, #bf2c09);
-    --_text-color: var(--sherpa-content-context-error-on-color-subtle, #bf2c09);
-    --_icon-color: var(--sherpa-content-context-error-on-color-subtle, #bf2c09);
+    --_background-color: var(--sherpa-surface-context-critical-subtle-default, #fff7f5);
+    --_border-color: var(--sherpa-border-context-critical-default, #bf2c09);
+    --_text-color: var(--sherpa-content-context-critical-on-color-subtle, #bf2c09);
+    --_icon-color: var(--sherpa-content-context-critical-on-color-subtle, #bf2c09);
   }
   &[data-status="urgent"] {
     --_background-color: var(
@@ -128,7 +128,7 @@
   }
 }
 :host([data-trend="flat"]) .metric-delta {
-  color: var(--sherpa-content-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 :host(:not([data-sparkline])) .metric-sparkline {
   display: none;

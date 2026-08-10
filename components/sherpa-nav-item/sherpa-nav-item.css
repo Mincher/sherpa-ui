@@ -159,7 +159,7 @@
   cursor: pointer;
 }
 :host .nav-item-delete:hover {
-  color: var(--sherpa-content-context-error-default, #bf2c09);
+  color: var(--sherpa-content-context-critical-default, #bf2c09);
 }
 /*
  * !important is required here to beat the ::part(delete) rule in sherpa-nav.css
@@ -186,7 +186,7 @@
   pointer-events: none;
 }
 :host([data-badge-status="critical"]) {
-  --_dot-color: var(--sherpa-border-context-error-default, #bf2c09);
+  --_dot-color: var(--sherpa-border-context-critical-default, #bf2c09);
 }
 :host([data-badge-status="info"]) {
   --_dot-color: var(--sherpa-border-context-info-default, #06526f);
@@ -240,7 +240,7 @@
     font-weight: var(--sherpa-font-weight-semibold, 600);
   }
   .nav-promo-description {
-    color: var(--sherpa-content-default-secondary, #5c5c66);
+    color: var(--sherpa-content-default-secondary, #404047);
     &:empty {
       display: none;
     }

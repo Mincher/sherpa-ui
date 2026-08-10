@@ -92,7 +92,7 @@
   font-weight: 900;
   font-style: normal;
   font-size: 20px;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   flex-shrink: 0;
 }
 :host .drop-text {
@@ -117,7 +117,7 @@
 :host .constraints-text {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
   line-height: var(--sherpa-line-height-default, 1.4);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 :host .file-list {
   display: flex;
@@ -148,7 +148,7 @@
   font-weight: 900;
   font-style: normal;
   font-size: 16px;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 :host .file-info {
   flex: 1;
@@ -173,7 +173,7 @@
 }
 :host .file-size {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -207,19 +207,19 @@
 }
 :host .file-status-text {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 :host .file-item[data-state="ready"] .file-status-text {
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 :host .file-item[data-state="uploaded"] .file-status-text {
   color: var(--sherpa-content-context-success-default, #1a7a2e);
 }
 :host .file-item[data-state="failed"] .file-status-text {
-  color: var(--sherpa-content-context-error-default, #dd2c00);
+  color: var(--sherpa-content-context-critical-default, #dd2c00);
 }
 :host .file-item[data-state="failed"] .file-icon {
-  background: var(--sherpa-surface-context-error-subtle-default, #fef0ec);
+  background: var(--sherpa-surface-context-critical-subtle-default, #fef0ec);
 }
 :host .file-actions {
   display: flex;
@@ -292,11 +292,11 @@
   }
 }
 :host .remove-all-btn {
-  background: var(--sherpa-surface-context-error-subtle-default, #f8c4b9);
-  color: var(--sherpa-content-context-error-default, #dd2c00);
+  background: var(--sherpa-surface-context-critical-subtle-default, #f8c4b9);
+  color: var(--sherpa-content-context-critical-default, #dd2c00);
 
   &:hover {
-    background: var(--sherpa-surface-context-error-subtle-default, #f0a898);
+    background: var(--sherpa-surface-context-critical-subtle-default, #f0a898);
   }
 }
 :host .file-input {

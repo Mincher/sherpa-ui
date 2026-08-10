@@ -74,8 +74,8 @@ export class SherpaMessage extends SherpaElement {
   get status(): Status | null { return (this.dataset["status"] as Status) || null; }
   set status(v: Status | null) { if (v) { this.dataset["status"] = v; } else { delete this.dataset["status"]; } }
 
-  get dismissible(): boolean { return this.hasAttribute('data-dismissible') && this.dataset["dismissible"] !== 'false'; }
-  set dismissible(v: boolean){ if (v) { this.dataset["dismissible"] = 'true'; } else { this.removeAttribute('data-dismissible'); } }
+  get dismissible(): boolean { return this.hasAttribute('data-dismissible'); }
+  set dismissible(v: boolean){ this.toggleAttribute('data-dismissible', v); }
 
   dismiss(): void {
     this.emit('close');

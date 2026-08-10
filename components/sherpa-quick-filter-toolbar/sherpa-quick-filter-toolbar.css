@@ -194,7 +194,7 @@ slot[name="presets"] {
     var(--sherpa-border-control-secondary-default, #9a9aad);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   white-space: nowrap;
@@ -258,7 +258,7 @@ slot[name="presets"] {
   border: none;
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   font-size: var(--sherpa-fonts-scale-base, 14px);
   cursor: pointer;
   flex-shrink: 0;
@@ -266,7 +266,7 @@ slot[name="presets"] {
 
 .action-btn:hover {
   background: var(--sherpa-surface-container-secondary-default, #fafaff);
-  color: var(--sherpa-content-default-base, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
 }
 
 .action-btn:focus-visible {
@@ -281,7 +281,7 @@ slot[name="presets"] {
 
 /* Favorite = filled star when pressed. */
 .action-btn.fave-btn[aria-pressed="true"] {
-  color: var(--sherpa-content-status-warning-base, #f5a623);
+  color: var(--sherpa-content-context-warning-default, #f5a623);
 }
 
 /* Save-n-Fave cluster: favorite · Save · dropdown · timestamp. */
@@ -302,7 +302,7 @@ slot[name="presets"] {
     var(--sherpa-border-container-default, #d5d5dc);
   border-radius: var(--sherpa-border-rounding-base, 4px);
   background: var(--sherpa-surface-control-secondary-default, #fff);
-  color: var(--sherpa-content-default-base, #2e2e33);
+  color: var(--sherpa-content-default-body, #2e2e33);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   white-space: nowrap;
@@ -322,7 +322,7 @@ slot[name="presets"] {
 
 .save-timestamp {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-content-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #404047);
   white-space: nowrap;
   margin-inline-start: var(--sherpa-space-2xs, 4px);
 }

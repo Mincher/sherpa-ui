@@ -49,7 +49,7 @@
 
 :host .group-required {
   display: none;
-  color: var(--sherpa-content-context-error-default, #c41337);
+  color: var(--sherpa-content-context-critical-default, #c41337);
   margin-inline-start: 2px;
 }
 
@@ -62,7 +62,7 @@
 :host .group-description,
 :host .group-helper {
   margin: 0;
-  color: var(--sherpa-content-default-secondary, #6a6a7a);
+  color: var(--sherpa-content-default-secondary, #404047);
 
   &:empty {
     display: none;
@@ -70,7 +70,7 @@
 }
 
 :host([data-status]) .group-helper {
-  color: var(--_status-text, var(--sherpa-content-default-secondary, #6a6a7a));
+  color: var(--_status-text, var(--sherpa-content-default-secondary, #404047));
 }
 
 /* ── Options layout ──────────────────────────────────────────────── */

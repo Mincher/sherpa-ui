@@ -12,7 +12,7 @@
  * @attr {boolean} data-stacked        — Stack bars by segment (legacy alias for data-mode="stacked")
  * @attr {enum}    data-mode           — single | grouped | stacked | full-stacked (multi-series layout;
  *                                       defaults to grouped for multi-series, single for one series)
- * @attr {string}  data-title          — Chart heading text
+ * @attr {string}  data-label          — Chart heading text
  * @attr {enum}    data-orientation     — horizontal | vertical (auto-selected)
  * @attr {string}  data-segment-field  — Field for bar grouping
  * @attr {enum}    data-segment-mode    — Segment display mode
@@ -124,7 +124,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
       "data-loading",
       "data-stacked",
       "data-mode",
-      "data-title",
+      "data-label",
       "data-orientation",
       "data-segment-field",
       "data-segment-mode",
@@ -207,7 +207,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     super.onAttributeChanged(name, oldValue, newValue);
 
     switch (name) {
-      case "data-title": {
+      case "data-label": {
         const titleEl = this.$(".header-title");
         if (titleEl) titleEl.textContent = newValue || "";
         const layout = this.$<HTMLElement>('.chart-layout');
@@ -669,7 +669,7 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #updateAriaLabel(categories: string[], series: BarSeries[]): void {
-    const title = this.getAttribute('data-title') || 'Bar chart';
+    const title = this.getAttribute('data-label') || 'Bar chart';
     const layout = this.$<HTMLElement>('.chart-layout');
     const summary = this.$<HTMLElement>('.chart-sr-summary');
     if (layout) layout.setAttribute('aria-label', title);

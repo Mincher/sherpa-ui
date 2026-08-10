@@ -93,7 +93,7 @@
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 2px);
   background: transparent;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   cursor: pointer;
   font-size: 14px;
   padding: var(--sherpa-space-xs, 8px) 0;
@@ -212,7 +212,7 @@
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 2px);
   background: transparent;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   cursor: pointer;
   font-size: 14px;
   padding: 0;
@@ -238,7 +238,7 @@
   align-items: center;
   gap: var(--sherpa-space-sm, 12px);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   min-height: 20px;
 }
 :host(:not([data-has-metadata])) .metadata {
@@ -296,7 +296,7 @@
   display: none;
   padding: var(--sherpa-space-lg, 20px) var(--sherpa-space-base, 16px);
   text-align: center;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
 }
 :host([data-empty-visible]) .panel-empty {
@@ -361,7 +361,7 @@
   width: var(--sherpa-size-2xl, 32px);
   height: var(--sherpa-size-2xl, 32px);
   border-radius: var(--sherpa-border-rounding-sm, 2px);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   font-size: var(--sherpa-fonts-scale-sm, 12px);
   transition: --transition-fast(background-color), --transition-fast(color);
 }

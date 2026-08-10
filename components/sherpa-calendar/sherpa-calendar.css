@@ -160,7 +160,7 @@ sherpa-container.panel-card[data-variant="fit"] {
 
 .cal-day[data-selected="true"] {
   background: var(--sherpa-surface-control-primary-default, #3c5edd);
-  color: var(--sherpa-content-on-color-body, #fff);
+  color: var(--sherpa-content-default-on-color-body, #fff);
   border-color: transparent;
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
@@ -219,7 +219,7 @@ sherpa-container.panel-card[data-variant="fit"] {
 
 .cal-cell[data-selected] {
   background: var(--sherpa-surface-control-primary-default, #3c5edd);
-  color: var(--sherpa-content-on-color-body, #fff);
+  color: var(--sherpa-content-default-on-color-body, #fff);
   border-color: transparent;
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }

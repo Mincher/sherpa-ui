@@ -32,10 +32,10 @@
  * @slot heading  — Custom heading content (replaces attribute-driven title)
  * @slot footer   — Footer action content (inside sherpa-container-footer)
  *
- * @fires open — Fired when dialog is opened
+ * @fires dialog-open — Fired when dialog is opened
  *   bubbles: true, composed: true
  *   detail: { }
- * @fires close — Fired when dialog is closed
+ * @fires dialog-close — Fired when dialog is closed
  *   bubbles: true, composed: true
  *   detail: { }
  * @fires dialog-finish — Fired when the final page of a wizard dialog is confirmed
@@ -96,7 +96,7 @@ export class SherpaDialog extends PageNavigationMixin(SherpaElement) {
     // Native <dialog> fires "close" when closed by .close() or Escape
     dialog?.addEventListener('close', () => {
       delete this.dataset["open"];
-      this.emit('close');
+      this.emit('dialog-close');
     });
 
     // Click on ::backdrop (detected as click on <dialog> itself) closes
@@ -188,7 +188,7 @@ export class SherpaDialog extends PageNavigationMixin(SherpaElement) {
     const dialog = this.$<HTMLDialogElement>('.dialog');
     if (dialog && !dialog.open) {
       dialog.showModal();
-      this.emit('open');
+      this.emit('dialog-open');
     }
   }
 

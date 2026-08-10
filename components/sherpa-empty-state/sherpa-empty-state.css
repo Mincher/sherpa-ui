@@ -106,7 +106,7 @@
 :host .sherpa-empty-state__small-print {
   display: none;
   margin: 0;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   text-align: center;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;

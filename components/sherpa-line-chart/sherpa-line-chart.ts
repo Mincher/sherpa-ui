@@ -9,7 +9,7 @@
  *   (data-variant="area") for cumulative totals or filled ranges. Supports multi-series with
  *   up to 8 colour-coded lines.
  *
- * @attr {string}  data-title          — Chart heading text
+ * @attr {string}  data-label          — Chart heading text
  * @attr {boolean} data-loading        — Show loading state
  * @attr {enum}    data-variant         — line | area | stacked | full-stacked
  *                                        (stacked variants accumulate series; full-stacked normalises to 100%)
@@ -77,7 +77,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
-      'data-title',
+      'data-label',
       'data-loading',
       'data-variant',
       'data-segment-field',
@@ -143,7 +143,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
-    if (name === 'data-title') {
+    if (name === 'data-label') {
       this.#syncTitle();
       const layout = this.$<HTMLElement>('.chart-layout');
       if (layout) layout.setAttribute('aria-label', newValue || 'Line chart');
@@ -574,7 +574,7 @@ export class SherpaLineChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #updateAriaLabel(labels: string[], series: { name: string }[]): void {
-    const title = this.getAttribute('data-title') || 'Line chart';
+    const title = this.getAttribute('data-label') || 'Line chart';
     const layout = this.$<HTMLElement>('.chart-layout');
     const summary = this.$<HTMLElement>('.chart-sr-summary');
     if (layout) layout.setAttribute('aria-label', title);

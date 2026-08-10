@@ -18,7 +18,7 @@
  *   overflow menu; the menu-select event bubbles through the header's shadow root into the
  *   container's ancestors without re-dispatching.
  *
- * @attr {string}  data-title          — Heading text
+ * @attr {string}  data-label          — Heading text
  * @attr {string}  data-description    — Secondary text (hidden when empty)
  * @attr {boolean} data-open-external  — Show the open-external button
  * @attr {boolean} data-menu-button    — Show the overflow menu button
@@ -41,7 +41,7 @@ export class SherpaContainerHeader extends SherpaElement {
   static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
-      "data-title",
+      "data-label",
       "data-description",
     ];
   }
@@ -59,14 +59,14 @@ export class SherpaContainerHeader extends SherpaElement {
   }
 
   override onAttributeChanged(name: string): void {
-    if (name === "data-title") this.#syncTitle();
+    if (name === "data-label") this.#syncTitle();
     if (name === "data-description") this.#syncDescription();
   }
 
   /* ── Private sync ──────────────────────────────────────────── */
 
   #syncTitle(): void {
-    if (this.els.title) this.els.title.textContent = this.dataset["title"] || "";
+    if (this.els.title) this.els.title.textContent = this.dataset["label"] || "";
   }
 
   #syncDescription(): void {

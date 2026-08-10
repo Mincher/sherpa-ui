@@ -6,7 +6,7 @@
  * hole is a smaller circle overlay. Pie mode removes the hole.
  *
  * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-title]          Chart heading text
+ * @attr {string}  [data-label]          Chart heading text
  * @attr {string}  [data-inner-label]    Centre big text (e.g. "100")
  * @attr {string}  [data-inner-sublabel] Centre small text (e.g. "TOTAL")
  * @attr {boolean} [data-loading]        Dims chart while loading
@@ -45,7 +45,7 @@
   align-items: center;
   width: 100%;
 }
-:host([data-title]) .chart-header {
+:host([data-label]) .chart-header {
   display: flex;
 }
 :host .chart-title {
@@ -56,7 +56,7 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -65,7 +65,7 @@
   display: none;
   flex-shrink: 0;
 }
-:host([data-title]) .menu-button {
+:host([data-label]) .menu-button {
   display: inline-flex;
 }
 :host sherpa-filter-bar {
@@ -146,7 +146,7 @@
   display: none;
   font-size: 11px;
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

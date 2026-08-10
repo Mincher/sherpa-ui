@@ -17,6 +17,10 @@
  * @attr {string} data-value    Optional new value the op sets (for add/update ops)
  *
  * @slot — Label text describing the change
+ *
+ * @note CSS-only attribute pattern: data-op, data-target, data-field, and data-value are not
+ *   observed or reactive in JS. They are read exclusively by CSS attribute selectors for styling
+ *   (icon colour-coding, op type indicators). No observedAttributes override is present by design.
  */
 
 import { SherpaElement } from "../utilities/sherpa-element/sherpa-element.js";

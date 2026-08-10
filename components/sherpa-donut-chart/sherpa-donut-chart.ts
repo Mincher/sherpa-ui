@@ -11,7 +11,7 @@
  *   or be placed inside a parent with `container-type: size` and fixed width+height. A parent
  *   with only `container-type: inline-size` produces a zero-height chart.
  *
- * @attr {string}  data-title          — Chart heading text
+ * @attr {string}  data-label          — Chart heading text
  * @attr {string}  data-inner-label    — Centre big text
  * @attr {string}  data-inner-sublabel — Centre small text
  * @attr {boolean} data-loading        — Show loading state
@@ -71,7 +71,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
-      'data-title',
+      'data-label',
       'data-inner-label',
       'data-inner-sublabel',
       'data-loading',
@@ -122,7 +122,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
     if (oldValue === newValue) return;
     super.onAttributeChanged(name, oldValue, newValue);
     switch (name) {
-      case 'data-title': {
+      case 'data-label': {
         this.#syncTitle();
         const layout = this.$<HTMLElement>('.chart-layout');
         if (layout) layout.setAttribute('aria-label', newValue || 'Donut chart');
@@ -365,7 +365,7 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
   }
 
   #updateAriaLabel(segments: DonutDatum[], total: number): void {
-    const title = this.getAttribute('data-title') || 'Donut chart';
+    const title = this.getAttribute('data-label') || 'Donut chart';
     const layout = this.$<HTMLElement>('.chart-layout');
     const summary = this.$<HTMLElement>('.chart-sr-summary');
     if (layout) layout.setAttribute('aria-label', title);

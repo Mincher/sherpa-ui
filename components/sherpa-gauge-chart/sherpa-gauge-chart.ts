@@ -6,7 +6,7 @@
  *   usage, score out of 100). The series variant (data-variant="series") divides the arc into
  *   coloured threshold segments — use it to show red/amber/green performance zones.
  *
- * @attr {string}  data-title   — Chart heading text
+ * @attr {string}  data-heading — Chart heading text (data-label is reserved for the value label below the dial)
  * @attr {number}  data-value   — Numeric value 0–100
  * @attr {string}  data-min     — Min range label (default: "0%")
  * @attr {string}  data-max     — Max range label (default: "100%")
@@ -45,7 +45,7 @@ export class SherpaGaugeChart extends SherpaElement {
   static override get observedAttributes(): string[] {
     return [
       ...super.observedAttributes,
-      'data-title',
+      'data-heading',
       'data-value',
       'data-min',
       'data-max',
@@ -84,7 +84,7 @@ export class SherpaGaugeChart extends SherpaElement {
 
   override onAttributeChanged(name: string): void {
     switch (name) {
-      case 'data-title': this.#syncTitle(); break;
+      case 'data-heading': this.#syncTitle(); break;
       case 'data-value': this.#syncValue(); break;
       case 'data-min':
       case 'data-max':   this.#syncRange(); break;
@@ -109,7 +109,7 @@ export class SherpaGaugeChart extends SherpaElement {
 
   #syncTitle(): void {
     if (this.#titleEl) {
-      this.#titleEl.textContent = this.dataset["title"] || '';
+      this.#titleEl.textContent = this.dataset["heading"] || '';
     }
   }
 

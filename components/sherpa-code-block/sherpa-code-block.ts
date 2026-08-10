@@ -230,7 +230,7 @@ export class SherpaCodeBlock extends SherpaElement {
     this.#detectedLanguage = this.#detectLanguage(codeContent, requestedLanguage);
 
     // Emit detection event
-    this.#emit('code-language-detected', {
+    this.emit('code-language-detected', {
       detected: this.#detectedLanguage,
       requested: requestedLanguage,
       confidence: this.#detectionConfidence(this.#detectedLanguage),
@@ -329,7 +329,7 @@ export class SherpaCodeBlock extends SherpaElement {
       this.#highlightError = `Failed to load syntax highlighter: ${(err as Error).message}`;
       this.dataset["highlightError"] = this.#highlightError;
 
-      this.#emit('code-highlight-error', {
+      this.emit('code-highlight-error', {
         language: this.#detectedLanguage,
         error: this.#highlightError,
         fallbackToPlaintext: true,
@@ -481,7 +481,7 @@ export class SherpaCodeBlock extends SherpaElement {
       }
 
       // Emit success event
-      this.#emit('code-copied', {
+      this.emit('code-copied', {
         language: this.#detectedLanguage,
         codeLength: code.length,
         success: true,
@@ -508,18 +508,6 @@ export class SherpaCodeBlock extends SherpaElement {
     }
   }
 
-  /**
-   * Emit custom event.
-   */
-  #emit(name: string, detail: unknown): void {
-    this.dispatchEvent(
-      new CustomEvent(name, {
-        bubbles: true,
-        composed: true,
-        detail,
-      })
-    );
-  }
 }
 
 customElements.define('sherpa-code-block', SherpaCodeBlock);

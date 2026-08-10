@@ -11,7 +11,7 @@
  *   data-action-label — optional inline link text
  *   data-action-href  — optional link href
  *   data-action-icon  — FA classes for trailing link icon
- *   data-dismissible  — presence shows close button
+ *   data-dismissible  — boolean presence: shows close button
  *   data-density      — compact | comfortable
  */
 
@@ -118,6 +118,6 @@
   margin-inline-start: auto;
   margin-block: calc((var(--sherpa-font-base-line-height, 20px) - var(--sherpa-size-lg, 24px)) / 2);
 }
-:host([data-dismissible]:not([data-dismissible="false"])) .message-close {
+:host([data-dismissible]) .message-close {
   display: inline-flex;
 }

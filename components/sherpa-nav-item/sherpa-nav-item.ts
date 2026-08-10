@@ -8,9 +8,8 @@
  *   window.__sherpaNavIcons.
  *
  * @attr {string}  data-icon      — FontAwesome icon class (e.g. "fa-home")
- * @attr {string}  data-icon-svg  — Inline SVG markup string. Takes precedence over data-icon.
- *                                    Use fill="currentColor" inside the SVG to inherit nav color.
- * @attr {string}  data-svg-icon  — Key into window.__sherpaNavIcons registry; resolved to data-icon-svg.
+ * @attr {string}  data-icon-svg  — Inline SVG markup string or registry key (window.__sherpaNavIcons).
+ *                                    Takes precedence over data-icon. Use fill="currentColor" inside SVG.
  * @attr {string}  data-badge     — Badge text rendered via internal sherpa-tag
  * @attr {enum}    data-badge-status — Badge status (critical | info | success | warning | urgent | brand). Defaults to "success".
  * @attr {enum}    data-variant  — section | subsection | child
@@ -48,7 +47,7 @@ export class SherpaNavItem extends SherpaElement {
   static override get htmlUrl(): string { return new URL('./sherpa-nav-item.html', import.meta.url).href; }
 
   static override get observedAttributes(): string[] {
-    return [...super.observedAttributes, 'data-icon', 'data-icon-svg', 'data-svg-icon', 'data-badge', 'data-badge-status', 'data-type', 'data-description'];
+    return [...super.observedAttributes, 'data-icon', 'data-icon-svg', 'data-badge', 'data-badge-status', 'data-type', 'data-description'];
   }
 
   override get templateId(): string { return this.dataset["type"] === 'promo' ? 'promo' : 'item'; }
@@ -68,7 +67,7 @@ export class SherpaNavItem extends SherpaElement {
       });
       return;
     }
-    if (name === 'data-icon' || name === 'data-icon-svg' || name === 'data-svg-icon') this.#syncIcon();
+    if (name === 'data-icon' || name === 'data-icon-svg') this.#syncIcon();
     if (name === 'data-badge' || name === 'data-badge-status') this.#syncBadge();
     if (name === 'data-description') this.#syncDescription();
   }
@@ -88,10 +87,10 @@ export class SherpaNavItem extends SherpaElement {
     // template, so we only ever update it here — never build it.
     const inner = this.$('.nav-item-icon-inner');
     if (!inner) return;
-    // Resolve registry key (data-svg-icon) → data-icon-svg if present.
-    const svgKey = this.dataset["svgIcon"];
+    // data-icon-svg may be an inline SVG string or a key into window.__sherpaNavIcons.
+    const iconSvgAttr = this.dataset["iconSvg"] || '';
     const registry = (typeof window !== 'undefined') ? window.__sherpaNavIcons : null;
-    const svg = this.dataset["iconSvg"] || (svgKey && registry && registry[svgKey]) || '';
+    const svg = (registry && registry[iconSvgAttr]) || iconSvgAttr;
     if (svg) {
       // Inline SVG mode — replace inner contents with raw SVG markup.
       inner.innerHTML = svg;

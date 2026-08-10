@@ -5,7 +5,7 @@
  * Host attributes:
  *   data-heading-level — primary (default) | secondary | tertiary
  *   data-density        — default | compact | comfortable
- *   data-divider        — Show bottom divider (true | false)
+ *   data-divider        — boolean presence: show bottom divider
  */
 
 :host {
@@ -48,7 +48,7 @@
   --_heading-text-transform: uppercase;
   --_heading-letter-spacing: 0.5px;
   --_heading-line-height: var(--sherpa-fonts-scale-lg, 16px);
-  --_heading-color: var(--sherpa-content-default-secondary, #6a6a75);
+  --_heading-color: var(--sherpa-content-default-secondary, #404047);
 }
 :host([data-density="compact"]) {
   --_content-gap: var(--sherpa-space-sm, 12px);
@@ -103,7 +103,7 @@
 }
 :host .header-description {
   display: none;
-  color: var(--sherpa-content-default-secondary, #6a6a75);
+  color: var(--sherpa-content-default-secondary, #404047);
 
   &[data-has-content] {
     display: block;
@@ -126,6 +126,6 @@
   border-top: var(--sherpa-border-width-base, 1px) solid
     var(--sherpa-border-container-subtle, #f0f0f5);
 }
-:host([data-divider="true"]) .section-header-divider {
+:host([data-divider]) .section-header-divider {
   display: block;
 }

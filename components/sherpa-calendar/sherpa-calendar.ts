@@ -19,7 +19,7 @@
  *   bubbles: true, composed: true
  *   detail: { value: string }
  *
- * @fires rangeselect — Complete range selected (range mode)
+ * @fires range-select — Complete range selected (range mode)
  *   bubbles: true, composed: true
  *   detail: { start: string, end: string, startAsDate: Temporal.PlainDate|null, endAsDate: Temporal.PlainDate|null }
  *
@@ -303,7 +303,7 @@ export class SherpaCalendar extends SherpaElement {
     this.dataset['valueEnd'] = iso;
     this.#renderCalendar();
 
-    this.dispatchEvent(new CustomEvent('rangeselect', {
+    this.dispatchEvent(new CustomEvent('range-select', {
       bubbles: true,
       composed: true,
       detail: {

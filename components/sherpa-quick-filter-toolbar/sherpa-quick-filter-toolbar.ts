@@ -36,20 +36,20 @@
  * @slot (default) — User-added dynamic filter chips
  * @slot actions   — Reset / settings / save actions
  *
- * @fires filter-change            — bubbles, composed · detail: { filters: FilterSpec[] }
- * @fires filter-clear             — bubbles, composed · detail: none
- * @fires container-filter-change  — bubbles, composed · detail: { filters: FilterSpec[] }
- * @fires global-filter-change     — document broadcast (no bubbles) when data-global · detail: { filters }
- * @fires view-menu-open           — (view scope) leading view chip clicked · detail: { views, activeViewId }
- * @fires view-change              — (view scope) active view changed · detail: { viewId, view }
- * @fires view-save                — (view scope) Save clicked · detail: { viewId }
- * @fires view-save-menu           — (view scope) Save dropdown clicked · detail: { viewId }
- * @fires view-favorite            — (view scope) Favorite toggled · detail: { viewId, favorite }
- * @fires view-overflow            — (view scope) Overflow clicked · detail: { viewId }
- * @fires filter-reset             — (view scope) Reset clicked · detail: none
- * @fires filter-settings          — (view scope) Settings clicked · detail: none
- * @fires ai-filter-request        — (view scope) AI recommend clicked · detail: { viewId }
- * @fires data-refresh             — (view scope) Refresh clicked · detail: none
+ * @fires quick-filter-toolbar-filter-change    — bubbles, composed · detail: { filters: FilterSpec[] }
+ * @fires quick-filter-toolbar-filter-clear     — bubbles, composed · detail: none
+ * @fires container-filter-change               — bubbles, composed · detail: { filters: FilterSpec[] }
+ * @fires global-filter-change                  — document broadcast (no bubbles) when data-global · detail: { filters }
+ * @fires quick-filter-toolbar-view-menu-open   — (view scope) leading view chip clicked · detail: { views, activeViewId }
+ * @fires quick-filter-toolbar-view-change      — (view scope) active view changed · detail: { viewId, view }
+ * @fires quick-filter-toolbar-view-save        — (view scope) Save clicked · detail: { viewId }
+ * @fires quick-filter-toolbar-view-save-menu   — (view scope) Save dropdown clicked · detail: { viewId }
+ * @fires quick-filter-toolbar-view-favorite    — (view scope) Favorite toggled · detail: { viewId, favorite }
+ * @fires quick-filter-toolbar-view-overflow    — (view scope) Overflow clicked · detail: { viewId }
+ * @fires quick-filter-toolbar-filter-reset     — (view scope) Reset clicked · detail: none
+ * @fires quick-filter-toolbar-filter-settings  — (view scope) Settings clicked · detail: none
+ * @fires quick-filter-toolbar-ai-filter-request — (view scope) AI recommend clicked · detail: { viewId }
+ * @fires quick-filter-toolbar-data-refresh     — (view scope) Refresh clicked · detail: none
  *
  * @method getFilters()                       — Returns the current FilterSpec[] (empty when the toggle is off)
  * @method setViews(views, activeId?)         — (view scope) Set selectable views: [{ id, label, badge? }]
@@ -893,38 +893,38 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     switch (action) {
       case "reset":
         this.#clearAll();
-        this.emit("filter-reset", {});
+        this.emit("quick-filter-toolbar-filter-reset", {});
         break;
       case "favorite": {
         const on = btn.getAttribute("aria-pressed") !== "true";
         btn.setAttribute("aria-pressed", String(on));
-        this.emit("view-favorite", { viewId: this.#activeViewId, favorite: on });
+        this.emit("quick-filter-toolbar-view-favorite", { viewId: this.#activeViewId, favorite: on });
         break;
       }
       case "ai":
-        this.emit("ai-filter-request", { viewId: this.#activeViewId });
+        this.emit("quick-filter-toolbar-ai-filter-request", { viewId: this.#activeViewId });
         break;
       case "save":
-        this.emit("view-save", { viewId: this.#activeViewId });
+        this.emit("quick-filter-toolbar-view-save", { viewId: this.#activeViewId });
         break;
       case "save-menu":
-        this.emit("view-save-menu", { viewId: this.#activeViewId });
+        this.emit("quick-filter-toolbar-view-save-menu", { viewId: this.#activeViewId });
         break;
       case "settings":
-        this.emit("filter-settings", {});
+        this.emit("quick-filter-toolbar-filter-settings", {});
         break;
       case "refresh":
-        this.emit("data-refresh", {});
+        this.emit("quick-filter-toolbar-data-refresh", {});
         break;
       case "overflow":
-        this.emit("view-overflow", { viewId: this.#activeViewId });
+        this.emit("quick-filter-toolbar-view-overflow", { viewId: this.#activeViewId });
         break;
     }
   };
 
   /** The leading view chip was clicked — request the view picker menu. */
   #onViewChipClick = (): void => {
-    this.emit("view-menu-open", { views: this.#views, activeViewId: this.#activeViewId });
+    this.emit("quick-filter-toolbar-view-menu-open", { views: this.#views, activeViewId: this.#activeViewId });
   };
 
   /** Reflect the active view onto the leading chip (label + badge + active state). */
@@ -955,7 +955,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!this.#views.some((v) => v.id === id)) return;
     this.#activeViewId = id;
     this.#syncViewChip();
-    this.emit("view-change", { viewId: id, view: this.#views.find((v) => v.id === id) });
+    this.emit("quick-filter-toolbar-view-change", { viewId: id, view: this.#views.find((v) => v.id === id) });
   }
 
   /** The currently active view id (or null). */
@@ -983,7 +983,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     this.removeAttribute("data-active");
     this.#populateAddMenu();
-    this.dispatchEvent(new CustomEvent("filter-clear", { bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent("quick-filter-toolbar-filter-clear", { bubbles: true, composed: true }));
     this.#dispatchContainerFilterChange([]);
     this.#dispatchGlobalFilterChange([]);
   }
@@ -1026,7 +1026,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#syncingSort || this.hasAttribute("data-syncing")) return;
     const filters = this.getFilters();
     this.dispatchEvent(
-      new CustomEvent("filter-change", { bubbles: true, composed: true, detail: { filters } }),
+      new CustomEvent("quick-filter-toolbar-filter-change", { bubbles: true, composed: true, detail: { filters } }),
     );
     this.#dispatchContainerFilterChange(filters);
     this.#dispatchGlobalFilterChange(filters);

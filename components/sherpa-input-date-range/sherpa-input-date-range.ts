@@ -49,6 +49,8 @@ export class SherpaInputDateRange extends SherpaInputBase {
       ...super.observedAttributes,
       "data-value-start",
       "data-value-end",
+      "data-open-start",
+      "data-open-end",
       "min",
       "max",
     ];
@@ -155,6 +157,24 @@ export class SherpaInputDateRange extends SherpaInputBase {
         this.#syncValues();
         this.#syncStartTrigger();
         this.#syncEndTrigger();
+        break;
+      case "data-open-start":
+        if (newValue !== null) {
+          this.#renderStartCalendar();
+          this.$(".trigger-start")?.setAttribute("aria-expanded", "true");
+          this.#positionPopup('.popup-start', '.trigger-start');
+        } else {
+          this.$(".trigger-start")?.setAttribute("aria-expanded", "false");
+        }
+        break;
+      case "data-open-end":
+        if (newValue !== null) {
+          this.#renderEndCalendar();
+          this.$(".trigger-end")?.setAttribute("aria-expanded", "true");
+          this.#positionPopup('.popup-end', '.trigger-end');
+        } else {
+          this.$(".trigger-end")?.setAttribute("aria-expanded", "false");
+        }
         break;
       case "min":
       case "max":

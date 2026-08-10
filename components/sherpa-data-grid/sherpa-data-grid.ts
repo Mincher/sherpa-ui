@@ -21,19 +21,19 @@
  *
  * @slot toolbar-leading — Consumer-provided primary action for toolbar
  *
- * @fires selection-change
+ * @fires grid-selection-change
  *   bubbles: true
  *   detail: { selected: string[], count: number }
- * @fires sort-change
+ * @fires grid-sort-change
  *   bubbles: true
  *   detail: { field: string, direction: "asc" | "desc" }
  * @fires page-change
  *   bubbles: true
  *   detail: { page: number, pageSize: number }
- * @fires groupexpand
+ * @fires group-expand
  *   bubbles: true
  *   detail: { groupValue: string, field: string }
- * @fires groupcollapse
+ * @fires group-collapse
  *   bubbles: true
  *   detail: { groupValue: string, field: string }
  * @fires row-action
@@ -1178,7 +1178,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
       } else {
         this.#expandedGroups.delete(group.label);
       }
-      const eventName = expanding ? "groupexpand" : "groupcollapse";
+      const eventName = expanding ? "group-expand" : "group-collapse";
       this.dispatchEvent(
         new CustomEvent(eventName, {
           bubbles: true,
@@ -1256,7 +1256,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     }
 
     this.dispatchEvent(
-      new CustomEvent("sort-change", {
+      new CustomEvent("grid-sort-change", {
         bubbles: true,
         detail: { field, direction: newDir },
       }),
@@ -1556,7 +1556,7 @@ class SherpaDataGrid extends ContentAttributesMixin(SherpaElement) {
     const hasSelection = this.#selectedRows.size > 0;
     this.toggleAttribute("data-has-selection", hasSelection);
     this.dispatchEvent(
-      new CustomEvent("selection-change", {
+      new CustomEvent("grid-selection-change", {
         bubbles: true,
         detail: {
           selected: Array.from(this.#selectedRows),

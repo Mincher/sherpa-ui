@@ -7,7 +7,7 @@
  * via calc() and renders clip-path polygons for stroke and fill.
  *
  * ── Data attributes ───────────────────────────────────────────
- * @attr {string}  [data-title]    Chart heading text
+ * @attr {string}  [data-label]    Chart heading text
  * @attr {boolean} [data-loading]  Dims chart while loading
  * @attr {string}  [data-variant]  line (default) | area
  *
@@ -53,7 +53,7 @@
   display: none;
   align-items: center;
 }
-:host([data-title]) .chart-header {
+:host([data-label]) .chart-header {
   display: flex;
 }
 :host .chart-title {
@@ -64,7 +64,7 @@
   line-height: var(--sherpa-font-base-line-height, 20px);
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -73,7 +73,7 @@
   display: none;
   flex-shrink: 0;
 }
-:host([data-title]) .menu-button {
+:host([data-label]) .menu-button {
   display: inline-flex;
 }
 :host sherpa-filter-bar {
@@ -106,7 +106,7 @@
 }
 :host .y-label {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   line-height: 1;
   white-space: nowrap;
 }
@@ -265,7 +265,7 @@
 }
 :host .x-label {
   font-size: var(--sherpa-fonts-scale-xs, 10px);
-  color: var(--sherpa-content-default-secondary, #5c5c66);
+  color: var(--sherpa-content-default-secondary, #404047);
   text-align: center;
   white-space: nowrap;
 }

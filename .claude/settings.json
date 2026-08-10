@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__figma-console__figma_execute"
+    ]
+  }
+}

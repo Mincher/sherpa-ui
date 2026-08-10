@@ -69,7 +69,7 @@
 }
 :host .system-caret {
   font-size: 10px;
-  color: var(--sherpa-content-default-secondary, #464646);
+  color: var(--sherpa-content-default-secondary, #404047);
 }
 :host([data-show-system-menu="false"]) .system-caret {
   display: none;
@@ -83,7 +83,7 @@
   gap: 4px;
   font-size: var(--sherpa-font-xs-size, 11px);
   line-height: var(--sherpa-font-xs-line-height, 16px);
-  color: var(--sherpa-content-default-secondary, #464646);
+  color: var(--sherpa-content-default-secondary, #404047);
   white-space: nowrap;
 }
 :host([data-show-time="false"]) .system-time {

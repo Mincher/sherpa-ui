@@ -42,8 +42,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
     this.#applyDataItems();
   }
 
-  override attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
-    super.attributeChangedCallback(name, oldValue, newValue);
+  override onAttributeChanged(name: string, oldValue: string | null, newValue: string | null): void {
     if (name === 'data-items' && newValue !== oldValue) {
       this.#applyDataItems();
     }
