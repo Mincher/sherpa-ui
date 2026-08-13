@@ -25,6 +25,14 @@ export function installTokens(): void {
 }
 
 export { SherpaElement } from './core/sherpa-element.js';
+export { renderElement, type ElementNode } from './core/render-element.js';
+export {
+  renderView,
+  StateStore,
+  type ViewDefinition,
+  type ViewElement,
+  type RenderedView,
+} from './core/render-view.js';
 export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';
 export { SherpaContainer } from './components/sherpa-container/sherpa-container.js';
