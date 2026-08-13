@@ -1,0 +1,18 @@
+<!--
+  sherpa-progress-bar — a horizontal task-progress indicator.
+
+  Public API:
+    data-value          0–100 completion percentage (determinate)
+    data-indeterminate  animated sweep for unknown-duration work (boolean)
+    data-label          accessible task label (shown above the bar; drives aria-label)
+    data-status         critical | warning | success | info  (colours the fill)
+
+  Slots: none — this is a display-only element.
+  Fires: nothing.
+-->
+<template id="default">
+  <span class="label" part="label"></span>
+  <div class="track" part="track">
+    <div class="fill" part="fill"></div>
+  </div>
+</template>

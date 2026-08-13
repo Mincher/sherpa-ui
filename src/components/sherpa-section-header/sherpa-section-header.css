@@ -1,0 +1,77 @@
+/**
+ * sherpa-section-header.css — all section-header presentation.
+ *
+ * A heading row: a title (or slotted heading) + optional description on the lead
+ * side, and a trailing actions region that appears only when the actions slot has
+ * content (data-has-actions, reflected by the base class). data-size scales the
+ * heading typography; data-divider draws a rule beneath the row. Pure data-*.
+ */
+
+:host {
+  display: block;
+
+  /* default size — base */
+  --_title-size: var(--sherpa-font-size-heading-sm, 18px);
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sherpa-space-md, 16px);
+}
+
+.lead {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+/* ── Title ───────────────────────────────────────────────────────────── */
+.title {
+  margin: 0;
+  color: var(--sherpa-content-default-heading, #1a1a20);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--_title-size);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 1.3;
+}
+
+/* When a heading is slotted, the default .title node collapses. */
+:host([data-has-heading]) .title { display: none; }
+
+/* ── Description ─────────────────────────────────────────────────────── */
+.description {
+  display: none;
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  line-height: 1.45;
+}
+:host([data-has-description]) .description { display: block; }
+
+/* ── Actions ─────────────────────────────────────────────────────────── */
+.actions {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+}
+:host([data-has-actions]) .actions { display: flex; }
+
+/* ── Size scale ──────────────────────────────────────────────────────── */
+:host([data-size="sm"]) { --_title-size: var(--sherpa-font-size-body-base, 16px); }
+:host([data-size="lg"]) { --_title-size: var(--sherpa-font-size-heading-base, 22px); }
+
+/* ── Divider ─────────────────────────────────────────────────────────── */
+.divider {
+  display: none;
+  margin: var(--sherpa-space-sm, 12px) 0 0;
+  border: none;
+  border-top: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #e0e0e6);
+}
+:host([data-divider]) .divider { display: block; }

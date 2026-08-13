@@ -1,0 +1,85 @@
+/**
+ * sherpa-tooltip.css — all tooltip presentation.
+ *
+ * The host is an inline wrapper; the trigger sits in .anchor and the tip in .bubble.
+ * The bubble is hidden by default and revealed purely by CSS on :host(:hover) /
+ * :host(:focus-within) — no JS visibility, no JS positioning. data-placement picks
+ * which side the bubble sits on with plain absolute positioning + a small offset.
+ */
+
+:host {
+  display: inline-flex;
+  position: relative;
+  vertical-align: middle;
+
+  --_gap: var(--sherpa-space-2xs, 4px);
+  --_bg: var(--sherpa-content-default-heading, #1a1a20);
+  --_fg: var(--sherpa-content-default-on-color-body, #ffffff);
+}
+
+.anchor {
+  display: inline-flex;
+}
+
+/* ── The tip bubble — hidden until hover/focus ────────────────────────── */
+.bubble {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  bottom: calc(100% + var(--_gap));
+  transform: translateX(-50%);
+  max-width: 16rem;
+  width: max-content;
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
+  background: var(--_bg);
+  color: var(--_fg);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 1.4;
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(16, 16, 20, 0.1));
+
+  /* Hidden state — no layout, unreadable to AT, no pointer capture. */
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, visibility 120ms ease;
+}
+
+.tip-text { color: inherit; }
+slot[name="tip"] { display: none; }
+:host([data-has-tip]) slot[name="tip"] { display: inline; }
+:host([data-has-tip]) .tip-text { display: none; }
+
+/* ── Reveal on hover / focus-within — the entire show/hide logic ──────── */
+:host(:hover) .bubble,
+:host(:focus-within) .bubble {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* ── Placement — plain absolute sides off data-placement ──────────────── */
+:host([data-placement="bottom"]) .bubble {
+  bottom: auto;
+  top: calc(100% + var(--_gap));
+}
+:host([data-placement="left"]) .bubble {
+  left: auto;
+  right: calc(100% + var(--_gap));
+  bottom: 50%;
+  top: auto;
+  transform: translateY(50%);
+}
+:host([data-placement="right"]) .bubble {
+  left: calc(100% + var(--_gap));
+  right: auto;
+  bottom: 50%;
+  top: auto;
+  transform: translateY(50%);
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .bubble { transition: none; }
+}

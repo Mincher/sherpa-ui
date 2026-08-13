@@ -1,0 +1,30 @@
+<!--
+  sherpa-list-item — a single list row.
+
+  Leading slot (icon / avatar), a content column (title + description), and a
+  trailing slot (actions / badges). The base class reflects slot presence to
+  data-has-leading / data-has-trailing on the host; CSS shows the regions.
+
+  Public API:
+    data-title        primary text
+    data-description  secondary text
+    data-active       active/selected state
+    data-interactive  hover + click behaviour
+    disabled          disabled state
+
+  Fires: list-item-click — detail: { title }
+-->
+<template id="default">
+  <div class="row" part="row">
+    <span class="leading" part="leading" aria-hidden="true">
+      <slot name="leading"></slot>
+    </span>
+    <span class="content" part="content">
+      <span class="title" part="title"></span>
+      <span class="description" part="description"></span>
+    </span>
+    <span class="trailing" part="trailing">
+      <slot name="trailing"></slot>
+    </span>
+  </div>
+</template>

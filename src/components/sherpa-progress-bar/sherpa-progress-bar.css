@@ -1,0 +1,90 @@
+/**
+ * sherpa-progress-bar.css — all progress-bar presentation.
+ *
+ * A thin rounded track with a coloured fill. The fill width is the ONE value JS
+ * supplies, via the --_pct custom property (data-value → --_pct in TS); everything
+ * else — colour, the indeterminate sweep, the label's visibility — is pure CSS off
+ * data-*. JS never sets width/display/visibility here.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  width: 100%;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+
+  /* Fill colour — status cascade wins, else the primary accent. */
+  --_fill: var(--_status-text, var(--sherpa-content-primary-default, #3c5edd));
+  /* Percentage width, written by JS from data-value. */
+  --_pct: 0%;
+}
+
+/* ── Label (above the bar; only when data-label is set) ───────────────── */
+.label {
+  display: none;
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+:host([data-label]) .label { display: block; }
+
+/* ── Track ────────────────────────────────────────────────────────────── */
+.track {
+  position: relative;
+  width: 100%;
+  height: var(--sherpa-space-2xs, 4px);
+  background: var(--sherpa-surface-container-inactive, #f4f4f6);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  overflow: hidden;
+}
+
+/* ── Fill (determinate) — width comes from the --_pct bridge ──────────── */
+.fill {
+  height: 100%;
+  width: var(--_pct, 0%);
+  background: var(--_fill);
+  border-radius: inherit;
+  transition: width 240ms ease;
+}
+
+/* ── Status colours the fill (deterministic per status) ───────────────── */
+:host([data-status="critical"]) { --_fill: var(--sherpa-content-critical-default, #c8324f); }
+:host([data-status="warning"])  { --_fill: var(--sherpa-content-warning-default, #b5730a); }
+:host([data-status="success"])  { --_fill: var(--sherpa-content-success-default, #16915a); }
+:host([data-status="info"])     { --_fill: var(--sherpa-content-info-default, #1f75e4); }
+
+/* ── Indeterminate — a sweeping band; the width bridge is ignored ──────── */
+:host([data-indeterminate]) .fill {
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--_fill) 50%,
+    transparent 100%
+  );
+  animation: sherpa-progress-sweep 1.3s ease-in-out infinite;
+}
+
+@keyframes sherpa-progress-sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+/* Motion is opt-out — a static partial fill remains legible. */
+@media (prefers-reduced-motion: reduce) {
+  .fill { transition: none; }
+  :host([data-indeterminate]) .fill { animation: none; }
+}
+
+/* ── Disabled — inactive tokens, never opacity ────────────────────────── */
+:host([disabled]) {
+  --_fill: var(--sherpa-content-inactive-default, #a6a6b2);
+}
+:host([disabled]) .track {
+  background: var(--sherpa-surface-container-inactive, #f4f4f6);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e6);
+}
+:host([disabled]) .label {
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+}

@@ -1,0 +1,101 @@
+/**
+ * sherpa-list-item.css — a single list row.
+ *
+ * A horizontal layout: leading → content → trailing. Regions appear only when
+ * filled (data-has-leading / data-has-trailing from the base; title/description
+ * from data-*). Interactive rows get hover, focus, and active treatments; the
+ * disabled row uses inactive tokens (never opacity).
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: transparent;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+/* ── Leading (icon / avatar slot) — shown only when filled ─────────── */
+.leading {
+  display: none;
+  align-items: center;
+  flex-shrink: 0;
+  min-block-size: var(--sherpa-size-md, 20px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+:host([data-has-leading]) .leading { display: inline-flex; }
+
+/* ── Content column (title + description) ──────────────────────────── */
+.content {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+
+.title {
+  color: var(--sherpa-content-default-heading, #18181f);
+  font-size: var(--sherpa-font-size-body-base, 16px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:host(:not([data-title])) .title { display: none; }
+
+.description {
+  color: var(--sherpa-content-default-secondary, #6a6a74);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+}
+:host(:not([data-description])) .description { display: none; }
+
+/* ── Trailing (actions / badges slot) — shown only when filled ─────── */
+.trailing {
+  display: none;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex-shrink: 0;
+}
+:host([data-has-trailing]) .trailing { display: inline-flex; }
+
+/* ── Interactive: hover + focus ────────────────────────────────────── */
+:host([data-interactive]) .row { cursor: pointer; }
+:host([data-interactive]:hover) .row {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+}
+:host([data-interactive]:focus-visible) {
+  outline: none;
+}
+:host([data-interactive]:focus-visible) .row {
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Active / selected ─────────────────────────────────────────────── */
+:host([data-active]) .row {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+}
+:host([data-active]) .title {
+  color: var(--sherpa-content-primary-default, #3c5edd);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
+:host([disabled]) {
+  pointer-events: none;
+}
+:host([disabled]) .row {
+  cursor: not-allowed;
+  background: var(--sherpa-surface-container-inactive, #f2f2f2);
+}
+:host([disabled]) .title,
+:host([disabled]) .description,
+:host([disabled]) .leading {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+}

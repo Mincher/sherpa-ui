@@ -1,0 +1,29 @@
+<!--
+  sherpa-list — a vertical row container.
+
+  Fill it either by slotting sherpa-list-item children (default slot) or via
+  populate([{ title, description?, active?, interactive? }]), which stamps rows
+  into .rows from the cloning prototype (<template class="row-tpl">, no id — so
+  the base template parser ignores it).
+
+  The empty-state message (data-empty) shows when there are no rows; CSS owns
+  its visibility.
+
+  Public API:
+    data-variant  default | bordered | divided
+    data-empty    empty-state message
+
+  No events of its own — child rows emit list-item-click, which the list uses
+  to keep a single active row.
+-->
+<template id="default">
+  <div class="body" part="body" role="list">
+    <div class="rows" part="rows"></div>
+    <slot></slot>
+  </div>
+  <div class="empty" part="empty" role="status" aria-live="polite"></div>
+
+  <template class="row-tpl">
+    <sherpa-list-item></sherpa-list-item>
+  </template>
+</template>

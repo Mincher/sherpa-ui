@@ -45,3 +45,12 @@ export { SherpaSelectCheckbox } from './components/sherpa-select-checkbox/sherpa
 export { SherpaSelectRadio } from './components/sherpa-select-radio/sherpa-select-radio.js';
 export { SherpaCallout } from './components/sherpa-callout/sherpa-callout.js';
 export { SherpaBreadcrumbs, type Crumb } from './components/sherpa-breadcrumbs/sherpa-breadcrumbs.js';
+export { SherpaSectionHeader } from './components/sherpa-section-header/sherpa-section-header.js';
+export { SherpaEmptyState } from './components/sherpa-empty-state/sherpa-empty-state.js';
+export { SherpaMessage } from './components/sherpa-message/sherpa-message.js';
+export { SherpaProgressBar } from './components/sherpa-progress-bar/sherpa-progress-bar.js';
+export { SherpaAccordion } from './components/sherpa-accordion/sherpa-accordion.js';
+export { SherpaTooltip } from './components/sherpa-tooltip/sherpa-tooltip.js';
+export { SherpaKeyValueList, type KeyValuePair } from './components/sherpa-key-value-list/sherpa-key-value-list.js';
+export { SherpaList } from './components/sherpa-list/sherpa-list.js';
+export { SherpaListItem } from './components/sherpa-list-item/sherpa-list-item.js';

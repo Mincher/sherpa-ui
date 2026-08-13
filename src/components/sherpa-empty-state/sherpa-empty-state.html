@@ -1,0 +1,43 @@
+<!--
+  sherpa-empty-state — a centred placeholder for a blank list, grid, or region.
+
+  A decorative icon area, a title, a message, and an optional action slot.
+  The icon glyph is a pure-CSS text mark chosen by data-illustration (no icon
+  font). A slotted icon replaces the default glyph; a slotted body replaces the
+  data-description text.
+
+  Public API:
+    data-title        heading text (rendered into .title)
+    data-description  message text (rendered into .message-text)
+    data-illustration built-in glyph: empty (default) | search | folder | data | error | success
+    data-size         sm | base (default) | lg
+
+  Slots:
+    icon        — custom illustration (reflects data-has-icon; replaces the glyph)
+    (default)   — custom message body (reflects data-has-content; replaces data-description)
+    action      — call-to-action controls (reflects data-has-action)
+
+  Fires: nothing — it's a static placeholder. Consumers wire their own actions.
+-->
+<template id="default">
+  <div class="empty" part="empty">
+    <div class="icon" part="icon" aria-hidden="true">
+      <slot name="icon">
+        <span class="glyph"></span>
+      </slot>
+    </div>
+
+    <div class="heading" part="heading">
+      <h2 class="title" part="title"></h2>
+      <div class="message" part="message">
+        <slot>
+          <p class="message-text" part="message-text"></p>
+        </slot>
+      </div>
+    </div>
+
+    <div class="actions" part="actions">
+      <slot name="action" data-accepts="control"></slot>
+    </div>
+  </div>
+</template>

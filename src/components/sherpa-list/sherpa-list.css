@@ -1,0 +1,60 @@
+/**
+ * sherpa-list.css — a vertical row container.
+ *
+ * The body is a single flex column holding both the stamped data rows (.rows)
+ * and slotted rows (the default slot), so variant treatments apply uniformly.
+ * Variants (default | bordered | divided) and the empty state are pure CSS off
+ * data-* on the host; JS only stamps rows and toggles data-empty-visible.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  --_row-gap: var(--sherpa-space-3xs, 2px);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--_row-gap);
+}
+
+/* The stamped-rows container is itself a column so both sources stack evenly. */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--_row-gap);
+}
+.rows:empty { display: none; }
+
+/* ── Bordered ──────────────────────────────────────────────────────── */
+:host([data-variant="bordered"]) {
+  --_row-gap: 0;
+}
+:host([data-variant="bordered"]) .body {
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d5d5dc);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  overflow: hidden;
+}
+
+/* ── Divided — hairlines between adjacent rows (both fill modes) ────── */
+:host([data-variant="divided"]) {
+  --_row-gap: 0;
+}
+:host([data-variant="divided"]) .rows > sherpa-list-item:not(:last-child),
+:host([data-variant="divided"]) ::slotted(sherpa-list-item:not(:last-child)) {
+  border-block-end: var(--sherpa-border-width-hairline, 1px) solid
+    var(--sherpa-border-container-default, #d5d5dc);
+}
+
+/* ── Empty state ───────────────────────────────────────────────────── */
+.empty {
+  display: none;
+  padding: var(--sherpa-space-md, 16px);
+  text-align: center;
+  color: var(--sherpa-content-default-secondary, #6a6a74);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+}
+:host([data-empty-visible]) .empty { display: block; }
+:host([data-empty-visible]) .body { display: none; }

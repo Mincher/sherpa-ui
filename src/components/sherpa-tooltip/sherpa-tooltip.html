@@ -1,0 +1,25 @@
+<!--
+  sherpa-tooltip — a hover/focus tooltip wrapping a trigger.
+
+  Show/hide is entirely CSS (:hover / :focus-within on the host); JS never toggles
+  visibility. The bubble's side is picked by CSS off data-placement.
+
+  Public API:
+    data-text       tip text (or use the `tip` slot)
+    data-placement  top (default) | bottom | left | right
+
+  Slots:
+    (default) — the trigger element the tooltip describes
+    tip       — rich tip content (reflects data-has-tip; overrides data-text)
+
+  Fires: nothing.
+-->
+<template id="default">
+  <span class="anchor" part="anchor">
+    <slot></slot>
+  </span>
+  <span class="bubble" part="bubble" role="tooltip">
+    <span class="tip-text"></span>
+    <slot name="tip"></slot>
+  </span>
+</template>

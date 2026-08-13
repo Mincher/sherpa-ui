@@ -1,0 +1,34 @@
+<!--
+  sherpa-section-header — a semantic heading row for a content section.
+
+  A title (data-title or a slotted heading), an optional description, and a
+  trailing actions slot. data-size scales the heading; data-divider draws a rule.
+
+  Public API:
+    data-title    heading text (rendered into .title)
+    data-size     sm | base (default) | lg
+    data-divider  show a bottom divider (boolean)
+
+  Slots:
+    heading      — custom heading element (replaces the default .title)
+    description  — description text below the heading (reflects data-has-description)
+    actions      — trailing action controls (reflects data-has-actions)
+
+  Fires: nothing — it's a static header row.
+-->
+<template id="default">
+  <header class="row" part="row">
+    <div class="lead" part="lead">
+      <slot name="heading">
+        <h2 class="title" part="title"></h2>
+      </slot>
+      <div class="description" part="description">
+        <slot name="description"></slot>
+      </div>
+    </div>
+    <div class="actions" part="actions">
+      <slot name="actions" data-accepts="control"></slot>
+    </div>
+  </header>
+  <hr class="divider" part="divider" />
+</template>

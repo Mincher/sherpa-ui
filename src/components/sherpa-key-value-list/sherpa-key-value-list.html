@@ -1,0 +1,20 @@
+<!--
+  sherpa-key-value-list — a semantic definition list.
+
+  Renders label/value pairs into a native <dl> from
+  populate([{ key, value }]). Each pair is stamped from the cloning prototype
+  (<template class="pair-tpl">, no id — so the base template parser ignores it).
+
+  Public API:
+    data-layout  horizontal | stacked (default: horizontal)
+
+  No events — display only.
+-->
+<template id="default">
+  <dl class="list" part="list"></dl>
+
+  <template class="pair-tpl">
+    <dt class="key" part="key"></dt>
+    <dd class="value" part="value"></dd>
+  </template>
+</template>
