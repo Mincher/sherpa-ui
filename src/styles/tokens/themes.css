@@ -1,0 +1,73 @@
+/**
+ * themes.css — mode handling lives here, not in components.
+ *
+ * Re-points ONLY the colour aliases (surface/content/border) for dark mode;
+ * geometry and type are mode-independent and stay as defined in aliases.css.
+ * Components never reference a mode — they consume `--sherpa-*` and this file
+ * decides the value. Two triggers: an explicit `data-mode="dark"` on the root,
+ * and the system `prefers-color-scheme` when no explicit choice is set.
+ *
+ * (Named brand themes — apex-purple etc. — slot in here later the same way:
+ * re-point the accent/brand-derived aliases under a `[data-theme="..."]` root.)
+ */
+
+/* Dark palette, shared by the explicit toggle and the system default. */
+:root[data-mode="dark"],
+:root[data-mode="auto"][data-prefers="dark"] {
+  --sherpa-surface-page-default: var(--core-black);
+  --sherpa-surface-container-default: var(--core-neutral-900);
+  --sherpa-surface-container-inactive: var(--core-neutral-800);
+
+  --sherpa-surface-control-primary-default: var(--core-accent-500);
+  --sherpa-surface-control-primary-hover: var(--core-accent-600);
+  --sherpa-surface-control-primary-down: var(--core-accent-700);
+  --sherpa-surface-control-secondary-default: var(--core-neutral-800);
+  --sherpa-surface-control-secondary-hover: var(--core-neutral-700);
+  --sherpa-surface-control-secondary-down: var(--core-neutral-600);
+  --sherpa-surface-control-tertiary-hover: var(--core-neutral-800);
+  --sherpa-surface-control-tertiary-down: var(--core-neutral-700);
+  --sherpa-surface-control-inactive: var(--core-neutral-800);
+
+  --sherpa-content-default-heading: var(--core-neutral-25);
+  --sherpa-content-default-body: var(--core-neutral-200);
+  --sherpa-content-default-secondary: var(--core-neutral-400);
+  --sherpa-content-default-on-color-body: var(--core-white);
+  --sherpa-content-primary-default: var(--core-accent-300);
+  --sherpa-content-inactive-default: var(--core-neutral-600);
+
+  --sherpa-border-container-default: var(--core-neutral-700);
+  --sherpa-border-control-primary-default: var(--core-accent-500);
+  --sherpa-border-control-secondary-default: var(--core-neutral-600);
+  --sherpa-border-control-inactive: var(--core-neutral-700);
+}
+
+/* System default: when no explicit data-mode is set, follow the OS. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="light"]) {
+    --sherpa-surface-page-default: var(--core-black);
+    --sherpa-surface-container-default: var(--core-neutral-900);
+    --sherpa-surface-container-inactive: var(--core-neutral-800);
+
+    --sherpa-surface-control-primary-default: var(--core-accent-500);
+    --sherpa-surface-control-primary-hover: var(--core-accent-600);
+    --sherpa-surface-control-primary-down: var(--core-accent-700);
+    --sherpa-surface-control-secondary-default: var(--core-neutral-800);
+    --sherpa-surface-control-secondary-hover: var(--core-neutral-700);
+    --sherpa-surface-control-secondary-down: var(--core-neutral-600);
+    --sherpa-surface-control-tertiary-hover: var(--core-neutral-800);
+    --sherpa-surface-control-tertiary-down: var(--core-neutral-700);
+    --sherpa-surface-control-inactive: var(--core-neutral-800);
+
+    --sherpa-content-default-heading: var(--core-neutral-25);
+    --sherpa-content-default-body: var(--core-neutral-200);
+    --sherpa-content-default-secondary: var(--core-neutral-400);
+    --sherpa-content-default-on-color-body: var(--core-white);
+    --sherpa-content-primary-default: var(--core-accent-300);
+    --sherpa-content-inactive-default: var(--core-neutral-600);
+
+    --sherpa-border-container-default: var(--core-neutral-700);
+    --sherpa-border-control-primary-default: var(--core-accent-500);
+    --sherpa-border-control-secondary-default: var(--core-neutral-600);
+    --sherpa-border-control-inactive: var(--core-neutral-700);
+  }
+}

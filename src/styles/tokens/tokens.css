@@ -1,0 +1,10 @@
+/**
+ * tokens.css — the light-DOM token layer, in cascade order.
+ *
+ * Load this once in the document (via <link> or installTokens()). It cascades
+ * primitives → aliases → themes; the resolved `--sherpa-*` values inherit into
+ * every component's shadow root for free.
+ */
+@import "./primitives.css";
+@import "./aliases.css";
+@import "./themes.css";

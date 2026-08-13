@@ -1,0 +1,83 @@
+/**
+ * aliases.css — Tier 2: the semantic tokens components consume.
+ *
+ * Every `--sherpa-*` here is something a component's CSS actually references, via
+ * `var(--sherpa-*, fallback)`. Geometry/type tokens are mode-independent (defined
+ * once). Colour tokens (surface/content/border) carry their LIGHT values here;
+ * themes.css re-points them for dark/other modes. Nothing dead — this file grows
+ * only when a component needs a new token.
+ */
+
+:root {
+  /* ── Spacing ── */
+  --sherpa-space-none: var(--core-scale-0);
+  --sherpa-space-3xs: var(--core-scale-25);
+  --sherpa-space-2xs: var(--core-scale-50);
+  --sherpa-space-xs: var(--core-scale-100);
+  --sherpa-space-sm: var(--core-scale-150);
+  --sherpa-space-md: var(--core-scale-200);
+  --sherpa-space-lg: var(--core-scale-250);
+  --sherpa-space-xl: var(--core-scale-300);
+  --sherpa-space-2xl: var(--core-scale-400);
+
+  /* ── Sizing (control heights, icon boxes) ── */
+  --sherpa-size-md: var(--core-scale-250);   /* 20 */
+  --sherpa-size-lg: var(--core-scale-300);   /* 24 */
+  --sherpa-size-xl: var(--core-scale-350);   /* 28 */
+  --sherpa-size-2xl: var(--core-scale-400);  /* 32 */
+  --sherpa-size-3xl: var(--core-scale-500);  /* 40 */
+
+  /* ── Radii ── */
+  --sherpa-border-rounding-none: var(--core-radius-0);
+  --sherpa-border-rounding-sm: var(--core-radius-100);
+  --sherpa-border-rounding-base: var(--core-radius-300);
+  --sherpa-border-rounding-lg: var(--core-radius-400);
+  --sherpa-border-rounding-full: var(--core-radius-full);
+
+  /* ── Stroke ── */
+  --sherpa-border-width-hairline: var(--core-stroke-100);
+  --sherpa-border-width-base: var(--core-stroke-200);
+  --sherpa-border-width-thick: var(--core-stroke-300);
+
+  /* ── Type ── */
+  --sherpa-font-family-body: var(--core-font-sans);
+  --sherpa-font-family-mono: var(--core-font-mono);
+  --sherpa-font-size-body-xs: var(--core-text-xs);
+  --sherpa-font-size-body-sm: var(--core-text-sm);
+  --sherpa-font-size-body-base: var(--core-text-base);
+  --sherpa-font-size-heading-sm: var(--core-text-lg);
+  --sherpa-font-size-heading-base: var(--core-text-xl);
+  --sherpa-font-weight-regular: var(--core-weight-regular);
+  --sherpa-font-weight-medium: var(--core-weight-medium);
+  --sherpa-font-weight-semibold: var(--core-weight-semibold);
+  --sherpa-font-weight-bold: var(--core-weight-bold);
+
+  /* ── Surfaces (LIGHT — themes override) ── */
+  --sherpa-surface-page-default: var(--core-white);
+  --sherpa-surface-container-default: var(--core-white);
+  --sherpa-surface-container-inactive: var(--core-neutral-50);
+
+  --sherpa-surface-control-primary-default: var(--core-accent-500);
+  --sherpa-surface-control-primary-hover: var(--core-accent-600);
+  --sherpa-surface-control-primary-down: var(--core-accent-700);
+  --sherpa-surface-control-secondary-default: var(--core-white);
+  --sherpa-surface-control-secondary-hover: var(--core-neutral-50);
+  --sherpa-surface-control-secondary-down: var(--core-neutral-100);
+  --sherpa-surface-control-tertiary-hover: var(--core-neutral-50);
+  --sherpa-surface-control-tertiary-down: var(--core-neutral-100);
+  --sherpa-surface-control-inactive: var(--core-neutral-50);
+
+  /* ── Content (text/icon — LIGHT) ── */
+  --sherpa-content-default-heading: var(--core-neutral-900);
+  --sherpa-content-default-body: var(--core-neutral-700);
+  --sherpa-content-default-secondary: var(--core-neutral-500);
+  --sherpa-content-default-on-color-body: var(--core-white);
+  --sherpa-content-primary-default: var(--core-accent-500);
+  --sherpa-content-inactive-default: var(--core-neutral-400);
+
+  /* ── Borders (LIGHT) ── */
+  --sherpa-border-container-default: var(--core-neutral-200);
+  --sherpa-border-control-primary-default: var(--core-accent-500);
+  --sherpa-border-control-secondary-default: var(--core-neutral-300);
+  --sherpa-border-control-inactive: var(--core-neutral-200);
+}

@@ -1,0 +1,96 @@
+/**
+ * primitives.css — Tier 1: raw values, hand-authored.
+ *
+ * The design scale in its rawest form: a unitless spacing ramp, colour ramps,
+ * type, radii. Components NEVER consume these directly — they consume the Tier-2
+ * semantic aliases (aliases.css), which point here. Themes re-point the aliases,
+ * never the primitives.
+ *
+ * Values are the real Sherpa design values, carried across from the previous
+ * system's Figma-synced primitives — but only the families actually in use. No
+ * generator, no dead ramps.
+ */
+
+:root {
+  /* ── Scale — one 8px-based ramp; both spacing and sizing draw from it ── */
+  --core-scale-0: 0px;
+  --core-scale-25: 2px;
+  --core-scale-50: 4px;
+  --core-scale-100: 8px;
+  --core-scale-150: 12px;
+  --core-scale-200: 16px;
+  --core-scale-250: 20px;
+  --core-scale-300: 24px;
+  --core-scale-350: 28px;
+  --core-scale-400: 32px;
+  --core-scale-450: 36px;
+  --core-scale-500: 40px;
+  --core-scale-600: 48px;
+  --core-scale-700: 56px;
+  --core-scale-800: 64px;
+
+  /* ── Radii ── */
+  --core-radius-0: 0px;
+  --core-radius-100: 2px;
+  --core-radius-150: 3px;
+  --core-radius-200: 4px;
+  --core-radius-300: 6px;
+  --core-radius-400: 8px;
+  --core-radius-500: 16px;
+  --core-radius-full: 9999px;
+
+  /* ── Stroke widths ── */
+  --core-stroke-0: 0px;
+  --core-stroke-100: 0.5px;
+  --core-stroke-200: 1px;
+  --core-stroke-300: 2px;
+
+  /* ── Neutrals (monochrome ramp) ── */
+  --core-white: #ffffff;
+  --core-neutral-25: #fafafb;
+  --core-neutral-50: #f4f4f6;
+  --core-neutral-100: #ededf0;
+  --core-neutral-200: #e0e0e6;
+  --core-neutral-300: #c8c8d2;
+  --core-neutral-400: #a6a6b2;
+  --core-neutral-500: #8a8a96;
+  --core-neutral-600: #6a6a76;
+  --core-neutral-700: #4a4a54;
+  --core-neutral-800: #2c2c34;
+  --core-neutral-900: #1a1a20;
+  --core-black: #101014;
+
+  /* ── Accent (primary actions — blue) ── */
+  --core-accent-100: #eef1fd;
+  --core-accent-300: #93a6ef;
+  --core-accent-500: #3c5edd;
+  --core-accent-600: #2f4bc0;
+  --core-accent-700: #263ea3;
+
+  /* ── Brand (AI / emphasis — purple) ── */
+  --core-brand-100: #f7edfc;
+  --core-brand-500: #7b1ce6;
+  --core-brand-600: #620bc6;
+
+  /* ── Status hues (base 500s; ramps added when a component needs them) ── */
+  --core-critical-500: #c8324f;
+  --core-warning-500: #b5730a;
+  --core-success-500: #16915a;
+  --core-info-500: #1f75e4;
+
+  /* ── Type ── */
+  --core-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --core-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --core-text-xs: 12px;
+  --core-text-sm: 14px;
+  --core-text-base: 16px;
+  --core-text-lg: 18px;
+  --core-text-xl: 22px;
+  --core-text-2xl: 28px;
+
+  --core-weight-regular: 400;
+  --core-weight-medium: 500;
+  --core-weight-semibold: 600;
+  --core-weight-bold: 700;
+}
