@@ -28,3 +28,4 @@ export { SherpaElement } from './core/sherpa-element.js';
 export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';
 export { SherpaContainer } from './components/sherpa-container/sherpa-container.js';
+export { SherpaInputText } from './components/sherpa-input-text/sherpa-input-text.js';

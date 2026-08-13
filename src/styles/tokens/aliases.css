@@ -81,8 +81,9 @@
   --sherpa-border-control-secondary-default: var(--core-neutral-300);
   --sherpa-border-control-inactive: var(--core-neutral-200);
 
-  /* ── Status content (text) ── */
+  /* ── Status content (text) + borders ── */
   --sherpa-content-critical-default: var(--core-critical-500);
+  --sherpa-border-critical-default: var(--core-critical-500);
   --sherpa-content-warning-default: var(--core-warning-500);
   --sherpa-content-success-default: var(--core-success-500);
   --sherpa-content-info-default: var(--core-info-500);

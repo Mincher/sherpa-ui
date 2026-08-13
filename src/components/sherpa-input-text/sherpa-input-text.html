@@ -1,0 +1,35 @@
+<!--
+  sherpa-input-text — a labelled text field.
+
+  Templates (via data-multiline):
+    default   — single-line <input>
+    multiline — auto-growing <textarea>
+
+  Public API:
+    data-label        field label (hidden when empty)
+    data-description   helper text under the label
+    data-error        error message (shown when set / on :user-invalid)
+    placeholder       native placeholder
+    value             native value (also a JS property)
+    name / required / disabled / readonly / minlength / maxlength / pattern
+                      native attributes, reflected to the inner control
+
+  Fires: input, change (re-dispatched from the inner control)
+-->
+<template id="default">
+  <label class="field" part="field">
+    <span class="label" part="label"></span>
+    <span class="description" part="description"></span>
+    <input class="control" part="control" type="text" />
+    <span class="message" part="message" aria-live="polite"></span>
+  </label>
+</template>
+
+<template id="multiline">
+  <label class="field" part="field">
+    <span class="label" part="label"></span>
+    <span class="description" part="description"></span>
+    <textarea class="control" part="control" rows="3"></textarea>
+    <span class="message" part="message" aria-live="polite"></span>
+  </label>
+</template>
