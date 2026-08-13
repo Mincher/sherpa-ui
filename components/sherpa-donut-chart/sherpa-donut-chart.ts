@@ -36,7 +36,7 @@ import { getSegmentField, isSegmentEnabled, getActiveSort, applySegmentBy, syncC
 import { injectFilterMenu, toggleFilters, toggleLegend, syncFilterMenuItems } from '../utilities/filter-menu-utils.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
-import { resolveCategoricalColor } from '../utilities/data-viz-colors.js';
+import { resolveCategoricalColor, categoricalIndex } from '../utilities/data-viz-colors.js';
 
 /** Default palette — falls back to CSS token values, but also needed for
  *  inline conic-gradient stops where tokens can't be used directly. */
@@ -353,7 +353,17 @@ export class SherpaDonutChart extends ContentAttributesMixin(SherpaElement) {
       const item = tpl?.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
       if (!item) return;
       const key = item.querySelector<HTMLElement>('.legend-key');
-      if (key) key.style.backgroundColor = colorFor(d, i);
+      if (key) {
+        // Theme-safe colour: an explicit d.color opts out via inline; otherwise the
+        // categorical token INDEX drives the swatch background in CSS (like barchart).
+        if (d.color) {
+          key.style.backgroundColor = d.color;
+          delete key.dataset['colorIndex'];
+        } else {
+          key.style.removeProperty('background-color');
+          key.dataset['colorIndex'] = String(categoricalIndex(i));
+        }
+      }
       const lbl = item.querySelector('.legend-label');
       if (lbl) lbl.textContent = d.label || '';
       const val = item.querySelector('.legend-value');

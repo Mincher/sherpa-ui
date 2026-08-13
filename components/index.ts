@@ -11,6 +11,16 @@ export { SherpaElement } from "./utilities/sherpa-element/sherpa-element.js";
 // Declarative rendering — build live elements from element JSON nodes.
 export { renderElement, type ElementNode } from "./utilities/render-element.js";
 
+// Declarative views — build a whole live view from a normalised view-definition
+// (id registry + shell regions + reactive $state wiring) on top of renderElement.
+export {
+  renderView,
+  StateStore,
+  type ViewDefinition,
+  type ViewElement,
+  type RenderedView,
+} from "./utilities/render-view.js";
+
 // Core layout components
 export * from "./sherpa-app-shell/sherpa-app-shell.js";
 export * from "./sherpa-app-header/sherpa-app-header.js";

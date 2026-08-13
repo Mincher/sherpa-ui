@@ -2,13 +2,14 @@
  * @element sherpa-nav-section
  * @category nav
  * @description Secondary navigation panel for Settings-style layouts where selecting an item
- *   switches the main content area. Populate item groups via setSections([{ label, items }])
+ *   switches the main content area. Populate item groups via populate([{ label, items }])
  *   or the data-sections JSON attribute. Use setActive(id) to highlight the current selection
  *   programmatically. Listen to nav-section-select to know which item was clicked and update
  *   the adjacent content area accordingly.
  *
  * Items can be supplied in two ways:
- *   1. Programmatically via `setSections([{ label, items }])` (preferred).
+ *   1. Programmatically via `populate([{ label, items }])` (the canonical data entry;
+ *      `setSections()` is a retained back-compat alias).
  *   2. Declaratively via the `data-sections` attribute, which holds the
  *      same shape as a JSON-encoded string.
  *

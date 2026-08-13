@@ -56,8 +56,14 @@ export class FormManager {
   }
 
   /**
-   * Populate fields from an object.
+   * Populate form FIELDS from an object (sets each named field's `value`).
    * Only sets values for fields that exist in the container.
+   *
+   * NOTE: distinct from the component-level `SherpaElement.populate()` data
+   * dispatcher — this is a FormManager convenience for pre-filling `sherpa-input-*`
+   * fields by name, not the render/populate contract. Different receiver, different
+   * contract; they only share a verb.
+   *
    * @param {Object} data — key-value map of field name → value
    */
   populate(data: Record<string, unknown> | null | undefined): void {
