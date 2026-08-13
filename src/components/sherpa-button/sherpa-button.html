@@ -1,0 +1,32 @@
+<!--
+  sherpa-button — the primary interactive trigger.
+
+  Two templates, selected by data-type:
+    default — icon(s) + label
+    icon    — icon only (square)
+
+  Public API (data-* + native):
+    data-variant   primary | secondary | tertiary | tertiary-on-color
+    data-size      2x-small | x-small | small | base | large
+    data-type      icon            (default omitted)
+    data-active    pressed/active state (boolean)
+    data-status    critical | warning | success | info | urgent
+    data-icon-start / data-icon-end   icon glyph value
+    data-label     label text (or use the default slot)
+    disabled       native disabled state
+
+  Fires: button-click
+-->
+<template id="default">
+  <button class="trigger" part="trigger" type="button">
+    <i class="icon icon-start" aria-hidden="true"></i>
+    <span class="label"><slot></slot></span>
+    <i class="icon icon-end" aria-hidden="true"></i>
+  </button>
+</template>
+
+<template id="icon">
+  <button class="trigger" part="trigger" type="button">
+    <i class="icon icon-start" aria-hidden="true"></i>
+  </button>
+</template>

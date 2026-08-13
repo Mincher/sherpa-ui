@@ -1,0 +1,145 @@
+/**
+ * sherpa-button.css — all button presentation.
+ *
+ * The host is a thin wrapper (border, radius, overflow); the .trigger <button>
+ * is the interactive surface. Colour comes from component-private --_* props that
+ * alias --sherpa-* tokens (with hardcoded fallbacks so the button renders even
+ * before the token layer loads). Variants/sizes/states are pure data-* selectors.
+ */
+
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+
+  /* primary defaults — variants below re-point these */
+  --_surface: var(--sherpa-surface-control-primary-default, #3c5edd);
+  --_surface-hover: var(--sherpa-surface-control-primary-hover, #2f4bc0);
+  --_surface-down: var(--sherpa-surface-control-primary-down, #263ea3);
+  --_content: var(--sherpa-content-default-on-color-body, #ffffff);
+  --_border: transparent;
+
+  --_height: var(--sherpa-size-2xl, 32px);
+  --_pad-inline: var(--sherpa-space-sm, 12px);
+  --_gap: var(--sherpa-space-xs, 8px);
+  --_font-size: var(--sherpa-font-size-body-sm, 14px);
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--_gap);
+  width: 100%;
+  min-height: var(--_height);
+  padding-inline: var(--_pad-inline);
+  border: 1px solid var(--_border);
+  border-radius: inherit;
+  margin: 0;
+  font-family: inherit;
+  font-size: var(--_font-size);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 1;
+  color: var(--_content);
+  background: var(--_surface);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.trigger:hover { background: var(--_surface-hover); }
+.trigger:active { background: var(--_surface-down); }
+
+:host(:focus-visible) { outline: none; }
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-surface-page-default, #ffffff),
+    0 0 0 4px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Variants ─────────────────────────────────────────────────────── */
+
+:host([data-variant="secondary"]) {
+  --_surface: var(--sherpa-surface-control-secondary-default, #ffffff);
+  --_surface-hover: var(--sherpa-surface-control-secondary-hover, #f2f2f5);
+  --_surface-down: var(--sherpa-surface-control-secondary-down, #e6e6ec);
+  --_content: var(--sherpa-content-default-heading, #18181f);
+  --_border: var(--sherpa-border-control-secondary-default, #c0c0cc);
+}
+
+:host([data-variant="tertiary"]) {
+  --_surface: transparent;
+  --_surface-hover: var(--sherpa-surface-control-tertiary-hover, #f2f2f5);
+  --_surface-down: var(--sherpa-surface-control-tertiary-down, #e6e6ec);
+  --_content: var(--sherpa-content-primary-default, #3c5edd);
+  --_border: transparent;
+}
+
+:host([data-variant="tertiary-on-color"]) {
+  --_surface: transparent;
+  --_surface-hover: rgba(255, 255, 255, 0.16);
+  --_surface-down: rgba(255, 255, 255, 0.24);
+  --_content: var(--sherpa-content-default-on-color-body, #ffffff);
+  --_border: transparent;
+}
+
+/* ── Active / pressed ─────────────────────────────────────────────── */
+
+:host([data-active]) .trigger { background: var(--_surface-down); }
+
+/* ── Sizes ────────────────────────────────────────────────────────── */
+
+:host([data-size="2x-small"]) {
+  --_height: var(--sherpa-size-md, 20px);
+  --_pad-inline: var(--sherpa-space-xs, 8px);
+  --_font-size: var(--sherpa-font-size-body-xs, 12px);
+}
+:host([data-size="x-small"]) {
+  --_height: var(--sherpa-size-lg, 24px);
+  --_pad-inline: var(--sherpa-space-xs, 8px);
+}
+:host([data-size="small"]) {
+  --_height: var(--sherpa-size-xl, 28px);
+  --_pad-inline: var(--sherpa-space-sm, 12px);
+}
+:host([data-size="large"]) {
+  --_height: var(--sherpa-size-3xl, 40px);
+  --_pad-inline: var(--sherpa-space-md, 16px);
+  --_font-size: var(--sherpa-font-size-body-base, 16px);
+}
+
+/* ── Icon-only (square) ───────────────────────────────────────────── */
+
+:host([data-type="icon"]) .trigger {
+  padding-inline: 0;
+  aspect-ratio: 1;
+  min-width: var(--_height);
+}
+
+/* ── Icons: CSS owns visibility; JS only sets the glyph value ─────── */
+
+.icon {
+  display: none;
+  font-style: normal;
+  line-height: 1;
+  color: var(--_content);
+}
+:host([data-icon-start]) .icon-start { display: inline-flex; }
+:host([data-icon-end]) .icon-end { display: inline-flex; }
+
+/* Hide the label wrapper when there's no slotted content and no data-label */
+.label { display: inline-flex; }
+:host([data-type="icon"]) .label { display: none; }
+
+/* ── Disabled — inactive tokens per property, never opacity ────────── */
+
+:host([disabled]) .trigger {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-content-inactive-default, #9a9aa5);
+  background: var(--sherpa-surface-control-inactive, #f2f2f5);
+  border-color: var(--sherpa-border-control-inactive, #d5d5dc);
+}
+:host([disabled]) .icon { color: var(--sherpa-content-inactive-default, #9a9aa5); }

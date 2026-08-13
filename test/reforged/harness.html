@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Reforged harness</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module">
+    // Register the reforged components, then flag ready.
+    import '/dist-reforged/components/sherpa-button/sherpa-button.js';
+    await customElements.whenDefined('sherpa-button');
+    window.__reforgedReady = true;
+  </script>
+</body>
+</html>
