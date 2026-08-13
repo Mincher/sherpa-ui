@@ -1,0 +1,31 @@
+<!--
+  sherpa-callout — a status message box.
+
+  A leading icon region, a title/message, and an optional dismiss button.
+  The status colour (info | success | warning | critical) is chosen by
+  data-status on the host and drives a soft surface tint + accent bar in CSS.
+
+  Public API:
+    data-status       info | success | warning | critical (default: info)
+    data-title        heading text (rendered into .title)
+    data-dismissible  show the close button (fires callout-dismiss)
+
+  Slots:
+    (default) — the message body
+
+  Fires: callout-dismiss
+-->
+<template id="default">
+  <div class="box" part="box">
+    <span class="icon" part="icon" aria-hidden="true"></span>
+    <div class="content" part="content">
+      <span class="title" part="title"></span>
+      <div class="message" part="message">
+        <slot></slot>
+      </div>
+    </div>
+    <button class="close" part="close" type="button" aria-label="Dismiss">
+      <span aria-hidden="true">&#215;</span>
+    </button>
+  </div>
+</template>

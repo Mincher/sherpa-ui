@@ -1,0 +1,96 @@
+/**
+ * sherpa-switch.css — all switch presentation.
+ *
+ * A pill track with a sliding knob and an ON/OFF text label. State (on/off),
+ * style (rectangular default vs. simple pill), disabled and focus are all pure
+ * data-* / :host selectors. The knob "slides" by flipping the flex direction:
+ * OFF puts the knob at the start, ON at the end.
+ */
+
+:host {
+  /* private knobs, overridden by data-style */
+  --_track-rounding: var(--sherpa-border-rounding-base, 4px);
+  --_knob-rounding: var(--sherpa-border-rounding-sm, 2px);
+  --_knob-size: var(--sherpa-size-md, 16px);
+  /* One fill token the track consumes; the ON state re-points it. Routing state
+     through a single custom property (not swapping the `background` rule) keeps
+     the computed value reliable — a swapped rule can go stale after an early
+     getComputedStyle read. */
+  --_fill: var(--sherpa-content-default-secondary, #8a8a96);
+
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* ── Track: the interactive button ─────────────────────────────────────── */
+.track {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row; /* OFF: knob at the start */
+  gap: var(--sherpa-space-2xs, 4px);
+  padding: var(--sherpa-space-3xs, 2px) var(--sherpa-space-2xs, 4px);
+  border: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-control-secondary-default, #e0e0e6);
+  border-radius: var(--_track-rounding);
+  background: var(--_fill);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.track:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Knob: the sliding control ─────────────────────────────────────────── */
+.knob {
+  flex-shrink: 0;
+  width: var(--_knob-size);
+  height: var(--_knob-size);
+  border-radius: var(--_knob-rounding);
+  background: var(--sherpa-surface-container-default, #ffffff);
+}
+
+/* ── Label: ON / OFF text (default style only) ─────────────────────────── */
+.label {
+  min-width: 24px;
+  text-align: center;
+  color: var(--sherpa-content-default-on-color-body, #ffffff);
+}
+:host([data-state="on"]) .label::after { content: "ON"; }
+:host(:not([data-state="on"])) .label::after { content: "OFF"; }
+
+/* ── ON state — re-point the single fill token; slide the knob to the end ── */
+:host([data-state="on"]) {
+  --_fill: var(--sherpa-content-success-default, #16915a);
+}
+:host([data-state="on"]) .track {
+  flex-direction: row-reverse;
+}
+
+/* ── Simple (pill) variant — rounded, no label, smaller knob ───────────── */
+:host([data-style="simple"]) {
+  --_track-rounding: var(--sherpa-border-rounding-full, 9999px);
+  --_knob-rounding: var(--sherpa-border-rounding-full, 9999px);
+  --_knob-size: var(--sherpa-size-xs, 12px);
+}
+:host([data-style="simple"]) .label { display: none; }
+
+/* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
+:host([disabled]) {
+  pointer-events: none;
+}
+:host([disabled]) .track {
+  cursor: not-allowed;
+  background: var(--sherpa-surface-control-inactive, #f4f4f6);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e6);
+}
+:host([disabled]) .knob {
+  background: var(--sherpa-surface-container-inactive, #f4f4f6);
+}
+:host([disabled]) .label {
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+}

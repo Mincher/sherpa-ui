@@ -1,0 +1,65 @@
+/**
+ * sherpa-breadcrumbs.css — all breadcrumb presentation.
+ *
+ * A horizontal trail of crumbs. Each crumb after the first draws its own
+ * separator via ::before, so separators need no DOM. Link crumbs are the
+ * accent/primary colour; the current crumb (aria-current) is the default body
+ * colour and non-interactive. Pure structure — no host data-* needed.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-sm, 13px);
+}
+
+.trail { min-width: 0; }
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-2xs, 4px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ── Crumb ───────────────────────────────────────────────────────────── */
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+/* Separator: every crumb except the first draws a leading slash. */
+.crumb + .crumb::before {
+  content: "/";
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  user-select: none;
+}
+
+.link {
+  color: var(--sherpa-content-primary-default, #3c5edd);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  text-decoration: none;
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  padding: var(--sherpa-space-3xs, 2px) 0;
+  cursor: pointer;
+}
+
+/* An anchor with an href is an active crumb — underline on hover. */
+.link[href]:hover { text-decoration: underline; }
+
+.link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* Current page crumb: default body colour, regular weight, non-interactive. */
+.link[aria-current="page"] {
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  cursor: default;
+  text-decoration: none;
+}

@@ -1,0 +1,169 @@
+/**
+ * sherpa-select-checkbox.css — all checkbox presentation.
+ *
+ * The visible box is a native <input type="checkbox"> with appearance:none; its
+ * look is driven entirely by native CSS state (:checked / :indeterminate /
+ * :disabled / :focus-visible) — JS never toggles a class or style. The checkmark
+ * and indeterminate dash are ::after pseudo-elements on the input. Disabled uses
+ * inactive tokens, never opacity. Focus is a box-shadow ring.
+ */
+
+:host {
+  display: inline-flex;
+  font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  --_size: var(--sherpa-size-sm, 16px);
+  --_border: var(--sherpa-border-control-primary-default, #3c5edd);
+  --_fill: var(--sherpa-surface-control-primary-default, #3c5edd);
+  --_focus: var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* Compact variant: the control alone, no label/description text. */
+:host([data-variant="minimal"]) .text { display: none; }
+
+.field {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-xs, 8px);
+  cursor: pointer;
+  user-select: none;
+  width: 100%;
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+
+/* ── The control (native input, custom-drawn box) ─────────────────── */
+.control {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--_size);
+  height: var(--_size);
+  margin: 0;
+  padding: 0;
+  position: relative;
+  border: var(--sherpa-border-width-base, 1px) solid var(--_border);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* ── Checked / indeterminate fill ─────────────────────────────────── */
+.control:checked,
+.control:indeterminate {
+  background: var(--_fill);
+  border-color: var(--_fill);
+}
+
+/* Checkmark — SVG mask, white on the filled box. */
+.control:checked::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  background-color: var(--sherpa-content-default-on-color-body, #ffffff);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+/* Indeterminate dash — takes precedence over the checkmark. */
+.control:indeterminate::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 2px;
+  border-radius: 1px;
+  background-color: var(--sherpa-content-default-on-color-body, #ffffff);
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+/* ── Hover / active ───────────────────────────────────────────────── */
+.control:hover:not(:disabled) {
+  border-color: var(--sherpa-surface-control-primary-hover, #2f4bb0);
+}
+.control:checked:hover:not(:disabled),
+.control:indeterminate:hover:not(:disabled) {
+  background: var(--sherpa-surface-control-primary-hover, #2f4bb0);
+  border-color: var(--sherpa-surface-control-primary-hover, #2f4bb0);
+}
+.control:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+/* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
+.control:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Label + description ──────────────────────────────────────────── */
+.text {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+  min-width: 0;
+}
+.label {
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  line-height: 1.4;
+}
+.description {
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  line-height: 1.4;
+}
+.label:empty,
+.description:empty { display: none; }
+
+/* ── Disabled — inactive tokens, never opacity ────────────────────── */
+:host([disabled]) .field {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+:host([disabled]) .control {
+  cursor: not-allowed;
+  border-color: var(--sherpa-border-control-inactive, #c0c0cc);
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+}
+:host([disabled]) .control:checked,
+:host([disabled]) .control:indeterminate {
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+  border-color: var(--sherpa-surface-control-inactive, #dddde6);
+}
+:host([disabled]) .control:checked::after,
+:host([disabled]) .control:indeterminate::after {
+  background-color: var(--sherpa-content-inactive-default, #5c5c66);
+}
+:host([disabled]) .label,
+:host([disabled]) .description {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+}
+
+/* ── Validation — native :user-invalid, unchecked required ────────── */
+.control:user-invalid:not(:checked):not(:indeterminate) {
+  border-color: var(--sherpa-border-critical-default, #c8324f);
+}
+
+/* ── Status cascade — tints the box + description via inherited --_status-* ── */
+:host([data-status]) .control:not(:checked):not(:indeterminate) {
+  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
+}
+:host([data-status]) .control:checked,
+:host([data-status]) .control:indeterminate {
+  background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
+  border-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
+}
+:host([data-status]) .description {
+  color: var(--_status-text, var(--sherpa-content-default-secondary, #8a8a96));
+}

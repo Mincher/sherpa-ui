@@ -1,0 +1,21 @@
+<!--
+  sherpa-switch — an immediate binary toggle.
+
+  One flat template. A real <button role="switch"> owns the semantics and focus;
+  the visual form (rectangular default vs. simple pill) is a CSS variant on
+  data-style — the same track markup restyles, no second template needed.
+
+  Public API:
+    data-state — on | off        (current value; JS keeps it and aria-checked in sync)
+    data-style — default (rectangular, ON/OFF label, 16px knob)
+               | simple  (pill, no label, 12px knob)
+    disabled   — native boolean
+
+  Fires: change  (detail: { checked: boolean })
+-->
+<template id="default">
+  <button type="button" class="track" role="switch" aria-checked="false">
+    <span class="knob" aria-hidden="true"></span>
+    <span class="label" aria-hidden="true"></span>
+  </button>
+</template>

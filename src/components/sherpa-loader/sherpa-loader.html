@@ -1,0 +1,21 @@
+<!--
+  sherpa-loader — an animated loading indicator.
+
+  Single flat template: a spinning arc plus an optional label slot. The visible
+  form (size, orientation, panel background, spin) is pure CSS off data-* on the
+  host — this component has no JS beyond the announce roles set in onRender.
+
+  Public API:
+    data-size         small | default | large   (spinner diameter)
+    data-orientation  horizontal (default) | vertical
+    data-panel        render a solid surface background behind the loader (boolean)
+
+  Slots:
+    label — loading text shown beside (or below) the spinner
+
+  Fires: nothing.
+-->
+<template id="default">
+  <div class="spinner" aria-hidden="true"></div>
+  <slot name="label" class="label"></slot>
+</template>

@@ -21,6 +21,8 @@
   --sherpa-space-2xl: var(--core-scale-400);
 
   /* ── Sizing (control heights, icon boxes) ── */
+  --sherpa-size-xs: var(--core-scale-150);   /* 12 — small spinner, simple-switch knob */
+  --sherpa-size-sm: var(--core-scale-200);   /* 16 — checkbox/radio box, small knobs */
   --sherpa-size-md: var(--core-scale-250);   /* 20 */
   --sherpa-size-lg: var(--core-scale-300);   /* 24 */
   --sherpa-size-xl: var(--core-scale-350);   /* 28 */

@@ -1,0 +1,27 @@
+<!--
+  sherpa-select-radio — a labelled radio button.
+
+  A native <input type="radio"> wrapped for accessibility + form semantics; the
+  visible dot is drawn in CSS off the input's :checked / :disabled states. Radios
+  sharing a `name` group together natively. JS never toggles the visual.
+
+  Public API:
+    data-label        label text to the right of the dot (or default slot)
+    data-description   helper line below the label
+    checked           native checked state (also a JS property)
+    value             submitted value when selected
+    name / disabled / required
+                      native attributes, mirrored to the inner control
+
+  Fires: change (re-dispatched from the inner control) — detail { checked, value }
+-->
+<template id="default">
+  <label class="field" part="field">
+    <input class="control" part="control" type="radio" />
+    <span class="text" part="text">
+      <span class="label" part="label"></span>
+      <span class="description" part="description"></span>
+      <slot></slot>
+    </span>
+  </label>
+</template>

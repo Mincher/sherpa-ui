@@ -1,0 +1,23 @@
+<!--
+  sherpa-breadcrumbs — a navigation trail.
+
+  Renders a flat crumb list from populate([{ label, href? }]) by cloning the
+  <template class="crumb-tpl"> prototype (no id → the base parser ignores it).
+  The last crumb is the current page: no href, aria-current="page". Separators
+  are drawn purely in CSS (::before on every crumb after the first).
+
+  Public API: (content-driven — no host data-* required)
+
+  Fires: breadcrumb-select — detail: { index, label, href }
+-->
+<template id="default">
+  <nav class="trail" part="trail" aria-label="Breadcrumb">
+    <ol class="crumbs" part="crumbs" role="list"></ol>
+  </nav>
+
+  <template class="crumb-tpl">
+    <li class="crumb" role="listitem">
+      <a class="link" part="link"></a>
+    </li>
+  </template>
+</template>

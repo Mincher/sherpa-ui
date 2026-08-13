@@ -39,3 +39,9 @@ export { SherpaContainer } from './components/sherpa-container/sherpa-container.
 export { SherpaInputText } from './components/sherpa-input-text/sherpa-input-text.js';
 export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
 export { SherpaNav, type NavItem } from './components/sherpa-nav/sherpa-nav.js';
+export { SherpaLoader } from './components/sherpa-loader/sherpa-loader.js';
+export { SherpaSwitch } from './components/sherpa-switch/sherpa-switch.js';
+export { SherpaSelectCheckbox } from './components/sherpa-select-checkbox/sherpa-select-checkbox.js';
+export { SherpaSelectRadio } from './components/sherpa-select-radio/sherpa-select-radio.js';
+export { SherpaCallout } from './components/sherpa-callout/sherpa-callout.js';
+export { SherpaBreadcrumbs, type Crumb } from './components/sherpa-breadcrumbs/sherpa-breadcrumbs.js';

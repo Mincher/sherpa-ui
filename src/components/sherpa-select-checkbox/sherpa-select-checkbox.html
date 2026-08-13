@@ -1,0 +1,28 @@
+<!--
+  sherpa-select-checkbox — a labelled checkbox.
+
+  A native <input type="checkbox"> wrapped for accessibility + form semantics;
+  the visible box is drawn in CSS off the input's :checked / :indeterminate /
+  :disabled states. JS never toggles the visual.
+
+  Public API:
+    data-label        label text to the right of the box (or default slot)
+    data-description   helper line below the label
+    checked           native checked state (also a JS property)
+    indeterminate     mixed state (JS property → input.indeterminate; CSS :indeterminate)
+    value             submitted value when checked (default "on")
+    name / disabled / required
+                      native attributes, mirrored to the inner control
+
+  Fires: change (re-dispatched from the inner control) — detail { checked, value, indeterminate }
+-->
+<template id="default">
+  <label class="field" part="field">
+    <input class="control" part="control" type="checkbox" />
+    <span class="text" part="text">
+      <span class="label" part="label"></span>
+      <span class="description" part="description"></span>
+      <slot></slot>
+    </span>
+  </label>
+</template>
