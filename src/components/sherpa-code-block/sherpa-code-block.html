@@ -1,0 +1,22 @@
+<!--
+  sherpa-code-block — a monospace code display with a copy button.
+
+  Public API:
+    data-code      the code to show (also settable via the default slot)
+    data-language  a short language label shown in the header (e.g. "ts")
+
+  Slot:
+    (default) — the code, when data-code is not set
+
+  Fires: code-copy — detail: { code } — on a successful clipboard write.
+-->
+<template id="default">
+  <div class="header" part="header">
+    <span class="language" part="language"></span>
+    <button type="button" class="copy" part="copy" aria-label="Copy code">
+      <span class="copy-label">Copy</span>
+      <span class="copied-label">Copied</span>
+    </button>
+  </div>
+  <pre class="pre" part="pre"><code class="code" part="code"><slot></slot></code></pre>
+</template>

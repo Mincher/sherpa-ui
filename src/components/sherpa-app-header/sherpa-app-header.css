@@ -1,0 +1,70 @@
+/**
+ * sherpa-app-header.css — the top application header bar.
+ *
+ * A single flex row: leading title/breadcrumb, an optional centred search that
+ * takes the free space, and trailing actions. Each region collapses when empty
+ * (search/actions via data-has-{slot}; the title via :empty). All CSS.
+ */
+
+:host {
+  display: block;
+  container: sherpa-app-header / inline-size;
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-md, 16px);
+  min-height: var(--sherpa-size-3xl, 40px);
+  padding-inline: var(--sherpa-space-md, 16px);
+  padding-block: var(--sherpa-space-2xs, 4px);
+}
+
+/* ── Leading: breadcrumb + title ────────────────────────────────────── */
+.leading {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--sherpa-font-size-heading-sm, 18px);
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  color: var(--sherpa-content-default-heading, #18181f);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.title:empty { display: none; }
+
+/* ── Search: takes the middle, collapses when unslotted ─────────────── */
+.search {
+  display: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+}
+:host([data-has-search]) .search { display: flex; }
+.search ::slotted(*) { width: 100%; max-width: 480px; }
+
+/* ── Actions: trailing, pushed to the end ───────────────────────────── */
+.actions {
+  display: none;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  margin-inline-start: auto;
+  flex: 0 0 auto;
+}
+:host([data-has-actions]) .actions { display: flex; }
+
+/* When there's no search, the leading region keeps actions on the far end. */
+:host(:not([data-has-search])) .leading { flex: 1 1 auto; }
+
+@container sherpa-app-header (max-width: 480px) {
+  .search { display: none; }
+}

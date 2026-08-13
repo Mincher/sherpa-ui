@@ -1,0 +1,26 @@
+<!--
+  sherpa-select-group — a labelled group of checkbox or radio options.
+
+  Composes sherpa-select-checkbox / sherpa-select-radio children, instantiated
+  from populate([{ value, label, description? }]). data-multiple → checkboxes;
+  default → radios grouped by a shared name. The children ARE design-system
+  components (composition), not raw structural DOM — so they're created by tag.
+
+  Public API:
+    data-label        group heading (hidden when empty)
+    data-description  helper line under the heading
+    data-multiple     present → checkboxes (multi-select); absent → radios
+    disabled          disable every option
+    value             property: string[] when multiple, else string | null
+
+  Fires: change — detail: { value }
+-->
+<template id="default">
+  <fieldset class="group" part="group">
+    <legend class="legend" part="legend">
+      <span class="label" part="label"></span>
+      <span class="description" part="description"></span>
+    </legend>
+    <div class="options" part="options" role="group"></div>
+  </fieldset>
+</template>

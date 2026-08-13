@@ -1,0 +1,32 @@
+<!--
+  sherpa-product-bar-v2 — the product branding bar.
+
+  A horizontal bar sitting above the app content. Left → right:
+    brand    — the product name (data-name) or a custom brand slot
+    nav      — optional product sub-navigation
+    actions  — trailing icon buttons / assistant entry point
+
+  Public API:
+    data-name — the product / system display name (hidden when empty)
+
+  Slots:
+    brand   — custom brand content, shown alongside/instead of data-name
+    nav     — product sub-navigation (reflects data-has-nav)
+    actions — trailing actions (reflects data-has-actions)
+
+  Fires: nothing itself — slotted controls emit their own events.
+-->
+<template id="default">
+  <div class="brand" part="brand">
+    <slot name="brand"></slot>
+    <span class="name" part="name"></span>
+  </div>
+
+  <div class="nav" part="nav">
+    <slot name="nav"></slot>
+  </div>
+
+  <div class="actions" part="actions">
+    <slot name="actions"></slot>
+  </div>
+</template>

@@ -1,0 +1,140 @@
+/**
+ * sherpa-calendar.css — the month-grid picker.
+ *
+ * A card surface holding a nav header, a weekday row, and a 7-column day grid.
+ * Day state (selected / today / out-of-range / blank) is pure CSS keyed off the
+ * data-* / disabled attributes JS stamps on each cell — JS never styles.
+ */
+
+:host {
+  display: inline-block;
+  --_border: var(--sherpa-border-container-default, #e0e0e6);
+  --_accent: var(--sherpa-surface-control-primary-default, #3c5edd);
+  --_accent-on: var(--sherpa-content-default-on-color-body, #ffffff);
+}
+
+.cal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-xs, 8px);
+  inline-size: fit-content;
+  padding: var(--sherpa-space-sm, 12px);
+  border: var(--sherpa-border-width-base, 1px) solid var(--_border);
+  border-radius: var(--sherpa-border-rounding-lg, 10px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-xs, 8px);
+}
+
+.cal-label {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: var(--sherpa-font-size-body-base, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+
+.cal-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-xl, 32px);
+  block-size: var(--sherpa-size-xl, 32px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: transparent;
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-size: var(--sherpa-font-size-heading-sm, 20px);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+.cal-nav:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.cal-nav:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Weekday row + day grid share the 7-column track ────────────────── */
+.cal-weekdays,
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, var(--sherpa-size-2xl, 36px));
+  gap: var(--sherpa-space-3xs, 2px);
+}
+
+.cal-weekdays span {
+  text-align: center;
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  padding-block: var(--sherpa-space-3xs, 2px);
+}
+
+/* ── Day cells ──────────────────────────────────────────────────────── */
+.cal-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: var(--sherpa-size-2xl, 36px);
+  padding: 0;
+  border: var(--sherpa-border-width-base, 1px) solid transparent;
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: transparent;
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
+}
+.cal-day:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.cal-day:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* Today — a ring, not a fill (fill is reserved for the selection). */
+.cal-day[data-today] {
+  border-color: var(--sherpa-border-control-primary-default, #3c5edd);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* Selected — accent fill, wins over hover / today. */
+.cal-day[data-selected] {
+  background: var(--_accent);
+  border-color: var(--_accent);
+  color: var(--_accent-on);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+.cal-day[data-selected]:hover {
+  background: var(--_accent);
+  color: var(--_accent-on);
+}
+
+/* Blank spacer cells — no chrome, no interaction. */
+.cal-day[data-blank] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Out-of-range days — inactive tokens, never opacity. */
+.cal-day[disabled]:not([data-blank]) {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+  background: transparent;
+}

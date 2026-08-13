@@ -1,0 +1,47 @@
+<!--
+  sherpa-transfer-list — a two-pane shuttle (available ↔ selected).
+
+  The full pool is supplied via populate([{ value, label, selected? }]); items
+  sit in the left or right pane per their `selected` flag. Staging checkboxes +
+  move buttons shuttle items across.
+
+  Data-driven rows use a cloning prototype (<template class="row-tpl">, no id — so
+  the base template parser ignores it).
+
+  Public API:
+    data-source-heading  heading for the available pane (default "Available")
+    data-target-heading  heading for the selected pane  (default "Selected")
+
+  Fires: transfer-change — detail: { selected, moved, direction }
+-->
+<template id="default">
+  <div class="panes" part="panes">
+    <div class="pane source" part="pane">
+      <div class="pane-heading" part="heading"></div>
+      <ul class="pane-list" part="list" role="listbox" aria-multiselectable="true"></ul>
+      <p class="pane-empty" part="empty">No items</p>
+    </div>
+
+    <div class="moves" part="moves" role="group" aria-label="Transfer controls">
+      <button class="move" data-move="add" type="button" aria-label="Add selected">&rsaquo;</button>
+      <button class="move" data-move="add-all" type="button" aria-label="Add all">&raquo;</button>
+      <button class="move" data-move="remove" type="button" aria-label="Remove selected">&lsaquo;</button>
+      <button class="move" data-move="remove-all" type="button" aria-label="Remove all">&laquo;</button>
+    </div>
+
+    <div class="pane target" part="pane">
+      <div class="pane-heading" part="heading"></div>
+      <ul class="pane-list" part="list" role="listbox" aria-multiselectable="true"></ul>
+      <p class="pane-empty" part="empty">Nothing selected</p>
+    </div>
+  </div>
+
+  <template class="row-tpl">
+    <li class="row" role="option">
+      <label class="row-field">
+        <input class="row-check" type="checkbox" />
+        <span class="row-label"></span>
+      </label>
+    </li>
+  </template>
+</template>

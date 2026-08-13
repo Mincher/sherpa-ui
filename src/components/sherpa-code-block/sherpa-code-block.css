@@ -1,0 +1,83 @@
+/**
+ * sherpa-code-block.css — a monospace code display with a copy button.
+ *
+ * A bordered surface: a header row (language label + copy button) over a
+ * scrollable <pre>. Line breaks and indentation are preserved by white-space:
+ * pre. The copy button's "Copied" confirmation is driven purely by data-copied.
+ */
+
+:host {
+  display: block;
+  container: sherpa-code-block / inline-size;
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+  border-radius: var(--sherpa-border-rounding-lg, 8px);
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm, 12px);
+  min-height: var(--sherpa-size-xl, 28px);
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-sm, 12px);
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+}
+
+.language {
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+}
+.language:empty { display: none; }
+
+/* ── Copy button ────────────────────────────────────────────────────── */
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+  padding: var(--sherpa-space-3xs, 2px) var(--sherpa-space-xs, 8px);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #c8c8d2);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: var(--sherpa-surface-control-secondary-default, #f4f4f6);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  cursor: pointer;
+}
+.copy:hover { background: var(--sherpa-surface-control-secondary-hover, #e8e8ec); }
+.copy:active { background: var(--sherpa-surface-control-secondary-down, #dcdce2); }
+.copy:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* Confirmation swap — CSS owns the state, JS only flips data-copied. */
+.copied-label { display: none; color: var(--sherpa-content-success-default, #2e8b57); }
+:host([data-copied]) .copy-label { display: none; }
+:host([data-copied]) .copied-label { display: inline; }
+
+/* ── Code ───────────────────────────────────────────────────────────── */
+.pre {
+  margin: 0;
+  padding: var(--sherpa-space-sm, 12px);
+  overflow-x: auto;
+}
+.code {
+  display: block;
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  line-height: 1.5;
+  white-space: pre;
+  tab-size: 2;
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+
+@container sherpa-code-block (max-width: 400px) {
+  .code { font-size: var(--sherpa-font-size-body-xs, 12px); }
+}

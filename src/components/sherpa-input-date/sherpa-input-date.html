@@ -1,0 +1,28 @@
+<!--
+  sherpa-input-date — a labelled date field.
+
+  Wraps a native <input type="date"> in the standard field chrome (label /
+  description / message). Native validation, keyboard entry, and the OS date
+  picker come for free.
+
+  Public API:
+    data-label        field label (hidden when empty)
+    data-description  helper text under the label
+    data-error        error message (shown when set / on :user-invalid)
+    data-min          earliest selectable date (YYYY-MM-DD) → native min
+    data-max          latest selectable date (YYYY-MM-DD)   → native max
+    data-step         step in days → native step
+    value             native value (also a JS property; YYYY-MM-DD)
+    name / required / disabled / readonly
+                      native attributes, reflected to the inner control
+
+  Fires: input, change (re-dispatched from the inner control)
+-->
+<template id="default">
+  <label class="field" part="field">
+    <span class="label" part="label"></span>
+    <span class="description" part="description"></span>
+    <input class="control" part="control" type="date" />
+    <span class="message" part="message" aria-live="polite"></span>
+  </label>
+</template>

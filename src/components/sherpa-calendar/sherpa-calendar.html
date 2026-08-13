@@ -1,0 +1,37 @@
+<!--
+  sherpa-calendar — a single-date month-grid picker.
+
+  A header (prev / month-year label / next), a static weekday row, and a
+  data-driven day grid stamped from the cloning prototype below.
+
+  Public API:
+    data-value  — selected day (ISO YYYY-MM-DD); highlighted in the grid
+    data-min    — earliest selectable day (ISO); earlier days are disabled
+    data-max    — latest selectable day (ISO); later days are disabled
+
+  Fires: datetime-change — detail: { value: string } (a selectable day clicked)
+
+  The day grid uses a cloning prototype (<template class="cal-day-tpl">, no id —
+  so the base class's template parser ignores it).
+-->
+<template id="default">
+  <div class="cal" part="cal">
+    <div class="cal-header" part="header">
+      <button type="button" class="cal-nav cal-prev" part="prev" aria-label="Previous month">&lsaquo;</button>
+      <span class="cal-label" part="label" aria-live="polite"></span>
+      <button type="button" class="cal-nav cal-next" part="next" aria-label="Next month">&rsaquo;</button>
+    </div>
+
+    <div class="cal-weekdays" part="weekdays" aria-hidden="true">
+      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span>
+      <span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+
+    <div class="cal-days" part="days" role="grid"></div>
+  </div>
+
+  <!-- Day-cell prototype — cloned per day by JS, never rendered directly. -->
+  <template class="cal-day-tpl">
+    <button type="button" class="cal-day" role="gridcell"></button>
+  </template>
+</template>

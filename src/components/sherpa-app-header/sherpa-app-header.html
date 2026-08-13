@@ -1,0 +1,34 @@
+<!--
+  sherpa-app-header — the top application header bar.
+
+  Sits in sherpa-app-shell's `header` slot. A flex bar with three regions:
+    leading  — the view title (data-title) and/or a breadcrumb slot
+    search   — an optional search control
+    actions  — trailing app/view actions
+
+  Public API:
+    data-title — the view title (hidden when empty)
+
+  Slots:
+    breadcrumb — leading breadcrumb trail (reflects data-has-breadcrumb)
+    search     — a centred search control (reflects data-has-search)
+    actions    — trailing actions (reflects data-has-actions)
+
+  Fires: nothing itself — slotted controls emit their own events.
+-->
+<template id="default">
+  <header class="bar" part="bar" role="banner">
+    <div class="leading" part="leading">
+      <slot name="breadcrumb"></slot>
+      <h1 class="title" part="title"></h1>
+    </div>
+
+    <div class="search" part="search">
+      <slot name="search"></slot>
+    </div>
+
+    <div class="actions" part="actions">
+      <slot name="actions"></slot>
+    </div>
+  </header>
+</template>

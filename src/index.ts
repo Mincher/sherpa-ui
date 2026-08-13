@@ -75,3 +75,13 @@ export { SherpaOverlayItem } from './components/sherpa-overlay-item/sherpa-overl
 export { SherpaChatMessage } from './components/sherpa-chat-message/sherpa-chat-message.js';
 export { SherpaProposalOp } from './components/sherpa-proposal-op/sherpa-proposal-op.js';
 export { SherpaProposalPreview } from './components/sherpa-proposal-preview/sherpa-proposal-preview.js';
+export { SherpaCalendar } from './components/sherpa-calendar/sherpa-calendar.js';
+export { SherpaInputDate } from './components/sherpa-input-date/sherpa-input-date.js';
+export { SherpaInputTime } from './components/sherpa-input-time/sherpa-input-time.js';
+export { SherpaSelectGroup } from './components/sherpa-select-group/sherpa-select-group.js';
+export { SherpaTransferList } from './components/sherpa-transfer-list/sherpa-transfer-list.js';
+export { SherpaScheduler } from './components/sherpa-scheduler/sherpa-scheduler.js';
+export { SherpaCodeBlock } from './components/sherpa-code-block/sherpa-code-block.js';
+export { SherpaAppHeader } from './components/sherpa-app-header/sherpa-app-header.js';
+export { SherpaProductBarV2 } from './components/sherpa-product-bar-v2/sherpa-product-bar-v2.js';
+export { SherpaPromptComposer } from './components/sherpa-prompt-composer/sherpa-prompt-composer.js';

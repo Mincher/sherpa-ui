@@ -1,0 +1,152 @@
+/**
+ * sherpa-transfer-list.css — two-pane shuttle layout.
+ *
+ * A three-column grid: available pane | move buttons | selected pane. Rows are
+ * native checkbox fields; move buttons are native <button>s styled here. Empty
+ * panes swap their list for a placeholder via data-empty (CSS owns visibility).
+ * Disabled uses inactive tokens; focus is a box-shadow ring. JS never styles.
+ */
+
+:host {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--sherpa-space-md, 16px);
+  align-items: stretch;
+  min-block-size: 240px;
+  font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+
+.panes {
+  display: contents;
+}
+
+/* ── A pane ───────────────────────────────────────────────────────── */
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #c0c0cc);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  overflow: hidden;
+}
+.pane-heading {
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border-block-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #c0c0cc);
+  color: var(--sherpa-content-default-heading, #2e2e33);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pane-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--sherpa-space-3xs, 2px);
+  flex: 1;
+  overflow: auto;
+  min-block-size: 0;
+}
+.pane-empty {
+  display: none;
+  margin: 0;
+  padding: var(--sherpa-space-md, 16px);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  text-align: center;
+}
+/* Empty pane: hide the list, show the placeholder. */
+.pane[data-empty] .pane-list { display: none; }
+.pane[data-empty] .pane-empty { display: block; }
+
+/* ── A row ────────────────────────────────────────────────────────── */
+.row {
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+}
+.row-field {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-2xs, 6px) var(--sherpa-space-xs, 8px);
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+}
+.row-field:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, #f2f2f2);
+}
+.row-check {
+  flex-shrink: 0;
+  inline-size: var(--sherpa-size-sm, 16px);
+  block-size: var(--sherpa-size-sm, 16px);
+  margin: 0;
+  accent-color: var(--sherpa-surface-control-primary-default, #3c5edd);
+}
+.row-check:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+.row-label {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Move buttons ─────────────────────────────────────────────────── */
+.moves {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sherpa-space-xs, 8px);
+}
+.move {
+  inline-size: var(--sherpa-size-xl, 32px);
+  block-size: var(--sherpa-size-xl, 32px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: var(--sherpa-font-size-body-base, 16px);
+  line-height: 1;
+  cursor: pointer;
+  color: var(--sherpa-content-default-body, #4a4a54);
+  background: var(--sherpa-surface-control-secondary-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #c0c0cc);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+.move:hover {
+  background: var(--sherpa-surface-control-secondary-hover, #f2f2f2);
+}
+.move:active {
+  background: var(--sherpa-surface-control-secondary-down, #e6e6e6);
+}
+.move:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Disabled — inactive tokens, never opacity ────────────────────── */
+:host([disabled]) {
+  pointer-events: none;
+}
+:host([disabled]) .move {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+  border-color: var(--sherpa-border-control-inactive, #c0c0cc);
+}
+:host([disabled]) .pane {
+  border-color: var(--sherpa-border-control-inactive, #c0c0cc);
+  background: var(--sherpa-surface-container-inactive, #f2f2f2);
+}
+
+/* ── Responsive: stack panes when narrow ──────────────────────────── */
+:host { container: sherpa-transfer / inline-size; }
+@container sherpa-transfer (max-width: 420px) {
+  :host {
+    grid-template-columns: 1fr;
+  }
+  .moves { flex-direction: row; justify-content: center; }
+}

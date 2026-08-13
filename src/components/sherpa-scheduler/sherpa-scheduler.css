@@ -1,0 +1,129 @@
+/**
+ * sherpa-scheduler.css — recurrence picker layout.
+ *
+ * CSS owns ALL conditional row visibility, keyed off data-frequency on the host.
+ * Only the frequency row plus the rows relevant to the chosen frequency show.
+ * Native date/time/weekday fields are styled here; composed sherpa children draw
+ * their own chrome. Disabled uses inactive tokens; focus is a box-shadow ring.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-md, 16px);
+}
+
+/* ── Rows: hidden by default; frequency-specific rows opt in ──────── */
+.row {
+  display: none;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-md, 16px);
+  align-items: flex-end;
+}
+.row > * { flex: 1 1 160px; min-inline-size: 0; }
+
+.row-frequency { display: flex; }
+
+/* Frequency-driven visibility. Default (no attr) behaves as weekly. */
+:host([data-frequency="once"]) .row-once,
+:host([data-frequency="hourly"]) .row-hourly,
+:host([data-frequency="daily"]) .row-time,
+:host([data-frequency="weekly"]) .row-time,
+:host([data-frequency="weekly"]) .row-weekly,
+:host([data-frequency="monthly"]) .row-time,
+:host([data-frequency="monthly"]) .row-monthly,
+:host(:not([data-frequency])) .row-time,
+:host(:not([data-frequency])) .row-weekly {
+  display: flex;
+}
+
+/* ── Native fields (date / time) ──────────────────────────────────── */
+.native-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 6px);
+}
+.native-label {
+  color: var(--sherpa-content-default-heading, #2e2e33);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+}
+.native-control {
+  font: inherit;
+  padding: var(--sherpa-space-2xs, 6px) var(--sherpa-space-xs, 8px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #c0c0cc);
+  border-radius: var(--sherpa-border-rounding-base, 4px);
+}
+.native-control:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Weekday toggle pills ─────────────────────────────────────────── */
+.weekdays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-2xs, 6px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+.weekdays > .native-label { flex-basis: 100%; margin-block-end: var(--sherpa-space-3xs, 2px); padding: 0; }
+.weekday {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-2xl, 40px);
+  block-size: var(--sherpa-size-2xl, 40px);
+  cursor: pointer;
+  user-select: none;
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #c0c0cc);
+  border-radius: var(--sherpa-border-rounding-full, 50%);
+  background: var(--sherpa-surface-control-secondary-default, #ffffff);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.weekday:hover {
+  background: var(--sherpa-surface-control-secondary-hover, #f2f2f2);
+}
+/* The native checkbox is invisible; the pill IS the control surface. */
+.weekday-input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+/* Checked pill: filled primary. */
+.weekday:has(.weekday-input:checked) {
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
+  border-color: var(--sherpa-surface-control-primary-default, #3c5edd);
+  color: var(--sherpa-content-default-on-color-body, #ffffff);
+}
+.weekday:has(.weekday-input:focus-visible) {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Disabled — inactive tokens, never opacity ────────────────────── */
+:host([disabled]) { pointer-events: none; }
+:host([disabled]) .native-control {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+  background: var(--sherpa-surface-container-inactive, #f2f2f2);
+  border-color: var(--sherpa-border-control-inactive, #c0c0cc);
+}
+:host([disabled]) .weekday {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+  background: var(--sherpa-surface-control-inactive, #dddde6);
+  border-color: var(--sherpa-border-control-inactive, #c0c0cc);
+}

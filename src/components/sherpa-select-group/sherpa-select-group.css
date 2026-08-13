@@ -1,0 +1,70 @@
+/**
+ * sherpa-select-group.css — a labelled group of checkbox/radio options.
+ *
+ * All presentation lives here, keyed off host data-*. The children draw their
+ * own control chrome; this file only lays out the legend + options stack and
+ * carries the disabled/status treatment for the heading. JS never styles.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+/* ── Legend: heading + description ────────────────────────────────── */
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+  padding: 0;
+  margin-block-end: var(--sherpa-space-sm, 12px);
+}
+.label {
+  color: var(--sherpa-content-default-heading, #2e2e33);
+  font-size: var(--sherpa-font-size-body-base, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 1.4;
+}
+.description {
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  line-height: 1.4;
+}
+.label:empty,
+.description:empty { display: none; }
+/* Collapse the whole legend when it has no text at all. */
+:host(:not([data-label]):not([data-description])) .legend { display: none; }
+
+/* ── Options stack (vertical by default) ─────────────────────────── */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 12px);
+}
+
+/* Horizontal / inline layout. */
+:host([data-orientation="horizontal"]) .options {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sherpa-space-lg, 24px);
+}
+
+/* ── Disabled — inactive tokens on the heading, children carry their own ── */
+:host([disabled]) .label { color: var(--sherpa-content-inactive-default, #5c5c66); }
+:host([disabled]) .description { color: var(--sherpa-content-inactive-default, #5c5c66); }
+
+/* ── Status cascade — tints the heading via inherited --_status-* ── */
+:host([data-status]) .label {
+  color: var(--_status-text, var(--sherpa-content-default-heading, #2e2e33));
+}
+:host([data-status]) .description {
+  color: var(--_status-text, var(--sherpa-content-default-secondary, #8a8a96));
+}

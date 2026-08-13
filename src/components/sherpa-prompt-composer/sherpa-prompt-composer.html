@@ -1,0 +1,28 @@
+<!--
+  sherpa-prompt-composer — an AI prompt input.
+
+  An auto-growing textarea with a brand-accent send button. Submit via the send
+  button or Enter (Shift+Enter inserts a newline). Attachment / action controls
+  slot to the left of the send button.
+
+  Public API:
+    data-placeholder — textarea placeholder
+    disabled         — disables the input + send button
+    value            — JS property; clear() resets it
+
+  Slots:
+    actions — controls before the send button (reflects data-has-actions)
+
+  Fires: prompt-submit — detail: { text } — on a non-empty submit (then clears).
+-->
+<template id="default">
+  <form class="form" part="form" autocomplete="off">
+    <textarea class="input" part="input" rows="1" spellcheck="true"></textarea>
+    <div class="tools" part="tools">
+      <div class="actions" part="actions"><slot name="actions"></slot></div>
+      <button type="submit" class="send" part="send" aria-label="Send">
+        <span class="send-glyph" aria-hidden="true">&#8593;</span>
+      </button>
+    </div>
+  </form>
+</template>
