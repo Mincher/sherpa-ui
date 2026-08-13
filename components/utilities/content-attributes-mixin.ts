@@ -114,10 +114,6 @@ export interface ContentConfig {
   presentationType: string | null;
   fields: unknown[] | null;
   timerange: string | null;
-  // Legacy aliases kept for consumer compatibility
-  categoryField?: string | null;
-  valueField2?: string;
-  segmentBy?: string | null;
 }
 
 /* ── Mixin interface ─────────────────────────────────────────────── *

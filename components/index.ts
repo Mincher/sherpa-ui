@@ -63,8 +63,6 @@ export * from "./sherpa-breadcrumbs/sherpa-breadcrumbs.js";
 export * from "./sherpa-list-item/sherpa-list-item.js";
 export * from "./sherpa-loader/sherpa-loader.js";
 export * from "./sherpa-panel/sherpa-panel.js";
-// @deprecated sherpa-product-bar (v1) — use sherpa-product-bar-v2 instead.
-export * from "./sherpa-product-bar/sherpa-product-bar.js";
 export * from "./sherpa-product-bar-v2/sherpa-product-bar-v2.js";
 export * from "./sherpa-progress-bar/sherpa-progress-bar.js";
 export * from "./sherpa-progress-step-tracker/sherpa-progress-step-tracker.js";

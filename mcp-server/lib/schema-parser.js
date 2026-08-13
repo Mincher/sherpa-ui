@@ -18,7 +18,6 @@ export const GROUP_MAP = {
   "sherpa-nav-item":           "navigation",
   "sherpa-breadcrumbs":        "navigation",
   "sherpa-overlay-item":       "navigation",
-  "sherpa-product-bar":        "navigation",
   "sherpa-input-text":         "form",
   "sherpa-input-number":       "form",
   "sherpa-input-password":     "form",

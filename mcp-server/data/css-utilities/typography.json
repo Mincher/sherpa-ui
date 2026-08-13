@@ -164,7 +164,7 @@
     },
     {
       "name": "text-product-bar",
-      "description": "Product bar heading. Brand font (Manrope), SemiBold 600, 20px, uppercase. Reserved for sherpa-product-bar — avoid on general text.",
+      "description": "Product bar heading. Brand font (Manrope), SemiBold 600, 20px, uppercase. Reserved for sherpa-product-bar-v2 — avoid on general text.",
       "example": "<span class=\"text-product-bar\">Product Name</span>"
     },
     {

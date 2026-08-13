@@ -24,7 +24,7 @@ const TAGS = [
   'sherpa-layout-grid', 'sherpa-line-chart', 'sherpa-list-item', 'sherpa-list',
   'sherpa-loader', 'sherpa-message', 'sherpa-metric', 'sherpa-nav-item',
   'sherpa-nav-section', 'sherpa-nav', 'sherpa-overlay-item', 'sherpa-pagination',
-  'sherpa-panel', 'sherpa-product-bar-v2', 'sherpa-product-bar', 'sherpa-progress-bar',
+  'sherpa-panel', 'sherpa-product-bar-v2', 'sherpa-progress-bar',
   'sherpa-progress-step-tracker', 'sherpa-prompt-composer', 'sherpa-proposal-op',
   'sherpa-proposal-preview', 'sherpa-quick-filter-toolbar', 'sherpa-quick-filter',
   'sherpa-scheduler', 'sherpa-section-header', 'sherpa-select-checkbox', 'sherpa-select-group',

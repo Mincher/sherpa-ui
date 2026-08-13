@@ -61,14 +61,11 @@
     "build": "npm run build:ts && npm run assets:copy && npm run tokens:generate && npm run patterns",
     "test:a11y": "node scripts/test-a11y.js",
     "test:a11y:verbose": "node scripts/test-a11y.js --verbose",
-    "audit": "node scripts/audit-components.js",
-    "audit:verbose": "node scripts/audit-components.js --verbose",
     "test": "playwright test",
     "test:unit": "node --test 'test/unit/**/*.test.mjs'",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
-    "test:report": "playwright show-report",
-    "test:legacy:wtr": "npm run build:ts && web-test-runner"
+    "test:report": "playwright show-report"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"
