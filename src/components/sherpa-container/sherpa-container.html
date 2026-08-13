@@ -1,0 +1,43 @@
+<!--
+  sherpa-container — the base surface: a card with header / content / footer slots
+  and built-in loading / empty / error states.
+
+  Public API:
+    data-variant    fill (default, stretches) | fit (hugs content)
+    data-elevation  none (default) | sm | md | lg
+    data-state      loading | empty | error   (shows the matching overlay)
+    data-padding    none | sm | base (default) | lg
+
+  Slots:
+    (default) — the card body
+    header    — header region (reflects data-has-header)
+    footer    — footer region (reflects data-has-footer)
+    loading / empty / error — custom state content (each has a default)
+
+  Fires: nothing by itself — it's a surface. Consumers wire their own controls.
+-->
+<template id="default">
+  <div class="header" part="header">
+    <slot name="header"></slot>
+  </div>
+
+  <div class="body" part="body">
+    <slot></slot>
+  </div>
+
+  <div class="footer" part="footer">
+    <slot name="footer"></slot>
+  </div>
+
+  <div class="state" role="status" aria-live="polite" part="state">
+    <slot name="loading" class="state-loading">
+      <span class="spinner" aria-label="Loading"></span>
+    </slot>
+    <slot name="empty" class="state-empty">
+      <span class="state-text">Nothing to show yet.</span>
+    </slot>
+    <slot name="error" class="state-error">
+      <span class="state-text">Something went wrong.</span>
+    </slot>
+  </div>
+</template>
