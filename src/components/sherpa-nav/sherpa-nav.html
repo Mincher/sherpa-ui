@@ -1,0 +1,36 @@
+<!--
+  sherpa-nav — a vertical navigation rail.
+
+  Renders a flat list of items from populate([{ id, label, icon?, href? }]).
+  The active item is marked by data-active-id on the host. Clicking an item
+  fires nav-select with the item's id.
+
+  Data-driven rows use a cloning prototype (<template class="item-tpl">, no id —
+  so the base class's template parser ignores it).
+
+  Public API:
+    data-active-id  — id of the currently active item
+    data-collapsed  — icon-only rail (labels hidden)
+
+  Fires: nav-select — detail: { id }
+-->
+<template id="default">
+  <nav class="rail" part="rail" aria-label="Main">
+    <div class="brand" part="brand">
+      <slot name="brand"></slot>
+    </div>
+    <ul class="items" part="items" role="list"></ul>
+    <div class="footer" part="footer">
+      <slot name="footer"></slot>
+    </div>
+  </nav>
+
+  <template class="item-tpl">
+    <li class="item" role="listitem">
+      <a class="link" part="link">
+        <span class="icon" aria-hidden="true"></span>
+        <span class="label"></span>
+      </a>
+    </li>
+  </template>
+</template>

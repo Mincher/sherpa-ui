@@ -1,0 +1,88 @@
+/**
+ * sherpa-nav.css — the navigation rail.
+ *
+ * A vertical column: brand slot, the data-driven item list, footer slot. The
+ * active item (matched by data-active-id on the host) gets an accent treatment.
+ * Collapsed mode hides the labels. Pure data-* + :state selectors; JS only stamps
+ * the item rows and reflects the active id.
+ */
+
+:host {
+  display: block;
+  block-size: 100%;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  padding: var(--sherpa-space-sm, 12px);
+  gap: var(--sherpa-space-xs, 8px);
+}
+
+.brand {
+  padding: var(--sherpa-space-xs, 8px);
+  min-block-size: var(--sherpa-size-3xl, 40px);
+}
+.brand:not(:has(*)) { display: none; }
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+  flex: 1 1 auto;
+}
+
+.footer { margin-block-start: auto; }
+.footer:not(:has(*)) { display: none; }
+
+/* ── Item rows (stamped from the cloning prototype) ────────────────── */
+.item { margin: 0; }
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+.link:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+.icon {
+  display: inline-flex;
+  inline-size: var(--sherpa-size-lg, 24px);
+  justify-content: center;
+  flex-shrink: 0;
+}
+.icon:empty { display: none; }
+
+.label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Active item ───────────────────────────────────────────────────── */
+.item[data-active] .link {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-primary-default, #3c5edd);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* ── Collapsed (icon-only) ─────────────────────────────────────────── */
+:host([data-collapsed]) .label,
+:host([data-collapsed]) .brand,
+:host([data-collapsed]) .footer { display: none; }
+:host([data-collapsed]) .link { justify-content: center; padding-inline: var(--sherpa-space-xs, 8px); }

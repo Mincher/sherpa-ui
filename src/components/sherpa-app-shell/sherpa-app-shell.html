@@ -1,0 +1,28 @@
+<!--
+  sherpa-app-shell — the top-level application frame.
+
+  A fixed region layout: a nav rail on the inline-start edge, an optional header
+  row across the top of the main column, and the scrolling content area. Purely
+  structural — it slots other components into place and owns no behaviour.
+
+  Slots:
+    nav        — the navigation rail (typically sherpa-nav)
+    header     — the app header row (reflects data-has-header)
+    (default)  — the main content area
+
+  Public API:
+    data-nav-collapsed  — narrow the nav rail (the rail component reads this too)
+-->
+<template id="default">
+  <div class="nav" part="nav">
+    <slot name="nav"></slot>
+  </div>
+  <div class="main" part="main">
+    <div class="header" part="header">
+      <slot name="header"></slot>
+    </div>
+    <div class="content" part="content">
+      <slot></slot>
+    </div>
+  </div>
+</template>

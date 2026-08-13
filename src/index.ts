@@ -29,3 +29,5 @@ export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';
 export { SherpaContainer } from './components/sherpa-container/sherpa-container.js';
 export { SherpaInputText } from './components/sherpa-input-text/sherpa-input-text.js';
+export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
+export { SherpaNav, type NavItem } from './components/sherpa-nav/sherpa-nav.js';

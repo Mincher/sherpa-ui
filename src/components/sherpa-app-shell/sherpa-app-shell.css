@@ -1,0 +1,52 @@
+/**
+ * sherpa-app-shell.css — the application frame layout.
+ *
+ * A two-column grid: a fixed-width nav rail + a flexible main column. The main
+ * column stacks an optional header row over a scrolling content area. All
+ * structure, no behaviour — the header row collapses when its slot is empty.
+ */
+
+:host {
+  display: grid;
+  grid-template-columns: var(--_nav-width, 240px) 1fr;
+  block-size: 100%;
+  min-block-size: 100vh;
+  background: var(--sherpa-surface-page-default, #ffffff);
+  color: var(--sherpa-content-default-body, #4a4a54);
+
+  --_nav-width: 240px;
+}
+
+:host([data-nav-collapsed]) {
+  --_nav-width: 56px;
+}
+
+.nav {
+  min-inline-size: 0;
+  border-inline-end: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #e0e0e6);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  overflow: hidden;
+}
+
+.main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+
+.header {
+  display: none;
+  border-block-end: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #e0e0e6);
+}
+:host([data-has-header]) .header {
+  display: block;
+}
+
+.content {
+  min-block-size: 0;
+  overflow: auto;
+  padding: var(--sherpa-space-lg, 20px);
+}
