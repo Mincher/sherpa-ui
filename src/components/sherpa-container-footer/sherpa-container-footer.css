@@ -1,0 +1,25 @@
+/**
+ * sherpa-container-footer.css — all container-footer presentation.
+ *
+ * A single actions row. It collapses when empty and appears when the slot has
+ * content (data-has-content, reflected by the base class). data-align controls
+ * the horizontal distribution of the slotted controls. Pure data-*.
+ */
+
+:host {
+  display: none;
+}
+:host([data-has-content]) { display: block; }
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* default: end-aligned */
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-sm, 12px) var(--sherpa-space-md, 16px);
+}
+
+/* ── Alignment ────────────────────────────────────────────────────────── */
+:host([data-align="start"]) .row { justify-content: flex-start; }
+:host([data-align="end"]) .row { justify-content: flex-end; }
+:host([data-align="between"]) .row { justify-content: space-between; }

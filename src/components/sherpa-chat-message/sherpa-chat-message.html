@@ -1,0 +1,32 @@
+<!--
+  sherpa-chat-message — a single chat bubble for AI / messaging threads.
+
+  Public API:
+    data-role     assistant (default, left, neutral) | user (right, accent) | system (centred, muted)
+    data-author   optional author name shown above the bubble
+    data-time     optional timestamp shown beside the author
+    data-content  optional text body (the default slot overrides it when slotted)
+
+  Slots:
+    avatar    — custom avatar content, replaces the default glyph (reflects data-has-avatar)
+    (default) — bubble body content, overrides data-content
+
+  Fires: nothing — a passive surface. Consumers wire their own controls.
+-->
+<template id="default">
+  <div class="message" part="message">
+    <span class="avatar" part="avatar" aria-hidden="true">
+      <slot name="avatar"><span class="avatar-glyph"></span></slot>
+    </span>
+    <div class="stack">
+      <div class="meta" part="meta">
+        <span class="author" part="author"></span>
+        <span class="time" part="time"></span>
+      </div>
+      <div class="bubble" part="bubble">
+        <span class="content"></span>
+        <slot></slot>
+      </div>
+    </div>
+  </div>
+</template>

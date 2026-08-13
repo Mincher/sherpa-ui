@@ -1,0 +1,39 @@
+<!--
+  sherpa-nav-item — a single navigation row.
+
+  For consumers building a custom nav by hand (the reforged sherpa-nav stamps
+  its own rows internally). The host IS the interactive row. Two templates:
+
+    • default — leading icon, label, optional trailing badge/count slot
+    • promo   — a larger CTA-style row: icon, heading, description
+
+  Public API:
+    data-icon        leading icon glyph (text/emoji)
+    data-label       row label text
+    data-badge       trailing count/badge text
+    data-description promo description (promo variant only)
+    data-active      active / current state
+    data-href        render the row as a link
+    data-variant     "promo" for the CTA row
+    disabled         disabled state
+
+  Fires: nav-item-click — detail: { label, href }
+-->
+<template id="default">
+  <a class="row" part="row">
+    <span class="icon" part="icon" aria-hidden="true"></span>
+    <span class="label" part="label"></span>
+    <span class="badge" part="badge"><slot name="trailing"></slot></span>
+  </a>
+</template>
+
+<template id="promo">
+  <a class="promo" part="row">
+    <span class="promo-icon" part="icon" aria-hidden="true"></span>
+    <span class="promo-body">
+      <span class="promo-heading" part="heading"></span>
+      <span class="promo-description" part="description"></span>
+    </span>
+    <span class="promo-chevron" part="chevron" aria-hidden="true">&#x203A;</span>
+  </a>
+</template>

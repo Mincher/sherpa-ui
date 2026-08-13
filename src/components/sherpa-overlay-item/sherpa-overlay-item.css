@@ -1,0 +1,107 @@
+/**
+ * sherpa-overlay-item.css — a menu option row.
+ *
+ * A horizontal flex row: check → icon → label → shortcut. The host is the
+ * interactive element. Hover / active (keyboard-highlighted) rows get a subtle
+ * surface; the danger variant is destructive-red; disabled uses inactive tokens
+ * (never opacity). Check mark shows only when data-checked.
+ */
+
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  inline-size: 100%;
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  box-sizing: border-box;
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+/* ── Check mark (checkable items) ──────────────────────────────────── */
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-sm, 16px);
+  flex-shrink: 0;
+  visibility: hidden;
+  color: var(--sherpa-content-primary-default, #3c5edd);
+}
+:host([data-checked]) .check { visibility: visible; }
+
+/* ── Leading icon ──────────────────────────────────────────────────── */
+.icon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-md, 20px);
+  flex-shrink: 0;
+}
+:host([data-icon]) .icon { display: inline-flex; }
+
+/* ── Label ─────────────────────────────────────────────────────────── */
+.label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Trailing shortcut / slot ──────────────────────────────────────── */
+.shortcut {
+  display: none;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--sherpa-content-default-secondary, #6a6a74);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-family: var(--sherpa-font-family-mono, monospace);
+}
+:host([data-shortcut]) .shortcut,
+:host([data-has-trailing]) .shortcut { display: inline-flex; }
+
+/* ── Hover / active (keyboard-highlighted) / focus ─────────────────── */
+:host(:hover),
+:host([data-active]),
+:host(:focus-visible) {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+:host(:focus-visible) {
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Danger variant ────────────────────────────────────────────────── */
+:host([data-variant="danger"]) {
+  color: var(--sherpa-content-critical-default, #bf2c09);
+}
+:host([data-variant="danger"]) .icon,
+:host([data-variant="danger"]) .check {
+  color: var(--sherpa-content-critical-default, #bf2c09);
+}
+:host([data-variant="danger"]:hover),
+:host([data-variant="danger"][data-active]),
+:host([data-variant="danger"]:focus-visible) {
+  color: var(--sherpa-content-critical-default, #bf2c09);
+}
+
+/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
+:host([disabled]) {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+  background: transparent;
+}
+:host([disabled]) .icon,
+:host([disabled]) .check,
+:host([disabled]) .shortcut {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+}

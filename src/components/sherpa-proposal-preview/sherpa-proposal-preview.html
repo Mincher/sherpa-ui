@@ -1,0 +1,46 @@
+<!--
+  sherpa-proposal-preview — a card wrapping a set of proposed operations.
+
+  A titled card that lists proposal ops (slotted sherpa-proposal-op children, or
+  data-driven rows via populate([...])) and offers accept-all / reject-all actions.
+
+  Public API:
+    data-title       header title (the header slot overrides it)
+    data-rationale   optional italic rationale shown under the title
+
+  Slots:
+    header    — custom header content, overrides data-title (reflects data-has-header)
+    (default) — sherpa-proposal-op children (reflects data-has-content)
+    decision  — custom decision controls; give each control a data-action of
+                "accept" | "reject" and the preview emits the matching event.
+
+  Fires:
+    proposal-accept — the accept-all button (or a data-action="accept" control) was clicked
+                      detail: { ops: Array<{ op, target?, label? }> }
+    proposal-reject — the reject-all button (or a data-action="reject" control) was clicked
+                      detail: {}
+-->
+<template id="default">
+  <article class="proposal" part="proposal">
+    <header class="head" part="head">
+      <slot name="header"><span class="title" part="title"></span></slot>
+      <p class="rationale" part="rationale"></p>
+    </header>
+
+    <div class="ops" part="ops">
+      <slot></slot>
+    </div>
+
+    <footer class="decision" part="decision">
+      <slot name="decision">
+        <button class="action reject" part="reject" type="button" data-action="reject">Reject all</button>
+        <button class="action accept" part="accept" type="button" data-action="accept">Accept all</button>
+      </slot>
+    </footer>
+  </article>
+
+  <!-- Cloning prototype for data-driven ops (no id — ignored by the template parser). -->
+  <template class="op-tpl">
+    <sherpa-proposal-op></sherpa-proposal-op>
+  </template>
+</template>

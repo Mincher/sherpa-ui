@@ -66,3 +66,12 @@ export { SherpaSparkline } from './components/sherpa-sparkline/sherpa-sparkline.
 export { SherpaMetric } from './components/sherpa-metric/sherpa-metric.js';
 export { SherpaSlider } from './components/sherpa-slider/sherpa-slider.js';
 export { SherpaToast, type ToastOptions } from './components/sherpa-toast/sherpa-toast.js';
+export { SherpaPanel } from './components/sherpa-panel/sherpa-panel.js';
+export { SherpaContainerHeader } from './components/sherpa-container-header/sherpa-container-header.js';
+export { SherpaContainerFooter } from './components/sherpa-container-footer/sherpa-container-footer.js';
+export { SherpaNavItem } from './components/sherpa-nav-item/sherpa-nav-item.js';
+export { SherpaNavSection } from './components/sherpa-nav-section/sherpa-nav-section.js';
+export { SherpaOverlayItem } from './components/sherpa-overlay-item/sherpa-overlay-item.js';
+export { SherpaChatMessage } from './components/sherpa-chat-message/sherpa-chat-message.js';
+export { SherpaProposalOp } from './components/sherpa-proposal-op/sherpa-proposal-op.js';
+export { SherpaProposalPreview } from './components/sherpa-proposal-preview/sherpa-proposal-preview.js';

@@ -75,6 +75,7 @@
   --sherpa-content-default-secondary: var(--core-neutral-500);
   --sherpa-content-default-on-color-body: var(--core-white);
   --sherpa-content-primary-default: var(--core-accent-500);
+  --sherpa-content-brand-default: var(--core-brand-500); /* AI / brand purple */
   --sherpa-content-inactive-default: var(--core-neutral-400);
 
   /* ── Borders (LIGHT) ── */

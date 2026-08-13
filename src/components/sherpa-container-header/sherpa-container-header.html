@@ -1,0 +1,29 @@
+<!--
+  sherpa-container-header — the header bar for a container's `header` slot.
+
+  A title (data-title or a slotted heading), an optional description, and a
+  trailing actions slot.
+
+  Public API:
+    data-title        heading text (rendered into .title)
+    data-description  secondary text (rendered into .description)
+
+  Slots:
+    heading  — custom heading element (replaces the default .title)
+    actions  — trailing action controls (reflects data-has-actions)
+
+  Fires: nothing — slotted controls emit their own events.
+-->
+<template id="default">
+  <header class="row" part="row">
+    <div class="labels" part="labels">
+      <slot name="heading">
+        <span class="title" part="title"></span>
+      </slot>
+      <span class="description" part="description"></span>
+    </div>
+    <div class="actions" part="actions">
+      <slot name="actions" data-accepts="control,input"></slot>
+    </div>
+  </header>
+</template>

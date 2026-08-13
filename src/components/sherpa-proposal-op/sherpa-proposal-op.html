@@ -1,0 +1,17 @@
+<!--
+  sherpa-proposal-op — a single proposed operation row inside a proposal preview.
+
+  Public API:
+    data-op       create | update | delete  (drives the glyph + colour)
+    data-label    the change description (the default slot overrides it when slotted)
+    data-target   optional machine-readable target (node id, field key) — not styled
+
+  Slots:
+    (default) — the change description, overrides data-label
+
+  Fires: nothing — decisions live on the enclosing sherpa-proposal-preview.
+-->
+<template id="default">
+  <span class="glyph" part="glyph" aria-hidden="true"></span>
+  <span class="label" part="label"><span class="text"></span><slot></slot></span>
+</template>

@@ -1,0 +1,48 @@
+/**
+ * sherpa-proposal-op.css — a single proposed operation row.
+ *
+ * A two-column row: a colour-coded glyph (+ / ~ / −) and the change description.
+ * data-op selects both the glyph character and its hue via a private --_hue that
+ * defaults to the neutral secondary ink. A slotted body overrides the data-label
+ * text node. Pure data-* selectors — JS never styles.
+ */
+
+:host {
+  display: grid;
+  grid-template-columns: var(--sherpa-size-sm, 16px) minmax(0, 1fr);
+  gap: var(--sherpa-space-2xs, 4px);
+  align-items: baseline;
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+
+  /* neutral by default; op blocks re-pin the hue + glyph */
+  --_hue: var(--sherpa-content-default-secondary, #8a8a96);
+  --_glyph: "\00B7"; /* · */
+}
+
+.glyph {
+  text-align: center;
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  color: var(--_hue);
+}
+.glyph::after { content: var(--_glyph); }
+
+.label { min-width: 0; word-wrap: break-word; overflow-wrap: anywhere; }
+
+/* A slotted body replaces the data-label text node. */
+:host([data-has-content]) .text { display: none; }
+
+/* ── Op type → glyph + hue ───────────────────────────────────────────── */
+:host([data-op="create"]) {
+  --_glyph: "+";
+  --_hue: var(--sherpa-content-success-default, #16915a);
+}
+:host([data-op="update"]) {
+  --_glyph: "~";
+  --_hue: var(--sherpa-content-warning-default, #b5730a);
+}
+:host([data-op="delete"]) {
+  --_glyph: "\2212"; /* − */
+  --_hue: var(--sherpa-content-critical-default, #c8324f);
+}

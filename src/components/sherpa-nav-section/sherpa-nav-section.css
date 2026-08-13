@@ -1,0 +1,124 @@
+/**
+ * sherpa-nav-section.css — a settings-style secondary navigation panel.
+ *
+ * A vertical column: an optional heading, then labelled groups of item rows.
+ * The active item (matched by data-active-id → data-active on the row) gets an
+ * accent treatment. Pure data-* selectors; JS only stamps the rows and reflects
+ * the active id.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  min-block-size: 0;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  border-inline-end: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d5d5d5);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  overflow: hidden;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  block-size: 100%;
+}
+
+.heading {
+  margin: 0;
+  padding: var(--sherpa-space-md, 16px);
+  color: var(--sherpa-content-default-heading, #18181f);
+  font-size: var(--sherpa-font-size-heading-sm, 18px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+:host(:not([data-heading])) .heading { display: none; }
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-y: auto;
+  padding-block: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-space-sm, 12px);
+}
+
+/* ── Group ─────────────────────────────────────────────────────────── */
+.group { display: flex; flex-direction: column; }
+
+.group-label {
+  margin: 0;
+  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-md, 16px);
+  color: var(--sherpa-content-default-secondary, #6a6a74);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.group[data-no-label] .group-label { display: none; }
+
+.group-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+
+/* ── Item rows ─────────────────────────────────────────────────────── */
+.item-row { margin: 0; }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  inline-size: 100%;
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-md, 16px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+.item:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+.item-icon {
+  display: inline-flex;
+  inline-size: var(--sherpa-size-md, 20px);
+  justify-content: center;
+  flex-shrink: 0;
+}
+.item-icon:empty { display: none; }
+
+.item-label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Active item ───────────────────────────────────────────────────── */
+.item-row[data-active] .item {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-primary-default, #3c5edd);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+.item-row[data-active] .item-icon {
+  color: var(--sherpa-content-primary-default, #3c5edd);
+}
