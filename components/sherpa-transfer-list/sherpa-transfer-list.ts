@@ -17,7 +17,6 @@
  *
  * @data {array} [{ value, label, selected? }] — The full option pool for both panes
  * @method populate(options)          — Canonical data entry: [{ value, label, selected? }]
- * @method setOptions(options)        — Deprecated alias for populate()
  * @method getSelectedValues()        — Returns array of currently-selected values
  */
 
@@ -84,11 +83,6 @@ export class SherpaTransferList extends SherpaElement {
     }));
     this.#checked.clear();
     this.#renderPanes();
-  }
-
-  /** @deprecated Use {@link populate} — retained for back-compat. */
-  setOptions(options: Array<{ value: unknown; label?: unknown; selected?: unknown }> = []): void {
-    this.populate(options);
   }
 
   getSelectedValues(): string[] {

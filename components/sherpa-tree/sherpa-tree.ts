@@ -13,7 +13,7 @@
  * @element sherpa-tree
  * @category content
  * @description A hierarchical tree of expandable nodes. Feed it a JSON forest via
- *   data-nodes or setNodes(). Set data-selection="single" for one selectable leaf, or
+ *   data-nodes or populate(). Set data-selection="single" for one selectable leaf, or
  *   "multi" for checkbox selection with indeterminate parents. Full WAI-ARIA tree keyboard
  *   support (arrows, Home/End, Left/Right expand-collapse, type-ahead, Enter/Space). Drop it
  *   into a dropdown for an Advanced SelectBox, or into any container for a standalone treeview.
@@ -35,7 +35,6 @@
  *
  * @data {array} [{ value, label?, children?, disabled?, icon?, expanded? }] — Node forest
  * @method populate(nodes) — Canonical data entry (JSON-serialised to data-nodes)
- * @method setNodes(nodes) — Deprecated alias for populate()
  * @method getValue()      — Current selection (string for single, string[] for multi)
  * @method setValue(v)     — Set selection programmatically
  * @method expandAll()     — Expand every branch
@@ -118,11 +117,6 @@ export class SherpaTree extends SherpaElement {
    */
   protected override renderData(source: unknown): void {
     this.dataset["nodes"] = JSON.stringify(Array.isArray(source) ? source : []);
-  }
-
-  /** @deprecated Use {@link populate} — retained for back-compat. */
-  public setNodes(nodes: TreeNode[]): void {
-    this.populate(nodes ?? []);
   }
 
   public getValue(): string | string[] {

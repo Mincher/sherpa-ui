@@ -3,7 +3,7 @@
  * @category media
  * @description Compact inline trend indicator, typically embedded in a metric card, table cell,
  *   or list item. Use to show trend direction without axes or labels. Pass values via
- *   data-values (comma-separated) or setValues(). Use the bar variant for discrete category
+ *   data-values (comma-separated) or populate(). Use the bar variant for discrete category
  *   comparisons; the default line variant for continuous time series.
  *
  * @attr {string}  data-values  — Comma-separated or JSON array (e.g. "10,25,15,30")
@@ -12,7 +12,6 @@
  *
  * @data {array} [number, …] — Data points, e.g. [10, 25, 15, 30]
  * @method populate(values) — Canonical data entry: number[]
- * @method setValues(values) — Deprecated alias for populate()
  */
 
 import { SherpaElement } from '../utilities/sherpa-element/sherpa-element.js';
@@ -98,24 +97,14 @@ export class SherpaSparkline extends SherpaElement {
   };
 
   /**
-   * Set sparkline data points.
-   * Writes to the data-values attribute — the single source of truth.
-   * The attribute persists through the async bootstrap, so values set
-   * before the template loads are picked up by onRender().
-   * @param {number[]} values - Array of numeric values (any range, will be normalized)
-   */
-  /**
    * Render data points. Dispatched from the unified `populate()` —
-   * call `el.populate([10, 25, 15, 30])`. Serialises to `data-values`.
+   * call `el.populate([10, 25, 15, 30])`. Serialises to `data-values` (the single
+   * source of truth), which persists through the async bootstrap so values set
+   * before the template loads are picked up by onRender().
    */
   protected override renderData(source: unknown): void {
     if (!Array.isArray(source) || source.length === 0) return;
     this.dataset["values"] = JSON.stringify(source);
-  }
-
-  /** @deprecated Use {@link populate} — retained for back-compat. */
-  setValues(values: number[]): void {
-    this.populate(values);
   }
 
   #updateFromAttribute(): void {

@@ -31,7 +31,7 @@ const MEMBERS = [
 
 function apply(list, opts) {
   if (!list) return;
-  if (typeof list.setOptions === 'function') list.setOptions(opts);
+  if (typeof list.populate === 'function') list.populate(opts);
 }
 
 export default {

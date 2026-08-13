@@ -230,14 +230,14 @@ export class SherpaInputSelect extends SherpaInputBase {
 
   /** Feed the node forest to the child sherpa-tree and rebuild the path map. */
   #renderTree(): void {
-    const tree = this.$<HTMLElement & { setNodes?: (n: TreeNode[]) => void }>('.tree-widget');
+    const tree = this.$<HTMLElement & { populate?: (n: TreeNode[]) => void }>('.tree-widget');
     if (!tree) return;
     let nodes: TreeNode[] = [];
     try { nodes = JSON.parse(this.dataset["tree"] || '[]'); } catch { /* intentional */ }
     this.#pathByValue.clear();
     this.#indexPaths(nodes, []);
     // Delegate all node rendering + keyboard a11y to sherpa-tree.
-    if (tree.setNodes) tree.setNodes(nodes);
+    if (tree.populate) tree.populate(nodes);
     else tree.setAttribute('data-nodes', JSON.stringify(nodes));
   }
 

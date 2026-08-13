@@ -6,7 +6,7 @@
  *   with context. Feed via setData() from the data pipeline, or set value, data-trend, and
  *   data-delta attributes directly. Trend colouring (success for up, critical for down) is
  *   applied automatically but can be overridden globally via setTrendStatusMap().
- *   NOTE: Sparklines require a JS call after render — `await el.rendered; el.setValues([...])`.
+ *   NOTE: Sparklines require a JS call after render — `await el.rendered; el.populate([...])`.
  *   The `data-trend` and `data-delta` attributes control the trend arrow and delta text only.
  *
  * @attr {string}  data-metric-id — Unique identifier for the metric
@@ -320,11 +320,11 @@ export class SherpaMetric extends ContentAttributesMixin(SherpaElement) {
 
     if (!showSparkline) return;
 
-    const sparkline = this.$<HTMLElement & { setValues?: (v: number[]) => void }>("sherpa-sparkline");
+    const sparkline = this.$<HTMLElement & { populate?: (v: number[]) => void }>("sherpa-sparkline");
     if (!sparkline) return;
 
     sparkline.dataset["unit"] = unitText || "";
-    sparkline.setValues?.(Array.isArray(values) ? values : []);
+    sparkline.populate?.(Array.isArray(values) ? values : []);
   }
 
   #formatNumber(num: number, unit: string): string {

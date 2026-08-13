@@ -20,7 +20,7 @@ test('sherpa-transfer-list setOptions renders panes; adding an item updates sele
     await el.rendered;
     let detail: any = null;
     el.addEventListener('transfer-change', (e: any) => (detail = e.detail));
-    el.setOptions([
+    el.populate([
       { value: 'a', label: 'Apple' },
       { value: 'b', label: 'Banana' },
       { value: 'c', label: 'Cherry', selected: true },
@@ -88,7 +88,7 @@ test('sherpa-progress-step-tracker setSteps renders steps; data-current-step mar
     await el.rendered;
     let changeDetail: any = null;
     el.addEventListener('step-change', (e: any) => (changeDetail = e.detail));
-    el.setSteps([
+    el.populate([
       { label: 'Account' },
       { label: 'Profile' },
       { label: 'Review' },

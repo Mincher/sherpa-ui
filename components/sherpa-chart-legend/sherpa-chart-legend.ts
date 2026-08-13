@@ -16,7 +16,6 @@
  *
  * @data {array} [{ label, value?, color?, active?, link? }] — Legend items to render
  * @method populate(items) — Canonical data entry: [{ label, value?, color?, active?, link? }]
- * @method setItems(items) — Deprecated alias for populate()
  *
  * @prop {Array} items — Current legend items (getter-only)
  */
@@ -76,11 +75,6 @@ export class SherpaChartLegend extends SherpaElement {
   protected override renderData(source: unknown): void {
     this.#items = Array.isArray(source) ? (source as LegendItem[]) : [];
     this.#render();
-  }
-
-  /** @deprecated Use {@link populate} — retained for back-compat. */
-  setItems(items: LegendItem[]): void {
-    this.populate(items);
   }
 
   /** Get current items. */

@@ -42,7 +42,6 @@
  *
  * @data {array} [{ label, items: [{ id?, label, type?, description? }] }] — Section groups
  * @method populate(sections)     — Canonical data entry: [{ label, items }]
- * @method setSections(sections)  — Deprecated alias for populate()
  * @method setActive(id)          — Mark the item with the given id active
  * @method getActiveId()          — Returns the currently active id
  *
@@ -147,11 +146,6 @@ export class SherpaNavSection extends SherpaElement {
     this.#renderSections();
   }
 
-  /** @deprecated Use {@link populate} — retained for back-compat. */
-  setSections(sections: NavSectionGroup[]): void {
-    this.populate(sections);
-  }
-
   /** Mark the item with the given id as active. */
   setActive(id: string | null): void {
     if (id) this.setAttribute("data-active-id", id);
@@ -170,7 +164,6 @@ export class SherpaNavSection extends SherpaElement {
       this.els.heading.textContent = this.dataset["heading"] || "";
     }
   }
-
 
   /** Parse the data-sections JSON attribute and populate from it. */
   #syncFromAttribute(): void {
@@ -286,6 +279,5 @@ export class SherpaNavSection extends SherpaElement {
     return null;
   }
 }
-
 
 customElements.define("sherpa-nav-section", SherpaNavSection);

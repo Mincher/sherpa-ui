@@ -28,7 +28,6 @@
  * @data {array} [{ label, sublabel?, timestamp?, status?, completed?, error?, disabled? }] — Steps;
  *   also accepts a { steps: [...] } wrapper object.
  * @method populate(steps)        — Canonical data entry: StepData[] OR { steps: StepData[] }
- * @method setSteps(steps)         — Deprecated alias for populate()
  * @method nextStep()              — Advance to the next step
  * @method previousStep()          — Go back one step
  * @method goToStep(n)             — Jump to step n (1-based)
@@ -260,11 +259,6 @@ export class SherpaProgressStepTracker extends SherpaElement {
       disabled:  s.disabled ?? false,
     }));
     if (this.#ready) this.#renderSteps();
-  }
-
-  /** @deprecated Use {@link populate} — retained for back-compat. */
-  setSteps(steps: StepData[]): void {
-    this.populate(steps);
   }
 
   nextStep(): void {

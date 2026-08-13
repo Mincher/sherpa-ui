@@ -150,7 +150,7 @@ test('sherpa-sparkline setValues([...]) reveals shapes + points', async ({ page 
   await page.evaluate(async () => {
     const el = document.querySelector('sherpa-sparkline') as HTMLElement & { rendered: Promise<void>; setValues: (v: number[]) => void };
     await el.rendered;
-    el.setValues([5, 12, 8, 20, 15]);
+    el.populate([5, 12, 8, 20, 15]);
   });
   await settle();
   const r = await page.evaluate(() => {
@@ -177,7 +177,7 @@ test('sherpa-chart-legend setItems renders rows; interactive row fires legend-it
     await el.rendered;
     let detail: any = null;
     el.addEventListener('legend-item-click', (e: any) => (detail = e.detail));
-    el.setItems([
+    el.populate([
       { label: 'Alpha', value: 12, link: true },
       { label: 'Beta', value: 8, link: true },
     ]);
@@ -206,7 +206,7 @@ test('sherpa-metric renders label/value/delta and drives inner sparkline via set
     // set data-sparkline so the inner sparkline is present + driveable
     (el as HTMLElement).toggleAttribute('data-sparkline', true);
     const spark = sr.querySelector('sherpa-sparkline') as (HTMLElement & { rendered: Promise<void>; setValues: (v: number[]) => void }) | null;
-    if (spark) { await spark.rendered; spark.setValues([1, 4, 2, 6]); }
+    if (spark) { await spark.rendered; spark.populate([1, 4, 2, 6]); }
     return {
       label: sr.querySelector('.header-title')!.textContent,
       value: sr.querySelector('.metric-value')!.textContent,

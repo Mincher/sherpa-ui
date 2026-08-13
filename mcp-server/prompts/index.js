@@ -491,7 +491,7 @@ Wire open/close and navigation only. Mark API call locations with TODO comments:
 ### 7. Data wiring patterns
 - Data grid: \`grid.setColumnConfig({...}); grid.setData({ columns, rows });\`
 - Charts: \`chart.setData({...});\`
-- Metrics: \`await metric.rendered; metric.setValues([...]);\` OR \`metric.setData({ name, summary: { total, delta, deltaPercent, values } });\`
+- Metrics: \`await metric.rendered; metric.populate({ name, summary: { total, delta, deltaPercent, values } });\`
 - Dialog: \`el.setAttribute('data-open','');\` to open, \`el.removeAttribute('data-open');\` to close
 - Toast: \`SherpaToast.success('...');\` / \`SherpaToast.critical('...');\`
 
