@@ -51,6 +51,7 @@
     "css:fallbacks": "node scripts/inject-css-fallbacks.js",
     "css:fallbacks:check": "node scripts/inject-css-fallbacks.js --dry",
     "lint:css": "node scripts/lint-component-css.mjs",
+    "audit:slots": "node scripts/slot-contract-audit.mjs",
     "lint:css:strict": "node scripts/lint-component-css.mjs --strict",
     "lint": "eslint components/**/*.ts --max-warnings 0",
     "lint:fix": "eslint components/**/*.ts --fix",
