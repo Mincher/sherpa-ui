@@ -3,13 +3,12 @@
  * @category media
  * @description Bar chart for comparing values across discrete categories. Use for categorical
  *   comparisons: revenue by region, tickets by status, users by role. Supports stacked bars
- *   (data-stacked) for part-to-whole breakdowns. Automatically switches between horizontal and
- *   vertical orientation based on the container aspect ratio. Feed via setData(config),
+ *   (data-mode="stacked") for part-to-whole breakdowns. Automatically switches between horizontal
+ *   and vertical orientation based on the container aspect ratio. Feed via populate(config),
  *   data-src-json (standalone/static pages), or the ContentAttributesMixin data pipeline
  *   (app-shell integration — last writer wins on datasetfiltered).
  *
  * @attr {boolean} data-loading        — Show loading state
- * @attr {boolean} data-stacked        — Stack bars by segment (legacy alias for data-mode="stacked")
  * @attr {enum}    data-mode           — single | grouped | stacked | full-stacked (multi-series layout;
  *                                       defaults to grouped for multi-series, single for one series)
  * @attr {string}  data-label          — Chart heading text
@@ -122,7 +121,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     return [
       ...super.observedAttributes,
       "data-loading",
-      "data-stacked",
       "data-mode",
       "data-label",
       "data-orientation",
@@ -227,7 +225,6 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
         this.#updateDisplayData();
         this.#updateChart();
         break;
-      case "data-stacked":
       case "data-orientation":
         if (this.#data) {
           this.#render();
@@ -917,13 +914,13 @@ export class SherpaBarChart extends ContentAttributesMixin(SherpaElement) {
     el.replaceChildren(...nodes.filter((n): n is HTMLElement => n !== null));
   }
 
-  /** Resolve the bar layout mode. data-mode wins; data-stacked is legacy for
-   *  "stacked". Single-series data always renders as "single". */
+  /** Resolve the bar layout mode. data-mode wins; a stacked flag on the parsed
+   *  data selects "stacked". Single-series data always renders as "single". */
   #barMode(series: BarSeries[]): "single" | "stacked" | "grouped" | "full-stacked" {
     if (series.length <= 1) return "single";
     const m = this.dataset["mode"];
     if (m === "grouped" || m === "stacked" || m === "full-stacked") return m;
-    if (this.hasAttribute("data-stacked") || this.#data?.stacked) return "stacked";
+    if (this.#data?.stacked) return "stacked";
     return "grouped"; // multi-series default = side-by-side
   }
 
