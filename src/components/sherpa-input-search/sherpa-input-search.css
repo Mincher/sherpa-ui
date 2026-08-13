@@ -1,0 +1,162 @@
+/**
+ * sherpa-input-search.css — search field presentation.
+ *
+ * Shares the input-text field chrome (label / description / message). The control
+ * row carries a pure-CSS magnifying-glass glyph (lens + handle) on the left and a
+ * clear (×) button on the right that shows only when the host has [data-has-value].
+ * Focus, validation, disabled are pure CSS.
+ */
+
+:host {
+  display: block;
+  --_border: var(--sherpa-border-control-secondary-default, #c8c8d2);
+  --_border-focus: var(--sherpa-border-control-primary-default, #3c5edd);
+  --_border-error: var(--sherpa-border-critical-default, #c8324f);
+  --_glyph: var(--sherpa-content-default-secondary, #8a8a96);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+
+.label {
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.description {
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  margin-bottom: var(--sherpa-space-3xs, 2px);
+}
+.label:empty,
+.description:empty,
+.message:empty {
+  display: none;
+}
+
+/* ── Control row: glyph + input + clear button ──────────────────────── */
+.control-row {
+  display: flex;
+  align-items: center;
+  border: var(--sherpa-border-width-base, 1px) solid var(--_border);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* Pure-CSS magnifying glass: lens (::before ring) + handle (::after bar). */
+.search-icon {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--sherpa-size-md, 16px);
+  height: var(--sherpa-size-md, 16px);
+  margin-inline-start: var(--sherpa-space-sm, 12px);
+  color: var(--_glyph);
+}
+.search-icon::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 10px;
+  height: 10px;
+  border: var(--sherpa-border-width-thick, 2px) solid currentColor;
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+}
+.search-icon::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 6px;
+  height: var(--sherpa-border-width-thick, 2px);
+  background: currentColor;
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  transform: rotate(45deg);
+  transform-origin: right center;
+}
+
+.control {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  min-height: var(--sherpa-size-3xl, 40px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-base, 16px);
+  line-height: 1.4;
+}
+.control:focus-visible { outline: none; }
+.control::placeholder { color: var(--sherpa-content-default-secondary, #8a8a96); }
+/* Drop the native search decorations; we render our own clear button. */
+.control::-webkit-search-cancel-button,
+.control::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+
+/* Clear button — hidden until the host reports a value. */
+.clear { display: none; }
+:host([data-has-value]) .clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--sherpa-size-2xl, 32px);
+  height: var(--sherpa-size-2xl, 32px);
+  margin-inline-end: var(--sherpa-space-3xs, 2px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  font-size: var(--sherpa-font-size-heading-sm, 18px);
+  line-height: 1;
+  cursor: pointer;
+}
+:host([data-has-value]) .clear:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, #f0f0f4);
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+:host([data-has-value]) .clear:active {
+  background: var(--sherpa-surface-control-tertiary-down, #e6e6ec);
+}
+
+/* ── Focus — ring on the row ─────────────────────────────────────────── */
+.control-row:focus-within {
+  border-color: var(--_border-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
+}
+
+/* ── Validation — native :user-invalid, or an explicit data-error ────── */
+.control-row:has(.control:user-invalid),
+:host([data-error]) .control-row {
+  border-color: var(--_border-error);
+}
+.control-row:has(.control:user-invalid):focus-within,
+:host([data-error]) .control-row:focus-within {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-error) 30%, transparent);
+}
+.message {
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  color: var(--sherpa-content-critical-default, #c8324f);
+}
+
+/* ── Disabled — inactive tokens, never opacity ───────────────────────── */
+:host([disabled]) .control-row {
+  background: var(--sherpa-surface-container-inactive, #f4f4f6);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e6);
+}
+:host([disabled]) .control {
+  cursor: not-allowed;
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+}
+:host([disabled]) .search-icon,
+:host([disabled]) .clear {
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+}
+:host([disabled]) .clear { cursor: not-allowed; pointer-events: none; }
+:host([disabled]) .label { color: var(--sherpa-content-inactive-default, #a6a6b2); }

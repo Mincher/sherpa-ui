@@ -1,0 +1,34 @@
+<!--
+  sherpa-pagination — page navigation.
+
+  A previous button, a windowed run of numbered page buttons (with ellipsis gaps
+  for large ranges), and a next button. The numbered buttons and gaps are stamped
+  from cloning prototypes (<template class="num-tpl"> / <template class="gap-tpl">,
+  no id → the base parser ignores them). Clicking a page emits page-change.
+
+  Public API:
+    data-total-pages  — total page count (default 1)
+    data-current-page — the active 1-based page (default 1)
+
+  Fires: page-change — detail: { page }
+-->
+<template id="default">
+  <nav class="pager" part="pager" aria-label="Pagination">
+    <button class="btn prev" data-action="prev" type="button" aria-label="Previous page">
+      <span class="chev chev-left" aria-hidden="true"></span>
+    </button>
+
+    <span class="numbers" part="numbers"></span>
+
+    <button class="btn next" data-action="next" type="button" aria-label="Next page">
+      <span class="chev chev-right" aria-hidden="true"></span>
+    </button>
+  </nav>
+
+  <template class="num-tpl">
+    <button class="btn num" data-action="page" type="button"></button>
+  </template>
+  <template class="gap-tpl">
+    <span class="gap" aria-hidden="true">…</span>
+  </template>
+</template>

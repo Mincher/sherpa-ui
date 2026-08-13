@@ -1,0 +1,24 @@
+<!--
+  sherpa-input-select — a labelled dropdown backed by a native <select>.
+
+  Options are stamped from populate([{ value, label, selected?, disabled? }]).
+
+  Public API:
+    data-label        field label (hidden when empty)
+    data-description  helper text under the label
+    data-error        error message (shown when set)
+    value             selected value (also a JS property)
+    name / required / disabled   native attributes, mirrored to the inner <select>
+
+  Fires: change — detail: { value } (re-dispatched from the inner <select>)
+-->
+<template id="default">
+  <label class="field" part="field">
+    <span class="label" part="label"></span>
+    <span class="description" part="description"></span>
+    <span class="select" part="select">
+      <select class="control" part="control"></select>
+    </span>
+    <span class="message" part="message" aria-live="polite"></span>
+  </label>
+</template>

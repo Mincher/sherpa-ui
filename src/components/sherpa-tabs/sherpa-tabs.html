@@ -1,0 +1,33 @@
+<!--
+  sherpa-tabs — a tabbed content switcher.
+
+  The tab strip (role="tablist") is populated from populate([{ id, label }]) by
+  cloning the <template class="tab-tpl"> prototype (no id → the base parser
+  ignores it). Content panels are the consumer's slotted children, each carrying
+  a data-tab="<id>" attribute; CSS shows only the one whose id matches the host's
+  data-active-id (::slotted([data-tab]) selectors).
+
+  Public API:
+    data-active-id — id of the currently active tab / panel
+
+  Slots:
+    (default) — the tab panels; each child should have data-tab="<id>"
+    detail    — trailing content beside the tab strip (badges, actions)
+
+  Fires: tab-change — detail: { id }
+-->
+<template id="default">
+  <div class="strip" part="tablist" role="tablist">
+    <span class="tabs"></span>
+    <span class="detail" part="detail"><slot name="detail"></slot></span>
+  </div>
+  <div class="panels" part="panels">
+    <slot></slot>
+  </div>
+
+  <template class="tab-tpl">
+    <button class="tab" part="tab" role="tab" type="button" tabindex="-1" aria-selected="false">
+      <span class="label"></span>
+    </button>
+  </template>
+</template>

@@ -1,0 +1,123 @@
+/**
+ * sherpa-slider.css — all slider presentation.
+ *
+ * A native <input type=range> laid transparently over a styled track. The filled
+ * portion is a separate .fill element whose width is the ONE value JS supplies,
+ * via the --_pct custom property (data-value → --_pct in TS); everything else —
+ * the track, the thumb, the label/value visibility, the disabled look — is pure
+ * CSS off data-*. JS never sets width/display/colour here.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  width: 100%;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+
+  --_accent: var(--_status-text, var(--sherpa-surface-control-primary-default, #3c5edd));
+  --_thumb: var(--sherpa-size-md, 20px);
+  --_rail: var(--sherpa-space-2xs, 4px);
+  --_pct: 0%;
+}
+
+/* ── Head: label + optional value read-out ─────────────────────────── */
+.head {
+  display: none;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sherpa-space-sm, 12px);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+}
+:host([data-label]) .head,
+:host([data-show-value]) .head { display: flex; }
+
+.label { color: var(--sherpa-content-default-body, #4a4a54); font-weight: var(--sherpa-font-weight-medium, 500); }
+.label:empty { display: none; }
+
+.value-out {
+  display: none;
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+:host([data-show-value]) .value-out { display: inline; }
+
+/* ── Track area: styled rail + fill + transparent native input ─────── */
+.track-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--_thumb);
+}
+
+.track {
+  position: absolute;
+  inset-inline: 0;
+  height: var(--_rail);
+  background: var(--sherpa-surface-container-inactive, #f4f4f6);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  width: var(--_pct, 0%);
+  background: var(--_accent);
+  border-radius: inherit;
+}
+
+/* Native input sits transparently on top and owns interaction. */
+.range {
+  position: relative;
+  width: 100%;
+  height: var(--_thumb);
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  z-index: 1;
+}
+.range:focus { outline: none; }
+
+/* The native rail is invisible — the styled .track shows instead. */
+.range::-webkit-slider-runnable-track { background: transparent; height: var(--_thumb); }
+.range::-moz-range-track { background: transparent; height: var(--_thumb); }
+
+/* Thumb. */
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--_thumb);
+  height: var(--_thumb);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  background: var(--sherpa-surface-page-default, #ffffff);
+  border: var(--sherpa-border-width-base, 2px) solid var(--_accent);
+  box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
+}
+.range::-moz-range-thumb {
+  width: var(--_thumb);
+  height: var(--_thumb);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  background: var(--sherpa-surface-page-default, #ffffff);
+  border: var(--sherpa-border-width-base, 2px) solid var(--_accent);
+  box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
+}
+
+/* Focus ring — explicit box-shadow, never a silent --focus-ring(). */
+.range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+.range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
+:host([disabled]) { --_accent: var(--sherpa-content-inactive-default, #a6a6b2); }
+:host([disabled]) .range { cursor: not-allowed; pointer-events: none; }
+:host([disabled]) .track {
+  background: var(--sherpa-surface-container-inactive, #f4f4f6);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e6);
+}
+:host([disabled]) .label,
+:host([disabled]) .value-out { color: var(--sherpa-content-inactive-default, #a6a6b2); }

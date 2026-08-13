@@ -1,0 +1,34 @@
+<!--
+  sherpa-metric — a KPI tile: label, big value, a delta/trend indicator, and an
+  optional embedded sparkline.
+
+  Public API:
+    data-label   — the metric name (shown above the value)
+    data-value   — the formatted value string (big number)
+    data-delta   — the change text (e.g. "+12.5%")
+    data-trend   — up | down | flat  (colours the delta + shows the arrow)
+
+  populate({ name, value, delta, values }) fills all of the above; when `values`
+  is present the embedded sparkline is shown and fed.
+
+  Slots: none — display only.
+  Fires: nothing.
+-->
+<template id="default">
+  <p class="label" part="label"></p>
+
+  <div class="row">
+    <div class="figures">
+      <p class="value" part="value"></p>
+      <div class="trend" part="trend">
+        <span class="arrow arrow-up" aria-hidden="true">&#9650;</span>
+        <span class="arrow arrow-down" aria-hidden="true">&#9660;</span>
+        <span class="delta" part="delta"></span>
+      </div>
+    </div>
+
+    <div class="spark" part="spark">
+      <sherpa-sparkline></sherpa-sparkline>
+    </div>
+  </div>
+</template>

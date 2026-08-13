@@ -1,0 +1,100 @@
+/**
+ * sherpa-metric.css — all KPI-tile presentation.
+ *
+ * A label, a large value, a delta with a directional arrow, and an optional
+ * embedded sparkline. Everything is pure CSS off data-*: the trend direction
+ * colours the delta and reveals the matching arrow; the sparkline region only
+ * appears once JS has fed it (data-has-values). JS never sets display/colour
+ * here — it only writes text and toggles data-* attributes.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+  min-width: 0;
+  container: sherpa-metric / inline-size;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+
+  /* Delta colour — neutral until a trend is set. */
+  --_delta: var(--sherpa-content-default-secondary, #8a8a96);
+}
+
+/* ── Label ─────────────────────────────────────────────────────────── */
+.label {
+  margin: 0;
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.label:empty { display: none; }
+
+/* ── Row: figures + sparkline ──────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-md, 16px);
+  min-width: 0;
+}
+
+.figures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-3xs, 2px);
+  min-width: 0;
+}
+
+/* ── Value ─────────────────────────────────────────────────────────── */
+.value {
+  margin: 0;
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-size: var(--sherpa-font-size-heading-base, 24px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: 1.2;
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+
+/* ── Trend + delta ─────────────────────────────────────────────────── */
+.trend {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--_delta);
+}
+.delta:empty { display: none; }
+
+.arrow { display: none; font-size: var(--sherpa-font-size-body-xs, 12px); line-height: 1; }
+:host([data-trend="up"])   { --_delta: var(--sherpa-content-success-default, #16915a); }
+:host([data-trend="down"]) { --_delta: var(--sherpa-content-critical-default, #c8324f); }
+:host([data-trend="up"])   .arrow-up   { display: inline-flex; }
+:host([data-trend="down"]) .arrow-down { display: inline-flex; }
+
+/* ── Sparkline (only once values have been supplied) ───────────────── */
+.spark {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: none;
+  align-self: stretch;
+}
+:host([data-has-values]) .spark { display: flex; }
+.spark > sherpa-sparkline { flex: 1 1 auto; width: 100%; }
+
+/* Drop the sparkline when the tile gets narrow. */
+@container sherpa-metric (max-width: 220px) {
+  .spark { display: none; }
+}
+
+/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
+:host([disabled]) {
+  --_delta: var(--sherpa-content-inactive-default, #a6a6b2);
+}
+:host([disabled]) .value,
+:host([disabled]) .label {
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+}

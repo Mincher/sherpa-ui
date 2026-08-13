@@ -1,0 +1,102 @@
+/**
+ * sherpa-pagination.css — all pager presentation.
+ *
+ * A row of square buttons: previous, the windowed numbers (with ellipsis gaps),
+ * next. The current page is marked data-current (reflected by the JS) and reads
+ * as the accent surface, non-interactive. Prev/next disable at the boundaries via
+ * the native `disabled` attribute (inactive tokens, never opacity). JS only
+ * stamps buttons and reflects state; CSS owns every visual.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  --_btn: var(--sherpa-size-xl, 32px);
+}
+
+.pager {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+
+.numbers {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-3xs, 2px);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--_btn);
+  block-size: var(--_btn);
+  padding-inline: var(--sherpa-space-2xs, 6px);
+  border: var(--sherpa-border-width-base, 1px) solid transparent;
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  cursor: pointer;
+  transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
+}
+
+.btn:hover:not(:disabled):not([data-current]) {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.btn:active:not(:disabled):not([data-current]) {
+  background: var(--sherpa-surface-control-tertiary-down, #ededf0);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Current page — accent, non-interactive ───────────────────────────── */
+.btn[data-current] {
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
+  color: var(--sherpa-content-default-on-color-body, #ffffff);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Disabled (prev/next at boundaries) — inactive tokens, never opacity ─ */
+.btn:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+}
+
+/* ── Ellipsis gap ──────────────────────────────────────────────────────── */
+.gap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--_btn);
+  block-size: var(--_btn);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+}
+
+/* ── Chevron glyphs (pure CSS, no icon font) ──────────────────────────── */
+.chev {
+  inline-size: 7px;
+  block-size: 7px;
+  border-right: var(--sherpa-border-width-thick, 2px) solid currentColor;
+  border-bottom: var(--sherpa-border-width-thick, 2px) solid currentColor;
+  box-sizing: border-box;
+}
+.chev-left { transform: rotate(135deg); }
+.chev-right { transform: rotate(-45deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}

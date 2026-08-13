@@ -1,0 +1,171 @@
+/**
+ * sherpa-dialog.css — all modal presentation.
+ *
+ * The native <dialog> is the surface: a bordered, elevated card with a header /
+ * body / footer stack. data-size sets the width; data-has-title / data-has-footer
+ * (reflected by the base class) collapse the empty title-slot and footer. The
+ * enter/exit motion uses @starting-style + allow-discrete, gated behind
+ * prefers-reduced-motion. JS never toggles visibility here — the native element
+ * shows/hides itself via showModal()/close().
+ */
+
+:host {
+  /* The host is a passthrough; the <dialog> is top-layer and positions itself. */
+  display: contents;
+
+  --_surface: var(--sherpa-surface-container-default, #ffffff);
+  --_border: var(--sherpa-border-container-default, #e0e0e6);
+  --_rounding: var(--sherpa-border-rounding-lg, 8px);
+  --_text: var(--sherpa-content-default-body, #4a4a54);
+}
+
+/* ── The dialog surface ────────────────────────────────────────────────── */
+.dialog {
+  flex-direction: column;
+  width: 600px;
+  max-width: 90vw;
+  max-height: 90vh;
+  padding: 0;
+  background: var(--_surface);
+  color: var(--_text);
+  border: var(--sherpa-border-width-base, 1px) solid var(--_border);
+  border-radius: var(--_rounding);
+  box-shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14));
+  overflow: clip;
+}
+/* Native <dialog> is display:none until [open]; keep it flex when shown. */
+.dialog[open] { display: flex; }
+
+.dialog::backdrop {
+  background: rgba(16, 16, 20, 0.5);
+}
+
+/* ── Size variants ─────────────────────────────────────────────────────── */
+:host([data-size="sm"]) .dialog { width: 400px; }
+:host([data-size="lg"]) .dialog { width: 800px; }
+:host([data-size="full"]) .dialog { width: 90vw; height: 90vh; }
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-md, 16px);
+  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--_border);
+  flex-shrink: 0;
+}
+
+.titles {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.title-text {
+  margin: 0;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-heading-sm, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 24px;
+  color: var(--sherpa-content-default-heading, #18181f);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.title-text:empty { display: none; }
+
+/* The title slot overrides the attribute-driven text. */
+slot[name="title"] { display: none; }
+:host([data-has-title]) slot[name="title"] { display: block; }
+:host([data-has-title]) .title-text { display: none; }
+
+/* ── Close button ──────────────────────────────────────────────────────── */
+.close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-lg, 24px);
+  block-size: var(--sherpa-size-lg, 24px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+.close:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+:host([data-dismissible="false"]) .close { display: none; }
+
+/* A pure-CSS ✕ glyph (two crossed bars) — no icon font dependency. */
+.close-glyph {
+  position: relative;
+  inline-size: 12px;
+  block-size: 12px;
+}
+.close-glyph::before,
+.close-glyph::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: var(--sherpa-border-width-thick, 2px);
+  background: currentColor;
+  border-radius: var(--sherpa-border-rounding-full, 999px);
+}
+.close-glyph::before { transform: translateY(-50%) rotate(45deg); }
+.close-glyph::after { transform: translateY(-50%) rotate(-45deg); }
+
+/* ── Body ──────────────────────────────────────────────────────────────── */
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--sherpa-space-md, 16px);
+  overflow-y: auto;
+  font-size: var(--sherpa-font-size-body-base, 16px);
+}
+
+/* ── Footer — collapses when the slot is empty ─────────────────────────── */
+.footer {
+  display: none;
+  gap: var(--sherpa-space-sm, 12px);
+  justify-content: flex-end;
+  padding: var(--sherpa-space-md, 16px);
+  border-top: var(--sherpa-border-width-base, 1px) solid var(--_border);
+  flex-shrink: 0;
+}
+:host([data-has-footer]) .footer { display: flex; }
+
+/* ── Enter / exit motion (top-layer aware, reduced-motion gated) ───────── */
+@media (prefers-reduced-motion: no-preference) {
+  .dialog {
+    opacity: 0;
+    scale: 0.96;
+    transition:
+      opacity 180ms ease,
+      scale 180ms ease,
+      display 180ms allow-discrete,
+      overlay 180ms allow-discrete;
+  }
+  .dialog[open] {
+    opacity: 1;
+    scale: 1;
+  }
+  .dialog::backdrop { transition: background-color 180ms ease; }
+
+  @starting-style {
+    .dialog[open] {
+      opacity: 0;
+      scale: 0.96;
+    }
+    .dialog[open]::backdrop { background: rgba(16, 16, 20, 0); }
+  }
+}

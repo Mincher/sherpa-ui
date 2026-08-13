@@ -1,0 +1,47 @@
+<!--
+  sherpa-sparkline — a compact inline trend chart (line area or bars).
+
+  A fixed set of 8 point slots (7 segments). JS supplies the raw values as
+  --_v0..--_v7 plus --_min / --_range on the host; CSS normalises each value to
+  0–100 with calc() and positions the shapes. Unused segments/points collapse
+  via [hidden] (a data-presence toggle, not a style toggle).
+
+  Public API:
+    data-values   — comma-separated or JSON array (e.g. "10,25,15,30")
+    data-variant  — line (default, area + stroke) | bar (flat-topped columns)
+
+  Slots: none — display only.
+  Fires: nothing.
+-->
+<template id="default">
+  <div class="chart" part="chart">
+    <div class="shape" data-index="0">
+      <span class="point" data-role="start" data-index="0"></span>
+      <span class="point" data-role="end" data-index="1"></span>
+    </div>
+    <div class="shape" data-index="1">
+      <span class="point" data-role="start" data-index="1"></span>
+      <span class="point" data-role="end" data-index="2"></span>
+    </div>
+    <div class="shape" data-index="2">
+      <span class="point" data-role="start" data-index="2"></span>
+      <span class="point" data-role="end" data-index="3"></span>
+    </div>
+    <div class="shape" data-index="3">
+      <span class="point" data-role="start" data-index="3"></span>
+      <span class="point" data-role="end" data-index="4"></span>
+    </div>
+    <div class="shape" data-index="4">
+      <span class="point" data-role="start" data-index="4"></span>
+      <span class="point" data-role="end" data-index="5"></span>
+    </div>
+    <div class="shape" data-index="5">
+      <span class="point" data-role="start" data-index="5"></span>
+      <span class="point" data-role="end" data-index="6"></span>
+    </div>
+    <div class="shape" data-index="6">
+      <span class="point" data-role="start" data-index="6"></span>
+      <span class="point" data-role="end" data-index="7"></span>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,32 @@
+<!--
+  sherpa-slider — a single-value range control wrapping a native <input type=range>.
+
+  The native input owns interaction, keyboard, and accessibility; CSS restyles
+  the track/thumb and draws the filled portion up to the current value. JS mirrors
+  data-min/max/step/value onto the input, writes the fill percentage into --_pct,
+  and re-dispatches input/change with a { value } detail.
+
+  Public API:
+    data-label   — label text above the slider (shown when set)
+    data-min     — minimum value (default 0)
+    data-max     — maximum value (default 100)
+    data-step    — step increment (default 1)
+    data-value   — current value
+    data-show-value — echo the current value beside the label (boolean)
+    disabled     — disabled state
+
+  Events: input (while dragging), change (on commit) — detail { value }.
+-->
+<template id="default">
+  <div class="head">
+    <span class="label" part="label"></span>
+    <span class="value-out" part="value" aria-hidden="true"></span>
+  </div>
+
+  <div class="track-area">
+    <div class="track" part="track">
+      <div class="fill" part="fill"></div>
+    </div>
+    <input class="range" type="range" part="range" />
+  </div>
+</template>

@@ -1,0 +1,24 @@
+<!--
+  sherpa-toast — a transient notification.
+
+  A status-tinted card with a message and a close button. Auto-dismisses after
+  data-duration ms; the close button dismisses manually. Message via data-message
+  or the default slot.
+
+  Public API:
+    data-status    info (default) | success | warning | critical
+    data-message   the message text (or slot content)
+    data-duration  auto-dismiss delay in ms (default 5000; 0 disables)
+
+  Static: SherpaToast.info/success/warning/critical(message, opts?)
+
+  Fires: toast-dismiss — on auto or manual dismiss
+-->
+<template id="default">
+  <div class="toast" part="toast" role="alert" aria-live="polite">
+    <span class="message" part="message"><slot></slot></span>
+    <button class="close" part="close" type="button" aria-label="Dismiss">
+      <span aria-hidden="true">&#215;</span>
+    </button>
+  </div>
+</template>

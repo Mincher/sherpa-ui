@@ -1,0 +1,124 @@
+/**
+ * sherpa-sparkline.css — all sparkline presentation.
+ *
+ * A CSS-only trend chart. JS provides the ONE thing CSS cannot compute: the raw
+ * data values, written to --_v0..--_v7 plus --_min / --_range on the host (a
+ * data→CSS-variable bridge, not styling). CSS normalises each value to 0–100
+ * with calc() and draws it: line variant renders an angled area + stroke via
+ * clip-path on pseudo-elements; bar variant flattens each segment's top edge to
+ * a column. Segment/point visibility is a [hidden] presence toggle set from the
+ * data length — JS never sets display/width/colour here.
+ */
+
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  width: 100%;
+  min-width: 40px;
+  height: var(--sherpa-size-xl, 40px);
+
+  /* Trend colour — status cascade wins, else the primary accent. */
+  --_line: var(--_status-text, var(--sherpa-content-primary-default, #3c5edd));
+
+  /* Raw values set by JS; CSS normalises them via calc() in .shape. */
+  --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;
+  --_v4: 0; --_v5: 0; --_v6: 0; --_v7: 0;
+  --_min: 0;
+  --_range: 1;
+  --_stroke: 1.5px;
+  --_point-size: var(--sherpa-space-xs, 8px);
+}
+
+.chart {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  color: var(--_line);
+}
+
+:host([data-variant="bar"]) .chart {
+  gap: var(--sherpa-space-3xs, 2px);
+}
+
+/* ── Shapes: one per adjacent value pair ───────────────────────────── */
+.shape {
+  /* CSS normalisation — raw value → 0–100 */
+  --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
+  --_n-end: calc((var(--_v-end) - var(--_min)) / var(--_range) * 100);
+
+  position: relative;
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+/* Map each shape to its adjacent raw-value pair. */
+.shape[data-index="0"] { --_v-start: var(--_v0); --_v-end: var(--_v1); }
+.shape[data-index="1"] { --_v-start: var(--_v1); --_v-end: var(--_v2); }
+.shape[data-index="2"] { --_v-start: var(--_v2); --_v-end: var(--_v3); }
+.shape[data-index="3"] { --_v-start: var(--_v3); --_v-end: var(--_v4); }
+.shape[data-index="4"] { --_v-start: var(--_v4); --_v-end: var(--_v5); }
+.shape[data-index="5"] { --_v-start: var(--_v5); --_v-end: var(--_v6); }
+.shape[data-index="6"] { --_v-start: var(--_v6); --_v-end: var(--_v7); }
+
+/* Filled area under the line — pseudo so points aren't clipped. */
+.shape::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, currentColor 24%, transparent);
+  clip-path: polygon(
+    0% calc(100% - var(--_n-start) * 1%),
+    100% calc(100% - var(--_n-end) * 1%),
+    100% 100%,
+    0% 100%
+  );
+}
+
+/* Stroke on the top edge. */
+.shape::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  clip-path: polygon(
+    0% calc(100% - var(--_n-start) * 1% - var(--_stroke)),
+    100% calc(100% - var(--_n-end) * 1% - var(--_stroke)),
+    100% calc(100% - var(--_n-end) * 1% + var(--_stroke)),
+    0% calc(100% - var(--_n-start) * 1% + var(--_stroke))
+  );
+}
+
+/* ── Bar variant: flat-topped columns (both corners share the end value) ─ */
+:host([data-variant="bar"]) .shape { --_v-start: var(--_v-end); }
+:host([data-variant="bar"]) .shape::before {
+  background: currentColor;
+}
+:host([data-variant="bar"]) .shape::after { display: none; }
+
+/* ── Points: dots at each vertex, revealed on hover ────────────────── */
+.point {
+  position: absolute;
+  width: var(--_point-size);
+  height: var(--_point-size);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  background: currentColor;
+  translate: calc(-1 * var(--_point-size) / 2) calc(-1 * var(--_point-size) / 2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.point[data-role="start"] { top: calc(100% - var(--_n-start) * 1%); left: 0%; }
+.point[data-role="end"]   { top: calc(100% - var(--_n-end) * 1%);   left: 100%; }
+
+:host(:hover) .point:not([hidden]) { opacity: 1; }
+:host([data-variant="bar"]) .point { display: none; }
+
+/* Data-presence collapse — JS toggles [hidden] from the value count. */
+.shape[hidden] { display: none; }
+.point[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .point { transition: none; }
+}
