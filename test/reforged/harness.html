@@ -11,7 +11,10 @@
   <script type="module">
     // The index wires SherpaElement.sharedStyles (base reset) and registers components.
     import '/dist-reforged/index.js';
-    await customElements.whenDefined('sherpa-button');
+    await Promise.all([
+      customElements.whenDefined('sherpa-button'),
+      customElements.whenDefined('sherpa-tag'),
+    ]);
     window.__reforgedReady = true;
   </script>
 </body>

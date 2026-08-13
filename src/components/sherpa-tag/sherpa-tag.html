@@ -1,0 +1,29 @@
+<!--
+  sherpa-tag — a compact labelled pill.
+
+  Templates (via data-removable):
+    default   — label pill
+    removable — label pill + a close button (fires tag-remove)
+
+  Public API:
+    data-color      one of 11 categorical colours (default: 1 / purple)
+    data-variant    primary (solid) | secondary (soft)
+    data-collapsed  render as a small circular indicator (boolean)
+    data-removable  show the close button (selects the removable template)
+
+  Fires: tag-remove
+-->
+<template id="default">
+  <span class="pill" part="pill">
+    <slot></slot>
+  </span>
+</template>
+
+<template id="removable">
+  <span class="pill" part="pill">
+    <span class="label"><slot></slot></span>
+    <button class="close" part="close" type="button" aria-label="Remove">
+      <span aria-hidden="true">&#215;</span>
+    </button>
+  </span>
+</template>

@@ -80,4 +80,17 @@
   --sherpa-border-control-primary-default: var(--core-accent-500);
   --sherpa-border-control-secondary-default: var(--core-neutral-300);
   --sherpa-border-control-inactive: var(--core-neutral-200);
+
+  /* ── Categorical (data-viz series, tag colours) — fixed order ── */
+  --sherpa-categorical-1: var(--core-cat-1);
+  --sherpa-categorical-2: var(--core-cat-2);
+  --sherpa-categorical-3: var(--core-cat-3);
+  --sherpa-categorical-4: var(--core-cat-4);
+  --sherpa-categorical-5: var(--core-cat-5);
+  --sherpa-categorical-6: var(--core-cat-6);
+  --sherpa-categorical-7: var(--core-cat-7);
+  --sherpa-categorical-8: var(--core-cat-8);
+  --sherpa-categorical-9: var(--core-cat-9);
+  --sherpa-categorical-10: var(--core-cat-10);
+  --sherpa-categorical-11: var(--core-cat-11);
 }
