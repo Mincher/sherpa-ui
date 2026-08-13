@@ -106,8 +106,9 @@ Components should provide fallbacks for robustness:
 
 Semantic tokens are generated from Figma Variables via:
 ```bash
-npm run tokens:extract  # Fetch from Figma API
-npm run tokens:generate # Generate CSS
+# Refresh figma-variables.json via the plugin API (figma_execute) — the REST-based
+# `npm run tokens:extract` is superseded and aborts on sparse data; see docs/DESIGN-AUDIT.md.
+npm run tokens:generate # Generate CSS from the committed figma-variables.json
 ```
 
 Output: `css/styles/sherpa-themes.css`

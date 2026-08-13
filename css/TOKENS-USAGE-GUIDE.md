@@ -380,20 +380,20 @@ Available themes (all bundled in `sherpa-themes.css`):
 When tokens change in Figma:
 
 ```bash
-# 1. Pull latest variables from Figma (requires FIGMA_ACCESS_TOKEN)
-npm run tokens:extract
+# 1. Refresh figma-variables.json via the PLUGIN API (figma_execute / figma-console MCP).
+#    ⚠ `npm run tokens:extract` (REST) is superseded — it returns sparse data for large
+#    collections and aborts by design. See docs/DESIGN-AUDIT.md for the transport migration.
 
-# 2. Regenerate CSS from the updated JSON
+# 2. Regenerate CSS from the updated JSON (the live, load-bearing step)
 npm run tokens:generate
 
-# Or run both via build:
+# tokens:generate also runs as part of the full build:
 npm run build
 ```
 
 This:
-1. Fetches all variable collections from the Figma REST API
-2. Writes `figma-tokens/figma-variables.json` with resolved values
-3. Generates per-theme CSS files, alias tokens, status mappings, fonts, and component tokens
+1. Reads `figma-tokens/figma-variables.json` (refreshed via the plugin API) + `token-overrides.json`
+2. Generates per-theme CSS files, alias tokens, status mappings, fonts, and component tokens
 
 ### Adding Custom Tokens
 

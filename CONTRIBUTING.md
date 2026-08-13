@@ -48,16 +48,21 @@ The CSS token files in `css/styles/` are generated from Figma Variables. The pip
 cp .env.example .env
 # Fill in FIGMA_ACCESS_TOKEN in .env
 
-npm run tokens:refresh   # pull from Figma + regenerate all CSS token files
+npm run tokens:generate   # regenerate all CSS token files from the committed figma-variables.json
 ```
 
-**After Figma variables change:**
+> **⚠ REST extraction is superseded.** `tokens:extract` / `tokens:refresh` fetch via the Figma
+> REST Variables API, which returns sparse/truncated data for this file's large collections and
+> **aborts by design** to protect the good committed snapshot. Full extraction now goes through the
+> **plugin API** (`figma_execute`, via the figma-console MCP). Migrating the extractor from REST to
+> plugin transport is tracked work — see `docs/DESIGN-AUDIT.md`. Until then, `tokens:generate` (on
+> the committed `figma-variables.json` + `token-overrides.json`) is the live path.
+
+**After Figma variables change** (via the plugin-API extraction, then):
 
 ```
-FIGMA_ACCESS_TOKEN=<token> npm run tokens:refresh
-# or if .env is loaded: npm run tokens:refresh
-
-git add css/styles/   # commit only the generated CSS output
+npm run tokens:generate   # regenerate CSS from the refreshed figma-variables.json
+git add css/styles/       # commit only the generated CSS output
 ```
 
 **If the Alias collection warning fires** (`⚠ ALIAS COLLECTION SHALLOW`):  

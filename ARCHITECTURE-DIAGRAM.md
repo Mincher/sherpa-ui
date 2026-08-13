@@ -19,7 +19,7 @@ flowchart LR
 
   subgraph TOKENS["🎟️ Token pipeline (build-time · config-driven · scripts/)"]
     direction TB
-    EXTRACT["extract-figma-vars.js\n(tokens:extract) → figma-variables.json"]
+    EXTRACT["extract-figma-vars.js (tokens:extract) → figma-variables.json\n⚠ REST superseded — aborts on sparse data; refresh via plugin API (figma_execute)"]
     CONFIG["figma-config.json + token-overrides.json\n(themes · breakpoints · extraAliases ·\nstatusPropMap · themeCorrections)"]
     GEN["generate-css-tokens.js\n(tokens:generate) — one pass:\nprimitives · alias · platform · themes ·\noverrides · index.css cascade"]
     FALLBACK["inject-css-fallbacks.js\n(hardcoded var() fallbacks)"]

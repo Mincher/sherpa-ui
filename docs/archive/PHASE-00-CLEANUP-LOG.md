@@ -31,3 +31,28 @@ Sticker-sheet demo pages (`index.html` → `sticker-sheet.html`), suppression-bu
 
 ## ✔️ Verification
 `type-check` ✓ · `build` ✓ (brand-status regeneration reverted) · staged set contains only intentional cleanup.
+
+---
+
+# Phase −1 — Compiler-rework ground-clearing (2026-08-13)
+
+**Context:** Prep for the bidirectional Figma⇄code composition-compiler rework (see memory `sherpa-figma-code-compiler-plan`). "Cleanup first" = only deletions safe **without** the compiler as justification. Branch: `design-audit-components`.
+
+## 🗑️ Deleted (verified zero-importer / zero-reference this session)
+| Item | Verification |
+|---|---|
+| `scripts/lib/differ.js` | 0 importers (grep: only its own file + incidental prose). Token-Studio staged-diff workflow that no longer exists. |
+| `scripts/lib/resolver.js` | 0 importers. The MCP's `resolveTokenChain` is a **separate** impl in `mcp-server/lib/loader.js`; `inject-css-fallbacks.js` has its own inline resolver. |
+| `figma-tokens/Apex 2.0 (N-able Core)/`, `.../(N-able Data Protection)/`, `Classic/` | 0 code refs; gitignored (`.gitignore:19-20`). Stale W3C `.tokens.json` exports from the Apex-2.0 era. |
+
+## 📝 Stale-doc fixes (REST extraction is superseded by the plugin API — see `docs/DESIGN-AUDIT.md:102`)
+Added a truthful "superseded / aborts on sparse data → use plugin API" note at each spot still presenting REST `tokens:extract`/`tokens:refresh` as the working source of truth: `README.md`, `CONTRIBUTING.md`, `css/TOKENS-USAGE-GUIDE.md`, `docs/adr/0005-semantic-tokens-only.md`, `ARCHITECTURE-DIAGRAM.md` (EXTRACT node). Commands left in place (they exist) — only their status clarified.
+
+## 📦 Archived → `docs/archive/` (completed-migration artifacts, git mv, history preserved)
+`APEX-SHERPA-DIFF.md`, `APEX-SHERPA-PLAN.md`, `FIX-AUTO-ROW-SPAN.md`.
+
+## ↩️ NOT touched (reversal from the cleanup inventory)
+`figma-token-diff-report.md` — the inventory flagged it as archivable, but Phase 00's log already **reversed** that: upstream actively tracks & regenerates it. **Kept tracked & in place.**
+
+## ⏭️ Deferred (need the compiler as justification — folded into later phases)
+Legacy `set*` aliases, dual `setData()`/`setMenuItems()` surfaces, duplicate components (product-bar v1 / view-header / quick-filter v1), the ~367 dead alias tokens, the 3-way audit-script overlap.

@@ -147,8 +147,8 @@ npm run build:ts           # Compile component TS to dist/components
 npm run build:ts:watch     # Rebuild TS on file changes
 npm run assets:copy        # Copy component HTML/CSS and related runtime assets
 npm run build              # Full build (TS + assets + tokens + patterns)
-npm run tokens:extract     # Fetch variables from Figma REST API
-npm run tokens:generate    # Generate CSS from figma-variables.json
+npm run tokens:extract     # ⚠ superseded — Figma REST returns sparse data & aborts; use the plugin API (figma_execute). See docs/DESIGN-AUDIT.md
+npm run tokens:generate    # Generate CSS from figma-variables.json (the live, load-bearing step)
 npm run patterns           # Generate pattern index data
 npm run mcp                # Start the MCP server
 ```
