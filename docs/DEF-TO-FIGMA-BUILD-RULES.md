@@ -138,6 +138,33 @@ size (the dot was force-sized to 10px, overriding its real dimensions).
 
 ---
 
+## Rule 9 — EVERY property binds a variable if a relevant one exists
+
+The discipline rule. A component's geometry — gap, padding, radius, stroke-width —
+must **bind the token that resolves to its value**, never a raw number. Component
+definition and creation must be meticulous about this.
+
+Resolution (source of truth: `scripts/audit-bindings.mjs`):
+- Map by **resolved pixel value**, not a name (semantic tokens are aliased —
+  `space/sm` resolves to 12, it isn't literally "12").
+- Prefer the component's **own scoped token** (`Button::button-space/*`,
+  `Container::container-space/*`); else the **Core** scale (`space/*`,
+  `border/rounding/*`, `border/width/*`).
+
+Safety (a naive value-match over-binds ~13×, so these are mandatory):
+- Bind stroke-width **only where a stroke paint actually exists** — never on a
+  strokeless layout frame.
+- **Skip off-scale values** (radius 1, radius 5 have no token — leave them; they
+  are a scale gap or intentional, not a violation).
+- Never touch **instance internals** — they inherit from their main component.
+
+Audit: `scripts/audit-bindings.mjs` holds the value→token maps + `shouldBind()`.
+A full pass over the built components found **297 real violations** (down from a
+naive 4131 of false positives) and bound **245** cleanly (0 errors, 0 visual
+change — the tokens resolve to the same pixels). After the pass: **0 remaining**.
+
+---
+
 ## The meta-lesson
 
 The pipeline builds **structure** correctly (nodes, variants, nesting, scope-checked
