@@ -180,9 +180,8 @@
     },
     "sherpa-calendar": {
       "figma": "Grid",
-      "status": "needs-rebuild",
-      "note": "Calendar's date Grid + Time Picker",
-      "rebuildNote": "month day-grid only vs Figma Grid Layout[month|year|day] + Time Picker"
+      "status": "matched",
+      "note": "rebuilt 2026-08-15: day|month|year layouts (was month day-grid only)"
     },
     "sherpa-nav-section": {
       "figma": "Navigation Section",

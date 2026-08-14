@@ -78,6 +78,28 @@
   gap: var(--sherpa-core-space-3xs, 2px);
 }
 
+/* Month / year grids are wider cells in fewer columns. */
+.cal-months,
+.cal-years {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sherpa-core-space-2xs, 4px);
+}
+
+/* ── Layout visibility (day | month | year) ─────────────────────────── */
+.cal-grid { display: none; }
+:host(:not([data-layout])) .cal-days,
+:host([data-layout="day"]) .cal-days { display: grid; }
+:host([data-layout="month"]) .cal-months { display: grid; }
+:host([data-layout="year"]) .cal-years { display: grid; }
+/* The weekday row belongs to the day layout only. */
+:host([data-layout="month"]) .cal-weekdays,
+:host([data-layout="year"]) .cal-weekdays { display: none; }
+
+.cal-label { cursor: pointer; border: none; background: transparent; font-family: inherit; }
+.cal-label:hover { color: var(--_accent); }
+.cal-label:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd); border-radius: var(--sherpa-core-border-rounding-base, 4px); }
+
 .cal-weekdays span {
   text-align: center;
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
@@ -87,7 +109,7 @@
 }
 
 /* ── Day cells ──────────────────────────────────────────────────────── */
-.cal-day {
+.cal-cell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -102,43 +124,50 @@
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 }
-.cal-day:hover {
+.cal-cell:hover {
   background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
   color: var(--sherpa-content-title-base, #18191a);
 }
-.cal-day:focus-visible {
+.cal-cell:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
 /* Today — a ring, not a fill (fill is reserved for the selection). */
-.cal-day[data-today] {
+.cal-cell[data-today] {
   border-color: var(--sherpa-border-interactive-primary, #3c5edd);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
 }
 
 /* Selected — accent fill, wins over hover / today. */
-.cal-day[data-selected] {
+.cal-cell[data-selected] {
   background: var(--_accent);
   border-color: var(--_accent);
   color: var(--_accent-on);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
 }
-.cal-day[data-selected]:hover {
+.cal-cell[data-selected]:hover {
   background: var(--_accent);
   color: var(--_accent-on);
 }
 
 /* Blank spacer cells — no chrome, no interaction. */
-.cal-day[data-blank] {
+.cal-cell[data-blank] {
   visibility: hidden;
   pointer-events: none;
 }
 
 /* Out-of-range days — inactive tokens, never opacity. */
-.cal-day[disabled]:not([data-blank]) {
+.cal-cell[disabled]:not([data-blank]) {
   cursor: not-allowed;
   pointer-events: none;
   color: var(--sherpa-content-inactive-base, #5c5c66);
   background: transparent;
+}
+
+/* Month / year cells fill their (wider) column and are a bit taller. */
+.cal-months .cal-cell,
+.cal-years .cal-cell {
+  inline-size: 100%;
+  block-size: var(--sherpa-core-size-3xl, 40px);
 }

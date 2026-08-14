@@ -1,10 +1,10 @@
 {
   "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
-  "generated": true,
+  "generated": false,
   "name": "sherpa-calendar",
   "figmaName": "Grid",
   "category": "container",
-  "description": "a single-date month-grid picker.",
+  "description": "A date picker with day / month / year layouts (the Figma Grid Layout axis). The header label zooms out day→month→year; picking a month/year zooms back in.",
   "props": [
     {
       "name": "data-value",
@@ -84,20 +84,13 @@
     "nodeType": "COMPONENT_SET",
     "built": true,
     "variantAxes": [
-      {
-        "name": "Layout",
-        "values": [
-          "month",
-          "year",
-          "day"
-        ]
-      }
+      "Layout"
     ],
     "booleanProps": [],
     "textProps": [],
     "instanceProps": [],
     "modePins": {},
     "figmaEvents": [],
-    "note": "Calendar's date Grid + Time Picker"
+    "note": "Rebuilt 2026-08-15 to match Figma Grid Layout axis (day|month|year): added a month picker + year picker; the label button zooms out, month/year cells zoom in. Was the month day-grid only (needs-rebuild)."
   }
 }
