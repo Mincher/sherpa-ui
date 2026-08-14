@@ -1,28 +1,58 @@
 <!--
   sherpa-list-item — a single list row.
 
-  Leading slot (icon / avatar), a content column (title + description), and a
-  trailing slot (actions / badges). The base class reflects slot presence to
-  data-has-leading / data-has-trailing on the host; CSS shows the regions.
+  Matches the Figma "Menu List Item": a leading region (drag handle, expand
+  toggle, a selection control, and an icon), a content column (title +
+  description), and a trailing slot. Each leading affordance is CSS-toggled off a
+  data-* flag; the leading slot still accepts a custom icon/avatar.
 
   Public API:
     data-title        primary text
     data-description  secondary text
+    data-icon         a leading icon glyph
     data-active       active/selected state
     data-interactive  hover + click behaviour
+    data-draggable    show the drag handle
+    data-expandable   show the expand toggle
+    data-expanded     expanded state (the toggle reflects it)
+    data-selectable   show a leading selection control (checkbox affordance)
+    data-selected     selection state (for the leading control)
     disabled          disabled state
 
-  Fires: list-item-click — detail: { title }
+  Slots:
+    leading   — a custom icon / avatar (in addition to the data-icon glyph)
+    control   — a custom selection control (else the built-in checkbox box)
+    trailing  — actions / badges
+
+  Fires:
+    list-item-click   — detail: { title }
+    list-item-expand  — detail: { expanded }
+    list-item-select  — detail: { selected }
+    list-item-drag    — detail: {}
 -->
 <template id="default">
   <div class="row" part="row">
-    <span class="leading" part="leading" aria-hidden="true">
-      <slot name="leading"></slot>
+    <span class="lead" part="lead">
+      <button class="drag" part="drag" type="button" tabindex="-1" aria-label="Drag to reorder">
+        <span class="drag-glyph" aria-hidden="true">&#x2830;</span>
+      </button>
+      <button class="expand" part="expand" type="button" tabindex="-1" aria-expanded="false" aria-label="Expand">
+        <span class="expand-glyph" aria-hidden="true">&#x25B8;</span>
+      </button>
+      <span class="control" part="control">
+        <slot name="control"><span class="checkbox" aria-hidden="true"></span></slot>
+      </span>
+      <span class="leading" part="leading" aria-hidden="true">
+        <span class="icon" part="icon"></span>
+        <slot name="leading"></slot>
+      </span>
     </span>
+
     <span class="content" part="content">
       <span class="title" part="title"></span>
       <span class="description" part="description"></span>
     </span>
+
     <span class="trailing" part="trailing">
       <slot name="trailing"></slot>
     </span>

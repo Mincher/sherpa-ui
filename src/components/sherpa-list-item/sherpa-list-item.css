@@ -1,15 +1,14 @@
 /**
  * sherpa-list-item.css — a single list row.
  *
- * A horizontal layout: leading → content → trailing. Regions appear only when
- * filled (data-has-leading / data-has-trailing from the base; title/description
- * from data-*). Interactive rows get hover, focus, and active treatments; the
- * disabled row uses inactive tokens (never opacity).
+ * Matches the Figma "Menu List Item": a leading region (drag handle, expand
+ * toggle, selection control, icon) → content (title + description) → trailing
+ * slot. Each leading affordance is CSS-toggled off a data-* flag. Interactive
+ * rows get hover/focus/active; disabled uses inactive tokens (never opacity).
  *
- * Figma model: geometry binds the control-scoped collection (control-space/*,
- * control-border/*); the active row fills surface/interactive/active/base and
- * its title takes content/active/base; the disabled row uses the inactive
- * tokens. A [data-status] ancestor fills the row via the --_status-* cascade.
+ * Figma model: geometry binds the control-scoped collection; the active row
+ * fills surface/interactive/active/base with content/active/base title; a
+ * [data-status] ancestor fills the row via the --_status-* cascade.
  */
 
 :host {
@@ -27,15 +26,63 @@
   transition: background-color 100ms ease, color 100ms ease;
 }
 
-/* ── Leading (icon / avatar slot) — shown only when filled ─────────── */
+/* ── Leading region + its affordances ──────────────────────────────── */
+.lead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-control-space-gap-base, 8px);
+  flex-shrink: 0;
+  min-block-size: var(--sherpa-core-fonts-scale-lg, 20px);
+}
+
+/* Drag handle + expand toggle: icon-glyph buttons, hidden by default */
+.drag,
+.expand {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-icon-xs, 16px);
+  block-size: var(--sherpa-size-icon-xs, 16px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-content-secondary-base, #5c5c66);
+  cursor: pointer;
+}
+:host([data-draggable]) .drag { display: inline-flex; cursor: grab; }
+.drag:active { cursor: grabbing; }
+:host([data-expandable]) .expand { display: inline-flex; }
+.expand-glyph { transition: transform 120ms ease; }
+:host([data-expanded]) .expand-glyph { transform: rotate(90deg); }
+
+/* Leading selection control — the built-in box, or a slotted control */
+.control { display: none; align-items: center; flex-shrink: 0; }
+:host([data-selectable]) .control { display: inline-flex; }
+.checkbox {
+  inline-size: var(--sherpa-size-icon-xs, 16px);
+  block-size: var(--sherpa-size-icon-xs, 16px);
+  border: var(--sherpa-core-border-width-base, 1px) solid
+    var(--sherpa-border-interactive-secondary, #8c8c99);
+  border-radius: var(--sherpa-core-border-rounding-sm, 2px);
+  box-sizing: border-box;
+}
+:host([data-selected]) .checkbox {
+  background: var(--sherpa-surface-interactive-primary-base, #3c5edd);
+  border-color: var(--sherpa-surface-interactive-primary-base, #3c5edd);
+}
+
+/* Leading icon / avatar slot — shown when data-icon set or a leading slot filled */
 .leading {
   display: none;
   align-items: center;
-  flex-shrink: 0;
-  min-block-size: var(--sherpa-size-icon-2xs, 12px);
   color: var(--_status-text, var(--sherpa-control-content-default, #2e2e33));
 }
+:host([data-icon]) .leading,
 :host([data-has-leading]) .leading { display: inline-flex; }
+.icon:empty { display: none; }
+
+/* Collapse the whole lead region only when nothing in it is shown. */
+:host(:not([data-draggable]):not([data-expandable]):not([data-selectable]):not([data-icon]):not([data-has-leading])) .lead { display: none; }
 
 /* ── Content column (title + description) ──────────────────────────── */
 .content {
@@ -75,9 +122,7 @@
 :host([data-interactive]:hover) .row {
   background: var(--sherpa-control-surface-hover, #fafafa);
 }
-:host([data-interactive]:focus-visible) {
-  outline: none;
-}
+:host([data-interactive]:focus-visible) { outline: none; }
 :host([data-interactive]:focus-visible) .row {
   box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
@@ -92,9 +137,7 @@
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
-:host([disabled]) {
-  pointer-events: none;
-}
+:host([disabled]) { pointer-events: none; }
 :host([disabled]) .row {
   cursor: not-allowed;
   background: var(--sherpa-surface-interactive-inactive, #d5d5d5);

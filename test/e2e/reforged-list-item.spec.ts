@@ -159,3 +159,81 @@ test('the active setter reflects to data-active', async ({ page }) => {
   expect(r.on).toBe(true);
   expect(r.off).toBe(false);
 });
+
+test('data-icon renders the leading glyph and reveals the leading region', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
+    el.setAttribute('data-title', 'Files');
+    el.setAttribute('data-icon', '📁');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const s = el.shadowRoot!;
+    return {
+      iconText: s.querySelector('.icon')!.textContent,
+      leadingVisible: getComputedStyle(s.querySelector('.leading')!).display !== 'none',
+    };
+  });
+  expect(r.iconText).toBe('📁');
+  expect(r.leadingVisible).toBe(true);
+});
+
+test('data-draggable reveals the drag handle and fires list-item-drag', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
+    el.setAttribute('data-title', 'Row');
+    el.setAttribute('data-draggable', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const drag = el.shadowRoot!.querySelector('.drag') as HTMLElement;
+    const visible = getComputedStyle(drag).display !== 'none';
+    let dragged = false;
+    el.addEventListener('list-item-drag', () => (dragged = true));
+    drag.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    await new Promise((res) => setTimeout(res, 0));
+    return { visible, dragged };
+  });
+  expect(r.visible).toBe(true);
+  expect(r.dragged).toBe(true);
+});
+
+test('data-expandable toggle flips data-expanded and fires list-item-expand', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
+    el.setAttribute('data-title', 'Group');
+    el.setAttribute('data-expandable', '');
+    el.setAttribute('data-interactive', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const expand = el.shadowRoot!.querySelector('.expand') as HTMLElement;
+    let detail: unknown = null;
+    let rowClicked = false;
+    el.addEventListener('list-item-expand', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('list-item-click', () => (rowClicked = true));
+    expand.click();
+    await new Promise((res) => setTimeout(res, 0));
+    return { expandedAfter: el.hasAttribute('data-expanded'), detail, rowClicked };
+  });
+  expect(r.expandedAfter).toBe(true);
+  expect(r.detail).toEqual({ expanded: true });
+  expect(r.rowClicked).toBe(false); // expand click doesn't also activate the row
+});
+
+test('data-selectable control toggles selection and fires list-item-select', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
+    el.setAttribute('data-title', 'Pick me');
+    el.setAttribute('data-selectable', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const control = el.shadowRoot!.querySelector('.control') as HTMLElement;
+    const visible = getComputedStyle(control).display !== 'none';
+    let detail: unknown = null;
+    el.addEventListener('list-item-select', (e) => (detail = (e as CustomEvent).detail));
+    control.click();
+    await new Promise((res) => setTimeout(res, 0));
+    return { visible, selectedAfter: el.hasAttribute('data-selected'), detail };
+  });
+  expect(r.visible).toBe(true);
+  expect(r.selectedAfter).toBe(true);
+  expect(r.detail).toEqual({ selected: true });
+});

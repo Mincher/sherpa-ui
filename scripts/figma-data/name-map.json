@@ -48,10 +48,9 @@
     },
     "sherpa-list-item": {
       "figma": "Menu List Item",
-      "status": "needs-rebuild",
-      "note": "Figma name differs",
+      "status": "matched",
       "tier": "sub-component",
-      "rebuildNote": "missing drag-handle, leading selection control, expand; no hover/inactive state parity vs Menu List Item"
+      "note": "rebuilt 2026-08-15: drag handle, expand toggle, leading selection control, icon + events + state"
     },
     "sherpa-list": {
       "figma": "List",
