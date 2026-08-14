@@ -24,8 +24,10 @@ const CSS_UTIL_DIR    = path.join(__dirname, "data", "css-utilities");
 const COMPONENTS_DIR  = path.join(ROOT, "src", "components");
 const PATTERNS_DIR    = path.join(ROOT, "patterns");
 const DOCS_DIR        = path.join(ROOT, "docs");
-const CSS_DIR         = path.join(ROOT, "css");
-const CSS_STYLES_DIR  = path.join(ROOT, "css", "styles");
+// Reforged: tokens live in src/styles/tokens/ (projected from Figma). The old
+// css/ tree is gone; CSS_DIR now aliases docs/ (a harmless guideline fallback).
+const CSS_DIR         = DOCS_DIR;
+const CSS_STYLES_DIR  = path.join(ROOT, "src", "styles", "tokens");
 const COPILOT_PATH    = path.join(ROOT, ".github", "instructions", "copilot-instructions.md");
 
 const PATHS = {

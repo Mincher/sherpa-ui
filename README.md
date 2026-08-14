@@ -1,154 +1,43 @@
 # Sherpa UI
 
-A TypeScript-first Web Component library and design token system. The package ships prebuilt ES modules in `dist/` for browser consumption.
+A standards-based Web Component library and design-token system. Zero framework,
+zero runtime dependencies — Custom Elements + Shadow DOM + HTML templates, styled
+by design tokens projected from Figma.
 
-## Quick Start
+## Install
 
-```
+```bash
 npm install sherpa-ui
 ```
 
-### JavaScript — import all components
-
-```
-import "sherpa-ui";
-```
-
-### CSS — import design tokens + utility classes
-
-```html
-<link rel="stylesheet" href="node_modules/sherpa-ui/css/styles/reset.css" />
-<link rel="stylesheet" href="node_modules/sherpa-ui/css/styles/index.css" />
+```js
+import 'sherpa-ui';                 // registers all <sherpa-*> elements
+import 'sherpa-ui/css';             // the token layer (or installTokens())
 ```
 
-Or with an import map:
+## Develop
 
-```html
-<script type="importmap">
-  {
-    "imports": {
-      "sherpa-ui": "./node_modules/sherpa-ui/dist/components/index.js",
-      "sherpa-ui/": "./node_modules/sherpa-ui/dist/"
-    }
-  }
-</script>
+```bash
+npm run build        # compile src/ → dist-reforged/ (+ copy CSS/HTML assets)
+npm run type-check   # strict TypeScript, no emit
+npm test             # Playwright e2e against the reforged harness
+npm run lint         # eslint src/
 ```
 
-## Entry Points
+## How it fits together
 
-| Entry | Path | Purpose |
-| --- | --- | --- |
-| **JS** | `dist/components/index.js` | Barrel export — registers all custom elements |
-| **Types** | `dist/components/index.d.ts` | Type declarations for TS consumers |
-| **CSS** | `css/styles/index.css` | Tokens + utility classes (`@layer tokens, utilities, components`) |
-| **Reset** | `css/styles/reset.css` | Minimal CSS reset |
+- **Components** live in `src/components/sherpa-<name>/` as a three-file split:
+  `.ts` (behaviour), `.css` (all presentation), `.html` (template + slots). JS is
+  the last resort — HTML data-attributes and CSS own structure and appearance.
+- **Tokens** are projected from the Figma file by `scripts/project-tokens.mjs` into
+  `src/styles/tokens/tokens.css`, layered by Figma's aliasing tiers
+  (`@layer core, style, overrides, components`). See
+  [docs/VARIABLE-TOKEN-MAP.md](docs/VARIABLE-TOKEN-MAP.md).
+- **Two-way Figma ↔ code** is the direction of travel — see
+  [docs/FIGMA-CODE-SYNC-PLAN.md](docs/FIGMA-CODE-SYNC-PLAN.md).
 
-## Architecture
+Architecture and conventions are documented in `CLAUDE.md`.
 
-*   **TypeScript source + dist build** — source lives in `components/**/*.ts`, compiled to `dist/components/**/*.js` (+ `.d.ts`)
-*   **No bundler required for consumers** — prebuilt native ES modules can be loaded directly in browsers
-*   **Shadow DOM** — components encapsulate styles via `SherpaElement` base class
-*   **CSS Cascade Layers** — `reset → tokens → utilities → components → app`
-*   **Design tokens** — sourced from Figma Variables API, processed via `npm run tokens:generate`
+## License
 
-## Development Build Workflow
-
-```
-npm run type-check      # Validate TS across repo (no emit)
-npm run build:ts        # Compile components TS -> dist/components
-npm run assets:copy     # Copy non-TS component assets needed at runtime
-npm run build           # Full build (TS + assets + tokens + patterns)
-```
-
-Primary build outputs:
-
-*   `dist/components/**/*.js`
-*   `dist/components/**/*.d.ts`
-*   `dist/components/**/*.js.map`
-
-## Data-Viz Components
-
-`sherpa-data-grid`, `sherpa-barchart`, and `sherpa-metric` accept data via the **dataset cascade** pattern: the app shell loads a dataset, applies global filters, and dispatches a `datasetfiltered` event on the content area. Each viz component listens, aggregates locally, and renders.
-
-```
-import {
-  setDateFieldProvider,
-} from "sherpa-ui/components/utilities/content-attributes-mixin.js";
-
-// Register a date field provider for metric sparklines
-setDateFieldProvider((datasetName) => {
-  // Return the date field name for chronological sorting, or null
-});
-```
-
-## Global Filters
-
-Register a global filter provider so viz components seed their first data load  
-with any active global filters (timerange, value filters, etc.):
-
-```
-import { setGlobalFilterProvider } from "sherpa-ui/components/utilities/global-filters.js";
-
-setGlobalFilterProvider(() => ({
-  filters: myFilterService.getFilters(),
-  timerange: myFilterService.getTimerange(),
-}));
-```
-
-Viz components using `ContentAttributesMixin` auto-load from their  
-`data-query-src` / `data-query-key` attributes on connect and automatically  
-include these global filters in the initial request.
-
-## Events
-
-Components dispatch these events (bubble + composed) for app-level integration:
-
-| Event | Source | Detail |
-| --- | --- | --- |
-| `containerfilterchange` | `sherpa-filter-bar` | `{ filters }` |
-| `globalfilterchange` | `sherpa-filter-bar` | `{ filters }` (on `document`) |
-| `container-export` | `sherpa-overlay-item` | `{ value }` (bubbles from overlay) |
-| `viewexport` | `sherpa-view-header` | `{ title }` |
-
-## MCP Server
-
-Sherpa UI ships with an [MCP](https://modelcontextprotocol.io/) server that  
-exposes component APIs, design tokens, and usage validation to AI agents.
-
-```
-npm run mcp                # Start the MCP server (stdio transport)
-```
-
-Add to your VS Code `.vscode/mcp.json`:
-
-```
-{
-  "servers": {
-    "sherpa-ui": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["./node_modules/sherpa-ui/mcp-server/index.js"]
-    }
-  }
-}
-```
-
-23 tools, 250+ resources, and 4 prompts (`build_ui`, `review_component_usage`,
-`create_component`, `debug_component`). Component schemas are parsed lazily
-from JSDoc at query time — no pre-generation step required. See
-[mcp-server/README.md](mcp-server/README.md) for full details.
-
-## Scripts
-
-```
-npm run clean              # Remove build output + TS incremental cache
-npm run type-check         # Type-check all TS without emitting files
-npm run build:ts           # Compile component TS to dist/components
-npm run build:ts:watch     # Rebuild TS on file changes
-npm run assets:copy        # Copy component HTML/CSS and related runtime assets
-npm run build              # Full build (TS + assets + tokens + patterns)
-npm run tokens:extract     # ⚠ superseded — Figma REST returns sparse data & aborts; use the plugin API (figma_execute). See docs/DESIGN-AUDIT.md
-npm run tokens:generate    # Generate CSS from figma-variables.json (the live, load-bearing step)
-npm run patterns           # Generate pattern index data
-npm run mcp                # Start the MCP server
-```
+MIT
