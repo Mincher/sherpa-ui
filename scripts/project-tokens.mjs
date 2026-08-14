@@ -89,6 +89,9 @@ function toCss(value, type) {
   if (isRef(value)) {
     const dotPath = value.slice(1, -1);
     if (dotPath.startsWith('primitives.') && primLiteral[dotPath] != null) return primLiteral[dotPath];
+    // The Status collection's shadow-color role isn't projected as a flat var
+    // (only its cascade roles are). Elevation refs it → resolve to the base tint.
+    if (dotPath.startsWith('status.status-shadow')) return 'var(--sherpa-elevation-tint)';
     return `var(${refName(value)})`;
   }
   return literal(value, type);
@@ -177,12 +180,32 @@ for (const mode of STATUS_MODES) {
 // ramps). These stay global in the overrides layer — a single-component partial
 // can't own a shared base. (Their variant modes, where used, are consumed by the
 // component via its own [data-*]; the primary values live here.)
-const OVERRIDE_COLLECTIONS = ['color-sets', 'grouping', 'elevation', 'control', 'badge'];
+// Each override collection: its primary values go in :root; its MODE variants
+// become attribute blocks keyed to `attr` (so a consumer opts into a hue / snap
+// position / elevation by setting the attribute). `attr:null` = primary only
+// (control/badge modes are consumed by components via their own [data-variant]).
+const OVERRIDE_COLLECTIONS = {
+  'color-sets': 'data-color-set', // 11 hues — a component takes a colour set
+  grouping: 'data-snap', // seamless component groups (top/middle/bottom/… positions)
+  elevation: 'data-elevation', // sm/md/lg shadow levels
+  control: null,
+  badge: null,
+};
 const overrideLines = [];
-for (const collKey of OVERRIDE_COLLECTIONS) {
+const overrideModeBlocks = [];
+for (const [collKey, attr] of Object.entries(OVERRIDE_COLLECTIONS)) {
+  const byMode = {};
   for (const leaf of leavesWithModes(doc[collKey] ?? {}, [])) {
     if (typeof leaf.primary === 'boolean') continue;
     overrideLines.push(`  ${leaf.name}: ${toCss(leaf.primary, leaf.type)};`);
+    if (!attr) continue;
+    for (const [mode, val] of Object.entries(leaf.modes)) {
+      if (mode === 'passthrough') continue; // passthrough == the primary (neutral)
+      (byMode[mode] ??= []).push(`    ${leaf.name}: ${toCss(val, leaf.type)};`);
+    }
+  }
+  for (const [mode, lines] of Object.entries(byMode)) {
+    overrideModeBlocks.push(`  [${attr}="${mode}"] {\n${lines.join('\n')}\n  }`);
   }
 }
 
@@ -195,6 +218,52 @@ const aliasLines = [
   '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x-large, 0) var(--sherpa-elevation-offset-y-large, 12px) var(--sherpa-elevation-blur-large, 32px) var(--sherpa-elevation-spread-large, 0) var(--sherpa-elevation-tint, #372f4f33);',
 ];
 for (let i = 1; i <= 11; i++) aliasLines.push(`  --sherpa-categorical-${i}: var(--sherpa-data-viz-categorical-color-${i});`);
+
+// ── @layer overrides: Layout Grid utility (.sherpa-layout-grid) ────────
+// Figma layout-grid vars drive a real CSS Grid. Mobile is the primary (4 cols);
+// tablet/desktop/wide re-point columns + max-width. Keyed to @container width via
+// the mode max-widths, so a grid inside any container adapts. Vars are exposed so
+// a consumer can override; the class wires them into grid-template-columns etc.
+const grid = {};
+for (const leaf of leavesWithModes(doc['layout-grid'] ?? {}, [])) {
+  // `columns` is a COUNT (typed dimension in Figma but unitless in CSS grid).
+  const unitless = leaf.name.endsWith('-columns');
+  const val = unitless && typeof leaf.primary === 'number' ? String(leaf.primary) : toCss(leaf.primary, leaf.type);
+  grid[leaf.name] = { primary: val, modes: leaf.modes, type: leaf.type };
+}
+const gv = (k) => grid[`--sherpa-layout-grid-${k}`];
+const layoutGridBlock =
+  Object.keys(grid).length === 0
+    ? ''
+    : `  .sherpa-layout-grid {
+${Object.entries(grid)
+  .map(([n, g]) => `    ${n}: ${g.primary};`)
+  .join('\n')}
+
+    display: grid;
+    grid-template-columns: repeat(var(--sherpa-layout-grid-columns), minmax(0, 1fr));
+    column-gap: var(--sherpa-layout-grid-gap-horizontal);
+    row-gap: var(--sherpa-layout-grid-gap-vertical);
+    grid-auto-rows: var(--sherpa-layout-grid-row-height);
+    max-inline-size: var(--sherpa-layout-grid-max-width);
+    padding-inline: var(--sherpa-layout-grid-padding);
+    margin-inline: auto;
+    container-type: inline-size;
+  }
+${['tablet', 'desktop', 'wide']
+  .map((bp) => {
+    const w = gv('max-width')?.modes?.[bp];
+    const cols = gv('columns')?.modes?.[bp];
+    if (w == null || cols == null) return '';
+    return `  @container (min-width: ${literal(w, 'dimension')}) {
+    .sherpa-layout-grid {
+      --sherpa-layout-grid-columns: ${literal(cols, 'number')};
+      --sherpa-layout-grid-max-width: ${literal(w, 'dimension')};
+    }
+  }`;
+  })
+  .filter(Boolean)
+  .join('\n')}`;
 
 // ── component-scoped partials (each component owns its scoping) ─────────
 // collection → { comp: the component dir, attr: variant attribute, default: the
@@ -301,6 +370,12 @@ ${aliasLines.map((l) => '  ' + l).join('\n')}
 
   /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
 ${statusBlocks.join('\n\n')}
+
+  /* Colour sets ([data-color-set]) · seamless groups ([data-snap]) · elevation ([data-elevation]) */
+${overrideModeBlocks.join('\n\n')}
+
+  /* Layout Grid utility — a real CSS Grid with responsive @container breakpoints. */
+${layoutGridBlock}
 }
 `;
 
