@@ -104,6 +104,10 @@ const CAVEATS = [
     match: /^Control::control-content\/inverse$/,
     text: 'Flips with the Control look tier: on-color (light) ink on a filled primary surface; dark ink on a light secondary/tertiary surface. This is the token a control label should use so text stays readable under any tier + status.',
   },
+  {
+    match: /^Button::button-size\//,
+    text: 'A Button MUST bind its height/icon to this (and padding/gap to button-space/*, label font to button-font/*). NEVER HUG a button height or hard-set pixels — that severs the size system. Set the size by pinning the Button collection MODE (2xs…3xl) on the instance; the bound vars re-value per mode.',
+  },
 ];
 function caveatFor(id) {
   for (const c of CAVEATS) if (c.match.test(id)) return c.text;

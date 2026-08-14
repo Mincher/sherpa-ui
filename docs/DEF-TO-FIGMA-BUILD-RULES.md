@@ -102,7 +102,32 @@ enough — assert the swapped instance's mainComponent name is `cross`.
 
 ---
 
-## Rule 6 — Mode pins do NOT cascade into nested instances automatically
+## Rule 7 — A Button ALWAYS binds the Button size variables (size mode must work)
+
+The alert-card's nested action/dismiss buttons were force-set to HUG/auto vertical
+sizing, which **dropped the `height` binding to `Button::button-size/height`**. Once a
+button's height (or padding/gap/icon) is not bound to the Button collection, its **size
+mode (2xs…3xl) can no longer drive it** — pinning `Button = sm` does nothing.
+
+Rule: a Button instance's geometry MUST stay bound to the Button size collection:
+
+| Property | Bind to |
+|---|---|
+| height | `Button::button-size/height` (vertical sizing = FIXED, so the var drives it) |
+| paddingLeft/Right | `Button::button-space/padding` |
+| itemSpacing (gap) | `Button::button-space/gap` |
+| icon width | `Button::button-size/icon` |
+| label fontSize/lineHeight | `Button::button-font/size` / `button-font/line-height` |
+
+Then set the size by **pinning the Button collection mode** (`2xs`/`xs`/`sm`/`md`/`xl`/
+`2xl`/`3xl`) on the instance — the bound vars re-value per mode and the button resizes.
+NEVER HUG a button's height or hard-set a pixel height; that severs the size system.
+Gate: read back `instance.boundVariables.height` points at `Button::button-size/height`
+AND the Button collection is mode-pinned to the intended size.
+
+---
+
+## Rule 8 — Mode pins do NOT cascade into nested instances automatically
 
 The status dot Tag didn't tint because a `Status` mode pinned on the **parent** does
 not automatically drive a nested **instance's** own bound variables — the instance
