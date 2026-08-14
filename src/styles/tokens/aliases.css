@@ -111,4 +111,16 @@
   --sherpa-categorical-9: var(--core-cat-9);
   --sherpa-categorical-10: var(--core-cat-10);
   --sherpa-categorical-11: var(--core-cat-11);
+
+  /* ── Sequential (magnitude) + divergent (polarity) data-viz ramps ── */
+  --sherpa-sequential-1: var(--core-seq-1);
+  --sherpa-sequential-2: var(--core-seq-2);
+  --sherpa-sequential-3: var(--core-seq-3);
+  --sherpa-sequential-4: var(--core-seq-4);
+  --sherpa-sequential-5: var(--core-seq-5);
+  --sherpa-divergent-neg-2: var(--core-div-neg-2);
+  --sherpa-divergent-neg-1: var(--core-div-neg-1);
+  --sherpa-divergent-mid: var(--core-div-mid);
+  --sherpa-divergent-pos-1: var(--core-div-pos-1);
+  --sherpa-divergent-pos-2: var(--core-div-pos-2);
 }

@@ -85,6 +85,20 @@
   --core-cat-10: #20c173;
   --core-cat-11: #b2b2bf;
 
+  /* ── Sequential data-viz ramp (single hue, light→dark, for magnitude) ── */
+  --core-seq-1: #e1c8fd;
+  --core-seq-2: #c493fc;
+  --core-seq-3: #a962fa;
+  --core-seq-4: #7b1ce6;
+  --core-seq-5: #4d049f;
+
+  /* ── Divergent data-viz ramp (two poles + neutral midpoint, for polarity) ── */
+  --core-div-neg-2: #c8324f;
+  --core-div-neg-1: #ef8ba0;
+  --core-div-mid: #ededf0;
+  --core-div-pos-1: #6fd7a6;
+  --core-div-pos-2: #16915a;
+
   /* ── Status hues (base 500s; ramps added when a component needs them) ── */
   --core-critical-500: #c8324f;
   --core-warning-500: #b5730a;
