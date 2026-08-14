@@ -1,0 +1,92 @@
+/**
+ * sherpa-data-grid.css — a sortable table.
+ *
+ * A clean bordered table: sticky header, hover rows, right-aligned numeric cells
+ * (mono), and a sort caret on the active column. The empty-state shows when there
+ * are no rows. All state is data-* / attribute selectors; JS only stamps rows and
+ * reflects the sort attributes.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+  border-radius: var(--sherpa-border-rounding-lg, 8px);
+  overflow: hidden;
+}
+
+.grid {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+:host([data-empty]) .grid { display: none; }
+
+/* ── Header ────────────────────────────────────────────────────────── */
+.head-cell {
+  padding: 0;
+  text-align: start;
+  background: var(--sherpa-surface-container-inactive, #f4f4f6);
+  border-block-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+}
+.head-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  inline-size: 100%;
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-heading, #18181f);
+  text-align: start;
+  cursor: pointer;
+}
+.head-cell[data-sortable="false"] .head-btn { cursor: default; }
+.head-btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* Sort caret — hidden unless this column is the active sort. */
+.sort-icon { inline-size: 0; block-size: 0; }
+.head-cell[data-sort="asc"] .sort-icon {
+  border-inline: 3px solid transparent;
+  border-block-end: 4px solid currentColor;
+}
+.head-cell[data-sort="desc"] .sort-icon {
+  border-inline: 3px solid transparent;
+  border-block-start: 4px solid currentColor;
+}
+
+/* ── Body ──────────────────────────────────────────────────────────── */
+.row {
+  cursor: pointer;
+  transition: background-color 80ms ease;
+}
+.row:hover { background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6); }
+.row:not(:last-child) .cell {
+  border-block-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+}
+
+.cell {
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  white-space: nowrap;
+}
+/* Numeric columns: right-aligned + mono (the Sherpa numeric convention). */
+.cell[data-type="number"] {
+  text-align: end;
+  font-family: var(--sherpa-font-family-mono, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Empty state ───────────────────────────────────────────────────── */
+.empty {
+  display: none;
+  padding: var(--sherpa-space-2xl, 32px);
+  text-align: center;
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+}
+:host([data-empty]) .empty { display: block; }

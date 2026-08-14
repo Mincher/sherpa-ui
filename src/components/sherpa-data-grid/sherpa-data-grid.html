@@ -1,0 +1,44 @@
+<!--
+  sherpa-data-grid — a sortable data table.
+
+  populate({ columns, rows }) where columns is [{ field, header?, align?, type? }]
+  and rows is an array of records. Header cells and body rows are stamped from
+  cloning prototypes. Clicking a sortable header sorts by that field (asc → desc →
+  asc) and reflects data-sort-field / data-sort-direction on the host. Clicking a
+  row emits row-click.
+
+  Public API:
+    data-sort-field / data-sort-direction   current sort (asc | desc)
+
+  Fires:
+    grid-sort-change — detail: { field, direction }
+    row-click        — detail: { index, row }
+-->
+<template id="default">
+  <table class="grid" part="grid">
+    <thead class="head" part="head">
+      <tr class="head-row"></tr>
+    </thead>
+    <tbody class="body" part="body"></tbody>
+  </table>
+  <div class="empty" part="empty" role="status">
+    <slot name="empty">No rows to display.</slot>
+  </div>
+
+  <template class="head-cell-tpl">
+    <th class="head-cell" scope="col">
+      <button class="head-btn" type="button">
+        <span class="head-label"></span>
+        <span class="sort-icon" aria-hidden="true"></span>
+      </button>
+    </th>
+  </template>
+
+  <template class="row-tpl">
+    <tr class="row"></tr>
+  </template>
+
+  <template class="cell-tpl">
+    <td class="cell"></td>
+  </template>
+</template>
