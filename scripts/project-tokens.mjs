@@ -116,7 +116,7 @@ function* leaves(node, path = []) {
 function* leavesWithModes(node, path = []) {
   if (node && typeof node === 'object' && '$value' in node) {
     const ext = node.$extensions?.['figma-console-mcp'] ?? {};
-    yield { name: `--${PREFIX}${toIdent(path)}`, primary: node.$value, modes: ext.modes ?? {}, type: node.$type };
+    yield { name: `--${PREFIX}${toIdent(path)}`, rawPath: path.join('/'), primary: node.$value, modes: ext.modes ?? {}, type: node.$type };
     return;
   }
   for (const k of Object.keys(node ?? {})) {
@@ -204,7 +204,7 @@ const SCOPED = {
   button: { comp: 'sherpa-button', attr: 'data-size', default: '2xs' },
   input: { comp: 'sherpa-input-text', attr: 'data-state', default: 'default' },
   navigation: { comp: 'sherpa-nav-item', attr: 'data-nav-state', default: 'default' },
-  switch: { comp: 'sherpa-switch', attr: 'data-variant', default: 'standard' },
+  switch: { comp: 'sherpa-switch', attr: 'data-style', default: 'standard' },
 };
 const partials = []; // { comp, css }
 for (const [collKey, cfg] of Object.entries(SCOPED)) {
@@ -212,11 +212,23 @@ for (const [collKey, cfg] of Object.entries(SCOPED)) {
   const rootVars = [];
   const byMode = {};
   for (const leaf of leavesWithModes(doc[collKey], [])) {
-    if (typeof leaf.primary === 'boolean') continue;
-    rootVars.push(`  ${leaf.name}: ${toCss(leaf.primary, leaf.type)};`);
+    // Boolean flags (hasValidation, hasLabel, …) are mode-driven VISIBILITY toggles,
+    // not value tokens. Emit them as a --_<flag> display var (true→revert-layer =
+    // visible, false→none = hidden) that flips per mode; the component consumes it
+    // as `display: var(--_<flag>, …)`. Visibility stays in CSS, driven by the mode.
+    const isBool = typeof leaf.primary === 'boolean';
+    // Boolean flag → a private, camelCase-split visibility var: hasValidation →
+    // --_has-validation. Value is a display keyword the component reads.
+    const name = isBool
+      ? '--_' + leaf.rawPath.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()
+      : leaf.name;
+    const vis = (b) => (b ? 'revert-layer' : 'none');
+    const value = isBool ? vis(leaf.primary) : toCss(leaf.primary, leaf.type);
+    rootVars.push(`  ${name}: ${value};`);
     for (const [mode, val] of Object.entries(leaf.modes)) {
       if (mode === cfg.default) continue;
-      (byMode[mode] ??= []).push(`  ${leaf.name}: ${toCss(val, leaf.type)};`);
+      const mv = isBool ? vis(val) : toCss(val, leaf.type);
+      (byMode[mode] ??= []).push(`  ${name}: ${mv};`);
     }
   }
   const modeBlocks = Object.entries(byMode).map(

@@ -6,7 +6,11 @@
  */
 @layer components {
   :host {
+    --_nav-container-has-child-items: revert-layer;
+    --_nav-container-has-search-button: none;
+    --_nav-container-has-search-input: revert-layer;
     --sherpa-nav-container-header-label: Product name;
+    --_nav-container-is-maximised: revert-layer;
     --sherpa-nav-container-pin-button: active;
     --sherpa-nav-container-setting-button: default;
     --sherpa-nav-container-size-width: 320px;
@@ -15,7 +19,11 @@
   }
 
   :host([data-nav-state="collapsed"]) {
+    --_nav-container-has-child-items: none;
+    --_nav-container-has-search-button: revert-layer;
+    --_nav-container-has-search-input: none;
     --sherpa-nav-container-header-label: Product name;
+    --_nav-container-is-maximised: none;
     --sherpa-nav-container-pin-button: default;
     --sherpa-nav-container-setting-button: default;
     --sherpa-nav-container-size-width: 40px;
@@ -24,7 +32,11 @@
   }
 
   :host([data-nav-state="hover"]) {
+    --_nav-container-has-child-items: revert-layer;
+    --_nav-container-has-search-button: none;
+    --_nav-container-has-search-input: revert-layer;
     --sherpa-nav-container-header-label: Product name;
+    --_nav-container-is-maximised: revert-layer;
     --sherpa-nav-container-pin-button: default;
     --sherpa-nav-container-setting-button: default;
     --sherpa-nav-container-size-width: 320px;
@@ -33,7 +45,11 @@
   }
 
   :host([data-nav-state="pinned"]) {
+    --_nav-container-has-child-items: revert-layer;
+    --_nav-container-has-search-button: none;
+    --_nav-container-has-search-input: revert-layer;
     --sherpa-nav-container-header-label: Product name;
+    --_nav-container-is-maximised: revert-layer;
     --sherpa-nav-container-pin-button: active;
     --sherpa-nav-container-setting-button: default;
     --sherpa-nav-container-size-width: 320px;
@@ -42,7 +58,11 @@
   }
 
   :host([data-nav-state="settings"]) {
+    --_nav-container-has-child-items: revert-layer;
+    --_nav-container-has-search-button: none;
+    --_nav-container-has-search-input: revert-layer;
     --sherpa-nav-container-header-label: Settings;
+    --_nav-container-is-maximised: revert-layer;
     --sherpa-nav-container-pin-button: active;
     --sherpa-nav-container-setting-button: active;
     --sherpa-nav-container-size-width: 320px;

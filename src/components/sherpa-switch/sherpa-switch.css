@@ -53,8 +53,11 @@
   background: var(--sherpa-control-surface-default, #ffffff);
 }
 
-/* ── Label: ON / OFF text (default form only) ──────────────────────────── */
+/* ── Label: ON / OFF text ──────────────────────────────────────────────
+   Visibility is Figma-driven: the switch token partial sets --_has-label
+   (revert-layer in standard, none in the "simple" mode). ── */
 .label {
+  display: var(--_has-label, inline-flex);
   min-width: 24px;
   text-align: center;
   color: var(--sherpa-switch-content-track-on, #fafafa);
@@ -73,9 +76,9 @@
   flex-direction: row-reverse;
 }
 
-/* ── Simple (pill) form — structural only; radius/thumb come from the token
-   layer's [data-variant="simple"] mode block, not from local --_ overrides. ── */
-:host([data-style="simple"]) .label { display: none; }
+/* ── Simple (pill) form — radius/thumb come from the switch token partial's
+   [data-style="simple"] mode block; the label hides via --_has-label (also
+   set by that mode). No local visibility rule needed. ── */
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
 :host([disabled]) {

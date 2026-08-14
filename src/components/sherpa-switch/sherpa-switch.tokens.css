@@ -1,11 +1,12 @@
 /**
  * sherpa-switch.tokens.css — component-scoped token aliases, PROJECTED from Figma
  * (the "switch" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
- * These alias up through overrides → style → core. The component's own [data-variant]
+ * These alias up through overrides → style → core. The component's own [data-style]
  * re-points them per variant. Import/adopt this alongside the component's CSS.
  */
 @layer components {
   :host {
+    --_has-label: revert-layer;
     --sherpa-switch-content-inactive: var(--sherpa-content-inactive-base);
     --sherpa-switch-content-track-off: var(--sherpa-control-content-default);
     --sherpa-switch-content-track-on: var(--sherpa-control-content-inverse);
@@ -19,7 +20,8 @@
     --sherpa-switch-surface-track-on: var(--sherpa-status-success-color-4);
   }
 
-  :host([data-variant="simple"]) {
+  :host([data-style="simple"]) {
+    --_has-label: none;
     --sherpa-switch-content-inactive: var(--sherpa-content-inactive-base);
     --sherpa-switch-content-track-off: var(--sherpa-control-content-default);
     --sherpa-switch-content-track-on: var(--sherpa-control-content-inverse);
