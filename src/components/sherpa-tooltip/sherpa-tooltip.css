@@ -12,9 +12,9 @@
   position: relative;
   vertical-align: middle;
 
-  --_gap: var(--sherpa-space-2xs, 4px);
-  --_bg: var(--sherpa-content-default-heading, #1a1a20);
-  --_fg: var(--sherpa-content-default-on-color-body, #ffffff);
+  --_gap: var(--sherpa-core-space-2xs, 4px);
+  --_bg: var(--sherpa-content-title-base, #18191a);
+  --_fg: var(--sherpa-content-title-on-color, #ffffff);
 }
 
 .anchor {
@@ -30,14 +30,14 @@
   transform: translateX(-50%);
   max-width: 16rem;
   width: max-content;
-  padding: var(--sherpa-space-2xs, 4px) var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-xs, 8px);
   background: var(--_bg);
   color: var(--_fg);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-xs, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  font-weight: var(--sherpa-core-fonts-weight-600, 600);
   line-height: 1.4;
-  border-radius: var(--sherpa-border-rounding-base, 6px);
+  border-radius: var(--sherpa-core-border-rounding-base, 4px);
   box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(16, 16, 20, 0.1));
 
   /* Hidden state — no layout, unreadable to AT, no pointer capture. */

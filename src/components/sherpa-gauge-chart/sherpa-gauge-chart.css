@@ -11,11 +11,11 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-core-space-xs, 8px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   --_size: 160px;
   --_ring: 16px;
-  --_fill: var(--sherpa-content-primary-default, #3c5edd);
+  --_fill: var(--sherpa-content-link-base, #3c5edd);
   --_fill-pct: 0%;
   --_angle: -90deg;
 }
@@ -26,9 +26,9 @@
 :host([data-status="info"])     { --_fill: var(--sherpa-content-info-default, #1f75e4); }
 
 .title {
-  font-size: var(--sherpa-font-size-body-sm, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-content-default-heading, #18181f);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  color: var(--sherpa-content-title-base, #18191a);
 }
 .title:empty { display: none; }
 
@@ -49,7 +49,7 @@
   /* punch the centre out into a ring */
   mask: radial-gradient(circle, transparent calc(50% - var(--_ring)), #000 calc(50% - var(--_ring) + 0.5px));
 }
-.track { background: var(--sherpa-border-container-default, #e0e0e6); }
+.track { background: var(--sherpa-border-primary, #d5d5d5); }
 
 /* Fill: conic sweep from the left (start of the visible half), 0–50% of the circle. */
 .fill {
@@ -74,7 +74,7 @@
   inset-inline-start: 0;
   inline-size: 2px;
   block-size: calc(var(--_size) / 2 - var(--_ring) / 2);
-  background: var(--sherpa-content-default-heading, #18181f);
+  background: var(--sherpa-content-title-base, #18191a);
   transform-origin: bottom center;
   transform: rotate(var(--_angle));
   transition: transform 300ms ease;
@@ -89,9 +89,9 @@
   text-align: center;
 }
 .value {
-  font-size: var(--sherpa-font-size-heading-base, 22px);
-  font-weight: var(--sherpa-font-weight-bold, 700);
-  color: var(--sherpa-content-default-heading, #18181f);
+  font-size: var(--sherpa-core-fonts-scale-2xl, 24px);
+  font-weight: var(--sherpa-core-fonts-weight-700, 700);
+  color: var(--sherpa-content-title-base, #18191a);
   font-variant-numeric: tabular-nums;
 }
 
@@ -100,6 +100,6 @@
   display: flex;
   justify-content: space-between;
   inline-size: var(--_size);
-  font-size: var(--sherpa-font-size-body-xs, 12px);
-  color: var(--sherpa-content-default-secondary, #8a8a96);
+  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  color: var(--sherpa-content-secondary-base, #404047);
 }

@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Token layer proof — the hand-authored three-tier system (primitives → aliases →
- * themes) resolving in the light DOM and inheriting into shadow roots, plus mode
- * handling owned by themes (not components).
+ * Token layer proof — the Figma-projected token layer (Primitives → Core →
+ * Style (Sherpa)) resolving in the light DOM and inheriting into shadow roots,
+ * plus mode handling owned by the layer (not components). Names follow the
+ * consolidated Figma taxonomy; values are the Figma-resolved ones.
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -13,16 +14,19 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
 });
 
-test('aliases resolve through primitives in the light DOM', async ({ page }) => {
+test('semantic tokens resolve through Core → Primitives in the light DOM', async ({ page }) => {
   const v = await page.evaluate(() => {
-    const s = getComputedStyle(document.documentElement);
-    return {
-      space: s.getPropertyValue('--sherpa-space-md').trim(),
-      accent: s.getPropertyValue('--sherpa-surface-control-primary-default').trim(),
-    };
+    const probe = document.createElement('div');
+    document.body.appendChild(probe);
+    // resolve a semantic colour by painting it — computed value follows the alias chain
+    probe.style.color = 'var(--sherpa-surface-interactive-primary-base)';
+    const accent = getComputedStyle(probe).color;
+    const space = getComputedStyle(document.documentElement).getPropertyValue('--sherpa-core-space-base').trim();
+    probe.remove();
+    return { space, accent };
   });
-  expect(v.space).toBe('16px'); // --sherpa-space-md → --core-scale-200 → 16px
-  expect(v.accent.replace(/\s/g, '')).toBe('#3c5edd'); // → --core-accent-500
+  expect(v.space).toBe('16px'); // --sherpa-core-space-base = 16px
+  expect(v.accent).toBe('rgb(60, 94, 221)'); // #3c5edd — resolved through Core accent
 });
 
 test('tokens inherit into a shadow root (button uses the real accent, not a fallback)', async ({ page }) => {
@@ -36,17 +40,20 @@ test('tokens inherit into a shadow root (button uses the real accent, not a fall
   expect(bg).toBe('rgb(60, 94, 221)'); // #3c5edd — the token value, proving inheritance
 });
 
-test('themes own mode: data-mode="dark" re-points aliases; components are mode-agnostic', async ({ page }) => {
+test('the layer owns mode: data-mode="dark" re-points semantic tokens; components are mode-agnostic', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const read = () =>
-      getComputedStyle(document.documentElement).getPropertyValue('--sherpa-surface-page-default').trim();
+    const probe = document.createElement('div');
+    document.body.appendChild(probe);
+    probe.style.background = 'var(--sherpa-app-primary)';
+    const read = () => getComputedStyle(probe).backgroundColor;
     const light = read();
     document.documentElement.setAttribute('data-mode', 'dark');
     const dark = read();
     document.documentElement.removeAttribute('data-mode');
+    probe.remove();
     return { light, dark };
   });
-  expect(r.light.replace(/\s/g, '')).toBe('#ffffff'); // light page surface
-  expect(r.dark.replace(/\s/g, '')).toBe('#101014'); // dark page surface (re-pointed)
+  expect(r.light).toBe('rgb(255, 255, 255)'); // #ffffff — light app surface
+  expect(r.dark).toBe('rgb(24, 25, 26)'); // #18191a — dark app surface (re-pointed)
   expect(r.light).not.toBe(r.dark);
 });

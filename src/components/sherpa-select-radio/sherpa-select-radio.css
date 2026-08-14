@@ -11,10 +11,10 @@
 :host {
   display: inline-flex;
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
-  font-size: var(--sherpa-font-size-body-sm, 14px);
-  --_size: var(--sherpa-size-sm, 16px);
-  --_border: var(--sherpa-border-control-primary-default, #3c5edd);
-  --_dot: var(--sherpa-surface-control-primary-default, #3c5edd);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  --_size: var(--sherpa-core-size-sm, 16px);
+  --_border: var(--sherpa-border-interactive-primary, #3c5edd);
+  --_dot: var(--sherpa-surface-interactive-primary-base, #3c5edd);
 }
 
 /* Compact variant: the control alone, no label/description text. */
@@ -23,11 +23,11 @@
 .field {
   display: inline-flex;
   align-items: flex-start;
-  gap: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-core-space-xs, 8px);
   cursor: pointer;
   user-select: none;
   width: 100%;
-  color: var(--sherpa-content-default-body, #4a4a54);
+  color: var(--sherpa-content-primary-base, #2e2e33);
 }
 
 /* ── The control (native input, custom-drawn circle) ──────────────── */
@@ -43,16 +43,16 @@
   margin: 0;
   padding: 0;
   position: relative;
-  border: var(--sherpa-border-width-base, 1px) solid var(--_border);
-  border-radius: var(--sherpa-border-rounding-full, 50%);
-  background: var(--sherpa-surface-container-default, #ffffff);
+  border: var(--sherpa-core-border-width-base, 1px) solid var(--_border);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
+  background: var(--sherpa-surface-primary-base, #ffffff);
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 /* Checked radio keeps a white face with a coloured inner dot. */
 .control:checked {
-  background: var(--sherpa-surface-container-default, #ffffff);
+  background: var(--sherpa-surface-primary-base, #ffffff);
   border-color: var(--_border);
 }
 .control:checked::after {
@@ -60,13 +60,13 @@
   display: block;
   width: 10px;
   height: 10px;
-  border-radius: var(--sherpa-border-rounding-full, 50%);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
   background-color: var(--_dot);
 }
 
 /* ── Hover / active ───────────────────────────────────────────────── */
 .control:hover:not(:disabled) {
-  border-color: var(--sherpa-surface-control-primary-hover, #2f4bb0);
+  border-color: var(--sherpa-surface-interactive-primary-hover, #173382);
 }
 .control:active:not(:disabled) {
   transform: scale(0.92);
@@ -75,24 +75,24 @@
 /* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
 .control:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
 /* ── Label + description ──────────────────────────────────────────── */
 .text {
   display: inline-flex;
   flex-direction: column;
-  gap: var(--sherpa-space-3xs, 2px);
+  gap: var(--sherpa-core-space-3xs, 2px);
   min-width: 0;
 }
 .label {
-  color: var(--sherpa-content-default-body, #4a4a54);
-  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--sherpa-content-primary-base, #2e2e33);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
   line-height: 1.4;
 }
 .description {
-  color: var(--sherpa-content-default-secondary, #8a8a96);
-  font-size: var(--sherpa-font-size-body-xs, 12px);
+  color: var(--sherpa-content-secondary-base, #404047);
+  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   line-height: 1.4;
 }
 .label:empty,
@@ -105,19 +105,19 @@
 }
 :host([disabled]) .control {
   cursor: not-allowed;
-  border-color: var(--sherpa-border-control-inactive, #c0c0cc);
-  background: var(--sherpa-surface-control-inactive, #dddde6);
+  border-color: var(--sherpa-border-interactive-inactive, #c0c0cc);
+  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
 }
 :host([disabled]) .control:checked {
-  background: var(--sherpa-surface-control-inactive, #dddde6);
-  border-color: var(--sherpa-border-control-inactive, #c0c0cc);
+  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
+  border-color: var(--sherpa-border-interactive-inactive, #c0c0cc);
 }
 :host([disabled]) .control:checked::after {
-  background-color: var(--sherpa-content-inactive-default, #5c5c66);
+  background-color: var(--sherpa-content-inactive-base, #5c5c66);
 }
 :host([disabled]) .label,
 :host([disabled]) .description {
-  color: var(--sherpa-content-inactive-default, #5c5c66);
+  color: var(--sherpa-content-inactive-base, #5c5c66);
 }
 
 /* ── Validation — native :user-invalid, unchecked required ────────── */
@@ -127,11 +127,11 @@
 
 /* ── Status cascade — tints border + dot via inherited --_status-* ─── */
 :host([data-status]) .control {
-  border-color: var(--_status-border, var(--sherpa-border-control-primary-default, #3c5edd));
+  border-color: var(--_status-border, var(--sherpa-border-interactive-primary, #3c5edd));
 }
 :host([data-status]) .control:checked::after {
-  background-color: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default, #3c5edd));
+  background-color: var(--_status-surface-strong, var(--sherpa-surface-interactive-primary-base, #3c5edd));
 }
 :host([data-status]) .description {
-  color: var(--_status-text, var(--sherpa-content-default-secondary, #8a8a96));
+  color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
 }

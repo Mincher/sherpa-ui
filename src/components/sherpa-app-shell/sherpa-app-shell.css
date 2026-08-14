@@ -11,8 +11,8 @@
   grid-template-columns: var(--_nav-width, 240px) 1fr;
   block-size: 100%;
   min-block-size: 100vh;
-  background: var(--sherpa-surface-page-default, #ffffff);
-  color: var(--sherpa-content-default-body, #4a4a54);
+  background: var(--sherpa-app-primary, #ffffff);
+  color: var(--sherpa-content-primary-base, #2e2e33);
 
   --_nav-width: 240px;
 }
@@ -23,9 +23,9 @@
 
 .nav {
   min-inline-size: 0;
-  border-inline-end: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default, #e0e0e6);
-  background: var(--sherpa-surface-container-default, #ffffff);
+  border-inline-end: var(--sherpa-core-border-width-base, 1px) solid
+    var(--sherpa-border-primary, #d5d5d5);
+  background: var(--sherpa-surface-primary-base, #ffffff);
   overflow: hidden;
 }
 
@@ -38,8 +38,8 @@
 
 .header {
   display: none;
-  border-block-end: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default, #e0e0e6);
+  border-block-end: var(--sherpa-core-border-width-base, 1px) solid
+    var(--sherpa-border-primary, #d5d5d5);
 }
 :host([data-has-header]) .header {
   display: block;
@@ -48,5 +48,5 @@
 .content {
   min-block-size: 0;
   overflow: auto;
-  padding: var(--sherpa-space-lg, 20px);
+  padding: var(--sherpa-core-space-lg, 20px);
 }

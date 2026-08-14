@@ -123,7 +123,7 @@ test('disabled blocks toggling and uses inactive tokens (never opacity)', async 
   });
   expect(r.state).toBe('off'); // no toggle while disabled
   expect(r.fired).toBe(0);
-  expect(r.bg).toBe('rgb(244, 244, 246)'); // surface-control-inactive #f4f4f6
+  expect(r.bg).toBe('rgb(213, 213, 213)'); // surface-interactive-inactive #d5d5d5
   expect(r.opacity).toBe('1'); // disabled must not rely on opacity
 });
 

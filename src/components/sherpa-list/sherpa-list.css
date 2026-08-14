@@ -10,8 +10,8 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  color: var(--sherpa-content-default-body, #4a4a54);
-  --_row-gap: var(--sherpa-space-3xs, 2px);
+  color: var(--sherpa-content-primary-base, #2e2e33);
+  --_row-gap: var(--sherpa-core-space-3xs, 2px);
 }
 
 .body {
@@ -33,8 +33,8 @@
   --_row-gap: 0;
 }
 :host([data-variant="bordered"]) .body {
-  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #d5d5dc);
-  border-radius: var(--sherpa-border-rounding-base, 6px);
+  border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-radius: var(--sherpa-core-border-rounding-base, 4px);
   overflow: hidden;
 }
 
@@ -44,17 +44,17 @@
 }
 :host([data-variant="divided"]) .rows > sherpa-list-item:not(:last-child),
 :host([data-variant="divided"]) ::slotted(sherpa-list-item:not(:last-child)) {
-  border-block-end: var(--sherpa-border-width-hairline, 1px) solid
-    var(--sherpa-border-container-default, #d5d5dc);
+  border-block-end: var(--sherpa-core-border-width-base, 1px) solid
+    var(--sherpa-border-primary, #d5d5d5);
 }
 
 /* ── Empty state ───────────────────────────────────────────────────── */
 .empty {
   display: none;
-  padding: var(--sherpa-space-md, 16px);
+  padding: var(--sherpa-core-space-base, 16px);
   text-align: center;
-  color: var(--sherpa-content-default-secondary, #6a6a74);
-  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--sherpa-content-secondary-base, #404047);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 :host([data-empty-visible]) .empty { display: block; }
 :host([data-empty-visible]) .body { display: none; }

@@ -17,16 +17,16 @@
 .box {
   display: flex;
   align-items: flex-start;
-  gap: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-sm, 12px);
+  gap: var(--sherpa-core-space-sm, 12px);
+  padding: var(--sherpa-core-space-sm, 12px);
   /* Leading accent bar on the inline-start edge only, over a soft status tint. */
   border: 0 solid var(--_accent);
-  border-inline-start-width: var(--sherpa-border-width-thick, 4px);
-  border-radius: var(--sherpa-border-rounding-base, 4px);
+  border-inline-start-width: var(--sherpa-core-border-width-lg, 2px);
+  border-radius: var(--sherpa-core-border-rounding-base, 4px);
   background: color-mix(in srgb, var(--_accent) 12%, transparent);
-  color: var(--sherpa-content-default-body, #4a4a54);
+  color: var(--sherpa-content-primary-base, #2e2e33);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-sm, 13px);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
   line-height: 1.45;
 }
 
@@ -36,10 +36,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--sherpa-size-md, 16px);
-  height: var(--sherpa-size-md, 16px);
+  width: var(--sherpa-core-size-md, 20px);
+  height: var(--sherpa-core-size-md, 20px);
   color: var(--_accent);
-  font-weight: var(--sherpa-font-weight-bold, 700);
+  font-weight: var(--sherpa-core-fonts-weight-700, 700);
   line-height: 1;
 }
 /* Text glyph per status — no icon font dependency, pure CSS content. */
@@ -56,13 +56,13 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-space-3xs, 2px);
+  gap: var(--sherpa-core-space-3xs, 2px);
 }
 
 .title {
-  color: var(--sherpa-content-default-heading, #1a1a20);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  font-size: var(--sherpa-font-size-body-base, 14px);
+  color: var(--sherpa-content-title-base, #18191a);
+  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-core-fonts-scale-lg, 16px);
   line-height: 1.35;
 }
 
@@ -79,26 +79,26 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--sherpa-size-md, 16px);
-  height: var(--sherpa-size-md, 16px);
+  width: var(--sherpa-core-size-md, 20px);
+  height: var(--sherpa-core-size-md, 20px);
   padding: 0;
-  margin-inline-start: var(--sherpa-space-2xs, 4px);
+  margin-inline-start: var(--sherpa-core-space-2xs, 4px);
   border: none;
-  border-radius: var(--sherpa-border-rounding-sm, 2px);
+  border-radius: var(--sherpa-core-border-rounding-sm, 2px);
   background: transparent;
-  color: var(--sherpa-content-default-secondary, #8a8a96);
+  color: var(--sherpa-content-secondary-base, #404047);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease;
 }
 .close:hover {
-  color: var(--sherpa-content-default-heading, #1a1a20);
+  color: var(--sherpa-content-title-base, #18191a);
   background: color-mix(in srgb, currentColor 14%, transparent);
 }
 .close:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
 /* Dismiss button only when the callout is dismissible. */

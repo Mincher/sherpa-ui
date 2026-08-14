@@ -14,23 +14,23 @@
 .bar {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-xs, 8px) 0;
+  gap: var(--sherpa-core-space-sm, 12px);
+  padding: var(--sherpa-core-space-xs, 8px) 0;
 }
 
 .view-zone { display: none; }
 :host([data-has-view]) .view-zone {
   display: flex;
   align-items: center;
-  padding-inline-end: var(--sherpa-space-sm, 12px);
-  border-inline-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+  padding-inline-end: var(--sherpa-core-space-sm, 12px);
+  border-inline-end: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-core-space-xs, 8px);
   flex: 1 1 auto;
   min-inline-size: 0;
 }
@@ -39,6 +39,6 @@
 :host([data-has-actions]) .actions-zone {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-core-space-xs, 8px);
   margin-inline-start: auto;
 }

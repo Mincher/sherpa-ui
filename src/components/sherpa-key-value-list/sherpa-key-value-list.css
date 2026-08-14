@@ -11,24 +11,24 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  color: var(--sherpa-content-default-body, #4a4a54);
-  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--sherpa-content-primary-base, #2e2e33);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 
 .list {
   margin: 0;
   display: grid;
-  row-gap: var(--sherpa-space-xs, 8px);
+  row-gap: var(--sherpa-core-space-xs, 8px);
 }
 
 .key {
-  color: var(--sherpa-content-default-secondary, #6a6a74);
-  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-content-secondary-base, #404047);
+  font-weight: var(--sherpa-core-fonts-weight-500, 500);
 }
 
 .value {
   margin: 0;
-  color: var(--sherpa-content-default-heading, #18181f);
+  color: var(--sherpa-content-title-base, #18191a);
   min-inline-size: 0;
 }
 
@@ -36,15 +36,15 @@
 :host([data-layout="horizontal"]) .list,
 :host(:not([data-layout])) .list {
   grid-template-columns: minmax(auto, max-content) 1fr;
-  column-gap: var(--sherpa-space-md, 16px);
+  column-gap: var(--sherpa-core-space-base, 16px);
   align-items: baseline;
 }
 
 /* ── Stacked: one column, key above its value ──────────────────────── */
 :host([data-layout="stacked"]) .list {
   grid-template-columns: 1fr;
-  row-gap: var(--sherpa-space-sm, 12px);
+  row-gap: var(--sherpa-core-space-sm, 12px);
 }
 :host([data-layout="stacked"]) .key {
-  margin-block-end: var(--sherpa-space-3xs, 2px);
+  margin-block-end: var(--sherpa-core-space-3xs, 2px);
 }

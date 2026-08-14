@@ -9,33 +9,33 @@
 :host {
   display: block;
   container: sherpa-app-header / inline-size;
-  background: var(--sherpa-surface-container-default, #ffffff);
-  border-bottom: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
-  color: var(--sherpa-content-default-body, #4a4a54);
+  background: var(--sherpa-surface-primary-base, #ffffff);
+  border-bottom: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  color: var(--sherpa-content-primary-base, #2e2e33);
 }
 
 .bar {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-md, 16px);
-  min-height: var(--sherpa-size-3xl, 40px);
-  padding-inline: var(--sherpa-space-md, 16px);
-  padding-block: var(--sherpa-space-2xs, 4px);
+  gap: var(--sherpa-core-space-base, 16px);
+  min-height: var(--sherpa-core-size-3xl, 40px);
+  padding-inline: var(--sherpa-core-space-base, 16px);
+  padding-block: var(--sherpa-core-space-2xs, 4px);
 }
 
 /* ── Leading: breadcrumb + title ────────────────────────────────────── */
 .leading {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-sm, 12px);
+  gap: var(--sherpa-core-space-sm, 12px);
   min-width: 0;
 }
 
 .title {
   margin: 0;
-  font-size: var(--sherpa-font-size-heading-sm, 18px);
-  font-weight: var(--sherpa-font-weight-bold, 700);
-  color: var(--sherpa-content-default-heading, #18181f);
+  font-size: var(--sherpa-core-fonts-scale-xl, 20px);
+  font-weight: var(--sherpa-core-fonts-weight-700, 700);
+  color: var(--sherpa-content-title-base, #18191a);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -56,7 +56,7 @@
 .actions {
   display: none;
   align-items: center;
-  gap: var(--sherpa-space-xs, 8px);
+  gap: var(--sherpa-core-space-xs, 8px);
   margin-inline-start: auto;
   flex: 0 0 auto;
 }

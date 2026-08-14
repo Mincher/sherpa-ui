@@ -8,22 +8,22 @@
 
 :host {
   /* private knobs, overridden per size */
-  --_spinner-size: var(--sherpa-size-md, 20px);
+  --_spinner-size: var(--sherpa-core-size-md, 20px);
   --_spinner-weight: 2px;
 
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-sm, 12px);
-  padding: var(--sherpa-space-md, 16px);
+  gap: var(--sherpa-core-space-sm, 12px);
+  padding: var(--sherpa-core-space-base, 16px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-sm, 14px);
-  color: var(--sherpa-content-default-body, #6a6a76);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  color: var(--sherpa-content-primary-base, #2e2e33);
 }
 
 /* ── Panel: solid surface background for full-area loading ─────────────── */
 :host([data-panel]) {
-  background: var(--sherpa-surface-container-default, #ffffff);
-  border-radius: var(--sherpa-border-rounding-base, 4px);
+  background: var(--sherpa-surface-primary-base, #ffffff);
+  border-radius: var(--sherpa-core-border-rounding-base, 4px);
 }
 
 /* ── Orientation ───────────────────────────────────────────────────────── */
@@ -43,8 +43,8 @@
   position: relative;
   width: var(--_spinner-size);
   height: var(--_spinner-size);
-  border-radius: var(--sherpa-border-rounding-full, 9999px);
-  border: var(--_spinner-weight) solid var(--sherpa-border-container-default, #e0e0e6);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
+  border: var(--_spinner-weight) solid var(--sherpa-border-primary, #d5d5d5);
 }
 
 /* The rotating worm — one arc drawn over the track, top edge cut away. */
@@ -52,20 +52,20 @@
   content: "";
   position: absolute;
   inset: calc(var(--_spinner-weight) * -1);
-  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
   border: var(--_spinner-weight) solid
-    var(--_status-border, var(--sherpa-content-primary-default, #3c5edd));
+    var(--_status-border, var(--sherpa-content-link-base, #3c5edd));
   border-block-start-color: transparent;
   animation: sherpa-loader-spin 0.8s linear infinite;
 }
 
 /* ── Sizes ─────────────────────────────────────────────────────────────── */
 :host([data-size="small"]) {
-  --_spinner-size: var(--sherpa-size-xs, 12px);
+  --_spinner-size: var(--sherpa-core-size-xs, 12px);
   --_spinner-weight: 1px;
 }
 :host([data-size="large"]) {
-  --_spinner-size: var(--sherpa-size-3xl, 48px);
+  --_spinner-size: var(--sherpa-core-size-3xl, 40px);
   --_spinner-weight: 4px;
 }
 

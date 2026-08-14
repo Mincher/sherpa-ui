@@ -1,0 +1,18 @@
+{
+  "$schema": "https://figma-console-mcp.southleft.com/schemas/tokens.config.v1.json",
+  "source": {
+    "dir": "src/styles/tokens",
+    "canonical": "dtcg"
+  },
+  "generated": {
+    "dir": "src/styles/tokens",
+    "formats": [
+      {
+        "format": "css-vars",
+        "splitByMode": false,
+        "prefix": "sherpa-"
+      }
+    ]
+  },
+  "conflictResolution": "ask"
+}

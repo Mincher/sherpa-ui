@@ -10,7 +10,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-sm, 13px);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 
 .trail { min-width: 0; }
@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--sherpa-space-2xs, 4px);
+  gap: var(--sherpa-core-space-2xs, 4px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -29,22 +29,22 @@
 .crumb {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-2xs, 4px);
+  gap: var(--sherpa-core-space-2xs, 4px);
 }
 
 /* Separator: every crumb except the first draws a leading slash. */
 .crumb + .crumb::before {
   content: "/";
-  color: var(--sherpa-content-default-secondary, #8a8a96);
+  color: var(--sherpa-content-secondary-base, #404047);
   user-select: none;
 }
 
 .link {
-  color: var(--sherpa-content-primary-default, #3c5edd);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-link-base, #3c5edd);
+  font-weight: var(--sherpa-core-fonts-weight-600, 600);
   text-decoration: none;
-  border-radius: var(--sherpa-border-rounding-sm, 2px);
-  padding: var(--sherpa-space-3xs, 2px) 0;
+  border-radius: var(--sherpa-core-border-rounding-sm, 2px);
+  padding: var(--sherpa-core-space-3xs, 2px) 0;
   cursor: pointer;
 }
 
@@ -53,13 +53,13 @@
 
 .link:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
 /* Current page crumb: default body colour, regular weight, non-interactive. */
 .link[aria-current="page"] {
-  color: var(--sherpa-content-default-body, #4a4a54);
-  font-weight: var(--sherpa-font-weight-regular, 400);
+  color: var(--sherpa-content-primary-base, #2e2e33);
+  font-weight: var(--sherpa-core-fonts-weight-400, 400);
   cursor: default;
   text-decoration: none;
 }

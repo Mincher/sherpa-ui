@@ -8,13 +8,13 @@
  */
 
 :host {
-  --_py: var(--sherpa-space-xs, 8px);
-  --_gap: var(--sherpa-space-xs, 8px);
+  --_py: var(--sherpa-core-space-xs, 8px);
+  --_gap: var(--sherpa-core-space-xs, 8px);
   display: block;
   inline-size: 100%;
 }
 
-:host([data-density="compact"]) { --_py: var(--sherpa-space-2xs, 4px); }
+:host([data-density="compact"]) { --_py: var(--sherpa-core-space-2xs, 4px); }
 
 .bar {
   display: flex;
@@ -26,8 +26,8 @@
 
 /* Bordered variant adds the Figma toolbar's bottom rule. */
 :host([data-variant="bordered"]) .bar {
-  border-block-end: var(--sherpa-border-width-base, 1px) solid
-    var(--sherpa-border-container-default, #d5d5dc);
+  border-block-end: var(--sherpa-core-border-width-base, 1px) solid
+    var(--sherpa-border-primary, #d5d5d5);
 }
 
 .zone {

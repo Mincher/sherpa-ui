@@ -11,12 +11,12 @@
   display: block;
   --_cols: var(--maxColCount, 12);
   --_row-height: var(--row-height, auto);
-  --_gap: var(--sherpa-space-md, 16px);
+  --_gap: var(--sherpa-core-space-base, 16px);
 }
 
-:host([data-gap="sm"]) { --_gap: var(--sherpa-space-sm, 12px); }
-:host([data-gap="lg"]) { --_gap: var(--sherpa-space-lg, 20px); }
-:host([data-pad]) .grid { padding: var(--sherpa-space-lg, 20px); }
+:host([data-gap="sm"]) { --_gap: var(--sherpa-core-space-sm, 12px); }
+:host([data-gap="lg"]) { --_gap: var(--sherpa-core-space-lg, 20px); }
+:host([data-pad]) .grid { padding: var(--sherpa-core-space-lg, 20px); }
 
 /* Banner — full-width strip above the tiles, collapses when empty. */
 .banner { display: none; }

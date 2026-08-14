@@ -13,19 +13,19 @@
 
   /* default swatch — categorical 1 (purple); on-color text */
   --_hue: var(--sherpa-categorical-1, #7b1ce6);
-  --_ink: var(--sherpa-content-default-on-color-body, #ffffff);
+  --_ink: var(--sherpa-content-title-on-color, #ffffff);
 }
 
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-space-3xs, 2px);
-  padding: var(--sherpa-space-3xs, 2px) var(--sherpa-space-xs, 8px);
-  border: var(--sherpa-border-width-base, 1px) solid var(--_hue);
-  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  gap: var(--sherpa-core-space-3xs, 2px);
+  padding: var(--sherpa-core-space-3xs, 2px) var(--sherpa-core-space-xs, 8px);
+  border: var(--sherpa-core-border-width-base, 1px) solid var(--_hue);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
   font-family: inherit;
-  font-size: var(--sherpa-font-size-body-xs, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  font-weight: var(--sherpa-core-fonts-weight-600, 600);
   line-height: 1.4;
   white-space: nowrap;
 
@@ -37,7 +37,7 @@
 /* ── Secondary: soft tint of the hue, dark ink ─────────────────────── */
 :host([data-variant="secondary"]) .pill {
   background: color-mix(in srgb, var(--_hue) 16%, transparent);
-  color: var(--sherpa-content-default-heading, #18181f);
+  color: var(--sherpa-content-title-base, #18191a);
   border-color: color-mix(in srgb, var(--_hue) 40%, transparent);
 }
 
@@ -56,7 +56,7 @@
 
 /* Light swatches (solid fill needs dark ink for contrast) */
 :host(:is([data-color="3"], [data-color="7"], [data-color="10"], [data-color="11"])) {
-  --_ink: var(--sherpa-content-default-heading, #18181f);
+  --_ink: var(--sherpa-content-title-base, #18191a);
 }
 
 /* ── Removable close button ────────────────────────────────────────── */
@@ -66,10 +66,10 @@
   justify-content: center;
   width: 14px;
   height: 14px;
-  margin-inline-start: var(--sherpa-space-3xs, 2px);
+  margin-inline-start: var(--sherpa-core-space-3xs, 2px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
   background: transparent;
   color: inherit;
   font-size: 14px;
@@ -81,15 +81,15 @@
 .close:hover { opacity: 1; background: color-mix(in srgb, currentColor 22%, transparent); }
 .close:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
 /* ── Collapsed: small circular indicator ───────────────────────────── */
 :host([data-collapsed]) .pill {
-  width: var(--sherpa-space-xs, 8px);
-  height: var(--sherpa-space-xs, 8px);
+  width: var(--sherpa-core-space-xs, 8px);
+  height: var(--sherpa-core-space-xs, 8px);
   padding: 0;
-  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
   overflow: hidden;
   font-size: 0;
 }

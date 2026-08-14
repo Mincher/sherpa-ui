@@ -10,10 +10,10 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-sm, 14px);
-  color: var(--sherpa-content-default-body, #4a4a54);
-  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
-  border-radius: var(--sherpa-border-rounding-lg, 8px);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  color: var(--sherpa-content-primary-base, #2e2e33);
+  border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-radius: var(--sherpa-core-border-rounding-lg, 8px);
   overflow: hidden;
 }
 
@@ -27,27 +27,27 @@
 .head-cell {
   padding: 0;
   text-align: start;
-  background: var(--sherpa-surface-container-inactive, #f4f4f6);
-  border-block-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+  background: var(--sherpa-surface-primary-inactive, #f2f2f2);
+  border-block-end: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
 }
 .head-btn {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-space-2xs, 4px);
+  gap: var(--sherpa-core-space-2xs, 4px);
   inline-size: 100%;
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
   border: none;
   background: none;
   font: inherit;
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-content-default-heading, #18181f);
+  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  color: var(--sherpa-content-title-base, #18191a);
   text-align: start;
   cursor: pointer;
 }
 .head-cell[data-sortable="false"] .head-btn { cursor: default; }
 .head-btn:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
 /* Sort caret — hidden unless this column is the active sort. */
@@ -66,13 +66,13 @@
   cursor: pointer;
   transition: background-color 80ms ease;
 }
-.row:hover { background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6); }
+.row:hover { background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6); }
 .row:not(:last-child) .cell {
-  border-block-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+  border-block-end: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
 }
 
 .cell {
-  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
   white-space: nowrap;
 }
 /* Numeric columns: right-aligned + mono (the Sherpa numeric convention). */
@@ -85,8 +85,8 @@
 /* ── Empty state ───────────────────────────────────────────────────── */
 .empty {
   display: none;
-  padding: var(--sherpa-space-2xl, 32px);
+  padding: var(--sherpa-core-space-2xl, 32px);
   text-align: center;
-  color: var(--sherpa-content-default-secondary, #8a8a96);
+  color: var(--sherpa-content-secondary-base, #404047);
 }
 :host([data-empty]) .empty { display: block; }

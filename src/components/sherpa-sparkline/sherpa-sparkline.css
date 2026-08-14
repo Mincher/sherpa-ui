@@ -15,10 +15,10 @@
   vertical-align: middle;
   width: 100%;
   min-width: 40px;
-  height: var(--sherpa-size-xl, 40px);
+  height: var(--sherpa-core-size-xl, 28px);
 
   /* Trend colour — status cascade wins, else the primary accent. */
-  --_line: var(--_status-text, var(--sherpa-content-primary-default, #3c5edd));
+  --_line: var(--_status-text, var(--sherpa-content-link-base, #3c5edd));
 
   /* Raw values set by JS; CSS normalises them via calc() in .shape. */
   --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;
@@ -26,7 +26,7 @@
   --_min: 0;
   --_range: 1;
   --_stroke: 1.5px;
-  --_point-size: var(--sherpa-space-xs, 8px);
+  --_point-size: var(--sherpa-core-space-xs, 8px);
 }
 
 .chart {
@@ -39,7 +39,7 @@
 }
 
 :host([data-variant="bar"]) .chart {
-  gap: var(--sherpa-space-3xs, 2px);
+  gap: var(--sherpa-core-space-3xs, 2px);
 }
 
 /* ── Shapes: one per adjacent value pair ───────────────────────────── */
@@ -102,7 +102,7 @@
   position: absolute;
   width: var(--_point-size);
   height: var(--_point-size);
-  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
   background: currentColor;
   translate: calc(-1 * var(--_point-size) / 2) calc(-1 * var(--_point-size) / 2);
   opacity: 0;

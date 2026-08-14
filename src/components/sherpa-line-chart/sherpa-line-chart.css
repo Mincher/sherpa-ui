@@ -11,15 +11,15 @@
 :host {
   display: inline-flex;
   flex-direction: column;
-  gap: var(--sherpa-space-sm, 12px);
+  gap: var(--sherpa-core-space-sm, 12px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   --_plot-height: 180px;
 }
 
 .title {
-  font-size: var(--sherpa-font-size-body-sm, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-content-default-heading, #18181f);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  color: var(--sherpa-content-title-base, #18191a);
 }
 .title:empty { display: none; }
 
@@ -36,7 +36,7 @@
 }
 
 .grid line {
-  stroke: var(--sherpa-border-container-default, #e0e0e6);
+  stroke: var(--sherpa-border-primary, #d5d5d5);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
@@ -59,9 +59,9 @@
 .x-axis {
   display: flex;
   justify-content: space-between;
-  margin-block-start: var(--sherpa-space-2xs, 4px);
-  font-size: var(--sherpa-font-size-body-xs, 12px);
-  color: var(--sherpa-content-default-secondary, #8a8a96);
+  margin-block-start: var(--sherpa-core-space-2xs, 4px);
+  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  color: var(--sherpa-content-secondary-base, #404047);
 }
 .x-label {
   flex: 1 1 0;
