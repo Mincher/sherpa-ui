@@ -6161,5 +6161,3443 @@
       "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 11"
     },
     "cb": []
+  },
+  "Primitives::border/radius/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": [
+      "Core::border/rounding/none"
+    ]
+  },
+  "Primitives::border/radius/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 2
+    },
+    "cb": [
+      "Core::border/rounding/sm"
+    ]
+  },
+  "Primitives::border/radius/150": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 3
+    },
+    "cb": [
+      "Switch::switch-radius/thumb"
+    ]
+  },
+  "Primitives::border/radius/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 4
+    },
+    "cb": [
+      "Core::border/rounding/base"
+    ]
+  },
+  "Primitives::border/radius/300": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 8
+    },
+    "cb": [
+      "Core::border/rounding/lg"
+    ]
+  },
+  "Primitives::border/radius/400": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 16
+    },
+    "cb": [
+      "Core::border/rounding/xl"
+    ]
+  },
+  "Primitives::border/radius/450": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 24
+    },
+    "cb": [
+      "Core::border/rounding/2xl"
+    ]
+  },
+  "Primitives::border/radius/1000": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 999
+    },
+    "cb": [
+      "Core::border/rounding/full",
+      "Snapping::snapping-radius/top-left",
+      "Snapping::snapping-radius/top-right",
+      "Switch::switch-radius/thumb"
+    ]
+  },
+  "Primitives::border/stroke/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": [
+      "Core::border/width/none"
+    ]
+  },
+  "Primitives::border/stroke/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0.25
+    },
+    "cb": [
+      "Core::border/width/xs"
+    ]
+  },
+  "Primitives::border/stroke/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0.5
+    },
+    "cb": [
+      "Core::border/width/sm"
+    ]
+  },
+  "Primitives::border/stroke/300": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 1
+    },
+    "cb": [
+      "Core::border/width/base"
+    ]
+  },
+  "Primitives::border/stroke/400": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 2
+    },
+    "cb": [
+      "Core::border/width/lg"
+    ]
+  },
+  "Primitives::border/stroke/450": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 3
+    },
+    "cb": []
+  },
+  "Primitives::border/stroke/500": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 4
+    },
+    "cb": [
+      "Core::border/width/xl"
+    ]
+  },
+  "Primitives::border/stroke/600": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 8
+    },
+    "cb": [
+      "Core::border/width/2xl"
+    ]
+  },
+  "Primitives::border/stroke/700": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 12
+    },
+    "cb": [
+      "Core::border/width/3xl"
+    ]
+  },
+  "Primitives::border/dash/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": []
+  },
+  "Primitives::border/dash/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 4
+    },
+    "cb": []
+  },
+  "Primitives::border/dash/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 8
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/transparent/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fafaff"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/tertiary/base",
+      "Style (Sherpa)::border/interactive/tertiary"
+    ]
+  },
+  "Primitives::color/basic/transparent/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fdfdfd"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/transparent/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#dddde6"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/transparent/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ceced9"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/tertiary/hover"
+    ]
+  },
+  "Primitives::color/basic/transparent/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c0c0cc"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/tertiary/hover",
+      "Style (Sherpa)::surface/interactive/tertiary/inactive"
+    ]
+  },
+  "Primitives::color/basic/transparent/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b2b2bf"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/transparent/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8d8d99"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/tertiary/down",
+      "Style (Sherpa)::surface/interactive/tertiary/inactive"
+    ]
+  },
+  "Primitives::color/basic/transparent/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#5c5c66"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/transparent/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#505059"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/transparent/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#404047"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/transparent/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#2e2e33"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffffff"
+    },
+    "cb": [
+      "Core::color/neutral/0"
+    ]
+  },
+  "Primitives::effects/opacity/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": []
+  },
+  "Primitives::effects/opacity/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 20
+    },
+    "cb": []
+  },
+  "Primitives::effects/opacity/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 40
+    },
+    "cb": []
+  },
+  "Primitives::effects/opacity/300": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 60
+    },
+    "cb": []
+  },
+  "Primitives::effects/opacity/400": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 80
+    },
+    "cb": []
+  },
+  "Primitives::effects/opacity/500": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 100
+    },
+    "cb": []
+  },
+  "Primitives::effects/offset/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": []
+  },
+  "Primitives::effects/offset/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": -16
+    },
+    "cb": []
+  },
+  "Primitives::effects/offset/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": -8
+    },
+    "cb": []
+  },
+  "Primitives::effects/offset/300": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": -4
+    },
+    "cb": [
+      "Style (Sherpa)::elevation/offset/x/sunken",
+      "Style (Sherpa)::elevation/spread/small"
+    ]
+  },
+  "Primitives::effects/offset/400": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": -2
+    },
+    "cb": [
+      "Style (Sherpa)::elevation/spread/base"
+    ]
+  },
+  "Primitives::effects/offset/500": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 2
+    },
+    "cb": [
+      "Style (Sherpa)::elevation/offset/y/small",
+      "Style (Sherpa)::elevation/offset/x/small",
+      "Style (Sherpa)::elevation/spread/large"
+    ]
+  },
+  "Primitives::effects/offset/600": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 4
+    },
+    "cb": [
+      "Style (Sherpa)::elevation/blur/sunken",
+      "Style (Sherpa)::elevation/offset/y/base",
+      "Style (Sherpa)::elevation/offset/y/sunken",
+      "Style (Sherpa)::elevation/offset/x/base"
+    ]
+  },
+  "Primitives::effects/offset/700": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 8
+    },
+    "cb": [
+      "Style (Sherpa)::elevation/blur/small",
+      "Style (Sherpa)::elevation/offset/y/large",
+      "Style (Sherpa)::elevation/offset/x/large"
+    ]
+  },
+  "Primitives::effects/offset/800": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 12
+    },
+    "cb": [
+      "Style (Sherpa)::elevation/blur/base"
+    ]
+  },
+  "Primitives::effects/offset/900": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 16
+    },
+    "cb": [
+      "Style (Sherpa)::elevation/blur/large"
+    ]
+  },
+  "Primitives::effects/spread/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": []
+  },
+  "Primitives::effects/spread/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": -2
+    },
+    "cb": []
+  },
+  "Primitives::effects/spread/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": -4
+    },
+    "cb": []
+  },
+  "Primitives::effects/spread/300": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": -8
+    },
+    "cb": []
+  },
+  "Primitives::effects/spread/400": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": -16
+    },
+    "cb": []
+  },
+  "Primitives::effects/blur/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": []
+  },
+  "Primitives::effects/blur/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 2
+    },
+    "cb": []
+  },
+  "Primitives::effects/blur/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 4
+    },
+    "cb": []
+  },
+  "Primitives::effects/blur/300": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 8
+    },
+    "cb": []
+  },
+  "Primitives::effects/blur/400": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 16
+    },
+    "cb": []
+  },
+  "Primitives::effects/blur/500": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 16
+    },
+    "cb": []
+  },
+  "Primitives::effects/blur/600": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 32
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/25": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fdfdfd"
+    },
+    "cb": [
+      "Core::color/neutral/100",
+      "Style (Sherpa)::surface/secondary/base"
+    ]
+  },
+  "Primitives::color/basic/monochrome/50": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fafafa"
+    },
+    "cb": [
+      "Core::color/neutral/200",
+      "Style (Sherpa)::surface/primary/hover"
+    ]
+  },
+  "Primitives::color/basic/monochrome/75": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f8f8f8"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f2f2f2"
+    },
+    "cb": [
+      "Core::color/neutral/300"
+    ]
+  },
+  "Primitives::color/basic/monochrome/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f0f0f0"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 6",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 6",
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 6"
+    ]
+  },
+  "Primitives::color/basic/monochrome/250": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e6e6e6"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/secondary/hover"
+    ]
+  },
+  "Primitives::color/basic/monochrome/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e3e3e3"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/secondary/down"
+    ]
+  },
+  "Primitives::color/basic/monochrome/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d5d5d5"
+    },
+    "cb": [
+      "Core::color/neutral/400",
+      "Style (Sherpa)::surface/tertiary/hover"
+    ]
+  },
+  "Primitives::color/basic/monochrome/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b7b7b7"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/tertiary/down"
+    ]
+  },
+  "Primitives::color/basic/monochrome/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b1b1b1"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#999999"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#909090"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#707070"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#6d6d6d"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#464646"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/850": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#373737"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/monochrome/875": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#333333"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/tertiary/base"
+    ]
+  },
+  "Primitives::color/basic/monochrome/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#292a2e"
+    },
+    "cb": [
+      "Core::color/tones/900",
+      "Style (Sherpa)::surface/secondary/base"
+    ]
+  },
+  "Primitives::color/basic/monochrome/925": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#222222"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/primary/base",
+      "Style (Sherpa)::surface/interactive/secondary/base"
+    ]
+  },
+  "Primitives::color/basic/monochrome/950": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#18191a"
+    },
+    "cb": [
+      "Core::color/neutral/1000",
+      "Core::color/tones/1000",
+      "Style (Sherpa)::app/primary"
+    ]
+  },
+  "Primitives::color/basic/monochrome/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#000000"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/greyscale/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fafaff"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/greyscale/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fdfdfd"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/greyscale/150": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e6e6e6"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/greyscale/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#dddde6"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/greyscale/color 1"
+    ]
+  },
+  "Primitives::color/basic/greyscale/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ceced9"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/greyscale/color 2",
+      "Style (Sherpa)::data-viz/categorical/color 11"
+    ]
+  },
+  "Primitives::color/basic/greyscale/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c0c0cc"
+    },
+    "cb": [
+      "Core::color/neutral/500",
+      "Style (Sherpa)::border/interactive/hover",
+      "Style (Sherpa)::data-viz/sequential/greyscale/color 3"
+    ]
+  },
+  "Primitives::color/basic/greyscale/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b2b2bf"
+    },
+    "cb": [
+      "Style (Sherpa)::border/interactive",
+      "Style (Sherpa)::data-viz/sequential/greyscale/color 3",
+      "Style (Sherpa)::data-viz/sequential/greyscale/color 4",
+      "Style (Sherpa)::data-viz/categorical/color 11"
+    ]
+  },
+  "Primitives::color/basic/greyscale/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8d8d99"
+    },
+    "cb": [
+      "Core::color/neutral/600",
+      "Style (Sherpa)::border/interactive/down",
+      "Style (Sherpa)::data-viz/sequential/greyscale/color 4",
+      "Style (Sherpa)::data-viz/sequential/greyscale/color 5"
+    ]
+  },
+  "Primitives::color/basic/greyscale/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#5c5c66"
+    },
+    "cb": [
+      "Core::color/neutral/700",
+      "Style (Sherpa)::data-viz/sequential/greyscale/color 5"
+    ]
+  },
+  "Primitives::color/basic/greyscale/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#505059"
+    },
+    "cb": [
+      "Style (Sherpa)::border/interactive"
+    ]
+  },
+  "Primitives::color/basic/greyscale/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#404047"
+    },
+    "cb": [
+      "Core::color/neutral/800",
+      "Style (Sherpa)::border/interactive/hover"
+    ]
+  },
+  "Primitives::color/basic/greyscale/950": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#36363c"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/greyscale/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#2e2e33"
+    },
+    "cb": [
+      "Core::color/neutral/900",
+      "Core::color/tones/800",
+      "Style (Sherpa)::border/interactive/down"
+    ]
+  },
+  "Primitives::color/basic/adlumin-blue/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ecf0fe"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d0dbfd"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#a3bbfc"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#749ffb"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/base": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#1861be"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#1f75e4"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#1861be"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#104a95"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#08336a"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#031c40"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#01102a"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/blue-green/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f7fdff"
+    },
+    "cb": [
+      "Core::color/accent/classic/100",
+      "Core::color/info/100"
+    ]
+  },
+  "Primitives::color/basic/blue-green/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d9f2fa"
+    },
+    "cb": [
+      "Core::color/accent/classic/200",
+      "Core::color/info/200",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 5",
+      "Style (Sherpa)::data-viz/sequential/blue green/color 1"
+    ]
+  },
+  "Primitives::color/basic/blue-green/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b0e8fc"
+    },
+    "cb": [
+      "Core::color/accent/classic/300",
+      "Core::color/info/300",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 4",
+      "Style (Sherpa)::data-viz/sequential/blue green/color 1"
+    ]
+  },
+  "Primitives::color/basic/blue-green/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#69d5fc"
+    },
+    "cb": [
+      "Core::color/accent/classic/400",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 5",
+      "Style (Sherpa)::data-viz/sequential/blue green/color 3"
+    ]
+  },
+  "Primitives::color/basic/blue-green/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3dc4f5"
+    },
+    "cb": [
+      "Core::color/info/400",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 4",
+      "Style (Sherpa)::data-viz/sequential/blue green/color 2",
+      "Style (Sherpa)::data-viz/sequential/blue green/color 4"
+    ]
+  },
+  "Primitives::color/basic/blue-green/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#16abe2"
+    },
+    "cb": [
+      "Core::color/accent/classic/500",
+      "Core::color/info/500",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 3",
+      "Style (Sherpa)::data-viz/sequential/blue green/color 3"
+    ]
+  },
+  "Primitives::color/basic/blue-green/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0a96c9"
+    },
+    "cb": [
+      "Core::color/accent/classic/600",
+      "Core::color/info/600",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 2"
+    ]
+  },
+  "Primitives::color/basic/blue-green/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#1c8eb1"
+    },
+    "cb": [
+      "Core::color/accent/classic/650",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 1"
+    ]
+  },
+  "Primitives::color/basic/blue-green/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0079aa"
+    },
+    "cb": [
+      "Core::color/accent/classic/base",
+      "Core::color/info/700",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 2",
+      "Style (Sherpa)::data-viz/sequential/blue green/color 4"
+    ]
+  },
+  "Primitives::color/basic/blue-green/725": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#037598"
+    },
+    "cb": [
+      "Core::color/accent/classic/725"
+    ]
+  },
+  "Primitives::color/basic/blue-green/750": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#006f9d"
+    },
+    "cb": [
+      "Core::color/accent/classic/750"
+    ]
+  },
+  "Primitives::color/basic/blue-green/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#07526f"
+    },
+    "cb": [
+      "Core::color/accent/classic/800",
+      "Core::color/info/800",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 1",
+      "Style (Sherpa)::data-viz/sequential/blue green/color 5"
+    ]
+  },
+  "Primitives::color/basic/blue-green/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#07344e"
+    },
+    "cb": [
+      "Core::color/accent/classic/900",
+      "Core::color/info/900"
+    ]
+  },
+  "Primitives::color/basic/blue-green/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0c303e"
+    },
+    "cb": [
+      "Core::color/accent/classic/1000",
+      "Core::color/info/1000"
+    ]
+  },
+  "Primitives::color/basic/blue/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e4e6ff"
+    },
+    "cb": [
+      "Core::color/accent/100"
+    ]
+  },
+  "Primitives::color/basic/blue/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d4d9ff"
+    },
+    "cb": [
+      "Core::color/accent/200",
+      "Style (Sherpa)::data-viz/sequential/blue/color 1"
+    ]
+  },
+  "Primitives::color/basic/blue/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b4bdfc"
+    },
+    "cb": [
+      "Core::color/accent/300",
+      "Style (Sherpa)::data-viz/sequential/blue/color 1",
+      "Style (Sherpa)::data-viz/sequential/blue/color 2"
+    ]
+  },
+  "Primitives::color/basic/blue/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#949efd"
+    },
+    "cb": [
+      "Core::color/accent/400",
+      "Style (Sherpa)::data-viz/sequential/blue/color 3"
+    ]
+  },
+  "Primitives::color/basic/blue/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#747fff"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/blue/color 2",
+      "Style (Sherpa)::data-viz/sequential/blue/color 4",
+      "Style (Sherpa)::data-viz/categorical/color 5"
+    ]
+  },
+  "Primitives::color/basic/blue/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#4141ef"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/blue/color 3",
+      "Style (Sherpa)::data-viz/sequential/blue/color 5",
+      "Style (Sherpa)::data-viz/categorical/color 5"
+    ]
+  },
+  "Primitives::color/basic/blue/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3333cc"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/blue/color 4"
+    ]
+  },
+  "Primitives::color/basic/blue/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0505bf"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/blue/color 5"
+    ]
+  },
+  "Primitives::color/basic/blue/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0505a7"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/blue/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#060688"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/blue/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0a0a60"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/purple/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f4ebfd"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/purple/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e1c8fd"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/purple/color 1"
+    ]
+  },
+  "Primitives::color/basic/purple/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c493fc"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 5",
+      "Style (Sherpa)::data-viz/sequential/purple/color 1",
+      "Style (Sherpa)::data-viz/sequential/purple/color 2"
+    ]
+  },
+  "Primitives::color/basic/purple/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#a962fa"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 4",
+      "Style (Sherpa)::data-viz/sequential/purple/color 2",
+      "Style (Sherpa)::data-viz/sequential/purple/color 3"
+    ]
+  },
+  "Primitives::color/basic/purple/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#9b45fc"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 3",
+      "Style (Sherpa)::data-viz/sequential/purple/color 4",
+      "Style (Sherpa)::data-viz/categorical/color 1"
+    ]
+  },
+  "Primitives::color/basic/purple/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#7b1ce6"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 2",
+      "Style (Sherpa)::data-viz/sequential/purple/color 3",
+      "Style (Sherpa)::data-viz/sequential/purple/color 5",
+      "Style (Sherpa)::data-viz/categorical/color 1"
+    ]
+  },
+  "Primitives::color/basic/purple/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#6209c6"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 1",
+      "Style (Sherpa)::data-viz/sequential/purple/color 4"
+    ]
+  },
+  "Primitives::color/basic/purple/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#4d049f"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 1"
+    ]
+  },
+  "Primitives::color/basic/purple/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3f1074"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/purple/color 5"
+    ]
+  },
+  "Primitives::color/basic/purple/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#260d41"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/purple/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#19072c"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/pink/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fef2ff"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/pink/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ecc8f2"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/pink/color 1"
+    ]
+  },
+  "Primitives::color/basic/pink/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#db9ee6"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 7",
+      "Style (Sherpa)::data-viz/sequential/pink/color 2"
+    ]
+  },
+  "Primitives::color/basic/pink/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d066e3"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 8",
+      "Style (Sherpa)::data-viz/sequential/pink/color 3"
+    ]
+  },
+  "Primitives::color/basic/pink/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#cc49e3"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 9",
+      "Style (Sherpa)::data-viz/sequential/pink/color 3",
+      "Style (Sherpa)::data-viz/sequential/pink/color 4"
+    ]
+  },
+  "Primitives::color/basic/pink/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ab27c3"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 10",
+      "Style (Sherpa)::data-viz/sequential/pink/color 5"
+    ]
+  },
+  "Primitives::color/basic/pink/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#911aa7"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 10",
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 11"
+    ]
+  },
+  "Primitives::color/basic/pink/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#6e167e"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 11",
+      "Style (Sherpa)::data-viz/sequential/pink/color 4"
+    ]
+  },
+  "Primitives::color/basic/pink/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#561162"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/pink/color 5"
+    ]
+  },
+  "Primitives::color/basic/pink/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#32002f"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/pink/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#230026"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/red/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fff7f5"
+    },
+    "cb": [
+      "Core::color/critical/100"
+    ]
+  },
+  "Primitives::color/basic/red/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffd7ca"
+    },
+    "cb": [
+      "Core::color/critical/200"
+    ]
+  },
+  "Primitives::color/basic/red/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f79780"
+    },
+    "cb": [
+      "Core::color/critical/300"
+    ]
+  },
+  "Primitives::color/basic/red/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f47253"
+    },
+    "cb": [
+      "Core::color/critical/400"
+    ]
+  },
+  "Primitives::color/basic/red/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f0451c"
+    },
+    "cb": [
+      "Core::color/critical/500"
+    ]
+  },
+  "Primitives::color/basic/red/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#dd2c01"
+    },
+    "cb": [
+      "Core::color/critical/600"
+    ]
+  },
+  "Primitives::color/basic/red/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c12600"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/red/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#bf2c09"
+    },
+    "cb": [
+      "Core::color/critical/700"
+    ]
+  },
+  "Primitives::color/basic/red/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#9b2509"
+    },
+    "cb": [
+      "Core::color/critical/800"
+    ]
+  },
+  "Primitives::color/basic/red/750": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#950000"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/red/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#7b1d07"
+    },
+    "cb": [
+      "Core::color/critical/900"
+    ]
+  },
+  "Primitives::color/basic/red/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#601b0b"
+    },
+    "cb": [
+      "Core::color/critical/1000"
+    ]
+  },
+  "Primitives::color/basic/red/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#48180d"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/orange/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffeccb"
+    },
+    "cb": [
+      "Core::color/urgent/100"
+    ]
+  },
+  "Primitives::color/basic/orange/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fde2c1"
+    },
+    "cb": [
+      "Core::color/urgent/200"
+    ]
+  },
+  "Primitives::color/basic/orange/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f8b176"
+    },
+    "cb": [
+      "Core::color/urgent/300"
+    ]
+  },
+  "Primitives::color/basic/orange/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fa9e52"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/orange/350": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f99d1c"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/orange/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fa8d33"
+    },
+    "cb": [
+      "Core::color/urgent/400"
+    ]
+  },
+  "Primitives::color/basic/orange/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e18d19"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/orange/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ff7300"
+    },
+    "cb": [
+      "Core::color/urgent/500"
+    ]
+  },
+  "Primitives::color/basic/orange/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ed6d03"
+    },
+    "cb": [
+      "Core::color/urgent/600"
+    ]
+  },
+  "Primitives::color/basic/orange/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d66304"
+    },
+    "cb": [
+      "Core::color/urgent/700"
+    ]
+  },
+  "Primitives::color/basic/orange/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b95605"
+    },
+    "cb": [
+      "Core::color/urgent/800"
+    ]
+  },
+  "Primitives::color/basic/orange/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#9a4907"
+    },
+    "cb": [
+      "Core::color/urgent/900"
+    ]
+  },
+  "Primitives::color/basic/orange/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#673106"
+    },
+    "cb": [
+      "Core::color/urgent/1000"
+    ]
+  },
+  "Primitives::color/basic/yellow/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fffbef"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fff4cc"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fce494"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffd857"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fccf37"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fec404"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e8b408"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#efb800"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ddab03"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#bf9402"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#957302"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/yellow/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#6f5602"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/green/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f0fff8"
+    },
+    "cb": [
+      "Core::color/success/100"
+    ]
+  },
+  "Primitives::color/basic/green/50": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d9f2e5"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/green/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c1f7dd"
+    },
+    "cb": [
+      "Core::color/success/200"
+    ]
+  },
+  "Primitives::color/basic/green/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#9eebc6"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/green/color 1"
+    ]
+  },
+  "Primitives::color/basic/green/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#74ddaa"
+    },
+    "cb": [
+      "Core::color/success/300",
+      "Style (Sherpa)::data-viz/sequential/green/color 2"
+    ]
+  },
+  "Primitives::color/basic/green/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#4ad391"
+    },
+    "cb": [
+      "Core::color/success/400",
+      "Style (Sherpa)::data-viz/sequential/green/color 3",
+      "Style (Sherpa)::data-viz/categorical/color 10"
+    ]
+  },
+  "Primitives::color/basic/green/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#20c173"
+    },
+    "cb": [
+      "Core::color/success/500",
+      "Style (Sherpa)::data-viz/sequential/green/color 3",
+      "Style (Sherpa)::data-viz/sequential/green/color 4",
+      "Style (Sherpa)::data-viz/categorical/color 10"
+    ]
+  },
+  "Primitives::color/basic/green/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#01a753"
+    },
+    "cb": [
+      "Core::color/success/600",
+      "Style (Sherpa)::data-viz/sequential/green/color 4",
+      "Style (Sherpa)::data-viz/sequential/green/color 5"
+    ]
+  },
+  "Primitives::color/basic/green/625": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#00a753"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/green/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#00954a"
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/green/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#058142"
+    },
+    "cb": [
+      "Core::color/success/700"
+    ]
+  },
+  "Primitives::color/basic/green/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#016f38"
+    },
+    "cb": [
+      "Core::color/success/800",
+      "Style (Sherpa)::data-viz/sequential/green/color 5"
+    ]
+  },
+  "Primitives::color/basic/green/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#015f2d"
+    },
+    "cb": [
+      "Core::color/success/900"
+    ]
+  },
+  "Primitives::color/basic/green/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#004f26"
+    },
+    "cb": [
+      "Core::color/success/1000"
+    ]
+  },
+  "Primitives::color/extended/phlox/250": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f8ebff"
+    },
+    "cb": [
+      "Core::color/brand/100"
+    ]
+  },
+  "Primitives::color/extended/phlox/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f2d6ff"
+    },
+    "cb": [
+      "Core::color/brand/200",
+      "Style (Sherpa)::border/interactive/gradient/ai/stop 3",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 1"
+    ]
+  },
+  "Primitives::color/extended/phlox/350": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e2adff"
+    },
+    "cb": [
+      "Core::color/brand/300",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 1",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 2"
+    ]
+  },
+  "Primitives::color/extended/phlox/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d485ff"
+    },
+    "cb": [
+      "Core::color/brand/400",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 3",
+      "Style (Sherpa)::data-viz/categorical/color 2"
+    ]
+  },
+  "Primitives::color/extended/phlox/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#cd70ff"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/phlox/color 2",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 4"
+    ]
+  },
+  "Primitives::color/extended/phlox/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c046ff"
+    },
+    "cb": [
+      "Core::color/brand/base",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 5",
+      "Style (Sherpa)::data-viz/categorical/color 2"
+    ]
+  },
+  "Primitives::color/extended/phlox/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#a90aff"
+    },
+    "cb": [
+      "Core::color/brand/600",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 3"
+    ]
+  },
+  "Primitives::color/extended/phlox/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8500cc"
+    },
+    "cb": [
+      "Core::color/brand/700",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 4"
+    ]
+  },
+  "Primitives::color/extended/phlox/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#50007a"
+    },
+    "cb": [
+      "Core::color/brand/800",
+      "Style (Sherpa)::data-viz/sequential/phlox/color 5"
+    ]
+  },
+  "Primitives::color/extended/phlox/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#350052"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/phlox/750": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#30004a"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/razamatazz/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fdecf3"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/razamatazz/250": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fcd9e7"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 7",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 1"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f9b4ce"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 7",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 1",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 2"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/350": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f68eb6"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 8",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 3",
+      "Style (Sherpa)::data-viz/categorical/color 8"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f3699d"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 8",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 2",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 4",
+      "Style (Sherpa)::data-viz/categorical/color 8"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f14284"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 9",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 5",
+      "Style (Sherpa)::data-viz/categorical/color 9"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ed186b"
+    },
+    "cb": [
+      "Style (Sherpa)::border/interactive/gradient/ai/stop 4",
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 10",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 3"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d1105a"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/categorical/color 9"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ab0d49"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 10",
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 11",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 4"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#720831"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 11",
+      "Style (Sherpa)::data-viz/sequential/razamatazz/color 5"
+    ]
+  },
+  "Primitives::color/extended/razamatazz/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#4a0521"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fff3f7"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f8d6e0"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f1b9ca"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e99cb3"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e27f9d"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#cb527a"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b23b66"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#992653"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#801040"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#660b32"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-red/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#571129"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-yellow/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fffbf2"
+    },
+    "cb": [
+      "Core::color/warning/100"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fdeed0"
+    },
+    "cb": [
+      "Core::color/warning/200",
+      "Style (Sherpa)::data-viz/sequential/orange/color 1"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fde0a6"
+    },
+    "cb": [
+      "Core::color/warning/300",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 7",
+      "Style (Sherpa)::data-viz/sequential/orange/color 1",
+      "Style (Sherpa)::data-viz/sequential/orange/color 2"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fdd37d"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 7",
+      "Style (Sherpa)::data-viz/sequential/orange/color 3"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fcc557"
+    },
+    "cb": [
+      "Core::color/warning/400",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 8",
+      "Style (Sherpa)::data-viz/sequential/orange/color 2",
+      "Style (Sherpa)::data-viz/sequential/orange/color 4"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffc44c"
+    },
+    "cb": [
+      "Core::color/warning/500",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 8",
+      "Style (Sherpa)::data-viz/sequential/orange/color 5"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fcb72d"
+    },
+    "cb": [
+      "Core::color/warning/600",
+      "Style (Sherpa)::data-viz/sequential/orange/color 3"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffae0b"
+    },
+    "cb": [
+      "Core::color/warning/700",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 9"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e39b07"
+    },
+    "cb": [
+      "Core::color/warning/800",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 9",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 10",
+      "Style (Sherpa)::data-viz/sequential/orange/color 4"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#a77206"
+    },
+    "cb": [
+      "Core::color/warning/900",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 10",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 11",
+      "Style (Sherpa)::data-viz/sequential/orange/color 5"
+    ]
+  },
+  "Primitives::color/extended/warm-yellow/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#805500"
+    },
+    "cb": [
+      "Core::color/warning/1000",
+      "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 11"
+    ]
+  },
+  "Primitives::color/extended/warm-green/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fbfff2"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ecffc3"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#defc9b"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d2ff6e"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c4fc4a"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b7f826"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#a5e613"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8cc609"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#7db10a"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#5c800c"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/warm-green/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#486011"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e6fffd"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b8ffec"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8cffdb"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#45fcc1"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#12f0aa"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#14d99b"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0fc48b"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0fa878"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#188664"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#14644b"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/cool-green/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#05412f"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/turquoise/250": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ddf9f5"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/turquoise/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#caf6f1"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 5",
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 1"
+    ]
+  },
+  "Primitives::color/extended/turquoise/350": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#a9efe7"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 4",
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 2"
+    ]
+  },
+  "Primitives::color/extended/turquoise/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#98ece2"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 4",
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 2",
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 3"
+    ]
+  },
+  "Primitives::color/extended/turquoise/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#75e6d9"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 3",
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 4",
+      "Style (Sherpa)::data-viz/categorical/color 3"
+    ]
+  },
+  "Primitives::color/extended/turquoise/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3bdbc7"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 5"
+    ]
+  },
+  "Primitives::color/extended/turquoise/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#2bd1c1"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 2",
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 3",
+      "Style (Sherpa)::data-viz/categorical/color 3"
+    ]
+  },
+  "Primitives::color/extended/turquoise/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#27bbac"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 1",
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 3"
+    ]
+  },
+  "Primitives::color/extended/turquoise/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#199989"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 2",
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 4"
+    ]
+  },
+  "Primitives::color/extended/turquoise/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0f554d"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 1",
+      "Style (Sherpa)::data-viz/sequential/turquoise/color 5"
+    ]
+  },
+  "Primitives::color/extended/turquoise/750": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#074b43"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f0edff"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/250": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#dbccfa"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#cebdf9"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/350": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#a98bf4"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#845aef"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#6e32ed"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#6b0bea"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#5609bb"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#40078c"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/electric-indigo/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#1e0751"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/neon-blue/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#eaf0ff"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/neon-blue/250": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d7deff"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 1"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b1c0fb"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 1",
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 2",
+      "Style (Sherpa)::data-viz/categorical/color 6"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/350": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#90a3f6"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 3"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8197f1"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 2",
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 4",
+      "Style (Sherpa)::data-viz/categorical/color 6"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#5f80e8"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 3",
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 5"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#4c63e5"
+    },
+    "cb": [
+      "Core::color/accent/500",
+      "Style (Sherpa)::surface/interactive/gradient/ai/stop 1",
+      "Style (Sherpa)::border/interactive/gradient/ai/stop 2",
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 4"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3c5edd"
+    },
+    "cb": [
+      "Core::color/accent/base",
+      "Style (Sherpa)::data-viz/sequential/neon blue/color 5"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#173382"
+    },
+    "cb": [
+      "Core::color/accent/700"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0f0f57"
+    },
+    "cb": [
+      "Core::color/accent/800"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0d0d4a"
+    },
+    "cb": [
+      "Core::color/accent/900"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/750": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0b0b3d"
+    },
+    "cb": [
+      "Core::color/accent/1000"
+    ]
+  },
+  "Primitives::color/extended/neon-blue/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#080830"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/chrome-orange/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fff8eb"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/chrome-orange/250": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#fff1d6"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/chrome-orange/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffe4ad"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/chrome-orange/350": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffd685"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/chrome-orange/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffc95c"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/categorical/color 7"
+    ]
+  },
+  "Primitives::color/extended/chrome-orange/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffbb33"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/chrome-orange/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#ffaa00"
+    },
+    "cb": [
+      "Style (Sherpa)::data-viz/categorical/color 7"
+    ]
+  },
+  "Primitives::color/extended/chrome-orange/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f5a300"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/chrome-orange/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c78500"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/chrome-orange/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b87a00"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/slate/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#f4f6fe"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/slate/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#eaeefe"
+    },
+    "cb": [
+      "Core::color/tones/100"
+    ]
+  },
+  "Primitives::color/extended/slate/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#e2e7f7"
+    },
+    "cb": [
+      "Core::color/tones/200"
+    ]
+  },
+  "Primitives::color/extended/slate/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#dadfef"
+    },
+    "cb": [
+      "Core::color/tones/300"
+    ]
+  },
+  "Primitives::color/extended/slate/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#d2d4e6"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/slate/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#babace"
+    },
+    "cb": [
+      "Core::color/tones/400"
+    ]
+  },
+  "Primitives::color/extended/slate/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8e8eb2"
+    },
+    "cb": [
+      "Core::color/tones/500"
+    ]
+  },
+  "Primitives::color/extended/slate/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#78789b"
+    },
+    "cb": [
+      "Core::color/tones/600"
+    ]
+  },
+  "Primitives::color/extended/slate/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#5f5d7f"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/slate/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#514b6b"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/slate/750": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#372f4f"
+    },
+    "cb": [
+      "Core::color/tones/700"
+    ]
+  },
+  "Primitives::color/extended/slate/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#241c3a"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/slate/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#171220"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/slate/950": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#0f0919"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/150": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#dfc5fc"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#c99efa"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/250": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#b377f8"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#9e50f7"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/350": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#933cf6"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#6009c3"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/450": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#4d079c"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3e067f"
+    },
+    "cb": []
+  },
+  "Primitives::color/extended/deep-purple/550": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#300561"
+    },
+    "cb": [
+      "Core::color/brand/900"
+    ]
+  },
+  "Primitives::color/extended/deep-purple/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#130227"
+    },
+    "cb": [
+      "Core::color/brand/1000"
+    ]
+  },
+  "Primitives::scale/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": [
+      "Core::size/none",
+      "Core::space/none"
+    ]
+  },
+  "Primitives::scale/25": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 2
+    },
+    "cb": [
+      "Core::space/3xs"
+    ]
+  },
+  "Primitives::scale/50": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 4
+    },
+    "cb": [
+      "Core::size/3xs",
+      "Core::space/2xs"
+    ]
+  },
+  "Primitives::scale/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 8
+    },
+    "cb": [
+      "Core::size/2xs",
+      "Core::space/xs"
+    ]
+  },
+  "Primitives::scale/150": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 12
+    },
+    "cb": [
+      "Core::size/xs",
+      "Core::space/sm"
+    ]
+  },
+  "Primitives::scale/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 16
+    },
+    "cb": [
+      "Core::size/sm",
+      "Core::space/base"
+    ]
+  },
+  "Primitives::scale/250": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 20
+    },
+    "cb": [
+      "Core::size/md",
+      "Core::space/lg"
+    ]
+  },
+  "Primitives::scale/300": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 24
+    },
+    "cb": [
+      "Core::size/lg",
+      "Core::space/xl"
+    ]
+  },
+  "Primitives::scale/350": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 28
+    },
+    "cb": [
+      "Core::size/xl"
+    ]
+  },
+  "Primitives::scale/400": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 32
+    },
+    "cb": [
+      "Core::size/2xl",
+      "Core::space/2xl"
+    ]
+  },
+  "Primitives::scale/450": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 36
+    },
+    "cb": []
+  },
+  "Primitives::scale/500": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 40
+    },
+    "cb": [
+      "Core::size/3xl",
+      "Core::space/3xl"
+    ]
+  },
+  "Primitives::scale/600": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 48
+    },
+    "cb": [
+      "Core::size/4xl",
+      "Core::space/4xl"
+    ]
+  },
+  "Primitives::scale/700": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 56
+    },
+    "cb": [
+      "Core::size/5xl",
+      "Core::space/5xl"
+    ]
+  },
+  "Primitives::scale/800": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 64
+    },
+    "cb": [
+      "Core::size/6xl",
+      "Core::space/6xl"
+    ]
+  },
+  "Primitives::motion/duration/0": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 0
+    },
+    "cb": []
+  },
+  "Primitives::motion/duration/100": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 150
+    },
+    "cb": []
+  },
+  "Primitives::motion/duration/200": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 225
+    },
+    "cb": []
+  },
+  "Primitives::motion/duration/300": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 300
+    },
+    "cb": []
+  },
+  "Primitives::motion/duration/400": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 425
+    },
+    "cb": []
+  },
+  "Primitives::motion/duration/500": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": 600
+    },
+    "cb": []
+  },
+  "Primitives::color/basic/adlumin-blue/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3585f9"
+    },
+    "cb": []
   }
 }

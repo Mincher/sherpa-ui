@@ -93,15 +93,19 @@ Design + shape: **[DESIGN-SYSTEM-ONTOLOGY.md](./DESIGN-SYSTEM-ONTOLOGY.md)**.
 ## 4. The variable architecture (tiers)
 
 ```
-Primitives (raw)  →  Core (named ramps)  →  Style (Sherpa) (semantic, light/dark)
+Primitives (raw, FOUNDATION)  →  Core (named ramps)  →  Style (Sherpa) (semantic, light/dark)
    →  component collections (Control, Status, Container, Button, Switch, Input,
       Navigation, Badge)  +  override collections (Elevation, Color Sets, Snapping,
       Layout Grid, Data Viz, Typography)  +  extensions (Saturated, Border Only,
       brand/mono/hero, density, Calendar Day/Month/Year)
 ```
 
-Never bind Primitives/Core directly; bind the lowest semantic/component tier. Details:
-`docs/FIGMA-VARIABLE-GRAPH.md`, `docs/FIGMA-CSS-PROPERTY-MAP.md`.
+**Prefer the lowest semantic/component tier.** But **Primitives are a bindable
+foundation layer** on both sides — bind them directly where no semantic token fits
+(e.g. a 3px radius the Core scale skips: `border/radius/150`). The ontology covers
+all 908 vars including Primitives (`tier: foundation`); an audit found 182 such
+foundation binds, all legitimate. Details: `docs/FIGMA-VARIABLE-GRAPH.md`,
+`docs/FIGMA-CSS-PROPERTY-MAP.md`.
 
 ---
 

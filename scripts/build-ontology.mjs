@@ -14,6 +14,11 @@
  * grounded in the usage graph, not invented. Entries needing human prose are
  * flagged `"needsReview": true` (the ambiguous / opaque-name cases).
  *
+ * Covers ALL 908 vars including Primitives (tier: foundation). Primitives are a
+ * bindable foundation layer on both sides — bind them where no semantic token
+ * fits (e.g. border/radius/150 = 3px, a gap in the Core scale). They are NOT
+ * excluded as "reference-only".
+ *
  * Usage: node scripts/build-ontology.mjs [--dry]
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
@@ -29,6 +34,7 @@ const TYPE = { C: 'COLOR', F: 'FLOAT', COLOR: 'COLOR', FLOAT: 'FLOAT' };
 
 // tier from the collection name
 function tierOf(coll) {
+  if (coll === 'Primitives') return 'foundation'; // bindable foundation layer (both sides)
   if (coll === 'Core') return 'core';
   if (coll === 'Style (Sherpa)') return 'style';
   if (['Control','Container','Status','Button','Switch','Input','Navigation','Badge','Calendar Day','Calendar Month','Calendar Year'].includes(coll)) return 'component';
@@ -48,14 +54,16 @@ function roleOf(id, entry) {
   }
   const scopeRole = roleFromScopes((entry.s || '').split(',').filter(Boolean));
   if (scopeRole !== 'open' && scopeRole !== 'other') return scopeRole;
-  if (/surface|fill|background|track|knob|thumb/.test(n)) return 'surface';
-  if (/border|stroke|divider/.test(n)) return 'border';
-  if (/content|text|label|heading|title|ink|link/.test(n)) return 'content';
+  // Name fallback — order matters: radius/scale before the generic 'border' word,
+  // so 'border/radius/150' is a radius and 'scale/400' is a space.
   if (/radius|rounding|corner/.test(n)) return 'radius';
-  if (/space|gap|padding/.test(n)) return 'space';
+  if (/(^|\/)(scale|space|gap|padding)(\/|$)/.test(n)) return 'space';
+  if (/shadow|elevation|blur|offset|spread|effects\//.test(n)) return 'effect';
+  if (/surface|fill|background|track|knob|thumb/.test(n)) return 'surface';
+  if (/(border|stroke|divider)/.test(n)) return 'border';
+  if (/content|text|label|heading|title|ink|link/.test(n)) return 'content';
   if (/size|icon|width|height/.test(n)) return 'size';
-  if (/shadow|elevation|blur|offset|spread/.test(n)) return 'effect';
-  return 'palette'; // open ramp step (status/color N, data-viz) — a palette, not a fixed role
+  return 'palette'; // colour ramp step (color/*, status/color N, data-viz) — a palette
 }
 
 const ROLE_PROSE = {
