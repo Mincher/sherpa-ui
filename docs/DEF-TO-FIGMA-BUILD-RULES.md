@@ -73,10 +73,23 @@ The label must bind a **control-aware** content token that flips with the Contro
 tier: on a filled (primary) surface → on-color/light ink; on a light (secondary/
 tertiary) surface → dark ink. Binding `status-content/*` straight bypasses that flip.
 
-**Status:** flagged as a real component bug to fix in sherpa-button's Figma bindings +
-its CSS (`content` should resolve via a control/status-aware chain, not `status-content`
-directly). Until fixed, any component that nests a secondary Button under status
-inherits the bug.
+**FIXED (Figma side).** Root cause was a **Figma⇄code DIVERGENCE**:
+- **CSS** (`sherpa-button.css`) was already correct — it has NO status handling; each
+  variant sets `--_content` per look tier (secondary → `control-content-default` = dark).
+  A button's label colour is status-INDEPENDENT in code, flipping only by variant.
+- **Figma** had wired the label/icon to `status-content/primary` (status-dependent),
+  which broke under a status pin on a light secondary surface.
+
+Fix: repointed the Button's default-state label + icons from `status-content/primary`
+→ **`control-content/default`**, which resolves correctly per Control mode (light
+on-color on a filled primary; dark on a light secondary/tertiary). Verified: secondary/
+primary/tertiary buttons in a Status=info context all read correctly. Now Figma matches
+the CSS: button label colour flips by look tier, not by status.
+
+**Lesson:** a button's TEXT is not status-tinted — only its SURFACE/BORDER are (and
+only for a filled primary in a status context). Bind control-content, never
+status-content, for control labels. This is a case the two-way sync must reconcile:
+the CSS was the correct source of truth.
 
 ---
 

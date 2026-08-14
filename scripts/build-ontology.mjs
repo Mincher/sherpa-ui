@@ -94,7 +94,7 @@ function proseFor(role, tier, entry) {
 const CAVEATS = [
   {
     match: /^Status::status-content\//,
-    text: 'DO NOT bind a control label (button/tag text) to this directly — under a status pin it resolves to the ON-COLOR (light) ink meant for text on a SATURATED fill. A secondary/tertiary control has a LIGHT surface, so the text vanishes (the sherpa-button secondary-in-status bug). Bind a control-aware content token that flips with the look tier instead.',
+    text: 'DO NOT bind a control label (button/tag text) to this directly — under a status pin it resolves to the ON-COLOR (light) ink meant for text on a SATURATED fill, so a secondary/tertiary control (light surface) gets invisible light-on-light text. This was the sherpa-button bug (FIXED: repointed to control-content/default). Control LABELS are NOT status-tinted — bind control-content/default (flips by look tier). Only a control SURFACE/BORDER is status-tinted.',
   },
   {
     match: /^Status::status-surface\//,
