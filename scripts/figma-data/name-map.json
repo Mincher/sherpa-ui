@@ -63,8 +63,8 @@
     },
     "sherpa-file-upload": {
       "figma": "File Uploader",
-      "status": "needs-rebuild",
-      "rebuildNote": "bare drag-drop list vs Figma with upload-button + remove-all-button; only files-change event"
+      "status": "matched",
+      "note": "rebuilt 2026-08-15: actions row (clear-all + upload), details block, per-file status, 4 lifecycle events"
     },
     "sherpa-key-value-list": {
       "figma": "Key Value Pair",

@@ -1,20 +1,25 @@
 /**
  * sherpa-file-upload — a drag-and-drop file selection zone.
  *
- * A dashed drop area opens a hidden native file input on click / keyboard, and
- * accepts dropped files. Selected files render as a list (name + size + remove)
- * stamped from a cloning prototype — the only structural DOM this component
- * creates. Drag state is a data-dragover attribute on the host (pure CSS);
- * accept / multiple mirror to the native input. JS carries files and events only.
+ * Rebuilt to match the Figma "File Uploader": a drop zone, a details block (max
+ * size + allowed types), a file list (each row: icon + name + size + status +
+ * remove), and an actions row (clear-all + upload). The drop area opens a hidden
+ * native file input on click / keyboard and accepts dropped files. Drag state,
+ * file presence and disabled are data-* on the host (pure CSS); JS carries the
+ * files, mirrors accept/multiple, and emits the lifecycle events.
  *
- * @fires files-change  detail: { files: File[] }
+ * @fires file-add          detail: { added: File[], files: File[] }
+ * @fires file-remove       detail: { removed: File, files: File[] }
+ * @fires file-clear        detail: {}
+ * @fires file-upload-start detail: { files: File[] }
+ * @fires files-change      detail: { files: File[] }   (kept for back-compat)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
 export class SherpaFileUpload extends SherpaElement {
   static override css = new URL('./sherpa-file-upload.css', import.meta.url);
   static override html = new URL('./sherpa-file-upload.html', import.meta.url);
-  static override observed = ['data-label', 'data-helper', 'data-accept', 'data-multiple', 'disabled'];
+  static override observed = ['data-label', 'data-helper', 'data-max-size', 'data-accept', 'data-multiple', 'disabled'];
 
   #input: HTMLInputElement | null = null;
   #files: File[] = [];
@@ -35,21 +40,26 @@ export class SherpaFileUpload extends SherpaElement {
     zone?.addEventListener('drop', this.#onDrop);
 
     this.#input?.addEventListener('change', this.#onInputChange);
-    // One delegated listener for every remove button — rows come and go.
     this.$('.file-list')?.addEventListener('click', this.#onListClick);
+    this.$('.clear-all')?.addEventListener('click', this.#onClearAll);
+    this.$('.upload')?.addEventListener('click', this.#onUpload);
   }
 
   override onChange(name: string): void {
-    if (name === 'data-label' || name === 'data-helper') this.#syncText();
-    else this.#syncInput();
+    if (name === 'data-label' || name === 'data-helper' || name === 'data-max-size' || name === 'data-accept') this.#syncText();
+    if (name === 'data-accept' || name === 'data-multiple') this.#syncInput();
   }
 
-  /** Label / helper text into the shadow (CSS collapses empties). */
+  /** Label / helper / details text into the shadow (CSS collapses empties). */
   #syncText(): void {
     const label = this.$('.label');
     if (label) label.textContent = this.dataset['label'] ?? '';
     const helper = this.$('.helper');
     if (helper) helper.textContent = this.dataset['helper'] ?? '';
+    const maxSize = this.$('.max-size');
+    if (maxSize) maxSize.textContent = this.dataset['maxSize'] ? `Maximum file size: ${this.dataset['maxSize']}` : '';
+    const allowed = this.$('.allowed-types');
+    if (allowed) allowed.textContent = this.dataset['accept'] ? `Allowed file types: ${this.dataset['accept']}` : '';
   }
 
   /** Mirror accept / multiple host → native input. */
@@ -113,9 +123,10 @@ export class SherpaFileUpload extends SherpaElement {
 
   #add(incoming: File[]): void {
     if (!incoming.length) return;
-    const files = this.hasAttribute('data-multiple') ? incoming : incoming.slice(0, 1);
-    this.#files = this.hasAttribute('data-multiple') ? [...this.#files, ...files] : files;
+    const added = this.hasAttribute('data-multiple') ? incoming : incoming.slice(0, 1);
+    this.#files = this.hasAttribute('data-multiple') ? [...this.#files, ...added] : added;
     this.#render();
+    this.emit('file-add', { added, files: this.#files });
     this.emit('files-change', { files: this.#files });
   }
 
@@ -140,10 +151,31 @@ export class SherpaFileUpload extends SherpaElement {
     const row = btn.closest<HTMLElement>('.file-item');
     const idx = Number(row?.dataset['index']);
     if (Number.isNaN(idx)) return;
-    this.#files.splice(idx, 1);
+    const [removed] = this.#files.splice(idx, 1);
     this.#render();
+    if (removed) this.emit('file-remove', { removed, files: this.#files });
     this.emit('files-change', { files: this.#files });
   };
+
+  #onClearAll = (): void => {
+    if (this.hasAttribute('disabled') || !this.#files.length) return;
+    this.#files = [];
+    this.#render();
+    this.emit('file-clear', {});
+    this.emit('files-change', { files: this.#files });
+  };
+
+  #onUpload = (): void => {
+    if (this.hasAttribute('disabled') || this.hasAttribute('data-uploading') || !this.#files.length) return;
+    this.emit('file-upload-start', { files: this.#files });
+  };
+
+  /** Set a per-file status line (e.g. "Uploading…", "Uploaded", "Failed"). */
+  setFileStatus(index: number, status: string): void {
+    const row = this.$$('.file-item').find((r) => Number((r as HTMLElement).dataset['index']) === index);
+    const el = row?.querySelector('.file-status');
+    if (el) el.textContent = status;
+  }
 
   #formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;

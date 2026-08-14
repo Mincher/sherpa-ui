@@ -1,19 +1,30 @@
 <!--
   sherpa-file-upload — a drag-and-drop file selection zone.
 
-  A dashed drop area triggers a hidden <input type="file"> on click / Enter /
-  Space, or accepts dropped files. Selected files render as a list (name + size +
-  remove) stamped from the .file-item-tpl cloning prototype.
+  Matches the Figma "File Uploader": a drop zone, a details block (max size +
+  allowed types), a file list (each row: icon + name + size + status + remove),
+  and an actions row (clear-all + upload buttons). The drop area triggers a
+  hidden <input type="file"> on click / Enter / Space, or accepts dropped files.
 
   Public API:
     data-label      label above the drop zone (hidden when empty)
-    data-helper     constraint / helper text under the list (hidden when empty)
-    data-accept     comma-separated MIME types / extensions → native accept
+    data-helper     helper text under the list (hidden when empty)
+    data-max-size   maximum file-size hint (e.g. "4 MB") shown in details
+    data-accept     comma-separated MIME types / extensions → native accept + hint
     data-multiple   allow selecting more than one file → native multiple
+    data-uploading  in-flight state (disables the upload button)
     data-dragover   set automatically while a drag is over the zone (CSS hook)
     disabled        disabled state
 
-  Fires: files-change — detail: { files: File[] }
+  Slots:
+    actions   — extra controls in the actions row (before clear/upload)
+
+  Fires:
+    file-add           — detail: { added: File[], files: File[] }
+    file-remove        — detail: { removed: File, files: File[] }
+    file-clear         — detail: {}
+    file-upload-start  — detail: { files: File[] }
+    files-change       — detail: { files: File[] }   (kept for back-compat)
 -->
 <template id="default">
   <div class="field" part="field">
@@ -24,7 +35,18 @@
       <span class="drop-text">Drag and drop files here, or <span class="browse">browse</span></span>
     </div>
 
+    <div class="details" part="details">
+      <span class="max-size" part="max-size"></span>
+      <span class="allowed-types" part="allowed-types"></span>
+    </div>
+
     <ul class="file-list" part="file-list" role="list"></ul>
+
+    <div class="actions" part="actions">
+      <slot name="actions"></slot>
+      <button class="clear-all" part="clear-all" type="button">Clear all</button>
+      <button class="upload" part="upload" type="button">Upload</button>
+    </div>
 
     <span class="helper" part="helper"></span>
   </div>
@@ -34,8 +56,13 @@
   <template class="file-item-tpl">
     <li class="file-item" role="listitem">
       <span class="file-icon" aria-hidden="true">🖹</span>
-      <span class="file-name"></span>
-      <span class="file-size"></span>
+      <span class="file-body">
+        <span class="file-line">
+          <span class="file-name"></span>
+          <span class="file-size"></span>
+        </span>
+        <span class="file-status" part="file-status"></span>
+      </span>
       <button class="file-remove" type="button" aria-label="Remove file">×</button>
     </li>
   </template>

@@ -1,10 +1,10 @@
 {
   "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
-  "generated": true,
+  "generated": false,
   "name": "sherpa-file-upload",
   "figmaName": "File Uploader",
   "category": "control",
-  "description": "a drag-and-drop file selection zone.",
+  "description": "A drag-and-drop file selection zone: a drop area, a details block (max size + allowed types), a file list (name + size + status + remove), and an actions row (clear-all + upload).",
   "props": [
     {
       "name": "data-label",
@@ -38,7 +38,15 @@
     }
   ],
   "templates": [],
-  "slots": [],
+  "slots": [
+    {
+      "name": "actions",
+      "accepts": [
+        "control"
+      ],
+      "description": "Extra controls in the actions row (before clear/upload)."
+    }
+  ],
   "parts": [
     "field",
     "label",
@@ -50,16 +58,74 @@
   "props_public": [],
   "events": [
     {
-      "name": "files-change",
+      "name": "file-add",
+      "description": "Files were added (dropped or picked).",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {
+        "added": "File[]",
+        "files": "File[]"
+      },
+      "trigger": {
+        "on": "drop",
+        "node": ".drop-zone"
+      }
+    },
+    {
+      "name": "file-remove",
+      "description": "A file was removed from the list.",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {
+        "removed": "File",
+        "files": "File[]"
+      },
+      "trigger": {
+        "on": "click",
+        "node": ".file-remove"
+      }
+    },
+    {
+      "name": "file-clear",
+      "description": "The clear-all button emptied the list.",
       "bubbles": true,
       "composed": true,
       "cancelable": false,
       "detail": {},
       "trigger": {
         "on": "click",
-        "node": ".file-list"
+        "node": ".clear-all"
+      }
+    },
+    {
+      "name": "file-upload-start",
+      "description": "The upload button started an upload of the current files.",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {
+        "files": "File[]"
       },
-      "_todo": "confirm cancelable + default action + detail shape"
+      "trigger": {
+        "on": "click",
+        "node": ".upload"
+      }
+    },
+    {
+      "name": "files-change",
+      "description": "The file list changed (kept for back-compat).",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {
+        "files": "File[]"
+      },
+      "trigger": {
+        "on": "change",
+        "node": ".file-input"
+      }
     }
   ],
   "tokens": {
@@ -116,6 +182,7 @@
       "file-remove",
       "file-clear",
       "file-upload-start"
-    ]
+    ],
+    "note": "Rebuilt 2026-08-15 to match Figma File Uploader: added the actions row (clear-all + upload buttons), the details block (max-size + allowed-types), a per-file status line, and the 4 lifecycle events. Was a bare drop-zone + list (needs-rebuild)."
   }
 }

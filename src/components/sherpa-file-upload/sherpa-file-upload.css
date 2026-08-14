@@ -101,8 +101,17 @@
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 .file-icon { color: var(--sherpa-content-secondary-base, #404047); flex-shrink: 0; }
+.file-body {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-core-space-3xs, 2px);
+}
+.file-line { display: flex; align-items: baseline; gap: var(--sherpa-core-space-xs, 8px); }
 .file-name {
   flex: 1 1 auto;
+  min-inline-size: 0;
   color: var(--_file-text);
   white-space: nowrap;
   overflow: hidden;
@@ -113,6 +122,11 @@
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   flex-shrink: 0;
 }
+.file-status {
+  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  color: var(--sherpa-content-secondary-base, #404047);
+}
+.file-status:empty { display: none; }
 .file-remove {
   flex-shrink: 0;
   display: inline-flex;
@@ -146,3 +160,71 @@
   border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .label { color: var(--sherpa-content-inactive-base, #5c5c66); }
+
+/* ── Details (max size + allowed types) ──────────────────────────────── */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-core-space-3xs, 2px);
+}
+.details:not(:has(.max-size:not(:empty))):not(:has(.allowed-types:not(:empty))) { display: none; }
+.max-size,
+.allowed-types {
+  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  color: var(--sherpa-content-secondary-base, #404047);
+}
+.max-size:empty,
+.allowed-types:empty { display: none; }
+
+/* ── Actions row (clear-all + upload) ────────────────────────────────── */
+.actions {
+  display: none;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sherpa-core-space-base, 16px);
+}
+/* The actions row appears once at least one file is present. */
+:host([data-has-files]) .actions { display: flex; }
+
+.clear-all,
+.upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-core-space-xs, 8px);
+  min-block-size: var(--sherpa-core-size-2xl, 32px);
+  padding-inline: var(--sherpa-core-space-sm, 12px);
+  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-weight: var(--sherpa-core-fonts-weight-500, 500);
+  cursor: pointer;
+  transition: background-color 100ms ease, border-color 100ms ease;
+}
+/* Clear all — secondary (outline) button */
+.clear-all {
+  border: var(--sherpa-control-border-width, 1px) solid
+    var(--sherpa-border-interactive-secondary, #8c8c99);
+  background: transparent;
+  color: var(--sherpa-content-primary-base, #2e2e33);
+}
+.clear-all:hover { background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6); }
+/* Upload — primary (filled) button */
+.upload {
+  border: none;
+  background: var(--sherpa-surface-interactive-primary-base, #3c5edd);
+  color: var(--sherpa-content-title-on-color, #ffffff);
+}
+.upload:hover { background: var(--sherpa-surface-interactive-primary-hover, #2f4bc4); }
+.clear-all:focus-visible,
+.upload:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+}
+:host([data-uploading]) .upload,
+:host([disabled]) .clear-all,
+:host([disabled]) .upload {
+  pointer-events: none;
+  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
+  color: var(--sherpa-content-inactive-base, #5c5c66);
+}
