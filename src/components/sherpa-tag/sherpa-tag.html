@@ -5,9 +5,12 @@
     default   — label pill
     removable — label pill + a close button (fires tag-remove)
 
+  Colour comes from the [data-status] cascade on an ancestor: the pill fills with
+  the status surface (primary) or shows a status border on a plain surface
+  (secondary). No ancestor status → a neutral pill.
+
   Public API:
-    data-color      one of 11 categorical colours (default: 1 / purple)
-    data-variant    primary (solid) | secondary (soft)
+    data-variant    primary (filled status surface) | secondary (status border)
     data-collapsed  render as a small circular indicator (boolean)
     data-removable  show the close button (selects the removable template)
 

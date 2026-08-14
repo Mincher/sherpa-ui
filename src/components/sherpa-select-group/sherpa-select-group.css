@@ -1,6 +1,13 @@
 /**
  * sherpa-select-group.css — a labelled group of checkbox/radio options.
  *
+ * Bindings mirror the Figma "Select Group" component:
+ *   root      gap  space/xs  (head → options stack)
+ *   head      gap  space/2xs (legend → description)
+ *   legend    fill content/title/base
+ *   descr     fill content/secondary/base
+ *   options   gap  space/xs  (between option rows)
+ *   validation fill status/critical/color 6 (→ --sherpa-status-critical-color-6)
  * All presentation lives here, keyed off host data-*. The children draw their
  * own control chrome; this file only lays out the legend + options stack and
  * carries the disabled/status treatment for the heading. JS never styles.
@@ -23,12 +30,12 @@
 .legend {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-core-space-2xs, 4px);
   padding: 0;
-  margin-block-end: var(--sherpa-core-space-sm, 12px);
+  margin-block-end: var(--sherpa-core-space-xs, 8px);
 }
 .label {
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
   font-size: var(--sherpa-core-fonts-scale-lg, 16px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
   line-height: 1.4;
@@ -47,21 +54,21 @@
 .options {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-core-space-xs, 8px);
 }
 
 /* Horizontal / inline layout. */
 :host([data-orientation="horizontal"]) .options {
   flex-direction: row;
   flex-wrap: wrap;
-  gap: var(--sherpa-core-space-lg, 20px);
+  gap: var(--sherpa-core-space-base, 16px);
 }
 
 /* ── Disabled — inactive tokens on the heading, children carry their own ── */
 :host([disabled]) .label { color: var(--sherpa-content-inactive-base, #5c5c66); }
 :host([disabled]) .description { color: var(--sherpa-content-inactive-base, #5c5c66); }
 
-/* ── Status cascade — tints the heading via inherited --_status-* ── */
+/* ── Status cascade — re-inks the heading via inherited --_status-* ── */
 :host([data-status]) .label {
   color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
 }

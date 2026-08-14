@@ -1,6 +1,14 @@
 /**
  * sherpa-select-checkbox.css — all checkbox presentation.
  *
+ * Bindings mirror the Figma "Checkbox Indicator" component:
+ *   box     fill  control-surface/default   stroke control-border/default
+ *           radius border/rounding/sm        stroke-width border/width/base
+ *   checked indicator overlay fill control-surface/accent (the accent ink)
+ *   glyph   white — content/title/on-color, width size/icon/2xs
+ *   inactive box  fill control-surface/inactive  stroke border/interactive/inactive
+ *   label   status-content/primary (→ --_status-text cascade), font family/size/weight
+ *   descr   content/secondary/base
  * The visible box is a native <input type="checkbox"> with appearance:none; its
  * look is driven entirely by native CSS state (:checked / :indeterminate /
  * :disabled / :focus-visible) — JS never toggles a class or style. The checkmark
@@ -13,9 +21,10 @@
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   --_size: var(--sherpa-core-size-sm, 16px);
-  --_border: var(--sherpa-control-border-accent, #3c5edd);
+  --_border: var(--sherpa-control-border-default, #b2b2bf);
+  --_surface: var(--sherpa-control-surface-default, #ffffff);
   --_fill: var(--sherpa-control-surface-accent, #3c5edd);
-  --_focus: var(--sherpa-control-border-accent, #3c5edd);
+  --_focus: var(--sherpa-control-border-default, #b2b2bf);
 }
 
 /* Compact variant: the control alone, no label/description text. */
@@ -46,12 +55,12 @@
   position: relative;
   border: var(--sherpa-core-border-width-base, 1px) solid var(--_border);
   border-radius: var(--sherpa-core-border-rounding-sm, 2px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
+  background: var(--_surface);
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
-/* ── Checked / indeterminate fill ─────────────────────────────────── */
+/* ── Checked / indeterminate — accent indicator fill ──────────────── */
 .control:checked,
 .control:indeterminate {
   background: var(--_fill);
@@ -89,7 +98,7 @@
 
 /* ── Hover / active ───────────────────────────────────────────────── */
 .control:hover:not(:disabled) {
-  border-color: var(--sherpa-surface-interactive-primary-hover, #173382);
+  border-color: var(--sherpa-border-interactive-hover, #8d8d99);
 }
 .control:checked:hover:not(:disabled),
 .control:indeterminate:hover:not(:disabled) {
@@ -103,7 +112,7 @@
 /* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
 .control:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-control-border-default, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-control-border-default, #b2b2bf);
 }
 
 /* ── Label + description ──────────────────────────────────────────── */
@@ -114,7 +123,7 @@
   min-width: 0;
 }
 .label {
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   line-height: 1.4;
 }
@@ -133,17 +142,17 @@
 }
 :host([disabled]) .control {
   cursor: not-allowed;
-  border-color: var(--sherpa-border-interactive-inactive, #c0c0cc);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
   background: var(--sherpa-control-surface-inactive, #d5d5d5);
 }
 :host([disabled]) .control:checked,
 :host([disabled]) .control:indeterminate {
   background: var(--sherpa-control-surface-inactive, #d5d5d5);
-  border-color: var(--sherpa-control-surface-inactive, #d5d5d5);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .control:checked::after,
 :host([disabled]) .control:indeterminate::after {
-  background-color: var(--sherpa-content-inactive-base, #5c5c66);
+  background-color: var(--sherpa-content-inactive-on-color-subtle, #404047);
 }
 :host([disabled]) .label,
 :host([disabled]) .description {
@@ -152,17 +161,14 @@
 
 /* ── Validation — native :user-invalid, unchecked required ────────── */
 .control:user-invalid:not(:checked):not(:indeterminate) {
-  border-color: var(--sherpa-border-critical-default, #c8324f);
+  border-color: var(--sherpa-status-critical-color-6, #9b2509);
 }
 
-/* ── Status cascade — tints the box + description via inherited --_status-* ── */
-:host([data-status]) .control:not(:checked):not(:indeterminate) {
-  border-color: var(--_status-border, var(--sherpa-border-interactive-primary, #3c5edd));
-}
+/* ── Status cascade — status context re-inks label + accent fill ──── */
 :host([data-status]) .control:checked,
 :host([data-status]) .control:indeterminate {
-  background: var(--_status-surface-strong, var(--sherpa-surface-interactive-primary-base, #3c5edd));
-  border-color: var(--_status-surface-strong, var(--sherpa-surface-interactive-primary-base, #3c5edd));
+  background: var(--_status-surface-strong, var(--sherpa-control-surface-accent, #3c5edd));
+  border-color: var(--_status-surface-strong, var(--sherpa-control-surface-accent, #3c5edd));
 }
 :host([data-status]) .description {
   color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));

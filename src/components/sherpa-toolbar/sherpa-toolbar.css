@@ -5,16 +5,26 @@
  * to nothing when empty; start and end are shrink-proof. Zones collapse when their
  * slot is empty (data-has-{slot}, reflected by the base class). Pure data-* CSS —
  * JS never touches visibility.
+ *
+ * Figma bindings: the bar is a container surface — background fills container-
+ * surface/default, and under a [data-status] ancestor the whole bar takes the
+ * status surface via the cascade (--_status-surface). Block padding =
+ * container-space/padding-md; zone gap = space/3xs; corners = border/radius/150;
+ * the bordered rule = control-border/width in the status-border cascade. Text
+ * ink = content/secondary/base.
  */
 
 :host {
   --_py: var(--sherpa-container-space-padding-md, 8px);
-  --_gap: var(--sherpa-core-space-xs, 8px);
+  --_gap: var(--sherpa-core-space-3xs, 2px);
   display: block;
   inline-size: 100%;
+  background: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
+  border-radius: var(--sherpa-primitives-border-radius-150, 3px);
+  color: var(--sherpa-content-secondary-base, #404047);
 }
 
-:host([data-density="compact"]) { --_py: var(--sherpa-core-space-2xs, 4px); }
+:host([data-density="compact"]) { --_py: var(--sherpa-core-space-3xs, 2px); }
 
 .bar {
   display: flex;
@@ -22,12 +32,13 @@
   inline-size: 100%;
   gap: var(--_gap);
   padding-block: var(--_py);
+  padding-inline: var(--sherpa-container-space-padding-md, 8px);
 }
 
-/* Bordered variant adds the Figma toolbar's bottom rule. */
+/* Bordered variant adds the Figma toolbar's bottom rule — status-border cascade. */
 :host([data-variant="bordered"]) .bar {
   border-block-end: var(--sherpa-control-border-width, 1px) solid
-    var(--sherpa-border-primary, #d5d5d5);
+    var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
 }
 
 .zone {

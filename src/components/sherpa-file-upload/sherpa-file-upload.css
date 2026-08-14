@@ -1,14 +1,23 @@
 /**
  * sherpa-file-upload.css — all presentation.
  *
- * A dashed drop zone + a file list. Drag state (data-dragover), file presence
- * (data-has-files), and disabled are pure data-* selectors; JS never styles.
+ * A dashed drop zone over a file list. The drop zone fills surface/tertiary/base
+ * with a dashed border/interactive/secondary; hover/drag/focus re-point the border
+ * to the accent. Each listed file is a status chip — it fills status-surface via
+ * the [data-status] cascade (--_status-surface, neutral surface/primary fallback)
+ * with a status-border (--_status-border) and status-tinted text (--_status-text).
+ * Drag state (data-dragover), file presence (data-has-files), and disabled are
+ * pure data-* selectors; JS never styles.
  */
 
 :host {
   display: block;
-  --_border: var(--sherpa-border-interactive-secondary, #d5d5d5);
   --_accent: var(--sherpa-border-interactive-primary, #3c5edd);
+
+  /* cascade fallbacks so a bare (status-less) file chip still resolves */
+  --_file-surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
+  --_file-border: var(--_status-border, var(--sherpa-border-primary, #c0c0cc));
+  --_file-text: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
 }
 
 .field {
@@ -37,9 +46,9 @@
   align-items: center;
   gap: var(--sherpa-core-space-xs, 8px);
   padding: var(--sherpa-core-space-xl, 24px) var(--sherpa-core-space-lg, 20px);
-  border: var(--sherpa-control-border-width, 1px) dashed var(--_border);
+  border: var(--sherpa-control-border-width, 1px) dashed var(--sherpa-border-interactive-secondary, #c0c0cc);
   border-radius: var(--sherpa-core-border-rounding-base, 4px);
-  background: var(--sherpa-surface-tertiary-base, #ffffff);
+  background: var(--sherpa-surface-tertiary-base, #f2f2f2);
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   text-align: center;
@@ -58,7 +67,7 @@
   color: var(--sherpa-content-secondary-base, #404047);
 }
 .browse {
-  color: var(--sherpa-content-link-base, #3c5edd);
+  color: var(--sherpa-content-primary-base, #2e2e33);
   font-weight: var(--sherpa-core-fonts-weight-500, 500);
   text-decoration: underline;
 }
@@ -85,19 +94,16 @@
   align-items: center;
   gap: var(--sherpa-core-space-sm, 12px);
   padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-primary, #d5d5d5);
-  border-radius:
-    var(--sherpa-grouping-radius-top-left, 4px)
-    var(--sherpa-grouping-radius-top-right, 4px)
-    var(--sherpa-grouping-radius-bottom-right, 4px)
-    var(--sherpa-grouping-radius-bottom-left, 4px);
-  background: var(--sherpa-surface-tertiary-base, #ffffff);
+  border: var(--sherpa-control-border-width, 1px) solid var(--_file-border);
+  border-radius: var(--sherpa-primitives-border-radius-150, 3px);
+  background: var(--_file-surface);
+  color: var(--_file-text);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 .file-icon { color: var(--sherpa-content-secondary-base, #404047); flex-shrink: 0; }
 .file-name {
   flex: 1 1 auto;
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--_file-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -124,7 +130,7 @@
 }
 .file-remove:hover {
   background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
-  color: var(--sherpa-content-critical-default, #c8324f);
+  color: var(--sherpa-status-critical-color-5, #9b2509);
 }
 .file-remove:focus-visible {
   outline: none;
@@ -137,6 +143,6 @@
   pointer-events: none;
   color: var(--sherpa-content-inactive-base, #5c5c66);
   background: var(--sherpa-surface-primary-inactive, #f2f2f2);
-  border-color: var(--sherpa-border-interactive-inactive, #e0e0e6);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .label { color: var(--sherpa-content-inactive-base, #5c5c66); }

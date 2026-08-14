@@ -6,6 +6,11 @@
  * via the --_pct custom property (data-value → --_pct in TS); everything else —
  * the track, the thumb, the label/value visibility, the disabled look — is pure
  * CSS off data-*. JS never sets width/display/colour here.
+ *
+ * Per its Figma bindings the slider is a NEUTRAL control: the empty rail fills
+ * surface/interactive/inactive and the filled portion + thumb ink take
+ * content/secondary/base. No status/accent surface is bound — the old
+ * status-cascade accent was drift and has been removed.
  */
 
 :host {
@@ -15,7 +20,7 @@
   width: 100%;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  --_accent: var(--_status-text, var(--sherpa-surface-interactive-primary-base, #3c5edd));
+  --_accent: var(--sherpa-content-secondary-base, #404047);
   --_thumb: var(--sherpa-core-size-md, 20px);
   --_rail: var(--sherpa-core-space-2xs, 4px);
   --_pct: 0%;
@@ -32,13 +37,13 @@
 :host([data-label]) .head,
 :host([data-show-value]) .head { display: flex; }
 
-.label { color: var(--sherpa-content-primary-base, #2e2e33); font-weight: var(--sherpa-core-fonts-weight-500, 500); }
+.label { color: var(--sherpa-content-secondary-base, #404047); font-weight: var(--sherpa-core-fonts-weight-500, 500); }
 .label:empty { display: none; }
 
 .value-out {
   display: none;
   font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-content-secondary-base, #404047);
 }
 :host([data-show-value]) .value-out { display: inline; }
 
@@ -54,8 +59,7 @@
   position: absolute;
   inset-inline: 0;
   height: var(--_rail);
-  background: var(--sherpa-surface-interactive-inactive, #f2f2f2);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   overflow: hidden;
 }
@@ -91,7 +95,7 @@
   width: var(--_thumb);
   height: var(--_thumb);
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
-  background: var(--sherpa-app-primary, #ffffff);
+  background: var(--sherpa-surface-primary-base, #ffffff);
   border: var(--sherpa-core-border-width-base, 1px) solid var(--_accent);
   box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
 }
@@ -99,7 +103,7 @@
   width: var(--_thumb);
   height: var(--_thumb);
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
-  background: var(--sherpa-app-primary, #ffffff);
+  background: var(--sherpa-surface-primary-base, #ffffff);
   border: var(--sherpa-core-border-width-base, 1px) solid var(--_accent);
   box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
 }
@@ -116,8 +120,7 @@
 :host([disabled]) { --_accent: var(--sherpa-content-inactive-base, #5c5c66); }
 :host([disabled]) .range { cursor: not-allowed; pointer-events: none; }
 :host([disabled]) .track {
-  background: var(--sherpa-surface-interactive-inactive, #f2f2f2);
-  border-color: var(--sherpa-border-interactive-inactive, #e0e0e6);
+  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
 }
 :host([disabled]) .label,
 :host([disabled]) .value-out { color: var(--sherpa-content-inactive-base, #5c5c66); }

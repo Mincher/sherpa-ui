@@ -2,12 +2,20 @@
  * sherpa-prompt-composer.css — an AI prompt input.
  *
  * A rounded surface holding an auto-growing textarea (JS sets the height; the
- * cap and scroll are here) and a brand-accent circular send button. Focus,
- * hover, and disabled are pure CSS off native pseudo-classes / :host([disabled]).
+ * cap and scroll are here) and an accent circular send button. The surround
+ * fills status-surface via the [data-status] cascade (--_status-surface, neutral
+ * surface/primary/base fallback) with a status-border (--_status-border). The
+ * send button is the accent primary action (accent #3c5edd, not brand purple).
+ * Focus, hover, and disabled are pure CSS off native pseudo-classes /
+ * :host([disabled]). Corner radii bind the snapping/grouping radius vars.
  */
 
 :host {
   display: block;
+
+  /* cascade fallbacks so a bare (status-less) composer still resolves */
+  --_surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-border-primary, #c0c0cc));
 }
 
 .form {
@@ -15,18 +23,18 @@
   align-items: flex-end;
   gap: var(--sherpa-core-space-xs, 8px);
   padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  background: var(--_surface);
+  border: var(--sherpa-control-border-width, 1px) solid var(--_border);
   border-radius:
-    var(--sherpa-grouping-radius-top-left, 8px)
-    var(--sherpa-grouping-radius-top-right, 8px)
-    var(--sherpa-grouping-radius-bottom-right, 8px)
-    var(--sherpa-grouping-radius-bottom-left, 8px);
+    var(--sherpa-grouping-radius-top-left, 3px)
+    var(--sherpa-grouping-radius-top-right, 3px)
+    var(--sherpa-grouping-radius-bottom-right, 3px)
+    var(--sherpa-grouping-radius-bottom-left, 3px);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 .form:focus-within {
-  border-color: var(--sherpa-content-active-base, #8500cc);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sherpa-content-active-base, #8500cc) 28%, transparent);
+  border-color: var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sherpa-border-interactive-primary, #3c5edd) 28%, transparent);
 }
 
 /* ── Textarea ───────────────────────────────────────────────────────── */
@@ -45,7 +53,7 @@
   color: var(--sherpa-content-primary-base, #2e2e33);
 }
 .input:focus { outline: none; }
-.input::placeholder { color: var(--sherpa-content-tertiary-base, #404047); }
+.input::placeholder { color: var(--sherpa-content-tertiary-base, #5c5c66); }
 
 /* ── Tools row (actions + send) ─────────────────────────────────────── */
 .tools {
@@ -61,7 +69,7 @@
 }
 :host([data-has-actions]) .actions { display: flex; }
 
-/* ── Send button — brand accent ─────────────────────────────────────── */
+/* ── Send button — accent primary action ────────────────────────────── */
 .send {
   display: inline-flex;
   align-items: center;
@@ -70,30 +78,31 @@
   block-size: var(--sherpa-button-size-height, 32px);
   border: none;
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
-  background: var(--sherpa-content-active-base, #8500cc);
+  background: var(--sherpa-surface-interactive-primary-base, #3c5edd);
   color: var(--sherpa-content-title-on-color, #ffffff);
   cursor: pointer;
   flex-shrink: 0;
   transition: background-color 120ms ease;
 }
 .send-glyph { font-size: var(--sherpa-core-fonts-scale-lg, 16px); line-height: 1; }
-.send:hover { background: color-mix(in srgb, var(--sherpa-content-active-base, #8500cc) 85%, #000); }
+.send:hover { background: var(--sherpa-surface-interactive-primary-hover, #4c63e5); }
+.send:active { background: var(--sherpa-surface-interactive-primary-down, #173382); }
 .send:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-content-active-base, #8500cc);
+  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
 :host([disabled]) .form {
   background: var(--sherpa-surface-primary-inactive, #f2f2f2);
-  border-color: var(--sherpa-border-interactive-inactive, #e0e0e6);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .input {
   color: var(--sherpa-content-inactive-base, #5c5c66);
   cursor: not-allowed;
 }
 :host([disabled]) .send {
-  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
+  background: var(--sherpa-surface-interactive-inactive, #c0c0cc);
   color: var(--sherpa-content-inactive-base, #5c5c66);
   cursor: not-allowed;
 }

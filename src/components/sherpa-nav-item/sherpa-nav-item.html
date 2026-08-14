@@ -11,11 +11,16 @@
     data-icon        leading icon glyph (text/emoji)
     data-label       row label text
     data-badge       trailing count/badge text
+    data-status-dot  render the trailing chip as a small success/online dot
     data-description promo description (promo variant only)
     data-active      active / current state
     data-href        render the row as a link
     data-variant     "promo" for the CTA row
     disabled         disabled state
+
+  The active row fills surface/interactive/active/base with content/active/base
+  ink (the brand accent). The trailing chip is a round status element filled by
+  the ancestor [data-status] cascade; a plain success dot pins the success ink.
 
   Fires: nav-item-click — detail: { label, href }
 -->

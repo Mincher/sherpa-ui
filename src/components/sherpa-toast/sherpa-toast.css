@@ -1,21 +1,21 @@
 /**
  * sherpa-toast.css — all toast presentation.
  *
- * A status-tinted card: a private --_accent is set per data-status from the
- * allowed status content tokens; the surface is a soft color-mix tint of it, the
- * border and text a stronger read. This matches the old soft-status intent without
- * the --_status-* cascade. Pure data-* selectors — JS never styles.
+ * A transient status box: the whole card fills with the status surface via the
+ * [data-status] cascade (--_status-surface), with a status border and status
+ * text. Only a status re-points those; a bare toast reads as the neutral/info
+ * default. No color-mix tint, no leading accent bar — that was the old design.
+ * Geometry = the container-scoped vars. Pure data-* selectors — JS never styles.
  */
 
 :host {
   display: block;
-  /* default: info */
-  --_accent: var(--sherpa-content-info-default, #1f75e4);
-}
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-:host([data-status="success"])  { --_accent: var(--sherpa-content-success-default, #16915a); }
-:host([data-status="warning"])  { --_accent: var(--sherpa-content-warning-default, #b5730a); }
-:host([data-status="critical"]) { --_accent: var(--sherpa-content-critical-default, #c8324f); }
+  /* cascade fallbacks so a bare (status-less) toast still resolves */
+  --_surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
+}
 
 .toast {
   display: flex;
@@ -23,20 +23,25 @@
   gap: var(--sherpa-core-space-sm, 12px);
   min-width: 260px;
   max-width: 420px;
-  padding: var(--sherpa-container-space-padding-md, 12px) var(--sherpa-container-space-padding-md, 16px);
-  border: var(--sherpa-container-border-width, 1px) solid
-    color-mix(in srgb, var(--_accent) 45%, transparent);
+  padding: var(--sherpa-container-space-padding-md, 16px);
+  border: var(--sherpa-container-border-width, 1px) solid var(--_border);
   border-radius: var(--sherpa-container-border-radius-top-left, 8px);
-  background: color-mix(in srgb, var(--_accent) 12%, var(--sherpa-surface-primary-base, #ffffff));
+  background: var(--_surface);
   box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(26, 26, 32, 0.16));
 }
 
 .message {
   flex: 1 1 auto;
   min-width: 0;
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   line-height: 1.4;
+}
+
+/* Action links inside the message stay link-coloured. */
+.message ::slotted(a),
+.message a {
+  color: var(--sherpa-content-link-base, #3c5edd);
 }
 
 /* ── Close button ──────────────────────────────────────────────────── */
@@ -52,14 +57,14 @@
   border: none;
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   background: transparent;
-  color: var(--_accent);
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease;
 }
 .close:hover {
-  background: color-mix(in srgb, var(--_accent) 18%, transparent);
+  background: color-mix(in srgb, currentColor 18%, transparent);
 }
 .close:focus-visible {
   outline: none;

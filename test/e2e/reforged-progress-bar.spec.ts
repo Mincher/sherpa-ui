@@ -88,7 +88,7 @@ test('data-status colours the fill', async ({ page }) => {
     };
     return { base: await paint(), success: await paint('success') };
   });
-  expect(r.success).toBe('rgb(22, 145, 90)'); // content-success-default #16915a
+  expect(r.success).toBe('rgb(5, 129, 66)'); // status-success-color-4 #058142
   expect(r.base).not.toBe(r.success);
 });
 

@@ -5,6 +5,11 @@
  * filled (data-has-leading / data-has-trailing from the base; title/description
  * from data-*). Interactive rows get hover, focus, and active treatments; the
  * disabled row uses inactive tokens (never opacity).
+ *
+ * Figma model: geometry binds the control-scoped collection (control-space/*,
+ * control-border/*); the active row fills surface/interactive/active/base and
+ * its title takes content/active/base; the disabled row uses the inactive
+ * tokens. A [data-status] ancestor fills the row via the --_status-* cascade.
  */
 
 :host {
@@ -15,10 +20,10 @@
 .row {
   display: flex;
   align-items: flex-start;
-  gap: var(--sherpa-control-space-gap-base, 12px);
-  padding: var(--sherpa-control-space-padding-md, 8px) var(--sherpa-control-space-padding-md, 12px);
+  gap: var(--sherpa-control-space-gap-base, 8px);
+  padding: var(--sherpa-control-space-padding-md, 8px) var(--sherpa-control-space-padding-md, 8px);
   border-radius: var(--sherpa-control-border-radius-top-left, 4px);
-  background: transparent;
+  background: var(--_status-surface, transparent);
   transition: background-color 100ms ease, color 100ms ease;
 }
 
@@ -27,8 +32,8 @@
   display: none;
   align-items: center;
   flex-shrink: 0;
-  min-block-size: var(--sherpa-core-size-md, 20px);
-  color: var(--sherpa-control-content-default, #2e2e33);
+  min-block-size: var(--sherpa-size-icon-2xs, 12px);
+  color: var(--_status-text, var(--sherpa-control-content-default, #2e2e33));
 }
 :host([data-has-leading]) .leading { display: inline-flex; }
 
@@ -42,7 +47,7 @@
 }
 
 .title {
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--_status-text, var(--sherpa-color-sets-content-primary, #2e2e33));
   font-size: var(--sherpa-core-fonts-scale-lg, 16px);
   font-weight: var(--sherpa-core-fonts-weight-500, 500);
   overflow: hidden;
@@ -51,7 +56,7 @@
 :host(:not([data-title])) .title { display: none; }
 
 .description {
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 :host(:not([data-description])) .description { display: none; }
@@ -68,7 +73,7 @@
 /* ── Interactive: hover + focus ────────────────────────────────────── */
 :host([data-interactive]) .row { cursor: pointer; }
 :host([data-interactive]:hover) .row {
-  background: var(--sherpa-control-surface-hover, #f4f4f6);
+  background: var(--sherpa-control-surface-hover, #fafafa);
 }
 :host([data-interactive]:focus-visible) {
   outline: none;
@@ -79,10 +84,10 @@
 
 /* ── Active / selected ─────────────────────────────────────────────── */
 :host([data-active]) .row {
-  background: var(--sherpa-surface-interactive-active-base, #f4f4f6);
+  background: var(--sherpa-surface-interactive-active-base, #f8ebff);
 }
 :host([data-active]) .title {
-  color: var(--sherpa-content-active-base, #3c5edd);
+  color: var(--sherpa-content-active-base, #8500cc);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
 }
 
@@ -92,7 +97,7 @@
 }
 :host([disabled]) .row {
   cursor: not-allowed;
-  background: var(--sherpa-surface-interactive-inactive, #f2f2f2);
+  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
 }
 :host([disabled]) .title,
 :host([disabled]) .description,

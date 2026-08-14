@@ -5,6 +5,12 @@
  * header and footer collapse when empty (driven by data-has-{slot} the base class
  * reflects). Elevation, variant, padding, and state are all data-* selectors;
  * JS never touches visibility here.
+ *
+ * Colour model (Figma): the whole card fills its status surface via the
+ * [data-status] cascade — background: var(--_status-surface, <neutral surface>),
+ * borders var(--_status-border, <neutral border>). With no ancestor status the
+ * cascade vars are undefined, so the neutral container surface/border show. No
+ * tints, no accent bars. Geometry binds the component-scoped container-* vars.
  */
 
 :host {
@@ -12,9 +18,13 @@
   flex-direction: column;
   position: relative;
   min-width: 0;
-  background: var(--sherpa-container-surface-default, #ffffff);
-  border: var(--sherpa-container-border-width, 1px) solid var(--sherpa-container-border-default, #d5d5d5);
-  border-radius: var(--sherpa-container-border-radius-top-left, 8px);
+
+  /* Surface + border fill the whole box; status cascade re-points them. */
+  background: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
+  border: var(--sherpa-container-border-width, 1px) solid
+    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
+  border-radius: var(--sherpa-container-border-radius-top-left, 4px);
+  color: var(--sherpa-container-content-default, #2e2e33);
 
   --_pad: var(--sherpa-container-space-padding-md, 16px);
   --_shadow: none;
@@ -37,9 +47,9 @@
 :host([data-elevation="md"]) { --_shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(16, 16, 20, 0.1)); }
 :host([data-elevation="lg"]) { --_shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14)); }
 
-/* ── Padding scale ─────────────────────────────────────────────────── */
-:host([data-padding="none"]) { --_pad: 0; }
-:host([data-padding="sm"]) { --_pad: var(--sherpa-container-space-padding-sm, 12px); }
+/* ── Padding scale — bound to the scoped container-space vars ──────── */
+:host([data-padding="none"]) { --_pad: var(--sherpa-container-space-padding-none, 0); }
+:host([data-padding="sm"]) { --_pad: var(--sherpa-container-space-padding-sm, 8px); }
 :host([data-padding="lg"]) { --_pad: var(--sherpa-core-space-lg, 20px); }
 
 /* ── Regions ───────────────────────────────────────────────────────── */
@@ -54,17 +64,22 @@
   min-height: 0;
 }
 
-/* header/footer appear only when their slot has content */
+/* header/footer appear only when their slot has content; the divider uses the
+   same status-aware border as the card. */
 :host([data-has-header]) .header {
   display: block;
-  border-bottom: var(--sherpa-container-border-width, 1px) solid var(--sherpa-container-border-default, #d5d5d5);
+  border-bottom: var(--sherpa-container-border-width, 1px) solid
+    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
 }
 :host([data-has-footer]) .footer {
   display: block;
-  border-top: var(--sherpa-container-border-width, 1px) solid var(--sherpa-container-border-default, #d5d5d5);
+  border-top: var(--sherpa-container-border-width, 1px) solid
+    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
 }
 
-/* ── State overlay — one region, the active state shown by data-state ─ */
+/* ── State overlay — one region, the active state shown by data-state ─
+   This scrim is a UX affordance, not a status surface: it dims the card while a
+   state is active. It is deliberately a neutral surface overlay, never a tint. */
 .state {
   display: none;
   position: absolute;
@@ -81,13 +96,13 @@
 :host([data-state="loading"]) .state-loading { display: inline-flex; }
 :host([data-state="empty"]) .state-empty { display: inline-flex; }
 :host([data-state="error"]) .state-error { display: inline-flex; }
-:host([data-state="error"]) .state-text { color: var(--sherpa-content-critical-default, #c8324f); }
+:host([data-state="error"]) .state-text { color: var(--sherpa-status-critical-color-5, #bf2c09); }
 
 /* Minimal spinner (the default loading content) */
 .spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--sherpa-border-primary, #d5d5d5);
+  border: 2px solid var(--sherpa-border-primary, #c0c0cc);
   border-top-color: var(--sherpa-content-link-base, #3c5edd);
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;

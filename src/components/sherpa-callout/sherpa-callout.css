@@ -15,7 +15,7 @@
   /* cascade fallbacks so a bare (status-less) callout still resolves */
   --_surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
-  --_badge: var(--_status-surface-strong, var(--sherpa-surface-interactive-active-base, #0c303e));
+  --_badge: var(--_status-surface-strong, var(--sherpa-status-info-color-5, #07526f));
 }
 
 .box {

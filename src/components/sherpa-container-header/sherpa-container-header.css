@@ -5,19 +5,26 @@
  * side, and a trailing actions region that appears only when the actions slot
  * has content (data-has-actions, reflected by the base class). The description
  * shows only when data-description is set (JS writes its text). Pure data-*.
+ *
+ * Colour model (Figma): the header row fills its status surface via the
+ * [data-status] cascade — background: var(--_status-surface, transparent) — and
+ * its bottom divider follows var(--_status-border, <neutral>). With no ancestor
+ * status it is transparent over the container surface. Title → content/title,
+ * description → content/secondary. Geometry binds the container-space vars.
  */
 
 :host {
   display: block;
   container: sherpa-container-header / inline-size;
+  background: var(--_status-surface, transparent);
 }
 
 /* ── Layout ───────────────────────────────────────────────────────────── */
 .row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-container-space-gap-sm, 16px);
-  padding: var(--sherpa-container-space-padding-sm, 12px) var(--sherpa-container-space-padding-md, 16px);
+  gap: var(--sherpa-container-space-gap-sm, 8px);
+  padding: var(--sherpa-container-space-padding-sm, 8px) var(--sherpa-container-space-padding-md, 16px);
 }
 
 .labels {
@@ -32,8 +39,8 @@
 /* ── Title ────────────────────────────────────────────────────────────── */
 .title {
   display: block;
-  color: var(--sherpa-content-title-base, #18191a);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-core-fonts-scale-lg, 16px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
   line-height: 1.3;
@@ -50,7 +57,7 @@ slot[name="heading"] { display: contents; }
 .description {
   display: none;
   color: var(--sherpa-content-secondary-base, #404047);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   line-height: 1.45;
   overflow: hidden;
@@ -64,7 +71,7 @@ slot[name="heading"] { display: contents; }
   display: none;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-container-space-gap-sm, 8px);
 }
 :host([data-has-actions]) .actions { display: flex; }
 

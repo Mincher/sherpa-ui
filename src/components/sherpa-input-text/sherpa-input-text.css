@@ -1,22 +1,28 @@
 /**
  * sherpa-input-text.css — all field presentation.
  *
- * Label + control + message. Validation styling is native — `:user-invalid` on
- * the control drives the error look with no JS. Label/description/message collapse
- * when empty via :empty. Focus, disabled, and error are pure CSS.
+ * Label + control + message. Geometry binds the control-scoped tokens
+ * (control-space/-border) and the input rounding var. Validation styling is
+ * native — `:user-invalid` on the control (or an explicit data-error) drives the
+ * error look through the STATUS CASCADE: setting data-status="critical" (or the
+ * native invalid state) fills the border/message with --_status-border/--_status-text,
+ * no per-status blocks and no phantom critical tokens. Label/description/message
+ * collapse when empty via :empty. Focus, disabled, and error are pure CSS.
  */
 
 :host {
   display: block;
   --_border: var(--sherpa-border-interactive-secondary, #d5d5d5);
   --_border-focus: var(--sherpa-border-interactive-primary, #3c5edd);
-  --_border-error: var(--sherpa-border-critical-default, #c8324f);
+  /* Error look routes through the status cascade; critical fallback resolves the ink. */
+  --_border-error: var(--_status-border, #bf2c09);
+  --_text-error: var(--_status-text, #bf2c09);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-control-space-gap-base, 8px);
 }
 
 .label {
@@ -27,7 +33,7 @@
 .description {
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   color: var(--sherpa-content-secondary-base, #404047);
-  margin-bottom: var(--sherpa-core-space-3xs, 2px);
+  margin-bottom: var(--sherpa-control-space-padding-xs, 2px);
 }
 .label:empty,
 .description:empty,
@@ -37,8 +43,8 @@
 
 .control {
   width: 100%;
-  min-height: var(--sherpa-core-size-2xl, 40px);
-  padding: var(--sherpa-control-space-padding-md, 8px) var(--sherpa-control-space-padding-md, 12px);
+  min-height: var(--sherpa-core-size-2xl, 32px);
+  padding: var(--sherpa-control-space-padding-sm, 4px) var(--sherpa-control-space-padding-md, 8px);
   border: var(--sherpa-control-border-width, 1px) solid var(--_border);
   border-radius: var(--sherpa-input-border-radius-top-left, 4px);
   background: var(--sherpa-surface-primary-base, #ffffff);
@@ -53,7 +59,7 @@ textarea.control {
   resize: vertical;
 }
 
-.control::placeholder { color: var(--sherpa-content-secondary-base, #404047); }
+.control::placeholder { color: var(--sherpa-content-tertiary-base, #5c5c66); }
 
 .control:focus-visible {
   outline: none;
@@ -61,7 +67,9 @@ textarea.control {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
 }
 
-/* ── Validation — native :user-invalid, or an explicit data-error ───── */
+/* ── Validation — native :user-invalid, or an explicit data-error ─────
+   Both borrow the status cascade so a data-status="critical" host or the
+   browser's own invalid state paint the same critical ink. */
 .control:user-invalid,
 :host([data-error]) .control {
   border-color: var(--_border-error);
@@ -72,7 +80,7 @@ textarea.control {
 }
 .message {
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
-  color: var(--sherpa-content-critical-default, #c8324f);
+  color: var(--_text-error);
 }
 
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
@@ -80,6 +88,6 @@ textarea.control {
   cursor: not-allowed;
   color: var(--sherpa-content-inactive-base, #5c5c66);
   background: var(--sherpa-surface-primary-inactive, #f2f2f2);
-  border-color: var(--sherpa-border-interactive-inactive, #e0e0e6);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .label { color: var(--sherpa-content-inactive-base, #5c5c66); }

@@ -1,22 +1,21 @@
 /**
  * sherpa-switch.css — all switch presentation.
  *
- * A pill track with a sliding knob and an ON/OFF text label. State (on/off),
- * style (rectangular default vs. simple pill), disabled and focus are all pure
- * data-* / :host selectors. The knob "slides" by flipping the flex direction:
- * OFF puts the knob at the start, ON at the end.
+ * A pill track with a sliding knob and an ON/OFF text label. The visual form
+ * (rectangular default vs. simple pill) is NOT re-declared here per-style: the
+ * switch binds its scoped --sherpa-switch-* vars once, and the token layer's
+ * [data-variant="simple"] mode block re-points radius/thumb/track for the pill
+ * form. Only the structural bits (flex direction, label visibility) stay local.
+ * State (on/off), disabled and focus are pure data-* / :host selectors. The knob
+ * "slides" by flipping the flex direction: OFF at the start, ON at the end.
  */
 
 :host {
-  /* private knobs, overridden by data-style */
-  --_track-rounding: var(--sherpa-switch-radius-track, 4px);
-  --_knob-rounding: var(--sherpa-switch-radius-thumb, 2px);
-  --_knob-size: var(--sherpa-switch-size-thumb, 20px);
   /* One fill token the track consumes; the ON state re-points it. Routing state
      through a single custom property (not swapping the `background` rule) keeps
      the computed value reliable — a swapped rule can go stale after an early
      getComputedStyle read. */
-  --_fill: var(--sherpa-switch-surface-track-off, #404047);
+  --_fill: var(--sherpa-switch-surface-track-off, #b7b7b7);
 
   display: inline-flex;
   vertical-align: middle;
@@ -28,10 +27,10 @@
   align-items: center;
   flex-direction: row; /* OFF: knob at the start */
   gap: var(--sherpa-control-space-gap-sm, 4px);
-  padding: var(--sherpa-core-space-3xs, 2px) var(--sherpa-switch-size-padding-horizontal, 4px);
+  padding: var(--sherpa-core-space-3xs, 2px) var(--sherpa-switch-size-padding-horizontal, 2px);
   border: var(--sherpa-core-border-width-sm, 1px) solid
-    var(--sherpa-control-border-default, #d5d5d5);
-  border-radius: var(--_track-rounding);
+    var(--sherpa-control-border-default, #b2b2bf);
+  border-radius: var(--sherpa-switch-radius-track, 4px);
   background: var(--_fill);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
@@ -45,38 +44,37 @@
   box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
-/* ── Knob: the sliding control ─────────────────────────────────────────── */
+/* ── Knob: the sliding control surface ─────────────────────────────────── */
 .knob {
   flex-shrink: 0;
-  width: var(--_knob-size);
-  height: var(--_knob-size);
-  border-radius: var(--_knob-rounding);
-  background: var(--sherpa-surface-primary-base, #ffffff);
+  width: var(--sherpa-switch-size-thumb, 16px);
+  height: var(--sherpa-switch-size-thumb, 16px);
+  border-radius: var(--sherpa-switch-radius-thumb, 3px);
+  background: var(--sherpa-control-surface-default, #ffffff);
 }
 
-/* ── Label: ON / OFF text (default style only) ─────────────────────────── */
+/* ── Label: ON / OFF text (default form only) ──────────────────────────── */
 .label {
   min-width: 24px;
   text-align: center;
-  color: var(--sherpa-switch-content-track-on, #ffffff);
+  color: var(--sherpa-switch-content-track-on, #fafafa);
 }
 :host([data-state="on"]) .label::after { content: "ON"; }
-:host(:not([data-state="on"])) .label::after { content: "OFF"; }
+:host(:not([data-state="on"])) .label::after {
+  content: "OFF";
+  color: var(--sherpa-switch-content-track-off, #2e2e33);
+}
 
 /* ── ON state — re-point the single fill token; slide the knob to the end ── */
 :host([data-state="on"]) {
-  --_fill: var(--sherpa-switch-surface-track-on, #16915a);
+  --_fill: var(--sherpa-switch-surface-track-on, #058142);
 }
 :host([data-state="on"]) .track {
   flex-direction: row-reverse;
 }
 
-/* ── Simple (pill) variant — rounded, no label, smaller knob ───────────── */
-:host([data-style="simple"]) {
-  --_track-rounding: var(--sherpa-switch-radius-track, 999px);
-  --_knob-rounding: var(--sherpa-switch-radius-thumb, 999px);
-  --_knob-size: var(--sherpa-switch-size-thumb, 12px);
-}
+/* ── Simple (pill) form — structural only; radius/thumb come from the token
+   layer's [data-variant="simple"] mode block, not from local --_ overrides. ── */
 :host([data-style="simple"]) .label { display: none; }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
@@ -86,10 +84,7 @@
 :host([disabled]) .track {
   cursor: not-allowed;
   background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
-  border-color: var(--sherpa-border-interactive-inactive, #e0e0e6);
-}
-:host([disabled]) .knob {
-  background: var(--sherpa-surface-primary-inactive, #f2f2f2);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .label {
   color: var(--sherpa-switch-content-inactive, #5c5c66);

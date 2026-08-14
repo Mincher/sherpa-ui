@@ -1,11 +1,12 @@
 /**
  * sherpa-message.css — all message presentation.
  *
- * A thin inline status strip: a leading status glyph, the message text, and an
- * optional dismiss button, all on one baseline-aligned row. data-status selects
- * one of four status hues; that hue drives a soft surface tint (color-mix, no
- * dedicated surface token), a subtle border, and the icon colour. Lighter than
- * sherpa-callout — no accent bar, no stacked title. Pure data-* selectors.
+ * A single-row status box: a leading status icon chip, the message text, and an
+ * optional dismiss button. The whole strip fills with the status surface via the
+ * [data-status] cascade (--_status-surface), with a status border and status
+ * text. Only a status re-points those; a bare message reads as the neutral/info
+ * default. No color-mix tint — that was the old design. Lighter than
+ * sherpa-callout (one row, no stacked title). Pure data-* selectors.
  */
 
 :host {
@@ -13,21 +14,18 @@
   align-items: baseline;
   gap: var(--sherpa-core-space-xs, 8px);
   width: 100%;
-  padding: var(--sherpa-container-space-padding-md, 4px) var(--sherpa-container-space-padding-md, 12px);
+  padding: var(--sherpa-container-space-padding-md, 12px);
   border: var(--sherpa-container-border-width, 1px) solid
-    color-mix(in srgb, var(--_hue) 30%, transparent);
+    var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
   border-radius: var(--sherpa-container-border-radius-top-left, 4px);
-  background: color-mix(in srgb, var(--_hue) 10%, transparent);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  background: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   line-height: 1.45;
-
-  /* default status — info; each status block below re-pins --_hue */
-  --_hue: var(--sherpa-content-info-default, #1f75e4);
 }
 
-/* ── Icon glyph ──────────────────────────────────────────────────────── */
+/* ── Icon chip — a round chip in the status ink with a white glyph ────── */
 .icon {
   flex-shrink: 0;
   align-self: center;
@@ -36,8 +34,12 @@
   justify-content: center;
   width: var(--sherpa-size-icon-2xs, 16px);
   height: var(--sherpa-size-icon-2xs, 16px);
-  color: var(--_hue);
+  border-radius: 50%;
+  background: var(--_status-surface-strong, var(--sherpa-status-info-color-5, #07526f));
+  color: var(--sherpa-content-title-on-color, #ffffff);
+  font-size: 11px;
   font-weight: var(--sherpa-core-fonts-weight-700, 700);
+  font-style: normal;
   line-height: 1;
 }
 /* Text glyph per status — no icon font dependency, pure CSS content. */
@@ -57,6 +59,12 @@
 /* A slotted body replaces the data-label text node. */
 :host([data-has-content]) .label { display: none; }
 
+/* Action links inside the message stay link-coloured. */
+.text ::slotted(a),
+.text a {
+  color: var(--sherpa-content-link-base, #3c5edd);
+}
+
 /* ── Dismiss button ──────────────────────────────────────────────────── */
 .close {
   flex-shrink: 0;
@@ -71,14 +79,13 @@
   border: none;
   border-radius: var(--sherpa-core-border-rounding-sm, 2px);
   background: transparent;
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease;
+  transition: background-color 100ms ease;
 }
 .close:hover {
-  color: var(--sherpa-content-title-base, #18191a);
   background: color-mix(in srgb, currentColor 14%, transparent);
 }
 .close:focus-visible {
@@ -88,9 +95,3 @@
 
 /* Dismiss button only when the message is dismissible. */
 :host(:not([data-dismissible])) .close { display: none; }
-
-/* ── Status hue selection ────────────────────────────────────────────── */
-:host([data-status="info"])     { --_hue: var(--sherpa-content-info-default,     #1f75e4); }
-:host([data-status="success"])  { --_hue: var(--sherpa-content-success-default,  #16915a); }
-:host([data-status="warning"])  { --_hue: var(--sherpa-content-warning-default,  #b5730a); }
-:host([data-status="critical"]) { --_hue: var(--sherpa-content-critical-default, #c8324f); }

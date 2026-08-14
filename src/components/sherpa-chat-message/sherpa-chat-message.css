@@ -2,13 +2,15 @@
  * sherpa-chat-message.css — a single chat bubble.
  *
  * Layout and colour are driven entirely by data-role:
- *   assistant (default) — left-aligned, neutral surface, avatar shown
+ *   assistant (default) — left-aligned, secondary surface, avatar shown
  *   user                — right-aligned, accent surface, no avatar
  *   system              — centred, muted, no avatar
  *
- * The author/time meta row and the avatar collapse when empty (data-author /
- * data-time / data-has-avatar). A slotted body overrides the data-content text
- * node. Pure data-* selectors — JS never styles.
+ * The bubble has NO border in Figma — the fill alone separates it. Assistant
+ * fills with surface/secondary/base + content/primary/base ink; user fills with
+ * surface/interactive/primary/base + content/primary/on-color ink. Corner radii
+ * bind the control-scoped radius vars. The author/time meta row and the avatar
+ * collapse when empty. Pure data-* selectors — JS never styles.
  */
 
 :host {
@@ -17,9 +19,8 @@
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
 
   /* private surface + ink for the bubble; role blocks re-pin these */
-  --_surface: var(--sherpa-surface-secondary-base, #ffffff);
+  --_surface: var(--sherpa-surface-secondary-base, #fdfdfd);
   --_ink: var(--sherpa-content-primary-base, #2e2e33);
-  --_border: var(--sherpa-border-primary, #d5d5d5);
 }
 
 .message {
@@ -33,7 +34,7 @@
 .stack {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-core-space-2xs, 4px);
   min-width: 0;
 }
 
@@ -46,7 +47,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
-  background: var(--sherpa-categorical-1, #7b1ce6);
+  background: var(--sherpa-surface-interactive-primary-base, #3c5edd);
   color: var(--sherpa-content-title-on-color, #ffffff);
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
@@ -54,8 +55,8 @@
 }
 /* Default glyph: a small filled dot; a slotted avatar hides it via the slot. */
 .avatar-glyph {
-  width: var(--sherpa-core-space-sm, 12px);
-  height: var(--sherpa-core-space-sm, 12px);
+  width: var(--sherpa-size-icon-2xs, 10px);
+  height: var(--sherpa-size-icon-2xs, 10px);
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   background: currentColor;
 }
@@ -78,15 +79,14 @@
 
 /* ── Bubble ──────────────────────────────────────────────────────────── */
 .bubble {
-  padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
+  padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-sm, 12px);
   background: var(--_surface);
   color: var(--_ink);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--_border);
   border-radius:
-    var(--sherpa-control-border-radius-top-left, 8px)
-    var(--sherpa-control-border-radius-top-right, 8px)
-    var(--sherpa-control-border-radius-bottom-right, 8px)
-    var(--sherpa-control-border-radius-bottom-left, 8px);
+    var(--sherpa-control-border-radius-top-left, 4px)
+    var(--sherpa-control-border-radius-top-right, 4px)
+    var(--sherpa-control-border-radius-bottom-right, 4px)
+    var(--sherpa-control-border-radius-bottom-left, 4px);
   line-height: 1.45;
   word-wrap: break-word;
   overflow-wrap: anywhere;
@@ -97,12 +97,11 @@
 .bubble ::slotted(*) { margin: 0; }
 .bubble ::slotted(* + *) { margin-top: var(--sherpa-core-space-xs, 8px); }
 
-/* ── Assistant (default): left-aligned, neutral, avatar shown ────────── */
+/* ── Assistant (default): left-aligned, secondary surface, avatar shown ─ */
 :host,
 :host([data-role="assistant"]) {
-  --_surface: var(--sherpa-surface-secondary-base, #ffffff);
+  --_surface: var(--sherpa-surface-secondary-base, #fdfdfd);
   --_ink: var(--sherpa-content-primary-base, #2e2e33);
-  --_border: var(--sherpa-border-primary, #d5d5d5);
 }
 
 /* ── User: right-aligned, accent surface, no avatar ──────────────────── */
@@ -114,8 +113,7 @@
 :host([data-role="user"]) .stack { align-items: flex-end; max-width: 85%; }
 :host([data-role="user"]) {
   --_surface: var(--sherpa-surface-interactive-primary-base, #3c5edd);
-  --_ink: var(--sherpa-content-primary-on-color, #ffffff);
-  --_border: var(--sherpa-border-interactive-primary, #3c5edd);
+  --_ink: var(--sherpa-content-primary-on-color, #fafafa);
 }
 
 /* ── System: centred, muted, no avatar ───────────────────────────────── */
@@ -130,7 +128,6 @@
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
 }
 :host([data-role="system"]) {
-  --_surface: var(--sherpa-surface-primary-inactive, #f2f2f2);
+  --_surface: var(--sherpa-surface-secondary-base, #fdfdfd);
   --_ink: var(--sherpa-content-secondary-base, #404047);
-  --_border: var(--sherpa-border-primary, #d5d5d5);
 }

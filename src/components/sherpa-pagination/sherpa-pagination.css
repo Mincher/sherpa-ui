@@ -2,10 +2,16 @@
  * sherpa-pagination.css — all pager presentation.
  *
  * A row of square buttons: previous, the windowed numbers (with ellipsis gaps),
- * next. The current page is marked data-current (reflected by the JS) and reads
- * as the accent surface, non-interactive. Prev/next disable at the boundaries via
- * the native `disabled` attribute (inactive tokens, never opacity). JS only
- * stamps buttons and reflects state; CSS owns every visual.
+ * next. Geometry binds the button-scoped tokens (button-size/height,
+ * button-space/gap+padding) and the shared snapping/grouping corner radius, so
+ * button sizes re-point from the token layer rather than per-size blocks here.
+ *
+ * The current page is marked data-current (reflected by the JS) and reads as the
+ * STATUS SURFACE fill — background:--_status-surface, border:--_status-border —
+ * cascading from any ancestor data-status, with a neutral selected fallback when
+ * none is set. (The old accent/on-color fill was drift.) Prev/next disable at the
+ * boundaries via the native `disabled` attribute (inactive tokens, never opacity).
+ * JS only stamps buttons and reflects state; CSS owns every visual.
  */
 
 :host {
@@ -60,10 +66,13 @@
   box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
-/* ── Current page — accent, non-interactive ───────────────────────────── */
+/* ── Current page — status-surface fill, neutral text, non-interactive ──
+   background + border cascade from any ancestor data-status; with none set,
+   a neutral selected surface + primary border stand in. */
 .btn[data-current] {
-  background: var(--sherpa-surface-interactive-primary-base, #3c5edd);
-  color: var(--sherpa-content-title-on-color, #ffffff);
+  background: var(--_status-surface, var(--sherpa-surface-secondary-base, #fdfdfd));
+  border-color: var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
+  color: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
   cursor: default;
   pointer-events: none;

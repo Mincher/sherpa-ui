@@ -1,10 +1,13 @@
 /**
  * sherpa-progress-bar.css — all progress-bar presentation.
  *
- * A thin rounded track with a coloured fill. The fill width is the ONE value JS
- * supplies, via the --_pct custom property (data-value → --_pct in TS); everything
- * else — colour, the indeterminate sweep, the label's visibility — is pure CSS off
- * data-*. JS never sets width/display/visibility here.
+ * A thin rounded track with a coloured fill. The track binds surface/secondary/base
+ * and a full (pill) rounding; the fill is the accent link colour, which the
+ * [data-status] cascade recolours via --_status-border when an ancestor sets a
+ * status. The fill width is the ONE value JS supplies, via the --_pct custom
+ * property (data-value → --_pct in TS); everything else — colour, the
+ * indeterminate sweep, the label's visibility — is pure CSS off data-*. JS never
+ * sets width/display/visibility here.
  */
 
 :host {
@@ -14,8 +17,8 @@
   width: 100%;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* Fill colour — status cascade wins, else the primary accent. */
-  --_fill: var(--_status-text, var(--sherpa-content-link-base, #3c5edd));
+  /* Fill colour — the status cascade ink wins, else the primary accent link. */
+  --_fill: var(--_status-border, var(--sherpa-content-link-base, #3c5edd));
   /* Percentage width, written by JS from data-value. */
   --_pct: 0%;
 }
@@ -33,8 +36,7 @@
   position: relative;
   width: 100%;
   height: var(--sherpa-core-space-2xs, 4px);
-  background: var(--sherpa-surface-primary-inactive, #f2f2f2);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  background: var(--sherpa-surface-secondary-base, #fdfdfd);
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   overflow: hidden;
 }
@@ -47,12 +49,6 @@
   border-radius: inherit;
   transition: width 240ms ease;
 }
-
-/* ── Status colours the fill (deterministic per status) ───────────────── */
-:host([data-status="critical"]) { --_fill: var(--sherpa-content-critical-default, #c8324f); }
-:host([data-status="warning"])  { --_fill: var(--sherpa-content-warning-default, #b5730a); }
-:host([data-status="success"])  { --_fill: var(--sherpa-content-success-default, #16915a); }
-:host([data-status="info"])     { --_fill: var(--sherpa-content-info-default, #1f75e4); }
 
 /* ── Indeterminate — a sweeping band; the width bridge is ignored ──────── */
 :host([data-indeterminate]) .fill {
@@ -83,7 +79,6 @@
 }
 :host([disabled]) .track {
   background: var(--sherpa-surface-primary-inactive, #f2f2f2);
-  border-color: var(--sherpa-border-interactive-inactive, #e0e0e6);
 }
 :host([disabled]) .label {
   color: var(--sherpa-content-inactive-base, #5c5c66);

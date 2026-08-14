@@ -1,9 +1,10 @@
 <!--
   sherpa-toast — a transient notification.
 
-  A status-tinted card with a message and a close button. Auto-dismisses after
-  data-duration ms; the close button dismisses manually. Message via data-message
-  or the default slot.
+  A status box with a message and a close button. The whole card fills with the
+  status surface (via the [data-status] cascade) with a status border and status
+  text. Auto-dismisses after data-duration ms; the close button dismisses
+  manually. Message via data-message or the default slot.
 
   Public API:
     data-status    info (default) | success | warning | critical

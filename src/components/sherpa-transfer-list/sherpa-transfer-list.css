@@ -1,10 +1,13 @@
 /**
  * sherpa-transfer-list.css — two-pane shuttle layout.
  *
- * A three-column grid: available pane | move buttons | selected pane. Rows are
- * native checkbox fields; move buttons are native <button>s styled here. Empty
- * panes swap their list for a placeholder via data-empty (CSS owns visibility).
- * Disabled uses inactive tokens; focus is a box-shadow ring. JS never styles.
+ * A three-column grid: available pane | move buttons | selected pane. Each pane
+ * fills status-surface via the [data-status] cascade (--_status-surface, neutral
+ * surface/primary/base fallback) with a status-border (--_status-border); its
+ * outer corners bind the snapping/grouping radii. Rows are native checkbox fields
+ * with control-scoped radii. Empty panes swap their list for a placeholder via
+ * data-empty (CSS owns visibility). Disabled uses inactive tokens; focus is a
+ * box-shadow ring. JS never styles.
  */
 
 :host {
@@ -16,6 +19,10 @@
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   color: var(--sherpa-content-primary-base, #2e2e33);
+
+  /* cascade fallbacks so a bare (status-less) list still resolves */
+  --_surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-border-primary, #c0c0cc));
 }
 
 .panes {
@@ -27,18 +34,18 @@
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border: var(--sherpa-control-border-width, 1px) solid var(--_border);
   border-radius:
-    var(--sherpa-grouping-radius-top-left, 4px)
-    var(--sherpa-grouping-radius-top-right, 4px)
-    var(--sherpa-grouping-radius-bottom-right, 4px)
-    var(--sherpa-grouping-radius-bottom-left, 4px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
+    var(--sherpa-grouping-radius-top-left, 3px)
+    var(--sherpa-grouping-radius-top-right, 3px)
+    var(--sherpa-grouping-radius-bottom-right, 3px)
+    var(--sherpa-grouping-radius-bottom-left, 3px);
+  background: var(--_surface);
   overflow: hidden;
 }
 .pane-heading {
   padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
-  border-block-end: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-block-end: var(--sherpa-control-border-width, 1px) solid var(--_border);
   color: var(--sherpa-content-title-base, #18191a);
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
@@ -48,7 +55,7 @@
 .pane-list {
   list-style: none;
   margin: 0;
-  padding: var(--sherpa-core-space-3xs, 2px);
+  padding: var(--sherpa-control-space-padding-md, 8px);
   flex: 1;
   overflow: auto;
   min-block-size: 0;
@@ -67,10 +74,10 @@
 /* ── A row ────────────────────────────────────────────────────────── */
 .row {
   border-radius:
-    var(--sherpa-control-border-radius-top-left, 2px)
-    var(--sherpa-control-border-radius-top-right, 2px)
-    var(--sherpa-control-border-radius-bottom-right, 2px)
-    var(--sherpa-control-border-radius-bottom-left, 2px);
+    var(--sherpa-control-border-radius-top-left, 4px)
+    var(--sherpa-control-border-radius-top-right, 4px)
+    var(--sherpa-control-border-radius-bottom-right, 4px)
+    var(--sherpa-control-border-radius-bottom-left, 4px);
 }
 .row-field {
   display: flex;
@@ -80,10 +87,10 @@
   cursor: pointer;
   user-select: none;
   border-radius:
-    var(--sherpa-control-border-radius-top-left, 2px)
-    var(--sherpa-control-border-radius-top-right, 2px)
-    var(--sherpa-control-border-radius-bottom-right, 2px)
-    var(--sherpa-control-border-radius-bottom-left, 2px);
+    var(--sherpa-control-border-radius-top-left, 4px)
+    var(--sherpa-control-border-radius-top-right, 4px)
+    var(--sherpa-control-border-radius-bottom-right, 4px)
+    var(--sherpa-control-border-radius-bottom-left, 4px);
 }
 .row-field:hover {
   background: var(--sherpa-surface-interactive-tertiary-hover, #f2f2f2);
@@ -114,8 +121,8 @@
   gap: var(--sherpa-core-space-xs, 8px);
 }
 .move {
-  inline-size: var(--sherpa-button-size-height, 28px);
-  block-size: var(--sherpa-button-size-height, 28px);
+  inline-size: var(--sherpa-button-size-height, 24px);
+  block-size: var(--sherpa-button-size-height, 24px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -125,15 +132,15 @@
   cursor: pointer;
   color: var(--sherpa-content-primary-base, #2e2e33);
   background: var(--sherpa-surface-interactive-secondary-base, #ffffff);
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-interactive-secondary, #d5d5d5);
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-interactive-secondary, #c0c0cc);
+  border-radius: var(--sherpa-primitives-border-radius-150, 3px);
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 .move:hover {
-  background: var(--sherpa-surface-interactive-secondary-hover, #fafafa);
+  background: var(--sherpa-surface-interactive-secondary-hover, #f2f2f2);
 }
 .move:active {
-  background: var(--sherpa-surface-interactive-secondary-down, #f2f2f2);
+  background: var(--sherpa-surface-interactive-secondary-down, #e3e3e3);
 }
 .move:focus-visible {
   outline: none;
@@ -146,11 +153,11 @@
 }
 :host([disabled]) .move {
   color: var(--sherpa-content-inactive-base, #5c5c66);
-  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
-  border-color: var(--sherpa-border-interactive-inactive, #c0c0cc);
+  background: var(--sherpa-surface-interactive-inactive, #c0c0cc);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .pane {
-  border-color: var(--sherpa-border-interactive-inactive, #c0c0cc);
+  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
   background: var(--sherpa-surface-primary-inactive, #f2f2f2);
 }
 

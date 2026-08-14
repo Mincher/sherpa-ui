@@ -1,10 +1,18 @@
 /**
  * sherpa-nav-item.css — a single navigation row.
  *
- * A horizontal row: leading icon → label → trailing badge. The host is the
- * interactive element; the inner anchor carries the layout. The active row
- * (data-active) gets an accent treatment; disabled uses inactive tokens (never
- * opacity). A "promo" variant renders a larger CTA-style row.
+ * A horizontal row: leading icon → label → trailing badge/status dot. The host
+ * is the interactive element; the inner anchor carries the layout. The active
+ * row (data-active) takes the interactive-active fill + active ink; disabled
+ * uses inactive tokens (never opacity). A "promo" variant renders a larger
+ * CTA-style row.
+ *
+ * Figma bindings: geometry on the control-scoped vars (control-space/*, row
+ * radius = border/rounding/base); the active row fills surface/interactive/
+ * active/base with content/active/base ink; hover fills control-surface/hover;
+ * the trailing chip is a round status element filled by the [data-status]
+ * cascade (--_status-surface-strong) with a white glyph, and a success dot
+ * pins status/success/color 4.
  */
 
 :host {
@@ -16,8 +24,8 @@
 .row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-control-space-gap-base, 12px);
-  padding: var(--sherpa-control-space-padding-xs, 8px) var(--sherpa-control-space-padding-sm, 12px);
+  gap: var(--sherpa-control-space-gap-base, 8px);
+  padding: var(--sherpa-control-space-padding-xs, 2px) var(--sherpa-control-space-padding-sm, 4px);
   border-radius: var(--sherpa-core-border-rounding-base, 4px);
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
@@ -31,7 +39,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-core-size-lg, 24px);
+  inline-size: var(--sherpa-size-icon-xs, 12px);
   flex-shrink: 0;
 }
 :host([data-icon]) .icon { display: inline-flex; }
@@ -44,6 +52,8 @@
   text-overflow: ellipsis;
 }
 
+/* Trailing chip — a round status element: strong status ink fill, white glyph.
+   Falls back to the brand-active surface when no [data-status] ancestor. */
 .badge {
   display: none;
   align-items: center;
@@ -52,14 +62,23 @@
   min-inline-size: var(--sherpa-core-size-md, 20px);
   block-size: var(--sherpa-core-size-md, 20px);
   justify-content: center;
-  border-radius: var(--sherpa-core-border-rounding-full, 999px);
-  background: var(--sherpa-surface-interactive-primary-base, #3c5edd);
+  border-radius: var(--sherpa-primitives-border-radius-1000, 999px);
+  background: var(--_status-surface-strong, var(--sherpa-surface-interactive-active-base, #f4ebfd));
   color: var(--sherpa-content-title-on-color, #ffffff);
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
 }
 :host([data-badge]) .badge,
 :host([data-has-trailing]) .badge { display: inline-flex; }
+
+/* Success / online dot — a small round marker pinned to the success ink. */
+:host([data-status-dot]) .badge {
+  min-inline-size: var(--sherpa-core-size-2xs, 8px);
+  inline-size: var(--sherpa-core-size-2xs, 8px);
+  block-size: var(--sherpa-core-size-2xs, 8px);
+  padding-inline: var(--sherpa-primitives-scale-0, 0px);
+  background: var(--sherpa-status-success-color-4, #058142);
+}
 
 /* ── Hover / focus ─────────────────────────────────────────────────── */
 :host(:hover) .row {
@@ -74,8 +93,8 @@
 
 /* ── Active / current ──────────────────────────────────────────────── */
 :host([data-active]) .row {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
-  color: var(--sherpa-content-link-base, #3c5edd);
+  background: var(--sherpa-surface-interactive-active-base, #f4ebfd);
+  color: var(--sherpa-content-active-base, #4d049f);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
 }
 
@@ -85,10 +104,10 @@
 :host([disabled]) .promo {
   cursor: not-allowed;
   color: var(--sherpa-content-inactive-base, #5c5c66);
-  background: var(--sherpa-surface-primary-inactive, #f2f2f2);
+  background: var(--sherpa-surface-interactive-inactive, #c0c0cc);
 }
 :host([disabled]) .badge {
-  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
+  background: var(--sherpa-surface-interactive-inactive, #c0c0cc);
   color: var(--sherpa-content-inactive-base, #5c5c66);
 }
 
@@ -96,10 +115,10 @@
 .promo {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-core-space-sm, 12px);
-  padding: var(--sherpa-core-space-sm, 12px) var(--sherpa-core-space-base, 16px);
+  gap: var(--sherpa-control-space-gap-base, 8px);
+  padding: var(--sherpa-control-space-padding-sm, 4px) var(--sherpa-core-space-xs, 8px);
   border-radius: var(--sherpa-core-border-rounding-base, 4px);
-  border: var(--sherpa-core-border-width-base, 1px) solid
+  border: var(--sherpa-control-border-width, 1px) solid
     var(--sherpa-border-primary, #d5d5d5);
   background: var(--sherpa-surface-primary-base, #ffffff);
   color: var(--sherpa-content-primary-base, #2e2e33);
@@ -108,7 +127,7 @@
   transition: background-color 100ms ease, border-color 100ms ease;
 }
 :host([data-variant="promo"]:hover) .promo {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
+  background: var(--sherpa-control-surface-hover, #f4f4f6);
   border-color: var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
@@ -116,23 +135,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-core-size-2xl, 32px);
-  block-size: var(--sherpa-core-size-2xl, 32px);
+  inline-size: var(--sherpa-core-size-lg, 24px);
+  block-size: var(--sherpa-core-size-lg, 24px);
   flex-shrink: 0;
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
-  background: var(--sherpa-surface-interactive-primary-base, #3c5edd);
-  color: var(--sherpa-content-title-on-color, #ffffff);
+  border-radius: var(--sherpa-core-border-rounding-xl, 16px);
+  background: var(--sherpa-surface-interactive-active-base, #f4ebfd);
+  color: var(--sherpa-content-active-base, #4d049f);
 }
 
 .promo-body {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-primitives-scale-0, 0px);
   flex: 1 1 auto;
   min-inline-size: 0;
 }
 .promo-heading {
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-content-primary-base, #2e2e33);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
 }

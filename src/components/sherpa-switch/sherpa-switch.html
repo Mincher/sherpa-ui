@@ -3,12 +3,15 @@
 
   One flat template. A real <button role="switch"> owns the semantics and focus;
   the visual form (rectangular default vs. simple pill) is a CSS variant on
-  data-style — the same track markup restyles, no second template needed.
+  data-style — the same track markup restyles, no second template needed. The
+  pill form's radius/thumb sizing lives in the token layer's [data-variant="simple"]
+  mode block (the switch binds its scoped --sherpa-switch-* vars once); the CSS
+  here only toggles the label off for the simple form.
 
   Public API:
     data-state — on | off        (current value; JS keeps it and aria-checked in sync)
-    data-style — default (rectangular, ON/OFF label, 16px knob)
-               | simple  (pill, no label, 12px knob)
+    data-style — default (rectangular, ON/OFF label, square thumb)
+               | simple  (pill, no label, round thumb)
     disabled   — native boolean
 
   Fires: change  (detail: { checked: boolean })

@@ -5,6 +5,10 @@
  * side, and a trailing actions region that appears only when the actions slot has
  * content (data-has-actions, reflected by the base class). data-size scales the
  * heading typography; data-divider draws a rule beneath the row. Pure data-*.
+ *
+ * Figma binding model: title → content/title/base, description →
+ * content/secondary/base, any slotted link → content/link/base, the divider rule
+ * → border/primary, and every gap/margin binds the single space/xs geometry token.
  */
 
 :host {
@@ -19,7 +23,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--sherpa-core-space-base, 16px);
+  gap: var(--sherpa-core-space-xs, 8px);
 }
 
 .lead {
@@ -27,7 +31,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-2xs, 4px);
+  gap: var(--sherpa-core-space-xs, 8px);
 }
 
 /* ── Title ───────────────────────────────────────────────────────────── */
@@ -53,12 +57,18 @@
 }
 :host([data-has-description]) .description { display: block; }
 
+/* A link inside the heading or description inherits the accent link colour. */
+::slotted(a),
+.lead a {
+  color: var(--sherpa-content-link-base, #3c5edd);
+}
+
 /* ── Actions ─────────────────────────────────────────────────────────── */
 .actions {
   display: none;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-core-space-xs, 8px);
 }
 :host([data-has-actions]) .actions { display: flex; }
 
@@ -69,7 +79,7 @@
 /* ── Divider ─────────────────────────────────────────────────────────── */
 .divider {
   display: none;
-  margin: var(--sherpa-core-space-sm, 12px) 0 0;
+  margin: var(--sherpa-core-space-xs, 8px) 0 0;
   border: none;
   border-top: var(--sherpa-core-border-width-base, 1px) solid
     var(--sherpa-border-primary, #d5d5d5);

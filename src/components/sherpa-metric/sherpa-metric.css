@@ -6,6 +6,13 @@
  * colours the delta and reveals the matching arrow; the sparkline region only
  * appears once JS has fed it (data-has-values). JS never sets display/colour
  * here — it only writes text and toggles data-* attributes.
+ *
+ * Figma model: the tile is status-fillable. A [data-status] ancestor fills the
+ * whole tile with the status surface (status-surface/default → --_status-surface),
+ * outlines it with the status border, and re-inks the label/value via the status
+ * text cascade (status-content/title → --_status-text). The value's resting
+ * colour binds content/primary/base; the trend delta takes the success/critical
+ * status ramp inks.
  */
 
 :host {
@@ -16,8 +23,13 @@
   container: sherpa-metric / inline-size;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
+  /* Fills only when an ancestor sets [data-status]; otherwise transparent. */
+  background: var(--_status-surface, transparent);
+  border: var(--sherpa-core-border-width-sm, 0.5px) solid
+    var(--_status-border, transparent);
+
   /* Delta colour — neutral until a trend is set. */
-  --_delta: var(--sherpa-content-secondary-base, #404047);
+  --_delta: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
 }
 
 /* ── Label ─────────────────────────────────────────────────────────── */
@@ -27,7 +39,7 @@
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -56,7 +68,7 @@
   font-size: var(--sherpa-core-fonts-scale-2xl, 24px);
   font-weight: var(--sherpa-core-fonts-weight-500, 500);
   line-height: 1.2;
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
 }
 
 /* ── Trend + delta ─────────────────────────────────────────────────── */
@@ -70,8 +82,8 @@
 .delta:empty { display: none; }
 
 .arrow { display: none; font-size: var(--sherpa-core-fonts-scale-sm, 12px); line-height: 1; }
-:host([data-trend="up"])   { --_delta: var(--sherpa-content-success-default, #16915a); }
-:host([data-trend="down"]) { --_delta: var(--sherpa-content-critical-default, #c8324f); }
+:host([data-trend="up"])   { --_delta: var(--sherpa-status-success-color-4, #058142); }
+:host([data-trend="down"]) { --_delta: var(--sherpa-status-critical-color-5, #bf2c09); }
 :host([data-trend="up"])   .arrow-up   { display: inline-flex; }
 :host([data-trend="down"]) .arrow-down { display: inline-flex; }
 

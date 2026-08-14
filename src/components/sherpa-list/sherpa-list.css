@@ -5,6 +5,11 @@
  * and slotted rows (the default slot), so variant treatments apply uniformly.
  * Variants (default | bordered | divided) and the empty state are pure CSS off
  * data-* on the host; JS only stamps rows and toggles data-empty-visible.
+ *
+ * Figma model: the list is a container. Its geometry binds the container-scoped
+ * collection (container-border/*, container-surface/default); rows within bind
+ * the control-scoped collection. A [data-status] ancestor fills the whole
+ * bordered/divided body with the status surface via the --_status-* cascade.
  */
 
 :host {
@@ -28,12 +33,14 @@
 }
 .rows:empty { display: none; }
 
-/* ── Bordered ──────────────────────────────────────────────────────── */
+/* ── Bordered — container surface fill + container border ───────────── */
 :host([data-variant="bordered"]) {
   --_row-gap: 0;
 }
 :host([data-variant="bordered"]) .body {
-  border: var(--sherpa-container-border-width, 1px) solid var(--sherpa-container-border-default, #d5d5d5);
+  background: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
+  border: var(--sherpa-container-border-width, 0.5px) solid
+    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
   border-radius: var(--sherpa-container-border-radius-top-left, 4px);
   overflow: hidden;
 }
@@ -44,8 +51,8 @@
 }
 :host([data-variant="divided"]) .rows > sherpa-list-item:not(:last-child),
 :host([data-variant="divided"]) ::slotted(sherpa-list-item:not(:last-child)) {
-  border-block-end: var(--sherpa-container-border-width, 1px) solid
-    var(--sherpa-container-border-default, #d5d5d5);
+  border-block-end: var(--sherpa-container-border-width, 0.5px) solid
+    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
 }
 
 /* ── Empty state ───────────────────────────────────────────────────── */
@@ -53,7 +60,7 @@
   display: none;
   padding: var(--sherpa-container-space-padding-md, 16px);
   text-align: center;
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 :host([data-empty-visible]) .empty { display: block; }

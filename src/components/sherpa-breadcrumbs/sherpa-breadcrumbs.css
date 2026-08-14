@@ -2,9 +2,10 @@
  * sherpa-breadcrumbs.css — all breadcrumb presentation.
  *
  * A horizontal trail of crumbs. Each crumb after the first draws its own
- * separator via ::before, so separators need no DOM. Link crumbs are the
- * accent/primary colour; the current crumb (aria-current) is the default body
- * colour and non-interactive. Pure structure — no host data-* needed.
+ * separator via ::before, so separators need no DOM. Link crumbs are the accent
+ * link colour (content/link/base); the current crumb (aria-current) is the title
+ * colour (content/title/base) and non-interactive. The separator glyph sizes to
+ * the icon token (size/icon/2xs) and all gaps bind the single space/xs token.
  */
 
 :host {
@@ -19,7 +20,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--sherpa-core-space-2xs, 4px);
+  gap: var(--sherpa-core-space-xs, 8px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -29,13 +30,15 @@
 .crumb {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-2xs, 4px);
+  gap: var(--sherpa-core-space-xs, 8px);
 }
 
-/* Separator: every crumb except the first draws a leading slash. */
+/* Separator: every crumb except the first draws a leading slash, sized to the
+   icon token so it matches the chevron glyph in Figma. */
 .crumb + .crumb::before {
   content: "/";
   color: var(--sherpa-content-secondary-base, #404047);
+  font-size: var(--sherpa-size-icon-2xs, 12px);
   user-select: none;
 }
 
@@ -56,9 +59,9 @@
   box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
-/* Current page crumb: default body colour, regular weight, non-interactive. */
+/* Current page crumb: title colour, regular weight, non-interactive. */
 .link[aria-current="page"] {
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-content-title-base, #18191a);
   font-weight: var(--sherpa-core-fonts-weight-400, 400);
   cursor: default;
   text-decoration: none;

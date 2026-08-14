@@ -1,11 +1,12 @@
 <!--
   sherpa-message — a lightweight inline status strip.
 
-  A single-row message: a leading status glyph, the message text (slotted or from
-  data-label), and an optional dismiss button. The status colour (info | success |
-  warning | critical) is chosen by data-status and drives a soft surface tint + a
-  matching icon glyph in CSS. Lighter than sherpa-callout — an inline strip, not a
-  box.
+  A single-row status box: a leading status icon chip, the message text (slotted
+  or from data-label), and an optional dismiss button. The status (info | success
+  | warning | critical) is chosen by data-status; the whole strip fills with the
+  status surface (via the [data-status] cascade) with a status border, status
+  text, and a matching glyph in CSS. Lighter than sherpa-callout — one row, no
+  stacked title.
 
   Public API:
     data-status       info (default) | success | warning | critical

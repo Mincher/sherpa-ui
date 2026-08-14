@@ -2,20 +2,24 @@
  * sherpa-code-block.css — a monospace code display with a copy button.
  *
  * A bordered surface: a header row (language label + copy button) over a
- * scrollable <pre>. Line breaks and indentation are preserved by white-space:
- * pre. The copy button's "Copied" confirmation is driven purely by data-copied.
+ * scrollable <pre>. The card fills status-surface via the [data-status] cascade
+ * (--_status-surface, neutral surface/primary fallback) with a status-border
+ * (--_status-border); the header divider matches. The <pre> sits on
+ * surface/secondary/base. Line breaks and indentation are preserved by
+ * white-space: pre. The copy button's "Copied" confirmation is driven purely by
+ * data-copied. Corner radii bind the snapping/grouping radius vars.
  */
 
 :host {
   display: block;
   container: sherpa-code-block / inline-size;
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  background: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
+  border: var(--sherpa-control-border-width, 1px) solid var(--_status-border, var(--sherpa-border-primary, #c0c0cc));
   border-radius:
-    var(--sherpa-grouping-radius-top-left, 8px)
-    var(--sherpa-grouping-radius-top-right, 8px)
-    var(--sherpa-grouping-radius-bottom-right, 8px)
-    var(--sherpa-grouping-radius-bottom-left, 8px);
+    var(--sherpa-grouping-radius-top-left, 3px)
+    var(--sherpa-grouping-radius-top-right, 3px)
+    var(--sherpa-grouping-radius-bottom-right, 3px)
+    var(--sherpa-grouping-radius-bottom-left, 3px);
   overflow: hidden;
 }
 
@@ -27,7 +31,7 @@
   gap: var(--sherpa-core-space-sm, 12px);
   min-height: var(--sherpa-core-size-xl, 28px);
   padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-sm, 12px);
-  border-bottom: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-bottom: var(--sherpa-control-border-width, 1px) solid var(--_status-border, var(--sherpa-border-primary, #c0c0cc));
 }
 
 .language {
@@ -45,24 +49,24 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-button-space-gap, 2px);
-  padding: var(--sherpa-button-space-padding, 2px) var(--sherpa-button-space-padding, 8px);
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-interactive-secondary, #d5d5d5);
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  padding: var(--sherpa-button-space-padding, 2px) var(--sherpa-core-space-xs, 8px);
+  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-interactive-secondary, #c0c0cc);
+  border-radius: var(--sherpa-primitives-border-radius-150, 3px);
   background: var(--sherpa-surface-interactive-secondary-base, #ffffff);
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-family: inherit;
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   cursor: pointer;
 }
-.copy:hover { background: var(--sherpa-surface-interactive-secondary-hover, #fafafa); }
-.copy:active { background: var(--sherpa-surface-interactive-secondary-down, #f2f2f2); }
+.copy:hover { background: var(--sherpa-surface-interactive-secondary-hover, #f2f2f2); }
+.copy:active { background: var(--sherpa-surface-interactive-secondary-down, #e3e3e3); }
 .copy:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
 }
 
 /* Confirmation swap — CSS owns the state, JS only flips data-copied. */
-.copied-label { display: none; color: var(--sherpa-content-success-default, #2e8b57); }
+.copied-label { display: none; color: var(--sherpa-status-success-color-4, #058142); }
 :host([data-copied]) .copy-label { display: none; }
 :host([data-copied]) .copied-label { display: inline; }
 
@@ -70,6 +74,7 @@
 .pre {
   margin: 0;
   padding: var(--sherpa-core-space-sm, 12px);
+  background: var(--sherpa-surface-secondary-base, #fdfdfd);
   overflow-x: auto;
 }
 .code {

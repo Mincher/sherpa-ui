@@ -45,6 +45,6 @@ test('ai type paints the chip with the brand-purple accent', async ({ page }) =>
     };
     return { def: await paint(), ai: await paint('ai') };
   });
-  expect(r.ai).toBe('rgb(133, 0, 204)'); // content-active-base #8500cc (brand)
+  expect(r.ai).toBe('rgb(192, 70, 255)'); // border-interactive-active #C046FF (brand)
   expect(r.ai).not.toBe(r.def);
 });

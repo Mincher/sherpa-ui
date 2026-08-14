@@ -2,9 +2,13 @@
  * sherpa-nav-section.css — a settings-style secondary navigation panel.
  *
  * A vertical column: an optional heading, then labelled groups of item rows.
- * The active item (matched by data-active-id → data-active on the row) gets an
- * accent treatment. Pure data-* selectors; JS only stamps the rows and reflects
- * the active id.
+ * Pure data-* selectors; JS only stamps the rows and reflects the active id.
+ *
+ * Figma bindings: the panel is a flat, transparent surface (no fill token) with
+ * a trailing rule drawn from border/primary at border/width/lg (border/stroke/
+ * 200 hairline where finer) and border/rounding/none. The only content ink is
+ * content/tertiary/base — heading, group labels and item rows all resolve from
+ * it; the active row differs by weight, not colour.
  */
 
 :host {
@@ -13,10 +17,10 @@
   min-inline-size: 0;
   min-block-size: 0;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  border-inline-end: var(--sherpa-core-border-width-base, 1px) solid
+  border-inline-end: var(--sherpa-core-border-width-lg, 2px) solid
     var(--sherpa-border-primary, #d5d5d5);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  border-radius: var(--sherpa-core-border-rounding-none, 0px);
+  color: var(--sherpa-content-tertiary-base, #5c5c66);
   overflow: hidden;
 }
 
@@ -29,8 +33,8 @@
 
 .heading {
   margin: 0;
-  padding: var(--sherpa-core-space-base, 16px);
-  color: var(--sherpa-content-title-base, #18191a);
+  padding: var(--sherpa-core-space-xs, 8px);
+  color: var(--sherpa-content-tertiary-base, #5c5c66);
   font-size: var(--sherpa-core-fonts-scale-xl, 20px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
 }
@@ -43,7 +47,7 @@
   min-block-size: 0;
   overflow-y: auto;
   padding-block: var(--sherpa-core-space-xs, 8px);
-  gap: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-core-space-xs, 8px);
 }
 
 /* ── Group ─────────────────────────────────────────────────────────── */
@@ -51,8 +55,8 @@
 
 .group-label {
   margin: 0;
-  padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-base, 16px);
-  color: var(--sherpa-content-secondary-base, #404047);
+  padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-xs, 8px);
+  color: var(--sherpa-content-tertiary-base, #5c5c66);
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
   text-transform: uppercase;
@@ -66,31 +70,36 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-core-space-2xs, 4px);
 }
 
 /* ── Item rows ─────────────────────────────────────────────────────── */
-.item-row { margin: 0; }
+.item-row {
+  margin: 0;
+  /* hairline divider between rows — border/stroke/200 in border/primary */
+  border-block-end: var(--sherpa-core-border-width-sm, 0.5px) solid
+    var(--sherpa-border-primary, #d5d5d5);
+}
+.item-row:last-child { border-block-end: none; }
 
 .item {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-core-space-xs, 8px);
   inline-size: 100%;
-  padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-base, 16px);
+  padding: var(--sherpa-core-space-xs, 8px);
   border: none;
   background: transparent;
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-content-tertiary-base, #5c5c66);
   font-family: inherit;
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   font-weight: var(--sherpa-core-fonts-weight-500, 500);
   text-align: start;
   cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease;
+  transition: color 100ms ease;
 }
 .item:hover {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-content-primary-base, #2e2e33);
 }
 .item:focus-visible {
   outline: none;
@@ -113,12 +122,8 @@
   text-overflow: ellipsis;
 }
 
-/* ── Active item ───────────────────────────────────────────────────── */
+/* ── Active item — same ink, heavier weight ────────────────────────── */
 .item-row[data-active] .item {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
-  color: var(--sherpa-content-link-base, #3c5edd);
+  color: var(--sherpa-content-primary-base, #2e2e33);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
-}
-.item-row[data-active] .item-icon {
-  color: var(--sherpa-content-link-base, #3c5edd);
 }

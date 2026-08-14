@@ -1,9 +1,11 @@
 /**
  * sherpa-loader.css — all loader presentation.
  *
- * A track ring plus a single rotating arc (the ::after worm). Size, orientation,
- * and the optional panel surface are pure data-* selectors. The animation is
- * disabled under prefers-reduced-motion, leaving a static partial ring.
+ * A track ring plus a single rotating arc (the ::after worm). The track ring
+ * binds border/primary; the moving arc is the accent link colour (the loader is
+ * a neutral spinner — it carries no status binding). Size, orientation, and the
+ * optional panel surface are pure data-* selectors. The animation is disabled
+ * under prefers-reduced-motion, leaving a static partial ring.
  */
 
 :host {
@@ -54,7 +56,7 @@
   inset: calc(var(--_spinner-weight) * -1);
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   border: var(--_spinner-weight) solid
-    var(--_status-border, var(--sherpa-content-link-base, #3c5edd));
+    var(--sherpa-content-link-base, #3c5edd);
   border-block-start-color: transparent;
   animation: sherpa-loader-spin 0.8s linear infinite;
 }

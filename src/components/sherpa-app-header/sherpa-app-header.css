@@ -4,22 +4,26 @@
  * A single flex row: leading title/breadcrumb, an optional centred search that
  * takes the free space, and trailing actions. Each region collapses when empty
  * (search/actions via data-has-{slot}; the title via :empty). All CSS.
+ *
+ * Figma bindings: surface fill = surface/primary/base; the product title ink =
+ * color/brand/base (the brand accent); row gap = container-space/gap-sm; region
+ * spacing = space/{2xs,sm,xs}. No border token is bound — the bar is a flat
+ * surface, not a ruled one.
  */
 
 :host {
   display: block;
   container: sherpa-app-header / inline-size;
   background: var(--sherpa-surface-primary-base, #ffffff);
-  border-bottom: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
   color: var(--sherpa-content-primary-base, #2e2e33);
 }
 
 .bar {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-container-space-gap-sm, 16px);
+  gap: var(--sherpa-container-space-gap-sm, 8px);
   min-height: var(--sherpa-core-size-3xl, 40px);
-  padding-inline: var(--sherpa-core-space-base, 16px);
+  padding-inline: var(--sherpa-core-space-sm, 12px);
   padding-block: var(--sherpa-core-space-2xs, 4px);
 }
 
@@ -35,7 +39,7 @@
   margin: 0;
   font-size: var(--sherpa-core-fonts-scale-xl, 20px);
   font-weight: var(--sherpa-core-fonts-weight-700, 700);
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-core-color-brand-base, #c046ff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

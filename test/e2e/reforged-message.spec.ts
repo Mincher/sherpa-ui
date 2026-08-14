@@ -39,7 +39,7 @@ test('data-status drives the icon colour from the status tokens', async ({ page 
       if (status) el.setAttribute('data-status', status);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      return getComputedStyle(el.shadowRoot!.querySelector('.icon')!).color;
+      return getComputedStyle(el.shadowRoot!.querySelector('.icon')!).backgroundColor;
     };
     return {
       info: await iconColor('info'),
@@ -48,10 +48,10 @@ test('data-status drives the icon colour from the status tokens', async ({ page 
       critical: await iconColor('critical'),
     };
   });
-  expect(r.info).toBe('rgb(31, 117, 228)'); // content-info-default #1f75e4
-  expect(r.success).toBe('rgb(22, 145, 90)'); // content-success-default #16915a
-  expect(r.warning).toBe('rgb(181, 115, 10)'); // content-warning-default #b5730a
-  expect(r.critical).toBe('rgb(200, 50, 79)'); // content-critical-default #c8324f
+  expect(r.info).toBe('rgb(7, 82, 111)'); // badge = status-info-color-5 #07526F
+  expect(r.success).toBe('rgb(5, 129, 66)'); // status-success-color-4 #058142
+  expect(r.warning).toBe('rgb(167, 114, 6)'); // status-warning-color-7 #A77206
+  expect(r.critical).toBe('rgb(191, 44, 9)'); // status-critical-color-5 #BF2C09
   expect(r.info).not.toBe(r.critical);
 });
 
@@ -82,9 +82,9 @@ test('default (no data-status) still resolves an info icon colour', async ({ pag
     el.setAttribute('data-label', 'x');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    return getComputedStyle(el.shadowRoot!.querySelector('.icon')!).color;
+    return getComputedStyle(el.shadowRoot!.querySelector('.icon')!).backgroundColor;
   });
-  expect(color).toBe('rgb(31, 117, 228)'); // defaults to info
+  expect(color).toBe('rgb(7, 82, 111)'); // default badge = info #07526F
 });
 
 test('a slotted body replaces the data-label text node', async ({ page }) => {
