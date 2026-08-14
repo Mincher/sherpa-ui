@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-pagination",
   "figmaName": "Pagination",
-  "category": "_TODO",
-  "description": "sherpa-pagination — page navigation.",
+  "category": "control",
+  "description": "page navigation.",
   "props": [
     {
       "name": "data-total-pages",

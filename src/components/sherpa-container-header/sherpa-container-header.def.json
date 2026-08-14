@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-container-header",
   "figmaName": "Container Header",
-  "category": "_TODO",
-  "description": "sherpa-container-header — the header bar for a container's `header` slot.",
+  "category": "container",
+  "description": "the header bar for a container's `header` slot.",
   "props": [
     {
       "name": "data-title",

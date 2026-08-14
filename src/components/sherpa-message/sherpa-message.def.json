@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-message",
   "figmaName": "Message",
-  "category": "_TODO",
-  "description": "sherpa-message — a lightweight inline status strip.",
+  "category": "container",
+  "description": "a lightweight inline status strip.",
   "props": [
     {
       "name": "data-label",

@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-nav-item",
   "figmaName": "Nav Item",
-  "category": "_TODO",
-  "description": "sherpa-nav-item — a single navigation row.",
+  "category": "nav",
+  "description": "a single navigation row.",
   "props": [
     {
       "name": "data-icon",

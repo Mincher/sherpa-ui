@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-select-radio",
   "figmaName": "Select Radio",
-  "category": "_TODO",
-  "description": "sherpa-select-radio — a labelled radio button.",
+  "category": "control",
+  "description": "a labelled radio button.",
   "props": [
     {
       "name": "data-label",

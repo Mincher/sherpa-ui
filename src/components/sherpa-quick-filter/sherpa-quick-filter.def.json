@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-quick-filter",
   "figmaName": "Quick Filter",
-  "category": "_TODO",
-  "description": "sherpa-quick-filter — a toggleable filter chip for toolbars.",
+  "category": "control",
+  "description": "a toggleable filter chip for toolbars.",
   "props": [
     {
       "name": "data-label",

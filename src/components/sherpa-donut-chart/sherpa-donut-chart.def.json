@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-donut-chart",
   "figmaName": "Donut Chart",
-  "category": "_TODO",
-  "description": "sherpa-donut-chart — a donut / pie for part-to-whole data.",
+  "category": "chart",
+  "description": "a donut / pie for part-to-whole data.",
   "props": [
     {
       "name": "data-label",

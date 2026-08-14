@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-switch",
   "figmaName": "Switch",
-  "category": "_TODO",
-  "description": "sherpa-switch — an immediate binary toggle for settings and preferences.",
+  "category": "control",
+  "description": "an immediate binary toggle for settings and preferences.",
   "props": [
     {
       "name": "data-state",

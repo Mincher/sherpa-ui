@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-toolbar",
   "figmaName": "Toolbar",
-  "category": "_TODO",
-  "description": "sherpa-toolbar — a horizontal control strip.",
+  "category": "control",
+  "description": "a horizontal control strip.",
   "props": [],
   "templates": [],
   "slots": [

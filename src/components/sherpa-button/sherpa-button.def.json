@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-button",
   "figmaName": "Button",
-  "category": "_TODO",
-  "description": "sherpa-button — the primary interactive trigger.",
+  "category": "control",
+  "description": "the primary interactive trigger.",
   "props": [
     {
       "name": "data-label",

@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-gauge-chart",
   "figmaName": "Gauge Chart",
-  "category": "_TODO",
-  "description": "sherpa-gauge-chart — a half-circle gauge for a single 0–100 value.",
+  "category": "chart",
+  "description": "a half-circle gauge for a single 0–100 value.",
   "props": [
     {
       "name": "data-value",

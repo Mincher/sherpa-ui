@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-select-checkbox",
   "figmaName": "Select Checkbox",
-  "category": "_TODO",
-  "description": "sherpa-select-checkbox — a labelled checkbox.",
+  "category": "control",
+  "description": "a labelled checkbox.",
   "props": [
     {
       "name": "data-label",

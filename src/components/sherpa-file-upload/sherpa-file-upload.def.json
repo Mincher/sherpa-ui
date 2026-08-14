@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-file-upload",
   "figmaName": "File Upload",
-  "category": "_TODO",
-  "description": "sherpa-file-upload — a drag-and-drop file selection zone.",
+  "category": "control",
+  "description": "a drag-and-drop file selection zone.",
   "props": [
     {
       "name": "data-label",

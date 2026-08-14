@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-container",
   "figmaName": "Container",
-  "category": "_TODO",
-  "description": "sherpa-container — the base card surface.",
+  "category": "container",
+  "description": "the base card surface.",
   "props": [],
   "templates": [],
   "slots": [

@@ -102,7 +102,7 @@ enough — assert the swapped instance's mainComponent name is `cross`.
 
 ---
 
-## Rule 7 — A Button ALWAYS binds the Button size variables (size mode must work)
+## Rule 6 — A Button ALWAYS binds the Button size variables (size mode must work)
 
 The alert-card's nested action/dismiss buttons were force-set to HUG/auto vertical
 sizing, which **dropped the `height` binding to `Button::button-size/height`**. Once a
@@ -127,7 +127,7 @@ AND the Button collection is mode-pinned to the intended size.
 
 ---
 
-## Rule 8 — Mode pins do NOT cascade into nested instances automatically
+## Rule 7 — Mode pins do NOT cascade into nested instances automatically
 
 The status dot Tag didn't tint because a `Status` mode pinned on the **parent** does
 not automatically drive a nested **instance's** own bound variables — the instance
@@ -138,7 +138,7 @@ size (the dot was force-sized to 10px, overriding its real dimensions).
 
 ---
 
-## Rule 9 — EVERY property binds a variable if a relevant one exists
+## Rule 8 — EVERY property binds a variable if a relevant one exists
 
 The discipline rule. A component's geometry — gap, padding, radius, stroke-width —
 must **bind the token that resolves to its value**, never a raw number. Component

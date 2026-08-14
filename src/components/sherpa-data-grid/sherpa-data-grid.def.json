@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-data-grid",
   "figmaName": "Data Grid",
-  "category": "_TODO",
-  "description": "sherpa-data-grid — a sortable data table.",
+  "category": "data",
+  "description": "a sortable data table.",
   "props": [
     {
       "name": "data-sort-field",

@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-barchart",
   "figmaName": "Barchart",
-  "category": "_TODO",
-  "description": "sherpa-barchart — a vertical bar chart for categorical comparison.",
+  "category": "chart",
+  "description": "a vertical bar chart for categorical comparison.",
   "props": [
     {
       "name": "data-max",

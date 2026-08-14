@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-select-group",
   "figmaName": "Select Group",
-  "category": "_TODO",
-  "description": "sherpa-select-group — a labelled group of checkbox or radio options.",
+  "category": "control",
+  "description": "a labelled group of checkbox or radio options.",
   "props": [
     {
       "name": "data-label",

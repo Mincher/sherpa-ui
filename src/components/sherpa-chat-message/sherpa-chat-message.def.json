@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-chat-message",
   "figmaName": "Chat Message",
-  "category": "_TODO",
-  "description": "sherpa-chat-message — a single chat bubble for AI / messaging threads.",
+  "category": "content",
+  "description": "a single chat bubble for AI / messaging threads.",
   "props": [
     {
       "name": "data-author",

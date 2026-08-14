@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-list-item",
   "figmaName": "List Item",
-  "category": "_TODO",
-  "description": "sherpa-list-item — a single row inside a sherpa-list.",
+  "category": "container",
+  "description": "a single row inside a sherpa-list.",
   "props": [
     {
       "name": "data-title",

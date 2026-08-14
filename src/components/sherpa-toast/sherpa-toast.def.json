@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-toast",
   "figmaName": "Toast",
-  "category": "_TODO",
-  "description": "sherpa-toast — a transient notification.",
+  "category": "container",
+  "description": "a transient notification.",
   "props": [
     {
       "name": "data-message",

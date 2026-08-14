@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-tabs",
   "figmaName": "Tabs",
-  "category": "_TODO",
-  "description": "sherpa-tabs — a tabbed content switcher.",
+  "category": "container",
+  "description": "a tabbed content switcher.",
   "props": [
     {
       "name": "data-active-id",

@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-app-header",
   "figmaName": "App Header",
-  "category": "_TODO",
-  "description": "sherpa-app-header — the top application header bar (app-shell's header slot).",
+  "category": "nav",
+  "description": "the top application header bar (app-shell's header slot).",
   "props": [
     {
       "name": "data-title",

@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-code-block",
   "figmaName": "Code Block",
-  "category": "_TODO",
-  "description": "sherpa-code-block — a monospace code display with a copy button.",
+  "category": "container",
+  "description": "a monospace code display with a copy button.",
   "props": [
     {
       "name": "data-code",

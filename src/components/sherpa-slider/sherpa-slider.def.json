@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-slider",
   "figmaName": "Slider",
-  "category": "_TODO",
-  "description": "sherpa-slider — a single-value range control.",
+  "category": "control",
+  "description": "a single-value range control.",
   "props": [
     {
       "name": "data-label",

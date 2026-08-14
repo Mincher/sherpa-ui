@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-nav-section",
   "figmaName": "Nav Section",
-  "category": "_TODO",
-  "description": "sherpa-nav-section — a labelled group of nav items in a settings-style panel.",
+  "category": "nav",
+  "description": "a labelled group of nav items in a settings-style panel.",
   "props": [
     {
       "name": "data-heading",

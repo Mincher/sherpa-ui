@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-nav",
   "figmaName": "Nav",
-  "category": "_TODO",
-  "description": "sherpa-nav — a vertical navigation rail.",
+  "category": "nav",
+  "description": "a vertical navigation rail.",
   "props": [
     {
       "name": "data-active-id",

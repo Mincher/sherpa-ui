@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-sparkline",
   "figmaName": "Sparkline",
-  "category": "_TODO",
-  "description": "sherpa-sparkline — a compact inline trend chart.",
+  "category": "chart",
+  "description": "a compact inline trend chart.",
   "props": [
     {
       "name": "data-values",

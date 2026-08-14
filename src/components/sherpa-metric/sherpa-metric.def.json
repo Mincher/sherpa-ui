@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-metric",
   "figmaName": "Metric",
-  "category": "_TODO",
-  "description": "sherpa-metric — a KPI tile.",
+  "category": "content",
+  "description": "a KPI tile.",
   "props": [
     {
       "name": "data-label",

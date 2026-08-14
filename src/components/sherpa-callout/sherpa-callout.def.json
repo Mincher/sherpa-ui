@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-callout",
   "figmaName": "Callout",
-  "category": "_TODO",
-  "description": "sherpa-callout — a status message box.",
+  "category": "container",
+  "description": "a status message box.",
   "props": [
     {
       "name": "data-title",

@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-quick-filter-toolbar",
   "figmaName": "Quick Filter Toolbar",
-  "category": "_TODO",
-  "description": "sherpa-quick-filter-toolbar — a strip of quick-filter chips above a grid/list.",
+  "category": "control",
+  "description": "a strip of quick-filter chips above a grid/list.",
   "props": [],
   "templates": [],
   "slots": [

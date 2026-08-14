@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-transfer-list",
   "figmaName": "Transfer List",
-  "category": "_TODO",
-  "description": "sherpa-transfer-list — a two-pane shuttle (available ↔ selected).",
+  "category": "container",
+  "description": "a two-pane shuttle (available ↔ selected).",
   "props": [
     {
       "name": "data-source-heading",

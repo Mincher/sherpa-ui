@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-calendar",
   "figmaName": "Calendar",
-  "category": "_TODO",
-  "description": "sherpa-calendar — a single-date month-grid picker.",
+  "category": "container",
+  "description": "a single-date month-grid picker.",
   "props": [
     {
       "name": "data-value",

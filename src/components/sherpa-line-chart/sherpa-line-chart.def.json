@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-line-chart",
   "figmaName": "Line Chart",
-  "category": "_TODO",
-  "description": "sherpa-line-chart — a line/area chart over one or more numeric series.",
+  "category": "chart",
+  "description": "a line/area chart over one or more numeric series.",
   "props": [
     {
       "name": "data-variant",

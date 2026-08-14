@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-layout-grid",
   "figmaName": "Layout Grid",
-  "category": "_TODO",
-  "description": "sherpa-layout-grid — a responsive CSS-grid container for dashboard tiles.",
+  "category": "data",
+  "description": "a responsive CSS-grid container for dashboard tiles.",
   "props": [
     {
       "name": "data-cols",

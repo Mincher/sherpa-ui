@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-tooltip",
   "figmaName": "Tooltip",
-  "category": "_TODO",
-  "description": "sherpa-tooltip — a hover/focus tooltip that wraps a trigger.",
+  "category": "container",
+  "description": "a hover/focus tooltip that wraps a trigger.",
   "props": [
     {
       "name": "data-text",

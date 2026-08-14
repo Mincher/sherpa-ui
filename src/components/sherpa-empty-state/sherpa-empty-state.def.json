@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-empty-state",
   "figmaName": "Empty State",
-  "category": "_TODO",
-  "description": "sherpa-empty-state — a centred placeholder for a blank list, grid, or region.",
+  "category": "container",
+  "description": "a centred placeholder for a blank list, grid, or region.",
   "props": [
     {
       "name": "data-title",

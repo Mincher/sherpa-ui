@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-list",
   "figmaName": "List",
-  "category": "_TODO",
-  "description": "sherpa-list — a vertical container for a homogeneous row list.",
+  "category": "container",
+  "description": "a vertical container for a homogeneous row list.",
   "props": [
     {
       "name": "data-empty",

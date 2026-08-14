@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-progress-bar",
   "figmaName": "Progress Bar",
-  "category": "_TODO",
-  "description": "sherpa-progress-bar — a horizontal progress indicator for a single ongoing task.",
+  "category": "control",
+  "description": "a horizontal progress indicator for a single ongoing task.",
   "props": [
     {
       "name": "data-value",

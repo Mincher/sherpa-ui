@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-container-footer",
   "figmaName": "Container Footer",
-  "category": "_TODO",
-  "description": "sherpa-container-footer — the footer bar for a container's `footer` slot.",
+  "category": "container",
+  "description": "the footer bar for a container's `footer` slot.",
   "props": [],
   "templates": [],
   "slots": [

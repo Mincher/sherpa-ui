@@ -3,9 +3,10 @@
  * Sherpa UI MCP Server — entry point
  *
  * Transport: stdio (launched by AI clients, not used directly in a browser).
- * All capabilities are registered in server.js; data loading in lib/loader.js.
+ * All capabilities are registered in server.js. Tools are thin wrappers over
+ * the shared generation lib (scripts/lib/generation/*).
  *
- * To add a tool: edit the appropriate file under tools/.
+ * To add a tool: edit tools/{discover,generate,verify}.js.
  * To add a resource: edit resources/index.js.
  * To add a prompt: edit prompts/index.js.
  */

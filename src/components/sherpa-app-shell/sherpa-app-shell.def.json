@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-app-shell",
   "figmaName": "App Shell",
-  "category": "_TODO",
-  "description": "sherpa-app-shell — the application frame.",
+  "category": "nav",
+  "description": "the application frame.",
   "props": [],
   "templates": [],
   "slots": [

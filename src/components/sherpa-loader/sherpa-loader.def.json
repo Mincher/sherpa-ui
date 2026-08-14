@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-loader",
   "figmaName": "Loader",
-  "category": "_TODO",
-  "description": "sherpa-loader — an animated loading indicator.",
+  "category": "control",
+  "description": "an animated loading indicator.",
   "props": [],
   "templates": [],
   "slots": [

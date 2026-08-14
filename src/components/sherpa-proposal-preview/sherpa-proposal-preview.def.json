@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-proposal-preview",
   "figmaName": "Proposal Preview",
-  "category": "_TODO",
-  "description": "sherpa-proposal-preview — a card wrapping a set of proposed operations.",
+  "category": "data",
+  "description": "a card wrapping a set of proposed operations.",
   "props": [
     {
       "name": "data-title",

@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-progress-step-tracker",
   "figmaName": "Progress Step Tracker",
-  "category": "_TODO",
-  "description": "sherpa-progress-step-tracker — a horizontal stepper.",
+  "category": "control",
+  "description": "a horizontal stepper.",
   "props": [
     {
       "name": "data-current-step",

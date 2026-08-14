@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-proposal-op",
   "figmaName": "Proposal Op",
-  "category": "_TODO",
-  "description": "sherpa-proposal-op — a single proposed operation row inside a proposal preview.",
+  "category": "data",
+  "description": "a single proposed operation row inside a proposal preview.",
   "props": [
     {
       "name": "data-label",

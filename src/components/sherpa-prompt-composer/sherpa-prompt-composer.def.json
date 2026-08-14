@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-prompt-composer",
   "figmaName": "Prompt Composer",
-  "category": "_TODO",
-  "description": "sherpa-prompt-composer — an AI prompt input.",
+  "category": "content",
+  "description": "an AI prompt input.",
   "props": [
     {
       "name": "data-placeholder",

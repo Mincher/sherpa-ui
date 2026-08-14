@@ -3,8 +3,8 @@
   "generated": true,
   "name": "sherpa-input-text",
   "figmaName": "Input Text",
-  "category": "_TODO",
-  "description": "sherpa-input-text — a labelled text field.",
+  "category": "control",
+  "description": "a labelled text field.",
   "props": [
     {
       "name": "data-label",
