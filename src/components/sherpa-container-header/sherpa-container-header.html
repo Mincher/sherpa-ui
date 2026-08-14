@@ -1,29 +1,52 @@
 <!--
   sherpa-container-header — the header bar for a container's `header` slot.
 
-  A title (data-title or a slotted heading), an optional description, and a
-  trailing actions slot.
+  Matches the Figma "Container Header": an optional drag handle + icon on the
+  lead, a title + optional description, then a trailing actions region with an
+  optional collapse toggle and a dismiss (close) button.
 
   Public API:
     data-title        heading text (rendered into .title)
     data-description  secondary text (rendered into .description)
+    data-icon         a glyph before the title (shows the icon slot)
+    data-draggable    show the drag handle
+    data-dismissible  show the close button
+    data-collapsible  show the collapse toggle
+    data-collapsed    collapsed state (the toggle reflects it)
 
   Slots:
     heading  — custom heading element (replaces the default .title)
-    actions  — trailing action controls (reflects data-has-actions)
+    icon     — custom icon element (else data-icon glyph)
+    actions  — extra trailing action controls (before toggle/close)
 
-  Fires: nothing — slotted controls emit their own events.
+  Fires:
+    container-header-dismiss  — detail: {}              (close button)
+    container-header-toggle   — detail: { collapsed }   (collapse toggle)
+    container-header-drag     — detail: {}              (drag handle pointerdown)
 -->
 <template id="default">
   <header class="row" part="row">
+    <button class="drag" part="drag" type="button" aria-label="Drag to reorder">
+      <span class="drag-glyph" aria-hidden="true">&#x2830;</span>
+    </button>
+
+    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"></slot></span>
+
     <div class="labels" part="labels">
       <slot name="heading">
         <span class="title" part="title"></span>
       </slot>
       <span class="description" part="description"></span>
     </div>
+
     <div class="actions" part="actions">
       <slot name="actions" data-accepts="control,input"></slot>
+      <button class="toggle" part="toggle" type="button" aria-expanded="true" aria-label="Collapse">
+        <span class="toggle-glyph" aria-hidden="true">&#x25B4;</span>
+      </button>
+      <button class="close" part="close" type="button" aria-label="Close">
+        <span class="close-glyph" aria-hidden="true">&#x2715;</span>
+      </button>
     </div>
   </header>
 </template>

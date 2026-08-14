@@ -80,7 +80,7 @@ test('the heading slot overrides data-title', async ({ page }) => {
   expect(r.textHidden).toBe(true);
 });
 
-test('the actions region reflects data-has-actions and appears when slotted', async ({ page }) => {
+test('the actions region hides when empty and appears when slotted', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const bare = document.createElement('sherpa-container-header') as HeaderEl;
     bare.setAttribute('data-title', 'Bare');
@@ -99,14 +99,69 @@ test('the actions region reflects data-has-actions and appears when slotted', as
       getComputedStyle(el.shadowRoot!.querySelector('.actions')!).display !== 'none';
 
     return {
-      bareActionsAttr: bare.hasAttribute('data-has-actions'),
       bareActionsVisible: vis(bare),
       fullActionsAttr: full.hasAttribute('data-has-actions'),
       fullActionsVisible: vis(full),
     };
   });
-  expect(r.bareActionsAttr).toBe(false);
-  expect(r.bareActionsVisible).toBe(false);
+  expect(r.bareActionsVisible).toBe(false); // no actions, no dismiss, no toggle → hidden
   expect(r.fullActionsAttr).toBe(true);
   expect(r.fullActionsVisible).toBe(true);
+});
+
+test('data-draggable and data-icon reveal the drag handle and icon', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-container-header') as HeaderEl;
+    el.setAttribute('data-title', 'Panel');
+    el.setAttribute('data-draggable', '');
+    el.setAttribute('data-icon', '📁');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const s = el.shadowRoot!;
+    return {
+      dragVisible: getComputedStyle(s.querySelector('.drag')!).display !== 'none',
+      iconVisible: getComputedStyle(s.querySelector('.icon')!).display !== 'none',
+      iconText: s.querySelector('.icon')!.textContent,
+    };
+  });
+  expect(r.dragVisible).toBe(true);
+  expect(r.iconVisible).toBe(true);
+  expect(r.iconText).toBe('📁');
+});
+
+test('data-dismissible close button fires container-header-dismiss', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-container-header') as HeaderEl;
+    el.setAttribute('data-title', 'X');
+    el.setAttribute('data-dismissible', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const close = el.shadowRoot!.querySelector('.close') as HTMLElement;
+    const closeVisible = getComputedStyle(close).display !== 'none';
+    let dismissed = false;
+    el.addEventListener('container-header-dismiss', () => (dismissed = true));
+    close.click();
+    await new Promise((res) => setTimeout(res, 0));
+    return { closeVisible, dismissed };
+  });
+  expect(r.closeVisible).toBe(true);
+  expect(r.dismissed).toBe(true);
+});
+
+test('data-collapsible toggle flips data-collapsed and fires container-header-toggle', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-container-header') as HeaderEl;
+    el.setAttribute('data-title', 'Section');
+    el.setAttribute('data-collapsible', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const toggle = el.shadowRoot!.querySelector('.toggle') as HTMLElement;
+    let detail: unknown = null;
+    el.addEventListener('container-header-toggle', (e) => (detail = (e as CustomEvent).detail));
+    toggle.click();
+    await new Promise((res) => setTimeout(res, 0));
+    return { collapsedAfter: el.hasAttribute('data-collapsed'), detail };
+  });
+  expect(r.collapsedAfter).toBe(true);
+  expect(r.detail).toEqual({ collapsed: true });
 });

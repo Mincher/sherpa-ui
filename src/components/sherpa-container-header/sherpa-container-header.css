@@ -1,16 +1,15 @@
 /**
  * sherpa-container-header.css — all container-header presentation.
  *
- * A header row: a title (or slotted heading) + optional description on the lead
- * side, and a trailing actions region that appears only when the actions slot
- * has content (data-has-actions, reflected by the base class). The description
- * shows only when data-description is set (JS writes its text). Pure data-*.
+ * Matches the Figma "Container Header": an optional drag handle + icon lead a
+ * title + optional description, then a trailing actions region with an optional
+ * collapse toggle and a dismiss button. Each affordance is CSS-toggled off a
+ * data-* flag (or slot presence); JS only writes text and wires the events.
  *
- * Colour model (Figma): the header row fills its status surface via the
- * [data-status] cascade — background: var(--_status-surface, transparent) — and
- * its bottom divider follows var(--_status-border, <neutral>). With no ancestor
- * status it is transparent over the container surface. Title → content/title,
- * description → content/secondary. Geometry binds the container-space vars.
+ * Colour model (Figma): the row fills its status surface via the [data-status]
+ * cascade — background: var(--_status-surface, transparent) — its title follows
+ * var(--_status-text, content/title) and the description content/secondary. With
+ * no ancestor status it is transparent over the container surface.
  */
 
 :host {
@@ -36,6 +35,36 @@
   overflow: hidden;
 }
 
+/* ── Drag handle ──────────────────────────────────────────────────────── */
+.drag {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-core-size-sm, 16px);
+  block-size: var(--sherpa-core-size-sm, 16px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-content-secondary-base, #5c5c66);
+  cursor: grab;
+}
+:host([data-draggable]) .drag { display: inline-flex; }
+.drag:active { cursor: grabbing; }
+
+/* ── Icon ─────────────────────────────────────────────────────────────── */
+.icon {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-core-size-sm, 16px);
+  block-size: var(--sherpa-core-size-sm, 16px);
+  color: var(--_status-icon, var(--sherpa-content-title-base, #18191a));
+}
+:host([data-icon]) .icon,
+:host([data-has-icon]) .icon { display: inline-flex; }
+
 /* ── Title ────────────────────────────────────────────────────────────── */
 .title {
   display: block;
@@ -48,8 +77,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
-/* When a heading is slotted, the default .title collapses. */
 slot[name="heading"] { display: contents; }
 :host([data-has-heading]) .title { display: none; }
 
@@ -68,12 +95,45 @@ slot[name="heading"] { display: contents; }
 
 /* ── Actions ──────────────────────────────────────────────────────────── */
 .actions {
-  display: none;
+  display: flex;
   flex-shrink: 0;
   align-items: center;
   gap: var(--sherpa-container-space-gap-sm, 8px);
 }
-:host([data-has-actions]) .actions { display: flex; }
+
+/* Icon-glyph action buttons (toggle, close) */
+.toggle,
+.close {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-core-size-2xl, 32px);
+  block-size: var(--sherpa-core-size-2xl, 32px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  background: transparent;
+  color: var(--_status-text, var(--sherpa-content-secondary-base, #5c5c66));
+  cursor: pointer;
+  transition: background-color 100ms ease;
+}
+.toggle:hover,
+.close:hover { background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6); }
+.toggle:focus-visible,
+.close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+}
+:host([data-collapsible]) .toggle { display: inline-flex; }
+:host([data-dismissible]) .close { display: inline-flex; }
+
+/* Collapsed rotates the toggle chevron. */
+.toggle-glyph { transition: transform 120ms ease; }
+:host([data-collapsed]) .toggle-glyph { transform: rotate(180deg); }
+
+/* Hide the whole actions region only when it truly has nothing. */
+:host(:not([data-has-actions]):not([data-dismissible]):not([data-collapsible])) .actions { display: none; }
 
 /* ── Narrow: drop the description first ───────────────────────────────── */
 @container sherpa-container-header (max-width: 220px) {

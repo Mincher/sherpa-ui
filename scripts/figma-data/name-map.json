@@ -86,8 +86,8 @@
     },
     "sherpa-container-header": {
       "figma": "Container Header",
-      "status": "needs-rebuild",
-      "rebuildNote": "missing all 4 Figma affordances: drag-handle, icon, close/dismiss, collapse toggle"
+      "status": "matched",
+      "note": "rebuilt 2026-08-15: added drag-handle, icon, dismiss, collapse toggle + events"
     },
     "sherpa-container-footer": {
       "figma": "Container Footer",
