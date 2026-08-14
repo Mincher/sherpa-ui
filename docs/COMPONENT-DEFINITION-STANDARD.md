@@ -173,7 +173,31 @@ Library consumers **do not edit source**. Five paths, recorded per component:
 
 ---
 
-## 6. Authoring a NEW def (outside Figma)
+## 6. The compiler (`def → code`)
+
+`scripts/compile-def.mjs <name>` reconstructs a component's three files from its
+def (needs an `anatomy` block). It is a **scaffolder, not a replicator**:
+
+- **The def owns:** structure (anatomy → HTML), the public API (props → observed
+  + templateId), behaviour wiring (nested `listen`/`reemit` → TS), and the token
+  map (tokens → CSS custom properties).
+- **Hand-written CSS still owns polish:** literal hex fallbacks, edge-case rules
+  (`:host([data-collapsed])`, `.close:hover`), `white-space`, transitions. These
+  are richer than the token map and stay in the `.css`.
+- **Optional prose:** a `docs.html` / `docs.ts` string in the def becomes the
+  file's doc comment; absent, a one-line generated header is used.
+
+So compiled output is a **correct, working component** — structurally identical
+to hand-written, but not byte-for-byte. Use it to scaffold a new component from
+a def, then hand-finish the CSS. Do **not** expect it to reproduce a hand-tuned
+file exactly; that would bloat the def into a second copy of the CSS.
+
+Output goes to `.compile-out/<name>/` (git-ignored) by default; `--print` to
+stdout; `--out DIR` to choose.
+
+---
+
+## 7. Authoring a NEW def (outside Figma)
 
 1. Add the row to `name-map.json` (`status: no-figma` or `figma-only`).
 2. Write `<name>.def.json` with `"generated": false`.
