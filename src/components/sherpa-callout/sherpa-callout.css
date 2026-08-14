@@ -1,45 +1,50 @@
 /**
- * sherpa-callout.css — all callout presentation.
+ * sherpa-callout — a status message box (matches Figma Callout).
  *
- * A status message box: a leading status icon, a title + message, and an
- * optional dismiss button. data-status selects one of four status hues; that
- * hue drives a soft surface tint (color-mix, no dedicated surface token) plus a
- * leading accent bar and the icon/title colour. Pure data-* selectors.
+ * The box is a neutral container by default: status-surface fill, status-border,
+ * status-tinted text — all from the [data-status] cascade (--_status-*). Only a
+ * status re-points those; a bare callout reads as the neutral/info default. A
+ * round icon badge carries the status colour; the action link stays a link.
+ * Geometry = the container-scoped vars.
  */
 
 :host {
   display: block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* default status — info; each status block below re-pins --_accent */
-  --_accent: var(--sherpa-content-info-default, #1f75e4);
+  /* cascade fallbacks so a bare (status-less) callout still resolves */
+  --_surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
+  --_badge: var(--_status-surface-strong, var(--sherpa-surface-interactive-active-base, #0c303e));
 }
 
 .box {
   display: flex;
   align-items: flex-start;
   gap: var(--sherpa-container-space-gap-md, 12px);
-  padding: var(--sherpa-container-space-padding-md, 12px);
-  /* Leading accent bar on the inline-start edge only, over a soft status tint. */
-  border: 0 solid var(--_accent);
-  border-inline-start-width: var(--sherpa-core-border-width-lg, 2px);
-  border-radius: var(--sherpa-container-border-radius-top-left, 4px);
-  background: color-mix(in srgb, var(--_accent) 12%, transparent);
+  padding: var(--sherpa-container-space-padding-md, 16px);
+  border: var(--sherpa-container-border-width, 1px) solid var(--_border);
+  border-radius: var(--sherpa-container-border-radius-top-left, 8px);
+  background: var(--_surface);
   color: var(--sherpa-content-primary-base, #2e2e33);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   line-height: 1.45;
 }
 
-/* ── Icon region ─────────────────────────────────────────────────────── */
+/* ── Status icon badge — a round chip in the status colour ───────────── */
 .icon {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--sherpa-core-size-md, 20px);
-  height: var(--sherpa-core-size-md, 20px);
-  color: var(--_accent);
+  inline-size: var(--sherpa-size-icon-md, 20px);
+  block-size: var(--sherpa-size-icon-md, 20px);
+  border-radius: 50%;
+  background: var(--_badge);
+  color: var(--sherpa-content-title-on-color, #ffffff);
+  font-size: 12px;
   font-weight: var(--sherpa-core-fonts-weight-700, 700);
+  font-style: normal;
   line-height: 1;
 }
 /* Text glyph per status — no icon font dependency, pure CSS content. */
@@ -47,8 +52,8 @@
 :host([data-status="success"])  .icon::after { content: "\2713"; } /* ✓ */
 :host([data-status="warning"])  .icon::after { content: "!"; }
 :host([data-status="critical"]) .icon::after { content: "!"; }
-/* default (no explicit status) shows the info glyph */
-:host(:not([data-status])) .icon::after { content: "i"; }
+:host([data-status="urgent"])   .icon::after { content: "!"; }
+:host(:not([data-status]))      .icon::after { content: "i"; }
 
 /* ── Content ─────────────────────────────────────────────────────────── */
 .content {
@@ -56,7 +61,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-core-space-2xs, 4px);
 }
 
 .title {
@@ -65,12 +70,9 @@
   font-size: var(--sherpa-core-fonts-scale-lg, 16px);
   line-height: 1.35;
 }
-
-/* Title only shows when data-title is set (JS fills .title). */
 :host(:not([data-title])) .title { display: none; }
 
-.message { color: inherit; }
-/* When there's no message content, drop the empty node. */
+.message { color: var(--sherpa-content-primary-base, #2e2e33); }
 :host(:not([data-has-content])) .message { display: none; }
 
 /* ── Dismiss button ──────────────────────────────────────────────────── */
@@ -79,8 +81,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--sherpa-core-size-md, 20px);
-  height: var(--sherpa-core-size-md, 20px);
+  inline-size: var(--sherpa-size-icon-md, 20px);
+  block-size: var(--sherpa-size-icon-md, 20px);
   padding: 0;
   margin-inline-start: var(--sherpa-core-space-2xs, 4px);
   border: none;
@@ -90,7 +92,9 @@
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease;
+  transition:
+    background-color 100ms ease,
+    color 100ms ease;
 }
 .close:hover {
   color: var(--sherpa-content-title-base, #18191a);
@@ -98,14 +102,6 @@
 }
 .close:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-control-border-accent, #3c5edd);
 }
-
-/* Dismiss button only when the callout is dismissible. */
 :host(:not([data-dismissible])) .close { display: none; }
-
-/* ── Status hue selection ────────────────────────────────────────────── */
-:host([data-status="info"])     { --_accent: var(--sherpa-content-info-default,     #1f75e4); }
-:host([data-status="success"])  { --_accent: var(--sherpa-content-success-default,  #16915a); }
-:host([data-status="warning"])  { --_accent: var(--sherpa-content-warning-default,  #b5730a); }
-:host([data-status="critical"]) { --_accent: var(--sherpa-content-critical-default, #c8324f); }

@@ -1404,37 +1404,37 @@
 /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
 [data-status="info"] {
   --_status-border: var(--sherpa-status-info-color-5);
+  --_status-surface-strong: var(--sherpa-status-info-color-5);
   --_status-text: var(--sherpa-content-title-on-color-subtle);
-  --_status-surface-strong: var(--sherpa-status-info-color-1);
-  --_status-surface: var(--sherpa-status-info-color-2);
+  --_status-surface: var(--sherpa-status-info-color-1);
 }
 
 [data-status="critical"] {
   --_status-border: var(--sherpa-status-critical-color-5);
+  --_status-surface-strong: var(--sherpa-status-critical-color-5);
   --_status-text: var(--sherpa-content-title-on-color-subtle);
-  --_status-surface-strong: var(--sherpa-status-critical-color-1);
-  --_status-surface: var(--sherpa-status-critical-color-2);
+  --_status-surface: var(--sherpa-status-critical-color-1);
 }
 
 [data-status="warning"] {
   --_status-border: var(--sherpa-status-warning-color-7);
+  --_status-surface-strong: var(--sherpa-status-warning-color-7);
   --_status-text: var(--sherpa-content-title-on-color-subtle);
-  --_status-surface-strong: var(--sherpa-status-warning-color-1);
-  --_status-surface: var(--sherpa-status-warning-color-2);
+  --_status-surface: var(--sherpa-status-warning-color-1);
 }
 
 [data-status="urgent"] {
   --_status-border: var(--sherpa-status-urgent-color-5);
+  --_status-surface-strong: var(--sherpa-status-urgent-color-5);
   --_status-text: var(--sherpa-content-title-on-color-subtle);
-  --_status-surface-strong: var(--sherpa-status-urgent-color-1);
-  --_status-surface: var(--sherpa-status-urgent-color-2);
+  --_status-surface: var(--sherpa-status-urgent-color-1);
 }
 
 [data-status="success"] {
   --_status-border: var(--sherpa-status-success-color-4);
+  --_status-surface-strong: var(--sherpa-status-success-color-4);
   --_status-text: var(--sherpa-content-title-on-color-subtle);
-  --_status-surface-strong: var(--sherpa-status-success-color-1);
-  --_status-surface: var(--sherpa-status-success-color-2);
+  --_status-surface: var(--sherpa-status-success-color-1);
 }
 
 /* Component-scoped variant modes — a component's [data-*] re-points its scoped vars. */

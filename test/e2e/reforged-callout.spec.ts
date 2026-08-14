@@ -40,7 +40,7 @@ test('data-status drives a soft status surface distinct per status', async ({ pa
   for (const v of values) expect(v).not.toBe('rgba(0, 0, 0, 0)');
 });
 
-test('accent bar (leading border) colour tracks the status', async ({ page }) => {
+test('status fills the box with the status surface + border (Figma model)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-callout') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-status', 'critical');
@@ -49,10 +49,10 @@ test('accent bar (leading border) colour tracks the status', async ({ page }) =>
     await el.rendered;
     const box = el.shadowRoot!.querySelector('.box')!;
     const cs = getComputedStyle(box);
-    return { color: cs.borderInlineStartColor, width: cs.borderInlineStartWidth };
+    return { surface: cs.backgroundColor, border: cs.borderTopColor };
   });
-  expect(r.color).toBe('rgb(200, 50, 79)'); // content-critical-default #c8324f
-  expect(parseFloat(r.width)).toBeGreaterThan(0);
+  expect(r.surface).toBe('rgb(255, 247, 245)'); // status-critical-color-1 #FFF7F5 (box tint)
+  expect(r.border).toBe('rgb(191, 44, 9)'); // status-critical-color-5 #BF2C09 (border)
 });
 
 test('data-title renders into the title node; absent title hides it', async ({ page }) => {

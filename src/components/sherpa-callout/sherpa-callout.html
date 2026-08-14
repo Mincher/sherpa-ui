@@ -1,12 +1,12 @@
 <!--
   sherpa-callout — a status message box.
 
-  A leading icon region, a title/message, and an optional dismiss button.
-  The status colour (info | success | warning | critical) is chosen by
-  data-status on the host and drives a soft surface tint + accent bar in CSS.
+  A round status icon badge, a title/message, and an optional dismiss button.
+  data-status re-points the [data-status] cascade (--_status-surface/-border/-text)
+  so the whole box fills with the status surface; the icon badge carries the hue.
 
   Public API:
-    data-status       info | success | warning | critical (default: info)
+    data-status       info | success | warning | critical | urgent (default: neutral/info)
     data-title        heading text (rendered into .title)
     data-dismissible  show the close button (fires callout-dismiss)
 

@@ -196,15 +196,19 @@ if (statusColl) {
       statusVars.push({ key: k, path: leaf.name });
     }
   }
-  // Map the Figma Status structure onto the CLAUDE.md cascade vocabulary the
-  // reforged components actually read: --_status-{surface,surface-strong,border,text}.
-  // (Figma splits content/surface into many sub-roles; components consume a compact set.)
+  // Map the Figma Status structure onto the cascade vocab components read.
+  // Figma roles (verified from the Status collection): surface/default = the box
+  // tint (color 1), border/default = the border/ink accent (color 5/7/4),
+  // content/title = the heading ink on that tint. The "badge/strong" accent a
+  // component wants for a status chip is the BORDER ink, so map border → both
+  // --_status-border and --_status-surface-strong.
   const ROLE_MAP = {
-    'status-surface-default': '_status-surface-strong', // the filled status surface
-    'status-surface-hover': '_status-surface',
-    'status-border-default': '_status-border',
-    'status-content-title': '_status-text', // the primary status ink
+    'status-surface-default': '_status-surface', // the box tint (color 1)
+    'status-border-default': '_status-border', // the border + strong accent ink
+    'status-content-title': '_status-text', // heading ink on the tint
   };
+  // border also feeds the "strong" accent (icon badge / fill chip)
+  const ALSO = { 'status-border-default': '_status-surface-strong' };
   function collectStatus(node, path, out) {
     if (node && typeof node === 'object' && '$value' in node) {
       const ext = node.$extensions?.['figma-console-mcp'] ?? {};
@@ -219,9 +223,12 @@ if (statusColl) {
   const roles = [];
   collectStatus(statusColl, [], roles);
   for (const mode of STATUS_MODES) {
-    const lines = roles
-      .filter((r) => ROLE_MAP[r.figmaRole] && r.modes[mode] != null)
-      .map((r) => `  --${ROLE_MAP[r.figmaRole]}: ${toCss(r.modes[mode])};`);
+    const lines = [];
+    for (const r of roles) {
+      if (r.modes[mode] == null) continue;
+      if (ROLE_MAP[r.figmaRole]) lines.push(`  --${ROLE_MAP[r.figmaRole]}: ${toCss(r.modes[mode])};`);
+      if (ALSO[r.figmaRole]) lines.push(`  --${ALSO[r.figmaRole]}: ${toCss(r.modes[mode])};`);
+    }
     if (lines.length) {
       statusBlocks.push(`[data-status="${mode}"] {\n${lines.join('\n')}\n}`);
     }
