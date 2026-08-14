@@ -11,7 +11,12 @@
 :host {
   display: inline-flex;
   vertical-align: middle;
-  border-radius: var(--sherpa-grouping-radius-top-left, 4px);
+  /* Per-corner radius so [data-snap] can join buttons into a seamless group:
+     [data-snap="left"] rounds only the left corners, "middle" squares all, etc. */
+  border-start-start-radius: var(--sherpa-grouping-radius-top-left, 4px);
+  border-start-end-radius: var(--sherpa-grouping-radius-top-right, 4px);
+  border-end-start-radius: var(--sherpa-grouping-radius-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-grouping-radius-bottom-right, 4px);
 
   /* primary look — control surface accent; variants re-point below */
   --_surface: var(--sherpa-control-surface-accent, #3c5edd);

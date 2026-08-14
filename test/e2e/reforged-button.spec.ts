@@ -117,3 +117,22 @@ test('slot presence reflects to data-has-content on the host', async ({ page }) 
   expect(r.withText).toBe(true);
   expect(r.empty).toBe(false);
 });
+
+test('data-snap joins buttons into a seamless group (per-corner radius)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const mk = async (snap: string) => {
+      const b = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };
+      b.setAttribute('data-snap', snap);
+      b.textContent = 'x';
+      document.getElementById('root')!.appendChild(b);
+      await b.rendered;
+      const cs = getComputedStyle(b);
+      return { tl: cs.borderStartStartRadius, tr: cs.borderStartEndRadius };
+    };
+    return { left: await mk('left'), middle: await mk('middle') };
+  });
+  // left keeps its top-left rounded; middle squares all corners (seamless join)
+  expect(parseFloat(r.left.tl)).toBeGreaterThan(0);
+  expect(parseFloat(r.middle.tl)).toBe(0);
+  expect(parseFloat(r.middle.tr)).toBe(0);
+});
